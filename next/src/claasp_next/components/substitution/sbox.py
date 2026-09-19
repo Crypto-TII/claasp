@@ -3,9 +3,9 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from claasp_next.graph import Component, PortLike, as_selection
-from claasp_next.domains import BinaryExtensionField, Bit, Word
 from claasp_next.components.substitution.lookup_table import LookupTable
+from claasp_next.domains import BinaryExtensionField, Bit, Word
+from claasp_next.graph import Component, PortLike, as_selection
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -44,9 +44,7 @@ class SBox(Component):
             ):
                 raise ValueError("lookup-table widths must match the S-box domain")
         else:
-            lookup_table = LookupTable(
-                table, domain.encoded_bit_size, domain.encoded_bit_size
-            )
+            lookup_table = LookupTable(table, domain.encoded_bit_size, domain.encoded_bit_size)
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
         object.__setattr__(self, "output_type", component_input.value_type)

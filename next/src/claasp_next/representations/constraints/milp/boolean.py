@@ -1,7 +1,15 @@
 """Exact binary-linear lowering of solver-independent Boolean clauses."""
 
 from claasp_next.representations.constraints.sat import BooleanCNFModel, CNFFormula
-from .model import ConstraintSense, LinearConstraint, LinearExpression, LinearVariable, MILPModel, VariableKind
+
+from .model import (
+    ConstraintSense,
+    LinearConstraint,
+    LinearExpression,
+    LinearVariable,
+    MILPModel,
+    VariableKind,
+)
 
 
 def cnf_to_milp(formula):
@@ -29,10 +37,18 @@ def cnf_to_milp(formula):
             name = formula.variables[abs(literal) - 1]
             terms[name] = terms.get(name, 0) + (1 if literal > 0 else -1)
             negative += literal < 0
-        constraints.append(LinearConstraint(LinearExpression.from_terms(terms),
-            ConstraintSense.GREATER_EQUAL, 1 - negative, f"clause_{number}"))
-    return MILPModel(tuple(LinearVariable(name, VariableKind.BINARY) for name in formula.variables),
-                     tuple(constraints))
+        constraints.append(
+            LinearConstraint(
+                LinearExpression.from_terms(terms),
+                ConstraintSense.GREATER_EQUAL,
+                1 - negative,
+                f"clause_{number}",
+            )
+        )
+    return MILPModel(
+        tuple(LinearVariable(name, VariableKind.BINARY) for name in formula.variables),
+        tuple(constraints),
+    )
 
 
 class BooleanGraphMILPModel:

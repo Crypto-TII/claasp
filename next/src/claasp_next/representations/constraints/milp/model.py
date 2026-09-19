@@ -121,7 +121,9 @@ class LinearExpression:
     def evaluate(self, assignment: Mapping[str, int | float]) -> float:
         """Evaluate this expression under a complete named assignment."""
 
-        return self.constant + sum(coefficient * assignment[name] for name, coefficient in self.terms)
+        return self.constant + sum(
+            coefficient * assignment[name] for name, coefficient in self.terms
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -168,7 +170,9 @@ class MILPModel:
         if len(set(names)) != len(names):
             raise ValueError("variable names must be unique")
         known = set(names)
-        referenced = {name for constraint in self.constraints for name, _ in constraint.expression.terms}
+        referenced = {
+            name for constraint in self.constraints for name, _ in constraint.expression.terms
+        }
         referenced.update(name for name, _ in self.objective.terms)
         if unknown := referenced - known:
             raise ValueError(f"expressions refer to unknown variables: {sorted(unknown)!r}")
@@ -189,14 +193,26 @@ class MILPModel:
                 return False
             if variable.upper_bound is not None and value > variable.upper_bound + tolerance:
                 return False
-            if variable.kind is not VariableKind.CONTINUOUS and abs(value - round(value)) > tolerance:
+            if (
+                variable.kind is not VariableKind.CONTINUOUS
+                and abs(value - round(value)) > tolerance
+            ):
                 return False
         for constraint in self.constraints:
             value = constraint.expression.evaluate(assignment)
-            if constraint.sense is ConstraintSense.EQUAL and abs(value - constraint.rhs) > tolerance:
+            if (
+                constraint.sense is ConstraintSense.EQUAL
+                and abs(value - constraint.rhs) > tolerance
+            ):
                 return False
-            if constraint.sense is ConstraintSense.LESS_EQUAL and value > constraint.rhs + tolerance:
+            if (
+                constraint.sense is ConstraintSense.LESS_EQUAL
+                and value > constraint.rhs + tolerance
+            ):
                 return False
-            if constraint.sense is ConstraintSense.GREATER_EQUAL and value < constraint.rhs - tolerance:
+            if (
+                constraint.sense is ConstraintSense.GREATER_EQUAL
+                and value < constraint.rhs - tolerance
+            ):
                 return False
         return True

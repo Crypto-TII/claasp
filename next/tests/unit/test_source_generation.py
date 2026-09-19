@@ -1,5 +1,5 @@
-from pathlib import Path
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 

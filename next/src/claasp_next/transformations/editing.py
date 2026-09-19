@@ -2,13 +2,28 @@
 
 from copy import copy
 
-from claasp_next.components import Add, LinearMap, ModularAdd, ModularSubtract, Permutation, Rotate, Xor
+from claasp_next.components import (
+    Add,
+    LinearMap,
+    ModularAdd,
+    ModularSubtract,
+    Permutation,
+    Rotate,
+    Xor,
+)
 from claasp_next.domains import Word
-from claasp_next.graph import InputVisibility, Primitive, PrimitiveInput, PrimitiveKind, as_selection
+from claasp_next.graph import (
+    InputVisibility,
+    Primitive,
+    PrimitiveInput,
+    PrimitiveKind,
+)
 from claasp_next.graph.composite import CompositeInstance
 from claasp_next.provenance import TransformationRecord
 from claasp_next.transformations.contracts import (
-    TransformationError, TransformationFailureReason, TransformationResult,
+    TransformationError,
+    TransformationFailureReason,
+    TransformationResult,
 )
 from claasp_next.transformations.slicing import slice_primitive
 from claasp_next.transformations.traversal import DependencyIndex, GraphSourceKind
@@ -17,7 +32,8 @@ from claasp_next.transformations.traversal import DependencyIndex, GraphSourceKi
 def _record(derived, source, operation, parameters=()):
     record = TransformationRecord(operation, parameters, source.realization_identity)
     object.__setattr__(
-        derived, "_transformation_provenance",
+        derived,
+        "_transformation_provenance",
         (*source.transformation_provenance, record),
     )
 
@@ -46,7 +62,8 @@ def _input_dependencies(primitive, index):
             dependencies[source_id] = frozenset((source_id,))
         else:
             dependencies[source_id] = frozenset(
-                name for predecessor in index.predecessors(source_id)
+                name
+                for predecessor in index.predecessors(source_id)
                 for name in dependencies[predecessor]
             )
     return dependencies
@@ -74,10 +91,16 @@ def _round_key_boundaries(primitive, index, dependencies, secret_inputs):
 
 def _zero_neutral_data_input(component, dependencies, secret_inputs):
     data_indices = tuple(
-        index for index, selection in enumerate(component.inputs)
-        if not (dependencies[selection.source.owner_id] and dependencies[selection.source.owner_id] <= secret_inputs)
+        index
+        for index, selection in enumerate(component.inputs)
+        if not (
+            dependencies[selection.source.owner_id]
+            and dependencies[selection.source.owner_id] <= secret_inputs
+        )
     )
-    key_indices = tuple(index for index in range(len(component.inputs)) if index not in data_indices)
+    key_indices = tuple(
+        index for index in range(len(component.inputs)) if index not in data_indices
+    )
     if len(data_indices) != 1 or not key_indices:
         return None
     if isinstance(component, (Xor, Add, ModularAdd)):
@@ -128,7 +151,8 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
             visiting.extend(index.predecessors(source_id))
 
     inputs = {
-        name: descriptor for name, descriptor in primitive.input_descriptors.items()
+        name: descriptor
+        for name, descriptor in primitive.input_descriptors.items()
         if name in required and name not in secret_inputs
     }
     derived = Primitive(
@@ -143,7 +167,8 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
     component_by_id = {component.component_id: component for component in primitive.components}
     round_by_component = {
         component.component_id: primitive_round.number
-        for primitive_round in primitive.rounds for component in primitive_round.components
+        for primitive_round in primitive.rounds
+        for component in primitive_round.components
     }
     active_round = None
 
@@ -167,8 +192,10 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
         if source.kind is GraphSourceKind.BINDING:
             binding = binding_by_id[source_id]
             ports[source_id] = derived._add_binding(
-                binding.kind, tuple(remap(item) for item in binding.inputs),
-                binding.output_type, word_width=binding.word_width,
+                binding.kind,
+                tuple(remap(item) for item in binding.inputs),
+                binding.output_type,
+                word_width=binding.word_width,
             )
         elif source.kind is GraphSourceKind.COMPONENT:
             component = component_by_id[source_id]
@@ -182,16 +209,21 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
             ports[source_id] = derived.add_component(clone)
     derived.set_output(remap(primitive.output))
     _record(
-        derived, primitive, "remove_key_schedule",
+        derived,
+        primitive,
+        "remove_key_schedule",
         (("keep_round_key_injection", "false"),),
     )
     return TransformationResult(
-        derived, tuple((name, name) for name in inputs),
+        derived,
+        tuple((name, name) for name in inputs),
     )
 
 
 def remove_key_schedule(
-    primitive: Primitive, *, keep_round_key_injection: bool = True,
+    primitive: Primitive,
+    *,
+    keep_round_key_injection: bool = True,
 ) -> TransformationResult:
     """Remove computed key dependencies from a primitive graph.
 
@@ -228,7 +260,10 @@ def remove_key_schedule(
         return _rebuild_without_key_injections(primitive, index, dependencies, secret_inputs)
 
     boundaries = _round_key_boundaries(
-        primitive, index, dependencies, secret_inputs,
+        primitive,
+        index,
+        dependencies,
+        secret_inputs,
     )
     if not boundaries:
         raise TransformationError(
@@ -236,8 +271,7 @@ def remove_key_schedule(
             "no key-derived round injection reaches a data-dependent component",
         )
     slice_inputs = {
-        name: primitive.input(name)
-        for name in primitive.input_ports if name not in secret_inputs
+        name: primitive.input(name) for name in primitive.input_ports if name not in secret_inputs
     }
     for number, (source_id, positions) in enumerate(boundaries):
         slice_inputs[f"round_key_{number}"] = primitive.port(source_id)[positions]
@@ -256,12 +290,16 @@ def remove_key_schedule(
     if primitive.kind in (PrimitiveKind.BLOCK_CIPHER, PrimitiveKind.TWEAKABLE_BLOCK_CIPHER):
         object.__setattr__(result.primitive, "_kind", primitive.kind)
     _record(
-        result.primitive, primitive, "remove_key_schedule",
+        result.primitive,
+        primitive,
+        "remove_key_schedule",
         (("keep_round_key_injection", "true"),),
     )
     return TransformationResult(
         result.primitive,
-        tuple((source_id, f"round_key_{number}") for number, (source_id, _) in enumerate(boundaries)),
+        tuple(
+            (source_id, f"round_key_{number}") for number, (source_id, _) in enumerate(boundaries)
+        ),
     )
 
 
@@ -313,7 +351,8 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
     component_by_id = {component.component_id: component for component in primitive.components}
     round_by_component = {
         component.component_id: primitive_round.number
-        for primitive_round in primitive.rounds for component in primitive_round.components
+        for primitive_round in primitive.rounds
+        for component in primitive_round.components
     }
     active_round = None
     derived_round_by_original = {}
@@ -329,12 +368,18 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
         if source.kind is GraphSourceKind.BINDING:
             binding = binding_by_id[source_id]
             ports[source_id] = derived._add_binding(
-                binding.kind, tuple(remap(item) for item in binding.inputs),
-                binding.output_type, word_width=binding.word_width,
+                binding.kind,
+                tuple(remap(item) for item in binding.inputs),
+                binding.output_type,
+                word_width=binding.word_width,
             )
             continue
         component = component_by_id[source_id]
-        mapping = component.mapping if isinstance(component, Permutation) else _linear_permutation(component)
+        mapping = (
+            component.mapping
+            if isinstance(component, Permutation)
+            else _linear_permutation(component)
+        )
         if mapping is not None:
             ports[source_id] = derived.view(remap(component.inputs[0])[mapping])
             inlined.add(source_id)
@@ -374,7 +419,8 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
         if not set(scope.component_ids) <= required or set(scope.component_ids) & inlined:
             continue
         instance = CompositeInstance(
-            scope.path, scope.definition,
+            scope.path,
+            scope.definition,
             tuple((name, remap(value)) for name, value in scope.input_bindings),
             tuple((name, remap(value)) for name, value in scope.output_bindings),
             tuple(ports[component_id].owner_id for component_id in scope.component_ids),
@@ -387,7 +433,11 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
     _record(derived, primitive, "inline_reorderings", (("components", str(len(inlined))),))
     return TransformationResult(
         derived,
-        tuple((source_id, ports[source_id].owner_id) for source_id in index.topological_ids if source_id in ports),
+        tuple(
+            (source_id, ports[source_id].owner_id)
+            for source_id in index.topological_ids
+            if source_id in ports
+        ),
     )
 
 

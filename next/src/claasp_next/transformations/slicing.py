@@ -4,12 +4,22 @@ from collections.abc import Mapping, Sequence
 from copy import copy
 from dataclasses import dataclass
 
-from claasp_next.graph import Port, PortLike, Primitive, PrimitiveInput, Selection, ValueType, as_selection
-from claasp_next.graph.composite import CompositeInstance
-from claasp_next.transformations.contracts import (
-    TransformationError, TransformationFailureReason, TransformationResult,
+from claasp_next.graph import (
+    Port,
+    PortLike,
+    Primitive,
+    PrimitiveInput,
+    Selection,
+    ValueType,
+    as_selection,
 )
+from claasp_next.graph.composite import CompositeInstance
 from claasp_next.provenance import TransformationRecord
+from claasp_next.transformations.contracts import (
+    TransformationError,
+    TransformationFailureReason,
+    TransformationResult,
+)
 from claasp_next.transformations.traversal import DependencyIndex, GraphSourceKind
 
 
@@ -48,7 +58,8 @@ def split_dependencies(
 
     index = DependencyIndex(primitive)
     return DependencySplit(
-        index.ancestors(top_outputs), index.descendants(bottom_inputs),
+        index.ancestors(top_outputs),
+        index.descendants(bottom_inputs),
     )
 
 
@@ -112,7 +123,9 @@ def _boundary_descriptors(primitive, inputs):
                 "one boundary input must use one scalar domain",
                 source_ids=tuple(piece.source.owner_id for piece in pieces),
             )
-        descriptor = PrimitiveInput(ValueType(domain, (sum(piece.value_type.unit_count for piece in pieces),)), role=name)
+        descriptor = PrimitiveInput(
+            ValueType(domain, (sum(piece.value_type.unit_count for piece in pieces),)), role=name
+        )
         descriptors[name] = descriptor
         offset = 0
         for piece in pieces:
@@ -199,13 +212,13 @@ def slice_primitive(
     boundary_positions = {}
     for name in boundary_descriptors:
         source_ports[name] = derived.input(name)
-    for source_id, (name, positions, offset) in boundary_by_source.items():
+    for source_id, (_name, positions, offset) in boundary_by_source.items():
         boundary_positions[source_id] = {
             position: offset + relative for relative, position in enumerate(positions)
         }
-    for name in primitive.input_ports:
-        if name in required and name not in boundary_by_source:
-            source_ports[name] = derived.input(name)
+    for input_name in primitive.input_ports:
+        if input_name in required and input_name not in boundary_by_source:
+            source_ports[input_name] = derived.input(input_name)
 
     def remap(selection: Selection) -> Selection:
         source_id = selection.source.owner_id
@@ -234,7 +247,8 @@ def slice_primitive(
     component_by_id = {component.component_id: component for component in primitive.components}
     round_by_component = {
         component.component_id: primitive_round.number
-        for primitive_round in primitive.rounds for component in primitive_round.components
+        for primitive_round in primitive.rounds
+        for component in primitive_round.components
     }
     active_round = None
     derived_round_by_original = {}
@@ -261,7 +275,9 @@ def slice_primitive(
             source_ports[source_id] = derived.add_component(component)
 
     transformed_outputs = tuple(remap(selection) for selection in output_selections)
-    derived.set_output(transformed_outputs if len(transformed_outputs) > 1 else transformed_outputs[0])
+    derived.set_output(
+        transformed_outputs if len(transformed_outputs) > 1 else transformed_outputs[0]
+    )
 
     # Complete composite scopes survive as hierarchy overlays; partial scopes
     # stay flat rather than claiming to be complete reusable instances.
@@ -293,7 +309,8 @@ def slice_primitive(
     object.__setattr__(derived, "_transformation_provenance", (*old_transformations, record))
     source_map = tuple(
         (source_id, source_ports[source_id].owner_id)
-        for source_id in index.topological_ids if source_id in source_ports
+        for source_id in index.topological_ids
+        if source_id in source_ports
     )
     return TransformationResult(derived, source_map)
 
@@ -343,7 +360,9 @@ def slice_rounds(
     if start_round < 0 or end_round < start_round or end_round >= len(primitive.rounds):
         raise ValueError("round range lies outside the primitive")
     outputs = _round_observation(primitive, end_round)
-    boundaries = None if start_round == 0 else {"state": _round_observation(primitive, start_round - 1)}
+    boundaries = (
+        None if start_round == 0 else {"state": _round_observation(primitive, start_round - 1)}
+    )
     result = slice_primitive(
         primitive,
         outputs,
@@ -378,6 +397,9 @@ def reduce_rounds(primitive: Primitive, number_of_rounds: int) -> Transformation
 
 
 __all__ = [
-    "DependencySplit", "reduce_rounds", "slice_primitive", "slice_rounds",
+    "DependencySplit",
+    "reduce_rounds",
+    "slice_primitive",
+    "slice_rounds",
     "split_dependencies",
 ]

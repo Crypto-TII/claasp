@@ -1,7 +1,9 @@
 from claasp_next.graph.bit_builder import BitGraphPrimitive
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
-PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 128, "key_bit_size": 128, "number_of_rounds": 35}]
+PARAMETERS_CONFIGURATION_LIST = [
+    {"block_bit_size": 128, "key_bit_size": 128, "number_of_rounds": 35}
+]
 # fmt: off
 SBOX = [0x3, 0x0, 0x6, 0xD, 0xB, 0x5, 0x8, 0xE, 0xC, 0xF, 0x9, 0x2, 0x4, 0xA, 0x7, 0x1]
 TAP_POSITIONS = (21, 60, 92, 108, 114, 119)
@@ -41,6 +43,7 @@ class Baksheesh(BitGraphPrimitive):
         >>> (hex(output)[:18], output.bit_length())
         ('0xc002be5e64c78a72', 128)
     """
+
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=35):
         super().__init__(
             family_name="baksheesh",
@@ -94,7 +97,9 @@ class Baksheesh(BitGraphPrimitive):
 
     def apply_bit_permutation(self, state):
         """Add the bit permutation stage to this primitive's typed operation graph."""
-        permutation = self.add_permutation_component(state[0], state[1], self.block_bit_size, PERMUTATION)
+        permutation = self.add_permutation_component(
+            state[0], state[1], self.block_bit_size, PERMUTATION
+        )
         state = ([permutation.id], [list(range(self.block_bit_size))])
         return state
 
@@ -110,7 +115,9 @@ class Baksheesh(BitGraphPrimitive):
         constant = self.add_constant_component(self.block_bit_size, value)
 
         comp = self.add_xor_component(
-            state[0] + [constant.id], state[1] + [list(range(self.block_bit_size))], self.block_bit_size
+            state[0] + [constant.id],
+            state[1] + [list(range(self.block_bit_size))],
+            self.block_bit_size,
         )
         state = ([comp.id], [list(range(self.block_bit_size))])
 

@@ -22,11 +22,20 @@ def test_correlation_dataset_is_lazy_reiterable_and_has_fixed_evidence(speck):
 
     assert first == tuple(dataset)
     assert [(item.sample, item.block) for item in first] == [
-        (0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)
+        (0, 0),
+        (0, 1),
+        (0, 2),
+        (1, 0),
+        (1, 1),
+        (1, 2),
     ]
     assert tuple(item.value for item in first) == (
-        4143310035, 3789494373, 837897962,
-        4143310035, 3789494373, 837897962,
+        4143310035,
+        3789494373,
+        837897962,
+        4143310035,
+        3789494373,
+        837897962,
     )
 
 

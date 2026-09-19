@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Mapping
 
 
 def _freeze(value):
@@ -17,7 +17,10 @@ def _freeze(value):
 
 def _thaw(value):
     if isinstance(value, tuple):
-        if all(isinstance(item, tuple) and len(item) == 2 and isinstance(item[0], str) for item in value):
+        if all(
+            isinstance(item, tuple) and len(item) == 2 and isinstance(item[0], str)
+            for item in value
+        ):
             return {key: _thaw(item) for key, item in value}
         return tuple(_thaw(item) for item in value)
     return value
@@ -230,6 +233,13 @@ class DriverAvailabilityRecord:
 
 
 __all__ = [
-    "AnalysisRecord", "ComponentRecord", "DriverAvailabilityRecord", "DriverRecord", "InputRecord",
-    "ParameterSetRecord", "PrimitiveRecord", "RealizationRecord", "RepresentationRecord",
+    "AnalysisRecord",
+    "ComponentRecord",
+    "DriverAvailabilityRecord",
+    "DriverRecord",
+    "InputRecord",
+    "ParameterSetRecord",
+    "PrimitiveRecord",
+    "RealizationRecord",
+    "RepresentationRecord",
 ]

@@ -3,9 +3,8 @@ import shutil
 import pytest
 
 from claasp_next.analysis import correlation_dataset
-from claasp_next.primitives import Speck
 from claasp_next.drivers.statistical import NistStsDriver
-
+from claasp_next.primitives import Speck
 
 pytestmark = pytest.mark.external
 

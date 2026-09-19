@@ -94,20 +94,21 @@ def aes_two_round_differential_evidence(table) -> AESTwoRoundDifferentialEvidenc
     maximum = max(max(row) for row in ddt[1:])
     if maximum != 4:
         raise ValueError("the supplied table does not have the AES differential bound")
-    input_choices = [sum(ddt[alpha][beta] == maximum for alpha in range(1, 256))
-                     for beta in range(256)]
+    input_choices = [
+        sum(ddt[alpha][beta] == maximum for alpha in range(1, 256)) for beta in range(256)
+    ]
     output_choices = [sum(count == maximum for count in ddt[alpha]) for alpha in range(256)]
 
     coefficients = (9, 11, 13, 14)
-    products = {coefficient: tuple(_gf256_multiply(value, coefficient) for value in range(256))
-                for coefficient in coefficients}
-    inverse = ((14, 11, 13, 9), (9, 14, 11, 13),
-               (13, 9, 14, 11), (11, 13, 9, 14))
+    products = {
+        coefficient: tuple(_gf256_multiply(value, coefficient) for value in range(256))
+        for coefficient in coefficients
+    }
+    inverse = ((14, 11, 13, 9), (9, 14, 11, 13), (13, 9, 14, 11), (11, 13, 9, 14))
     pattern_counts = [0, 0, 0, 0]
     for third in range(1, 256):
         for fourth in range(1, 256):
-            column = tuple(products[row[2]][third] ^ products[row[3]][fourth]
-                           for row in inverse)
+            column = tuple(products[row[2]][third] ^ products[row[3]][fourth] for row in inverse)
             zero_positions = [index for index, value in enumerate(column) if value == 0]
             if len(zero_positions) != 1:
                 continue
@@ -161,9 +162,11 @@ def branch_number_activity_table(input_units, output_units, branch_number):
         raise ValueError("branch number exceeds the combined unit count")
     if total > 16:
         raise ValueError("explicit activity tables are limited to 16 units")
-    return tuple(tuple((value >> bit) & 1 for bit in reversed(range(total)))
-                 for value in range(1 << total)
-                 if value == 0 or value.bit_count() >= branch_number)
+    return tuple(
+        tuple((value >> bit) & 1 for bit in reversed(range(total)))
+        for value in range(1 << total)
+        if value == 0 or value.bit_count() >= branch_number
+    )
 
 
 def possible_active_sbox_counts(tables, weight, *, maximum_active=None):
@@ -181,8 +184,11 @@ def possible_active_sbox_counts(tables, weight, *, maximum_active=None):
     """
     if not isinstance(weight, int) or isinstance(weight, bool) or weight < 0:
         raise ValueError("weight must be a nonnegative integer")
-    if maximum_active is not None and (not isinstance(maximum_active, int)
-            or isinstance(maximum_active, bool) or maximum_active < 0):
+    if maximum_active is not None and (
+        not isinstance(maximum_active, int)
+        or isinstance(maximum_active, bool)
+        or maximum_active < 0
+    ):
         raise ValueError("maximum_active must be a nonnegative integer")
     probabilities = set()
     for table in tables:
@@ -206,8 +212,12 @@ def possible_active_sbox_counts(tables, weight, *, maximum_active=None):
     current = {Fraction(1)}
     counts = {0} if weight == 0 else set()
     for count in range(1, maximum_active + 1):
-        current = {previous * probability for previous in current
-                   for probability in probabilities if previous * probability >= target}
+        current = {
+            previous * probability
+            for previous in current
+            for probability in probabilities
+            if previous * probability >= target
+        }
         if target in current:
             counts.add(count)
         if not current:

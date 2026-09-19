@@ -1,6 +1,6 @@
 import pytest
 
-from claasp_next import Bit, Primitive, PrimeField, ScalarEvaluator, ValueType
+from claasp_next import Bit, PrimeField, Primitive, ScalarEvaluator, ValueType
 from claasp_next.primitives import MiMC, Poseidon
 from claasp_next.representations.constraints.polynomial import (
     Monomial,

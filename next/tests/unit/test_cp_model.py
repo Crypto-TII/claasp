@@ -1,11 +1,16 @@
 import pytest
 
-from claasp_next.primitives import Speck
 from claasp_next.drivers.solvers.minizinc import (
-    CPEnumerationResult, CPStatus, _parse_all_output, _parse_output,
+    CPEnumerationResult,
+    CPStatus,
+    _parse_all_output,
+    _parse_output,
 )
+from claasp_next.primitives import Speck
 from claasp_next.representations.constraints.cp import (
-    BooleanMiniZincLowerer, MiniZincModel, SpeckDifferentialCPModel,
+    BooleanMiniZincLowerer,
+    MiniZincModel,
+    SpeckDifferentialCPModel,
 )
 from claasp_next.representations.constraints.sat import CNFFormula
 from claasp_next.semantics import XOR_DIFFERENTIAL
@@ -41,14 +46,10 @@ def test_minizinc_json_and_terminal_statuses_are_backend_neutral():
 
 
 def test_minizinc_all_solution_parser_requires_exhaustion_for_proof():
-    complete = _parse_all_output(
-        '{"x": false}\n----------\n{"x": true}\n----------\n==========\n'
-    )
+    complete = _parse_all_output('{"x": false}\n----------\n{"x": true}\n----------\n==========\n')
     partial = _parse_all_output('{"x": false}\n----------\n=====UNKNOWN=====\n')
 
-    assert complete == (
-        CPStatus.SATISFIED, ({"x": False}, {"x": True}), True, "exhausted"
-    )
+    assert complete == (CPStatus.SATISFIED, ({"x": False}, {"x": True}), True, "exhausted")
     assert partial == (CPStatus.UNKNOWN, ({"x": False},), False, "unknown")
     result = CPEnumerationResult(
         partial[0], partial[1], partial[2], partial[3], 0.1, "test", "", ""
@@ -59,7 +60,10 @@ def test_minizinc_all_solution_parser_requires_exhaustion_for_proof():
 
 def test_minizinc_all_solution_parser_preserves_completed_unsat():
     assert _parse_all_output("=====UNSATISFIABLE=====\n") == (
-        CPStatus.UNSATISFIABLE, (), True, "exhausted_unsat"
+        CPStatus.UNSATISFIABLE,
+        (),
+        True,
+        "exhausted_unsat",
     )
 
 
@@ -90,10 +94,14 @@ def test_boolean_lowering_preserves_cnf_names_signs_and_provenance():
 
 def test_speck_differential_cp_lowering_has_exact_relation_and_bound():
     primitive = Speck(number_of_rounds=5)
-    lowered = SpeckDifferentialCPModel(PropagationProblem(
-        primitive, XOR_DIFFERENTIAL, maximum_weight=9,
-        provenance=("legacy Speck32/64-5 optimum",),
-    )).cp_model()
+    lowered = SpeckDifferentialCPModel(
+        PropagationProblem(
+            primitive,
+            XOR_DIFFERENTIAL,
+            maximum_weight=9,
+            provenance=("legacy Speck32/64-5 optimum",),
+        )
+    ).cp_model()
 
     assert "predicate modular_addition_xor_difference" in lowered.declarations[0]
     assert sum("modular_addition_xor_difference" in item for item in lowered.constraints) == 5
@@ -102,9 +110,15 @@ def test_speck_differential_cp_lowering_has_exact_relation_and_bound():
 
 
 def test_speck_fixed_differential_boundaries_are_msb_first():
-    model = SpeckDifferentialCPModel(PropagationProblem(
-        Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=3,
-    ), input_difference=0x00400000, output_difference=0x8000840A)
+    model = SpeckDifferentialCPModel(
+        PropagationProblem(
+            Speck(number_of_rounds=3),
+            XOR_DIFFERENTIAL,
+            maximum_weight=3,
+        ),
+        input_difference=0x00400000,
+        output_difference=0x8000840A,
+    )
     constraints = model.cp_model().constraints
     assert "constraint x_0[9] = true;" in constraints
     assert "constraint y_0[9] = false;" in constraints
@@ -126,6 +140,11 @@ def test_speck_differential_boundary_relation_is_explicit_and_validated():
 @pytest.mark.parametrize("value", [-1, 1 << 32, True, 1.5])
 def test_speck_fixed_differential_boundaries_reject_invalid_values(value):
     with pytest.raises(ValueError):
-        SpeckDifferentialCPModel(PropagationProblem(
-            Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=3,
-        ), input_difference=value)
+        SpeckDifferentialCPModel(
+            PropagationProblem(
+                Speck(number_of_rounds=3),
+                XOR_DIFFERENTIAL,
+                maximum_weight=3,
+            ),
+            input_difference=value,
+        )

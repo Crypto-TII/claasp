@@ -2,8 +2,8 @@
 
 from collections.abc import Mapping
 
-from claasp_next.graph import Selection, ValueType
 from claasp_next.domains import Bit, Word
+from claasp_next.graph import Selection, ValueType
 
 
 def unit_variable_names(owner_id: str, value_type: ValueType, position: int) -> tuple[str, ...]:
@@ -30,7 +30,8 @@ def selection_variable_names(selection: Selection) -> tuple[tuple[str, ...], ...
 
 
 def resolved_selection_variable_names(
-    primitive, selection: Selection,
+    primitive,
+    selection: Selection,
 ) -> tuple[tuple[str, ...], ...]:
     """Return Boolean variable groups after resolving structural bindings.
 
@@ -50,10 +51,7 @@ def resolved_selection_variable_names(
             raise ValueError("Boolean encoding requires canonically encoded source domains")
         position, local_bit = divmod(flat_bit, source_width)
         names.append(unit_variable_names(owner_id, value_type, position)[local_bit])
-    return tuple(
-        tuple(names[start:start + width])
-        for start in range(0, len(names), width)
-    )
+    return tuple(tuple(names[start : start + width]) for start in range(0, len(names), width))
 
 
 def encode_unit(value: int, value_type: ValueType) -> tuple[int, ...]:

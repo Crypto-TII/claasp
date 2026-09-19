@@ -16,9 +16,8 @@
 # ****************************************************************************
 
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
+from claasp_next.graph.bit_builder import BitGraphPrimitive, extract_inputs
 from claasp_next.primitive_inputs import INPUT_STATE, PERMUTATION
-from claasp_next.graph.bit_builder import extract_inputs
 
 PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 160}]
 reference_code = """

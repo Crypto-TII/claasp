@@ -2,8 +2,7 @@
 
 from claasp_next.components import ModularAdd, Rotate, Xor
 from claasp_next.domains import Word
-from claasp_next.graph import Primitive, Port, Selection, ValueType
-
+from claasp_next.graph import Port, Primitive, Selection, ValueType
 
 _COLUMNS = ((0, 4, 8, 12), (5, 9, 13, 1), (10, 14, 2, 6), (15, 3, 7, 11))
 _ROWS = ((0, 1, 2, 3), (5, 6, 7, 4), (10, 11, 8, 9), (15, 12, 13, 14))
@@ -61,7 +60,11 @@ class Salsa(Primitive):
             groups = _COLUMNS if round_number % 2 == 0 else _ROWS
             for quarter_number, (a, b, c, d) in enumerate(groups):
                 state[a], state[b], state[c], state[d] = self._quarter_round(
-                    state[a], state[b], state[c], state[d], rotations,
+                    state[a],
+                    state[b],
+                    state[c],
+                    state[d],
+                    rotations,
                     f"round_{round_number}_quarter_{quarter_number}",
                 )
         self.set_output(state)
@@ -90,5 +93,7 @@ class Salsa(Primitive):
         prefix: str,
     ) -> Port:
         added = self.add_component(ModularAdd((left, right), component_id=f"{prefix}_add"))
-        rotated = self.add_component(Rotate(added, rotation, "left", component_id=f"{prefix}_rotate"))
+        rotated = self.add_component(
+            Rotate(added, rotation, "left", component_id=f"{prefix}_rotate")
+        )
         return self.add_component(Xor((destination, rotated), component_id=f"{prefix}_xor"))

@@ -34,9 +34,7 @@ def test_inapplicable_and_terminal_states_require_diagnostics():
     with pytest.raises(ValueError, match="requires a diagnostic"):
         PresentationEvidence(EvidenceClass.SKIPPED)
     with pytest.raises(ValueError, match="classified as unavailable"):
-        PresentationEvidence(
-            EvidenceClass.EXACT, applicability=Applicability.INAPPLICABLE
-        )
+        PresentationEvidence(EvidenceClass.EXACT, applicability=Applicability.INAPPLICABLE)
 
     value = PresentationEvidence(
         EvidenceClass.UNAVAILABLE,

@@ -1,30 +1,36 @@
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
-from claasp_next.graph import (
-    AmbiguousRealizationError, Primitive, RealizationDescriptor,
-    RealizationMaturity, UnsupportedRealizationError, ValueType,
-)
 from claasp_next.domains import Bit
-
+from claasp_next.graph import (
+    AmbiguousRealizationError,
+    Primitive,
+    RealizationDescriptor,
+    RealizationMaturity,
+    UnsupportedRealizationError,
+    ValueType,
+)
 
 ROOT = Path(__file__).parents[2]
 
 
 def test_realization_audit_covers_every_packaged_multi_module_family():
     catalogue = json.loads((ROOT / "migration/realization_catalogue.json").read_text())
-    audited = {item["canonical"].split(":", 1)[0].rsplit(".", 1)[0] for item in catalogue["families"]}
+    audited = {
+        item["canonical"].split(":", 1)[0].rsplit(".", 1)[0] for item in catalogue["families"]
+    }
     primitive_root = ROOT / "src/claasp_next/primitives"
     packaged = set()
     for package in primitive_root.glob("*/*"):
         if not package.is_dir() or package.name == "__pycache__":
             continue
         implementation_modules = {
-            path.stem for path in package.glob("*.py")
+            path.stem
+            for path in package.glob("*.py")
             if path.name not in {"__init__.py", "parameters.py"}
         }
         if len(implementation_modules) > 1:
@@ -47,13 +53,21 @@ def test_realization_audit_has_unique_names_and_explicit_exclusions():
 class _SelectablePrimitive(Primitive):
     REALIZATIONS = (
         RealizationDescriptor(
-            "reference", frozenset(("evaluate", "shared")), frozenset(("word",)),
-            "reference graph", provenance=("unit fixture",), priority=0,
+            "reference",
+            frozenset(("evaluate", "shared")),
+            frozenset(("word",)),
+            "reference graph",
+            provenance=("unit fixture",),
+            priority=0,
         ),
         RealizationDescriptor(
-            "specialized", frozenset(("analyze", "shared")), frozenset(("sbox",)),
-            "analysis graph", RealizationMaturity.EXPERIMENTAL,
-            ("unit fixture",), 10,
+            "specialized",
+            frozenset(("analyze", "shared")),
+            frozenset(("sbox",)),
+            "analysis graph",
+            RealizationMaturity.EXPERIMENTAL,
+            ("unit fixture",),
+            10,
         ),
     )
 
@@ -90,6 +104,8 @@ def test_realization_metadata_and_default_identity_are_stable():
 def test_realization_closure_gate_passes():
     completed = subprocess.run(
         [sys.executable, str(ROOT / "tools/realization_closure.py"), "--check"],
-        check=True, capture_output=True, text=True,
+        check=True,
+        capture_output=True,
+        text=True,
     )
     assert "16 interchangeable families, 36 graphs" in completed.stdout

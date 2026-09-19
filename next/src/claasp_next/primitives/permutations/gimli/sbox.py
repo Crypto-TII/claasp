@@ -17,11 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, simplify_inputs
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import simplify_inputs
 
 N_ROWS = 3
 N_COLS = 4
@@ -95,7 +92,12 @@ class GimliSbox(BitGraphPrimitive):
             for column in range(N_COLS):
                 states[row][column] = BitState(
                     [INPUT_PLAINTEXT],
-                    [[k + column * self.word_bit_size + row * self.plain_size for k in range(self.word_bit_size)]],
+                    [
+                        [
+                            k + column * self.word_bit_size + row * self.plain_size
+                            for k in range(self.word_bit_size)
+                        ]
+                    ],
                 )
 
         # round function
@@ -141,9 +143,14 @@ class GimliSbox(BitGraphPrimitive):
             # ------------------------------------------------------
             # x before substitution_layer-box
             self.add_shift_component(
-                b[2][column_number].id, b[2][column_number].input_bit_positions, self.word_bit_size, -1
+                b[2][column_number].id,
+                b[2][column_number].input_bit_positions,
+                self.word_bit_size,
+                -1,
             )
-            b0_shift1 = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
+            b0_shift1 = BitState(
+                [self.get_current_component_id()], [list(range(self.word_bit_size))]
+            )
             inputs_id = b[0][column_number].id + b0_shift1.id
             inputs_pos = b[0][column_number].input_bit_positions + b0_shift1.input_bit_positions
             self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
@@ -151,14 +158,18 @@ class GimliSbox(BitGraphPrimitive):
             # ------------------------------------------------------
             # y before Sbox
             inputs_id = b[1][column_number].id + b[0][column_number].id
-            inputs_pos = b[1][column_number].input_bit_positions + b[0][column_number].input_bit_positions
+            inputs_pos = (
+                b[1][column_number].input_bit_positions + b[0][column_number].input_bit_positions
+            )
             self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
             b1_xor = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
             # ------------------------------------------------------
             # z before Sbox
             inputs_id = b[2][column_number].id + b[1][column_number].id
-            inputs_pos = b[2][column_number].input_bit_positions + b[1][column_number].input_bit_positions
+            inputs_pos = (
+                b[2][column_number].input_bit_positions + b[1][column_number].input_bit_positions
+            )
             self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
             b2_xor = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
@@ -175,7 +186,9 @@ class GimliSbox(BitGraphPrimitive):
                 else:
                     inputs_pos = [[i]] * N_ROWS
                 self.add_sbox_component(inputs_id, inputs_pos, N_ROWS, GIMLI_SBOX)
-                substitution_layer.append(BitState([self.get_current_component_id()], [list(range(SBOX_SIZE))]))
+                substitution_layer.append(
+                    BitState([self.get_current_component_id()], [list(range(SBOX_SIZE))])
+                )
 
             inputs_id = []
             for i in range(self.word_bit_size):
@@ -186,8 +199,12 @@ class GimliSbox(BitGraphPrimitive):
 
             # ------------------------------------------------------
             # x after substitution_layer-box
-            self.add_shift_component(lane_after_sb[0].id, lane_after_sb[0].input_bit_positions, self.word_bit_size, -2)
-            b0_shift2 = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
+            self.add_shift_component(
+                lane_after_sb[0].id, lane_after_sb[0].input_bit_positions, self.word_bit_size, -2
+            )
+            b0_shift2 = BitState(
+                [self.get_current_component_id()], [list(range(self.word_bit_size))]
+            )
             inputs_id = b0_xor.id + b0_shift2.id
             inputs_pos = b0_xor.input_bit_positions + b0_shift2.input_bit_positions
             self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
@@ -198,8 +215,12 @@ class GimliSbox(BitGraphPrimitive):
             )
             # ------------------------------------------------------
             # y after substitution_layer-box
-            self.add_shift_component(lane_after_sb[1].id, lane_after_sb[1].input_bit_positions, self.word_bit_size, -1)
-            b1_shift = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
+            self.add_shift_component(
+                lane_after_sb[1].id, lane_after_sb[1].input_bit_positions, self.word_bit_size, -1
+            )
+            b1_shift = BitState(
+                [self.get_current_component_id()], [list(range(self.word_bit_size))]
+            )
             inputs_id = b1_xor.id + b1_shift.id
             inputs_pos = b1_xor.input_bit_positions + b1_shift.input_bit_positions
             self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
@@ -209,8 +230,12 @@ class GimliSbox(BitGraphPrimitive):
             )
             # ------------------------------------------------------
             # z after substitution_layer-box
-            self.add_shift_component(lane_after_sb[2].id, lane_after_sb[2].input_bit_positions, self.word_bit_size, -3)
-            b2_shift = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
+            self.add_shift_component(
+                lane_after_sb[2].id, lane_after_sb[2].input_bit_positions, self.word_bit_size, -3
+            )
+            b2_shift = BitState(
+                [self.get_current_component_id()], [list(range(self.word_bit_size))]
+            )
             inputs_id = b2_xor.id + b2_shift.id
             inputs_pos = b2_xor.input_bit_positions + b2_shift.input_bit_positions
             self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
@@ -231,7 +256,9 @@ class GimliSbox(BitGraphPrimitive):
         inputs_pos = c.input_bit_positions + states[0][0].input_bit_positions
 
         self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
-        states[0][0] = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
+        states[0][0] = BitState(
+            [self.get_current_component_id()], [list(range(self.word_bit_size))]
+        )
 
         return states
 
@@ -247,7 +274,9 @@ class GimliSbox(BitGraphPrimitive):
                 inputs_pos = inputs_pos + states[row_number][column_number].input_bit_positions
 
         inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-        self.add_intermediate_output_component(inputs_id, inputs_pos, self.state_bit_size, "round_output_nonlinear")
+        self.add_intermediate_output_component(
+            inputs_id, inputs_pos, self.state_bit_size, "round_output_nonlinear"
+        )
 
         if (round_number & 3) == 0:
             states = small_swap(states)

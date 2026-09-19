@@ -8,9 +8,9 @@ from types import MappingProxyType
 
 from claasp_next.graph import Primitive
 from claasp_next.transformations.contracts import (
-    TransformationError, TransformationFailureReason,
+    TransformationError,
+    TransformationFailureReason,
 )
-
 
 EquivalentFactory = Callable[[Primitive], Primitive]
 
@@ -66,7 +66,8 @@ def _keccak(primitive):
     from claasp_next.transformations._inverse_realizations import KeccakSboxTheta
 
     return KeccakSboxTheta(
-        number_of_rounds=_round_count(primitive), word_size=primitive.word_bit_size,
+        number_of_rounds=_round_count(primitive),
+        word_size=primitive.word_bit_size,
     )
 
 
@@ -91,7 +92,8 @@ def _gimli(primitive):
     from claasp_next.transformations._inverse_realizations import GimliTriangular
 
     return GimliTriangular(
-        number_of_rounds=_round_count(primitive), word_size=primitive.word_bit_size,
+        number_of_rounds=_round_count(primitive),
+        word_size=primitive.word_bit_size,
     )
 
 
@@ -219,20 +221,22 @@ _EQUIVALENTS = (
     ),
 )
 
-DEFAULT_PRIMITIVE_INVERSE_EQUIVALENTS = MappingProxyType({
-    item.source_type: item for item in _EQUIVALENTS
-})
+DEFAULT_PRIMITIVE_INVERSE_EQUIVALENTS = MappingProxyType(
+    {item.source_type: item for item in _EQUIVALENTS}
+)
 
-_DIRECT_INVERSES = MappingProxyType({
-    "claasp_next.primitives.tweakable_block_ciphers.chilow.Chilow": (
-        "claasp_next.transformations._inverse_realizations.chilow_inverse",
-        "the published ChiChi boundary formulas give an exact retained-tweak/key inverse",
-    ),
-    "claasp_next.primitives.block_ciphers.subterranean.Subterranean": (
-        "claasp_next.transformations._inverse_realizations.subterranean_inverse",
-        "the published odd-width chi recurrence gives an exact keyed round inverse",
-    ),
-})
+_DIRECT_INVERSES = MappingProxyType(
+    {
+        "claasp_next.primitives.tweakable_block_ciphers.chilow.Chilow": (
+            "claasp_next.transformations._inverse_realizations.chilow_inverse",
+            "the published ChiChi boundary formulas give an exact retained-tweak/key inverse",
+        ),
+        "claasp_next.primitives.block_ciphers.subterranean.Subterranean": (
+            "claasp_next.transformations._inverse_realizations.subterranean_inverse",
+            "the published odd-width chi recurrence gives an exact keyed round inverse",
+        ),
+    }
+)
 
 
 def _qualified_type(value) -> str:
@@ -302,6 +306,8 @@ def direct_inversion_equivalent(primitive: Primitive, output_name: str):
 
 
 __all__ = [
-    "DEFAULT_PRIMITIVE_INVERSE_EQUIVALENTS", "PrimitiveInverseEquivalent",
-    "direct_inversion_equivalent", "inversion_equivalent",
+    "DEFAULT_PRIMITIVE_INVERSE_EQUIVALENTS",
+    "PrimitiveInverseEquivalent",
+    "direct_inversion_equivalent",
+    "inversion_equivalent",
 ]

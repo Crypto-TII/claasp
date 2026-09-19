@@ -7,11 +7,11 @@ re-iterable: every iteration reconstructs the same local pseudo-random stream.
 
 from __future__ import annotations
 
+import json
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from hashlib import sha256
 from itertools import combinations
-import json
 from math import ceil, comb
 from random import Random
 from typing import BinaryIO
@@ -185,7 +185,9 @@ class StatisticalDataset:
     def _random_other_inputs(self, random: Random) -> dict[str, int]:
         fixed = dict(self.fixed_inputs)
         return {
-            name: fixed[name] if name in fixed else random.getrandbits(packed_bit_width(self.primitive, name))
+            name: fixed[name]
+            if name in fixed
+            else random.getrandbits(packed_bit_width(self.primitive, name))
             for name in self.primitive.input_ports
             if name != self.input_name
         }
@@ -272,8 +274,14 @@ def correlation_dataset(
         raise ValueError("correlation datasets require selected input and output widths to match")
 
     return _dataset(
-        primitive, "correlation", input_name, number_of_samples,
-        blocks_per_sample, seed, 1.0, fixed_inputs,
+        primitive,
+        "correlation",
+        input_name,
+        number_of_samples,
+        blocks_per_sample,
+        seed,
+        1.0,
+        fixed_inputs,
     )
 
 
@@ -300,8 +308,14 @@ def cbc_dataset(
     if packed_bit_width(primitive, input_name) != packed_bit_width(primitive):
         raise ValueError("CBC datasets require selected input and output widths to match")
     return _dataset(
-        primitive, "cbc", input_name, number_of_samples,
-        blocks_per_sample, seed, 1.0, fixed_inputs,
+        primitive,
+        "cbc",
+        input_name,
+        number_of_samples,
+        blocks_per_sample,
+        seed,
+        1.0,
+        fixed_inputs,
     )
 
 

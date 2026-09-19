@@ -2,14 +2,18 @@ import shutil
 
 import pytest
 
-from claasp_next.primitives import MiMC
 from claasp_next.domains import PrimeField
 from claasp_next.drivers.algebra import MsolveDriver, SingularDriver
+from claasp_next.primitives import MiMC
 from claasp_next.representations.constraints.polynomial import (
-    Polynomial, PolynomialSystem, PrimeFieldPolynomialModel,
+    Polynomial,
+    PolynomialSystem,
+    PrimeFieldPolynomialModel,
 )
-from claasp_next.representations.constraints.polynomial.exporters import MsolveExporter, SingularExporter
-
+from claasp_next.representations.constraints.polynomial.exporters import (
+    MsolveExporter,
+    SingularExporter,
+)
 
 pytestmark = pytest.mark.external
 

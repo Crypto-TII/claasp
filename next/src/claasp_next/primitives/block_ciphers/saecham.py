@@ -15,8 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 # SAECHAM is defined only for a 64-bit block and 128-bit key [DampersSAECHAM2025]_.
@@ -24,8 +23,8 @@ PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 88}]
 
 _BLOCK_BIT_SIZE = 64
 _KEY_BIT_SIZE = 128
-_WORD_SIZE = 16          # block / 4
-_NUM_KEY_WORDS = 8       # key / word_size
+_WORD_SIZE = 16  # block / 4
+_NUM_KEY_WORDS = 8  # key / word_size
 _DEFAULT_ROUNDS = 88
 
 
@@ -112,7 +111,9 @@ class Saecham(BitGraphPrimitive):
             k_state = BitState([INPUT_KEY], [k_bits])
 
             # ROL(k[i], 1)
-            rot1 = self.add_rotate_component(k_state.id, k_state.input_bit_positions, _WORD_SIZE, -1)
+            rot1 = self.add_rotate_component(
+                k_state.id, k_state.input_bit_positions, _WORD_SIZE, -1
+            )
             rot1_state = self._word_state(rot1)
 
             # k[i] ^ ROL(k[i], 1)
@@ -124,7 +125,9 @@ class Saecham(BitGraphPrimitive):
             xor_01_state = self._word_state(xor_01)
 
             # ROL(k[i], 8)
-            rot8 = self.add_rotate_component(k_state.id, k_state.input_bit_positions, _WORD_SIZE, -8)
+            rot8 = self.add_rotate_component(
+                k_state.id, k_state.input_bit_positions, _WORD_SIZE, -8
+            )
             rot8_state = self._word_state(rot8)
 
             # rk[i] = k[i] ^ ROL(k[i], 1) ^ ROL(k[i], 8)
@@ -136,7 +139,9 @@ class Saecham(BitGraphPrimitive):
             rk[i] = self._word_state(rk_low)
 
             # ROL(k[i], 11)
-            rot11 = self.add_rotate_component(k_state.id, k_state.input_bit_positions, _WORD_SIZE, -11)
+            rot11 = self.add_rotate_component(
+                k_state.id, k_state.input_bit_positions, _WORD_SIZE, -11
+            )
             rot11_state = self._word_state(rot11)
 
             # rk[(i+W)^1] = k[i] ^ ROL(k[i], 1) ^ ROL(k[i], 11)

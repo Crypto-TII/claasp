@@ -27,7 +27,11 @@ class BoomerangConnectivity:
         if self.input_difference.width != self.output_difference.width:
             raise ValueError("BCT differences must have equal widths")
         size = 1 << self.input_difference.width
-        if not isinstance(self.count, int) or isinstance(self.count, bool) or not 0 <= self.count <= size:
+        if (
+            not isinstance(self.count, int)
+            or isinstance(self.count, bool)
+            or not 0 <= self.count <= size
+        ):
             raise ValueError("BCT count must lie between zero and the table size")
 
     @property
@@ -38,7 +42,11 @@ class BoomerangConnectivity:
     @property
     def weight(self) -> float:
         """Return the negative binary logarithm of the BCT probability."""
-        return float("inf") if not self.count else -log2(self.count / (1 << self.input_difference.width))
+        return (
+            float("inf")
+            if not self.count
+            else -log2(self.count / (1 << self.input_difference.width))
+        )
 
 
 class SBoxBoomerangSemantics:
@@ -76,13 +84,17 @@ class SBoxBoomerangSemantics:
         if not 0 <= input_difference < size or not 0 <= output_difference < size:
             raise ValueError("BCT differences must fit the S-box width")
         count = sum(
-            (self.inverse[self.table[source] ^ output_difference] ^
-             self.inverse[self.table[source ^ input_difference] ^ output_difference]) == input_difference
+            (
+                self.inverse[self.table[source] ^ output_difference]
+                ^ self.inverse[self.table[source ^ input_difference] ^ output_difference]
+            )
+            == input_difference
             for source in range(size)
         )
         return BoomerangConnectivity(
             XorDifference(input_difference, self.width),
-            XorDifference(output_difference, self.width), count,
+            XorDifference(output_difference, self.width),
+            count,
         )
 
 
@@ -111,7 +123,11 @@ class ModularAddBoomerangConnectivity:
         if len({item.width for item in differences}) != 1:
             raise ValueError("modular-add switch differences must have one width")
         maximum = 1 << (2 * self.delta_left.width)
-        if not isinstance(self.count, int) or isinstance(self.count, bool) or not 0 <= self.count <= maximum:
+        if (
+            not isinstance(self.count, int)
+            or isinstance(self.count, bool)
+            or not 0 <= self.count <= maximum
+        ):
             raise ValueError("quartet count is outside the modular-add input space")
 
     @property
@@ -156,7 +172,10 @@ class ModularAddBoomerangSemantics:
 
         size, mask = 1 << self.width, (1 << self.width) - 1
         values = (delta_left, delta_right, nabla_output, nabla_right)
-        if any(not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < size for value in values):
+        if any(
+            not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < size
+            for value in values
+        ):
             raise ValueError("switch differences must fit the word width")
         count = 0
         for left in range(size):
@@ -171,8 +190,11 @@ class ModularAddBoomerangSemantics:
                     count += 1
         difference = lambda value: XorDifference(value, self.width)
         return ModularAddBoomerangConnectivity(
-            difference(delta_left), difference(delta_right),
-            difference(nabla_output), difference(nabla_right), count,
+            difference(delta_left),
+            difference(delta_right),
+            difference(nabla_output),
+            difference(nabla_right),
+            count,
         )
 
 
@@ -203,7 +225,10 @@ class ModularAddBoomerangAutomaton:
 
         size = 1 << self.width
         values = (delta_left, delta_right, nabla_output, nabla_right)
-        if any(not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < size for value in values):
+        if any(
+            not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < size
+            for value in values
+        ):
             raise ValueError("switch differences must fit the word width")
         states = {(0, 0, 0, 0): 1}
         for bit in range(self.width):
@@ -224,16 +249,21 @@ class ModularAddBoomerangAutomaton:
                         if ((lower_total & 1) ^ (paired_lower_total & 1)) != da:
                             continue
                         state = (
-                            top >> 1, paired_top >> 1,
-                            int(lower_total < 0), int(paired_lower_total < 0),
+                            top >> 1,
+                            paired_top >> 1,
+                            int(lower_total < 0),
+                            int(paired_lower_total < 0),
                         )
                         following[state] = following.get(state, 0) + paths
             states = following
         count = sum(states.values())
         difference = lambda value: XorDifference(value, self.width)
         return ModularAddBoomerangConnectivity(
-            difference(delta_left), difference(delta_right),
-            difference(nabla_output), difference(nabla_right), count,
+            difference(delta_left),
+            difference(delta_right),
+            difference(nabla_output),
+            difference(nabla_right),
+            count,
         )
 
 
@@ -283,7 +313,10 @@ class BoomerangTrail:
     lower: Trail
 
     def __post_init__(self) -> None:
-        if self.upper.kind is not TrailKind.XOR_DIFFERENTIAL or self.lower.kind is not TrailKind.XOR_DIFFERENTIAL:
+        if (
+            self.upper.kind is not TrailKind.XOR_DIFFERENTIAL
+            or self.lower.kind is not TrailKind.XOR_DIFFERENTIAL
+        ):
             raise TypeError("boomerang constituents must be XOR-differential trails")
         if self.upper.output_pattern != self.switch.upper_input:
             raise ValueError("upper trail does not meet the switch boundary")
@@ -320,8 +353,11 @@ class DifferentialLinearTrail:
             raise TypeError("prefix must be an XOR-differential trail")
         if self.linear.kind is not TrailKind.XOR_LINEAR:
             raise TypeError("suffix must be an XOR-linear trail")
-        widths = (self.differential.output_pattern.width,
-                  len(self.connector.input_pattern.bits), self.linear.input_pattern.width)
+        widths = (
+            self.differential.output_pattern.width,
+            len(self.connector.input_pattern.bits),
+            self.linear.input_pattern.width,
+        )
         if len(set(widths)) != 1:
             raise ValueError("differential-linear boundaries must have one width")
 

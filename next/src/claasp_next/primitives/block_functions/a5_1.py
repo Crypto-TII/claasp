@@ -15,10 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp_next.primitive_inputs import INPUT_FRAME, INPUT_KEY, STREAM_CIPHER
-from claasp_next.graph.bit_builder import get_inputs_parameter
 
 BIT_LENGTH = "BIT_LENGTH"
 TAPPED_BITS = "TAPPED_BITS"
@@ -26,9 +24,21 @@ CLOCK_BIT = "CLOCK_BIT"
 CLOCK_POLYNOMIAL = "CLOCK_POLYNOMIAL"
 
 REGISTERS = [
-    {BIT_LENGTH: 19, TAPPED_BITS: [[0], [1], [2], [5]], CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [10], []]},
-    {BIT_LENGTH: 22, TAPPED_BITS: [[19], [20]], CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [30], []]},
-    {BIT_LENGTH: 23, TAPPED_BITS: [[41], [42], [43], [56]], CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [53], []]},
+    {
+        BIT_LENGTH: 19,
+        TAPPED_BITS: [[0], [1], [2], [5]],
+        CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [10], []],
+    },
+    {
+        BIT_LENGTH: 22,
+        TAPPED_BITS: [[19], [20]],
+        CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [30], []],
+    },
+    {
+        BIT_LENGTH: 23,
+        TAPPED_BITS: [[41], [42], [43], [56]],
+        CLOCK_POLYNOMIAL: [[10, 30], [30, 53], [10, 53], [53], []],
+    },
 ]
 
 
@@ -63,7 +73,11 @@ class A51(BitGraphPrimitive):
     """
 
     def __init__(
-        self, key_bit_size=64, frame_bit_size=22, number_of_normal_clocks_at_initialization=100, number_of_rounds=228
+        self,
+        key_bit_size=64,
+        frame_bit_size=22,
+        number_of_normal_clocks_at_initialization=100,
+        number_of_rounds=228,
     ):
         super().__init__(
             family_name="a51",
@@ -89,13 +103,18 @@ class A51(BitGraphPrimitive):
         )
 
         fsr_description = [
-            [[register[BIT_LENGTH], register[TAPPED_BITS], register[CLOCK_POLYNOMIAL]] for register in REGISTERS],
+            [
+                [register[BIT_LENGTH], register[TAPPED_BITS], register[CLOCK_POLYNOMIAL]]
+                for register in REGISTERS
+            ],
             1,
             1,
         ]
         primitive_output = []
         for _ in range(number_of_rounds):
-            regs = self.round_function(regs=regs, regs_size=regs_size, fsr_description=fsr_description)
+            regs = self.round_function(
+                regs=regs, regs_size=regs_size, fsr_description=fsr_description
+            )
             regs_xor_output = []
             for i in range(len(REGISTERS)):
                 regs_xor_output.append(BitState(regs.id, [[regs_output_bit[i]]]))
@@ -106,7 +125,9 @@ class A51(BitGraphPrimitive):
         inputs_id, inputs_pos = get_inputs_parameter(primitive_output)
         self.add_primitive_output_component(inputs_id, inputs_pos, number_of_rounds)
 
-    def regs_initialization(self, key_bit_size, frame_bit_size, number_of_normal_clocks_at_initialization, regs_size):
+    def regs_initialization(
+        self, key_bit_size, frame_bit_size, number_of_normal_clocks_at_initialization, regs_size
+    ):
         # registers initialization
         """Build the regs initialization stage in this primitive's typed operation graph."""
         self.add_round()
@@ -121,7 +142,10 @@ class A51(BitGraphPrimitive):
         regs = BitState([self.get_current_component_id()], [list(range(regs_size))])
 
         # load key
-        fsr_description = [[[register[BIT_LENGTH], register[TAPPED_BITS]] for register in REGISTERS], 1]
+        fsr_description = [
+            [[register[BIT_LENGTH], register[TAPPED_BITS]] for register in REGISTERS],
+            1,
+        ]
         for i in range(key_bit_size):
             self.add_fsr_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
             regs = BitState([self.get_current_component_id()], [list(range(regs_size))])
@@ -149,7 +173,10 @@ class A51(BitGraphPrimitive):
 
         # normal clocked without output
         fsr_description = [
-            [[register[BIT_LENGTH], register[TAPPED_BITS], register[CLOCK_POLYNOMIAL]] for register in REGISTERS],
+            [
+                [register[BIT_LENGTH], register[TAPPED_BITS], register[CLOCK_POLYNOMIAL]]
+                for register in REGISTERS
+            ],
             1,
             number_of_normal_clocks_at_initialization,
         ]

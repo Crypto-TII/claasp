@@ -3,9 +3,9 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from claasp_next.graph import Component, PortLike, ValueType, as_selection
-from claasp_next.domains import Bit
 from claasp_next.components.substitution.lookup_table import LookupTable
+from claasp_next.domains import Bit
+from claasp_next.graph import Component, PortLike, ValueType, as_selection
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -36,21 +36,14 @@ class BitVectorSBox(Component):
         if isinstance(table, LookupTable):
             lookup_table = table
             if lookup_table.input_bit_size != width:
-                raise ValueError(
-                    "lookup-table input width must match the selected bits"
-                )
-            if (
-                output_bit_size is not None
-                and output_bit_size != lookup_table.output_bit_size
-            ):
+                raise ValueError("lookup-table input width must match the selected bits")
+            if output_bit_size is not None and output_bit_size != lookup_table.output_bit_size:
                 raise ValueError("output_bit_size conflicts with the lookup table")
         else:
             lookup_table = LookupTable(table, width, output_bit_size)
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
-        object.__setattr__(
-            self, "output_type", ValueType(Bit(), (lookup_table.output_bit_size,))
-        )
+        object.__setattr__(self, "output_type", ValueType(Bit(), (lookup_table.output_bit_size,)))
         object.__setattr__(self, "table", lookup_table.values)
         object.__setattr__(self, "output_bit_size", lookup_table.output_bit_size)
         Component.__post_init__(self)

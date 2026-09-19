@@ -2,22 +2,31 @@
 
 import pytest
 
+from claasp_next.primitives import AES
 from claasp_next.semantics.cryptanalysis import (
     aes_two_round_differential_evidence,
+    branch_number_activity_table,
     legacy_wordwise_active_sbox_evidence,
-    branch_number_activity_table, possible_active_sbox_counts,
+    possible_active_sbox_counts,
 )
-from claasp_next.primitives import AES
 
 
 def test_legacy_aes_mix_column_branch_table_matches_every_fixed_row():
     import ast
     from pathlib import Path
+
     # Parse (never import) the fixed Sage-dependent legacy assertion.
-    source = Path(__file__).resolve().parents[3] / "tests/unit/cipher_modules/models/cp/mzn_model_test.py"
+    source = (
+        Path(__file__).resolve().parents[3]
+        / "tests/unit/cipher_modules/models/cp/mzn_model_test.py"
+    )
     module = ast.parse(source.read_text())
-    function = next(node for node in module.body
-                    if isinstance(node, ast.FunctionDef) and node.name == "test_build_mix_column_truncated_table")
+    function = next(
+        node
+        for node in module.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "test_build_mix_column_truncated_table"
+    )
     assertion = next(node for node in function.body if isinstance(node, ast.Assert))
     text = ast.literal_eval(assertion.test.comparators[0])
     entries = tuple(map(int, text.split("[")[-1].split("]")[0].split(",")))
@@ -43,8 +52,11 @@ def test_legacy_midori_weight_nine_active_sbox_counts():
 
 def test_legacy_two_step_aes_differential_results_are_derived_exactly():
     primitive = AES(number_of_rounds=1)
-    table = next(component.table for component in primitive.components
-                 if hasattr(component, "table") and len(component.table) == 256)
+    table = next(
+        component.table
+        for component in primitive.components
+        if hasattr(component, "table") and len(component.table) == 256
+    )
 
     evidence = aes_two_round_differential_evidence(table)
 

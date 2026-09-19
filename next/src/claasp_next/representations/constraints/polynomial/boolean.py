@@ -107,7 +107,9 @@ class BooleanPolynomial:
             other = self.one() if other else self.zero()
         if not isinstance(other, BooleanPolynomial):
             return NotImplemented
-        return BooleanPolynomial(left * right for left in self.monomials for right in other.monomials)
+        return BooleanPolynomial(
+            left * right for left in self.monomials for right in other.monomials
+        )
 
     __rmul__ = __mul__
 
@@ -146,13 +148,17 @@ class BooleanPolynomial:
         for monomial in self.monomials:
             if any(values.get(variable) == 0 for variable in monomial.variables):
                 continue
-            terms.append(BooleanMonomial.from_variables(
-                variable for variable in monomial.variables if variable not in values
-            ))
+            terms.append(
+                BooleanMonomial.from_variables(
+                    variable for variable in monomial.variables if variable not in values
+                )
+            )
         return BooleanPolynomial(terms)
 
 
-def anf_from_truth_table(values: Sequence[int], variable_names: Sequence[str] | None = None) -> BooleanPolynomial:
+def anf_from_truth_table(
+    values: Sequence[int], variable_names: Sequence[str] | None = None
+) -> BooleanPolynomial:
     """Compute an exact ANF by the in-place Möbius transform.
 
     EXAMPLES::
@@ -187,7 +193,9 @@ def anf_from_truth_table(values: Sequence[int], variable_names: Sequence[str] | 
     )
 
 
-def vectorial_anf(table: Sequence[int], variable_names: Sequence[str] | None = None) -> tuple[BooleanPolynomial, ...]:
+def vectorial_anf(
+    table: Sequence[int], variable_names: Sequence[str] | None = None
+) -> tuple[BooleanPolynomial, ...]:
     """Return output-bit ANFs of a power-of-two lookup table, MSB first.
 
     EXAMPLES::
@@ -203,7 +211,10 @@ def vectorial_anf(table: Sequence[int], variable_names: Sequence[str] | None = N
     if size < 2 or size & (size - 1):
         raise ValueError("lookup-table length must be a power of two")
     width = size.bit_length() - 1
-    if any(not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < size for value in table):
+    if any(
+        not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < size
+        for value in table
+    ):
         raise ValueError("lookup-table outputs must fit its input width")
     return tuple(
         anf_from_truth_table(tuple((value >> bit) & 1 for value in table), variable_names)

@@ -43,8 +43,4 @@ class PrimeField(Domain):
         return self.modulus.bit_length()
 
     def contains(self, value: object) -> bool:
-        return (
-            isinstance(value, int)
-            and not isinstance(value, bool)
-            and 0 <= value < self.modulus
-        )
+        return isinstance(value, int) and not isinstance(value, bool) and 0 <= value < self.modulus

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import shutil
 import subprocess
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
@@ -44,8 +44,10 @@ class DieharderDriver:
             input_path = Path(directory) / "dataset.bin"
             with input_path.open("wb") as stream:
                 dataset.write_binary(stream)
-            tool_arguments = ("-g", "201", "-f", str(input_path), "-a") if test is None else (
-                "-g", "201", "-f", str(input_path), "-d", str(test)
+            tool_arguments = (
+                ("-g", "201", "-f", str(input_path), "-a")
+                if test is None
+                else ("-g", "201", "-f", str(input_path), "-d", str(test))
             )
             start = monotonic()
             completed = subprocess.run(
@@ -65,8 +67,7 @@ class DieharderDriver:
         report = parse_dieharder_report(completed.stdout)
         version = self._version(executable)
         stable_arguments = tuple(
-            "{dataset}" if argument == str(input_path) else argument
-            for argument in tool_arguments
+            "{dataset}" if argument == str(input_path) else argument for argument in tool_arguments
         )
         return StatisticalTestRun(
             suite="dieharder",

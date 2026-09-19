@@ -25,8 +25,7 @@ The input is named *key* because the hash function SHA-1 can be seen like a
 symmetric primitive whose plaintext is the initial state and key is the input.
 """
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import HASH_FUNCTION, INPUT_MESSAGE
 
 PARAMETERS_CONFIGURATION_LIST = [{"word_size": 32, "number_of_rounds": 80}]
@@ -147,29 +146,39 @@ class SHA1(BitGraphPrimitive):
             E = self.add_modadd_component_in_sha1(E, initial_state[4])
 
         self.add_primitive_output_component(
-            [A.id, B.id, C.id, D.id, E.id], [list(range(self.word_size)) for _ in range(5)], self.word_size * 5
+            [A.id, B.id, C.id, D.id, E.id],
+            [list(range(self.word_size)) for _ in range(5)],
+            self.word_size * 5,
         )
 
     def add_and_component_in_sha1(self, component_0, component_1):
         """Add the and component in sha1 stage to this primitive's typed operation graph."""
         return self.add_and_component(
-            [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
+            [component_0.id, component_1.id],
+            [list(range(self.word_size)), list(range(self.word_size))],
+            self.word_size,
         )
 
     def add_modadd_component_in_sha1(self, component_0, component_1):
         """Add the modadd component in sha1 stage to this primitive's typed operation graph."""
         return self.add_modadd_component(
-            [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
+            [component_0.id, component_1.id],
+            [list(range(self.word_size)), list(range(self.word_size))],
+            self.word_size,
         )
 
     def add_rotate_component_in_sha1(self, component, amount):
         """Add the rotate component in sha1 stage to this primitive's typed operation graph."""
-        return self.add_rotate_component([component.id], [list(range(self.word_size))], self.word_size, amount)
+        return self.add_rotate_component(
+            [component.id], [list(range(self.word_size))], self.word_size, amount
+        )
 
     def add_round_output_component_in_sha1(self, A, B, C, D, E):
         """Add the round output component in sha1 stage to this primitive's typed operation graph."""
         return self.add_round_output_component(
-            [A.id, B.id, C.id, D.id, E.id], [list(range(self.word_size)) for _ in range(5)], self.word_size * 5
+            [A.id, B.id, C.id, D.id, E.id],
+            [list(range(self.word_size)) for _ in range(5)],
+            self.word_size * 5,
         )
 
     def compute_temp_and_s_30_b(self, A, B, E, ft_B_C_D, K, W):
@@ -190,7 +199,9 @@ class SHA1(BitGraphPrimitive):
         NOT_B = self.add_not_component([B.id], [list(range(self.word_size))], self.word_size)
         NOT_B_AND_D = self.add_and_component_in_sha1(NOT_B, D)
         ft_B_C_D = self.add_or_component(
-            [B_AND_C.id, NOT_B_AND_D.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
+            [B_AND_C.id, NOT_B_AND_D.id],
+            [list(range(self.word_size)), list(range(self.word_size))],
+            self.word_size,
         )
 
         return self.compute_temp_and_s_30_b(A, B, E, ft_B_C_D, K, W)

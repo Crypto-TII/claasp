@@ -1,17 +1,29 @@
 """Reference AES implementation following the FIPS 197 pseudocode."""
 
 from claasp_next.components import (
-    Add, BinaryAffineMap, Constant, LinearMap, Permutation, Power,
+    Add,
+    BinaryAffineMap,
+    Constant,
+    LinearMap,
+    Permutation,
+    Power,
     SBox,
 )
 from claasp_next.composites.aes import (
-    AES_AFFINE_MATRIX, AES_FIELD, AES_SBOX, MIX_COLUMNS_MATRIX,
-    ROUND_CONSTANTS, SHIFT_ROWS_MAPPING,
+    AES_AFFINE_MATRIX,
+    AES_FIELD,
+    AES_SBOX,
+    MIX_COLUMNS_MATRIX,
+    ROUND_CONSTANTS,
+    SHIFT_ROWS_MAPPING,
 )
 from claasp_next.graph import (
-    Primitive, PrimitiveKind, RealizationDescriptor, ValueType, as_selection,
+    Primitive,
+    PrimitiveKind,
+    RealizationDescriptor,
+    ValueType,
+    as_selection,
 )
-
 
 PARAMETERS_CONFIGURATION_LIST = (
     {"key_bit_size": 128, "number_of_rounds": 10},
@@ -22,7 +34,8 @@ PARAMETERS_CONFIGURATION_LIST = (
 
 def _validate_parameters(key_bit_size, number_of_rounds, realization):
     configuration = Primitive.select_configuration(
-        PARAMETERS_CONFIGURATION_LIST, key_bit_size=key_bit_size,
+        PARAMETERS_CONFIGURATION_LIST,
+        key_bit_size=key_bit_size,
     )
     rounds = Primitive.validate_number_of_rounds(
         number_of_rounds,
@@ -47,28 +60,33 @@ def _key_schedule(primitive, key, key_word_count, number_of_rounds, realization)
     """FIPS 197 KEYEXPANSION, returning round keys in their natural order."""
 
     word_type = ValueType(AES_FIELD, (4,))
-    words = [key[4 * index:4 * index + 4] for index in range(key_word_count)]
+    words = [key[4 * index : 4 * index + 4] for index in range(key_word_count)]
     while len(words) < 4 * (number_of_rounds + 1):
         word_index = len(words)
         temporary = as_selection(words[-1])
         if word_index % key_word_count == 0:
             temporary = temporary.source.select(
-                temporary.positions[1], temporary.positions[2],
-                temporary.positions[3], temporary.positions[0],
+                temporary.positions[1],
+                temporary.positions[2],
+                temporary.positions[3],
+                temporary.positions[0],
             )
             temporary = _sub_bytes(primitive, temporary, realization)
-            round_constant = primitive.add_component(Constant(
-                word_type, (ROUND_CONSTANTS[word_index // key_word_count - 1], 0, 0, 0),
-            ))
+            round_constant = primitive.add_component(
+                Constant(
+                    word_type,
+                    (ROUND_CONSTANTS[word_index // key_word_count - 1], 0, 0, 0),
+                )
+            )
             temporary = primitive.add_component(Add((temporary, round_constant)))
         elif key_word_count == 8 and word_index % key_word_count == 4:
             temporary = _sub_bytes(primitive, temporary, realization)
         words.append(primitive.add_component(Add((words[word_index - key_word_count], temporary))))
 
     return [
-        key[:16] if round_number == 0 else primitive.join(
-            *words[4 * round_number:4 * round_number + 4]
-        )
+        key[:16]
+        if round_number == 0
+        else primitive.join(*words[4 * round_number : 4 * round_number + 4])
         for round_number in range(number_of_rounds + 1)
     ]
 
@@ -114,7 +132,9 @@ class AES(Primitive):
         realization: str = "lookup",
     ) -> None:
         configuration, rounds, descriptor = _validate_parameters(
-            key_bit_size, number_of_rounds, realization,
+            key_bit_size,
+            number_of_rounds,
+            realization,
         )
         self.Nk = key_bit_size // 32
         self.Nr = rounds
@@ -175,5 +195,7 @@ class AES128(AES):
 
     def __init__(self, number_of_rounds: int = 10, realization: str = "lookup") -> None:
         super().__init__(
-            key_bit_size=128, number_of_rounds=number_of_rounds, realization=realization,
+            key_bit_size=128,
+            number_of_rounds=number_of_rounds,
+            realization=realization,
         )

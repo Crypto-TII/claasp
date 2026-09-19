@@ -3,8 +3,13 @@
 import pytest
 
 from claasp_next import (
-    BinaryExtensionField, Bit, Primitive, ScalarEvaluator, TransposedBatchEvaluator,
-    ValueType, Word,
+    BinaryExtensionField,
+    Bit,
+    Primitive,
+    ScalarEvaluator,
+    TransposedBatchEvaluator,
+    ValueType,
+    Word,
 )
 from claasp_next.components import Permutation
 

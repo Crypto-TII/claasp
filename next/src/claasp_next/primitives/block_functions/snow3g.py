@@ -14,8 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import INPUT_INITIALIZATION_VECTOR, INPUT_KEY, STREAM_CIPHER
 
 # fmt: off
@@ -61,13 +60,21 @@ WORD_NUM = 16
 WORD_SIZE = 32
 LFSR_DESCR = [
     [
-        [16, [[1, [0]], [1, [2]], [1, [11]]]]  # Register len =16, feedback poly=alpha*x0 + x2 + alpha^(-1)*x11
+        [
+            16,
+            [[1, [0]], [1, [2]], [1, [11]]],
+        ]  # Register len =16, feedback poly=alpha*x0 + x2 + alpha^(-1)*x11
     ],
     32,  # Registers' cell (word) size = 32-bit
 ]
 
 PARAMETERS_CONFIGURATION_LIST = [
-    {"iv_bit_size": 128, "key_bit_size": 128, "number_of_initialization_clocks": 32, "keystream_word_size": 2}
+    {
+        "iv_bit_size": 128,
+        "key_bit_size": 128,
+        "number_of_initialization_clocks": 32,
+        "keystream_word_size": 2,
+    }
 ]
 
 
@@ -86,7 +93,13 @@ class Snow3G(BitGraphPrimitive):
         ('0xc764a037b12fc857', 64)
     """
 
-    def __init__(self, iv_bit_size=128, key_bit_size=128, number_of_initialization_clocks=32, keystream_word_size=2):
+    def __init__(
+        self,
+        iv_bit_size=128,
+        key_bit_size=128,
+        number_of_initialization_clocks=32,
+        keystream_word_size=2,
+    ):
         self.keystream_word_size = keystream_word_size
         self.key_bit_size = key_bit_size
         self.iv_bit_size = iv_bit_size
@@ -118,7 +131,9 @@ class Snow3G(BitGraphPrimitive):
             self.clock_lfsr(const_0)
 
         self.add_primitive_output_component(
-            [keystream], [list(range(keystream_word_size * WORD_SIZE))], keystream_word_size * WORD_SIZE
+            [keystream],
+            [list(range(keystream_word_size * WORD_SIZE))],
+            keystream_word_size * WORD_SIZE,
         )
 
     def snow3g_state_initialization(self, key, iv):
@@ -146,7 +161,9 @@ class Snow3G(BitGraphPrimitive):
                 [list(range(i * WORD_SIZE, (i + 1) * WORD_SIZE)), list(range(WORD_SIZE))],
                 WORD_SIZE,
             )
-            self.lfsr_s[i] = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+            self.lfsr_s[i] = [
+                BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]
+            ]
             self.lfsr_p[i] = [list(range(WORD_SIZE))]
         # lfsr cells-5th to 8th:  k_0, k_1, k_2, k_3
         for i in range(4):
@@ -154,17 +171,27 @@ class Snow3G(BitGraphPrimitive):
             self.lfsr_p[i + 4] = [list(range(i * WORD_SIZE, (i + 1) * WORD_SIZE))]
 
         # lfsr[8]: k0+1
-        self.add_xor_component([key.id[0]] + const_1, [list(range(WORD_SIZE)), list(range(WORD_SIZE))], WORD_SIZE)
-        self.lfsr_s[8] = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.add_xor_component(
+            [key.id[0]] + const_1, [list(range(WORD_SIZE)), list(range(WORD_SIZE))], WORD_SIZE
+        )
+        self.lfsr_s[8] = [
+            BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]
+        ]
         self.lfsr_p[8] = [list(range(WORD_SIZE))]
 
         # lfsr[9]: k1+1+iv3
         self.add_xor_component(
             [key.id[0]] + const_1 + [iv[0][0]],
-            [list(range(WORD_SIZE, 2 * WORD_SIZE)), list(range(WORD_SIZE)), list(range(3 * WORD_SIZE, 4 * WORD_SIZE))],
+            [
+                list(range(WORD_SIZE, 2 * WORD_SIZE)),
+                list(range(WORD_SIZE)),
+                list(range(3 * WORD_SIZE, 4 * WORD_SIZE)),
+            ],
             WORD_SIZE,
         )
-        self.lfsr_s[9] = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.lfsr_s[9] = [
+            BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]
+        ]
         self.lfsr_p[9] = [list(range(WORD_SIZE))]
 
         # lfsr[10] :k2+1+iv2
@@ -177,21 +204,31 @@ class Snow3G(BitGraphPrimitive):
             ],
             WORD_SIZE,
         )
-        self.lfsr_s[10] = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.lfsr_s[10] = [
+            BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]
+        ]
         self.lfsr_p[10] = [list(range(WORD_SIZE))]
 
         # lfsr[11]: k3+1
         self.add_xor_component(
-            [key.id[0]] + const_1, [list(range(3 * WORD_SIZE, 4 * WORD_SIZE)), list(range(WORD_SIZE))], WORD_SIZE
+            [key.id[0]] + const_1,
+            [list(range(3 * WORD_SIZE, 4 * WORD_SIZE)), list(range(WORD_SIZE))],
+            WORD_SIZE,
         )
-        self.lfsr_s[11] = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.lfsr_s[11] = [
+            BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]
+        ]
         self.lfsr_p[11] = [list(range(WORD_SIZE))]
 
         # lfsr[12] : k0+iv1
         self.add_xor_component(
-            [key.id[0], iv[0][0]], [list(range(WORD_SIZE)), list(range(WORD_SIZE, 2 * WORD_SIZE))], WORD_SIZE
+            [key.id[0], iv[0][0]],
+            [list(range(WORD_SIZE)), list(range(WORD_SIZE, 2 * WORD_SIZE))],
+            WORD_SIZE,
         )
-        self.lfsr_s[12] = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.lfsr_s[12] = [
+            BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]
+        ]
         self.lfsr_p[12] = [list(range(WORD_SIZE))]
 
         # lfsr[13, 14]: k1+0, k2+0
@@ -201,12 +238,16 @@ class Snow3G(BitGraphPrimitive):
 
         # s15=k3+iv0
         self.add_xor_component(
-            [key.id[0], iv[0][0]], [list(range(3 * WORD_SIZE, 4 * WORD_SIZE)), list(range(WORD_SIZE))], WORD_SIZE
+            [key.id[0], iv[0][0]],
+            [list(range(3 * WORD_SIZE, 4 * WORD_SIZE)), list(range(WORD_SIZE))],
+            WORD_SIZE,
         )
-        self.lfsr_s[15] = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.lfsr_s[15] = [
+            BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]
+        ]
         self.lfsr_p[15] = [list(range(WORD_SIZE))]
 
-        for i in range(3):
+        for _ in range(3):
             self.fsm_r.append([const_0.id[0]])
             self.fsm_p.append([list(range(WORD_SIZE))])
         self.fsm_r[1] = self.fsm_r[1] + self.fsm_r[1] + self.fsm_r[1] + self.fsm_r[1]
@@ -214,16 +255,24 @@ class Snow3G(BitGraphPrimitive):
 
     def clock_fsm(self, const_0):
         """Build the clock fsm transition in this primitive's typed operation graph."""
-        self.add_modadd_component(self.lfsr_s[15] + self.fsm_r[0], self.lfsr_p[15] + self.fsm_p[0], WORD_SIZE)
+        self.add_modadd_component(
+            self.lfsr_s[15] + self.fsm_r[0], self.lfsr_p[15] + self.fsm_p[0], WORD_SIZE
+        )
         F = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
 
-        self.add_xor_component(F + self.fsm_r[1], [list(range(WORD_SIZE))] + self.fsm_p[1], WORD_SIZE)
+        self.add_xor_component(
+            F + self.fsm_r[1], [list(range(WORD_SIZE))] + self.fsm_p[1], WORD_SIZE
+        )
         F = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
 
-        self.add_xor_component(self.fsm_r[2] + self.lfsr_s[5], self.fsm_p[2] + self.lfsr_p[5], WORD_SIZE)
+        self.add_xor_component(
+            self.fsm_r[2] + self.lfsr_s[5], self.fsm_p[2] + self.lfsr_p[5], WORD_SIZE
+        )
         r = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
 
-        self.add_modadd_component(r + self.fsm_r[1], [list(range(WORD_SIZE))] + self.fsm_p[1], WORD_SIZE)
+        self.add_modadd_component(
+            r + self.fsm_r[1], [list(range(WORD_SIZE))] + self.fsm_p[1], WORD_SIZE
+        )
         r = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
 
         self.fsm_r[2], self.fsm_p[2] = self.S2(self.fsm_r[1], self.fsm_p[1], const_0)
@@ -278,10 +327,46 @@ class Snow3G(BitGraphPrimitive):
             self.add_sbox_component([w_id[i]], [w_pos[i]], 8, SBoxQ)
             sbq.append([BitState([self.get_current_component_id()], [list(range(8))]).id[0]])
 
-        id_0 = sbq[0] + [const_0.id[0]] + sbq[0] + sbq[0] + [const_0.id[0]] + sbq[0] + [const_0.id[0]] + sbq[0]
-        id_1 = sbq[1] + [const_0.id[0]] + sbq[1] + sbq[1] + [const_0.id[0]] + sbq[1] + [const_0.id[0]] + sbq[1]
-        id_2 = sbq[2] + [const_0.id[0]] + sbq[2] + sbq[2] + [const_0.id[0]] + sbq[2] + [const_0.id[0]] + sbq[2]
-        id_3 = sbq[3] + [const_0.id[0]] + sbq[3] + sbq[3] + [const_0.id[0]] + sbq[3] + [const_0.id[0]] + sbq[3]
+        id_0 = (
+            sbq[0]
+            + [const_0.id[0]]
+            + sbq[0]
+            + sbq[0]
+            + [const_0.id[0]]
+            + sbq[0]
+            + [const_0.id[0]]
+            + sbq[0]
+        )
+        id_1 = (
+            sbq[1]
+            + [const_0.id[0]]
+            + sbq[1]
+            + sbq[1]
+            + [const_0.id[0]]
+            + sbq[1]
+            + [const_0.id[0]]
+            + sbq[1]
+        )
+        id_2 = (
+            sbq[2]
+            + [const_0.id[0]]
+            + sbq[2]
+            + sbq[2]
+            + [const_0.id[0]]
+            + sbq[2]
+            + [const_0.id[0]]
+            + sbq[2]
+        )
+        id_3 = (
+            sbq[3]
+            + [const_0.id[0]]
+            + sbq[3]
+            + sbq[3]
+            + [const_0.id[0]]
+            + sbq[3]
+            + [const_0.id[0]]
+            + sbq[3]
+        )
         pos_0 = [list(range(1, 8))] + [[0, 1]] + [[0]] + [[0]] + [[0]] + [[0]] + [[0, 1]] + [[0]]
 
         ids = id_0 + sbq[1] + sbq[2] + id_3 + sbq[3]
@@ -312,8 +397,12 @@ class Snow3G(BitGraphPrimitive):
     def clock_lfsr_initialization_mode(self, F, const_0):
         """Build the clock lfsr initialization mode transition in this primitive's typed operation graph."""
         self.clock_lfsr(const_0)
-        self.add_xor_component(self.lfsr_s[15] + F, self.lfsr_p[15] + [list(range(WORD_SIZE))], WORD_SIZE)
-        self.lfsr_s[15] = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.add_xor_component(
+            self.lfsr_s[15] + F, self.lfsr_p[15] + [list(range(WORD_SIZE))], WORD_SIZE
+        )
+        self.lfsr_s[15] = [
+            BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]
+        ]
         self.lfsr_p[15] = [list(range(WORD_SIZE))]
 
     def clock_lfsr(self, const_0):
@@ -331,7 +420,9 @@ class Snow3G(BitGraphPrimitive):
             fsr_pos = fsr_pos + self.lfsr_p[i]
 
         self.add_fsr_component(fsr_ids, fsr_pos, WORD_SIZE * WORD_NUM, LFSR_DESCR)
-        S15 = [BitState([self.get_current_component_id()], [list(range(WORD_SIZE * WORD_NUM))]).id[0]]
+        S15 = [
+            BitState([self.get_current_component_id()], [list(range(WORD_SIZE * WORD_NUM))]).id[0]
+        ]
         for i in range(WORD_NUM - 1):
             self.lfsr_s[i] = self.lfsr_s[i + 1]
             self.lfsr_p[i] = self.lfsr_p[i + 1]
@@ -403,9 +494,13 @@ class Snow3G(BitGraphPrimitive):
 
     def snow3g_key_stream(self, F, keystream, clock_number):
         """Build the snow3g key stream stage in this primitive's typed operation graph."""
-        key_word = self.add_xor_component(F + self.lfsr_s[0], [list(range(WORD_SIZE))] + self.lfsr_p[0], WORD_SIZE).id
+        key_word = self.add_xor_component(
+            F + self.lfsr_s[0], [list(range(WORD_SIZE))] + self.lfsr_p[0], WORD_SIZE
+        ).id
         if clock_number == 0:
-            keystream = self.add_round_output_component([key_word], [list(range(WORD_SIZE))], WORD_SIZE).id
+            keystream = self.add_round_output_component(
+                [key_word], [list(range(WORD_SIZE))], WORD_SIZE
+            ).id
         else:
             keystream = self.add_round_output_component(
                 [keystream, key_word],

@@ -48,15 +48,17 @@ def parse_dieharder_report(text: str | Iterable[str]) -> DieharderReport:
             p_value = float(parts[4])
         except ValueError as error:
             raise ValueError(f"malformed Dieharder result row: {line.strip()!r}") from error
-        observations.append(DieharderObservation(
-            len(observations) + 1,
-            "".join(parts[0].split()),
-            ntuple,
-            test_samples,
-            pvalue_samples,
-            p_value,
-            labels[parts[-1]],
-        ))
+        observations.append(
+            DieharderObservation(
+                len(observations) + 1,
+                "".join(parts[0].split()),
+                ntuple,
+                test_samples,
+                pvalue_samples,
+                p_value,
+                labels[parts[-1]],
+            )
+        )
     if not observations:
         raise ValueError("Dieharder output contains no result rows")
     return DieharderReport(tuple(observations))
@@ -114,14 +116,16 @@ def parse_nist_final_report(text: str | Iterable[str]) -> NISTFinalReport:
                 passed, total = int(passed_token), int(total_token)
         except (ValueError, TypeError) as error:
             raise ValueError(f"malformed NIST STS result row: {line.strip()!r}") from error
-        rows.append(NISTSummaryRow(
-            test_name,
-            _normalize_nist_name(test_name),
-            bins,
-            uniformity,
-            passed,
-            total,
-        ))
+        rows.append(
+            NISTSummaryRow(
+                test_name,
+                _normalize_nist_name(test_name),
+                bins,
+                uniformity,
+                passed,
+                total,
+            )
+        )
     if not rows:
         raise ValueError("NIST STS final report contains no result rows")
     return NISTFinalReport(tuple(rows))

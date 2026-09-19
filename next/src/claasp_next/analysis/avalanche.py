@@ -92,9 +92,7 @@ def avalanche_probabilities(
                 record.output_difference >> (dataset.output_bit_count - output_bit - 1)
             ) & 1
 
-    probabilities = tuple(
-        tuple(count / number_of_samples for count in row) for row in counts
-    )
+    probabilities = tuple(tuple(count / number_of_samples for count in row) for row in counts)
     return AvalancheResult(
         primitive.family_name, input_name, number_of_samples, seed, probabilities
     )

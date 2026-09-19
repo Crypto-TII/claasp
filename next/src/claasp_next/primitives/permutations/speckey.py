@@ -15,11 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import (
+    BitGraphPrimitive,
+    BitState,
+    coerce_exact_int,
+    get_inputs_parameter,
+)
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import coerce_exact_int, get_inputs_parameter
-
 
 _WORD_SIZE = 16
 _NUMBER_OF_WORDS = 2
@@ -71,13 +73,8 @@ class Speckey(BitGraphPrimitive):
 
         state = []
         for word_index in range(self.number_of_words):
-            bit_positions = [
-                bit + word_index * self.word_size
-                for bit in range(self.word_size)
-            ]
-            state.append(
-                BitState([INPUT_PLAINTEXT], [bit_positions])
-            )
+            bit_positions = [bit + word_index * self.word_size for bit in range(self.word_size)]
+            state.append(BitState([INPUT_PLAINTEXT], [bit_positions]))
 
         for round_number in range(number_of_rounds):
             self.add_round()

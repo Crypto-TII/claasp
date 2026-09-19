@@ -4,6 +4,7 @@ from typing import Protocol, runtime_checkable
 
 from claasp_next.representations import Artifact
 
+
 @runtime_checkable
 class Driver(Protocol):
     """A solver, interpreter, compiler, or renderer consuming an artifact."""

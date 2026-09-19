@@ -1,8 +1,11 @@
 """Primitive consisting of one whole-bit-vector S-box."""
 
 from collections.abc import Sequence
+
 from claasp_next.components import (
     BitVectorSBox as BitVectorSBoxComponent,
+)
+from claasp_next.components import (
     LookupTable,
 )
 from claasp_next.domains import Bit
@@ -46,11 +49,7 @@ class BitVectorSBox(Primitive):
             if lookup_table is None
             else LookupTable(lookup_table, input_bit_size, output_bit_size)
         )
-        kind = (
-            PrimitiveKind.PERMUTATION
-            if table.is_bijective()
-            else PrimitiveKind.FUNCTION
-        )
+        kind = PrimitiveKind.PERMUTATION if table.is_bijective() else PrimitiveKind.FUNCTION
         super().__init__(
             "bit_vector_sbox",
             {"input": ValueType(Bit(), (table.input_bit_size,))},

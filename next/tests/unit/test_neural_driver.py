@@ -24,7 +24,9 @@ def _separable_dataset(samples: int, seed: int) -> NeuralDataset:
         row = (label, label, 1 - label, 1 - label)
         features.append(row)
         labels.append(label)
-    return NeuralDataset(tuple(features), tuple(labels), "black_box", seed, ("f0", "f1", "f2", "f3"))
+    return NeuralDataset(
+        tuple(features), tuple(labels), "black_box", seed, ("f0", "f1", "f2", "f3")
+    )
 
 
 def test_sklearn_mlp_driver_rejects_invalid_construction():

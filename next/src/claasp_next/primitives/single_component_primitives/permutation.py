@@ -3,6 +3,7 @@
 from claasp_next.components import Permutation as PermutationComponent
 from claasp_next.domains import Bit, Word
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
+
 from ._base import positive
 
 

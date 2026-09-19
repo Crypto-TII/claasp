@@ -1,9 +1,9 @@
 """Optional LaTeX driver producing PDF diagram artifacts."""
 
-from dataclasses import dataclass
-from pathlib import Path
 import shutil
 import subprocess
+from dataclasses import dataclass
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
@@ -54,10 +54,16 @@ class LaTeXDriver:
             start = monotonic()
             completed = subprocess.run(
                 [
-                    executable, "-interaction=nonstopmode", "-halt-on-error",
-                    f"-output-directory={directory}", str(source),
+                    executable,
+                    "-interaction=nonstopmode",
+                    "-halt-on-error",
+                    f"-output-directory={directory}",
+                    str(source),
                 ],
-                text=True, capture_output=True, timeout=self.timeout_seconds, check=False,
+                text=True,
+                capture_output=True,
+                timeout=self.timeout_seconds,
+                check=False,
             )
             elapsed = monotonic() - start
             pdf_path = Path(directory) / "diagram.pdf"

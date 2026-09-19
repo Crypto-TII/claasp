@@ -42,9 +42,7 @@ class LinearMap(Primitive):
             if matrix_is_invertible(matrix, domain)
             else PrimitiveKind.FUNCTION
         )
-        super().__init__(
-            "linear_map", {"input": ValueType(domain, (len(matrix[0]),))}, kind=kind
-        )
+        super().__init__("linear_map", {"input": ValueType(domain, (len(matrix[0]),))}, kind=kind)
         self.add_round()
         output = self.add_component(LinearMapComponent(self.input("input"), matrix))
         self.set_output(output)

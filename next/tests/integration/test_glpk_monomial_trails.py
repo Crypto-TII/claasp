@@ -1,8 +1,8 @@
 """Real GLPK composition of multi-round monomial trails."""
 
 from claasp_next.analysis import PresentMonomialSemantics
-from claasp_next.primitives import Present
 from claasp_next.drivers.solvers import GLPKSolver, MILPStatus
+from claasp_next.primitives import Present
 from claasp_next.representations.constraints.milp import PresentMonomialTrailMILPModel
 
 

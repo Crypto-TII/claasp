@@ -77,4 +77,6 @@ def test_poseidon_width_one_partial_round_needs_no_concatenation():
     result = ScalarEvaluator().evaluate(primitive, {"state": (4,)})
 
     assert result.output is not None
-    assert all(not component.component_id.startswith("concatenate") for component in primitive.components)
+    assert all(
+        not component.component_id.startswith("concatenate") for component in primitive.components
+    )

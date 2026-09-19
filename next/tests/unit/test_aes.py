@@ -1,8 +1,11 @@
-from claasp_next.primitives import AES, AES128, CustomAES
 from claasp_next.composites import AESKeySchedule, AESRound
 from claasp_next.domains import BinaryExtensionField
-from claasp_next.representations.execution import BatchEvaluator, ScalarEvaluator, TransposedBatchEvaluator
-
+from claasp_next.primitives import AES, AES128, CustomAES
+from claasp_next.representations.execution import (
+    BatchEvaluator,
+    ScalarEvaluator,
+    TransposedBatchEvaluator,
+)
 
 PLAINTEXT = tuple(bytes.fromhex("00112233445566778899aabbccddeeff"))
 KEY = tuple(bytes.fromhex("000102030405060708090a0b0c0d0e0f"))
@@ -43,10 +46,12 @@ def test_aes128_batch_backends_match_scalar_reference():
         "key": (KEY, tuple(reversed(KEY))),
     }
     expected = tuple(
-        ScalarEvaluator().evaluate(
+        ScalarEvaluator()
+        .evaluate(
             primitive,
             {"plaintext": inputs["plaintext"][lane], "key": inputs["key"][lane]},
-        ).output
+        )
+        .output
         for lane in range(2)
     )
 
@@ -60,9 +65,10 @@ def test_aes_key_schedule_and_round_are_independently_evaluable_blocks():
     assert round_key == 0xD6AA74FDD2AF72FADAA678F1D6AB76FE
 
     round_block = AESRound(mix_columns=True)
-    assert round_block.evaluate(
-        0x00102030405060708090A0B0C0D0E0F0, round_key
-    ) == 0x89D810E8855ACE682D1843D8CB128FE4
+    assert (
+        round_block.evaluate(0x00102030405060708090A0B0C0D0E0F0, round_key)
+        == 0x89D810E8855ACE682D1843D8CB128FE4
+    )
 
 
 def test_custom_aes_records_changes_and_supports_sbox_and_layer_studies():

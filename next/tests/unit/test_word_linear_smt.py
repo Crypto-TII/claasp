@@ -11,7 +11,9 @@ from claasp_next.representations.constraints.smt import WordLinearSMTModel
 
 
 def _xor_model():
-    primitive = Primitive("xor", {"left": ValueType(Word(2), (1,)), "key": ValueType(Word(2), (1,))})
+    primitive = Primitive(
+        "xor", {"left": ValueType(Word(2), (1,)), "key": ValueType(Word(2), (1,))}
+    )
     primitive.add_round()
     output = primitive.add_component(Xor((primitive.input("left"), primitive.input("key"))))
     primitive.set_output(output)
@@ -67,7 +69,9 @@ def test_facade_defaults_to_single_key_masks_and_preserves_provenance():
             assert "fixed_external_mask" not in formula.provenance
             return SatResult(SatStatus.UNSATISFIABLE, None, 0, "", "")
 
-    result = model.primitive.analyze().enumerate_xor_linear_trails(0, nonzero_input="left", solver=Solver())
+    result = model.primitive.analyze().enumerate_xor_linear_trails(
+        0, nonzero_input="left", solver=Solver()
+    )
     assert result.complete
     assert dict(result.reproducibility)["version"] == "unreported"
     assert dict(result.reproducibility)["fixed_inputs"] == "(('key', 0),)"
@@ -75,7 +79,9 @@ def test_facade_defaults_to_single_key_masks_and_preserves_provenance():
 
 def test_concrete_fixed_keys_are_constants_not_zero_masks():
     primitive = _xor_model().primitive
-    model = WordLinearSMTModel(primitive, maximum_weight=0, nonzero_input="left", fixed_inputs={"key": 3})
+    model = WordLinearSMTModel(
+        primitive, maximum_weight=0, nonzero_input="left", fixed_inputs={"key": 3}
+    )
     formula = model.smt_formula()
     trail = model.decode_characteristic(dict.fromkeys(formula.variables, 1))
     assert dict(trail.input_masks) == {"left": 3, "key": 0}
@@ -84,9 +90,13 @@ def test_concrete_fixed_keys_are_constants_not_zero_masks():
 
 
 def test_bitwise_and_word_composition_recounts_signs_and_weights():
-    primitive = Primitive("and", {"left": ValueType(Word(2), (1,)), "right": ValueType(Word(2), (1,))})
+    primitive = Primitive(
+        "and", {"left": ValueType(Word(2), (1,)), "right": ValueType(Word(2), (1,))}
+    )
     primitive.add_round()
-    output = primitive.add_component(BitwiseAnd((primitive.input("left"), primitive.input("right"))))
+    output = primitive.add_component(
+        BitwiseAnd((primitive.input("left"), primitive.input("right")))
+    )
     primitive.set_output(output)
     model = WordLinearSMTModel(primitive, maximum_weight=2, nonzero_input="left")
     formula = model.smt_formula()

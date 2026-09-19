@@ -18,14 +18,21 @@
 
 from copy import deepcopy
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import get_inputs_parameter
 
 WORD_SIZE = 32
 AZ_ROTATE = [(31, 24), (17, 17), (0, 31), (24, 16)]
-CI = [0xB7E15162, 0xBF715880, 0x38B4DA56, 0x324E7738, 0xBB1185EB, 0x4F7C7B57, 0xCFBFA1C8, 0xC2B3293D]
+CI = [
+    0xB7E15162,
+    0xBF715880,
+    0x38B4DA56,
+    0x324E7738,
+    0xBB1185EB,
+    0x4F7C7B57,
+    0xCFBFA1C8,
+    0xC2B3293D,
+]
 PARAMETERS_CONFIGURATION_LIST = [
     {"number_of_blocks": 4, "number_of_steps": 7},
     {"number_of_blocks": 4, "number_of_steps": 10},
@@ -72,13 +79,17 @@ class Sparkle(BitGraphPrimitive):
         # state initialization
         state = []
         for i in range(2 * number_of_blocks):
-            state.append(BitState([INPUT_PLAINTEXT], [[k + i * WORD_SIZE for k in range(WORD_SIZE)]]))
+            state.append(
+                BitState([INPUT_PLAINTEXT], [[k + i * WORD_SIZE for k in range(WORD_SIZE)]])
+            )
 
         # assign constants
         constant_ci = []
         for i in range(8):
             self.add_constant_component(WORD_SIZE, CI[i])
-            constant_ci.append(BitState([self.get_current_component_id()], [list(range(WORD_SIZE))]))
+            constant_ci.append(
+                BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+            )
 
         constant_r = []
         for i in range(number_of_steps):
@@ -104,7 +115,9 @@ class Sparkle(BitGraphPrimitive):
     def alzette(self, state_x, state_y, ci):
         """Build the alzette stage in this primitive's typed operation graph."""
         for i in range(4):
-            state_x, state_y = self.alzette_round(state_x, state_y, AZ_ROTATE[i][1], AZ_ROTATE[i][0], ci)
+            state_x, state_y = self.alzette_round(
+                state_x, state_y, AZ_ROTATE[i][1], AZ_ROTATE[i][0], ci
+            )
 
         return state_x, state_y
 
@@ -134,9 +147,12 @@ class Sparkle(BitGraphPrimitive):
     def ell_function(self, state_i):
         # lx = (x <<< 16) xor (x and 0xffff)
         """Build the ell function stage in this primitive's typed operation graph."""
-        state_left = BitState(state_i.id, [[state_i.input_bit_positions[0][k] for k in range(WORD_SIZE // 2)]])
+        state_left = BitState(
+            state_i.id, [[state_i.input_bit_positions[0][k] for k in range(WORD_SIZE // 2)]]
+        )
         state_right = BitState(
-            state_i.id, [[state_i.input_bit_positions[0][k] for k in range(WORD_SIZE // 2, WORD_SIZE)]]
+            state_i.id,
+            [[state_i.input_bit_positions[0][k] for k in range(WORD_SIZE // 2, WORD_SIZE)]],
         )
         inputs_id, inputs_pos = get_inputs_parameter([state_left, state_right])
         self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE // 2)
@@ -173,7 +189,9 @@ class Sparkle(BitGraphPrimitive):
         #     }
         state_old = deepcopy(state)
         for i in range(omega - 1):
-            inputs_id, inputs_pos = get_inputs_parameter([state_old[(omega + i + 1) * 2], state_old[(i + 1) * 2], ty])
+            inputs_id, inputs_pos = get_inputs_parameter(
+                [state_old[(omega + i + 1) * 2], state_old[(i + 1) * 2], ty]
+            )
             self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
             state[i * 2] = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
             state[(omega + i + 1) * 2] = state_old[2 * (i + 1)]
@@ -188,11 +206,15 @@ class Sparkle(BitGraphPrimitive):
         # state[nb-1] = state[nb+1] ^ y0 ^ tmpx; state[nb+1] = y0;
         inputs_id, inputs_pos = get_inputs_parameter([state_old[omega * 2], state_old[0], ty])
         self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
-        state[(omega - 1) * 2] = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+        state[(omega - 1) * 2] = BitState(
+            [self.get_current_component_id()], [list(range(WORD_SIZE))]
+        )
         state[omega * 2] = state_old[0]
         inputs_id, inputs_pos = get_inputs_parameter([state_old[omega * 2 + 1], state_old[1], tx])
         self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
-        state[(omega - 1) * 2 + 1] = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+        state[(omega - 1) * 2 + 1] = BitState(
+            [self.get_current_component_id()], [list(range(WORD_SIZE))]
+        )
         state[omega * 2 + 1] = state_old[1]
 
         return state
@@ -211,7 +233,9 @@ class Sparkle(BitGraphPrimitive):
 
         # xi, yi = alzette(xi, yi, ci)
         for i in range(len(state) // 2):
-            state[2 * i], state[2 * i + 1] = self.alzette(state[2 * i], state[2 * i + 1], constant_ci[i])
+            state[2 * i], state[2 * i + 1] = self.alzette(
+                state[2 * i], state[2 * i + 1], constant_ci[i]
+            )
 
         # Diffusion Layer
         # state = L(S)

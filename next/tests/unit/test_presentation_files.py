@@ -5,9 +5,19 @@ import pytest
 
 from claasp_next.analysis.avalanche import AvalancheResult
 from claasp_next.presentation import (
-    Citation, MathematicalProvenance, PresentationProvenance, PrimitiveProvenance,
-    ReportSection, Table, TableColumn, TableRow, compose_report, present,
-    render_report, to_dataframe, write_report,
+    Citation,
+    MathematicalProvenance,
+    PresentationProvenance,
+    PrimitiveProvenance,
+    ReportSection,
+    Table,
+    TableColumn,
+    TableRow,
+    compose_report,
+    present,
+    render_report,
+    to_dataframe,
+    write_report,
 )
 
 
@@ -87,10 +97,19 @@ def test_optional_dataframe_matches_display_text_or_reports_missing_dependency(m
     if frame is not None:
         assert frame.to_dict(orient="records") == [{"Name": "café"}]
     original_import = builtins.__import__
-    def missing_pandas(name, globals=None, locals=None, fromlist=(), level=0):
+
+    # The replacement mirrors the built-in import hook's required signature.
+    def missing_pandas(
+        name,
+        globals=None,  # noqa: A002 - built-in import hook signature
+        locals=None,  # noqa: A002 - built-in import hook signature
+        fromlist=(),
+        level=0,
+    ):
         if name == "pandas":
             raise ImportError("missing")
         return original_import(name, globals, locals, fromlist, level)
+
     monkeypatch.setattr(builtins, "__import__", missing_pandas)
     with pytest.raises(ImportError, match="optional pandas"):
         to_dataframe(table)

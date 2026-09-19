@@ -70,8 +70,42 @@ class Twine(BitGraphPrimitive):
             0x1C, 0x38, 0x33, 0x25, 0x09, 0x12, 0x24, 0x0B
         ]
         # fmt: on
-        self.permutation = [0x5, 0x0, 0x1, 0x4, 0x7, 0xC, 0x3, 0x8, 0xD, 0x6, 0x9, 0x2, 0xF, 0xA, 0xB, 0xE]
-        self.permutation_inv = [0x1, 0x2, 0xB, 0x6, 0x3, 0x0, 0x9, 0x4, 0x7, 0xA, 0xD, 0xE, 0x5, 0x8, 0xF, 0xC]
+        self.permutation = [
+            0x5,
+            0x0,
+            0x1,
+            0x4,
+            0x7,
+            0xC,
+            0x3,
+            0x8,
+            0xD,
+            0x6,
+            0x9,
+            0x2,
+            0xF,
+            0xA,
+            0xB,
+            0xE,
+        ]
+        self.permutation_inv = [
+            0x1,
+            0x2,
+            0xB,
+            0x6,
+            0x3,
+            0x0,
+            0x9,
+            0x4,
+            0x7,
+            0xA,
+            0xD,
+            0xE,
+            0x5,
+            0x8,
+            0xF,
+            0xC,
+        ]
 
         super().__init__(
             family_name="twine",
@@ -101,17 +135,26 @@ class Twine(BitGraphPrimitive):
 
     def update_key(self, k, i):
         """Build the update key transition in this primitive's typed operation graph."""
+
         def update_word(emitting_word_indx, receiving_word_indx):
-            sbox = self.add_sbox_component([k], [get_word_bit_indexes(emitting_word_indx)], 4, self.sbox).id
-            return self.add_xor_component([sbox, k], [list(range(4)), get_word_bit_indexes(receiving_word_indx)], 4).id
+            sbox = self.add_sbox_component(
+                [k], [get_word_bit_indexes(emitting_word_indx)], 4, self.sbox
+            ).id
+            return self.add_xor_component(
+                [sbox, k], [list(range(4)), get_word_bit_indexes(receiving_word_indx)], 4
+            ).id
 
         xor0 = update_word(0, 1)
         xor1 = update_word(16, 4)
 
         c0 = self.add_constant_component(6, self.round_constants[i - 1]).id
         pad = self.add_constant_component(1, 0b0).id
-        xor_c0 = self.add_xor_component([pad, c0, k], [[0], list(range(3)), get_word_bit_indexes(7)], 4).id
-        xor_c1 = self.add_xor_component([pad, c0, k], [[0], list(range(3, 6)), get_word_bit_indexes(19)], 4).id
+        xor_c0 = self.add_xor_component(
+            [pad, c0, k], [[0], list(range(3)), get_word_bit_indexes(7)], 4
+        ).id
+        xor_c1 = self.add_xor_component(
+            [pad, c0, k], [[0], list(range(3, 6)), get_word_bit_indexes(19)], 4
+        ).id
 
         if self.key_bit_size == 80:
             input_ids = [xor1, k, xor_c0, k, xor_c1, xor0, k]
@@ -150,18 +193,27 @@ class Twine(BitGraphPrimitive):
         """Build the round function stage in this primitive's typed operation graph."""
         sb_order = [0, 5, 1, 4, 3, 6, 2, 7]
         after_key_add = self.add_xor_component(
-            [x, k], [[_ for i in range(8) for _ in get_word_bit_indexes(2 * i)], list(range(32))], 32
+            [x, k],
+            [[_ for i in range(8) for _ in get_word_bit_indexes(2 * i)], list(range(32))],
+            32,
         ).id
         sb_outputs = [
-            self.add_sbox_component([after_key_add], [get_word_bit_indexes(i)], 4, self.sbox).id for i in range(8)
+            self.add_sbox_component([after_key_add], [get_word_bit_indexes(i)], 4, self.sbox).id
+            for i in range(8)
         ]
         xor_outputs = [
-            self.add_xor_component([sb_outputs[i], x], [list(range(4))] + [get_word_bit_indexes(2 * i + 1)], 4).id
+            self.add_xor_component(
+                [sb_outputs[i], x], [list(range(4))] + [get_word_bit_indexes(2 * i + 1)], 4
+            ).id
             for i in sb_order
         ]
         round_output = self.add_round_output_component(
             [_ for xor in xor_outputs for _ in (xor, x)],
-            [_ for i in range(8) for _ in (list(range(4)), get_word_bit_indexes(self.permutation_inv[2 * i + 1]))],
+            [
+                _
+                for i in range(8)
+                for _ in (list(range(4)), get_word_bit_indexes(self.permutation_inv[2 * i + 1]))
+            ],
             64,
         ).id
 

@@ -13,7 +13,6 @@ import importlib.util
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "tools" / "terminology_guard.py"
 
@@ -45,8 +44,7 @@ def test_guard_still_detects_a_reintroduced_generic_cipher_reference(tmp_path):
     scan_root = tmp_path / "src" / "claasp_next"
     scan_root.mkdir(parents=True)
     (scan_root / "regressed.py").write_text(
-        "class CipherFoo:\n"
-        "    \"\"\"A cipher graph description.\"\"\"\n"
+        'class CipherFoo:\n    """A cipher graph description."""\n'
     )
 
     original_root = module.NEXT_ROOT
@@ -64,9 +62,9 @@ def test_guard_allows_the_real_block_cipher_taxonomy_and_ciphertext(tmp_path):
     scan_root = tmp_path / "src" / "claasp_next"
     scan_root.mkdir(parents=True)
     (scan_root / "fine.py").write_text(
-        "\"\"\"Keyed block-cipher graphs, e.g. block_ciphers and tweakable_block_ciphers.\n"
+        '"""Keyed block-cipher graphs, e.g. block_ciphers and tweakable_block_ciphers.\n'
         "Evaluation returns plaintext/ciphertext pairs; ChaCha was a stream cipher mode.\n"
-        "\"\"\"\n"
+        '"""\n'
     )
 
     original_root = module.NEXT_ROOT

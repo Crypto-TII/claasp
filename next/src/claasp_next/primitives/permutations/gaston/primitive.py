@@ -17,10 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import get_inputs_parameter
 
 GASTON_NROWS = 5
 WORD_SIZE = 64
@@ -119,7 +117,9 @@ class Gaston(BitGraphPrimitive):
     def gaston_rho_east(self, state):
         """Build the gaston rho east stage in this primitive's typed operation graph."""
         for row in range(GASTON_NROWS):
-            self.add_rotate_component(state[row].id, state[row].input_bit_positions, WORD_SIZE, -GASTON_e[row])
+            self.add_rotate_component(
+                state[row].id, state[row].input_bit_positions, WORD_SIZE, -GASTON_e[row]
+            )
             state[row] = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         return state
@@ -140,7 +140,9 @@ class Gaston(BitGraphPrimitive):
 
         Q_rows = []
         for i in range(GASTON_NROWS):
-            self.add_rotate_component(state[i].id, state[i].input_bit_positions, WORD_SIZE, -GASTON_t[i])
+            self.add_rotate_component(
+                state[i].id, state[i].input_bit_positions, WORD_SIZE, -GASTON_t[i]
+            )
             q = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
             Q_rows.append(q)
 
@@ -173,7 +175,9 @@ class Gaston(BitGraphPrimitive):
     def gaston_rho_west(self, state):
         """Build the gaston rho west stage in this primitive's typed operation graph."""
         for row in range(GASTON_NROWS):
-            self.add_rotate_component(state[row].id, state[row].input_bit_positions, WORD_SIZE, -GASTON_w[row])
+            self.add_rotate_component(
+                state[row].id, state[row].input_bit_positions, WORD_SIZE, -GASTON_w[row]
+            )
             state[row] = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         return state

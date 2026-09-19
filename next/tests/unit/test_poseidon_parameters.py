@@ -1,5 +1,5 @@
-from claasp_next.representations.execution import ScalarEvaluator
 from claasp_next.parameters import poseidon_bn254_width3
+from claasp_next.representations.execution import ScalarEvaluator
 
 
 def test_bn254_width3_parameters_match_pinned_reference_vector():

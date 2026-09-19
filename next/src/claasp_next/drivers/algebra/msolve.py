@@ -1,8 +1,8 @@
 """Command-line msolve input driver."""
 
-from pathlib import Path
 import shutil
 import subprocess
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
@@ -29,12 +29,13 @@ class MsolveDriver:
             start = monotonic()
             completed = subprocess.run(
                 [executable, "-f", str(input_path), "-o", str(output_path)],
-                text=True, capture_output=True, timeout=self.timeout_seconds, check=False,
+                text=True,
+                capture_output=True,
+                timeout=self.timeout_seconds,
+                check=False,
             )
             elapsed = monotonic() - start
             if completed.returncode != 0 or not output_path.exists():
                 raise RuntimeError(completed.stderr.strip() or completed.stdout.strip())
             result_text = output_path.read_text(encoding="utf-8")
-        return AlgebraExecutionResult(
-            completed.stdout, completed.stderr, elapsed, result_text
-        )
+        return AlgebraExecutionResult(completed.stdout, completed.stderr, elapsed, result_text)

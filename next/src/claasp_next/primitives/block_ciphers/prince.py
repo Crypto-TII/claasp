@@ -118,12 +118,16 @@ class Prince(BitGraphPrimitive):
 
             for i in range(16):
                 sbox_layer.append(
-                    self.add_sbox_component([current_state], [[i * 4, i * 4 + 1, i * 4 + 2, i * 4 + 3]], 4, sbox)
+                    self.add_sbox_component(
+                        [current_state], [[i * 4, i * 4 + 1, i * 4 + 2, i * 4 + 3]], 4, sbox
+                    )
                 )
 
             input_ids = [c.id for c in sbox_layer]
             input_bit_positions = [list(range(4)) for i in range(16)]
-            after_m_matrix = self.add_linear_layer_component(input_ids, input_bit_positions, 64, get_m_prime())
+            after_m_matrix = self.add_linear_layer_component(
+                input_ids, input_bit_positions, 64, get_m_prime()
+            )
             after_shift_row = self.add_linear_layer_component(
                 [after_m_matrix.id], [list(range(64))], 64, get_shift_rows_matrix()
             )
@@ -157,21 +161,31 @@ class Prince(BitGraphPrimitive):
 
         sboxes = []
         for i in range(16):
-            sboxes.append(self.add_sbox_component([current_state], [[i * 4, i * 4 + 1, i * 4 + 2, i * 4 + 3]], 4, sbox))
+            sboxes.append(
+                self.add_sbox_component(
+                    [current_state], [[i * 4, i * 4 + 1, i * 4 + 2, i * 4 + 3]], 4, sbox
+                )
+            )
         input_ids = [sbox_layer.id for sbox_layer in sboxes]
         input_bit_positions = [list(range(4)) for i in range(16)]
-        current_state = self.add_linear_layer_component(input_ids, input_bit_positions, 64, get_m_prime())
+        current_state = self.add_linear_layer_component(
+            input_ids, input_bit_positions, 64, get_m_prime()
+        )
 
         sboxes = []
         for i in range(16):
             sboxes.append(
-                self.add_sbox_component([current_state.id], [[i * 4, i * 4 + 1, i * 4 + 2, i * 4 + 3]], 4, inverse_sbox)
+                self.add_sbox_component(
+                    [current_state.id], [[i * 4, i * 4 + 1, i * 4 + 2, i * 4 + 3]], 4, inverse_sbox
+                )
             )
 
         input_ids = [sbox_layer.id for sbox_layer in sboxes]
         input_bit_positions = [list(range(4)) for i in range(16)]
 
-        input_ids, input_bit_positions = self.get_last_rounds(number_of_rounds, input_ids, input_bit_positions)
+        input_ids, input_bit_positions = self.get_last_rounds(
+            number_of_rounds, input_ids, input_bit_positions
+        )
 
         round_constant_11 = self.add_constant_component(64, round_constants[11])
 
@@ -188,25 +202,33 @@ class Prince(BitGraphPrimitive):
     def pre_whitening(self):
         """Build the pre whitening stage in this primitive's typed operation graph."""
         self.add_round()
-        return self.add_xor_component([INPUT_PLAINTEXT, INPUT_KEY], [list(range(64)), list(range(64))], 64).id
+        return self.add_xor_component(
+            [INPUT_PLAINTEXT, INPUT_KEY], [list(range(64)), list(range(64))], 64
+        ).id
 
     def get_k0_prime(self, key_component_id):
         """Return the k0 prime used while authoring this primitive graph."""
         k0_rot = self.add_rotate_component([key_component_id], [list(range(64))], 64, 1).id
         k0_shift = self.add_shift_component([key_component_id], [list(range(64))], 64, 63).id
 
-        k0_prime = self.add_xor_component([k0_rot, k0_shift], [list(range(64)), list(range(64))], 64).id
+        k0_prime = self.add_xor_component(
+            [k0_rot, k0_shift], [list(range(64)), list(range(64))], 64
+        ).id
 
         return k0_prime
 
     def pos_whitening(self, final_xor):
         """Build the pos whitening stage in this primitive's typed operation graph."""
         k0_prime = self.get_k0_prime(INPUT_KEY)
-        return self.add_xor_component([final_xor.id, k0_prime], [list(range(64)), list(range(64))], 64)
+        return self.add_xor_component(
+            [final_xor.id, k0_prime], [list(range(64)), list(range(64))], 64
+        )
 
     def get_last_rounds(self, number_of_rounds, input_ids, input_bit_positions):
         """Return the last rounds used while authoring this primitive graph."""
-        for round_idx in range(number_of_rounds // 2, (number_of_rounds // 2 - 1) + number_of_rounds // 2):
+        for round_idx in range(
+            number_of_rounds // 2, (number_of_rounds // 2 - 1) + number_of_rounds // 2
+        ):
             self.add_round()
             round_constant_0 = self.add_constant_component(64, round_constants[round_idx])
             constant_xor_key1 = self.add_xor_component(
@@ -220,13 +242,18 @@ class Prince(BitGraphPrimitive):
                 [current_state.id], [list(range(64))], 64, get_shift_rows_matrix_inverse()
             )
 
-            current_state = self.add_linear_layer_component([after_shift_row.id], [list(range(64))], 64, get_m_prime())
+            current_state = self.add_linear_layer_component(
+                [after_shift_row.id], [list(range(64))], 64, get_m_prime()
+            )
 
             sbox_layer = []
             for i in range(16):
                 sbox_layer.append(
                     self.add_sbox_component(
-                        [current_state.id], [[i * 4, i * 4 + 1, i * 4 + 2, i * 4 + 3]], 4, inverse_sbox
+                        [current_state.id],
+                        [[i * 4, i * 4 + 1, i * 4 + 2, i * 4 + 3]],
+                        4,
+                        inverse_sbox,
                     )
                 )
 

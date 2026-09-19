@@ -1,9 +1,9 @@
 """Versioned Poseidon parameter sets with explicit provenance."""
 
+import json
 from dataclasses import dataclass
 from functools import lru_cache
 from importlib.resources import files
-import json
 
 from .primitive import Poseidon
 

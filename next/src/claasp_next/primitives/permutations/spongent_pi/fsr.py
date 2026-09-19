@@ -15,4 +15,5 @@ class SpongentPiFSR(SpongentPi):
         ('0xcaed745fb9d13ede', 160)
     """
 
+
 __all__ = ["SpongentPiFSR"]

@@ -1,8 +1,14 @@
 import pytest
 
 from claasp_next.representations.constraints.milp import (
-    ConstraintSense, LinearConstraint, LinearExpression, LinearVariable,
-    LPExporter, MILPModel, ObjectiveSense, VariableKind,
+    ConstraintSense,
+    LinearConstraint,
+    LinearExpression,
+    LinearVariable,
+    LPExporter,
+    MILPModel,
+    ObjectiveSense,
+    VariableKind,
 )
 
 
@@ -10,7 +16,14 @@ def _knapsack_model():
     variables = tuple(LinearVariable(name, VariableKind.BINARY) for name in ("x", "y", "z"))
     return MILPModel(
         variables,
-        (LinearConstraint(LinearExpression.from_terms({"x": 2, "y": 3, "z": 4}), ConstraintSense.LESS_EQUAL, 5, "capacity"),),
+        (
+            LinearConstraint(
+                LinearExpression.from_terms({"x": 2, "y": 3, "z": 4}),
+                ConstraintSense.LESS_EQUAL,
+                5,
+                "capacity",
+            ),
+        ),
         LinearExpression.from_terms({"x": 3, "y": 4, "z": 5}),
         ObjectiveSense.MAXIMIZE,
     )
@@ -26,7 +39,9 @@ def test_model_checks_feasibility_and_objective_independently():
 
 def test_lp_export_is_deterministic_and_declares_domains():
     text = LPExporter().export(_knapsack_model())
-    assert text == """Maximize
+    assert (
+        text
+        == """Maximize
  objective: 3 x + 4 y + 5 z
 Subject To
  capacity: 2 x + 3 y + 4 z <= 5
@@ -37,6 +52,7 @@ Binary
  z
 End
 """
+    )
 
 
 def test_model_rejects_unknown_or_duplicate_variables():

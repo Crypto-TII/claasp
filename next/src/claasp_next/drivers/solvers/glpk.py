@@ -1,16 +1,16 @@
 """Command-line driver for the open-source GLPK optimizer."""
 
-from pathlib import Path
 import shutil
 import subprocess
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
+from claasp_next.drivers.solvers.base import SatResult, SatStatus
+from claasp_next.drivers.solvers.milp_results import MILPResult, MILPStatus
 from claasp_next.representations.constraints.milp.exporter import LPExporter
 from claasp_next.representations.constraints.milp.model import MILPModel
-from claasp_next.drivers.solvers.milp_results import MILPResult, MILPStatus
 from claasp_next.representations.constraints.sat import CNFFormula
-from claasp_next.drivers.solvers.base import SatResult, SatStatus
 
 
 class GLPKSolver:
@@ -29,14 +29,24 @@ class GLPKSolver:
 
         if isinstance(model, CNFFormula):
             from claasp_next.representations.constraints.milp.boolean import cnf_to_milp
+
             solved = self.solve(cnf_to_milp(model))
             if solved.status is MILPStatus.UNKNOWN:
                 raise RuntimeError("GLPK returned unknown; Boolean infeasibility is not proved")
-            assignment = None if solved.assignment is None else {name: round(value) for name, value in solved.assignment.items()}
+            assignment = (
+                None
+                if solved.assignment is None
+                else {name: round(value) for name, value in solved.assignment.items()}
+            )
             if assignment is not None and not model.is_satisfied(assignment):
                 raise RuntimeError("GLPK binary witness violates the original Boolean clauses")
-            return SatResult(SatStatus.SATISFIABLE if solved.is_feasible else SatStatus.UNSATISFIABLE,
-                             assignment, solved.runtime_seconds, solved.stdout, solved.stderr)
+            return SatResult(
+                SatStatus.SATISFIABLE if solved.is_feasible else SatStatus.UNSATISFIABLE,
+                assignment,
+                solved.runtime_seconds,
+                solved.stdout,
+                solved.stderr,
+            )
         if not isinstance(model, MILPModel):
             raise TypeError("model must be an MILPModel")
         executable = shutil.which(self.executable)
@@ -48,8 +58,13 @@ class GLPKSolver:
             mapping_path = Path(directory) / "problem.glp"
             problem_path.write_text(LPExporter().export(model), encoding="ascii")
             command = [
-                executable, "--lp", str(problem_path), "--write", str(result_path),
-                "--wglp", str(mapping_path),
+                executable,
+                "--lp",
+                str(problem_path),
+                "--write",
+                str(result_path),
+                "--wglp",
+                str(mapping_path),
             ]
             if self.timeout_seconds is not None:
                 command.extend(("--tmlim", str(max(1, int(self.timeout_seconds)))))
@@ -64,7 +79,8 @@ class GLPKSolver:
                     f"{completed.stderr.strip() or completed.stdout.strip()}"
                 )
             status, assignment, objective = self._parse_solution(
-                result_path.read_text(encoding="ascii"), model,
+                result_path.read_text(encoding="ascii"),
+                model,
                 self._parse_column_names(mapping_path.read_text(encoding="ascii")),
             )
         if assignment is not None:
@@ -73,7 +89,9 @@ class GLPKSolver:
             recomputed = model.objective_value(assignment)
             if objective is None or abs(recomputed - objective) > 1e-6:
                 raise RuntimeError("GLPK objective disagrees with the returned assignment")
-        return MILPResult(status, assignment, objective, elapsed, completed.stdout, completed.stderr)
+        return MILPResult(
+            status, assignment, objective, elapsed, completed.stdout, completed.stderr
+        )
 
     @staticmethod
     def _parse_solution(text: str, model: MILPModel, column_names: dict[int, str]):

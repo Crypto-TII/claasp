@@ -1,6 +1,13 @@
 """Exact finite binary relations without convex-hull or logic-minimizer tools."""
 
-from .model import ConstraintSense, LinearConstraint, LinearExpression, LinearVariable, MILPModel, VariableKind
+from .model import (
+    ConstraintSense,
+    LinearConstraint,
+    LinearExpression,
+    LinearVariable,
+    MILPModel,
+    VariableKind,
+)
 
 
 class FiniteBinaryRelationMILPModel:
@@ -28,8 +35,10 @@ class FiniteBinaryRelationMILPModel:
             raise ValueError("relation columns use a reserved auxiliary name")
         for name in self.columns:
             LinearVariable(name, VariableKind.BINARY)
-        if (len(set(self.rows)) != len(self.rows) or any(len(row) != len(self.columns)
-                or any(value not in (0, 1) for value in row) for row in self.rows)):
+        if len(set(self.rows)) != len(self.rows) or any(
+            len(row) != len(self.columns) or any(value not in (0, 1) for value in row)
+            for row in self.rows
+        ):
             raise ValueError("relation rows must be unique binary tuples matching the columns")
         self.row_costs = tuple(0 for _ in self.rows) if row_costs is None else tuple(row_costs)
         if len(self.row_costs) != len(self.rows):
@@ -39,22 +48,51 @@ class FiniteBinaryRelationMILPModel:
     def milp_model(self):
         """Compute the milp model for this public typed contract."""
 
-        variables = tuple(LinearVariable(name, VariableKind.BINARY) for name in self.columns + self.selectors)
+        variables = tuple(
+            LinearVariable(name, VariableKind.BINARY) for name in self.columns + self.selectors
+        )
         constraints = []
         if not self.rows:
             for value in (0, 1):
-                constraints.append(LinearConstraint(LinearExpression.from_terms({self.columns[0]: 1}),
-                    ConstraintSense.EQUAL, value, f"empty_relation_{value}"))
+                constraints.append(
+                    LinearConstraint(
+                        LinearExpression.from_terms({self.columns[0]: 1}),
+                        ConstraintSense.EQUAL,
+                        value,
+                        f"empty_relation_{value}",
+                    )
+                )
         else:
-            constraints.append(LinearConstraint(LinearExpression.from_terms(dict.fromkeys(self.selectors, 1)),
-                ConstraintSense.EQUAL, 1, "select_one_relation_row"))
+            constraints.append(
+                LinearConstraint(
+                    LinearExpression.from_terms(dict.fromkeys(self.selectors, 1)),
+                    ConstraintSense.EQUAL,
+                    1,
+                    "select_one_relation_row",
+                )
+            )
             for position, column in enumerate(self.columns):
                 terms = {column: 1}
-                terms.update({selector: -row[position] for selector, row in zip(self.selectors, self.rows) if row[position]})
-                constraints.append(LinearConstraint(LinearExpression.from_terms(terms),
-                    ConstraintSense.EQUAL, 0, f"relation_column_{position}"))
-        return MILPModel(variables, tuple(constraints),
-            LinearExpression.from_terms(dict(zip(self.selectors, self.row_costs))))
+                terms.update(
+                    {
+                        selector: -row[position]
+                        for selector, row in zip(self.selectors, self.rows)
+                        if row[position]
+                    }
+                )
+                constraints.append(
+                    LinearConstraint(
+                        LinearExpression.from_terms(terms),
+                        ConstraintSense.EQUAL,
+                        0,
+                        f"relation_column_{position}",
+                    )
+                )
+        return MILPModel(
+            variables,
+            tuple(constraints),
+            LinearExpression.from_terms(dict(zip(self.selectors, self.row_costs))),
+        )
 
     def witness(self, row):
         """Compute the witness for this public typed contract."""
@@ -63,4 +101,6 @@ class FiniteBinaryRelationMILPModel:
         if row not in self.rows:
             raise ValueError("row is not accepted by the relation")
         index = self.rows.index(row)
-        return dict(zip(self.columns, row)) | {name: int(i == index) for i, name in enumerate(self.selectors)}
+        return dict(zip(self.columns, row)) | {
+            name: int(i == index) for i, name in enumerate(self.selectors)
+        }

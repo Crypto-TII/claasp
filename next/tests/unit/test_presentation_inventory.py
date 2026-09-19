@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 
-
 NEXT_ROOT = Path(__file__).resolve().parents[2]
 REPOSITORY_ROOT = NEXT_ROOT.parent
 

@@ -56,8 +56,12 @@ class SerializationError(ValueError):
         (<SerializationFailure.INVALID_JSON: 'invalid_json'>, '$.value', 'invalid_json at $.value: bad input')
     """
 
-    def __init__(self, reason: SerializationFailure | str, message: str, *, path: str = "$") -> None:
-        reason = reason if isinstance(reason, SerializationFailure) else SerializationFailure(reason)
+    def __init__(
+        self, reason: SerializationFailure | str, message: str, *, path: str = "$"
+    ) -> None:
+        reason = (
+            reason if isinstance(reason, SerializationFailure) else SerializationFailure(reason)
+        )
         if not isinstance(path, str) or not path:
             raise ValueError("serialization diagnostic path must be non-empty")
         if not isinstance(message, str) or not message:

@@ -103,8 +103,7 @@ class FeedbackRegisterParameters:
         if not isinstance(domain, (Bit, BinaryExtensionField)):
             raise TypeError("feedback-register domain must be Bit or BinaryExtensionField")
         if not frozen_registers or any(
-            not isinstance(register, FeedbackRegisterSpec)
-            for register in frozen_registers
+            not isinstance(register, FeedbackRegisterSpec) for register in frozen_registers
         ):
             raise TypeError("registers must contain FeedbackRegisterSpec values")
         if not isinstance(clocks, int) or isinstance(clocks, bool) or clocks <= 0:
@@ -136,14 +135,23 @@ class FeedbackRegisterParameters:
             4
         """
 
-        if not isinstance(register_size, int) or isinstance(register_size, bool) or register_size <= 0:
+        if (
+            not isinstance(register_size, int)
+            or isinstance(register_size, bool)
+            or register_size <= 0
+        ):
             raise ValueError("register_size must be a positive integer")
         if not isinstance(word_width, int) or isinstance(word_width, bool) or word_width <= 0:
             raise ValueError("word_width must be a positive integer")
         if register_size % word_width:
             raise ValueError("register_size must be divisible by word_width")
-        domain = Bit() if word_width == 1 else BinaryExtensionField(
-            word_width, first_irreducible_polynomial(word_width),
+        domain = (
+            Bit()
+            if word_width == 1
+            else BinaryExtensionField(
+                word_width,
+                first_irreducible_polynomial(word_width),
+            )
         )
         feedback = [FeedbackTerm(tap) for tap in taps]
         return cls(
@@ -151,6 +159,7 @@ class FeedbackRegisterParameters:
             [FeedbackRegisterSpec(register_size // word_width, feedback)],
             clocks,
         )
+
 
 @dataclass(frozen=True, slots=True, init=False)
 class FeedbackRegister(Component):

@@ -1,10 +1,11 @@
 import pytest
 
-from claasp_next.primitives import Present, Speck
 from claasp_next.components import BitVectorSBox
+from claasp_next.primitives import Present, Speck
 from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.semantics.cryptanalysis import (
-    ComponentSemanticsBinding, PropagationProblem,
+    ComponentSemanticsBinding,
+    PropagationProblem,
 )
 
 
@@ -12,8 +13,11 @@ def test_default_registry_resolves_exact_graph_derived_sbox_semantics():
     primitive = Present(number_of_rounds=1)
     component = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
     problem = PropagationProblem(
-        primitive, XOR_DIFFERENTIAL, component_ids=(component.component_id,),
-        maximum_weight=4, provenance=("unit-test",),
+        primitive,
+        XOR_DIFFERENTIAL,
+        component_ids=(component.component_id,),
+        maximum_weight=4,
+        provenance=("unit-test",),
     )
 
     transition = problem.provider_for(component).transition((1,), 3)
@@ -41,10 +45,14 @@ def test_per_component_binding_overrides_global_semantics_immutably():
         def transition(self, input_patterns, output_pattern):
             return base.provider(components[0], XOR_DIFFERENTIAL).transition((0,), 1)
 
-    overridden = base.register(ComponentSemanticsBinding(
-        XOR_DIFFERENTIAL, BitVectorSBox, lambda component: ImpossibleProvider(),
-        component_id=components[0].component_id,
-    ))
+    overridden = base.register(
+        ComponentSemanticsBinding(
+            XOR_DIFFERENTIAL,
+            BitVectorSBox,
+            lambda component: ImpossibleProvider(),
+            component_id=components[0].component_id,
+        )
+    )
     problem = PropagationProblem(primitive, XOR_DIFFERENTIAL, registry=overridden)
 
     assert not problem.provider_for(components[0]).transition((1,), 3).is_possible

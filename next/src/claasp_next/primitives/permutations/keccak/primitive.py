@@ -17,11 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, simplify_inputs
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import simplify_inputs
 
 X_NUM = 5
 Y_NUM = 5
@@ -89,8 +86,14 @@ class Keccak(BitGraphPrimitive):
 
     def __init__(self, number_of_rounds=24, word_size=64):
         maximum_number_of_rounds = 12 + 2 * (int(word_size).bit_length() - 1)
-        if word_size <= 0 or word_size & (word_size - 1) or number_of_rounds > maximum_number_of_rounds:
-            raise ValueError('word_size must be a power of two and number_of_rounds must not exceed Keccak-f rounds')
+        if (
+            word_size <= 0
+            or word_size & (word_size - 1)
+            or number_of_rounds > maximum_number_of_rounds
+        ):
+            raise ValueError(
+                "word_size must be a power of two and number_of_rounds must not exceed Keccak-f rounds"
+            )
         round_offset = maximum_number_of_rounds - number_of_rounds
         self.word_bit_size = word_size
         self.plane_size = Y_NUM * self.word_bit_size
@@ -139,7 +142,9 @@ class Keccak(BitGraphPrimitive):
                 inputs_id = inputs_id + states[i][j].id
                 inputs_pos = inputs_pos + states[i][j].input_bit_positions
         inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-        self.add_intermediate_output_component(inputs_id, inputs_pos, self.state_bit_size, "round_output_linear")
+        self.add_intermediate_output_component(
+            inputs_id, inputs_pos, self.state_bit_size, "round_output_linear"
+        )
 
     def add_round_output_nonlinear(self, states):
         """Add the round output nonlinear stage to this primitive's typed operation graph."""
@@ -150,7 +155,9 @@ class Keccak(BitGraphPrimitive):
                 inputs_id = inputs_id + states[i][j].id
                 inputs_pos = inputs_pos + states[i][j].input_bit_positions
         inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-        self.add_intermediate_output_component(inputs_id, inputs_pos, self.state_bit_size, "round_output_nonlinear")
+        self.add_intermediate_output_component(
+            inputs_id, inputs_pos, self.state_bit_size, "round_output_nonlinear"
+        )
 
     def chi_definition(self, b, states):
         # A[x,y] = B[x,y] xor ((not B[x+1,y]) and B[x+2,y]), for (x,y) in (range(5), range(5))
@@ -158,19 +165,27 @@ class Keccak(BitGraphPrimitive):
         for i in range(X_NUM):
             for j in range(Y_NUM):
                 self.add_not_component(
-                    b[(i + 1) % X_NUM][j].id, b[(i + 1) % X_NUM][j].input_bit_positions, self.word_bit_size
+                    b[(i + 1) % X_NUM][j].id,
+                    b[(i + 1) % X_NUM][j].input_bit_positions,
+                    self.word_bit_size,
                 )
-                b_not = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
+                b_not = BitState(
+                    [self.get_current_component_id()], [list(range(self.word_bit_size))]
+                )
 
                 inputs_id = b[(i + 2) % X_NUM][j].id + b_not.id
                 inputs_pos = b[(i + 2) % X_NUM][j].input_bit_positions + b_not.input_bit_positions
                 self.add_and_component(inputs_id, inputs_pos, self.word_bit_size)
-                b_and = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
+                b_and = BitState(
+                    [self.get_current_component_id()], [list(range(self.word_bit_size))]
+                )
 
                 inputs_id = b[i][j].id + b_and.id
                 inputs_pos = b[i][j].input_bit_positions + b_and.input_bit_positions
                 self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
-                states[i][j] = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
+                states[i][j] = BitState(
+                    [self.get_current_component_id()], [list(range(self.word_bit_size))]
+                )
         self.add_round_output_nonlinear(states)
 
         return states
@@ -191,7 +206,9 @@ class Keccak(BitGraphPrimitive):
         inputs_id = c.id + states[0][0].id
         inputs_pos = c.input_bit_positions + states[0][0].input_bit_positions
         self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
-        states[0][0] = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
+        states[0][0] = BitState(
+            [self.get_current_component_id()], [list(range(self.word_bit_size))]
+        )
 
         return states
 
@@ -202,7 +219,10 @@ class Keccak(BitGraphPrimitive):
         for i in range(X_NUM):
             for j in range(Y_NUM):
                 self.add_rotate_component(
-                    states[i][j].id, states[i][j].input_bit_positions, self.word_bit_size, ROT_TABLE[i][j]
+                    states[i][j].id,
+                    states[i][j].input_bit_positions,
+                    self.word_bit_size,
+                    ROT_TABLE[i][j],
                 )
                 b[j][(2 * i + 3 * j) % Y_NUM] = BitState(
                     [self.get_current_component_id()], [list(range(self.word_bit_size))]
@@ -226,7 +246,12 @@ class Keccak(BitGraphPrimitive):
             for j in range(Y_NUM):
                 states[i][j] = BitState(
                     [INPUT_PLAINTEXT],
-                    [[k + j * self.word_bit_size + i * self.plane_size for k in range(self.word_bit_size)]],
+                    [
+                        [
+                            k + j * self.word_bit_size + i * self.plane_size
+                            for k in range(self.word_bit_size)
+                        ]
+                    ],
                 )
 
         return states
@@ -249,7 +274,10 @@ class Keccak(BitGraphPrimitive):
         d = []
         for i in range(X_NUM):
             self.add_rotate_component(
-                c[(i + 1) % X_NUM].id, c[(i + 1) % X_NUM].input_bit_positions, self.word_bit_size, THETA_ROT
+                c[(i + 1) % X_NUM].id,
+                c[(i + 1) % X_NUM].input_bit_positions,
+                self.word_bit_size,
+                THETA_ROT,
             )
             inputs_id = c[(i - 1) % X_NUM].id + [self.get_current_component_id()]
             inputs_pos = c[(i - 1) % X_NUM].input_bit_positions + [list(range(self.word_bit_size))]
@@ -261,6 +289,8 @@ class Keccak(BitGraphPrimitive):
                 inputs_id = states[i][j].id + d[i].id
                 inputs_pos = states[i][j].input_bit_positions + d[i].input_bit_positions
                 self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
-                states[i][j] = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
+                states[i][j] = BitState(
+                    [self.get_current_component_id()], [list(range(self.word_bit_size))]
+                )
 
         return states

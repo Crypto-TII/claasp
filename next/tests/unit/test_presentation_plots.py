@@ -9,22 +9,37 @@ matplotlib.use("Agg")
 from matplotlib import pyplot
 
 from claasp_next.analysis import (
-    ComponentProperty, ComponentPropertyResult, PropertyClaim, PropertyDomain, PropertyRequest,
+    ComponentProperty,
+    ComponentPropertyResult,
+    PropertyClaim,
+    PropertyDomain,
+    PropertyRequest,
 )
 from claasp_next.analysis.avalanche import AvalancheResult
-from claasp_next.analysis.component_properties import ComponentAnalysisProvenance
-from claasp_next.analysis.component_properties import DiagnosticCode, PropertyDiagnostic
+from claasp_next.analysis.component_properties import (
+    ComponentAnalysisProvenance,
+    DiagnosticCode,
+    PropertyDiagnostic,
+)
 from claasp_next.analysis.statistical_results import (
-    DieharderObservation, DieharderReport, NISTFinalReport, NISTSummaryRow, StatisticalAssessment,
+    DieharderObservation,
+    DieharderReport,
+    NISTFinalReport,
+    NISTSummaryRow,
+    StatisticalAssessment,
 )
 from claasp_next.drivers.renderers import (
-    MatplotlibPresentationDriver, NormalizationDirection, RadarScale,
+    MatplotlibPresentationDriver,
+    NormalizationDirection,
+    RadarScale,
 )
 
 
 def property_result(prop, value, claim=PropertyClaim.EXACT):
     return ComponentPropertyResult(
-        PropertyRequest(prop, PropertyDomain.LOOKUP_TABLE), claim, value,
+        PropertyRequest(prop, PropertyDomain.LOOKUP_TABLE),
+        claim,
+        value,
         claim is PropertyClaim.EXACT,
         ComponentAnalysisProvenance("AES S-box", "fixed lookup evidence"),
     )
@@ -35,18 +50,43 @@ def test_component_radar_has_explicit_scales_evidence_and_omits_incomparable():
         property_result(ComponentProperty.DIFFERENTIAL_UNIFORMITY, 4),
         property_result(ComponentProperty.NONLINEARITY, 112),
         property_result(ComponentProperty.ALGEBRAIC_DEGREE, 7),
-        property_result(ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER, 5, PropertyClaim.PROVED_UPPER_BOUND),
+        property_result(
+            ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER, 5, PropertyClaim.PROVED_UPPER_BOUND
+        ),
         ComponentPropertyResult(
             PropertyRequest(ComponentProperty.BOOMERANG_UNIFORMITY, PropertyDomain.LOOKUP_TABLE),
-            PropertyClaim.UNAVAILABLE, None, False,
+            PropertyClaim.UNAVAILABLE,
+            None,
+            False,
             ComponentAnalysisProvenance("rectangular lookup", "applicability check"),
             PropertyDiagnostic(DiagnosticCode.INAPPLICABLE_DOMAIN, "requires a square bijection"),
         ),
     )
     scales = (
-        RadarScale("differential_uniformity", PropertyDomain.LOOKUP_TABLE, 2, 16, NormalizationDirection.LOWER_IS_BETTER, "Differential uniformity"),
-        RadarScale("nonlinearity", PropertyDomain.LOOKUP_TABLE, 0, 120, NormalizationDirection.HIGHER_IS_BETTER, "Nonlinearity"),
-        RadarScale("algebraic_degree", PropertyDomain.LOOKUP_TABLE, 1, 8, NormalizationDirection.HIGHER_IS_BETTER, "Algebraic degree"),
+        RadarScale(
+            "differential_uniformity",
+            PropertyDomain.LOOKUP_TABLE,
+            2,
+            16,
+            NormalizationDirection.LOWER_IS_BETTER,
+            "Differential uniformity",
+        ),
+        RadarScale(
+            "nonlinearity",
+            PropertyDomain.LOOKUP_TABLE,
+            0,
+            120,
+            NormalizationDirection.HIGHER_IS_BETTER,
+            "Nonlinearity",
+        ),
+        RadarScale(
+            "algebraic_degree",
+            PropertyDomain.LOOKUP_TABLE,
+            1,
+            8,
+            NormalizationDirection.HIGHER_IS_BETTER,
+            "Algebraic degree",
+        ),
     )
     artifact = MatplotlibPresentationDriver().component_radar("AES S-box", results, scales)
     axis = artifact.figure.axes[0]
@@ -54,7 +94,8 @@ def test_component_radar_has_explicit_scales_evidence_and_omits_incomparable():
     assert tuple(axis.lines[0].get_ydata()) == artifact.series[0][1] + artifact.series[0][1][:1]
     assert any("exact" in label.get_text() for label in axis.get_xticklabels())
     assert artifact.omitted == (
-        "differential_branch_number:no_normalization", "boomerang_uniformity:unavailable"
+        "differential_branch_number:no_normalization",
+        "boomerang_uniformity:unavailable",
     )
     pyplot.close(artifact.figure)
 
@@ -62,14 +103,50 @@ def test_component_radar_has_explicit_scales_evidence_and_omits_incomparable():
 def test_mixcolumns_radar_can_show_a_bound_without_claiming_exactness():
     provenance = ComponentAnalysisProvenance("AES MixColumns", "fixed field evidence")
     results = (
-        ComponentPropertyResult(PropertyRequest(ComponentProperty.RANK, PropertyDomain.WORD_LINEAR), PropertyClaim.EXACT, 4, True, provenance),
-        ComponentPropertyResult(PropertyRequest(ComponentProperty.MDS, PropertyDomain.WORD_LINEAR), PropertyClaim.EXACT, True, True, provenance),
-        ComponentPropertyResult(PropertyRequest(ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER, PropertyDomain.WORD_LINEAR), PropertyClaim.PROVED_UPPER_BOUND, 5, False, provenance),
+        ComponentPropertyResult(
+            PropertyRequest(ComponentProperty.RANK, PropertyDomain.WORD_LINEAR),
+            PropertyClaim.EXACT,
+            4,
+            True,
+            provenance,
+        ),
+        ComponentPropertyResult(
+            PropertyRequest(ComponentProperty.MDS, PropertyDomain.WORD_LINEAR),
+            PropertyClaim.EXACT,
+            True,
+            True,
+            provenance,
+        ),
+        ComponentPropertyResult(
+            PropertyRequest(
+                ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER, PropertyDomain.WORD_LINEAR
+            ),
+            PropertyClaim.PROVED_UPPER_BOUND,
+            5,
+            False,
+            provenance,
+        ),
     )
     scales = (
-        RadarScale("rank", PropertyDomain.WORD_LINEAR, 0, 4, NormalizationDirection.HIGHER_IS_BETTER, "Rank"),
-        RadarScale("mds", PropertyDomain.WORD_LINEAR, 0, 1, NormalizationDirection.HIGHER_IS_BETTER, "MDS"),
-        RadarScale("differential_branch_number", PropertyDomain.WORD_LINEAR, 1, 5, NormalizationDirection.HIGHER_IS_BETTER, "Differential branch"),
+        RadarScale(
+            "rank",
+            PropertyDomain.WORD_LINEAR,
+            0,
+            4,
+            NormalizationDirection.HIGHER_IS_BETTER,
+            "Rank",
+        ),
+        RadarScale(
+            "mds", PropertyDomain.WORD_LINEAR, 0, 1, NormalizationDirection.HIGHER_IS_BETTER, "MDS"
+        ),
+        RadarScale(
+            "differential_branch_number",
+            PropertyDomain.WORD_LINEAR,
+            1,
+            5,
+            NormalizationDirection.HIGHER_IS_BETTER,
+            "Differential branch",
+        ),
     )
     artifact = MatplotlibPresentationDriver().component_radar("AES MixColumns", results, scales)
     assert artifact.series[0][1] == (1.0, 1.0, 1.0)
@@ -88,20 +165,24 @@ def test_avalanche_heatmap_structure_and_deterministic_series():
 
 
 def test_statistical_figures_preserve_weak_and_unavailable_cases():
-    dieharder = DieharderReport((
-        DieharderObservation(1, "a", 0, 1, 1, 0.5, StatisticalAssessment.PASSED),
-        DieharderObservation(2, "b", 0, 1, 1, 0.2, StatisticalAssessment.WEAK),
-        DieharderObservation(3, "c", 0, 1, 1, 0.0, StatisticalAssessment.FAILED),
-    ))
+    dieharder = DieharderReport(
+        (
+            DieharderObservation(1, "a", 0, 1, 1, 0.5, StatisticalAssessment.PASSED),
+            DieharderObservation(2, "b", 0, 1, 1, 0.2, StatisticalAssessment.WEAK),
+            DieharderObservation(3, "c", 0, 1, 1, 0.0, StatisticalAssessment.FAILED),
+        )
+    )
     driver = MatplotlibPresentationDriver()
     dieharder_artifact = driver.dieharder_assessments(dieharder)
     assert dieharder_artifact.series[0][1] == (1.0, 0.0, -1.0)
     pyplot.close(dieharder_artifact.figure)
 
-    nist = NISTFinalReport((
-        NISTSummaryRow("Frequency", "frequency", (1,) * 10, 0.5, 9, 10),
-        NISTSummaryRow("Excursion", "excursion", (0,) * 10, None, 0, 0),
-    ))
+    nist = NISTFinalReport(
+        (
+            NISTSummaryRow("Frequency", "frequency", (1,) * 10, 0.5, 9, 10),
+            NISTSummaryRow("Excursion", "excursion", (0,) * 10, None, 0, 0),
+        )
+    )
     nist_artifact = driver.nist_proportions(nist)
     assert nist_artifact.series[0][1] == (0.9,)
     assert nist_artifact.omitted == ("Excursion",)

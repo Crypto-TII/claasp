@@ -19,7 +19,7 @@ class Aradi(Primitive):
 
     def __init__(self, number_of_rounds=16):
         super().__init__("aradi", {"plaintext": word_type(16, 8), "key": word_type(32, 8)})
-        state = [self.input("plaintext")[2 * index:2 * index + 2] for index in range(4)]
+        state = [self.input("plaintext")[2 * index : 2 * index + 2] for index in range(4)]
         key = [select(self.input("key"), 7 - index) for index in range(8)]
         a_values, b_values, c_values = (11, 10, 9, 8), (8, 9, 4, 9), (14, 11, 14, 7)
 
@@ -28,8 +28,18 @@ class Aradi(Primitive):
             index = round_number % 4
             return concatenate(
                 self,
-                xor(self, left, rotate(self, left, -a_values[index]), rotate(self, right, -c_values[index])),
-                xor(self, right, rotate(self, right, -a_values[index]), rotate(self, left, -b_values[index])),
+                xor(
+                    self,
+                    left,
+                    rotate(self, left, -a_values[index]),
+                    rotate(self, right, -c_values[index]),
+                ),
+                xor(
+                    self,
+                    right,
+                    rotate(self, right, -a_values[index]),
+                    rotate(self, left, -b_values[index]),
+                ),
             )
 
         def m_function(x, y, first, second):
@@ -53,8 +63,11 @@ class Aradi(Primitive):
             k5, k4 = m_function(key[5], key[4], 1, 3)
             k7, k6 = m_function(key[7], key[6], 9, 28)
             k7 = xor(self, k7, constant(self, 32, round_number))
-            key = ([k0, k2, k1, k3, k4, k6, k5, k7] if round_number % 2 == 0
-                   else [k0, k4, k2, k6, k1, k5, k3, k7])
+            key = (
+                [k0, k2, k1, k3, k4, k6, k5, k7]
+                if round_number % 2 == 0
+                else [k0, k4, k2, k6, k1, k5, k3, k7]
+            )
         final_key = [split_word(self, key[index], 16) for index in range(4)]
         state = [xor(self, value, final_key[index]) for index, value in enumerate(state)]
         self.set_output(concatenate(self, *state))

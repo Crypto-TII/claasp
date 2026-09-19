@@ -16,8 +16,7 @@
 # ****************************************************************************
 
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 SBOX = [0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2]
@@ -77,7 +76,9 @@ class Led(BitGraphPrimitive):
             range_1 = list(range(self.block_bit_size))
         elif key_bit_size == 5 * self.block_bit_size // 4:
             range_0 = list(range(self.block_bit_size))
-            range_1 = list(range(self.block_bit_size, self.key_bit_size))  + list(range(3 * self.block_bit_size // 4))
+            range_1 = list(range(self.block_bit_size, self.key_bit_size)) + list(
+                range(3 * self.block_bit_size // 4)
+            )
         elif key_bit_size == 2 * self.block_bit_size:
             range_0 = list(range(self.block_bit_size))
             range_1 = list(range(self.block_bit_size, self.key_bit_size))
@@ -98,10 +99,14 @@ class Led(BitGraphPrimitive):
             state = self.add_round_key(state, key[key_index])
             key_index = (key_index + 1) % 2
             if step_number != self.number_of_steps - 1:
-                self.add_round_output_component(state.id, state.input_bit_positions, self.block_bit_size)
+                self.add_round_output_component(
+                    state.id, state.input_bit_positions, self.block_bit_size
+                )
                 self.add_round()
             else:
-                self.add_primitive_output_component(state.id, state.input_bit_positions, self.block_bit_size)
+                self.add_primitive_output_component(
+                    state.id, state.input_bit_positions, self.block_bit_size
+                )
 
     def get_round_constant(self, round_number):
         """Return the round constant used while authoring this primitive graph."""
@@ -142,7 +147,9 @@ class Led(BitGraphPrimitive):
         """Build the sub cells stage in this primitive's typed operation graph."""
         sbox_out_ids = []
         for i in range(16):
-            id_sbox = self.add_sbox_component(state.id, [state.input_bit_positions[0][i * 4 : (i + 1) * 4]], 4, SBOX).id
+            id_sbox = self.add_sbox_component(
+                state.id, [state.input_bit_positions[0][i * 4 : (i + 1) * 4]], 4, SBOX
+            ).id
             sbox_out_ids.append(id_sbox)
         return BitState(sbox_out_ids, [list(range(4))] * 16)
 
@@ -181,7 +188,9 @@ class Led(BitGraphPrimitive):
 
     def add_round_key(self, state, key):
         xor_id = self.add_xor_component(
-            [*state.id, *key.id], [*state.input_bit_positions, *key.input_bit_positions], self.block_bit_size
+            [*state.id, *key.id],
+            [*state.input_bit_positions, *key.input_bit_positions],
+            self.block_bit_size,
         ).id
 
         return BitState([xor_id], [list(range(self.block_bit_size))])

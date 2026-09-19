@@ -16,7 +16,9 @@ class BitwiseAnd(Component):
         2
     """
 
-    def __init__(self, component_inputs: Iterable[Selection], component_id: str | None = None) -> None:
+    def __init__(
+        self, component_inputs: Iterable[Selection], component_id: str | None = None
+    ) -> None:
         inputs = tuple(component_inputs)
         if len(inputs) < 2:
             raise ValueError("word AND requires at least two inputs")

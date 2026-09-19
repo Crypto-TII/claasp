@@ -8,11 +8,15 @@ from claasp_next import Primitive, ValueType, Word
 from claasp_next.components import BitwiseAnd, Xor
 from claasp_next.drivers.solvers import SatResult, SatStatus
 from claasp_next.representations.constraints.smt import WordDifferentialSMTModel
-from claasp_next.representations.constraints.smt.word_differential import WordDifferentialEnumeration
+from claasp_next.representations.constraints.smt.word_differential import (
+    WordDifferentialEnumeration,
+)
 
 
 def _primitive(component):
-    primitive = Primitive("boolean_word", {"left": ValueType(Word(2), (1,)), "key": ValueType(Word(2), (1,))})
+    primitive = Primitive(
+        "boolean_word", {"left": ValueType(Word(2), (1,)), "key": ValueType(Word(2), (1,))}
+    )
     primitive.add_round()
     output = primitive.add_component(component((primitive.input("left"), primitive.input("key"))))
     primitive.set_output(output)
@@ -70,10 +74,17 @@ def test_incomplete_differential_enumeration_is_not_a_count_proof():
         result.cluster_probability()
 
 
-@pytest.mark.parametrize("options", [dict(fixed_weight=-1), dict(maximum_weight=True),
-                                    dict(fixed_weight=1, maximum_weight=2),
-                                    dict(nonzero_input="missing"), dict(output_difference=4),
-                                    dict(fixed_input_differences={"key": 4})])
+@pytest.mark.parametrize(
+    "options",
+    [
+        dict(fixed_weight=-1),
+        dict(maximum_weight=True),
+        dict(fixed_weight=1, maximum_weight=2),
+        dict(nonzero_input="missing"),
+        dict(output_difference=4),
+        dict(fixed_input_differences={"key": 4}),
+    ],
+)
 def test_invalid_differential_model_requests(options):
     with pytest.raises(ValueError):
         WordDifferentialSMTModel(_primitive(Xor), **options)

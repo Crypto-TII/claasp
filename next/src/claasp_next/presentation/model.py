@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 from claasp_next.presentation.contracts import (
-    Citation, PresentationDiagnostic, PresentationEvidence, PresentationProvenance,
+    Citation,
+    PresentationDiagnostic,
+    PresentationEvidence,
+    PresentationProvenance,
 )
 from claasp_next.presentation.formatting import FormatSpec, format_value
 
@@ -59,7 +62,7 @@ class TableCell:
     """
 
     value: object | None = None
-    format: FormatSpec = FormatSpec()
+    format: FormatSpec = field(default_factory=FormatSpec)
     evidence: PresentationEvidence | None = None
     diagnostic: PresentationDiagnostic | None = None
 
@@ -97,10 +100,14 @@ class TableRow:
     cells: tuple[TableCell, ...]
 
     @classmethod
-    def of(cls, *values: object) -> "TableRow":
+    def of(cls, *values: object) -> TableRow:
         """Construct a text-oriented row, preserving caller order."""
 
-        return cls(tuple(value if isinstance(value, TableCell) else TableCell(str(value)) for value in values))
+        return cls(
+            tuple(
+                value if isinstance(value, TableCell) else TableCell(str(value)) for value in values
+            )
+        )
 
 
 @dataclass(frozen=True, slots=True)

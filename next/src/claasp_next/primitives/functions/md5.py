@@ -25,8 +25,7 @@ The input is named *key* because the hash function MD5 can be seen like a
 symmetric primitive whose plaintext is the initial state and key is the input.
 """
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import HASH_FUNCTION, INPUT_MESSAGE
 
 PARAMETERS_CONFIGURATION_LIST = [{"word_size": 32, "number_of_rounds": 64}]
@@ -66,7 +65,12 @@ class MD5(BitGraphPrimitive):
             primitive_output_bit_size=64,
         )
 
-        k = (lambda i: i, lambda i: (5 * i + 1) % 16, lambda i: (3 * i + 5) % 16, lambda i: 7 * i % 16)
+        k = (
+            lambda i: i,
+            lambda i: (5 * i + 1) % 16,
+            lambda i: (3 * i + 5) % 16,
+            lambda i: 7 * i % 16,
+        )
 
         s = ((7, 12, 17, 22), (5, 9, 14, 20), (4, 11, 16, 23), (6, 10, 15, 21))
 
@@ -91,7 +95,10 @@ class MD5(BitGraphPrimitive):
             swap_little_big_positions.extend(tuple(range(i, i + unit_len)))
 
         X = [
-            BitState(INPUT_MESSAGE, [list(map(lambda p: p + i * self.word_size, swap_little_big_positions))])
+            BitState(
+                INPUT_MESSAGE,
+                [list(map(lambda p: p + i * self.word_size, swap_little_big_positions))],
+            )
             for i in range(14)
         ]
         X += [
@@ -117,11 +124,15 @@ class MD5(BitGraphPrimitive):
             self.add_round_output_component_in_md5(A, B, C, D)
             self.add_round()
             index = i // 16
-            A, B, C, D = self.md5_step(A, B, C, D, k[index](i), s[index][i % 4], i, aux[index], X, T)
+            A, B, C, D = self.md5_step(
+                A, B, C, D, k[index](i), s[index][i % 4], i, aux[index], X, T
+            )
 
         if number_of_rounds < 64:
             self.add_primitive_output_component(
-                [A.id, B.id, C.id, D.id], [list(range(self.word_size)) for _ in range(4)], self.word_size * 4
+                [A.id, B.id, C.id, D.id],
+                [list(range(self.word_size)) for _ in range(4)],
+                self.word_size * 4,
             )
         else:
             self.add_round_output_component_in_md5(A, B, C, D)
@@ -130,7 +141,9 @@ class MD5(BitGraphPrimitive):
             C = self.add_modadd_component_in_md5(C, CC)
             D = self.add_modadd_component_in_md5(D, DD)
             self.add_primitive_output_component(
-                [A.id, B.id, C.id, D.id], [swap_little_big_positions for _ in range(4)], self.word_size * 4
+                [A.id, B.id, C.id, D.id],
+                [swap_little_big_positions for _ in range(4)],
+                self.word_size * 4,
             )
 
     def md5_step(self, a, b, c, d, k, s, i, function, X, T):
@@ -169,35 +182,47 @@ class MD5(BitGraphPrimitive):
     def add_and_component_in_md5(self, component_0, component_1):
         """Add the and component in md5 stage to this primitive's typed operation graph."""
         return self.add_and_component(
-            [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
+            [component_0.id, component_1.id],
+            [list(range(self.word_size)), list(range(self.word_size))],
+            self.word_size,
         )
 
     def add_modadd_component_in_md5(self, component_0, component_1):
         """Add the modadd component in md5 stage to this primitive's typed operation graph."""
         return self.add_modadd_component(
-            [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
+            [component_0.id, component_1.id],
+            [list(range(self.word_size)), list(range(self.word_size))],
+            self.word_size,
         )
 
     def add_modadd_component_in_md5_for_x(self, x, component):
         """Add the modadd component in md5 for x stage to this primitive's typed operation graph."""
         return self.add_modadd_component(
-            [x.id, component.id], [x.input_bit_positions[0], list(range(self.word_size))], self.word_size
+            [x.id, component.id],
+            [x.input_bit_positions[0], list(range(self.word_size))],
+            self.word_size,
         )
 
     def add_rotate_component_in_md5(self, component, amount):
         """Add the rotate component in md5 stage to this primitive's typed operation graph."""
-        return self.add_rotate_component([component.id], [list(range(self.word_size))], self.word_size, amount)
+        return self.add_rotate_component(
+            [component.id], [list(range(self.word_size))], self.word_size, amount
+        )
 
     def add_xor_component_in_md5(self, component_0, component_1):
         """Add the xor component in md5 stage to this primitive's typed operation graph."""
         return self.add_xor_component(
-            [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
+            [component_0.id, component_1.id],
+            [list(range(self.word_size)), list(range(self.word_size))],
+            self.word_size,
         )
 
     def add_or_component_in_md5(self, component_0, component_1):
         """Add the or component in md5 stage to this primitive's typed operation graph."""
         return self.add_or_component(
-            [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
+            [component_0.id, component_1.id],
+            [list(range(self.word_size)), list(range(self.word_size))],
+            self.word_size,
         )
 
     def add_not_component_in_md5(self, component):
@@ -207,5 +232,7 @@ class MD5(BitGraphPrimitive):
     def add_round_output_component_in_md5(self, A, B, C, D):
         """Add the round output component in md5 stage to this primitive's typed operation graph."""
         return self.add_round_output_component(
-            [A.id, B.id, C.id, D.id], [list(range(self.word_size)) for _ in range(4)], self.word_size * 4
+            [A.id, B.id, C.id, D.id],
+            [list(range(self.word_size)) for _ in range(4)],
+            self.word_size * 4,
         )

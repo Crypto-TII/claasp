@@ -5,10 +5,11 @@ from claasp_next.domains import Bit
 from claasp_next.encoding import bits_from_int
 from claasp_next.graph import Primitive, ValueType
 
-
 ROUND_MODE_HALF = "half"
 ROUND_MODE_SINGLE = "single"
-PARAMETERS_CONFIGURATION_LIST = ({"block_bit_size": 512, "key_bit_size": 256, "number_of_rounds": 20},)
+PARAMETERS_CONFIGURATION_LIST = (
+    {"block_bit_size": 512, "key_bit_size": 256, "number_of_rounds": 20},
+)
 _COLUMNS = ((0, 4, 8, 12), (1, 5, 9, 13), (2, 6, 10, 14), (3, 7, 11, 15))
 _DIAGONALS = ((0, 5, 10, 15), (1, 6, 11, 12), (2, 7, 8, 13), (3, 4, 9, 14))
 
@@ -36,8 +37,12 @@ class ChaChaKeystreamBlock(Primitive):
     """
 
     def __init__(
-        self, block_bit_size=512, key_bit_size=256, number_of_rounds=20,
-        block_count=1, chacha_constants=0x617078653320646E79622D326B206574,
+        self,
+        block_bit_size=512,
+        key_bit_size=256,
+        number_of_rounds=20,
+        block_count=1,
+        chacha_constants=0x617078653320646E79622D326B206574,
         round_mode=ROUND_MODE_SINGLE,
     ) -> None:
         if block_bit_size != 512 or key_bit_size != 256:
@@ -54,20 +59,31 @@ class ChaChaKeystreamBlock(Primitive):
             provenance=(("identity", "ChaCha keystream block"),),
         )
         self.add_round()
-        constant_bits = self.add_component(Constant(
-            bit_vector(128), bits_from_int(chacha_constants & ((1 << 128) - 1), 128),
-            component_id="constants",
-        ))
-        counter_bits = self.add_component(Constant(
-            bit_vector(32), bits_from_int(block_count & 0xFFFFFFFF, 32), component_id="counter",
-        ))
-        initial_bits = [constant_bits[index * 32:(index + 1) * 32] for index in range(4)]
-        initial_bits += [self.input("key")[_little_endian_word_positions(index)] for index in range(8)]
+        constant_bits = self.add_component(
+            Constant(
+                bit_vector(128),
+                bits_from_int(chacha_constants & ((1 << 128) - 1), 128),
+                component_id="constants",
+            )
+        )
+        counter_bits = self.add_component(
+            Constant(
+                bit_vector(32),
+                bits_from_int(block_count & 0xFFFFFFFF, 32),
+                component_id="counter",
+            )
+        )
+        initial_bits = [constant_bits[index * 32 : (index + 1) * 32] for index in range(4)]
+        initial_bits += [
+            self.input("key")[_little_endian_word_positions(index)] for index in range(8)
+        ]
         initial_bits.append(counter_bits)
-        initial_bits += [self.input("nonce")[_little_endian_word_positions(index)] for index in range(3)]
+        initial_bits += [
+            self.input("nonce")[_little_endian_word_positions(index)] for index in range(3)
+        ]
         feed_forward = [self.pack_bits(bits, 32) for bits in initial_bits]
         state = [
-            self.pack_bits(self.input("plaintext")[index * 32:(index + 1) * 32], 32)
+            self.pack_bits(self.input("plaintext")[index * 32 : (index + 1) * 32], 32)
             for index in range(16)
         ]
         for half_round in range(half_rounds):
@@ -78,7 +94,11 @@ class ChaChaKeystreamBlock(Primitive):
             for quarter, indexes in enumerate(groups):
                 a, b, c, d = indexes
                 state[a], state[b], state[c], state[d] = self._half_quarter_round(
-                    state[a], state[b], state[c], state[d], rotations,
+                    state[a],
+                    state[b],
+                    state[c],
+                    state[d],
+                    rotations,
                     f"r{half_round}_q{quarter}",
                 )
         self.add_round()
@@ -101,4 +121,4 @@ class ChaChaKeystreamBlock(Primitive):
         return self.add_component(Rotate(mixed, amount, "left", component_id=component_id))
 
 
-__all__ = ["ChaChaKeystreamBlock", "PARAMETERS_CONFIGURATION_LIST"]
+__all__ = ["PARAMETERS_CONFIGURATION_LIST", "ChaChaKeystreamBlock"]

@@ -1,9 +1,11 @@
 import pytest
 
-from claasp_next.primitives import Present
-from claasp_next.representations.constraints.milp import PresentDifferentialMILPModel, check_present_milp_trail
 from claasp_next.drivers.solvers import GLPKSolver, MILPStatus
-
+from claasp_next.primitives import Present
+from claasp_next.representations.constraints.milp import (
+    PresentDifferentialMILPModel,
+    check_present_milp_trail,
+)
 
 pytestmark = pytest.mark.external
 

@@ -1,4 +1,7 @@
-from claasp_next.components.algebraic._validation import normalize_inputs, require_homogeneous_inputs
+from claasp_next.components.algebraic._validation import (
+    normalize_inputs,
+    require_homogeneous_inputs,
+)
 from claasp_next.domains import Word
 
 

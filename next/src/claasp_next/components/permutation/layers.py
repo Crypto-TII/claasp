@@ -9,7 +9,6 @@ from claasp_next.domains import Bit
 from claasp_next.graph import PortLike
 from claasp_next.graph.port import as_selection
 
-
 BitState = tuple[int, ...]
 
 
@@ -58,7 +57,9 @@ def shift_rows(
     if not isinstance(row_width, int) or isinstance(row_width, bool) or row_width <= 0:
         raise ValueError("row width must be a positive integer")
     frozen_offsets = tuple(offsets)
-    if not frozen_offsets or any(not isinstance(offset, int) or isinstance(offset, bool) for offset in frozen_offsets):
+    if not frozen_offsets or any(
+        not isinstance(offset, int) or isinstance(offset, bool) for offset in frozen_offsets
+    ):
         raise ValueError("row offsets must be a non-empty iterable of integers")
     if row_width * len(frozen_offsets) != selection.value_type.unit_count:
         raise ValueError("row dimensions must cover every selected unit exactly")
@@ -160,14 +161,10 @@ def _xoodoo_values(state: BitState, lane_width: int) -> BitState:
         state[index] ^ state[plane_size + index] ^ state[2 * plane_size + index]
         for index in range(plane_size)
     )
-    lanes = tuple(parity[x * lane_width:(x + 1) * lane_width] for x in range(4))
+    lanes = tuple(parity[x * lane_width : (x + 1) * lane_width] for x in range(4))
     shifted_5 = tuple(_rotate_left(lanes[(x - 1) % 4], 5) for x in range(4))
     shifted_14 = tuple(_rotate_left(lanes[(x - 1) % 4], 14) for x in range(4))
-    effect = tuple(
-        shifted_5[x][z] ^ shifted_14[x][z]
-        for x in range(4)
-        for z in range(lane_width)
-    )
+    effect = tuple(shifted_5[x][z] ^ shifted_14[x][z] for x in range(4) for z in range(lane_width))
     return tuple(value ^ effect[index % plane_size] for index, value in enumerate(state))
 
 
@@ -199,13 +196,17 @@ def _xoodoo_matrix(size: int):
 def _gaston_values(state: BitState, rotations: tuple[int, ...]) -> BitState:
     row_width = len(state) // 5
     r, s, u, *row_rotations = rotations
-    rows = tuple(state[index * row_width:(index + 1) * row_width] for index in range(5))
-    parity = tuple(rows[0][z] ^ rows[1][z] ^ rows[2][z] ^ rows[3][z] ^ rows[4][z] for z in range(row_width))
+    rows = tuple(state[index * row_width : (index + 1) * row_width] for index in range(5))
+    parity = tuple(
+        rows[0][z] ^ rows[1][z] ^ rows[2][z] ^ rows[3][z] ^ rows[4][z] for z in range(row_width)
+    )
     twisted = tuple(_rotate_left(rows[index], row_rotations[index]) for index in range(5))
-    second = tuple(twisted[0][z] ^ twisted[1][z] ^ twisted[2][z] ^ twisted[3][z] ^ twisted[4][z] for z in range(row_width))
+    second = tuple(
+        twisted[0][z] ^ twisted[1][z] ^ twisted[2][z] ^ twisted[3][z] ^ twisted[4][z]
+        for z in range(row_width)
+    )
     effect = tuple(
-        parity[z] ^ _rotate_left(parity, r)[z]
-        ^ second[z] ^ _rotate_left(second, s)[z]
+        parity[z] ^ _rotate_left(parity, r)[z] ^ second[z] ^ _rotate_left(second, s)[z]
         for z in range(row_width)
     )
     shifted = _rotate_left(effect, u)

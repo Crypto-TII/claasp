@@ -19,10 +19,11 @@ from claasp_next.graph.bit_builder import BitGraphPrimitive
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
-    {'key_bit_size': 128, 'number_of_rounds': 16},
-    {'key_bit_size': 80, 'number_of_rounds': 12},
-    {'key_bit_size': 40, 'number_of_rounds': 12},
+    {"key_bit_size": 128, "number_of_rounds": 16},
+    {"key_bit_size": 80, "number_of_rounds": 12},
+    {"key_bit_size": 40, "number_of_rounds": 12},
 ]
+
 
 class Cast(BitGraphPrimitive):
     """
@@ -44,9 +45,11 @@ class Cast(BitGraphPrimitive):
         ('0x13c502b354d53871', 61)
     """
 
-    def __init__(self, key_bit_size = 128, number_of_rounds: int = None):
+    def __init__(self, key_bit_size=128, number_of_rounds: int | None = None):
         if not (40 <= key_bit_size <= 128) or key_bit_size % 8 != 0:
-            raise ValueError(f"Invalid key_bit_size: {key_bit_size}. Key must be between 40 and 128 bits and a multiple of 8.")
+            raise ValueError(
+                f"Invalid key_bit_size: {key_bit_size}. Key must be between 40 and 128 bits and a multiple of 8."
+            )
         self.key_bit_size = key_bit_size
         if number_of_rounds is None:
             self.nrounds = 16 if key_bit_size > 80 else 12
@@ -58,7 +61,7 @@ class Cast(BitGraphPrimitive):
             primitive_type=BLOCK_CIPHER,
             primitive_inputs=[INPUT_KEY, INPUT_PLAINTEXT],
             primitive_inputs_bit_size=[self.key_bit_size, 64],
-            primitive_output_bit_size=64
+            primitive_output_bit_size=64,
         )
 
         self.add_round()
@@ -356,7 +359,7 @@ class Cast(BitGraphPrimitive):
         km_bits = list(range(32))
 
         # Round Function
-        for round_num in range(1, self.nrounds+1):
+        for round_num in range(1, self.nrounds + 1):
             self.add_round()
 
             current_km_id = self.km[round_num - 1]
@@ -369,51 +372,33 @@ class Cast(BitGraphPrimitive):
                 f_out = self._round_type3(current_block_id, current_km_id, km_bits, current_kr_id)
 
             new_r = self.add_xor_component(
-                [current_block_id, f_out.id],
-                [list(range(32)), list(range(32))],
-                32
+                [current_block_id, f_out.id], [list(range(32)), list(range(32))], 32
             )
             if round_num == self.nrounds:
                 # No switch Left/Right on the last round
                 round_out = self.add_round_output_component(
-                    [new_r.id, current_block_id],
-                    [list(range(32)), list(range(32, 64))],
-                    64
+                    [new_r.id, current_block_id], [list(range(32)), list(range(32, 64))], 64
                 )
             else:
                 round_out = self.add_round_output_component(
-                    [current_block_id, new_r.id],
-                    [list(range(32, 64)), list(range(32))],
-                    64
+                    [current_block_id, new_r.id], [list(range(32, 64)), list(range(32))], 64
                 )
             current_block_id = round_out.id
-        self.add_primitive_output_component(
-            [current_block_id],
-            [list(range(64))],
-            64)
+        self.add_primitive_output_component([current_block_id], [list(range(64))], 64)
 
     def _round_type1(self, input_block_id, km_id, km_bits, kr_id):
         r_bits = list(range(32, 64))
 
         # compute I
-        km_plus_d = self.add_modadd_component(
-            [km_id, input_block_id],
-            [km_bits, r_bits],
-            32
-        )
+        km_plus_d = self.add_modadd_component([km_id, input_block_id], [km_bits, r_bits], 32)
 
         dummy = self.add_constant_component(32, 0x0)
         shift_amount = self.add_xor_component(
-            [kr_id, dummy.id],
-            [list(range(27,32)), list(range(5))],
-            5
+            [kr_id, dummy.id], [list(range(27, 32)), list(range(5))], 5
         )
 
         i_val = self.add_variable_rotate_component(
-            [km_plus_d.id, shift_amount.id],
-            [list(range(32)), list(range(5))],
-            32,
-            -1
+            [km_plus_d.id, shift_amount.id], [list(range(32)), list(range(5))], 32, -1
         )
 
         # Compute f
@@ -428,19 +413,13 @@ class Cast(BitGraphPrimitive):
         s4_out = self.add_sbox_component([i_val.id], [id_bits], 32, self.sbox[4])
 
         f_xor = self.add_xor_component(
-            [s1_out.id, s2_out.id],
-            [list(range(32)), list(range(32))],
-            32
+            [s1_out.id, s2_out.id], [list(range(32)), list(range(32))], 32
         )
         f_sub = self.add_modsub_component(
-            [f_xor.id, s3_out.id],
-            [list(range(32)), list(range(32))],
-            32
+            [f_xor.id, s3_out.id], [list(range(32)), list(range(32))], 32
         )
         f_out = self.add_modadd_component(
-            [f_sub.id, s4_out.id],
-            [list(range(32)), list(range(32))],
-            32
+            [f_sub.id, s4_out.id], [list(range(32)), list(range(32))], 32
         )
 
         return f_out
@@ -449,24 +428,15 @@ class Cast(BitGraphPrimitive):
         r_bits = list(range(32, 64))
 
         # Compute I
-        km_xor_d = self.add_xor_component(
-            [km_id, input_block_id],
-            [km_bits, r_bits],
-            32
-        )
+        km_xor_d = self.add_xor_component([km_id, input_block_id], [km_bits, r_bits], 32)
 
         dummy = self.add_constant_component(32, 0x0)
         shift_amount = self.add_xor_component(
-            [kr_id, dummy.id],
-            [list(range(27, 32)), list(range(5))],
-            5
+            [kr_id, dummy.id], [list(range(27, 32)), list(range(5))], 5
         )
 
         i_val = self.add_variable_rotate_component(
-            [km_xor_d.id, shift_amount.id],
-            [list(range(32)), list(range(5))],
-            32,
-            -1
+            [km_xor_d.id, shift_amount.id], [list(range(32)), list(range(5))], 32, -1
         )
 
         ia_bits = list(range(0, 8))
@@ -480,19 +450,13 @@ class Cast(BitGraphPrimitive):
         s4_out = self.add_sbox_component([i_val.id], [id_bits], 32, self.sbox[4])
 
         f_sub = self.add_modsub_component(
-            [s1_out.id, s2_out.id],
-            [list(range(32)), list(range(32))],
-            32
+            [s1_out.id, s2_out.id], [list(range(32)), list(range(32))], 32
         )
         f_add = self.add_modadd_component(
-            [f_sub.id, s3_out.id],
-            [list(range(32)), list(range(32))],
-            32
+            [f_sub.id, s3_out.id], [list(range(32)), list(range(32))], 32
         )
         f_out = self.add_xor_component(
-            [f_add.id, s4_out.id],
-            [list(range(32)), list(range(32))],
-            32
+            [f_add.id, s4_out.id], [list(range(32)), list(range(32))], 32
         )
 
         return f_out
@@ -501,24 +465,15 @@ class Cast(BitGraphPrimitive):
         r_bits = list(range(32, 64))
 
         # Compute I
-        km_sub_d = self.add_modsub_component(
-            [km_id, input_block_id],
-            [km_bits, r_bits],
-            32
-        )
+        km_sub_d = self.add_modsub_component([km_id, input_block_id], [km_bits, r_bits], 32)
 
         dummy = self.add_constant_component(32, 0x0)
         shift_amount = self.add_xor_component(
-            [kr_id, dummy.id],
-            [list(range(27, 32)), list(range(5))],
-            5
+            [kr_id, dummy.id], [list(range(27, 32)), list(range(5))], 5
         )
 
         i_val = self.add_variable_rotate_component(
-            [km_sub_d.id, shift_amount.id],
-            [list(range(32)), list(range(5))],
-            32,
-            -1
+            [km_sub_d.id, shift_amount.id], [list(range(32)), list(range(5))], 32, -1
         )
 
         # Compute f
@@ -533,21 +488,15 @@ class Cast(BitGraphPrimitive):
         s4_out = self.add_sbox_component([i_val.id], [id_bits], 32, self.sbox[4])
 
         f_add = self.add_modadd_component(
-            [s1_out.id, s2_out.id],
-            [list(range(32)), list(range(32))],
-            32
+            [s1_out.id, s2_out.id], [list(range(32)), list(range(32))], 32
         )
 
         f_xor = self.add_xor_component(
-            [f_add.id, s3_out.id],
-            [list(range(32)), list(range(32))],
-            32
+            [f_add.id, s3_out.id], [list(range(32)), list(range(32))], 32
         )
 
         f_out = self.add_modsub_component(
-            [f_xor.id, s4_out.id],
-            [list(range(32)), list(range(32))],
-            32
+            [f_xor.id, s4_out.id], [list(range(32)), list(range(32))], 32
         )
 
         return f_out
@@ -559,7 +508,7 @@ class Cast(BitGraphPrimitive):
                      self._get_byte_bits(15) returns [120,121,...,127]
         """
         start_bit = byte_index * 8
-        return list(range(start_bit, start_bit+8))
+        return list(range(start_bit, start_bit + 8))
 
     def _get_word_bits(self, byte_index):
         """
@@ -567,7 +516,7 @@ class Cast(BitGraphPrimitive):
         For example: self._get_word_bits(0) returns [0,1,...,31]
         """
         start_bit = byte_index * 8
-        return list(range(start_bit, start_bit+32))
+        return list(range(start_bit, start_bit + 32))
 
     def _compute_z_from_x(self, x_id):
         """
@@ -582,9 +531,15 @@ class Cast(BitGraphPrimitive):
 
         z_0123 = self.add_xor_component(
             [x_id, s5_xd.id, s6_xf.id, s7_xc.id, s8_xe.id, s7_x8.id],
-            [self._get_word_bits(0), list(range(32)), list(range(32)), list(range(32)), list(range(32)),
-             list(range(32))],
-            32
+            [
+                self._get_word_bits(0),
+                list(range(32)),
+                list(range(32)),
+                list(range(32)),
+                list(range(32)),
+                list(range(32)),
+            ],
+            32,
         )
 
         # Compute z4z5z6z7
@@ -596,9 +551,15 @@ class Cast(BitGraphPrimitive):
 
         z_4567 = self.add_xor_component(
             [x_id, s5_z0.id, s6_z2.id, s7_z1.id, s8_z3.id, s8_xa.id],
-            [self._get_word_bits(8), list(range(32)), list(range(32)), list(range(32)), list(range(32)),
-             list(range(32))],
-            32
+            [
+                self._get_word_bits(8),
+                list(range(32)),
+                list(range(32)),
+                list(range(32)),
+                list(range(32)),
+                list(range(32)),
+            ],
+            32,
         )
 
         # Compute z8z9zAzB
@@ -610,9 +571,15 @@ class Cast(BitGraphPrimitive):
 
         z_89ab = self.add_xor_component(
             [x_id, s5_z7.id, s6_z6.id, s7_z5.id, s8_z4.id, s5_x9.id],
-            [self._get_word_bits(12), list(range(32)), list(range(32)), list(range(32)), list(range(32)),
-             list(range(32))],
-            32
+            [
+                self._get_word_bits(12),
+                list(range(32)),
+                list(range(32)),
+                list(range(32)),
+                list(range(32)),
+                list(range(32)),
+            ],
+            32,
         )
 
         # Compute zCzDzEzF
@@ -624,9 +591,15 @@ class Cast(BitGraphPrimitive):
 
         z_cdef = self.add_xor_component(
             [x_id, s5_za.id, s6_z9.id, s7_zb.id, s8_z8.id, s6_xb.id],
-            [self._get_word_bits(4), list(range(32)), list(range(32)), list(range(32)), list(range(32)),
-             list(range(32))],
-            32
+            [
+                self._get_word_bits(4),
+                list(range(32)),
+                list(range(32)),
+                list(range(32)),
+                list(range(32)),
+                list(range(32)),
+            ],
+            32,
         )
 
         return z_0123.id, z_4567.id, z_89ab.id, z_cdef.id
@@ -635,7 +608,12 @@ class Cast(BitGraphPrimitive):
         """
         Compute x_i from z_i values
         """
-        b0, b1, b2, b3 = list(range(0, 8)), list(range(8, 16)), list(range(16, 24)), list(range(24, 32))
+        b0, b1, b2, b3 = (
+            list(range(0, 8)),
+            list(range(8, 16)),
+            list(range(16, 24)),
+            list(range(24, 32)),
+        )
 
         # Compute x0x1x2x3
         s5_z5 = self.add_sbox_component([z_4567_id], [b1], 32, self.sbox[5])
@@ -645,8 +623,7 @@ class Cast(BitGraphPrimitive):
         s7_z0 = self.add_sbox_component([z_0123_id], [b0], 32, self.sbox[7])
 
         x_0123 = self.add_xor_component(
-            [z_89ab_id, s5_z5.id, s6_z7.id, s7_z4.id, s8_z6.id, s7_z0.id],
-            [list(range(32))] * 6, 32
+            [z_89ab_id, s5_z5.id, s6_z7.id, s7_z4.id, s8_z6.id, s7_z0.id], [list(range(32))] * 6, 32
         )
 
         # Compute x4x5x6x7
@@ -657,8 +634,7 @@ class Cast(BitGraphPrimitive):
         s8_z2 = self.add_sbox_component([z_0123_id], [b2], 32, self.sbox[8])
 
         x_4567 = self.add_xor_component(
-            [z_0123_id, s5_x0.id, s6_x2.id, s7_x1.id, s8_x3.id, s8_z2.id],
-            [list(range(32))] * 6, 32
+            [z_0123_id, s5_x0.id, s6_x2.id, s7_x1.id, s8_x3.id, s8_z2.id], [list(range(32))] * 6, 32
         )
 
         # Compute x8x9xAxB
@@ -669,8 +645,7 @@ class Cast(BitGraphPrimitive):
         s5_z1 = self.add_sbox_component([z_0123_id], [b1], 32, self.sbox[5])
 
         x_89ab = self.add_xor_component(
-            [z_4567_id, s5_x7.id, s6_x6.id, s7_x5.id, s8_x4.id, s5_z1.id],
-            [list(range(32))] * 6, 32
+            [z_4567_id, s5_x7.id, s6_x6.id, s7_x5.id, s8_x4.id, s5_z1.id], [list(range(32))] * 6, 32
         )
 
         # Compute xCxDxExF
@@ -681,8 +656,7 @@ class Cast(BitGraphPrimitive):
         s6_z3 = self.add_sbox_component([z_0123_id], [b3], 32, self.sbox[6])
 
         x_cdef = self.add_xor_component(
-            [z_cdef_id, s5_xa.id, s6_x9.id, s7_xb.id, s8_x8.id, s6_z3.id],
-            [list(range(32))] * 6, 32
+            [z_cdef_id, s5_xa.id, s6_x9.id, s7_xb.id, s8_x8.id, s6_z3.id], [list(range(32))] * 6, 32
         )
 
         return x_0123.id, x_4567.id, x_89ab.id, x_cdef.id
@@ -691,7 +665,12 @@ class Cast(BitGraphPrimitive):
         """
         Compute k1-k4 key values from z values
         """
-        b0, b1, b2, b3 = list(range(0, 8)), list(range(8, 16)), list(range(16, 24)), list(range(24, 32))
+        b0, b1, b2, b3 = (
+            list(range(0, 8)),
+            list(range(8, 16)),
+            list(range(16, 24)),
+            list(range(24, 32)),
+        )
 
         # Compute K1 (or K17)
         s5_z8 = self.add_sbox_component([z_89ab_id], [b0], 32, self.sbox[5])
@@ -701,8 +680,7 @@ class Cast(BitGraphPrimitive):
         s5_z2 = self.add_sbox_component([z_0123_id], [b2], 32, self.sbox[5])
 
         k1 = self.add_xor_component(
-            [s5_z8.id, s6_z9.id, s7_z7.id, s8_z6.id, s5_z2.id],
-            [list(range(32))] * 5, 32
+            [s5_z8.id, s6_z9.id, s7_z7.id, s8_z6.id, s5_z2.id], [list(range(32))] * 5, 32
         )
 
         # Compute K2 (or K18)
@@ -713,8 +691,7 @@ class Cast(BitGraphPrimitive):
         s6_z6 = self.add_sbox_component([z_4567_id], [b2], 32, self.sbox[6])
 
         k2 = self.add_xor_component(
-            [s5_za.id, s6_zb.id, s7_z5.id, s8_z4.id, s6_z6.id],
-            [list(range(32))] * 5, 32
+            [s5_za.id, s6_zb.id, s7_z5.id, s8_z4.id, s6_z6.id], [list(range(32))] * 5, 32
         )
 
         # Compute K3 (or K19)
@@ -725,8 +702,7 @@ class Cast(BitGraphPrimitive):
         s7_z9 = self.add_sbox_component([z_89ab_id], [b1], 32, self.sbox[7])
 
         k3 = self.add_xor_component(
-            [s5_zc.id, s6_zd.id, s7_z3.id, s8_z2.id, s7_z9.id],
-            [list(range(32))] * 5, 32
+            [s5_zc.id, s6_zd.id, s7_z3.id, s8_z2.id, s7_z9.id], [list(range(32))] * 5, 32
         )
 
         # Compute K4 (or K20)
@@ -737,8 +713,7 @@ class Cast(BitGraphPrimitive):
         s8_zc = self.add_sbox_component([z_cdef_id], [b0], 32, self.sbox[8])
 
         k4 = self.add_xor_component(
-            [s5_ze.id, s6_zf.id, s7_z1.id, s8_z0.id, s8_zc.id],
-            [list(range(32))] * 5, 32
+            [s5_ze.id, s6_zf.id, s7_z1.id, s8_z0.id, s8_zc.id], [list(range(32))] * 5, 32
         )
 
         return k1.id, k2.id, k3.id, k4.id
@@ -747,7 +722,12 @@ class Cast(BitGraphPrimitive):
         """
         Compute k5-k8 key values from x values
         """
-        b0, b1, b2, b3 = list(range(0, 8)), list(range(8, 16)), list(range(16, 24)), list(range(24, 32))
+        b0, b1, b2, b3 = (
+            list(range(0, 8)),
+            list(range(8, 16)),
+            list(range(16, 24)),
+            list(range(24, 32)),
+        )
 
         # Compute K5 (or K21)
         s5_x3 = self.add_sbox_component([x_0123_id], [b3], 32, self.sbox[5])
@@ -757,8 +737,7 @@ class Cast(BitGraphPrimitive):
         s5_x8 = self.add_sbox_component([x_89ab_id], [b0], 32, self.sbox[5])
 
         k5 = self.add_xor_component(
-            [s5_x3.id, s6_x2.id, s7_xc.id, s8_xd.id, s5_x8.id],
-            [list(range(32))] * 5, 32
+            [s5_x3.id, s6_x2.id, s7_xc.id, s8_xd.id, s5_x8.id], [list(range(32))] * 5, 32
         )
 
         # Compute K6 (or K22)
@@ -769,8 +748,7 @@ class Cast(BitGraphPrimitive):
         s6_xd = self.add_sbox_component([x_cdef_id], [b1], 32, self.sbox[6])
 
         k6 = self.add_xor_component(
-            [s5_x1.id, s6_x0.id, s7_xe.id, s8_xf.id, s6_xd.id],
-            [list(range(32))] * 5, 32
+            [s5_x1.id, s6_x0.id, s7_xe.id, s8_xf.id, s6_xd.id], [list(range(32))] * 5, 32
         )
 
         # Compute K7 (or K23)
@@ -781,8 +759,7 @@ class Cast(BitGraphPrimitive):
         s7_x3 = self.add_sbox_component([x_0123_id], [b3], 32, self.sbox[7])
 
         k7 = self.add_xor_component(
-            [s5_x7.id, s6_x6.id, s7_x8.id, s8_x9.id, s7_x3.id],
-            [list(range(32))] * 5, 32
+            [s5_x7.id, s6_x6.id, s7_x8.id, s8_x9.id, s7_x3.id], [list(range(32))] * 5, 32
         )
 
         # Compute K8 (or K24)
@@ -793,8 +770,7 @@ class Cast(BitGraphPrimitive):
         s8_x7 = self.add_sbox_component([x_4567_id], [b3], 32, self.sbox[8])
 
         k8 = self.add_xor_component(
-            [s5_x5.id, s6_x4.id, s7_xa.id, s8_xb.id, s8_x7.id],
-            [list(range(32))] * 5, 32
+            [s5_x5.id, s6_x4.id, s7_xa.id, s8_xb.id, s8_x7.id], [list(range(32))] * 5, 32
         )
 
         return k5.id, k6.id, k7.id, k8.id
@@ -803,7 +779,12 @@ class Cast(BitGraphPrimitive):
         """
         Compute k9-k12 key values from x values
         """
-        b0, b1, b2, b3 = list(range(0, 8)), list(range(8, 16)), list(range(16, 24)), list(range(24, 32))
+        b0, b1, b2, b3 = (
+            list(range(0, 8)),
+            list(range(8, 16)),
+            list(range(16, 24)),
+            list(range(24, 32)),
+        )
 
         # Compute K9 (or K25)
         s5_z3 = self.add_sbox_component([z_0123_id], [b3], 32, self.sbox[5])
@@ -813,8 +794,7 @@ class Cast(BitGraphPrimitive):
         s5_z9 = self.add_sbox_component([z_89ab_id], [b1], 32, self.sbox[5])
 
         k9 = self.add_xor_component(
-            [s5_z3.id, s6_z2.id, s7_zc.id, s8_zd.id, s5_z9.id],
-            [list(range(32))] * 5, 32
+            [s5_z3.id, s6_z2.id, s7_zc.id, s8_zd.id, s5_z9.id], [list(range(32))] * 5, 32
         )
 
         # Compute K10 (or K26)
@@ -825,8 +805,7 @@ class Cast(BitGraphPrimitive):
         s6_zc = self.add_sbox_component([z_cdef_id], [b0], 32, self.sbox[6])
 
         k10 = self.add_xor_component(
-            [s5_z1.id, s6_z0.id, s7_ze.id, s8_zf.id, s6_zc.id],
-            [list(range(32))] * 5, 32
+            [s5_z1.id, s6_z0.id, s7_ze.id, s8_zf.id, s6_zc.id], [list(range(32))] * 5, 32
         )
 
         # Compute K11 (or K27)
@@ -837,8 +816,7 @@ class Cast(BitGraphPrimitive):
         s7_z2 = self.add_sbox_component([z_0123_id], [b2], 32, self.sbox[7])
 
         k11 = self.add_xor_component(
-            [s5_z7.id, s6_z6.id, s7_z8.id, s8_z9.id, s7_z2.id],
-            [list(range(32))] * 5, 32
+            [s5_z7.id, s6_z6.id, s7_z8.id, s8_z9.id, s7_z2.id], [list(range(32))] * 5, 32
         )
 
         # Compute K12 (or K28)
@@ -849,8 +827,7 @@ class Cast(BitGraphPrimitive):
         s8_z6 = self.add_sbox_component([z_4567_id], [b2], 32, self.sbox[8])
 
         k12 = self.add_xor_component(
-            [s5_z5.id, s6_z4.id, s7_za.id, s8_zb.id, s8_z6.id],
-            [list(range(32))] * 5, 32
+            [s5_z5.id, s6_z4.id, s7_za.id, s8_zb.id, s8_z6.id], [list(range(32))] * 5, 32
         )
 
         return k9.id, k10.id, k11.id, k12.id
@@ -859,7 +836,12 @@ class Cast(BitGraphPrimitive):
         """
         Compute k13-k16 key values from x values
         """
-        b0, b1, b2, b3 = list(range(0, 8)), list(range(8, 16)), list(range(16, 24)), list(range(24, 32))
+        b0, b1, b2, b3 = (
+            list(range(0, 8)),
+            list(range(8, 16)),
+            list(range(16, 24)),
+            list(range(24, 32)),
+        )
 
         # Compute X13 (or K29)
         s5_x8 = self.add_sbox_component([x_89ab_id], [b0], 32, self.sbox[5])
@@ -869,8 +851,7 @@ class Cast(BitGraphPrimitive):
         s5_x3 = self.add_sbox_component([x_0123_id], [b3], 32, self.sbox[5])
 
         k13 = self.add_xor_component(
-            [s5_x8.id, s6_x9.id, s7_x7.id, s8_x6.id, s5_x3.id],
-            [list(range(32))] * 5, 32
+            [s5_x8.id, s6_x9.id, s7_x7.id, s8_x6.id, s5_x3.id], [list(range(32))] * 5, 32
         )
 
         # Compute X14 (or K30)
@@ -881,8 +862,7 @@ class Cast(BitGraphPrimitive):
         s6_x7 = self.add_sbox_component([x_4567_id], [b3], 32, self.sbox[6])
 
         k14 = self.add_xor_component(
-            [s5_xa.id, s6_xb.id, s7_x5.id, s8_x4.id, s6_x7.id],
-            [list(range(32))] * 5, 32
+            [s5_xa.id, s6_xb.id, s7_x5.id, s8_x4.id, s6_x7.id], [list(range(32))] * 5, 32
         )
 
         # Compute X15 (or K31)
@@ -893,8 +873,7 @@ class Cast(BitGraphPrimitive):
         s7_x8 = self.add_sbox_component([x_89ab_id], [b0], 32, self.sbox[7])
 
         k15 = self.add_xor_component(
-            [s5_xc.id, s6_xd.id, s7_x3.id, s8_x2.id, s7_x8.id],
-            [list(range(32))] * 5, 32
+            [s5_xc.id, s6_xd.id, s7_x3.id, s8_x2.id, s7_x8.id], [list(range(32))] * 5, 32
         )
 
         # Compute X16 (or K32)
@@ -905,8 +884,7 @@ class Cast(BitGraphPrimitive):
         s8_xd = self.add_sbox_component([x_cdef_id], [b1], 32, self.sbox[8])
 
         k16 = self.add_xor_component(
-            [s5_xe.id, s6_xf.id, s7_x1.id, s8_x0.id, s8_xd.id],
-            [list(range(32))] * 5, 32
+            [s5_xe.id, s6_xf.id, s7_x1.id, s8_x0.id, s8_xd.id], [list(range(32))] * 5, 32
         )
 
         return k13.id, k14.id, k15.id, k16.id
@@ -920,7 +898,7 @@ class Cast(BitGraphPrimitive):
                 [INPUT_KEY, zero_pad.id],
                 [list(range(self.key_bit_size)), list(range(padding_length))],
                 128,
-                list(range(128))
+                list(range(128)),
             ).id
         else:
             input_key_id = INPUT_KEY
@@ -933,10 +911,7 @@ class Cast(BitGraphPrimitive):
         k5, k6, k7, k8 = self._compute_k5_to_k8(x_0123, x_4567, x_89ab, x_cdef)
 
         x_concatenation = self.add_permutation_component(
-            [x_0123, x_4567, x_89ab, x_cdef],
-            [list(range(32))] * 4,
-            128,
-            list(range(128))
+            [x_0123, x_4567, x_89ab, x_cdef], [list(range(32))] * 4, 128, list(range(128))
         ).id
 
         z_0123, z_4567, z_89ab, z_cdef = self._compute_z_from_x(x_concatenation)
@@ -946,10 +921,7 @@ class Cast(BitGraphPrimitive):
         k13, k14, k15, k16 = self._compute_k13_to_k16(x_0123, x_4567, x_89ab, x_cdef)
 
         x_concatenation = self.add_permutation_component(
-            [x_0123, x_4567, x_89ab, x_cdef],
-            [list(range(32))] * 4,
-            128,
-            list(range(128))
+            [x_0123, x_4567, x_89ab, x_cdef], [list(range(32))] * 4, 128, list(range(128))
         ).id
 
         z_0123, z_4567, z_89ab, z_cdef = self._compute_z_from_x(x_concatenation)
@@ -959,10 +931,7 @@ class Cast(BitGraphPrimitive):
         k21, k22, k23, k24 = self._compute_k5_to_k8(x_0123, x_4567, x_89ab, x_cdef)
 
         x_concatenation = self.add_permutation_component(
-            [x_0123, x_4567, x_89ab, x_cdef],
-            [list(range(32))] * 4,
-            128,
-            list(range(128))
+            [x_0123, x_4567, x_89ab, x_cdef], [list(range(32))] * 4, 128, list(range(128))
         ).id
 
         z_0123, z_4567, z_89ab, z_cdef = self._compute_z_from_x(x_concatenation)
@@ -971,7 +940,39 @@ class Cast(BitGraphPrimitive):
         x_0123, x_4567, x_89ab, x_cdef = self._compute_x_from_z(z_0123, z_4567, z_89ab, z_cdef)
         k29, k30, k31, k32 = self._compute_k13_to_k16(x_0123, x_4567, x_89ab, x_cdef)
 
-        key_schedule = [k1, k2, k3, k4, k5, k6, k7, k8, k9, k10, k11, k12, k13, k14, k15, k16,
-                  k17, k18, k19, k20, k21, k22, k23, k24, k25, k26, k27, k28, k29, k30, k31, k32]
+        key_schedule = [
+            k1,
+            k2,
+            k3,
+            k4,
+            k5,
+            k6,
+            k7,
+            k8,
+            k9,
+            k10,
+            k11,
+            k12,
+            k13,
+            k14,
+            k15,
+            k16,
+            k17,
+            k18,
+            k19,
+            k20,
+            k21,
+            k22,
+            k23,
+            k24,
+            k25,
+            k26,
+            k27,
+            k28,
+            k29,
+            k30,
+            k31,
+            k32,
+        ]
 
         return key_schedule

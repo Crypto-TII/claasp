@@ -17,7 +17,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-"""
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
+from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+from claasp_next.primitives.block_ciphers.katan.primitive import (
+    CONFIGURATION,
+    get_ir_bit,
+    normalize_number_of_rounds,
+)
+
+_ARCHITECTURE = """
 FSR-based implementation of the KTANTAN block primitive.
 
 Same register/FSR structure as ``katan_fsr_block_cipher.py``; the only
@@ -28,13 +36,6 @@ arithmetic they create *no* additional CLAASP components; the round-key
 ``BitState`` objects point directly at ``INPUT_KEY`` bit positions.
 This yields an even smaller component graph than the FSR KATAN variant.
 """
-
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.primitives.block_ciphers.katan.primitive import (
-    CONFIGURATION, get_ir_bit, normalize_number_of_rounds,
-)
-from claasp_next.graph.bit_builder import BitState
-from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"block_bit_size": 32, "key_bit_size": 80, "number_of_rounds": 254},
@@ -121,10 +122,7 @@ class KtantanFSR(BitGraphPrimitive):
         # ------------------------------------------------------------------ #
         # Key bits: all point directly to INPUT_KEY positions (no XOR comps) #
         # ------------------------------------------------------------------ #
-        key_bits = [
-            BitState([INPUT_KEY], [[key_bit_size - 1 - i]])
-            for i in range(key_bit_size)
-        ]
+        key_bits = [BitState([INPUT_KEY], [[key_bit_size - 1 - i]]) for i in range(key_bit_size)]
 
         # Pre-compute all round keys (pure Python — no CLAASP components added)
         ka, kb = self._expand_round_keys(key_bits, number_of_rounds)
@@ -164,13 +162,9 @@ class KtantanFSR(BitGraphPrimitive):
             state_bits = list(range(block_bit_size))
 
             if round_number != number_of_rounds - 1:
-                self.add_round_output_component(
-                    [fsr.id], [output_positions], block_bit_size
-                )
+                self.add_round_output_component([fsr.id], [output_positions], block_bit_size)
 
-        self.add_primitive_output_component(
-            [fsr.id], [output_positions], block_bit_size
-        )
+        self.add_primitive_output_component([fsr.id], [output_positions], block_bit_size)
 
     # ---------------------------------------------------------------------- #
     # KTANTAN key schedule (pure Python — no CLAASP components)              #

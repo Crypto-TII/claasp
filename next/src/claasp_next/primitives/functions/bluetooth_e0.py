@@ -16,8 +16,7 @@
 # ****************************************************************************
 
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import INPUT_STATE, STREAM_CIPHER
 
 PARAMETERS_CONFIGURATION_LIST = [
@@ -29,7 +28,10 @@ LFSR_DESCR = [
         [25, [[0], [5], [13], [17]]],  # Register_1: len=25, feedback poly = s0+ s5 + s13 + s17
         [31, [[25], [32], [40], [44]]],  # Register_2: len=31, feedback poly = s25+ s32 + s40 + s44
         [33, [[56], [61], [65], [85]]],  # Register_3: len=33, feedback poly = s56+ s61 + s65 + s85
-        [39, [[89], [92], [100], [124]]],  # Register_1: len=39, feedback poly = s89+ s92 + s100 + s124
+        [
+            39,
+            [[89], [92], [100], [124]],
+        ],  # Register_1: len=39, feedback poly = s89+ s92 + s100 + s124
     ],
     1,  # Registers' word-size=1-bit
 ]
@@ -64,7 +66,9 @@ class BluetoothE0(BitGraphPrimitive):
         ('0x0', 0)
     """
 
-    def __init__(self, key_bit_size=128, lfsr_state_bit_size=128, fsm_bit_size=4, keystream_bit_len=125):
+    def __init__(
+        self, key_bit_size=128, lfsr_state_bit_size=128, fsm_bit_size=4, keystream_bit_len=125
+    ):
         self.fsm_bit_size = fsm_bit_size
         self.lfsr_state_bit_size = lfsr_state_bit_size
         self.key_bit_size = key_bit_size
@@ -88,7 +92,10 @@ class BluetoothE0(BitGraphPrimitive):
             keystream = self.e0_keystream(lfsr_state, fsm_id, fsm_pos, clock_number, keystream)
             fsm_id, fsm_pos = self.e0_nonlinear_function(lfsr_state, fsm_id, fsm_pos)
             lfsr_state = self.add_fsr_component(
-                [lfsr_state], [list(range(self.lfsr_state_bit_size))], self.lfsr_state_bit_size, LFSR_DESCR
+                [lfsr_state],
+                [list(range(self.lfsr_state_bit_size))],
+                self.lfsr_state_bit_size,
+                LFSR_DESCR,
             ).id
 
         self.add_primitive_output_component(
@@ -124,10 +131,14 @@ class BluetoothE0(BitGraphPrimitive):
         ).id
 
         t1_0 = self.add_and_component([y1, fsm_id[3]], [[0], fsm_pos[3]], 1).id
-        t1_1 = self.add_and_component([y0, fsm_id[2], fsm_id[3]], [[0], fsm_pos[2], fsm_pos[3]], 1).id
+        t1_1 = self.add_and_component(
+            [y0, fsm_id[2], fsm_id[3]], [[0], fsm_pos[2], fsm_pos[3]], 1
+        ).id
         t1_2 = self.add_and_component([y1, y0, fsm_id[2]], [[0], [0], fsm_pos[2]], 1).id
         t1 = self.add_xor_component(
-            [y2, t1_0, t1_1, t1_2, fsm_id[3], fsm_id[0]], [[0], [0], [0], [0], fsm_pos[3], fsm_pos[0]], 1
+            [y2, t1_0, t1_1, t1_2, fsm_id[3], fsm_id[0]],
+            [[0], [0], [0], [0], fsm_pos[3], fsm_pos[0]],
+            1,
         ).id
 
         fsm_id[0] = fsm_id[2]
@@ -164,5 +175,7 @@ class BluetoothE0(BitGraphPrimitive):
         if clock_number == 0:
             ks = self.add_round_output_component([z], [[0]], 1).id
         else:
-            ks = self.add_round_output_component([ks, z], [list(range(clock_number)), [0]], clock_number + 1).id
+            ks = self.add_round_output_component(
+                [ks, z], [list(range(clock_number)), [0]], clock_number + 1
+            ).id
         return ks

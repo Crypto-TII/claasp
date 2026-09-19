@@ -17,7 +17,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from claasp_next.graph.bit_builder import BitGraphPrimitive
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
 
@@ -54,20 +53,23 @@ class QARMAv2MixColumn(BitGraphPrimitive):
         ('0xcfbeb4d546c9b062', 64)
     """
 
-    def __init__(self, number_of_rounds=10, number_of_layers=1, key_bit_size=128, tweak_bit_size=128):
+    def __init__(
+        self, number_of_rounds=10, number_of_layers=1, key_bit_size=128, tweak_bit_size=128
+    ):
         if number_of_layers not in (1, 2):
             raise ValueError("number_of_layers incorrect (should be in [1,2])")
         if number_of_rounds < 1:
             raise ValueError("number_of_rounds incorrect (should be at least 1)")
-        if (
-            key_bit_size != 128
-            and number_of_layers == 1
-            or key_bit_size not in (128, 192, 256)
-            and number_of_layers == 2
+        if (key_bit_size != 128 and number_of_layers == 1) or (
+            key_bit_size not in (128, 192, 256) and number_of_layers == 2
         ):
-            raise ValueError("key_bit_size incorrect (should be 128 with 1 layer and 128, 192 or 256 with 2 layers)")
+            raise ValueError(
+                "key_bit_size incorrect (should be 128 with 1 layer and 128, 192 or 256 with 2 layers)"
+            )
         if tweak_bit_size != 64 * number_of_layers and tweak_bit_size != 128 * number_of_layers:
-            raise ValueError("tweak_bit_size incorrect (should be either 64*number_of_layers or 128*number_of_layers)")
+            raise ValueError(
+                "tweak_bit_size incorrect (should be either 64*number_of_layers or 128*number_of_layers)"
+            )
 
         # primitive dictionary initialize
         self.primitive_block_size = 64 * number_of_layers
@@ -128,7 +130,9 @@ class QARMAv2MixColumn(BitGraphPrimitive):
         for i in self.state_shuffle:
             inverse_state_permutation += list(range(4 * i, 4 * i + 4))
         self.inverse_state_permutation = inverse_state_permutation
-        state_permutation = [inverse_state_permutation.index(i) for i in range(self.layer_block_size)]
+        state_permutation = [
+            inverse_state_permutation.index(i) for i in range(self.layer_block_size)
+        ]
         self.state_permutation = state_permutation
         tweak_permutation = []
         inverse_permutation = []
@@ -138,7 +142,9 @@ class QARMAv2MixColumn(BitGraphPrimitive):
         direct_permutation = [inverse_permutation.index(i) for i in range(self.tweak_block_size)]
         tweak_permutation = [inverse_permutation, direct_permutation]
 
-        exchange_rows_permutation = list(range(64, 96)) + list(range(32, 64)) + list(range(32)) + list(range(96, 128))
+        exchange_rows_permutation = (
+            list(range(64, 96)) + list(range(32, 64)) + list(range(32)) + list(range(96, 128))
+        )
         self.exchange_rows_permutation = exchange_rows_permutation
 
         self.add_round()
@@ -195,7 +201,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
             key_1 = key_0
         else:
             key_1 = self.add_permutation_component(
-                [INPUT_KEY, majority_function(INPUT_KEY).id],
+                [INPUT_KEY, self.majority_function(INPUT_KEY).id],
                 [
                     list(range(self.key_block_size / 2)),
                     list(range(self.key_block_size, 3 * self.key_block_size / 2)),
@@ -210,16 +216,25 @@ class QARMAv2MixColumn(BitGraphPrimitive):
     def tweak_initialization(self, tweak_permutation, tweak_bit_size):
         """Build the tweak initialization stage in this primitive's typed operation graph."""
         tweak_0 = self.add_permutation_component(
-            [INPUT_TWEAK], [list(range(self.tweak_block_size))], self.tweak_block_size, tweak_permutation[1]
+            [INPUT_TWEAK],
+            [list(range(self.tweak_block_size))],
+            self.tweak_block_size,
+            tweak_permutation[1],
         )
         for _ in range(1, self.nrounds - 1):
             perm_tweak = self.add_permutation_component(
-                [tweak_0.id], [list(range(self.tweak_block_size))], self.tweak_block_size, tweak_permutation[1]
+                [tweak_0.id],
+                [list(range(self.tweak_block_size))],
+                self.tweak_block_size,
+                tweak_permutation[1],
             )
             tweak_0 = perm_tweak
         if tweak_bit_size == self.tweak_block_size:
             tweak_1 = self.add_permutation_component(
-                [INPUT_TWEAK], [list(range(self.tweak_block_size))], self.tweak_block_size, tweak_permutation[1]
+                [INPUT_TWEAK],
+                [list(range(self.tweak_block_size))],
+                self.tweak_block_size,
+                tweak_permutation[1],
             )
         else:
             tweak_1 = self.add_permutation_component(
@@ -265,7 +280,10 @@ class QARMAv2MixColumn(BitGraphPrimitive):
         first_round_sboxes = []
         for sb in range(self.num_sboxes):
             sbox = self.add_sbox_component(
-                [first_round_add_round_key.id], [list(range(4 * sb, 4 * sb + 4))], self.sbox_bit_size, self.sbox
+                [first_round_add_round_key.id],
+                [list(range(4 * sb, 4 * sb + 4))],
+                self.sbox_bit_size,
+                self.sbox,
             )
             first_round_sboxes.append(sbox)
 
@@ -278,7 +296,9 @@ class QARMAv2MixColumn(BitGraphPrimitive):
 
         return round_output
 
-    def direct_round(self, round_output, key_state, tweak_state, tweak_permutation, round_constant, round_number):
+    def direct_round(
+        self, round_output, key_state, tweak_state, tweak_permutation, round_constant, round_number
+    ):
         # Direct encryption
         """Build the direct round stage in this primitive's typed operation graph."""
         round_key_shuffle = [None] * self.number_of_layers
@@ -353,7 +373,9 @@ class QARMAv2MixColumn(BitGraphPrimitive):
             )
 
             round_output = self.add_round_output_component(
-                [exchanging_rows.id], [list(range(self.primitive_block_size))], self.primitive_block_size
+                [exchanging_rows.id],
+                [list(range(self.primitive_block_size))],
+                self.primitive_block_size,
             )
         else:
             round_output = self.add_round_output_component(
@@ -437,7 +459,9 @@ class QARMAv2MixColumn(BitGraphPrimitive):
 
         return round_output, key_state
 
-    def inverse_round(self, round_output, key_state, tweak_state, tweak_permutation, round_constant, round_number):
+    def inverse_round(
+        self, round_output, key_state, tweak_state, tweak_permutation, round_constant, round_number
+    ):
         # Inverse encryption
         """Build the inverse round stage in this primitive's typed operation graph."""
         if self.number_of_layers == 2 and (self.nrounds - round_number) % 2 == 0:
@@ -453,7 +477,10 @@ class QARMAv2MixColumn(BitGraphPrimitive):
         round_sboxes = []
         for sb in range(self.num_sboxes):
             sbox = self.add_sbox_component(
-                [exchanging_rows.id], [list(range(4 * sb, 4 * sb + 4))], self.sbox_bit_size, self.inverse_sbox
+                [exchanging_rows.id],
+                [list(range(4 * sb, 4 * sb + 4))],
+                self.sbox_bit_size,
+                self.inverse_sbox,
             )
             round_sboxes.append(sbox)
 
@@ -545,7 +572,10 @@ class QARMAv2MixColumn(BitGraphPrimitive):
         last_round_sboxes = []
         for sb in range(self.num_sboxes):
             sbox = self.add_sbox_component(
-                [round_output.id], [list(range(4 * sb, 4 * sb + 4))], self.sbox_bit_size, self.inverse_sbox
+                [round_output.id],
+                [list(range(4 * sb, 4 * sb + 4))],
+                self.sbox_bit_size,
+                self.inverse_sbox,
             )
             last_round_sboxes.append(sbox)
 
@@ -675,7 +705,10 @@ class QARMAv2MixColumn(BitGraphPrimitive):
             [key[0].id], [list(range(self.key_block_size))], self.key_block_size, 1
         )
         key_shift_0 = self.add_shift_component(
-            [key[0].id], [list(range(self.key_block_size))], self.key_block_size, self.key_block_size - 1
+            [key[0].id],
+            [list(range(self.key_block_size))],
+            self.key_block_size,
+            self.key_block_size - 1,
         )
         key_1 = self.add_xor_component(
             [key_rot_0.id, key_shift_0.id],
@@ -687,7 +720,10 @@ class QARMAv2MixColumn(BitGraphPrimitive):
             [key[1].id], [list(range(self.key_block_size))], self.key_block_size, -1
         )
         key_rshift_1 = self.add_shift_component(
-            [key_lshift_1.id], [list(range(self.key_block_size))], self.key_block_size, self.key_block_size - 1
+            [key_lshift_1.id],
+            [list(range(self.key_block_size))],
+            self.key_block_size,
+            self.key_block_size - 1,
         )
         key_rotated_1 = self.add_xor_component(
             [key[1].id, key_rshift_1.id],
@@ -724,5 +760,7 @@ class QARMAv2MixColumn(BitGraphPrimitive):
         maj_key_rotated = self.add_or_component(
             [and_0_1, and_0_2, and_1_2], [list(range(maj_key_size)) for _ in range(3)], maj_key_size
         )
-        maj_key = self.add_rotate_component([maj_key_rotated], [list(range(maj_key_size))], maj_key_size, 17)
+        maj_key = self.add_rotate_component(
+            [maj_key_rotated], [list(range(maj_key_size))], maj_key_size, 17
+        )
         return maj_key

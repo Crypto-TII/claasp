@@ -2,6 +2,7 @@
 
 from claasp_next.components import Multiply as MultiplyComponent
 from claasp_next.graph import Primitive, PrimitiveKind
+
 from ._base import algebraic_inputs
 
 
@@ -36,9 +37,7 @@ class Multiply(Primitive):
         ('0x0', 0)
     """
 
-    def __init__(
-        self, domain=None, unit_count: int = 1, number_of_inputs: int = 2
-    ) -> None:
+    def __init__(self, domain=None, unit_count: int = 1, number_of_inputs: int = 2) -> None:
         super().__init__(
             "multiply",
             algebraic_inputs(domain, unit_count, number_of_inputs),

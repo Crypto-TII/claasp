@@ -2,9 +2,11 @@
 
 from collections.abc import Sequence
 
-from claasp_next.components import LookupTable, SBox as SBoxComponent
+from claasp_next.components import LookupTable
+from claasp_next.components import SBox as SBoxComponent
 from claasp_next.domains import Word
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
+
 from ._base import positive
 
 
@@ -49,11 +51,7 @@ class SBox(Primitive):
             if lookup_table is None
             else LookupTable(lookup_table, domain.encoded_bit_size)
         )
-        kind = (
-            PrimitiveKind.PERMUTATION
-            if table.is_bijective()
-            else PrimitiveKind.FUNCTION
-        )
+        kind = PrimitiveKind.PERMUTATION if table.is_bijective() else PrimitiveKind.FUNCTION
         super().__init__("sbox", {"input": ValueType(domain, (unit_count,))}, kind=kind)
         self.add_round()
         output = self.add_component(SBoxComponent(self.input("input"), table))

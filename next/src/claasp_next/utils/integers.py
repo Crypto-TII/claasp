@@ -65,7 +65,9 @@ def bits_little_endian(value: int, width: int) -> tuple[int, ...]:
     return tuple((value >> position) & 1 for position in range(width))
 
 
-def int_to_words(value: int, word_width: int, total_width: int, *, byteorder: str = "big") -> tuple[int, ...]:
+def int_to_words(
+    value: int, word_width: int, total_width: int, *, byteorder: str = "big"
+) -> tuple[int, ...]:
     """Split a fixed-width integer into equally sized words.
 
     EXAMPLES::
@@ -83,7 +85,9 @@ def int_to_words(value: int, word_width: int, total_width: int, *, byteorder: st
         raise ValueError(f"value must fit in {total_width} bits")
     if byteorder not in {"big", "little"}:
         raise ValueError("byteorder must be 'big' or 'little'")
-    words = tuple((value >> offset) & bitmask(word_width) for offset in range(0, total_width, word_width))
+    words = tuple(
+        (value >> offset) & bitmask(word_width) for offset in range(0, total_width, word_width)
+    )
     return tuple(reversed(words)) if byteorder == "big" else words
 
 

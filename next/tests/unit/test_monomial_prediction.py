@@ -1,11 +1,12 @@
 """Sage/Gurobi-free ANF, superpoly, and monomial-transition regressions."""
 
+from claasp_next.representations.constraints.milp import MonomialTransitionMILPModel
 from claasp_next.representations.constraints.polynomial import (
-    BooleanPolynomial, anf_from_truth_table, monomial_transition_table,
+    BooleanPolynomial,
+    anf_from_truth_table,
+    monomial_transition_table,
     vectorial_anf,
 )
-from claasp_next.representations.constraints.milp import MonomialTransitionMILPModel
-
 
 PRESENT = (12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2)
 
@@ -15,7 +16,9 @@ def test_present_vectorial_anf_matches_every_legacy_sbox_value():
 
     for value, expected in enumerate(PRESENT):
         assignment = {f"p{index}": (value >> (3 - index)) & 1 for index in range(4)}
-        computed = sum(polynomial.evaluate(assignment) << (3 - index) for index, polynomial in enumerate(anfs))
+        computed = sum(
+            polynomial.evaluate(assignment) << (3 - index) for index, polynomial in enumerate(anfs)
+        )
         assert computed == expected
 
 

@@ -1,8 +1,8 @@
 """Bit-oriented PRESENT block primitive."""
 
 from claasp_next.components import Add, BitVectorSBox, Constant, Permutation
-from claasp_next.graph import Primitive, Port, ValueType
 from claasp_next.domains import Bit
+from claasp_next.graph import Port, Primitive, ValueType
 
 PRESENT_SBOX = (0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2)
 
@@ -10,14 +10,14 @@ PRESENT_SBOX = (0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4,
 def _p_layer_mapping() -> tuple[int, ...]:
     mapping = [0] * 64
     for input_lsb_position in range(64):
-        output_lsb_position = (
-            63 if input_lsb_position == 63 else 16 * input_lsb_position % 63
-        )
+        output_lsb_position = 63 if input_lsb_position == 63 else 16 * input_lsb_position % 63
         mapping[63 - output_lsb_position] = 63 - input_lsb_position
     return tuple(mapping)
 
 
 P_LAYER_MAPPING = _p_layer_mapping()
+
+
 class Present(Primitive):
     """Construct PRESENT with a 64-bit block and an 80- or 128-bit key.
 
@@ -50,27 +50,29 @@ class Present(Primitive):
 
         for round_number in range(1, number_of_rounds + 1):
             self.add_round()
-            state = self.add_component(Add(
-                (state, key[:64]), component_id=f"add_round_key_{round_number}"
-            ))
+            state = self.add_component(
+                Add((state, key[:64]), component_id=f"add_round_key_{round_number}")
+            )
             substituted_nibbles = []
             for nibble in range(16):
                 start = 4 * nibble
-                substituted = self.add_component(BitVectorSBox(
-                    state[start:start + 4],
-                    PRESENT_SBOX,
-                    component_id=f"sbox_{round_number}_{nibble}",
-                ))
+                substituted = self.add_component(
+                    BitVectorSBox(
+                        state[start : start + 4],
+                        PRESENT_SBOX,
+                        component_id=f"sbox_{round_number}_{nibble}",
+                    )
+                )
                 substituted_nibbles.append(substituted)
             substituted_state = self.join(*substituted_nibbles)
-            state = self.add_component(Permutation(
-                substituted_state, P_LAYER_MAPPING, component_id=f"p_layer_{round_number}"
-            ))
+            state = self.add_component(
+                Permutation(
+                    substituted_state, P_LAYER_MAPPING, component_id=f"p_layer_{round_number}"
+                )
+            )
             key = self._update_key(key, round_number, key_type, counter_type, key_bit_size)
 
-        state = self.add_component(Add(
-            (state, key[:64]), component_id="final_add_round_key"
-        ))
+        state = self.add_component(Add((state, key[:64]), component_id="final_add_round_key"))
         self.set_output(state)
 
     def _update_key(
@@ -81,41 +83,41 @@ class Present(Primitive):
         counter_type: ValueType,
         key_bit_size: int,
     ) -> Port:
-        rotation_mapping = tuple(
-            (position + 61) % key_bit_size for position in range(key_bit_size)
+        rotation_mapping = tuple((position + 61) % key_bit_size for position in range(key_bit_size))
+        rotated = self.add_component(
+            Permutation(key, rotation_mapping, component_id=f"key_rotate_{round_number}")
         )
-        rotated = self.add_component(Permutation(
-            key, rotation_mapping, component_id=f"key_rotate_{round_number}"
-        ))
-        high_nibble = self.add_component(BitVectorSBox(
-            rotated[0:4], PRESENT_SBOX, component_id=f"key_sbox_{round_number}"
-        ))
+        high_nibble = self.add_component(
+            BitVectorSBox(rotated[0:4], PRESENT_SBOX, component_id=f"key_sbox_{round_number}")
+        )
         prefix = [high_nibble]
         remaining_start = 4
         if key_bit_size == 128:
-            second_nibble = self.add_component(BitVectorSBox(
-                rotated[4:8],
-                PRESENT_SBOX,
-                component_id=f"key_sbox_second_{round_number}",
-            ))
+            second_nibble = self.add_component(
+                BitVectorSBox(
+                    rotated[4:8],
+                    PRESENT_SBOX,
+                    component_id=f"key_sbox_second_{round_number}",
+                )
+            )
             prefix.append(second_nibble)
             remaining_start = 8
         substituted = self.join(*prefix, rotated[remaining_start:key_bit_size])
-        counter_bits = tuple(
-            (round_number >> position) & 1 for position in range(4, -1, -1)
+        counter_bits = tuple((round_number >> position) & 1 for position in range(4, -1, -1))
+        counter = self.add_component(
+            Constant(counter_type, counter_bits, component_id=f"key_counter_{round_number}")
         )
-        counter = self.add_component(Constant(
-            counter_type, counter_bits, component_id=f"key_counter_{round_number}"
-        ))
         counter_start = 60 if key_bit_size == 80 else 61
-        counter_xor = self.add_component(Add(
-            (substituted[counter_start:counter_start + 5], counter),
-            component_id=f"key_counter_xor_{round_number}",
-        ))
+        counter_xor = self.add_component(
+            Add(
+                (substituted[counter_start : counter_start + 5], counter),
+                component_id=f"key_counter_xor_{round_number}",
+            )
+        )
         return self.join(
             substituted[:counter_start],
             counter_xor,
-            substituted[counter_start + 5:key_bit_size],
+            substituted[counter_start + 5 : key_bit_size],
         )
 
 

@@ -1,10 +1,15 @@
 """MILP lowerings for exact component trail relations."""
 
-from claasp_next.semantics.cryptanalysis import ModularAddLinearSemantics
 from claasp_next.representations.constraints.milp.model import (
-    ConstraintSense, LinearConstraint, LinearExpression, LinearVariable,
-    MILPModel, ObjectiveSense, VariableKind,
+    ConstraintSense,
+    LinearConstraint,
+    LinearExpression,
+    LinearVariable,
+    MILPModel,
+    ObjectiveSense,
+    VariableKind,
 )
+from claasp_next.semantics.cryptanalysis import ModularAddLinearSemantics
 
 
 class ModularAddLinearMILPModel:
@@ -34,8 +39,16 @@ class ModularAddLinearMILPModel:
     ) -> MILPModel:
         """Build the exact support relation with unary correlation weight."""
 
-        for name, value in (("left_mask", left_mask), ("right_mask", right_mask), ("output_mask", output_mask)):
-            if value is not None and (not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < 1 << self.width):
+        for name, value in (
+            ("left_mask", left_mask),
+            ("right_mask", right_mask),
+            ("output_mask", output_mask),
+        ):
+            if value is not None and (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or not 0 <= value < 1 << self.width
+            ):
                 raise ValueError(f"{name} must fit the configured width")
         variables = []
         constraints = []
@@ -54,9 +67,11 @@ class ModularAddLinearMILPModel:
         for bit in range(2, self.width):
             parity = binary(f"parity_{bit}")
             _parity(
-                constraints, variables,
+                constraints,
+                variables,
                 (weight[bit], weight[bit - 1], output[bit - 1], left[bit - 1], right[bit - 1]),
-                parity, 2,
+                parity,
+                2,
             )
         for bit in range(1, self.width):
             for operand in (left, right):
@@ -68,7 +83,8 @@ class ModularAddLinearMILPModel:
                     constraints.append(_equal({name: 1}, _bit(value, self.width, bit)))
         self._groups = left, right, output
         return MILPModel(
-            tuple(variables), tuple(constraints),
+            tuple(variables),
+            tuple(constraints),
             LinearExpression.from_terms({name: 1 for name in weight}),
             ObjectiveSense.MINIMIZE,
         )
@@ -78,7 +94,9 @@ class ModularAddLinearMILPModel:
 
         if not self._groups:
             raise ValueError("build the MILP model before decoding a transition")
-        values = tuple(_integer(round(assignment[name]) for name in group) for group in self._groups)
+        values = tuple(
+            _integer(round(assignment[name]) for name in group) for group in self._groups
+        )
         transition = ModularAddLinearSemantics(self.width).xor_linear(*values)
         if not transition.is_possible:
             raise ValueError("assignment does not describe a possible modular-add transition")

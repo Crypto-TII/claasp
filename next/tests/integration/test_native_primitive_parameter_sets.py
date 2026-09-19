@@ -8,16 +8,14 @@ import pytest
 
 from claasp_next.graph import Primitive, PrimitiveKind
 
-
 PARAMETER_SETS = json.loads(
-    (Path(__file__).parents[2] / "migration/m10_9d_parameter_sets.json").read_text(
-        encoding="utf-8"
-    )
+    (Path(__file__).parents[2] / "migration/m10_9d_parameter_sets.json").read_text(encoding="utf-8")
 )
 
 
 @pytest.mark.parametrize(
-    "record", PARAMETER_SETS,
+    "record",
+    PARAMETER_SETS,
     ids=lambda item: f"{item['class']}:{json.dumps(item['parameters'], sort_keys=True)}",
 )
 @pytest.mark.extended

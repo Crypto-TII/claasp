@@ -1,8 +1,8 @@
 """Sphinx configuration for the Sage-independent CLAASP documentation."""
 
-from pathlib import Path
 import os
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
@@ -12,7 +12,7 @@ if guide not in {"user", "developer"}:
 
 project = "CLAASP"
 author = "TII Cryptanalysis Team"
-copyright = "Technology Innovation Institute LLC"
+copyright = "Technology Innovation Institute LLC"  # noqa: A001 - required by Sphinx
 version = "5.0"
 release = "5.0.0.dev0"
 
@@ -28,39 +28,43 @@ templates_path = ["_templates"]
 master_doc = f"{guide}_guide"
 exclude_patterns = ["_build", "index.rst"]
 if guide == "user":
-    exclude_patterns.extend([
-        "developer_guide.rst",
-        "development.rst",
-        "architecture.rst",
-        "composite_architecture.rst",
-        "representation_architecture.rst",
-        "diagram_representations.rst",
-        "extending_analysis.rst",
-        "api.rst",
-        "boolean_models.rst",
-        "polynomial_models.rst",
-        "smt_models.rst",
-        "milp_models.rst",
-        "cp_models.rst",
-        "catalogue_architecture.rst",
-        "transformation_architecture.rst",
-        "component_analysis_architecture.rst",
-        "presentation_architecture.rst",
-        "serialization_architecture.rst",
-    ])
+    exclude_patterns.extend(
+        [
+            "developer_guide.rst",
+            "development.rst",
+            "architecture.rst",
+            "composite_architecture.rst",
+            "representation_architecture.rst",
+            "diagram_representations.rst",
+            "extending_analysis.rst",
+            "api.rst",
+            "boolean_models.rst",
+            "polynomial_models.rst",
+            "smt_models.rst",
+            "milp_models.rst",
+            "cp_models.rst",
+            "catalogue_architecture.rst",
+            "transformation_architecture.rst",
+            "component_analysis_architecture.rst",
+            "presentation_architecture.rst",
+            "serialization_architecture.rst",
+        ]
+    )
 else:
-    exclude_patterns.extend([
-        "user_guide.rst",
-        "getting_started.rst",
-        "traditional_primitives.rst",
-        "composite_blocks.rst",
-        "batch_evaluation.rst",
-        "displaying_results.rst",
-        "primitive_catalogue.rst",
-        "transformations.rst",
-        "component_properties.rst",
-        "serialization_and_source.rst",
-    ])
+    exclude_patterns.extend(
+        [
+            "user_guide.rst",
+            "getting_started.rst",
+            "traditional_primitives.rst",
+            "composite_blocks.rst",
+            "batch_evaluation.rst",
+            "displaying_results.rst",
+            "primitive_catalogue.rst",
+            "transformations.rst",
+            "component_properties.rst",
+            "serialization_and_source.rst",
+        ]
+    )
 nitpicky = True
 show_warning_types = True
 # autodoc renders a Generic type parameter's bound TypeVar as a py:class

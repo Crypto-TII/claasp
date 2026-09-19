@@ -4,6 +4,10 @@ from claasp_next.annotations.base import AnnotationEntry, AnnotationRole, GraphA
 from claasp_next.annotations.traces import ExecutionTrace, LeakageSample, SideChannelTrace
 
 __all__ = [
-    "AnnotationEntry", "AnnotationRole", "ExecutionTrace", "GraphAnnotation",
-    "LeakageSample", "SideChannelTrace",
+    "AnnotationEntry",
+    "AnnotationRole",
+    "ExecutionTrace",
+    "GraphAnnotation",
+    "LeakageSample",
+    "SideChannelTrace",
 ]

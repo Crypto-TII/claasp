@@ -2,11 +2,13 @@
 
 from dataclasses import dataclass
 
-from claasp_next.representations.constraints.milp import (
-    ConstraintSense, LinearConstraint, LinearExpression, MILPModel,
-)
-
 from claasp_next.components import BitVectorSBox, Permutation
+from claasp_next.representations.constraints.milp import (
+    ConstraintSense,
+    LinearConstraint,
+    LinearExpression,
+    MILPModel,
+)
 from claasp_next.representations.constraints.polynomial import monomial_transition_table
 from claasp_next.semantics.cryptanalysis.monomial import ComponentMonomialSemantics
 
@@ -66,11 +68,13 @@ class PresentRoundMonomialSemantics:
 
     def __init__(self, primitive) -> None:
         sboxes = tuple(
-            component for component in primitive.components
+            component
+            for component in primitive.components
             if isinstance(component, BitVectorSBox) and component.component_id.startswith("sbox_1_")
         )
         permutations = tuple(
-            component for component in primitive.components
+            component
+            for component in primitive.components
             if isinstance(component, Permutation) and component.component_id == "p_layer_1"
         )
         if primitive.family_name != "present" or len(primitive.rounds) != 1:
@@ -78,7 +82,9 @@ class PresentRoundMonomialSemantics:
         if len(sboxes) != 16 or len(permutations) != 1:
             raise ValueError("PRESENT graph does not expose the expected S-box/p-layer structure")
         self.primitive = primitive
-        self.sboxes = tuple(sorted(sboxes, key=lambda component: int(component.component_id.rsplit("_", 1)[1])))
+        self.sboxes = tuple(
+            sorted(sboxes, key=lambda component: int(component.component_id.rsplit("_", 1)[1]))
+        )
         self.permutation = permutations[0]
         self.tables = tuple(monomial_transition_table(component.table) for component in self.sboxes)
 
@@ -86,12 +92,14 @@ class PresentRoundMonomialSemantics:
         """Return a component witness, or ``None`` when the pair is unreachable."""
 
         limit = 1 << 64
-        if any(not isinstance(mask, int) or isinstance(mask, bool) or not 0 <= mask < limit
-               for mask in (input_mask, output_mask)):
+        if any(
+            not isinstance(mask, int) or isinstance(mask, bool) or not 0 <= mask < limit
+            for mask in (input_mask, output_mask)
+        ):
             raise ValueError("PRESENT monomial masks must be 64-bit integers")
         before_permutation = self._inverse_permute(output_mask)
         steps = []
-        for index, table in enumerate(self.tables):
+        for index, _table in enumerate(self.tables):
             shift = 4 * (15 - index)
             local_input = (input_mask >> shift) & 0xF
             local_output = (before_permutation >> shift) & 0xF
@@ -99,16 +107,22 @@ class PresentRoundMonomialSemantics:
                 self.sboxes[index], (local_input,), local_output
             ):
                 return None
-            steps.append(MonomialTrailStep(
-                self.sboxes[index].component_id, local_input, local_output
-            ))
+            steps.append(
+                MonomialTrailStep(self.sboxes[index].component_id, local_input, local_output)
+            )
         steps.append(MonomialTrailStep("p_layer_1", before_permutation, output_mask))
         if not ComponentMonomialSemantics.is_possible(
             self.permutation, (before_permutation,), output_mask
         ):
-            raise RuntimeError("typed permutation mapping produced an inconsistent monomial boundary")
+            raise RuntimeError(
+                "typed permutation mapping produced an inconsistent monomial boundary"
+            )
         return MonomialTrail(
-            input_mask, output_mask, 64, tuple(steps), "plaintext",
+            input_mask,
+            output_mask,
+            64,
+            tuple(steps),
+            "plaintext",
             "typed PRESENT round; exact component 3SDP-woU transitions",
         )
 
@@ -166,25 +180,37 @@ class PresentMonomialSemantics:
         self.primitive = primitive
         self.round_count = len(primitive.rounds)
         self.sbox_table = monomial_transition_table(
-            next(component for component in primitive.components
-                 if component.component_id == "sbox_1_0").table
+            next(
+                component
+                for component in primitive.components
+                if component.component_id == "sbox_1_0"
+            ).table
         )
         self.permutations = tuple(
-            next(component for component in primitive.components
-                 if component.component_id == f"p_layer_{round_number}")
+            next(
+                component
+                for component in primitive.components
+                if component.component_id == f"p_layer_{round_number}"
+            )
             for round_number in range(1, self.round_count + 1)
         )
 
     def predecessor_trail(self, output_mask: int) -> MultiRoundMonomialTrail:
         """Choose a canonical exact predecessor for a requested output monomial."""
 
-        if not isinstance(output_mask, int) or isinstance(output_mask, bool) or not 0 <= output_mask < 1 << 64:
+        if (
+            not isinstance(output_mask, int)
+            or isinstance(output_mask, bool)
+            or not 0 <= output_mask < 1 << 64
+        ):
             raise ValueError("output_mask must be a 64-bit exponent vector")
         following = output_mask
         reversed_rounds = []
         for round_number in range(self.round_count, 0, -1):
             permutation = self.permutations[round_number - 1]
-            before_permutation = ComponentMonomialSemantics._permutation_input(permutation, following)
+            before_permutation = ComponentMonomialSemantics._permutation_input(
+                permutation, following
+            )
             predecessor = 0
             steps = []
             for nibble in range(16):
@@ -192,18 +218,28 @@ class PresentMonomialSemantics:
                 local_output = (before_permutation >> shift) & 0xF
                 local_input = min(self.sbox_table[local_output])
                 predecessor |= local_input << shift
-                steps.append(MonomialTrailStep(
-                    f"sbox_{round_number}_{nibble}", local_input, local_output
-                ))
-            steps.append(MonomialTrailStep(f"p_layer_{round_number}", before_permutation, following))
-            reversed_rounds.append(MonomialTrail(
-                predecessor, following, 64, tuple(steps), "plaintext",
-                f"typed PRESENT round {round_number}",
-            ))
+                steps.append(
+                    MonomialTrailStep(f"sbox_{round_number}_{nibble}", local_input, local_output)
+                )
+            steps.append(
+                MonomialTrailStep(f"p_layer_{round_number}", before_permutation, following)
+            )
+            reversed_rounds.append(
+                MonomialTrail(
+                    predecessor,
+                    following,
+                    64,
+                    tuple(steps),
+                    "plaintext",
+                    f"typed PRESENT round {round_number}",
+                )
+            )
             following = predecessor
         rounds = tuple(reversed(reversed_rounds))
         return MultiRoundMonomialTrail(
-            following, output_mask, rounds,
+            following,
+            output_mask,
+            rounds,
             "canonical exact 3SDP-woU predecessor through typed PRESENT graph",
         )
 
@@ -220,7 +256,11 @@ class PresentMonomialSemantics:
             for nibble, step in enumerate(round_trail.steps[:-1]):
                 if step.component_id != f"sbox_{index}_{nibble}":
                     return False
-                component = next(item for item in self.primitive.components if item.component_id == step.component_id)
+                component = next(
+                    item
+                    for item in self.primitive.components
+                    if item.component_id == step.component_id
+                )
                 if not ComponentMonomialSemantics.is_possible(
                     component, (step.input_mask,), step.output_mask
                 ):
@@ -294,19 +334,23 @@ def enumerate_optimal_monomial_parity(compilation, solver, max_paths=10000):
     paths = 0
     binary_names = tuple(variable.name for variable in base.variables)
     while paths < max_paths:
-        query = MILPModel(
-            base.variables, tuple(constraints), base.objective, base.objective_sense
-        )
+        query = MILPModel(base.variables, tuple(constraints), base.objective, base.objective_sense)
         result = solver.solve(query)
         if result.status is MILPStatus.INFEASIBLE:
             return MonomialParityResult(
-                degree, tuple(sorted(mask for mask, odd in parity.items() if odd)),
-                paths, True, "exhausted_unsat",
+                degree,
+                tuple(sorted(mask for mask, odd in parity.items() if odd)),
+                paths,
+                True,
+                "exhausted_unsat",
             )
         if result.status is not MILPStatus.OPTIMAL or result.assignment is None:
             return MonomialParityResult(
-                degree, tuple(sorted(mask for mask, odd in parity.items() if odd)),
-                paths, False, result.status.value,
+                degree,
+                tuple(sorted(mask for mask, odd in parity.items() if odd)),
+                paths,
+                False,
+                result.status.value,
             )
         assignment = result.assignment
         mask = 0
@@ -314,18 +358,25 @@ def enumerate_optimal_monomial_parity(compilation, solver, max_paths=10000):
             compilation.primitive.input_ports[compilation.variable_input].value_type
         )
         for bit in range(width):
-            mask = (mask << 1) | int(round(
-                assignment[compilation._wire(compilation.variable_input, bit)]
-            ))
+            mask = (mask << 1) | int(
+                round(assignment[compilation._wire(compilation.variable_input, bit)])
+            )
         parity[mask] = not parity.get(mask, False)
         paths += 1
         ones = {name for name in binary_names if round(assignment[name]) == 1}
         terms = {name: (-1 if name in ones else 1) for name in binary_names}
-        constraints.append(LinearConstraint(
-            LinearExpression.from_terms(terms), ConstraintSense.GREATER_EQUAL,
-            1 - len(ones), f"exclude_path_{paths}",
-        ))
+        constraints.append(
+            LinearConstraint(
+                LinearExpression.from_terms(terms),
+                ConstraintSense.GREATER_EQUAL,
+                1 - len(ones),
+                f"exclude_path_{paths}",
+            )
+        )
     return MonomialParityResult(
-        degree, tuple(sorted(mask for mask, odd in parity.items() if odd)),
-        paths, False, "path_limit",
+        degree,
+        tuple(sorted(mask for mask, odd in parity.items() if odd)),
+        paths,
+        False,
+        "path_limit",
     )

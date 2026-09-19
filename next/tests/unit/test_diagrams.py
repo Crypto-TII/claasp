@@ -4,18 +4,21 @@ from claasp_next import Bit, Primitive, ValueType
 from claasp_next.components import Identity
 from claasp_next.primitives import Present
 from claasp_next.primitives.block_ciphers.present import PRESENT_SBOX
+from claasp_next.representations.diagrams import (
+    ASCIIArtSerializer,
+    DiagramCompiler,
+    DiagramEdge,
+    DiagramNode,
+    DiagramRound,
+    PrimitiveDiagram,
+    TikZSerializer,
+)
 from claasp_next.semantics.cryptanalysis import (
     SBoxTransitionSemantics,
     Trail,
     TrailKind,
     TrailStep,
     XorDifference,
-)
-from claasp_next.representations.diagrams import (
-    ASCIIArtSerializer, DiagramEdge, DiagramNode, DiagramRound,
-    PrimitiveDiagram,
-    DiagramCompiler,
-    TikZSerializer,
 )
 
 
@@ -89,7 +92,9 @@ def test_cryptanalytic_trail_is_accepted_without_renderer_specific_adaptation():
 
 def test_ascii_routes_multiple_inputs_in_declared_order():
     primitive = Present(number_of_rounds=1)
-    component = next(item for item in primitive.components if item.component_id == "add_round_key_1")
+    component = next(
+        item for item in primitive.components if item.component_id == "add_round_key_1"
+    )
 
     ascii_art = primitive.draw("ascii")
     first = f"[0] {component.inputs[0].source.owner_id}"

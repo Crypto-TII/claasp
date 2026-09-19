@@ -53,7 +53,9 @@ class Twofish(BitGraphPrimitive):
         self.key_block_size = key_length
         self.key_padding_length = 128 - self.key_block_size
         if self.key_block_size > 64:
-            self.key_padding_length = int(64 * (math.ceil(self.key_block_size / 64.0))) - self.key_block_size
+            self.key_padding_length = (
+                int(64 * (math.ceil(self.key_block_size / 64.0))) - self.key_block_size
+            )
         self.key_size = self.key_block_size + self.key_padding_length
         self.key_k = int(self.key_size / 64)
         self.key_RS_polynomial = 333
@@ -135,7 +137,10 @@ class Twofish(BitGraphPrimitive):
             )
         else:
             master_key = self.add_permutation_component(
-                [INPUT_KEY], [list(range(self.key_block_size))], self.key_block_size, list(range(self.key_block_size))
+                [INPUT_KEY],
+                [list(range(self.key_block_size))],
+                self.key_block_size,
+                list(range(self.key_block_size)),
             )
 
         M_e = [master_key for _ in range(self.key_k)]
@@ -159,7 +164,9 @@ class Twofish(BitGraphPrimitive):
         # Key Schedule
         keys_list = [0] * (2 * number_of_rounds + 8)
         for i in range(4):
-            X1 = self.add_constant_component(32, 2 * i + 2 * i * 2**8 + 2 * i * 2**16 + 2 * i * 2**24)
+            X1 = self.add_constant_component(
+                32, 2 * i + 2 * i * 2**8 + 2 * i * 2**16 + 2 * i * 2**24
+            )
             X2 = self.add_constant_component(
                 32, (2 * i + 1) + (2 * i + 1) * 2**8 + (2 * i + 1) * 2**16 + (2 * i + 1) * 2**24
             )
@@ -177,7 +184,12 @@ class Twofish(BitGraphPrimitive):
                 [B], [list(chain(range(16, 24), range(8, 16), range(8), range(24, 32)))], 32, -1
             )
             A1 = self.add_modadd_component(
-                [A, B1.id], [list(chain(range(24, 32), range(16, 24), range(8, 16), range(8))), list(range(32))], 32
+                [A, B1.id],
+                [
+                    list(chain(range(24, 32), range(16, 24), range(8, 16), range(8))),
+                    list(range(32)),
+                ],
+                32,
             )
             keys_list[2 * i + 1] = A1
 
@@ -246,7 +258,12 @@ class Twofish(BitGraphPrimitive):
                 [B], [list(chain(range(16, 24), range(8, 16), range(8), range(24, 32)))], 32, -1
             )
             A1 = self.add_modadd_component(
-                [A, B1.id], [list(chain(range(24, 32), range(16, 24), range(8, 16), range(8))), list(range(32))], 32
+                [A, B1.id],
+                [
+                    list(chain(range(24, 32), range(16, 24), range(8, 16), range(8))),
+                    list(range(32)),
+                ],
+                32,
             )
             keys_list[(2 * round_number + 9)] = A1
 
@@ -275,9 +292,13 @@ class Twofish(BitGraphPrimitive):
                 ],
                 32,
             )
-            R0_to_rot = self.add_xor_component([state[2].id, F0.id], [list(range(32)), list(range(32))], 32)
+            R0_to_rot = self.add_xor_component(
+                [state[2].id, F0.id], [list(range(32)), list(range(32))], 32
+            )
             R0 = self.add_rotate_component([R0_to_rot.id], [list(range(32))], 32, 1)
-            R1 = self.add_xor_component([state[3].id, F1.id], [list(range(1, 32)) + [0], list(range(32))], 32)
+            R1 = self.add_xor_component(
+                [state[3].id, F1.id], [list(range(1, 32)) + [0], list(range(32))], 32
+            )
             state[2] = state[0]
             state[3] = state[1]
             state[0] = R0
@@ -288,7 +309,9 @@ class Twofish(BitGraphPrimitive):
                 output = [0, 0, 0, 0]
                 for i in range(2):
                     output[2 * i] = self.add_xor_component(
-                        [state[(2 * i + 2) % 4].id, keys_list[2 * i + 4].id], [list(range(32)) for _ in range(2)], 32
+                        [state[(2 * i + 2) % 4].id, keys_list[2 * i + 4].id],
+                        [list(range(32)) for _ in range(2)],
+                        32,
                     )
                     output[2 * i + 1] = self.add_xor_component(
                         [state[((2 * i + 1) + 2) % 4].id, keys_list[(2 * i + 1) + 4].id],
@@ -297,7 +320,10 @@ class Twofish(BitGraphPrimitive):
                     )
                 self.add_primitive_output_component(
                     [output[j].id for j in range(4)],
-                    [list(chain(range(24, 32), range(16, 24), range(8, 16), range(8))) for _ in range(4)],
+                    [
+                        list(chain(range(24, 32), range(16, 24), range(8, 16), range(8)))
+                        for _ in range(4)
+                    ],
                     self.primitive_block_size,
                 )
             else:
@@ -317,68 +343,101 @@ class Twofish(BitGraphPrimitive):
             y4_j = X
             y_i[3] = [
                 self.add_sbox_component(
-                    [y4_j], [list(range(8 * (3 - j), 8 * (4 - j)))], 8, self.q_PERMUTATIONS[int(abs(j - 1.5))]
+                    [y4_j],
+                    [list(range(8 * (3 - j), 8 * (4 - j)))],
+                    8,
+                    self.q_PERMUTATIONS[int(abs(j - 1.5))],
                 )
                 for j in range(4)
             ]
             y3_j = self.add_xor_component(
-                [y_i[3][j].id for j in range(4)] + [L[3]], [list(range(8)) for _ in range(4)] + [L_bits[3]], 32
+                [y_i[3][j].id for j in range(4)] + [L[3]],
+                [list(range(8)) for _ in range(4)] + [L_bits[3]],
+                32,
             )
             y_i[2] = [
                 self.add_sbox_component(
-                    [y3_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[1 - int(j / 2)]
+                    [y3_j.id],
+                    [list(range(8 * j, 8 * (j + 1)))],
+                    8,
+                    self.q_PERMUTATIONS[1 - int(j / 2)],
                 )
                 for j in range(4)
             ]
             y2_j = self.add_xor_component(
-                [y_i[2][j].id for j in range(4)] + [L[2]], [list(range(8)) for _ in range(4)] + [L_bits[2]], 32
+                [y_i[2][j].id for j in range(4)] + [L[2]],
+                [list(range(8)) for _ in range(4)] + [L_bits[2]],
+                32,
             )
             y_i[1] = [
-                self.add_sbox_component([y2_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[j % 2])
+                self.add_sbox_component(
+                    [y2_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[j % 2]
+                )
                 for j in range(4)
             ]
             y1_j = self.add_xor_component(
-                [y_i[1][j].id for j in range(4)] + [L[1]], [list(range(8)) for _ in range(4)] + [L_bits[1]], 32
+                [y_i[1][j].id for j in range(4)] + [L[1]],
+                [list(range(8)) for _ in range(4)] + [L_bits[1]],
+                32,
             )
 
         elif self.key_k == 3:
             y3_j = X
             y_i[2] = [
                 self.add_sbox_component(
-                    [y3_j], [list(range(8 * (3 - j), 8 * (4 - j)))], 8, self.q_PERMUTATIONS[1 - int(j / 2)]
+                    [y3_j],
+                    [list(range(8 * (3 - j), 8 * (4 - j)))],
+                    8,
+                    self.q_PERMUTATIONS[1 - int(j / 2)],
                 )
                 for j in range(4)
             ]
             y2_j = self.add_xor_component(
-                [y_i[2][j].id for j in range(4)] + [L[2]], [list(range(8)) for _ in range(4)] + [L_bits[2]], 32
+                [y_i[2][j].id for j in range(4)] + [L[2]],
+                [list(range(8)) for _ in range(4)] + [L_bits[2]],
+                32,
             )
             y_i[1] = [
-                self.add_sbox_component([y2_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[j % 2])
+                self.add_sbox_component(
+                    [y2_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[j % 2]
+                )
                 for j in range(4)
             ]
             y1_j = self.add_xor_component(
-                [y_i[1][j].id for j in range(4)] + [L[1]], [list(range(8)) for _ in range(4)] + [L_bits[1]], 32
+                [y_i[1][j].id for j in range(4)] + [L[1]],
+                [list(range(8)) for _ in range(4)] + [L_bits[1]],
+                32,
             )
 
         elif self.key_k == 2:
             y_i[1] = [
-                self.add_sbox_component([y2_j], [list(range(8 * (3 - j), 8 * (4 - j)))], 8, self.q_PERMUTATIONS[j % 2])
+                self.add_sbox_component(
+                    [y2_j], [list(range(8 * (3 - j), 8 * (4 - j)))], 8, self.q_PERMUTATIONS[j % 2]
+                )
                 for j in range(4)
             ]
             y1_j = self.add_xor_component(
-                [y_i[1][j].id for j in range(4)] + [L[1]], [list(range(8)) for _ in range(4)] + [L_bits[1]], 32
+                [y_i[1][j].id for j in range(4)] + [L[1]],
+                [list(range(8)) for _ in range(4)] + [L_bits[1]],
+                32,
             )
 
         y_i[0] = [
-            self.add_sbox_component([y1_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[int(j / 2)])
+            self.add_sbox_component(
+                [y1_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[int(j / 2)]
+            )
             for j in range(4)
         ]
         y0_j = self.add_xor_component(
-            [y_i[0][j].id for j in range(4)] + [L[0]], [list(range(8)) for _ in range(4)] + [L_bits[0]], 32
+            [y_i[0][j].id for j in range(4)] + [L[0]],
+            [list(range(8)) for _ in range(4)] + [L_bits[0]],
+            32,
         )
 
         y = [
-            self.add_sbox_component([y0_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[1 - (j % 2)])
+            self.add_sbox_component(
+                [y0_j.id], [list(range(8 * j, 8 * (j + 1)))], 8, self.q_PERMUTATIONS[1 - (j % 2)]
+            )
             for j in range(4)
         ]
 

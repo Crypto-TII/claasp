@@ -1,7 +1,12 @@
 """SMT lowering of shared component transition semantics."""
 
-from claasp_next.semantics.cryptanalysis import ModularAddLinearSemantics, ModularAddTransitionSemantics, SBoxTransitionSemantics, TrailKind
 from claasp_next.representations.constraints.smt.formula import SMTFormula
+from claasp_next.semantics.cryptanalysis import (
+    ModularAddLinearSemantics,
+    ModularAddTransitionSemantics,
+    SBoxTransitionSemantics,
+    TrailKind,
+)
 
 
 class SBoxTransitionSMTModel:
@@ -46,10 +51,12 @@ class SBoxTransitionSMTModel:
                 if transition.is_possible:
                     continue
                 assignment = _bits(source, width) + _bits(target, width)
-                clauses.append(tuple(
-                    -(position + 1) if value else position + 1
-                    for position, value in enumerate(assignment)
-                ))
+                clauses.append(
+                    tuple(
+                        -(position + 1) if value else position + 1
+                        for position, value in enumerate(assignment)
+                    )
+                )
                 provenance.append(f"{self.kind.value}_support")
         for prefix, value, offset in (
             ("input", input_pattern, 0),
@@ -99,15 +106,18 @@ class ModularAddDifferentialSMTModel:
 
         from itertools import product
 
-        variables = tuple(f"{prefix}_{bit}" for prefix in ("left", "right", "output")
-                          for bit in range(self.width)) + tuple(
-                              f"weight_{bit}" for bit in range(self.width - 1))
+        variables = tuple(
+            f"{prefix}_{bit}" for prefix in ("left", "right", "output") for bit in range(self.width)
+        ) + tuple(f"weight_{bit}" for bit in range(self.width - 1))
         indices = {name: index for index, name in enumerate(variables, 1)}
         clauses, provenance = [], []
 
         def forbid(names, bits, label):
-            clauses.append(tuple(-indices[name] if value else indices[name]
-                                 for name, value in zip(names, bits)))
+            clauses.append(
+                tuple(
+                    -indices[name] if value else indices[name] for name, value in zip(names, bits)
+                )
+            )
             provenance.append(label)
 
         last = tuple(f"{prefix}_{self.width - 1}" for prefix in ("left", "right", "output"))
@@ -129,14 +139,20 @@ class ModularAddDifferentialSMTModel:
         """Compute the decode transition for this public typed contract."""
 
         from claasp_next.representations.constraints.sat import CNFFormula
+
         formula = self.smt_formula()
-        if not CNFFormula(formula.variables, formula.assertions, formula.provenance).is_satisfied(assignment):
+        if not CNFFormula(formula.variables, formula.assertions, formula.provenance).is_satisfied(
+            assignment
+        ):
             raise ValueError("invalid modular-add differential witness")
-        values = [_integer(tuple(assignment[f"{prefix}_{bit}"] for bit in range(self.width)))
-                  for prefix in ("left", "right", "output")]
+        values = [
+            _integer(tuple(assignment[f"{prefix}_{bit}"] for bit in range(self.width)))
+            for prefix in ("left", "right", "output")
+        ]
         transition = self.semantics.xor_differential(*values)
         if not transition.is_possible or transition.weight != sum(
-                assignment[f"weight_{bit}"] for bit in range(self.width - 1)):
+            assignment[f"weight_{bit}"] for bit in range(self.width - 1)
+        ):
             raise ValueError("modular-add differential weight disagrees with exact semantics")
         return transition
 
@@ -198,7 +214,11 @@ class ModularAddLinearSMTModel:
         ):
             if value is None:
                 continue
-            if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < 1 << self.width:
+            if (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or not 0 <= value < 1 << self.width
+            ):
                 raise ValueError(f"{prefix}_mask must fit the modular-add width")
             for bit, encoded in enumerate(_bits(value, self.width)):
                 variable = offset + bit + 1
@@ -237,8 +257,7 @@ def _xor_equivalence(names, indices, clauses, provenance):
         values = tuple((assignment >> (len(names) - 1 - bit)) & 1 for bit in range(len(names)))
         if sum(values) % 2 == 0:
             continue
-        clauses.append(tuple(
-            -indices[name] if value else indices[name]
-            for name, value in zip(names, values)
-        ))
+        clauses.append(
+            tuple(-indices[name] if value else indices[name] for name, value in zip(names, values))
+        )
         provenance.append("linear_weight_recurrence")

@@ -15,12 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from typing import List, Tuple
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
-from claasp_next.primitive_inputs import INPUT_KEY, INPUT_PLAINTEXT, BLOCK_CIPHER
-from claasp_next.graph.bit_builder import get_inputs_parameter
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
+from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 STATE_NUM = 32
 STATE_SIZE = 4
@@ -28,23 +25,131 @@ STATE_SIZE = 4
 KEY_NUM = 32
 KEY_SIZE = 4
 
-SBOX = [0xc, 0xa, 0xd, 0x3, 0xe, 0xb, 0xf, 0x7, 0x8, 0x9, 0x1, 0x5, 0x0, 0x2, 0x4, 0x6]
+SBOX = [0xC, 0xA, 0xD, 0x3, 0xE, 0xB, 0xF, 0x7, 0x8, 0x9, 0x1, 0x5, 0x0, 0x2, 0x4, 0x6]
 SBOX_SIZE = 4
 
 PBOX = [
-    31, 6, 29, 14, 1, 12, 21, 8, 27, 2, 3, 0, 25, 4, 23, 10,
-    15, 22, 13, 30, 17, 28, 5, 24, 11, 18, 19, 16, 9, 20, 7, 26
+    31,
+    6,
+    29,
+    14,
+    1,
+    12,
+    21,
+    8,
+    27,
+    2,
+    3,
+    0,
+    25,
+    4,
+    23,
+    10,
+    15,
+    22,
+    13,
+    30,
+    17,
+    28,
+    5,
+    24,
+    11,
+    18,
+    19,
+    16,
+    9,
+    20,
+    7,
+    26,
 ]
 
 ROUND_CONSTANTS = [
     [
-        0x0, 0x0, 0x1, 0x3, 0x7, 0xf, 0xf, 0xf, 0xe, 0xd, 0xa, 0x5, 0xa, 0x5, 0xb, 0x6, 0xc, 0x9, 0x3, 0x6,
-        0xd, 0xb, 0x7, 0xe, 0xd, 0xb, 0x6, 0xd, 0xa, 0x4, 0x9, 0x2, 0x4, 0x9, 0x3, 0x7, 0xe, 0xc, 0x8, 0x1, 0x2
+        0x0,
+        0x0,
+        0x1,
+        0x3,
+        0x7,
+        0xF,
+        0xF,
+        0xF,
+        0xE,
+        0xD,
+        0xA,
+        0x5,
+        0xA,
+        0x5,
+        0xB,
+        0x6,
+        0xC,
+        0x9,
+        0x3,
+        0x6,
+        0xD,
+        0xB,
+        0x7,
+        0xE,
+        0xD,
+        0xB,
+        0x6,
+        0xD,
+        0xA,
+        0x4,
+        0x9,
+        0x2,
+        0x4,
+        0x9,
+        0x3,
+        0x7,
+        0xE,
+        0xC,
+        0x8,
+        0x1,
+        0x2,
     ],
     [
-        0x4, 0xc, 0xc, 0xc, 0xc, 0xc, 0x8, 0x4, 0x8, 0x4, 0x8, 0x4, 0xc, 0x8, 0x0, 0x4, 0xc, 0x8, 0x4, 0xc,
-        0xc, 0x8, 0x4, 0xc, 0x8, 0x4, 0x8, 0x0, 0x4, 0x8, 0x0, 0x4, 0xc, 0xc, 0x8, 0x0, 0x0, 0x4, 0x8, 0x4, 0xc
-    ]
+        0x4,
+        0xC,
+        0xC,
+        0xC,
+        0xC,
+        0xC,
+        0x8,
+        0x4,
+        0x8,
+        0x4,
+        0x8,
+        0x4,
+        0xC,
+        0x8,
+        0x0,
+        0x4,
+        0xC,
+        0x8,
+        0x4,
+        0xC,
+        0xC,
+        0x8,
+        0x4,
+        0xC,
+        0x8,
+        0x4,
+        0x8,
+        0x0,
+        0x4,
+        0x8,
+        0x0,
+        0x4,
+        0xC,
+        0xC,
+        0x8,
+        0x0,
+        0x0,
+        0x4,
+        0x8,
+        0x4,
+        0xC,
+    ],
 ]
 
 
@@ -74,25 +179,25 @@ class Warp(BitGraphPrimitive):
         self.total_rounds_number = number_of_rounds
 
         super().__init__(
-            family_name='warp',
+            family_name="warp",
             primitive_type=BLOCK_CIPHER,
             primitive_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
             primitive_inputs_bit_size=[self.state_bit_size, self.state_bit_size],
             primitive_output_bit_size=self.state_bit_size,
         )
 
-        state: List[BitState] = []
+        state: list[BitState] = []
         for i in range(STATE_NUM):
             p = BitState([INPUT_PLAINTEXT], [[k + i * STATE_SIZE for k in range(STATE_SIZE)]])
             state.append(p)
 
-        key: List[BitState] = []
+        key: list[BitState] = []
         for i in range(KEY_NUM):
             p = BitState([INPUT_KEY], [[k + i * KEY_SIZE for k in range(KEY_SIZE)]])
             key.append(p)
 
-        key_0 = key[0: KEY_NUM // 2]
-        key_1 = key[KEY_NUM // 2: KEY_NUM]
+        key_0 = key[0 : KEY_NUM // 2]
+        key_1 = key[KEY_NUM // 2 : KEY_NUM]
         key_0_1 = (key_0, key_1)
 
         for r in range(number_of_rounds):
@@ -105,11 +210,12 @@ class Warp(BitGraphPrimitive):
             else:
                 self.add_round_output_component(inputs_id, inputs_pos, self.state_bit_size)
 
-    def _round_function(self,
-                        state: List[BitState],
-                        keys: Tuple[List[BitState],
-                                    List[BitState]],
-                        number_of_round: int) -> List[BitState]:
+    def _round_function(
+        self,
+        state: list[BitState],
+        keys: tuple[list[BitState], list[BitState]],
+        number_of_round: int,
+    ) -> list[BitState]:
         state = self._sbox_xor_round_key(state, keys, number_of_round)
         state = self._xor_round_constants(state, number_of_round)
 
@@ -117,11 +223,12 @@ class Warp(BitGraphPrimitive):
             state = self._permutation(state)
         return state
 
-    def _sbox_xor_round_key(self,
-                            state: List[BitState],
-                            keys: Tuple[List[BitState],
-                                        List[BitState]],
-                            number_of_round: int) -> List[BitState]:
+    def _sbox_xor_round_key(
+        self,
+        state: list[BitState],
+        keys: tuple[list[BitState], list[BitState]],
+        number_of_round: int,
+    ) -> list[BitState]:
         state_new = []
         for i in range(0, STATE_NUM, 2):
             state_new.append(state[i])
@@ -138,7 +245,7 @@ class Warp(BitGraphPrimitive):
 
         return state_new
 
-    def _xor_round_constants(self, state: List[BitState], number_of_round: int) -> List[BitState]:
+    def _xor_round_constants(self, state: list[BitState], number_of_round: int) -> list[BitState]:
         const_0_r = self.add_constant_component(STATE_SIZE, ROUND_CONSTANTS[0][number_of_round])
         const_0_r = BitState([const_0_r.id], [list(range(STATE_SIZE))])
         inputs_id, inputs_bit = get_inputs_parameter([state[1], const_0_r])
@@ -153,10 +260,12 @@ class Warp(BitGraphPrimitive):
 
         return state
 
-    def _permutation(self, state: List[BitState]) -> List[BitState]:
+    def _permutation(self, state: list[BitState]) -> list[BitState]:
         inputs_id, inputs_bit = get_inputs_parameter(state)
 
-        perm = self.add_permutation_component(inputs_id, inputs_bit, STATE_SIZE * STATE_NUM, PBOX, word_size=4)
+        perm = self.add_permutation_component(
+            inputs_id, inputs_bit, STATE_SIZE * STATE_NUM, PBOX, word_size=4
+        )
 
         state_new = []
         for i in range(STATE_NUM):

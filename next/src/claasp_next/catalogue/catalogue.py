@@ -2,17 +2,23 @@
 
 from __future__ import annotations
 
-import json
 import importlib.util
-from importlib.resources import files
+import json
 import shutil
 import subprocess
+from importlib.resources import files
 
 from claasp_next.catalogue.records import (
-    AnalysisRecord, ComponentRecord, DriverAvailabilityRecord, DriverRecord, InputRecord,
-    ParameterSetRecord, PrimitiveRecord, RealizationRecord, RepresentationRecord,
+    AnalysisRecord,
+    ComponentRecord,
+    DriverAvailabilityRecord,
+    DriverRecord,
+    InputRecord,
+    ParameterSetRecord,
+    PrimitiveRecord,
+    RealizationRecord,
+    RepresentationRecord,
 )
-
 
 FILTER_ALIASES = {
     "block_cipher": "block_ciphers",
@@ -83,9 +89,13 @@ def _primitive_record(item: dict) -> PrimitiveRecord:
     name = item["name"]
     realizations = tuple(
         RealizationRecord(
-            name, realization["name"], frozenset(realization["capabilities"]),
-            frozenset(realization["structure"]), realization["maturity"],
-            tuple(realization["provenance"]), realization["priority"],
+            name,
+            realization["name"],
+            frozenset(realization["capabilities"]),
+            frozenset(realization["structure"]),
+            realization["maturity"],
+            tuple(realization["provenance"]),
+            realization["priority"],
         )
         for realization in item["realizations"]
     )
@@ -161,33 +171,48 @@ class Catalogue:
         self._components = tuple(ComponentRecord(**item) for item in payload["components"])
         self._representations = tuple(
             RepresentationRecord(
-                name=item["name"], kind=item["kind"], implementation=item["implementation"],
-                components=frozenset(item["components"]), domains=frozenset(item["domains"]),
-                drivers=frozenset(item["drivers"]), scope=item["scope"],
+                name=item["name"],
+                kind=item["kind"],
+                implementation=item["implementation"],
+                components=frozenset(item["components"]),
+                domains=frozenset(item["domains"]),
+                drivers=frozenset(item["drivers"]),
+                scope=item["scope"],
             )
             for item in payload["representations"]
         )
         self._analyses = tuple(
             AnalysisRecord(
-                name=item["name"], entry_point=item["entry_point"], kind=item["kind"],
-                evidence=item["evidence"], representations=frozenset(item["representations"]),
+                name=item["name"],
+                entry_point=item["entry_point"],
+                kind=item["kind"],
+                evidence=item["evidence"],
+                representations=frozenset(item["representations"]),
                 drivers=frozenset(item["drivers"]),
                 required_components=frozenset(item["required_components"]),
-                primitives=frozenset(item["primitives"]), restriction=item["restriction"],
+                primitives=frozenset(item["primitives"]),
+                restriction=item["restriction"],
             )
             for item in payload["analyses"]
         )
         self._drivers = tuple(
             DriverRecord(
-                name=item["name"], kind=item["kind"], availability=item["availability"],
-                target=item["target"], implementation=item["implementation"],
+                name=item["name"],
+                kind=item["kind"],
+                availability=item["availability"],
+                target=item["target"],
+                implementation=item["implementation"],
                 representations=frozenset(item["representations"]),
             )
             for item in payload["drivers"]
         )
 
     def primitives(
-        self, *, category: str | None = None, filters=None, components=None,
+        self,
+        *,
+        category: str | None = None,
+        filters=None,
+        components=None,
         authenticity: str | None = None,
     ) -> tuple[PrimitiveRecord, ...]:
         """Return primitives matching category, design, and component filters."""
@@ -195,9 +220,18 @@ class Catalogue:
         requested = tuple(_normalized_filter(item) for item in _tokens(filters))
         if category is not None:
             requested += (_normalized_filter(category),)
-        supported = frozenset(tag for record in self._primitives for tag in record.tags) | frozenset({
-            "arx", "purearx", "andrx", "pureandrx", "sbox_based", "fsr_based",
-        })
+        supported = frozenset(
+            tag for record in self._primitives for tag in record.tags
+        ) | frozenset(
+            {
+                "arx",
+                "purearx",
+                "andrx",
+                "pureandrx",
+                "sbox_based",
+                "fsr_based",
+            }
+        )
         unknown = frozenset(requested) - supported
         if unknown:
             raise ValueError(f"unknown primitive filters: {tuple(sorted(unknown))}")
@@ -221,7 +255,9 @@ class Catalogue:
             raise KeyError(f"unknown primitive {name!r}")
         return matches[0]
 
-    def components(self, *, names=None, representation: str | None = None) -> tuple[ComponentRecord, ...]:
+    def components(
+        self, *, names=None, representation: str | None = None
+    ) -> tuple[ComponentRecord, ...]:
         """Return components, optionally restricted by name or representation."""
 
         requested = frozenset(_tokens(names))
@@ -229,14 +265,19 @@ class Catalogue:
             None if representation is None else self.representation(representation).components
         )
         return tuple(
-            record for record in self._components
+            record
+            for record in self._components
             if (not requested or record.name in requested)
             and (supported is None or record.name in supported)
         )
 
     def representations(
-        self, *, component: str | None = None, driver: str | None = None,
-        kind: str | None = None, domain: str | None = None,
+        self,
+        *,
+        component: str | None = None,
+        driver: str | None = None,
+        kind: str | None = None,
+        domain: str | None = None,
     ) -> tuple[RepresentationRecord, ...]:
         """Return representations matching component, driver, kind, and domain.
 
@@ -254,7 +295,8 @@ class Catalogue:
         if driver is not None:
             self.driver(driver)
         return tuple(
-            record for record in self._representations
+            record
+            for record in self._representations
             if (component is None or component in record.components)
             and (driver is None or driver in record.drivers)
             and (kind is None or kind == record.kind)
@@ -277,8 +319,12 @@ class Catalogue:
         return matches[0]
 
     def analyses(
-        self, *, primitive: str | None = None, representation: str | None = None,
-        driver: str | None = None, kind: str | None = None,
+        self,
+        *,
+        primitive: str | None = None,
+        representation: str | None = None,
+        driver: str | None = None,
+        kind: str | None = None,
     ) -> tuple[AnalysisRecord, ...]:
         """Return analyses whose declared requirements match a primitive.
 
@@ -314,16 +360,16 @@ class Catalogue:
                 if not record.required_components <= primitive_record.components:
                     continue
                 if record.representations and not any(
-                    (
-                        candidate.scope == "result"
-                    ) or (
+                    (candidate.scope == "result")
+                    or (
                         candidate.scope == "component"
                         and (
                             record.required_components <= primitive_record.components
                             if record.required_components
                             else bool(candidate.components & primitive_record.components)
                         )
-                    ) or (
+                    )
+                    or (
                         primitive_record.components <= candidate.components
                         and primitive_record.domains <= candidate.domains
                     )
@@ -335,8 +381,12 @@ class Catalogue:
         return tuple(rows)
 
     def realizations(
-        self, *, primitive: str | None = None, capabilities=None,
-        structure=None, maturity: str | None = None,
+        self,
+        *,
+        primitive: str | None = None,
+        capabilities=None,
+        structure=None,
+        maturity: str | None = None,
     ) -> tuple[RealizationRecord, ...]:
         """Return realization records satisfying all requested features."""
 
@@ -349,14 +399,18 @@ class Catalogue:
             for realization in item.realizations
         )
         return tuple(
-            record for record in records
+            record
+            for record in records
             if requested_capabilities <= record.capabilities
             and requested_structure <= record.structure
             and (maturity is None or record.maturity == maturity)
         )
 
     def parameter_sets(
-        self, *, primitive: str | None = None, parameters=None,
+        self,
+        *,
+        primitive: str | None = None,
+        parameters=None,
     ) -> tuple[ParameterSetRecord, ...]:
         """Return named parameter sets containing the requested values."""
 
@@ -368,19 +422,24 @@ class Catalogue:
             for parameter_set in item.parameter_sets
         )
         return tuple(
-            record for record in records
+            record
+            for record in records
             if all(record.values.get(name) == value for name, value in requested.items())
         )
 
     def drivers(
-        self, *, kind: str | None = None, representation: str | None = None,
+        self,
+        *,
+        kind: str | None = None,
+        representation: str | None = None,
     ) -> tuple[DriverRecord, ...]:
         """Return drivers, optionally restricted to a consumed representation."""
 
         if representation is not None:
             self.representation(representation)
         return tuple(
-            record for record in self._drivers
+            record
+            for record in self._drivers
             if kind is None or record.kind == kind
             if representation is None or representation in record.representations
         )
@@ -406,17 +465,26 @@ class Catalogue:
             return DriverAvailabilityRecord(record, resolved is not None, resolved=resolved)
         if record.availability == "python_module":
             available = importlib.util.find_spec(record.target or "") is not None
-            return DriverAvailabilityRecord(record, available, resolved=record.target if available else None)
+            return DriverAvailabilityRecord(
+                record, available, resolved=record.target if available else None
+            )
         if record.availability == "minizinc_solver":
             executable_name, solver_name = (record.target or "").split(":", 1)
             resolved = shutil.which(executable_name)
             if resolved is None:
-                return DriverAvailabilityRecord(record, False, detail="MiniZinc executable not found")
+                return DriverAvailabilityRecord(
+                    record, False, detail="MiniZinc executable not found"
+                )
             completed = subprocess.run(
-                (resolved, "--solvers"), text=True, capture_output=True, check=False,
+                (resolved, "--solvers"),
+                text=True,
+                capture_output=True,
+                check=False,
                 timeout=10,
             )
-            available = completed.returncode == 0 and solver_name.lower() in completed.stdout.lower()
+            available = (
+                completed.returncode == 0 and solver_name.lower() in completed.stdout.lower()
+            )
             detail = None if available else f"MiniZinc solver {solver_name!r} not registered"
             return DriverAvailabilityRecord(record, available, resolved=resolved, detail=detail)
         raise ValueError(f"unknown availability probe {record.availability!r}")

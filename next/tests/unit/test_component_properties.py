@@ -7,9 +7,9 @@ from claasp_next.analysis import (
 from claasp_next.components import BitVectorSBox, LinearMap, LookupTable, SBox
 from claasp_next.composites.aes import AES_FIELD
 from claasp_next.domains import Bit, Word
+from claasp_next.drivers.analysis import BoundedBranchNumberDriver
 from claasp_next.graph import Port, ValueType
 from claasp_next.primitives import AES, Present
-from claasp_next.drivers.analysis import BoundedBranchNumberDriver
 
 
 def test_public_primitive_api_retains_analysis_and_realization_provenance():
@@ -60,21 +60,19 @@ def test_public_driver_api_keeps_realization_separate_from_driver_provenance():
 
 
 def test_binary_and_field_linear_examples_have_fixed_evidence():
-    binary = LinearMap(
-        Port("bits", ValueType(Bit(), (2,))), ((1, 0), (1, 1))
-    )
+    binary = LinearMap(Port("bits", ValueType(Bit(), (2,))), ((1, 0), (1, 1)))
     mix_column = LinearMap(
         Port("column", ValueType(AES_FIELD, (4,))),
         ((2, 3, 1, 1), (1, 2, 3, 1), (1, 1, 2, 3), (3, 1, 1, 2)),
     )
     from claasp_next.analysis import analyze_component_property
 
-    binary_result = analyze_component_property(binary, PropertyRequest(
-        ComponentProperty.RANK, PropertyDomain.BIT_LINEAR
-    ))
-    mix_result = analyze_component_property(mix_column, PropertyRequest(
-        ComponentProperty.MDS, PropertyDomain.WORD_LINEAR
-    ))
+    binary_result = analyze_component_property(
+        binary, PropertyRequest(ComponentProperty.RANK, PropertyDomain.BIT_LINEAR)
+    )
+    mix_result = analyze_component_property(
+        mix_column, PropertyRequest(ComponentProperty.MDS, PropertyDomain.WORD_LINEAR)
+    )
 
     assert binary_result.value == 2
     assert mix_result.value is True
@@ -87,9 +85,13 @@ def test_unit_sbox_analysis_uses_one_unit_width_not_the_whole_vector():
     )
     from claasp_next.analysis import analyze_component_property
 
-    result = analyze_component_property(sbox, PropertyRequest(
-        ComponentProperty.ALGEBRAIC_DEGREE, PropertyDomain.LOOKUP_TABLE,
-    ))
+    result = analyze_component_property(
+        sbox,
+        PropertyRequest(
+            ComponentProperty.ALGEBRAIC_DEGREE,
+            PropertyDomain.LOOKUP_TABLE,
+        ),
+    )
 
     assert result.value == 1
 

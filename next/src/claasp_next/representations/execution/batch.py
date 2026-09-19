@@ -3,17 +3,31 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from claasp_next.graph import Primitive
 from claasp_next.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
 from claasp_next.components.feedback import FeedbackRegister
 from claasp_next.components.structural import Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import (
-    BitwiseAnd, BitwiseNot, BitwiseOr, IDEAMultiply, ModularAdd, ModularMultiply,
-    ModularSubtract, Rotate, Shift, VariableRotate, VariableShift, Xor,
+    BitwiseAnd,
+    BitwiseNot,
+    BitwiseOr,
+    IDEAMultiply,
+    ModularAdd,
+    ModularMultiply,
+    ModularSubtract,
+    Rotate,
+    Shift,
+    VariableRotate,
+    VariableShift,
+    Xor,
 )
-from claasp_next.representations.execution.scalar import EvaluationResult, RuntimeValue, ScalarExecutionDriver
+from claasp_next.graph import Primitive
 from claasp_next.provenance import DriverIdentity, DriverKind, ResultProvenance
+from claasp_next.representations.execution.scalar import (
+    EvaluationResult,
+    RuntimeValue,
+    ScalarExecutionDriver,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,7 +112,9 @@ class BatchExecutionDriver:
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
             unexpected = sorted(actual_names - expected_names)
-            raise ValueError(f"primitive inputs do not match: missing={missing}, unexpected={unexpected}")
+            raise ValueError(
+                f"primitive inputs do not match: missing={missing}, unexpected={unexpected}"
+            )
 
         batch_sizes = {len(values) for values in inputs.values()}
         if len(batch_sizes) > 1:
@@ -147,7 +163,9 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
             unexpected = sorted(actual_names - expected_names)
-            raise ValueError(f"primitive inputs do not match: missing={missing}, unexpected={unexpected}")
+            raise ValueError(
+                f"primitive inputs do not match: missing={missing}, unexpected={unexpected}"
+            )
         batch_sizes = {len(values) for values in inputs.values()}
         if len(batch_sizes) > 1:
             raise ValueError("every primitive input must contain the same number of batch items")
@@ -200,11 +218,18 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
             from claasp_next.annotations import ExecutionTrace, GraphAnnotation
             from claasp_next.semantics import CONCRETE
 
-            annotation = GraphAnnotation.from_values(primitive, CONCRETE, lane_values, output=output)
+            annotation = GraphAnnotation.from_values(
+                primitive, CONCRETE, lane_values, output=output
+            )
             provenance = ResultProvenance.for_primitive(primitive, self.identity)
-            results.append(EvaluationResult(
-                lane_values | binding_caches[lane], output, ExecutionTrace(annotation), provenance
-            ))
+            results.append(
+                EvaluationResult(
+                    lane_values | binding_caches[lane],
+                    output,
+                    ExecutionTrace(annotation),
+                    provenance,
+                )
+            )
         return BatchEvaluationResult(
             tuple(results), ResultProvenance.for_primitive(primitive, self.identity)
         )

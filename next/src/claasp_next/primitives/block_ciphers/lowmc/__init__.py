@@ -2,4 +2,4 @@
 
 from .primitive import LowMC
 
-__all__ = ['LowMC']
+__all__ = ["LowMC"]

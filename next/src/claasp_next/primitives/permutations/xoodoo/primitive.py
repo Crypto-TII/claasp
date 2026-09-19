@@ -17,16 +17,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from copy import deepcopy
 
 # Sage construction replaced by dependency-free v5 constants
 # Sage construction replaced by dependency-free v5 constants
-
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import (
+    BitGraphPrimitive,
+    BitState,
+    get_ci,
+    layer_and_lane_initialization,
+    simplify_inputs,
+)
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import get_ci, layer_and_lane_initialization, simplify_inputs
 
 LANE_NUM = 4
 PLANE_NUM = 3
@@ -105,7 +107,9 @@ class Xoodoo(BitGraphPrimitive):
             inputs_id = inputs_id + deepcopy(planes[i].id)
             inputs_pos = inputs_pos + deepcopy(planes[i].input_bit_positions)
         inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-        self.add_intermediate_output_component(inputs_id, inputs_pos, self.state_bit_size, "round_output_linear")
+        self.add_intermediate_output_component(
+            inputs_id, inputs_pos, self.state_bit_size, "round_output_linear"
+        )
 
     def add_round_output_nonlinear(self, planes):
         """Add the round output nonlinear stage to this primitive's typed operation graph."""
@@ -115,7 +119,9 @@ class Xoodoo(BitGraphPrimitive):
             inputs_id = inputs_id + deepcopy(planes[i].id)
             inputs_pos = inputs_pos + deepcopy(planes[i].input_bit_positions)
         inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-        self.add_intermediate_output_component(inputs_id, inputs_pos, self.state_bit_size, "round_output_nonlinear")
+        self.add_intermediate_output_component(
+            inputs_id, inputs_pos, self.state_bit_size, "round_output_nonlinear"
+        )
 
     def chi_definition(self, planes):
         # inverse block

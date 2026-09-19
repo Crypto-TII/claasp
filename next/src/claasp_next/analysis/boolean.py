@@ -4,9 +4,9 @@ from itertools import combinations
 
 from claasp_next.analysis.constraints import Equal, FixedValue, HammingWeight, Nonzero, NotEqual
 from claasp_next.analysis.problem import AnalysisProblem
+from claasp_next.domains import Bit
 from claasp_next.representations.constraints.sat import BooleanCNFModel, CNFFormula
 from claasp_next.representations.constraints.sat.encoding import resolved_selection_variable_names
-from claasp_next.domains import Bit
 
 
 def lower_boolean_problem(problem: AnalysisProblem) -> CNFFormula:
@@ -27,7 +27,9 @@ def lower_boolean_problem(problem: AnalysisProblem) -> CNFFormula:
                 for names in resolved_selection_variable_names(problem.primitive, selection)
             )
         except KeyError as error:
-            raise ValueError("constraint target does not belong to the analyzed primitive") from error
+            raise ValueError(
+                "constraint target does not belong to the analyzed primitive"
+            ) from error
 
     def literals(selection):
         return tuple(item for group in groups(selection) for item in group)
@@ -39,7 +41,9 @@ def lower_boolean_problem(problem: AnalysisProblem) -> CNFFormula:
     for number, constraint in enumerate(problem.constraints):
         label = f"constraint_{number}_{type(constraint).__name__.lower()}"
         if isinstance(constraint, FixedValue):
-            values = problem.primitive._decode_boundary(constraint.value, constraint.target.value_type)
+            values = problem.primitive._decode_boundary(
+                constraint.value, constraint.target.value_type
+            )
             if len(values) != constraint.target.value_type.unit_count:
                 raise ValueError("fixed value length must match its constraint target")
             for value in values:
@@ -71,7 +75,9 @@ def lower_boolean_problem(problem: AnalysisProblem) -> CNFFormula:
             add(literals(constraint.target), label)
         elif isinstance(constraint, HammingWeight):
             if not isinstance(constraint.target.value_type.domain, Bit):
-                raise NotImplementedError("word-unit Hamming weight requires cardinality auxiliaries")
+                raise NotImplementedError(
+                    "word-unit Hamming weight requires cardinality auxiliaries"
+                )
             bounded = literals(constraint.target)
             for subset in combinations(bounded, constraint.maximum + 1):
                 add(tuple(-item for item in subset), label)

@@ -46,7 +46,9 @@ def import_parameters(source: Path) -> dict[str, object]:
     flat_constants = tuple(int(value, 16) for value in values["round_constants_254"])
     expected_constants = width * (full_rounds + partial_rounds)
     if len(flat_constants) != expected_constants:
-        raise ValueError(f"expected {expected_constants} round constants, got {len(flat_constants)}")
+        raise ValueError(
+            f"expected {expected_constants} round constants, got {len(flat_constants)}"
+        )
 
     return {
         "schema_version": 1,
@@ -66,10 +68,7 @@ def import_parameters(source: Path) -> dict[str, object]:
             list(flat_constants[offset : offset + width])
             for offset in range(0, len(flat_constants), width)
         ],
-        "linear_layer": [
-            [int(value, 16) for value in row]
-            for row in values["matrix_254"]
-        ],
+        "linear_layer": [[int(value, 16) for value in row] for row in values["matrix_254"]],
         "reference": {
             "input": [0, 1, 2],
             "output_position": 1,

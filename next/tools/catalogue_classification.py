@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-
-_CATEGORY_BIJECTIONS = frozenset({
-    "block_ciphers", "permutations", "tweakable_block_ciphers",
-})
+_CATEGORY_BIJECTIONS = frozenset(
+    {
+        "block_ciphers",
+        "permutations",
+        "tweakable_block_ciphers",
+    }
+)
 
 # These fixed catalogue interfaces need a more precise classification than
 # their broad taxonomy supplies.  ``True`` means that the designated

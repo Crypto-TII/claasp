@@ -10,12 +10,11 @@ cannot establish on its own.
 
 import pytest
 
-from claasp_next.primitives import Trivium
-from claasp_next.primitives.block_functions.trivium import estream_bytes_to_bit_sequence
 from claasp_next.components import BitwiseAnd, Constant, Xor
 from claasp_next.encoding import units_from_int
+from claasp_next.primitives import Trivium
+from claasp_next.primitives.block_functions.trivium import estream_bytes_to_bit_sequence
 from claasp_next.representations.execution import BatchEvaluator
-
 
 #: eSTREAM/ECRYPT ``Trivium`` 80-bit key, 80-bit IV test vectors, quoted as
 #: published byte strings: ``(set, vector, key, iv, stream[0..15])``.
@@ -31,9 +30,7 @@ ESTREAM_VECTORS = (
 #: ``tests/unit/ciphers/stream_ciphers/trivium_stream_cipher_test.py`` value.
 #: Unlike the skipped Gurobi fixtures it is executed by the legacy suite, so it
 #: is an independent oracle produced by an unrelated implementation.
-LEGACY_ALL_ZERO_KEYSTREAM = (
-    0xDF07FD641A9AA0D88A5E7472C4F993FE6A4CC06898E0F3B4E7159EF0854D97B3
-)
+LEGACY_ALL_ZERO_KEYSTREAM = 0xDF07FD641A9AA0D88A5E7472C4F993FE6A4CC06898E0F3B4E7159EF0854D97B3
 
 
 def _reference_trivium(key_bits, iv_bits, clocks, keystream_bits):
@@ -81,7 +78,8 @@ def standard_trivium():
 
 
 @pytest.mark.parametrize(
-    "vector_set, vector, key, iv, stream", ESTREAM_VECTORS,
+    "vector_set, vector, key, iv, stream",
+    ESTREAM_VECTORS,
     ids=[f"set{entry[0]}_vector{entry[1]}" for entry in ESTREAM_VECTORS],
 )
 def test_published_estream_vectors(standard_trivium, vector_set, vector, key, iv, stream):
@@ -100,19 +98,18 @@ def test_legacy_all_zero_keystream_is_reproduced():
 
 
 @pytest.mark.parametrize("clocks, keystream_bits", ((0, 4), (13, 1), (66, 8), (200, 16)))
-@pytest.mark.parametrize("key, iv", (
-    (0, 0),
-    (1 << 79, 0),
-    (0, 1 << 79),
-    (0x0123456789ABCDEF0123, 0xFEDCBA98765432100FED),
-))
+@pytest.mark.parametrize(
+    "key, iv",
+    (
+        (0, 0),
+        (1 << 79, 0),
+        (0, 1 << 79),
+        (0x0123456789ABCDEF0123, 0xFEDCBA98765432100FED),
+    ),
+)
 def test_reduced_keystream_matches_the_independent_reference(clocks, keystream_bits, key, iv):
-    primitive = Trivium(
-        number_of_initialization_clocks=clocks, keystream_bit_size=keystream_bits
-    )
-    expected, _ = _reference_trivium(
-        _unpack(key, 80), _unpack(iv, 80), clocks, keystream_bits
-    )
+    primitive = Trivium(number_of_initialization_clocks=clocks, keystream_bit_size=keystream_bits)
+    expected, _ = _reference_trivium(_unpack(key, 80), _unpack(iv, 80), clocks, keystream_bits)
 
     assert primitive.evaluate(key=key, iv=iv) == _pack(expected)
 
@@ -132,14 +129,16 @@ def test_scalar_and_batch_evaluation_agree():
     keys = (0x0123456789ABCDEF0123, 0)
     ivs = (0xFEDCBA98765432100FED, 1 << 79)
 
-    batch = BatchEvaluator().evaluate(primitive, {
-        "key": tuple(units_from_int(key, 1, 80) for key in keys),
-        "iv": tuple(units_from_int(iv, 1, 80) for iv in ivs),
-    })
+    batch = BatchEvaluator().evaluate(
+        primitive,
+        {
+            "key": tuple(units_from_int(key, 1, 80) for key in keys),
+            "iv": tuple(units_from_int(iv, 1, 80) for iv in ivs),
+        },
+    )
 
     assert batch.outputs == tuple(
-        units_from_int(primitive.evaluate(key=key, iv=iv), 1, 8)
-        for key, iv in zip(keys, ivs)
+        units_from_int(primitive.evaluate(key=key, iv=iv), 1, 8) for key, iv in zip(keys, ivs)
     )
 
 
@@ -151,9 +150,7 @@ def test_graph_shape_and_reused_components():
     assert primitive.input_ports["iv"].value_type.unit_count == 80
     assert primitive.output.value_type.encoded_bit_size == 1
     assert len(primitive.rounds) == 15
-    assert {type(component) for component in primitive.components} == {
-        Constant, Xor, BitwiseAnd
-    }
+    assert {type(component) for component in primitive.components} == {Constant, Xor, BitwiseAnd}
     assert sum(isinstance(component, BitwiseAnd) for component in primitive.components) == 42
 
 
@@ -168,10 +165,13 @@ def test_estream_conversion_is_an_involution_and_validates_inputs():
         estream_bytes_to_bit_sequence(True, 1)
 
 
-@pytest.mark.parametrize("clocks, keystream_bits, message", (
-    (-1, 1, "must not be negative"),
-    (1, -1, "must not be negative"),
-))
+@pytest.mark.parametrize(
+    "clocks, keystream_bits, message",
+    (
+        (-1, 1, "must not be negative"),
+        (1, -1, "must not be negative"),
+    ),
+)
 def test_invalid_parameters_are_rejected(clocks, keystream_bits, message):
     with pytest.raises(ValueError, match=message):
         Trivium(number_of_initialization_clocks=clocks, keystream_bit_size=keystream_bits)

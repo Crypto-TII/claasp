@@ -73,9 +73,7 @@ class PolynomialSystem:
             degrees[equation.degree] = degrees.get(equation.degree, 0) + 1
             term_count += len(equation.terms)
             present = {
-                variable
-                for monomial, _ in equation.terms
-                for variable, _ in monomial.powers
+                variable for monomial, _ in equation.terms for variable, _ in monomial.powers
             }
             for variable in present:
                 if variable in incidence:

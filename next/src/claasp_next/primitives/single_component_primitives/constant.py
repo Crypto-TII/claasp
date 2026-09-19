@@ -4,6 +4,7 @@ from claasp_next.components import Constant as ConstantComponent
 from claasp_next.domains import Bit
 from claasp_next.encoding import bits_from_int
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
+
 from ._base import positive
 
 

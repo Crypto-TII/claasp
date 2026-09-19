@@ -2,14 +2,14 @@ import importlib
 import json
 from pathlib import Path
 
-
 ROOT = Path(__file__).parents[2]
 
 
 def test_every_m10_9d7_source_has_its_typed_public_class():
     inventory = json.loads((ROOT / "migration/legacy_inventory.json").read_text(encoding="utf-8"))
     records = [
-        record for record in inventory["records"]
+        record
+        for record in inventory["records"]
         if record.get("milestone_owner") == "M10.9d7" and record["kind"] == "source"
     ]
     assert len(records) == 25

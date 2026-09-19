@@ -31,8 +31,14 @@ PARAMETERS_CONFIGURATION_LIST = [
 
 NLFSR_DESCR = [
     [
-        [93, [[93], [108], [24], [94, 95]]],  # Register_1: len=93, feedback poly = s_93+ s_108 + s_24 + s_94*s_95
-        [84, [[0], [99], [27], [1, 2]]],  # Register_2: len=84, feedback poly = s_0+ s_99 + s_27 + s_1*s_2
+        [
+            93,
+            [[93], [108], [24], [94, 95]],
+        ],  # Register_1: len=93, feedback poly = s_93+ s_108 + s_24 + s_94*s_95
+        [
+            84,
+            [[0], [99], [27], [1, 2]],
+        ],  # Register_2: len=84, feedback poly = s_0+ s_99 + s_27 + s_1*s_2
     ],
     1,  # Registers' cell size = 1-bit
 ]
@@ -117,8 +123,15 @@ class Bivium(BitGraphPrimitive):
         self.add_round()
         cst0 = self.add_constant_component(13, 0x0).id
         state0_id = [cst0] + key[0] + [cst0] + iv[0]
-        state0_pos = [list(range(13)), list(range(self.key_bit_size)), list(range(4)), list(range(self.iv_bit_size))]
-        biv_state = self.add_fsr_component(state0_id, state0_pos, self.state_bit_size, NLFSR_DESCR).id
+        state0_pos = [
+            list(range(13)),
+            list(range(self.key_bit_size)),
+            list(range(4)),
+            list(range(self.iv_bit_size)),
+        ]
+        biv_state = self.add_fsr_component(
+            state0_id, state0_pos, self.state_bit_size, NLFSR_DESCR
+        ).id
         biv_state = self.add_fsr_component(
             [biv_state],
             [list(range(self.state_bit_size))],
@@ -134,5 +147,7 @@ class Bivium(BitGraphPrimitive):
         if clock_number == 0:
             ks = self.add_round_output_component([z], [[0]], 1).id
         else:
-            ks = self.add_round_output_component([ks, z], [list(range(clock_number)), [0]], clock_number + 1).id
+            ks = self.add_round_output_component(
+                [ks, z], [list(range(clock_number)), [0]], clock_number + 1
+            ).id
         return ks

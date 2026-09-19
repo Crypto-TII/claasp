@@ -93,7 +93,8 @@ class PresentationDiagnostic:
         if not isinstance(self.message, str) or not self.message:
             raise ValueError("diagnostic message must be a non-empty string")
         if any(
-            not isinstance(item, tuple) or len(item) != 2
+            not isinstance(item, tuple)
+            or len(item) != 2
             or not all(isinstance(value, str) and value for value in item)
             for item in self.details
         ):
@@ -130,17 +131,25 @@ class PresentationEvidence:
             raise ValueError("bound direction must be 'lower', 'upper', or None")
         if self.classification is EvidenceClass.PROVED_BOUND and self.bound_direction is None:
             raise ValueError("proved bounds require a direction")
-        if self.classification is not EvidenceClass.PROVED_BOUND and self.bound_direction is not None:
+        if (
+            self.classification is not EvidenceClass.PROVED_BOUND
+            and self.bound_direction is not None
+        ):
             raise ValueError("only proved bounds have a bound direction")
         non_values = {
-            EvidenceClass.UNAVAILABLE, EvidenceClass.SKIPPED,
-            EvidenceClass.INCOMPLETE, EvidenceClass.FAILED,
+            EvidenceClass.UNAVAILABLE,
+            EvidenceClass.SKIPPED,
+            EvidenceClass.INCOMPLETE,
+            EvidenceClass.FAILED,
         }
         if self.classification in non_values and self.diagnostic is None:
             raise ValueError(f"{self.classification.value} evidence requires a diagnostic")
         if self.classification is EvidenceClass.EXACT and not self.complete:
             raise ValueError("exact evidence must be complete")
-        if self.applicability is Applicability.INAPPLICABLE and self.classification is not EvidenceClass.UNAVAILABLE:
+        if (
+            self.applicability is Applicability.INAPPLICABLE
+            and self.classification is not EvidenceClass.UNAVAILABLE
+        ):
             raise ValueError("inapplicable evidence must be classified as unavailable")
 
     @property
@@ -239,7 +248,8 @@ class ExecutionProvenance:
         if any(not isinstance(item, str) or not item for item in self.command):
             raise ValueError("command arguments must be non-empty strings")
         if any(
-            not isinstance(item, tuple) or len(item) != 2
+            not isinstance(item, tuple)
+            or len(item) != 2
             or not all(isinstance(value, str) and value for value in item)
             for item in self.options
         ):

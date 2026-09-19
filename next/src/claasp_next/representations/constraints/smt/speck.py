@@ -4,8 +4,11 @@ from claasp_next.analysis.arx import check_speck_linear_trail
 from claasp_next.components import Rotate
 from claasp_next.domains import Word
 from claasp_next.representations.constraints.smt.formula import SMTFormula
-from claasp_next.representations.constraints.smt.transitions import ModularAddLinearSMTModel, _xor_equivalence
 from claasp_next.representations.constraints.smt.trails import _at_most
+from claasp_next.representations.constraints.smt.transitions import (
+    ModularAddLinearSMTModel,
+    _xor_equivalence,
+)
 from claasp_next.semantics.cryptanalysis import Trail, TrailKind, TrailStep, XorMask
 
 
@@ -25,23 +28,38 @@ class SpeckLinearSMTModel:
         required configuration rejected
     """
 
-    def __init__(self, primitive, *, maximum_weight=None, fixed_weight=None,
-                 input_mask=None, output_mask=None):
+    def __init__(
+        self,
+        primitive,
+        *,
+        maximum_weight=None,
+        fixed_weight=None,
+        input_mask=None,
+        output_mask=None,
+    ):
         plaintext = primitive.input_ports.get("plaintext")
-        if (primitive.family_name != "speck" or plaintext is None
-                or not isinstance(plaintext.value_type.domain, Word)
-                or not primitive.rounds):
+        if (
+            primitive.family_name != "speck"
+            or plaintext is None
+            or not isinstance(plaintext.value_type.domain, Word)
+            or not primitive.rounds
+        ):
             raise NotImplementedError("linear SMT composition requires a typed Speck primitive")
         if maximum_weight is not None and fixed_weight is not None:
             raise ValueError("choose maximum_weight or fixed_weight, not both")
         for weight in (maximum_weight, fixed_weight):
-            if weight is not None and (not isinstance(weight, int) or isinstance(weight, bool) or weight < 0):
+            if weight is not None and (
+                not isinstance(weight, int) or isinstance(weight, bool) or weight < 0
+            ):
                 raise ValueError("weights must be nonnegative integers")
         self.primitive = primitive
         self.width = plaintext.value_type.domain.width
         for mask in (input_mask, output_mask):
-            if mask is not None and (not isinstance(mask, int) or isinstance(mask, bool)
-                                     or not 0 <= mask < (1 << (2 * self.width))):
+            if mask is not None and (
+                not isinstance(mask, int)
+                or isinstance(mask, bool)
+                or not 0 <= mask < (1 << (2 * self.width))
+            ):
                 raise ValueError("boundary masks must fit the primitive block width")
         self.input_mask = input_mask
         self.output_mask = output_mask
@@ -64,30 +82,42 @@ class SpeckLinearSMTModel:
             provenance.append(label)
 
         width = self.width
-        states = tuple(tuple(allocate(f"state_{r}_{bit}") for bit in range(2 * width))
-                       for r in range(len(self.primitive.rounds) + 1))
+        states = tuple(
+            tuple(allocate(f"state_{r}_{bit}") for bit in range(2 * width))
+            for r in range(len(self.primitive.rounds) + 1)
+        )
         weights = []
         for r in range(len(self.primitive.rounds)):
             local = ModularAddLinearSMTModel(width).smt_formula()
-            mapping = {i: indices[allocate(f"round_{r}_{name}")]
-                       for i, name in enumerate(local.variables, 1)}
+            mapping = {
+                i: indices[allocate(f"round_{r}_{name}")]
+                for i, name in enumerate(local.variables, 1)
+            }
             for clause, label in zip(local.assertions, local.provenance):
-                add((mapping[abs(literal)] * (1 if literal > 0 else -1) for literal in clause), label)
+                add(
+                    (mapping[abs(literal)] * (1 if literal > 0 else -1) for literal in clause),
+                    label,
+                )
             alpha = self._rotation(r, "right")
             beta = self._rotation(r, "left")
             for bit in range(width):
                 relations = (
                     (f"round_{r}_left_{bit}", states[r][(bit - alpha) % width]),
-                    (f"round_{r}_right_{bit}", states[r][width + bit],
-                     states[r + 1][width + (bit - beta) % width]),
+                    (
+                        f"round_{r}_right_{bit}",
+                        states[r][width + bit],
+                        states[r + 1][width + (bit - beta) % width],
+                    ),
                     (f"round_{r}_output_{bit}", states[r + 1][bit], states[r + 1][width + bit]),
                 )
                 for names in relations:
                     _xor_equivalence(names, indices, clauses, provenance)
                 weights.append(f"round_{r}_weight_{bit}")
         add((indices[name] for name in states[0]), "nonzero_linear_input")
-        for names, mask, label in ((states[0], self.input_mask, "fixed_linear_input"),
-                                   (states[-1], self.output_mask, "fixed_linear_output")):
+        for names, mask, label in (
+            (states[0], self.input_mask, "fixed_linear_input"),
+            (states[-1], self.output_mask, "fixed_linear_output"),
+        ):
             if mask is not None:
                 for bit, name in enumerate(names):
                     value = (mask >> (2 * width - 1 - bit)) & 1
@@ -104,8 +134,13 @@ class SpeckLinearSMTModel:
                 add((indices[weights[0]],), "impossible_fixed_weight")
                 add((-indices[weights[0]],), "impossible_fixed_weight")
             else:
-                _at_most(complements, len(weights) - self.fixed_weight,
-                         lambda name: allocate("lower" + name), indices, add)
+                _at_most(
+                    complements,
+                    len(weights) - self.fixed_weight,
+                    lambda name: allocate("lower" + name),
+                    indices,
+                    add,
+                )
         self._states = states
         return SMTFormula(tuple(variables), tuple(clauses), tuple(provenance))
 
@@ -116,8 +151,9 @@ class SpeckLinearSMTModel:
         steps = []
         for r in range(len(self.primitive.rounds)):
             local = ModularAddLinearSMTModel(self.width)
-            projected = {name: assignment[f"round_{r}_{name}"]
-                         for name in local.smt_formula().variables}
+            projected = {
+                name: assignment[f"round_{r}_{name}"] for name in local.smt_formula().variables
+            }
             component_id = self.primitive.round_operations[r]["modular_add"].component_id
             steps.append(TrailStep(component_id, local.decode_transition(projected)))
 
@@ -127,14 +163,20 @@ class SpeckLinearSMTModel:
                 value = (value << 1) | assignment[name]
             return value
 
-        trail = Trail(TrailKind.XOR_LINEAR,
-                      XorMask(packed(self._states[0]), 2 * self.width),
-                      XorMask(packed(self._states[-1]), 2 * self.width), tuple(steps))
-        if (not trail.input_pattern.value or not check_speck_linear_trail(self.primitive, trail)
-                or (self.maximum_weight is not None and trail.total_weight > self.maximum_weight)
-                or (self.fixed_weight is not None and trail.total_weight != self.fixed_weight)
-                or (self.input_mask is not None and trail.input_pattern.value != self.input_mask)
-                or (self.output_mask is not None and trail.output_pattern.value != self.output_mask)):
+        trail = Trail(
+            TrailKind.XOR_LINEAR,
+            XorMask(packed(self._states[0]), 2 * self.width),
+            XorMask(packed(self._states[-1]), 2 * self.width),
+            tuple(steps),
+        )
+        if (
+            not trail.input_pattern.value
+            or not check_speck_linear_trail(self.primitive, trail)
+            or (self.maximum_weight is not None and trail.total_weight > self.maximum_weight)
+            or (self.fixed_weight is not None and trail.total_weight != self.fixed_weight)
+            or (self.input_mask is not None and trail.input_pattern.value != self.input_mask)
+            or (self.output_mask is not None and trail.output_pattern.value != self.output_mask)
+        ):
             raise ValueError("assignment disagrees with Speck linear semantics or weight")
         return trail
 

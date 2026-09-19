@@ -5,14 +5,39 @@ import inspect
 import pytest
 
 from claasp_next.primitives import (
-    Ballet, Blake, Blake2, CHAM, HIGHT, LEA, LowMC, MSX, Midori, Raiden,
-    SPARX, TEA, Threefish, Ublock, XTEA,
+    CHAM,
+    HIGHT,
+    LEA,
+    MSX,
+    SPARX,
+    TEA,
+    XTEA,
+    Ballet,
+    Blake,
+    Blake2,
+    LowMC,
+    Midori,
+    Raiden,
+    Threefish,
+    Ublock,
 )
 
-
 ROUND_CONFIGURED_PRIMITIVES = (
-    Ballet, Blake, Blake2, CHAM, HIGHT, LEA, LowMC, MSX, Midori, Raiden,
-    SPARX, TEA, Threefish, Ublock, XTEA,
+    Ballet,
+    Blake,
+    Blake2,
+    CHAM,
+    HIGHT,
+    LEA,
+    LowMC,
+    MSX,
+    Midori,
+    Raiden,
+    SPARX,
+    TEA,
+    Threefish,
+    Ublock,
+    XTEA,
 )
 
 

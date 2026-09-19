@@ -154,8 +154,10 @@ class PropertyRequest:
         if not isinstance(self.domain, PropertyDomain):
             object.__setattr__(self, "domain", PropertyDomain(self.domain))
         if not isinstance(self.options, tuple) or any(
-            not isinstance(item, tuple) or len(item) != 2
-            or not isinstance(item[0], str) or not item[0]
+            not isinstance(item, tuple)
+            or len(item) != 2
+            or not isinstance(item[0], str)
+            or not item[0]
             for item in self.options
         ):
             raise TypeError("property options must be (name, value) pairs")
@@ -394,10 +396,7 @@ def semantic_component_groups(primitive, domain: PropertyDomain) -> tuple[Compon
         grouped.setdefault(key, []).append(
             ComponentOccurrence(component, locations.get(id(component)))
         )
-    return tuple(
-        ComponentGroup(key, tuple(occurrences))
-        for key, occurrences in grouped.items()
-    )
+    return tuple(ComponentGroup(key, tuple(occurrences)) for key, occurrences in grouped.items())
 
 
 def _freeze_hashable(value):
@@ -414,16 +413,18 @@ def _freeze_hashable(value):
     return value
 
 
-_LOOKUP_PROPERTIES = frozenset({
-    ComponentProperty.DIFFERENTIAL_UNIFORMITY,
-    ComponentProperty.NONLINEARITY,
-    ComponentProperty.ALGEBRAIC_DEGREE,
-    ComponentProperty.BALANCED,
-    ComponentProperty.APN,
-    ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
-    ComponentProperty.LINEAR_BRANCH_NUMBER,
-    ComponentProperty.BOOMERANG_UNIFORMITY,
-})
+_LOOKUP_PROPERTIES = frozenset(
+    {
+        ComponentProperty.DIFFERENTIAL_UNIFORMITY,
+        ComponentProperty.NONLINEARITY,
+        ComponentProperty.ALGEBRAIC_DEGREE,
+        ComponentProperty.BALANCED,
+        ComponentProperty.APN,
+        ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
+        ComponentProperty.LINEAR_BRANCH_NUMBER,
+        ComponentProperty.BOOMERANG_UNIFORMITY,
+    }
+)
 
 
 def analyze_component_property(
@@ -451,11 +452,21 @@ def analyze_component_property(
     """
 
     from claasp_next.components import (
-        BinaryAffineMap, BitVectorSBox, FeedbackRegister, LinearMap,
-        Permutation, SBox,
+        BinaryAffineMap,
+        BitVectorSBox,
+        FeedbackRegister,
+        LinearMap,
+        Permutation,
+        SBox,
     )
     from claasp_next.components.word import (
-        BitwiseAnd, BitwiseNot, BitwiseOr, ModularAdd, Rotate, Shift, Xor,
+        BitwiseAnd,
+        BitwiseNot,
+        BitwiseOr,
+        ModularAdd,
+        Rotate,
+        Shift,
+        Xor,
     )
 
     if isinstance(component, (BitVectorSBox, SBox)):
@@ -523,7 +534,9 @@ def analyze_lookup_table(
     provenance = ComponentAnalysisProvenance(
         identity, "exact_exhaustive_lookup", graph_locations=graph_locations
     )
-    return _lookup_result(table.values, table.input_bit_size, table.output_bit_size, request, provenance)
+    return _lookup_result(
+        table.values, table.input_bit_size, table.output_bit_size, request, provenance
+    )
 
 
 def _analyze_lookup_component(component, request, graph_locations, primitive, realization):
@@ -551,18 +564,24 @@ def _analyze_lookup_component(component, request, graph_locations, primitive, re
 def _lookup_result(table, input_width, output_width, request, provenance):
     if request.domain not in {PropertyDomain.LOOKUP_TABLE, PropertyDomain.BOOLEAN}:
         return unavailable_result(
-            request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+            request,
+            provenance,
+            DiagnosticCode.INAPPLICABLE_DOMAIN,
             f"lookup properties do not apply in {request.domain.value!r}",
         )
     if request.property not in _LOOKUP_PROPERTIES:
         return unavailable_result(
-            request, provenance, DiagnosticCode.UNSUPPORTED_PROPERTY,
+            request,
+            provenance,
+            DiagnosticCode.UNSUPPORTED_PROPERTY,
             f"{request.property.value!r} is not a lookup-table property",
         )
     if request.property is ComponentProperty.BOOMERANG_UNIFORMITY:
         if input_width != output_width or sorted(table) != list(range(1 << input_width)):
             return unavailable_result(
-                request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+                request,
+                provenance,
+                DiagnosticCode.INAPPLICABLE_DOMAIN,
                 "boomerang uniformity requires a bijective square lookup table",
             )
     facts = _exact_lookup_facts(tuple(table), input_width, output_width)
@@ -580,10 +599,12 @@ def _lookup_identity(table, input_width, output_width):
 def _exact_lookup_facts(table, input_width, output_width):
     from claasp_next.components import LookupTable
     from claasp_next.representations.constraints.polynomial import (
-        anf_from_truth_table, vectorial_anf,
+        anf_from_truth_table,
+        vectorial_anf,
     )
     from claasp_next.semantics.cryptanalysis import (
-        SBoxBoomerangSemantics, SBoxTransitionSemantics,
+        SBoxBoomerangSemantics,
+        SBoxTransitionSemantics,
     )
 
     LookupTable(table, input_width, output_width)
@@ -608,7 +629,8 @@ def _exact_lookup_facts(table, input_width, output_width):
         names = tuple(f"x{index}" for index in range(input_width))
         anfs = tuple(
             anf_from_truth_table(
-                tuple((value >> bit) & 1 for value in table), names,
+                tuple((value >> bit) & 1 for value in table),
+                names,
             )
             for bit in reversed(range(output_width))
         )
@@ -637,16 +659,18 @@ def _exact_lookup_facts(table, input_width, output_width):
             for alpha in range(1, input_size)
             for beta in range(1, output_size)
         )
-    return MappingProxyType({
-        ComponentProperty.DIFFERENTIAL_UNIFORMITY: differential_uniformity,
-        ComponentProperty.NONLINEARITY: nonlinearity,
-        ComponentProperty.ALGEBRAIC_DEGREE: algebraic_degree,
-        ComponentProperty.BALANCED: balanced,
-        ComponentProperty.APN: differential_uniformity == 2,
-        ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER: differential_branch,
-        ComponentProperty.LINEAR_BRANCH_NUMBER: linear_branch,
-        ComponentProperty.BOOMERANG_UNIFORMITY: boomerang,
-    })
+    return MappingProxyType(
+        {
+            ComponentProperty.DIFFERENTIAL_UNIFORMITY: differential_uniformity,
+            ComponentProperty.NONLINEARITY: nonlinearity,
+            ComponentProperty.ALGEBRAIC_DEGREE: algebraic_degree,
+            ComponentProperty.BALANCED: balanced,
+            ComponentProperty.APN: differential_uniformity == 2,
+            ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER: differential_branch,
+            ComponentProperty.LINEAR_BRANCH_NUMBER: linear_branch,
+            ComponentProperty.BOOMERANG_UNIFORMITY: boomerang,
+        }
+    )
 
 
 def _rectangular_ddt(table, input_size, output_size):
@@ -677,27 +701,38 @@ def _rectangular_walsh(table, input_size, output_size):
 
 
 def _analyze_linear_component(component, request, graph_locations, primitive, realization):
-    from claasp_next.components import BinaryAffineMap, LinearMap, Permutation
-    from claasp_next.domains import BinaryExtensionField, Bit
     from claasp_next.analysis.linear_properties import (
-        exact_branch_number, exact_matrix_order, expand_binary_field_matrix,
-        matrix_is_mds, matrix_rank, permutation_order,
+        exact_branch_number,
+        exact_matrix_order,
+        expand_binary_field_matrix,
+        matrix_is_mds,
+        matrix_rank,
+        permutation_order,
     )
+    from claasp_next.components import BinaryAffineMap, Permutation
+    from claasp_next.domains import BinaryExtensionField, Bit
 
     key = semantic_component_key(component, request.domain)
     provenance = ComponentAnalysisProvenance(
-        _semantic_key_identity(key), "exact_field_linear_algebra",
-        primitive, realization, graph_locations,
+        _semantic_key_identity(key),
+        "exact_field_linear_algebra",
+        primitive,
+        realization,
+        graph_locations,
     )
     supported = {
-        ComponentProperty.RANK, ComponentProperty.INVERTIBLE,
-        ComponentProperty.ORDER, ComponentProperty.MDS,
+        ComponentProperty.RANK,
+        ComponentProperty.INVERTIBLE,
+        ComponentProperty.ORDER,
+        ComponentProperty.MDS,
         ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
         ComponentProperty.LINEAR_BRANCH_NUMBER,
     }
     if request.property not in supported:
         return unavailable_result(
-            request, provenance, DiagnosticCode.UNSUPPORTED_PROPERTY,
+            request,
+            provenance,
+            DiagnosticCode.UNSUPPORTED_PROPERTY,
             f"{request.property.value!r} is not a linear-map property",
         )
     if isinstance(component, Permutation):
@@ -715,7 +750,9 @@ def _analyze_linear_component(component, request, graph_locations, primitive, re
         )
 
     matrix = component.matrix
-    domain = Bit() if isinstance(component, BinaryAffineMap) else component.inputs[0].value_type.domain
+    domain = (
+        Bit() if isinstance(component, BinaryAffineMap) else component.inputs[0].value_type.domain
+    )
     analysis_matrix = matrix
     analysis_domain = domain
     if request.domain is PropertyDomain.BIT_LINEAR and isinstance(domain, BinaryExtensionField):
@@ -723,19 +760,25 @@ def _analyze_linear_component(component, request, graph_locations, primitive, re
         analysis_domain = Bit()
     elif request.domain is PropertyDomain.BIT_LINEAR and not isinstance(domain, Bit):
         return unavailable_result(
-            request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+            request,
+            provenance,
+            DiagnosticCode.INAPPLICABLE_DOMAIN,
             "bit-linear analysis requires Bit or binary-extension-field semantics",
         )
     elif request.domain in {PropertyDomain.WORD_LINEAR, PropertyDomain.FINITE_FIELD_LINEAR}:
         if isinstance(component, BinaryAffineMap) or isinstance(domain, Bit):
             return unavailable_result(
-                request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+                request,
+                provenance,
+                DiagnosticCode.INAPPLICABLE_DOMAIN,
                 "word/field analysis requires a non-binary scalar field matrix",
             )
     else:
         if request.domain is not PropertyDomain.BIT_LINEAR:
             return unavailable_result(
-                request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+                request,
+                provenance,
+                DiagnosticCode.INAPPLICABLE_DOMAIN,
                 f"linear properties do not apply in {request.domain.value!r}",
             )
 
@@ -749,13 +792,19 @@ def _analyze_linear_component(component, request, graph_locations, primitive, re
         dimension = max(len(analysis_matrix), len(analysis_matrix[0]))
         if dimension > 6 and all(value != 0 for row in analysis_matrix for value in row):
             return unavailable_result(
-                request, provenance, DiagnosticCode.BUDGET_EXHAUSTED,
+                request,
+                provenance,
+                DiagnosticCode.BUDGET_EXHAUSTED,
                 "exact all-minors MDS validation is limited to dimension six; use an explicit driver",
             )
         value = matrix_is_mds(analysis_matrix, analysis_domain)
     elif request.property is ComponentProperty.ORDER:
         maximum_steps = request.option_map.get("maximum_steps", 65536)
-        if not isinstance(maximum_steps, int) or isinstance(maximum_steps, bool) or maximum_steps <= 0:
+        if (
+            not isinstance(maximum_steps, int)
+            or isinstance(maximum_steps, bool)
+            or maximum_steps <= 0
+        ):
             raise ValueError("maximum_steps must be a positive integer")
         offset = None
         if isinstance(component, BinaryAffineMap):
@@ -765,30 +814,47 @@ def _analyze_linear_component(component, request, graph_locations, primitive, re
             analysis_matrix, analysis_domain, maximum_steps=maximum_steps, offset=offset
         )
         if value is None:
-            code = DiagnosticCode.INAPPLICABLE_DOMAIN if not square or rank != len(analysis_matrix) else DiagnosticCode.BUDGET_EXHAUSTED
-            message = "order requires an invertible square map" if code is DiagnosticCode.INAPPLICABLE_DOMAIN else "matrix order was not reached within maximum_steps"
+            code = (
+                DiagnosticCode.INAPPLICABLE_DOMAIN
+                if not square or rank != len(analysis_matrix)
+                else DiagnosticCode.BUDGET_EXHAUSTED
+            )
+            message = (
+                "order requires an invertible square map"
+                if code is DiagnosticCode.INAPPLICABLE_DOMAIN
+                else "matrix order was not reached within maximum_steps"
+            )
             return unavailable_result(request, provenance, code, message)
     else:
         maximum_vectors = request.option_map.get("maximum_vectors", 65536)
-        if not isinstance(maximum_vectors, int) or isinstance(maximum_vectors, bool) or maximum_vectors <= 0:
+        if (
+            not isinstance(maximum_vectors, int)
+            or isinstance(maximum_vectors, bool)
+            or maximum_vectors <= 0
+        ):
             raise ValueError("maximum_vectors must be a positive integer")
         value = exact_branch_number(
-            analysis_matrix, analysis_domain,
+            analysis_matrix,
+            analysis_domain,
             linear=request.property is ComponentProperty.LINEAR_BRANCH_NUMBER,
             maximum_vectors=maximum_vectors,
         )
         if value is None:
             return unavailable_result(
-                request, provenance, DiagnosticCode.BUDGET_EXHAUSTED,
+                request,
+                provenance,
+                DiagnosticCode.BUDGET_EXHAUSTED,
                 "exact branch-number enumeration exceeds maximum_vectors",
             )
-    return ComponentPropertyResult(
-        request, PropertyClaim.EXACT, value, True, provenance
-    )
+    return ComponentPropertyResult(request, PropertyClaim.EXACT, value, True, provenance)
 
 
 def _semantic_key_identity(key):
-    digest = sha256(repr((key.component_type, key.input_types, key.output_type, key.parameters, key.domain)).encode()).hexdigest()[:16]
+    digest = sha256(
+        repr(
+            (key.component_type, key.input_types, key.output_type, key.parameters, key.domain)
+        ).encode()
+    ).hexdigest()[:16]
     return f"{key.component_type.rsplit('.', 1)[-1]}:{key.domain.value}:{digest}"
 
 
@@ -798,21 +864,31 @@ def _analyze_boolean_word_component(component, request, graph_locations, primiti
 
     provenance = ComponentAnalysisProvenance(
         _semantic_key_identity(semantic_component_key(component, request.domain)),
-        "exact_sparse_component_anf", primitive, realization, graph_locations,
+        "exact_sparse_component_anf",
+        primitive,
+        realization,
+        graph_locations,
     )
     if request.domain not in {PropertyDomain.BOOLEAN, PropertyDomain.WORD_OPERATION}:
         return unavailable_result(
-            request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+            request,
+            provenance,
+            DiagnosticCode.INAPPLICABLE_DOMAIN,
             "Boolean word properties require the boolean or word-operation domain",
         )
     supported = {
-        ComponentProperty.ALGEBRAIC_DEGREE, ComponentProperty.TERM_COUNT,
-        ComponentProperty.VARIABLE_COUNT, ComponentProperty.LINEAR,
-        ComponentProperty.INVERTIBLE, ComponentProperty.ORDER,
+        ComponentProperty.ALGEBRAIC_DEGREE,
+        ComponentProperty.TERM_COUNT,
+        ComponentProperty.VARIABLE_COUNT,
+        ComponentProperty.LINEAR,
+        ComponentProperty.INVERTIBLE,
+        ComponentProperty.ORDER,
     }
     if request.property not in supported:
         return unavailable_result(
-            request, provenance, DiagnosticCode.UNSUPPORTED_PROPERTY,
+            request,
+            provenance,
+            DiagnosticCode.UNSUPPORTED_PROPERTY,
             f"{request.property.value!r} is not a Boolean word-operation property",
         )
     polynomials = BooleanSymbolicEvaluator().component_anfs(component)
@@ -836,7 +912,9 @@ def _analyze_boolean_word_component(component, request, graph_locations, primiti
         value = _word_permutation_property(component, request.property)
         if value is None:
             return unavailable_result(
-                request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+                request,
+                provenance,
+                DiagnosticCode.INAPPLICABLE_DOMAIN,
                 f"{request.property.value} is not defined for {type(component).__name__} without retained operands",
             )
     return ComponentPropertyResult(request, PropertyClaim.EXACT, value, True, provenance)
@@ -844,6 +922,7 @@ def _analyze_boolean_word_component(component, request, graph_locations, primiti
 
 def _word_permutation_property(component, property_):
     from math import gcd
+
     from claasp_next.components import BitwiseNot, Rotate
 
     if isinstance(component, BitwiseNot):
@@ -859,21 +938,31 @@ def _word_permutation_property(component, property_):
 def _analyze_feedback_component(component, request, graph_locations, primitive, realization):
     provenance = ComponentAnalysisProvenance(
         _semantic_key_identity(semantic_component_key(component, request.domain)),
-        "typed_feedback_specification", primitive, realization, graph_locations,
+        "typed_feedback_specification",
+        primitive,
+        realization,
+        graph_locations,
     )
     if request.domain is not PropertyDomain.FEEDBACK_REGISTER:
         return unavailable_result(
-            request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+            request,
+            provenance,
+            DiagnosticCode.INAPPLICABLE_DOMAIN,
             "feedback properties require the feedback-register domain",
         )
     supported = {
-        ComponentProperty.REGISTER_STRUCTURE, ComponentProperty.ALGEBRAIC_DEGREE,
-        ComponentProperty.TERM_COUNT, ComponentProperty.VARIABLE_COUNT,
-        ComponentProperty.LINEAR, ComponentProperty.CONNECTION_POLYNOMIAL,
+        ComponentProperty.REGISTER_STRUCTURE,
+        ComponentProperty.ALGEBRAIC_DEGREE,
+        ComponentProperty.TERM_COUNT,
+        ComponentProperty.VARIABLE_COUNT,
+        ComponentProperty.LINEAR,
+        ComponentProperty.CONNECTION_POLYNOMIAL,
     }
     if request.property not in supported:
         return unavailable_result(
-            request, provenance, DiagnosticCode.UNSUPPORTED_PROPERTY,
+            request,
+            provenance,
+            DiagnosticCode.UNSUPPORTED_PROPERTY,
             f"{request.property.value!r} is not a feedback-register property",
         )
     degrees = tuple(
@@ -886,32 +975,57 @@ def _analyze_feedback_component(component, request, graph_locations, primitive, 
         for register in component.registers
     )
     if request.property is ComponentProperty.REGISTER_STRUCTURE:
-        value = tuple({
-            "length": register.length,
-            "feedback": tuple((term.positions, term.coefficient) for term in register.feedback),
-            "clock": None if register.clock is None else tuple(
-                (term.positions, term.coefficient) for term in register.clock
-            ),
-        } for register in component.registers)
+        value = tuple(
+            {
+                "length": register.length,
+                "feedback": tuple((term.positions, term.coefficient) for term in register.feedback),
+                "clock": None
+                if register.clock is None
+                else tuple((term.positions, term.coefficient) for term in register.clock),
+            }
+            for register in component.registers
+        )
     elif request.property is ComponentProperty.ALGEBRAIC_DEGREE:
         value = degrees
     elif request.property is ComponentProperty.TERM_COUNT:
-        value = tuple(sum(term.coefficient != 0 for term in register.feedback) for register in component.registers)
+        value = tuple(
+            sum(term.coefficient != 0 for term in register.feedback)
+            for register in component.registers
+        )
     elif request.property is ComponentProperty.VARIABLE_COUNT:
-        value = tuple(len({position for term in register.feedback if term.coefficient for position in term.positions}) for register in component.registers)
+        value = tuple(
+            len(
+                {
+                    position
+                    for term in register.feedback
+                    if term.coefficient
+                    for position in term.positions
+                }
+            )
+            for register in component.registers
+        )
     elif request.property is ComponentProperty.LINEAR:
         value = linear
     else:
         if not linear:
             return unavailable_result(
-                request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+                request,
+                provenance,
+                DiagnosticCode.INAPPLICABLE_DOMAIN,
                 "connection polynomials require unconditional linear feedback rules",
             )
-        value = tuple({
-            "degree": register.length,
-            "terms": tuple((term.positions[0] if term.positions else None, term.coefficient) for term in register.feedback if term.coefficient),
-            "domain": repr(component.output_type.domain),
-        } for register in component.registers)
+        value = tuple(
+            {
+                "degree": register.length,
+                "terms": tuple(
+                    (term.positions[0] if term.positions else None, term.coefficient)
+                    for term in register.feedback
+                    if term.coefficient
+                ),
+                "domain": repr(component.output_type.domain),
+            }
+            for register in component.registers
+        )
     return ComponentPropertyResult(request, PropertyClaim.EXACT, value, True, provenance)
 
 

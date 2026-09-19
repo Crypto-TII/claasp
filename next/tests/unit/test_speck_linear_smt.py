@@ -19,8 +19,15 @@ def test_speck_linear_formula_is_deterministic_and_bounded():
     assert "weight_bound" in first.provenance
 
 
-@pytest.mark.parametrize("options", [{"fixed_weight": -1}, {"maximum_weight": True},
-                                    {"fixed_weight": 1.5}, {"maximum_weight": 1, "fixed_weight": 1}])
+@pytest.mark.parametrize(
+    "options",
+    [
+        {"fixed_weight": -1},
+        {"maximum_weight": True},
+        {"fixed_weight": 1.5},
+        {"maximum_weight": 1, "fixed_weight": 1},
+    ],
+)
 def test_speck_linear_model_rejects_invalid_weights(options):
     with pytest.raises(ValueError):
         SpeckLinearSMTModel(Speck(number_of_rounds=3), **options)
@@ -43,8 +50,9 @@ def test_fixed_linear_masks_must_fit_block_width(mask):
 
 def test_fixed_linear_mask_constraints_are_complete_and_deterministic():
     primitive = Speck(number_of_rounds=3)
-    model = SpeckLinearSMTModel(primitive, fixed_weight=5,
-                               input_mask=0x03805224, output_mask=0x40A000C1)
+    model = SpeckLinearSMTModel(
+        primitive, fixed_weight=5, input_mask=0x03805224, output_mask=0x40A000C1
+    )
     formula = model.smt_formula()
     assert formula.provenance.count("fixed_linear_input") == 32
     assert formula.provenance.count("fixed_linear_output") == 32
@@ -56,4 +64,6 @@ def test_speck_linear_checker_rejects_wrong_component_provenance():
     trail = find_four_round_speck_xor_linear(primitive).trail
     assert check_speck_linear_trail(primitive, trail)
     bad_step = replace(trail.steps[0], component_id="wrong")
-    assert not check_speck_linear_trail(primitive, replace(trail, steps=(bad_step,) + trail.steps[1:]))
+    assert not check_speck_linear_trail(
+        primitive, replace(trail, steps=(bad_step,) + trail.steps[1:])
+    )

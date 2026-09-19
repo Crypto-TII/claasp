@@ -9,6 +9,7 @@ from claasp_next.utils import (
     matrix_is_invertible,
     normalize_matrix,
 )
+
 from ._base import positive
 
 
@@ -44,22 +45,16 @@ class BinaryAffineMap(Primitive):
     ) -> None:
         word_size = positive(word_size, "word_size")
         unit_count = positive(unit_count, "unit_count")
-        matrix = normalize_matrix(
-            identity_matrix(word_size) if matrix is None else matrix
-        )
+        matrix = normalize_matrix(identity_matrix(word_size) if matrix is None else matrix)
         field = BinaryExtensionField(word_size, first_irreducible_polynomial(word_size))
         kind = (
             PrimitiveKind.PERMUTATION
             if matrix_is_invertible(matrix, Bit())
             else PrimitiveKind.FUNCTION
         )
-        super().__init__(
-            "binary_affine_map", {"input": ValueType(field, (unit_count,))}, kind=kind
-        )
+        super().__init__("binary_affine_map", {"input": ValueType(field, (unit_count,))}, kind=kind)
         self.add_round()
-        output = self.add_component(
-            BinaryAffineMapComponent(self.input("input"), matrix, offset)
-        )
+        output = self.add_component(BinaryAffineMapComponent(self.input("input"), matrix, offset))
         self.set_output(output)
 
 

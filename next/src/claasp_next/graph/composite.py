@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
-from claasp_next.graph.component import Component
 from claasp_next.graph.binding import ValueBinding
+from claasp_next.graph.component import Component
 from claasp_next.graph.port import Port, PortLike, Selection, as_selection
 from claasp_next.graph.value_type import ValueType
 
@@ -51,7 +51,7 @@ class CompositeTemplate:
     """A nested scope retained inside a composite definition."""
 
     path: str
-    definition: "CompositeDefinition"
+    definition: CompositeDefinition
     input_bindings: tuple[tuple[str, Selection], ...]
     output_bindings: tuple[tuple[str, Selection], ...]
     component_ids: tuple[str, ...]
@@ -121,8 +121,11 @@ class CompositeDefinition:
         primitive = Primitive(self.name, dict(self.input_types), provenance=self.provenance)
         for binding in self.bindings:
             primitive._add_binding(
-                binding.kind, binding.inputs, binding.output_type,
-                word_width=binding.word_width, binding_id=binding.binding_id,
+                binding.kind,
+                binding.inputs,
+                binding.output_type,
+                word_width=binding.word_width,
+                binding_id=binding.binding_id,
                 _validate_inputs=False,
             )
         for components in self.rounds:
@@ -194,7 +197,7 @@ class CompositeInstance:
 
         return CompositeOutputs(self.output_bindings)
 
-    def scope(self, relative_path: str) -> "CompositeInstance":
+    def scope(self, relative_path: str) -> CompositeInstance:
         """Resolve a nested scope relative to this instance."""
 
         return self._primitive.scope(f"{self.path}/{relative_path}")
@@ -277,7 +280,9 @@ class CompositeBuilder:
 
         return self._primitive.add_component(component, primitive_round=primitive_round)
 
-    def add_composite(self, definition: CompositeDefinition, bindings: Mapping[str, PortLike], **kwargs):
+    def add_composite(
+        self, definition: CompositeDefinition, bindings: Mapping[str, PortLike], **kwargs
+    ):
         """Instantiate a nested reusable definition in this scope."""
 
         return self._primitive.add_composite(definition, bindings, **kwargs)
@@ -330,7 +335,9 @@ class CompositeBuilder:
         return CompositeDefinition(
             name=self.name,
             input_types=tuple((name, port.value_type) for name, port in self.input_ports.items()),
-            rounds=tuple(tuple(primitive_round.components) for primitive_round in self._primitive.rounds),
+            rounds=tuple(
+                tuple(primitive_round.components) for primitive_round in self._primitive.rounds
+            ),
             bindings=self._primitive.bindings,
             outputs=tuple(self._outputs.items()),
             provenance=tuple(sorted((provenance or {}).items())),

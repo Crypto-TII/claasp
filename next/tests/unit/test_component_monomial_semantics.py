@@ -5,7 +5,9 @@ from claasp_next.semantics.cryptanalysis import ComponentMonomialSemantics
 
 
 def _component(primitive, component_id):
-    return next(component for component in primitive.components if component.component_id == component_id)
+    return next(
+        component for component in primitive.components if component.component_id == component_id
+    )
 
 
 def test_sbox_and_permutation_semantics_are_selected_from_typed_components():

@@ -136,7 +136,8 @@ def continuous_speck32(
         left = continuous_xor(left, zero_difference)
         right = continuous_xor(continuous_rotate_left(right, 2), left)
     return ContinuousHeuristicResult(
-        left + right, 1e-4,
+        left + right,
+        1e-4,
         "legacy CLAASP continuous Speck model; BGGMP2023 equations 3--5",
     )
 

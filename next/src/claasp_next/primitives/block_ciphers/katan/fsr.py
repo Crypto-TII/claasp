@@ -17,7 +17,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-"""
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
+from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+
+from .primitive import CONFIGURATION, get_ir_bit, normalize_number_of_rounds
+
+_ARCHITECTURE = """
 FSR-based implementation of the KATAN block primitive.
 
 This module re-encodes each CLAASP round as a single ``add_FSR_component`` call
@@ -53,11 +58,6 @@ Output bit order
 The gate-level primitive outputs ``reversed(l2 + l1)``.  In FSR coordinates that
 equals  FSR[len_l2 .. block-1] ++ FSR[0 .. len_l2-1].
 """
-
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from .primitive import CONFIGURATION, get_ir_bit, normalize_number_of_rounds
-from claasp_next.graph.bit_builder import BitState
-from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"block_bit_size": 32, "key_bit_size": 80, "number_of_rounds": 254},
@@ -102,8 +102,8 @@ class KatanFSR(BitGraphPrimitive):
         config = CONFIGURATION[block_bit_size]
         len_l1 = config["len_l1"]
         len_l2 = config["len_l2"]
-        x = config["x"]   # (x1, x2, x3, x4, x5) — L1 tap indices
-        y = config["y"]   # (y1, y2, y3, y4, y5, y6) — L2 tap indices
+        x = config["x"]  # (x1, x2, x3, x4, x5) — L1 tap indices
+        y = config["y"]  # (y1, y2, y3, y4, y5, y6) — L2 tap indices
         steps = config["steps"]  # register clocks per CLAASP round
 
         number_of_rounds = normalize_number_of_rounds(number_of_rounds)
@@ -129,14 +129,14 @@ class KatanFSR(BitGraphPrimitive):
             [block_bit_size - 1 - x[0]],
             [block_bit_size - 1 - x[1]],
             [block_bit_size - 1 - x[2], block_bit_size - 1 - x[3]],  # AND(l1[x3], l1[x4])
-            [block_bit_size],                                          # ka
+            [block_bit_size],  # ka
         ]
         fa_poly_with_ir = [
             [block_bit_size - 1 - x[0]],
             [block_bit_size - 1 - x[1]],
             [block_bit_size - 1 - x[2], block_bit_size - 1 - x[3]],  # AND(l1[x3], l1[x4])
-            [block_bit_size - 1 - x[4]],                              # IR * l1[x5]  (IR=1 only)
-            [block_bit_size],                                          # ka
+            [block_bit_size - 1 - x[4]],  # IR * l1[x5]  (IR=1 only)
+            [block_bit_size],  # ka
         ]
 
         # L1 register (register 1) feedback = fb  (uses L2 taps + kb; same every round)
@@ -145,16 +145,13 @@ class KatanFSR(BitGraphPrimitive):
             [len_l2 - 1 - y[1]],
             [len_l2 - 1 - y[2], len_l2 - 1 - y[3]],  # AND(l2[y3], l2[y4])
             [len_l2 - 1 - y[4], len_l2 - 1 - y[5]],  # AND(l2[y5], l2[y6])
-            [block_bit_size + 1],                      # kb
+            [block_bit_size + 1],  # kb
         ]
 
         # ------------------------------------------------------------------ #
         # Key bits (BitState list, expanded via LFSR on demand)        #
         # ------------------------------------------------------------------ #
-        key_bits = [
-            BitState([INPUT_KEY], [[key_bit_size - 1 - i]])
-            for i in range(key_bit_size)
-        ]
+        key_bits = [BitState([INPUT_KEY], [[key_bit_size - 1 - i]]) for i in range(key_bit_size)]
 
         # ------------------------------------------------------------------ #
         # State bit positions                                                 #
@@ -180,12 +177,16 @@ class KatanFSR(BitGraphPrimitive):
 
             # Expand key schedule: need key_bits[2r] and key_bits[2r+1]
             while len(key_bits) <= 2 * round_number + 1:
-                key_bits.append(self._xor_bits([
-                    key_bits[-80],
-                    key_bits[-61],
-                    key_bits[-50],
-                    key_bits[-13],
-                ]))
+                key_bits.append(
+                    self._xor_bits(
+                        [
+                            key_bits[-80],
+                            key_bits[-61],
+                            key_bits[-50],
+                            key_bits[-13],
+                        ]
+                    )
+                )
 
             ka = key_bits[2 * round_number]
             kb = key_bits[2 * round_number + 1]
@@ -195,7 +196,7 @@ class KatanFSR(BitGraphPrimitive):
 
             fsr_desc = [
                 [[len_l2, fa_poly], [len_l1, fb_poly]],
-                1,   # bit cell size = 1
+                1,  # bit cell size = 1
             ]
             if steps > 1:
                 fsr_desc.append(steps)
@@ -210,13 +211,9 @@ class KatanFSR(BitGraphPrimitive):
             state_bits = list(range(block_bit_size))
 
             if round_number != number_of_rounds - 1:
-                self.add_round_output_component(
-                    [fsr.id], [output_positions], block_bit_size
-                )
+                self.add_round_output_component([fsr.id], [output_positions], block_bit_size)
 
-        self.add_primitive_output_component(
-            [fsr.id], [output_positions], block_bit_size
-        )
+        self.add_primitive_output_component([fsr.id], [output_positions], block_bit_size)
 
     def _xor_bits(self, bits):
         if len(bits) == 1:

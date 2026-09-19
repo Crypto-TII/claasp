@@ -18,10 +18,8 @@
 
 from copy import deepcopy
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import get_inputs_parameter
 
 IRREDUCIBLE_POLYNOMIAL = 0x13
 M = [
@@ -79,17 +77,25 @@ class Photon(BitGraphPrimitive):
         # state initialization
         state = []
         for i in range(self.d * self.d):
-            state.append(BitState([INPUT_PLAINTEXT], [[k + i * self.cell_bits for k in range(self.cell_bits)]]))
+            state.append(
+                BitState(
+                    [INPUT_PLAINTEXT], [[k + i * self.cell_bits for k in range(self.cell_bits)]]
+                )
+            )
 
         # round constant setup
         components_rc = []
         for rc in RC:
             self.add_constant_component(self.cell_bits, rc)
-            components_rc.append(BitState([self.get_current_component_id()], [list(range(self.cell_bits))]))
+            components_rc.append(
+                BitState([self.get_current_component_id()], [list(range(self.cell_bits))])
+            )
         components_ic = []
         for ic in IC:
             self.add_constant_component(self.cell_bits, ic)
-            components_ic.append(BitState([self.get_current_component_id()], [list(range(self.cell_bits))]))
+            components_ic.append(
+                BitState([self.get_current_component_id()], [list(range(self.cell_bits))])
+            )
 
         for round_number in range(number_of_rounds):
             # round function
@@ -112,14 +118,20 @@ class Photon(BitGraphPrimitive):
         # state[i,0] = state[i,0] xor RC[r] xor IC[i] for i in range(self.d)
         """Build the round function stage in this primitive's typed operation graph."""
         for i in range(self.d):
-            inputs_id, inputs_pos = get_inputs_parameter([state[i * self.d], component_rc, components_ic[i]])
+            inputs_id, inputs_pos = get_inputs_parameter(
+                [state[i * self.d], component_rc, components_ic[i]]
+            )
             self.add_xor_component(inputs_id, inputs_pos, self.cell_bits)
-            state[i * self.d] = BitState([self.get_current_component_id()], [list(range(self.cell_bits))])
+            state[i * self.d] = BitState(
+                [self.get_current_component_id()], [list(range(self.cell_bits))]
+            )
 
         # SubCells
         # state[i,j] = s_box(state[i, j])
         for i in range(self.d * self.d):
-            self.add_sbox_component(state[i].id, state[i].input_bit_positions, self.cell_bits, S_BOX)
+            self.add_sbox_component(
+                state[i].id, state[i].input_bit_positions, self.cell_bits, S_BOX
+            )
             state[i] = BitState([self.get_current_component_id()], [list(range(self.cell_bits))])
 
         # ShiftRows
@@ -133,13 +145,19 @@ class Photon(BitGraphPrimitive):
         # MixColumnSerials
         # state = M x state
         for i in range(self.d):
-            inputs_id, inputs_pos = get_inputs_parameter([state[i + j * self.d] for j in range(self.d)])
+            inputs_id, inputs_pos = get_inputs_parameter(
+                [state[i + j * self.d] for j in range(self.d)]
+            )
             self.add_mix_column_component(
-                inputs_id, inputs_pos, self.cell_bits * self.d, [M, IRREDUCIBLE_POLYNOMIAL, self.cell_bits]
+                inputs_id,
+                inputs_pos,
+                self.cell_bits * self.d,
+                [M, IRREDUCIBLE_POLYNOMIAL, self.cell_bits],
             )
             for j in range(self.d):
                 state[i + j * self.d] = BitState(
-                    [self.get_current_component_id()], [[k + j * self.cell_bits for k in range(self.cell_bits)]]
+                    [self.get_current_component_id()],
+                    [[k + j * self.cell_bits for k in range(self.cell_bits)]],
                 )
 
         return state

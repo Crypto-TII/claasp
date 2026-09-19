@@ -4,12 +4,15 @@ from itertools import product
 
 import pytest
 
-from claasp_next.primitives import Simon, Speck
-from claasp_next.representations.constraints.sat import CNFFormula
-from claasp_next.representations.constraints.milp import BooleanGraphMILPModel, cnf_to_milp
-from claasp_next.representations.execution import ScalarEvaluator
 from claasp_next.drivers.solvers import GLPKSolver, MILPResult, MILPStatus
-from claasp_next.representations.constraints.milp import MILPModel
+from claasp_next.primitives import Simon, Speck
+from claasp_next.representations.constraints.milp import (
+    BooleanGraphMILPModel,
+    MILPModel,
+    cnf_to_milp,
+)
+from claasp_next.representations.constraints.sat import CNFFormula
+from claasp_next.representations.execution import ScalarEvaluator
 
 
 @pytest.mark.parametrize("clause", [(1,), (-1,), (1, 2), (-1, -2), (1, -2), (1, -1), (1, 1, -2)])
@@ -24,8 +27,9 @@ def test_binary_inequalities_match_every_clause_assignment(clause):
 @pytest.mark.parametrize("primitive", [Speck(number_of_rounds=22), Simon(number_of_rounds=3)])
 def test_full_graph_milp_witness_preserves_nonlinear_operations(primitive):
     model = BooleanGraphMILPModel(primitive)
-    evaluation = ScalarEvaluator().evaluate(primitive, {"plaintext": (0x6574, 0x694C),
-        "key": (0x1918, 0x1110, 0x0908, 0x0100)})
+    evaluation = ScalarEvaluator().evaluate(
+        primitive, {"plaintext": (0x6574, 0x694C), "key": (0x1918, 0x1110, 0x0908, 0x0100)}
+    )
     witness = model.witness(evaluation)
     assert model.milp_model().is_feasible(witness)
     changed = dict(witness)

@@ -21,8 +21,13 @@ class BinaryAffineMap(Component):
     matrix: tuple[tuple[int, ...], ...]
     offset: int
 
-    def __init__(self, component_input: PortLike, matrix: Iterable[Iterable[int]],
-                 offset: int, component_id: str | None = None) -> None:
+    def __init__(
+        self,
+        component_input: PortLike,
+        matrix: Iterable[Iterable[int]],
+        offset: int,
+        component_id: str | None = None,
+    ) -> None:
         component_input = as_selection(component_input)
         domain = component_input.value_type.domain
         if not isinstance(domain, BinaryExtensionField):

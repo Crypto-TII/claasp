@@ -3,11 +3,10 @@ import shutil
 import pytest
 
 from claasp_next import Bit, Primitive, ValueType
-from claasp_next.representations.constraints.sat import BooleanCNFModel
+from claasp_next.components import Add
 from claasp_next.drivers.solvers import MinisatSolver, SatStatus
 from claasp_next.primitives import Present80, Simon, Speck
-from claasp_next.components import Add
-
+from claasp_next.representations.constraints.sat import BooleanCNFModel
 
 pytestmark = pytest.mark.external
 
@@ -32,7 +31,9 @@ def test_minisat_solves_and_refutes_named_present_constraints():
 
 
 def test_high_level_analysis_recovers_an_unknown_input():
-    primitive = Primitive("xor", {"plaintext": ValueType(Bit(), (1,)), "key": ValueType(Bit(), (1,))})
+    primitive = Primitive(
+        "xor", {"plaintext": ValueType(Bit(), (1,)), "key": ValueType(Bit(), (1,))}
+    )
     primitive.add_round()
     output = primitive.add_component(Add((primitive.input("plaintext"), primitive.input("key"))))
     primitive.set_output(output)
@@ -72,7 +73,9 @@ def test_and_word_graph_recovers_a_simon_plaintext():
     plaintext, key = 0x65656877, 0x1918111009080100
     ciphertext = primitive.evaluate(plaintext, key)
     result = primitive.analyze().recover_input(
-        "plaintext", known_inputs={"key": key}, output=ciphertext,
+        "plaintext",
+        known_inputs={"key": key},
+        output=ciphertext,
         solver=MinisatSolver(timeout_seconds=10),
     )
     assert result.is_satisfiable

@@ -17,10 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import get_inputs_parameter
 
 GASTON_NROWS = 5
 WORD_SIZE = 64
@@ -109,7 +107,9 @@ class GastonSboxTheta(BitGraphPrimitive):
     def gaston_rho_east(self, state):
         """Build the gaston rho east stage in this primitive's typed operation graph."""
         for row in range(GASTON_NROWS):
-            self.add_rotate_component(state[row].id, state[row].input_bit_positions, WORD_SIZE, -GASTON_e[row])
+            self.add_rotate_component(
+                state[row].id, state[row].input_bit_positions, WORD_SIZE, -GASTON_e[row]
+            )
             state[row] = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         return state
@@ -118,17 +118,22 @@ class GastonSboxTheta(BitGraphPrimitive):
         """Build the gaston theta stage in this primitive's typed operation graph."""
         inputs_id, inputs_pos = get_inputs_parameter([state[i] for i in range(GASTON_NROWS)])
         rotation_amounts = [GASTON_r, GASTON_s, GASTON_u, *GASTON_t]
-        self.add_theta_gaston_component(inputs_id, inputs_pos, GASTON_NROWS * WORD_SIZE, rotation_amounts)
+        self.add_theta_gaston_component(
+            inputs_id, inputs_pos, GASTON_NROWS * WORD_SIZE, rotation_amounts
+        )
         for row in range(GASTON_NROWS):
             state[row] = BitState(
-                [self.get_current_component_id()], [list(range(row * WORD_SIZE, (row + 1) * WORD_SIZE))]
+                [self.get_current_component_id()],
+                [list(range(row * WORD_SIZE, (row + 1) * WORD_SIZE))],
             )
         return state
 
     def gaston_rho_west(self, state):
         """Build the gaston rho west stage in this primitive's typed operation graph."""
         for row in range(GASTON_NROWS):
-            self.add_rotate_component(state[row].id, state[row].input_bit_positions, WORD_SIZE, -GASTON_w[row])
+            self.add_rotate_component(
+                state[row].id, state[row].input_bit_positions, WORD_SIZE, -GASTON_w[row]
+            )
             state[row] = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         return state

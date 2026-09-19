@@ -1,13 +1,13 @@
 """Optional bounded compiler and execution drivers for generated C."""
 
+import os
+import shutil
+import subprocess
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from hashlib import sha256
-import os
 from pathlib import Path
-import shutil
-import subprocess
 from tempfile import TemporaryDirectory
 from time import monotonic
 
@@ -58,8 +58,10 @@ class NativeArtifact:
         if sha256(self.binary).hexdigest() != self.binary_digest:
             raise ValueError("native binary digest does not match its bytes")
         for label, digest in (("source", self.source_digest), ("primitive", self.primitive_digest)):
-            if not isinstance(digest, str) or len(digest) != 64 or any(
-                character not in "0123456789abcdef" for character in digest
+            if (
+                not isinstance(digest, str)
+                or len(digest) != 64
+                or any(character not in "0123456789abcdef" for character in digest)
             ):
                 raise ValueError(f"native {label} digest must be lowercase SHA-256")
         if not self.realization_identity or not self.compiler or not self.compiler_version:
@@ -161,13 +163,24 @@ def compile_native(
     options = tuple(options)
     if any(option not in _ALLOWED_OPTIONS for option in options):
         raise ValueError(f"compiler options must be selected from {sorted(_ALLOWED_OPTIONS)}")
-    if not isinstance(timeout_seconds, (int, float)) or isinstance(timeout_seconds, bool) or not 0 < timeout_seconds <= 60:
+    if (
+        not isinstance(timeout_seconds, (int, float))
+        or isinstance(timeout_seconds, bool)
+        or not 0 < timeout_seconds <= 60
+    ):
         raise ValueError("timeout_seconds must be in (0, 60]")
     executable = shutil.which(compiler)
     if executable is None:
         return NativeCompilationResult(
-            NativeCompilationStatus.UNAVAILABLE, None, (), None, 0.0, "",
-            f"compiler {compiler!r} is unavailable", None, artifact.source_digest,
+            NativeCompilationStatus.UNAVAILABLE,
+            None,
+            (),
+            None,
+            0.0,
+            "",
+            f"compiler {compiler!r} is unavailable",
+            None,
+            artifact.source_digest,
         )
     version = _compiler_version(executable)
     with TemporaryDirectory(prefix="claasp-native-") as directory:
@@ -178,31 +191,61 @@ def compile_native(
         started = monotonic()
         try:
             completed = subprocess.run(
-                command, capture_output=True, text=True, timeout=timeout_seconds,
-                check=False, cwd=directory,
+                command,
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+                check=False,
+                cwd=directory,
                 env={"LANG": "C", "LC_ALL": "C", "PATH": os.environ.get("PATH", "")},
             )
         except subprocess.TimeoutExpired as error:
             return NativeCompilationResult(
-                NativeCompilationStatus.TIMEOUT, None, command, version,
-                monotonic() - started, error.stdout or "", error.stderr or "", None,
+                NativeCompilationStatus.TIMEOUT,
+                None,
+                command,
+                version,
+                monotonic() - started,
+                error.stdout or "",
+                error.stderr or "",
+                None,
                 artifact.source_digest,
             )
         runtime = monotonic() - started
         if completed.returncode != 0 or not binary.is_file():
             return NativeCompilationResult(
-                NativeCompilationStatus.FAILED, None, command, version, runtime,
-                completed.stdout, completed.stderr, completed.returncode, artifact.source_digest,
+                NativeCompilationStatus.FAILED,
+                None,
+                command,
+                version,
+                runtime,
+                completed.stdout,
+                completed.stderr,
+                completed.returncode,
+                artifact.source_digest,
             )
         payload = binary.read_bytes()
         native = NativeArtifact(
-            payload, sha256(payload).hexdigest(), artifact.source_digest,
-            artifact.primitive_digest, artifact.realization_identity, executable,
-            version, command, options,
+            payload,
+            sha256(payload).hexdigest(),
+            artifact.source_digest,
+            artifact.primitive_digest,
+            artifact.realization_identity,
+            executable,
+            version,
+            command,
+            options,
         )
         return NativeCompilationResult(
-            NativeCompilationStatus.SUCCESS, native, command, version, runtime,
-            completed.stdout, completed.stderr, completed.returncode, artifact.source_digest,
+            NativeCompilationStatus.SUCCESS,
+            native,
+            command,
+            version,
+            runtime,
+            completed.stdout,
+            completed.stderr,
+            completed.returncode,
+            artifact.source_digest,
         )
 
 
@@ -232,7 +275,11 @@ def run_compiled(
         raise ValueError("compiled artifact belongs to a different primitive graph")
     if sha256(artifact.binary).hexdigest() != artifact.binary_digest:
         raise ValueError("compiled artifact binary digest is invalid")
-    if not isinstance(timeout_seconds, (int, float)) or isinstance(timeout_seconds, bool) or not 0 < timeout_seconds <= 60:
+    if (
+        not isinstance(timeout_seconds, (int, float))
+        or isinstance(timeout_seconds, bool)
+        or not 0 < timeout_seconds <= 60
+    ):
         raise ValueError("timeout_seconds must be in (0, 60]")
     arguments = _hex_arguments(primitive, inputs)
     with TemporaryDirectory(prefix="claasp-run-") as directory:
@@ -243,49 +290,95 @@ def run_compiled(
         started = monotonic()
         try:
             completed = subprocess.run(
-                command, capture_output=True, text=True, timeout=timeout_seconds,
-                check=False, cwd=directory,
+                command,
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+                check=False,
+                cwd=directory,
                 env={"LANG": "C", "LC_ALL": "C"},
             )
         except subprocess.TimeoutExpired as error:
             return _native_result(
-                NativeExecutionStatus.TIMEOUT, None, command, monotonic() - started,
-                error.stdout or "", error.stderr or "", None, artifact, primitive,
+                NativeExecutionStatus.TIMEOUT,
+                None,
+                command,
+                monotonic() - started,
+                error.stdout or "",
+                error.stderr or "",
+                None,
+                artifact,
+                primitive,
             )
         runtime = monotonic() - started
         if completed.returncode:
             return _native_result(
-                NativeExecutionStatus.FAILED, None, command, runtime,
-                completed.stdout, completed.stderr, completed.returncode, artifact, primitive,
+                NativeExecutionStatus.FAILED,
+                None,
+                command,
+                runtime,
+                completed.stdout,
+                completed.stderr,
+                completed.returncode,
+                artifact,
+                primitive,
             )
         try:
             packed = int(completed.stdout.strip(), 16)
             output = primitive._decode_boundary(packed, primitive.output.value_type)
         except (TypeError, ValueError) as error:
             return _native_result(
-                NativeExecutionStatus.FAILED, None, command, runtime,
-                completed.stdout, f"invalid native output: {error}", completed.returncode,
-                artifact, primitive,
+                NativeExecutionStatus.FAILED,
+                None,
+                command,
+                runtime,
+                completed.stdout,
+                f"invalid native output: {error}",
+                completed.returncode,
+                artifact,
+                primitive,
             )
         return _native_result(
-            NativeExecutionStatus.SUCCESS, output, command, runtime,
-            completed.stdout, completed.stderr, completed.returncode, artifact, primitive,
+            NativeExecutionStatus.SUCCESS,
+            output,
+            command,
+            runtime,
+            completed.stdout,
+            completed.stderr,
+            completed.returncode,
+            artifact,
+            primitive,
         )
 
 
-def _native_result(status, output, command, runtime, stdout, stderr, return_code, artifact, primitive):
+def _native_result(
+    status, output, command, runtime, stdout, stderr, return_code, artifact, primitive
+):
     return NativeExecutionResult(
-        status, output, command, runtime, stdout, stderr, return_code,
-        artifact.source_digest, artifact.compiler, artifact.compiler_version,
-        artifact.command, artifact.options,
+        status,
+        output,
+        command,
+        runtime,
+        stdout,
+        stderr,
+        return_code,
+        artifact.source_digest,
+        artifact.compiler,
+        artifact.compiler_version,
+        artifact.command,
+        artifact.options,
         ResultProvenance.for_primitive(primitive, NATIVE_EXECUTION_DRIVER),
     )
 
 
 def _compiler_version(executable):
     completed = subprocess.run(
-        (executable, "--version"), capture_output=True, text=True, timeout=5,
-        check=False, env={"LANG": "C", "LC_ALL": "C", "PATH": os.environ.get("PATH", "")},
+        (executable, "--version"),
+        capture_output=True,
+        text=True,
+        timeout=5,
+        check=False,
+        env={"LANG": "C", "LC_ALL": "C", "PATH": os.environ.get("PATH", "")},
     )
     line = (completed.stdout or completed.stderr).splitlines()
     return line[0].strip() if line else "unknown"
@@ -312,7 +405,12 @@ def _hex_arguments(primitive, inputs):
 
 
 __all__ = [
-    "NATIVE_EXECUTION_DRIVER", "NativeArtifact", "NativeCompilationResult",
-    "NativeCompilationStatus", "NativeExecutionResult", "NativeExecutionStatus",
-    "compile_native", "run_compiled",
+    "NATIVE_EXECUTION_DRIVER",
+    "NativeArtifact",
+    "NativeCompilationResult",
+    "NativeCompilationStatus",
+    "NativeExecutionResult",
+    "NativeExecutionStatus",
+    "compile_native",
+    "run_compiled",
 ]

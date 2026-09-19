@@ -15,4 +15,5 @@ class XoodooInvertible(XoodooSbox):
         ('0x89d5d88da963fcbf', 384)
     """
 
+
 __all__ = ["XoodooInvertible"]

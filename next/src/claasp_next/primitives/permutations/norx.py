@@ -16,8 +16,7 @@
 # ****************************************************************************
 
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
 
 # rotation offsets (r0, r1, r2, r3) of the G function, Table 3.2 of the NORX v3.0 specification (AJN2016)
@@ -27,7 +26,10 @@ WORD_SIZE_TO_ROTATIONS = {32: (8, 11, 16, 31), 64: (8, 19, 40, 63)}
 COLUMN_STEP = [[0, 4, 8, 12], [1, 5, 9, 13], [2, 6, 10, 14], [3, 7, 11, 15]]
 DIAGONAL_STEP = [[0, 5, 10, 15], [1, 6, 11, 12], [2, 7, 8, 13], [3, 4, 9, 14]]
 
-PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 4, "word_size": 32}, {"number_of_rounds": 4, "word_size": 64}]
+PARAMETERS_CONFIGURATION_LIST = [
+    {"number_of_rounds": 4, "word_size": 32},
+    {"number_of_rounds": 4, "word_size": 64},
+]
 
 
 class Norx(BitGraphPrimitive):
@@ -75,7 +77,9 @@ class Norx(BitGraphPrimitive):
         )
 
         state = [
-            BitState([INPUT_PLAINTEXT], [[k + i * self.word_bit_size for k in range(self.word_bit_size)]])
+            BitState(
+                [INPUT_PLAINTEXT], [[k + i * self.word_bit_size for k in range(self.word_bit_size)]]
+            )
             for i in range(16)
         ]
 
@@ -123,13 +127,19 @@ class Norx(BitGraphPrimitive):
     def h_function(self, x, y):
         # H(x, y) = (x xor y) xor ((x and y) << 1), the non-linear building block of the NORX G function
         """Build the h function stage in this primitive's typed operation graph."""
-        self.add_and_component(x.id + y.id, x.input_bit_positions + y.input_bit_positions, self.word_bit_size)
+        self.add_and_component(
+            x.id + y.id, x.input_bit_positions + y.input_bit_positions, self.word_bit_size
+        )
         and_xy = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
         self.add_shift_component(and_xy.id, and_xy.input_bit_positions, self.word_bit_size, -1)
-        shifted_and_xy = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
+        shifted_and_xy = BitState(
+            [self.get_current_component_id()], [list(range(self.word_bit_size))]
+        )
 
-        self.add_xor_component(x.id + y.id, x.input_bit_positions + y.input_bit_positions, self.word_bit_size)
+        self.add_xor_component(
+            x.id + y.id, x.input_bit_positions + y.input_bit_positions, self.word_bit_size
+        )
         xor_xy = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
         self.add_xor_component(
@@ -142,9 +152,13 @@ class Norx(BitGraphPrimitive):
 
     def xor_then_rotate_right(self, x, y, rotation_amount):
         """Build the xor then rotate right stage in this primitive's typed operation graph."""
-        self.add_xor_component(x.id + y.id, x.input_bit_positions + y.input_bit_positions, self.word_bit_size)
+        self.add_xor_component(
+            x.id + y.id, x.input_bit_positions + y.input_bit_positions, self.word_bit_size
+        )
         xored = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
-        self.add_rotate_component(xored.id, xored.input_bit_positions, self.word_bit_size, rotation_amount)
+        self.add_rotate_component(
+            xored.id, xored.input_bit_positions, self.word_bit_size, rotation_amount
+        )
 
         return BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])

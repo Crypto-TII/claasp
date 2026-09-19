@@ -15,9 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
+from claasp_next.graph.bit_builder import BitGraphPrimitive, extract_inputs
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
-from claasp_next.graph.bit_builder import extract_inputs
 
 # fmt: off
 SBox9 = [
@@ -104,7 +103,9 @@ class Kasumi(BitGraphPrimitive):
             primitive_output_bit_size=block_bit_size,
         )
 
-        left_half_ids, left_half_positions, right_half_ids, right_half_positions = Kasumi.init_halves()
+        left_half_ids, left_half_positions, right_half_ids, right_half_positions = (
+            Kasumi.init_halves()
+        )
 
         key = [INPUT_KEY], [list(range(self.key_bit_size))]
         for round_number in range(self._get_number_of_rounds(number_of_rounds)):
@@ -114,12 +115,20 @@ class Kasumi(BitGraphPrimitive):
             sub_key = self.round_key(key, key_derived, round_number + 1)
             if round_number % 2 == 0:
                 right_half_ids, right_half_positions = self._even_round(
-                    left_half_ids, left_half_positions, sub_key, right_half_ids, right_half_positions
+                    left_half_ids,
+                    left_half_positions,
+                    sub_key,
+                    right_half_ids,
+                    right_half_positions,
                 )
 
             else:
                 left_half_ids, left_half_positions = self._odd_round(
-                    left_half_ids, left_half_positions, sub_key, right_half_ids, right_half_positions
+                    left_half_ids,
+                    left_half_positions,
+                    sub_key,
+                    right_half_ids,
+                    right_half_positions,
                 )
 
             self.add_round_output_component(
@@ -145,7 +154,12 @@ class Kasumi(BitGraphPrimitive):
         right_half_ids = ["plaintext" for _ in range(6)]
         offset = 32
         right_half_positions = [
-            list(range(sum(half_word_distribution[:i]) + offset, sum(half_word_distribution[: i + 1]) + offset))
+            list(
+                range(
+                    sum(half_word_distribution[:i]) + offset,
+                    sum(half_word_distribution[: i + 1]) + offset,
+                )
+            )
             for i in range(len(half_word_distribution))
         ]
         return left_half_ids, left_half_positions, right_half_ids, right_half_positions
@@ -195,7 +209,10 @@ class Kasumi(BitGraphPrimitive):
 
         configuration_number_of_rounds = None
         for parameters in PARAMETERS_CONFIGURATION_LIST:
-            if parameters["block_bit_size"] == self.block_bit_size and parameters["key_bit_size"] == self.key_bit_size:
+            if (
+                parameters["block_bit_size"] == self.block_bit_size
+                and parameters["key_bit_size"] == self.key_bit_size
+            ):
                 configuration_number_of_rounds = parameters["number_of_rounds"]
                 break
         if configuration_number_of_rounds is None:
@@ -204,7 +221,9 @@ class Kasumi(BitGraphPrimitive):
 
     def fi_function1(self, ids, ki_id, ki_positions):
         """Build the fi function1 stage in this primitive's typed operation graph."""
-        s9_1 = self.add_sbox_component([ids[0], ids[1]], [list(range(7)), list(range(2))], 9, SBox9).id
+        s9_1 = self.add_sbox_component(
+            [ids[0], ids[1]], [list(range(7)), list(range(2))], 9, SBox9
+        ).id
 
         cst1 = self.add_constant_component(2, 0b00).id
 
@@ -220,7 +239,9 @@ class Kasumi(BitGraphPrimitive):
 
         xor4 = self.add_xor_component([xor2, ki_id], [list(range(7)), ki_positions[:7]], 7).id
 
-        s9_2 = self.add_sbox_component([xor3_1, xor3_2], [list(range(2)), list(range(7))], 9, SBox9).id
+        s9_2 = self.add_sbox_component(
+            [xor3_1, xor3_2], [list(range(2)), list(range(7))], 9, SBox9
+        ).id
 
         xor5_1 = self.add_xor_component([s9_2, cst1], [list(range(2)), list(range(2))], 2)
         xor5_2 = self.add_xor_component([s9_2, xor4], [list(range(2, 9)), list(range(7))], 7)
@@ -237,12 +258,16 @@ class Kasumi(BitGraphPrimitive):
         xor1s = []
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            xor1_temp = self.add_xor_component([ids[i], sub_key], [positions[i], list(range(start, end))], length)
+            xor1_temp = self.add_xor_component(
+                [ids[i], sub_key], [positions[i], list(range(start, end))], length
+            )
             xor1s.append(xor1_temp.id)
             start = end
 
         ki_id, ki_positions = extract_inputs(
-            [sub_key], [list(range(8 * self.word_size))], [i + 5 * self.word_size for i in range(self.word_size)]
+            [sub_key],
+            [list(range(8 * self.word_size))],
+            [i + 5 * self.word_size for i in range(self.word_size)],
         )
 
         fis1 = self.fi_function1([xor1s[0], xor1s[1], xor1s[2]], ki_id[0], ki_positions[0])
@@ -267,7 +292,9 @@ class Kasumi(BitGraphPrimitive):
             start = end
 
         ki2_id, ki2_positions = extract_inputs(
-            [sub_key], [list(range(8 * self.word_size))], [i + 6 * self.word_size for i in range(self.word_size)]
+            [sub_key],
+            [list(range(8 * self.word_size))],
+            [i + 6 * self.word_size for i in range(self.word_size)],
         )
 
         fis2 = self.fi_function1([xor3s[0], xor3s[1], xor3s[2]], ki2_id[0], ki2_positions[0])
@@ -292,7 +319,9 @@ class Kasumi(BitGraphPrimitive):
             start = end
 
         ki3_id, ki3_positions = extract_inputs(
-            [sub_key], [list(range(8 * self.word_size))], [i + 7 * self.word_size for i in range(self.word_size)]
+            [sub_key],
+            [list(range(8 * self.word_size))],
+            [i + 7 * self.word_size for i in range(self.word_size)],
         )
         fis3 = self.fi_function1([xor5s[0], xor5s[1], xor5s[2]], ki3_id[0], ki3_positions[0])
 
@@ -312,12 +341,17 @@ class Kasumi(BitGraphPrimitive):
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            and1_temp = self.add_and_component([ids[i], sub_key], [positions[i], word_size[start:end]], length)
+            and1_temp = self.add_and_component(
+                [ids[i], sub_key], [positions[i], word_size[start:end]], length
+            )
             and1s.append(and1_temp.id)
             start = end
 
         rot1 = self.add_rotate_component(
-            [and1s[0], and1s[1], and1s[2]], [list(range(7)), list(range(2)), list(range(7))], self.word_size, -1
+            [and1s[0], and1s[1], and1s[2]],
+            [list(range(7)), list(range(2)), list(range(7))],
+            self.word_size,
+            -1,
         ).id
 
         rot_size = list(range(self.word_size))
@@ -326,7 +360,9 @@ class Kasumi(BitGraphPrimitive):
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            xor1_temp = self.add_xor_component([rot1, ids[i + 3]], [rot_size[start:end], positions[i + 3]], length)
+            xor1_temp = self.add_xor_component(
+                [rot1, ids[i + 3]], [rot_size[start:end], positions[i + 3]], length
+            )
             xor1s.append(xor1_temp.id)
             start = end
 
@@ -336,18 +372,24 @@ class Kasumi(BitGraphPrimitive):
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            or1_temp = self.add_or_component([xor1s[i], sub_key], [list(range(length)), subkey_size[start:end]], length)
+            or1_temp = self.add_or_component(
+                [xor1s[i], sub_key], [list(range(length)), subkey_size[start:end]], length
+            )
             or1s.append(or1_temp.id)
             start = end
 
-        rot2 = self.add_rotate_component(or1s, [list(range(7)), list(range(2)), list(range(7))], self.word_size, -1).id
+        rot2 = self.add_rotate_component(
+            or1s, [list(range(7)), list(range(2)), list(range(7))], self.word_size, -1
+        ).id
 
         rot_size = list(range(self.word_size))
         xor2s = []
         start = 0
         for i, length in enumerate(half_half_word_distribution):
             end = start + length
-            xor2_temp = self.add_xor_component([rot2, ids[i]], [rot_size[start:end], positions[i]], length)
+            xor2_temp = self.add_xor_component(
+                [rot2, ids[i]], [rot_size[start:end], positions[i]], length
+            )
             xor2s.append(xor2_temp.id)
             start = end
 
@@ -357,14 +399,19 @@ class Kasumi(BitGraphPrimitive):
         """Build the derived key stage in this primitive's typed operation graph."""
         cst = self.add_constant_component(128, 0x123456789ABCDEFFEDCBA9876543210).id
         key_der = self.add_xor_component(
-            key[0] + [cst], [list(range(self.key_bit_size))] + [list(range(self.key_bit_size))], self.key_bit_size
+            key[0] + [cst],
+            [list(range(self.key_bit_size))] + [list(range(self.key_bit_size))],
+            self.key_bit_size,
         )
         return key_der.id
 
     def round_key(self, key, key_der, r):
         """Build the round key stage in this primitive's typed operation graph."""
         kl1 = self.add_rotate_component(
-            key[0], [[i + (r - 1) * self.word_size for i in range(self.word_size)]], self.word_size, -1
+            key[0],
+            [[i + (r - 1) * self.word_size for i in range(self.word_size)]],
+            self.word_size,
+            -1,
         ).id
         kl2_id, kl2_positions = extract_inputs(
             [key_der],
@@ -373,13 +420,22 @@ class Kasumi(BitGraphPrimitive):
         )
 
         ko1 = self.add_rotate_component(
-            key[0], [[i + (r % 8) * self.word_size for i in range(self.word_size)]], self.word_size, -5
+            key[0],
+            [[i + (r % 8) * self.word_size for i in range(self.word_size)]],
+            self.word_size,
+            -5,
         ).id
         ko2 = self.add_rotate_component(
-            key[0], [[i + ((r + 4) % 8) * self.word_size for i in range(self.word_size)]], self.word_size, -8
+            key[0],
+            [[i + ((r + 4) % 8) * self.word_size for i in range(self.word_size)]],
+            self.word_size,
+            -8,
         ).id
         ko3 = self.add_rotate_component(
-            key[0], [[i + ((r + 5) % 8) * self.word_size for i in range(self.word_size)]], self.word_size, -13
+            key[0],
+            [[i + ((r + 5) % 8) * self.word_size for i in range(self.word_size)]],
+            self.word_size,
+            -13,
         ).id
         ki1_id, ki1_positions = extract_inputs(
             [key_der],

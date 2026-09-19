@@ -1,15 +1,27 @@
 """Optional external constraint-solver drivers."""
 
 from claasp_next.drivers.solvers.base import SatResult, SatStatus
-from claasp_next.drivers.solvers.minisat import MinisatSolver
 from claasp_next.drivers.solvers.milp_results import MILPResult, MILPStatus
+from claasp_next.drivers.solvers.minisat import MinisatSolver
 from claasp_next.drivers.solvers.minizinc import (
-    CPEnumerationResult, CPResult, CPStatus, MiniZincSolver,
+    CPEnumerationResult,
+    CPResult,
+    CPStatus,
+    MiniZincSolver,
 )
 
 __all__ = [
-    "CPEnumerationResult", "CPResult", "CPStatus", "GLPKSolver", "MILPResult", "MILPStatus",
-    "MiniZincSolver", "MinisatSolver", "SatResult", "SatStatus", "Z3Solver",
+    "CPEnumerationResult",
+    "CPResult",
+    "CPStatus",
+    "GLPKSolver",
+    "MILPResult",
+    "MILPStatus",
+    "MiniZincSolver",
+    "MinisatSolver",
+    "SatResult",
+    "SatStatus",
+    "Z3Solver",
 ]
 
 

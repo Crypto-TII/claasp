@@ -2,14 +2,15 @@
 
 import pytest
 
+from claasp_next import BinaryExtensionField, Bit
 from claasp_next.utils import (
     bitmask,
     bits_little_endian,
     bytes_to_int,
     coerce_exact_int,
+    identity_matrix,
     int_to_bytes,
     int_to_words,
-    identity_matrix,
     matrix_is_invertible,
     normalize_matrix,
     reverse_bytes_in_words,
@@ -21,7 +22,6 @@ from claasp_next.utils import (
     transpose_matrix,
     words_to_int,
 )
-from claasp_next import BinaryExtensionField, Bit
 
 
 def test_legacy_integer_evidence_and_independent_bit_formula():
@@ -58,7 +58,9 @@ def test_layout_reverses_bytes_in_each_word_independently():
         + [0, 1, 2, 3, 4, 5, 6, 7]
     )
     assert reverse_bytes_in_words(range(32)) == expected
-    assert reverse_bytes_in_words(range(64)) == expected + tuple(position + 32 for position in expected)
+    assert reverse_bytes_in_words(range(64)) == expected + tuple(
+        position + 32 for position in expected
+    )
 
 
 def test_matrix_helpers_hide_normalization_and_preserve_field_semantics():

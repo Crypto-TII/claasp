@@ -17,8 +17,14 @@ class Raiden(Primitive):
         ('0x0', 0)
     """
 
-    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None,
-                 right_shift_amount=14, left_shift_amount=9):
+    def __init__(
+        self,
+        block_bit_size=64,
+        key_bit_size=128,
+        number_of_rounds=None,
+        right_shift_amount=14,
+        left_shift_amount=9,
+    ):
         width = block_bit_size // 2
         if key_bit_size != 4 * width or block_bit_size % 2:
             raise ValueError("Raiden requires a four-word key and two-word block")
@@ -37,6 +43,10 @@ class Raiden(Primitive):
             for index in range(2):
                 other = block[1 - index]
                 summed = add(self, subkey, other)
-                mixed = xor(self, subtract(self, subkey, other), shift(self, summed, right_shift_amount))
-                block[index] = add(self, block[index], xor(self, shift(self, summed, -left_shift_amount), mixed))
+                mixed = xor(
+                    self, subtract(self, subkey, other), shift(self, summed, right_shift_amount)
+                )
+                block[index] = add(
+                    self, block[index], xor(self, shift(self, summed, -left_shift_amount), mixed)
+                )
         self.set_output(concatenate(self, *block))

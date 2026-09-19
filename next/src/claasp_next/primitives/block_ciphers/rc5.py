@@ -6,7 +6,17 @@ from math import ceil, log10
 from claasp_next.domains import Bit, Word
 from claasp_next.graph import Primitive, ValueType
 
-from ._word_graph import add, byte_swap, concatenate, constant, low_bits, rotate, select, variable_rotate, xor
+from ._word_graph import (
+    add,
+    byte_swap,
+    concatenate,
+    constant,
+    low_bits,
+    rotate,
+    select,
+    variable_rotate,
+    xor,
+)
 
 
 def _magic_constants(width):
@@ -38,9 +48,13 @@ class RC5(Primitive):
             raise ValueError("RC5 rounds or key size lies outside the specification")
         if key_size not in (0, 1) and key_size % 8:
             raise ValueError("this typed RC5 graph requires a byte-aligned nonempty key")
-        key_type = ValueType(Bit(), (1,)) if key_size in (0, 1) else ValueType(Word(8), (key_size // 8,))
+        key_type = (
+            ValueType(Bit(), (1,)) if key_size in (0, 1) else ValueType(Word(8), (key_size // 8,))
+        )
         byte_count = word_size // 8
-        super().__init__("rc5", {"key": key_type, "plaintext": ValueType(Word(8), (2 * byte_count,))})
+        super().__init__(
+            "rc5", {"key": key_type, "plaintext": ValueType(Word(8), (2 * byte_count,))}
+        )
         self.add_round()
 
         def pack_little_endian(byte_selection):
@@ -55,8 +69,12 @@ class RC5(Primitive):
             key_words = []
             count = max(1, ceil((key_size // 8) / byte_count))
             for index in range(count):
-                chunk = [select(key_bytes, byte) for byte in range(index * byte_count,
-                         min((index + 1) * byte_count, key_size // 8))]
+                chunk = [
+                    select(key_bytes, byte)
+                    for byte in range(
+                        index * byte_count, min((index + 1) * byte_count, key_size // 8)
+                    )
+                ]
                 while len(chunk) < byte_count:
                     # RC5 pads the last little-endian key word with zero bytes.
                     zero = constant(self, 8, 0)
@@ -64,7 +82,9 @@ class RC5(Primitive):
                 key_words.append(pack_little_endian(chunk))
         p, q = _magic_constants(word_size)
         amount_width = word_size.bit_length() - 1
-        schedule = [constant(self, word_size, p + index * q) for index in range(2 * (number_of_rounds + 1))]
+        schedule = [
+            constant(self, word_size, p + index * q) for index in range(2 * (number_of_rounds + 1))
+        ]
         a = b = constant(self, word_size, 0)
         i = j = 0
         for _ in range(3 * max(len(schedule), len(key_words))):
@@ -77,12 +97,28 @@ class RC5(Primitive):
             j = (j + 1) % len(key_words)
 
         plain_bytes = self.input("plaintext")
-        a = add(self, pack_little_endian([select(plain_bytes, i) for i in range(byte_count)]), schedule[0])
-        b = add(self, pack_little_endian([select(plain_bytes, i) for i in range(byte_count, 2 * byte_count)]), schedule[1])
+        a = add(
+            self,
+            pack_little_endian([select(plain_bytes, i) for i in range(byte_count)]),
+            schedule[0],
+        )
+        b = add(
+            self,
+            pack_little_endian([select(plain_bytes, i) for i in range(byte_count, 2 * byte_count)]),
+            schedule[1],
+        )
         for round_number in range(number_of_rounds):
             self.add_round()
-            a = add(self, variable_rotate(self, xor(self, a, b), low_bits(self, b, amount_width), left=True),
-                    schedule[2 * round_number + 2])
-            b = add(self, variable_rotate(self, xor(self, b, a), low_bits(self, a, amount_width), left=True),
-                    schedule[2 * round_number + 3])
-        self.set_output(concatenate(self, byte_swap(self, a, word_size), byte_swap(self, b, word_size)))
+            a = add(
+                self,
+                variable_rotate(self, xor(self, a, b), low_bits(self, b, amount_width), left=True),
+                schedule[2 * round_number + 2],
+            )
+            b = add(
+                self,
+                variable_rotate(self, xor(self, b, a), low_bits(self, a, amount_width), left=True),
+                schedule[2 * round_number + 3],
+            )
+        self.set_output(
+            concatenate(self, byte_swap(self, a, word_size), byte_swap(self, b, word_size))
+        )

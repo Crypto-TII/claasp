@@ -6,10 +6,12 @@ import pytest
 
 from claasp_next import compile_source
 from claasp_next.drivers.native import (
-    NativeCompilationStatus, NativeExecutionStatus, compile_native, run_compiled,
+    NativeCompilationStatus,
+    NativeExecutionStatus,
+    compile_native,
+    run_compiled,
 )
 from claasp_next.primitives import Present, Speck
-
 
 pytestmark = pytest.mark.external
 
@@ -52,7 +54,8 @@ def test_compiled_artifact_rejects_a_different_graph():
     assert compilation.status is NativeCompilationStatus.SUCCESS, compilation.stderr
     with pytest.raises(ValueError, match="different primitive"):
         run_compiled(
-            compilation.artifact, Speck(32, 64, number_of_rounds=2),
+            compilation.artifact,
+            Speck(32, 64, number_of_rounds=2),
             {"plaintext": 0, "key": 0},
         )
 

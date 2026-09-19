@@ -46,7 +46,9 @@ def test_or_and_not_exact_anfs_and_sound_degree_bounds():
     symbolic = BooleanSymbolicEvaluator().evaluate(primitive)
     # NOT(XOR(OR(a,b), AND(a,b))) simplifies to NOT(a XOR b).
     assert symbolic.output_anfs[0].monomials == (
-        BooleanMonomial(), BooleanMonomial(("l0",)), BooleanMonomial(("r0",)),
+        BooleanMonomial(),
+        BooleanMonomial(("l0",)),
+        BooleanMonomial(("r0",)),
     )
     degree = BooleanDegreeEvaluator().evaluate(primitive, "left")
     assert degree.output_bounds == (1,)

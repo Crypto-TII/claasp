@@ -16,10 +16,8 @@
 # ****************************************************************************
 
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import get_inputs_parameter
 
 NUMBER_OF_ROWS = 4
 
@@ -96,7 +94,9 @@ class Knot(BitGraphPrimitive):
         ('0xbc44b75eeea81b95', 256)
     """
 
-    def __init__(self, state_bit_size=256, number_of_rounds=None, lfsr_degree=None, bit_slice=False):
+    def __init__(
+        self, state_bit_size=256, number_of_rounds=None, lfsr_degree=None, bit_slice=False
+    ):
         if state_bit_size not in KNOT_PARAMETERS:
             raise ValueError("state_bit_size must be one of 256, 384 or 512")
 
@@ -184,9 +184,13 @@ class Knot(BitGraphPrimitive):
         sbox_ids = []
         for column in range(row_bit_size):
             # S-box input Col(j) = a_{3,j} || a_{2,j} || a_{1,j} || a_{0,j} (a_{3,j} is the most significant bit)
-            input_id_links = [self._row_component_id(state[row], column) for row in reversed(range(NUMBER_OF_ROWS))]
+            input_id_links = [
+                self._row_component_id(state[row], column)
+                for row in reversed(range(NUMBER_OF_ROWS))
+            ]
             input_bit_positions = [
-                [self._row_bit_position(state[row], column)] for row in reversed(range(NUMBER_OF_ROWS))
+                [self._row_bit_position(state[row], column)]
+                for row in reversed(range(NUMBER_OF_ROWS))
             ]
             self.add_sbox_component(input_id_links, input_bit_positions, NUMBER_OF_ROWS, SBOX)
             sbox_ids.append(self.get_current_component_id())
@@ -246,7 +250,9 @@ class Knot(BitGraphPrimitive):
             # laid out a_{i,b/4-1}, ..., a_{i,0} from the most significant bit down, and add_rotate_component
             # indexes the word from its most significant bit, so this is a left (negative) rotation.
             offset = (-self.shift_row_offsets[row]) % row_bit_size
-            self.add_rotate_component(state[row].id, state[row].input_bit_positions, row_bit_size, offset)
+            self.add_rotate_component(
+                state[row].id, state[row].input_bit_positions, row_bit_size, offset
+            )
             state[row] = BitState([self.get_current_component_id()], [list(range(row_bit_size))])
 
         return state

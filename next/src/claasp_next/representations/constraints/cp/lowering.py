@@ -26,9 +26,7 @@ class BooleanMiniZincLowerer:
         constraints = tuple(
             "constraint "
             + " \\/ ".join(
-                encoded[abs(literal) - 1]
-                if literal > 0
-                else f"not {encoded[abs(literal) - 1]}"
+                encoded[abs(literal) - 1] if literal > 0 else f"not {encoded[abs(literal) - 1]}"
                 for literal in clause
             )
             + ";"

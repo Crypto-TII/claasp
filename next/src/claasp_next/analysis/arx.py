@@ -1,8 +1,11 @@
 """Reviewed ARX differential trail search."""
 
+from claasp_next.components import ModularAdd, Rotate
+from claasp_next.domains import Word
+from claasp_next.graph import Primitive
 from claasp_next.semantics.cryptanalysis import (
-    ModularAddTransitionSemantics,
     ModularAddLinearSemantics,
+    ModularAddTransitionSemantics,
     Trail,
     TrailKind,
     TrailSearchResult,
@@ -10,9 +13,6 @@ from claasp_next.semantics.cryptanalysis import (
     XorDifference,
     XorMask,
 )
-from claasp_next.components import ModularAdd, Rotate
-from claasp_next.graph import Primitive
-from claasp_next.domains import Word
 
 
 def find_two_round_speck_xor_differential(primitive: Primitive) -> TrailSearchResult:
@@ -82,9 +82,7 @@ def check_speck_trail(primitive: Primitive, trail: Trail) -> bool:
         return False
     new_left = first.output_pattern.value
     new_right = _rotate_left(right, beta, width) ^ new_left
-    if second.input_pattern.value != (
-        _rotate_right(new_left, alpha, width) << width
-    ) | new_right:
+    if second.input_pattern.value != (_rotate_right(new_left, alpha, width) << width) | new_right:
         return False
     final_left = second.output_pattern.value
     final_right = _rotate_left(new_right, beta, width) ^ final_left
@@ -108,16 +106,19 @@ def find_four_round_speck_xor_linear(primitive: Primitive) -> TrailSearchResult:
         zip(boundary_masks, boundary_masks[1:])
     ):
         addition, alpha_component, beta_component = _state_round_components(
-            primitive, round_number,
+            primitive,
+            round_number,
         )
         alpha, beta = alpha_component.amount, beta_component.amount
         add_left = _rotate_right(left, alpha, width)
         add_right = right ^ _rotate_right(next_right, beta, width)
         add_output = next_left ^ next_right
-        steps.append(TrailStep(
-            addition.component_id,
-            semantics.xor_linear(add_left, add_right, add_output),
-        ))
+        steps.append(
+            TrailStep(
+                addition.component_id,
+                semantics.xor_linear(add_left, add_right, add_output),
+            )
+        )
     trail = Trail(
         TrailKind.XOR_LINEAR,
         XorMask((boundary_masks[0][0] << width) | boundary_masks[0][1], 2 * width),
@@ -135,8 +136,11 @@ def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently check modular-add correlations and backward mask wiring."""
 
     plaintext = primitive.input_ports.get("plaintext")
-    if (primitive.family_name != "speck" or plaintext is None
-            or not isinstance(plaintext.value_type.domain, Word)):
+    if (
+        primitive.family_name != "speck"
+        or plaintext is None
+        or not isinstance(plaintext.value_type.domain, Word)
+    ):
         return False
     width = plaintext.value_type.domain.width
     if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != len(primitive.rounds):
@@ -157,7 +161,8 @@ def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     right = trail.input_pattern.value & mask
     for round_number, step in enumerate(trail.steps):
         _, alpha_component, beta_component = _state_round_components(
-            primitive, round_number,
+            primitive,
+            round_number,
         )
         alpha, beta = alpha_component.amount, beta_component.amount
         add_left = step.transition.input_pattern.value >> width

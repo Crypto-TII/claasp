@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 
-
 NEXT_ROOT = Path(__file__).resolve().parents[2]
 REPOSITORY_ROOT = NEXT_ROOT.parent
 
@@ -20,7 +19,9 @@ def test_m10_15_inventory_assigns_python_native_mixed_and_diagram_surfaces():
         assert item["rationale"] and item["fixed_evidence"]
         assert (REPOSITORY_ROOT / item["path"]).is_file()
     assert {item["path"] for item in manifest["mixed_module_surfaces"]} == {
-        "claasp/cipher.py", "tests/unit/cipher_test.py", "tests/benchmark/cipher_test.py",
+        "claasp/cipher.py",
+        "tests/unit/cipher_test.py",
+        "tests/benchmark/cipher_test.py",
     }
     diagram = manifest["diagram_audit"]
     assert diagram["disposition"] == "retain-achieved-m10.5d5"
@@ -36,7 +37,9 @@ def test_m10_15_python_records_have_explicit_ownership_and_rationales():
     assert len(owned) == 11
     for item in owned:
         assert item["status"] in {
-            "migrated-in-m10.15f", "superseded-in-m10.15d", "superseded-in-m10.15f",
+            "migrated-in-m10.15f",
+            "superseded-in-m10.15d",
+            "superseded-in-m10.15f",
         }
         assert item["disposition"] in {"migrate", "supersede"}
         assert item["v5_destination"].startswith("next/")
@@ -75,8 +78,14 @@ def test_batch_and_serialization_imports_do_not_load_numpy():
     import sys
 
     completed = subprocess.run(
-        [sys.executable, "-c", "import sys; before=set(sys.modules); import claasp_next.serialization; import claasp_next.representations.execution.batch; print('numpy' in set(sys.modules)-before)"],
-        check=True, capture_output=True, text=True,
+        [
+            sys.executable,
+            "-c",
+            "import sys; before=set(sys.modules); import claasp_next.serialization; import claasp_next.representations.execution.batch; print('numpy' in set(sys.modules)-before)",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
     )
     assert completed.stdout == "False\n"
 
@@ -87,7 +96,9 @@ def test_tooling_closure_gate_passes():
 
     completed = subprocess.run(
         [sys.executable, str(NEXT_ROOT / "tools/legacy_inventory.py"), "--check-tooling-closure"],
-        check=True, capture_output=True, text=True,
+        check=True,
+        capture_output=True,
+        text=True,
     )
     status = json.loads(completed.stdout)
     assert status["complete"]

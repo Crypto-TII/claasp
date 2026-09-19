@@ -17,7 +17,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from claasp_next.graph.bit_builder import BitGraphPrimitive
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -321,8 +320,12 @@ class DESExactKeyLength(BitGraphPrimitive):
         )
 
         key_state = self.add_permutation_component(
-            [INPUT_KEY], [list(range(number_of_sboxes * 7))], number_of_sboxes * 7, list(range(number_of_sboxes * 7))
+            [INPUT_KEY],
+            [list(range(number_of_sboxes * 7))],
+            number_of_sboxes * 7,
+            list(range(number_of_sboxes * 7)),
         )
+        left_round_key = right_round_key = key_state
 
         for round_number in range(number_of_rounds):
             # Key Schedule
@@ -346,17 +349,29 @@ class DESExactKeyLength(BitGraphPrimitive):
 
             if round_number in (0, 1, 8, 15):
                 left_round_key = self.add_rotate_component(
-                    [left_key.id], [list(range(self.half_round_key_size))], self.half_round_key_size, -1
+                    [left_key.id],
+                    [list(range(self.half_round_key_size))],
+                    self.half_round_key_size,
+                    -1,
                 )
                 right_round_key = self.add_rotate_component(
-                    [right_key.id], [list(range(self.half_round_key_size))], self.half_round_key_size, -1
+                    [right_key.id],
+                    [list(range(self.half_round_key_size))],
+                    self.half_round_key_size,
+                    -1,
                 )
             else:
                 left_round_key = self.add_rotate_component(
-                    [left_key.id], [list(range(self.half_round_key_size))], self.half_round_key_size, -2
+                    [left_key.id],
+                    [list(range(self.half_round_key_size))],
+                    self.half_round_key_size,
+                    -2,
                 )
                 right_round_key = self.add_rotate_component(
-                    [right_key.id], [list(range(self.half_round_key_size))], self.half_round_key_size, -2
+                    [right_key.id],
+                    [list(range(self.half_round_key_size))],
+                    self.half_round_key_size,
+                    -2,
                 )
 
             # KeyOutput
@@ -414,7 +429,10 @@ class DESExactKeyLength(BitGraphPrimitive):
             if round_number == number_of_rounds - 1:
                 output = self.add_permutation_component(
                     [right_state.id, state.id],
-                    [list(range(number_of_sboxes * 4)), list(range(number_of_sboxes * 4, number_of_sboxes * 8))],
+                    [
+                        list(range(number_of_sboxes * 4)),
+                        list(range(number_of_sboxes * 4, number_of_sboxes * 8)),
+                    ],
                     self.primitive_block_size,
                     self.final_permutation[number_of_sboxes],
                 )
@@ -425,7 +443,10 @@ class DESExactKeyLength(BitGraphPrimitive):
             else:
                 output = self.add_permutation_component(
                     [state.id, right_state.id],
-                    [list(range(number_of_sboxes * 4, number_of_sboxes * 8)), list(range(number_of_sboxes * 4))],
+                    [
+                        list(range(number_of_sboxes * 4, number_of_sboxes * 8)),
+                        list(range(number_of_sboxes * 4)),
+                    ],
                     self.primitive_block_size,
                     list(range(self.primitive_block_size)),
                 )

@@ -17,13 +17,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from copy import deepcopy
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
-from claasp_next.primitive_inputs import INPUT_KEY, INPUT_PLAINTEXT, BLOCK_CIPHER
-from claasp_next.graph.bit_builder import get_inputs_parameter
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
+from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 KEY_NUM = 8
 KEY_SIZE = 16
@@ -96,7 +93,7 @@ class Gift(BitGraphPrimitive):
 
     def __init__(self, number_of_rounds=None, block_bit_size=128):
         if block_bit_size not in (64, 128):
-            raise ValueError('block_bit_size must be 64 or 128')
+            raise ValueError("block_bit_size must be 64 or 128")
         if number_of_rounds is None:
             number_of_rounds = 28 if block_bit_size == 64 else 40
 

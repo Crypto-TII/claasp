@@ -21,9 +21,8 @@ import sys
 import time
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REPORT = ROOT / "docs" / "primitive_inversion_audit.md"
@@ -51,19 +50,22 @@ def _encoded_value(value_type, seed: bytes):
 
 def _round_trip(primitive, inverse, recover_input: str, sample_number: int) -> bool:
     values = {
-        name: _encoded_value(port.value_type, f"{primitive.family_name}:{name}:{sample_number}".encode())
+        name: _encoded_value(
+            port.value_type, f"{primitive.family_name}:{name}:{sample_number}".encode()
+        )
         for name, port in primitive.input_ports.items()
     }
     output = primitive.evaluate(values)
     inverse_values = {"output": output}
-    inverse_values.update(
-        (name, value) for name, value in values.items() if name != recover_input
-    )
+    inverse_values.update((name, value) for name, value in values.items() if name != recover_input)
     return inverse.evaluate(inverse_values) == values[recover_input]
 
 
 def _attempt_inversion(
-    primitive, recover_input: str, timeout: float, repetitions: int,
+    primitive,
+    recover_input: str,
+    timeout: float,
+    repetitions: int,
 ) -> dict:
     import signal
 
@@ -110,7 +112,10 @@ def _attempt_inversion(
         signal.setitimer(signal.ITIMER_REAL, timeout)
         for sample_number in range(2):
             semantic_passes += _round_trip(
-                primitive, inverse, recover_input, sample_number,
+                primitive,
+                inverse,
+                recover_input,
+                sample_number,
             )
     except _InversionTimeout:
         status = "semantic-timeout"
@@ -120,7 +125,11 @@ def _attempt_inversion(
         diagnostic = f"{type(error).__name__}: {error}"
     else:
         status = "verified" if semantic_passes == 2 else "semantic-mismatch"
-        diagnostic = None if status == "verified" else "recovered value differed from the original first input"
+        diagnostic = (
+            None
+            if status == "verified"
+            else "recovered value differed from the original first input"
+        )
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)
         signal.signal(signal.SIGALRM, old_handler)
@@ -153,10 +162,7 @@ def _recover_input(primitive, bijectivity_obligation: bool) -> str:
     if not bijectivity_obligation:
         return next(iter(primitive.input_ports))
     preferred_roles = ("plaintext", "state", "input_state", "input")
-    by_role = {
-        primitive.input_descriptor(name).role: name
-        for name in primitive.input_ports
-    }
+    by_role = {primitive.input_descriptor(name).role: name for name in primitive.input_ports}
     for role in preferred_roles:
         if role in by_role:
             return by_role[role]
@@ -206,7 +212,9 @@ def _worker(primitive_index: int, parameter_index: int, timeout: float, repetiti
 
     try:
         one_round, one_round_basis = _one_round_instance(
-            primitive_class, dict(parameter_set.values), len(primitive.rounds),
+            primitive_class,
+            dict(parameter_set.values),
+            len(primitive.rounds),
         )
     except Exception as error:
         result.update(
@@ -220,13 +228,19 @@ def _worker(primitive_index: int, parameter_index: int, timeout: float, repetiti
             result["one_round_status"] = "unavailable"
         else:
             one_round_result = _attempt_inversion(
-                one_round, recover_input, timeout, repetitions,
+                one_round,
+                recover_input,
+                timeout,
+                repetitions,
             )
             result.update((f"one_round_{name}", value) for name, value in one_round_result.items())
             result["one_round_graph_rounds"] = len(one_round.rounds)
 
     full_result = _attempt_inversion(
-        primitive, recover_input, timeout, repetitions,
+        primitive,
+        recover_input,
+        timeout,
+        repetitions,
     )
     result.update(full_result)
     if "inversion_ms" in result:
@@ -312,17 +326,20 @@ def _milliseconds(value) -> str:
 
 
 def _write_report(
-    results: list[dict], destination: Path, timeout: float, repetitions: int, jobs: int,
+    results: list[dict],
+    destination: Path,
+    timeout: float,
+    repetitions: int,
+    jobs: int,
 ) -> None:
     statuses = Counter(item["status"] for item in results)
     by_category = defaultdict(list)
     for item in results:
         by_category[item["category"]].append(item)
-    verified_primitives = {
-        item["primitive"] for item in results if item["status"] == "verified"
-    }
+    verified_primitives = {item["primitive"] for item in results if item["status"] == "verified"}
     fully_verified = {
-        name for name in {item["primitive"] for item in results}
+        name
+        for name in {item["primitive"] for item in results}
         if all(item["status"] == "verified" for item in results if item["primitive"] == name)
     }
     one_round_statuses = Counter(item.get("one_round_status", "not-run") for item in results)
@@ -336,7 +353,7 @@ def _write_report(
     lines = [
         "# Primitive inversion audit",
         "",
-        f"Generated at {datetime.now(timezone.utc).isoformat(timespec='seconds')} from commit "
+        f"Generated at {datetime.now(UTC).isoformat(timespec='seconds')} from commit "
         f"`{_git_revision()}` on {platform.platform()}, Python {platform.python_version()}.",
         "",
         "## Scope and interpretation",
@@ -377,14 +394,14 @@ def _write_report(
         f"- Official parameter sets checked: **{len(results)}**",
         f"- Primitives with at least one verified configuration: **{len(verified_primitives)}**",
         f"- Primitives verified for every official configuration: **{len(fully_verified)}**",
-        "- Configuration outcomes: " + ", ".join(
-            f"**{count} {status}**" for status, count in sorted(statuses.items())
-        ),
+        "- Configuration outcomes: "
+        + ", ".join(f"**{count} {status}**" for status, count in sorted(statuses.items())),
         f"- Retained-input-bijective catalogue configurations verified by the current transformation: "
         f"**{sum(item['status'] == 'verified' for item in obligated)}/{len(obligated)}**",
         f"- Configurations without a catalogue bijectivity obligation that still support "
         f"first-input recovery with auxiliaries: **{sum(item['status'] == 'verified' for item in unobligated)}/{len(unobligated)}**",
-        "- One-round outcomes: " + ", ".join(
+        "- One-round outcomes: "
+        + ", ".join(
             f"**{count} {status}**" for status, count in sorted(one_round_statuses.items())
         ),
         "",
@@ -394,7 +411,12 @@ def _write_report(
     for category, items in sorted(by_category.items()):
         category_statuses = Counter(item["status"] for item in items)
         timed_out = category_statuses["timeout"] + category_statuses["worker-timeout"]
-        other = len(items) - category_statuses["verified"] - category_statuses["not-supported"] - timed_out
+        other = (
+            len(items)
+            - category_statuses["verified"]
+            - category_statuses["not-supported"]
+            - timed_out
+        )
         lines.append(
             f"| `{category}` | {len({item['primitive'] for item in items})} | {len(items)} | "
             f"{category_statuses['verified']} | {category_statuses['not-supported']} | "
@@ -403,65 +425,71 @@ def _write_report(
 
     reasons = Counter(
         item.get("failure_reason", item["status"])
-        for item in results if item["status"] != "verified"
+        for item in results
+        if item["status"] != "verified"
     )
-    lines.extend([
-        "",
-        "### Failure and stall diagnostics",
-        "",
-        "| Diagnostic class | Configurations |",
-        "|---|---:|",
-        *[f"| `{reason}` | {count} |" for reason, count in sorted(reasons.items())],
-        "",
-        "### Slowest verified full inversions",
-        "",
-        "| Primitive | Parameter set | Full ms | Graph rounds | ms/round |",
-        "|---|---|---:|---:|---:|",
-        *[
-            f"| `{item['primitive']}` | `{item['parameter_set']}` | "
-            f"{item['inversion_ms']:.3f} | {item['graph_rounds']} | "
-            f"{item['normalized_ms_per_graph_round']:.3f} |"
-            for item in slowest
-        ],
-        "",
-        "## Methodology status",
-        "",
-        "This report is the acceptance evidence for tracker slice `M10.10h`. Its catalogue "
-        "completeness condition is that every configuration carrying a bijectivity obligation "
-        "has status `verified`. At this checkpoint, "
-        f"**{sum(item['status'] == 'verified' for item in obligated)}/{len(obligated)}** "
-        "such configurations satisfy that condition.",
-        "",
-        "Non-verified rows remain visible because the audit also probes first-input recovery "
-        "for hashes, stream-output functions, lossy teaching components, and other primitives without "
-        "a catalogue bijectivity obligation. They are qualified results, not gaps in the "
-        "bijective coverage claim. Future optimization can use the slowest-results table to "
-        "prioritize graph construction cost, but must retain the same solver-free contracts, "
-        "typed failures, provenance, and independent semantic round trips.",
-        "",
-        "## Configuration results",
-        "",
-        "Times are milliseconds. Parameters are the exact values passed to the public constructor.",
-    ])
+    lines.extend(
+        [
+            "",
+            "### Failure and stall diagnostics",
+            "",
+            "| Diagnostic class | Configurations |",
+            "|---|---:|",
+            *[f"| `{reason}` | {count} |" for reason, count in sorted(reasons.items())],
+            "",
+            "### Slowest verified full inversions",
+            "",
+            "| Primitive | Parameter set | Full ms | Graph rounds | ms/round |",
+            "|---|---|---:|---:|---:|",
+            *[
+                f"| `{item['primitive']}` | `{item['parameter_set']}` | "
+                f"{item['inversion_ms']:.3f} | {item['graph_rounds']} | "
+                f"{item['normalized_ms_per_graph_round']:.3f} |"
+                for item in slowest
+            ],
+            "",
+            "## Methodology status",
+            "",
+            "This report is the acceptance evidence for tracker slice `M10.10h`. Its catalogue "
+            "completeness condition is that every configuration carrying a bijectivity obligation "
+            "has status `verified`. At this checkpoint, "
+            f"**{sum(item['status'] == 'verified' for item in obligated)}/{len(obligated)}** "
+            "such configurations satisfy that condition.",
+            "",
+            "Non-verified rows remain visible because the audit also probes first-input recovery "
+            "for hashes, stream-output functions, lossy teaching components, and other primitives without "
+            "a catalogue bijectivity obligation. They are qualified results, not gaps in the "
+            "bijective coverage claim. Future optimization can use the slowest-results table to "
+            "prioritize graph construction cost, but must retain the same solver-free contracts, "
+            "typed failures, provenance, and independent semantic round trips.",
+            "",
+            "## Configuration results",
+            "",
+            "Times are milliseconds. Parameters are the exact values passed to the public constructor.",
+        ]
+    )
     for category, items in sorted(by_category.items()):
-        lines.extend([
-            "",
-            f"### {category}",
-            "",
-            "| Primitive | Parameter set | Parameters | Recover | Obligation | Graph rounds | Components | 1-round outcome | 1-round ms | Full outcome | Full ms | ms/round | Semantic | Diagnostic |",
-            "|---|---|---|---|:---:|---:|---:|---|---:|---|---:|---:|:---:|---|",
-        ])
+        lines.extend(
+            [
+                "",
+                f"### {category}",
+                "",
+                "| Primitive | Parameter set | Parameters | Recover | Obligation | Graph rounds | Components | 1-round outcome | 1-round ms | Full outcome | Full ms | ms/round | Semantic | Diagnostic |",
+                "|---|---|---|---|:---:|---:|---:|---|---:|---|---:|---:|:---:|---|",
+            ]
+        )
         for item in sorted(items, key=lambda value: (value["primitive"], value["parameter_set"])):
             parameters = json.dumps(item["parameters"], sort_keys=True, separators=(",", ":"))
             semantic = (
                 f"{item.get('semantic_passes', 0)}/{item.get('semantic_samples', 0)}"
-                if "semantic_samples" in item else "—"
+                if "semantic_samples" in item
+                else "—"
             )
             diagnostic = item.get("failure_reason", "")
             if item.get("diagnostic"):
                 detail = item["diagnostic"]
                 if diagnostic and detail.startswith(f"{diagnostic}: "):
-                    detail = detail[len(diagnostic) + 2:]
+                    detail = detail[len(diagnostic) + 2 :]
                 diagnostic += (": " if diagnostic else "") + detail
             one_round_status = item.get("one_round_status", "not-run")
             one_round_diagnostic = item.get("one_round_diagnostic")
@@ -478,20 +506,22 @@ def _write_report(
                 f"{_escape(diagnostic) if diagnostic else '—'} |"
             )
 
-    lines.extend([
-        "",
-        "## Reproduction",
-        "",
-        "From `next/`:",
-        "",
-        "```console",
-        "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3.11 tools/audit_primitive_inversion.py",
-        "```",
-        "",
-        "The report is a point-in-time benchmark. Compare future methodology changes on the "
-        "same machine, Python version, timeout, and repetition count.",
-        "",
-    ])
+    lines.extend(
+        [
+            "",
+            "## Reproduction",
+            "",
+            "From `next/`:",
+            "",
+            "```console",
+            "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3.11 tools/audit_primitive_inversion.py",
+            "```",
+            "",
+            "The report is a point-in-time benchmark. Compare future methodology changes on the "
+            "same machine, Python version, timeout, and repetition count.",
+            "",
+        ]
+    )
     destination.write_text("\n".join(lines), encoding="utf-8")
 
 
@@ -501,13 +531,19 @@ def _parent_main(arguments) -> int:
     tasks = []
     for primitive_index, record in enumerate(catalogue.primitives()):
         for parameter_index, parameter_set in enumerate(record.parameter_sets):
-            tasks.append((primitive_index, parameter_index, {
-                "primitive": record.name,
-                "category": record.category,
-                "parameter_set": parameter_set.name,
-                "parameters": dict(parameter_set.values),
-                "bijectivity_obligation": record.bijectivity_obligation,
-            }))
+            tasks.append(
+                (
+                    primitive_index,
+                    parameter_index,
+                    {
+                        "primitive": record.name,
+                        "category": record.category,
+                        "parameter_set": parameter_set.name,
+                        "parameters": dict(parameter_set.values),
+                        "bijectivity_obligation": record.bijectivity_obligation,
+                    },
+                )
+            )
     results = []
     with ThreadPoolExecutor(max_workers=arguments.jobs) as executor:
         futures = {

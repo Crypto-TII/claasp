@@ -4,8 +4,8 @@ from enum import Enum
 
 from claasp_next.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp_next.components.structural import Constant, Identity, Permutation
-from claasp_next.graph import Primitive, Selection
 from claasp_next.domains import PrimeField
+from claasp_next.graph import Primitive, Selection
 from claasp_next.representations.constraints.polynomial.expression import Polynomial
 from claasp_next.representations.constraints.polynomial.system import PolynomialSystem
 
@@ -76,9 +76,8 @@ class PrimeFieldPolynomialModel:
                 self._variable(port.owner_id, position)
                 for position in range(port.value_type.unit_count)
             )
-            for port in tuple(self._primitive.input_ports.values()) + tuple(
-                component.output for component in self._primitive.components
-            )
+            for port in tuple(self._primitive.input_ports.values())
+            + tuple(component.output for component in self._primitive.components)
         }
         return self._primitive.resolve_selection(selection, values)
 
@@ -87,7 +86,9 @@ class PrimeFieldPolynomialModel:
 
         variables = []
         for name, port in self._primitive.input_ports.items():
-            variables.extend(self.variable_name(name, position) for position in range(port.value_type.unit_count))
+            variables.extend(
+                self.variable_name(name, position) for position in range(port.value_type.unit_count)
+            )
         for component in self._primitive.components:
             variables.extend(
                 self.variable_name(component.component_id, position)
@@ -168,21 +169,35 @@ class PrimeFieldPolynomialModel:
         provenance: list[str] = []
         selection = component.inputs[0]
         for position, (base, output) in enumerate(zip(self._selection(selection), outputs)):
-            if len(base.terms) != 1 or base.terms[0][1] != 1 \
-                    or len(base.terms[0][0].powers) != 1 or base.terms[0][0].powers[0][1] != 1:
+            if (
+                len(base.terms) != 1
+                or base.terms[0][1] != 1
+                or len(base.terms[0][0].powers) != 1
+                or base.terms[0][0].powers[0][1] != 1
+            ):
                 raise ValueError("binary-chain power input must resolve to one graph variable")
             base_name = base.terms[0][0].powers[0][0]
             powers: dict[int, Polynomial] = {1: base}
 
-            def lower(exponent: int, *, final: bool = False) -> Polynomial:
+            def lower(
+                exponent: int,
+                *,
+                final: bool = False,
+                powers=powers,
+                output=output,
+                position=position,
+                base_name=base_name,
+            ) -> Polynomial:
                 if exponent in powers:
                     return powers[exponent]
                 left_exponent = exponent // 2 if exponent % 2 == 0 else exponent - 1
                 right_exponent = exponent - left_exponent
                 left = lower(left_exponent)
                 right = lower(right_exponent)
-                result = output if final else self._new_auxiliary(
-                    component.component_id, position, exponent, base_name
+                result = (
+                    output
+                    if final
+                    else self._new_auxiliary(component.component_id, position, exponent, base_name)
                 )
                 equations.append(result - left * right)
                 provenance.append(f"{component.component_id}:unit={position}:power={exponent}")

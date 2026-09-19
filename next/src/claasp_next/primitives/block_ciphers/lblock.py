@@ -80,7 +80,9 @@ class LBlock(BitGraphPrimitive):
             round_key = self.add_round_key_output_component([key], [list(range(32))], 32).id  #
             state = self.round_function(state, round_key)
             key = self.update_key(key, round_i)
-        self.add_primitive_output_component([state, state], [list(range(32, 64)), list(range(32))], 64)
+        self.add_primitive_output_component(
+            [state, state], [list(range(32, 64)), list(range(32))], 64
+        )
 
     def update_key(self, k, i):
         """Build the update key transition in this primitive's typed operation graph."""
@@ -91,7 +93,13 @@ class LBlock(BitGraphPrimitive):
         xor0 = self.add_xor_component([rot_k, c0], [[29, 30, 31, 32, 33], list(range(5))], 5).id  #
         updated_key = self.add_intermediate_output_component(
             [s0, s1, rot_k, xor0, rot_k],
-            [list(range(4)), list(range(4)), list(range(8, 29)), list(range(5)), list(range(34, 80))],
+            [
+                list(range(4)),
+                list(range(4)),
+                list(range(8, 29)),
+                list(range(5)),
+                list(range(34, 80)),
+            ],
             80,
             "updated_key",
         )
@@ -104,13 +112,20 @@ class LBlock(BitGraphPrimitive):
         after_key_add = self.add_xor_component([x, k], [list(range(32))] + [list(range(32))], 32).id
         sb_outputs = [
             self.add_sbox_component(
-                [after_key_add], [list(range(word_pos[i] * 4, (word_pos[i] + 1) * 4))], 4, self.sboxes[sb_order[i]]
+                [after_key_add],
+                [list(range(word_pos[i] * 4, (word_pos[i] + 1) * 4))],
+                4,
+                self.sboxes[sb_order[i]],
             ).id
             for i in range(8)
         ]
         right_word_rotated = self.add_rotate_component([x], [list(range(32, 64))], 32, -8).id
         new_left_word = self.add_xor_component(
-            sb_outputs + [right_word_rotated], [list(range(4)) for i in range(8)] + [list(range(32))], 32
+            sb_outputs + [right_word_rotated],
+            [list(range(4)) for i in range(8)] + [list(range(32))],
+            32,
         ).id
-        round_output = self.add_round_output_component([new_left_word, x], [list(range(32)), list(range(32))], 64).id
+        round_output = self.add_round_output_component(
+            [new_left_word, x], [list(range(32)), list(range(32))], 64
+        ).id
         return round_output

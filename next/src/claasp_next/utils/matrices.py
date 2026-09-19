@@ -18,10 +18,7 @@ def identity_matrix(size: int) -> tuple[tuple[int, ...], ...]:
 
     if not isinstance(size, int) or isinstance(size, bool) or size <= 0:
         raise ValueError("matrix size must be a positive integer")
-    return tuple(
-        tuple(int(row == column) for column in range(size))
-        for row in range(size)
-    )
+    return tuple(tuple(int(row == column) for column in range(size)) for row in range(size))
 
 
 def normalize_matrix(matrix: Iterable[Iterable[int]]) -> tuple[tuple[int, ...], ...]:
@@ -71,8 +68,10 @@ def matrix_is_invertible(
     """
 
     frozen = [list(row) for row in normalize_matrix(matrix)]
-    if not frozen or len(frozen) != len(frozen[0]) or any(
-        len(row) != len(frozen) for row in frozen
+    if (
+        not frozen
+        or len(frozen) != len(frozen[0])
+        or any(len(row) != len(frozen) for row in frozen)
     ):
         return False
     if not isinstance(domain, (Bit, BinaryExtensionField)):
@@ -92,20 +91,17 @@ def matrix_is_invertible(
         frozen[rank], frozen[pivot] = frozen[pivot], frozen[rank]
         if isinstance(domain, BinaryExtensionField):
             inverse = binary_field_power(
-                domain, frozen[rank][column], (1 << domain.degree) - 2,
+                domain,
+                frozen[rank][column],
+                (1 << domain.degree) - 2,
             )
-            frozen[rank] = [
-                binary_field_multiply(domain, value, inverse)
-                for value in frozen[rank]
-            ]
+            frozen[rank] = [binary_field_multiply(domain, value, inverse) for value in frozen[rank]]
         for row in range(len(frozen)):
             factor = frozen[row][column]
             if row == rank or not factor:
                 continue
             if isinstance(domain, Bit):
-                frozen[row] = [
-                    left ^ right for left, right in zip(frozen[row], frozen[rank])
-                ]
+                frozen[row] = [left ^ right for left, right in zip(frozen[row], frozen[rank])]
             else:
                 frozen[row] = [
                     left ^ binary_field_multiply(domain, factor, right)
@@ -138,6 +134,6 @@ def repeat_block_diagonal(
         for block_row in frozen:
             row = [0] * (size * copies)
             start = copy_number * size
-            row[start:start + size] = block_row
+            row[start : start + size] = block_row
             result.append(tuple(row))
     return tuple(result)

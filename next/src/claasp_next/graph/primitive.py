@@ -1,21 +1,28 @@
 """Validated typed primitive graph."""
 
+import re
 from collections.abc import Iterable, Mapping, Sequence
 from copy import copy
-import re
 from types import MappingProxyType
 
-from claasp_next.graph.component import Component
 from claasp_next.graph.binding import BindingKind, ValueBinding
+from claasp_next.graph.component import Component
 from claasp_next.graph.metadata import (
-    InputVisibility, PrimitiveInput, PrimitiveKind, infer_primitive_kind,
+    InputVisibility,
+    PrimitiveInput,
+    PrimitiveKind,
+    infer_primitive_kind,
 )
 from claasp_next.graph.port import Port, PortLike, Selection, as_selection
-from claasp_next.graph.round import Round
 from claasp_next.graph.realization import (
-    RealizationDescriptor, RealizationMaturity, RealizationSelectionPolicy,
-    UnsupportedRealizationError, normalize_realization_contract, select_realization,
+    RealizationDescriptor,
+    RealizationMaturity,
+    RealizationSelectionPolicy,
+    UnsupportedRealizationError,
+    normalize_realization_contract,
+    select_realization,
 )
+from claasp_next.graph.round import Round
 from claasp_next.graph.value_type import ValueType
 
 
@@ -50,7 +57,8 @@ class Primitive:
         """Return the unique standard configuration matching ``parameters``."""
 
         matches = [
-            configuration for configuration in configurations
+            configuration
+            for configuration in configurations
             if all(configuration.get(name) == value for name, value in parameters.items())
         ]
         if len(matches) != 1:
@@ -101,7 +109,11 @@ class Primitive:
             if isinstance(supplied, PrimitiveInput):
                 descriptor = supplied
             elif isinstance(supplied, ValueType):
-                visibility = InputVisibility.SECRET if name in {"key", "secret", "secret_key"} else InputVisibility.PUBLIC
+                visibility = (
+                    InputVisibility.SECRET
+                    if name in {"key", "secret", "secret_key"}
+                    else InputVisibility.PUBLIC
+                )
                 descriptor = PrimitiveInput(supplied, role=name, visibility=visibility)
             else:
                 raise TypeError(f"input {name!r} must have a ValueType or PrimitiveInput")
@@ -212,13 +224,19 @@ class Primitive:
 
     @classmethod
     def for_capabilities(
-        cls, requirements, *, policy: RealizationSelectionPolicy | str = RealizationSelectionPolicy.PREFERRED,
+        cls,
+        requirements,
+        *,
+        policy: RealizationSelectionPolicy | str = RealizationSelectionPolicy.PREFERRED,
         **parameters,
     ) -> "Primitive":
         """Construct the deterministic realization satisfying a task request."""
 
         descriptor = select_realization(
-            cls.available_realizations(), requirements, policy=policy, primitive_name=cls.__name__,
+            cls.available_realizations(),
+            requirements,
+            policy=policy,
+            primitive_name=cls.__name__,
         )
         return cls.realize(descriptor.name, **parameters)
 
@@ -444,7 +462,9 @@ class Primitive:
             try:
                 actual_port = self._ports[source_id]
             except KeyError as error:
-                raise ValueError(f"input source {source_id!r} is not available in this graph") from error
+                raise ValueError(
+                    f"input source {source_id!r} is not available in this graph"
+                ) from error
             if component_input.source != actual_port:
                 raise ValueError(f"input source {source_id!r} does not match its graph port type")
 
@@ -472,7 +492,11 @@ class Primitive:
         return self._add_binding(BindingKind.JOIN, selections, output_type)
 
     def pack_bits(
-        self, value: PortLike, word_width: int, *, output_domain=None,
+        self,
+        value: PortLike,
+        word_width: int,
+        *,
+        output_domain=None,
     ) -> Port:
         """View consecutive MSB-first bits as fixed-width words."""
 
@@ -493,7 +517,10 @@ class Primitive:
         domain = output_domain if output_domain is not None else Word(word_width)
         output_type = ValueType(domain, (selection.value_type.unit_count // word_width,))
         return self._add_binding(
-            BindingKind.PACK_BITS, (selection,), output_type, word_width=word_width,
+            BindingKind.PACK_BITS,
+            (selection,),
+            output_type,
+            word_width=word_width,
         )
 
     def view(self, value: PortLike) -> Port:
@@ -514,12 +541,20 @@ class Primitive:
         word_width = domain.width if isinstance(domain, Word) else domain.degree
         output_type = ValueType(Bit(), (selection.value_type.unit_count * word_width,))
         return self._add_binding(
-            BindingKind.UNPACK_BITS, (selection,), output_type, word_width=word_width,
+            BindingKind.UNPACK_BITS,
+            (selection,),
+            output_type,
+            word_width=word_width,
         )
 
     def _add_binding(
-        self, kind: BindingKind, inputs: tuple[Selection, ...], output_type: ValueType,
-        *, word_width: int | None = None, binding_id: str | None = None,
+        self,
+        kind: BindingKind,
+        inputs: tuple[Selection, ...],
+        output_type: ValueType,
+        *,
+        word_width: int | None = None,
+        binding_id: str | None = None,
         _validate_inputs: bool = True,
     ) -> Port:
         if _validate_inputs:
@@ -536,7 +571,9 @@ class Primitive:
         self._ports[binding_id] = binding.output
         return binding.output
 
-    def resolve_selection(self, selection: Selection, values: Mapping[str, tuple], cache=None) -> tuple:
+    def resolve_selection(
+        self, selection: Selection, values: Mapping[str, tuple], cache=None
+    ) -> tuple:
         """Resolve a selection through structural bindings for a representation."""
 
         cache = {} if cache is None else cache
@@ -563,7 +600,8 @@ class Primitive:
             except KeyError as error:
                 raise KeyError(f"graph source {source_id!r} has no available value") from error
             missing = tuple(
-                item.source.owner_id for item in binding.inputs
+                item.source.owner_id
+                for item in binding.inputs
                 if not available(item.source.owner_id)
             )
             if missing:
@@ -577,7 +615,7 @@ class Primitive:
             elif binding.kind is BindingKind.PACK_BITS:
                 bits = operands[0]
                 groups = tuple(
-                    bits[start:start + binding.word_width]
+                    bits[start : start + binding.word_width]
                     for start in range(0, len(bits), binding.word_width)
                 )
                 result = tuple(
@@ -585,7 +623,8 @@ class Primitive:
                         int(bit) << (binding.word_width - 1 - index)
                         for index, bit in enumerate(group)
                     )
-                    if all(isinstance(bit, int) for bit in group) else tuple(group)
+                    if all(isinstance(bit, int) for bit in group)
+                    else tuple(group)
                     for group in groups
                 )
             elif binding.kind is BindingKind.UNPACK_BITS:
@@ -621,9 +660,7 @@ class Primitive:
                 raise TypeError("graph wiring requires canonically encoded domains")
             units = []
             for position in range(port.value_type.unit_count):
-                refs = tuple(
-                    (port.owner_id, position * width + bit) for bit in range(width)
-                )
+                refs = tuple((port.owner_id, position * width + bit) for bit in range(width))
                 units.append(refs[0] if width == 1 else refs)
             values[port.owner_id] = tuple(units)
         selected = self.resolve_selection(selection, values)
@@ -658,7 +695,9 @@ class Primitive:
         if set(bindings) != expected:
             missing = sorted(expected - set(bindings))
             unexpected = sorted(set(bindings) - expected)
-            raise ValueError(f"composite bindings do not match: missing={missing}, unexpected={unexpected}")
+            raise ValueError(
+                f"composite bindings do not match: missing={missing}, unexpected={unexpected}"
+            )
 
         normalized: dict[str, Selection] = {}
         for name, value_type in definition.input_types:
@@ -688,7 +727,9 @@ class Primitive:
         for components in definition.rounds:
             for template_component in components:
                 if template_component.component_id is None:
-                    raise ValueError("composite definitions must contain assigned component identifiers")
+                    raise ValueError(
+                        "composite definitions must contain assigned component identifiers"
+                    )
                 remapped[template_component.component_id] = Port(
                     f"{scope_id}/{template_component.component_id}", template_component.output_type
                 ).select_all()
@@ -714,7 +755,9 @@ class Primitive:
                 local_id = template_component.component_id
                 component_id = f"{scope_id}/{local_id}"
                 object.__setattr__(component, "component_id", component_id)
-                object.__setattr__(component, "inputs", tuple(remap(item) for item in component.inputs))
+                object.__setattr__(
+                    component, "inputs", tuple(remap(item) for item in component.inputs)
+                )
                 output = self.add_component(component, primitive_round=target_round)
                 remapped[local_id] = output.select_all()
                 component_ids.append(component_id)
@@ -829,7 +872,8 @@ class Primitive:
         from claasp_next.transformations import remove_key_schedule
 
         return remove_key_schedule(
-            self, keep_round_key_injection=keep_round_key_injection,
+            self,
+            keep_round_key_injection=keep_round_key_injection,
         )
 
     def with_inlined_reorderings(self):
@@ -859,11 +903,15 @@ class Primitive:
         from claasp_next.annotations import GraphAnnotation
         from claasp_next.representations.diagrams import DiagramCompiler
 
-        if annotation is not None and not isinstance(annotation, GraphAnnotation) and hasattr(annotation, "annotate"):
+        if (
+            annotation is not None
+            and not isinstance(annotation, GraphAnnotation)
+            and hasattr(annotation, "annotate")
+        ):
             annotation = annotation.annotate(self)
         return DiagramCompiler().compile(self, annotation)
 
-    def draw(self, format: str = "ascii", annotation=None):
+    def draw(self, format: str = "ascii", annotation=None):  # noqa: A002 - public format API
         """Render this primitive as routed ASCII art, TikZ, or PDF.
 
         PDF rendering requires the optional ``pdflatex`` command. ASCII and
@@ -884,22 +932,30 @@ class Primitive:
             return LaTeXDriver().render(tikz).pdf
         raise ValueError("diagram format must be 'ascii', 'tikz', or 'pdf'")
 
-    def _bind_inputs(self, args: tuple[object, ...], kwargs: Mapping[str, object]) -> Mapping[str, object]:
+    def _bind_inputs(
+        self, args: tuple[object, ...], kwargs: Mapping[str, object]
+    ) -> Mapping[str, object]:
         if kwargs and args:
-            raise TypeError("use positional arguments, keyword arguments, or one mapping; do not mix them")
+            raise TypeError(
+                "use positional arguments, keyword arguments, or one mapping; do not mix them"
+            )
         if kwargs:
             supplied = dict(kwargs)
         elif len(args) == 1 and isinstance(args[0], Mapping):
             supplied = dict(args[0])
         else:
             if len(args) != len(self._input_ports):
-                raise TypeError(f"expected {len(self._input_ports)} positional inputs, got {len(args)}")
+                raise TypeError(
+                    f"expected {len(self._input_ports)} positional inputs, got {len(args)}"
+                )
             supplied = dict(zip(self._input_ports, args))
         expected = set(self._input_ports)
         if set(supplied) != expected:
             missing = sorted(expected - set(supplied))
             unexpected = sorted(set(supplied) - expected)
-            raise ValueError(f"primitive inputs do not match: missing={missing}, unexpected={unexpected}")
+            raise ValueError(
+                f"primitive inputs do not match: missing={missing}, unexpected={unexpected}"
+            )
         return supplied
 
     @staticmethod

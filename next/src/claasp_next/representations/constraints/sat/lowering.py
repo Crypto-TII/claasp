@@ -2,8 +2,6 @@
 
 from collections.abc import Mapping
 
-from claasp_next.representations.constraints.sat.cnf import CNFFormula
-from claasp_next.representations.constraints.sat.encoding import encode_unit, unit_variable_names
 from claasp_next.components import (
     Add,
     BitVectorSBox,
@@ -15,8 +13,10 @@ from claasp_next.components import (
     Rotate,
     Xor,
 )
-from claasp_next.graph import Primitive
 from claasp_next.domains import Bit, Word
+from claasp_next.graph import Primitive
+from claasp_next.representations.constraints.sat.cnf import CNFFormula
+from claasp_next.representations.constraints.sat.encoding import encode_unit, unit_variable_names
 from claasp_next.representations.execution import EvaluationResult
 
 
@@ -54,7 +54,9 @@ class BooleanCNFModel:
 
         if self._formula is not None:
             return self._formula
-        sources = list(self.primitive.input_ports.values()) + [component.output for component in self.primitive.components]
+        sources = list(self.primitive.input_ports.values()) + [
+            component.output for component in self.primitive.components
+        ]
         for port in sources:
             if not isinstance(port.value_type.domain, (Bit, Word)):
                 raise ValueError(
@@ -121,11 +123,13 @@ class BooleanCNFModel:
             selected = []
             for item in component.inputs:
                 width = item.value_type.domain.encoded_bit_size
-                names = [self._bit_name(owner_id, bit) for owner_id, bit in self.primitive.selection_bit_sources(item)]
-                selected.append([
-                    tuple(names[start:start + width])
-                    for start in range(0, len(names), width)
-                ])
+                names = [
+                    self._bit_name(owner_id, bit)
+                    for owner_id, bit in self.primitive.selection_bit_sources(item)
+                ]
+                selected.append(
+                    [tuple(names[start : start + width]) for start in range(0, len(names), width)]
+                )
             if isinstance(component, Constant):
                 for output, value in zip(outputs, component.values):
                     for bit_name, bit in zip(output, encode_unit(value, component.output_type)):
@@ -144,7 +148,9 @@ class BooleanCNFModel:
                     accumulator = operands[0]
                     for operand_number, operand in enumerate(operands[1:], start=1):
                         is_last = operand_number == len(operands) - 1
-                        target = output[0] if is_last else f"__aux_{label}_{position}_{operand_number}"
+                        target = (
+                            output[0] if is_last else f"__aux_{label}_{position}_{operand_number}"
+                        )
                         if not is_last:
                             allocate(target)
                             auxiliary.append(("xor", (target, accumulator, operand)))
@@ -157,8 +163,10 @@ class BooleanCNFModel:
                         accumulator = operands[0]
                         for operand_number, operand in enumerate(operands[1:], start=1):
                             is_last = operand_number == len(operands) - 1
-                            target = target_output if is_last else allocate(
-                                f"__aux_{label}_{position}_{bit}_{operand_number}"
+                            target = (
+                                target_output
+                                if is_last
+                                else allocate(f"__aux_{label}_{position}_{bit}_{operand_number}")
                             )
                             if not is_last:
                                 auxiliary.append(("xor", (target, accumulator, operand)))
@@ -182,16 +190,22 @@ class BooleanCNFModel:
                         (group[position] for group in selected[1:]), start=1
                     ):
                         is_last = operand_number == len(selected) - 1
-                        target = output if is_last else tuple(
-                            allocate(f"__aux_{label}_{position}_{operand_number}_{bit}")
-                            for bit in range(width)
+                        target = (
+                            output
+                            if is_last
+                            else tuple(
+                                allocate(f"__aux_{label}_{position}_{operand_number}_{bit}")
+                                for bit in range(width)
+                            )
                         )
                         carry = None
                         for bit in range(width - 1, -1, -1):
                             if carry is None:
                                 xor(target[bit], accumulator[bit], operand[bit], label)
                                 if not is_last:
-                                    auxiliary.append(("xor", (target[bit], accumulator[bit], operand[bit])))
+                                    auxiliary.append(
+                                        ("xor", (target[bit], accumulator[bit], operand[bit]))
+                                    )
                             else:
                                 partial = allocate(
                                     f"__aux_{label}_{position}_{operand_number}_xor_{bit}"
@@ -207,10 +221,19 @@ class BooleanCNFModel:
                                 )
                                 if carry is None:
                                     and_(next_carry, accumulator[bit], operand[bit], label)
-                                    auxiliary.append(("and", (next_carry, accumulator[bit], operand[bit])))
+                                    auxiliary.append(
+                                        ("and", (next_carry, accumulator[bit], operand[bit]))
+                                    )
                                 else:
-                                    majority(next_carry, accumulator[bit], operand[bit], carry, label)
-                                    auxiliary.append(("majority", (next_carry, accumulator[bit], operand[bit], carry)))
+                                    majority(
+                                        next_carry, accumulator[bit], operand[bit], carry, label
+                                    )
+                                    auxiliary.append(
+                                        (
+                                            "majority",
+                                            (next_carry, accumulator[bit], operand[bit], carry),
+                                        )
+                                    )
                                 carry = next_carry
                         accumulator = target
             elif isinstance(component, BitVectorSBox):
@@ -220,7 +243,9 @@ class BooleanCNFModel:
                 output_width = len(outputs)
                 for input_value, output_value in enumerate(component.table):
                     antecedent = tuple(
-                        -indices[name] if (input_value >> (input_width - 1 - i)) & 1 else indices[name]
+                        -indices[name]
+                        if (input_value >> (input_width - 1 - i)) & 1
+                        else indices[name]
                         for i, name in enumerate(inputs)
                     )
                     for i, output in enumerate(outputs):
@@ -265,7 +290,9 @@ class BooleanCNFModel:
         return {name: assignment[name] for name in formula.variables}
 
     def _port_type(self, owner_id: str):
-        for port in list(self.primitive.input_ports.values()) + [item.output for item in self.primitive.components]:
+        for port in list(self.primitive.input_ports.values()) + [
+            item.output for item in self.primitive.components
+        ]:
             if port.owner_id == owner_id:
                 return port.value_type
         raise KeyError(owner_id)

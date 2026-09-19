@@ -3,6 +3,7 @@
 from claasp_next.components import Identity as IdentityComponent
 from claasp_next.domains import Bit
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
+
 from ._base import positive
 
 

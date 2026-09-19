@@ -12,33 +12,45 @@ import json
 from pathlib import Path
 
 import pytest
-
 from claasp.cipher import Cipher
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--inventory", type=Path, default=Path("next/migration/legacy_inventory.json"))
+    parser.add_argument(
+        "--inventory", type=Path, default=Path("next/migration/legacy_inventory.json")
+    )
     parser.add_argument("--slice", default="M10.9d6")
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
     inventory = json.loads(arguments.inventory.read_text(encoding="utf-8"))
-    tests = sorted({
-        record["path"] for record in inventory["records"]
-        if record.get("milestone_owner") == arguments.slice and record["kind"] == "test"
-    })
+    tests = sorted(
+        {
+            record["path"]
+            for record in inventory["records"]
+            if record.get("milestone_owner") == arguments.slice and record["kind"] == "test"
+        }
+    )
     observations = []
     original = Cipher.evaluate
 
     def recording_evaluate(self, cipher_input, intermediate_output=False, verbosity=False):
-        result = original(self, cipher_input, intermediate_output=intermediate_output, verbosity=verbosity)
-        if not intermediate_output and isinstance(result, int) and all(isinstance(value, int) for value in cipher_input):
-            observations.append({
-                "legacy_class": f"{type(self).__module__}.{type(self).__name__}",
-                "legacy_id": self.id,
-                "inputs": list(cipher_input),
-                "output": result,
-            })
+        result = original(
+            self, cipher_input, intermediate_output=intermediate_output, verbosity=verbosity
+        )
+        if (
+            not intermediate_output
+            and isinstance(result, int)
+            and all(isinstance(value, int) for value in cipher_input)
+        ):
+            observations.append(
+                {
+                    "legacy_class": f"{type(self).__module__}.{type(self).__name__}",
+                    "legacy_id": self.id,
+                    "inputs": list(cipher_input),
+                    "output": result,
+                }
+            )
         return result
 
     Cipher.evaluate = recording_evaluate

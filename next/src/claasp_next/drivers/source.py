@@ -1,13 +1,13 @@
 """Safe file and execution drivers for generated source artifacts."""
 
+import json
+import os
+import subprocess
+import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
-import json
-import os
 from pathlib import Path
-import subprocess
-import sys
 from tempfile import TemporaryDirectory
 from time import monotonic
 
@@ -55,12 +55,15 @@ class SourceExecutionResult:
 
 
 PYTHON_SOURCE_DRIVER = DriverIdentity(
-    "python_generated_source", DriverKind.EXECUTION_ENGINE,
+    "python_generated_source",
+    DriverKind.EXECUTION_ENGINE,
     f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
 )
 
 
-def write_source(artifact: SourceArtifact, path: str | os.PathLike, *, overwrite: bool = False) -> Path:
+def write_source(
+    artifact: SourceArtifact, path: str | os.PathLike, *, overwrite: bool = False
+) -> Path:
     """Write one source artifact to an explicit matching file path.
 
     EXAMPLES::
@@ -75,8 +78,10 @@ def write_source(artifact: SourceArtifact, path: str | os.PathLike, *, overwrite
     if not isinstance(artifact, SourceArtifact):
         raise TypeError("write_source requires a SourceArtifact")
     destination = Path(path)
-    if not destination.name or destination.name in {".", ".."} or any(
-        character in destination.name for character in ("\0", "\n", "\r")
+    if (
+        not destination.name
+        or destination.name in {".", ".."}
+        or any(character in destination.name for character in ("\0", "\n", "\r"))
     ):
         raise ValueError("source output requires a safe explicit filename")
     suffix = ".py" if artifact.language is SourceLanguage.PYTHON else ".c"
@@ -112,7 +117,11 @@ def run_python_source(
         raise TypeError("run_python_source requires a Python SourceArtifact")
     if artifact.primitive_digest != _primitive_digest(primitive):
         raise ValueError("source artifact belongs to a different primitive graph")
-    if not isinstance(timeout_seconds, (int, float)) or isinstance(timeout_seconds, bool) or not 0 < timeout_seconds <= 60:
+    if (
+        not isinstance(timeout_seconds, (int, float))
+        or isinstance(timeout_seconds, bool)
+        or not 0 < timeout_seconds <= 60
+    ):
         raise ValueError("timeout_seconds must be in (0, 60]")
     payload = _json_inputs(primitive, inputs)
     runtime_root = str(Path(__file__).resolve().parents[2])
@@ -128,23 +137,41 @@ def run_python_source(
         started = monotonic()
         try:
             completed = subprocess.run(
-                command, input=json.dumps(payload, separators=(",", ":"), sort_keys=True),
-                capture_output=True, text=True, timeout=timeout_seconds, check=False,
+                command,
+                input=json.dumps(payload, separators=(",", ":"), sort_keys=True),
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+                check=False,
                 cwd=directory,
                 env={"LANG": "C", "LC_ALL": "C", "PYTHONHASHSEED": "0"},
             )
         except subprocess.TimeoutExpired as error:
             runtime = monotonic() - started
             return SourceExecutionResult(
-                SourceExecutionStatus.TIMEOUT, None, (), command, runtime,
-                error.stdout or "", error.stderr or "", None, artifact.source_digest,
+                SourceExecutionStatus.TIMEOUT,
+                None,
+                (),
+                command,
+                runtime,
+                error.stdout or "",
+                error.stderr or "",
+                None,
+                artifact.source_digest,
                 ResultProvenance.for_primitive(primitive, PYTHON_SOURCE_DRIVER),
             )
         runtime = monotonic() - started
         if completed.returncode:
             return SourceExecutionResult(
-                SourceExecutionStatus.FAILED, None, (), command, runtime,
-                completed.stdout, completed.stderr, completed.returncode, artifact.source_digest,
+                SourceExecutionStatus.FAILED,
+                None,
+                (),
+                command,
+                runtime,
+                completed.stdout,
+                completed.stderr,
+                completed.returncode,
+                artifact.source_digest,
                 ResultProvenance.for_primitive(primitive, PYTHON_SOURCE_DRIVER),
             )
         try:
@@ -154,13 +181,27 @@ def run_python_source(
             _validate_generated_values(primitive, output, values)
         except (KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
             return SourceExecutionResult(
-                SourceExecutionStatus.FAILED, None, (), command, runtime,
-                completed.stdout, f"invalid generated output: {error}", completed.returncode,
-                artifact.source_digest, ResultProvenance.for_primitive(primitive, PYTHON_SOURCE_DRIVER),
+                SourceExecutionStatus.FAILED,
+                None,
+                (),
+                command,
+                runtime,
+                completed.stdout,
+                f"invalid generated output: {error}",
+                completed.returncode,
+                artifact.source_digest,
+                ResultProvenance.for_primitive(primitive, PYTHON_SOURCE_DRIVER),
             )
         return SourceExecutionResult(
-            SourceExecutionStatus.SUCCESS, output, values, command, runtime,
-            completed.stdout, completed.stderr, completed.returncode, artifact.source_digest,
+            SourceExecutionStatus.SUCCESS,
+            output,
+            values,
+            command,
+            runtime,
+            completed.stdout,
+            completed.stderr,
+            completed.returncode,
+            artifact.source_digest,
             ResultProvenance.for_primitive(primitive, PYTHON_SOURCE_DRIVER),
         )
 
@@ -200,19 +241,29 @@ def _validate_generated_values(primitive, output, values):
     for source_id, value in values:
         value_type = primitive.port(source_id).value_type
         if len(value) != value_type.unit_count or any(
-            not isinstance(item, int) or isinstance(item, bool)
-            or not value_type.domain.contains(item) for item in value
+            not isinstance(item, int)
+            or isinstance(item, bool)
+            or not value_type.domain.contains(item)
+            for item in value
         ):
             raise ValueError(f"generated value for {source_id!r} violates its type")
         mapping[source_id] = value
-    expected_output = None if primitive.output is None else primitive.resolve_selection(
-        primitive.output, mapping,
+    expected_output = (
+        None
+        if primitive.output is None
+        else primitive.resolve_selection(
+            primitive.output,
+            mapping,
+        )
     )
     if output != expected_output:
         raise ValueError("generated output does not match its graph values")
 
 
 __all__ = [
-    "PYTHON_SOURCE_DRIVER", "SourceExecutionResult", "SourceExecutionStatus",
-    "run_python_source", "write_source",
+    "PYTHON_SOURCE_DRIVER",
+    "SourceExecutionResult",
+    "SourceExecutionStatus",
+    "run_python_source",
+    "write_source",
 ]

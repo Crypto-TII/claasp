@@ -17,8 +17,14 @@ class TEA(Primitive):
         ('0x41ea3a0a94baa940', 63)
     """
 
-    def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=None,
-                 right_shift_amount=5, left_shift_amount=4):
+    def __init__(
+        self,
+        block_bit_size=64,
+        key_bit_size=128,
+        number_of_rounds=None,
+        right_shift_amount=5,
+        left_shift_amount=4,
+    ):
         width = block_bit_size // 2
         if key_bit_size != 4 * width or block_bit_size % 2:
             raise ValueError("TEA requires a four-word key and a two-word block")

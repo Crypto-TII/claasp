@@ -17,7 +17,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from claasp_next.graph.bit_builder import BitGraphPrimitive
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -40,7 +39,13 @@ Z = [
     0x36EB19781229CD0F,
     0x3479AD88170CA4EF,
 ]
-WORDSIZE_TO_ZINDEX = {16: {4: 0}, 24: {3: 0, 4: 1}, 32: {3: 2, 4: 3}, 48: {2: 2, 3: 3}, 64: {2: 2, 3: 3, 4: 4}}
+WORDSIZE_TO_ZINDEX = {
+    16: {4: 0},
+    24: {3: 0, 4: 1},
+    32: {3: 2, 4: 3},
+    48: {2: 2, 3: 3},
+    64: {2: 2, 3: 3, 4: 4},
+}
 # fmt: off
 SBOX = [
     0X00, 0X00, 0X00, 0X01, 0X00, 0X00, 0X02, 0X03, 0X00, 0X00, 0X00, 0X01, 0X04, 0X04, 0X06, 0X07,
@@ -103,7 +108,13 @@ class SimonSbox(BitGraphPrimitive):
         ('0x5ae828ec', 31)
     """
 
-    def __init__(self, block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-1, -8, -2)):
+    def __init__(
+        self,
+        block_bit_size=32,
+        key_bit_size=64,
+        number_of_rounds=None,
+        rotation_amounts=(-1, -8, -2),
+    ):
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
         self.word_size = self.block_bit_size // 2
@@ -152,9 +163,13 @@ class SimonSbox(BitGraphPrimitive):
         output_ids = [""] * self.word_size
         output_positions = [0] * self.word_size
         for i in range(self.number_of_sboxes):
-            sbox_input_positions = [(position + 8 * i) % self.word_size for position in input_positions_pattern]
+            sbox_input_positions = [
+                (position + 8 * i) % self.word_size for position in input_positions_pattern
+            ]
             sbox_id = self.add_sbox_component([x[0]], [sbox_input_positions], 8, SBOX).id
-            sbox_output_positions = [(position + 8 * i) % self.word_size for position in output_positions_pattern]
+            sbox_output_positions = [
+                (position + 8 * i) % self.word_size for position in output_positions_pattern
+            ]
             for j, sbox_output_position in enumerate(sbox_output_positions):
                 output_ids[sbox_output_position] = sbox_id
                 output_positions[sbox_output_position] = j
@@ -178,9 +193,13 @@ class SimonSbox(BitGraphPrimitive):
         # Rk(x, y) = (y ⊕ f(x) ⊕ k, x)
         """Build the feistel function stage in this primitive's typed operation graph."""
         feistel_id, feistel_positions = self.f(x)
-        new_x_id = self.add_xor_component([y[0], feistel_id, k[0]], [y[1], feistel_positions, k[1]], self.word_size).id
+        new_x_id = self.add_xor_component(
+            [y[0], feistel_id, k[0]], [y[1], feistel_positions, k[1]], self.word_size
+        ).id
 
-        self.add_round_output_component([new_x_id, x[0]], [list(range(self.word_size)), x[1]], self.block_bit_size).id
+        self.add_round_output_component(
+            [new_x_id, x[0]], [list(range(self.word_size)), x[1]], self.block_bit_size
+        )
 
         return (new_x_id, list(range(self.word_size))), (x[0], x[1])
 
@@ -190,8 +209,10 @@ class SimonSbox(BitGraphPrimitive):
             key_index = self.number_of_key_words - round_number - 1
 
             self.add_round_key_output_component(
-                [INPUT_KEY], [list(range(self.word_size * key_index, self.word_size * (key_index + 1)))], self.word_size
-            ).id
+                [INPUT_KEY],
+                [list(range(self.word_size * key_index, self.word_size * (key_index + 1)))],
+                self.word_size,
+            )
             round_keys[round_number] = (
                 INPUT_KEY,
                 list(range(self.word_size * key_index, self.word_size * (key_index + 1))),
@@ -231,5 +252,7 @@ class SimonSbox(BitGraphPrimitive):
                 self.word_size,
             ).id
 
-            self.add_round_key_output_component([xor_id], [list(range(self.word_size))], self.word_size).id
+            self.add_round_key_output_component(
+                [xor_id], [list(range(self.word_size))], self.word_size
+            )
             round_keys[round_number] = xor_id, list(range(self.word_size))

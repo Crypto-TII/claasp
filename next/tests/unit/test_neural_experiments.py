@@ -102,6 +102,10 @@ def test_split_contract_rejects_overlap_bad_fractions_and_incomplete_runs():
         run.validate_for(dataset)
     with pytest.raises(TypeError, match="scalar"):
         NeuralRunProvenance.create(
-            dataset, primitive="toy", partition_seed=0, driver="test",
-            driver_version="1", options={"layers": [32, 32]},
+            dataset,
+            primitive="toy",
+            partition_seed=0,
+            driver="test",
+            driver_version="1",
+            options={"layers": [32, 32]},
         )

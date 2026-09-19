@@ -4,8 +4,8 @@ from collections.abc import Iterable
 from math import gcd
 
 from claasp_next.components import Add, Constant, LinearMap, Power
-from claasp_next.graph import Primitive, Port, ValueType
 from claasp_next.domains import PrimeField
+from claasp_next.graph import Port, Primitive, ValueType
 from claasp_next.utils import normalize_matrix
 
 
@@ -80,9 +80,7 @@ class Poseidon(Primitive):
                 component_id=f"constant_{round_number}_0",
             )
             constant_output = self.add_component(constant)
-            addition = Add(
-                (state, constant_output), component_id=f"add_{round_number}_1"
-            )
+            addition = Add((state, constant_output), component_id=f"add_{round_number}_1")
             state = self.add_component(addition)
 
             is_full_round = (

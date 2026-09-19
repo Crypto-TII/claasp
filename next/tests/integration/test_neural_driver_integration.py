@@ -3,9 +3,8 @@ import importlib.util
 import pytest
 
 from claasp_next.analysis.neural import NeuralExperiment, xor_differential_dataset
-from claasp_next.primitives import Speck
 from claasp_next.drivers.neural import SklearnMLPDriver
-
+from claasp_next.primitives import Speck
 
 pytestmark = pytest.mark.external
 

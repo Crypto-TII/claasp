@@ -5,10 +5,9 @@ from __future__ import annotations
 
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
-
+from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
 CATALOGUE = ROOT / "src/claasp_next/catalogue/data/catalogue.json"
@@ -61,7 +60,8 @@ def check() -> tuple[int, int, int, int, int]:
     classified = {
         item["primitive"]["proposed_class"]: item
         for item in inventory["records"]
-        if item.get("kind") == "source" and "primitive" in item
+        if item.get("kind") == "source"
+        and "primitive" in item
         and item["primitive"]["primitive_category"] != "outside_scope"
     }
     for name, record in by_name.items():
@@ -79,7 +79,9 @@ def check() -> tuple[int, int, int, int, int]:
     for item in realization_audit["families"]:
         class_name = item["canonical"].split(":", 1)[1]
         if len(item["equivalent"]) > 1:
-            assert [record["name"] for record in by_name[class_name]["realizations"]] == item["equivalent"]
+            assert [record["name"] for record in by_name[class_name]["realizations"]] == item[
+                "equivalent"
+            ]
     for name in ("GimliSbox", "SimeckSbox", "SimonSbox"):
         assert by_name[name]["authenticity"] == "noncanonical_legacy_regression"
         assert "noncanonical_legacy_regression" in by_name[name]["labels"]
@@ -89,10 +91,19 @@ def check() -> tuple[int, int, int, int, int]:
     environment["PYTHONPATH"] = str(ROOT / "src")
     subprocess.run(
         [sys.executable, str(ROOT / "tools/generate_catalogue_metadata.py"), "--check"],
-        cwd=ROOT.parent, env=environment, check=True, capture_output=True, text=True,
+        cwd=ROOT.parent,
+        env=environment,
+        check=True,
+        capture_output=True,
+        text=True,
     )
-    return (len(primitives), len(catalogue["components"]), len(representations),
-            len(analyses), len(catalogue["drivers"]))
+    return (
+        len(primitives),
+        len(catalogue["components"]),
+        len(representations),
+        len(analyses),
+        len(catalogue["drivers"]),
+    )
 
 
 def main() -> int:

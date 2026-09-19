@@ -1,8 +1,14 @@
 import pytest
 
 from claasp_next import (
-    Bit, InputVisibility, Primitive, PrimitiveInput, PrimitiveKind, ValueType,
-    public_input, secret_input,
+    Bit,
+    InputVisibility,
+    Primitive,
+    PrimitiveInput,
+    PrimitiveKind,
+    ValueType,
+    public_input,
+    secret_input,
 )
 from claasp_next.primitives import AES, Ascon
 from claasp_next.primitives.block_ciphers.katan import Katan
@@ -50,5 +56,7 @@ def test_unkeyed_state_graphs_infer_permutation_kind():
 
 def test_legacy_authored_graphs_map_to_semantic_v5_kinds():
     assert Katan(number_of_rounds=1).kind is PrimitiveKind.BLOCK_CIPHER
-    assert SiphashMAC(compression_rounds=1, finalization_rounds=1).kind is PrimitiveKind.BLOCK_FUNCTION
+    assert (
+        SiphashMAC(compression_rounds=1, finalization_rounds=1).kind is PrimitiveKind.BLOCK_FUNCTION
+    )
     assert QARMAv2(number_of_rounds=1).kind is PrimitiveKind.TWEAKABLE_BLOCK_CIPHER

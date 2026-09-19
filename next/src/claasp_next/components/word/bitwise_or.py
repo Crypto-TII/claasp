@@ -18,7 +18,9 @@ class BitwiseOr(Component):
         11
     """
 
-    def __init__(self, component_inputs: Iterable[PortLike], component_id: str | None = None) -> None:
+    def __init__(
+        self, component_inputs: Iterable[PortLike], component_id: str | None = None
+    ) -> None:
         inputs = tuple(component_inputs)
         if len(inputs) < 2:
             raise ValueError("word OR requires at least two inputs")

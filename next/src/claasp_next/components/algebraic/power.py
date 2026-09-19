@@ -20,7 +20,9 @@ class Power(Component):
 
     exponent: int
 
-    def __init__(self, component_input: PortLike, exponent: int, component_id: str | None = None) -> None:
+    def __init__(
+        self, component_input: PortLike, exponent: int, component_id: str | None = None
+    ) -> None:
         component_input = as_selection(component_input)
         if not isinstance(exponent, int) or isinstance(exponent, bool):
             raise TypeError("exponent must be an integer")

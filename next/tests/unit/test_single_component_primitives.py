@@ -4,27 +4,71 @@ from pathlib import Path
 
 from claasp_next.components import (
     Add as AddComponent,
+)
+from claasp_next.components import (
     BinaryAffineMap as BinaryAffineMapComponent,
+)
+from claasp_next.components import (
     BitVectorSBox as BitVectorSBoxComponent,
+)
+from claasp_next.components import (
     BitwiseAnd as BitwiseAndComponent,
+)
+from claasp_next.components import (
     BitwiseNot as BitwiseNotComponent,
+)
+from claasp_next.components import (
     BitwiseOr as BitwiseOrComponent,
+)
+from claasp_next.components import (
     Constant as ConstantComponent,
+)
+from claasp_next.components import (
     FeedbackRegister as FeedbackRegisterComponent,
+)
+from claasp_next.components import (
     IDEAMultiply as IDEAMultiplyComponent,
+)
+from claasp_next.components import (
     Identity as IdentityComponent,
+)
+from claasp_next.components import (
     LinearMap as LinearMapComponent,
+)
+from claasp_next.components import (
     ModularAdd as ModularAddComponent,
+)
+from claasp_next.components import (
     ModularMultiply as ModularMultiplyComponent,
+)
+from claasp_next.components import (
     ModularSubtract as ModularSubtractComponent,
+)
+from claasp_next.components import (
     Multiply as MultiplyComponent,
+)
+from claasp_next.components import (
     Permutation as PermutationComponent,
+)
+from claasp_next.components import (
     Power as PowerComponent,
+)
+from claasp_next.components import (
     Rotate as RotateComponent,
+)
+from claasp_next.components import (
     SBox as SBoxComponent,
+)
+from claasp_next.components import (
     Shift as ShiftComponent,
+)
+from claasp_next.components import (
     VariableRotate as VariableRotateComponent,
+)
+from claasp_next.components import (
     VariableShift as VariableShiftComponent,
+)
+from claasp_next.components import (
     Xor as XorComponent,
 )
 from claasp_next.domains import BinaryExtensionField, PrimeField, Word
@@ -55,7 +99,6 @@ from claasp_next.primitives.single_component_primitives import (
     VariableShift,
     Xor,
 )
-
 
 CLASSES = (
     Add,
@@ -115,20 +158,15 @@ def test_catalogue_is_one_to_one_with_public_base_components():
     expected = {component.__name__ for component in COMPONENT_CLASSES}
     assert set(advertised) == expected
     assert {primitive.__name__ for primitive in CLASSES} == expected
+    assert all(primitive().__class__.__name__ == primitive.__name__ for primitive in CLASSES)
     assert all(
-        primitive().__class__.__name__ == primitive.__name__ for primitive in CLASSES
-    )
-    assert all(
-        type(primitive().components[0]).__name__ == primitive.__name__
-        for primitive in CLASSES
+        type(primitive().components[0]).__name__ == primitive.__name__ for primitive in CLASSES
     )
 
 
 def test_machine_catalogue_matches_generated_exports():
     path = Path(__file__).parents[2] / "migration" / "single_component_catalogue.json"
-    assert (
-        json.loads(path.read_text()) == CATEGORY_EXPORTS["single_component_primitives"]
-    )
+    assert json.loads(path.read_text()) == CATEGORY_EXPORTS["single_component_primitives"]
 
 
 def test_fixed_semantic_examples():
@@ -202,8 +240,6 @@ def test_all_default_kinds_are_explicit():
     }
     for primitive_class in CLASSES:
         expected = (
-            PrimitiveKind.PERMUTATION
-            if primitive_class in permutations
-            else PrimitiveKind.FUNCTION
+            PrimitiveKind.PERMUTATION if primitive_class in permutations else PrimitiveKind.FUNCTION
         )
         assert primitive_class().kind is expected

@@ -19,8 +19,7 @@
 
 import sys
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
@@ -57,7 +56,9 @@ RC = [
 # fmt: on
 
 
-def generate_ublock_matrix(n, shift0, shift1, shift2, permutation_left, permutation_right, nibblewise=False):
+def generate_ublock_matrix(
+    n, shift0, shift1, shift2, permutation_left, permutation_right, nibblewise=False
+):
     if nibblewise:
         size = 2
         wordsize = 8
@@ -152,7 +153,9 @@ class UblockSingleLinearLayer(BitGraphPrimitive):
         ('0x144f09912b6b7bd2', 125)
     """
 
-    def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=16, use_mix_column=False):
+    def __init__(
+        self, block_bit_size=128, key_bit_size=128, number_of_rounds=16, use_mix_column=False
+    ):
         self.key_block_size = key_bit_size // 4
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
@@ -195,27 +198,45 @@ class UblockSingleLinearLayer(BitGraphPrimitive):
             # encryption
             state = self.round_function(state, round_key)
             # round output
-            self.add_round_key_output_component(round_key.id, round_key.input_bit_positions, self.block_bit_size)
+            self.add_round_key_output_component(
+                round_key.id, round_key.input_bit_positions, self.block_bit_size
+            )
             if round_number < number_of_rounds - 1:
-                self.add_round_output_component(state.id, state.input_bit_positions, self.block_bit_size)
+                self.add_round_output_component(
+                    state.id, state.input_bit_positions, self.block_bit_size
+                )
             # round_key schedule
-            key_0, key_1, key_2, key_3, round_key = self.key_schedule(key_0, key_1, key_2, key_3, RC[round_number])
+            key_0, key_1, key_2, key_3, round_key = self.key_schedule(
+                key_0, key_1, key_2, key_3, RC[round_number]
+            )
 
         # primitive output and round key output
         self.add_xor_component(
-            state.id + round_key.id, state.input_bit_positions + round_key.input_bit_positions, self.block_bit_size
+            state.id + round_key.id,
+            state.input_bit_positions + round_key.input_bit_positions,
+            self.block_bit_size,
         )
-        primitive_output = BitState([self.get_current_component_id()], [list(range(self.block_bit_size))])
-        self.add_round_key_output_component(round_key.id, round_key.input_bit_positions, self.block_bit_size)
-        self.add_primitive_output_component(primitive_output.id, primitive_output.input_bit_positions, self.block_bit_size)
+        primitive_output = BitState(
+            [self.get_current_component_id()], [list(range(self.block_bit_size))]
+        )
+        self.add_round_key_output_component(
+            round_key.id, round_key.input_bit_positions, self.block_bit_size
+        )
+        self.add_primitive_output_component(
+            primitive_output.id, primitive_output.input_bit_positions, self.block_bit_size
+        )
 
     def round_initialization(self):
         """Build the round initialization stage in this primitive's typed operation graph."""
         state = BitState([INPUT_PLAINTEXT], [list(range(self.block_bit_size))])
         key_0 = BitState([INPUT_KEY], [list(range(self.key_block_size))])
         key_1 = BitState([INPUT_KEY], [list(range(self.key_block_size, self.key_block_size * 2))])
-        key_2 = BitState([INPUT_KEY], [list(range(self.key_block_size * 2, self.key_block_size * 3))])
-        key_3 = BitState([INPUT_KEY], [list(range(self.key_block_size * 3, self.key_block_size * 4))])
+        key_2 = BitState(
+            [INPUT_KEY], [list(range(self.key_block_size * 2, self.key_block_size * 3))]
+        )
+        key_3 = BitState(
+            [INPUT_KEY], [list(range(self.key_block_size * 3, self.key_block_size * 4))]
+        )
         round_key = BitState([INPUT_KEY], [list(range(self.block_bit_size))])
 
         return state, key_0, key_1, key_2, key_3, round_key
@@ -224,7 +245,9 @@ class UblockSingleLinearLayer(BitGraphPrimitive):
         # state xor round_key
         """Build the round function stage in this primitive's typed operation graph."""
         self.add_xor_component(
-            state.id + round_key.id, state.input_bit_positions + round_key.input_bit_positions, self.block_bit_size
+            state.id + round_key.id,
+            state.input_bit_positions + round_key.input_bit_positions,
+            self.block_bit_size,
         )
         state = BitState([self.get_current_component_id()], [list(range(self.block_bit_size))])
         # sbox(state)
@@ -233,7 +256,10 @@ class UblockSingleLinearLayer(BitGraphPrimitive):
         n = self.block_bit_size // window_size
         for i in range(n):
             self.add_sbox_component(
-                state.id, [state.input_bit_positions[0][i * window_size : (i + 1) * window_size]], window_size, SBOX
+                state.id,
+                [state.input_bit_positions[0][i * window_size : (i + 1) * window_size]],
+                window_size,
+                SBOX,
             )
             ids.append(self.get_current_component_id())
         state = BitState(ids, [list(range(window_size))] * n)
@@ -243,7 +269,13 @@ class UblockSingleLinearLayer(BitGraphPrimitive):
                 state.id,
                 state.input_bit_positions,
                 self.block_bit_size,
-                [generate_ublock_matrix(self.block_bit_size // 4, 1, 2, 5, self.pl, self.pr, nibblewise=True), 0x13, 4],
+                [
+                    generate_ublock_matrix(
+                        self.block_bit_size // 4, 1, 2, 5, self.pl, self.pr, nibblewise=True
+                    ),
+                    0x13,
+                    4,
+                ],
             )
         else:
             # linear layer
@@ -288,7 +320,10 @@ class UblockSingleLinearLayer(BitGraphPrimitive):
             n = int(self.key_block_size / window_size)
             for i in range(n):
                 self.add_sbox_component(
-                    temp.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, SBOX
+                    temp.id,
+                    [list(range(i * window_size, (i + 1) * window_size))],
+                    window_size,
+                    SBOX,
                 )
                 ids.append(self.get_current_component_id())
             temp = BitState(ids, [list(range(window_size))] * n)
@@ -306,7 +341,10 @@ class UblockSingleLinearLayer(BitGraphPrimitive):
             n = RC_SIZE // window_size
             for i in range(n):
                 self.add_sbox_component(
-                    temp.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, SBOX
+                    temp.id,
+                    [list(range(i * window_size, (i + 1) * window_size))],
+                    window_size,
+                    SBOX,
                 )
                 ids.append(self.get_current_component_id())
             n = (self.key_block_size - RC_SIZE) // window_size
@@ -318,9 +356,13 @@ class UblockSingleLinearLayer(BitGraphPrimitive):
                     SBOX,
                 )
                 ids.append(self.get_current_component_id())
-            temp = BitState(ids, [list(range(window_size))] * int(self.key_block_size / window_size))
+            temp = BitState(
+                ids, [list(range(window_size))] * int(self.key_block_size / window_size)
+            )
         self.add_xor_component(
-            key_2.id + temp.id, key_2.input_bit_positions + temp.input_bit_positions, self.key_block_size
+            key_2.id + temp.id,
+            key_2.input_bit_positions + temp.input_bit_positions,
+            self.key_block_size,
         )
         key_2 = BitState([self.get_current_component_id()], [list(range(self.key_block_size))])
 
@@ -330,12 +372,17 @@ class UblockSingleLinearLayer(BitGraphPrimitive):
         n = self.key_block_size // window_size
         for i in range(n):
             self.add_sbox_component(
-                key_1.id, [key_1.input_bit_positions[0][i * window_size : (i + 1) * window_size]], window_size, SBOX_TK
+                key_1.id,
+                [key_1.input_bit_positions[0][i * window_size : (i + 1) * window_size]],
+                window_size,
+                SBOX_TK,
             )
             ids.append(self.get_current_component_id())
         temp = BitState(ids, [list(range(window_size))] * n)
         self.add_xor_component(
-            key_3.id + temp.id, key_3.input_bit_positions + temp.input_bit_positions, self.key_block_size
+            key_3.id + temp.id,
+            key_3.input_bit_positions + temp.input_bit_positions,
+            self.key_block_size,
         )
         key_3 = BitState([self.get_current_component_id()], [list(range(self.key_block_size))])
 
@@ -349,6 +396,8 @@ class UblockSingleLinearLayer(BitGraphPrimitive):
                 + key_0.input_bit_positions,
             )
         else:
-            round_key = BitState(key_2.id + key_3.id, key_2.input_bit_positions + key_3.input_bit_positions)
+            round_key = BitState(
+                key_2.id + key_3.id, key_2.input_bit_positions + key_3.input_bit_positions
+            )
 
         return key_2, key_3, key_1, key_0, round_key

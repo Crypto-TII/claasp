@@ -62,8 +62,7 @@ def units_from_int(value: int, unit_width: int, count: int) -> tuple[int, ...]:
         raise ValueError(f"value must fit in {width} bits")
     mask = (1 << unit_width) - 1
     return tuple(
-        (value >> (unit_width * (count - position - 1))) & mask
-        for position in range(count)
+        (value >> (unit_width * (count - position - 1))) & mask for position in range(count)
     )
 
 

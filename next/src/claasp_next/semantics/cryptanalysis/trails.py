@@ -1,9 +1,9 @@
 """Representation-independent differential and linear trail semantics."""
 
+from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
 from math import inf, log2
-from collections import defaultdict
 
 from claasp_next.semantics.base import XOR_DIFFERENTIAL, XOR_LINEAR
 
@@ -213,7 +213,9 @@ class Trail:
             AnnotationEntry(step.component_id, AnnotationRole.COMPONENT, step.transition)
             for step in self.steps
         )
-        entries.append(AnnotationEntry("primitive_output", AnnotationRole.OUTPUT, self.output_pattern))
+        entries.append(
+            AnnotationEntry("primitive_output", AnnotationRole.OUTPUT, self.output_pattern)
+        )
         return GraphAnnotation(primitive, self.semantics, entries)
 
 
@@ -283,7 +285,10 @@ class SBoxTransitionSemantics:
                 for start in range(0, size, 2 * stride):
                     for offset in range(stride):
                         left, right = values[start + offset], values[start + offset + stride]
-                        values[start + offset], values[start + offset + stride] = left + right, left - right
+                        values[start + offset], values[start + offset + stride] = (
+                            left + right,
+                            left - right,
+                        )
                 stride *= 2
             for alpha, coefficient in enumerate(values):
                 rows[alpha][beta] = coefficient
@@ -335,19 +340,28 @@ class SBoxTransitionSemantics:
         transition. Unknown output bits do not identify feasible joint values.
         """
         from .truncated import TruncatedBit, TruncatedXorDifference
+
         if not isinstance(difference, TruncatedXorDifference) or len(difference.bits) != self.width:
             raise ValueError("truncated difference must match the S-box width")
         outputs = set()
         for alpha in range(len(self.table)):
-            if any(bit is not TruncatedBit.UNKNOWN and bit.encoded != ((alpha >> (self.width - 1 - position)) & 1)
-                   for position, bit in enumerate(difference.bits)):
+            if any(
+                bit is not TruncatedBit.UNKNOWN
+                and bit.encoded != ((alpha >> (self.width - 1 - position)) & 1)
+                for position, bit in enumerate(difference.bits)
+            ):
                 continue
             outputs.update(self.table[x] ^ self.table[x ^ alpha] for x in range(len(self.table)))
         joined = []
         for position in range(self.width):
             values = {(output >> (self.width - 1 - position)) & 1 for output in outputs}
-            joined.append(TruncatedBit.UNKNOWN if len(values) > 1 else
-                          TruncatedBit.ONE if 1 in values else TruncatedBit.ZERO)
+            joined.append(
+                TruncatedBit.UNKNOWN
+                if len(values) > 1
+                else TruncatedBit.ONE
+                if 1 in values
+                else TruncatedBit.ZERO
+            )
         return TruncatedXorDifference(tuple(joined))
 
     def check(self, transition: Transition) -> bool:
@@ -364,7 +378,11 @@ class SBoxTransitionSemantics:
         return transition == expected
 
     def _validate_pattern(self, value: int) -> None:
-        if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < len(self.table):
+        if (
+            not isinstance(value, int)
+            or isinstance(value, bool)
+            or not 0 <= value < len(self.table)
+        ):
             raise ValueError(f"pattern must be an integer in range({len(self.table)})")
 
 
@@ -404,9 +422,7 @@ class ModularAddTransitionSemantics:
                 for left in (0, 1):
                     for right in (0, 1):
                         total = left + right + carry
-                        paired_total = (
-                            (left ^ left_delta) + (right ^ right_delta) + paired_carry
-                        )
+                        paired_total = (left ^ left_delta) + (right ^ right_delta) + paired_carry
                         if ((total ^ paired_total) & 1) == expected:
                             next_carries[(total >> 1, paired_total >> 1)] += count
             carries = next_carries
@@ -435,15 +451,15 @@ class ModularAddTransitionSemantics:
                 for left in (0, 1):
                     for right in (0, 1):
                         total = left + right + carry
-                        paired_total = (
-                            (left ^ left_delta) + (right ^ right_delta) + paired_carry
-                        )
+                        paired_total = (left ^ left_delta) + (right ^ right_delta) + paired_carry
                         difference = (total ^ paired_total) & 1
-                        next_states[(
-                            total >> 1,
-                            paired_total >> 1,
-                            output | (difference << bit),
-                        )] += count
+                        next_states[
+                            (
+                                total >> 1,
+                                paired_total >> 1,
+                                output | (difference << bit),
+                            )
+                        ] += count
             states = next_states
         counts = defaultdict(int)
         for (_, _, output), count in states.items():
@@ -472,9 +488,7 @@ class ModularAddTransitionSemantics:
 
         left = transition.input_pattern.value >> self.width
         right = transition.input_pattern.value & self.mask
-        return transition == self.xor_differential(
-            left, right, transition.output_pattern.value
-        )
+        return transition == self.xor_differential(left, right, transition.output_pattern.value)
 
 
 class ModularAddLinearSemantics:

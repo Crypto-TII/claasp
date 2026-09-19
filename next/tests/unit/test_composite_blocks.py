@@ -40,9 +40,9 @@ def test_chacha_quarter_round_preserves_the_rfc_8439_vector_and_named_outputs():
 def test_composite_block_can_be_instantiated_and_queried_as_a_scope():
     from claasp_next import Primitive, ValueType
 
-    primitive = Primitive("one_quarter_round", {
-        name: ValueType(Word(32), (1,)) for name in ("a", "b", "c", "d")
-    })
+    primitive = Primitive(
+        "one_quarter_round", {name: ValueType(Word(32), (1,)) for name in ("a", "b", "c", "d")}
+    )
     primitive.add_round()
     scope = primitive.add_composite(
         ChaChaQuarterRound(),
@@ -53,5 +53,7 @@ def test_composite_block_can_be_instantiated_and_queried_as_a_scope():
 
     assert scope.as_primitive().family_name == "ChaChaQuarterRound"
     assert len(scope.components) == 12
-    assert primitive.evaluate(0x11111111, 0x01020304, 0x9B8D6F43, 0x01234567) == \
-        0xEA2A92F4CB1CF8CE4581472E5881C4BB
+    assert (
+        primitive.evaluate(0x11111111, 0x01020304, 0x9B8D6F43, 0x01234567)
+        == 0xEA2A92F4CB1CF8CE4581472E5881C4BB
+    )

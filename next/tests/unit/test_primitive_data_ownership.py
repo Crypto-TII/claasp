@@ -4,11 +4,13 @@ from pathlib import Path
 from claasp_next.parameters import poseidon_bn254_width3 as convenience_poseidon_parameters
 from claasp_next.primitives.permutations.poseidon import poseidon_bn254_width3
 
-
 ROOT = Path(__file__).parents[2] / "src/claasp_next"
 CATEGORIES = (
-    "block_ciphers", "tweakable_block_ciphers", "permutations",
-    "block_functions", "functions",
+    "block_ciphers",
+    "tweakable_block_ciphers",
+    "permutations",
+    "block_functions",
+    "functions",
 )
 
 

@@ -17,11 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import get_inputs_parameter
 
 WORD_NUM = 5
 WORD_SIZE = 64
@@ -153,14 +150,20 @@ class Ascon(BitGraphPrimitive):
         for i in range(WORD_NUM):
             inputs.append(state[i])
         inputs_id, inputs_pos = get_inputs_parameter(inputs)
-        self.add_intermediate_output_component(inputs_id, inputs_pos, self.state_bit_size, "round_output_nonlinear")
+        self.add_intermediate_output_component(
+            inputs_id, inputs_pos, self.state_bit_size, "round_output_nonlinear"
+        )
 
         # linear layer
         # S[i] ^= rotr(S[i], rot0) ^ rotr(S[i], rot1)
         for i in range(WORD_NUM):
-            self.add_rotate_component(state[i].id, state[i].input_bit_positions, WORD_SIZE, LINEAR_LAYER_ROT[i][0])
+            self.add_rotate_component(
+                state[i].id, state[i].input_bit_positions, WORD_SIZE, LINEAR_LAYER_ROT[i][0]
+            )
             s1 = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
-            self.add_rotate_component(state[i].id, state[i].input_bit_positions, WORD_SIZE, LINEAR_LAYER_ROT[i][1])
+            self.add_rotate_component(
+                state[i].id, state[i].input_bit_positions, WORD_SIZE, LINEAR_LAYER_ROT[i][1]
+            )
             s2 = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
             inputs_id, inputs_pos = get_inputs_parameter([state[i], s1, s2])
             self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)

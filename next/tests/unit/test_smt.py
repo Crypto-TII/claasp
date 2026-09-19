@@ -2,10 +2,9 @@ import pytest
 
 from claasp_next import Bit, Primitive, ValueType
 from claasp_next.components import Add
-from claasp_next.drivers.solvers import SatStatus
+from claasp_next.drivers.solvers import SatStatus, Z3Solver
 from claasp_next.representations.constraints.smt import BooleanSMTModel, SMTFormula
 from claasp_next.representations.constraints.smt.exporter import SMTLibExporter
-from claasp_next.drivers.solvers import Z3Solver
 
 
 def _xor_primitive():

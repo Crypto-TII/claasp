@@ -44,11 +44,13 @@ def test_reduced_width_lookup_facts_match_direct_exhaustive_definitions():
     table = LookupTable((0, 2, 3, 1), 2)
     ddt_counts = [
         sum(table.values[x] ^ table.values[x ^ alpha] == beta for x in range(4))
-        for alpha in range(1, 4) for beta in range(4)
+        for alpha in range(1, 4)
+        for beta in range(4)
     ]
     direct_branch = min(
         alpha.bit_count() + beta.bit_count()
-        for alpha in range(1, 4) for beta in range(4)
+        for alpha in range(1, 4)
+        for beta in range(4)
         if any(table.values[x] ^ table.values[x ^ alpha] == beta for x in range(4))
     )
 
@@ -65,10 +67,12 @@ def test_rectangular_lookup_has_precise_boomerang_diagnostic():
 
 
 def test_component_dispatch_rejects_wrong_domain_without_fabricated_value():
-    from claasp_next.primitives import Present
     from claasp_next.components import BitVectorSBox
+    from claasp_next.primitives import Present
 
-    component = next(item for item in Present(number_of_rounds=1).components if isinstance(item, BitVectorSBox))
+    component = next(
+        item for item in Present(number_of_rounds=1).components if isinstance(item, BitVectorSBox)
+    )
     result = analyze_component_property(
         component,
         PropertyRequest(ComponentProperty.NONLINEARITY, PropertyDomain.WORD_OPERATION),

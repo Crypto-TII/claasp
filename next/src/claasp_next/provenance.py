@@ -1,9 +1,9 @@
 """Typed provenance shared by execution, analysis, and representation results."""
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
 from types import MappingProxyType
-from collections.abc import Mapping
 
 from claasp_next.graph.realization import RealizationDescriptor
 
@@ -66,7 +66,8 @@ class TransformationRecord:
         if not isinstance(self.operation, str) or not self.operation:
             raise ValueError("transformation operation must be a non-empty string")
         if not isinstance(self.parameters, tuple) or any(
-            not isinstance(item, tuple) or len(item) != 2
+            not isinstance(item, tuple)
+            or len(item) != 2
             or not all(isinstance(value, str) for value in item)
             for item in self.parameters
         ):

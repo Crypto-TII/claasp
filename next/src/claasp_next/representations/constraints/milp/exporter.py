@@ -41,7 +41,9 @@ class LPExporter:
         for index, constraint in enumerate(model.constraints):
             name = constraint.name or f"constraint_{index}"
             rhs = constraint.rhs - constraint.expression.constant
-            lines.append(f" {name}: {_expression(constraint.expression.terms)} {constraint.sense.value} {_number(rhs)}")
+            lines.append(
+                f" {name}: {_expression(constraint.expression.terms)} {constraint.sense.value} {_number(rhs)}"
+            )
         lines.append("Bounds")
         for variable in model.variables:
             if variable.kind is VariableKind.BINARY:
@@ -49,8 +51,12 @@ class LPExporter:
             lower = "-inf" if variable.lower_bound is None else _number(float(variable.lower_bound))
             upper = "+inf" if variable.upper_bound is None else _number(float(variable.upper_bound))
             lines.append(f" {lower} <= {variable.name} <= {upper}")
-        binaries = [variable.name for variable in model.variables if variable.kind is VariableKind.BINARY]
-        generals = [variable.name for variable in model.variables if variable.kind is VariableKind.INTEGER]
+        binaries = [
+            variable.name for variable in model.variables if variable.kind is VariableKind.BINARY
+        ]
+        generals = [
+            variable.name for variable in model.variables if variable.kind is VariableKind.INTEGER
+        ]
         if binaries:
             lines.extend(("Binary", *(f" {name}" for name in binaries)))
         if generals:

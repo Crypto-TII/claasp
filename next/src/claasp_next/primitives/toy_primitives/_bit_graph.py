@@ -4,8 +4,8 @@ from claasp_next.components import (
     BitVectorSBox,
     BitwiseAnd,
     Constant,
-    Permutation,
     ModularAdd,
+    Permutation,
     Shift,
     Xor,
 )
@@ -70,7 +70,9 @@ def shift_bits(primitive, source: PortLike, amount: int, *, component_id=None):
 
 
 def constant_bits(primitive, width: int, value: int, *, component_id=None):
-    return primitive.add_component(Constant(bit_type(width), bits_from_int(value, width), component_id=component_id))
+    return primitive.add_component(
+        Constant(bit_type(width), bits_from_int(value, width), component_id=component_id)
+    )
 
 
 def sbox_layer(primitive, source: PortLike, table, *, component_id_prefix="sbox"):
@@ -81,9 +83,11 @@ def sbox_layer(primitive, source: PortLike, table, *, component_id_prefix="sbox"
     outputs = []
     for index in range(source.value_type.unit_count // width):
         chunk = source[tuple(range(index * width, (index + 1) * width))]
-        outputs.append(primitive.add_component(BitVectorSBox(
-            chunk, table, component_id=f"{component_id_prefix}_{index}"
-        )))
+        outputs.append(
+            primitive.add_component(
+                BitVectorSBox(chunk, table, component_id=f"{component_id_prefix}_{index}")
+            )
+        )
     return concatenate(primitive, outputs)
 
 

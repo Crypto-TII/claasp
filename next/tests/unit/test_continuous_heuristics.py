@@ -5,20 +5,51 @@ from math import isclose
 import pytest
 
 from claasp_next.semantics.cryptanalysis import (
-    ContinuousHeuristicResult, continuous_modular_add, continuous_rotate_left,
-    continuous_rotate_right, continuous_speck32, continuous_xor,
+    ContinuousHeuristicResult,
+    continuous_modular_add,
+    continuous_rotate_left,
+    continuous_rotate_right,
+    continuous_speck32,
+    continuous_xor,
 )
-
 
 LEFT = (-1.0, -1.0, -1.0, 1.0) + (-1.0,) * 12
 RIGHT = (-1.0, 1.0, -1.0, 1.0) + (-1.0,) * 12
 ROUND_ONE_LEFT = (
-    0.0, 0.5, 0.0, 0.984375, -0.96875, -0.9375, -0.875, -0.75,
-    -0.5, 0.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
+    0.0,
+    0.5,
+    0.0,
+    0.984375,
+    -0.96875,
+    -0.9375,
+    -0.875,
+    -0.75,
+    -0.5,
+    0.0,
+    1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
 )
 ROUND_ONE_RIGHT = (
-    0.0, -0.5, 0.0, 0.984375, -0.96875, -0.9375, -0.875, -0.75,
-    -0.5, 0.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0,
+    0.0,
+    -0.5,
+    0.0,
+    0.984375,
+    -0.96875,
+    -0.9375,
+    -0.875,
+    -0.75,
+    -0.5,
+    0.0,
+    1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    1.0,
 )
 
 
@@ -29,7 +60,9 @@ def test_continuous_component_vectors_preserve_legacy_scip_results():
 
     assert rotated_left[10] == 1
     assert rotated_right[1] == 1 and rotated_right[15] == 1
-    assert all(isclose(value, expected, abs_tol=1e-9) for value, expected in zip(added, ROUND_ONE_LEFT))
+    assert all(
+        isclose(value, expected, abs_tol=1e-9) for value, expected in zip(added, ROUND_ONE_LEFT)
+    )
     assert continuous_xor(added, rotated_right) == ROUND_ONE_RIGHT
 
 
@@ -37,14 +70,44 @@ def test_continuous_speck_preserves_one_and_two_round_legacy_vectors():
     one = continuous_speck32(LEFT, RIGHT, rounds=1)
     two = continuous_speck32(LEFT, RIGHT, rounds=2)
     expected_two = (
-        0.0, 0.125904, 0.0, 0.849684, -0.730319, -0.521594, -0.163504, 0.0,
-        -0.003400, 0.0, -0.877274, -0.785400, -0.631694, -0.382812, 0.0, 0.5,
-        0.0, -0.123896, 0.0, 0.796585, -0.639005, -0.391206, -0.081797, 0.0,
-        0.003400, 0.0, -0.877274, -0.785400, -0.631695, 0.382810, 0.0, 0.25,
+        0.0,
+        0.125904,
+        0.0,
+        0.849684,
+        -0.730319,
+        -0.521594,
+        -0.163504,
+        0.0,
+        -0.003400,
+        0.0,
+        -0.877274,
+        -0.785400,
+        -0.631694,
+        -0.382812,
+        0.0,
+        0.5,
+        0.0,
+        -0.123896,
+        0.0,
+        0.796585,
+        -0.639005,
+        -0.391206,
+        -0.081797,
+        0.0,
+        0.003400,
+        0.0,
+        -0.877274,
+        -0.785400,
+        -0.631695,
+        0.382810,
+        0.0,
+        0.25,
     )
 
     assert one.values == ROUND_ONE_LEFT + ROUND_ONE_RIGHT
-    assert all(isclose(value, expected, abs_tol=1e-4) for value, expected in zip(two.values, expected_two))
+    assert all(
+        isclose(value, expected, abs_tol=1e-4) for value, expected in zip(two.values, expected_two)
+    )
     assert two.claim_kind == "heuristic"
     assert not hasattr(two, "is_satisfiable") and not hasattr(two, "is_optimal")
 

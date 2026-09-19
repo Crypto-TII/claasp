@@ -6,7 +6,6 @@ import pytest
 from claasp_next.analysis.statistical_results import StatisticalAssessment
 from claasp_next.drivers.statistical import parse_dieharder_report, parse_nist_final_report
 
-
 ROOT = Path(__file__).resolve().parents[3]
 NIST_FIXTURES = ROOT / "tests/unit/cipher_modules/statistical_tests/test_data/assess_output"
 
@@ -47,7 +46,9 @@ def test_nist_parser_preserves_failure_markers_and_not_applicable_rows():
     assert unavailable.proportion == 0.0
 
 
-@pytest.mark.parametrize("path", sorted(NIST_FIXTURES.glob("*/experiments/AlgorithmTesting/finalAnalysisReport.txt")))
+@pytest.mark.parametrize(
+    "path", sorted(NIST_FIXTURES.glob("*/experiments/AlgorithmTesting/finalAnalysisReport.txt"))
+)
 def test_nist_parser_preserves_all_committed_reference_suite_rows(path):
     report = parse_nist_final_report(path.read_text(encoding="utf-8"))
     counts = Counter(row.normalized_name for row in report.rows)

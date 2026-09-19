@@ -1,26 +1,33 @@
 """Private compact realizations used by reviewed inversion equivalents."""
 
-from claasp_next.graph.bit_builder import (
-    BitState, calculate_inputs, simplify_inputs,
-)
 from claasp_next.components import Add, Constant, LinearMap, Multiply, Permutation
 from claasp_next.domains import Bit
 from claasp_next.graph import Primitive, PrimitiveInput, PrimitiveKind, ValueType
+from claasp_next.graph.bit_builder import (
+    BitState,
+    calculate_inputs,
+    simplify_inputs,
+)
 from claasp_next.primitives.block_ciphers._word_graph import word_type
 from claasp_next.primitives.block_ciphers.aradi.sbox_compact_linear_map import (
-    AradiSBoxCompactLinearMap, create_linear_layers,
+    AradiSBoxCompactLinearMap,
+    create_linear_layers,
 )
+from claasp_next.primitives.permutations.gimli.primitive import N_COLS, N_ROWS, ROT_TABLE, Gimli
 from claasp_next.primitives.permutations.keccak.sbox import (
-    X_NUM, Y_NUM, KeccakSbox,
-)
-from claasp_next.primitives.permutations.xoodoo.sbox import (
-    LANE_NUM, LANE_SIZE, PLANE_NUM, XoodooSbox,
+    X_NUM,
+    Y_NUM,
+    KeccakSbox,
 )
 from claasp_next.primitives.permutations.norx import Norx
-from claasp_next.primitives.permutations.gimli.primitive import Gimli, N_COLS, N_ROWS, ROT_TABLE
+from claasp_next.primitives.permutations.xoodoo.sbox import (
+    LANE_NUM,
+    LANE_SIZE,
+    PLANE_NUM,
+    XoodooSbox,
+)
 from claasp_next.primitives.tweakable_block_ciphers.qarmav2.primitive import QARMAv2
 from claasp_next.transformations.inverse_rules import _inverse_matrix
-
 
 # Each output bit is the XOR of three rotated input words.
 _QARMAV2_M_MATRIX = tuple(
@@ -29,10 +36,13 @@ _QARMAV2_M_MATRIX = tuple(
             input_word == (output_word + rotation + 1) % 4
             and input_bit == (output_bit + rotation + 1) % 4
             for rotation in range(3)
-        ) & 1
-        for input_word in range(4) for input_bit in range(4)
+        )
+        & 1
+        for input_word in range(4)
+        for input_bit in range(4)
     )
-    for output_word in range(4) for output_bit in range(4)
+    for output_word in range(4)
+    for output_bit in range(4)
 )
 
 
@@ -111,10 +121,14 @@ class KeccakSboxTheta(KeccakSbox):
             [
                 BitState(
                     [component_id],
-                    [list(range(
-                        (x * Y_NUM + y) * self.word_bit_size,
-                        (x * Y_NUM + y + 1) * self.word_bit_size,
-                    ))],
+                    [
+                        list(
+                            range(
+                                (x * Y_NUM + y) * self.word_bit_size,
+                                (x * Y_NUM + y + 1) * self.word_bit_size,
+                            )
+                        )
+                    ],
                 )
                 for y in range(Y_NUM)
             ]
@@ -143,10 +157,12 @@ class XoodooSboxTheta(XoodooSbox):
             BitState(
                 [component_id for _ in range(LANE_NUM)],
                 [
-                    list(range(
-                        (plane * LANE_NUM + lane) * LANE_SIZE,
-                        (plane * LANE_NUM + lane + 1) * LANE_SIZE,
-                    ))
+                    list(
+                        range(
+                            (plane * LANE_NUM + lane) * LANE_SIZE,
+                            (plane * LANE_NUM + lane + 1) * LANE_SIZE,
+                        )
+                    )
                     for lane in range(LANE_NUM)
                 ],
             )
@@ -180,8 +196,7 @@ class QARMAv2Compact(QARMAv2):
         )
         port = self.port(component_id)
         return [
-            self.view(port[tuple(range(word * 4, (word + 1) * 4))]).owner_id
-            for word in range(4)
+            self.view(port[tuple(range(word * 4, (word + 1) * 4))]).owner_id for word in range(4)
         ]
 
 
@@ -218,7 +233,10 @@ class NorxTriangular(Norx):
                 inputs_pos.append([0])
             output_ids.append(self.add_xor_component(inputs_id, inputs_pos, 1).id)
         joined = self.add_intermediate_output_component(
-            output_ids, [[0]] * self.word_bit_size, self.word_bit_size, "triangular_h",
+            output_ids,
+            [[0]] * self.word_bit_size,
+            self.word_bit_size,
+            "triangular_h",
         )
         return BitState([joined.id], [list(range(self.word_bit_size))])
 
@@ -258,7 +276,8 @@ class GimliTriangular(Gimli):
                     ROT_TABLE[row],
                 )
                 rotated[row][column] = BitState(
-                    [component.id], [list(range(self.word_bit_size))],
+                    [component.id],
+                    [list(range(self.word_bit_size))],
                 )
             rotated[2][column] = states[2][column]
 
@@ -271,32 +290,39 @@ class GimliTriangular(Gimli):
                 if bit + 1 < self.word_bit_size:
                     z_inputs.append(self._source_bit(z, bit + 1))
                 if bit + 2 < self.word_bit_size:
-                    z_inputs.append(self._product_bits(
-                        self._source_bit(y, bit + 2),
-                        self._source_bit(z, bit + 2),
-                    ))
+                    z_inputs.append(
+                        self._product_bits(
+                            self._source_bit(y, bit + 2),
+                            self._source_bit(z, bit + 2),
+                        )
+                    )
                 output_bits[2][bit] = self._sum_bits(*z_inputs)
 
                 y_inputs = [self._source_bit(y, bit), self._source_bit(x, bit)]
                 if bit + 1 < self.word_bit_size:
-                    y_inputs.append(self._or_bits(
-                        self._source_bit(x, bit + 1),
-                        self._source_bit(z, bit + 1),
-                    ))
+                    y_inputs.append(
+                        self._or_bits(
+                            self._source_bit(x, bit + 1),
+                            self._source_bit(z, bit + 1),
+                        )
+                    )
                 output_bits[1][bit] = self._sum_bits(*y_inputs)
 
                 x_inputs = [self._source_bit(z, bit), self._source_bit(y, bit)]
                 if bit + 3 < self.word_bit_size:
-                    x_inputs.append(self._product_bits(
-                        self._source_bit(x, bit + 3),
-                        self._source_bit(y, bit + 3),
-                    ))
+                    x_inputs.append(
+                        self._product_bits(
+                            self._source_bit(x, bit + 3),
+                            self._source_bit(y, bit + 3),
+                        )
+                    )
                 output_bits[0][bit] = self._sum_bits(*x_inputs)
 
             for row in range(N_ROWS):
                 joined = self.view(self.join(*output_bits[row]))
                 result[row][column] = BitState(
-                    [joined.owner_id], [list(range(self.word_bit_size))],
+                    [joined.owner_id],
+                    [list(range(self.word_bit_size))],
                 )
         return result
 
@@ -346,7 +372,9 @@ def subterranean_inverse(source, output_name="output"):
         keyed_tail = derived.add_component(Add((state[tuple(range(1, size))], key)))
         state = derived.join(state[0], keyed_tail)
         state = derived.add_component(LinearMap(state, inverse_matrix))
-        state = derived.join(derived.add_component(Add((state[0], one))), state[tuple(range(1, size))])
+        state = derived.join(
+            derived.add_component(Add((state[0], one))), state[tuple(range(1, size))]
+        )
         chi_output = derived.add_component(Add((state, ones)))
         fixed = tuple(chi_output[index] for index in range(size))
         recovered = list(fixed)
@@ -377,26 +405,30 @@ def _chichi_inverse_bits(derived, output_bits, zero, one):
         return zero if not bits else bits[0] if len(bits) == 1 else derived.add_component(Add(bits))
 
     def multiply(*bits):
-        return one if not bits else bits[0] if len(bits) == 1 else derived.add_component(Multiply(bits))
+        return (
+            one
+            if not bits
+            else bits[0]
+            if len(bits) == 1
+            else derived.add_component(Multiply(bits))
+        )
 
     def product(indices, *, complement=False):
-        return multiply(*(
-            negate(output_bits[index]) if complement else output_bits[index]
-            for index in indices
-        ))
+        return multiply(
+            *(negate(output_bits[index]) if complement else output_bits[index] for index in indices)
+        )
 
     def sum_of_products(terms):
-        return add(*(
-            multiply(output_bits[index], product(factors, complement=True))
-            for index, factors in terms
-        ))
+        return add(
+            *(
+                multiply(output_bits[index], product(factors, complement=True))
+                for index, factors in terms
+            )
+        )
 
     # Lemmas 3--6 in the ChiChi bijectivity proof recover the four bits
     # needed by lambda without expanding the high-degree inverse into a table.
-    left = sum_of_products(
-        (2 * index, range(1, 2 * index, 2))
-        for index in range(half - 1)
-    )
+    left = sum_of_products((2 * index, range(1, 2 * index, 2)) for index in range(half - 1))
     right = add(
         negate(output_bits[middle]),
         sum_of_products(
@@ -411,8 +443,7 @@ def _chichi_inverse_bits(derived, output_bits, zero, one):
     x_middle = add(output_bits[middle - 3], multiply(left, right))
 
     upper_odd = sum_of_products(
-        (2 * index - 1, range(middle + 2, 2 * index, 2))
-        for index in range(half + 1, middle + 1)
+        (2 * index - 1, range(middle + 2, 2 * index, 2)) for index in range(half + 1, middle + 1)
     )
     x_middle_plus_m3 = add(
         output_bits[middle - 1],
@@ -426,12 +457,10 @@ def _chichi_inverse_bits(derived, output_bits, zero, one):
     )
 
     lower_odd = sum_of_products(
-        (2 * index - 1, range(0, 2 * index, 2))
-        for index in range(1, half - 1)
+        (2 * index - 1, range(0, 2 * index, 2)) for index in range(1, half - 1)
     )
     upper_odd_tail = sum_of_products(
-        (2 * index - 1, range(middle + 2, 2 * index, 2))
-        for index in range(half + 2, middle + 1)
+        (2 * index - 1, range(middle + 2, 2 * index, 2)) for index in range(half + 2, middle + 1)
     )
     x_middle_m1 = add(
         output_bits[middle - 2],
@@ -449,12 +478,10 @@ def _chichi_inverse_bits(derived, output_bits, zero, one):
     )
 
     upper_even = sum_of_products(
-        (2 * index, range(middle + 1, 2 * index + 1, 2))
-        for index in range(half + 1, middle)
+        (2 * index, range(middle + 1, 2 * index + 1, 2)) for index in range(half + 1, middle)
     )
     lower_odd_long = sum_of_products(
-        (2 * index - 1, range(0, 2 * index, 2))
-        for index in range(1, half)
+        (2 * index - 1, range(0, 2 * index, 2)) for index in range(1, half)
     )
     x_middle_m2 = add(
         output_bits[middle],
@@ -494,10 +521,7 @@ def _chichi_inverse_bits(derived, output_bits, zero, one):
             )
         return recovered
 
-    return (
-        inverse_odd_chi(chi_outputs[:middle - 1])
-        + inverse_odd_chi(chi_outputs[middle - 1:])
-    )
+    return inverse_odd_chi(chi_outputs[: middle - 1]) + inverse_odd_chi(chi_outputs[middle - 1 :])
 
 
 def chilow_inverse(source, output_name="output"):
@@ -539,10 +563,9 @@ def chilow_inverse(source, output_name="output"):
     whitened_tweak = [add(tweak[index], key[index]) for index in range(64)]
     alpha, offsets = 3, (1, 26, 50)
     final_tweak = [
-        derived.add_component(Add(tuple(
-            whitened_tweak[(alpha * index + offset) % 64]
-            for offset in offsets
-        )))
+        derived.add_component(
+            Add(tuple(whitened_tweak[(alpha * index + offset) % 64] for offset in offsets))
+        )
         for index in range(64)
     ]
     chichi_output = [add(output[index], final_tweak[index]) for index in range(40)]
@@ -553,6 +576,12 @@ def chilow_inverse(source, output_name="output"):
 
 
 __all__ = [
-    "AradiCompactWord", "GimliTriangular", "KeccakSboxTheta", "NorxTriangular",
-    "QARMAv2Compact", "XoodooSboxTheta", "chilow_inverse", "subterranean_inverse",
+    "AradiCompactWord",
+    "GimliTriangular",
+    "KeccakSboxTheta",
+    "NorxTriangular",
+    "QARMAv2Compact",
+    "XoodooSboxTheta",
+    "chilow_inverse",
+    "subterranean_inverse",
 ]

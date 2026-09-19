@@ -15,11 +15,15 @@ def test_all_small_modadd_ddt_entries_and_weights(width):
     cnf = CNFFormula(formula.variables, formula.assertions, formula.provenance)
     mask = (1 << width) - 1
     for alpha, beta, gamma in product(range(1 << width), repeat=3):
-        count = sum((((x + y) & mask) ^ (((x ^ alpha) + (y ^ beta)) & mask)) == gamma
-                    for x, y in product(range(1 << width), repeat=2))
-        assignment = {f"{prefix}_{bit}": (value >> (width - 1 - bit)) & 1
-                      for prefix, value in zip(("left", "right", "output"), (alpha, beta, gamma))
-                      for bit in range(width)}
+        count = sum(
+            (((x + y) & mask) ^ (((x ^ alpha) + (y ^ beta)) & mask)) == gamma
+            for x, y in product(range(1 << width), repeat=2)
+        )
+        assignment = {
+            f"{prefix}_{bit}": (value >> (width - 1 - bit)) & 1
+            for prefix, value in zip(("left", "right", "output"), (alpha, beta, gamma))
+            for bit in range(width)
+        }
         accepted = []
         for weights in product((0, 1), repeat=width - 1):
             candidate = assignment | {f"weight_{bit}": value for bit, value in enumerate(weights)}

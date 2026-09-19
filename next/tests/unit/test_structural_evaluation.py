@@ -1,6 +1,6 @@
 import pytest
 
-from claasp_next import Bit, Primitive, PrimeField, ScalarEvaluator, ValueType
+from claasp_next import Bit, PrimeField, Primitive, ScalarEvaluator, ValueType
 from claasp_next.components import Constant, Identity, Permutation
 
 
@@ -45,9 +45,13 @@ def test_selection_identity_and_concatenation_use_logical_units():
 
 def test_primitive_output_accepts_multi_source_structural_wiring():
     field = PrimeField(257)
-    primitive = Primitive("wired_output", {
-        "left": ValueType(field, (2,)), "right": ValueType(field, (2,)),
-    })
+    primitive = Primitive(
+        "wired_output",
+        {
+            "left": ValueType(field, (2,)),
+            "right": ValueType(field, (2,)),
+        },
+    )
     primitive.add_round()
     primitive.set_output((primitive.input("left"), primitive.input("right")[1, 0]))
 
@@ -111,7 +115,9 @@ def test_scalar_evaluator_rejects_unsupported_base_component():
     value_type = ValueType(Bit(), (1,))
     primitive = Primitive("unsupported", {"state": value_type})
     primitive.add_round()
-    primitive.add_component(Component("unknown_0_0", (primitive.input("state").select_all(),), value_type))
+    primitive.add_component(
+        Component("unknown_0_0", (primitive.input("state").select_all(),), value_type)
+    )
 
     with pytest.raises(NotImplementedError, match="does not support Component"):
         ScalarEvaluator().evaluate(primitive, {"state": (0,)})

@@ -15,10 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import (
+    BitGraphPrimitive,
+    BitState,
+    coerce_exact_int,
+    get_inputs_parameter,
+)
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import coerce_exact_int, get_inputs_parameter
 
 _DEFAULT_ROTATIONS = (-5, -8, -13, -7, -16)
 _NUMBER_OF_WORDS = 4

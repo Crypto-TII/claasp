@@ -3,43 +3,43 @@ import subprocess
 
 import pytest
 
-from claasp_next.drivers.solvers import CPStatus, MiniZincSolver
 from claasp_next.analysis import AnalysisProblem, FixedValue
-from claasp_next.primitives import AES, Simon, Speck
-from claasp_next.representations.constraints.cp import MiniZincModel
+from claasp_next.drivers.solvers import CPStatus, MiniZincSolver
+from claasp_next.primitives import AES, Present, Simon, Speck
+from claasp_next.representations.constraints.cp import (
+    ImpossibleBoundaryCPModel,
+    MiniZincModel,
+    PresentDifferentialCPModel,
+    PresentLinearCPModel,
+    ProbabilisticTruncatedModularAddCPModel,
+    SBoxBoomerangCPModel,
+    SBoxDifferenceCPModel,
+    SimonImpossibleCPModel,
+    SpeckDifferentialCPModel,
+    SpeckImpossibleCPModel,
+    SpeckProbabilisticTruncatedCPModel,
+    SpeckTruncatedCPModel,
+    WordwiseDifferenceCPModel,
+)
+from claasp_next.representations.constraints.smt.trails import (
+    check_present_linear_smt_trail,
+    check_present_smt_trail,
+)
 from claasp_next.semantics import (
     DETERMINISTIC_TRUNCATED_XOR,
     PROBABILISTIC_TRUNCATED_XOR,
     XOR_DIFFERENTIAL,
     XOR_LINEAR,
 )
-from claasp_next.semantics.cryptanalysis import PropagationProblem
-from claasp_next.representations.constraints.cp import (
-    PresentDifferentialCPModel,
-    ImpossibleBoundaryCPModel,
-    PresentLinearCPModel,
-    SBoxDifferenceCPModel,
-    SBoxBoomerangCPModel,
-    ProbabilisticTruncatedModularAddCPModel,
-    SpeckDifferentialCPModel,
-    SpeckImpossibleCPModel,
-    SimonImpossibleCPModel,
-    SpeckProbabilisticTruncatedCPModel,
-    SpeckTruncatedCPModel,
-    WordwiseDifferenceCPModel,
-)
 from claasp_next.semantics.cryptanalysis import (
-    TruncatedXorDifference, check_probabilistic_truncated_modular_add,
     ImpossiblePropagationBoundary,
-    WordwiseDifferenceKind, WordwiseXorDifference,
+    PropagationProblem,
+    TruncatedXorDifference,
+    WordwiseDifferenceKind,
+    WordwiseXorDifference,
+    check_probabilistic_truncated_modular_add,
     propagate_single_active_aes_byte,
 )
-from claasp_next.representations.constraints.smt.trails import (
-    check_present_linear_smt_trail,
-    check_present_smt_trail,
-)
-from claasp_next.primitives import Present
-
 
 pytestmark = pytest.mark.external
 
@@ -69,9 +69,10 @@ def test_minizinc_all_solution_contract_requires_complete_exhaustion():
 
     assert result.status is CPStatus.SATISFIED
     assert result.termination == "exhausted"
-    assert {
-        (solution["left"], solution["right"]) for solution in result.solutions
-    } == {(False, True), (True, False)}
+    assert {(solution["left"], solution["right"]) for solution in result.solutions} == {
+        (False, True),
+        (True, False),
+    }
 
 
 def test_minizinc_solves_and_projects_named_values():
@@ -144,18 +145,22 @@ def test_minizinc_reproduces_legacy_full_speck_missing_bits_result():
 def test_minizinc_proves_present_two_round_differential_optimum():
     primitive = Present(number_of_rounds=2)
     solver = MiniZincSolver(solver=_test_solver(), timeout_seconds=60)
-    below = PresentDifferentialCPModel(PropagationProblem(
-        primitive,
-        XOR_DIFFERENTIAL,
-        maximum_weight=3,
-        provenance=("PRESENT-2 legacy lower bound",),
-    ))
-    optimum = PresentDifferentialCPModel(PropagationProblem(
-        primitive,
-        XOR_DIFFERENTIAL,
-        maximum_weight=4,
-        provenance=("PRESENT-2 legacy optimum",),
-    ))
+    below = PresentDifferentialCPModel(
+        PropagationProblem(
+            primitive,
+            XOR_DIFFERENTIAL,
+            maximum_weight=3,
+            provenance=("PRESENT-2 legacy lower bound",),
+        )
+    )
+    optimum = PresentDifferentialCPModel(
+        PropagationProblem(
+            primitive,
+            XOR_DIFFERENTIAL,
+            maximum_weight=4,
+            provenance=("PRESENT-2 legacy optimum",),
+        )
+    )
 
     assert solver.solve(below.cp_model()).status is CPStatus.UNSATISFIABLE
     solved = solver.solve(optimum.cp_model())
@@ -169,18 +174,22 @@ def test_minizinc_proves_present_two_round_differential_optimum():
 def test_minizinc_proves_present_three_round_linear_optimum_with_signs():
     primitive = Present(number_of_rounds=3)
     solver = MiniZincSolver(solver=_test_solver(), timeout_seconds=60)
-    below = PresentLinearCPModel(PropagationProblem(
-        primitive,
-        XOR_LINEAR,
-        maximum_weight=3,
-        provenance=("PRESENT-3 legacy linear lower bound",),
-    ))
-    optimum = PresentLinearCPModel(PropagationProblem(
-        primitive,
-        XOR_LINEAR,
-        maximum_weight=4,
-        provenance=("PRESENT-3 legacy linear optimum",),
-    ))
+    below = PresentLinearCPModel(
+        PropagationProblem(
+            primitive,
+            XOR_LINEAR,
+            maximum_weight=3,
+            provenance=("PRESENT-3 legacy linear lower bound",),
+        )
+    )
+    optimum = PresentLinearCPModel(
+        PropagationProblem(
+            primitive,
+            XOR_LINEAR,
+            maximum_weight=4,
+            provenance=("PRESENT-3 legacy linear optimum",),
+        )
+    )
 
     assert solver.solve(below.cp_model()).status is CPStatus.UNSATISFIABLE
     solved = solver.solve(optimum.cp_model())
@@ -249,14 +258,22 @@ def test_minizinc_preserves_exact_present_boomerang_connectivity_entries():
 def test_minizinc_proves_legacy_speck_five_round_differential_optimum():
     primitive = Speck(number_of_rounds=5)
     solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=30)
-    below = SpeckDifferentialCPModel(PropagationProblem(
-        primitive, XOR_DIFFERENTIAL, maximum_weight=8,
-        provenance=("legacy Speck32/64-5 lower bound",),
-    ))
-    optimum = SpeckDifferentialCPModel(PropagationProblem(
-        primitive, XOR_DIFFERENTIAL, maximum_weight=9,
-        provenance=("legacy Speck32/64-5 optimum",),
-    ))
+    below = SpeckDifferentialCPModel(
+        PropagationProblem(
+            primitive,
+            XOR_DIFFERENTIAL,
+            maximum_weight=8,
+            provenance=("legacy Speck32/64-5 lower bound",),
+        )
+    )
+    optimum = SpeckDifferentialCPModel(
+        PropagationProblem(
+            primitive,
+            XOR_DIFFERENTIAL,
+            maximum_weight=9,
+            provenance=("legacy Speck32/64-5 optimum",),
+        )
+    )
 
     assert solver.solve(below.cp_model()).status is CPStatus.UNSATISFIABLE
     solved = solver.solve(optimum.cp_model())
@@ -267,20 +284,33 @@ def test_minizinc_proves_legacy_speck_five_round_differential_optimum():
     assert len(trail.steps) == 5
 
 
-@pytest.mark.parametrize("input_difference,output_difference,weight", [
-    (0x00400000, 0x8000840A, 3),
-    (0x02110A04, 0x80008000, 6),
-])
+@pytest.mark.parametrize(
+    "input_difference,output_difference,weight",
+    [
+        (0x00400000, 0x8000840A, 3),
+        (0x02110A04, 0x80008000, 6),
+    ],
+)
 def test_minizinc_preserves_legacy_fixed_speck_three_round_differential(
-    input_difference, output_difference, weight,
+    input_difference,
+    output_difference,
+    weight,
 ):
     """sat_model_test.py dictionary-based differential fixture, zero key difference."""
     primitive = Speck(number_of_rounds=3)
-    model = SpeckDifferentialCPModel(PropagationProblem(
-        primitive, XOR_DIFFERENTIAL, maximum_weight=weight,
-        provenance=("legacy sat_model_test.py fixed Speck-3 witness",),
-    ), input_difference=input_difference, output_difference=output_difference)
-    solved = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=10).solve(model.cp_model())
+    model = SpeckDifferentialCPModel(
+        PropagationProblem(
+            primitive,
+            XOR_DIFFERENTIAL,
+            maximum_weight=weight,
+            provenance=("legacy sat_model_test.py fixed Speck-3 witness",),
+        ),
+        input_difference=input_difference,
+        output_difference=output_difference,
+    )
+    solved = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=10).solve(
+        model.cp_model()
+    )
     assert solved.status is CPStatus.SATISFIED
     trail = model.decode_trail(solved.assignment)
     assert trail.input_pattern.value == input_difference
@@ -300,7 +330,10 @@ def test_minizinc_preserves_differential_boundary_comparison_sat_unsat():
         trail = model.decode_trail(result.assignment)
         assert (trail.input_pattern.value == trail.output_pattern.value) == (relation == "equal")
     contradictory = SpeckDifferentialCPModel(
-        problem, input_difference=1, output_difference=1, boundary_relation="not_equal",
+        problem,
+        input_difference=1,
+        output_difference=1,
+        boundary_relation="not_equal",
     )
     assert solver.solve(contradictory.cp_model()).status is CPStatus.UNSATISFIABLE
 
@@ -312,10 +345,15 @@ def test_minizinc_preserves_legacy_mixed_exact_truncated_speck_feasibility():
     first two data rounds exact, last data round deterministic truncated.
     """
     from claasp_next.analysis import SpeckHybridDifferentialProblem
+
     problem = SpeckHybridDifferentialProblem(
-        Speck(number_of_rounds=3), exact_rounds=2, input_difference=0x00400000,
+        Speck(number_of_rounds=3),
+        exact_rounds=2,
+        input_difference=0x00400000,
     )
-    result = problem.solve(MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=10))
+    result = problem.solve(
+        MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=10)
+    )
     assert result is not None
     assert problem.check(result)
     assert result.exact_prefix.input_pattern.value == 0x00400000
@@ -325,10 +363,14 @@ def test_minizinc_preserves_legacy_mixed_exact_truncated_speck_feasibility():
 def test_minizinc_preserves_legacy_speck_five_round_bounded_trail_count():
     primitive = Speck(number_of_rounds=5)
     solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=45)
-    representation = SpeckDifferentialCPModel(PropagationProblem(
-        primitive, XOR_DIFFERENTIAL, maximum_weight=10,
-        provenance=("legacy SMT Speck32/64-5 bounded enumeration",),
-    ))
+    representation = SpeckDifferentialCPModel(
+        PropagationProblem(
+            primitive,
+            XOR_DIFFERENTIAL,
+            maximum_weight=10,
+            provenance=("legacy SMT Speck32/64-5 bounded enumeration",),
+        )
+    )
 
     result = solver.solve_all(representation.cp_model()).require_complete()
     trails = tuple(representation.decode_trail(solution) for solution in result.solutions)
@@ -399,7 +441,8 @@ def test_minizinc_preserves_legacy_speck_probabilistic_truncated_trails(
     primitive = Speck(number_of_rounds=rounds)
     model = SpeckProbabilisticTruncatedCPModel(
         PropagationProblem(
-            primitive, PROBABILISTIC_TRUNCATED_XOR,
+            primitive,
+            PROBABILISTIC_TRUNCATED_XOR,
             provenance=("legacy semi-deterministic Speck fixture",),
         ),
         TruncatedXorDifference.parse(input_pattern),
@@ -443,10 +486,12 @@ def test_minizinc_projects_wordwise_aes_single_byte_diffusion_fixture():
 
 
 def test_minizinc_proves_and_decodes_an_impossible_middle_boundary():
-    model = ImpossibleBoundaryCPModel(ImpossiblePropagationBoundary(
-        TruncatedXorDifference.parse("01??0"),
-        TruncatedXorDifference.parse("00?11"),
-    ))
+    model = ImpossibleBoundaryCPModel(
+        ImpossiblePropagationBoundary(
+            TruncatedXorDifference.parse("01??0"),
+            TruncatedXorDifference.parse("00?11"),
+        )
+    )
 
     solved = MiniZincSolver(solver=_test_solver()).solve(model.cp_model())
     boundary = model.decode_boundary(solved.assignment)
@@ -456,10 +501,12 @@ def test_minizinc_proves_and_decodes_an_impossible_middle_boundary():
 
 
 def test_minizinc_rejects_a_compatible_middle_boundary():
-    model = ImpossibleBoundaryCPModel(ImpossiblePropagationBoundary(
-        TruncatedXorDifference.parse("01??0"),
-        TruncatedXorDifference.parse("?1?00"),
-    ))
+    model = ImpossibleBoundaryCPModel(
+        ImpossiblePropagationBoundary(
+            TruncatedXorDifference.parse("01??0"),
+            TruncatedXorDifference.parse("?1?00"),
+        )
+    )
 
     solved = MiniZincSolver(solver=_test_solver()).solve(model.cp_model())
 
@@ -469,9 +516,9 @@ def test_minizinc_rejects_a_compatible_middle_boundary():
 def test_minizinc_preserves_legacy_speck_seven_round_impossible_unsat():
     model = SpeckImpossibleCPModel(Speck(number_of_rounds=7), middle_round=3)
 
-    solved = MiniZincSolver(
-        solver=_test_solver(require_chuffed=True), timeout_seconds=30
-    ).solve(model.cp_model())
+    solved = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=30).solve(
+        model.cp_model()
+    )
 
     assert solved.status is CPStatus.UNSATISFIABLE
     assert model.cp_model().provenance == (

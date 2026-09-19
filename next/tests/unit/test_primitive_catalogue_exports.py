@@ -19,7 +19,7 @@ def test_all_142_catalogue_classes_are_public_at_top_level_and_by_category():
 
 def test_unknown_catalogue_export_is_an_attribute_error():
     try:
-        primitives.NotAPrimitive
+        primitives.__getattr__("NotAPrimitive")
     except AttributeError as error:
         assert error.args == ("NotAPrimitive",)
     else:

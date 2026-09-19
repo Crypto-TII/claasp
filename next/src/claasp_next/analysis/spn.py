@@ -2,6 +2,9 @@
 
 from math import inf
 
+from claasp_next.components import BitVectorSBox, Permutation
+from claasp_next.domains import Bit
+from claasp_next.graph import Primitive
 from claasp_next.semantics.cryptanalysis import (
     SBoxTransitionSemantics,
     Trail,
@@ -11,9 +14,6 @@ from claasp_next.semantics.cryptanalysis import (
     XorDifference,
     XorMask,
 )
-from claasp_next.components import BitVectorSBox, Permutation
-from claasp_next.graph import Primitive
-from claasp_next.domains import Bit
 
 
 def find_two_round_spn_xor_differential(primitive: Primitive) -> TrailSearchResult:
@@ -37,9 +37,7 @@ def find_two_round_spn_xor_differential(primitive: Primitive) -> TrailSearchResu
         difference: tuple(
             transition
             for output in range(1 << semantics.width)
-            if (
-                transition := semantics.xor_differential(difference, output)
-            ).is_possible
+            if (transition := semantics.xor_differential(difference, output)).is_possible
         )
         for difference in range(1 << semantics.width)
     }
@@ -172,7 +170,9 @@ def find_three_round_spn_xor_linear(primitive: Primitive) -> TrailSearchResult:
                             transitions[mask],
                             key=lambda item: (item.weight, item.output_pattern.value),
                         )
-                        steps.append(TrailStep(layers[round_index][nibble].component_id, transition))
+                        steps.append(
+                            TrailStep(layers[round_index][nibble].component_id, transition)
+                        )
                         output |= transition.output_pattern.value << shift
                     state = _permute(output, 64, permutations[round_index].mapping)
                 trail = Trail(
@@ -181,7 +181,11 @@ def find_three_round_spn_xor_linear(primitive: Primitive) -> TrailSearchResult:
                     XorMask(state, 64),
                     tuple(steps),
                 )
-                ordering = (trail.total_weight, trail.input_pattern.value, trail.output_pattern.value)
+                ordering = (
+                    trail.total_weight,
+                    trail.input_pattern.value,
+                    trail.output_pattern.value,
+                )
                 if best is None or ordering < best[0]:
                     best = (ordering, trail)
     if best is None:

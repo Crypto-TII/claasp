@@ -2,26 +2,27 @@ import shutil
 
 import pytest
 
-from claasp_next.drivers.solvers import SatStatus
-from claasp_next.analysis import AnalysisProblem, FixedValue
+from claasp_next.analysis import AnalysisProblem, FixedValue, TrailKind
+from claasp_next.drivers.solvers import SatStatus, Z3Solver
 from claasp_next.primitives import Present, Speck
-from claasp_next.drivers.solvers import Z3Solver
+from claasp_next.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp_next.representations.constraints.smt import (
+    ModularAddLinearSMTModel,
     PresentDifferentialSMTModel,
     PresentLinearSMTModel,
-    ModularAddLinearSMTModel,
     SBoxTransitionSMTModel,
 )
-from claasp_next.representations.constraints.smt.trails import check_present_linear_smt_trail, check_present_smt_trail
-from claasp_next.analysis import TrailKind
-from claasp_next.primitives.block_ciphers.present import PRESENT_SBOX
-
+from claasp_next.representations.constraints.smt.trails import (
+    check_present_linear_smt_trail,
+    check_present_smt_trail,
+)
 
 pytestmark = pytest.mark.external
 
 
 def test_z3_incremental_queries_reject_mutation_and_close_process():
     from claasp_next.representations.constraints.smt import SMTFormula
+
     formula = SMTFormula(("state",), ((1,),), ("fixed",))
     with Z3Solver(timeout_seconds=10).incremental(formula) as session:
         assert session.solve(formula).status is SatStatus.SATISFIABLE
@@ -120,9 +121,9 @@ def test_z3_restores_speck_linear_modular_add_reference_transitions():
     )
     transitions = []
     for left, right, output in reference:
-        solved = solver.solve(model.smt_formula(
-            left_mask=left, right_mask=right, output_mask=output
-        ))
+        solved = solver.solve(
+            model.smt_formula(left_mask=left, right_mask=right, output_mask=output)
+        )
         assert solved.status is SatStatus.SATISFIABLE
         transitions.append(model.decode_transition(solved.assignment))
 

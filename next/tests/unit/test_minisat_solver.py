@@ -1,7 +1,7 @@
 import pytest
 
-from claasp_next.representations.constraints.sat import CNFFormula
 from claasp_next.drivers.solvers import MinisatSolver, SatStatus
+from claasp_next.representations.constraints.sat import CNFFormula
 
 
 def test_minisat_result_parser_maps_dimacs_literals_to_names():

@@ -12,7 +12,13 @@ from claasp_next.presentation.model import Alignment, ReportData, ReportSection,
 
 
 def _markdown(value: str) -> str:
-    return value.replace("\\", "\\\\").replace("|", "\\|").replace("\r\n", "\n").replace("\r", "\n").replace("\n", "<br>")
+    return (
+        value.replace("\\", "\\\\")
+        .replace("|", "\\|")
+        .replace("\r\n", "\n")
+        .replace("\r", "\n")
+        .replace("\n", "<br>")
+    )
 
 
 def render_markdown_table(table: Table) -> str:
@@ -28,15 +34,16 @@ def render_markdown_table(table: Table) -> str:
     """
 
     alignments = {
-        Alignment.LEFT: ":---", Alignment.RIGHT: "---:", Alignment.CENTER: ":---:",
+        Alignment.LEFT: ":---",
+        Alignment.RIGHT: "---:",
+        Alignment.CENTER: ":---:",
     }
     lines = [
         "| " + " | ".join(_markdown(column.heading) for column in table.columns) + " |",
         "| " + " | ".join(alignments[column.alignment] for column in table.columns) + " |",
     ]
     lines.extend(
-        "| " + " | ".join(_markdown(cell.text) for cell in row.cells) + " |"
-        for row in table.rows
+        "| " + " | ".join(_markdown(cell.text) for cell in row.cells) + " |" for row in table.rows
     )
     return "\n".join(lines)
 
@@ -53,8 +60,10 @@ def render_terminal_table(table: Table) -> str:
         required arguments rejected
     """
 
-    row_lines = [tuple(cell.text.replace("\r\n", "\n").replace("\r", "\n").split("\n") for cell in row.cells)
-                 for row in table.rows]
+    row_lines = [
+        tuple(cell.text.replace("\r\n", "\n").replace("\r", "\n").split("\n") for cell in row.cells)
+        for row in table.rows
+    ]
     widths = []
     for index, column in enumerate(table.columns):
         candidates = [column.heading]
@@ -69,15 +78,19 @@ def render_terminal_table(table: Table) -> str:
             return value.center(widths[index])
         return value.ljust(widths[index])
 
-    lines = [" | ".join(aligned(column.heading, index) for index, column in enumerate(table.columns))]
+    lines = [
+        " | ".join(aligned(column.heading, index) for index, column in enumerate(table.columns))
+    ]
     lines.append("-+-".join("-" * width for width in widths))
     for row in row_lines:
         height = max(len(cell_lines) for cell_lines in row)
         for line_index in range(height):
-            lines.append(" | ".join(
-                aligned(cell_lines[line_index] if line_index < len(cell_lines) else "", index)
-                for index, cell_lines in enumerate(row)
-            ))
+            lines.append(
+                " | ".join(
+                    aligned(cell_lines[line_index] if line_index < len(cell_lines) else "", index)
+                    for index, cell_lines in enumerate(row)
+                )
+            )
     return "\n".join(lines)
 
 
@@ -108,7 +121,10 @@ def _compatible(value):
     if isinstance(value, (tuple, list)):
         return [_compatible(item) for item in value]
     if isinstance(value, (dict, MappingProxyType)):
-        return {str(key): _compatible(item) for key, item in sorted(value.items(), key=lambda pair: str(pair[0]))}
+        return {
+            str(key): _compatible(item)
+            for key, item in sorted(value.items(), key=lambda pair: str(pair[0]))
+        }
     if isinstance(value, (set, frozenset)):
         return sorted((_compatible(item) for item in value), key=str)
     if is_dataclass(value):
@@ -200,7 +216,11 @@ def report_data(report: ReportData) -> dict[str, object]:
     }
 
 
-def render_section(section: ReportSection, *, format: str = "terminal") -> str:
+def render_section(
+    section: ReportSection,
+    *,
+    format: str = "terminal",  # noqa: A002 - public format API
+) -> str:
     """Render one section as terminal, Markdown, or CSV text.
 
     EXAMPLES::

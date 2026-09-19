@@ -11,8 +11,13 @@ from enum import Enum
 from math import pi
 
 from claasp_next.analysis.avalanche import AvalancheResult
-from claasp_next.analysis.component_properties import ComponentPropertyResult, PropertyClaim, PropertyDomain
-from claasp_next.analysis.statistical_results import DieharderReport, NISTFinalReport, StatisticalTestRun
+from claasp_next.analysis.component_properties import (
+    PropertyClaim,
+    PropertyDomain,
+)
+from claasp_next.analysis.statistical_results import (
+    StatisticalTestRun,
+)
 from claasp_next.presentation.contracts import EvidenceClass
 from claasp_next.provenance import DriverIdentity, DriverKind
 
@@ -144,22 +149,32 @@ class MatplotlibPresentationDriver:
             }[result.claim]
             points.append(RadarPoint(key[0], value, normalized, evidence, scale))
         if len(points) < 3:
-            raise ValueError("a radar chart requires at least three comparable applicable properties")
+            raise ValueError(
+                "a radar chart requires at least three comparable applicable properties"
+            )
         angles = tuple(2 * pi * index / len(points) for index in range(len(points)))
         values = tuple(point.normalized_value for point in points)
         figure, axis = pyplot.subplots(subplot_kw={"projection": "polar"})
         axis.plot(angles + angles[:1], values + values[:1], marker="o", label=label)
         axis.fill(angles + angles[:1], values + values[:1], alpha=0.12)
         axis.set_xticks(angles)
-        axis.set_xticklabels(tuple(
-            f"{point.scale.label}\n{point.scale.direction.value}\n[{point.scale.minimum:g}, {point.scale.maximum:g}]\n{point.evidence.value}"
-            for point in points
-        ))
+        axis.set_xticklabels(
+            tuple(
+                f"{point.scale.label}\n{point.scale.direction.value}\n[{point.scale.minimum:g}, {point.scale.maximum:g}]\n{point.evidence.value}"
+                for point in points
+            )
+        )
         axis.set_ylim(0.0, 1.0)
         axis.set_ylabel("normalized desirability (0 worst, 1 best)")
         axis.legend()
-        return FigureArtifact(figure, "component_radar", ((label, values),), self.identity,
-                              tuple(point.scale for point in points), tuple(omitted))
+        return FigureArtifact(
+            figure,
+            "component_radar",
+            ((label, values),),
+            self.identity,
+            tuple(point.scale for point in points),
+            tuple(omitted),
+        )
 
     def avalanche_matrix(self, result: AvalancheResult) -> FigureArtifact:
         """Render an empirical input-bit by output-bit probability matrix."""
@@ -169,11 +184,18 @@ class MatplotlibPresentationDriver:
         image = axis.imshow(result.probabilities, vmin=0.0, vmax=1.0, aspect="auto", cmap="viridis")
         axis.set_xlabel("output bit (MSB first)")
         axis.set_ylabel("input bit (MSB first)")
-        axis.set_title(f"{result.primitive_family} avalanche; n={result.sample_count}; seed={result.seed}; empirical")
+        axis.set_title(
+            f"{result.primitive_family} avalanche; n={result.sample_count}; seed={result.seed}; empirical"
+        )
         figure.colorbar(image, ax=axis, label="observed flip probability")
-        return FigureArtifact(figure, "avalanche_matrix",
-                              tuple((f"input_bit_{index}", tuple(row)) for index, row in enumerate(result.probabilities)),
-                              self.identity)
+        return FigureArtifact(
+            figure,
+            "avalanche_matrix",
+            tuple(
+                (f"input_bit_{index}", tuple(row)) for index, row in enumerate(result.probabilities)
+            ),
+            self.identity,
+        )
 
     def dieharder_assessments(self, result) -> FigureArtifact:
         """Render ordered Dieharder categories without hiding weak rows."""
@@ -190,7 +212,9 @@ class MatplotlibPresentationDriver:
         axis.set_xlabel("test")
         axis.set_ylabel("assessment")
         axis.legend()
-        return FigureArtifact(figure, "dieharder_assessments", (("assessment", values),), self.identity)
+        return FigureArtifact(
+            figure, "dieharder_assessments", (("assessment", values),), self.identity
+        )
 
     def nist_proportions(self, result) -> FigureArtifact:
         """Render available NIST proportions and explicitly omit unavailable rows."""
@@ -208,5 +232,10 @@ class MatplotlibPresentationDriver:
         axis.set_xlabel("test")
         axis.set_ylabel("passing proportion")
         axis.legend()
-        return FigureArtifact(figure, "nist_proportions", (("pass_proportion", values),),
-                              self.identity, omitted=omitted)
+        return FigureArtifact(
+            figure,
+            "nist_proportions",
+            (("pass_proportion", values),),
+            self.identity,
+            omitted=omitted,
+        )

@@ -15,4 +15,5 @@ class KeccakInvertible(KeccakSbox):
         ('0xf1258f7940e1dde7', 1600)
     """
 
+
 __all__ = ["KeccakInvertible"]

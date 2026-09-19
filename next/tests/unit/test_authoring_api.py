@@ -1,7 +1,8 @@
 import pytest
 
-from claasp_next import Primitive, PrimeField, ValueType
+from claasp_next import PrimeField, Primitive, ValueType
 from claasp_next.components import Add, Permutation
+from claasp_next.domains import BinaryExtensionField
 from claasp_next.representations.execution import ScalarEvaluator
 from claasp_next.utils import (
     binary_field_multiply,
@@ -9,7 +10,6 @@ from claasp_next.utils import (
     repeat_block_diagonal,
     rotate_left,
 )
-from claasp_next.domains import BinaryExtensionField
 
 
 def test_ports_support_whole_input_coercion_indexing_and_slicing():
@@ -58,17 +58,20 @@ def test_round_observations_do_not_expose_authoring_collections():
 
 
 def test_automatic_component_ids_are_deterministic_and_explicit_ids_remain_available():
-    primitive = Primitive("ids", {
-        "left": ValueType(PrimeField(17), (1,)),
-        "right": ValueType(PrimeField(17), (1,)),
-    })
+    primitive = Primitive(
+        "ids",
+        {
+            "left": ValueType(PrimeField(17), (1,)),
+            "right": ValueType(PrimeField(17), (1,)),
+        },
+    )
     primitive.add_round()
     first = primitive.add_component(Add((primitive.input("left"), primitive.input("right"))))
     second = primitive.add_component(Add((first, primitive.input("right"))))
-    named = primitive.add_component(Add((second, primitive.input("right")), component_id="final_sum"))
-    assert (first.owner_id, second.owner_id, named.owner_id) == (
-        "add_0_0", "add_0_1", "final_sum"
+    named = primitive.add_component(
+        Add((second, primitive.input("right")), component_id="final_sum")
     )
+    assert (first.owner_id, second.owner_id, named.owner_id) == ("add_0_0", "add_0_1", "final_sum")
 
     with pytest.raises(ValueError, match="already exists"):
         primitive.add_component(Add((first, second), component_id="final_sum"))

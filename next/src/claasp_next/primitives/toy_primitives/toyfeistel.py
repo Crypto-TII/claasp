@@ -5,7 +5,6 @@ from claasp_next.graph import Primitive
 
 from ._bit_graph import bit_type, concatenate, constant_bits, rotate_bits, xor_bits
 
-
 DEFAULT_SBOX = (14, 9, 15, 0, 13, 4, 10, 11, 1, 2, 8, 3, 7, 6, 12, 5)
 
 
@@ -33,7 +32,9 @@ class ToyFeistel(Primitive):
         half = block_bit_size // 2
         if len(sbox) != 1 << half:
             raise ValueError("ToyFeistel S-box width must equal half the block width")
-        super().__init__("toyfeistel", {"plaintext": bit_type(block_bit_size), "key": bit_type(key_bit_size)})
+        super().__init__(
+            "toyfeistel", {"plaintext": bit_type(block_bit_size), "key": bit_type(key_bit_size)}
+        )
         state = self.input("plaintext").select_all()
         key = self.input("key").select_all()
         left_positions = tuple(range(half))

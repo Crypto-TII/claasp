@@ -17,7 +17,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from claasp_next.graph.bit_builder import BitGraphPrimitive
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -90,7 +89,9 @@ class SimeckSbox(BitGraphPrimitive):
         ('0x589290e7', 31)
     """
 
-    def __init__(self, block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-5, -1)):
+    def __init__(
+        self, block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-5, -1)
+    ):
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
         self.word_size = self.block_bit_size // 2
@@ -122,17 +123,25 @@ class SimeckSbox(BitGraphPrimitive):
         right = INPUT_PLAINTEXT, list(range(self.word_size, 2 * self.word_size))
         keys_buffer = []
         for i in range(4):
-            keys_buffer.append((INPUT_KEY, list(range(self.word_size * i, self.word_size * (i + 1)))))
+            keys_buffer.append(
+                (INPUT_KEY, list(range(self.word_size * i, self.word_size * (i + 1))))
+            )
 
         for round_number in range(number_of_rounds - 1):
             self.add_round()
             left, right = self.feistel_function(left, right, keys_buffer[3])
-            self.add_round_output_component([left[0], right[0]], [left[1], right[1]], self.block_bit_size)
+            self.add_round_output_component(
+                [left[0], right[0]], [left[1], right[1]], self.block_bit_size
+            )
             keys_buffer = self.update_keys_buffer(keys_buffer, round_number)
-            self.add_round_key_output_component([keys_buffer[3][0]], [keys_buffer[3][1]], self.word_size)
+            self.add_round_key_output_component(
+                [keys_buffer[3][0]], [keys_buffer[3][1]], self.word_size
+            )
         self.add_round()
         left, right = self.feistel_function(left, right, keys_buffer[3])
-        self.add_primitive_output_component([left[0], right[0]], [left[1], right[1]], self.block_bit_size)
+        self.add_primitive_output_component(
+            [left[0], right[0]], [left[1], right[1]], self.block_bit_size
+        )
 
     def feistel_function(self, left, right, round_key):
         # g(x) = (x & x <<< 5) ⊕ (x <<< 1)
@@ -143,9 +152,13 @@ class SimeckSbox(BitGraphPrimitive):
         output_ids = [""] * self.word_size
         output_positions = [0] * self.word_size
         for i in range(self.number_of_sboxes):
-            sbox_input_positions = [left[1][(position + 8 * i) % self.word_size] for position in positions_pattern]
+            sbox_input_positions = [
+                left[1][(position + 8 * i) % self.word_size] for position in positions_pattern
+            ]
             sbox_id = self.add_sbox_component([left[0]], [sbox_input_positions], 8, SBOX).id
-            sbox_output_positions = [(position + 8 * i) % self.word_size for position in positions_pattern[:-1]]
+            sbox_output_positions = [
+                (position + 8 * i) % self.word_size for position in positions_pattern[:-1]
+            ]
             for j, sbox_output_position in enumerate(sbox_output_positions):
                 output_ids[sbox_output_position] = sbox_id
                 output_positions[sbox_output_position] = j
@@ -163,7 +176,9 @@ class SimeckSbox(BitGraphPrimitive):
         ).id
         # Rk(x, y) = (y ⊕ f(x) ⊕ k, x)
         new_left_id = self.add_xor_component(
-            [right[0], f_id, round_key[0]], [right[1], list(range(self.word_size)), round_key[1]], self.word_size
+            [right[0], f_id, round_key[0]],
+            [right[1], list(range(self.word_size)), round_key[1]],
+            self.word_size,
         ).id
 
         return (new_left_id, list(range(self.word_size))), left
@@ -171,9 +186,13 @@ class SimeckSbox(BitGraphPrimitive):
     def update_keys_buffer(self, keys_buffer, round_number):
         # c ^ z[j][i]
         """Build the update keys buffer transition in this primitive's typed operation graph."""
-        round_constant_id = self.add_constant_component(self.word_size, self.c ^ ((self.z >> round_number) & 1)).id
+        round_constant_id = self.add_constant_component(
+            self.word_size, self.c ^ ((self.z >> round_number) & 1)
+        ).id
         round_constant = round_constant_id, list(range(self.word_size))
-        new_key_left, keys_buffer[3] = self.feistel_function(keys_buffer[2], keys_buffer[3], round_constant)
+        new_key_left, keys_buffer[3] = self.feistel_function(
+            keys_buffer[2], keys_buffer[3], round_constant
+        )
         keys_buffer[2] = keys_buffer[1]
         keys_buffer[1] = keys_buffer[0]
         keys_buffer[0] = new_key_left

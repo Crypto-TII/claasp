@@ -6,8 +6,15 @@ from claasp_next.analysis.component_properties import (
     analyze_component_property,
 )
 from claasp_next.components import (
-    BitwiseAnd, BitwiseNot, FeedbackRegister, FeedbackRegisterSpec,
-    FeedbackTerm, ModularAdd, Rotate, Shift, Xor,
+    BitwiseAnd,
+    BitwiseNot,
+    FeedbackRegister,
+    FeedbackRegisterSpec,
+    FeedbackTerm,
+    ModularAdd,
+    Rotate,
+    Shift,
+    Xor,
 )
 from claasp_next.domains import Bit, Word
 from claasp_next.graph import Port, ValueType
@@ -60,8 +67,12 @@ def test_linear_feedback_structure_and_connection_polynomial_are_typed():
     request = lambda property_: PropertyRequest(property_, PropertyDomain.FEEDBACK_REGISTER)
 
     assert analyze_component_property(component, request(ComponentProperty.LINEAR)).value is True
-    assert analyze_component_property(component, request(ComponentProperty.ALGEBRAIC_DEGREE)).value == (1,)
-    polynomial = analyze_component_property(component, request(ComponentProperty.CONNECTION_POLYNOMIAL)).value
+    assert analyze_component_property(
+        component, request(ComponentProperty.ALGEBRAIC_DEGREE)
+    ).value == (1,)
+    polynomial = analyze_component_property(
+        component, request(ComponentProperty.CONNECTION_POLYNOMIAL)
+    ).value
     assert polynomial[0]["degree"] == 4
     assert polynomial[0]["terms"] == ((0, 1), (3, 1))
 
@@ -70,11 +81,13 @@ def test_nonlinear_or_clocked_feedback_rejects_connection_polynomial():
     state = Port("state", ValueType(Bit(), (4,)))
     component = FeedbackRegister(
         state,
-        (FeedbackRegisterSpec(
-            4,
-            (FeedbackTerm((0, 1)), FeedbackTerm(3)),
-            clock=(FeedbackTerm(2),),
-        ),),
+        (
+            FeedbackRegisterSpec(
+                4,
+                (FeedbackTerm((0, 1)), FeedbackTerm(3)),
+                clock=(FeedbackTerm(2),),
+            ),
+        ),
     )
     result = analyze_component_property(
         component,

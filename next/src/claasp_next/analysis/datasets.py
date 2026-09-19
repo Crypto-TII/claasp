@@ -185,9 +185,9 @@ def generate_avalanche_dataset(
             changed_output = primitive.evaluate(changed_inputs)
             if not isinstance(changed_output, int):
                 raise TypeError("avalanche datasets require a packed integer output")
-            records.append(AvalancheSample(
-                sample.inputs, input_bit, sample.output ^ changed_output
-            ))
+            records.append(
+                AvalancheSample(sample.inputs, input_bit, sample.output ^ changed_output)
+            )
     return AvalancheDataset(
         primitive.family_name,
         input_name,

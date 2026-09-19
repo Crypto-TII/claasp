@@ -24,6 +24,10 @@ def format_annotation(value: object | None) -> str | None:
         return f"0x{value.value:x}"
     if isinstance(value, tuple):
         if len(value) <= 4:
-            return "(" + ",".join(f"0x{item:x}" if isinstance(item, int) else str(item) for item in value) + ")"
+            return (
+                "("
+                + ",".join(f"0x{item:x}" if isinstance(item, int) else str(item) for item in value)
+                + ")"
+            )
         return f"{len(value)} units"
     return str(value)

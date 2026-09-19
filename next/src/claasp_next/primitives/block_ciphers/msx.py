@@ -15,10 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from typing import ClassVar
+
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_number_of_rounds_from
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
-from claasp_next.graph.bit_builder import get_number_of_rounds_from
 
 
 class MSX(BitGraphPrimitive):
@@ -49,8 +49,7 @@ class MSX(BitGraphPrimitive):
         ('0x915559f800c453f7', 64)
     """
 
-
-    PARAMETERS_CONFIGURATION_LIST = [
+    PARAMETERS_CONFIGURATION_LIST: ClassVar[list[dict[str, int]]] = [
         {"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 14},
         {"block_bit_size": 128, "key_bit_size": 128, "number_of_rounds": 18},
         {"block_bit_size": 128, "key_bit_size": 256, "number_of_rounds": 18},
@@ -60,7 +59,7 @@ class MSX(BitGraphPrimitive):
         self.word_size = 32
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
-        self.mod32 = 2 ** self.word_size
+        self.mod32 = 2**self.word_size
         self.CON = 0xA1CD0000
 
         n = get_number_of_rounds_from(
@@ -105,7 +104,10 @@ class MSX(BitGraphPrimitive):
         b3 = BitState(w.id, [list(range(8))])
         return BitState(
             b0.id + b1.id + b2.id + b3.id,
-            b0.input_bit_positions + b1.input_bit_positions + b2.input_bit_positions + b3.input_bit_positions,
+            b0.input_bit_positions
+            + b1.input_bit_positions
+            + b2.input_bit_positions
+            + b3.input_bit_positions,
         )
 
     def _key_words_from_input(self, num_words):
@@ -128,26 +130,61 @@ class MSX(BitGraphPrimitive):
         k = self._key_words_from_input(4)
 
         C = [
-            732050807, 568877293, 527446341, 505872366, 942805254, 634010619,
-            1296924710, 3826869025, 515107230, 1130980195, 2149511253, 539907735,
+            732050807,
+            568877293,
+            527446341,
+            505872366,
+            942805254,
+            634010619,
+            1296924710,
+            3826869025,
+            515107230,
+            1130980195,
+            2149511253,
+            539907735,
         ]
         Cc = [self._const32(v) for v in C]
 
-        self.add_modadd_component(k[1].id + k[0].id, k[1].input_bit_positions + k[0].input_bit_positions, self.word_size, self.mod32)
+        self.add_modadd_component(
+            k[1].id + k[0].id,
+            k[1].input_bit_positions + k[0].input_bit_positions,
+            self.word_size,
+            self.mod32,
+        )
         t = BitState([self.get_current_component_id()], [list(range(self.word_size))])
-        self.add_modadd_component(t.id + k[3].id, t.input_bit_positions + k[3].input_bit_positions, self.word_size, self.mod32)
+        self.add_modadd_component(
+            t.id + k[3].id,
+            t.input_bit_positions + k[3].input_bit_positions,
+            self.word_size,
+            self.mod32,
+        )
         t = BitState([self.get_current_component_id()], [list(range(self.word_size))])
-        self.add_xor_component(t.id + Cc[0].id, t.input_bit_positions + Cc[0].input_bit_positions, self.word_size)
+        self.add_xor_component(
+            t.id + Cc[0].id, t.input_bit_positions + Cc[0].input_bit_positions, self.word_size
+        )
         st0 = BitState([self.get_current_component_id()], [list(range(self.word_size))])
 
         st = [None] * 12
         st[0] = st0
         assign = [
-            (1, k[2], 1), (2, k[0], 2), (3, k[3], 3), (4, k[0], 4), (5, k[1], 5), (6, k[3], 6),
-            (7, k[0], 7), (8, k[2], 8), (9, k[1], 9), (10, k[2], 10), (11, k[3], 11)
+            (1, k[2], 1),
+            (2, k[0], 2),
+            (3, k[3], 3),
+            (4, k[0], 4),
+            (5, k[1], 5),
+            (6, k[3], 6),
+            (7, k[0], 7),
+            (8, k[2], 8),
+            (9, k[1], 9),
+            (10, k[2], 10),
+            (11, k[3], 11),
         ]
         for idx, kw, ci in assign:
-            self.add_xor_component(kw.id + Cc[ci].id, kw.input_bit_positions + Cc[ci].input_bit_positions, self.word_size)
+            self.add_xor_component(
+                kw.id + Cc[ci].id,
+                kw.input_bit_positions + Cc[ci].input_bit_positions,
+                self.word_size,
+            )
             st[idx] = BitState([self.get_current_component_id()], [list(range(self.word_size))])
         return st
 
@@ -158,7 +195,7 @@ class MSX(BitGraphPrimitive):
             (2, 3, 5, 7, 9, 0),
             (3, 4, 6, 8, 10, 1),
             (4, 5, 7, 9, 11, 2),
-            (5, 6, 8, 10, 0, 3)
+            (5, 6, 8, 10, 0, 3),
         ]
         params = steps[step % 6]
         src = params[0]
@@ -167,66 +204,183 @@ class MSX(BitGraphPrimitive):
         tmp = st[src]
         new_st = list(st)
         for rot, dst in zip([1, 2, 3, 4, 5], dsts):
-            self.add_rotate_component(new_st[dst].id, new_st[dst].input_bit_positions, self.word_size, -rot)
+            self.add_rotate_component(
+                new_st[dst].id, new_st[dst].input_bit_positions, self.word_size, -rot
+            )
             r = BitState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_modadd_component(r.id + tmp.id, r.input_bit_positions + tmp.input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(
+                r.id + tmp.id,
+                r.input_bit_positions + tmp.input_bit_positions,
+                self.word_size,
+                self.mod32,
+            )
             new_st[dst] = BitState([self.get_current_component_id()], [list(range(self.word_size))])
         return new_st
 
     def _key_schedule_initialization_128(self):
         C = [
-            732050807, 568877293, 527446341, 505872366, 942805254, 634010619,
-            1296924710, 3826869025, 515107230, 1130980195, 2149511253, 539907735,
-            244569516, 920961429, 2743527186, 2947265473, 645454543, 3960268375,
-            2795036687, 563113322, 2690074390, 722202776, 833026909, 2035301852,
+            732050807,
+            568877293,
+            527446341,
+            505872366,
+            942805254,
+            634010619,
+            1296924710,
+            3826869025,
+            515107230,
+            1130980195,
+            2149511253,
+            539907735,
+            244569516,
+            920961429,
+            2743527186,
+            2947265473,
+            645454543,
+            3960268375,
+            2795036687,
+            563113322,
+            2690074390,
+            722202776,
+            833026909,
+            2035301852,
         ]
         Cc = [self._const32(v) for v in C]
         st = [None] * 24
 
         if self.key_bit_size == 128:
             k = self._key_words_from_input(4)
-            self.add_modadd_component(k[2].id + k[3].id, k[2].input_bit_positions + k[3].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(
+                k[2].id + k[3].id,
+                k[2].input_bit_positions + k[3].input_bit_positions,
+                self.word_size,
+                self.mod32,
+            )
             t = BitState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_modadd_component(t.id + k[0].id, t.input_bit_positions + k[0].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(
+                t.id + k[0].id,
+                t.input_bit_positions + k[0].input_bit_positions,
+                self.word_size,
+                self.mod32,
+            )
             t = BitState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_xor_component(t.id + Cc[0].id, t.input_bit_positions + Cc[0].input_bit_positions, self.word_size)
+            self.add_xor_component(
+                t.id + Cc[0].id, t.input_bit_positions + Cc[0].input_bit_positions, self.word_size
+            )
             st[0] = BitState([self.get_current_component_id()], [list(range(self.word_size))])
             assign = [
-                (1, k[1], 1), (2, k[0], 2), (3, k[3], 3), (4, k[0], 4), (5, k[2], 5), (6, k[3], 6),
-                (7, k[2], 7), (8, k[1], 8), (9, k[0], 9), (10, k[1], 10), (11, k[3], 11),
-                (12, k[0], 12), (13, k[3], 13), (14, k[2], 14), (15, k[1], 15), (16, k[2], 16),
-                (17, k[0], 17), (18, k[1], 18), (19, k[0], 19), (20, k[3], 20), (21, k[2], 21),
-                (22, k[3], 22), (23, k[1], 23),
+                (1, k[1], 1),
+                (2, k[0], 2),
+                (3, k[3], 3),
+                (4, k[0], 4),
+                (5, k[2], 5),
+                (6, k[3], 6),
+                (7, k[2], 7),
+                (8, k[1], 8),
+                (9, k[0], 9),
+                (10, k[1], 10),
+                (11, k[3], 11),
+                (12, k[0], 12),
+                (13, k[3], 13),
+                (14, k[2], 14),
+                (15, k[1], 15),
+                (16, k[2], 16),
+                (17, k[0], 17),
+                (18, k[1], 18),
+                (19, k[0], 19),
+                (20, k[3], 20),
+                (21, k[2], 21),
+                (22, k[3], 22),
+                (23, k[1], 23),
             ]
             for idx, kw, ci in assign:
-                self.add_xor_component(kw.id + Cc[ci].id, kw.input_bit_positions + Cc[ci].input_bit_positions, self.word_size)
+                self.add_xor_component(
+                    kw.id + Cc[ci].id,
+                    kw.input_bit_positions + Cc[ci].input_bit_positions,
+                    self.word_size,
+                )
                 st[idx] = BitState([self.get_current_component_id()], [list(range(self.word_size))])
         elif self.key_bit_size == 256:
             k = self._key_words_from_input(8)
-            self.add_modadd_component(k[2].id + k[1].id, k[2].input_bit_positions + k[1].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(
+                k[2].id + k[1].id,
+                k[2].input_bit_positions + k[1].input_bit_positions,
+                self.word_size,
+                self.mod32,
+            )
             t = BitState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_modadd_component(t.id + k[5].id, t.input_bit_positions + k[5].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(
+                t.id + k[5].id,
+                t.input_bit_positions + k[5].input_bit_positions,
+                self.word_size,
+                self.mod32,
+            )
             t = BitState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_modadd_component(t.id + k[4].id, t.input_bit_positions + k[4].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(
+                t.id + k[4].id,
+                t.input_bit_positions + k[4].input_bit_positions,
+                self.word_size,
+                self.mod32,
+            )
             t = BitState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_xor_component(t.id + Cc[0].id, t.input_bit_positions + Cc[0].input_bit_positions, self.word_size)
+            self.add_xor_component(
+                t.id + Cc[0].id, t.input_bit_positions + Cc[0].input_bit_positions, self.word_size
+            )
             st[0] = BitState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_modadd_component(k[3].id + k[7].id, k[3].input_bit_positions + k[7].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(
+                k[3].id + k[7].id,
+                k[3].input_bit_positions + k[7].input_bit_positions,
+                self.word_size,
+                self.mod32,
+            )
             t = BitState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_modadd_component(t.id + k[6].id, t.input_bit_positions + k[6].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(
+                t.id + k[6].id,
+                t.input_bit_positions + k[6].input_bit_positions,
+                self.word_size,
+                self.mod32,
+            )
             t = BitState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_modadd_component(t.id + k[0].id, t.input_bit_positions + k[0].input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(
+                t.id + k[0].id,
+                t.input_bit_positions + k[0].input_bit_positions,
+                self.word_size,
+                self.mod32,
+            )
             t = BitState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_xor_component(t.id + Cc[1].id, t.input_bit_positions + Cc[1].input_bit_positions, self.word_size)
+            self.add_xor_component(
+                t.id + Cc[1].id, t.input_bit_positions + Cc[1].input_bit_positions, self.word_size
+            )
             st[1] = BitState([self.get_current_component_id()], [list(range(self.word_size))])
             assign = [
-                (2, k[0], 2), (3, k[6], 3), (4, k[7], 4), (5, k[4], 5), (6, k[2], 6), (7, k[3], 7),
-                (8, k[1], 8), (9, k[6], 9), (10, k[7], 10), (11, k[5], 11), (12, k[0], 12), (13, k[1], 13),
-                (14, k[2], 14), (15, k[4], 15), (16, k[5], 16), (17, k[6], 17), (18, k[0], 18), (19, k[1], 19),
-                (20, k[3], 20), (21, k[4], 21), (22, k[5], 22), (23, k[7], 23),
+                (2, k[0], 2),
+                (3, k[6], 3),
+                (4, k[7], 4),
+                (5, k[4], 5),
+                (6, k[2], 6),
+                (7, k[3], 7),
+                (8, k[1], 8),
+                (9, k[6], 9),
+                (10, k[7], 10),
+                (11, k[5], 11),
+                (12, k[0], 12),
+                (13, k[1], 13),
+                (14, k[2], 14),
+                (15, k[4], 15),
+                (16, k[5], 16),
+                (17, k[6], 17),
+                (18, k[0], 18),
+                (19, k[1], 19),
+                (20, k[3], 20),
+                (21, k[4], 21),
+                (22, k[5], 22),
+                (23, k[7], 23),
             ]
             for idx, kw, ci in assign:
-                self.add_xor_component(kw.id + Cc[ci].id, kw.input_bit_positions + Cc[ci].input_bit_positions, self.word_size)
+                self.add_xor_component(
+                    kw.id + Cc[ci].id,
+                    kw.input_bit_positions + Cc[ci].input_bit_positions,
+                    self.word_size,
+                )
                 st[idx] = BitState([self.get_current_component_id()], [list(range(self.word_size))])
         else:
             raise AssertionError("Unsupported key size for MSX-128")
@@ -241,7 +395,7 @@ class MSX(BitGraphPrimitive):
             (4, [5, 7, 10, 13, 16, 18, 21, 0, 3]),
             (5, [6, 8, 11, 14, 17, 19, 22, 1, 4]),
             (6, [7, 9, 12, 15, 18, 20, 23, 2, 5]),
-            (7, [8, 10, 13, 16, 19, 21, 0, 3, 6])
+            (7, [8, 10, 13, 16, 19, 21, 0, 3, 6]),
         ]
         params = steps[step % 8]
         src = params[0]
@@ -250,9 +404,16 @@ class MSX(BitGraphPrimitive):
         tmp = st[src]
         new_st = list(st)
         for rot, dst in zip(range(1, 10), dsts):
-            self.add_rotate_component(new_st[dst].id, new_st[dst].input_bit_positions, self.word_size, -rot)
+            self.add_rotate_component(
+                new_st[dst].id, new_st[dst].input_bit_positions, self.word_size, -rot
+            )
             r = BitState([self.get_current_component_id()], [list(range(self.word_size))])
-            self.add_modadd_component(r.id + tmp.id, r.input_bit_positions + tmp.input_bit_positions, self.word_size, self.mod32)
+            self.add_modadd_component(
+                r.id + tmp.id,
+                r.input_bit_positions + tmp.input_bit_positions,
+                self.word_size,
+                self.mod32,
+            )
             new_st[dst] = BitState([self.get_current_component_id()], [list(range(self.word_size))])
         return new_st
 
@@ -260,6 +421,7 @@ class MSX(BitGraphPrimitive):
         rk_buffer = []
         key_state = None
         key_update_step = 0
+
         def next_rk_group():
             nonlocal rk_buffer, key_state, key_update_step
             if len(rk_buffer) < 6:
@@ -281,7 +443,9 @@ class MSX(BitGraphPrimitive):
             rk_group = next_rk_group()
             # MSX-64 Feistel applies F to W1 (offset 32) exactly as the original code applied F to L.
             F_out = self.round_function(W1, rk_group, c_i)
-            self.add_xor_component(W0.id + F_out.id, W0.input_bit_positions + F_out.input_bit_positions, self.word_size)
+            self.add_xor_component(
+                W0.id + F_out.id, W0.input_bit_positions + F_out.input_bit_positions, self.word_size
+            )
             W0_next = BitState([self.get_current_component_id()], [list(range(self.word_size))])
 
             W0_new = W1
@@ -307,6 +471,7 @@ class MSX(BitGraphPrimitive):
         rk_buffer = []
         key_state = None
         key_update_step = 0
+
         def next_rk_group():
             nonlocal rk_buffer, key_state, key_update_step
             if len(rk_buffer) < 6:
@@ -334,11 +499,15 @@ class MSX(BitGraphPrimitive):
 
             # F takes W1 XORs into W0, and then F takes W3 XORs into W2
             F1 = self.round_function(W1, rk_group1, c_i)
-            self.add_xor_component(W0.id + F1.id, W0.input_bit_positions + F1.input_bit_positions, self.word_size)
+            self.add_xor_component(
+                W0.id + F1.id, W0.input_bit_positions + F1.input_bit_positions, self.word_size
+            )
             W0_next = BitState([self.get_current_component_id()], [list(range(self.word_size))])
 
             F2 = self.round_function(W3, rk_group2, c_i)
-            self.add_xor_component(W2.id + F2.id, W2.input_bit_positions + F2.input_bit_positions, self.word_size)
+            self.add_xor_component(
+                W2.id + F2.id, W2.input_bit_positions + F2.input_bit_positions, self.word_size
+            )
             W2_next = BitState([self.get_current_component_id()], [list(range(self.word_size))])
 
             W0_new = W3
@@ -363,13 +532,19 @@ class MSX(BitGraphPrimitive):
                 # (aligned_blocks with 2-shift: [W2,W3,W0,W1], output O3+O0+O1+O2 = W1+W2+W3+W0)
                 self.add_primitive_output_component(
                     W1_out.id + W2_out.id + W3_out.id + W0_out.id,
-                    W1_out.input_bit_positions + W2_out.input_bit_positions + W3_out.input_bit_positions + W0_out.input_bit_positions,
+                    W1_out.input_bit_positions
+                    + W2_out.input_bit_positions
+                    + W3_out.input_bit_positions
+                    + W0_out.input_bit_positions,
                     4 * self.word_size,
                 )
             else:
                 self.add_round_output_component(
                     W1_out.id + W2_out.id + W3_out.id + W0_out.id,
-                    W1_out.input_bit_positions + W2_out.input_bit_positions + W3_out.input_bit_positions + W0_out.input_bit_positions,
+                    W1_out.input_bit_positions
+                    + W2_out.input_bit_positions
+                    + W3_out.input_bit_positions
+                    + W0_out.input_bit_positions,
                     4 * self.word_size,
                 )
 
@@ -388,23 +563,57 @@ class MSX(BitGraphPrimitive):
             zero16.input_bit_positions + x_high16.input_bit_positions,
         )
 
-        self.add_modadd_component(x0_32.id + rk_group[0].id, x0_32.input_bit_positions + rk_group[0].input_bit_positions, n, self.mod32)
+        self.add_modadd_component(
+            x0_32.id + rk_group[0].id,
+            x0_32.input_bit_positions + rk_group[0].input_bit_positions,
+            n,
+            self.mod32,
+        )
         t0 = BitState([self.get_current_component_id()], [list(range(n))])
-        self.add_modadd_component(x1_32.id + rk_group[1].id, x1_32.input_bit_positions + rk_group[1].input_bit_positions, n, self.mod32)
+        self.add_modadd_component(
+            x1_32.id + rk_group[1].id,
+            x1_32.input_bit_positions + rk_group[1].input_bit_positions,
+            n,
+            self.mod32,
+        )
         t1 = BitState([self.get_current_component_id()], [list(range(n))])
 
-        self.add_modmul_component(t0.id + t1.id, t0.input_bit_positions + t1.input_bit_positions, n, self.mod32)
+        self.add_modmul_component(
+            t0.id + t1.id, t0.input_bit_positions + t1.input_bit_positions, n, self.mod32
+        )
         w0 = BitState([self.get_current_component_id()], [list(range(n))])
-        self.add_modadd_component(w0.id + rk_group[2].id, w0.input_bit_positions + rk_group[2].input_bit_positions, n, self.mod32)
+        self.add_modadd_component(
+            w0.id + rk_group[2].id,
+            w0.input_bit_positions + rk_group[2].input_bit_positions,
+            n,
+            self.mod32,
+        )
         w0 = BitState([self.get_current_component_id()], [list(range(n))])
 
-        self.add_modadd_component(x0_32.id + rk_group[3].id, x0_32.input_bit_positions + rk_group[3].input_bit_positions, n, self.mod32)
+        self.add_modadd_component(
+            x0_32.id + rk_group[3].id,
+            x0_32.input_bit_positions + rk_group[3].input_bit_positions,
+            n,
+            self.mod32,
+        )
         u0 = BitState([self.get_current_component_id()], [list(range(n))])
-        self.add_modadd_component(x1_32.id + rk_group[4].id, x1_32.input_bit_positions + rk_group[4].input_bit_positions, n, self.mod32)
+        self.add_modadd_component(
+            x1_32.id + rk_group[4].id,
+            x1_32.input_bit_positions + rk_group[4].input_bit_positions,
+            n,
+            self.mod32,
+        )
         u1 = BitState([self.get_current_component_id()], [list(range(n))])
-        self.add_modmul_component(u0.id + u1.id, u0.input_bit_positions + u1.input_bit_positions, n, self.mod32)
+        self.add_modmul_component(
+            u0.id + u1.id, u0.input_bit_positions + u1.input_bit_positions, n, self.mod32
+        )
         w1 = BitState([self.get_current_component_id()], [list(range(n))])
-        self.add_modadd_component(w1.id + rk_group[5].id, w1.input_bit_positions + rk_group[5].input_bit_positions, n, self.mod32)
+        self.add_modadd_component(
+            w1.id + rk_group[5].id,
+            w1.input_bit_positions + rk_group[5].input_bit_positions,
+            n,
+            self.mod32,
+        )
         w1 = BitState([self.get_current_component_id()], [list(range(n))])
         self.add_xor_component(w1.id + c.id, w1.input_bit_positions + c.input_bit_positions, n)
         w1 = BitState([self.get_current_component_id()], [list(range(n))])
@@ -422,9 +631,13 @@ class MSX(BitGraphPrimitive):
         self.add_rotate_component(y_orig.id, y_orig.input_bit_positions, n, -21)
         ry21 = BitState([self.get_current_component_id()], [list(range(n))])
 
-        self.add_xor_component(y_orig.id + ry13.id, y_orig.input_bit_positions + ry13.input_bit_positions, n)
+        self.add_xor_component(
+            y_orig.id + ry13.id, y_orig.input_bit_positions + ry13.input_bit_positions, n
+        )
         y_step1 = BitState([self.get_current_component_id()], [list(range(n))])
-        self.add_xor_component(y_step1.id + ry21.id, y_step1.input_bit_positions + ry21.input_bit_positions, n)
+        self.add_xor_component(
+            y_step1.id + ry21.id, y_step1.input_bit_positions + ry21.input_bit_positions, n
+        )
         y = BitState([self.get_current_component_id()], [list(range(n))])
         return y
 

@@ -57,11 +57,16 @@ def evaluate_cube_sum(
     positions = tuple(cube_positions)
     if len(set(positions)) != len(positions):
         raise ValueError("cube positions must be unique")
-    if any(not isinstance(position, int) or isinstance(position, bool)
-           or not 0 <= position < width for position in positions):
+    if any(
+        not isinstance(position, int) or isinstance(position, bool) or not 0 <= position < width
+        for position in positions
+    ):
         raise ValueError("cube positions must fit the selected input")
-    if not isinstance(output_bit, int) or isinstance(output_bit, bool) \
-            or not 0 <= output_bit < output_width:
+    if (
+        not isinstance(output_bit, int)
+        or isinstance(output_bit, bool)
+        or not 0 <= output_bit < output_width
+    ):
         raise ValueError("output_bit must fit the primitive output")
 
     cleared = int(inputs[variable_input])

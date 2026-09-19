@@ -1,7 +1,7 @@
 """Typed constant component."""
 
-from dataclasses import dataclass
 from collections.abc import Iterable
+from dataclasses import dataclass
 
 from claasp_next.graph.component import Component
 from claasp_next.graph.value_type import ValueType

@@ -1,6 +1,6 @@
 import pytest
 
-from claasp_next import Bit, Primitive, Component, Port, PrimeField, Round, ValueType
+from claasp_next import Bit, Component, Port, PrimeField, Primitive, Round, ValueType
 
 
 def test_logical_selection_is_independent_of_encoded_bit_size():

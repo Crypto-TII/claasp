@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from timeit import repeat
 
 from claasp_next.evaluators import BatchEvaluator, TransposedBatchEvaluator
+
 from claasp_next.parameters import poseidon_bn254_width3
 
 
@@ -25,9 +26,16 @@ def main() -> None:
     reference = evaluators[0].evaluate(cipher, inputs).outputs
     for evaluator in evaluators:
         assert evaluator.evaluate(cipher, inputs).outputs == reference
-        elapsed = min(repeat(
-            lambda: evaluator.evaluate(cipher, inputs), repeat=3, number=args.number
-        )) / args.number
+        elapsed = (
+            min(
+                repeat(
+                    lambda evaluator=evaluator: evaluator.evaluate(cipher, inputs),
+                    repeat=3,
+                    number=args.number,
+                )
+            )
+            / args.number
+        )
         print(f"{type(evaluator).__name__}: {elapsed:.6f} seconds/evaluation")
 
 

@@ -16,10 +16,8 @@
 # ****************************************************************************
 
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
-from claasp_next.graph.bit_builder import get_inputs_parameter
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"block_bit_size": 64, "key_bit_size": 64, "number_of_rounds": 32},
@@ -156,7 +154,9 @@ class Skinny(BitGraphPrimitive):
             inputs_id, inputs_pos = get_inputs_parameter(state)
             self.add_round_output_component(inputs_id, inputs_pos, block_bit_size)
             key = self.key_schedule(key)
-            inputs_id, inputs_pos = get_inputs_parameter([key_state for key_array in key for key_state in key_array])
+            inputs_id, inputs_pos = get_inputs_parameter(
+                [key_state for key_array in key for key_state in key_array]
+            )
             self.add_round_key_output_component(inputs_id, inputs_pos, key_bit_size)
             self.add_round()
         state = self.round_function(state, key, number_of_rounds - 1, rc2)
@@ -192,9 +192,14 @@ class Skinny(BitGraphPrimitive):
         """Build the round function stage in this primitive's typed operation graph."""
         for cell_number in range(NUMBER_OF_CELLS):
             self.add_sbox_component(
-                state[cell_number].id, state[cell_number].input_bit_positions, self.cell_size, self.sbox
+                state[cell_number].id,
+                state[cell_number].input_bit_positions,
+                self.cell_size,
+                self.sbox,
             )
-            state[cell_number] = BitState([self.get_current_component_id()], [list(range(self.cell_size))])
+            state[cell_number] = BitState(
+                [self.get_current_component_id()], [list(range(self.cell_size))]
+            )
 
         # AddConstants c0
         self.add_constant_component(self.cell_size, ROUND_CONSTANTS_0[round_number])
@@ -218,9 +223,13 @@ class Skinny(BitGraphPrimitive):
         # AddRoundTweakey
         for key_arrays_number in range(self.number_of_key_arrays):
             for cell_number in range(2 * NUMBER_OF_ROWS):
-                inputs_id, inputs_pos = get_inputs_parameter([state[cell_number], key[key_arrays_number][cell_number]])
+                inputs_id, inputs_pos = get_inputs_parameter(
+                    [state[cell_number], key[key_arrays_number][cell_number]]
+                )
                 self.add_xor_component(inputs_id, inputs_pos, self.cell_size)
-                state[cell_number] = BitState([self.get_current_component_id()], [list(range(self.cell_size))])
+                state[cell_number] = BitState(
+                    [self.get_current_component_id()], [list(range(self.cell_size))]
+                )
 
         # ShiftRows
         state[4], state[5], state[6], state[7] = state[7], state[4], state[5], state[6]
@@ -232,17 +241,23 @@ class Skinny(BitGraphPrimitive):
         for i in range(4):
             inputs_id, inputs_pos = get_inputs_parameter([state[i], state[i + 8], state[i + 12]])
             self.add_xor_component(inputs_id, inputs_pos, self.cell_size)
-            mix_column_state.append(BitState([self.get_current_component_id()], [list(range(self.cell_size))]))
+            mix_column_state.append(
+                BitState([self.get_current_component_id()], [list(range(self.cell_size))])
+            )
         for i in range(4):
             mix_column_state.append(state[i])
         for i in range(4):
             inputs_id, inputs_pos = get_inputs_parameter([state[i + 4], state[i + 8]])
             self.add_xor_component(inputs_id, inputs_pos, self.cell_size)
-            mix_column_state.append(BitState([self.get_current_component_id()], [list(range(self.cell_size))]))
+            mix_column_state.append(
+                BitState([self.get_current_component_id()], [list(range(self.cell_size))])
+            )
         for i in range(4):
             inputs_id, inputs_pos = get_inputs_parameter([state[i], state[i + 8]])
             self.add_xor_component(inputs_id, inputs_pos, self.cell_size)
-            mix_column_state.append(BitState([self.get_current_component_id()], [list(range(self.cell_size))]))
+            mix_column_state.append(
+                BitState([self.get_current_component_id()], [list(range(self.cell_size))])
+            )
 
         return mix_column_state
 
@@ -267,12 +282,16 @@ class Skinny(BitGraphPrimitive):
             for cell_number in range(2 * NUMBER_OF_COLUMNS):
                 input_id, input_pos = get_inputs_parameter([key[1][cell_number]])
                 self.add_linear_layer_component(input_id, input_pos, self.cell_size, self.lfsr_tk2)
-                key[1][cell_number] = BitState([self.get_current_component_id()], [list(range(self.cell_size))])
+                key[1][cell_number] = BitState(
+                    [self.get_current_component_id()], [list(range(self.cell_size))]
+                )
 
         if self.number_of_key_arrays > 2:
             for cell_number in range(2 * NUMBER_OF_COLUMNS):
                 input_id, input_pos = get_inputs_parameter([key[2][cell_number]])
                 self.add_linear_layer_component(input_id, input_pos, self.cell_size, self.lfsr_tk3)
-                key[2][cell_number] = BitState([self.get_current_component_id()], [list(range(self.cell_size))])
+                key[2][cell_number] = BitState(
+                    [self.get_current_component_id()], [list(range(self.cell_size))]
+                )
 
         return key

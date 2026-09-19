@@ -17,13 +17,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from copy import deepcopy
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, simplify_inputs
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import simplify_inputs
 
 X_NUM = 5
 Y_NUM = 5
@@ -98,8 +95,14 @@ class KeccakSbox(BitGraphPrimitive):
 
     def __init__(self, number_of_rounds=24, word_size=64):
         maximum_number_of_rounds = 12 + 2 * (int(word_size).bit_length() - 1)
-        if word_size <= 0 or word_size & (word_size - 1) or number_of_rounds > maximum_number_of_rounds:
-            raise ValueError('word_size must be a power of two and number_of_rounds must not exceed Keccak-f rounds')
+        if (
+            word_size <= 0
+            or word_size & (word_size - 1)
+            or number_of_rounds > maximum_number_of_rounds
+        ):
+            raise ValueError(
+                "word_size must be a power of two and number_of_rounds must not exceed Keccak-f rounds"
+            )
         round_offset = maximum_number_of_rounds - number_of_rounds
         self.word_bit_size = word_size
         self.plane_size = Y_NUM * self.word_bit_size
@@ -142,7 +145,9 @@ class KeccakSbox(BitGraphPrimitive):
     def chi_definition(self, b):
         # A[x,y] = B[x,y] xor ((not B[x+1,y]) and B[x+2,y]), for (x,y) in (range(5), range(5))
         """Build the chi definition stage in this primitive's typed operation graph."""
-        p = BitState(["" for _ in range(self.word_bit_size)], [[] for _ in range(self.word_bit_size)])
+        p = BitState(
+            ["" for _ in range(self.word_bit_size)], [[] for _ in range(self.word_bit_size)]
+        )
         state_new = [[deepcopy(p) for _ in range(Y_NUM)] for _ in range(X_NUM)]
         for j in range(Y_NUM):
             for k in range(self.word_bit_size):
@@ -188,7 +193,10 @@ class KeccakSbox(BitGraphPrimitive):
         for i in range(X_NUM):
             for j in range(Y_NUM):
                 self.add_rotate_component(
-                    state[i][j].id, state[i][j].input_bit_positions, self.word_bit_size, ROT_TABLE[i][j]
+                    state[i][j].id,
+                    state[i][j].input_bit_positions,
+                    self.word_bit_size,
+                    ROT_TABLE[i][j],
                 )
                 b[j][(2 * i + 3 * j) % Y_NUM] = BitState(
                     [self.get_current_component_id()], [list(range(self.word_bit_size))]
@@ -211,7 +219,12 @@ class KeccakSbox(BitGraphPrimitive):
             for j in range(Y_NUM):
                 state[i][j] = BitState(
                     [INPUT_PLAINTEXT],
-                    [[k + j * self.word_bit_size + i * self.plane_size for k in range(self.word_bit_size)]],
+                    [
+                        [
+                            k + j * self.word_bit_size + i * self.plane_size
+                            for k in range(self.word_bit_size)
+                        ]
+                    ],
                 )
 
         return state
@@ -234,7 +247,10 @@ class KeccakSbox(BitGraphPrimitive):
         d = []
         for i in range(X_NUM):
             self.add_rotate_component(
-                c[(i + 1) % X_NUM].id, c[(i + 1) % X_NUM].input_bit_positions, self.word_bit_size, THETA_ROT
+                c[(i + 1) % X_NUM].id,
+                c[(i + 1) % X_NUM].input_bit_positions,
+                self.word_bit_size,
+                THETA_ROT,
             )
             inputs_id = c[(i - 1) % X_NUM].id + [self.get_current_component_id()]
             inputs_pos = c[(i - 1) % X_NUM].input_bit_positions + [list(range(self.word_bit_size))]
@@ -246,6 +262,8 @@ class KeccakSbox(BitGraphPrimitive):
                 inputs_id = state[i][j].id + d[i].id
                 inputs_pos = state[i][j].input_bit_positions + d[i].input_bit_positions
                 self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
-                state[i][j] = BitState([self.get_current_component_id()], [list(range(self.word_bit_size))])
+                state[i][j] = BitState(
+                    [self.get_current_component_id()], [list(range(self.word_bit_size))]
+                )
 
         return state

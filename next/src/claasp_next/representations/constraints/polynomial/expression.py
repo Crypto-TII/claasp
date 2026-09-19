@@ -153,7 +153,9 @@ class Polynomial:
         return self + other
 
     def __neg__(self) -> "Polynomial":
-        return Polynomial(self.field, {monomial: -coefficient for monomial, coefficient in self.terms})
+        return Polynomial(
+            self.field, {monomial: -coefficient for monomial, coefficient in self.terms}
+        )
 
     def __sub__(self, other: object) -> "Polynomial":
         return self + (-self._coerce(other))
@@ -189,7 +191,10 @@ class Polynomial:
     def evaluate(self, values: Mapping[str, int]) -> int:
         """Compute the evaluate for this public typed contract."""
 
-        return sum(
-            coefficient * monomial.evaluate(values, self.field.modulus)
-            for monomial, coefficient in self.terms
-        ) % self.field.modulus
+        return (
+            sum(
+                coefficient * monomial.evaluate(values, self.field.modulus)
+                for monomial, coefficient in self.terms
+            )
+            % self.field.modulus
+        )

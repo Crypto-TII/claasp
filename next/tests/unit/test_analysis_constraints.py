@@ -55,7 +55,9 @@ def test_equality_inequality_nonzero_and_weight_constraints_lower_to_cnf():
     primitive = _xor_primitive()
     equal = AnalysisProblem(primitive, (Equal(primitive.input("left"), primitive.input("key")),))
     assert len(list(_satisfying_assignments(lower_boolean_problem(equal)))) == 2
-    unequal = AnalysisProblem(primitive, (NotEqual(primitive.input("left"), primitive.input("key")),))
+    unequal = AnalysisProblem(
+        primitive, (NotEqual(primitive.input("left"), primitive.input("key")),)
+    )
     assert len(list(_satisfying_assignments(lower_boolean_problem(unequal)))) == 2
     nonzero = AnalysisProblem(primitive, (Nonzero(primitive.input("left")),))
     assert all(item["left_0"] for item in _satisfying_assignments(lower_boolean_problem(nonzero)))
@@ -75,9 +77,7 @@ def test_recovery_api_validates_user_facing_input_names():
     with pytest.raises(ValueError, match="unknown primitive input"):
         primitive.analyze().recover_input("missing", known_inputs={"left": 0}, output=0)
     with pytest.raises(ValueError, match="must not also be fixed"):
-        primitive.analyze().recover_input(
-            "key", known_inputs={"left": 0, "key": 0}, output=0
-        )
+        primitive.analyze().recover_input("key", known_inputs={"left": 0, "key": 0}, output=0)
 
 
 def test_fixed_value_rejects_wrong_sequence_length():
@@ -94,9 +94,7 @@ def test_solution_enumeration_blocks_projected_values_and_honors_limit():
         (FixedValue(primitive.output, 0),),
         {"key": primitive.input("key")},
     )
-    results = primitive.analyze().enumerate_solutions(
-        problem, limit=5, solver=_ExhaustiveSolver()
-    )
+    results = primitive.analyze().enumerate_solutions(problem, limit=5, solver=_ExhaustiveSolver())
     assert {result.value("key") for result in results} == {0, 1}
     assert len(results) == 2
     assert all(result.provenance.realization is primitive.realization for result in results)

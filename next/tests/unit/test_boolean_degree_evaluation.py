@@ -9,17 +9,17 @@ def test_degree_propagation_is_a_sound_bound_on_exact_simon_degrees():
     bound = BooleanDegreeEvaluator().evaluate(primitive, "plaintext")
     exact = BooleanSymbolicEvaluator().evaluate(primitive)
 
-    assert all(polynomial.degree <= upper
-               for polynomial, upper in zip(exact.output_anfs, bound.output_bounds))
+    assert all(
+        polynomial.degree <= upper
+        for polynomial, upper in zip(exact.output_anfs, bound.output_bounds)
+    )
     assert bound.output_bounds == (16,) * 16 + (8,) * 16
     assert bound.sound
     assert not bound.complete
 
 
 def test_degree_propagation_scales_to_simon_thirteen():
-    result = BooleanDegreeEvaluator().evaluate(
-        Simon(number_of_rounds=13), "plaintext"
-    )
+    result = BooleanDegreeEvaluator().evaluate(Simon(number_of_rounds=13), "plaintext")
     assert result.output_bounds == (32,) * 32
 
 

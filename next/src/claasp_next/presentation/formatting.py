@@ -46,7 +46,11 @@ class FormatSpec:
     def __post_init__(self) -> None:
         if not isinstance(self.kind, ValueKind):
             object.__setattr__(self, "kind", ValueKind(self.kind))
-        if not isinstance(self.precision, int) or isinstance(self.precision, bool) or self.precision < 1:
+        if (
+            not isinstance(self.precision, int)
+            or isinstance(self.precision, bool)
+            or self.precision < 1
+        ):
             raise ValueError("precision must be a positive integer")
         for name, value in (("bit_width", self.bit_width), ("word_width", self.word_width)):
             if value is not None and (

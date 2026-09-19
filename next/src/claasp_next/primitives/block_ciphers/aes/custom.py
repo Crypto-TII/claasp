@@ -75,7 +75,8 @@ class CustomAES(Primitive):
             round_function = self.add_composite(
                 AESRound(
                     sbox_table=table,
-                    mix_columns=include_mix_columns and round_number != configuration["number_of_rounds"],
+                    mix_columns=include_mix_columns
+                    and round_number != configuration["number_of_rounds"],
                 ),
                 {"state": state, "round_key": key_schedule.output[round_number]},
             )

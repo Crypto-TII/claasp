@@ -7,21 +7,31 @@ from copy import copy
 from claasp_next.components import Add, LinearMap, Rotate, Xor
 from claasp_next.domains import BinaryExtensionField, Bit, Word
 from claasp_next.graph import (
-    BindingKind, Component, Port, PortLike, Primitive, PrimitiveInput,
-    PrimitiveKind, Selection, ValueType, as_selection,
+    BindingKind,
+    Port,
+    PortLike,
+    Primitive,
+    PrimitiveInput,
+    PrimitiveKind,
+    Selection,
+    ValueType,
+    as_selection,
 )
 from claasp_next.provenance import TransformationRecord
 from claasp_next.transformations.contracts import (
-    TransformationError, TransformationFailureReason, TransformationResult,
-)
-from claasp_next.transformations.inverse_rules import (
-    ComponentInverseRegistry, DEFAULT_INVERSE_REGISTRY,
+    TransformationError,
+    TransformationFailureReason,
+    TransformationResult,
 )
 from claasp_next.transformations.inverse_equivalents import (
-    direct_inversion_equivalent, inversion_equivalent,
+    direct_inversion_equivalent,
+    inversion_equivalent,
+)
+from claasp_next.transformations.inverse_rules import (
+    DEFAULT_INVERSE_REGISTRY,
+    ComponentInverseRegistry,
 )
 from claasp_next.transformations.traversal import DependencyIndex
-
 
 Atom = tuple[str, int]
 
@@ -97,7 +107,8 @@ def _normalize_known(primitive: Primitive, known):
         )
         descriptors[name] = (
             primitive.input_descriptor(name)
-            if exact_input else PrimitiveInput(ValueType(domain, (len(piece_atoms),)), role=name)
+            if exact_input
+            else PrimitiveInput(ValueType(domain, (len(piece_atoms),)), role=name)
         )
         boundaries[name] = piece_atoms
     return descriptors, boundaries
@@ -167,7 +178,7 @@ def _propagate_binding(binding, derived, equivalents, *, changed_atoms=None):
         raise AssertionError("conversion binding has no word width")
     if binding.kind is BindingKind.PACK_BITS:
         for index, output_atom in enumerate(output_atoms):
-            group = input_atoms[index * width:(index + 1) * width]
+            group = input_atoms[index * width : (index + 1) * width]
             if output_atom in equivalents and not all(atom in equivalents for atom in group):
                 bits = derived.unpack_bits(equivalents[output_atom])
                 changed |= _assign(equivalents, group, bits, changed_atoms=changed_atoms)
@@ -175,7 +186,8 @@ def _propagate_binding(binding, derived, equivalents, *, changed_atoms=None):
                 bits = _assembled(derived, equivalents, group)
                 domain = binding.output_type.domain
                 packed = derived.pack_bits(
-                    bits, width,
+                    bits,
+                    width,
                     output_domain=domain if isinstance(domain, BinaryExtensionField) else None,
                 )
                 equivalents[output_atom] = packed[0]
@@ -184,7 +196,7 @@ def _propagate_binding(binding, derived, equivalents, *, changed_atoms=None):
                 changed = True
     elif binding.kind is BindingKind.UNPACK_BITS:
         for index, input_atom in enumerate(input_atoms):
-            group = output_atoms[index * width:(index + 1) * width]
+            group = output_atoms[index * width : (index + 1) * width]
             if input_atom in equivalents and not all(atom in equivalents for atom in group):
                 bits = derived.unpack_bits(equivalents[input_atom])
                 changed |= _assign(equivalents, group, bits, changed_atoms=changed_atoms)
@@ -192,7 +204,8 @@ def _propagate_binding(binding, derived, equivalents, *, changed_atoms=None):
                 bits = _assembled(derived, equivalents, group)
                 domain = binding.inputs[0].value_type.domain
                 packed = derived.pack_bits(
-                    bits, width,
+                    bits,
+                    width,
                     output_domain=domain if isinstance(domain, BinaryExtensionField) else None,
                 )
                 equivalents[input_atom] = packed[0]
@@ -210,7 +223,12 @@ def _propagate_bindings(primitive, derived, equivalents):
 
 
 def _recover_xor_region(
-    primitive, components, derived, equivalents, bit_cache, region_cache,
+    primitive,
+    components,
+    derived,
+    equivalents,
+    bit_cache,
+    region_cache,
 ):
     """Recover units isolated by exact bit-level elimination of XOR regions."""
 
@@ -229,7 +247,8 @@ def _recover_xor_region(
             return ()
         return tuple(
             (selection.source.owner_id, position, bit)
-            for position in selection.positions for bit in range(domain_width)
+            for position in selection.positions
+            for bit in range(domain_width)
         )
 
     if "groups" not in region_cache:
@@ -285,7 +304,11 @@ def _recover_xor_region(
                 for output_bit, row in zip(output_bits, component.matrix):
                     add_equation(
                         output_bit,
-                        *(input_bit for input_bit, coefficient in zip(input_bits[0], row) if coefficient),
+                        *(
+                            input_bit
+                            for input_bit, coefficient in zip(input_bits[0], row)
+                            if coefficient
+                        ),
                     )
 
         parents = {}
@@ -335,7 +358,8 @@ def _recover_xor_region(
             continue
         for bit, selection in enumerate(bits):
             known[(atom[0], atom[1], bit)] = (
-                selection.source.owner_id, selection.positions[0],
+                selection.source.owner_id,
+                selection.positions[0],
             )
 
     solved = {}
@@ -359,12 +383,10 @@ def _recover_xor_region(
             continue
         if not any(right_hand_side for _, right_hand_side in group):
             continue
-        variables = tuple(sorted({
-            variable for coefficients, _ in group for variable in coefficients
-        }))
-        tokens = tuple(sorted({
-            token for _, right_hand_side in group for token in right_hand_side
-        }))
+        variables = tuple(
+            sorted({variable for coefficients, _ in group for variable in coefficients})
+        )
+        tokens = tuple(sorted({token for _, right_hand_side in group for token in right_hand_side}))
         variable_indexes = {variable: index for index, variable in enumerate(variables)}
         token_indexes = {token: index for index, token in enumerate(tokens)}
         basis = {}
@@ -382,7 +404,7 @@ def _recover_xor_region(
                 right_hand_side_bits ^= other_right_hand_side
         for pivot in sorted(basis, reverse=True):
             pivot_coefficients, pivot_right_hand_side = basis[pivot]
-            for other_pivot, (coefficients, right_hand_side) in basis.items():
+            for other_pivot, (coefficients, _right_hand_side) in basis.items():
                 if other_pivot != pivot and coefficients & (1 << pivot):
                     basis[other_pivot][0] ^= pivot_coefficients
                     basis[other_pivot][1] ^= pivot_right_hand_side
@@ -390,9 +412,7 @@ def _recover_xor_region(
             if coefficients.bit_count() == 1 and right_hand_side:
                 variable = variables[(coefficients & -coefficients).bit_length() - 1]
                 solved[variable] = {
-                    tokens[index]
-                    for index in range(len(tokens))
-                    if right_hand_side & (1 << index)
+                    tokens[index] for index in range(len(tokens)) if right_hand_side & (1 << index)
                 }
 
     solved_units = {}
@@ -414,14 +434,14 @@ def _recover_xor_region(
                 for source_id, position in sorted(expressions[bit])
             )
             bits.append(
-                selections[0] if len(selections) == 1
-                else derived.add_component(Add(selections))
+                selections[0] if len(selections) == 1 else derived.add_component(Add(selections))
             )
         if isinstance(port.value_type.domain, Bit):
             value = bits[0]
         else:
             value = derived.pack_bits(
-                derived.join(*bits), domain_width,
+                derived.join(*bits),
+                domain_width,
                 output_domain=(
                     port.value_type.domain
                     if isinstance(port.value_type.domain, BinaryExtensionField)
@@ -502,7 +522,10 @@ def partial_inverse(
         else:
             component = components[operation_index]
             watched_atoms = (
-                *((component.component_id, index) for index in range(component.output_type.unit_count)),
+                *(
+                    (component.component_id, index)
+                    for index in range(component.output_type.unit_count)
+                ),
                 *(atom for item in component.inputs for atom in _atoms(item)),
             )
         for atom in watched_atoms:
@@ -521,7 +544,12 @@ def partial_inverse(
     while not all(atom in equivalents for atom in target_atoms):
         if not queue:
             changed_atoms = _recover_xor_region(
-                primitive, components, derived, equivalents, bit_cache, region_cache,
+                primitive,
+                components,
+                derived,
+                equivalents,
+                bit_cache,
+                region_cache,
             )
             if not changed_atoms:
                 break
@@ -554,7 +582,8 @@ def partial_inverse(
             clone = copy(component)
             object.__setattr__(clone, "component_id", None)
             object.__setattr__(
-                clone, "inputs",
+                clone,
+                "inputs",
                 tuple(_assembled(derived, equivalents, atoms) for atoms in input_atoms),
             )
             result = derived.add_component(clone)
@@ -585,7 +614,8 @@ def partial_inverse(
             continue
         auxiliaries = {
             index: _assembled(derived, equivalents, atoms)
-            for index, atoms in enumerate(input_atoms) if index != recover
+            for index, atoms in enumerate(input_atoms)
+            if index != recover
         }
         try:
             inverse = registry.invert(
@@ -620,10 +650,15 @@ def partial_inverse(
                 stalled_errors.values(),
                 key=lambda error: priorities.get(error.reason, 99),
             )
-        missing = tuple(sorted({
-            source_id for source_id, position in target_atoms
-            if (source_id, position) not in equivalents
-        }))
+        missing = tuple(
+            sorted(
+                {
+                    source_id
+                    for source_id, position in target_atoms
+                    if (source_id, position) not in equivalents
+                }
+            )
+        )
         raise TransformationError(
             TransformationFailureReason.DISCONNECTED_DEPENDENCY,
             "known boundaries do not connect to every requested target wire",
@@ -637,12 +672,17 @@ def partial_inverse(
         primitive.realization_identity,
     )
     object.__setattr__(
-        derived, "_transformation_provenance",
+        derived,
+        "_transformation_provenance",
         (*primitive.transformation_provenance, record),
     )
     return TransformationResult(
         derived,
-        tuple((source_id, name) for name, atoms in boundaries.items() for source_id in dict.fromkeys(atom[0] for atom in atoms)),
+        tuple(
+            (source_id, name)
+            for name, atoms in boundaries.items()
+            for source_id in dict.fromkeys(atom[0] for atom in atoms)
+        ),
     )
 
 
@@ -689,28 +729,42 @@ def invert_primitive(
             direct.realization = primitive.realization
             equivalent_record = TransformationRecord(
                 "inverse_equivalent",
-                (("source", _qualified_primitive_type(primitive)),
-                 ("replacement", direct_contract[0])),
+                (
+                    ("source", _qualified_primitive_type(primitive)),
+                    ("replacement", direct_contract[0]),
+                ),
                 primitive.realization_identity,
             )
             inverse_record = TransformationRecord(
                 "inverse",
-                (("recover", source_recovered.owner_id),
-                 ("retained", ",".join(
-                     port.owner_id for port in primitive.inputs()
-                     if port.owner_id != source_recovered.owner_id
-                 ))),
+                (
+                    ("recover", source_recovered.owner_id),
+                    (
+                        "retained",
+                        ",".join(
+                            port.owner_id
+                            for port in primitive.inputs()
+                            if port.owner_id != source_recovered.owner_id
+                        ),
+                    ),
+                ),
                 primitive.realization_identity,
             )
             object.__setattr__(
-                direct, "_transformation_provenance",
+                direct,
+                "_transformation_provenance",
                 (*primitive.transformation_provenance, equivalent_record, inverse_record),
             )
             return TransformationResult(
                 direct,
-                ((primitive.output.source.owner_id, output_name),
-                 *((port.owner_id, port.owner_id) for port in primitive.inputs()
-                   if port.owner_id != source_recovered.owner_id)),
+                (
+                    (primitive.output.source.owner_id, output_name),
+                    *(
+                        (port.owner_id, port.owner_id)
+                        for port in primitive.inputs()
+                        if port.owner_id != source_recovered.owner_id
+                    ),
+                ),
             )
     working, equivalent_contract = inversion_equivalent(primitive)
     if working is None:
@@ -718,7 +772,8 @@ def invert_primitive(
     recovered = working.input(source_recovered.owner_id)
     retained = (
         tuple(port for port in working.inputs() if port.owner_id != recovered.owner_id)
-        if retained_inputs is None else tuple(
+        if retained_inputs is None
+        else tuple(
             working.input(primitive.input(selector).owner_id) for selector in retained_inputs
         )
     )
@@ -744,33 +799,43 @@ def invert_primitive(
     )
     derived = result.primitive
     complete = (
-        set(port.owner_id for port in retained)
-        == set(working.input_ports) - {recovered.owner_id}
+        set(port.owner_id for port in retained) == set(working.input_ports) - {recovered.owner_id}
         and working.output.value_type == recovered.value_type
     )
     if complete and primitive.kind in (
-        PrimitiveKind.BLOCK_CIPHER, PrimitiveKind.TWEAKABLE_BLOCK_CIPHER,
+        PrimitiveKind.BLOCK_CIPHER,
+        PrimitiveKind.TWEAKABLE_BLOCK_CIPHER,
         PrimitiveKind.PERMUTATION,
     ):
         object.__setattr__(derived, "_kind", primitive.kind)
     derived.realization = primitive.realization
     record = TransformationRecord(
         "inverse",
-        (("recover", recovered.owner_id), ("retained", ",".join(port.owner_id for port in retained))),
+        (
+            ("recover", recovered.owner_id),
+            ("retained", ",".join(port.owner_id for port in retained)),
+        ),
         primitive.realization_identity,
     )
     object.__setattr__(
-        derived, "_transformation_provenance",
+        derived,
+        "_transformation_provenance",
         (
             *primitive.transformation_provenance,
-            *(() if equivalent_contract is None else (TransformationRecord(
-                "inverse_equivalent",
-                (
-                    ("source", equivalent_contract.source_type),
-                    ("replacement", equivalent_contract.replacement_type),
-                ),
-                primitive.realization_identity,
-            ),)),
+            *(
+                ()
+                if equivalent_contract is None
+                else (
+                    TransformationRecord(
+                        "inverse_equivalent",
+                        (
+                            ("source", equivalent_contract.source_type),
+                            ("replacement", equivalent_contract.replacement_type),
+                        ),
+                        primitive.realization_identity,
+                    ),
+                )
+            ),
             record,
         ),
     )

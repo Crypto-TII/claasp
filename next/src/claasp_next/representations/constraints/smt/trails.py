@@ -1,5 +1,9 @@
 """Weighted full-trail SMT representation lowering."""
 
+from claasp_next.components import BitVectorSBox, Permutation
+from claasp_next.graph import Primitive
+from claasp_next.representations.constraints.smt.formula import SMTFormula
+from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp_next.semantics.cryptanalysis import (
     PropagationProblem,
     SBoxTransitionSemantics,
@@ -9,10 +13,6 @@ from claasp_next.semantics.cryptanalysis import (
     XorDifference,
     XorMask,
 )
-from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
-from claasp_next.components import BitVectorSBox, Permutation
-from claasp_next.graph import Primitive
-from claasp_next.representations.constraints.smt.formula import SMTFormula
 
 
 class PresentDifferentialSMTModel:
@@ -27,12 +27,16 @@ class PresentDifferentialSMTModel:
         required configuration rejected
     """
 
-    def __init__(self, primitive: Primitive | PropagationProblem, maximum_weight: int | None = None) -> None:
+    def __init__(
+        self, primitive: Primitive | PropagationProblem, maximum_weight: int | None = None
+    ) -> None:
         problem = (
             primitive
             if isinstance(primitive, PropagationProblem)
             else PropagationProblem(
-                primitive, XOR_DIFFERENTIAL, maximum_weight=maximum_weight,
+                primitive,
+                XOR_DIFFERENTIAL,
+                maximum_weight=maximum_weight,
                 provenance=("PRESENT-2 SMT convenience constructor",),
             )
         )
@@ -78,17 +82,19 @@ class PresentDifferentialSMTModel:
         second_input = tuple(first_output[position] for position in permutation.mapping)
         weight_names = []
         records = []
-        for round_number, (inputs, outputs, sboxes) in enumerate((
-            (plaintext, first_output, first_sboxes),
-            (second_input, second_output, second_sboxes),
-        ), start=1):
+        for round_number, (inputs, outputs, sboxes) in enumerate(
+            (
+                (plaintext, first_output, first_sboxes),
+                (second_input, second_output, second_sboxes),
+            ),
+            start=1,
+        ):
             for nibble, component in enumerate(sboxes):
                 start = 4 * nibble
                 input_names = inputs[start : start + 4]
                 output_names = outputs[start : start + 4]
                 local_weights = tuple(
-                    allocate(f"round_{round_number}_sbox_{nibble}_weight_{bit}")
-                    for bit in range(3)
+                    allocate(f"round_{round_number}_sbox_{nibble}_weight_{bit}") for bit in range(3)
                 )
                 weight_names.extend(local_weights)
                 records.append((component.component_id, input_names, output_names))
@@ -160,12 +166,16 @@ class PresentLinearSMTModel:
         required configuration rejected
     """
 
-    def __init__(self, primitive: Primitive | PropagationProblem, maximum_weight: int | None = None) -> None:
+    def __init__(
+        self, primitive: Primitive | PropagationProblem, maximum_weight: int | None = None
+    ) -> None:
         problem = (
             primitive
             if isinstance(primitive, PropagationProblem)
             else PropagationProblem(
-                primitive, XOR_LINEAR, maximum_weight=maximum_weight,
+                primitive,
+                XOR_LINEAR,
+                maximum_weight=maximum_weight,
                 provenance=("PRESENT-3 SMT convenience constructor",),
             )
         )
@@ -236,8 +246,7 @@ class PresentLinearSMTModel:
                         weight = int(transition.weight)
                         for bit, name in enumerate(local_weights):
                             add(
-                                forbid
-                                + ((indices[name] if bit < weight else -indices[name]),),
+                                forbid + ((indices[name] if bit < weight else -indices[name]),),
                                 f"{component.component_id}_linear_weight",
                             )
             permutation = _component(self.primitive, f"p_layer_{round_number}", Permutation)
@@ -299,7 +308,9 @@ def check_present_smt_trail(primitive: Primitive, trail: Trail) -> bool:
     expected_output = _permute(
         second_output, _component(primitive, "p_layer_2", Permutation).mapping
     )
-    return first_input == trail.input_pattern.value and expected_output == trail.output_pattern.value
+    return (
+        first_input == trail.input_pattern.value and expected_output == trail.output_pattern.value
+    )
 
 
 def check_present_linear_smt_trail(primitive: Primitive, trail: Trail) -> bool:
@@ -340,8 +351,7 @@ def _at_most(names, bound, allocate, indices, add):
     previous = ()
     for position, name in enumerate(names):
         current = tuple(
-            allocate(f"__weight_counter_{position}_{count}")
-            for count in range(1, bound + 1)
+            allocate(f"__weight_counter_{position}_{count}") for count in range(1, bound + 1)
         )
         add((-indices[name], indices[current[0]]), "weight_bound")
         if previous:
@@ -369,7 +379,9 @@ def _round_sboxes(primitive, round_number):
 
 
 def _component(primitive, component_id, expected_type):
-    component = next((item for item in primitive.components if item.component_id == component_id), None)
+    component = next(
+        (item for item in primitive.components if item.component_id == component_id), None
+    )
     if not isinstance(component, expected_type):
         raise ValueError(f"primitive is missing {component_id!r}")
     return component

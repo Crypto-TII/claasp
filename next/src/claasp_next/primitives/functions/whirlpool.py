@@ -92,7 +92,11 @@ class Whirlpool(BitGraphPrimitive):
             [0x09, 0x02, 0x05, 0x08, 0x01, 0x04, 0x01, 0x01],
         ]
 
-        self.whirlpool_matrix_description = [self.whirlpool_matrix, self.irreducible_polynomial, word_size]
+        self.whirlpool_matrix_description = [
+            self.whirlpool_matrix,
+            self.irreducible_polynomial,
+            word_size,
+        ]
 
         super().__init__(
             family_name="whirlpool_hash_function",
@@ -104,7 +108,9 @@ class Whirlpool(BitGraphPrimitive):
 
         self.add_round()
 
-        round_key = self.add_constant_component(self.primitive_block_size, 0x00)  # Initial Key value
+        round_key = self.add_constant_component(
+            self.primitive_block_size, 0x00
+        )  # Initial Key value
 
         add_round_key = self.add_xor_component(
             [INPUT_MESSAGE, round_key.id],
@@ -113,29 +119,38 @@ class Whirlpool(BitGraphPrimitive):
         )
 
         self.add_intermediate_output_component(
-            [add_round_key.id], [list(range(self.primitive_block_size))], self.primitive_block_size, INTERMEDIATE_OUTPUT
+            [add_round_key.id],
+            [list(range(self.primitive_block_size))],
+            self.primitive_block_size,
+            INTERMEDIATE_OUTPUT,
         )
 
         add_round_constant = round_key
         for round_number in range(number_of_rounds):
             sboxes_components = self.create_sbox_component(add_round_key)
-            shift_column_components = self.create_shift_column_components(sboxes_components, word_size)
+            shift_column_components = self.create_shift_column_components(
+                sboxes_components, word_size
+            )
             mix_row_components = self.create_mix_row_components(shift_column_components)
 
             round_constant = self.create_round_constant_component(round_number)
             key_sboxes_components = self.create_sbox_component(add_round_constant)
-            key_shift_column_components = self.create_shift_column_components(key_sboxes_components, word_size)
+            key_shift_column_components = self.create_shift_column_components(
+                key_sboxes_components, word_size
+            )
             key_mix_row_components = self.create_mix_row_components(key_shift_column_components)
 
             add_round_constant = self.add_xor_component(
-                [key_mix_row_components[i].id for i in range(self.num_columns)] + [round_constant.id],
+                [key_mix_row_components[i].id for i in range(self.num_columns)]
+                + [round_constant.id],
                 [list(range(self.column_size)) for _ in range(self.num_columns)]
                 + [list(range(self.primitive_block_size))],
                 self.primitive_block_size,
             )
 
             add_round_key = self.add_xor_component(
-                [mix_row_components[i].id for i in range(self.num_columns)] + [add_round_constant.id],
+                [mix_row_components[i].id for i in range(self.num_columns)]
+                + [add_round_constant.id],
                 [list(range(self.column_size)) for _ in range(self.num_columns)]
                 + [list(range(self.primitive_block_size))],
                 self.primitive_block_size,
@@ -156,7 +171,9 @@ class Whirlpool(BitGraphPrimitive):
             self.primitive_block_size,
         )
 
-        self.add_primitive_output_component([output.id], [list(range(self.primitive_block_size))], self.primitive_block_size)
+        self.add_primitive_output_component(
+            [output.id], [list(range(self.primitive_block_size))], self.primitive_block_size
+        )
 
     def create_sbox_component(self, add_round_key):
         """Construct the sbox component stage in this primitive's typed operation graph."""
@@ -179,7 +196,9 @@ class Whirlpool(BitGraphPrimitive):
             rotation = self.add_rotate_component(
                 [
                     sboxes_components[i].id
-                    for i in range(j, j + self.num_columns * (self.num_columns - 1) + 1, self.num_columns)
+                    for i in range(
+                        j, j + self.num_columns * (self.num_columns - 1) + 1, self.num_columns
+                    )
                 ],
                 [list(range(self.sbox_bit_size)) for _ in range(self.num_columns)],
                 self.column_size,
@@ -195,7 +214,10 @@ class Whirlpool(BitGraphPrimitive):
         for j in range(self.num_rows):
             mix_row = self.add_mix_column_component(
                 [shift_column_components[i].id for i in range(self.num_rows)],
-                [list(range(j * self.num_rows, (j + 1) * self.num_rows)) for _ in range(self.num_rows)],
+                [
+                    list(range(j * self.num_rows, (j + 1) * self.num_rows))
+                    for _ in range(self.num_rows)
+                ],
                 self.row_size,
                 self.whirlpool_matrix_description,
             )
@@ -206,10 +228,14 @@ class Whirlpool(BitGraphPrimitive):
     def create_round_constant_component(self, round_number):
         """Construct the round constant component stage in this primitive's typed operation graph."""
         round_constant_value = (
-            ["0x"] + [format(self.sbox[8 * (round_number) + j], "02x") for j in range(8)] + ["00" for _ in range(56)]
+            ["0x"]
+            + [format(self.sbox[8 * (round_number) + j], "02x") for j in range(8)]
+            + ["00" for _ in range(56)]
         )
         round_constant_string = "".join(round_constant_value)
         round_constant_hex_value = int(round_constant_string, 16)
-        round_constant = self.add_constant_component(self.primitive_block_size, round_constant_hex_value)
+        round_constant = self.add_constant_component(
+            self.primitive_block_size, round_constant_hex_value
+        )
 
         return round_constant

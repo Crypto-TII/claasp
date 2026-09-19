@@ -73,20 +73,20 @@ default_constants = {
     ]
 }
 # fmt: on
-reference_code = f"""
+reference_code = """
 def blake_encrypt(plaintext, state):
     from math import sqrt
     from claasp.utils.integer_functions import bytearray_to_wordlist, wordlist_to_bytearray, ror
 
-    plaintext_size = {{0}}
-    state_size = {{1}}
-    rounds = {{2}}
-    word_size = {{3}}
+    plaintext_size = {0}
+    state_size = {1}
+    rounds = {2}
+    word_size = {3}
 
     ###CONSTANTS
-    permutations = {{4}}
-    rot_amounts = {{5}}
-    constants = {{6}}
+    permutations = {4}
+    rot_amounts = {5}
+    constants = {6}
 
     def state_transformation(data_words, state_words, m0, m1):
         if n == 4:
@@ -237,11 +237,13 @@ class Blake(BitGraphPrimitive):
 
         data_word_ids = [INPUT_MESSAGE] * self.state_size_in_words
         data_word_ranges = [
-            list(range(i * self.word_size, (i + 1) * self.word_size)) for i in range(self.state_size_in_words)
+            list(range(i * self.word_size, (i + 1) * self.word_size))
+            for i in range(self.state_size_in_words)
         ]
         state_word_ids = [INPUT_STATE] * self.state_size_in_words
         state_word_ranges = [
-            list(range(i * self.word_size, (i + 1) * self.word_size)) for i in range(self.state_size_in_words)
+            list(range(i * self.word_size, (i + 1) * self.word_size))
+            for i in range(self.state_size_in_words)
         ]
 
         for r in range(number_of_rounds):
@@ -252,12 +254,16 @@ class Blake(BitGraphPrimitive):
                 state_word_ids, state_word_ranges = self.column_step(
                     data_word_ids, data_word_ranges, state_word_ids, state_word_ranges, r
                 )
-                self.add_round_output_component(state_word_ids, state_word_ranges, self.word_size * 16)
+                self.add_round_output_component(
+                    state_word_ids, state_word_ranges, self.word_size * 16
+                )
             else:
                 state_word_ids, state_word_ranges = self.diagonal_step(
                     data_word_ids, data_word_ranges, state_word_ids, state_word_ranges, r
                 )
-                self.add_round_output_component(state_word_ids, state_word_ranges, self.word_size * 16)
+                self.add_round_output_component(
+                    state_word_ids, state_word_ranges, self.word_size * 16
+                )
 
         self.add_primitive_output_component(state_word_ids, state_word_ranges, state_bit_size)
 
@@ -275,7 +281,13 @@ class Blake(BitGraphPrimitive):
             m1 = self.permutations[(r // 2) % n_perm][2 * i + 1]
 
             new_state_words = self.state_transformation(
-                data_word_ids, data_word_ranges, state_word_ids, state_word_ranges, word_indexes, m0, m1
+                data_word_ids,
+                data_word_ranges,
+                state_word_ids,
+                state_word_ranges,
+                word_indexes,
+                m0,
+                m1,
             )
 
             for j in range(self.n):
@@ -343,11 +355,21 @@ class Blake(BitGraphPrimitive):
         for i in range(self.n):
             word_indexes = [j * self.n + ((i + j) % self.n) for j in range(self.n)]
 
-            m0 = self.permutations[(r // 2) % n_perm][(2 * self.n + 2 * i) % self.state_size_in_words]
-            m1 = self.permutations[(r // 2) % n_perm][(2 * self.n + 2 * i + 1) % self.state_size_in_words]
+            m0 = self.permutations[(r // 2) % n_perm][
+                (2 * self.n + 2 * i) % self.state_size_in_words
+            ]
+            m1 = self.permutations[(r // 2) % n_perm][
+                (2 * self.n + 2 * i + 1) % self.state_size_in_words
+            ]
 
             new_state_words = self.state_transformation(
-                data_word_ids, data_word_ranges, state_word_ids, state_word_ranges, word_indexes, m0, m1
+                data_word_ids,
+                data_word_ranges,
+                state_word_ids,
+                state_word_ranges,
+                word_indexes,
+                m0,
+                m1,
             )
 
             for j in range(self.n):
@@ -361,7 +383,14 @@ class Blake(BitGraphPrimitive):
         return new_state_word_ids, new_state_word_ranges
 
     def state_transformation(
-        self, data_word_ids, data_word_ranges, state_word_ids, state_word_ranges, word_indexes, m0, m1
+        self,
+        data_word_ids,
+        data_word_ranges,
+        state_word_ids,
+        state_word_ranges,
+        word_indexes,
+        m0,
+        m1,
     ):
         """Build the state transformation stage in this primitive's typed operation graph."""
         m = c = None

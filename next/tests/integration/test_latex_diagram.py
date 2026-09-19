@@ -2,9 +2,8 @@ import shutil
 
 import pytest
 
-from claasp_next.primitives import MiMC
 from claasp_next.drivers.renderers import LaTeXDriver
-
+from claasp_next.primitives import MiMC
 
 pytestmark = pytest.mark.external
 

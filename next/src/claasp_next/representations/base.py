@@ -45,5 +45,7 @@ class Artifact:
             raise TypeError("representation must be a Representation")
         if any(not isinstance(item, str) or not item for item in self.provenance):
             raise ValueError("artifact provenance entries must be non-empty strings")
-        if self.result_provenance is not None and not isinstance(self.result_provenance, ResultProvenance):
+        if self.result_provenance is not None and not isinstance(
+            self.result_provenance, ResultProvenance
+        ):
             raise TypeError("result_provenance must be ResultProvenance or None")

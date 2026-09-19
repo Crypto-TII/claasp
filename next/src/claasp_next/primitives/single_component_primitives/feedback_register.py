@@ -2,6 +2,8 @@
 
 from claasp_next.components import (
     FeedbackRegister as FeedbackRegisterComponent,
+)
+from claasp_next.components import (
     FeedbackRegisterParameters,
 )
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
@@ -36,9 +38,7 @@ class FeedbackRegister(Primitive):
 
     def __init__(self, parameters: FeedbackRegisterParameters | None = None) -> None:
         parameters = (
-            FeedbackRegisterParameters.from_taps(4, [0, 1])
-            if parameters is None
-            else parameters
+            FeedbackRegisterParameters.from_taps(4, [0, 1]) if parameters is None else parameters
         )
         if not isinstance(parameters, FeedbackRegisterParameters):
             raise TypeError("parameters must be FeedbackRegisterParameters")
@@ -49,9 +49,7 @@ class FeedbackRegister(Primitive):
         )
         self.add_round()
         output = self.add_component(
-            FeedbackRegisterComponent(
-                self.input("input"), parameters.registers, parameters.clocks
-            )
+            FeedbackRegisterComponent(self.input("input"), parameters.registers, parameters.clocks)
         )
         self.set_output(output)
 

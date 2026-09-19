@@ -6,18 +6,20 @@ from enum import Enum
 from typing import Protocol, runtime_checkable
 
 from claasp_next.components import BitVectorSBox, BitwiseAnd, ModularAdd
-from claasp_next.semantics.cryptanalysis.bitwise import BitwiseAndSemantics
-from claasp_next.graph import Primitive, Component
+from claasp_next.graph import Component, Primitive
 from claasp_next.semantics.base import (
     DETERMINISTIC_TRUNCATED_XOR,
     PROBABILISTIC_TRUNCATED_XOR,
-    SemanticType,
     XOR_DIFFERENTIAL,
     XOR_LINEAR,
+    SemanticType,
 )
+from claasp_next.semantics.cryptanalysis.bitwise import BitwiseAndSemantics
 from claasp_next.semantics.cryptanalysis.trails import (
-    ModularAddLinearSemantics, ModularAddTransitionSemantics,
-    SBoxTransitionSemantics, Transition,
+    ModularAddLinearSemantics,
+    ModularAddTransitionSemantics,
+    SBoxTransitionSemantics,
+    Transition,
 )
 
 
@@ -78,7 +80,9 @@ class ComponentSemanticsBinding:
     def __post_init__(self) -> None:
         if not isinstance(self.semantics, SemanticType):
             raise TypeError("binding semantics must be a SemanticType")
-        if not isinstance(self.component_type, type) or not issubclass(self.component_type, Component):
+        if not isinstance(self.component_type, type) or not issubclass(
+            self.component_type, Component
+        ):
             raise TypeError("component_type must be a Component subclass")
         if not callable(self.factory):
             raise TypeError("provider factory must be callable")
@@ -173,7 +177,9 @@ class PropagationProblem:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
         if semantics not in (
-            XOR_DIFFERENTIAL, XOR_LINEAR, DETERMINISTIC_TRUNCATED_XOR,
+            XOR_DIFFERENTIAL,
+            XOR_LINEAR,
+            DETERMINISTIC_TRUNCATED_XOR,
             PROBABILISTIC_TRUNCATED_XOR,
         ):
             raise ValueError(
@@ -183,12 +189,16 @@ class PropagationProblem:
         if not isinstance(objective, PropagationObjective):
             raise TypeError("objective must be a PropagationObjective")
         if maximum_weight is not None and (
-            not isinstance(maximum_weight, int) or isinstance(maximum_weight, bool) or maximum_weight < 0
+            not isinstance(maximum_weight, int)
+            or isinstance(maximum_weight, bool)
+            or maximum_weight < 0
         ):
             raise ValueError("maximum_weight must be a nonnegative integer or None")
-        identifiers = tuple(
-            component.component_id for component in primitive.components
-        ) if component_ids is None else tuple(component_ids)
+        identifiers = (
+            tuple(component.component_id for component in primitive.components)
+            if component_ids is None
+            else tuple(component_ids)
+        )
         if len(set(identifiers)) != len(identifiers):
             raise ValueError("propagation component IDs must be unique")
         known = {component.component_id for component in primitive.components}
@@ -213,7 +223,11 @@ class PropagationProblem:
         """Return scoped graph components in primitive order."""
 
         selected = set(self.component_ids)
-        return tuple(component for component in self.primitive.components if component.component_id in selected)
+        return tuple(
+            component
+            for component in self.primitive.components
+            if component.component_id in selected
+        )
 
     def provider_for(self, component: Component) -> TransitionProvider:
         """Resolve this problem's selected semantics for ``component``."""
@@ -283,16 +297,25 @@ def default_component_semantics() -> ComponentSemanticsRegistry:
 
     registry = ComponentSemanticsRegistry()
     for semantics in (XOR_DIFFERENTIAL, XOR_LINEAR):
-        registry = registry.register(ComponentSemanticsBinding(
-            semantics, BitVectorSBox,
-            lambda component, meaning=semantics: _SBoxProvider(component, meaning),
-        ))
-        registry = registry.register(ComponentSemanticsBinding(
-            semantics, ModularAdd,
-            lambda component, meaning=semantics: _ModularAddProvider(component, meaning),
-        ))
-        registry = registry.register(ComponentSemanticsBinding(
-            semantics, BitwiseAnd,
-            lambda component, meaning=semantics: _BitwiseAndProvider(component, meaning),
-        ))
+        registry = registry.register(
+            ComponentSemanticsBinding(
+                semantics,
+                BitVectorSBox,
+                lambda component, meaning=semantics: _SBoxProvider(component, meaning),
+            )
+        )
+        registry = registry.register(
+            ComponentSemanticsBinding(
+                semantics,
+                ModularAdd,
+                lambda component, meaning=semantics: _ModularAddProvider(component, meaning),
+            )
+        )
+        registry = registry.register(
+            ComponentSemanticsBinding(
+                semantics,
+                BitwiseAnd,
+                lambda component, meaning=semantics: _BitwiseAndProvider(component, meaning),
+            )
+        )
     return registry

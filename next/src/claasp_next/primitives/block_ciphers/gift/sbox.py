@@ -17,13 +17,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from copy import deepcopy
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
-from claasp_next.primitive_inputs import INPUT_KEY, INPUT_PLAINTEXT, BLOCK_CIPHER
-from claasp_next.graph.bit_builder import get_inputs_parameter, simplify_inputs
+from claasp_next.graph.bit_builder import (
+    BitGraphPrimitive,
+    BitState,
+    get_inputs_parameter,
+    simplify_inputs,
+)
+from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 KEY_NUM = 8
 KEY_SIZE = 16
@@ -98,7 +100,7 @@ class GiftSbox(BitGraphPrimitive):
 
     def __init__(self, number_of_rounds=None, block_bit_size=128):
         if block_bit_size not in (64, 128):
-            raise ValueError('block_bit_size must be 64 or 128')
+            raise ValueError("block_bit_size must be 64 or 128")
         if number_of_rounds is None:
             number_of_rounds = 28 if block_bit_size == 64 else 40
 
@@ -220,8 +222,12 @@ class GiftSbox(BitGraphPrimitive):
         # Si = permutation_i(Si)
         for i in range(STATE_NUM):
             inputs_id, inputs_pos = get_inputs_parameter([state[i]])
-            self.add_permutation_component(inputs_id, inputs_pos, self.state_word_size, deepcopy(self.p_box[i]))
-            state[i] = BitState([self.get_current_component_id()], [list(range(self.state_word_size))])
+            self.add_permutation_component(
+                inputs_id, inputs_pos, self.state_word_size, deepcopy(self.p_box[i])
+            )
+            state[i] = BitState(
+                [self.get_current_component_id()], [list(range(self.state_word_size))]
+            )
 
         # addroundkey
         key_word_u = 1 if self.state_bit_size == 64 else 2
@@ -229,11 +235,15 @@ class GiftSbox(BitGraphPrimitive):
 
         inputs_id, inputs_pos = get_inputs_parameter([state[key_word_u], round_key_u])
         self.add_xor_component(inputs_id, inputs_pos, self.state_word_size)
-        state[key_word_u] = BitState([self.get_current_component_id()], [list(range(self.state_word_size))])
+        state[key_word_u] = BitState(
+            [self.get_current_component_id()], [list(range(self.state_word_size))]
+        )
 
         inputs_id, inputs_pos = get_inputs_parameter([state[key_word_v], round_key_v])
         self.add_xor_component(inputs_id, inputs_pos, self.state_word_size)
-        state[key_word_v] = BitState([self.get_current_component_id()], [list(range(self.state_word_size))])
+        state[key_word_v] = BitState(
+            [self.get_current_component_id()], [list(range(self.state_word_size))]
+        )
 
         # S3 = S3 xor ci
         # add round constant

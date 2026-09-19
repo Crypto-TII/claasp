@@ -15,9 +15,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
+from claasp_next.graph.bit_builder import (
+    BitGraphPrimitive,
+    add_intermediate_output_component_latin_dances_permutations,
+    get_2d_array_element_from_1d_array_index,
+    get_input_bit_positions_latin_dances,
+    init_state_latin_dances,
+    set_2d_array_element_from_1d_array_index,
+)
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import init_state_latin_dances, get_2d_array_element_from_1d_array_index, set_2d_array_element_from_1d_array_index, get_input_bit_positions_latin_dances, add_intermediate_output_component_latin_dances_permutations
 
 COLUMNS = [[0, 4, 8, 12], [1, 5, 9, 13], [2, 6, 10, 14], [3, 7, 11, 15]]
 DIAGONALS = [[0, 5, 10, 15], [1, 6, 11, 12], [2, 7, 8, 13], [3, 4, 9, 14]]
@@ -27,6 +33,7 @@ PARAMETERS_CONFIGURATION_LIST = [
     {"number_of_rounds": 14},
     {"number_of_rounds": 10},
 ]
+
 
 class Forro(BitGraphPrimitive):
     """
@@ -59,7 +66,7 @@ class Forro(BitGraphPrimitive):
         state_of_components=None,
         inputs=None,
         primitive_inputs_bit_size=None,
-        rotations=[10, 27, 8],
+        rotations=(10, 27, 8),
         word_size=32,
     ):
         self.block_bit_size = word_size * 16
@@ -73,7 +80,9 @@ class Forro(BitGraphPrimitive):
             family_name="forro_permutation",
             primitive_type=PERMUTATION,
             primitive_inputs=inputs if inputs else [INPUT_PLAINTEXT],
-            primitive_inputs_bit_size=primitive_inputs_bit_size if inputs else [self.block_bit_size],
+            primitive_inputs_bit_size=primitive_inputs_bit_size
+            if inputs
+            else [self.block_bit_size],
             primitive_output_bit_size=self.block_bit_size,
         )
 
@@ -91,7 +100,9 @@ class Forro(BitGraphPrimitive):
         for round_index in range(number_of_rounds):
             self.add_round()
             self._round_function(round_index)
-            add_intermediate_output_component_latin_dances_permutations(self, round_index, number_of_rounds)
+            add_intermediate_output_component_latin_dances_permutations(
+                self, round_index, number_of_rounds
+            )
 
     def _round_function(self, round_index):
         group = COLUMNS if round_index % 2 == 0 else DIAGONALS
@@ -133,14 +144,16 @@ class Forro(BitGraphPrimitive):
     def _modadd(self, x, y, word_size):
         return self.add_modadd_component(
             [x.id, y.id],
-            get_input_bit_positions_latin_dances(x, word_size) + get_input_bit_positions_latin_dances(y, word_size),
+            get_input_bit_positions_latin_dances(x, word_size)
+            + get_input_bit_positions_latin_dances(y, word_size),
             word_size,
         )
 
     def _xor(self, x, y, word_size):
         return self.add_xor_component(
             [x.id, y.id],
-            get_input_bit_positions_latin_dances(x, word_size) + get_input_bit_positions_latin_dances(y, word_size),
+            get_input_bit_positions_latin_dances(x, word_size)
+            + get_input_bit_positions_latin_dances(y, word_size),
             word_size,
         )
 

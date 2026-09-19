@@ -26,8 +26,7 @@ seen like a symmetric primitive whose plaintext is the initial state and key is
 the input.
 """
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import HASH_FUNCTION, INPUT_MESSAGE
 
 PARAMETERS_CONFIGURATION_LIST = [
@@ -164,7 +163,9 @@ class SHA2(BitGraphPrimitive):
 
         Kt = self.add_constant_component(self.word_size, K[key_for_K_dict][0])
 
-        initial_state = [self.add_constant_component(self.word_size, state) for state in H[self.output_bit_size]]
+        initial_state = [
+            self.add_constant_component(self.word_size, state) for state in H[self.output_bit_size]
+        ]
         a = initial_state[0]
         b = initial_state[1]
         c = initial_state[2]
@@ -215,18 +216,24 @@ class SHA2(BitGraphPrimitive):
     def add_and_component_sha2(self, component_0, component_1):
         """Add the and component sha2 stage to this primitive's typed operation graph."""
         return self.add_and_component(
-            [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
+            [component_0.id, component_1.id],
+            [list(range(self.word_size)), list(range(self.word_size))],
+            self.word_size,
         )
 
     def add_modadd_component_sha2(self, component_0, component_1):
         """Add the modadd component sha2 stage to this primitive's typed operation graph."""
         return self.add_modadd_component(
-            [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
+            [component_0.id, component_1.id],
+            [list(range(self.word_size)), list(range(self.word_size))],
+            self.word_size,
         )
 
     def add_rotate_component_sha2(self, component, amount):
         """Add the rotate component sha2 stage to this primitive's typed operation graph."""
-        return self.add_rotate_component([component.id], [list(range(self.word_size))], self.word_size, amount)
+        return self.add_rotate_component(
+            [component.id], [list(range(self.word_size))], self.word_size, amount
+        )
 
     def add_round_output_component_sha2(self, a, b, c, d, e, f, g, h):
         """Add the round output component sha2 stage to this primitive's typed operation graph."""
@@ -239,7 +246,9 @@ class SHA2(BitGraphPrimitive):
     def add_xor_component_sha2(self, component_0, component_1):
         """Add the xor component sha2 stage to this primitive's typed operation graph."""
         return self.add_xor_component(
-            [component_0.id, component_1.id], [list(range(self.word_size)), list(range(self.word_size))], self.word_size
+            [component_0.id, component_1.id],
+            [list(range(self.word_size)), list(range(self.word_size))],
+            self.word_size,
         )
 
     def compute_bsig0_bsig1(self, component_0, component_1):
@@ -250,7 +259,9 @@ class SHA2(BitGraphPrimitive):
             ROTR_22 = self.add_rotate_component_sha2(component_0, 22)
 
             BSIG0 = self.add_xor_component(
-                [ROTR_2.id, ROTR_13.id, ROTR_22.id], [list(range(self.word_size)) for _ in range(3)], self.word_size
+                [ROTR_2.id, ROTR_13.id, ROTR_22.id],
+                [list(range(self.word_size)) for _ in range(3)],
+                self.word_size,
             )
 
             ROTR_6 = self.add_rotate_component_sha2(component_1, 6)
@@ -258,7 +269,9 @@ class SHA2(BitGraphPrimitive):
             ROTR_25 = self.add_rotate_component_sha2(component_1, 25)
 
             BSIG1 = self.add_xor_component(
-                [ROTR_6.id, ROTR_11.id, ROTR_25.id], [list(range(self.word_size)) for _ in range(3)], self.word_size
+                [ROTR_6.id, ROTR_11.id, ROTR_25.id],
+                [list(range(self.word_size)) for _ in range(3)],
+                self.word_size,
             )
 
         elif self.output_bit_size in (384, 512):
@@ -267,7 +280,9 @@ class SHA2(BitGraphPrimitive):
             ROTR_39 = self.add_rotate_component_sha2(component_0, 39)
 
             BSIG0 = self.add_xor_component(
-                [ROTR_28.id, ROTR_34.id, ROTR_39.id], [list(range(self.word_size)) for _ in range(3)], self.word_size
+                [ROTR_28.id, ROTR_34.id, ROTR_39.id],
+                [list(range(self.word_size)) for _ in range(3)],
+                self.word_size,
             )
 
             ROTR_14 = self.add_rotate_component_sha2(component_1, 14)
@@ -275,7 +290,9 @@ class SHA2(BitGraphPrimitive):
             ROTR_41 = self.add_rotate_component_sha2(component_1, 41)
 
             BSIG1 = self.add_xor_component(
-                [ROTR_14.id, ROTR_18.id, ROTR_41.id], [list(range(self.word_size)) for _ in range(3)], self.word_size
+                [ROTR_14.id, ROTR_18.id, ROTR_41.id],
+                [list(range(self.word_size)) for _ in range(3)],
+                self.word_size,
             )
 
         return BSIG0, BSIG1
@@ -295,43 +312,77 @@ class SHA2(BitGraphPrimitive):
         x_AND_z = self.add_and_component_sha2(x, z)
 
         return self.add_xor_component(
-            [x_AND_y.id, y_AND_z.id, x_AND_z.id], [list(range(self.word_size)) for _ in range(3)], self.word_size
+            [x_AND_y.id, y_AND_z.id, x_AND_z.id],
+            [list(range(self.word_size)) for _ in range(3)],
+            self.word_size,
         )
 
     def compute_ssig0_ssig1(self, W, t):
         """Construct the ssig0 ssig1 stage in this primitive's typed operation graph."""
         if self.output_bit_size in (224, 256):
-            ROTR_7 = self.add_rotate_component([W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 7)
-            ROTR_18 = self.add_rotate_component([W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 18)
-            SHR_3 = self.add_shift_component([W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 3)
-
-            SSIG0 = self.add_xor_component(
-                [ROTR_7.id, ROTR_18.id, SHR_3.id], [list(range(self.word_size)) for _ in range(3)], self.word_size
+            ROTR_7 = self.add_rotate_component(
+                [W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 7
+            )
+            ROTR_18 = self.add_rotate_component(
+                [W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 18
+            )
+            SHR_3 = self.add_shift_component(
+                [W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 3
             )
 
-            ROTR_17 = self.add_rotate_component([W[t - 2].id], W[t - 2].input_bit_positions, self.word_size, 17)
-            ROTR_19 = self.add_rotate_component([W[t - 2].id], W[t - 2].input_bit_positions, self.word_size, 19)
-            SHR_10 = self.add_shift_component([W[t - 2].id], W[t - 2].input_bit_positions, self.word_size, 10)
+            SSIG0 = self.add_xor_component(
+                [ROTR_7.id, ROTR_18.id, SHR_3.id],
+                [list(range(self.word_size)) for _ in range(3)],
+                self.word_size,
+            )
+
+            ROTR_17 = self.add_rotate_component(
+                [W[t - 2].id], W[t - 2].input_bit_positions, self.word_size, 17
+            )
+            ROTR_19 = self.add_rotate_component(
+                [W[t - 2].id], W[t - 2].input_bit_positions, self.word_size, 19
+            )
+            SHR_10 = self.add_shift_component(
+                [W[t - 2].id], W[t - 2].input_bit_positions, self.word_size, 10
+            )
 
             SSIG1 = self.add_xor_component(
-                [ROTR_17.id, ROTR_19.id, SHR_10.id], [list(range(self.word_size)) for _ in range(3)], self.word_size
+                [ROTR_17.id, ROTR_19.id, SHR_10.id],
+                [list(range(self.word_size)) for _ in range(3)],
+                self.word_size,
             )
 
         elif self.output_bit_size in (384, 512):
-            ROTR_1 = self.add_rotate_component([W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 1)
-            ROTR_8 = self.add_rotate_component([W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 8)
-            SHR_7 = self.add_shift_component([W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 7)
-
-            SSIG0 = self.add_xor_component(
-                [ROTR_1.id, ROTR_8.id, SHR_7.id], [list(range(self.word_size)) for _ in range(3)], self.word_size
+            ROTR_1 = self.add_rotate_component(
+                [W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 1
+            )
+            ROTR_8 = self.add_rotate_component(
+                [W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 8
+            )
+            SHR_7 = self.add_shift_component(
+                [W[t - 15].id], W[t - 15].input_bit_positions, self.word_size, 7
             )
 
-            ROTR_19 = self.add_rotate_component([W[t - 2].id], W[t - 2].input_bit_positions, self.word_size, 19)
-            ROTR_61 = self.add_rotate_component([W[t - 2].id], W[t - 2].input_bit_positions, self.word_size, 61)
-            SHR_6 = self.add_shift_component([W[t - 2].id], W[t - 2].input_bit_positions, self.word_size, 6)
+            SSIG0 = self.add_xor_component(
+                [ROTR_1.id, ROTR_8.id, SHR_7.id],
+                [list(range(self.word_size)) for _ in range(3)],
+                self.word_size,
+            )
+
+            ROTR_19 = self.add_rotate_component(
+                [W[t - 2].id], W[t - 2].input_bit_positions, self.word_size, 19
+            )
+            ROTR_61 = self.add_rotate_component(
+                [W[t - 2].id], W[t - 2].input_bit_positions, self.word_size, 61
+            )
+            SHR_6 = self.add_shift_component(
+                [W[t - 2].id], W[t - 2].input_bit_positions, self.word_size, 6
+            )
 
             SSIG1 = self.add_xor_component(
-                [ROTR_19.id, ROTR_61.id, SHR_6.id], [list(range(self.word_size)) for _ in range(3)], self.word_size
+                [ROTR_19.id, ROTR_61.id, SHR_6.id],
+                [list(range(self.word_size)) for _ in range(3)],
+                self.word_size,
             )
 
         return SSIG0, SSIG1

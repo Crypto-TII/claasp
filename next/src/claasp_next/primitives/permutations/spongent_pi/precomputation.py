@@ -17,11 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT
-from claasp_next.graph.bit_builder import get_inputs_parameter
 
 SBOX_CELL_SIZE = 8
 PARAMETERS_CONFIGURATION_LIST = [
@@ -131,7 +128,9 @@ class SpongentPiPrecomputation(BitGraphPrimitive):
             self.icounter_iv_rev = ICOUNTER_IV_176_REV
             self.permute = PERMUTE_176
         else:
-            print("The parameter state_bit_size = ", str(self.state_bit_size), " is not implemented.")
+            print(
+                "The parameter state_bit_size = ", str(self.state_bit_size), " is not implemented."
+            )
             return
 
         super().__init__(
@@ -145,7 +144,11 @@ class SpongentPiPrecomputation(BitGraphPrimitive):
         # state initialization
         state = []
         for i in range(self.state_len):
-            state.append(BitState([INPUT_PLAINTEXT], [[k + i * SBOX_CELL_SIZE for k in range(SBOX_CELL_SIZE)]]))
+            state.append(
+                BitState(
+                    [INPUT_PLAINTEXT], [[k + i * SBOX_CELL_SIZE for k in range(SBOX_CELL_SIZE)]]
+                )
+            )
 
         for round_number in range(number_of_rounds):
             # round function
@@ -172,18 +175,24 @@ class SpongentPiPrecomputation(BitGraphPrimitive):
         icounter = BitState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
         inputs_id, inputs_pos = get_inputs_parameter([state[self.state_len - 1], icounter])
         self.add_xor_component(inputs_id, inputs_pos, SBOX_CELL_SIZE)
-        state[self.state_len - 1] = BitState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
+        state[self.state_len - 1] = BitState(
+            [self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))]
+        )
 
         # state[0] = state[0] xor reverse(0|icounter)
         self.add_constant_component(SBOX_CELL_SIZE, self.icounter_iv_rev[r])
-        reverse_icounter = BitState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
+        reverse_icounter = BitState(
+            [self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))]
+        )
         inputs_id, inputs_pos = get_inputs_parameter([state[0], reverse_icounter])
         self.add_xor_component(inputs_id, inputs_pos, SBOX_CELL_SIZE)
         state[0] = BitState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
 
         # state[i] = sbox(state[i])
         for i in range(self.state_len):
-            self.add_sbox_component(state[i].id, state[i].input_bit_positions, SBOX_CELL_SIZE, S_BOX)
+            self.add_sbox_component(
+                state[i].id, state[i].input_bit_positions, SBOX_CELL_SIZE, S_BOX
+            )
             state[i] = BitState([self.get_current_component_id()], [list(range(SBOX_CELL_SIZE))])
 
         # state[j] = permute(state[j])
@@ -194,7 +203,8 @@ class SpongentPiPrecomputation(BitGraphPrimitive):
         self.add_permutation_component(inputs_id, inputs_pos, self.state_bit_size, self.permute)
         for i in range(self.state_len):
             state[i] = BitState(
-                [self.get_current_component_id()], [[k + i * SBOX_CELL_SIZE for k in range(SBOX_CELL_SIZE)]]
+                [self.get_current_component_id()],
+                [[k + i * SBOX_CELL_SIZE for k in range(SBOX_CELL_SIZE)]],
             )
 
         return state

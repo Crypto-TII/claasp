@@ -3,25 +3,48 @@ import random
 import pytest
 
 from claasp_next import (
-    Bit, Primitive, PrimitiveKind, TransformationError,
-    TransformationFailureReason, ValueType, Word, invert_primitive,
+    Bit,
+    Primitive,
+    PrimitiveKind,
+    TransformationError,
+    TransformationFailureReason,
+    ValueType,
+    Word,
+    invert_primitive,
     partial_inverse,
 )
-from claasp_next.components import Identity, Permutation, Shift, Xor
 from claasp_next.catalogue import catalogue
+from claasp_next.components import Identity, Permutation, Shift, Xor
 from claasp_next.primitives import Present, Simon, Speck
 from claasp_next.primitives._catalogue_exports import load_export
-
 
 PLAINTEXT = 0x6574694C
 KEY = 0x1918111009080100
 
 REVIEWED_RETAINED_INPUT_PRIMITIVES = (
-    "Add", "BinaryAffineMap", "BitVectorSBox", "BitwiseNot",
-    "ChaChaKeystreamBlock", "CipherFour", "FeedbackRegister", "Heys",
-    "IDEAMultiply", "Identity", "LinearMap", "ModularAdd",
-    "ModularSubtract", "Permutation", "Power", "Rotate", "SBox", "ToyAES",
-    "ToyFeistel", "ToySPN1", "ToySPN2", "VariableRotate", "Xor",
+    "Add",
+    "BinaryAffineMap",
+    "BitVectorSBox",
+    "BitwiseNot",
+    "ChaChaKeystreamBlock",
+    "CipherFour",
+    "FeedbackRegister",
+    "Heys",
+    "IDEAMultiply",
+    "Identity",
+    "LinearMap",
+    "ModularAdd",
+    "ModularSubtract",
+    "Permutation",
+    "Power",
+    "Rotate",
+    "SBox",
+    "ToyAES",
+    "ToyFeistel",
+    "ToySPN1",
+    "ToySPN2",
+    "VariableRotate",
+    "Xor",
 )
 
 
@@ -43,11 +66,13 @@ def test_reviewed_retained_input_obligations_round_trip(primitive_name):
     record = catalogue.primitive(primitive_name)
     parameters = dict(record.parameter_sets[0].values)
     primitive = load_export(primitive_name)(**parameters)
-    by_role = {
-        primitive.input_descriptor(name).role: name for name in primitive.input_ports
-    }
+    by_role = {primitive.input_descriptor(name).role: name for name in primitive.input_ports}
     recover_input = next(
-        (by_role[role] for role in ("plaintext", "state", "input_state", "input") if role in by_role),
+        (
+            by_role[role]
+            for role in ("plaintext", "state", "input_state", "input")
+            if role in by_role
+        ),
         next(iter(primitive.input_ports)),
     )
     inverse = primitive.inverse(recover_input).primitive
@@ -74,7 +99,10 @@ def test_reviewed_retained_input_obligations_round_trip(primitive_name):
     ),
 )
 def test_representative_bit_and_feistel_primitive_inverses_match_fixed_evidence(
-    primitive, plaintext, key, ciphertext,
+    primitive,
+    plaintext,
+    key,
+    ciphertext,
 ):
     assert primitive.evaluate(plaintext, key) == ciphertext
     assert invert_primitive(primitive).primitive.evaluate(ciphertext, key) == plaintext
@@ -95,7 +123,8 @@ def test_inverse_preserves_realization_and_records_transformation_separately():
 
 def test_partial_inverse_recovers_through_equivalent_fanout_wires():
     graph = Primitive(
-        "fanout", {"left": ValueType(Word(8), (1,)), "right": ValueType(Word(8), (1,))},
+        "fanout",
+        {"left": ValueType(Word(8), (1,)), "right": ValueType(Word(8), (1,))},
     )
     graph.add_round()
     first = graph.add_component(Xor(graph.inputs()))
@@ -103,7 +132,8 @@ def test_partial_inverse_recovers_through_equivalent_fanout_wires():
     graph.set_output(second)
 
     inverse = partial_inverse(
-        graph, graph.input("left"),
+        graph,
+        graph.input("left"),
         known={"observed": graph.output, "right": graph.input("right")},
     ).primitive
 
@@ -114,7 +144,8 @@ def test_partial_inverse_recovers_through_equivalent_fanout_wires():
 
 def test_partial_inverse_can_recover_an_internal_wire():
     graph = Primitive(
-        "internal", {"left": ValueType(Word(8), (1,)), "right": ValueType(Word(8), (1,))},
+        "internal",
+        {"left": ValueType(Word(8), (1,)), "right": ValueType(Word(8), (1,))},
     )
     graph.add_round()
     mixed = graph.add_component(Xor(graph.inputs()))
@@ -122,7 +153,8 @@ def test_partial_inverse_can_recover_an_internal_wire():
     graph.set_output(rotated)
 
     inverse = partial_inverse(
-        graph, mixed,
+        graph,
+        mixed,
         known={"observed": graph.output, "right": graph.input("right")},
     ).primitive
     assert inverse.evaluate(0xA5, 0x3C) == 0x99
@@ -130,7 +162,8 @@ def test_partial_inverse_can_recover_an_internal_wire():
 
 def test_joint_xor_region_recovers_multiple_predecessors_without_a_solver():
     graph = Primitive(
-        "joint", {"state": ValueType(Word(4), (3,))},
+        "joint",
+        {"state": ValueType(Word(4), (3,))},
         kind=PrimitiveKind.PERMUTATION,
     )
     graph.add_round()
@@ -178,13 +211,15 @@ def test_stalls_report_multiple_predecessors_information_loss_and_disconnection(
     assert loss.value.source_ids == ("loss",)
 
     disconnected = Primitive(
-        "disconnected", {"left": ValueType(Bit(), (1,)), "right": ValueType(Bit(), (1,))},
+        "disconnected",
+        {"left": ValueType(Bit(), (1,)), "right": ValueType(Bit(), (1,))},
     )
     disconnected.add_round()
     disconnected.set_output(disconnected.input("right"))
     with pytest.raises(TransformationError) as absent:
         partial_inverse(
-            disconnected, disconnected.input("left"),
+            disconnected,
+            disconnected.input("left"),
             known={"observed": disconnected.output},
         )
     assert absent.value.reason is TransformationFailureReason.DISCONNECTED_DEPENDENCY
@@ -194,6 +229,7 @@ def test_zero_input_primitive_reports_an_ambiguous_boundary():
     graph = Primitive("constant", {})
     graph.add_round()
     from claasp_next.components import Constant
+
     graph.set_output(graph.add_component(Constant(ValueType(Bit(), (1,)), (1,))))
 
     with pytest.raises(TransformationError) as caught:

@@ -1,15 +1,20 @@
 import pytest
 
 from claasp_next import (
-    CompositeBuilder, PairedTransformationResult, Primitive, PrimeField,
-    TransformationError, TransformationFailureReason, ValueType, Word,
+    CompositeBuilder,
+    PairedTransformationResult,
+    PrimeField,
+    Primitive,
+    TransformationError,
+    TransformationFailureReason,
+    ValueType,
+    Word,
     paired_xor_primitive,
 )
 from claasp_next.components import Identity
 from claasp_next.graph import as_selection
 from claasp_next.primitives import Present, Speck
 from claasp_next.representations.constraints.sat import BooleanCNFModel
-
 
 LEFT = 0x6574694C
 RIGHT = 0x6574694D
@@ -40,19 +45,25 @@ def test_single_key_pair_matches_fixed_output_and_all_published_differences():
 
     assert isinstance(result, PairedTransformationResult)
     assert paired.evaluate(LEFT, RIGHT, KEY) == 0xFAED5B91
-    assert paired.evaluate(LEFT, RIGHT, KEY) == source.evaluate(LEFT, KEY) ^ source.evaluate(RIGHT, KEY)
+    assert paired.evaluate(LEFT, RIGHT, KEY) == source.evaluate(LEFT, KEY) ^ source.evaluate(
+        RIGHT, KEY
+    )
     assert _value(paired, evaluation, result.differences_by_input["plaintext"]) == (0, LEFT ^ RIGHT)
     assert tuple(
-        _value(paired, evaluation, difference)
-        for difference in result.round_differences
+        _value(paired, evaluation, difference) for difference in result.round_differences
     ) == tuple(
-        tuple(left ^ right for left, right in zip(
-            _observation_value(source, left_trace, observation),
-            _observation_value(source, right_trace, observation),
-        ))
+        tuple(
+            left ^ right
+            for left, right in zip(
+                _observation_value(source, left_trace, observation),
+                _observation_value(source, right_trace, observation),
+            )
+        )
         for observation in source.round_states
     )
-    assert all(_value(paired, evaluation, difference) == (0,) for difference in result.key_differences)
+    assert all(
+        _value(paired, evaluation, difference) == (0,) for difference in result.key_differences
+    )
 
 
 def test_related_key_pair_has_independent_inputs_and_fixed_output_difference():
@@ -61,7 +72,10 @@ def test_related_key_pair_has_independent_inputs_and_fixed_output_difference():
     paired = result.primitive
 
     assert tuple(paired.input_ports) == (
-        "left_plaintext", "right_plaintext", "left_key", "right_key",
+        "left_plaintext",
+        "right_plaintext",
+        "left_key",
+        "right_key",
     )
     assert paired.evaluate(LEFT, RIGHT, KEY, RELATED_KEY) == 0xD64FCE87
     assert paired.evaluate(LEFT, RIGHT, KEY, RELATED_KEY) == (
@@ -90,13 +104,18 @@ def test_nested_source_scopes_remain_nested_in_each_paired_realization():
     block.set_output("output", copied)
     source = Primitive("scoped", {"state": ValueType(Word(4), (1,))})
     source.add_round()
-    instance = source.add_composite(block.build(), {"value": source.input("state")}, scope_id="block")
+    instance = source.add_composite(
+        block.build(), {"value": source.input("state")}, scope_id="block"
+    )
     source.set_output(instance.output())
 
     paired = paired_xor_primitive(source)
 
     assert tuple(scope.path for scope in paired.primitive.scopes) == (
-        "left", "left/block", "right", "right/block",
+        "left",
+        "left/block",
+        "right",
+        "right/block",
     )
     assert paired.primitive.evaluate(0xA, 0x3) == 0x9
 

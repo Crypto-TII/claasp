@@ -10,21 +10,32 @@ from claasp_next.components.feedback import FeedbackRegister, FeedbackTerm
 from claasp_next.components.structural import Constant, Identity, Permutation
 from claasp_next.components.substitution import BitVectorSBox, SBox
 from claasp_next.components.word import (
-    BitwiseAnd, BitwiseNot, BitwiseOr, IDEAMultiply, ModularAdd, ModularMultiply,
-    ModularSubtract, Rotate, Shift, VariableRotate, VariableShift, Xor,
+    BitwiseAnd,
+    BitwiseNot,
+    BitwiseOr,
+    IDEAMultiply,
+    ModularAdd,
+    ModularMultiply,
+    ModularSubtract,
+    Rotate,
+    Shift,
+    VariableRotate,
+    VariableShift,
+    Xor,
 )
-from claasp_next.graph.primitive import Primitive
 from claasp_next.graph.component import Component
-from claasp_next.semantics import CONCRETE
+from claasp_next.graph.primitive import Primitive
 from claasp_next.provenance import DriverIdentity, DriverKind, ResultProvenance
+from claasp_next.semantics import CONCRETE
 
 RuntimeValue = tuple[int, ...]
 Handler = Callable[[Component, tuple[RuntimeValue, ...]], RuntimeValue]
+
+
 @lru_cache(maxsize=64)
 def _binary_row_masks(matrix):
     return tuple(
-        sum((coefficient & 1) << column for column, coefficient in enumerate(row))
-        for row in matrix
+        sum((coefficient & 1) << column for column, coefficient in enumerate(row)) for row in matrix
     )
 
 
@@ -114,7 +125,9 @@ class ScalarExecutionDriver:
             raise TypeError("handler must be callable")
         self._handlers[component_type] = handler
 
-    def evaluate(self, primitive: Primitive, inputs: Mapping[str, Sequence[int]]) -> EvaluationResult:
+    def evaluate(
+        self, primitive: Primitive, inputs: Mapping[str, Sequence[int]]
+    ) -> EvaluationResult:
         """Compute the evaluate for this public typed contract."""
 
         if not isinstance(primitive, Primitive):
@@ -124,7 +137,9 @@ class ScalarExecutionDriver:
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
             unexpected = sorted(actual_names - expected_names)
-            raise ValueError(f"primitive inputs do not match: missing={missing}, unexpected={unexpected}")
+            raise ValueError(
+                f"primitive inputs do not match: missing={missing}, unexpected={unexpected}"
+            )
 
         values: dict[str, RuntimeValue] = {}
         for name, port in primitive.input_ports.items():
@@ -158,11 +173,11 @@ class ScalarExecutionDriver:
             output = primitive.resolve_selection(primitive.output, values, binding_cache)
         for binding in primitive.bindings:
             primitive.resolve_selection(binding.output.select_all(), values, binding_cache)
-        annotation = GraphAnnotation.from_values(
-            primitive, CONCRETE, values, output=output
-        )
+        annotation = GraphAnnotation.from_values(primitive, CONCRETE, values, output=output)
         return EvaluationResult(
-            dict(values) | dict(binding_cache), output, ExecutionTrace(annotation),
+            dict(values) | dict(binding_cache),
+            output,
+            ExecutionTrace(annotation),
             ResultProvenance.for_primitive(primitive, self.identity),
         )
 
@@ -182,7 +197,9 @@ class ScalarExecutionDriver:
         return inputs[0]
 
     @staticmethod
-    def _evaluate_permutation(component: Permutation, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+    def _evaluate_permutation(
+        component: Permutation, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
         return tuple(inputs[0][position] for position in component.mapping)
 
     @staticmethod
@@ -230,11 +247,15 @@ class ScalarExecutionDriver:
         return tuple(output)
 
     @classmethod
-    def _evaluate_multiply(cls, component: Multiply, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+    def _evaluate_multiply(
+        cls, component: Multiply, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
         domain = component.output_type.domain
         output = list(inputs[0])
         for operand in inputs[1:]:
-            output = [cls._multiply_scalar(domain, left, right) for left, right in zip(output, operand)]
+            output = [
+                cls._multiply_scalar(domain, left, right) for left, right in zip(output, operand)
+            ]
         return tuple(output)
 
     @classmethod
@@ -243,7 +264,9 @@ class ScalarExecutionDriver:
         return tuple(cls._power_scalar(domain, value, component.exponent) for value in inputs[0])
 
     @classmethod
-    def _evaluate_linear_map(cls, component: LinearMap, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
+    def _evaluate_linear_map(
+        cls, component: LinearMap, inputs: tuple[RuntimeValue, ...]
+    ) -> RuntimeValue:
         from claasp_next.domains import Bit
 
         domain = component.inputs[0].value_type.domain
@@ -251,12 +274,14 @@ class ScalarExecutionDriver:
         if isinstance(domain, Bit):
             packed = sum((value & 1) << index for index, value in enumerate(vector))
             return tuple(
-                (packed & mask).bit_count() & 1
-                for mask in _binary_row_masks(component.matrix)
+                (packed & mask).bit_count() & 1 for mask in _binary_row_masks(component.matrix)
             )
         output = []
         for row in component.matrix:
-            products = [cls._multiply_scalar(domain, coefficient, value) for coefficient, value in zip(row, vector)]
+            products = [
+                cls._multiply_scalar(domain, coefficient, value)
+                for coefficient, value in zip(row, vector)
+            ]
             accumulator = products[0]
             for product in products[1:]:
                 accumulator = cls._add_scalar(domain, accumulator, product)
@@ -299,17 +324,13 @@ class ScalarExecutionDriver:
         encoded_zero = 1 << component.output_type.domain.width
         modulus = encoded_zero + 1
         encoded_inputs = [
-            [encoded_zero if value == 0 else value for value in operand]
-            for operand in inputs
+            [encoded_zero if value == 0 else value for value in operand] for operand in inputs
         ]
         for index in component.inverse_inputs:
             encoded_inputs[index] = [pow(value, -1, modulus) for value in encoded_inputs[index]]
         output = encoded_inputs[0]
         for operand in encoded_inputs[1:]:
-            output = [
-                (left * right) % modulus
-                for left, right in zip(output, operand)
-            ]
+            output = [(left * right) % modulus for left, right in zip(output, operand)]
         return tuple(0 if value == encoded_zero else value for value in output)
 
     @staticmethod
@@ -352,11 +373,17 @@ class ScalarExecutionDriver:
         if amount == 0:
             return inputs[0]
         if component.direction == "left":
-            return tuple(((value << amount) | (value >> (width - amount))) & mask for value in inputs[0])
-        return tuple(((value >> amount) | (value << (width - amount))) & mask for value in inputs[0])
+            return tuple(
+                ((value << amount) | (value >> (width - amount))) & mask for value in inputs[0]
+            )
+        return tuple(
+            ((value >> amount) | (value << (width - amount))) & mask for value in inputs[0]
+        )
 
     @staticmethod
-    def _shift_values(values: RuntimeValue, width: int, amount: int, direction: str) -> RuntimeValue:
+    def _shift_values(
+        values: RuntimeValue, width: int, amount: int, direction: str
+    ) -> RuntimeValue:
         if amount >= width:
             return (0,) * len(values)
         mask = (1 << width) - 1
@@ -375,9 +402,7 @@ class ScalarExecutionDriver:
         cls, component: VariableShift, inputs: tuple[RuntimeValue, ...]
     ) -> RuntimeValue:
         width = component.output_type.domain.width
-        return cls._shift_values(
-            inputs[0], width, inputs[1][0] % width, component.direction
-        )
+        return cls._shift_values(inputs[0], width, inputs[1][0] % width, component.direction)
 
     @staticmethod
     def _evaluate_variable_rotate(
@@ -389,8 +414,12 @@ class ScalarExecutionDriver:
             return inputs[0]
         mask = (1 << width) - 1
         if component.direction == "left":
-            return tuple(((value << amount) | (value >> (width - amount))) & mask for value in inputs[0])
-        return tuple(((value >> amount) | (value << (width - amount))) & mask for value in inputs[0])
+            return tuple(
+                ((value << amount) | (value >> (width - amount))) & mask for value in inputs[0]
+            )
+        return tuple(
+            ((value >> amount) | (value << (width - amount))) & mask for value in inputs[0]
+        )
 
     @classmethod
     def _evaluate_feedback_term(cls, domain, term: FeedbackTerm, state: RuntimeValue) -> int:
@@ -420,12 +449,16 @@ class ScalarExecutionDriver:
             start = 0
             for register in component.registers:
                 stop = start + register.length
-                clock = 1 if register.clock is None else cls._evaluate_feedback_polynomial(
-                    domain, register.clock, previous
+                clock = (
+                    1
+                    if register.clock is None
+                    else cls._evaluate_feedback_polynomial(domain, register.clock, previous)
                 )
                 if clock:
-                    feedback = cls._evaluate_feedback_polynomial(domain, register.feedback, previous)
-                    updated[start:stop] = previous[start + 1:stop] + (feedback,)
+                    feedback = cls._evaluate_feedback_polynomial(
+                        domain, register.feedback, previous
+                    )
+                    updated[start:stop] = previous[start + 1 : stop] + (feedback,)
                 start = stop
             state = tuple(updated)
         return state
@@ -451,15 +484,17 @@ class ScalarExecutionDriver:
                 )
                 forbidden = set(starts)
                 if (
-                    register.clock is not None or len(pivot_terms) != 1
+                    register.clock is not None
+                    or len(pivot_terms) != 1
                     or any(
                         forbidden.intersection(term.positions)
-                        for term in register.feedback if term is not pivot_terms[0]
+                        for term in register.feedback
+                        if term is not pivot_terms[0]
                     )
                 ):
                     raise ValueError("feedback transition has no explicit reversible pivot")
                 known_previous = list(current)
-                known_previous[start + 1:stop] = current[start:stop - 1]
+                known_previous[start + 1 : stop] = current[start : stop - 1]
                 known_previous[start] = 0
                 remainder = cls._evaluate_feedback_polynomial(
                     domain,
@@ -480,7 +515,7 @@ class ScalarExecutionDriver:
                         base = binary_field_multiply(domain, base, base)
                         inverse >>= 1
                     recovered = binary_field_multiply(domain, target, scale)
-                previous[start:stop] = [recovered, *current[start:stop - 1]]
+                previous[start:stop] = [recovered, *current[start : stop - 1]]
             state = tuple(previous)
         return state
 
@@ -514,6 +549,7 @@ class ScalarExecutionDriver:
         substituted = component.table[value]
         width = component.output_type.unit_count
         return tuple((substituted >> position) & 1 for position in range(width - 1, -1, -1))
+
 
 # Transitional spelling for code written during the early v5 milestones.
 ScalarEvaluator = ScalarExecutionDriver

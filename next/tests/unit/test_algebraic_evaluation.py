@@ -1,6 +1,6 @@
 import pytest
 
-from claasp_next import BinaryExtensionField, Primitive, PrimeField, ScalarEvaluator, ValueType
+from claasp_next import BinaryExtensionField, PrimeField, Primitive, ScalarEvaluator, ValueType
 from claasp_next.components import Add, BinaryAffineMap, LinearMap, Multiply, Power
 
 

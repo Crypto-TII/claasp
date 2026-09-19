@@ -89,7 +89,10 @@ def deterministic_partition(
         raise ValueError("validation and testing fractions must sum to less than one")
     random = Random(seed)
     strata = (
-        [[index for index, label in enumerate(dataset.labels) if label == value] for value in (0, 1)]
+        [
+            [index for index, label in enumerate(dataset.labels) if label == value]
+            for value in (0, 1)
+        ]
         if stratified
         else [list(range(dataset.sample_count))]
     )
@@ -175,10 +178,14 @@ class NeuralRunProvenance:
             raise ValueError("provenance names and versions must not be empty")
         if not isinstance(partition_seed, int) or isinstance(partition_seed, bool):
             raise TypeError("partition_seed must be an integer")
-        if any(not isinstance(value, (str, int, float, bool, type(None)))
-               for value in (options or {}).values()):
+        if any(
+            not isinstance(value, (str, int, float, bool, type(None)))
+            for value in (options or {}).values()
+        ):
             raise TypeError("provenance option values must be scalar")
-        normalized = tuple(sorted((str(key), repr(value)) for key, value in (options or {}).items()))
+        normalized = tuple(
+            sorted((str(key), repr(value)) for key, value in (options or {}).items())
+        )
         return cls(
             primitive,
             realization,

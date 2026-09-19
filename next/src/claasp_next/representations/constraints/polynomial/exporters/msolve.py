@@ -43,16 +43,16 @@ class MsolveExporter:
         rendered_equations = ",\n".join(equations)
         # The final newline is accepted by current msolve and avoids an EOF
         # parser crash in the msolve 0.6.5 package shipped by Ubuntu 24.04.
-        return "\n".join(
-            (",".join(external_names), str(system.field.modulus), rendered_equations)
-        ) + "\n"
+        return (
+            "\n".join((",".join(external_names), str(system.field.modulus), rendered_equations))
+            + "\n"
+        )
 
     def _polynomial(self, polynomial: Polynomial, names: dict[str, str]) -> str:
         if not polynomial.terms:
             return "0"
         return "+".join(
-            self._term(monomial, coefficient, names)
-            for monomial, coefficient in polynomial.terms
+            self._term(monomial, coefficient, names) for monomial, coefficient in polynomial.terms
         )
 
     def _term(self, monomial: Monomial, coefficient: int, names: dict[str, str]) -> str:

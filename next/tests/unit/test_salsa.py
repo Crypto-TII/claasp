@@ -1,5 +1,5 @@
-from claasp_next.primitives.permutations.salsa import Salsa
 from claasp_next.encoding import units_from_int
+from claasp_next.primitives.permutations.salsa import Salsa
 from claasp_next.representations.execution import BatchEvaluator
 
 

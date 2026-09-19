@@ -18,7 +18,6 @@
 from claasp_next.graph.bit_builder import BitGraphPrimitive
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
-
 BLOCK_BIT_SIZE = 128
 WORD_BIT_SIZE = 32
 NUMBER_OF_KEY_WORDS = 8
@@ -59,6 +58,7 @@ SBOXES = [
     [7, 2, 12, 5, 8, 4, 6, 11, 14, 9, 1, 15, 13, 3, 10, 0],
     [1, 13, 15, 0, 14, 8, 2, 11, 7, 4, 12, 10, 9, 3, 5, 6],
 ]
+
 
 def get_reversed_byte_positions(bit_size):
     """Return the bit positions that reverse the byte order."""
@@ -116,14 +116,10 @@ class Serpent(BitGraphPrimitive):
         number_of_rounds=DEFAULT_NUMBER_OF_ROUNDS,
     ):
         if key_bit_size not in VALID_KEY_BIT_SIZES:
-            raise ValueError(
-                "Incorrect key_bit_size: expected 128, 192 or 256."
-            )
+            raise ValueError("Incorrect key_bit_size: expected 128, 192 or 256.")
 
         if not 1 <= number_of_rounds <= DEFAULT_NUMBER_OF_ROUNDS:
-            raise ValueError(
-                "Incorrect number_of_rounds: expected a value from 1 to 32."
-            )
+            raise ValueError("Incorrect number_of_rounds: expected a value from 1 to 32.")
 
         self.block_bit_size = BLOCK_BIT_SIZE
         self.key_bit_size = key_bit_size
@@ -159,9 +155,7 @@ class Serpent(BitGraphPrimitive):
         round_keys = []
 
         for round_index in range(self.number_of_requested_rounds + 1):
-            round_keys.append(
-                self._add_round_key(prekeys, round_index)
-            )
+            round_keys.append(self._add_round_key(prekeys, round_index))
 
         state = self.add_intermediate_output_component(
             [INPUT_PLAINTEXT],
@@ -226,10 +220,7 @@ class Serpent(BitGraphPrimitive):
         for word_index in range(NUMBER_OF_KEY_WORDS):
             if word_index < user_key_word_count:
                 # Read user-key words starting from the least significant word.
-                start = (
-                    self.key_bit_size
-                    - WORD_BIT_SIZE * (word_index + 1)
-                )
+                start = self.key_bit_size - WORD_BIT_SIZE * (word_index + 1)
 
                 key_words.append(
                     (
@@ -281,8 +272,7 @@ class Serpent(BitGraphPrimitive):
         )
 
         xor_component = self.add_xor_component(
-            [word[0] for word in source_words]
-            + [phi_component.id, index_component.id],
+            [word[0] for word in source_words] + [phi_component.id, index_component.id],
             [word[1] for word in source_words]
             + [
                 list(range(WORD_BIT_SIZE)),
@@ -306,9 +296,7 @@ class Serpent(BitGraphPrimitive):
         """
         first_word_index = NUMBER_OF_KEY_WORDS + 4 * round_index
 
-        source_words = prekeys[
-            first_word_index:first_word_index + 4
-        ]
+        source_words = prekeys[first_word_index : first_word_index + 4]
 
         sbox_index = (3 - round_index) % 8
         sbox_outputs = []
@@ -330,11 +318,7 @@ class Serpent(BitGraphPrimitive):
 
         round_key = self.add_round_key_output_component(
             sbox_outputs * 4,
-            [
-                [output_bit]
-                for output_bit in range(4)
-                for _ in range(WORD_BIT_SIZE)
-            ],
+            [[output_bit] for output_bit in range(4) for _ in range(WORD_BIT_SIZE)],
             BLOCK_BIT_SIZE,
         )
 
@@ -363,11 +347,7 @@ class Serpent(BitGraphPrimitive):
 
         sbox_output = self.add_intermediate_output_component(
             sbox_outputs * 4,
-            [
-                [output_bit]
-                for output_bit in range(4)
-                for _ in range(WORD_BIT_SIZE)
-            ],
+            [[output_bit] for output_bit in range(4) for _ in range(WORD_BIT_SIZE)],
             BLOCK_BIT_SIZE,
             f"sbox_output_{round_index}",
         )

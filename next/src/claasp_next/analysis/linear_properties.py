@@ -64,15 +64,16 @@ def matrix_is_mds(matrix, domain) -> bool:
         for row_indices in combinations(range(size), order):
             for column_indices in combinations(range(size), order):
                 minor = tuple(
-                    tuple(frozen[row][column] for column in column_indices)
-                    for row in row_indices
+                    tuple(frozen[row][column] for column in column_indices) for row in row_indices
                 )
                 if matrix_rank(minor, domain) != order:
                     return False
     return True
 
 
-def exact_branch_number(matrix, domain, *, linear: bool = False, maximum_vectors: int = 65536) -> int | None:
+def exact_branch_number(
+    matrix, domain, *, linear: bool = False, maximum_vectors: int = 65536
+) -> int | None:
     """Return an exact unit branch number, or ``None`` above the safe budget.
 
     Differential propagation uses ``M``. Linear-mask propagation uses
@@ -221,7 +222,10 @@ def apply_matrix(matrix, vector, domain):
         raise ValueError("vector length must match matrix column count")
     _validate_matrix_domain((vector,), domain)
     return tuple(
-        _sum(domain, (_multiply(domain, coefficient, value) for coefficient, value in zip(row, vector)))
+        _sum(
+            domain,
+            (_multiply(domain, coefficient, value) for coefficient, value in zip(row, vector)),
+        )
         for row in frozen
     )
 
@@ -242,7 +246,10 @@ def multiply_matrices(left, right, domain):
         raise ValueError("matrix dimensions do not compose")
     columns = transpose_matrix(right)
     return tuple(
-        tuple(_sum(domain, (_multiply(domain, x, y) for x, y in zip(row, column))) for column in columns)
+        tuple(
+            _sum(domain, (_multiply(domain, x, y) for x, y in zip(row, column)))
+            for column in columns
+        )
         for row in left
     )
 

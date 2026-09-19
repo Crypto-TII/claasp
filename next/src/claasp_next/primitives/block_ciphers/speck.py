@@ -4,7 +4,6 @@ from claasp_next.components import Constant, ModularAdd, Rotate, Xor
 from claasp_next.domains import Word
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
 
-
 PARAMETERS_CONFIGURATION_LIST = (
     {"block_bit_size": 32, "key_bit_size": 64, "number_of_rounds": 22},
     {"block_bit_size": 48, "key_bit_size": 72, "number_of_rounds": 22},
@@ -20,7 +19,11 @@ PARAMETERS_CONFIGURATION_LIST = (
 
 
 def _validate_parameters(
-    block_bit_size, key_bit_size, number_of_rounds, rotation_alpha, rotation_beta,
+    block_bit_size,
+    key_bit_size,
+    number_of_rounds,
+    rotation_alpha,
+    rotation_beta,
 ):
     configuration = Primitive.select_configuration(
         PARAMETERS_CONFIGURATION_LIST,
@@ -66,7 +69,11 @@ class Speck(Primitive):
         rotation_beta: int | None = None,
     ) -> None:
         word_size, key_word_count, rounds, alpha, beta = _validate_parameters(
-            block_bit_size, key_bit_size, number_of_rounds, rotation_alpha, rotation_beta,
+            block_bit_size,
+            key_bit_size,
+            number_of_rounds,
+            rotation_alpha,
+            rotation_beta,
         )
         word_type = ValueType(Word(word_size), (1,))
         super().__init__(
@@ -82,6 +89,7 @@ class Speck(Primitive):
         key = self.input("key")
         schedule = [key[position] for position in range(key_word_count - 2, -1, -1)]
         round_key = key[key_word_count - 1]
+
         def round_function(x, y, key):
             x = self.add_component(Rotate(x, alpha, "right"))
             x = self.add_component(ModularAdd((x, y)))
@@ -107,7 +115,9 @@ class Speck(Primitive):
                 index = round_number % len(schedule)
                 constant = self.add_component(Constant(word_type, (round_number,)))
                 schedule[index], round_key = round_function(
-                    schedule[index], round_key, constant,
+                    schedule[index],
+                    round_key,
+                    constant,
                 )
                 self.add_key_schedule_state(schedule[index], round_key)
 

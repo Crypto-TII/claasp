@@ -1,6 +1,6 @@
 """Exact independent-bit AND differences and signed linear correlations."""
 
-from claasp_next.semantics.cryptanalysis.trails import Transition, TrailKind, XorDifference, XorMask
+from claasp_next.semantics.cryptanalysis.trails import TrailKind, Transition, XorDifference, XorMask
 
 
 class BitwiseAndSemantics:
@@ -22,7 +22,11 @@ class BitwiseAndSemantics:
 
     def _validate(self, *patterns):
         for value in patterns:
-            if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < 1 << self.width:
+            if (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or not 0 <= value < 1 << self.width
+            ):
                 raise ValueError("patterns must fit the AND word width")
 
     def xor_differential(self, left, right, output):
@@ -30,23 +34,34 @@ class BitwiseAndSemantics:
         self._validate(left, right, output)
         active = left | right
         numerator = 0 if output & ~active else 1 << (2 * self.width - active.bit_count())
-        return Transition(TrailKind.XOR_DIFFERENTIAL,
-                          XorDifference((left << self.width) | right, 2 * self.width),
-                          XorDifference(output, self.width), numerator, 1 << (2 * self.width))
+        return Transition(
+            TrailKind.XOR_DIFFERENTIAL,
+            XorDifference((left << self.width) | right, 2 * self.width),
+            XorDifference(output, self.width),
+            numerator,
+            1 << (2 * self.width),
+        )
 
     def xor_linear(self, left, right, output):
         """Return the exact signed XOR-linear transition for two AND inputs."""
         self._validate(left, right, output)
         numerator = 0 if (left | right) & ~output else 1 << (2 * self.width - output.bit_count())
         sign = -1 if numerator and (left & right & output).bit_count() % 2 else 1
-        return Transition(TrailKind.XOR_LINEAR,
-                          XorMask((left << self.width) | right, 2 * self.width),
-                          XorMask(output, self.width), numerator, 1 << (2 * self.width), sign)
+        return Transition(
+            TrailKind.XOR_LINEAR,
+            XorMask((left << self.width) | right, 2 * self.width),
+            XorMask(output, self.width),
+            numerator,
+            1 << (2 * self.width),
+            sign,
+        )
 
     def check(self, transition):
         """Recompute and compare an AND transition independently."""
         left, right = divmod(transition.input_pattern.value, 1 << self.width)
-        expected = (self.xor_linear(left, right, transition.output_pattern.value)
-                    if transition.kind is TrailKind.XOR_LINEAR
-                    else self.xor_differential(left, right, transition.output_pattern.value))
+        expected = (
+            self.xor_linear(left, right, transition.output_pattern.value)
+            if transition.kind is TrailKind.XOR_LINEAR
+            else self.xor_differential(left, right, transition.output_pattern.value)
+        )
         return transition == expected

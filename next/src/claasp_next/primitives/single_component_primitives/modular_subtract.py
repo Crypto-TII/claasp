@@ -2,6 +2,7 @@
 
 from claasp_next.components import ModularSubtract as ModularSubtractComponent
 from claasp_next.graph import Primitive, PrimitiveKind
+
 from ._base import word_inputs
 
 

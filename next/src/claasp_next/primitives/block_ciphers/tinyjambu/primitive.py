@@ -17,13 +17,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from copy import deepcopy
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp_next.primitive_inputs import INPUT_KEY, INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import get_inputs_parameter
 
 STATE_SIZE = 128
 PARAMETERS_CONFIGURATION_LIST = [{"key_bit_size": 128, "number_of_rounds": 640}]
@@ -93,7 +90,9 @@ class TinyJambu(BitGraphPrimitive):
         self.add_and_component(inputs_id, inputs_pos, 1)
         self.add_not_component([self.get_current_component_id()], [[0]], 1)
         temp = BitState([self.get_current_component_id()], [[0]])
-        inputs_id, inputs_pos = get_inputs_parameter([state[0], state[47], state[91], temp, key[(r) % len(key)]])
+        inputs_id, inputs_pos = get_inputs_parameter(
+            [state[0], state[47], state[91], temp, key[(r) % len(key)]]
+        )
         self.add_xor_component(inputs_id, inputs_pos, 1)
         temp = BitState([self.get_current_component_id()], [[0]])
 

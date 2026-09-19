@@ -1,15 +1,31 @@
 import csv
-from io import StringIO
 import json
+from io import StringIO
 
 import pytest
 
 from claasp_next.presentation import (
-    Alignment, Citation, DiagnosticCode, EvidenceClass, FormatSpec,
-    MathematicalProvenance, PresentationDiagnostic, PresentationEvidence,
-    PresentationProvenance, ReportData, ReportSection, Table, TableCell,
-    TableColumn, TableRow, ValueKind, render_csv_table, render_markdown_table,
-    render_section, render_terminal_table, report_data,
+    Alignment,
+    Citation,
+    DiagnosticCode,
+    EvidenceClass,
+    FormatSpec,
+    MathematicalProvenance,
+    PresentationDiagnostic,
+    PresentationEvidence,
+    PresentationProvenance,
+    ReportData,
+    ReportSection,
+    Table,
+    TableCell,
+    TableColumn,
+    TableRow,
+    ValueKind,
+    render_csv_table,
+    render_markdown_table,
+    render_section,
+    render_terminal_table,
+    report_data,
 )
 
 
@@ -24,17 +40,26 @@ def fixed_table():
             TableColumn("note", "Note", Alignment.CENTER),
         ),
         (
-            TableRow((
-                TableCell("rank"), TableCell(8, FormatSpec(ValueKind.INTEGER)),
-                TableCell("a,b"),
-            )),
-            TableRow((
-                TableCell("branch"),
-                TableCell(5, FormatSpec(ValueKind.INTEGER), PresentationEvidence(
-                    EvidenceClass.PROVED_BOUND, complete=False, bound_direction="upper"
-                )),
-                TableCell(diagnostic=diagnostic),
-            )),
+            TableRow(
+                (
+                    TableCell("rank"),
+                    TableCell(8, FormatSpec(ValueKind.INTEGER)),
+                    TableCell("a,b"),
+                )
+            ),
+            TableRow(
+                (
+                    TableCell("branch"),
+                    TableCell(
+                        5,
+                        FormatSpec(ValueKind.INTEGER),
+                        PresentationEvidence(
+                            EvidenceClass.PROVED_BOUND, complete=False, bound_direction="upper"
+                        ),
+                    ),
+                    TableCell(diagnostic=diagnostic),
+                )
+            ),
         ),
         "Fixed table",
     )
@@ -69,12 +94,16 @@ def test_csv_round_trips_with_standard_library_parser():
 def test_json_compatible_report_data_is_structural_and_preserves_evidence():
     report = ReportData(
         "Evidence",
-        (ReportSection("Properties", tables=(fixed_table(),), citations=(
-            Citation("fips197", "Advanced Encryption Standard", "section 5"),
-        )),),
-        PresentationProvenance(MathematicalProvenance(
-            "fixed component evidence", ("FIPS-197",), ("aes-mixcolumns",)
-        )),
+        (
+            ReportSection(
+                "Properties",
+                tables=(fixed_table(),),
+                citations=(Citation("fips197", "Advanced Encryption Standard", "section 5"),),
+            ),
+        ),
+        PresentationProvenance(
+            MathematicalProvenance("fixed component evidence", ("FIPS-197",), ("aes-mixcolumns",))
+        ),
     )
     data = report_data(report)
     encoded = json.dumps(data, sort_keys=True, ensure_ascii=False)

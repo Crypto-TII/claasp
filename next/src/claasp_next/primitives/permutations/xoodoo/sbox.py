@@ -17,16 +17,20 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from copy import deepcopy
 
 # Sage construction replaced by dependency-free v5 constants
 # Sage construction replaced by dependency-free v5 constants
-
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import (
+    BitGraphPrimitive,
+    BitState,
+    calculate_inputs,
+    create_new_state_for_calculation,
+    get_ci,
+    layer_and_lane_initialization,
+    simplify_inputs,
+)
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import calculate_inputs, create_new_state_for_calculation, get_ci, layer_and_lane_initialization, simplify_inputs
 
 LANE_NUM = 4
 PLANE_NUM = 3

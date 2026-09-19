@@ -52,7 +52,9 @@ def ParallelSBoxLayer(
             selection = builder.input("state")[index * width : (index + 1) * width]
             component = BitVectorSBox(selection, frozen_table, component_id=f"sbox_{index}")
         else:
-            component = SBox(builder.input("state")[index], frozen_table, component_id=f"sbox_{index}")
+            component = SBox(
+                builder.input("state")[index], frozen_table, component_id=f"sbox_{index}"
+            )
         outputs.append(builder.add_component(component))
     output = builder.join(*outputs)
     builder.set_output("output", output)

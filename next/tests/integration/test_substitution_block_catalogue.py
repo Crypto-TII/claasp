@@ -6,7 +6,6 @@ import pytest
 
 from claasp_next.representations.execution import BatchEvaluator
 
-
 VECTORS = json.loads(
     (Path(__file__).parents[2] / "migration" / "m10_9d6_zero_regressions.json").read_text(
         encoding="utf-8"
@@ -41,7 +40,8 @@ def test_every_m10_9d6_default_graph_preserves_legacy_zero_regression(vector):
 
 
 @pytest.mark.parametrize(
-    "record", FIXED_VECTORS,
+    "record",
+    FIXED_VECTORS,
     ids=lambda item: item["legacy_id"],
 )
 def test_every_captured_legacy_fixed_vector(record):

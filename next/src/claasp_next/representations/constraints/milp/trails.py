@@ -1,17 +1,25 @@
 """Exact weighted trail lowering to the portable MILP representation."""
 
-from claasp_next.semantics import XOR_DIFFERENTIAL
-from claasp_next.semantics.cryptanalysis import (
-    PropagationProblem, SBoxTransitionSemantics, Trail, TrailKind, TrailStep,
-    XorDifference,
-)
 from claasp_next.components import BitVectorSBox, Permutation
 from claasp_next.graph import Primitive
 from claasp_next.representations.constraints.milp.model import (
-    ConstraintSense, LinearConstraint, LinearExpression, LinearVariable,
-    MILPModel, ObjectiveSense, VariableKind,
+    ConstraintSense,
+    LinearConstraint,
+    LinearExpression,
+    LinearVariable,
+    MILPModel,
+    ObjectiveSense,
+    VariableKind,
 )
 from claasp_next.representations.constraints.smt.trails import check_present_smt_trail
+from claasp_next.semantics import XOR_DIFFERENTIAL
+from claasp_next.semantics.cryptanalysis import (
+    PropagationProblem,
+    Trail,
+    TrailKind,
+    TrailStep,
+    XorDifference,
+)
 
 
 class PresentDifferentialMILPModel:
@@ -31,7 +39,8 @@ class PresentDifferentialMILPModel:
             primitive
             if isinstance(primitive, PropagationProblem)
             else PropagationProblem(
-                primitive, XOR_DIFFERENTIAL,
+                primitive,
+                XOR_DIFFERENTIAL,
                 provenance=("PRESENT-2 MILP convenience constructor",),
             )
         )
@@ -84,22 +93,32 @@ class PresentDifferentialMILPModel:
                 constraints.append(_equal({name: 1 for name, _, _ in choices}, 1))
                 for bit, name in enumerate(local_input):
                     terms = {name: 1}
-                    terms.update({selector: -1 for selector, source, _ in choices if _bit(source, bit)})
+                    terms.update(
+                        {selector: -1 for selector, source, _ in choices if _bit(source, bit)}
+                    )
                     constraints.append(_equal(terms, 0))
                 for bit, name in enumerate(local_output):
                     terms = {name: 1}
-                    terms.update({selector: -1 for selector, _, target in choices if _bit(target, bit)})
+                    terms.update(
+                        {selector: -1 for selector, _, target in choices if _bit(target, bit)}
+                    )
                     constraints.append(_equal(terms, 0))
                 records.append((component.component_id, local_input, local_output))
-        constraints.append(LinearConstraint(
-            LinearExpression.from_terms({name: 1 for name in plaintext}),
-            ConstraintSense.GREATER_EQUAL, 1, "nonzero_input",
-        ))
+        constraints.append(
+            LinearConstraint(
+                LinearExpression.from_terms({name: 1 for name in plaintext}),
+                ConstraintSense.GREATER_EQUAL,
+                1,
+                "nonzero_input",
+            )
+        )
         self._records = tuple(records)
         self._input_names = plaintext
         self._last_output_names = second_output
         return MILPModel(
-            tuple(variables), tuple(constraints), LinearExpression.from_terms(objective),
+            tuple(variables),
+            tuple(constraints),
+            LinearExpression.from_terms(objective),
             ObjectiveSense.MINIMIZE,
         )
 
@@ -162,14 +181,20 @@ def _permute(value, mapping):
 
 def _round_sboxes(primitive, round_number):
     prefix = f"sbox_{round_number}_"
-    result = tuple(component for component in primitive.components if isinstance(component, BitVectorSBox) and component.component_id.startswith(prefix))
+    result = tuple(
+        component
+        for component in primitive.components
+        if isinstance(component, BitVectorSBox) and component.component_id.startswith(prefix)
+    )
     if len(result) != 16:
         raise ValueError(f"PRESENT round {round_number} must contain 16 state S-boxes")
     return result
 
 
 def _component(primitive, component_id, expected_type):
-    component = next((item for item in primitive.components if item.component_id == component_id), None)
+    component = next(
+        (item for item in primitive.components if item.component_id == component_id), None
+    )
     if not isinstance(component, expected_type):
         raise ValueError(f"primitive is missing {component_id!r}")
     return component

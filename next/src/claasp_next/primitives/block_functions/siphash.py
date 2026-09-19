@@ -15,16 +15,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import HASH_FUNCTION, INPUT_KEY, INPUT_MESSAGE
 
 PARAMETERS_CONFIGURATION_LIST = [
     {
-        'message_byte_size': 15,
-        'compression_rounds': 2,
-        'finalization_rounds': 4,
-        'output_bit_size': 64,
+        "message_byte_size": 15,
+        "compression_rounds": 2,
+        "finalization_rounds": 4,
+        "output_bit_size": 64,
     }
 ]
 
@@ -62,7 +61,9 @@ class SiphashMAC(BitGraphPrimitive):
         ('0x97f21481e1333322', 64)
     """
 
-    def __init__(self, message_byte_size=15, compression_rounds=2, finalization_rounds=4, output_bit_size=64):
+    def __init__(
+        self, message_byte_size=15, compression_rounds=2, finalization_rounds=4, output_bit_size=64
+    ):
         self.word_size = 64
         self.message_byte_size = message_byte_size
         self.compression_rounds = compression_rounds
@@ -70,16 +71,16 @@ class SiphashMAC(BitGraphPrimitive):
         self.digest_bit_size = output_bit_size
 
         if self.message_byte_size < 0:
-            raise ValueError('message_byte_size must be >= 0.')
+            raise ValueError("message_byte_size must be >= 0.")
         if self.compression_rounds < 0:
-            raise ValueError('compression_rounds must be >= 0.')
+            raise ValueError("compression_rounds must be >= 0.")
         if self.finalization_rounds < 0:
-            raise ValueError('finalization_rounds must be >= 0.')
+            raise ValueError("finalization_rounds must be >= 0.")
         if self.digest_bit_size not in (64, 128):
-            raise ValueError('output_bit_size must be either 64 or 128.')
+            raise ValueError("output_bit_size must be either 64 or 128.")
 
         super().__init__(
-            family_name='siphash',
+            family_name="siphash",
             primitive_type=HASH_FUNCTION,
             primitive_inputs=[INPUT_MESSAGE, INPUT_KEY],
             primitive_inputs_bit_size=[max(8, self.message_byte_size * 8), 128],
@@ -120,7 +121,9 @@ class SiphashMAC(BitGraphPrimitive):
         digest_low = self._xor_four_words(v0, v1, v2, v3)
 
         if self.digest_bit_size == 64:
-            self.add_primitive_output_component([digest_low.id], [digest_low.input_bit_positions[0]], 64)
+            self.add_primitive_output_component(
+                [digest_low.id], [digest_low.input_bit_positions[0]], 64
+            )
         else:
             v1 = self._xor_words(v1, self._constant_word(0xDD))
             v0, v1, v2, v3 = self._apply_sip_rounds(v0, v1, v2, v3, self.finalization_rounds)
@@ -164,7 +167,9 @@ class SiphashMAC(BitGraphPrimitive):
         zero_byte = self._constant_word(0, bit_size=8)
 
         ids = [len_byte.id] + [zero_byte.id] * (7 - left)
-        bit_positions = [len_byte.input_bit_positions[0]] + [zero_byte.input_bit_positions[0]] * (7 - left)
+        bit_positions = [len_byte.input_bit_positions[0]] + [zero_byte.input_bit_positions[0]] * (
+            7 - left
+        )
 
         for i in range(left - 1, -1, -1):
             byte_index = full_words * 8 + i
@@ -239,7 +244,12 @@ class SiphashMAC(BitGraphPrimitive):
     def _add_state_intermediate_output(self, v0, v1, v2, v3, output_tag):
         self.add_intermediate_output_component(
             [v0.id, v1.id, v2.id, v3.id],
-            [v0.input_bit_positions[0], v1.input_bit_positions[0], v2.input_bit_positions[0], v3.input_bit_positions[0]],
+            [
+                v0.input_bit_positions[0],
+                v1.input_bit_positions[0],
+                v2.input_bit_positions[0],
+                v3.input_bit_positions[0],
+            ],
             256,
             output_tag,
         )

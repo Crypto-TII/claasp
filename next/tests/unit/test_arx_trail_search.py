@@ -1,6 +1,9 @@
-from claasp_next.semantics.cryptanalysis import ModularAddLinearSemantics, ModularAddTransitionSemantics
 from claasp_next.analysis.arx import check_speck_linear_trail, check_speck_trail
 from claasp_next.primitives import Speck
+from claasp_next.semantics.cryptanalysis import (
+    ModularAddLinearSemantics,
+    ModularAddTransitionSemantics,
+)
 
 
 def test_modular_add_transition_counts_are_exact():

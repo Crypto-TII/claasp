@@ -15,31 +15,24 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from typing import List, Tuple
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
-from claasp_next.graph.bit_builder import get_inputs_parameter
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
-
 
 SBOX = [0xE, 0x4, 0xB, 0x2, 0x3, 0x8, 0x0, 0x9, 0x1, 0xA, 0x7, 0xF, 0x6, 0xC, 0x5, 0xD]
 
-DIFFUSION_MATRIX = [[2, 3, 1, 1],
-                    [1, 2, 3, 1],
-                    [1, 1, 2, 3],
-                    [3, 1, 1, 2]]
+DIFFUSION_MATRIX = [[2, 3, 1, 1], [1, 2, 3, 1], [1, 1, 2, 3], [3, 1, 1, 2]]
 
 GF16_IRREDUCIBLE_POLY = 0x13
 
 RP_PERMUTATION = [6, 3, 0, 5, 2, 7, 4, 1]
 
-BASE32_80 = 0x0f1e2d3c
-BASE32_128 = 0x6547a98b
+BASE32_80 = 0x0F1E2D3C
+BASE32_128 = 0x6547A98B
 
 PARAMETERS_CONFIGURATION_LIST = [
-    {'key_bit_size': 80, 'number_of_rounds': 25},
-    {'key_bit_size': 128, 'number_of_rounds': 31},
+    {"key_bit_size": 80, "number_of_rounds": 25},
+    {"key_bit_size": 128, "number_of_rounds": 31},
 ]
 
 
@@ -48,12 +41,14 @@ def _c5(i: int) -> int:
     return i & 0x1F
 
 
-def _generate_constants(num_rounds: int, base32: int) -> List[int]:
+def _generate_constants(num_rounds: int, base32: int) -> list[int]:
     constants = []
     for i in range(num_rounds):
         c0 = _c5(0)
         c_i1 = _c5(i + 1)
-        const = (c_i1 << 27) | (c0 << 22) | (c_i1 << 17) | (0 << 15) | (c_i1 << 10) | (c0 << 5) | c_i1
+        const = (
+            (c_i1 << 27) | (c0 << 22) | (c_i1 << 17) | (0 << 15) | (c_i1 << 10) | (c0 << 5) | c_i1
+        )
         const = (const ^ base32) & 0xFFFFFFFF
 
         constants.append((const >> 16) & 0xFFFF)
@@ -61,7 +56,7 @@ def _generate_constants(num_rounds: int, base32: int) -> List[int]:
     return constants
 
 
-def _piccolo128_key_selection_order(rounds: int) -> List[int]:
+def _piccolo128_key_selection_order(rounds: int) -> list[int]:
     kk = list(range(8))
     order = []
     for i in range(2 * rounds):
@@ -99,17 +94,19 @@ class Piccolo(BitGraphPrimitive):
     def __init__(self, key_bit_size=80, number_of_rounds=None):
         self.block_bit_size = 64
         if key_bit_size not in (80, 128):
-            raise ValueError('key_bit_size must be 80 or 128')
+            raise ValueError("key_bit_size must be 80 or 128")
         self.key_bit_size = key_bit_size
         if number_of_rounds is None:
             number_of_rounds = 25 if key_bit_size == 80 else 31
         r = number_of_rounds
 
-        super().__init__(family_name='piccolo',
-                         primitive_type=BLOCK_CIPHER,
-                         primitive_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
-                         primitive_inputs_bit_size=[self.block_bit_size, self.key_bit_size],
-                         primitive_output_bit_size=self.block_bit_size)
+        super().__init__(
+            family_name="piccolo",
+            primitive_type=BLOCK_CIPHER,
+            primitive_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            primitive_inputs_bit_size=[self.block_bit_size, self.key_bit_size],
+            primitive_output_bit_size=self.block_bit_size,
+        )
 
         x0 = BitState([INPUT_PLAINTEXT], [list(range(0, 16))])
         x1 = BitState([INPUT_PLAINTEXT], [list(range(16, 32))])
@@ -118,7 +115,7 @@ class Piccolo(BitGraphPrimitive):
 
         self.add_round()
 
-        wk, rk = (self.schedule_80(r) if self.key_bit_size == 80 else self.schedule_128(r))
+        wk, rk = self.schedule_80(r) if self.key_bit_size == 80 else self.schedule_128(r)
 
         x0 = self._xor([x0, wk[0]])
         x2 = self._xor([x2, wk[1]])
@@ -143,19 +140,33 @@ class Piccolo(BitGraphPrimitive):
 
         self.add_primitive_output_component(ids, bits, self.block_bit_size)
 
-    def schedule_80(self, r: int) -> Tuple[List[BitState], List[BitState]]:
+    def schedule_80(self, r: int) -> tuple[list[BitState], list[BitState]]:
         """Build the schedule 80 transition in this primitive's typed operation graph."""
+
         def word(i):
             return list(range(16 * i, 16 * i + 16))
+
         k = [BitState([INPUT_KEY], [word(i)]) for i in range(5)]
         key_left = [BitState(k[i].id, [k[i].input_bit_positions[0][0:8]]) for i in range(5)]
         key_right = [BitState(k[i].id, [k[i].input_bit_positions[0][8:16]]) for i in range(5)]
 
         wk_bits = [
-            BitState([INPUT_KEY], [key_left[0].input_bit_positions[0] + key_right[1].input_bit_positions[0]]),
-            BitState([INPUT_KEY], [key_left[1].input_bit_positions[0] + key_right[0].input_bit_positions[0]]),
-            BitState([INPUT_KEY], [key_left[4].input_bit_positions[0] + key_right[3].input_bit_positions[0]]),
-            BitState([INPUT_KEY], [key_left[3].input_bit_positions[0] + key_right[4].input_bit_positions[0]]),
+            BitState(
+                [INPUT_KEY],
+                [key_left[0].input_bit_positions[0] + key_right[1].input_bit_positions[0]],
+            ),
+            BitState(
+                [INPUT_KEY],
+                [key_left[1].input_bit_positions[0] + key_right[0].input_bit_positions[0]],
+            ),
+            BitState(
+                [INPUT_KEY],
+                [key_left[4].input_bit_positions[0] + key_right[3].input_bit_positions[0]],
+            ),
+            BitState(
+                [INPUT_KEY],
+                [key_left[3].input_bit_positions[0] + key_right[4].input_bit_positions[0]],
+            ),
         ]
 
         constants = _generate_constants(r, BASE32_80)
@@ -181,8 +192,9 @@ class Piccolo(BitGraphPrimitive):
             rk_bits.append(self._xor([k[b], const_b]))
         return wk_bits, rk_bits
 
-    def schedule_128(self, r: int) -> Tuple[List[BitState], List[BitState]]:
+    def schedule_128(self, r: int) -> tuple[list[BitState], list[BitState]]:
         """Build the schedule 128 transition in this primitive's typed operation graph."""
+
         def word(i):
             return list(range(16 * i, 16 * i + 16))
 
@@ -193,10 +205,22 @@ class Piccolo(BitGraphPrimitive):
         key_right = [BitState(k[i].id, [k[i].input_bit_positions[0][8:16]]) for i in range(word_n)]
 
         wk = [
-            BitState([INPUT_KEY], [key_left[0].input_bit_positions[0] + key_right[1].input_bit_positions[0]]),
-            BitState([INPUT_KEY], [key_left[1].input_bit_positions[0] + key_right[0].input_bit_positions[0]]),
-            BitState([INPUT_KEY], [key_left[4].input_bit_positions[0] + key_right[7].input_bit_positions[0]]),
-            BitState([INPUT_KEY], [key_left[7].input_bit_positions[0] + key_right[4].input_bit_positions[0]]),
+            BitState(
+                [INPUT_KEY],
+                [key_left[0].input_bit_positions[0] + key_right[1].input_bit_positions[0]],
+            ),
+            BitState(
+                [INPUT_KEY],
+                [key_left[1].input_bit_positions[0] + key_right[0].input_bit_positions[0]],
+            ),
+            BitState(
+                [INPUT_KEY],
+                [key_left[4].input_bit_positions[0] + key_right[7].input_bit_positions[0]],
+            ),
+            BitState(
+                [INPUT_KEY],
+                [key_left[7].input_bit_positions[0] + key_right[4].input_bit_positions[0]],
+            ),
         ]
 
         constants = _generate_constants(r, BASE32_128)
@@ -204,7 +228,6 @@ class Piccolo(BitGraphPrimitive):
         rk = []
 
         for i in range(2 * r):
-
             const_id = self.add_constant_component(16, constants[i]).id
             const = BitState([const_id], [list(range(16))])
 
@@ -217,7 +240,7 @@ class Piccolo(BitGraphPrimitive):
 
         out_ids, out_bits = [], []
         for n in range(4):
-            self.add_sbox_component(ids, [bits[0][4 * n: 4 * n + 4]], 4, SBOX)
+            self.add_sbox_component(ids, [bits[0][4 * n : 4 * n + 4]], 4, SBOX)
             out_ids.append(self.get_current_component_id())
             out_bits.append(list(range(4)))
 
@@ -233,11 +256,14 @@ class Piccolo(BitGraphPrimitive):
         diffusion = self._diffusion_layer(sbox1)
         return self._sbox_layer(diffusion)
 
-    def _round_permutation(self, x0: BitState, x1: BitState, x2: BitState,
-                           x3: BitState) -> Tuple[BitState, BitState, BitState, BitState]:
+    def _round_permutation(
+        self, x0: BitState, x1: BitState, x2: BitState, x3: BitState
+    ) -> tuple[BitState, BitState, BitState, BitState]:
         ids, bits = get_inputs_parameter([x0, x1, x2, x3])
 
-        perm_id = self.add_word_permutation_component(ids, bits, self.block_bit_size, RP_PERMUTATION, 8).id
+        perm_id = self.add_word_permutation_component(
+            ids, bits, self.block_bit_size, RP_PERMUTATION, 8
+        ).id
 
         return (
             BitState([perm_id], [list(range(0, 16))]),
@@ -246,10 +272,10 @@ class Piccolo(BitGraphPrimitive):
             BitState([perm_id], [list(range(48, 64))]),
         )
 
-    def _xor(self, terms: List[BitState]) -> BitState:
+    def _xor(self, terms: list[BitState]) -> BitState:
         """XOR all the terms in the list and return the corresponding BitState object."""
         if len(terms) == 0:
-            raise ValueError('Empty terms list.')
+            raise ValueError("Empty terms list.")
 
         ids, bits = get_inputs_parameter(terms)
         size = sum(len(p) for p in terms[0].input_bit_positions)

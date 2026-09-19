@@ -1,12 +1,18 @@
 from claasp_next import (
-    Bit, CompositeBuilder, DependencyIndex, Primitive, TransformationError,
-    TransformationFailureReason, ValueType, reduce_rounds, slice_primitive,
+    Bit,
+    CompositeBuilder,
+    DependencyIndex,
+    Primitive,
+    TransformationError,
+    TransformationFailureReason,
+    ValueType,
+    reduce_rounds,
+    slice_primitive,
     slice_rounds,
 )
 from claasp_next.components import Identity
 from claasp_next.graph import as_selection
 from claasp_next.primitives import Speck
-
 
 PLAINTEXT = 0x6574694C
 KEY = 0x1918111009080100
@@ -30,7 +36,10 @@ def test_dependency_slice_matches_independent_round_state_evaluation():
     result = slice_primitive(primitive, primitive.round_states[1])
     derived = result.primitive
 
-    assert derived._decode_boundary(derived.evaluate(PLAINTEXT, KEY), derived.output.value_type) == expected
+    assert (
+        derived._decode_boundary(derived.evaluate(PLAINTEXT, KEY), derived.output.value_type)
+        == expected
+    )
     assert len(derived.components) < len(primitive.components)
     assert len(primitive.rounds) == 3
     assert derived.transformation_provenance[-1].operation == "slice"
@@ -45,7 +54,8 @@ def test_middle_round_slice_retains_key_schedule_and_accepts_state_boundary():
 
     derived = slice_rounds(primitive, 1, 2).primitive
     actual = derived._decode_boundary(
-        derived.evaluate(state=start, key=KEY), derived.output.value_type,
+        derived.evaluate(state=start, key=KEY),
+        derived.output.value_type,
     )
 
     assert actual == expected
@@ -57,7 +67,9 @@ def test_round_reduction_is_a_validated_prefix_and_does_not_mutate_source():
     primitive = Speck(number_of_rounds=3)
     reduced = reduce_rounds(primitive, 2).primitive
 
-    assert reduced.evaluate(PLAINTEXT, KEY) == slice_rounds(primitive, 0, 1).primitive.evaluate(PLAINTEXT, KEY)
+    assert reduced.evaluate(PLAINTEXT, KEY) == slice_rounds(primitive, 0, 1).primitive.evaluate(
+        PLAINTEXT, KEY
+    )
     assert len(reduced.rounds) <= 2
     assert len(primitive.rounds) == 3
     assert reduced.transformation_provenance[-1].operation == "slice_rounds"
@@ -86,7 +98,8 @@ def test_slice_preserves_structural_bindings_and_complete_composite_scopes():
     definition = builder.build()
 
     primitive = Primitive(
-        "scoped", {"left": ValueType(Bit(), (1,)), "right": ValueType(Bit(), (1,))},
+        "scoped",
+        {"left": ValueType(Bit(), (1,)), "right": ValueType(Bit(), (1,))},
     )
     primitive.add_round()
     joined = primitive.join(primitive.input("left"), primitive.input("right"))

@@ -10,17 +10,17 @@ from __future__ import annotations
 
 import argparse
 import ast
-from collections import defaultdict
 import dataclasses
 import enum
 import importlib
 import inspect
 import json
-from pathlib import Path
 import re
 import sys
-from typing import Any, Iterable
-
+from collections import defaultdict
+from collections.abc import Iterable
+from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_ROOT = ROOT / "next" / "src" / "claasp_next"
@@ -48,7 +48,9 @@ def _declares_all(path: Path) -> bool:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     for node in tree.body:
         if isinstance(node, ast.Assign):
-            if any(isinstance(target, ast.Name) and target.id == "__all__" for target in node.targets):
+            if any(
+                isinstance(target, ast.Name) and target.id == "__all__" for target in node.targets
+            ):
                 return True
         elif isinstance(node, ast.AnnAssign):
             if isinstance(node.target, ast.Name) and node.target.id == "__all__":
@@ -135,7 +137,9 @@ def enumerate_public_api(source_root: Path = SOURCE_ROOT) -> list[dict[str, Any]
             try:
                 value = getattr(module, name)
             except (AttributeError, ImportError) as error:
-                raise ValueError(f"public export does not resolve: {qualified_name}: {error}") from error
+                raise ValueError(
+                    f"public export does not resolve: {qualified_name}: {error}"
+                ) from error
             canonical = _canonical_name(value, qualified_name)
             entries[qualified_name] = {
                 "qualified_name": qualified_name,
@@ -355,9 +359,7 @@ def documentation_violations(
     """Return all live documentation and executable-example violations."""
 
     violations = []
-    exceptions = {
-        item["qualified_name"] for item in authority.get("example_exceptions", [])
-    }
+    exceptions = {item["qualified_name"] for item in authority.get("example_exceptions", [])}
     checked_canonical_docs = set()
     for entry in entries:
         if entry["kind"] in {"data", "dataclass_field", "enum_member"}:
@@ -375,12 +377,18 @@ def documentation_violations(
             continue
         docstring = inspect.getdoc(value)
         violations.extend(validate_docstring(docstring, doc_owner))
-        if _example_required(entry) and doc_owner not in exceptions and not _scoped_example(entry, docstring):
+        if (
+            _example_required(entry)
+            and doc_owner not in exceptions
+            and not _scoped_example(entry, docstring)
+        ):
             violations.append(f"{doc_owner}: missing executable EXAMPLES:: section")
     return sorted(set(violations))
 
 
-def build_authority(entries: list[dict[str, Any]], previous: dict[str, Any] | None = None) -> dict[str, Any]:
+def build_authority(
+    entries: list[dict[str, Any]], previous: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Build the deterministic authority while retaining reviewed exceptions."""
 
     return {
@@ -396,16 +404,24 @@ def main(argv: list[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write", action="store_true", help="rewrite the committed authority")
-    parser.add_argument("--check-authority", action="store_true", help="check enumeration and exceptions")
-    parser.add_argument("--check", action="store_true", help="check authority and documentation closure")
-    parser.add_argument("--report", action="store_true", help="print documentation violation counts")
+    parser.add_argument(
+        "--check-authority", action="store_true", help="check enumeration and exceptions"
+    )
+    parser.add_argument(
+        "--check", action="store_true", help="check authority and documentation closure"
+    )
+    parser.add_argument(
+        "--report", action="store_true", help="print documentation violation counts"
+    )
     args = parser.parse_args(argv)
 
     entries = enumerate_public_api()
     previous = load_authority() if AUTHORITY.exists() else None
     if args.write:
         authority = build_authority(entries, previous)
-        AUTHORITY.write_text(json.dumps(authority, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        AUTHORITY.write_text(
+            json.dumps(authority, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
         print(f"wrote {len(entries)} public API entries to {AUTHORITY.relative_to(ROOT)}")
         return 0
     if previous is None:

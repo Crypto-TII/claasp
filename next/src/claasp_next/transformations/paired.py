@@ -6,13 +6,18 @@ from dataclasses import dataclass
 from claasp_next.components import Add, Xor
 from claasp_next.domains import BinaryExtensionField, Bit, Word
 from claasp_next.graph import (
-    CompositeDefinition, Port, PortLike, Primitive, PrimitiveKind, Selection,
+    CompositeDefinition,
+    Port,
+    Primitive,
+    PrimitiveKind,
+    Selection,
     as_selection,
 )
 from claasp_next.graph.composite import CompositeInstance, CompositeTemplate
 from claasp_next.provenance import TransformationRecord
 from claasp_next.transformations.contracts import (
-    TransformationError, TransformationFailureReason,
+    TransformationError,
+    TransformationFailureReason,
 )
 
 
@@ -56,8 +61,11 @@ def _as_observation(value) -> tuple[Selection, ...]:
 def _definition_from_primitive(primitive: Primitive) -> CompositeDefinition:
     templates = tuple(
         CompositeTemplate(
-            scope.path, scope.definition, scope.input_bindings,
-            scope.output_bindings, scope.component_ids,
+            scope.path,
+            scope.definition,
+            scope.input_bindings,
+            scope.output_bindings,
+            scope.component_ids,
         )
         for scope in primitive.scopes
     )
@@ -72,7 +80,9 @@ def _definition_from_primitive(primitive: Primitive) -> CompositeDefinition:
     )
 
 
-def _scoped_selection(parent: Primitive, scope: CompositeInstance, selection: Selection) -> Selection:
+def _scoped_selection(
+    parent: Primitive, scope: CompositeInstance, selection: Selection
+) -> Selection:
     source_id = selection.source.owner_id
     if source_id in scope.inputs:
         return scope.inputs[source_id][selection.positions]
@@ -100,8 +110,7 @@ def _difference_component(left: Selection, right: Selection):
 
 def _scoped_observation(parent, scope, observation):
     selections = tuple(
-        _scoped_selection(parent, scope, selection)
-        for selection in _as_observation(observation)
+        _scoped_selection(parent, scope, selection) for selection in _as_observation(observation)
     )
     domains = {selection.value_type.domain for selection in selections}
     if len(domains) != 1:
@@ -183,10 +192,12 @@ def paired_xor_primitive(
     for name in primitive.input_ports:
         if name in shared:
             continue
-        difference = paired.add_component(_difference_component(
-            paired.input(f"left_{name}").select_all(),
-            paired.input(f"right_{name}").select_all(),
-        ))
+        difference = paired.add_component(
+            _difference_component(
+                paired.input(f"left_{name}").select_all(),
+                paired.input(f"right_{name}").select_all(),
+            )
+        )
         input_differences.append((name, difference.select_all()))
 
     def differences(observations):
@@ -199,9 +210,12 @@ def paired_xor_primitive(
 
     round_differences = differences(tuple(getattr(primitive, "round_states", ())))
     key_differences = differences(tuple(getattr(primitive, "round_keys", ())))
-    output_difference = paired.add_component(_difference_component(
-        left_scope.output(), right_scope.output(),
-    )).select_all()
+    output_difference = paired.add_component(
+        _difference_component(
+            left_scope.output(),
+            right_scope.output(),
+        )
+    ).select_all()
     paired.set_output(output_difference)
     record = TransformationRecord(
         "paired_xor",
@@ -209,12 +223,18 @@ def paired_xor_primitive(
         primitive.realization_identity,
     )
     object.__setattr__(
-        paired, "_transformation_provenance",
+        paired,
+        "_transformation_provenance",
         (*primitive.transformation_provenance, record),
     )
     return PairedTransformationResult(
-        paired, left_scope, right_scope, tuple(input_differences),
-        round_differences, key_differences, output_difference,
+        paired,
+        left_scope,
+        right_scope,
+        tuple(input_differences),
+        round_differences,
+        key_differences,
+        output_difference,
     )
 
 

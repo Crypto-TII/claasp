@@ -3,8 +3,8 @@
 from collections.abc import Iterable
 
 from claasp_next.components import Add, Constant, Power
-from claasp_next.graph import Primitive, ValueType
 from claasp_next.domains import PrimeField
+from claasp_next.graph import Primitive, ValueType
 
 
 class MiMC(Primitive):

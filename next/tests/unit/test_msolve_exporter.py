@@ -1,13 +1,17 @@
 import shutil
 import subprocess
-from tempfile import TemporaryDirectory
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import pytest
 
 from claasp_next import PrimeField
 from claasp_next.primitives import MiMC
-from claasp_next.representations.constraints.polynomial import Polynomial, PolynomialSystem, PrimeFieldPolynomialModel
+from claasp_next.representations.constraints.polynomial import (
+    Polynomial,
+    PolynomialSystem,
+    PrimeFieldPolynomialModel,
+)
 from claasp_next.representations.constraints.polynomial.exporters import MsolveExporter
 
 

@@ -2,6 +2,7 @@
 
 from claasp_next.components import BitwiseOr as BitwiseOrComponent
 from claasp_next.graph import Primitive, PrimitiveKind
+
 from ._base import word_inputs
 
 

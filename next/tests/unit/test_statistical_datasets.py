@@ -35,9 +35,7 @@ def test_random_dataset_can_fix_an_input_and_validates_arguments():
 
 def test_avalanche_dataset_records_every_msb_first_input_flip():
     primitive = Speck(number_of_rounds=1)
-    dataset = generate_avalanche_dataset(
-        primitive, "plaintext", 2, seed=9, fixed_inputs={"key": 0}
-    )
+    dataset = generate_avalanche_dataset(primitive, "plaintext", 2, seed=9, fixed_inputs={"key": 0})
 
     assert dataset.input_bit_count == dataset.output_bit_count == 32
     assert dataset.sample_count == 2

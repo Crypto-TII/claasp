@@ -17,12 +17,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.primitives.block_ciphers.katan.primitive import (
-    CONFIGURATION, get_ir_bit, normalize_number_of_rounds,
-)
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+from claasp_next.primitives.block_ciphers.katan.primitive import (
+    CONFIGURATION,
+    get_ir_bit,
+    normalize_number_of_rounds,
+)
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"block_bit_size": 32, "key_bit_size": 80, "number_of_rounds": 254},
@@ -77,12 +78,17 @@ class Ktantan(BitGraphPrimitive):
             primitive_output_bit_size=block_bit_size,
         )
 
-        l2 = [self._input_bit(INPUT_PLAINTEXT, self.block_bit_size - 1 - i) for i in range(self._config["len_l2"])]
+        l2 = [
+            self._input_bit(INPUT_PLAINTEXT, self.block_bit_size - 1 - i)
+            for i in range(self._config["len_l2"])
+        ]
         l1 = [
             self._input_bit(INPUT_PLAINTEXT, self.block_bit_size - 1 - (self._config["len_l2"] + i))
             for i in range(self._config["len_l1"])
         ]
-        key_bits = [self._input_bit(INPUT_KEY, self.key_bit_size - 1 - i) for i in range(self.key_bit_size)]
+        key_bits = [
+            self._input_bit(INPUT_KEY, self.key_bit_size - 1 - i) for i in range(self.key_bit_size)
+        ]
         ka, kb = self._expand_round_keys(key_bits, number_of_rounds)
 
         for round_number in range(number_of_rounds):
@@ -124,29 +130,35 @@ class Ktantan(BitGraphPrimitive):
 
     def _and_bits(self, left, right):
         component_id = self.add_and_component(
-            [left.id[0], right.id[0]], [left.input_bit_positions[0], right.input_bit_positions[0]], 1
+            [left.id[0], right.id[0]],
+            [left.input_bit_positions[0], right.input_bit_positions[0]],
+            1,
         ).id
         return BitState([component_id], [[0]])
 
     def _round_function_a(self, l1, ka, round_number, ir_mode):
         x1, x2, x3, x4, x5 = self._config["x"]
-        return self._xor_bits([
-            l1[x1],
-            l1[x2],
-            self._and_bits(l1[x3], l1[x4]),
-            l1[x5] if get_ir_bit(round_number, ir_mode) else self._constant_bit(0),
-            ka[round_number],
-        ])
+        return self._xor_bits(
+            [
+                l1[x1],
+                l1[x2],
+                self._and_bits(l1[x3], l1[x4]),
+                l1[x5] if get_ir_bit(round_number, ir_mode) else self._constant_bit(0),
+                ka[round_number],
+            ]
+        )
 
     def _round_function_b(self, l2, kb, round_number):
         y1, y2, y3, y4, y5, y6 = self._config["y"]
-        return self._xor_bits([
-            l2[y1],
-            l2[y2],
-            self._and_bits(l2[y3], l2[y4]),
-            self._and_bits(l2[y5], l2[y6]),
-            kb[round_number],
-        ])
+        return self._xor_bits(
+            [
+                l2[y1],
+                l2[y2],
+                self._and_bits(l2[y3], l2[y4]),
+                self._and_bits(l2[y5], l2[y6]),
+                kb[round_number],
+            ]
+        )
 
     def _add_state_output(self, output_function, state):
         ordered_state = list(reversed(state))

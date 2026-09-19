@@ -19,6 +19,7 @@
 from os.path import dirname, exists, realpath
 
 from claasp_next.graph.bit_builder import BitGraphPrimitive
+
 # LowMC uses only vetted primitive-owned constant data
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -67,8 +68,11 @@ class LowMC(BitGraphPrimitive):
     """
 
     def __init__(
-        self, block_bit_size=128, key_bit_size=128,
-        number_of_rounds=None, number_of_sboxes=None,
+        self,
+        block_bit_size=128,
+        key_bit_size=128,
+        number_of_rounds=None,
+        number_of_sboxes=None,
     ):
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
@@ -90,7 +94,9 @@ class LowMC(BitGraphPrimitive):
         number_of_rounds = self.define_number_of_rounds(number_of_rounds)
         self.n_sbox = self.define_number_of_sboxes(number_of_rounds, number_of_sboxes)
 
-        self.constants = f"lowmc_constants_p{block_bit_size}_k{key_bit_size}_r{number_of_rounds}.dat"
+        self.constants = (
+            f"lowmc_constants_p{block_bit_size}_k{key_bit_size}_r{number_of_rounds}.dat"
+        )
         if not exists(dirname(realpath(__file__)) + "/data/" + self.constants):
             raise ValueError("unsupported LowMC parameter set: no vetted constant data is packaged")
 
@@ -118,7 +124,9 @@ class LowMC(BitGraphPrimitive):
     def add_output_component(self, number_of_rounds, plaintext_id, r, round_key):
         """Add the output component stage to this primitive's typed operation graph."""
         if r == number_of_rounds - 1:
-            self.add_primitive_output_component([round_key], [list(range(self.block_bit_size))], self.block_bit_size)
+            self.add_primitive_output_component(
+                [round_key], [list(range(self.block_bit_size))], self.block_bit_size
+            )
         else:
             plaintext_id = self.add_round_output_component(
                 [round_key], [list(range(self.block_bit_size))], self.block_bit_size
@@ -129,7 +137,9 @@ class LowMC(BitGraphPrimitive):
 
     def add_round_constant(self, plaintext_id, round_number):
         """Add the round constant stage to this primitive's typed operation graph."""
-        constant_id = self.add_constant_component(self.block_bit_size, self.round_constants[round_number]).id
+        constant_id = self.add_constant_component(
+            self.block_bit_size, self.round_constants[round_number]
+        ).id
 
         return self.add_xor_component(
             [plaintext_id, constant_id], [list(range(self.block_bit_size))] * 2, self.block_bit_size
@@ -211,14 +221,16 @@ class LowMC(BitGraphPrimitive):
         validated against this instance's block size, key size, and round count.
         """
 
-        with open(dirname(realpath(__file__)) + "/data/" + self.constants, "r") as f:
+        with open(dirname(realpath(__file__)) + "/data/" + self.constants) as f:
             data = f.read().split("\n")
 
         # Checking file
         assert data[0] == str(self.block_bit_size), "Wrong blocksize in data file."
         assert data[1] == str(self.key_bit_size), "Wrong keysize in data file."
         assert data[2] == str(n), "Wrong number of rounds in data file."
-        assert (len(data) - 1) == 3 + (((n * 2) + 1) * self.block_bit_size) + n, "Wrong file size (number of lines)."
+        assert (len(data) - 1) == 3 + (((n * 2) + 1) * self.block_bit_size) + n, (
+            "Wrong file size (number of lines)."
+        )
 
         # Linear layer matrices
         lines_offset = 3
@@ -291,7 +303,9 @@ class LowMC(BitGraphPrimitive):
         # m computations of 3 - bit sbox
         # remaining n - 3m bits remain the same
         for i in range(self.n_sbox):
-            sbox_output[i] = self.add_sbox_component([plaintext_id], [list(range(3 * i, 3 * (i + 1)))], 3, self.sbox).id
+            sbox_output[i] = self.add_sbox_component(
+                [plaintext_id], [list(range(3 * i, 3 * (i + 1)))], 3, self.sbox
+            ).id
 
         return (
             sbox_output + [plaintext_id],
@@ -301,7 +315,12 @@ class LowMC(BitGraphPrimitive):
     def update_key_register(self, key_id, round_number):
         """Build the update key register transition in this primitive's typed operation graph."""
         rk_id = self.add_linear_layer_component(
-            [key_id], [list(range(self.key_bit_size))], self.key_bit_size, self.kmatrices[round_number]
+            [key_id],
+            [list(range(self.key_bit_size))],
+            self.key_bit_size,
+            self.kmatrices[round_number],
         ).id
 
-        return self.add_round_key_output_component([rk_id], [list(range(self.key_bit_size))], self.key_bit_size).id
+        return self.add_round_key_output_component(
+            [rk_id], [list(range(self.key_bit_size))], self.key_bit_size
+        ).id

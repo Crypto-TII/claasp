@@ -96,7 +96,11 @@ class WordwiseXorDifference:
             return self
         if self.kind is other.kind is WordwiseDifferenceKind.KNOWN:
             value = self.value ^ other.value
-            return type(self)(self.width, WordwiseDifferenceKind.ZERO) if value == 0 else type(self).known(self.width, value)
+            return (
+                type(self)(self.width, WordwiseDifferenceKind.ZERO)
+                if value == 0
+                else type(self).known(self.width, value)
+            )
         return type(self)(self.width, WordwiseDifferenceKind.UNKNOWN)
 
     @classmethod
@@ -155,8 +159,13 @@ class WordwiseImpossibleFixture:
     claim_kind: str = "abstract-incompatibility-witness"
 
     def __post_init__(self) -> None:
-        patterns = (self.input_pattern, self.key_pattern, self.output_pattern,
-                    self.forward_middle, self.backward_middle)
+        patterns = (
+            self.input_pattern,
+            self.key_pattern,
+            self.output_pattern,
+            self.forward_middle,
+            self.backward_middle,
+        )
         if any(len(pattern) != 16 or set(pattern) - set("0123") for pattern in patterns):
             raise ValueError("wordwise fixture patterns must contain sixteen base-domain symbols")
         if self.claim_kind != "abstract-incompatibility-witness":
@@ -194,14 +203,22 @@ def propagate_dense_wordwise_activity(differences, output_units):
         (<WordwiseDifferenceKind.NONZERO: 2>, <WordwiseDifferenceKind.NONZERO: 2>)
     """
     differences = tuple(differences)
-    if (not differences or any(not isinstance(item, WordwiseXorDifference) for item in differences)
-            or len({item.width for item in differences}) != 1):
+    if (
+        not differences
+        or any(not isinstance(item, WordwiseXorDifference) for item in differences)
+        or len({item.width for item in differences}) != 1
+    ):
         raise ValueError("dense layer inputs must have the same wordwise width")
     if not isinstance(output_units, int) or isinstance(output_units, bool) or output_units < 1:
         raise ValueError("output_units must be a positive integer")
     active = sum(item.kind is not WordwiseDifferenceKind.ZERO for item in differences)
-    kind = (WordwiseDifferenceKind.UNKNOWN if any(item.kind is WordwiseDifferenceKind.UNKNOWN for item in differences) or active > 1
-            else WordwiseDifferenceKind.NONZERO if active else WordwiseDifferenceKind.ZERO)
+    kind = (
+        WordwiseDifferenceKind.UNKNOWN
+        if any(item.kind is WordwiseDifferenceKind.UNKNOWN for item in differences) or active > 1
+        else WordwiseDifferenceKind.NONZERO
+        if active
+        else WordwiseDifferenceKind.ZERO
+    )
     return tuple(WordwiseXorDifference(differences[0].width, kind) for _ in range(output_units))
 
 
@@ -292,9 +309,8 @@ class ImpossiblePropagationBoundary:
         """Positions fixed to opposite Boolean differences."""
 
         return tuple(
-            index for index, (forward, backward) in enumerate(
-                zip(self.forward.bits, self.backward.bits)
-            )
+            index
+            for index, (forward, backward) in enumerate(zip(self.forward.bits, self.backward.bits))
             if TruncatedBit.UNKNOWN not in (forward, backward) and forward is not backward
         )
 
@@ -330,9 +346,17 @@ class ProbabilisticTruncatedModularAddTransition:
 
     def __post_init__(self) -> None:
         width = len(self.left.bits)
-        if any(len(pattern.bits) != width for pattern in (
-            self.right, self.output, self.carry_difference,
-        )) or len(self.costs) != width:
+        if (
+            any(
+                len(pattern.bits) != width
+                for pattern in (
+                    self.right,
+                    self.output,
+                    self.carry_difference,
+                )
+            )
+            or len(self.costs) != width
+        ):
             raise ValueError("probabilistic truncated transition values must have equal widths")
         if any(cost not in {0, 4, 9, 19, 41, 100} for cost in self.costs):
             raise ValueError("invalid probabilistic truncated fixed-point cost")
@@ -404,9 +428,11 @@ def check_probabilistic_truncated_modular_add(
     if carry[-1] != 0 or costs[-1] != 0:
         return False
     for index in range(width):
-        expected = 2 if 2 in (a[index], b[index], carry[index]) else (
-            a[index] + b[index] + carry[index]
-        ) % 2
+        expected = (
+            2
+            if 2 in (a[index], b[index], carry[index])
+            else (a[index] + b[index] + carry[index]) % 2
+        )
         if c[index] != expected:
             return False
     run_length = [0] * width
@@ -459,12 +485,19 @@ def truncated_modular_add(
                     for left_value in (0, 1):
                         for right_value in (0, 1):
                             total = left_value + right_value + carry
-                            paired = (left_value ^ left_delta) + (right_value ^ right_delta) + paired_carry
+                            paired = (
+                                (left_value ^ left_delta)
+                                + (right_value ^ right_delta)
+                                + paired_carry
+                            )
                             outputs.add((total ^ paired) & 1)
                             next_carries.add((total >> 1, paired >> 1))
         lsb_output.append(
-            TruncatedBit.UNKNOWN if len(outputs) != 1
-            else TruncatedBit.ONE if 1 in outputs else TruncatedBit.ZERO
+            TruncatedBit.UNKNOWN
+            if len(outputs) != 1
+            else TruncatedBit.ONE
+            if 1 in outputs
+            else TruncatedBit.ZERO
         )
         carries = next_carries
     return TruncatedXorDifference(tuple(reversed(lsb_output)))
@@ -499,19 +532,28 @@ def truncated_modular_subtract(
                     for left_value in (0, 1):
                         for right_value in (0, 1):
                             total = left_value - right_value - borrow
-                            paired = (left_value ^ left_delta) - (right_value ^ right_delta) - paired_borrow
+                            paired = (
+                                (left_value ^ left_delta)
+                                - (right_value ^ right_delta)
+                                - paired_borrow
+                            )
                             outputs.add((total ^ paired) & 1)
                             next_borrows.add((int(total < 0), int(paired < 0)))
         lsb_output.append(
-            TruncatedBit.UNKNOWN if len(outputs) != 1
-            else TruncatedBit.ONE if 1 in outputs else TruncatedBit.ZERO
+            TruncatedBit.UNKNOWN
+            if len(outputs) != 1
+            else TruncatedBit.ONE
+            if 1 in outputs
+            else TruncatedBit.ZERO
         )
         borrows = next_borrows
     return TruncatedXorDifference(tuple(reversed(lsb_output)))
 
 
 def propagate_two_word_speck_round(
-    primitive: Primitive, difference: TruncatedXorDifference, round_number: int = 0,
+    primitive: Primitive,
+    difference: TruncatedXorDifference,
+    round_number: int = 0,
 ) -> TruncatedXorDifference:
     """Propagate a zero-key-difference pattern through a selected Speck round.
 
@@ -531,8 +573,11 @@ def propagate_two_word_speck_round(
     width = plaintext.value_type.domain.width
     if len(difference.bits) != 2 * width:
         raise ValueError("difference width must match the Speck block")
-    if (not isinstance(round_number, int) or isinstance(round_number, bool)
-            or not 0 <= round_number < len(primitive.rounds)):
+    if (
+        not isinstance(round_number, int)
+        or isinstance(round_number, bool)
+        or not 0 <= round_number < len(primitive.rounds)
+    ):
         raise ValueError("round_number is outside the primitive")
     alpha = _speck_rotation(primitive, round_number, "right").amount
     beta = _speck_rotation(primitive, round_number, "left").amount
@@ -544,7 +589,9 @@ def propagate_two_word_speck_round(
 
 
 def propagate_two_word_speck_inverse_round(
-    primitive: Primitive, difference: TruncatedXorDifference, round_number: int = 0,
+    primitive: Primitive,
+    difference: TruncatedXorDifference,
+    round_number: int = 0,
 ) -> TruncatedXorDifference:
     """Soundly propagate a zero-key difference through one inverse Speck round.
 
@@ -622,21 +669,26 @@ def propagate_two_word_simon_inverse_round(
 
 
 def _truncated_and(
-    left: TruncatedXorDifference, right: TruncatedXorDifference,
+    left: TruncatedXorDifference,
+    right: TruncatedXorDifference,
 ) -> TruncatedXorDifference:
     """Apply the conservative legacy AND difference abstraction."""
 
     if len(left.bits) != len(right.bits):
         raise ValueError("truncated AND operands must have equal width")
-    return TruncatedXorDifference(tuple(
-        TruncatedBit.ZERO
-        if left_bit is right_bit is TruncatedBit.ZERO else TruncatedBit.UNKNOWN
-        for left_bit, right_bit in zip(left.bits, right.bits)
-    ))
+    return TruncatedXorDifference(
+        tuple(
+            TruncatedBit.ZERO
+            if left_bit is right_bit is TruncatedBit.ZERO
+            else TruncatedBit.UNKNOWN
+            for left_bit, right_bit in zip(left.bits, right.bits)
+        )
+    )
 
 
 def propagate_single_active_aes_byte(
-    primitive: Primitive, byte_index: int,
+    primitive: Primitive,
+    byte_index: int,
 ) -> tuple[WordwiseXorDifference, ...]:
     """Propagate one nonzero plaintext-byte difference through AES round one.
 
@@ -660,16 +712,21 @@ def propagate_single_active_aes_byte(
         raise ValueError("byte_index must be in range(16)")
     boundaries = primitive.round_states[0]
     shifted = _named_component(
-        primitive, boundaries["shift_rows"].owner_id, Permutation,
+        primitive,
+        boundaries["shift_rows"].owner_id,
+        Permutation,
     )
     mixed = _named_component(
-        primitive, boundaries["mix_columns"].owner_id, LinearMap,
+        primitive,
+        boundaries["mix_columns"].owner_id,
+        LinearMap,
     )
     sbox_activity = [WordwiseXorDifference(8, WordwiseDifferenceKind.ZERO) for _ in range(16)]
     sbox_activity[byte_index] = WordwiseXorDifference(8, WordwiseDifferenceKind.NONZERO)
     shifted_activity = [sbox_activity[source] for source in shifted.mapping]
     active_sources = [
-        index for index, word in enumerate(shifted_activity)
+        index
+        for index, word in enumerate(shifted_activity)
         if word.kind is WordwiseDifferenceKind.NONZERO
     ]
     if len(active_sources) != 1:
@@ -678,21 +735,20 @@ def propagate_single_active_aes_byte(
     return tuple(
         WordwiseXorDifference(
             8,
-            WordwiseDifferenceKind.NONZERO
-            if row[source] != 0 else WordwiseDifferenceKind.ZERO,
+            WordwiseDifferenceKind.NONZERO if row[source] != 0 else WordwiseDifferenceKind.ZERO,
         )
         for row in mixed.matrix
     )
 
 
 def _rotation(primitive: Primitive, component_id: str) -> Rotate:
-    component = next((item for item in primitive.components if item.component_id == component_id), None)
+    component = next(
+        (item for item in primitive.components if item.component_id == component_id), None
+    )
     if component is None and primitive.family_name == "speck":
         parts = component_id.split("_")
         if len(parts) == 4 and parts[0] == "round" and parts[1].isdigit():
-            component = primitive.round_operations[int(parts[1])].get(
-                f"rotate_{parts[3]}"
-            )
+            component = primitive.round_operations[int(parts[1])].get(f"rotate_{parts[3]}")
     if not isinstance(component, Rotate):
         raise ValueError(f"primitive is missing rotation {component_id!r}")
     return component
@@ -709,7 +765,9 @@ def _speck_rotation(primitive: Primitive, round_number: int, direction: str) -> 
 
 
 def _named_component(primitive: Primitive, component_id: str, expected_type):
-    component = next((item for item in primitive.components if item.component_id == component_id), None)
+    component = next(
+        (item for item in primitive.components if item.component_id == component_id), None
+    )
     if not isinstance(component, expected_type):
         raise ValueError(f"primitive is missing {component_id!r}")
     return component

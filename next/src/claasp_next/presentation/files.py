@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from pathlib import Path
 
 from claasp_next.presentation.exports import render_section, report_data
 from claasp_next.presentation.model import ReportData
-
 
 _EXTENSIONS = {
     "terminal": ".txt",
@@ -34,14 +33,16 @@ class WrittenReport:
     byte_count: int
 
 
-def _validated_path(path: str | Path, format: str) -> Path:
-    if format not in _EXTENSIONS:
+def _validated_path(path: str | Path, output_format: str) -> Path:
+    if output_format not in _EXTENSIONS:
         raise ValueError("format must be one of: terminal, markdown, csv, json")
     candidate = Path(path)
     if not candidate.name or any(part == ".." for part in candidate.parts):
         raise ValueError("output path must be explicit and must not contain '..'")
-    if candidate.suffix.lower() != _EXTENSIONS[format]:
-        raise ValueError(f"{format} output requires the {_EXTENSIONS[format]} extension")
+    if candidate.suffix.lower() != _EXTENSIONS[output_format]:
+        raise ValueError(
+            f"{output_format} output requires the {_EXTENSIONS[output_format]} extension"
+        )
     if candidate.exists() and candidate.is_dir():
         raise IsADirectoryError(candidate)
     if candidate.is_symlink():
@@ -53,7 +54,7 @@ def write_report(
     report: ReportData,
     path: str | Path,
     *,
-    format: str,
+    format: str,  # noqa: A002 - public format API
     overwrite: bool = False,
     create_parents: bool = False,
 ) -> WrittenReport:
@@ -95,7 +96,11 @@ def write_report(
     return WrittenReport(destination, normalized, len(text.encode("utf-8")))
 
 
-def render_report(report: ReportData, *, format: str = "terminal") -> str:
+def render_report(
+    report: ReportData,
+    *,
+    format: str = "terminal",  # noqa: A002 - public format API
+) -> str:
     """Render a complete human-readable report with citations and provenance.
 
     EXAMPLES::

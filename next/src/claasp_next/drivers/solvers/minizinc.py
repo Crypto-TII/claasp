@@ -1,12 +1,12 @@
 """Command-line MiniZinc driver with no Python package dependency."""
 
+import json
+import shutil
+import subprocess
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
-import json
 from pathlib import Path
-import shutil
-import subprocess
 from tempfile import TemporaryDirectory
 from time import monotonic
 
@@ -64,7 +64,10 @@ class CPResult:
 
         if self.values is None:
             return None
-        return {name: int(value) if isinstance(value, bool) else value for name, value in self.values.items()}
+        return {
+            name: int(value) if isinstance(value, bool) else value
+            for name, value in self.values.items()
+        }
 
 
 @dataclass(frozen=True, slots=True)
@@ -166,8 +169,13 @@ class MiniZincSolver:
             start = monotonic()
             completed = subprocess.run(
                 [
-                    executable, "--solver", self.solver, "--output-mode", "json",
-                    "--all-solutions", str(path),
+                    executable,
+                    "--solver",
+                    self.solver,
+                    "--output-mode",
+                    "json",
+                    "--all-solutions",
+                    str(path),
                 ],
                 text=True,
                 capture_output=True,
@@ -187,8 +195,14 @@ class MiniZincSolver:
                 for solution in solutions
             )
         return CPEnumerationResult(
-            status, solutions, complete, termination, elapsed,
-            self.solver, completed.stdout, completed.stderr,
+            status,
+            solutions,
+            complete,
+            termination,
+            elapsed,
+            self.solver,
+            completed.stdout,
+            completed.stderr,
         )
 
 
@@ -234,8 +248,11 @@ def _parse_all_output(
     if unknown:
         return CPStatus.UNKNOWN, tuple(solutions), False, "unknown"
     if solutions:
-        return CPStatus.SATISFIED, tuple(solutions), complete, (
-            "exhausted" if complete else "missing_terminal_marker"
+        return (
+            CPStatus.SATISFIED,
+            tuple(solutions),
+            complete,
+            ("exhausted" if complete else "missing_terminal_marker"),
         )
     if "=====UNSATISFIABLE=====" in output:
         return CPStatus.UNSATISFIABLE, (), True, "exhausted_unsat"

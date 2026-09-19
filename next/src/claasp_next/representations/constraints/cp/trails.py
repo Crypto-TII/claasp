@@ -2,22 +2,31 @@
 
 from claasp_next.components import BitVectorSBox, Permutation, Rotate
 from claasp_next.domains import Word
-from claasp_next.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
-from claasp_next.semantics.cryptanalysis import (
-    ImpossiblePropagationBoundary, ModularAddTransitionSemantics, PropagationProblem,
-    ProbabilisticTruncatedModularAddTransition, ProbabilisticTruncatedTrail,
-    Trail, TrailKind, TrailStep,
-    TruncatedXorDifference, XorDifference, XorMask,
-    check_probabilistic_truncated_modular_add, propagate_two_word_speck_round,
-    propagate_two_word_simon_inverse_round, propagate_two_word_simon_round,
-    WordwiseDifferenceKind, WordwiseXorDifference,
-    SBoxBoomerangSemantics,
-)
-from claasp_next.semantics import DETERMINISTIC_TRUNCATED_XOR
 from claasp_next.representations.constraints.cp.model import MiniZincModel
 from claasp_next.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
     check_present_smt_trail,
+)
+from claasp_next.semantics import DETERMINISTIC_TRUNCATED_XOR, XOR_DIFFERENTIAL, XOR_LINEAR
+from claasp_next.semantics.cryptanalysis import (
+    ImpossiblePropagationBoundary,
+    ModularAddTransitionSemantics,
+    ProbabilisticTruncatedModularAddTransition,
+    ProbabilisticTruncatedTrail,
+    PropagationProblem,
+    SBoxBoomerangSemantics,
+    Trail,
+    TrailKind,
+    TrailStep,
+    TruncatedXorDifference,
+    WordwiseDifferenceKind,
+    WordwiseXorDifference,
+    XorDifference,
+    XorMask,
+    check_probabilistic_truncated_modular_add,
+    propagate_two_word_simon_inverse_round,
+    propagate_two_word_simon_round,
+    propagate_two_word_speck_round,
 )
 
 
@@ -78,7 +87,9 @@ class PresentDifferentialCPModel:
                     for target in range(16):
                         transition = semantics.transition((source,), target)
                         if transition.is_possible:
-                            rows.append((*_bits(source, 4), *_bits(target, 4), int(transition.weight)))
+                            rows.append(
+                                (*_bits(source, 4), *_bits(target, 4), int(transition.weight))
+                            )
                 table_name = f"round_{round_number}_sbox_{nibble}_table"
                 flattened = ",".join(str(item) for row in rows for item in row)
                 declarations.append(
@@ -96,8 +107,10 @@ class PresentDifferentialCPModel:
         self._input_names = plaintext
         self._last_output_names = second_output
         return MiniZincModel(
-            tuple(declarations), tuple(constraints),
-            includes=('include "table.mzn";',), provenance=self.problem.provenance,
+            tuple(declarations),
+            tuple(constraints),
+            includes=('include "table.mzn";',),
+            provenance=self.problem.provenance,
         )
 
     def decode_trail(self, assignment) -> Trail:
@@ -117,7 +130,8 @@ class PresentDifferentialCPModel:
         trail = Trail(
             TrailKind.XOR_DIFFERENTIAL,
             XorDifference(_integer(assignment[name] for name in self._input_names), 64),
-            XorDifference(final, 64), tuple(steps),
+            XorDifference(final, 64),
+            tuple(steps),
         )
         if not check_present_smt_trail(self.primitive, trail):
             raise ValueError("MiniZinc returned an invalid differential trail")
@@ -180,7 +194,9 @@ class PresentLinearCPModel:
                     for target in range(16):
                         transition = semantics.transition((source,), target)
                         if transition.is_possible:
-                            rows.append((*_bits(source, 4), *_bits(target, 4), int(transition.weight)))
+                            rows.append(
+                                (*_bits(source, 4), *_bits(target, 4), int(transition.weight))
+                            )
                 table_name = f"round_{round_number}_linear_{nibble}_table"
                 flattened = ",".join(str(item) for row in rows for item in row)
                 declarations.append(
@@ -201,8 +217,10 @@ class PresentLinearCPModel:
         self._input_names = input_names
         self._last_output_names = last_output
         return MiniZincModel(
-            tuple(declarations), tuple(constraints),
-            includes=('include "table.mzn";',), provenance=self.problem.provenance,
+            tuple(declarations),
+            tuple(constraints),
+            includes=('include "table.mzn";',),
+            provenance=self.problem.provenance,
         )
 
     def decode_trail(self, assignment) -> Trail:
@@ -222,7 +240,8 @@ class PresentLinearCPModel:
         trail = Trail(
             TrailKind.XOR_LINEAR,
             XorMask(_integer(assignment[name] for name in self._input_names), 64),
-            XorMask(final, 64), tuple(steps),
+            XorMask(final, 64),
+            tuple(steps),
         )
         if not check_present_linear_smt_trail(self.primitive, trail):
             raise ValueError("MiniZinc returned an invalid linear trail")
@@ -245,8 +264,15 @@ class SpeckDifferentialCPModel:
         required configuration rejected
     """
 
-    def __init__(self, problem: PropagationProblem, *, input_difference=None,
-                 output_difference=None, boundary_relation=None, round_count=None) -> None:
+    def __init__(
+        self,
+        problem: PropagationProblem,
+        *,
+        input_difference=None,
+        output_difference=None,
+        boundary_relation=None,
+        round_count=None,
+    ) -> None:
         if not isinstance(problem, PropagationProblem):
             raise TypeError("problem must be a PropagationProblem")
         if problem.semantics != XOR_DIFFERENTIAL:
@@ -273,8 +299,11 @@ class SpeckDifferentialCPModel:
             raise ValueError("boundary_relation must be equal or not_equal")
         self.boundary_relation = boundary_relation
         self.round_count = len(self.primitive.rounds) if round_count is None else round_count
-        if (not isinstance(self.round_count, int) or isinstance(self.round_count, bool)
-                or not 1 <= self.round_count <= len(self.primitive.rounds)):
+        if (
+            not isinstance(self.round_count, int)
+            or isinstance(self.round_count, bool)
+            or not 1 <= self.round_count <= len(self.primitive.rounds)
+        ):
             raise ValueError("round_count must select a nonempty Speck prefix")
 
     def cp_model(self) -> MiniZincModel:
@@ -284,18 +313,16 @@ class SpeckDifferentialCPModel:
         declarations = [_MODADD_DIFFERENTIAL_PREDICATE]
         constraints = []
         for boundary in range(rounds + 1):
-            declarations.extend((
-                f"array[0..15] of var bool: x_{boundary};",
-                f"array[0..15] of var bool: y_{boundary};",
-            ))
+            declarations.extend(
+                (
+                    f"array[0..15] of var bool: x_{boundary};",
+                    f"array[0..15] of var bool: y_{boundary};",
+                )
+            )
         for round_number in range(rounds):
             declarations.append(f"array[0..14] of var bool: weight_{round_number};")
-            alpha = _component(
-                self.primitive, f"round_{round_number}_rotate_right", Rotate
-            ).amount
-            beta = _component(
-                self.primitive, f"round_{round_number}_rotate_left", Rotate
-            ).amount
+            alpha = _component(self.primitive, f"round_{round_number}_rotate_right", Rotate).amount
+            beta = _component(self.primitive, f"round_{round_number}_rotate_left", Rotate).amount
             constraints.append(
                 "constraint modular_addition_xor_difference("
                 f"{_array_rotation(f'x_{round_number}', -alpha, self.width)}, "
@@ -317,9 +344,13 @@ class SpeckDifferentialCPModel:
                 constraints.append(f"constraint {name}_{boundary}[{bit % 16}] = {encoded};")
         if self.boundary_relation == "equal":
             for name in ("x", "y"):
-                constraints.append(f"constraint forall(i in 0..15)({name}_0[i] = {name}_{rounds}[i]);")
+                constraints.append(
+                    f"constraint forall(i in 0..15)({name}_0[i] = {name}_{rounds}[i]);"
+                )
         elif self.boundary_relation == "not_equal":
-            constraints.append(f"constraint exists(i in 0..15)(x_0[i] != x_{rounds}[i] \\/ y_0[i] != y_{rounds}[i]);")
+            constraints.append(
+                f"constraint exists(i in 0..15)(x_0[i] != x_{rounds}[i] \\/ y_0[i] != y_{rounds}[i]);"
+            )
         weight_terms = [
             f"bool2int(weight_{round_number}[{bit}])"
             for round_number in range(rounds)
@@ -341,12 +372,8 @@ class SpeckDifferentialCPModel:
         right = _boolean_word(assignment["y_0"])
         initial = (left << self.width) | right
         for round_number in range(self.round_count):
-            alpha = _component(
-                self.primitive, f"round_{round_number}_rotate_right", Rotate
-            ).amount
-            beta = _component(
-                self.primitive, f"round_{round_number}_rotate_left", Rotate
-            ).amount
+            alpha = _component(self.primitive, f"round_{round_number}_rotate_right", Rotate).amount
+            beta = _component(self.primitive, f"round_{round_number}_rotate_left", Rotate).amount
             output = _boolean_word(assignment[f"x_{round_number + 1}"])
             transition = semantics.xor_differential(
                 _rotate_right_integer(left, alpha, self.width), right, output
@@ -365,13 +392,20 @@ class SpeckDifferentialCPModel:
             XorDifference((left << self.width) | right, 2 * self.width),
             tuple(steps),
         )
-        if (not initial or trail.total_weight > self.problem.maximum_weight
-                or (self.input_difference is not None and initial != self.input_difference)
-                or (self.output_difference is not None and trail.output_pattern.value != self.output_difference)):
+        if (
+            not initial
+            or trail.total_weight > self.problem.maximum_weight
+            or (self.input_difference is not None and initial != self.input_difference)
+            or (
+                self.output_difference is not None
+                and trail.output_pattern.value != self.output_difference
+            )
+        ):
             raise ValueError("MiniZinc assignment violates requested Speck boundaries or weight")
         equal = initial == trail.output_pattern.value
-        if ((self.boundary_relation == "equal" and not equal)
-                or (self.boundary_relation == "not_equal" and equal)):
+        if (self.boundary_relation == "equal" and not equal) or (
+            self.boundary_relation == "not_equal" and equal
+        ):
             raise ValueError("MiniZinc assignment violates requested boundary relation")
         return trail
 
@@ -424,10 +458,12 @@ class SpeckTruncatedCPModel:
         """Decode and independently compare the solver's three-valued output."""
 
         symbols = {0: "0", 1: "1", 2: "?"}
-        pattern = TruncatedXorDifference.parse("".join(
-            symbols[assignment[f"round_0_output_truncated_{index}"]]
-            for index in range(len(self.expected_output.bits))
-        ))
+        pattern = TruncatedXorDifference.parse(
+            "".join(
+                symbols[assignment[f"round_0_output_truncated_{index}"]]
+                for index in range(len(self.expected_output.bits))
+            )
+        )
         if pattern != self.expected_output:
             raise ValueError("MiniZinc returned an invalid truncated propagation")
         return pattern
@@ -485,13 +521,17 @@ class ProbabilisticTruncatedModularAddCPModel:
         ]
         if self.carry_difference is not None:
             constraints.append(_fixed_array("carry_difference", self.carry_difference))
-        constraints.extend((
-            "constraint counter_based_probabilistic_truncated_modadd(left, right, "
-            "output_difference, carry_difference, costs, scaled_weight);",
-            "constraint costs[" + str(last) + "] = 0;",
-        ))
+        constraints.extend(
+            (
+                "constraint counter_based_probabilistic_truncated_modadd(left, right, "
+                "output_difference, carry_difference, costs, scaled_weight);",
+                "constraint costs[" + str(last) + "] = 0;",
+            )
+        )
         return MiniZincModel(
-            declarations, tuple(constraints), solve="solve minimize scaled_weight;",
+            declarations,
+            tuple(constraints),
+            solve="solve minimize scaled_weight;",
             provenance=("legacy counter_based_modadd_semideterministic fixture",),
         )
 
@@ -536,7 +576,8 @@ class SpeckProbabilisticTruncatedCPModel:
             raise ValueError("Speck model requires probabilistic-truncated XOR semantics")
         plaintext = problem.primitive.input_ports.get("plaintext")
         if (
-            problem.primitive.family_name != "speck" or plaintext is None
+            problem.primitive.family_name != "speck"
+            or plaintext is None
             or not isinstance(plaintext.value_type.domain, Word)
             or plaintext.value_type.domain.width != 16
         ):
@@ -556,31 +597,33 @@ class SpeckProbabilisticTruncatedCPModel:
         declarations = [_PROBABILISTIC_TRUNCATED_MODADD_PREDICATE]
         constraints = []
         for boundary in range(rounds + 1):
-            declarations.extend((
-                f"array[0..15] of var 0..2: x_{boundary};",
-                f"array[0..15] of var 0..2: y_{boundary};",
-            ))
+            declarations.extend(
+                (
+                    f"array[0..15] of var 0..2: x_{boundary};",
+                    f"array[0..15] of var 0..2: y_{boundary};",
+                )
+            )
         probabilities = []
         for round_number in range(rounds):
-            declarations.extend((
-                f"array[0..15] of var 0..2: carry_{round_number};",
-                f"array[0..15] of var {{0,4,9,19,41,100}}: costs_{round_number};",
-                f"var int: probability_{round_number};",
-            ))
+            declarations.extend(
+                (
+                    f"array[0..15] of var 0..2: carry_{round_number};",
+                    f"array[0..15] of var {{0,4,9,19,41,100}}: costs_{round_number};",
+                    f"var int: probability_{round_number};",
+                )
+            )
             probabilities.append(f"probability_{round_number}")
-            alpha = _component(
-                self.primitive, f"round_{round_number}_rotate_right", Rotate
-            ).amount
-            beta = _component(
-                self.primitive, f"round_{round_number}_rotate_left", Rotate
-            ).amount
-            constraints.extend((
-                "constraint counter_based_probabilistic_truncated_modadd("
-                f"{_array_rotation(f'x_{round_number}', -alpha, self.width)}, "
-                f"y_{round_number}, x_{round_number + 1}, carry_{round_number}, "
-                f"costs_{round_number}, probability_{round_number});",
-                f"constraint costs_{round_number}[15] = 0;",
-            ))
+            alpha = _component(self.primitive, f"round_{round_number}_rotate_right", Rotate).amount
+            beta = _component(self.primitive, f"round_{round_number}_rotate_left", Rotate).amount
+            constraints.extend(
+                (
+                    "constraint counter_based_probabilistic_truncated_modadd("
+                    f"{_array_rotation(f'x_{round_number}', -alpha, self.width)}, "
+                    f"y_{round_number}, x_{round_number + 1}, carry_{round_number}, "
+                    f"costs_{round_number}, probability_{round_number});",
+                    f"constraint costs_{round_number}[15] = 0;",
+                )
+            )
             for index in range(self.width):
                 source = (index + beta) % self.width
                 constraints.append(
@@ -588,16 +631,20 @@ class SpeckProbabilisticTruncatedCPModel:
                     f"truncated_xor2(y_{round_number}[{source}], "
                     f"x_{round_number + 1}[{index}]);"
                 )
-        constraints.extend((
-            _fixed_array("x_0", TruncatedXorDifference(self.input_pattern.bits[:16])),
-            _fixed_array("y_0", TruncatedXorDifference(self.input_pattern.bits[16:])),
-            _fixed_array(f"x_{rounds}", TruncatedXorDifference(self.output_pattern.bits[:16])),
-            _fixed_array(f"y_{rounds}", TruncatedXorDifference(self.output_pattern.bits[16:])),
-        ))
+        constraints.extend(
+            (
+                _fixed_array("x_0", TruncatedXorDifference(self.input_pattern.bits[:16])),
+                _fixed_array("y_0", TruncatedXorDifference(self.input_pattern.bits[16:])),
+                _fixed_array(f"x_{rounds}", TruncatedXorDifference(self.output_pattern.bits[:16])),
+                _fixed_array(f"y_{rounds}", TruncatedXorDifference(self.output_pattern.bits[16:])),
+            )
+        )
         declarations.append("var int: scaled_weight;")
         constraints.append(f"constraint scaled_weight = sum([{', '.join(probabilities)}]);")
         return MiniZincModel(
-            tuple(declarations), tuple(constraints), solve="solve minimize scaled_weight;",
+            tuple(declarations),
+            tuple(constraints),
+            solve="solve minimize scaled_weight;",
             provenance=self.problem.provenance,
         )
 
@@ -608,15 +655,13 @@ class SpeckProbabilisticTruncatedCPModel:
         left = TruncatedXorDifference(self.input_pattern.bits[:16])
         right = TruncatedXorDifference(self.input_pattern.bits[16:])
         for round_number in range(len(self.primitive.rounds)):
-            alpha = _component(
-                self.primitive, f"round_{round_number}_rotate_right", Rotate
-            ).amount
-            beta = _component(
-                self.primitive, f"round_{round_number}_rotate_left", Rotate
-            ).amount
+            alpha = _component(self.primitive, f"round_{round_number}_rotate_right", Rotate).amount
+            beta = _component(self.primitive, f"round_{round_number}_rotate_left", Rotate).amount
             output = _decode_truncated(assignment[f"x_{round_number + 1}"])
             transition = ProbabilisticTruncatedModularAddTransition(
-                left.rotate_right(alpha), right, output,
+                left.rotate_right(alpha),
+                right,
+                output,
                 _decode_truncated(assignment[f"carry_{round_number}"]),
                 tuple(int(value) for value in assignment[f"costs_{round_number}"]),
             )
@@ -628,7 +673,8 @@ class SpeckProbabilisticTruncatedCPModel:
             transitions.append(transition)
             left, right = output, next_right
         trail = ProbabilisticTruncatedTrail(
-            self.input_pattern, TruncatedXorDifference(left.bits + right.bits),
+            self.input_pattern,
+            TruncatedXorDifference(left.bits + right.bits),
             tuple(transitions),
         )
         if trail.output_pattern != self.output_pattern:
@@ -678,7 +724,8 @@ class WordwiseDifferenceCPModel:
                 # meaning is carried exclusively by the enum state.
                 constraints.append(f"constraint value[{index}] = 0;")
         return MiniZincModel(
-            declarations, tuple(constraints),
+            declarations,
+            tuple(constraints),
             provenance=("typed wordwise XOR-difference states",),
         )
 
@@ -736,11 +783,10 @@ class ImpossibleBoundaryCPModel:
             rf"forward[{index}] != backward[{index}]);"
             for index in range(width)
         )
-        constraints.append(
-            f"constraint exists(i in 0..{width - 1})(contradiction[i]);"
-        )
+        constraints.append(f"constraint exists(i in 0..{width - 1})(contradiction[i]);")
         return MiniZincModel(
-            declarations, tuple(constraints),
+            declarations,
+            tuple(constraints),
             provenance=("forward/backward impossible propagation boundary",),
         )
 
@@ -752,8 +798,7 @@ class ImpossibleBoundaryCPModel:
             _decode_truncated(assignment["backward"]),
         )
         solver_positions = tuple(
-            index for index, value in enumerate(assignment["contradiction"])
-            if bool(value)
+            index for index, value in enumerate(assignment["contradiction"]) if bool(value)
         )
         if decoded != self.boundary or solver_positions != decoded.contradictory_positions:
             raise ValueError("MiniZinc returned an invalid impossible boundary")
@@ -782,7 +827,8 @@ class SpeckImpossibleCPModel:
     def __init__(self, primitive, middle_round: int) -> None:
         plaintext = primitive.input_ports.get("plaintext")
         if (
-            primitive.family_name != "speck" or plaintext is None
+            primitive.family_name != "speck"
+            or plaintext is None
             or not isinstance(plaintext.value_type.domain, Word)
             or plaintext.value_type.domain.width != 16
         ):
@@ -804,18 +850,16 @@ class SpeckImpossibleCPModel:
             ("backward", range(self.middle_round, rounds + 1)),
         ):
             for boundary in boundaries:
-                declarations.extend((
-                    f"array[0..15] of var 0..2: {prefix}_x_{boundary};",
-                    f"array[0..15] of var 0..2: {prefix}_y_{boundary};",
-                ))
+                declarations.extend(
+                    (
+                        f"array[0..15] of var 0..2: {prefix}_x_{boundary};",
+                        f"array[0..15] of var 0..2: {prefix}_y_{boundary};",
+                    )
+                )
         for round_number in range(self.middle_round):
             prefix = "forward"
-            alpha = _component(
-                self.primitive, f"round_{round_number}_rotate_right", Rotate
-            ).amount
-            beta = _component(
-                self.primitive, f"round_{round_number}_rotate_left", Rotate
-            ).amount
+            alpha = _component(self.primitive, f"round_{round_number}_rotate_right", Rotate).amount
+            beta = _component(self.primitive, f"round_{round_number}_rotate_left", Rotate).amount
             constraints.append(
                 "constraint deterministic_truncated_modadd("
                 f"{_array_rotation(f'{prefix}_x_{round_number}', -alpha, self.width)}, "
@@ -829,12 +873,8 @@ class SpeckImpossibleCPModel:
                     f"{prefix}_x_{round_number + 1}[{index}]);"
                 )
         for round_number in reversed(range(self.middle_round, rounds)):
-            alpha = _component(
-                self.primitive, f"round_{round_number}_rotate_right", Rotate
-            ).amount
-            beta = _component(
-                self.primitive, f"round_{round_number}_rotate_left", Rotate
-            ).amount
+            alpha = _component(self.primitive, f"round_{round_number}_rotate_right", Rotate).amount
+            beta = _component(self.primitive, f"round_{round_number}_rotate_left", Rotate).amount
             for index in range(self.width):
                 # old_y = ROR(new_y XOR new_x, beta)
                 source = (index - beta) % self.width
@@ -850,15 +890,18 @@ class SpeckImpossibleCPModel:
                 f"backward_x_{round_number + 1}, backward_y_{round_number}, "
                 f"{_array_rotation(f'backward_x_{round_number}', alpha, self.width)});"
             )
-        constraints.extend((
-            r"constraint exists(i in 0..15)(forward_x_0[i] != 0 \/ forward_y_0[i] != 0);",
-            rf"constraint exists(i in 0..15)(backward_x_{rounds}[i] != 0 \/ backward_y_{rounds}[i] != 0);",
-            "constraint exists(i in 0..15)(" +
-            rf"(forward_x_{self.middle_round}[i] + backward_x_{self.middle_round}[i] = 1) \/ " +
-            f"(forward_y_{self.middle_round}[i] + backward_y_{self.middle_round}[i] = 1));",
-        ))
+        constraints.extend(
+            (
+                r"constraint exists(i in 0..15)(forward_x_0[i] != 0 \/ forward_y_0[i] != 0);",
+                rf"constraint exists(i in 0..15)(backward_x_{rounds}[i] != 0 \/ backward_y_{rounds}[i] != 0);",
+                "constraint exists(i in 0..15)("
+                + rf"(forward_x_{self.middle_round}[i] + backward_x_{self.middle_round}[i] = 1) \/ "
+                + f"(forward_y_{self.middle_round}[i] + backward_y_{self.middle_round}[i] = 1));",
+            )
+        )
         return MiniZincModel(
-            tuple(declarations), tuple(constraints),
+            tuple(declarations),
+            tuple(constraints),
             provenance=(
                 "legacy MznImpossibleXorDifferentialModel Speck32/64 fixture",
                 "7 rounds, split after round 3, zero key difference",
@@ -893,40 +936,59 @@ class SimonImpossibleCPModel:
 
         rounds = len(self.primitive.rounds)
         declarations, constraints = [_SIMON_TRUNCATED_FUNCTIONS], []
-        for prefix, boundaries in (("forward", range(self.middle_round + 1)),
-                                   ("backward", range(self.middle_round, rounds + 1))):
+        for prefix, boundaries in (
+            ("forward", range(self.middle_round + 1)),
+            ("backward", range(self.middle_round, rounds + 1)),
+        ):
             for boundary in boundaries:
-                declarations.extend((f"array[0..15] of var 0..2: {prefix}_x_{boundary};",
-                                     f"array[0..15] of var 0..2: {prefix}_y_{boundary};"))
+                declarations.extend(
+                    (
+                        f"array[0..15] of var 0..2: {prefix}_x_{boundary};",
+                        f"array[0..15] of var 0..2: {prefix}_y_{boundary};",
+                    )
+                )
         for round_number in range(self.middle_round):
             for index in range(16):
-                constraints.extend((
-                    f"constraint forward_x_{round_number + 1}[{index}] = truncated_xor2("
-                    f"truncated_xor2(forward_y_{round_number}[{index}], truncated_and2("
-                    f"forward_x_{round_number}[{(index + 1) % 16}], forward_x_{round_number}[{(index + 8) % 16}])), "
-                    f"forward_x_{round_number}[{(index + 2) % 16}]);",
-                    f"constraint forward_y_{round_number + 1}[{index}] = forward_x_{round_number}[{index}];",
-                ))
+                constraints.extend(
+                    (
+                        f"constraint forward_x_{round_number + 1}[{index}] = truncated_xor2("
+                        f"truncated_xor2(forward_y_{round_number}[{index}], truncated_and2("
+                        f"forward_x_{round_number}[{(index + 1) % 16}], forward_x_{round_number}[{(index + 8) % 16}])), "
+                        f"forward_x_{round_number}[{(index + 2) % 16}]);",
+                        f"constraint forward_y_{round_number + 1}[{index}] = forward_x_{round_number}[{index}];",
+                    )
+                )
         for round_number in reversed(range(self.middle_round, rounds)):
             for index in range(16):
-                constraints.extend((
-                    f"constraint backward_x_{round_number}[{index}] = backward_y_{round_number + 1}[{index}];",
-                    f"constraint backward_y_{round_number}[{index}] = truncated_xor2("
-                    f"truncated_xor2(backward_x_{round_number + 1}[{index}], truncated_and2("
-                    f"backward_y_{round_number + 1}[{(index + 1) % 16}], backward_y_{round_number + 1}[{(index + 8) % 16}])), "
-                    f"backward_y_{round_number + 1}[{(index + 2) % 16}]);",
-                ))
-        constraints.extend((
-            _fixed_array("forward_x_0", TruncatedXorDifference(self.input_pattern.bits[:16])),
-            _fixed_array("forward_y_0", TruncatedXorDifference(self.input_pattern.bits[16:])),
-            _fixed_array(f"backward_x_{rounds}", TruncatedXorDifference(self.output_pattern.bits[:16])),
-            _fixed_array(f"backward_y_{rounds}", TruncatedXorDifference(self.output_pattern.bits[16:])),
-            "constraint exists(i in 0..15)(" +
-            rf"(forward_x_{self.middle_round}[i] + backward_x_{self.middle_round}[i] = 1) \/ " +
-            f"(forward_y_{self.middle_round}[i] + backward_y_{self.middle_round}[i] = 1));",
-        ))
-        return MiniZincModel(tuple(declarations), tuple(constraints), provenance=(
-            "legacy Simon32/64 11-round fully-automatic impossible fixture",))
+                constraints.extend(
+                    (
+                        f"constraint backward_x_{round_number}[{index}] = backward_y_{round_number + 1}[{index}];",
+                        f"constraint backward_y_{round_number}[{index}] = truncated_xor2("
+                        f"truncated_xor2(backward_x_{round_number + 1}[{index}], truncated_and2("
+                        f"backward_y_{round_number + 1}[{(index + 1) % 16}], backward_y_{round_number + 1}[{(index + 8) % 16}])), "
+                        f"backward_y_{round_number + 1}[{(index + 2) % 16}]);",
+                    )
+                )
+        constraints.extend(
+            (
+                _fixed_array("forward_x_0", TruncatedXorDifference(self.input_pattern.bits[:16])),
+                _fixed_array("forward_y_0", TruncatedXorDifference(self.input_pattern.bits[16:])),
+                _fixed_array(
+                    f"backward_x_{rounds}", TruncatedXorDifference(self.output_pattern.bits[:16])
+                ),
+                _fixed_array(
+                    f"backward_y_{rounds}", TruncatedXorDifference(self.output_pattern.bits[16:])
+                ),
+                "constraint exists(i in 0..15)("
+                + rf"(forward_x_{self.middle_round}[i] + backward_x_{self.middle_round}[i] = 1) \/ "
+                + f"(forward_y_{self.middle_round}[i] + backward_y_{self.middle_round}[i] = 1));",
+            )
+        )
+        return MiniZincModel(
+            tuple(declarations),
+            tuple(constraints),
+            provenance=("legacy Simon32/64 11-round fully-automatic impossible fixture",),
+        )
 
     def decode_boundary(self, assignment) -> ImpossiblePropagationBoundary:
         """Decode both middle patterns and check them independently in Python."""
@@ -938,10 +1000,14 @@ class SimonImpossibleCPModel:
         for _ in range(len(self.primitive.rounds) - self.middle_round):
             backward = propagate_two_word_simon_inverse_round(backward)
         decoded = ImpossiblePropagationBoundary(
-            TruncatedXorDifference(_decode_truncated(assignment[f"forward_x_{self.middle_round}"]).bits +
-                                   _decode_truncated(assignment[f"forward_y_{self.middle_round}"]).bits),
-            TruncatedXorDifference(_decode_truncated(assignment[f"backward_x_{self.middle_round}"]).bits +
-                                   _decode_truncated(assignment[f"backward_y_{self.middle_round}"]).bits),
+            TruncatedXorDifference(
+                _decode_truncated(assignment[f"forward_x_{self.middle_round}"]).bits
+                + _decode_truncated(assignment[f"forward_y_{self.middle_round}"]).bits
+            ),
+            TruncatedXorDifference(
+                _decode_truncated(assignment[f"backward_x_{self.middle_round}"]).bits
+                + _decode_truncated(assignment[f"backward_y_{self.middle_round}"]).bits
+            ),
         )
         if decoded != ImpossiblePropagationBoundary(forward, backward) or not decoded.is_impossible:
             raise ValueError("MiniZinc returned an invalid Simon impossible boundary")
@@ -1007,7 +1073,9 @@ class SBoxDifferenceCPModel:
             f"constraint output_difference = {self.output_difference};",
         )
         return MiniZincModel(
-            declarations, constraints, includes=('include "table.mzn";',),
+            declarations,
+            constraints,
+            includes=('include "table.mzn";',),
             provenance=self.problem.provenance,
         )
 
@@ -1024,12 +1092,19 @@ class SBoxBoomerangCPModel:
         required configuration rejected
     """
 
-    def __init__(self, component: BitVectorSBox, input_difference=None, output_difference=None) -> None:
+    def __init__(
+        self, component: BitVectorSBox, input_difference=None, output_difference=None
+    ) -> None:
         if not isinstance(component, BitVectorSBox):
             raise TypeError("component must be a BitVectorSBox")
         semantics = SBoxBoomerangSemantics(component.table)
-        for name, value in (("input_difference", input_difference), ("output_difference", output_difference)):
-            if value is not None and (not isinstance(value, int) or not 0 <= value < len(component.table)):
+        for name, value in (
+            ("input_difference", input_difference),
+            ("output_difference", output_difference),
+        ):
+            if value is not None and (
+                not isinstance(value, int) or not 0 <= value < len(component.table)
+            ):
                 raise ValueError(f"{name} must fit the S-box width")
         self.component = component
         self.semantics = semantics
@@ -1054,13 +1129,17 @@ class SBoxBoomerangCPModel:
             f"var 0..{limit}: output_difference;",
             f"var 1..{len(self.component.table)}: quartet_count;",
         )
-        constraints = ["constraint table([input_difference, output_difference, quartet_count], bct);"]
+        constraints = [
+            "constraint table([input_difference, output_difference, quartet_count], bct);"
+        ]
         if self.input_difference is not None:
             constraints.append(f"constraint input_difference = {self.input_difference};")
         if self.output_difference is not None:
             constraints.append(f"constraint output_difference = {self.output_difference};")
         return MiniZincModel(
-            declarations, tuple(constraints), includes=('include "table.mzn";',),
+            declarations,
+            tuple(constraints),
+            includes=('include "table.mzn";',),
             solve="solve maximize quartet_count;",
             provenance=(f"exact exhaustive BCT for {self.component.component_id}",),
         )
@@ -1095,7 +1174,8 @@ def _permute(value, mapping):
 def _round_sboxes(primitive, round_number):
     prefix = f"sbox_{round_number}_"
     result = tuple(
-        component for component in primitive.components
+        component
+        for component in primitive.components
         if isinstance(component, BitVectorSBox) and component.component_id.startswith(prefix)
     )
     if len(result) != 16:

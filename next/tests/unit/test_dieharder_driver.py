@@ -3,9 +3,8 @@ from pathlib import Path
 import pytest
 
 from claasp_next.analysis import cbc_dataset
-from claasp_next.primitives import Speck
 from claasp_next.drivers.statistical import DieharderDriver
-
+from claasp_next.primitives import Speck
 
 SCRIPT = """#!/bin/sh
 if [ "$1" = "-h" ]; then
@@ -32,9 +31,7 @@ def test_driver_uses_raw_generator_and_records_reproducibility(tmp_path):
         3,
         fixed_inputs={"key": 0},
     )
-    run = DieharderDriver(str(_fake_dieharder(tmp_path)), timeout_seconds=2).run(
-        dataset, test=100
-    )
+    run = DieharderDriver(str(_fake_dieharder(tmp_path)), timeout_seconds=2).run(dataset, test=100)
 
     assert run.suite == "dieharder"
     assert run.suite_version == "dieharder version 3.test"
@@ -45,9 +42,7 @@ def test_driver_uses_raw_generator_and_records_reproducibility(tmp_path):
 
 
 def test_driver_validates_options_and_external_failures(tmp_path):
-    dataset = cbc_dataset(
-        Speck(number_of_rounds=1), "plaintext", 1, 1, fixed_inputs={"key": 0}
-    )
+    dataset = cbc_dataset(Speck(number_of_rounds=1), "plaintext", 1, 1, fixed_inputs={"key": 0})
     with pytest.raises(ValueError, match="non-negative"):
         DieharderDriver(str(_fake_dieharder(tmp_path))).run(dataset, test=-1)
     with pytest.raises(FileNotFoundError, match="was not found"):

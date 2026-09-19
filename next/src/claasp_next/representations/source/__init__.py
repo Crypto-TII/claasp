@@ -1,10 +1,14 @@
 """Deterministic source representations compiled from typed graphs."""
 
+from claasp_next.representations.source.c import C_COMPILER, compile_c_source
 from claasp_next.representations.source.model import (
-    SourceArtifact, SourceCompilationResult, SourceDiagnostic, SourceLanguage, SourceStatus,
+    SourceArtifact,
+    SourceCompilationResult,
+    SourceDiagnostic,
+    SourceLanguage,
+    SourceStatus,
 )
 from claasp_next.representations.source.python import PYTHON_COMPILER, compile_python_source
-from claasp_next.representations.source.c import C_COMPILER, compile_c_source
 
 
 def compile_source(primitive, *, target: SourceLanguage | str = SourceLanguage.PYTHON):
@@ -25,7 +29,9 @@ def compile_source(primitive, *, target: SourceLanguage | str = SourceLanguage.P
     except (TypeError, ValueError):
         return SourceCompilationResult(
             SourceStatus.UNSUPPORTED,
-            diagnostic=SourceDiagnostic("unsupported_language", f"unsupported source language {target!r}"),
+            diagnostic=SourceDiagnostic(
+                "unsupported_language", f"unsupported source language {target!r}"
+            ),
         )
     if language is SourceLanguage.PYTHON:
         return compile_python_source(primitive)
@@ -33,7 +39,14 @@ def compile_source(primitive, *, target: SourceLanguage | str = SourceLanguage.P
 
 
 __all__ = [
-    "C_COMPILER", "PYTHON_COMPILER", "SourceArtifact", "SourceCompilationResult",
-    "SourceDiagnostic", "SourceLanguage", "SourceStatus", "compile_c_source",
-    "compile_python_source", "compile_source",
+    "C_COMPILER",
+    "PYTHON_COMPILER",
+    "SourceArtifact",
+    "SourceCompilationResult",
+    "SourceDiagnostic",
+    "SourceLanguage",
+    "SourceStatus",
+    "compile_c_source",
+    "compile_python_source",
+    "compile_source",
 ]

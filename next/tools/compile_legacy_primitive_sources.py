@@ -9,10 +9,9 @@ from __future__ import annotations
 
 import ast
 import json
-from pathlib import Path
 import re
 import shutil
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 V5_ROOT = ROOT / "next" / "src"
@@ -21,8 +20,7 @@ INVENTORY = ROOT / "next" / "migration" / "legacy_inventory.json"
 
 def _replacement(node: ast.ImportFrom) -> str | None:
     names = ", ".join(
-        name.name if name.asname is None else f"{name.name} as {name.asname}"
-        for name in node.names
+        name.name if name.asname is None else f"{name.name} as {name.asname}" for name in node.names
     )
     if node.module == "claasp.cipher":
         return "from claasp_next.graph.bit_builder import BitGraphPrimitive"
@@ -61,12 +59,16 @@ def compile_source(source: Path, destination: Path, old_class: str, new_class: s
         lines[start:end] = replacement
     text = "\n".join(lines) + "\n"
     text = re.sub(rf"\b{re.escape(old_class)}\b", new_class, text)
-    text = re.sub(rf"\bclass {re.escape(new_class)}\(Cipher\):", f"class {new_class}(BitGraphPrimitive):", text)
+    text = re.sub(
+        rf"\bclass {re.escape(new_class)}\(Cipher\):",
+        f"class {new_class}(BitGraphPrimitive):",
+        text,
+    )
     text = re.sub(r"\bComponentState\b", "BitState", text)
     if source.name == "lowmc_block_cipher.py":
         text = text.replace('+ "/" + self.constants', '+ "/data/" + self.constants')
         text = re.sub(
-            r'\n\s*# Only generate constant data if needed\n\s*if not exists\(.*?\):\n\s*lowmc_generate_matrices\.main\(.*?\)\n',
+            r"\n\s*# Only generate constant data if needed\n\s*if not exists\(.*?\):\n\s*lowmc_generate_matrices\.main\(.*?\)\n",
             '\n        if not exists(dirname(realpath(__file__)) + "/data/" + self.constants):\n'
             '            raise ValueError("unsupported LowMC parameter set: no vetted constant data is packaged")\n',
             text,
@@ -74,7 +76,9 @@ def compile_source(source: Path, destination: Path, old_class: str, new_class: s
     if source.name in {"xoodoo_permutation.py", "xoodoo_sbox_permutation.py"}:
         text = re.sub(
             r'R = PolynomialRing\(GF\(2\), "t"\).*?\n\n\nclass',
-            'QI = SI = t = None\n\n\nclass', text, flags=re.DOTALL,
+            "QI = SI = t = None\n\n\nclass",
+            text,
+            flags=re.DOTALL,
         )
     text = text.replace("claasp.ciphers", "claasp.__LEGACY_CATALOGUE__")
     for old, new in (
@@ -114,14 +118,17 @@ def main() -> None:
         destination = module_path.with_suffix(".py")
         if not destination.exists():
             destination = module_path / "primitive.py"
-        if not destination.exists() or "BitGraphPrimitive" not in destination.read_text(encoding="utf-8"):
+        if not destination.exists() or "BitGraphPrimitive" not in destination.read_text(
+            encoding="utf-8"
+        ):
             continue
         source = ROOT / record["path"]
         if source.name == "chacha_stream_cipher.py":
             continue
         tree = ast.parse(source.read_text(encoding="utf-8"))
         source_classes = [
-            node.name for node in tree.body
+            node.name
+            for node in tree.body
             if isinstance(node, ast.ClassDef)
             and any(isinstance(base, ast.Name) and base.id == "Cipher" for base in node.bases)
         ]

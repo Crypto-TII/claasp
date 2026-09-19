@@ -1,9 +1,9 @@
 """Public contracts shared by immutable graph transformations."""
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
 from types import MappingProxyType
-from collections.abc import Mapping
 
 from claasp_next.graph import Primitive
 from claasp_next.provenance import TransformationRecord
@@ -50,7 +50,8 @@ class TransformationError(ValueError):
         source_ids: tuple[str, ...] = (),
     ) -> None:
         self.reason = (
-            reason if isinstance(reason, TransformationFailureReason)
+            reason
+            if isinstance(reason, TransformationFailureReason)
             else TransformationFailureReason(reason)
         )
         if not isinstance(message, str) or not message:
@@ -84,7 +85,8 @@ class TransformationResult:
         if not isinstance(self.primitive, Primitive):
             raise TypeError("transformation result must contain a Primitive")
         if not isinstance(self.sources, tuple) or any(
-            not isinstance(item, tuple) or len(item) != 2
+            not isinstance(item, tuple)
+            or len(item) != 2
             or not all(isinstance(value, str) and value for value in item)
             for item in self.sources
         ):
@@ -114,5 +116,7 @@ def record_transformation(
 
 
 __all__ = [
-    "TransformationError", "TransformationFailureReason", "TransformationResult",
+    "TransformationError",
+    "TransformationFailureReason",
+    "TransformationResult",
 ]

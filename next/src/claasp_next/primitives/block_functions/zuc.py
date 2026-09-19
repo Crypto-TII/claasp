@@ -1,5 +1,4 @@
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import INPUT_INITIALIZATION_VECTOR, INPUT_KEY, STREAM_CIPHER
 
 # fmt: off
@@ -46,8 +45,42 @@ EK_d = [
     0b101111000100110, 0b011110001001101, 0b111100010011010, 0b100011110101100,
 ]
 # fmt: on
-LFSR_S = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
-LFSR_P = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+LFSR_S = [
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+]
+LFSR_P = [
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+]
 FSM_R = [None, None]
 FSM_P = [None, None]
 
@@ -55,7 +88,12 @@ WORD_SIZE = 32
 LFSR_W_SIZE = 31
 
 PARAMETERS_CONFIGURATION_LIST = [
-    {"iv_bit_size": 128, "key_bit_size": 128, "number_of_initialization_clocks": 32, "len_keystream_word": 1}
+    {
+        "iv_bit_size": 128,
+        "key_bit_size": 128,
+        "number_of_initialization_clocks": 32,
+        "len_keystream_word": 1,
+    }
 ]
 
 
@@ -74,7 +112,13 @@ class Zuc(BitGraphPrimitive):
         ('0x27bede74018082da', 62)
     """
 
-    def __init__(self, iv_bit_size=128, key_bit_size=128, number_of_initialization_clocks=32, len_keystream_word=2):
+    def __init__(
+        self,
+        iv_bit_size=128,
+        key_bit_size=128,
+        number_of_initialization_clocks=32,
+        len_keystream_word=2,
+    ):
         self.len_keystream_word = len_keystream_word
         self.key_bit_size = key_bit_size
         self.iv_bit_size = iv_bit_size
@@ -126,7 +170,11 @@ class Zuc(BitGraphPrimitive):
         for i in range(16):
             D.append(self.add_constant_component(15, EK_d[i]))
             LFSR_S[i] = [key.id[0], D[i].id, iv.id[0]]
-            LFSR_P[i] = [list(range(i * 8, (i + 1) * 8)), list(range(15)), list(range(i * 8, (i + 1) * 8))]
+            LFSR_P[i] = [
+                list(range(i * 8, (i + 1) * 8)),
+                list(range(15)),
+                list(range(i * 8, (i + 1) * 8)),
+            ]
 
     def lfsr_with_initialization_mode(self, W):
         """Build the lfsr with initialization mode stage in this primitive's typed operation graph."""
@@ -135,7 +183,10 @@ class Zuc(BitGraphPrimitive):
         W = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         self.add_modadd_component(
-            LFSR_S[15] + [W.id[0]], LFSR_P[15] + [list(range(1, WORD_SIZE))], LFSR_W_SIZE, (2**LFSR_W_SIZE) - 1
+            LFSR_S[15] + [W.id[0]],
+            LFSR_P[15] + [list(range(1, WORD_SIZE))],
+            LFSR_W_SIZE,
+            (2**LFSR_W_SIZE) - 1,
         )
         LFSR_S[15] = [BitState([self.get_current_component_id()], [list(range(LFSR_W_SIZE))]).id[0]]
         LFSR_P[15] = [list(range(LFSR_W_SIZE))]
@@ -157,7 +208,9 @@ class Zuc(BitGraphPrimitive):
         pr5 = BitState([self.get_current_component_id()], [list(range(LFSR_W_SIZE))])
 
         ids = [pr1.id[0], pr2.id[0], pr3.id[0], pr4.id[0], pr5.id[0]] + LFSR_S[0]
-        self.add_modadd_component(ids, [list(range(LFSR_W_SIZE))] * 5 + LFSR_P[0], LFSR_W_SIZE, (2**LFSR_W_SIZE) - 1)
+        self.add_modadd_component(
+            ids, [list(range(LFSR_W_SIZE))] * 5 + LFSR_P[0], LFSR_W_SIZE, (2**LFSR_W_SIZE) - 1
+        )
         s16 = BitState([self.get_current_component_id()], [list(range(LFSR_W_SIZE))])
 
         for i in range(15):
@@ -171,15 +224,21 @@ class Zuc(BitGraphPrimitive):
         s15h_id, s15h_ps = self.lfsr_S_high_16bits(LFSR_S[15], LFSR_P[15])
         s14l_id, s14l_ps = self.lfsr_S_low_16bits(LFSR_S[14], LFSR_P[14])
 
-        self.add_xor_component(s15h_id + s14l_id + FSM_R[0], s15h_ps + s14l_ps + FSM_P[0], WORD_SIZE)
+        self.add_xor_component(
+            s15h_id + s14l_id + FSM_R[0], s15h_ps + s14l_ps + FSM_P[0], WORD_SIZE
+        )
 
         W = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
-        self.add_modadd_component([W.id[0]] + FSM_R[1], [list(range(WORD_SIZE))] + FSM_P[1], WORD_SIZE)
+        self.add_modadd_component(
+            [W.id[0]] + FSM_R[1], [list(range(WORD_SIZE))] + FSM_P[1], WORD_SIZE
+        )
         W = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         s11l_id, s11l_ps = self.lfsr_S_low_16bits(LFSR_S[11], LFSR_P[11])
         s9h_id, s9h_ps = self.lfsr_S_high_16bits(LFSR_S[9], LFSR_P[9])
-        self.add_modadd_component(FSM_R[0] + s11l_id + s9h_id, FSM_P[0] + s11l_ps + s9h_ps, WORD_SIZE)
+        self.add_modadd_component(
+            FSM_R[0] + s11l_id + s9h_id, FSM_P[0] + s11l_ps + s9h_ps, WORD_SIZE
+        )
         W1 = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         s7l_id, s7l_ps = self.lfsr_S_low_16bits(LFSR_S[7], LFSR_P[7])
@@ -235,7 +294,9 @@ class Zuc(BitGraphPrimitive):
             [w.id[0]] + s2l_id + s0h_id, [list(range(WORD_SIZE))] + s2l_ps + s0h_ps, WORD_SIZE
         ).id
         if clock_number == 0:
-            key_st = self.add_round_output_component([key_word], [list(range(WORD_SIZE))], WORD_SIZE).id
+            key_st = self.add_round_output_component(
+                [key_word], [list(range(WORD_SIZE))], WORD_SIZE
+            ).id
         else:
             key_st = self.add_round_output_component(
                 [key_st, key_word],

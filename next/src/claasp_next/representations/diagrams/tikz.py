@@ -64,5 +64,13 @@ def _coordinates(diagram: PrimitiveDiagram):
 
 
 def _escape(value: str) -> str:
-    replacements = {"\\": r"\textbackslash{}", "_": r"\_", "%": r"\%", "#": r"\#", "&": r"\&", "{": r"\{", "}": r"\}"}
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "_": r"\_",
+        "%": r"\%",
+        "#": r"\#",
+        "&": r"\&",
+        "{": r"\{",
+        "}": r"\}",
+    }
     return re.sub(r"[\\_%#&{}]", lambda match: replacements[match.group()], value)

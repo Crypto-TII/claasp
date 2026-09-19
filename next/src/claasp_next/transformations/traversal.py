@@ -1,14 +1,15 @@
 """Dependency traversal for typed primitive graphs."""
 
-from dataclasses import dataclass
-from enum import Enum
 from collections import deque
 from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
+from enum import Enum
 from types import MappingProxyType
 
 from claasp_next.graph import Primitive, ValueType
 from claasp_next.transformations.contracts import (
-    TransformationError, TransformationFailureReason,
+    TransformationError,
+    TransformationFailureReason,
 )
 
 
@@ -92,12 +93,14 @@ class DependencyIndex:
         for binding in primitive.bindings:
             source_id = binding.binding_id
             sources[source_id] = GraphSource(
-                source_id, GraphSourceKind.BINDING, binding.output_type,
-                scopes=tuple(path for path in primitive._scopes if source_id.startswith(f"{path}/")),
+                source_id,
+                GraphSourceKind.BINDING,
+                binding.output_type,
+                scopes=tuple(
+                    path for path in primitive._scopes if source_id.startswith(f"{path}/")
+                ),
             )
-            dependencies[source_id] = self._unique(
-                item.source.owner_id for item in binding.inputs
-            )
+            dependencies[source_id] = self._unique(item.source.owner_id for item in binding.inputs)
             order.append(source_id)
         for component in primitive.components:
             source_id = component.component_id
@@ -114,7 +117,10 @@ class DependencyIndex:
             order.append(source_id)
 
         missing = tuple(
-            sorted({dependency for values in dependencies.values() for dependency in values} - set(sources))
+            sorted(
+                {dependency for values in dependencies.values() for dependency in values}
+                - set(sources)
+            )
         )
         if missing:
             raise TransformationError(
@@ -131,7 +137,9 @@ class DependencyIndex:
         topological = self._topological(dependencies, successors, priority)
         self._sources = MappingProxyType(sources)
         self._predecessors = MappingProxyType(dependencies)
-        self._successors = MappingProxyType({key: tuple(value) for key, value in successors.items()})
+        self._successors = MappingProxyType(
+            {key: tuple(value) for key, value in successors.items()}
+        )
         self._topological_ids = topological
 
     @staticmethod
@@ -183,7 +191,8 @@ class DependencyIndex:
         except KeyError as error:
             raise TransformationError(
                 TransformationFailureReason.DISCONNECTED_DEPENDENCY,
-                "graph source does not exist", source_ids=(source_id,),
+                "graph source does not exist",
+                source_ids=(source_id,),
             ) from error
 
     def predecessors(self, source_id: str) -> tuple[str, ...]:

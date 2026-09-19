@@ -69,7 +69,9 @@ def _projection_bits(
 
 
 def _widths(primitive: Primitive) -> dict[str, int]:
-    widths = {name: port.value_type.encoded_bit_size for name, port in primitive.input_ports.items()}
+    widths = {
+        name: port.value_type.encoded_bit_size for name, port in primitive.input_ports.items()
+    }
     if any(width is None for width in widths.values()):
         raise ValueError("neural datasets require canonically bit-encoded inputs")
     return {name: int(width) for name, width in widths.items()}
@@ -182,9 +184,7 @@ class NeuralExperimentResult:
 class NeuralTrainingDriver(Protocol):
     """Structural interface implemented by optional ML integrations."""
 
-    def train(
-        self, dataset: NeuralDataset, experiment: NeuralExperiment
-    ) -> NeuralExperimentResult:
+    def train(self, dataset: NeuralDataset, experiment: NeuralExperiment) -> NeuralExperimentResult:
         """Train and return one typed neural experiment result."""
 
         ...

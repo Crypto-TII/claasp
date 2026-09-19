@@ -30,15 +30,24 @@ class ToySPN2(Primitive):
             raise ValueError("ToySPN2 requires equal block and key widths")
         if number_of_rounds <= 0:
             raise ValueError("number_of_rounds must be positive")
-        super().__init__("toyspn2", {"plaintext": bit_type(block_bit_size), "key": bit_type(key_bit_size)})
+        super().__init__(
+            "toyspn2", {"plaintext": bit_type(block_bit_size), "key": bit_type(key_bit_size)}
+        )
         state = self.input("plaintext")
         round_key = self.input("key")
         for round_number in range(number_of_rounds):
             self.add_round()
             round_key = rotate_bits(
-                self, round_key, round_key_rotation, component_id=f"round_{round_number}_key_rotation"
+                self,
+                round_key,
+                round_key_rotation,
+                component_id=f"round_{round_number}_key_rotation",
             )
             state = xor_bits(self, state, round_key, component_id=f"round_{round_number}_key_add")
-            state = sbox_layer(self, state, tuple(sbox), component_id_prefix=f"round_{round_number}_sbox")
-            state = rotate_bits(self, state, rotation_layer, component_id=f"round_{round_number}_rotation")
+            state = sbox_layer(
+                self, state, tuple(sbox), component_id_prefix=f"round_{round_number}_sbox"
+            )
+            state = rotate_bits(
+                self, state, rotation_layer, component_id=f"round_{round_number}_rotation"
+            )
         self.set_output(state)

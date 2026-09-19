@@ -7,8 +7,8 @@ from claasp_next.analysis.neural import (
     round_component_ids,
     xor_differential_component_dataset,
 )
-from claasp_next.primitives import Speck
 from claasp_next.encoding import bits_from_int, int_from_bits
+from claasp_next.primitives import Speck
 
 
 def test_round_component_ids_matches_the_primitive_graph_round_structure():
@@ -22,9 +22,9 @@ def test_round_component_ids_matches_the_primitive_graph_round_structure():
     # Semantic references stay stable even when automatic identifiers change.
     assert primitive.round_states[0][1].owner_id in round_0
     assert primitive.key_schedule_states[0][1].owner_id in round_0
-    assert {
-        owner_id for owner_id, _ in primitive.selection_bit_sources(primitive.output)
-    } <= set(round_1)
+    assert {owner_id for owner_id, _ in primitive.selection_bit_sources(primitive.output)} <= set(
+        round_1
+    )
 
     with pytest.raises(ValueError, match="range"):
         round_component_ids(primitive, 2)
@@ -128,12 +128,8 @@ def test_xor_differential_component_dataset_matches_direct_trace_inspection():
             second_trace = primitive.evaluate_with_trace(
                 {"plaintext": second_plaintext, "key": second_key}
             ).trace
-            expected_first = bits_from_int(
-                first_trace.value_of(component_id)[0], component_width
-            )
-            expected_second = bits_from_int(
-                second_trace.value_of(component_id)[0], component_width
-            )
+            expected_first = bits_from_int(first_trace.value_of(component_id)[0], component_width)
+            expected_second = bits_from_int(second_trace.value_of(component_id)[0], component_width)
             assert row == expected_first + expected_second
             verified_real_rows += 1
         else:

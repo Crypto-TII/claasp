@@ -2,7 +2,11 @@ import pytest
 
 from claasp_next import bits_from_int, int_from_bits
 from claasp_next.primitives import Present80
-from claasp_next.representations.execution import BatchEvaluator, ScalarEvaluator, TransposedBatchEvaluator
+from claasp_next.representations.execution import (
+    BatchEvaluator,
+    ScalarEvaluator,
+    TransposedBatchEvaluator,
+)
 
 
 @pytest.mark.parametrize(
@@ -31,10 +35,12 @@ def test_present80_batch_backends_match_scalar_reference():
         "key": (bits_from_int(0, 80), bits_from_int((1 << 80) - 1, 80)),
     }
     expected = tuple(
-        ScalarEvaluator().evaluate(
+        ScalarEvaluator()
+        .evaluate(
             primitive,
             {"plaintext": inputs["plaintext"][lane], "key": inputs["key"][lane]},
-        ).output
+        )
+        .output
         for lane in range(2)
     )
     assert BatchEvaluator().evaluate(primitive, inputs).outputs == expected

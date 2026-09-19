@@ -227,8 +227,12 @@ def speck32_differential_linear_legacy_fixture() -> DifferentialLinearFixture:
 
     differential_semantics = ModularAddTransitionSemantics(16)
     differential_steps = (
-        TrailStep("round_0_modular_add", differential_semantics.xor_differential(0x2000, 0x2000, 0)),
-        TrailStep("round_1_modular_add", differential_semantics.xor_differential(0, 0x8000, 0x8000)),
+        TrailStep(
+            "round_0_modular_add", differential_semantics.xor_differential(0x2000, 0x2000, 0)
+        ),
+        TrailStep(
+            "round_1_modular_add", differential_semantics.xor_differential(0, 0x8000, 0x8000)
+        ),
     )
     differential = Trail(
         TrailKind.XOR_DIFFERENTIAL,
@@ -264,8 +268,10 @@ def speck32_differential_linear_legacy_fixture() -> DifferentialLinearFixture:
         TrailKind.XOR_LINEAR,
         XorMask(0x00804001, 32),
         XorMask(0x00040004, 32),
-        tuple(TrailStep(name, linear_semantics.xor_linear(left, right, output))
-              for name, left, right, output in linear_inputs),
+        tuple(
+            TrailStep(name, linear_semantics.xor_linear(left, right, output))
+            for name, left, right, output in linear_inputs
+        ),
     )
     return DifferentialLinearFixture(
         DifferentialLinearTrail(differential, connector, linear),
@@ -294,8 +300,9 @@ def check_speck32_differential_linear_fixture(fixture: DifferentialLinearFixture
     return (
         all(differential.check(step.transition) for step in trail.differential.steps)
         and all(linear.check(step.transition) for step in trail.linear.steps)
-        and all(check_probabilistic_truncated_modular_add(step)
-                for step in trail.connector.transitions)
+        and all(
+            check_probabilistic_truncated_modular_add(step) for step in trail.connector.transitions
+        )
         and fixture.legacy_search_weight
         == trail.differential.total_weight + trail.connector.weight + 2 * trail.linear.total_weight
     )

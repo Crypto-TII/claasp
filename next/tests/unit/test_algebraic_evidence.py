@@ -25,8 +25,38 @@ def test_exact_simon_degrees_preserve_legacy_fixture(simon_four_round_evidence):
 
 def test_exact_simon_superpoly_parity_preserves_legacy_fixture(simon_four_round_evidence):
     assert simon_four_round_evidence.cube_degrees == (
-        -1, -1, -1, -1, 2, 3, -1, -1, 3, -1, -1, -1, -1, 3, 3, 3,
-        1, -1, -1, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        2,
+        3,
+        -1,
+        -1,
+        3,
+        -1,
+        -1,
+        -1,
+        -1,
+        3,
+        3,
+        3,
+        1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
     )
     assert 0 in simon_four_round_evidence.balanced_output_bits
     assert 4 not in simon_four_round_evidence.balanced_output_bits
@@ -40,22 +70,27 @@ def test_incomplete_evidence_cannot_be_used_as_a_proof(simon_four_round_evidence
 
 def test_fixed_variables_require_a_cube():
     with pytest.raises(ValueError, match="require a cube"):
-        analyze_boolean_algebra(
-            Simon(number_of_rounds=1), fixed_variables={"p0": 0}
-        )
+        analyze_boolean_algebra(Simon(number_of_rounds=1), fixed_variables={"p0": 0})
 
 
 def test_exact_simon_partial_anf_preserves_legacy_fixture():
-    evidence = analyze_boolean_algebra(
-        Simon(number_of_rounds=3), cube=("p1", "p2")
-    )
+    evidence = analyze_boolean_algebra(Simon(number_of_rounds=3), cube=("p1", "p2"))
     assert set(evidence.cube_coefficients[0].monomials) == {
         BooleanMonomial(tuple(sorted(term)))
         for term in (
-            ("p3", "p10", "p11"), ("p3", "p10"), ("p4", "p10"),
-            ("p5", "p10"), ("p10", "p11", "p18"),
-            ("p10", "p11", "k50"), ("p10", "p18"), ("p10", "p19"),
-            ("p10", "k33"), ("p10", "k50"), ("p10", "k51"),
-            ("p10",), ("p25",), ("k57",),
+            ("p3", "p10", "p11"),
+            ("p3", "p10"),
+            ("p4", "p10"),
+            ("p5", "p10"),
+            ("p10", "p11", "p18"),
+            ("p10", "p11", "k50"),
+            ("p10", "p18"),
+            ("p10", "p19"),
+            ("p10", "k33"),
+            ("p10", "k50"),
+            ("p10", "k51"),
+            ("p10",),
+            ("p25",),
+            ("k57",),
         )
     }

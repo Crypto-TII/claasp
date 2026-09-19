@@ -1,15 +1,15 @@
 """Command-line MiniSat driver."""
 
-from collections.abc import Mapping
-from pathlib import Path
 import shutil
 import subprocess
+from collections.abc import Mapping
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
+from claasp_next.drivers.solvers.base import SatResult, SatStatus
 from claasp_next.representations.constraints.sat.cnf import CNFFormula
 from claasp_next.representations.constraints.sat.exporters import DimacsExporter
-from claasp_next.drivers.solvers.base import SatResult, SatStatus
 
 
 class MinisatSolver:
@@ -74,7 +74,9 @@ class MinisatSolver:
             if status is not expected_status:
                 raise RuntimeError("MiniSat exit code and result status disagree")
             if status is SatStatus.SATISFIABLE and not augmented.is_satisfied(assignment):
-                raise RuntimeError("MiniSat returned an assignment that does not satisfy the formula")
+                raise RuntimeError(
+                    "MiniSat returned an assignment that does not satisfy the formula"
+                )
             return SatResult(status, assignment, elapsed, completed.stdout, completed.stderr)
 
     def _resolve_executable(self) -> str:
@@ -98,7 +100,9 @@ class MinisatSolver:
         return tuple(clauses)
 
     @staticmethod
-    def _parse_result(text: str, variables: tuple[str, ...]) -> tuple[SatStatus, dict[str, int] | None]:
+    def _parse_result(
+        text: str, variables: tuple[str, ...]
+    ) -> tuple[SatStatus, dict[str, int] | None]:
         tokens = text.split()
         if not tokens:
             raise RuntimeError("MiniSat returned an empty result")

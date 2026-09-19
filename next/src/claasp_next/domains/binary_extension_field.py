@@ -51,7 +51,5 @@ class BinaryExtensionField(Domain):
 
     def contains(self, value: object) -> bool:
         return (
-            isinstance(value, int)
-            and not isinstance(value, bool)
-            and 0 <= value < 1 << self.degree
+            isinstance(value, int) and not isinstance(value, bool) and 0 <= value < 1 << self.degree
         )

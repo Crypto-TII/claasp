@@ -5,7 +5,11 @@ from itertools import product
 import pytest
 
 from claasp_next import (
-    BinaryExtensionField, Bit, Primitive, ScalarEvaluator, TransposedBatchEvaluator,
+    BinaryExtensionField,
+    Bit,
+    Primitive,
+    ScalarEvaluator,
+    TransposedBatchEvaluator,
     ValueType,
 )
 from claasp_next.components import LinearMap
@@ -33,9 +37,10 @@ def _reference_binary_field_multiply(left, right, degree, modulus):
 def test_binary_linear_map_matches_complete_truth_table():
     primitive = _map_primitive(Bit(), ((1, 1), (1, 0)))
     for left, right in product(range(2), repeat=2):
-        assert ScalarEvaluator().evaluate(
-            primitive, {"state": (left, right)}
-        ).output == (left ^ right, left)
+        assert ScalarEvaluator().evaluate(primitive, {"state": (left, right)}).output == (
+            left ^ right,
+            left,
+        )
 
 
 def test_mix_column_style_matrix_matches_independent_gf16_reference():
@@ -47,9 +52,7 @@ def test_mix_column_style_matrix_matches_independent_gf16_reference():
             left ^ _reference_binary_field_multiply(right, 2, 4, 0b10011),
             _reference_binary_field_multiply(left, 3, 4, 0b10011) ^ right,
         )
-        assert ScalarEvaluator().evaluate(
-            primitive, {"state": (left, right)}
-        ).output == expected
+        assert ScalarEvaluator().evaluate(primitive, {"state": (left, right)}).output == expected
 
 
 def test_aes_mix_columns_published_column_and_batch_parity():
@@ -65,8 +68,7 @@ def test_aes_mix_columns_published_column_and_batch_parity():
     batch = TransposedBatchEvaluator().evaluate(primitive, inputs)
     assert batch.outputs == ((0x04, 0x66, 0x81, 0xE5), (0, 0, 0, 0))
     assert batch.outputs == tuple(
-        ScalarEvaluator().evaluate(primitive, {"state": state}).output
-        for state in inputs["state"]
+        ScalarEvaluator().evaluate(primitive, {"state": state}).output for state in inputs["state"]
     )
 
 

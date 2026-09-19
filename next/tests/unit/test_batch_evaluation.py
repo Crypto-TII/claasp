@@ -17,8 +17,7 @@ def test_mimc_batch_matches_individual_scalar_evaluations():
 
     batch_result = BatchEvaluator().evaluate(primitive, {"state": states})
     scalar_outputs = tuple(
-        ScalarEvaluator().evaluate(primitive, {"state": state}).output
-        for state in states
+        ScalarEvaluator().evaluate(primitive, {"state": state}).output for state in states
     )
 
     assert batch_result.outputs == scalar_outputs
@@ -44,8 +43,7 @@ def test_poseidon_batch_matches_scalar_evaluation():
     result = BatchEvaluator().evaluate(primitive, {"state": states})
 
     assert result.outputs == tuple(
-        ScalarEvaluator().evaluate(primitive, {"state": state}).output
-        for state in states
+        ScalarEvaluator().evaluate(primitive, {"state": state}).output for state in states
     )
 
 

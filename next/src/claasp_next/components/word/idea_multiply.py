@@ -31,8 +31,8 @@ class IDEAMultiply(Component):
         inputs, output_type = require_word_inputs(inputs, "IDEA multiplication")
         inverse_inputs = tuple(inverse_inputs)
         if len(set(inverse_inputs)) != len(inverse_inputs) or any(
-            not isinstance(index, int) or isinstance(index, bool)
-            or index not in range(len(inputs)) for index in inverse_inputs
+            not isinstance(index, int) or isinstance(index, bool) or index not in range(len(inputs))
+            for index in inverse_inputs
         ):
             raise ValueError("inverse IDEA input indexes must be unique valid input positions")
         object.__setattr__(self, "component_id", component_id)

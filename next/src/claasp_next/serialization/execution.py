@@ -6,15 +6,26 @@ import json
 
 from claasp_next.annotations import AnnotationEntry, AnnotationRole, ExecutionTrace, GraphAnnotation
 from claasp_next.graph import Primitive
-from claasp_next.provenance import DriverIdentity, DriverKind, ResultProvenance, TransformationRecord
+from claasp_next.provenance import (
+    DriverIdentity,
+    DriverKind,
+    ResultProvenance,
+    TransformationRecord,
+)
 from claasp_next.representations.execution import EvaluationResult
 from claasp_next.semantics import CONCRETE
 from claasp_next.serialization.errors import SerializationError, SerializationFailure
 from claasp_next.serialization.primitive import (
-    _array, _decode_realization, _encode_realization, _integer, _object, _pairs,
-    _string, _unique_object, primitive_digest,
+    _array,
+    _decode_realization,
+    _encode_realization,
+    _integer,
+    _object,
+    _pairs,
+    _string,
+    _unique_object,
+    primitive_digest,
 )
-
 
 EXECUTION_TRACE_SCHEMA_ID = "org.claasp.execution-trace"
 EVALUATION_RESULT_SCHEMA_ID = "org.claasp.evaluation-result"
@@ -22,9 +33,16 @@ EXECUTION_SCHEMA_VERSION = 1
 
 
 def _canonical(envelope) -> bytes:
-    return (json.dumps(
-        envelope, ensure_ascii=False, allow_nan=False, separators=(",", ":"), sort_keys=True,
-    ) + "\n").encode("utf-8")
+    return (
+        json.dumps(
+            envelope,
+            ensure_ascii=False,
+            allow_nan=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+        + "\n"
+    ).encode("utf-8")
 
 
 def _values(value, path):
@@ -39,18 +57,22 @@ def _validate_value(primitive, source_id, value, path):
         value_type = primitive.port(source_id).value_type
     except KeyError as error:
         raise SerializationError(
-            SerializationFailure.INVALID_REFERENCE, f"unknown graph source {source_id!r}", path=path,
+            SerializationFailure.INVALID_REFERENCE,
+            f"unknown graph source {source_id!r}",
+            path=path,
         ) from error
     if len(value) != value_type.unit_count:
         raise SerializationError(
             SerializationFailure.INCONSISTENT_WIDTH,
-            f"source {source_id!r} requires {value_type.unit_count} units", path=path,
+            f"source {source_id!r} requires {value_type.unit_count} units",
+            path=path,
         )
     for scalar in value:
         if not value_type.domain.contains(scalar):
             raise SerializationError(
                 SerializationFailure.MALFORMED_VALUE,
-                f"value {scalar!r} is outside the source domain", path=path,
+                f"value {scalar!r} is outside the source domain",
+                path=path,
             )
 
 
@@ -79,15 +101,21 @@ def serialize_execution_trace(trace: ExecutionTrace) -> bytes:
                 SerializationFailure.UNSUPPORTED_ARTIFACT,
                 "concrete trace values must be tuples of canonical integers",
             )
-        entries.append({
-            "role": entry.role.value, "source": entry.source_id, "value": list(entry.value),
-        })
-    return _canonical({
-        "artifact": "execution_trace",
-        "payload": {"entries": entries, "primitive_digest": primitive_digest(primitive)},
-        "schema": EXECUTION_TRACE_SCHEMA_ID,
-        "version": EXECUTION_SCHEMA_VERSION,
-    })
+        entries.append(
+            {
+                "role": entry.role.value,
+                "source": entry.source_id,
+                "value": list(entry.value),
+            }
+        )
+    return _canonical(
+        {
+            "artifact": "execution_trace",
+            "payload": {"entries": entries, "primitive_digest": primitive_digest(primitive)},
+            "schema": EXECUTION_TRACE_SCHEMA_ID,
+            "version": EXECUTION_SCHEMA_VERSION,
+        }
+    )
 
 
 def deserialize_execution_trace(data: bytes | str, primitive: Primitive) -> ExecutionTrace:
@@ -123,31 +151,55 @@ def deserialize_execution_trace(data: bytes | str, primitive: Primitive) -> Exec
         try:
             role = AnnotationRole(item["role"])
         except (TypeError, ValueError) as error:
-            raise SerializationError(SerializationFailure.MALFORMED_VALUE, "unknown annotation role", path=f"{path}.role") from error
+            raise SerializationError(
+                SerializationFailure.MALFORMED_VALUE, "unknown annotation role", path=f"{path}.role"
+            ) from error
         identity = (role, source)
         if identity in seen:
-            raise SerializationError(SerializationFailure.DUPLICATE_IDENTITY, "duplicate trace entry", path=path)
+            raise SerializationError(
+                SerializationFailure.DUPLICATE_IDENTITY, "duplicate trace entry", path=path
+            )
         seen.add(identity)
         value = _values(item["value"], f"{path}.value")
         if role is AnnotationRole.INPUT:
             if source not in input_names:
-                raise SerializationError(SerializationFailure.INVALID_REFERENCE, "unknown input trace source", path=f"{path}.source")
+                raise SerializationError(
+                    SerializationFailure.INVALID_REFERENCE,
+                    "unknown input trace source",
+                    path=f"{path}.source",
+                )
             _validate_value(primitive, source, value, f"{path}.value")
         elif role is AnnotationRole.COMPONENT:
             if source not in component_ids:
-                raise SerializationError(SerializationFailure.INVALID_REFERENCE, "unknown component trace source", path=f"{path}.source")
+                raise SerializationError(
+                    SerializationFailure.INVALID_REFERENCE,
+                    "unknown component trace source",
+                    path=f"{path}.source",
+                )
             _validate_value(primitive, source, value, f"{path}.value")
         else:
             if source != "primitive_output" or primitive.output is None:
-                raise SerializationError(SerializationFailure.INVALID_REFERENCE, "invalid primitive output trace source", path=f"{path}.source")
+                raise SerializationError(
+                    SerializationFailure.INVALID_REFERENCE,
+                    "invalid primitive output trace source",
+                    path=f"{path}.source",
+                )
             value_type = primitive.output.value_type
-            if len(value) != value_type.unit_count or any(not value_type.domain.contains(unit) for unit in value):
-                raise SerializationError(SerializationFailure.INCONSISTENT_WIDTH, "invalid primitive output trace value", path=f"{path}.value")
+            if len(value) != value_type.unit_count or any(
+                not value_type.domain.contains(unit) for unit in value
+            ):
+                raise SerializationError(
+                    SerializationFailure.INCONSISTENT_WIDTH,
+                    "invalid primitive output trace value",
+                    path=f"{path}.value",
+                )
         entries.append(AnnotationEntry(source, role, value))
     try:
         return ExecutionTrace(GraphAnnotation(primitive, CONCRETE, tuple(entries)))
     except (TypeError, ValueError) as error:
-        raise SerializationError(SerializationFailure.MALFORMED_VALUE, str(error), path="$.payload.entries") from error
+        raise SerializationError(
+            SerializationFailure.MALFORMED_VALUE, str(error), path="$.payload.entries"
+        ) from error
 
 
 def _encode_provenance(provenance):
@@ -160,7 +212,11 @@ def _encode_provenance(provenance):
         "primitive": provenance.primitive,
         "realization": _encode_realization(provenance.realization),
         "transformations": [
-            {"operation": item.operation, "parameters": [list(pair) for pair in item.parameters], "source_identity": item.source_identity}
+            {
+                "operation": item.operation,
+                "parameters": [list(pair) for pair in item.parameters],
+                "source_identity": item.source_identity,
+            }
             for item in provenance.transformations
         ],
     }
@@ -176,26 +232,36 @@ def _decode_provenance(value, primitive, path):
     try:
         identity = DriverIdentity(
             _string(driver["name"], path=f"{path}.driver.name"),
-            DriverKind(driver["kind"]), version,
+            DriverKind(driver["kind"]),
+            version,
         )
         realization = _decode_realization(value["realization"], f"{path}.realization")
         transformations = []
-        for index, item in enumerate(_array(value["transformations"], path=f"{path}.transformations")):
+        for index, item in enumerate(
+            _array(value["transformations"], path=f"{path}.transformations")
+        ):
             item_path = f"{path}.transformations[{index}]"
             _object(item, {"operation", "parameters", "source_identity"}, path=item_path)
             source_identity = item["source_identity"]
             if source_identity is not None:
                 source_identity = _string(source_identity, path=f"{item_path}.source_identity")
-            transformations.append(TransformationRecord(
-                _string(item["operation"], path=f"{item_path}.operation"),
-                _pairs(item["parameters"], f"{item_path}.parameters"), source_identity,
-            ))
+            transformations.append(
+                TransformationRecord(
+                    _string(item["operation"], path=f"{item_path}.operation"),
+                    _pairs(item["parameters"], f"{item_path}.parameters"),
+                    source_identity,
+                )
+            )
         result = ResultProvenance(
-            _string(value["primitive"], path=f"{path}.primitive"), realization,
-            identity, tuple(transformations),
+            _string(value["primitive"], path=f"{path}.primitive"),
+            realization,
+            identity,
+            tuple(transformations),
         )
     except (TypeError, ValueError) as error:
-        raise SerializationError(SerializationFailure.MALFORMED_VALUE, str(error), path=path) from error
+        raise SerializationError(
+            SerializationFailure.MALFORMED_VALUE, str(error), path=path
+        ) from error
     if (
         result.primitive != primitive.family_name
         or result.realization != primitive.realization
@@ -245,17 +311,19 @@ def serialize_evaluation_result(result: EvaluationResult) -> bytes:
         value = tuple(result.values[source_id])
         _validate_value(primitive, source_id, value, f"$.payload.values.{source_id}")
         values.append({"source": source_id, "value": list(value)})
-    return _canonical({
-        "artifact": "evaluation_result",
-        "payload": {
-            "output": None if result.output is None else list(result.output),
-            "primitive_digest": primitive_digest(primitive),
-            "provenance": _encode_provenance(result.provenance),
-            "values": values,
-        },
-        "schema": EVALUATION_RESULT_SCHEMA_ID,
-        "version": EXECUTION_SCHEMA_VERSION,
-    })
+    return _canonical(
+        {
+            "artifact": "evaluation_result",
+            "payload": {
+                "output": None if result.output is None else list(result.output),
+                "primitive_digest": primitive_digest(primitive),
+                "provenance": _encode_provenance(result.provenance),
+                "values": values,
+            },
+            "schema": EVALUATION_RESULT_SCHEMA_ID,
+            "version": EXECUTION_SCHEMA_VERSION,
+        }
+    )
 
 
 def deserialize_evaluation_result(data: bytes | str, primitive: Primitive) -> EvaluationResult:
@@ -276,7 +344,8 @@ def deserialize_evaluation_result(data: bytes | str, primitive: Primitive) -> Ev
     _object(payload, {"output", "primitive_digest", "provenance", "values"}, path="$.payload")
     if payload["primitive_digest"] != primitive_digest(primitive):
         raise SerializationError(
-            SerializationFailure.TYPE_MISMATCH, "evaluation result belongs to a different primitive graph",
+            SerializationFailure.TYPE_MISMATCH,
+            "evaluation result belongs to a different primitive graph",
             path="$.payload.primitive_digest",
         )
     expected_order = (
@@ -291,7 +360,9 @@ def deserialize_evaluation_result(data: bytes | str, primitive: Primitive) -> Ev
         _object(item, {"source", "value"}, path=path)
         source = _string(item["source"], path=f"{path}.source")
         if source in values:
-            raise SerializationError(SerializationFailure.DUPLICATE_IDENTITY, "duplicate result source", path=path)
+            raise SerializationError(
+                SerializationFailure.DUPLICATE_IDENTITY, "duplicate result source", path=path
+            )
         value = _values(item["value"], f"{path}.value")
         _validate_value(primitive, source, value, f"{path}.value")
         order.append(source)
@@ -303,7 +374,9 @@ def deserialize_evaluation_result(data: bytes | str, primitive: Primitive) -> Ev
             path="$.payload.values",
         )
     output = None if payload["output"] is None else _values(payload["output"], "$.payload.output")
-    expected_output = None if primitive.output is None else primitive.resolve_selection(primitive.output, values)
+    expected_output = (
+        None if primitive.output is None else primitive.resolve_selection(primitive.output, values)
+    )
     if output != expected_output:
         raise SerializationError(
             SerializationFailure.TYPE_MISMATCH,
@@ -313,11 +386,17 @@ def deserialize_evaluation_result(data: bytes | str, primitive: Primitive) -> Ev
     provenance = _decode_provenance(payload["provenance"], primitive, "$.payload.provenance")
     annotation_values = {
         source_id: values[source_id]
-        for source_id in tuple(primitive.input_ports) + tuple(item.component_id for item in primitive.components)
+        for source_id in tuple(primitive.input_ports)
+        + tuple(item.component_id for item in primitive.components)
     }
-    trace = ExecutionTrace(GraphAnnotation.from_values(
-        primitive, CONCRETE, annotation_values, output=output,
-    ))
+    trace = ExecutionTrace(
+        GraphAnnotation.from_values(
+            primitive,
+            CONCRETE,
+            annotation_values,
+            output=output,
+        )
+    )
     return EvaluationResult(values, output, trace, provenance)
 
 
@@ -351,7 +430,9 @@ def _load_envelope(data, schema, artifact):
         try:
             data = data.decode("utf-8")
         except UnicodeDecodeError as error:
-            raise SerializationError(SerializationFailure.INVALID_JSON, "input is not valid UTF-8") from error
+            raise SerializationError(
+                SerializationFailure.INVALID_JSON, "input is not valid UTF-8"
+            ) from error
     if not isinstance(data, str):
         raise TypeError("serialized artifact must be bytes or str")
     try:
@@ -362,16 +443,31 @@ def _load_envelope(data, schema, artifact):
         raise SerializationError(SerializationFailure.INVALID_JSON, str(error)) from error
     _object(envelope, {"artifact", "payload", "schema", "version"}, path="$")
     if envelope["schema"] != schema:
-        raise SerializationError(SerializationFailure.UNKNOWN_SCHEMA, f"unsupported schema {envelope['schema']!r}", path="$.schema")
+        raise SerializationError(
+            SerializationFailure.UNKNOWN_SCHEMA,
+            f"unsupported schema {envelope['schema']!r}",
+            path="$.schema",
+        )
     if envelope["version"] != EXECUTION_SCHEMA_VERSION:
-        raise SerializationError(SerializationFailure.UNKNOWN_VERSION, f"unsupported version {envelope['version']!r}", path="$.version")
+        raise SerializationError(
+            SerializationFailure.UNKNOWN_VERSION,
+            f"unsupported version {envelope['version']!r}",
+            path="$.version",
+        )
     if envelope["artifact"] != artifact:
-        raise SerializationError(SerializationFailure.UNKNOWN_ARTIFACT, f"expected {artifact!r}", path="$.artifact")
+        raise SerializationError(
+            SerializationFailure.UNKNOWN_ARTIFACT, f"expected {artifact!r}", path="$.artifact"
+        )
     return envelope
 
 
 __all__ = [
-    "EVALUATION_RESULT_SCHEMA_ID", "EXECUTION_SCHEMA_VERSION", "EXECUTION_TRACE_SCHEMA_ID",
-    "deserialize_evaluation_result", "deserialize_execution_trace", "serialize_artifact",
-    "serialize_evaluation_result", "serialize_execution_trace",
+    "EVALUATION_RESULT_SCHEMA_ID",
+    "EXECUTION_SCHEMA_VERSION",
+    "EXECUTION_TRACE_SCHEMA_ID",
+    "deserialize_evaluation_result",
+    "deserialize_execution_trace",
+    "serialize_artifact",
+    "serialize_evaluation_result",
+    "serialize_execution_trace",
 ]

@@ -1,7 +1,9 @@
 """Reusable mathematical and layout helpers for primitive authors."""
 
 from claasp_next.utils.finite_fields import (
-    binary_field_multiply, binary_field_power, first_irreducible_polynomial,
+    binary_field_multiply,
+    binary_field_power,
+    first_irreducible_polynomial,
 )
 from claasp_next.utils.integers import (
     bitmask,
@@ -16,12 +18,19 @@ from claasp_next.utils.integers import (
 )
 from claasp_next.utils.layouts import reverse_bytes_in_words
 from claasp_next.utils.matrices import (
-    identity_matrix, matrix_is_invertible, normalize_matrix, repeat_block_diagonal,
+    identity_matrix,
+    matrix_is_invertible,
+    normalize_matrix,
+    repeat_block_diagonal,
     transpose_matrix,
 )
 from claasp_next.utils.sequences import (
     rotate_left as rotate_sequence_left,
+)
+from claasp_next.utils.sequences import (
     rotate_right as rotate_sequence_right,
+)
+from claasp_next.utils.sequences import (
     shift_left,
     shift_right,
 )

@@ -132,7 +132,11 @@ def select_realization(
     """
 
     requested = _names(requirements, "capability requirements")
-    selected_policy = policy if isinstance(policy, RealizationSelectionPolicy) else RealizationSelectionPolicy(policy)
+    selected_policy = (
+        policy
+        if isinstance(policy, RealizationSelectionPolicy)
+        else RealizationSelectionPolicy(policy)
+    )
     matches = tuple(item for item in descriptors if item.supports(requested))
     rendered = tuple(sorted(requested))
     if not matches:
@@ -198,11 +202,15 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
         if encoded_size(expected.value_type) != encoded_size(actual.value_type):
             raise ValueError(f"realization input {name!r} has a different encoded width")
         if expected.role != actual.role or expected.visibility != actual.visibility:
-            raise ValueError(f"realization input {name!r} has different role or visibility metadata")
+            raise ValueError(
+                f"realization input {name!r} has different role or visibility metadata"
+            )
     if encoded_size(reference.output.value_type) != encoded_size(candidate.output.value_type):
         raise ValueError("equivalent realizations have different output widths")
 
-    exact_inputs = tuple(reference.input_descriptors.items()) == tuple(candidate.input_descriptors.items())
+    exact_inputs = tuple(reference.input_descriptors.items()) == tuple(
+        candidate.input_descriptors.items()
+    )
     if exact_inputs and reference.output.value_type == candidate.output.value_type:
         candidate._family_name = reference.family_name
         candidate.realization = descriptor
@@ -234,7 +242,9 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
             converted = normalized.pack_bits(value, target_domain.width)
         elif isinstance(target_domain, BinaryExtensionField):
             converted = normalized.pack_bits(
-                value, target_domain.degree, output_domain=target_domain,
+                value,
+                target_domain.degree,
+                output_domain=target_domain,
             )
         else:
             raise ValueError(
@@ -265,7 +275,8 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
                     output = normalized.view(inputs[0])
                 elif binding.kind is BindingKind.PACK_BITS:
                     output = normalized.pack_bits(
-                        inputs[0], binding.word_width,
+                        inputs[0],
+                        binding.word_width,
                         output_domain=(
                             binding.output_type.domain
                             if isinstance(binding.output_type.domain, BinaryExtensionField)
@@ -282,23 +293,25 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
         normalized.add_round()
         if round_index == 0:
             for name, port in candidate.input_ports.items():
-                remapped[name] = as_selection(convert(
-                    normalized.input(name), port.value_type, f"__realization_input_{name}"
-                ))
+                remapped[name] = as_selection(
+                    convert(normalized.input(name), port.value_type, f"__realization_input_{name}")
+                )
             drain_bindings()
         for component in getattr(candidate_round, "components", ()):
             drain_bindings()
             cloned = copy(component)
-            object.__setattr__(cloned, "inputs", tuple(
-                remapped[item.source.owner_id][item.positions] for item in component.inputs
-            ))
+            object.__setattr__(
+                cloned,
+                "inputs",
+                tuple(remapped[item.source.owner_id][item.positions] for item in component.inputs),
+            )
             remapped[component.component_id] = normalized.add_component(cloned).select_all()
     drain_bindings()
     if pending_bindings:
         raise ValueError("realization contains unresolved structural bindings")
 
     candidate_output = remapped[candidate.output.source.owner_id][candidate.output.positions]
-    normalized.set_output(convert(
-        candidate_output, reference.output.value_type, "__realization_output"
-    ))
+    normalized.set_output(
+        convert(candidate_output, reference.output.value_type, "__realization_output")
+    )
     return normalized

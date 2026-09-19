@@ -7,18 +7,37 @@ from math import gcd
 from types import MappingProxyType
 
 from claasp_next.components import (
-    Add, BinaryAffineMap, BitVectorSBox, BitwiseAnd, BitwiseNot, BitwiseOr,
-    Constant, FeedbackRegister, IDEAMultiply, Identity, LinearMap,
-    ModularAdd, ModularMultiply, ModularSubtract, Multiply, Permutation,
-    Power, Rotate, SBox, Shift, VariableRotate, VariableShift, Xor,
+    Add,
+    BinaryAffineMap,
+    BitVectorSBox,
+    BitwiseAnd,
+    BitwiseNot,
+    BitwiseOr,
+    Constant,
+    FeedbackRegister,
+    IDEAMultiply,
+    Identity,
+    LinearMap,
+    ModularAdd,
+    ModularMultiply,
+    ModularSubtract,
+    Multiply,
+    Permutation,
+    Power,
+    Rotate,
+    SBox,
+    Shift,
+    VariableRotate,
+    VariableShift,
+    Xor,
 )
 from claasp_next.domains import BinaryExtensionField, Bit, PrimeField
 from claasp_next.graph import Component, PortLike, Selection, as_selection
-from claasp_next.utils import binary_field_multiply
 from claasp_next.transformations.contracts import (
-    TransformationError, TransformationFailureReason,
+    TransformationError,
+    TransformationFailureReason,
 )
-
+from claasp_next.utils import binary_field_multiply
 
 InverseFactory = Callable[[Component, Selection, tuple[Selection, ...], int], Component]
 
@@ -76,7 +95,8 @@ class ComponentInverseRegistry:
         if len(set(types)) != len(types):
             raise ValueError("component inverse semantics must have unique component types")
         object.__setattr__(
-            self, "_semantics",
+            self,
+            "_semantics",
             MappingProxyType({item.component_type: item for item in records}),
         )
 
@@ -120,7 +140,9 @@ class ComponentInverseRegistry:
         supplied = dict(auxiliary_inputs or {})
         if any(not isinstance(index, int) or isinstance(index, bool) for index in supplied):
             raise TypeError("auxiliary input indices must be integers")
-        invalid = tuple(str(index) for index in supplied if index not in range(len(component.inputs)))
+        invalid = tuple(
+            str(index) for index in supplied if index not in range(len(component.inputs))
+        )
         if invalid:
             raise TransformationError(
                 TransformationFailureReason.AMBIGUOUS_BOUNDARY,
@@ -128,11 +150,14 @@ class ComponentInverseRegistry:
                 source_ids=invalid,
             )
         if recover_input is None:
-            missing = tuple(index for index in range(len(component.inputs)) if index not in supplied)
+            missing = tuple(
+                index for index in range(len(component.inputs)) if index not in supplied
+            )
             if len(missing) != 1:
                 reason = (
                     TransformationFailureReason.MULTIPLE_PREDECESSORS
-                    if len(missing) > 1 else TransformationFailureReason.AMBIGUOUS_BOUNDARY
+                    if len(missing) > 1
+                    else TransformationFailureReason.AMBIGUOUS_BOUNDARY
                 )
                 raise TransformationError(
                     reason,
@@ -159,7 +184,11 @@ class ComponentInverseRegistry:
                 "inverse recovery requires every other component input",
                 source_ids=missing_auxiliary,
             )
-        auxiliaries = tuple(as_selection(supplied[index]) for index in range(len(component.inputs)) if index != recover_input)
+        auxiliaries = tuple(
+            as_selection(supplied[index])
+            for index in range(len(component.inputs))
+            if index != recover_input
+        )
         for original, replacement in zip(
             (item for index, item in enumerate(component.inputs) if index != recover_input),
             auxiliaries,
@@ -199,6 +228,7 @@ def _unary(factory: Callable[[Selection], Component]) -> InverseFactory:
         if recover_input != 0:  # pragma: no cover - registry validation reaches this first
             raise AssertionError("unary recovery index must be zero")
         return factory(output)
+
     return create
 
 
@@ -291,10 +321,12 @@ def _inverse_matrix(matrix, domain):
                 if row != column and augmented[row] & (1 << column):
                     augmented[row] ^= augmented[column]
         return tuple(
-            tuple((row >> (size + column)) & 1 for column in range(size))
-            for row in augmented
+            tuple((row >> (size + column)) & 1 for column in range(size)) for row in augmented
         )
-    augmented = [list(row) + [int(column == row_index) for column in range(size)] for row_index, row in enumerate(matrix)]
+    augmented = [
+        list(row) + [int(column == row_index) for column in range(size)]
+        for row_index, row in enumerate(matrix)
+    ]
     for column in range(size):
         pivot = next((row for row in range(column, size) if augmented[row][column]), None)
         if pivot is None:
@@ -338,10 +370,11 @@ def _inverse_binary_affine_map(component, output, auxiliaries, recover_input):
             "binary affine map has a singular matrix",
             source_ids=_component_ids(component),
         )
-    bits = tuple((component.offset >> (domain.degree - 1 - index)) & 1 for index in range(domain.degree))
+    bits = tuple(
+        (component.offset >> (domain.degree - 1 - index)) & 1 for index in range(domain.degree)
+    )
     transformed = tuple(
-        sum(coefficient & value for coefficient, value in zip(row, bits)) & 1
-        for row in inverse
+        sum(coefficient & value for coefficient, value in zip(row, bits)) & 1 for row in inverse
     )
     offset = sum(value << (domain.degree - 1 - index) for index, value in enumerate(transformed))
     return BinaryAffineMap(output, inverse, offset)
@@ -409,10 +442,21 @@ def _recover_modular_subtract(component, output, auxiliaries, recover_input):
     original_auxiliaries = {
         index: auxiliary
         for index, auxiliary in zip(
-            (index for index in range(len(component.inputs)) if index != recover_input), auxiliaries,
+            (index for index in range(len(component.inputs)) if index != recover_input),
+            auxiliaries,
         )
     }
-    return ModularSubtract((original_auxiliaries[0], output, *(original_auxiliaries[index] for index in range(1, len(component.inputs)) if index != recover_input)))
+    return ModularSubtract(
+        (
+            original_auxiliaries[0],
+            output,
+            *(
+                original_auxiliaries[index]
+                for index in range(1, len(component.inputs))
+                if index != recover_input
+            ),
+        )
+    )
 
 
 def _inverse_rotate(component, output, auxiliaries, recover_input):
@@ -426,7 +470,9 @@ def _inverse_variable_rotate(component, output, auxiliaries, recover_input):
             "a rotated value does not uniquely determine its rotation amount",
             source_ids=_component_ids(component),
         )
-    return VariableRotate(output, auxiliaries[0], "right" if component.direction == "left" else "left")
+    return VariableRotate(
+        output, auxiliaries[0], "right" if component.direction == "left" else "left"
+    )
 
 
 def _recover_idea_multiply(component, output, auxiliaries, recover_input):
@@ -443,11 +489,13 @@ def _inverse_feedback_register(component, output, auxiliaries, recover_input):
     for register, start in zip(component.registers, starts):
         pivots = tuple(term for term in register.feedback if term.positions == (start,))
         if (
-            register.clock is not None or len(pivots) != 1
+            register.clock is not None
+            or len(pivots) != 1
             or not pivots[0].coefficient
             or any(
                 forbidden.intersection(term.positions)
-                for term in register.feedback if term is not pivots[0]
+                for term in register.feedback
+                if term is not pivots[0]
             )
         ):
             raise TransformationError(
@@ -457,7 +505,10 @@ def _inverse_feedback_register(component, output, auxiliaries, recover_input):
             )
     direction = "inverse" if component.direction == "forward" else "forward"
     return FeedbackRegister(
-        output, component.registers, component.clocks, direction=direction,
+        output,
+        component.registers,
+        component.clocks,
+        direction=direction,
     )
 
 
@@ -465,31 +516,59 @@ def _unsupported(component_type, reason, rationale):
     return ComponentInverseSemantics(component_type, None, reason, rationale)
 
 
-DEFAULT_INVERSE_REGISTRY = ComponentInverseRegistry((
-    ComponentInverseSemantics(Identity, _unary(Identity)),
-    ComponentInverseSemantics(Permutation, _inverse_permutation),
-    ComponentInverseSemantics(BitwiseNot, _unary(BitwiseNot)),
-    ComponentInverseSemantics(Rotate, _inverse_rotate),
-    ComponentInverseSemantics(VariableRotate, _inverse_variable_rotate),
-    ComponentInverseSemantics(SBox, _inverse_sbox),
-    ComponentInverseSemantics(BitVectorSBox, _inverse_sbox),
-    ComponentInverseSemantics(LinearMap, _inverse_linear_map),
-    ComponentInverseSemantics(BinaryAffineMap, _inverse_binary_affine_map),
-    ComponentInverseSemantics(Power, _inverse_power),
-    ComponentInverseSemantics(Xor, _recover_xor),
-    ComponentInverseSemantics(Add, _recover_add),
-    ComponentInverseSemantics(ModularAdd, _recover_modular_add),
-    ComponentInverseSemantics(ModularSubtract, _recover_modular_subtract),
-    _unsupported(Constant, TransformationFailureReason.AMBIGUOUS_BOUNDARY, "a constant has no predecessor to recover"),
-    _unsupported(Shift, TransformationFailureReason.INFORMATION_LOSS, "fixed shifts discard bits"),
-    _unsupported(VariableShift, TransformationFailureReason.INFORMATION_LOSS, "variable shifts can discard bits"),
-    _unsupported(BitwiseAnd, TransformationFailureReason.INFORMATION_LOSS, "bitwise AND is not bijective in an operand"),
-    _unsupported(BitwiseOr, TransformationFailureReason.INFORMATION_LOSS, "bitwise OR is not bijective in an operand"),
-    _unsupported(Multiply, TransformationFailureReason.INFORMATION_LOSS, "multiplication is not bijective when an auxiliary can be zero"),
-    _unsupported(ModularMultiply, TransformationFailureReason.INFORMATION_LOSS, "modular multiplication is not bijective for every auxiliary"),
-    ComponentInverseSemantics(IDEAMultiply, _recover_idea_multiply),
-    ComponentInverseSemantics(FeedbackRegister, _inverse_feedback_register),
-))
+DEFAULT_INVERSE_REGISTRY = ComponentInverseRegistry(
+    (
+        ComponentInverseSemantics(Identity, _unary(Identity)),
+        ComponentInverseSemantics(Permutation, _inverse_permutation),
+        ComponentInverseSemantics(BitwiseNot, _unary(BitwiseNot)),
+        ComponentInverseSemantics(Rotate, _inverse_rotate),
+        ComponentInverseSemantics(VariableRotate, _inverse_variable_rotate),
+        ComponentInverseSemantics(SBox, _inverse_sbox),
+        ComponentInverseSemantics(BitVectorSBox, _inverse_sbox),
+        ComponentInverseSemantics(LinearMap, _inverse_linear_map),
+        ComponentInverseSemantics(BinaryAffineMap, _inverse_binary_affine_map),
+        ComponentInverseSemantics(Power, _inverse_power),
+        ComponentInverseSemantics(Xor, _recover_xor),
+        ComponentInverseSemantics(Add, _recover_add),
+        ComponentInverseSemantics(ModularAdd, _recover_modular_add),
+        ComponentInverseSemantics(ModularSubtract, _recover_modular_subtract),
+        _unsupported(
+            Constant,
+            TransformationFailureReason.AMBIGUOUS_BOUNDARY,
+            "a constant has no predecessor to recover",
+        ),
+        _unsupported(
+            Shift, TransformationFailureReason.INFORMATION_LOSS, "fixed shifts discard bits"
+        ),
+        _unsupported(
+            VariableShift,
+            TransformationFailureReason.INFORMATION_LOSS,
+            "variable shifts can discard bits",
+        ),
+        _unsupported(
+            BitwiseAnd,
+            TransformationFailureReason.INFORMATION_LOSS,
+            "bitwise AND is not bijective in an operand",
+        ),
+        _unsupported(
+            BitwiseOr,
+            TransformationFailureReason.INFORMATION_LOSS,
+            "bitwise OR is not bijective in an operand",
+        ),
+        _unsupported(
+            Multiply,
+            TransformationFailureReason.INFORMATION_LOSS,
+            "multiplication is not bijective when an auxiliary can be zero",
+        ),
+        _unsupported(
+            ModularMultiply,
+            TransformationFailureReason.INFORMATION_LOSS,
+            "modular multiplication is not bijective for every auxiliary",
+        ),
+        ComponentInverseSemantics(IDEAMultiply, _recover_idea_multiply),
+        ComponentInverseSemantics(FeedbackRegister, _inverse_feedback_register),
+    )
+)
 
 
 def invert_component(
@@ -520,11 +599,16 @@ def invert_component(
     if not isinstance(registry, ComponentInverseRegistry):
         raise TypeError("registry must be a ComponentInverseRegistry")
     return registry.invert(
-        component, output, recover_input=recover_input, auxiliary_inputs=auxiliary_inputs,
+        component,
+        output,
+        recover_input=recover_input,
+        auxiliary_inputs=auxiliary_inputs,
     )
 
 
 __all__ = [
-    "ComponentInverseRegistry", "ComponentInverseSemantics",
-    "DEFAULT_INVERSE_REGISTRY", "invert_component",
+    "DEFAULT_INVERSE_REGISTRY",
+    "ComponentInverseRegistry",
+    "ComponentInverseSemantics",
+    "invert_component",
 ]

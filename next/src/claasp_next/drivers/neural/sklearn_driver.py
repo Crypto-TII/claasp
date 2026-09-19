@@ -54,8 +54,7 @@ class SklearnMLPDriver:
             from sklearn.neural_network import MLPClassifier
         except ImportError as error:
             raise ImportError(
-                "SklearnMLPDriver requires the optional 'ml' extra: "
-                "pip install 'claasp-next[ml]'"
+                "SklearnMLPDriver requires the optional 'ml' extra: pip install 'claasp-next[ml]'"
             ) from error
 
         if not isinstance(dataset, NeuralDataset):

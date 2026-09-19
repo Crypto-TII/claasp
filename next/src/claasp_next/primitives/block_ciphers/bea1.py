@@ -370,7 +370,10 @@ class BEA1(BitGraphPrimitive):
         _zero = self.add_constant_component(self.sbox_bit_size, 0)
         key_state = [
             self.add_xor_component(
-                [INPUT_KEY if j < (self.key_block_size // self.sbox_bit_size) else _zero.id, _zero.id],
+                [
+                    INPUT_KEY if j < (self.key_block_size // self.sbox_bit_size) else _zero.id,
+                    _zero.id,
+                ],
                 [
                     list(range(j * self.sbox_bit_size, (j + 1) * self.sbox_bit_size))
                     if (j < (self.key_block_size // self.sbox_bit_size))
@@ -405,7 +408,9 @@ class BEA1(BitGraphPrimitive):
             ]
             xor_constant = self.add_constant_component(self.sbox_bit_size, pow(3, i, 2**10))
             x[0] = self.add_xor_component(
-                [x[0].id, xor_constant.id], [list(range(self.sbox_bit_size))] * 2, self.sbox_bit_size
+                [x[0].id, xor_constant.id],
+                [list(range(self.sbox_bit_size))] * 2,
+                self.sbox_bit_size,
             )
 
             for j in range(4):
@@ -449,13 +454,23 @@ class BEA1(BitGraphPrimitive):
             if round_number != self.nrounds - 1:
                 # mix columns + shift rows
                 mx1 = self.add_linear_layer_component(
-                    [primitive_state[0].id, primitive_state[5].id, primitive_state[2].id, primitive_state[7].id],
+                    [
+                        primitive_state[0].id,
+                        primitive_state[5].id,
+                        primitive_state[2].id,
+                        primitive_state[7].id,
+                    ],
                     [list(range(self.sbox_bit_size))] * 4,
                     self.sbox_bit_size * 4,
                     self.mix_columns_matrix,
                 )
                 mx2 = self.add_linear_layer_component(
-                    [primitive_state[4].id, primitive_state[1].id, primitive_state[6].id, primitive_state[3].id],
+                    [
+                        primitive_state[4].id,
+                        primitive_state[1].id,
+                        primitive_state[6].id,
+                        primitive_state[3].id,
+                    ],
                     [list(range(self.sbox_bit_size))] * 4,
                     self.sbox_bit_size * 4,
                     self.mix_columns_matrix,
@@ -513,7 +528,9 @@ class BEA1(BitGraphPrimitive):
         key = [key_state[(8 * round_number + i) % 24] for i in range(8)]
 
         self.add_round_key_output_component(
-            [key[i].id for i in range(8)], [list(range(self.sbox_bit_size))] * 8, self.sbox_bit_size * 8
+            [key[i].id for i in range(8)],
+            [list(range(self.sbox_bit_size))] * 8,
+            self.sbox_bit_size * 8,
         )
 
         if isinstance(primitive_state, str):
@@ -532,7 +549,9 @@ class BEA1(BitGraphPrimitive):
 
         return [
             self.add_xor_component(
-                [primitive_state[i].id, key[i].id], [list(range(self.sbox_bit_size))] * 2, self.sbox_bit_size
+                [primitive_state[i].id, key[i].id],
+                [list(range(self.sbox_bit_size))] * 2,
+                self.sbox_bit_size,
             )
             for i in range(8)
         ]

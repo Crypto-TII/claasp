@@ -16,9 +16,8 @@
 # ****************************************************************************
 
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
+from claasp_next.graph.bit_builder import BitGraphPrimitive, extract_inputs
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
-from claasp_next.graph.bit_builder import extract_inputs
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"key_bit_size": 80, "number_of_rounds": 25},
@@ -113,7 +112,9 @@ class Rectangle(BitGraphPrimitive):
     def add_round_key(self, data, key):
         round_key_positions = [p for i in reversed(range(4)) for p in self.key_row_positions(i, 16)]
         key_id_list, key_bit_positions = extract_inputs(*key, round_key_positions)
-        new_data_id = self.add_xor_component(data[0] + key_id_list, data[1] + key_bit_positions, self.block_bit_size).id
+        new_data_id = self.add_xor_component(
+            data[0] + key_id_list, data[1] + key_bit_positions, self.block_bit_size
+        ).id
 
         return [new_data_id], [list(range(self.block_bit_size))]
 
@@ -122,7 +123,9 @@ class Rectangle(BitGraphPrimitive):
         sbox_outputs = [""] * 16
 
         for j in range(16):
-            sbox_outputs[j] = self.add_sbox_component(data[0], [[15 - j, 31 - j, 47 - j, 63 - j]], 4, SBOX).id
+            sbox_outputs[j] = self.add_sbox_component(
+                data[0], [[15 - j, 31 - j, 47 - j, 63 - j]], 4, SBOX
+            ).id
 
         return sbox_outputs
 
@@ -158,7 +161,9 @@ class Rectangle(BitGraphPrimitive):
         rows = []
         for i in range(self.number_of_key_rows):
             if i < 4:
-                row_ids, row_bit_positions = extract_inputs(*key, self.key_row_positions(i)[: w - m])
+                row_ids, row_bit_positions = extract_inputs(
+                    *key, self.key_row_positions(i)[: w - m]
+                )
                 row_ids += [sbox_outputs[j] for j in reversed(range(m))]
                 row_bit_positions += [[3 - i]] * m
             else:
@@ -168,16 +173,22 @@ class Rectangle(BitGraphPrimitive):
         rot_0 = self.add_rotate_component(rows[0][0], rows[0][1], w, -8).id
         row_0 = self.add_xor_component([rot_0] + rows[1][0], [list(range(w))] + rows[1][1], w).id
         constant_id = self.add_constant_component(5, RC[r]).id
-        row_0_rc = self.add_xor_component([row_0, constant_id], [list(range(w - 5, w)), list(range(5))], 5).id
+        row_0_rc = self.add_xor_component(
+            [row_0, constant_id], [list(range(w - 5, w)), list(range(5))], 5
+        ).id
         new_row_0 = [row_0, row_0_rc], [list(range(w - 5)), list(range(5))]
 
         if self.key_bit_size == 80:
             rot_3 = self.add_rotate_component(rows[3][0], rows[3][1], w, -12).id
-            row_3 = self.add_xor_component([rot_3] + rows[4][0], [list(range(w))] + rows[4][1], w).id
+            row_3 = self.add_xor_component(
+                [rot_3] + rows[4][0], [list(range(w))] + rows[4][1], w
+            ).id
             new_rows = [rows[0], ([row_3], [list(range(w))]), rows[3], rows[2], new_row_0]
         else:
             rot_2 = self.add_rotate_component(rows[2][0], rows[2][1], w, -16).id
-            row_2 = self.add_xor_component([rot_2] + rows[3][0], [list(range(w))] + rows[3][1], w).id
+            row_2 = self.add_xor_component(
+                [rot_2] + rows[3][0], [list(range(w))] + rows[3][1], w
+            ).id
             new_rows = [rows[0], ([row_2], [list(range(w))]), rows[2], new_row_0]
 
         key_ids = [i for row in new_rows for i in row[0]]

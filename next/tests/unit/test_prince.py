@@ -14,9 +14,13 @@ def test_prince_and_prince_v2_are_distinct_primitive_identities():
 
 
 def test_prince_preserves_its_legacy_fixed_vector():
-    assert Prince().evaluate(
-        0x0000000000000000, 0xFFFFFFFFFFFFFFFF0000000000000000,
-    ) == 0x9FB51935FC3DF524
+    assert (
+        Prince().evaluate(
+            0x0000000000000000,
+            0xFFFFFFFFFFFFFFFF0000000000000000,
+        )
+        == 0x9FB51935FC3DF524
+    )
 
 
 def test_prince_v2_preserves_its_specification_fixed_vector():

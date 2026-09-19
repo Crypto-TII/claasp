@@ -65,21 +65,57 @@ PARAMETERS_CONFIGURATION_LIST = [
 ]
 
 PERMUTATION_64 = [
-    0, 5, 11, 10,
-    1, 6, 4, 13,
-    2, 12, 9, 15,
-    3, 7, 14, 8,
+    0,
+    5,
+    11,
+    10,
+    1,
+    6,
+    4,
+    13,
+    2,
+    12,
+    9,
+    15,
+    3,
+    7,
+    14,
+    8,
 ]
 
 PERMUTATION_128 = [
-    5, 12, 4, 1,
-    17, 9, 10, 16,
-    28, 14, 21, 22,
-    11, 27, 8, 13,
-    2, 25, 18, 3,
-    30, 6, 19, 20,
-    0, 23, 24, 31,
-    7, 15, 29, 26,
+    5,
+    12,
+    4,
+    1,
+    17,
+    9,
+    10,
+    16,
+    28,
+    14,
+    21,
+    22,
+    11,
+    27,
+    8,
+    13,
+    2,
+    25,
+    18,
+    3,
+    30,
+    6,
+    19,
+    20,
+    0,
+    23,
+    24,
+    31,
+    7,
+    15,
+    29,
+    26,
 ]
 
 MIX_COLUMN_MATRIX = [
@@ -90,10 +126,22 @@ MIX_COLUMN_MATRIX = [
 ]
 
 SBOX = [
-    0x1, 0x0, 0x9, 0x3,
-    0x8, 0x5, 0xE, 0x7,
-    0x4, 0x2, 0xC, 0xB,
-    0xA, 0xF, 0x6, 0xD,
+    0x1,
+    0x0,
+    0x9,
+    0x3,
+    0x8,
+    0x5,
+    0xE,
+    0x7,
+    0x4,
+    0x2,
+    0xC,
+    0xB,
+    0xA,
+    0xF,
+    0x6,
+    0xD,
 ]
 
 ROUND_CONSTANTS_64 = [
@@ -197,10 +245,7 @@ class Blink(BitGraphPrimitive):
             self.round_constants = ROUND_CONSTANTS_128
             self.round_constants_prime = ROUND_CONSTANTS_PRIME_128
 
-        self.inverse_permutation = [
-            self.permutation.index(i)
-            for i in range(self.number_of_cells)
-        ]
+        self.inverse_permutation = [self.permutation.index(i) for i in range(self.number_of_cells)]
 
         self.mix_column_matrix = MIX_COLUMN_MATRIX
         self.sbox = SBOX
@@ -234,13 +279,10 @@ class Blink(BitGraphPrimitive):
         state = self._add_pi4(state, round_keys)
 
         self.add_primitive_output_component(
-        list(reversed(state)),
-        [
-            list(range(self.word_size))
-            for _ in range(self.number_of_cells)
-        ],
-        self.block_bit_size,
-    )
+            list(reversed(state)),
+            [list(range(self.word_size)) for _ in range(self.number_of_cells)],
+            self.block_bit_size,
+        )
 
     def _get_key_slice(self, index_from_lsb):
         """
@@ -268,10 +310,7 @@ class Blink(BitGraphPrimitive):
         """
         Return rk1, ..., rk_(a+b).
         """
-        return [
-            self._get_key_slice(i + 2)
-            for i in range(self.a + self.b)
-        ]
+        return [self._get_key_slice(i + 2) for i in range(self.a + self.b)]
 
     def _add_sbox_layer(self, state):
         """
@@ -286,9 +325,7 @@ class Blink(BitGraphPrimitive):
             else:
                 input_id = state
                 start = self.block_bit_size - (i + 1) * self.word_size
-                input_bit_positions = list(
-                    range(start, start + self.word_size)
-                )
+                input_bit_positions = list(range(start, start + self.word_size))
 
             sbox_output = self.add_sbox_component(
                 [input_id],
@@ -324,10 +361,7 @@ class Blink(BitGraphPrimitive):
             layer_start = layer * 16
 
             for column_index in range(4):
-                column = [
-                    state[layer_start + column_index + row * 4]
-                    for row in range(4)
-                ]
+                column = [state[layer_start + column_index + row * 4] for row in range(4)]
 
                 for output_row in range(4):
                     input_cells = [
@@ -338,18 +372,14 @@ class Blink(BitGraphPrimitive):
 
                     mixed_cell = self.add_xor_component(
                         input_cells,
-                        [
-                            list(range(self.word_size))
-                            for _ in input_cells
-                        ],
+                        [list(range(self.word_size)) for _ in input_cells],
                         self.word_size,
                     ).id
 
-                    mixed_state[
-                        layer_start + column_index + output_row * 4
-                    ] = mixed_cell
+                    mixed_state[layer_start + column_index + output_row * 4] = mixed_cell
 
         return mixed_state
+
     def _add_round_key(self, state, round_key):
         """
         XOR the round key with the state.
@@ -364,7 +394,7 @@ class Blink(BitGraphPrimitive):
                 [state[i], key_id],
                 [
                     list(range(self.word_size)),
-                    key_bit_positions[start:start + self.word_size],
+                    key_bit_positions[start : start + self.word_size],
                 ],
                 self.word_size,
             ).id
@@ -406,10 +436,7 @@ class Blink(BitGraphPrimitive):
         """
         self.add_round_output_component(
             list(reversed(state)),
-            [
-                list(range(self.word_size))
-                for _ in range(self.number_of_cells)
-            ],
+            [list(range(self.word_size)) for _ in range(self.number_of_cells)],
             self.block_bit_size,
         )
 
@@ -466,17 +493,9 @@ class Blink(BitGraphPrimitive):
             for i in range(total_hash_key_size)
         ]
 
-        k1_positions = list(
-            reversed(
-                least_significant_positions[:hash_key_size]
-            )
-        )
+        k1_positions = list(reversed(least_significant_positions[:hash_key_size]))
 
-        k2_positions = list(
-            reversed(
-                least_significant_positions[hash_key_size:]
-            )
-        )
+        k2_positions = list(reversed(least_significant_positions[hash_key_size:]))
 
         k1 = (INPUT_KEY, k1_positions)
         k2 = (INPUT_KEY, k2_positions)
@@ -546,14 +565,11 @@ class Blink(BitGraphPrimitive):
         for i in range(self.number_of_cells):
             start = self.block_bit_size - (i + 1) * self.word_size
 
-            hash_bits = hash_value[
-                start:start + self.word_size
-            ]
+            hash_bits = hash_value[start : start + self.word_size]
 
             output_cell = self.add_xor_component(
                 [state[i]] + hash_bits,
-                [list(range(self.word_size))]
-                + [[0] for _ in range(self.word_size)],
+                [list(range(self.word_size))] + [[0] for _ in range(self.word_size)],
                 self.word_size,
             ).id
 
@@ -576,15 +592,13 @@ class Blink(BitGraphPrimitive):
                 state_bit_positions = list(range(self.word_size))
             else:
                 state_id = state
-                state_bit_positions = list(
-                    range(start, start + self.word_size)
-                )
+                state_bit_positions = list(range(start, start + self.word_size))
 
             output_cell = self.add_xor_component(
                 [state_id, key_id],
                 [
                     state_bit_positions,
-                    key_bit_positions[start:start + self.word_size],
+                    key_bit_positions[start : start + self.word_size],
                 ],
                 self.word_size,
             ).id

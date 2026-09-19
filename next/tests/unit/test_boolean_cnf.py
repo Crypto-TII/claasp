@@ -3,21 +3,21 @@ from itertools import product
 import pytest
 
 from claasp_next import bits_from_int
+from claasp_next.components import Add
+from claasp_next.domains import Bit
+from claasp_next.graph import Primitive, ValueType
+from claasp_next.primitives import MiMC, Present80, Simon, Speck
 from claasp_next.representations.constraints.sat import BooleanCNFModel, CNFFormula
 from claasp_next.representations.constraints.sat.exporters import DimacsExporter
-from claasp_next.primitives import MiMC, Present80, Simon, Speck
-from claasp_next.components import Add
-from claasp_next.graph import Primitive, ValueType
-from claasp_next.domains import Bit
 from claasp_next.representations.execution import ScalarEvaluator
 
 
 def _xor_primitive(operand_count=2):
     primitive = Primitive("xor", {name: ValueType(Bit(), (1,)) for name in "abc"[:operand_count]})
     primitive.add_round()
-    output = primitive.add_component(Add(
-        tuple(primitive.input(name) for name in "abc"[:operand_count]), component_id="sum"
-    ))
+    output = primitive.add_component(
+        Add(tuple(primitive.input(name) for name in "abc"[:operand_count]), component_id="sum")
+    )
     primitive.set_output(output)
     return primitive
 
@@ -71,14 +71,20 @@ def test_word_arx_execution_produces_satisfying_cnf_witness():
 
 def test_simon_and_rotation_graph_has_an_independently_checked_cnf_witness():
     primitive = Simon(number_of_rounds=3)
-    evaluation = ScalarEvaluator().evaluate(primitive, {
-        "plaintext": (0x6565, 0x6877), "key": (0x1918, 0x1110, 0x0908, 0x0100),
-    })
+    evaluation = ScalarEvaluator().evaluate(
+        primitive,
+        {
+            "plaintext": (0x6565, 0x6877),
+            "key": (0x1918, 0x1110, 0x0908, 0x0100),
+        },
+    )
     model = BooleanCNFModel(primitive)
     formula = model.cnf_formula()
     witness = model.witness(evaluation)
     assert formula.is_satisfied(witness)
-    and_component = next(item for item in primitive.components if type(item).__name__ == "BitwiseAnd")
+    and_component = next(
+        item for item in primitive.components if type(item).__name__ == "BitwiseAnd"
+    )
     changed = dict(witness)
     changed[f"{and_component.component_id}_0_0"] ^= 1
     assert not formula.is_satisfied(changed)
@@ -86,17 +92,21 @@ def test_simon_and_rotation_graph_has_an_independently_checked_cnf_witness():
 
 def test_legacy_three_input_or_relation_retains_the_complete_truth_table():
     from claasp_next.components import BitVectorSBox
+
     primitive = Primitive("or_lookup", {"x": ValueType(Bit(), (3,))})
     primitive.add_round()
-    output = primitive.add_component(BitVectorSBox(primitive.input("x"),
-        (0, 1, 1, 1, 1, 1, 1, 1), component_id="or"))
+    output = primitive.add_component(
+        BitVectorSBox(primitive.input("x"), (0, 1, 1, 1, 1, 1, 1, 1), component_id="or")
+    )
     primitive.set_output(output)
     model = BooleanCNFModel(primitive)
     formula = model.cnf_formula()
     for input_value, output_value in product(range(8), repeat=2):
-        assignment = {f"{prefix}_{bit}": (value >> (2 - bit)) & 1
-                      for prefix, value in (("x", input_value), ("or", output_value))
-                      for bit in range(3)}
+        assignment = {
+            f"{prefix}_{bit}": (value >> (2 - bit)) & 1
+            for prefix, value in (("x", input_value), ("or", output_value))
+            for bit in range(3)
+        }
         assert formula.is_satisfied(assignment) is (output_value == int(input_value != 0))
 
 
@@ -124,9 +134,9 @@ def test_unsupported_bit_component_is_rejected_explicitly():
 
     primitive = Primitive("and", {"x": ValueType(Bit(), (1,)), "y": ValueType(Bit(), (1,))})
     primitive.add_round()
-    primitive.add_component(Multiply(
-        (primitive.input("x"), primitive.input("y")), component_id="product"
-    ))
+    primitive.add_component(
+        Multiply((primitive.input("x"), primitive.input("y")), component_id="product")
+    )
     with pytest.raises(NotImplementedError, match="Multiply"):
         BooleanCNFModel(primitive).cnf_formula()
 

@@ -16,8 +16,7 @@
 # ****************************************************************************
 
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 # fmt: off
@@ -73,7 +72,9 @@ CONSTANTS = [
     0x919
 ]
 # fmt: on
-PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 192, "key_bit_size": 192, "number_of_rounds": 5}]
+PARAMETERS_CONFIGURATION_LIST = [
+    {"block_bit_size": 192, "key_bit_size": 192, "number_of_rounds": 5}
+]
 
 
 class Speedy(BitGraphPrimitive):
@@ -103,14 +104,22 @@ class Speedy(BitGraphPrimitive):
     """
 
     def __init__(
-        self, block_bit_size=192, key_bit_size=192, number_of_rounds=1, alpha=(0, 1, 5, 9, 15, 21, 26), beta=7, gamma=1
+        self,
+        block_bit_size=192,
+        key_bit_size=192,
+        number_of_rounds=1,
+        alpha=(0, 1, 5, 9, 15, 21, 26),
+        beta=7,
+        gamma=1,
     ):
         if block_bit_size != key_bit_size:
             raise ValueError(
                 f"block_bit_size (={block_bit_size}) and key_bit_size (={key_bit_size}) differs. No primitive created"
             )
         if block_bit_size % 6 != 0:
-            raise ValueError(f"block_bit_size (={block_bit_size}) is NOT a multiple of 6. It MUST be a multiple of 6.")
+            raise ValueError(
+                f"block_bit_size (={block_bit_size}) is NOT a multiple of 6. It MUST be a multiple of 6."
+            )
         self.l = block_bit_size // 6
         self.constants_per_block = self.l // 2
 
@@ -138,18 +147,23 @@ class Speedy(BitGraphPrimitive):
             # the comments describe the point of view of the state
             # state is a whole of 6*l bits
             block = self.add_xor_component(
-                [block.id, key.id], block.input_bit_positions + key.input_bit_positions, block_bit_size
+                [block.id, key.id],
+                block.input_bit_positions + key.input_bit_positions,
+                block_bit_size,
             )
             # state is l components corresponding to the l sboxes
             block = [
-                self.add_sbox_component([block.id], [list(range(6 * i, 6 * (i + 1)))], 6, SBOX) for i in range(self.l)
+                self.add_sbox_component([block.id], [list(range(6 * i, 6 * (i + 1)))], 6, SBOX)
+                for i in range(self.l)
             ]
             # state is 6 columns
             new_block = []
             input_ids = [block[_].id for _ in range(self.l)]
             for i in range(6):
                 input_bit_positions = [[i] for _ in range(self.l)]
-                new_block.append(self.add_rotate_component(input_ids, input_bit_positions, self.l, -i))
+                new_block.append(
+                    self.add_rotate_component(input_ids, input_bit_positions, self.l, -i)
+                )
             block = new_block
             # state is l components corresponding to the l sboxes
             new_block = []
@@ -163,7 +177,9 @@ class Speedy(BitGraphPrimitive):
             input_ids = [block[_].id for _ in range(self.l)]
             for i in range(6):
                 input_bit_positions = [[i] for _ in range(self.l)]
-                new_block.append(self.add_rotate_component(input_ids, input_bit_positions, self.l, -i))
+                new_block.append(
+                    self.add_rotate_component(input_ids, input_bit_positions, self.l, -i)
+                )
             block = new_block
             # state is l components corresponding to the l rows of the block
             new_block = []
@@ -174,16 +190,23 @@ class Speedy(BitGraphPrimitive):
             block = new_block
             # state is a whole of 6*l bits
             constant = 0
-            for i in range(self.constants_per_block * round_number, self.constants_per_block * (round_number + 1)):
+            for i in range(
+                self.constants_per_block * round_number,
+                self.constants_per_block * (round_number + 1),
+            ):
                 constant <<= 12
                 constant ^= CONSTANTS[i]
             constant_component = self.add_constant_component(192, constant)
             input_ids = [nb.id for nb in block] + [constant_component.id]
-            input_bit_positions = [list(range(6)) for _ in range(self.l)] + [list(range(6 * self.l))]
+            input_bit_positions = [list(range(6)) for _ in range(self.l)] + [
+                list(range(6 * self.l))
+            ]
             block = self.add_xor_component(input_ids, input_bit_positions, block_bit_size)
             block = BitState(block.id, [list(range(block_bit_size))])
             # key schedule
-            key = self.add_permutation_component([key.id], [list(range(6 * self.l))], 6 * self.l, self.permutation)
+            key = self.add_permutation_component(
+                [key.id], [list(range(6 * self.l))], 6 * self.l, self.permutation
+            )
             key = BitState(key.id, [list(range(key_bit_size))])
 
             self.add_round_key_output_component([key.id], [list(range(6 * self.l))], 6 * self.l)
@@ -196,7 +219,10 @@ class Speedy(BitGraphPrimitive):
             [block.id, key.id], block.input_bit_positions + key.input_bit_positions, block_bit_size
         )
         # state is l components corresponding to the l sboxes
-        block = [self.add_sbox_component([block.id], [list(range(6 * i, 6 * (i + 1)))], 6, SBOX) for i in range(self.l)]
+        block = [
+            self.add_sbox_component([block.id], [list(range(6 * i, 6 * (i + 1)))], 6, SBOX)
+            for i in range(self.l)
+        ]
         # state is 6 columns
         new_block = []
         input_ids = [block[_].id for _ in range(self.l)]
@@ -212,7 +238,9 @@ class Speedy(BitGraphPrimitive):
             new_block.append(self.add_sbox_component(input_ids, input_bit_positions, 6, SBOX))
         block = new_block
         # key schedule
-        key = self.add_permutation_component([key.id], [list(range(6 * self.l))], 6 * self.l, self.permutation)
+        key = self.add_permutation_component(
+            [key.id], [list(range(6 * self.l))], 6 * self.l, self.permutation
+        )
         # state is a whole of 6*l bits
         input_ids = [nb.id for nb in new_block] + [key.id]
         input_bit_positions = [list(range(6)) for _ in range(self.l)] + [list(range(6 * self.l))]

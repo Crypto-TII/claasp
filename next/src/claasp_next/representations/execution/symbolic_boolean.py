@@ -4,12 +4,18 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from claasp_next.components import (
-    BitwiseAnd, BitwiseNot, BitwiseOr, Constant, ModularAdd, Rotate, Shift, Xor,
+    BitwiseAnd,
+    BitwiseNot,
+    BitwiseOr,
+    Constant,
+    ModularAdd,
+    Rotate,
+    Shift,
+    Xor,
 )
 from claasp_next.domains import Bit, Word
 from claasp_next.graph import Primitive
 from claasp_next.representations.constraints.polynomial import BooleanPolynomial
-
 
 SymbolicUnit = BooleanPolynomial | tuple[BooleanPolynomial, ...]
 
@@ -59,13 +65,16 @@ class BooleanSymbolicEvaluator:
                 )
             elif isinstance(domain, Word):
                 values[name] = tuple(
-                    tuple(BooleanPolynomial.variable(
-                        f"{prefix}{unit * domain.width + bit}"
-                    ) for bit in range(domain.width))
+                    tuple(
+                        BooleanPolynomial.variable(f"{prefix}{unit * domain.width + bit}")
+                        for bit in range(domain.width)
+                    )
                     for unit in range(port.value_type.unit_count)
                 )
             else:
-                raise NotImplementedError("Boolean symbolic evaluation supports Bit and Word domains")
+                raise NotImplementedError(
+                    "Boolean symbolic evaluation supports Bit and Word domains"
+                )
 
         binding_cache = {}
         for component in primitive.components:
@@ -95,22 +104,28 @@ class BooleanSymbolicEvaluator:
         for operand_index, selection in enumerate(component.inputs):
             domain = selection.value_type.domain
             if isinstance(domain, Bit):
-                symbolic_inputs.append(tuple(
-                    BooleanPolynomial.variable(f"x{operand_index}_{unit_index}")
-                    for unit_index in range(selection.value_type.unit_count)
-                ))
+                symbolic_inputs.append(
+                    tuple(
+                        BooleanPolynomial.variable(f"x{operand_index}_{unit_index}")
+                        for unit_index in range(selection.value_type.unit_count)
+                    )
+                )
             elif isinstance(domain, Word):
-                symbolic_inputs.append(tuple(
-                    tuple(BooleanPolynomial.variable(
-                        f"x{operand_index}_{unit_index}_{bit_index}"
-                    ) for bit_index in range(domain.width))
-                    for unit_index in range(selection.value_type.unit_count)
-                ))
+                symbolic_inputs.append(
+                    tuple(
+                        tuple(
+                            BooleanPolynomial.variable(f"x{operand_index}_{unit_index}_{bit_index}")
+                            for bit_index in range(domain.width)
+                        )
+                        for unit_index in range(selection.value_type.unit_count)
+                    )
+                )
             else:
                 raise NotImplementedError("component ANFs require Bit or Word domains")
         output = self._component(component, tuple(symbolic_inputs))
         return tuple(
-            polynomial for unit in output
+            polynomial
+            for unit in output
             for polynomial in ((unit,) if isinstance(unit, BooleanPolynomial) else unit)
         )
 
@@ -118,18 +133,28 @@ class BooleanSymbolicEvaluator:
         if isinstance(component, Constant):
             domain = component.output_type.domain
             if isinstance(domain, Bit):
-                return tuple(BooleanPolynomial.one() if value else BooleanPolynomial.zero()
-                             for value in component.values)
+                return tuple(
+                    BooleanPolynomial.one() if value else BooleanPolynomial.zero()
+                    for value in component.values
+                )
             if isinstance(domain, Word):
-                return tuple(tuple(
-                    BooleanPolynomial.one() if value & (1 << (domain.width - 1 - bit))
-                    else BooleanPolynomial.zero()
-                    for bit in range(domain.width)
-                ) for value in component.values)
+                return tuple(
+                    tuple(
+                        BooleanPolynomial.one()
+                        if value & (1 << (domain.width - 1 - bit))
+                        else BooleanPolynomial.zero()
+                        for bit in range(domain.width)
+                    )
+                    for value in component.values
+                )
         if isinstance(component, Rotate):
-            return tuple(self._rotate(unit, component.amount, component.direction) for unit in inputs[0])
+            return tuple(
+                self._rotate(unit, component.amount, component.direction) for unit in inputs[0]
+            )
         if isinstance(component, Shift):
-            return tuple(self._shift(unit, component.amount, component.direction) for unit in inputs[0])
+            return tuple(
+                self._shift(unit, component.amount, component.direction) for unit in inputs[0]
+            )
         if isinstance(component, BitwiseNot):
             return tuple(self._word_not(unit) for unit in inputs[0])
         if isinstance(component, (Xor, BitwiseAnd, BitwiseOr, ModularAdd)):
@@ -144,14 +169,20 @@ class BooleanSymbolicEvaluator:
                 else:
                     result = [self._word_add(left, right) for left, right in zip(result, operand)]
             return tuple(result)
-        raise NotImplementedError(f"Boolean symbolic evaluator does not support {type(component).__name__}")
+        raise NotImplementedError(
+            f"Boolean symbolic evaluator does not support {type(component).__name__}"
+        )
 
     @staticmethod
     def _rotate(word, amount, direction):
         amount %= len(word)
         if not amount:
             return word
-        return word[amount:] + word[:amount] if direction == "left" else word[-amount:] + word[:-amount]
+        return (
+            word[amount:] + word[:amount]
+            if direction == "left"
+            else word[-amount:] + word[:-amount]
+        )
 
     @staticmethod
     def _shift(word, amount, direction):

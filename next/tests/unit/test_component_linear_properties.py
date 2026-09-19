@@ -39,8 +39,18 @@ def test_aes_mixcolumn_word_branch_number_and_mds_status():
 
     assert _analyze(component, ComponentProperty.RANK, PropertyDomain.WORD_LINEAR).value == 4
     assert _analyze(component, ComponentProperty.MDS, PropertyDomain.WORD_LINEAR).value is True
-    assert _analyze(component, ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER, PropertyDomain.WORD_LINEAR).value == 5
-    assert _analyze(component, ComponentProperty.LINEAR_BRANCH_NUMBER, PropertyDomain.WORD_LINEAR).value == 5
+    assert (
+        _analyze(
+            component, ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER, PropertyDomain.WORD_LINEAR
+        ).value
+        == 5
+    )
+    assert (
+        _analyze(
+            component, ComponentProperty.LINEAR_BRANCH_NUMBER, PropertyDomain.WORD_LINEAR
+        ).value
+        == 5
+    )
 
 
 def test_toyaes_gf4_non_mds_matrix_has_exact_branch_three():
@@ -49,7 +59,12 @@ def test_toyaes_gf4_non_mds_matrix_has_exact_branch_three():
     component = LinearMap(Port("column", ValueType(field, (4,))), matrix)
 
     assert _analyze(component, ComponentProperty.MDS, PropertyDomain.WORD_LINEAR).value is False
-    assert _analyze(component, ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER, PropertyDomain.WORD_LINEAR).value == 3
+    assert (
+        _analyze(
+            component, ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER, PropertyDomain.WORD_LINEAR
+        ).value
+        == 3
+    )
 
 
 def test_asymmetric_matrix_applies_linear_transpose_rule():
@@ -67,12 +82,8 @@ def test_asymmetric_matrix_applies_linear_transpose_rule():
 
 def test_binary_affine_order_includes_offset_not_only_linear_matrix():
     identity = tuple(tuple(int(row == column) for column in range(8)) for row in range(8))
-    component = BinaryAffineMap(
-        Port("x", ValueType(AES_FIELD, (1,))), identity, 0x63
-    )
-    linear_only = BinaryAffineMap(
-        Port("x", ValueType(AES_FIELD, (1,))), identity, 0
-    )
+    component = BinaryAffineMap(Port("x", ValueType(AES_FIELD, (1,))), identity, 0x63)
+    linear_only = BinaryAffineMap(Port("x", ValueType(AES_FIELD, (1,))), identity, 0)
 
     assert _analyze(component, ComponentProperty.ORDER).value == 2
     assert _analyze(linear_only, ComponentProperty.ORDER).value == 1
@@ -82,8 +93,10 @@ def test_large_exact_bit_branch_request_reports_budget_exhaustion():
     matrix = ((2, 3, 1, 1), (1, 2, 3, 1), (1, 1, 2, 3), (3, 1, 1, 2))
     component = LinearMap(Port("column", ValueType(AES_FIELD, (4,))), matrix)
     result = _analyze(
-        component, ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
-        PropertyDomain.BIT_LINEAR, maximum_vectors=16,
+        component,
+        ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
+        PropertyDomain.BIT_LINEAR,
+        maximum_vectors=16,
     )
 
     assert not result.is_available

@@ -1,12 +1,13 @@
-from claasp_next.primitives import Present
 from claasp_next.components import BitVectorSBox
-from claasp_next.semantics import XOR_DIFFERENTIAL
-from claasp_next.semantics.cryptanalysis import (
-    ComponentSemanticsBinding, PropagationProblem,
-)
+from claasp_next.primitives import Present
+from claasp_next.representations.constraints.cp import PresentDifferentialCPModel
 from claasp_next.representations.constraints.milp import PresentDifferentialMILPModel
 from claasp_next.representations.constraints.smt import PresentDifferentialSMTModel
-from claasp_next.representations.constraints.cp import PresentDifferentialCPModel
+from claasp_next.semantics import XOR_DIFFERENTIAL
+from claasp_next.semantics.cryptanalysis import (
+    ComponentSemanticsBinding,
+    PropagationProblem,
+)
 
 
 def test_smt_milp_and_cp_composition_consume_the_same_component_override():
@@ -25,16 +26,20 @@ def test_smt_milp_and_cp_composition_consume_the_same_component_override():
             return self.provider.transition(input_patterns, output_pattern)
 
     def problem_for(counter, maximum_weight=None):
-        registry = base.register(ComponentSemanticsBinding(
-            XOR_DIFFERENTIAL,
-            BitVectorSBox,
-            lambda selected: CountingProvider(
-                base.provider(selected, XOR_DIFFERENTIAL), counter
-            ),
-            component_id=component.component_id,
-        ))
+        registry = base.register(
+            ComponentSemanticsBinding(
+                XOR_DIFFERENTIAL,
+                BitVectorSBox,
+                lambda selected: CountingProvider(
+                    base.provider(selected, XOR_DIFFERENTIAL), counter
+                ),
+                component_id=component.component_id,
+            )
+        )
         return PropagationProblem(
-            primitive, XOR_DIFFERENTIAL, registry=registry,
+            primitive,
+            XOR_DIFFERENTIAL,
+            registry=registry,
             maximum_weight=maximum_weight,
         )
 

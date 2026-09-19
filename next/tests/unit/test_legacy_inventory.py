@@ -2,10 +2,9 @@
 
 import importlib.util
 import json
-from pathlib import Path
 import subprocess
 import sys
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = ROOT / "next" / "tools" / "legacy_inventory.py"
@@ -28,9 +27,19 @@ def test_checked_in_inventory_exactly_matches_legacy_python_tree():
 def test_inventory_has_complete_required_metadata_and_valid_dispositions():
     payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
     required = {
-        "path", "kind", "responsibility", "public_entry_points", "dependencies",
-        "tests", "fixed_evidence", "v5_destination", "prerequisites", "disposition",
-        "status", "acceptance_criterion", "rationale",
+        "path",
+        "kind",
+        "responsibility",
+        "public_entry_points",
+        "dependencies",
+        "tests",
+        "fixed_evidence",
+        "v5_destination",
+        "prerequisites",
+        "disposition",
+        "status",
+        "acceptance_criterion",
+        "rationale",
     }
     dispositions = {"migrate", "supersede", "defer", "remove", "inapplicable"}
     paths = [record["path"] for record in payload["records"]]
@@ -47,9 +56,15 @@ def test_inventory_has_complete_required_metadata_and_valid_dispositions():
 def test_every_primitive_record_has_naming_and_taxonomy_metadata():
     payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
     categories = {
-        "permutations", "functions", "block_ciphers", "block_functions",
-        "tweakable_block_ciphers", "tweakable_block_functions",
-        "single_component_primitives", "toy_primitives", "outside_scope",
+        "permutations",
+        "functions",
+        "block_ciphers",
+        "block_functions",
+        "tweakable_block_ciphers",
+        "tweakable_block_functions",
+        "single_component_primitives",
+        "toy_primitives",
+        "outside_scope",
     }
     primitive_records = [record for record in payload["records"] if "primitive" in record]
     assert primitive_records
@@ -82,9 +97,24 @@ def test_m10_9b_catalogue_classification_is_complete_and_checks_input_roles():
         "errors": [],
         "complete": True,
     }
-    assert records["claasp/ciphers/block_ciphers/mantis_block_cipher.py"]["primitive"]["primitive_category"] == "tweakable_block_ciphers"
-    assert records["claasp/ciphers/permutations/tinyjambu_permutation.py"]["primitive"]["primitive_category"] == "block_ciphers"
-    assert records["claasp/ciphers/stream_ciphers/bluetooth_stream_cipher_e0.py"]["primitive"]["primitive_category"] == "functions"
+    assert (
+        records["claasp/ciphers/block_ciphers/mantis_block_cipher.py"]["primitive"][
+            "primitive_category"
+        ]
+        == "tweakable_block_ciphers"
+    )
+    assert (
+        records["claasp/ciphers/permutations/tinyjambu_permutation.py"]["primitive"][
+            "primitive_category"
+        ]
+        == "block_ciphers"
+    )
+    assert (
+        records["claasp/ciphers/stream_ciphers/bluetooth_stream_cipher_e0.py"]["primitive"][
+            "primitive_category"
+        ]
+        == "functions"
+    )
     helper = records["claasp/ciphers/block_ciphers/lowmc_generate_matrices.py"]
     assert helper["primitive"]["primitive_category"] == "outside_scope"
     assert helper["disposition"] == "inapplicable"
@@ -108,10 +138,7 @@ def test_m10_8d_boolean_constraint_entries_are_resolved():
 
 def test_m10_8d_algebraic_inventory_has_no_unspecified_destinations():
     payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
-    records = [
-        record for record in payload["records"]
-        if "/models/algebraic/" in record["path"]
-    ]
+    records = [record for record in payload["records"] if "/models/algebraic/" in record["path"]]
 
     assert records
     assert all("destination finalized" not in record["v5_destination"] for record in records)
@@ -127,18 +154,25 @@ def test_m10_8d_smt_inventory_is_resolved_with_complete_linear_evidence():
     assert all(record["status"] != "planned-or-partially-migrated" for record in records)
     deferred = {record["path"] for record in records if record["disposition"] == "defer"}
     assert deferred == set()
-    linear = next(record for record in records if record["path"].endswith("smt_xor_linear_model_test.py"))
+    linear = next(
+        record for record in records if record["path"].endswith("smt_xor_linear_model_test.py")
+    )
     assert linear["status"] == "migrated-in-m10.8d"
     assert linear["prerequisites"] == []
 
 
 def test_m10_8d_cms_inventory_has_explicit_evidence_and_existing_destinations():
     payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
-    records = [record for record in payload["records"]
-               if "/cms_models/" in record["path"] and not record["path"].endswith("/__init__.py")]
+    records = [
+        record
+        for record in payload["records"]
+        if "/cms_models/" in record["path"] and not record["path"].endswith("/__init__.py")
+    ]
     assert len(records) == 8
     assert all(record["prerequisites"] == [] for record in records)
-    assert all(record["status"] in {"migrated-in-m10.8d", "superseded-in-m10.8d"} for record in records)
+    assert all(
+        record["status"] in {"migrated-in-m10.8d", "superseded-in-m10.8d"} for record in records
+    )
     assert all((ROOT / record["v5_destination"]).exists() for record in records)
     assert sum(record["disposition"] == "migrate" for record in records) == 2
 
@@ -223,8 +257,14 @@ def test_m10_9d_primitive_catalogue_audit_assigns_every_source_and_test_once():
     assert not any(
         record["path"] in status["unresolved"]
         for record in payload["records"]
-        if record.get("milestone_owner") in {
-            "M10.9d1", "M10.9d2", "M10.9d4", "M10.9d5", "M10.9d6", "M10.9d7",
+        if record.get("milestone_owner")
+        in {
+            "M10.9d1",
+            "M10.9d2",
+            "M10.9d4",
+            "M10.9d5",
+            "M10.9d6",
+            "M10.9d7",
             "M10.9d8",
         }
         and record["kind"] == "source"
@@ -297,7 +337,10 @@ def test_m10_11_component_analysis_inventory_closes_without_reopening_m10_8d():
 def test_m10_11_component_analysis_cli_closure_gate_passes():
     result = subprocess.run(
         [sys.executable, str(SCRIPT), "--check-component-analysis-closure"],
-        cwd=ROOT / "next", check=False, capture_output=True, text=True,
+        cwd=ROOT / "next",
+        check=False,
+        capture_output=True,
+        text=True,
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
@@ -320,7 +363,10 @@ def test_m10_14_presentation_inventory_and_deferred_obligations_close():
 def test_m10_14_presentation_cli_closure_gate_passes():
     result = subprocess.run(
         [sys.executable, str(SCRIPT), "--check-presentation-closure"],
-        cwd=ROOT / "next", check=False, capture_output=True, text=True,
+        cwd=ROOT / "next",
+        check=False,
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert json.loads(result.stdout)["complete"]

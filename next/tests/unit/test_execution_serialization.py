@@ -3,8 +3,12 @@ import json
 import pytest
 
 from claasp_next import (
-    SerializationError, SerializationFailure, deserialize_evaluation_result,
-    deserialize_execution_trace, serialize_artifact, serialize_evaluation_result,
+    SerializationError,
+    SerializationFailure,
+    deserialize_evaluation_result,
+    deserialize_execution_trace,
+    serialize_artifact,
+    serialize_evaluation_result,
     serialize_execution_trace,
 )
 from claasp_next.annotations import GraphAnnotation

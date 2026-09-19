@@ -17,9 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
@@ -123,7 +121,9 @@ class Ublock(BitGraphPrimitive):
             # encryption
             state_left, state_right = self.round_function(state_left, state_right, round_key)
             # round output
-            self.add_round_key_output_component(round_key.id, round_key.input_bit_positions, self.block_bit_size)
+            self.add_round_key_output_component(
+                round_key.id, round_key.input_bit_positions, self.block_bit_size
+            )
             if round_number < self.r - 1:
                 self.add_round_output_component(
                     state_left.id + state_right.id,
@@ -131,17 +131,27 @@ class Ublock(BitGraphPrimitive):
                     self.block_bit_size,
                 )
             # round_key schedule
-            key_0, key_1, key_2, key_3, round_key = self.key_schedule(key_0, key_1, key_2, key_3, RC[round_number])
+            key_0, key_1, key_2, key_3, round_key = self.key_schedule(
+                key_0, key_1, key_2, key_3, RC[round_number]
+            )
 
         # primitive output and round key output
         self.add_xor_component(
             state_left.id + state_right.id + round_key.id,
-            state_left.input_bit_positions + state_right.input_bit_positions + round_key.input_bit_positions,
+            state_left.input_bit_positions
+            + state_right.input_bit_positions
+            + round_key.input_bit_positions,
             self.block_bit_size,
         )
-        primitive_output = BitState([self.get_current_component_id()], [list(range(self.block_bit_size))])
-        self.add_round_key_output_component(round_key.id, round_key.input_bit_positions, self.block_bit_size)
-        self.add_primitive_output_component(primitive_output.id, primitive_output.input_bit_positions, self.block_bit_size)
+        primitive_output = BitState(
+            [self.get_current_component_id()], [list(range(self.block_bit_size))]
+        )
+        self.add_round_key_output_component(
+            round_key.id, round_key.input_bit_positions, self.block_bit_size
+        )
+        self.add_primitive_output_component(
+            primitive_output.id, primitive_output.input_bit_positions, self.block_bit_size
+        )
 
     def check_parameters(self):
         """Validate the parameters constraints before graph construction."""
@@ -180,11 +190,17 @@ class Ublock(BitGraphPrimitive):
     def round_initialization(self):
         """Build the round initialization stage in this primitive's typed operation graph."""
         left_state = BitState([INPUT_PLAINTEXT], [list(range(self.half_block_bit_size))])
-        right_state = BitState([INPUT_PLAINTEXT], [list(range(self.half_block_bit_size, self.block_bit_size))])
+        right_state = BitState(
+            [INPUT_PLAINTEXT], [list(range(self.half_block_bit_size, self.block_bit_size))]
+        )
         key_0 = BitState([INPUT_KEY], [list(range(self.key_block_size))])
         key_1 = BitState([INPUT_KEY], [list(range(self.key_block_size, self.key_block_size * 2))])
-        key_2 = BitState([INPUT_KEY], [list(range(self.key_block_size * 2, self.key_block_size * 3))])
-        key_3 = BitState([INPUT_KEY], [list(range(self.key_block_size * 3, self.key_block_size * 4))])
+        key_2 = BitState(
+            [INPUT_KEY], [list(range(self.key_block_size * 2, self.key_block_size * 3))]
+        )
+        key_3 = BitState(
+            [INPUT_KEY], [list(range(self.key_block_size * 3, self.key_block_size * 4))]
+        )
         round_key = BitState([INPUT_KEY], [list(range(self.block_bit_size))])
 
         return left_state, right_state, key_0, key_1, key_2, key_3, round_key
@@ -194,12 +210,17 @@ class Ublock(BitGraphPrimitive):
         """Build the round function stage in this primitive's typed operation graph."""
         self.add_xor_component(
             state_left.id + state_right.id + round_key.id,
-            state_left.input_bit_positions + state_right.input_bit_positions + round_key.input_bit_positions,
+            state_left.input_bit_positions
+            + state_right.input_bit_positions
+            + round_key.input_bit_positions,
             self.block_bit_size,
         )
-        state_left = BitState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
+        state_left = BitState(
+            [self.get_current_component_id()], [list(range(self.half_block_bit_size))]
+        )
         state_right = BitState(
-            [self.get_current_component_id()], [list(range(self.half_block_bit_size, self.block_bit_size))]
+            [self.get_current_component_id()],
+            [list(range(self.half_block_bit_size, self.block_bit_size))],
         )
 
         # sbox_n(state_left)
@@ -236,7 +257,9 @@ class Ublock(BitGraphPrimitive):
             state_left.input_bit_positions + state_right.input_bit_positions,
             self.half_block_bit_size,
         )
-        state_right = BitState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
+        state_right = BitState(
+            [self.get_current_component_id()], [list(range(self.half_block_bit_size))]
+        )
 
         # state_left = state_left xor (state_right <<<_32 4)
         ids = []
@@ -244,14 +267,21 @@ class Ublock(BitGraphPrimitive):
         n = int(self.half_block_bit_size / window_size)
         for i in range(n):
             self.add_rotate_component(
-                state_right.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, -4
+                state_right.id,
+                [list(range(i * window_size, (i + 1) * window_size))],
+                window_size,
+                -4,
             )
             ids.append(self.get_current_component_id())
         temp = BitState(ids, [list(range(window_size))] * n)
         self.add_xor_component(
-            state_left.id + temp.id, state_left.input_bit_positions + temp.input_bit_positions, self.half_block_bit_size
+            state_left.id + temp.id,
+            state_left.input_bit_positions + temp.input_bit_positions,
+            self.half_block_bit_size,
         )
-        state_left = BitState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
+        state_left = BitState(
+            [self.get_current_component_id()], [list(range(self.half_block_bit_size))]
+        )
 
         # state_right = state_right xor (state_left <<<_32 8)
         ids = []
@@ -259,7 +289,10 @@ class Ublock(BitGraphPrimitive):
         n = int(self.half_block_bit_size / window_size)
         for i in range(n):
             self.add_rotate_component(
-                state_left.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, -8
+                state_left.id,
+                [list(range(i * window_size, (i + 1) * window_size))],
+                window_size,
+                -8,
             )
             ids.append(self.get_current_component_id())
         temp = BitState(ids, [list(range(window_size))] * n)
@@ -268,7 +301,9 @@ class Ublock(BitGraphPrimitive):
             temp.input_bit_positions + state_right.input_bit_positions,
             self.half_block_bit_size,
         )
-        state_right = BitState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
+        state_right = BitState(
+            [self.get_current_component_id()], [list(range(self.half_block_bit_size))]
+        )
 
         # state_left = state_left xor (state_right <<<_32 8)
         ids = []
@@ -276,14 +311,21 @@ class Ublock(BitGraphPrimitive):
         n = int(self.half_block_bit_size / window_size)
         for i in range(n):
             self.add_rotate_component(
-                state_right.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, -8
+                state_right.id,
+                [list(range(i * window_size, (i + 1) * window_size))],
+                window_size,
+                -8,
             )
             ids.append(self.get_current_component_id())
         temp = BitState(ids, [list(range(window_size))] * n)
         self.add_xor_component(
-            state_left.id + temp.id, state_left.input_bit_positions + temp.input_bit_positions, self.half_block_bit_size
+            state_left.id + temp.id,
+            state_left.input_bit_positions + temp.input_bit_positions,
+            self.half_block_bit_size,
         )
-        state_left = BitState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
+        state_left = BitState(
+            [self.get_current_component_id()], [list(range(self.half_block_bit_size))]
+        )
 
         # state_right = state_right xor (state_left <<<_32 20)
         ids = []
@@ -291,7 +333,10 @@ class Ublock(BitGraphPrimitive):
         n = int(self.half_block_bit_size / window_size)
         for i in range(n):
             self.add_rotate_component(
-                state_left.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, -20
+                state_left.id,
+                [list(range(i * window_size, (i + 1) * window_size))],
+                window_size,
+                -20,
             )
             ids.append(self.get_current_component_id())
         temp = BitState(ids, [list(range(window_size))] * n)
@@ -300,7 +345,9 @@ class Ublock(BitGraphPrimitive):
             temp.input_bit_positions + state_right.input_bit_positions,
             self.half_block_bit_size,
         )
-        state_right = BitState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
+        state_right = BitState(
+            [self.get_current_component_id()], [list(range(self.half_block_bit_size))]
+        )
 
         # state_left = state_left xor state_right
         self.add_xor_component(
@@ -308,19 +355,33 @@ class Ublock(BitGraphPrimitive):
             state_left.input_bit_positions + state_right.input_bit_positions,
             self.half_block_bit_size,
         )
-        state_left = BitState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
+        state_left = BitState(
+            [self.get_current_component_id()], [list(range(self.half_block_bit_size))]
+        )
 
         # state_left = PL(state_left)
         self.add_word_permutation_component(
-            state_left.id, state_left.input_bit_positions, self.half_block_bit_size, self.pl, P_WORD_SIZE
+            state_left.id,
+            state_left.input_bit_positions,
+            self.half_block_bit_size,
+            self.pl,
+            P_WORD_SIZE,
         )
-        state_left = BitState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
+        state_left = BitState(
+            [self.get_current_component_id()], [list(range(self.half_block_bit_size))]
+        )
 
         # state_right = PR(state_right)
         self.add_word_permutation_component(
-            state_right.id, state_right.input_bit_positions, self.half_block_bit_size, self.pr, P_WORD_SIZE
+            state_right.id,
+            state_right.input_bit_positions,
+            self.half_block_bit_size,
+            self.pr,
+            P_WORD_SIZE,
         )
-        state_right = BitState([self.get_current_component_id()], [list(range(self.half_block_bit_size))])
+        state_right = BitState(
+            [self.get_current_component_id()], [list(range(self.half_block_bit_size))]
+        )
 
         return state_left, state_right
 
@@ -336,7 +397,8 @@ class Ublock(BitGraphPrimitive):
         )
         key_0 = BitState([self.get_current_component_id()], [list(range(self.key_block_size))])
         key_1 = BitState(
-            [self.get_current_component_id()], [list(range(self.key_block_size, self.key_block_size * 2))]
+            [self.get_current_component_id()],
+            [list(range(self.key_block_size, self.key_block_size * 2))],
         )
 
         # K2 = K2 xor sbox_k(K0 xor RC)
@@ -344,7 +406,9 @@ class Ublock(BitGraphPrimitive):
         round_constant = BitState([self.get_current_component_id()], [list(range(RC_SIZE))])
         if self.key_block_size == RC_SIZE:
             self.add_xor_component(
-                key_0.id + round_constant.id, key_0.input_bit_positions + round_constant.input_bit_positions, RC_SIZE
+                key_0.id + round_constant.id,
+                key_0.input_bit_positions + round_constant.input_bit_positions,
+                RC_SIZE,
             )
             temp = BitState([self.get_current_component_id()], [list(range(self.key_block_size))])
             ids = []
@@ -352,7 +416,10 @@ class Ublock(BitGraphPrimitive):
             n = int(self.key_block_size / window_size)
             for i in range(n):
                 self.add_sbox_component(
-                    temp.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, SBOX
+                    temp.id,
+                    [list(range(i * window_size, (i + 1) * window_size))],
+                    window_size,
+                    SBOX,
                 )
                 ids.append(self.get_current_component_id())
             temp = BitState(ids, [list(range(window_size))] * n)
@@ -370,7 +437,10 @@ class Ublock(BitGraphPrimitive):
             n = int(RC_SIZE / window_size)
             for i in range(n):
                 self.add_sbox_component(
-                    temp.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, SBOX
+                    temp.id,
+                    [list(range(i * window_size, (i + 1) * window_size))],
+                    window_size,
+                    SBOX,
                 )
                 ids.append(self.get_current_component_id())
             n = int((self.key_block_size - RC_SIZE) / window_size)
@@ -382,9 +452,13 @@ class Ublock(BitGraphPrimitive):
                     SBOX,
                 )
                 ids.append(self.get_current_component_id())
-            temp = BitState(ids, [list(range(window_size))] * int(self.key_block_size / window_size))
+            temp = BitState(
+                ids, [list(range(window_size))] * int(self.key_block_size / window_size)
+            )
         self.add_xor_component(
-            key_2.id + temp.id, key_2.input_bit_positions + temp.input_bit_positions, self.key_block_size
+            key_2.id + temp.id,
+            key_2.input_bit_positions + temp.input_bit_positions,
+            self.key_block_size,
         )
         key_2 = BitState([self.get_current_component_id()], [list(range(self.key_block_size))])
 
@@ -394,12 +468,17 @@ class Ublock(BitGraphPrimitive):
         n = int(self.key_block_size / window_size)
         for i in range(n):
             self.add_sbox_component(
-                key_1.id, [key_1.input_bit_positions[0][i * window_size : (i + 1) * window_size]], window_size, SBOX_TK
+                key_1.id,
+                [key_1.input_bit_positions[0][i * window_size : (i + 1) * window_size]],
+                window_size,
+                SBOX_TK,
             )
             ids.append(self.get_current_component_id())
         temp = BitState(ids, [list(range(window_size))] * n)
         self.add_xor_component(
-            key_3.id + temp.id, key_3.input_bit_positions + temp.input_bit_positions, self.key_block_size
+            key_3.id + temp.id,
+            key_3.input_bit_positions + temp.input_bit_positions,
+            self.key_block_size,
         )
         key_3 = BitState([self.get_current_component_id()], [list(range(self.key_block_size))])
 
@@ -413,6 +492,8 @@ class Ublock(BitGraphPrimitive):
                 + key_0.input_bit_positions,
             )
         else:
-            round_key = BitState(key_2.id + key_3.id, key_2.input_bit_positions + key_3.input_bit_positions)
+            round_key = BitState(
+                key_2.id + key_3.id, key_2.input_bit_positions + key_3.input_bit_positions
+            )
 
         return key_2, key_3, key_1, key_0, round_key

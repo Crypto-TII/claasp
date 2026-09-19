@@ -3,6 +3,7 @@
 from claasp_next.components import BitwiseNot as BitwiseNotComponent
 from claasp_next.domains import Word
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
+
 from ._base import positive
 
 

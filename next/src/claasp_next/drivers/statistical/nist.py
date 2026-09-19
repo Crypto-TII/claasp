@@ -20,12 +20,12 @@ than appending.
 
 from __future__ import annotations
 
-from contextlib import contextmanager
-from pathlib import Path
 import re
 import shutil
 import subprocess
 import threading
+from contextlib import contextmanager
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
@@ -161,7 +161,11 @@ class NistStsDriver:
                 raise ValueError("dataset does not contain enough bits for number_of_bit_streams")
             stream_length = total_bits // number_of_bit_streams
             tool_arguments = (
-                str(input_path), str(stream_length), str(number_of_bit_streams), "1", test_selection,
+                str(input_path),
+                str(stream_length),
+                str(number_of_bit_streams),
+                "1",
+                test_selection,
             )
 
             with _lock_for(self.working_dir), _process_lock(report_path):
@@ -194,8 +198,7 @@ class NistStsDriver:
         report = parse_nist_final_report(report_text)
         version = self._version(executable)
         stable_arguments = tuple(
-            "{dataset}" if argument == str(input_path) else argument
-            for argument in tool_arguments
+            "{dataset}" if argument == str(input_path) else argument for argument in tool_arguments
         )
         return StatisticalTestRun(
             suite="nist_sts",

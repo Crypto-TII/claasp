@@ -1,7 +1,7 @@
 import pytest
 
-from claasp_next.primitives.permutations.chacha import ChaCha
 from claasp_next.encoding import units_from_int
+from claasp_next.primitives.permutations.chacha import ChaCha
 from claasp_next.representations.execution import BatchEvaluator
 
 

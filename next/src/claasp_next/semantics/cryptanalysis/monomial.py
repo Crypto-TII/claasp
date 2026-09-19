@@ -44,14 +44,18 @@ class ComponentMonomialSemantics:
         if len(input_masks) != len(component.inputs):
             raise ValueError("one input mask is required for each component input")
         for index, (mask, selection) in enumerate(zip(input_masks, component.inputs)):
-            ComponentMonomialSemantics._mask(mask, selection.value_type.unit_count, f"input_masks[{index}]")
+            ComponentMonomialSemantics._mask(
+                mask, selection.value_type.unit_count, f"input_masks[{index}]"
+            )
 
         if isinstance(component, BitVectorSBox):
             return input_masks[0] in monomial_transition_table(component.table)[output_mask]
         if isinstance(component, Identity):
             return input_masks == (output_mask,)
         if isinstance(component, Permutation):
-            return input_masks == (ComponentMonomialSemantics._permutation_input(component, output_mask),)
+            return input_masks == (
+                ComponentMonomialSemantics._permutation_input(component, output_mask),
+            )
         if isinstance(component, Add):
             # Over GF(2), each selected output variable chooses exactly one of
             # the corresponding operand variables. Input masks form a disjoint
@@ -64,7 +68,8 @@ class ComponentMonomialSemantics:
             return union == output_mask
         if isinstance(component, Constant):
             selected_positions = (
-                index for index in range(output_width)
+                index
+                for index in range(output_width)
                 if output_mask & (1 << (output_width - 1 - index))
             )
             return all(component.values[index] == 1 for index in selected_positions)

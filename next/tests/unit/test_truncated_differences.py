@@ -1,20 +1,20 @@
+from claasp_next.primitives import AES, Present, Speck
 from claasp_next.semantics.cryptanalysis import (
+    ImpossiblePropagationBoundary,
     ProbabilisticTruncatedModularAddTransition,
     ProbabilisticTruncatedTrail,
-    ImpossiblePropagationBoundary,
+    TruncatedXorDifference,
     WordwiseDifferenceKind,
     WordwiseXorDifference,
-    legacy_wordwise_impossible_fixture,
-    TruncatedXorDifference,
     check_probabilistic_truncated_modular_add,
+    legacy_wordwise_impossible_fixture,
     propagate_single_active_aes_byte,
-    propagate_two_word_speck_inverse_round,
-    propagate_two_word_speck_round,
     propagate_two_word_simon_inverse_round,
     propagate_two_word_simon_round,
+    propagate_two_word_speck_inverse_round,
+    propagate_two_word_speck_round,
     truncated_modular_add,
 )
-from claasp_next.primitives import AES, Present, Speck
 
 
 def test_truncated_modular_add_preserves_only_universal_output_bits():
@@ -31,9 +31,7 @@ def test_truncated_modular_add_preserves_only_universal_output_bits():
 
 def test_speck_truncated_round_reproduces_legacy_sat_fixture():
     primitive = Speck(number_of_rounds=2)
-    input_difference = TruncatedXorDifference.parse(
-        "00000000011111001110000000000000"
-    )
+    input_difference = TruncatedXorDifference.parse("00000000011111001110000000000000")
 
     output = propagate_two_word_speck_round(primitive, input_difference)
 
@@ -42,13 +40,9 @@ def test_speck_truncated_round_reproduces_legacy_sat_fixture():
 
 def test_speck_three_round_truncated_output_reproduces_legacy_sat_fixture():
     primitive = Speck(number_of_rounds=3)
-    difference = TruncatedXorDifference.parse(
-        "00000000011000000000000000000000"
-    )
+    difference = TruncatedXorDifference.parse("00000000011000000000000000000000")
     for round_number in range(3):
-        difference = propagate_two_word_speck_round(
-            primitive, difference, round_number
-        )
+        difference = propagate_two_word_speck_round(primitive, difference, round_number)
 
     assert str(difference) == "???????????????0????????????????"
 
@@ -63,21 +57,15 @@ def test_speck_mixed_exact_truncated_sat_boundaries_are_preserved():
         primitive = Speck(number_of_rounds=rounds)
         difference = TruncatedXorDifference.parse(start)
         for round_number in range(2, rounds):
-            difference = propagate_two_word_speck_round(
-                primitive, difference, round_number
-            )
+            difference = propagate_two_word_speck_round(primitive, difference, round_number)
         assert str(difference) == output
 
 
 def test_graph_level_impossible_sbox_transition_is_exhaustively_refuted():
     primitive = Present(number_of_rounds=1)
 
-    assert not primitive.analyze().is_xor_differential_transition_possible(
-        "sbox_1_0", 0x1, 0x1
-    )
-    assert primitive.analyze().is_xor_differential_transition_possible(
-        "sbox_1_0", 0x1, 0x3
-    )
+    assert not primitive.analyze().is_xor_differential_transition_possible("sbox_1_0", 0x1, 0x1)
+    assert primitive.analyze().is_xor_differential_transition_possible("sbox_1_0", 0x1, 0x3)
 
 
 def test_probabilistic_truncated_transition_rejects_an_invalid_carry_boundary():
@@ -96,7 +84,11 @@ def test_probabilistic_truncated_transition_rejects_an_invalid_carry_boundary():
 def test_probabilistic_truncated_trail_sums_exact_scaled_costs():
     zero = TruncatedXorDifference.parse("0000")
     transition = ProbabilisticTruncatedModularAddTransition(
-        zero, zero, zero, zero, (41, 19, 0, 0),
+        zero,
+        zero,
+        zero,
+        zero,
+        (41, 19, 0, 0),
     )
     trail = ProbabilisticTruncatedTrail(zero, zero, (transition, transition))
 
@@ -110,10 +102,11 @@ def test_wordwise_difference_preserves_values_and_sound_activity():
 
     assert zero.xor(known) == known
     assert known.xor(known).kind is WordwiseDifferenceKind.ZERO
-    assert known.through_bijection() == WordwiseXorDifference(
-        8, WordwiseDifferenceKind.NONZERO
+    assert known.through_bijection() == WordwiseXorDifference(8, WordwiseDifferenceKind.NONZERO)
+    assert (
+        WordwiseXorDifference(8, WordwiseDifferenceKind.UNKNOWN).through_bijection().kind
+        is WordwiseDifferenceKind.UNKNOWN
     )
-    assert WordwiseXorDifference(8, WordwiseDifferenceKind.UNKNOWN).through_bijection().kind is WordwiseDifferenceKind.UNKNOWN
 
 
 def test_wordwise_aes_single_byte_diffuses_to_one_column():

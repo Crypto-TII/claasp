@@ -14,7 +14,16 @@ from claasp_next.components.word.variable_shift import VariableShift
 from claasp_next.components.word.xor import Xor
 
 __all__ = [
-    "BitwiseAnd", "BitwiseNot", "BitwiseOr", "IDEAMultiply", "ModularAdd",
-    "ModularMultiply", "ModularSubtract", "Rotate", "Shift", "VariableRotate",
-    "VariableShift", "Xor",
+    "BitwiseAnd",
+    "BitwiseNot",
+    "BitwiseOr",
+    "IDEAMultiply",
+    "ModularAdd",
+    "ModularMultiply",
+    "ModularSubtract",
+    "Rotate",
+    "Shift",
+    "VariableRotate",
+    "VariableShift",
+    "Xor",
 ]

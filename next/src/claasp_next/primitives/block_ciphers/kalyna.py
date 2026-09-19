@@ -398,14 +398,7 @@ class Kalyna(BitGraphPrimitive):
             )
             gE_second = self.add_mix_column_component(
                 [shift_E.id],
-                [
-                    [
-                        i
-                        for i in range(
-                            self.PRIMITIVE_BLOCK_SIZE // 2, self.PRIMITIVE_BLOCK_SIZE
-                        )
-                    ]
-                ],
+                [[i for i in range(self.PRIMITIVE_BLOCK_SIZE // 2, self.PRIMITIVE_BLOCK_SIZE)]],
                 self.PRIMITIVE_BLOCK_SIZE // 2,
                 self.kalyna_matrix_description,
             )
@@ -458,14 +451,7 @@ class Kalyna(BitGraphPrimitive):
             )
             gE2_second = self.add_mix_column_component(
                 [shift_E2.id],
-                [
-                    [
-                        i
-                        for i in range(
-                            self.PRIMITIVE_BLOCK_SIZE // 2, self.PRIMITIVE_BLOCK_SIZE
-                        )
-                    ]
-                ],
+                [[i for i in range(self.PRIMITIVE_BLOCK_SIZE // 2, self.PRIMITIVE_BLOCK_SIZE)]],
                 self.PRIMITIVE_BLOCK_SIZE // 2,
                 self.kalyna_matrix_description,
             )
@@ -574,14 +560,7 @@ class Kalyna(BitGraphPrimitive):
             )
             g_second = self.add_mix_column_component(
                 [shift.id],
-                [
-                    [
-                        i
-                        for i in range(
-                            self.PRIMITIVE_BLOCK_SIZE // 2, self.PRIMITIVE_BLOCK_SIZE
-                        )
-                    ]
-                ],
+                [[i for i in range(self.PRIMITIVE_BLOCK_SIZE // 2, self.PRIMITIVE_BLOCK_SIZE)]],
                 self.PRIMITIVE_BLOCK_SIZE // 2,
                 self.kalyna_matrix_description,
             )
@@ -599,12 +578,7 @@ class Kalyna(BitGraphPrimitive):
                     [g_first.id, k_round.id],
                     [
                         [j for j in range(self.PRIMITIVE_BLOCK_SIZE // 2)],
-                        [
-                            j
-                            for j in range(
-                                self.KEY_BLOCK_SIZE // 2, self.KEY_BLOCK_SIZE
-                            )
-                        ],
+                        [j for j in range(self.KEY_BLOCK_SIZE // 2, self.KEY_BLOCK_SIZE)],
                     ],
                     self.PRIMITIVE_BLOCK_SIZE // 2,
                 )

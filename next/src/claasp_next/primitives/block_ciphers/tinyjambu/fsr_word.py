@@ -17,13 +17,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 from copy import deepcopy
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp_next.primitive_inputs import INPUT_KEY, INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import get_inputs_parameter
 
 WORD_SIZE = 32
 STATE_SIZE = 128
@@ -100,8 +97,12 @@ class TinyJambuFSRWordBased(BitGraphPrimitive):
         # = fsr xor kr xor 1
         """Build the round function stage in this primitive's typed operation graph."""
         inputs_id, inputs_pos = get_inputs_parameter([state[0], state[1], state[2], state[3]])
-        self.add_fsr_component(inputs_id, inputs_pos, STATE_SIZE, [[[STATE_SIZE, FSR_POLYNOMIAL, []]], 1, FSR_LOOPS])
-        fsr_output = BitState([self.get_current_component_id()], [list(range(3 * WORD_SIZE, 4 * WORD_SIZE))])
+        self.add_fsr_component(
+            inputs_id, inputs_pos, STATE_SIZE, [[[STATE_SIZE, FSR_POLYNOMIAL, []]], 1, FSR_LOOPS]
+        )
+        fsr_output = BitState(
+            [self.get_current_component_id()], [list(range(3 * WORD_SIZE, 4 * WORD_SIZE))]
+        )
 
         inputs_id, inputs_pos = get_inputs_parameter([fsr_output, key[r % len(key)], not_constant])
         self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)

@@ -1,15 +1,22 @@
 """Public constraint-programming model representations."""
 
-from claasp_next.representations.constraints.cp.model import MiniZincModel
 from claasp_next.representations.constraints.cp.lowering import BooleanMiniZincLowerer
+from claasp_next.representations.constraints.cp.model import MiniZincModel
 
 __all__ = [
-    "BooleanMiniZincLowerer", "ImpossibleBoundaryCPModel", "MiniZincModel",
+    "BooleanMiniZincLowerer",
+    "ImpossibleBoundaryCPModel",
+    "MiniZincModel",
     "PresentDifferentialCPModel",
-    "PresentLinearCPModel", "SBoxDifferenceCPModel",
+    "PresentLinearCPModel",
+    "ProbabilisticTruncatedModularAddCPModel",
     "SBoxBoomerangCPModel",
-    "ProbabilisticTruncatedModularAddCPModel", "SpeckDifferentialCPModel",
-    "SimonImpossibleCPModel", "SpeckImpossibleCPModel", "SpeckProbabilisticTruncatedCPModel", "SpeckTruncatedCPModel",
+    "SBoxDifferenceCPModel",
+    "SimonImpossibleCPModel",
+    "SpeckDifferentialCPModel",
+    "SpeckImpossibleCPModel",
+    "SpeckProbabilisticTruncatedCPModel",
+    "SpeckTruncatedCPModel",
     "WordwiseDifferenceCPModel",
 ]
 
@@ -30,9 +37,14 @@ def __getattr__(name: str):
 
         return SpeckDifferentialCPModel
     if name in {
-        "ImpossibleBoundaryCPModel", "SBoxDifferenceCPModel", "SBoxBoomerangCPModel",
+        "ImpossibleBoundaryCPModel",
+        "SBoxDifferenceCPModel",
+        "SBoxBoomerangCPModel",
         "ProbabilisticTruncatedModularAddCPModel",
-        "SimonImpossibleCPModel", "SpeckImpossibleCPModel", "SpeckProbabilisticTruncatedCPModel", "SpeckTruncatedCPModel",
+        "SimonImpossibleCPModel",
+        "SpeckImpossibleCPModel",
+        "SpeckProbabilisticTruncatedCPModel",
+        "SpeckTruncatedCPModel",
         "WordwiseDifferenceCPModel",
     }:
         from claasp_next.representations.constraints.cp import trails

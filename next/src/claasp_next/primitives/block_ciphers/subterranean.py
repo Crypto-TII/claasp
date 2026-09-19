@@ -15,11 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
-from claasp_next.primitive_inputs import INPUT_PLAINTEXT, INPUT_KEY, PERMUTATION
-from claasp_next.graph.bit_builder import get_inputs_parameter
 from enum import Enum
+
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
+from claasp_next.primitive_inputs import INPUT_KEY, INPUT_PLAINTEXT, PERMUTATION
 
 
 class Version(Enum):
@@ -55,10 +54,16 @@ class Subterranean(BitGraphPrimitive):
         self.key_bit_size = 256
 
         super().__init__(
-            family_name='subterranean', primitive_type=PERMUTATION, primitive_inputs=[
-                INPUT_PLAINTEXT, INPUT_KEY] if version == Version.V1 else [INPUT_PLAINTEXT], primitive_inputs_bit_size=[
-                self.state_bit_size, self.key_bit_size] if version == Version.V1 else [
-                self.state_bit_size], primitive_output_bit_size=self.state_bit_size, )
+            family_name="subterranean",
+            primitive_type=PERMUTATION,
+            primitive_inputs=[INPUT_PLAINTEXT, INPUT_KEY]
+            if version == Version.V1
+            else [INPUT_PLAINTEXT],
+            primitive_inputs_bit_size=[self.state_bit_size, self.key_bit_size]
+            if version == Version.V1
+            else [self.state_bit_size],
+            primitive_output_bit_size=self.state_bit_size,
+        )
 
         state = BitState([INPUT_PLAINTEXT], [list(range(self.state_bit_size))])
         key = BitState([INPUT_KEY], [list(range(self.key_bit_size))])
@@ -101,7 +106,9 @@ class Subterranean(BitGraphPrimitive):
         a = self.add_or_component(ids, bits, self.state_bit_size)
 
         ids, bits = get_inputs_parameter([state])
-        self.add_xor_component(ids + [a.id], bits + [list(range(self.state_bit_size))], self.state_bit_size)
+        self.add_xor_component(
+            ids + [a.id], bits + [list(range(self.state_bit_size))], self.state_bit_size
+        )
 
         return BitState([self.get_current_component_id()], [list(range(self.state_bit_size))])
 
@@ -121,21 +128,27 @@ class Subterranean(BitGraphPrimitive):
         return BitState([self.get_current_component_id()], [list(range(self.state_bit_size))])
 
     def _step_4(self, state: BitState, key: BitState) -> BitState:
-        xor = self.add_xor_component([state.id[0], key.id[0]], [state.input_bit_positions[0]
-                                     [1:]] + key.input_bit_positions, self.state_bit_size - 1)
+        xor = self.add_xor_component(
+            [state.id[0], key.id[0]],
+            [state.input_bit_positions[0][1:]] + key.input_bit_positions,
+            self.state_bit_size - 1,
+        )
         return BitState(
             [state.id[0], xor.id],
-            [[state.input_bit_positions[0][0]], list(range(self.key_bit_size))]
+            [[state.input_bit_positions[0][0]], list(range(self.key_bit_size))],
         )
 
     def _step_5(self, state: BitState) -> BitState:
-        permutation = [(pow(12, -1, self.state_bit_size) * i) % self.state_bit_size for i in range(self.state_bit_size)]
+        permutation = [
+            (pow(12, -1, self.state_bit_size) * i) % self.state_bit_size
+            for i in range(self.state_bit_size)
+        ]
         ids, bits = get_inputs_parameter([state])
         self.add_permutation_component(ids, bits, self.state_bit_size, permutation)
         return BitState([self.get_current_component_id()], [list(range(self.state_bit_size))])
 
     def _chi(self, state: BitState) -> BitState:
-        s1 = self._rotate(state, self.state_bit_size, - 1)
+        s1 = self._rotate(state, self.state_bit_size, -1)
 
         ids, bits = get_inputs_parameter([s1])
         self.add_not_component(ids, bits, self.state_bit_size)
@@ -148,6 +161,9 @@ class Subterranean(BitGraphPrimitive):
 
         mul = self.add_and_component(ids, bits, self.state_bit_size)
 
-        self.add_xor_component(state.id + [mul.id], state.input_bit_positions +
-                               [list(range(self.state_bit_size))], self.state_bit_size)
+        self.add_xor_component(
+            state.id + [mul.id],
+            state.input_bit_positions + [list(range(self.state_bit_size))],
+            self.state_bit_size,
+        )
         return BitState([self.get_current_component_id()], [list(range(self.state_bit_size))])

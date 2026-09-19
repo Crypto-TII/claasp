@@ -17,8 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
@@ -32,27 +31,277 @@ SUPPORTED_IR_MODES = ("strict", "cycle")
 
 CONFIGURATION = {
     32: {"len_l1": 13, "len_l2": 19, "x": (12, 7, 8, 5, 3), "y": (18, 7, 12, 10, 8, 3), "steps": 1},
-    48: {"len_l1": 19, "len_l2": 29, "x": (18, 12, 15, 7, 6), "y": (28, 19, 21, 13, 15, 6), "steps": 2},
-    64: {"len_l1": 25, "len_l2": 39, "x": (24, 15, 20, 11, 9), "y": (38, 25, 33, 21, 14, 9), "steps": 3},
+    48: {
+        "len_l1": 19,
+        "len_l2": 29,
+        "x": (18, 12, 15, 7, 6),
+        "y": (28, 19, 21, 13, 15, 6),
+        "steps": 2,
+    },
+    64: {
+        "len_l1": 25,
+        "len_l2": 39,
+        "x": (24, 15, 20, 11, 9),
+        "y": (38, 25, 33, 21, 14, 9),
+        "steps": 3,
+    },
 }
 
 IR = (
-    1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1,
-    0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0,
-    1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0,
-    0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
-    0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1,
-    1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1,
-    0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0,
-    1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1,
-    0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1,
-    1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1,
-    1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1,
-    0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1,
-    1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0,
-    0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1,
-    0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1,
-    1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1,
+    0,
+    1,
+    1,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    1,
+    1,
+    1,
+    0,
+    1,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
+    1,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    0,
+    0,
+    1,
+    1,
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    0,
+    1,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    0,
+    1,
+    1,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    0,
+    1,
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    0,
 )
 
 
@@ -133,23 +382,30 @@ class Katan(BitGraphPrimitive):
             primitive_output_bit_size=block_bit_size,
         )
 
-        l2 = [self._input_bit(INPUT_PLAINTEXT, self.block_bit_size - 1 - i) for i in range(self._config["len_l2"])]
+        l2 = [
+            self._input_bit(INPUT_PLAINTEXT, self.block_bit_size - 1 - i)
+            for i in range(self._config["len_l2"])
+        ]
         l1 = [
             self._input_bit(INPUT_PLAINTEXT, self.block_bit_size - 1 - (self._config["len_l2"] + i))
             for i in range(self._config["len_l1"])
         ]
-        key_bits = [self._input_bit(INPUT_KEY, self.key_bit_size - 1 - i) for i in range(self.key_bit_size)]
+        key_bits = [
+            self._input_bit(INPUT_KEY, self.key_bit_size - 1 - i) for i in range(self.key_bit_size)
+        ]
 
         for round_number in range(number_of_rounds):
             self.add_round()
             while len(key_bits) <= 2 * round_number + 1:
                 key_bits.append(
-                    self._xor_bits([
-                        key_bits[-80],
-                        key_bits[-61],
-                        key_bits[-50],
-                        key_bits[-13],
-                    ])
+                    self._xor_bits(
+                        [
+                            key_bits[-80],
+                            key_bits[-61],
+                            key_bits[-50],
+                            key_bits[-13],
+                        ]
+                    )
                 )
 
             for _ in range(self._config["steps"]):
@@ -188,7 +444,9 @@ class Katan(BitGraphPrimitive):
 
     def _and_bits(self, left, right):
         component_id = self.add_and_component(
-            [left.id[0], right.id[0]], [left.input_bit_positions[0], right.input_bit_positions[0]], 1
+            [left.id[0], right.id[0]],
+            [left.input_bit_positions[0], right.input_bit_positions[0]],
+            1,
         ).id
         return BitState([component_id], [[0]])
 
@@ -199,23 +457,27 @@ class Katan(BitGraphPrimitive):
 
     def _round_function_a(self, l1, key_bits, round_number, ir_mode):
         x1, x2, x3, x4, x5 = self._config["x"]
-        return self._xor_bits([
-            l1[x1],
-            l1[x2],
-            self._and_bits(l1[x3], l1[x4]),
-            self._and_with_ir(l1[x5], get_ir_bit(round_number, ir_mode)),
-            key_bits[2 * round_number],
-        ])
+        return self._xor_bits(
+            [
+                l1[x1],
+                l1[x2],
+                self._and_bits(l1[x3], l1[x4]),
+                self._and_with_ir(l1[x5], get_ir_bit(round_number, ir_mode)),
+                key_bits[2 * round_number],
+            ]
+        )
 
     def _round_function_b(self, l2, key_bits, round_number):
         y1, y2, y3, y4, y5, y6 = self._config["y"]
-        return self._xor_bits([
-            l2[y1],
-            l2[y2],
-            self._and_bits(l2[y3], l2[y4]),
-            self._and_bits(l2[y5], l2[y6]),
-            key_bits[2 * round_number + 1],
-        ])
+        return self._xor_bits(
+            [
+                l2[y1],
+                l2[y2],
+                self._and_bits(l2[y3], l2[y4]),
+                self._and_bits(l2[y5], l2[y6]),
+                key_bits[2 * round_number + 1],
+            ]
+        )
 
     def _add_state_output(self, output_function, state):
         ordered_state = list(reversed(state))

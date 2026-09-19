@@ -1,12 +1,11 @@
 import importlib
 import inspect
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 from claasp_next.primitives._catalogue_exports import ALL_EXPORTS
-
 
 ROOT = Path(__file__).parents[2]
 CATALOGUE = ROOT / "src/claasp_next/catalogue/data/catalogue.json"
@@ -55,32 +54,51 @@ def test_every_catalogue_parameter_set_matches_its_public_constructor():
         accepted = set(signature.parameters)
         for parameter_set in item["parameter_sets"]:
             assert set(parameter_set["values"]) <= accepted, (
-                item["name"], parameter_set["name"], set(parameter_set["values"]) - accepted,
+                item["name"],
+                parameter_set["name"],
+                set(parameter_set["values"]) - accepted,
             )
 
 
 def test_reviewed_retained_input_bijectivity_obligations():
     by_name = {item["name"]: item for item in _catalogue()["primitives"]}
     expected_components = {
-        "Add", "BinaryAffineMap", "BitVectorSBox", "BitwiseNot",
-        "FeedbackRegister", "IDEAMultiply", "Identity", "LinearMap",
-        "ModularAdd", "ModularSubtract", "Permutation", "Power", "Rotate",
-        "SBox", "VariableRotate", "Xor",
+        "Add",
+        "BinaryAffineMap",
+        "BitVectorSBox",
+        "BitwiseNot",
+        "FeedbackRegister",
+        "IDEAMultiply",
+        "Identity",
+        "LinearMap",
+        "ModularAdd",
+        "ModularSubtract",
+        "Permutation",
+        "Power",
+        "Rotate",
+        "SBox",
+        "VariableRotate",
+        "Xor",
     }
     observed_components = {
-        item["name"] for item in by_name.values()
-        if item["category"] == "single_component_primitives"
-        and item["bijectivity_obligation"]
+        item["name"]
+        for item in by_name.values()
+        if item["category"] == "single_component_primitives" and item["bijectivity_obligation"]
     }
     assert observed_components == expected_components
 
     expected_toys = {
-        "CipherFour", "Heys", "ToyAES", "ToyFeistel", "ToySPN1", "ToySPN2",
+        "CipherFour",
+        "Heys",
+        "ToyAES",
+        "ToyFeistel",
+        "ToySPN1",
+        "ToySPN2",
     }
     observed_toys = {
-        item["name"] for item in by_name.values()
-        if item["category"] == "toy_primitives"
-        and item["bijectivity_obligation"]
+        item["name"]
+        for item in by_name.values()
+        if item["category"] == "toy_primitives" and item["bijectivity_obligation"]
     }
     assert observed_toys == expected_toys
     assert not by_name["Fancy"]["bijectivity_obligation"]
@@ -100,7 +118,9 @@ def test_legacy_sbox_forms_are_explicitly_noncanonical():
 def test_catalogue_closure_gate_passes():
     completed = subprocess.run(
         [sys.executable, str(ROOT / "tools/catalogue_closure.py"), "--check"],
-        check=True, capture_output=True, text=True,
+        check=True,
+        capture_output=True,
+        text=True,
     )
     assert (
         "142 primitives, 23 components, 19 representations, 11 analyses, 24 drivers"
@@ -115,8 +135,7 @@ def test_component_property_capability_is_conservative_and_queryable():
     assert "LinearMap" in representation.components
     assert "Constant" not in representation.components
     assert {item.name for item in catalogue.drivers(representation="component_properties")} == {
-        "component_minizinc", "component_bounded",
+        "component_minizinc",
+        "component_bounded",
     }
-    assert "component_property" in {
-        item.name for item in catalogue.analyses(primitive="AES")
-    }
+    assert "component_property" in {item.name for item in catalogue.analyses(primitive="AES")}

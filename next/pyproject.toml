@@ -26,6 +26,76 @@ markers = [
   "extended: exhaustive dependency-free audit kept outside the routine time budget",
 ]
 
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [
+  "build",
+  "dist",
+  "docs/_build",
+  "*.egg-info",
+]
+
+[tool.ruff.lint]
+select = [
+  "A001",
+  "A002",
+  "B002",
+  "B003",
+  "B004",
+  "B005",
+  "B006",
+  "B007",
+  "B009",
+  "B010",
+  "B012",
+  "B013",
+  "B014",
+  "B015",
+  "B016",
+  "B017",
+  "B018",
+  "B020",
+  "B022",
+  "B023",
+  "B025",
+  "B029",
+  "B030",
+  "B031",
+  "B032",
+  "B033",
+  "B039",
+  "E4",
+  "E701",
+  "E702",
+  "E703",
+  "E711",
+  "E712",
+  "E713",
+  "E714",
+  "E721",
+  "E722",
+  "E9",
+  "F",
+  "I",
+  "RUF009",
+  "RUF012",
+  "RUF013",
+  "RUF100",
+  "UP006",
+  "UP007",
+  "UP035",
+]
+
+[tool.ruff.format]
+docstring-code-format = false
+
+[tool.ruff.lint.per-file-ignores]
+# The inventory must add its sibling tool directory before importing the classifier.
+"tools/legacy_inventory.py" = ["E402"]
+# Matplotlib's backend must be selected before importing pyplot and renderers.
+"tests/unit/test_presentation_plots.py" = ["E402"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

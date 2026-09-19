@@ -3,7 +3,6 @@
 from claasp_next.drivers.solvers import GLPKSolver, MILPStatus
 from claasp_next.representations.constraints.milp import MonomialTransitionMILPModel
 
-
 PRESENT = (12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2)
 
 

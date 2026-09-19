@@ -3,7 +3,10 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from claasp_next.components.algebraic._validation import normalize_inputs, require_homogeneous_inputs
+from claasp_next.components.algebraic._validation import (
+    normalize_inputs,
+    require_homogeneous_inputs,
+)
 from claasp_next.graph.component import Component
 from claasp_next.graph.port import Selection
 
@@ -20,7 +23,9 @@ class Multiply(Component):
         1
     """
 
-    def __init__(self, component_inputs: Iterable[Selection], component_id: str | None = None) -> None:
+    def __init__(
+        self, component_inputs: Iterable[Selection], component_id: str | None = None
+    ) -> None:
         frozen_inputs = normalize_inputs(tuple(component_inputs))
         if len(frozen_inputs) < 2:
             raise ValueError("multiplication requires at least two inputs")

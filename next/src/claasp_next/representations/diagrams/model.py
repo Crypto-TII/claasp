@@ -88,7 +88,9 @@ class PrimitiveDiagram:
         if not self.primitive_name or len(set(identifiers)) != len(identifiers):
             raise ValueError("diagram name must be nonempty and node IDs unique")
         known = set(identifiers)
-        if any(edge.source_id not in known or edge.destination_id not in known for edge in self.edges):
+        if any(
+            edge.source_id not in known or edge.destination_id not in known for edge in self.edges
+        ):
             raise ValueError("every diagram edge must connect declared nodes")
         grouped = tuple(node_id for group in self.rounds for node_id in group.node_ids)
         component_ids = tuple(node.node_id for node in self.nodes if node.round_number is not None)

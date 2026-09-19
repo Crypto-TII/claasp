@@ -3,6 +3,7 @@
 from claasp_next.components import Shift as ShiftComponent
 from claasp_next.domains import Word
 from claasp_next.graph import Primitive, PrimitiveKind, ValueType
+
 from ._base import positive
 
 
@@ -41,9 +42,7 @@ class Shift(Primitive):
             kind=PrimitiveKind.FUNCTION,
         )
         self.add_round()
-        self.set_output(
-            self.add_component(ShiftComponent(self.input("input"), amount, direction))
-        )
+        self.set_output(self.add_component(ShiftComponent(self.input("input"), amount, direction)))
 
 
 __all__ = ["Shift"]

@@ -65,7 +65,10 @@ def run_speck32_boomerang_experiment(
     """
 
     limit = 1 << 32
-    for name, value in (("input_difference", input_difference), ("output_difference", output_difference)):
+    for name, value in (
+        ("input_difference", input_difference),
+        ("output_difference", output_difference),
+    ):
         if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < limit:
             raise ValueError(f"{name} must be a 32-bit integer")
     if not isinstance(rounds, int) or isinstance(rounds, bool) or not 1 <= rounds <= 22:
@@ -86,11 +89,18 @@ def run_speck32_boomerang_experiment(
         first_output = _encrypt(first, round_keys)
         paired_output = _encrypt(paired, round_keys)
         lower_first = _decrypt((first_output[0] ^ nabla[0], first_output[1] ^ nabla[1]), round_keys)
-        lower_paired = _decrypt((paired_output[0] ^ nabla[0], paired_output[1] ^ nabla[1]), round_keys)
+        lower_paired = _decrypt(
+            (paired_output[0] ^ nabla[0], paired_output[1] ^ nabla[1]), round_keys
+        )
         successes += (lower_first[0] ^ lower_paired[0], lower_first[1] ^ lower_paired[1]) == delta
 
     return BoomerangExperimentResult(
-        input_difference, output_difference, rounds, samples, successes, seed,
+        input_difference,
+        output_difference,
+        rounds,
+        samples,
+        successes,
+        seed,
         "legacy CLAASP MznBoomerangModelARXOptimized Speck32/64-8 witness",
     )
 

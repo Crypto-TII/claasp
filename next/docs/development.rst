@@ -43,6 +43,28 @@ Run both documentation suites:
 
    make -C docs doctest
 
+Formatting and linting
+----------------------
+
+Install the exact quality-tool versions and run the check-only commands used
+by CI:
+
+.. code-block:: console
+
+   python -m pip install -e '.[quality]'
+   ruff format --check src tests tools docs/conf.py
+   ruff check src tests tools docs/conf.py
+
+Apply the formatter and safe lint fixes locally with:
+
+.. code-block:: console
+
+   ruff format src tests tools docs/conf.py
+   ruff check --fix src tests tools docs/conf.py
+
+The scope is intentionally the v5 package and its supporting tests, tools, and
+Sphinx configuration. It does not rewrite the legacy v4 tree.
+
 Model migration closure
 -----------------------
 

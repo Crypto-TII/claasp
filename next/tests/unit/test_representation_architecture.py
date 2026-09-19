@@ -2,17 +2,25 @@ import pytest
 
 from claasp_next.analysis import AttackTarget
 from claasp_next.annotations import (
-    AnnotationEntry, AnnotationRole, ExecutionTrace, GraphAnnotation,
-    LeakageSample, SideChannelTrace,
+    AnnotationEntry,
+    AnnotationRole,
+    ExecutionTrace,
+    GraphAnnotation,
+    LeakageSample,
+    SideChannelTrace,
 )
 from claasp_next.primitives import Present
-from claasp_next.semantics import CONCRETE, LEAKAGE, SemanticType
-from claasp_next.semantics.cryptanalysis import (
-    SBoxTransitionSemantics, Trail, TrailKind, TrailStep, XorDifference,
-)
 from claasp_next.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp_next.representations import Artifact, Representation
 from claasp_next.representations.execution import ScalarExecutionDriver
+from claasp_next.semantics import CONCRETE, LEAKAGE, SemanticType
+from claasp_next.semantics.cryptanalysis import (
+    SBoxTransitionSemantics,
+    Trail,
+    TrailKind,
+    TrailStep,
+    XorDifference,
+)
 
 
 def test_graph_annotations_are_typed_validated_and_immutable():
@@ -38,7 +46,8 @@ def test_annotations_reject_unknown_sources_and_semantic_type_confusion():
     primitive = Present(number_of_rounds=1)
     with pytest.raises(ValueError, match="unknown primitive component"):
         GraphAnnotation(
-            primitive, CONCRETE,
+            primitive,
+            CONCRETE,
             (AnnotationEntry("not_in_graph", AnnotationRole.COMPONENT, 0),),
         )
     leakage = GraphAnnotation(primitive, LEAKAGE, ())
@@ -81,7 +90,9 @@ def test_representation_artifact_can_retain_typed_result_provenance():
         primitive, {"plaintext": (0,) * 64, "key": (0,) * 80}
     )
     artifact = Artifact(
-        Representation("trace", "application/json"), {}, ("unit-test",),
+        Representation("trace", "application/json"),
+        {},
+        ("unit-test",),
         execution.provenance,
     )
     assert artifact.result_provenance.realization is primitive.realization

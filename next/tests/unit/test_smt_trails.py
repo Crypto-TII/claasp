@@ -1,5 +1,8 @@
 from claasp_next.primitives import Present
-from claasp_next.representations.constraints.smt import PresentDifferentialSMTModel, PresentLinearSMTModel
+from claasp_next.representations.constraints.smt import (
+    PresentDifferentialSMTModel,
+    PresentLinearSMTModel,
+)
 
 
 def test_present_weighted_smt_formula_is_deterministic_and_scalable():

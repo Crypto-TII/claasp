@@ -3,9 +3,8 @@
 import pytest
 
 from claasp_next.primitives.block_ciphers.present import PRESENT_SBOX
-from claasp_next.semantics.cryptanalysis import TrailKind
-from claasp_next.semantics.cryptanalysis import SBoxTransitionSemantics
 from claasp_next.representations.constraints.milp import SBoxTransitionMILPModel
+from claasp_next.semantics.cryptanalysis import SBoxTransitionSemantics, TrailKind
 
 
 @pytest.mark.parametrize("kind", [TrailKind.XOR_DIFFERENTIAL, TrailKind.XOR_LINEAR])
@@ -17,13 +16,21 @@ def test_every_present_supported_transition_and_objective(kind):
         transition = relation.decode_transition(witness)
         assert relation.semantics.check(transition)
         assert model.objective_value(witness) == transition.weight
-    assert len(relation.relation.rows) == sum(relation._transition(source, target).is_possible
-                                            for source in range(16) for target in range(16))
+    assert len(relation.relation.rows) == sum(
+        relation._transition(source, target).is_possible
+        for source in range(16)
+        for target in range(16)
+    )
     if kind is TrailKind.XOR_DIFFERENTIAL:
         # Legacy convex-hull fixture for the probability-2/16 class.
-        probability_two = [row for row in relation.relation.rows
-                           if relation._transition(int("".join(map(str, row[:4])), 2),
-                               int("".join(map(str, row[4:])), 2)).numerator == 2]
+        probability_two = [
+            row
+            for row in relation.relation.rows
+            if relation._transition(
+                int("".join(map(str, row[:4])), 2), int("".join(map(str, row[4:])), 2)
+            ).numerator
+            == 2
+        ]
         assert probability_two and all(row[3] + row[4] + row[6] >= 1 for row in probability_two)
 
 

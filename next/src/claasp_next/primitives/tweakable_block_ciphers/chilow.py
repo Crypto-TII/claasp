@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from typing import Any, List, NamedTuple, Tuple
+from typing import Any, NamedTuple
 
 from claasp_next.graph.bit_builder import BitGraphPrimitive
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
@@ -23,10 +23,10 @@ from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEX
 
 class State(NamedTuple):
     id: str
-    bits: List[int]
+    bits: list[int]
 
     @staticmethod
-    def get_inputs_parameter(states: List[Any]) -> Tuple[List[str], List[List[int]]]:
+    def get_inputs_parameter(states: list[Any]) -> tuple[list[str], list[list[int]]]:
         return ([state.id for state in states], [state.bits for state in states])
 
 
@@ -38,11 +38,11 @@ class LinearCoefficients(NamedTuple):
 
 
 LINEAR_COEFFICIENTS = {
-    'L32': LinearCoefficients(11, 5, 9, 12),
-    'L32-prime': LinearCoefficients(11, 1, 26, 30),
-    'L40': LinearCoefficients(17, 1, 9, 30),
-    'L64': LinearCoefficients(3, 1, 26, 50),
-    'L128': LinearCoefficients(17, 7, 11, 14)
+    "L32": LinearCoefficients(11, 5, 9, 12),
+    "L32-prime": LinearCoefficients(11, 1, 26, 30),
+    "L40": LinearCoefficients(17, 1, 9, 30),
+    "L64": LinearCoefficients(3, 1, 26, 50),
+    "L128": LinearCoefficients(17, 7, 11, 14),
 }
 
 
@@ -85,7 +85,7 @@ class Chilow(BitGraphPrimitive):
             output_bit_size += tau
 
         super().__init__(
-            family_name='chilow',
+            family_name="chilow",
             primitive_type=BLOCK_CIPHER,
             primitive_inputs=inputs,
             primitive_inputs_bit_size=inputs_size,
@@ -135,13 +135,15 @@ class Chilow(BitGraphPrimitive):
             tweak = State(self.get_current_component_id(), list(range(self.tweak_bit_size)))
 
             if i != number_of_rounds - 1:
-                self.add_round_output_component([state1.id, state2.id], [state1.bits,
-                                                state2.bits], self.block_bit_size * 2)
+                self.add_round_output_component(
+                    [state1.id, state2.id], [state1.bits, state2.bits], self.block_bit_size * 2
+                )
 
         tag, plaintext = self.last_round_32(state1, state2, tweak)
 
-        self.add_primitive_output_component([tag.id, plaintext.id], [
-                                         tag.bits, plaintext.bits], self.tau + self.block_bit_size)
+        self.add_primitive_output_component(
+            [tag.id, plaintext.id], [tag.bits, plaintext.bits], self.tau + self.block_bit_size
+        )
 
     def chilow_40(self, state: State, tweak: State, key: State, number_of_rounds: int) -> None:
         """Implement all rounds for ChiLow-40."""
@@ -193,7 +195,7 @@ class Chilow(BitGraphPrimitive):
         self.add_xor_component(ids, bits, self.block_bit_size)
         return State(self.get_current_component_id(), list(range(self.block_bit_size)))
 
-    def whitening_40(self, state: State, tweak: State, key: State) -> Tuple[State, State]:
+    def whitening_40(self, state: State, tweak: State, key: State) -> tuple[State, State]:
         """Build the whitening 40 stage in this primitive's typed operation graph."""
         k_state = State(key.id, list(range(*self.key_rev_range(64, 64 + self.block_bit_size))))
 
@@ -208,7 +210,7 @@ class Chilow(BitGraphPrimitive):
 
         return state, tweak
 
-    def last_round_32(self, state1: State, state2: State, tweak: State) -> Tuple[State, State]:
+    def last_round_32(self, state1: State, state2: State, tweak: State) -> tuple[State, State]:
         """Build the last round 32 stage in this primitive's typed operation graph."""
         state1 = self.chichi(state1, self.block_bit_size)
         state2 = self.chichi(state2, self.block_bit_size)
@@ -222,11 +224,15 @@ class Chilow(BitGraphPrimitive):
         tweak_32_64 = State(tweak.id, list(range(*self.tweak_rev_range(32, 64))))
         ids, bits = State.get_inputs_parameter([state2, tweak_32_64])
         self.add_xor_component(ids, bits, self.block_bit_size)
-        tag = State(self.get_current_component_id(), list(range(*self.state_rev_range(0, self.tau))))
+        tag = State(
+            self.get_current_component_id(), list(range(*self.state_rev_range(0, self.tau)))
+        )
 
         return tag, plaintext
 
-    def state_tweak_interaction_32(self, state1: State, state2: State, tweak: State) -> Tuple[State, State]:
+    def state_tweak_interaction_32(
+        self, state1: State, state2: State, tweak: State
+    ) -> tuple[State, State]:
         """Build the state tweak interaction 32 stage in this primitive's typed operation graph."""
         tweak_0_32 = State(tweak.id, list(range(*self.tweak_rev_range(0, 32))))
         tweak_32_64 = State(tweak.id, list(range(*self.tweak_rev_range(32, 64))))
@@ -241,7 +247,7 @@ class Chilow(BitGraphPrimitive):
 
         return state1, state2
 
-    def whitening_32(self, state: State, tweak: State, key: State) -> Tuple[State, State, State]:
+    def whitening_32(self, state: State, tweak: State, key: State) -> tuple[State, State, State]:
         """Build the whitening 32 stage in this primitive's typed operation graph."""
         key_64_96 = State(key.id, list(range(*self.key_rev_range(64, 96))))
         key_96_128 = State(key.id, list(range(*self.key_rev_range(96, 128))))
@@ -263,23 +269,23 @@ class Chilow(BitGraphPrimitive):
 
     def l32(self, state: State) -> State:
         """Build the l32 stage in this primitive's typed operation graph."""
-        return self.linear(state, 32, LINEAR_COEFFICIENTS['L32'])
+        return self.linear(state, 32, LINEAR_COEFFICIENTS["L32"])
 
     def l32_prime(self, state: State) -> State:
         """Build the l32 prime stage in this primitive's typed operation graph."""
-        return self.linear(state, 32, LINEAR_COEFFICIENTS['L32-prime'])
+        return self.linear(state, 32, LINEAR_COEFFICIENTS["L32-prime"])
 
     def l40(self, state: State) -> State:
         """Build the l40 stage in this primitive's typed operation graph."""
-        return self.linear(state, 40, LINEAR_COEFFICIENTS['L40'])
+        return self.linear(state, 40, LINEAR_COEFFICIENTS["L40"])
 
     def l64(self, state: State) -> State:
         """Build the l64 stage in this primitive's typed operation graph."""
-        return self.linear(state, 64, LINEAR_COEFFICIENTS['L64'])
+        return self.linear(state, 64, LINEAR_COEFFICIENTS["L64"])
 
     def l128(self, state: State) -> State:
         """Build the l128 stage in this primitive's typed operation graph."""
-        return self.linear(state, 128, LINEAR_COEFFICIENTS['L128'])
+        return self.linear(state, 128, LINEAR_COEFFICIENTS["L128"])
 
     def linear(self, state: State, n: int, coeff: LinearCoefficients) -> State:
         """Build the linear stage in this primitive's typed operation graph."""
@@ -296,17 +302,17 @@ class Chilow(BitGraphPrimitive):
         """Build the chichi stage in this primitive's typed operation graph."""
         m = n // 2
         part1 = State(state.id, list(range(*self.rev_range(0, m - 1, n))))
-        self.add_intermediate_output_component([part1.id], [part1.bits], m - 1, 'part1')
+        self.add_intermediate_output_component([part1.id], [part1.bits], m - 1, "part1")
         part1 = self.chi(part1, m - 1)
 
         part2 = State(state.id, list(range(*self.rev_range(m - 1, n, n))))
-        self.add_intermediate_output_component([part2.id], [part2.bits], m + 1, 'part2')
+        self.add_intermediate_output_component([part2.id], [part2.bits], m + 1, "part2")
         part2 = self.chi(part2, m + 1)
 
         ids, bits = State.get_inputs_parameter([part2, part1])
-        concat = self.add_intermediate_output_component(ids, bits, n, 'concat')
+        concat = self.add_intermediate_output_component(ids, bits, n, "concat")
         lam = self.lambda_term(state, n)
-        lam = self.add_intermediate_output_component([lam.id], [lam.bits], n, 'lambda')
+        lam = self.add_intermediate_output_component([lam.id], [lam.bits], n, "lambda")
 
         self.add_xor_component([concat.id, lam.id], [list(range(n)), list(range(n))], n)
         return State(self.get_current_component_id(), list(range(n)))
@@ -377,7 +383,7 @@ class Chilow(BitGraphPrimitive):
             ids_full.append(comp_id)
             bits_full.append([p])
 
-        self.add_intermediate_output_component(ids_full, bits_full, n, 'lamda term')
+        self.add_intermediate_output_component(ids_full, bits_full, n, "lamda term")
 
         return State(self.get_current_component_id(), list(range(n)))
 
@@ -401,14 +407,14 @@ class Chilow(BitGraphPrimitive):
 
         ids, bits = State.get_inputs_parameter([xor, key_first_96])
 
-        self.add_intermediate_output_component(ids, bits, self.key_bit_size, 'add round constant')
+        self.add_intermediate_output_component(ids, bits, self.key_bit_size, "add round constant")
         return State(self.get_current_component_id(), list(range(self.key_bit_size)))
 
     def rev(self, i: int, n: int) -> int:
         """Convert indexing from (LSB=0) to (MSB=0) for a bit string of size n."""
         return n - i - 1
 
-    def rev_range(self, s: int, e: int, n: int) -> Tuple[int, int]:
+    def rev_range(self, s: int, e: int, n: int) -> tuple[int, int]:
         """Convert range [s, e) from (LSB=0) to (MSB=0) for a bit string of size n."""
         return (self.rev(e, n) + 1, self.rev(s, n) + 1)
 
@@ -416,7 +422,7 @@ class Chilow(BitGraphPrimitive):
         """Build the state rev stage in this primitive's typed operation graph."""
         return self.rev(i, self.block_bit_size)
 
-    def state_rev_range(self, s: int, e: int) -> Tuple[int, int]:
+    def state_rev_range(self, s: int, e: int) -> tuple[int, int]:
         """Build the state rev range stage in this primitive's typed operation graph."""
         return self.rev_range(s, e, self.block_bit_size)
 
@@ -424,7 +430,7 @@ class Chilow(BitGraphPrimitive):
         """Build the key rev stage in this primitive's typed operation graph."""
         return self.rev(i, self.key_bit_size)
 
-    def key_rev_range(self, s: int, e: int) -> Tuple[int, int]:
+    def key_rev_range(self, s: int, e: int) -> tuple[int, int]:
         """Build the key rev range stage in this primitive's typed operation graph."""
         return self.rev_range(s, e, self.key_bit_size)
 
@@ -432,6 +438,6 @@ class Chilow(BitGraphPrimitive):
         """Build the tweak rev stage in this primitive's typed operation graph."""
         return self.rev(i, self.tweak_bit_size)
 
-    def tweak_rev_range(self, s: int, e: int) -> Tuple[int, int]:
+    def tweak_rev_range(self, s: int, e: int) -> tuple[int, int]:
         """Build the tweak rev range stage in this primitive's typed operation graph."""
         return self.rev_range(s, e, self.tweak_bit_size)

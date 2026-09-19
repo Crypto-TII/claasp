@@ -81,7 +81,8 @@ class SourceArtifact:
         if not isinstance(self.source, str) or not self.source.endswith("\n"):
             raise ValueError("generated source must be newline-terminated text")
         if (
-            not isinstance(self.filename, str) or not self.filename
+            not isinstance(self.filename, str)
+            or not self.filename
             or Path(self.filename).name != self.filename
             or any(character in self.filename for character in ("\0", "\n", "\r"))
         ):
@@ -93,8 +94,10 @@ class SourceArtifact:
         if self.source_digest != actual_digest:
             raise ValueError("source digest does not match generated source")
         for label, value in (("primitive digest", self.primitive_digest),):
-            if not isinstance(value, str) or len(value) != 64 or any(
-                character not in "0123456789abcdef" for character in value
+            if (
+                not isinstance(value, str)
+                or len(value) != 64
+                or any(character not in "0123456789abcdef" for character in value)
             ):
                 raise ValueError(f"{label} must be a lowercase SHA-256 digest")
         if not isinstance(self.realization_identity, str) or not self.realization_identity:
@@ -119,9 +122,13 @@ class SourceCompilationResult:
     diagnostic: SourceDiagnostic | None = None
 
     def __post_init__(self) -> None:
-        if self.status is SourceStatus.READY and (self.artifact is None or self.diagnostic is not None):
+        if self.status is SourceStatus.READY and (
+            self.artifact is None or self.diagnostic is not None
+        ):
             raise ValueError("ready source compilation requires only an artifact")
-        if self.status is SourceStatus.UNSUPPORTED and (self.artifact is not None or self.diagnostic is None):
+        if self.status is SourceStatus.UNSUPPORTED and (
+            self.artifact is not None or self.diagnostic is None
+        ):
             raise ValueError("unsupported source compilation requires only a diagnostic")
 
     @property
@@ -132,5 +139,9 @@ class SourceCompilationResult:
 
 
 __all__ = [
-    "SourceArtifact", "SourceCompilationResult", "SourceDiagnostic", "SourceLanguage", "SourceStatus",
+    "SourceArtifact",
+    "SourceCompilationResult",
+    "SourceDiagnostic",
+    "SourceLanguage",
+    "SourceStatus",
 ]

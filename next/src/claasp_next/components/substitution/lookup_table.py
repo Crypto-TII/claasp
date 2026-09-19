@@ -45,9 +45,7 @@ class LookupTable:
             raise ValueError(f"lookup table must contain {expected_size} entries")
         output_limit = 1 << output_bit_size
         if any(
-            not isinstance(value, int)
-            or isinstance(value, bool)
-            or not 0 <= value < output_limit
+            not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < output_limit
             for value in frozen_values
         ):
             raise ValueError(f"lookup-table outputs must fit in {output_bit_size} bits")
@@ -57,9 +55,7 @@ class LookupTable:
         object.__setattr__(self, "output_bit_size", output_bit_size)
 
     @classmethod
-    def identity(
-        cls, input_bit_size: int, output_bit_size: int | None = None
-    ) -> "LookupTable":
+    def identity(cls, input_bit_size: int, output_bit_size: int | None = None) -> "LookupTable":
         """Return the identity lookup for the requested widths.
 
         EXAMPLES::
@@ -82,9 +78,9 @@ class LookupTable:
             False
         """
 
-        return self.output_bit_size == self.input_bit_size and sorted(
-            self.values
-        ) == list(range(1 << self.input_bit_size))
+        return self.output_bit_size == self.input_bit_size and sorted(self.values) == list(
+            range(1 << self.input_bit_size)
+        )
 
 
 __all__ = ["LookupTable"]

@@ -3,10 +3,9 @@ from pathlib import Path
 import pytest
 
 from claasp_next.analysis import cbc_dataset
-from claasp_next.primitives import Speck
 from claasp_next.drivers.statistical import NistStsDriver
 from claasp_next.drivers.statistical.nist import _REPORT_RELATIVE_PATH
-
+from claasp_next.primitives import Speck
 
 REPORT_BODY = (
     "------------------------------------------------------------------------------\n"
@@ -45,15 +44,13 @@ def _fake_assess(tmp_path: Path, *, body: str | None, exit_code: int = 1) -> Pat
     script_dir.mkdir(parents=True, exist_ok=True)
     executable = script_dir / "assess"
     report_path = _report_path(working_dir)
-    write_report = "" if body is None else (
-        f'mkdir -p "{report_path.parent}"\n'
-        f'cat > "{report_path}" <<\'EOF\'\n{body}EOF\n'
+    write_report = (
+        ""
+        if body is None
+        else (f'mkdir -p "{report_path.parent}"\ncat > "{report_path}" <<\'EOF\'\n{body}EOF\n')
     )
     executable.write_text(
-        "#!/bin/sh\n"
-        'printf \'%s\\n\' "$@" >&2\n'
-        f"{write_report}"
-        f"exit {exit_code}\n",
+        f"#!/bin/sh\nprintf '%s\\n' \"$@\" >&2\n{write_report}exit {exit_code}\n",
         encoding="utf-8",
     )
     executable.chmod(0o755)
@@ -61,9 +58,7 @@ def _fake_assess(tmp_path: Path, *, body: str | None, exit_code: int = 1) -> Pat
 
 
 def _dataset():
-    return cbc_dataset(
-        Speck(number_of_rounds=1), "plaintext", 1, 3, fixed_inputs={"key": 0}
-    )
+    return cbc_dataset(Speck(number_of_rounds=1), "plaintext", 1, 3, fixed_inputs={"key": 0})
 
 
 def test_driver_reads_fixed_report_path_despite_inverted_exit_code(tmp_path):
@@ -72,11 +67,10 @@ def test_driver_reads_fixed_report_path_despite_inverted_exit_code(tmp_path):
     working_dir = tmp_path / "working"
 
     run = NistStsDriver(
-        str(executable), working_dir=str(working_dir),
+        str(executable),
+        working_dir=str(working_dir),
         timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
-    ).run(
-        dataset, number_of_bit_streams=1
-    )
+    ).run(dataset, number_of_bit_streams=1)
 
     assert run.suite == "nist_sts"
     assert run.suite_version == "NIST STS 2.1.2"
@@ -105,20 +99,18 @@ def test_driver_computes_stream_length_from_dataset_bit_count(tmp_path):
     expected_total_bits = dataset.manifest().byte_count * 8
 
     run = NistStsDriver(
-        str(executable), working_dir=str(working_dir),
+        str(executable),
+        working_dir=str(working_dir),
         timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
-    ).run(
-        dataset, number_of_bit_streams=1
-    )
+    ).run(dataset, number_of_bit_streams=1)
 
     assert run.command[2] == str(expected_total_bits)
 
     run_split = NistStsDriver(
-        str(executable), working_dir=str(working_dir),
+        str(executable),
+        working_dir=str(working_dir),
         timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
-    ).run(
-        dataset, number_of_bit_streams=2
-    )
+    ).run(dataset, number_of_bit_streams=2)
 
     assert run_split.command[2] == str(expected_total_bits // 2)
 
@@ -130,7 +122,8 @@ def test_driver_raises_when_report_is_never_produced(tmp_path):
 
     with pytest.raises(RuntimeError, match="did not produce a report"):
         NistStsDriver(
-            str(executable), working_dir=str(working_dir),
+            str(executable),
+            working_dir=str(working_dir),
             timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
         ).run(dataset)
 
@@ -148,7 +141,8 @@ def test_driver_refuses_a_stale_report_left_by_a_previous_run(tmp_path):
 
     with pytest.raises(RuntimeError, match="did not refresh its report"):
         NistStsDriver(
-            str(executable), working_dir=str(working_dir),
+            str(executable),
+            working_dir=str(working_dir),
             timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
         ).run(dataset)
 
@@ -158,7 +152,8 @@ def test_driver_validates_options_and_missing_executable(tmp_path):
     executable = _fake_assess(tmp_path, body=REPORT_BODY, exit_code=1)
     working_dir = tmp_path / "working"
     driver = NistStsDriver(
-        str(executable), working_dir=str(working_dir),
+        str(executable),
+        working_dir=str(working_dir),
         timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
     )
 
@@ -180,14 +175,15 @@ def test_version_falls_back_to_unknown_without_an_sts_version_hint(tmp_path):
     unversioned.write_text(
         "#!/bin/sh\n"
         f'mkdir -p "{report_path.parent}"\n'
-        f'cat > "{report_path}" <<\'EOF\'\n{REPORT_BODY}EOF\n'
+        f"cat > \"{report_path}\" <<'EOF'\n{REPORT_BODY}EOF\n"
         "exit 1\n",
         encoding="utf-8",
     )
     unversioned.chmod(0o755)
 
     run = NistStsDriver(
-        str(unversioned), working_dir=str(working_dir),
+        str(unversioned),
+        working_dir=str(working_dir),
         timeout_seconds=FAKE_EXECUTABLE_TIMEOUT_SECONDS,
     ).run(dataset)
 

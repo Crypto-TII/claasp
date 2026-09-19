@@ -21,7 +21,10 @@ class ToySpeck(Primitive):
         if not isinstance(number_of_rounds, int) or isinstance(number_of_rounds, bool):
             raise ValueError("ToySpeck requires an integer round count")
         rounds = Primitive.validate_number_of_rounds(
-            number_of_rounds, default=4, maximum=4, name="ToySpeck",
+            number_of_rounds,
+            default=4,
+            maximum=4,
+            name="ToySpeck",
         )
         word_type = ValueType(Word(4), (1,))
         super().__init__(

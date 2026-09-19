@@ -11,8 +11,10 @@ def test_one_round_simon_anf_preserves_legacy_fixed_monomials():
     terms = set(first_output.monomials)
 
     assert terms == {
-        BooleanMonomial(("k48",)), BooleanMonomial(("p1", "p8")),
-        BooleanMonomial(("p16",)), BooleanMonomial(("p2",)),
+        BooleanMonomial(("k48",)),
+        BooleanMonomial(("p1", "p8")),
+        BooleanMonomial(("p16",)),
+        BooleanMonomial(("p2",)),
     }
     assert first_output.degree == 2
 
@@ -26,8 +28,10 @@ def test_symbolic_simon_anf_evaluates_like_the_typed_primitive():
         **{f"p{index}": (plaintext >> (31 - index)) & 1 for index in range(32)},
         **{f"k{index}": (key >> (63 - index)) & 1 for index in range(64)},
     }
-    symbolic = sum(polynomial.evaluate(assignment) << (31 - index)
-                   for index, polynomial in enumerate(result.output_anfs))
+    symbolic = sum(
+        polynomial.evaluate(assignment) << (31 - index)
+        for index, polynomial in enumerate(result.output_anfs)
+    )
 
     assert symbolic == primitive.evaluate(plaintext, key)
 

@@ -16,8 +16,7 @@
 # ****************************************************************************
 
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import INPUT_KEY, INPUT_PLAINTEXT
 
 SBOX = [
@@ -109,9 +108,7 @@ class Gost(BitGraphPrimitive):
 
             plaintext = self.swap_blocks(plaintext)
 
-            self.add_round_key_output_component(
-                key.id, key.input_bit_positions, self.key_bit_size
-            )
+            self.add_round_key_output_component(key.id, key.input_bit_positions, self.key_bit_size)
             self.add_round_output_component(
                 plaintext.id, plaintext.input_bit_positions, self.block_bit_size
             )
@@ -120,9 +117,7 @@ class Gost(BitGraphPrimitive):
             plaintext.id, plaintext.input_bit_positions, self.block_bit_size
         )
 
-    def add_round_key(
-        self, plaintext: BitState, key: BitState
-    ) -> BitState:
+    def add_round_key(self, plaintext: BitState, key: BitState) -> BitState:
         plaintext_id = self.add_modadd_component(
             [plaintext.id[-1], key.id],
             [plaintext.input_bit_positions[-1]] + key.input_bit_positions,

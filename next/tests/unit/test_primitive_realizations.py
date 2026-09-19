@@ -22,7 +22,6 @@ from claasp_next.primitives.permutations.spongent_pi import SpongentPi
 from claasp_next.primitives.permutations.xoodoo import Xoodoo
 from claasp_next.primitives.tweakable_block_ciphers.qarmav2 import QARMAv2
 
-
 ROOT = Path(__file__).parents[2]
 DIFFERENTIAL_CASES = (
     (Aradi, {"number_of_rounds": 2}),
@@ -45,7 +44,8 @@ DIFFERENTIAL_CASES = (
 
 @pytest.mark.parametrize(("primitive_class", "parameters"), DIFFERENTIAL_CASES)
 def test_selected_realizations_have_identical_contracts_and_seeded_outputs(
-    primitive_class, parameters,
+    primitive_class,
+    parameters,
 ):
     descriptors = primitive_class.available_realizations()
     graphs = tuple(primitive_class.realize(item.name, **parameters) for item in descriptors)
@@ -67,7 +67,12 @@ def test_selected_realizations_have_identical_contracts_and_seeded_outputs(
 
 
 FIXTURE_CASES = (
-    (Aradi, {}, (0, 0x1F1E1D1C1B1A191817161514131211100F0E0D0C0B0A09080706050403020100), 0x3F09ABF400E3BD7403260DEFB7C53912),
+    (
+        Aradi,
+        {},
+        (0, 0x1F1E1D1C1B1A191817161514131211100F0E0D0C0B0A09080706050403020100),
+        0x3F09ABF400E3BD7403260DEFB7C53912,
+    ),
     (Simeck, {}, (0x65656877, 0x1918111009080100), 0x770D2C76),
     (Simon, {}, (0x65656877, 0x1918111009080100), 0xC69BE9BB),
     (TinyJambu, {}, (0, 0), 255845905141822593977431191925590833879),
@@ -76,7 +81,10 @@ FIXTURE_CASES = (
 
 @pytest.mark.parametrize(("primitive_class", "parameters", "inputs", "expected"), FIXTURE_CASES)
 def test_boundary_normalized_realizations_preserve_published_fixed_vectors(
-    primitive_class, parameters, inputs, expected,
+    primitive_class,
+    parameters,
+    inputs,
+    expected,
 ):
     for descriptor in primitive_class.available_realizations():
         assert primitive_class.realize(descriptor.name, **parameters).evaluate(*inputs) == expected
@@ -88,13 +96,26 @@ def test_every_audited_family_and_realization_has_existing_fixed_evidence():
         records.extend(json.loads((ROOT / "migration" / name).read_text()))
     evidenced = {record["class"] for record in records}
     assert {
-        "Gift", "Katan", "Ktantan", "TinyJambu", "Ublock", "QARMAv2",
-        "Ascon", "Gaston", "Gimli", "Keccak", "SpongentPi", "Xoodoo",
+        "Gift",
+        "Katan",
+        "Ktantan",
+        "TinyJambu",
+        "Ublock",
+        "QARMAv2",
+        "Ascon",
+        "Gaston",
+        "Gimli",
+        "Keccak",
+        "SpongentPi",
+        "Xoodoo",
     } <= evidenced
 
 
 def test_capability_selection_uses_metadata_not_component_names():
     assert Gift.for_capabilities({"sbox_semantics"}).realization.name == "sbox"
-    assert Katan.for_capabilities({"feedback_register_semantics"}).realization.name == "feedback_register"
+    assert (
+        Katan.for_capabilities({"feedback_register_semantics"}).realization.name
+        == "feedback_register"
+    )
     assert Gaston.for_capabilities({"linear_map_semantics"}).realization.name == "sbox_theta"
     assert Simon.for_capabilities({"sbox_semantics"}).realization.name == "legacy_sbox"

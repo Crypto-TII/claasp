@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 import importlib.util
+from abc import ABC, abstractmethod
 from pathlib import Path
-
 
 TOOL_PATH = Path(__file__).resolve().parents[2] / "tools" / "public_api_closure.py"
 SPEC = importlib.util.spec_from_file_location("public_api_closure", TOOL_PATH)
@@ -21,8 +20,15 @@ def test_committed_public_api_authority_is_complete_and_deterministic():
     assert entries == sorted(entries, key=lambda entry: entry["qualified_name"])
     assert not public_api_closure.validate_authority(authority, entries)
     assert {entry["kind"] for entry in entries} >= {
-        "module", "class", "constructor", "method",
-        "property", "dataclass", "dataclass_field", "enum", "enum_member",
+        "module",
+        "class",
+        "constructor",
+        "method",
+        "property",
+        "dataclass",
+        "dataclass_field",
+        "enum",
+        "enum_member",
     }
     assert any(entry.get("inherited_by") for entry in entries)
     assert any(
@@ -174,7 +180,5 @@ def test_primitive_catalogue_public_api_documentation_is_closed():
     violations = public_api_closure.documentation_violations(entries, authority)
 
     assert not [
-        violation
-        for violation in violations
-        if violation.startswith("claasp_next.primitives")
+        violation for violation in violations if violation.startswith("claasp_next.primitives")
     ]

@@ -139,10 +139,13 @@ class Trivium(Primitive):
         if keystream_bit_size < 0:
             raise ValueError("keystream_bit_size must not be negative")
 
-        super().__init__("trivium", {
-            "key": ValueType(Word(1), (KEY_BIT_SIZE,)),
-            "iv": ValueType(Word(1), (IV_BIT_SIZE,)),
-        })
+        super().__init__(
+            "trivium",
+            {
+                "key": ValueType(Word(1), (KEY_BIT_SIZE,)),
+                "iv": ValueType(Word(1), (IV_BIT_SIZE,)),
+            },
+        )
         self.number_of_initialization_clocks = clocks
         self.keystream_bit_size = keystream_bit_size
 
@@ -152,11 +155,14 @@ class Trivium(Primitive):
         key, iv = self.input("key"), self.input("iv")
         state: list[Port | Selection] = (
             # register A: s1..s80 hold the key, s81..s93 are zero
-            [key[KEY_BIT_SIZE - 1 - index] for index in range(KEY_BIT_SIZE)] + [zero] * 13
+            [key[KEY_BIT_SIZE - 1 - index] for index in range(KEY_BIT_SIZE)]
+            + [zero] * 13
             # register B: s94..s173 hold the IV, s174..s177 are zero
-            + [iv[IV_BIT_SIZE - 1 - index] for index in range(IV_BIT_SIZE)] + [zero] * 4
+            + [iv[IV_BIT_SIZE - 1 - index] for index in range(IV_BIT_SIZE)]
+            + [zero] * 4
             # register C: s178..s285 are zero and s286..s288 are one
-            + [zero] * 108 + [one] * 3
+            + [zero] * 108
+            + [one] * 3
         )
         if len(state) != STATE_BIT_SIZE:
             raise AssertionError("Trivium state layout must cover exactly 288 bits")
@@ -175,18 +181,25 @@ class Trivium(Primitive):
 
         keystream_bit = None
         if emitting:
-            keystream_bit = self.add_component(Xor(
-                [state[index - 1] for register in _REGISTERS for index in register[:2]]
-            ))
+            keystream_bit = self.add_component(
+                Xor([state[index - 1] for register in _REGISTERS for index in register[:2]])
+            )
         feedback = []
         for tap_a, tap_b, and_left, and_right, feedback_tap in _REGISTERS:
-            product = self.add_component(BitwiseAnd(
-                (state[and_left - 1], state[and_right - 1])
-            ))
-            feedback.append(self.add_component(Xor((
-                state[tap_a - 1], state[tap_b - 1], product, state[feedback_tap - 1],
-            ))))
+            product = self.add_component(BitwiseAnd((state[and_left - 1], state[and_right - 1])))
+            feedback.append(
+                self.add_component(
+                    Xor(
+                        (
+                            state[tap_a - 1],
+                            state[tap_b - 1],
+                            product,
+                            state[feedback_tap - 1],
+                        )
+                    )
+                )
+            )
         updated = list(state)
         for source, start, stop in _TARGETS:
-            updated[start - 1:stop] = [feedback[source]] + state[start - 1:stop - 1]
+            updated[start - 1 : stop] = [feedback[source]] + state[start - 1 : stop - 1]
         return updated, keystream_bit

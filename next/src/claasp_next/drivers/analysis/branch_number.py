@@ -75,9 +75,7 @@ class BoundedBranchNumberDriver:
         (2, True)
     """
 
-    identity = DriverIdentity(
-        "bounded_branch_enumeration", DriverKind.EXECUTION_ENGINE
-    )
+    identity = DriverIdentity("bounded_branch_enumeration", DriverKind.EXECUTION_ENGINE)
 
     def __init__(self, maximum_input_weight: int = 2) -> None:
         if (
@@ -97,7 +95,9 @@ class BoundedBranchNumberDriver:
             ComponentProperty.LINEAR_BRANCH_NUMBER,
         }:
             return unavailable_result(
-                request, provenance, DiagnosticCode.UNSUPPORTED_PROPERTY,
+                request,
+                provenance,
+                DiagnosticCode.UNSUPPORTED_PROPERTY,
                 "bounded branch enumeration supports only differential/linear branch numbers",
             )
         try:
@@ -153,7 +153,9 @@ class MiniZincBranchNumberDriver:
             ComponentProperty.LINEAR_BRANCH_NUMBER,
         }:
             return unavailable_result(
-                request, provenance, DiagnosticCode.UNSUPPORTED_PROPERTY,
+                request,
+                provenance,
+                DiagnosticCode.UNSUPPORTED_PROPERTY,
                 "MiniZinc branch optimization supports only differential/linear branch numbers",
             )
         try:
@@ -164,7 +166,9 @@ class MiniZincBranchNumberDriver:
             )
         if not isinstance(domain, Bit):
             return unavailable_result(
-                request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN,
+                request,
+                provenance,
+                DiagnosticCode.INAPPLICABLE_DOMAIN,
                 "the MiniZinc baseline consumes binary matrices; request bit-linear expansion",
             )
         if request.property is ComponentProperty.LINEAR_BRANCH_NUMBER:
@@ -176,20 +180,20 @@ class MiniZincBranchNumberDriver:
             return unavailable_result(
                 request, provenance, DiagnosticCode.DRIVER_UNAVAILABLE, str(error)
             )
-        if (
-            not solved.is_satisfied
-            or solved.values is None
-            or "==========" not in solved.stdout
-        ):
+        if not solved.is_satisfied or solved.values is None or "==========" not in solved.stdout:
             return unavailable_result(
-                request, provenance, DiagnosticCode.DRIVER_UNAVAILABLE,
+                request,
+                provenance,
+                DiagnosticCode.DRIVER_UNAVAILABLE,
                 "MiniZinc did not return an optimal branch number",
             )
-        branch_number = sum(solved.values["input_bits"]) + sum(
-            solved.values["output_bits"]
-        )
+        branch_number = sum(solved.values["input_bits"]) + sum(solved.values["output_bits"])
         return ComponentPropertyResult(
-            request, PropertyClaim.EXACT, branch_number, True, provenance,
+            request,
+            PropertyClaim.EXACT,
+            branch_number,
+            True,
+            provenance,
         )
 
 
@@ -197,9 +201,7 @@ def _minizinc_model(matrix):
     from claasp_next.representations.constraints.cp import MiniZincModel
 
     rows, columns = len(matrix), len(matrix[0])
-    literal = "[|" + "|".join(
-        ",".join(str(value) for value in row) for row in matrix
-    ) + "|]"
+    literal = "[|" + "|".join(",".join(str(value) for value in row) for row in matrix) + "|]"
     return MiniZincModel(
         declarations=(
             f"int: input_size = {columns};",

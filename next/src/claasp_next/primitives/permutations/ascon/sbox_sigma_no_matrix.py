@@ -17,11 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp_next.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
-from claasp_next.graph.bit_builder import get_inputs_parameter
 
 WORD_NUM = 5
 SBOX_SIZE = 5
@@ -114,7 +111,9 @@ class AsconSboxSigmaNoMatrix(BitGraphPrimitive):
             else:
                 inputs_pos = [[i]] * 5
             self.add_sbox_component(inputs_id, inputs_pos, SBOX_SIZE, ASCON_SBOX)
-            substitution_layer.append(BitState([self.get_current_component_id()], [list(range(SBOX_SIZE))]))
+            substitution_layer.append(
+                BitState([self.get_current_component_id()], [list(range(SBOX_SIZE))])
+            )
 
         inputs_id = []
         for j in range(WORD_SIZE):
@@ -135,7 +134,9 @@ class AsconSboxSigmaNoMatrix(BitGraphPrimitive):
             self.add_rotate_component(inputs_id, inputs_pos, WORD_SIZE, LINEAR_LAYER_ROT[i][1])
             s2 = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
             self.add_xor_component(
-                inputs_id + s1.id + s2.id, inputs_pos + s1.input_bit_positions + s2.input_bit_positions, WORD_SIZE
+                inputs_id + s1.id + s2.id,
+                inputs_pos + s1.input_bit_positions + s2.input_bit_positions,
+                WORD_SIZE,
             )
             state[i] = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 

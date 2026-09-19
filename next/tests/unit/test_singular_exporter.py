@@ -4,7 +4,10 @@ import subprocess
 import pytest
 
 from claasp_next.primitives import MiMC
-from claasp_next.representations.constraints.polynomial import PowerLoweringPolicy, PrimeFieldPolynomialModel
+from claasp_next.representations.constraints.polynomial import (
+    PowerLoweringPolicy,
+    PrimeFieldPolynomialModel,
+)
 from claasp_next.representations.constraints.polynomial.exporters import SingularExporter
 
 
@@ -33,7 +36,7 @@ def test_exported_program_is_accepted_by_singular():
     system = PrimeFieldPolynomialModel(
         MiMC(17, 5, (1,)), PowerLoweringPolicy.BINARY_CHAIN
     ).polynomial_system()
-    program = SingularExporter().export(system) + 'print(size(I));\n'
+    program = SingularExporter().export(system) + "print(size(I));\n"
 
     completed = subprocess.run(
         ["Singular", "--no-tty", "--quiet"],

@@ -13,7 +13,6 @@ from claasp_next.drivers.analysis import (
 )
 from claasp_next.graph import Port, ValueType
 
-
 ASYMMETRIC = (
     (0, 0, 0, 1),
     (0, 1, 1, 0),
@@ -59,9 +58,9 @@ def test_bounded_driver_can_prove_exactness_at_mathematical_lower_bound():
 
 
 def test_minizinc_missing_executable_returns_typed_unavailable_result():
-    result = MiniZincBranchNumberDriver(
-        executable="definitely-not-a-minizinc-binary"
-    ).analyze(_component(), _request())
+    result = MiniZincBranchNumberDriver(executable="definitely-not-a-minizinc-binary").analyze(
+        _component(), _request()
+    )
 
     assert result.claim is PropertyClaim.UNAVAILABLE
     assert result.diagnostic.code is DiagnosticCode.DRIVER_UNAVAILABLE

@@ -31,7 +31,9 @@ class ValueType:
             raise TypeError("domain must be a Domain")
         if not self.shape:
             raise ValueError("shape must contain at least one dimension")
-        if any(not isinstance(size, int) or isinstance(size, bool) or size <= 0 for size in self.shape):
+        if any(
+            not isinstance(size, int) or isinstance(size, bool) or size <= 0 for size in self.shape
+        ):
             raise ValueError("every shape dimension must be a positive integer")
 
     @property

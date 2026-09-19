@@ -1,6 +1,6 @@
 import pytest
 
-from claasp_next import CompositeBuilder, Primitive, PrimeField, ValueType
+from claasp_next import CompositeBuilder, PrimeField, Primitive, ValueType
 from claasp_next.components import Add
 
 
@@ -9,9 +9,7 @@ def _double_then_add_definition():
     builder = CompositeBuilder("DoubleThenAdd", {"value": value_type, "addend": value_type})
     value, addend = builder.inputs("value", 1)
     builder.add_round()
-    doubled = builder.add_component(
-        Add((value, value), component_id="double")
-    )
+    doubled = builder.add_component(Add((value, value), component_id="double"))
     output = builder.add_component(Add((doubled, addend), component_id="sum"))
     builder.set_output("doubled", doubled)
     builder.set_output("output", output)
@@ -40,7 +38,8 @@ def test_instantiation_lowers_namespaced_leaves_and_retains_scope_outputs():
     primitive.set_output(instance.output())
 
     assert tuple(component.component_id for component in primitive.components) == (
-        "block/double", "block/sum"
+        "block/double",
+        "block/sum",
     )
     assert primitive.scope("block") is instance
     assert primitive_round.scopes == (instance,)
@@ -75,7 +74,8 @@ def test_nested_scopes_survive_flat_lowering_with_deterministic_paths():
 
     assert primitive.scope("outer_block/inner").path == "outer_block/inner"
     assert outer.scope("inner").component_ids == (
-        "outer_block/inner/double", "outer_block/inner/sum"
+        "outer_block/inner/double",
+        "outer_block/inner/sum",
     )
     assert primitive.evaluate(7, 1) == 15
 

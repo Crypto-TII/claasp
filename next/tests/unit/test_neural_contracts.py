@@ -30,9 +30,7 @@ def test_differential_dataset_is_seeded_and_has_two_outputs():
     differences = {"plaintext": 0x0040_0000, "key": 0}
     dataset = xor_differential_dataset(primitive, differences, samples=16, seed=7)
 
-    assert dataset == xor_differential_dataset(
-        primitive, differences, samples=16, seed=7
-    )
+    assert dataset == xor_differential_dataset(primitive, differences, samples=16, seed=7)
     assert dataset.kind == "xor_differential"
     assert dataset.feature_width == 64
     assert dataset.feature_names[0] == "output_0[0]"
@@ -46,9 +44,7 @@ def test_dataset_generation_validates_contract_boundaries():
     with pytest.raises(ValueError, match="every primitive input"):
         xor_differential_dataset(primitive, {"plaintext": 1}, samples=2)
     with pytest.raises(ValueError, match="does not fit"):
-        xor_differential_dataset(
-            primitive, {"plaintext": 1 << 32, "key": 0}, samples=2
-        )
+        xor_differential_dataset(primitive, {"plaintext": 1 << 32, "key": 0}, samples=2)
 
 
 def test_neural_experiment_and_result_are_framework_neutral_value_objects():

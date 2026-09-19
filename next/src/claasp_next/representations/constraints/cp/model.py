@@ -26,7 +26,11 @@ class MiniZincModel:
         sections = (self.includes, self.declarations, self.constraints, self.outputs)
         if any(not isinstance(section, tuple) for section in sections):
             raise TypeError("MiniZinc model sections must be tuples")
-        if any(not isinstance(line, str) or not line.strip() for section in sections for line in section):
+        if any(
+            not isinstance(line, str) or not line.strip()
+            for section in sections
+            for line in section
+        ):
             raise ValueError("MiniZinc model lines must be nonempty strings")
         if len({encoded for encoded, _ in self.name_mapping}) != len(self.name_mapping):
             raise ValueError("encoded MiniZinc names must be unique")

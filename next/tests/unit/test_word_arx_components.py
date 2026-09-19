@@ -6,8 +6,14 @@ import pytest
 
 from claasp_next import Primitive, ScalarEvaluator, TransposedBatchEvaluator, ValueType, Word
 from claasp_next.components import (
-    IDEAMultiply, ModularAdd, ModularMultiply, ModularSubtract, Rotate, Shift,
-    VariableRotate, VariableShift,
+    IDEAMultiply,
+    ModularAdd,
+    ModularMultiply,
+    ModularSubtract,
+    Rotate,
+    Shift,
+    VariableRotate,
+    VariableShift,
 )
 
 
@@ -15,9 +21,9 @@ def _binary_primitive(component_type, width=3, **kwargs):
     value_type = ValueType(Word(width), (1,))
     primitive = Primitive(component_type.__name__, {"left": value_type, "right": value_type})
     primitive.add_round()
-    output = primitive.add_component(component_type(
-        (primitive.input("left"), primitive.input("right")), **kwargs
-    ))
+    output = primitive.add_component(
+        component_type((primitive.input("left"), primitive.input("right")), **kwargs)
+    )
     primitive.set_output(output)
     return primitive
 
@@ -33,17 +39,13 @@ def _binary_primitive(component_type, width=3, **kwargs):
 def test_modular_operations_match_exhaustive_three_bit_arithmetic(component_type, expected):
     primitive = _binary_primitive(component_type)
     for left, right in product(range(8), repeat=2):
-        result = ScalarEvaluator().evaluate(
-            primitive, {"left": (left,), "right": (right,)}
-        ).output
+        result = ScalarEvaluator().evaluate(primitive, {"left": (left,), "right": (right,)}).output
         assert result == (expected(left, right),)
 
 
 def test_modular_multiply_honors_non_power_of_two_modulus():
     primitive = _binary_primitive(ModularMultiply, width=4, modulus=13)
-    assert ScalarEvaluator().evaluate(
-        primitive, {"left": (11,), "right": (7,)}
-    ).output == (12,)
+    assert ScalarEvaluator().evaluate(primitive, {"left": (11,), "right": (7,)}).output == (12,)
 
 
 def test_idea_multiplication_matches_zero_encoded_field_arithmetic():
@@ -66,9 +68,7 @@ def _motion_primitive(component_type, direction, *, variable=False):
     primitive = Primitive(component_type.__name__, inputs)
     primitive.add_round()
     if variable:
-        component = component_type(
-            primitive.input("values"), primitive.input("amount"), direction
-        )
+        component = component_type(primitive.input("values"), primitive.input("amount"), direction)
     else:
         component = component_type(primitive.input("values"), 3, direction)
     output = primitive.add_component(component)

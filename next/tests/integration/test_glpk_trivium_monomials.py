@@ -9,11 +9,10 @@ enumeration terminated in UNSAT.
 import pytest
 
 from claasp_next.analysis import enumerate_optimal_monomial_parity
-from claasp_next.primitives import Trivium
 from claasp_next.drivers.solvers import GLPKSolver, MILPStatus
+from claasp_next.primitives import Trivium
 from claasp_next.representations.constraints.milp import BooleanMonomialGraphMILPModel
 from claasp_next.representations.execution import BooleanSymbolicEvaluator
-
 
 pytestmark = pytest.mark.external
 
@@ -23,8 +22,7 @@ def _exact_iv_monomials(primitive):
 
     polynomial = BooleanSymbolicEvaluator().evaluate(primitive).output_anfs[0]
     positions = {
-        term: tuple(int(variable[1:]) for variable in term.variables
-                    if variable.startswith("i"))
+        term: tuple(int(variable[1:]) for variable in term.variables if variable.startswith("i"))
         for term in polynomial.monomials
     }
     degree = max(len(entry) for entry in positions.values())

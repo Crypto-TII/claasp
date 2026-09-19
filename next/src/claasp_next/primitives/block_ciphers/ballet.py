@@ -16,8 +16,7 @@
 # ****************************************************************************
 
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive
-from claasp_next.graph.bit_builder import BitState
+from claasp_next.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
@@ -94,7 +93,9 @@ class Ballet(BitGraphPrimitive):
                     state_0, state_1, state_2, state_3, key_0, last_round=True
                 )
                 # round output
-                self.add_round_key_output_component(key_0.id, key_0.input_bit_positions, self.round_key_bit_size)
+                self.add_round_key_output_component(
+                    key_0.id, key_0.input_bit_positions, self.round_key_bit_size
+                )
                 self.add_primitive_output_component(
                     state_0.id + state_1.id + state_2.id + state_3.id,
                     state_0.input_bit_positions
@@ -109,7 +110,9 @@ class Ballet(BitGraphPrimitive):
                     state_0, state_1, state_2, state_3, key_0, last_round=False
                 )
                 # round output
-                self.add_round_key_output_component(key_0.id, key_0.input_bit_positions, self.round_key_bit_size)
+                self.add_round_key_output_component(
+                    key_0.id, key_0.input_bit_positions, self.round_key_bit_size
+                )
                 self.add_round_output_component(
                     state_0.id + state_1.id + state_2.id + state_3.id,
                     state_0.input_bit_positions
@@ -122,7 +125,9 @@ class Ballet(BitGraphPrimitive):
                 if self.block_bit_size == self.key_bit_size:
                     key_0, key_1 = self.key_schedule_nn(key_0, key_1, round_number)
                 else:
-                    key_0, key_1, t_0, t_1 = self.key_schedule_n2n(key_0, key_1, t_0, t_1, round_number)
+                    key_0, key_1, t_0, t_1 = self.key_schedule_n2n(
+                        key_0, key_1, t_0, t_1, round_number
+                    )
 
     def check_parameters(self):
         """Validate the parameters constraints before graph construction."""
@@ -154,12 +159,16 @@ class Ballet(BitGraphPrimitive):
         """Build the round initialization stage in this primitive's typed operation graph."""
         state_0 = BitState([INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size))])
         state_1 = BitState(
-            [INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size, self.quater_block_bit_size * 2))]
+            [INPUT_PLAINTEXT],
+            [list(range(self.quater_block_bit_size, self.quater_block_bit_size * 2))],
         )
         state_2 = BitState(
-            [INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size * 2, self.quater_block_bit_size * 3))]
+            [INPUT_PLAINTEXT],
+            [list(range(self.quater_block_bit_size * 2, self.quater_block_bit_size * 3))],
         )
-        state_3 = BitState([INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size * 3, self.block_bit_size))])
+        state_3 = BitState(
+            [INPUT_PLAINTEXT], [list(range(self.quater_block_bit_size * 3, self.block_bit_size))]
+        )
 
         if self.block_bit_size == self.key_bit_size:
             key_0 = BitState([INPUT_KEY], [list(range(self.round_key_bit_size))])
@@ -169,8 +178,12 @@ class Ballet(BitGraphPrimitive):
             return state_0, state_1, state_2, state_3, key_0, key_1, t_0, t_1
 
         key_0 = BitState([INPUT_KEY], [list(range(self.round_key_bit_size))])
-        key_1 = BitState([INPUT_KEY], [list(range(self.round_key_bit_size, self.round_key_bit_size * 2))])
-        t_0 = BitState([INPUT_KEY], [list(range(self.round_key_bit_size * 2, self.round_key_bit_size * 3))])
+        key_1 = BitState(
+            [INPUT_KEY], [list(range(self.round_key_bit_size, self.round_key_bit_size * 2))]
+        )
+        t_0 = BitState(
+            [INPUT_KEY], [list(range(self.round_key_bit_size * 2, self.round_key_bit_size * 3))]
+        )
         t_1 = BitState([INPUT_KEY], [list(range(self.round_key_bit_size * 3, self.key_bit_size))])
         return state_0, state_1, state_2, state_3, key_0, key_1, t_0, t_1
 
@@ -182,48 +195,79 @@ class Ballet(BitGraphPrimitive):
             state_1.input_bit_positions + state_2.input_bit_positions,
             self.quater_block_bit_size,
         )
-        state_temp = BitState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
+        state_temp = BitState(
+            [self.get_current_component_id()], [list(range(self.quater_block_bit_size))]
+        )
 
         # state_0_new = state_1 xor round_key_left
         self.add_xor_component(
             state_1.id + round_key.id,
-            state_1.input_bit_positions + [round_key.input_bit_positions[0][: self.quater_block_bit_size]],
+            state_1.input_bit_positions
+            + [round_key.input_bit_positions[0][: self.quater_block_bit_size]],
             self.quater_block_bit_size,
         )
-        state_0_new = BitState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
+        state_0_new = BitState(
+            [self.get_current_component_id()], [list(range(self.quater_block_bit_size))]
+        )
 
         # state_1_new = (state_0 <<< 6) modadd (state' <<< 9)
-        self.add_rotate_component(state_0.id, state_0.input_bit_positions, self.quater_block_bit_size, -6)
-        state_temp_1 = BitState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
-        self.add_rotate_component(state_temp.id, state_temp.input_bit_positions, self.quater_block_bit_size, -9)
-        state_temp_2 = BitState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
+        self.add_rotate_component(
+            state_0.id, state_0.input_bit_positions, self.quater_block_bit_size, -6
+        )
+        state_temp_1 = BitState(
+            [self.get_current_component_id()], [list(range(self.quater_block_bit_size))]
+        )
+        self.add_rotate_component(
+            state_temp.id, state_temp.input_bit_positions, self.quater_block_bit_size, -9
+        )
+        state_temp_2 = BitState(
+            [self.get_current_component_id()], [list(range(self.quater_block_bit_size))]
+        )
         self.add_modadd_component(
             state_temp_1.id + state_temp_2.id,
             state_temp_1.input_bit_positions + state_temp_2.input_bit_positions,
             self.quater_block_bit_size,
         )
-        state_1_new = BitState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
+        state_1_new = BitState(
+            [self.get_current_component_id()], [list(range(self.quater_block_bit_size))]
+        )
 
         # state_2_new = (state_3 <<< 15) modadd (state' <<< 14)
-        self.add_rotate_component(state_3.id, state_3.input_bit_positions, self.quater_block_bit_size, -15)
-        state_temp_1 = BitState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
-        self.add_rotate_component(state_temp.id, state_temp.input_bit_positions, self.quater_block_bit_size, -14)
-        state_temp_2 = BitState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
+        self.add_rotate_component(
+            state_3.id, state_3.input_bit_positions, self.quater_block_bit_size, -15
+        )
+        state_temp_1 = BitState(
+            [self.get_current_component_id()], [list(range(self.quater_block_bit_size))]
+        )
+        self.add_rotate_component(
+            state_temp.id, state_temp.input_bit_positions, self.quater_block_bit_size, -14
+        )
+        state_temp_2 = BitState(
+            [self.get_current_component_id()], [list(range(self.quater_block_bit_size))]
+        )
         self.add_modadd_component(
             state_temp_1.id + state_temp_2.id,
             state_temp_1.input_bit_positions + state_temp_2.input_bit_positions,
             self.quater_block_bit_size,
         )
-        state_2_new = BitState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
+        state_2_new = BitState(
+            [self.get_current_component_id()], [list(range(self.quater_block_bit_size))]
+        )
 
         # state_3_new = state_2 xor round_key_right
         self.add_xor_component(
             state_2.id + round_key.id,
             state_2.input_bit_positions
-            + [round_key.input_bit_positions[0][self.quater_block_bit_size : self.round_key_bit_size]],
+            + [
+                round_key.input_bit_positions[0][
+                    self.quater_block_bit_size : self.round_key_bit_size
+                ]
+            ],
             self.quater_block_bit_size,
         )
-        state_3_new = BitState([self.get_current_component_id()], [list(range(self.quater_block_bit_size))])
+        state_3_new = BitState(
+            [self.get_current_component_id()], [list(range(self.quater_block_bit_size))]
+        )
 
         if last_round:
             return state_1_new, state_0_new, state_3_new, state_2_new
@@ -235,11 +279,17 @@ class Ballet(BitGraphPrimitive):
         # key_0_new = key_1
         """Build the key schedule nn stage in this primitive's typed operation graph."""
         self.add_rotate_component(key_1.id, key_1.input_bit_positions, self.round_key_bit_size, -3)
-        key_temp_1 = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
+        key_temp_1 = BitState(
+            [self.get_current_component_id()], [list(range(self.round_key_bit_size))]
+        )
         self.add_rotate_component(key_1.id, key_1.input_bit_positions, self.round_key_bit_size, -5)
-        key_temp_2 = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
+        key_temp_2 = BitState(
+            [self.get_current_component_id()], [list(range(self.round_key_bit_size))]
+        )
         self.add_constant_component(self.round_key_bit_size, RC)
-        round_constant = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
+        round_constant = BitState(
+            [self.get_current_component_id()], [list(range(self.round_key_bit_size))]
+        )
         self.add_xor_component(
             key_0.id + key_temp_1.id + key_temp_2.id + round_constant.id,
             key_0.input_bit_positions
@@ -248,7 +298,9 @@ class Ballet(BitGraphPrimitive):
             + round_constant.input_bit_positions,
             self.round_key_bit_size,
         )
-        key_1_new = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
+        key_1_new = BitState(
+            [self.get_current_component_id()], [list(range(self.round_key_bit_size))]
+        )
 
         return key_1, key_1_new
 
@@ -257,37 +309,57 @@ class Ballet(BitGraphPrimitive):
         # t_0_new = t_1
         """Build the key schedule n2n stage in this primitive's typed operation graph."""
         self.add_rotate_component(t_1.id, t_1.input_bit_positions, self.round_key_bit_size, -7)
-        t_temp_1 = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
+        t_temp_1 = BitState(
+            [self.get_current_component_id()], [list(range(self.round_key_bit_size))]
+        )
         self.add_rotate_component(t_1.id, t_1.input_bit_positions, self.round_key_bit_size, -17)
-        t_temp_2 = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
+        t_temp_2 = BitState(
+            [self.get_current_component_id()], [list(range(self.round_key_bit_size))]
+        )
         self.add_xor_component(
             t_0.id + t_temp_1.id + t_temp_2.id,
             t_0.input_bit_positions + t_temp_1.input_bit_positions + t_temp_2.input_bit_positions,
             self.round_key_bit_size,
         )
-        t_1_new = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
+        t_1_new = BitState(
+            [self.get_current_component_id()], [list(range(self.round_key_bit_size))]
+        )
 
         # key_1_new = key_0 xor (key_1 <<< 3) xor (key_1 <<< 5)
         # key_0_new = key_1
         self.add_rotate_component(key_1.id, key_1.input_bit_positions, self.round_key_bit_size, -3)
-        key_temp_1 = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
+        key_temp_1 = BitState(
+            [self.get_current_component_id()], [list(range(self.round_key_bit_size))]
+        )
         self.add_rotate_component(key_1.id, key_1.input_bit_positions, self.round_key_bit_size, -5)
-        key_temp_2 = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
+        key_temp_2 = BitState(
+            [self.get_current_component_id()], [list(range(self.round_key_bit_size))]
+        )
         self.add_xor_component(
             key_0.id + key_temp_1.id + key_temp_2.id,
-            key_0.input_bit_positions + key_temp_1.input_bit_positions + key_temp_2.input_bit_positions,
+            key_0.input_bit_positions
+            + key_temp_1.input_bit_positions
+            + key_temp_2.input_bit_positions,
             self.round_key_bit_size,
         )
-        key_1_new = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
+        key_1_new = BitState(
+            [self.get_current_component_id()], [list(range(self.round_key_bit_size))]
+        )
 
         # key_1_new = key_1_new xor t_1_new xor RC
         self.add_constant_component(self.round_key_bit_size, RC)
-        round_constant = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
+        round_constant = BitState(
+            [self.get_current_component_id()], [list(range(self.round_key_bit_size))]
+        )
         self.add_xor_component(
             key_1_new.id + t_1_new.id + round_constant.id,
-            key_1_new.input_bit_positions + t_1_new.input_bit_positions + round_constant.input_bit_positions,
+            key_1_new.input_bit_positions
+            + t_1_new.input_bit_positions
+            + round_constant.input_bit_positions,
             self.round_key_bit_size,
         )
-        key_1_new = BitState([self.get_current_component_id()], [list(range(self.round_key_bit_size))])
+        key_1_new = BitState(
+            [self.get_current_component_id()], [list(range(self.round_key_bit_size))]
+        )
 
         return key_1, key_1_new, t_1, t_1_new

@@ -1,8 +1,11 @@
 from itertools import product
 
-from claasp_next.semantics.cryptanalysis import TrailKind
 from claasp_next.primitives.block_ciphers.present import PRESENT_SBOX
-from claasp_next.representations.constraints.smt import ModularAddLinearSMTModel, SBoxTransitionSMTModel
+from claasp_next.representations.constraints.smt import (
+    ModularAddLinearSMTModel,
+    SBoxTransitionSMTModel,
+)
+from claasp_next.semantics.cryptanalysis import TrailKind
 
 
 def _solutions(formula):
@@ -18,10 +21,13 @@ def _solutions(formula):
 def test_differential_smt_relation_matches_all_present_ddt_entries():
     model = SBoxTransitionSMTModel(PRESENT_SBOX, TrailKind.XOR_DIFFERENTIAL)
     formula = model.smt_formula()
-    decoded = {(
-        model.decode_transition(assignment).input_pattern.value,
-        model.decode_transition(assignment).output_pattern.value,
-    ) for assignment in _solutions(formula)}
+    decoded = {
+        (
+            model.decode_transition(assignment).input_pattern.value,
+            model.decode_transition(assignment).output_pattern.value,
+        )
+        for assignment in _solutions(formula)
+    }
     expected = {
         (source, target)
         for source in range(16)

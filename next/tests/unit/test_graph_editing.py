@@ -1,11 +1,16 @@
 from claasp_next import (
-    Bit, Primitive, PrimitiveKind, ValueType, Word, inline_reorderings,
-    prune_orphans, remove_key_schedule,
+    Bit,
+    Primitive,
+    PrimitiveKind,
+    ValueType,
+    Word,
+    inline_reorderings,
+    prune_orphans,
+    remove_key_schedule,
 )
 from claasp_next.components import Identity, LinearMap, Permutation, Rotate, Shift, Xor
 from claasp_next.graph import as_selection
 from claasp_next.primitives import Present, Speck
-
 
 PLAINTEXT = 0x6574694C
 KEY = 0x1918111009080100
@@ -30,7 +35,11 @@ def test_remove_key_schedule_externalizes_round_keys_and_preserves_evaluation():
 
     assert transformed.evaluate(**supplied) == primitive.evaluate(PLAINTEXT, KEY)
     assert tuple(transformed.input_ports) == (
-        "plaintext", "round_key_0", "round_key_1", "round_key_2", "round_key_3",
+        "plaintext",
+        "round_key_0",
+        "round_key_1",
+        "round_key_2",
+        "round_key_3",
     )
     assert transformed.secret_inputs == ("round_key_0", "round_key_1", "round_key_2", "round_key_3")
     assert transformed.kind is PrimitiveKind.BLOCK_CIPHER
@@ -55,7 +64,8 @@ def test_remove_key_schedule_without_injections_matches_zero_round_keys():
 
 def test_prune_orphans_reconstructs_only_the_output_dependency_closure():
     graph = Primitive(
-        "orphans", {"left": ValueType(Word(8), (1,)), "right": ValueType(Word(8), (1,))},
+        "orphans",
+        {"left": ValueType(Word(8), (1,)), "right": ValueType(Word(8), (1,))},
     )
     graph.add_round()
     output = graph.add_component(Xor(graph.inputs()), primitive_round=graph.rounds[-1])
@@ -77,7 +87,9 @@ def test_inline_reorderings_preserves_speck_and_present_semantics():
     for primitive, arguments in cases:
         transformed = inline_reorderings(primitive).primitive
         assert transformed.evaluate(*arguments) == primitive.evaluate(*arguments)
-        assert not any(isinstance(component, (Permutation, Rotate)) for component in transformed.components)
+        assert not any(
+            isinstance(component, (Permutation, Rotate)) for component in transformed.components
+        )
         assert not any(isinstance(component, Identity) for component in transformed.components)
         assert transformed.bindings
 
@@ -85,12 +97,18 @@ def test_inline_reorderings_preserves_speck_and_present_semantics():
 def test_inline_reorderings_only_removes_permutation_matrices():
     graph = Primitive("linear", {"state": ValueType(Bit(), (3,))}, kind=PrimitiveKind.PERMUTATION)
     graph.add_round()
-    reordered = graph.add_component(LinearMap(
-        graph.input("state"), ((0, 1, 0), (0, 0, 1), (1, 0, 0)),
-    ))
-    mixed = graph.add_component(LinearMap(
-        reordered, ((1, 1, 0), (0, 1, 0), (0, 0, 1)),
-    ))
+    reordered = graph.add_component(
+        LinearMap(
+            graph.input("state"),
+            ((0, 1, 0), (0, 0, 1), (1, 0, 0)),
+        )
+    )
+    mixed = graph.add_component(
+        LinearMap(
+            reordered,
+            ((1, 1, 0), (0, 1, 0), (0, 0, 1)),
+        )
+    )
     graph.set_output(mixed)
 
     transformed = graph.with_inlined_reorderings().primitive
@@ -103,4 +121,6 @@ def test_inline_reorderings_only_removes_permutation_matrices():
 def test_public_round_reduction_method_uses_published_round_boundaries():
     primitive = Speck(number_of_rounds=3)
     reduced = primitive.reduced_rounds(2).primitive
-    assert reduced.evaluate(PLAINTEXT, KEY) == primitive.sliced(primitive.round_states[1]).primitive.evaluate(PLAINTEXT, KEY)
+    assert reduced.evaluate(PLAINTEXT, KEY) == primitive.sliced(
+        primitive.round_states[1]
+    ).primitive.evaluate(PLAINTEXT, KEY)

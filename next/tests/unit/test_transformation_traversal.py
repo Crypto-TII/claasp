@@ -1,12 +1,20 @@
 from claasp_next import (
-    Bit, DependencyIndex, GraphSourceKind, Primitive, TransformationError,
-    TransformationFailureReason, TransformationRecord, ValueType,
+    Bit,
+    DependencyIndex,
+    GraphSourceKind,
+    Primitive,
+    TransformationError,
+    TransformationFailureReason,
+    TransformationRecord,
+    ValueType,
 )
 from claasp_next.components import Add, Identity
 
 
 def _graph():
-    primitive = Primitive("traversal", {"left": ValueType(Bit(), (4,)), "right": ValueType(Bit(), (4,))})
+    primitive = Primitive(
+        "traversal", {"left": ValueType(Bit(), (4,)), "right": ValueType(Bit(), (4,))}
+    )
     primitive.add_round()
     joined = primitive.join(primitive.input("left")[:2], primitive.input("right")[:2])
     copied = primitive.add_component(Identity(joined, "copy"))

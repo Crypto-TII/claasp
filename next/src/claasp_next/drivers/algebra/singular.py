@@ -22,8 +22,12 @@ class SingularDriver:
             raise FileNotFoundError(f"Singular executable {self.executable!r} was not found")
         start = monotonic()
         completed = subprocess.run(
-            [executable, "--no-tty", "--quiet"], input=program, text=True,
-            capture_output=True, timeout=self.timeout_seconds, check=False,
+            [executable, "--no-tty", "--quiet"],
+            input=program,
+            text=True,
+            capture_output=True,
+            timeout=self.timeout_seconds,
+            check=False,
         )
         elapsed = monotonic() - start
         if completed.returncode != 0:
