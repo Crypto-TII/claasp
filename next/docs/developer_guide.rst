@@ -23,6 +23,7 @@ renderers.
    extending_analysis
    neural_distinguishers
    statistical_testing
+   documentation_quality
    development
 
 .. toctree::

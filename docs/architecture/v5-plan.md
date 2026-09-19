@@ -1231,6 +1231,48 @@ executable example or a reviewed exception; the full tree passes the pinned
 format, lint, type, docstring-structure, Python-doctest, and documentation-
 doctest checks locally and in CI.
 
+M10.16 is delivered through the following dependency-ordered slices. They are
+slices of this documentation and quality milestone rather than new milestones:
+
+1. **M10.16a — authority, convention, tools, and measured baseline.** Define
+   the mechanical public-API boundary, one docstring/doctest convention, the
+   reviewed exception schema, the v5 quality-tool scope, exact tool pins, and
+   reproducible baseline measurements. Record why Ruff supplies formatting and
+   linting and why mypy supplies static typing, without enabling a gate before
+   its findings have been audited.
+2. **M10.16b — public-API documentation audit and closure gate.** Enumerate
+   package exports, dynamic ``__all__`` values, aliases, classes, constructors,
+   methods, properties, inherited user-facing members, dataclass fields, enum
+   members, and generated catalogue exports. Add a versioned machine authority,
+   narrow reviewed exceptions, deterministic closure tooling, and negative
+   fixtures for malformed documentation and stale authority data.
+3. **M10.16c — foundational API documentation closure.** Complete conforming
+   docstrings and executable examples for graph authoring, domains, components,
+   semantics, provenance, annotations, and primitive-authoring foundations.
+4. **M10.16d — processing API documentation closure.** Complete conforming
+   documentation for representations, serialization, source compilers,
+   drivers, analyses, transformations, presentation, catalogue discovery, and
+   composite graphs without requiring optional packages or external tools.
+5. **M10.16e — primitive catalogue and export closure.** Replace retained Sage
+   prompts, document every primitive and remaining public export, verify fixed
+   deterministic examples, and close every public alias and generated
+   catalogue-facing API.
+6. **M10.16f — pinned formatting and linting.** Apply Ruff formatting in an
+   isolated mechanical change, audit correctness findings, retain only narrow
+   justified suppressions, document fix/check commands, and enable the pinned
+   check-only CI gate.
+7. **M10.16g — pinned static typing.** Type-check the explicitly recorded v5
+   source, test, tool, and documentation-configuration scope with pinned mypy;
+   correct contracts first and, only where immediate strictness is impractical,
+   retain a machine-readable diagnostic baseline which rejects new and stale
+   entries.
+8. **M10.16h — Sphinx, CI, packaging, and milestone closure.** Make the complete
+   public API discoverable through warning-free autodoc, run Python and both
+   guide doctest suites, enforce every documentation and quality gate on Python
+   3.11--3.13, audit wheel contents and optional-import isolation, run all
+   existing closure gates plus the M10.16 gate, and complete the host and
+   compatibility-container checkpoint before marking M10.16 achieved.
+
 Exit criterion for M10: the migration inventory contains no unclassified
 legacy source or test module; all release-scope entries are migrated or
 superseded, and every deferral/removal is recorded with rationale and
@@ -1669,7 +1711,15 @@ is absent). Update this table in the same commit that changes milestone state.
 | Deterministic Python source (M10.15e) | Achieved | `compile_source(..., target="python")` produces a validated immutable artifact from canonical graph bytes with stable source/digests and separate compiler provenance. Explicit safe writing refuses mismatched extensions, unsafe basenames, missing parents, and implicit overwrite. The bounded isolated driver uses an argument vector without a shell, validates typed graph-order output, and records command/runtime/stdout/stderr/status/source digest plus separate realization and execution provenance. Fixed Speck and PRESENT outputs and trace order match scalar evaluation. Darwin x86_64/Python 3.11.12 dependency-free: 1678 passed/82 external deselected. |
 | Deterministic native source (M10.15f) | Achieved | The typed Bit/Word subset compiles to deterministic self-contained C11 with explicit unsupported-domain/component results; no legacy C/header ABI is shipped. Compilation and execution are separate bounded, shell-free, isolated operations with option allowlisting, safe predictable names, compiler absence/failure/timeout statuses, exact command/version/options/runtime/stdout/stderr/return status, source and binary digests, and separate realization/execution provenance. Fixed PRESENT bit and Speck word graphs match scalar evaluation under Apple clang 16.0.0; AES field components are honestly unsupported. CUDA is out of scope because the audit found no maintained source, driver, or result-bearing tests. Host external native: 4 passed; Darwin x86_64/Python 3.11.12 dependency-free: 1681 passed/86 external deselected. |
 | Tooling documentation and closure (M10.15g) | Achieved | Public user/developer guidance separates canonical graph/result serialization, generated source, optional native execution, and diagrams. The catalogue now declares 19 representations and 24 drivers; diagram routing/round/annotation/TikZ-escaping evidence is complete; dedicated generated-C CI and package/wheel ownership checks are present. The M10.15 closure gate reports 11/11 final Python records, four native artifacts, three mixed surfaces, and retained M10.6d6 continuous ownership. Darwin x86_64/Python 3.11.12: 1686 dependency-free passed/86 external deselected; routine host: 1254 passed/518 external-or-extended deselected; native Apple clang 16.0.0: 4 passed; LaTeX/PDF: 1 passed. API/user/developer doctests: 100/424/534; both HTML guides warning-free. Wheel: 412 entries with required owned data and source modules, zero binaries/caches/legacy C-header ABI. amd64 Linux/Python 3.10.12 compatibility Docker: 1251 passed/3 optional-dependency skips/518 deselected; Docker external: 84 passed/2 optional-dependency skips/1686 deselected, including generated C under GCC 11.4.0 and PDF rendering. Inventory, catalogue, realization, terminology, and tooling gates pass. The canonical multi-architecture Python 3.11+ image remains queued independently. |
-| Documentation and static-quality enforcement (M10.16) | Next | Standardize and audit public docstrings/doctests, then enforce their structure and execution together with pinned formatting, linting, and typing gates in CI |
+| Documentation and static-quality enforcement (M10.16) | In progress | M10.16a--M10.16h standardize and close public documentation, formatting, linting, typing, Sphinx, CI, and packaging quality |
+| Documentation authority and measured baseline (M10.16a) | Achieved | The mechanical boundary covers 123 ``__all__`` modules, 1,179 qualified exports, 671 canonical objects, and 1,224 canonical public members; the developer policy records the section/example convention, reviewed exception schema, v5-only quality scope, Ruff 0.16.8 and mypy 2.3.1 selection, and explicit adoption measurements. Darwin x86_64/Python 3.11.12: 1686 dependency-free passed/86 external deselected. |
+| Public-API documentation audit (M10.16b) | Next | Add deterministic enumeration, a machine authority, reviewed exceptions, structural/example validation, and negative fixtures |
+| Foundational API documentation closure (M10.16c) | Queued | Close graph, domain, component, semantic, provenance, annotation, and primitive-authoring documentation |
+| Processing API documentation closure (M10.16d) | Queued | Close representation, serialization, compiler, driver, analysis, transformation, presentation, catalogue, and composite documentation |
+| Primitive/export documentation closure (M10.16e) | Queued | Close primitive catalogue, generated exports, aliases, remaining public entries, and remove Sage prompts |
+| Pinned formatting and linting (M10.16f) | Queued | Apply and enforce Ruff formatting/linting with audited narrow exceptions |
+| Pinned static typing (M10.16g) | Queued | Enforce pinned mypy over the recorded v5 source/test/tool/docs scope with an audited regression baseline only if required |
+| Documentation and quality closure (M10.16h) | Queued | Integrate autodoc, doctests, CI, packaging, isolation, all closure gates, and the full host/container checkpoint |
 | Canonical v5 Docker/CI environment | Queued | Before release, replace the amd64 Python-3.10 compatibility image with a multi-architecture Python-3.11+ image containing Chuffed, GLPK, Z3, MiniSat, Singular, msolve and LaTeX; do not block the current M10.9c/M10.9d migration workstream on image construction |
 | Integration and release (M11) | Planned | Reconcile the latest `develop`, run the complete release matrix in the canonical environment, accept the public API, rename `claasp_next` to `claasp`, publish prereleases, and release 5.0 |
 | Final bidirectional migration audit (M11a) | Planned | Machine matrix and generated human summary map every legacy artifact to v5 migrated/superseded/removed/out-of-scope ownership and every shipped v5 artifact back to legacy predecessors or an explicit new-v5 rationale; enforce 100% coverage before and after the package rename |
