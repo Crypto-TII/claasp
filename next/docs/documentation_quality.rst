@@ -84,3 +84,15 @@ The dependency-free core-import boundary remains unchanged: quality and
 documentation collection must not import Sage, NumPy, pandas, Matplotlib,
 scikit-learn, solver libraries, or compiler/toolchain bindings. Optional
 drivers import optional packages only when explicitly invoked.
+
+Static typing adoption
+----------------------
+
+Pinned mypy checks ``src/claasp_next``, ``tests``, ``tools``, and
+``docs/conf.py`` with untyped function bodies checked, implicit optionals
+rejected, and unused ignores reported. The M10.16g authority is an exact
+regression baseline, not a set of module exclusions: every diagnostic retains
+its path, position, error code, and message, and the closure command rejects
+new, stale, duplicate, or out-of-scope entries. Inline suppressions are not
+accepted. Contributors should narrow public values and immutable result types
+at their source, then update the baseline only to remove resolved diagnostics.

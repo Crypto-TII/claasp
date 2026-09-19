@@ -96,6 +96,20 @@ docstring-code-format = false
 # Matplotlib's backend must be selected before importing pyplot and renderers.
 "tests/unit/test_presentation_plots.py" = ["E402"]
 
+[tool.mypy]
+python_version = "3.11"
+files = ["src/claasp_next", "tests", "tools", "docs/conf.py"]
+mypy_path = "src"
+check_untyped_defs = true
+no_implicit_optional = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+show_error_codes = true
+show_column_numbers = true
+pretty = false
+no_error_summary = true
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

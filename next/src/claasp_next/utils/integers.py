@@ -1,6 +1,7 @@
 """Fixed-width integer and word-encoding helpers."""
 
 from collections.abc import Iterable
+from typing import Literal, SupportsIndex, SupportsInt
 
 
 def coerce_exact_int(value: object, parameter_name: str) -> int:
@@ -22,8 +23,10 @@ def coerce_exact_int(value: object, parameter_name: str) -> int:
 
     if isinstance(value, (bool, str, bytes, bytearray)):
         raise ValueError(f"{parameter_name} must be an integer")
+    if not isinstance(value, (SupportsInt, SupportsIndex)):
+        raise ValueError(f"{parameter_name} must be an integer")
     try:
-        coerced = int(value)  # type: ignore[arg-type]
+        coerced = int(value)
     except (TypeError, ValueError, OverflowError) as error:
         raise ValueError(f"{parameter_name} must be an integer") from error
     if coerced != value:
@@ -66,7 +69,11 @@ def bits_little_endian(value: int, width: int) -> tuple[int, ...]:
 
 
 def int_to_words(
-    value: int, word_width: int, total_width: int, *, byteorder: str = "big"
+    value: int,
+    word_width: int,
+    total_width: int,
+    *,
+    byteorder: Literal["big", "little"] = "big",
 ) -> tuple[int, ...]:
     """Split a fixed-width integer into equally sized words.
 
@@ -91,7 +98,9 @@ def int_to_words(
     return tuple(reversed(words)) if byteorder == "big" else words
 
 
-def words_to_int(words: Iterable[int], word_width: int, *, byteorder: str = "big") -> int:
+def words_to_int(
+    words: Iterable[int], word_width: int, *, byteorder: Literal["big", "little"] = "big"
+) -> int:
     """Pack equally sized words into one integer.
 
     EXAMPLES::
@@ -115,7 +124,7 @@ def words_to_int(words: Iterable[int], word_width: int, *, byteorder: str = "big
     return value
 
 
-def int_to_bytes(value: int, width: int, *, byteorder: str = "big") -> bytes:
+def int_to_bytes(value: int, width: int, *, byteorder: Literal["big", "little"] = "big") -> bytes:
     """Encode an integer whose declared width is a whole number of bytes.
 
     EXAMPLES::
@@ -135,7 +144,7 @@ def int_to_bytes(value: int, width: int, *, byteorder: str = "big") -> bytes:
     return value.to_bytes(width // 8, byteorder)
 
 
-def bytes_to_int(data: bytes | bytearray, *, byteorder: str = "big") -> int:
+def bytes_to_int(data: bytes | bytearray, *, byteorder: Literal["big", "little"] = "big") -> int:
     """Decode unsigned bytes using an explicit byte order.
 
     EXAMPLES::

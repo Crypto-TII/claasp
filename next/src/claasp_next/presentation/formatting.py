@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
 from math import isfinite
+from typing import SupportsFloat
 
 
 class ValueKind(str, Enum):
@@ -99,26 +101,34 @@ def format_value(value: object, spec: FormatSpec = FormatSpec()) -> str:
             raise ValueError("hexadecimal value does not fit bit_width")
         return f"0x{value:0{digits}x}"
     if kind is ValueKind.BIT_VECTOR:
-        bits = tuple(value)  # type: ignore[arg-type]
+        if not isinstance(value, Iterable) or isinstance(value, (str, bytes)):
+            raise TypeError("bit vectors require an iterable of bits")
+        bits: tuple[object, ...] = tuple(value)
         if any(bit not in (0, 1) for bit in bits):
             raise ValueError("bit vectors contain only zero and one")
         if spec.bit_width is not None and len(bits) != spec.bit_width:
             raise ValueError("bit vector length does not match bit_width")
         return "0b" + "".join(str(bit) for bit in bits)
     if kind is ValueKind.WORD_VECTOR:
-        words = tuple(value)  # type: ignore[arg-type]
+        if not isinstance(value, Iterable) or isinstance(value, (str, bytes)):
+            raise TypeError("word vectors require an iterable of words")
+        words: tuple[object, ...] = tuple(value)
         if spec.word_width is None:
             raise ValueError("word vectors require word_width")
         item_spec = FormatSpec(ValueKind.HEXADECIMAL, bit_width=spec.word_width)
         return "[" + ", ".join(format_value(word, item_spec) for word in words) + "]"
     if kind in {ValueKind.PROBABILITY, ValueKind.CORRELATION}:
-        number = float(value)  # type: ignore[arg-type]
+        if not isinstance(value, SupportsFloat):
+            raise TypeError(f"{kind.value} cells require real numbers")
+        number = float(value)
         if not -1.0 <= number <= 1.0:
             raise ValueError(f"{kind.value} must be between -1 and 1")
         rendered = _number(number, spec.precision)
         return ("+" + rendered) if kind is ValueKind.CORRELATION and number >= 0 else rendered
     if kind is ValueKind.WEIGHT:
-        number = float(value)  # type: ignore[arg-type]
+        if not isinstance(value, SupportsFloat):
+            raise TypeError("weight cells require real numbers")
+        number = float(value)
         if number < 0:
             raise ValueError("weights must be non-negative")
         return _number(number, spec.precision)

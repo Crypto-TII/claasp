@@ -54,6 +54,7 @@ by CI:
    python -m pip install -e '.[quality]'
    ruff format --check src tests tools docs/conf.py
    ruff check src tests tools docs/conf.py
+   python tools/typecheck_closure.py --check
 
 Apply the formatter and safe lint fixes locally with:
 
@@ -64,6 +65,14 @@ Apply the formatter and safe lint fixes locally with:
 
 The scope is intentionally the v5 package and its supporting tests, tools, and
 Sphinx configuration. It does not rewrite the legacy v4 tree.
+
+The typing command runs pinned mypy over that same boundary. The committed
+machine baseline records every remaining adoption diagnostic by path, line,
+column, code, and message; it rejects both new and stale entries and permits no
+inline ``type: ignore`` or ``mypy:`` suppression. When a change removes typing
+debt, regenerate the authority with ``python tools/typecheck_closure.py
+--write`` and review the JSON diff together with the fix. Do not add or move a
+diagnostic into the baseline as a substitute for correcting a new regression.
 
 Model migration closure
 -----------------------
