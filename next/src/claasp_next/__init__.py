@@ -35,7 +35,9 @@ from claasp_next.transformations import (
 )
 from claasp_next.serialization import (
     SerializationDiagnostic, SerializationError, SerializationFailure,
-    deserialize_primitive, primitive_digest, serialize_primitive,
+    deserialize_evaluation_result, deserialize_execution_trace, deserialize_primitive,
+    primitive_digest, serialize_artifact, serialize_evaluation_result,
+    serialize_execution_trace, serialize_primitive,
 )
 
 __all__ = [
@@ -104,7 +106,12 @@ __all__ = [
     "split_dependencies",
     "serialize_primitive",
     "deserialize_primitive",
+    "deserialize_evaluation_result",
+    "deserialize_execution_trace",
     "primitive_digest",
+    "serialize_artifact",
+    "serialize_evaluation_result",
+    "serialize_execution_trace",
     "public_input",
     "secret_input",
 ]

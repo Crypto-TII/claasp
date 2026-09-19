@@ -6,8 +6,16 @@ from claasp_next.serialization.errors import (
 from claasp_next.serialization.primitive import (
     SCHEMA_ID, SCHEMA_VERSION, deserialize_primitive, primitive_digest, serialize_primitive,
 )
+from claasp_next.serialization.execution import (
+    EVALUATION_RESULT_SCHEMA_ID, EXECUTION_SCHEMA_VERSION, EXECUTION_TRACE_SCHEMA_ID,
+    deserialize_evaluation_result, deserialize_execution_trace, serialize_artifact,
+    serialize_evaluation_result, serialize_execution_trace,
+)
 
 __all__ = [
     "SCHEMA_ID", "SCHEMA_VERSION", "SerializationDiagnostic", "SerializationError",
     "SerializationFailure", "deserialize_primitive", "primitive_digest", "serialize_primitive",
+    "EVALUATION_RESULT_SCHEMA_ID", "EXECUTION_SCHEMA_VERSION", "EXECUTION_TRACE_SCHEMA_ID",
+    "deserialize_evaluation_result", "deserialize_execution_trace", "serialize_artifact",
+    "serialize_evaluation_result", "serialize_execution_trace",
 ]
