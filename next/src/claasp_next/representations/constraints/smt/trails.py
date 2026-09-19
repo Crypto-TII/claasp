@@ -16,7 +16,16 @@ from claasp_next.representations.constraints.smt.formula import SMTFormula
 
 
 class PresentDifferentialSMTModel:
-    """Exact two-round PRESENT XOR-differential model with a weight bound."""
+    """Exact two-round PRESENT XOR-differential model with a weight bound.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     PresentDifferentialSMTModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, primitive: Primitive | PropagationProblem, maximum_weight: int | None = None) -> None:
         problem = (
@@ -140,7 +149,16 @@ class PresentDifferentialSMTModel:
 
 
 class PresentLinearSMTModel:
-    """Exact three-round PRESENT XOR-linear model with a weight bound."""
+    """Exact three-round PRESENT XOR-linear model with a weight bound.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     PresentLinearSMTModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, primitive: Primitive | PropagationProblem, maximum_weight: int | None = None) -> None:
         problem = (

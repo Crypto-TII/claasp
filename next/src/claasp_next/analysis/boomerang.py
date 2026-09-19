@@ -10,7 +10,14 @@ from random import Random
 
 @dataclass(frozen=True, slots=True)
 class BoomerangExperimentResult:
-    """Portable metadata and outcome of a seeded boomerang experiment."""
+    """Portable metadata and outcome of a seeded boomerang experiment.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (BoomerangExperimentResult.__dataclass_params__.frozen, tuple(field.name for field in fields(BoomerangExperimentResult)))
+        (True, ('input_difference', 'output_difference', 'rounds', 'samples', 'successes', 'seed', 'provenance'))
+    """
 
     input_difference: int
     output_difference: int

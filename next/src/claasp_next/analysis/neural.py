@@ -86,7 +86,14 @@ def _output_width(primitive: Primitive) -> int:
 
 @dataclass(frozen=True, slots=True)
 class NeuralDataset:
-    """Binary features and labels with reproducibility metadata."""
+    """Binary features and labels with reproducibility metadata.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (NeuralDataset.__dataclass_params__.frozen, tuple(field.name for field in fields(NeuralDataset)))
+        (True, ('features', 'labels', 'kind', 'seed', 'feature_names'))
+    """
 
     features: tuple[tuple[int, ...], ...]
     labels: tuple[int, ...]
@@ -113,16 +120,27 @@ class NeuralDataset:
 
     @property
     def sample_count(self) -> int:
+        """Return the sample count for this public typed contract."""
+
         return len(self.labels)
 
     @property
     def feature_width(self) -> int:
+        """Return the feature width for this public typed contract."""
+
         return len(self.features[0]) if self.features else len(self.feature_names)
 
 
 @dataclass(frozen=True, slots=True)
 class NeuralExperiment:
-    """Portable training request consumed by an optional ML driver."""
+    """Portable training request consumed by an optional ML driver.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (NeuralExperiment.__dataclass_params__.frozen, tuple(field.name for field in fields(NeuralExperiment)))
+        (True, ('architecture', 'epochs', 'batch_size', 'validation_fraction', 'seed'))
+    """
 
     architecture: str
     epochs: int = 10
@@ -141,7 +159,14 @@ class NeuralExperiment:
 
 @dataclass(frozen=True, slots=True)
 class NeuralExperimentResult:
-    """Framework-neutral summary returned by neural training drivers."""
+    """Framework-neutral summary returned by neural training drivers.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (NeuralExperimentResult.__dataclass_params__.frozen, tuple(field.name for field in fields(NeuralExperimentResult)))
+        (True, ('validation_accuracy', 'driver', 'deterministic'))
+    """
 
     validation_accuracy: tuple[float, ...]
     driver: str
@@ -159,7 +184,10 @@ class NeuralTrainingDriver(Protocol):
 
     def train(
         self, dataset: NeuralDataset, experiment: NeuralExperiment
-    ) -> NeuralExperimentResult: ...
+    ) -> NeuralExperimentResult:
+        """Train and return one typed neural experiment result."""
+
+        ...
 
 
 def black_box_dataset(
@@ -173,6 +201,15 @@ def black_box_dataset(
 
     Other primitive inputs are fixed for the whole dataset, matching the
     black-box experiment in CLAASP 4.  Bit order is most-significant first.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     black_box_dataset()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     _positive_integer("samples", samples)
@@ -213,6 +250,15 @@ def xor_differential_dataset(
     Label one uses the requested related-input pair.  Label zero uses an
     independently random second input, preserving the statistical meaning of
     the legacy generator without depending on NumPy or TensorFlow.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     xor_differential_dataset()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     _positive_integer("samples", samples)
@@ -262,6 +308,15 @@ def round_component_ids(primitive: Primitive, round_number: int) -> tuple[str, .
     Callers that need only the state or only the key schedule can filter the
     returned ids (for example by a primitive's own component-id prefix
     convention) before passing them on.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     round_component_ids()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     rounds = primitive.rounds
@@ -296,6 +351,15 @@ def component_output_dataset(
     Label one uses the primitive's real projected value; label zero
     substitutes independently random bits of the same width, preserving the
     legacy black-box construction described in :func:`black_box_dataset`.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     component_output_dataset()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     _positive_integer("samples", samples)
@@ -344,6 +408,15 @@ def xor_differential_component_dataset(
     the paired values come from a specific round's state, a round key, or an
     arbitrary component id captured by the typed execution trace, instead of
     only the primitive's final output.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     xor_differential_component_dataset()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     _positive_integer("samples", samples)

@@ -16,6 +16,13 @@ class AvalancheResult:
     Rows and columns use the public packed integer's most-significant-bit-first
     order.  This is empirical evidence, not a proof of the strict avalanche
     criterion.
+
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (AvalancheResult.__dataclass_params__.frozen, tuple(field.name for field in fields(AvalancheResult)))
+        (True, ('primitive_family', 'input_name', 'sample_count', 'seed', 'probabilities', 'method', 'complete'))
     """
 
     primitive_family: str
@@ -28,10 +35,14 @@ class AvalancheResult:
 
     @property
     def input_bit_count(self) -> int:
+        """Return the input bit count for this public typed contract."""
+
         return len(self.probabilities)
 
     @property
     def output_bit_count(self) -> int:
+        """Return the output bit count for this public typed contract."""
+
         return len(self.probabilities[0]) if self.probabilities else 0
 
     @property
@@ -60,6 +71,15 @@ def avalanche_probabilities(
     For each sampled input, the function evaluates a baseline and then flips
     each bit of ``input_name`` independently.  Randomness is reproducible and
     the underlying task uses only :meth:`~claasp_next.graph.Primitive.evaluate`.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     avalanche_probabilities()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     dataset = generate_avalanche_dataset(

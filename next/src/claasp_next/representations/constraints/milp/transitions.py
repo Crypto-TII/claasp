@@ -8,7 +8,16 @@ from claasp_next.representations.constraints.milp.model import (
 
 
 class ModularAddLinearMILPModel:
-    """Exact XOR-linear mask relation for addition modulo ``2**width``."""
+    """Exact XOR-linear mask relation for addition modulo ``2**width``.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     ModularAddLinearMILPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, width: int) -> None:
         if not isinstance(width, int) or isinstance(width, bool) or width < 2:

@@ -44,7 +44,14 @@ def AESSubstitutionLayer(
     table: Iterable[int] = AES_SBOX,
     realization: str = "lookup",
 ) -> CompositeDefinition:
-    """Return an AES-byte substitution layer over ``unit_count`` bytes."""
+    """Return an AES-byte substitution layer over ``unit_count`` bytes.
+
+    EXAMPLES::
+
+        >>> from claasp_next.composites import AESSubstitutionLayer
+        >>> hex(AESSubstitutionLayer(1).evaluate(0x53))
+        '0xed'
+    """
 
     if not isinstance(unit_count, int) or isinstance(unit_count, bool) or unit_count <= 0:
         raise ValueError("unit_count must be a positive integer")
@@ -72,7 +79,16 @@ def AESKeySchedule(
     sbox_table: Iterable[int] = AES_SBOX,
     realization: str = "lookup",
 ) -> CompositeDefinition:
-    """Return the AES key-expansion block with named round-key outputs."""
+    """Return the AES key-expansion block with named round-key outputs.
+
+    EXAMPLES::
+
+        >>> from claasp_next.composites import AESKeySchedule
+        >>> schedule = AESKeySchedule(128, 1)
+        >>> hex(schedule.evaluate(0x000102030405060708090A0B0C0D0E0F,
+        ...     output="round_key_1"))
+        '0xd6aa74fdd2af72fadaa678f1d6ab76fe'
+    """
 
     if key_bit_size not in (128, 192, 256):
         raise ValueError("AES key_bit_size must be 128, 192, or 256")
@@ -133,7 +149,15 @@ def AESRound(
     mix_columns: bool = True,
     realization: str = "lookup",
 ) -> CompositeDefinition:
-    """Return one AES encryption round with named intermediate boundaries."""
+    """Return one AES encryption round with named intermediate boundaries.
+
+    EXAMPLES::
+
+        >>> from claasp_next.composites import AESRound
+        >>> hex(AESRound().evaluate(0x00102030405060708090A0B0C0D0E0F0,
+        ...     0xD6AA74FDD2AF72FADAA678F1D6AB76FE))
+        '0x89d810e8855ace682d1843d8cb128fe4'
+    """
 
     if not isinstance(mix_columns, bool):
         raise TypeError("mix_columns must be a bool")

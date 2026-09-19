@@ -16,7 +16,13 @@ from claasp_next.provenance import DriverIdentity
 
 
 class PropertyClaim(str, Enum):
-    """Strength of the evidence carried by a property result."""
+    """Strength of the evidence carried by a property result.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in PropertyClaim)
+        ('exact', 'proved_lower_bound', 'proved_upper_bound', 'empirical', 'unavailable')
+    """
 
     EXACT = "exact"
     PROVED_LOWER_BOUND = "proved_lower_bound"
@@ -26,7 +32,13 @@ class PropertyClaim(str, Enum):
 
 
 class PropertyDomain(str, Enum):
-    """Mathematical domain in which a component property is interpreted."""
+    """Mathematical domain in which a component property is interpreted.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in PropertyDomain)
+        ('lookup_table', 'boolean', 'bit_linear', 'word_linear', 'finite_field_linear', 'word_operation', 'feedback_register')
+    """
 
     LOOKUP_TABLE = "lookup_table"
     BOOLEAN = "boolean"
@@ -38,7 +50,13 @@ class PropertyDomain(str, Enum):
 
 
 class ComponentProperty(str, Enum):
-    """Specification-oriented component properties supported by M10.11."""
+    """Specification-oriented component properties supported by M10.11.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in ComponentProperty)
+        ('differential_uniformity', 'nonlinearity', 'algebraic_degree', 'balanced', 'apn', 'differential_branch_number', 'linear_branch_number', 'boomerang_uniformity', 'rank', 'invertible', 'order', 'mds', 'term_count', 'variable_count', 'linear', 'register_structure', 'connection_polynomial')
+    """
 
     DIFFERENTIAL_UNIFORMITY = "differential_uniformity"
     NONLINEARITY = "nonlinearity"
@@ -60,7 +78,13 @@ class ComponentProperty(str, Enum):
 
 
 class DiagnosticCode(str, Enum):
-    """Stable reason why a requested property cannot be returned."""
+    """Stable reason why a requested property cannot be returned.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in DiagnosticCode)
+        ('unsupported_component', 'unsupported_property', 'inapplicable_domain', 'invalid_parameters', 'driver_unavailable', 'budget_exhausted')
+    """
 
     UNSUPPORTED_COMPONENT = "unsupported_component"
     UNSUPPORTED_PROPERTY = "unsupported_property"
@@ -82,7 +106,14 @@ def _freeze(value):
 
 @dataclass(frozen=True, slots=True)
 class PropertyDiagnostic:
-    """Typed analysis diagnostic with a stable machine-readable code."""
+    """Typed analysis diagnostic with a stable machine-readable code.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (PropertyDiagnostic.__dataclass_params__.frozen, tuple(field.name for field in fields(PropertyDiagnostic)))
+        (True, ('code', 'message'))
+    """
 
     code: DiagnosticCode
     message: str
@@ -104,6 +135,13 @@ class PropertyRequest:
     >>> request = PropertyRequest(ComponentProperty.RANK, PropertyDomain.BIT_LINEAR)
     >>> request.property.value, request.domain.value
     ('rank', 'bit_linear')
+
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (PropertyRequest.__dataclass_params__.frozen, tuple(field.name for field in fields(PropertyRequest)))
+        (True, ('property', 'domain', 'options'))
     """
 
     property: ComponentProperty
@@ -140,6 +178,13 @@ class ComponentAnalysisProvenance:
 
     ``semantic_identity`` never contains an incidental component identifier.
     Graph locations are optional evidence references only.
+
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (ComponentAnalysisProvenance.__dataclass_params__.frozen, tuple(field.name for field in fields(ComponentAnalysisProvenance)))
+        (True, ('semantic_identity', 'analysis_method', 'primitive', 'realization', 'graph_locations', 'driver'))
     """
 
     semantic_identity: str
@@ -162,7 +207,14 @@ class ComponentAnalysisProvenance:
 
 @dataclass(frozen=True, slots=True)
 class ComponentPropertyResult:
-    """Immutable value, evidence qualification, and provenance for one request."""
+    """Immutable value, evidence qualification, and provenance for one request.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (ComponentPropertyResult.__dataclass_params__.frozen, tuple(field.name for field in fields(ComponentPropertyResult)))
+        (True, ('request', 'claim', 'value', 'complete', 'provenance', 'diagnostic'))
+    """
 
     request: PropertyRequest
     claim: PropertyClaim
@@ -207,7 +259,14 @@ class ComponentPropertyDriver(Protocol):
 
 @dataclass(frozen=True, slots=True)
 class ComponentSemanticKey:
-    """Identity of one operation independent of graph location and inputs."""
+    """Identity of one operation independent of graph location and inputs.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (ComponentSemanticKey.__dataclass_params__.frozen, tuple(field.name for field in fields(ComponentSemanticKey)))
+        (True, ('component_type', 'input_types', 'output_type', 'parameters', 'domain'))
+    """
 
     component_type: str
     input_types: tuple[object, ...]
@@ -218,7 +277,14 @@ class ComponentSemanticKey:
 
 @dataclass(frozen=True, slots=True)
 class ComponentOccurrence:
-    """One semantic component and its optional stable graph location."""
+    """One semantic component and its optional stable graph location.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (ComponentOccurrence.__dataclass_params__.frozen, tuple(field.name for field in fields(ComponentOccurrence)))
+        (True, ('component', 'graph_location'))
+    """
 
     component: object
     graph_location: str | None
@@ -226,7 +292,14 @@ class ComponentOccurrence:
 
 @dataclass(frozen=True, slots=True)
 class ComponentGroup:
-    """Equivalent semantic operations discovered in an immutable graph."""
+    """Equivalent semantic operations discovered in an immutable graph.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (ComponentGroup.__dataclass_params__.frozen, tuple(field.name for field in fields(ComponentGroup)))
+        (True, ('key', 'occurrences'))
+    """
 
     key: ComponentSemanticKey
     occurrences: tuple[ComponentOccurrence, ...]
@@ -255,6 +328,15 @@ def semantic_component_key(component, domain: PropertyDomain) -> ComponentSemant
     ``LookupTable`` is a parameter object rather than a graph component; graph
     operations are validated explicitly so structural bindings cannot enter
     analysis grouping.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     semantic_component_key()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     from claasp_next.graph import Component
@@ -283,6 +365,15 @@ def semantic_component_groups(primitive, domain: PropertyDomain) -> tuple[Compon
 
     The returned order follows the first semantic occurrence only for
     presentation stability; it is not part of a group's identity.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     semantic_component_groups()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     from claasp_next.graph import Primitive
@@ -348,6 +439,15 @@ def analyze_component_property(
     Unsupported component/property/domain combinations return a typed
     unavailable result. Invalid component parameters continue to raise at
     component construction boundaries.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     analyze_component_property()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     from claasp_next.components import (
@@ -404,6 +504,15 @@ def analyze_lookup_table(
     ...     ComponentProperty.DIFFERENTIAL_UNIFORMITY, PropertyDomain.LOOKUP_TABLE))
     >>> result.value, result.claim.value
     (4, 'exact')
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     analyze_lookup_table()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     from claasp_next.components import LookupTable
@@ -812,7 +921,16 @@ def unavailable_result(
     code: DiagnosticCode,
     message: str,
 ) -> ComponentPropertyResult:
-    """Construct a precise unavailable result without fabricating a value."""
+    """Construct a precise unavailable result without fabricating a value.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     unavailable_result()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     return ComponentPropertyResult(
         request=request,

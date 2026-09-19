@@ -10,7 +10,14 @@ from time import monotonic
 
 @dataclass(frozen=True, slots=True)
 class PDFResult:
-    """Rendered PDF bytes and captured LaTeX process diagnostics."""
+    """Rendered PDF bytes and captured LaTeX process diagnostics.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (PDFResult.__dataclass_params__.frozen, tuple(field.name for field in fields(PDFResult)))
+        (True, ('pdf', 'runtime_seconds', 'stdout', 'stderr'))
+    """
 
     pdf: bytes
     runtime_seconds: float

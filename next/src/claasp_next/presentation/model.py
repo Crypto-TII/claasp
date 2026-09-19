@@ -12,7 +12,13 @@ from claasp_next.presentation.formatting import FormatSpec, format_value
 
 
 class Alignment(str, Enum):
-    """Portable column alignment."""
+    """Portable alignment for table columns.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in Alignment)
+        ('left', 'right', 'center')
+    """
 
     LEFT = "left"
     RIGHT = "right"
@@ -21,7 +27,14 @@ class Alignment(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class TableColumn:
-    """Stable column key, human heading, and alignment."""
+    """Stable column key, human heading, and alignment.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (TableColumn.__dataclass_params__.frozen, tuple(field.name for field in fields(TableColumn)))
+        (True, ('key', 'heading', 'alignment'))
+    """
 
     key: str
     heading: str
@@ -36,7 +49,14 @@ class TableColumn:
 
 @dataclass(frozen=True, slots=True)
 class TableCell:
-    """A typed display value with optional evidence or diagnostic."""
+    """A typed display value with optional evidence or diagnostic.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (TableCell.__dataclass_params__.frozen, tuple(field.name for field in fields(TableCell)))
+        (True, ('value', 'format', 'evidence', 'diagnostic'))
+    """
 
     value: object | None = None
     format: FormatSpec = FormatSpec()
@@ -65,7 +85,14 @@ class TableCell:
 
 @dataclass(frozen=True, slots=True)
 class TableRow:
-    """One immutable row in declared column order."""
+    """One immutable row in declared column order.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (TableRow.__dataclass_params__.frozen, tuple(field.name for field in fields(TableRow)))
+        (True, ('cells',))
+    """
 
     cells: tuple[TableCell, ...]
 
@@ -108,7 +135,14 @@ class Table:
 
 @dataclass(frozen=True, slots=True)
 class ReportSection:
-    """A titled report section containing prose and ordered tables."""
+    """A titled report section containing prose and ordered tables.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (ReportSection.__dataclass_params__.frozen, tuple(field.name for field in fields(ReportSection)))
+        (True, ('title', 'paragraphs', 'tables', 'citations'))
+    """
 
     title: str
     paragraphs: tuple[str, ...] = ()
@@ -124,7 +158,14 @@ class ReportSection:
 
 @dataclass(frozen=True, slots=True)
 class ReportData:
-    """Immutable presentation data; serialization is deliberately external."""
+    """Immutable presentation data; serialization is deliberately external.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (ReportData.__dataclass_params__.frozen, tuple(field.name for field in fields(ReportData)))
+        (True, ('title', 'sections', 'provenance'))
+    """
 
     title: str
     sections: tuple[ReportSection, ...]

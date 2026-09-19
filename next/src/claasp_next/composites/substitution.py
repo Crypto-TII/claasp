@@ -20,6 +20,13 @@ def ParallelSBoxLayer(
     box is a :class:`~claasp_next.components.BitVectorSBox`, which is directly consumable by Boolean
     constraint representations.  Supplying a finite encoded domain gives one
     logical unit per box and uses ordinary :class:`~claasp_next.components.SBox` leaves.
+
+    EXAMPLES::
+
+        >>> from claasp_next.composites import ParallelSBoxLayer
+        >>> hex(ParallelSBoxLayer((0xC, 5, 6, 0xB, 9, 0, 0xA, 0xD,
+        ...     3, 0xE, 0xF, 8, 4, 7, 1, 2), 2).evaluate(0x0F))
+        '0xc2'
     """
 
     frozen_table = tuple(table)

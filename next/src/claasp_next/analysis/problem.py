@@ -9,7 +9,14 @@ from claasp_next.graph import Primitive, PortLike, Selection, as_selection
 
 @dataclass(frozen=True, slots=True, init=False)
 class MinimizeWeight:
-    """Request minimization of a Hamming-weight expression."""
+    """Request minimization of a Hamming-weight expression.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (MinimizeWeight.__dataclass_params__.frozen, tuple(field.name for field in fields(MinimizeWeight)))
+        (True, ('target',))
+    """
 
     target: Selection
 
@@ -19,7 +26,14 @@ class MinimizeWeight:
 
 @dataclass(frozen=True, slots=True)
 class AnalysisProblem:
-    """A primitive, graph-level constraints, projections, and optional objective."""
+    """A primitive, graph-level constraints, projections, and optional objective.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (AnalysisProblem.__dataclass_params__.frozen, tuple(field.name for field in fields(AnalysisProblem)))
+        (True, ('primitive', 'constraints', 'projections', 'objective'))
+    """
 
     primitive: Primitive
     constraints: tuple[object, ...]

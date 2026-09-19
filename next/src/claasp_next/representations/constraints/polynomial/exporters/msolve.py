@@ -26,6 +26,8 @@ class MsolveExporter:
     MAX_CHARACTERISTIC = 1 << 31
 
     def export(self, system: PolynomialSystem) -> str:
+        """Compute the export for this public typed contract."""
+
         if not isinstance(system, PolynomialSystem):
             raise TypeError("system must be a PolynomialSystem")
         if system.field.modulus >= self.MAX_CHARACTERISTIC:

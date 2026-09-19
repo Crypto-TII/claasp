@@ -19,7 +19,14 @@ from claasp_next.provenance import DriverIdentity, DriverKind, ResultProvenance
 
 @dataclass(frozen=True, slots=True)
 class AnalysisResult:
-    """Projected user values and reproducibility data from an analysis."""
+    """Projected user values and reproducibility data from an analysis.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (AnalysisResult.__dataclass_params__.frozen, tuple(field.name for field in fields(AnalysisResult)))
+        (True, ('status', 'values', 'runtime_seconds', 'backend', 'statistics', 'reproducibility', 'solver_result', 'provenance'))
+    """
 
     status: SatStatus
     values: Mapping[str, int | tuple[int, ...]]
@@ -32,6 +39,8 @@ class AnalysisResult:
 
     @property
     def is_satisfiable(self) -> bool:
+        """Return the is satisfiable for this public typed contract."""
+
         return self.status is SatStatus.SATISFIABLE
 
     def value(self, name: str) -> int | tuple[int, ...]:
@@ -44,7 +53,16 @@ class AnalysisResult:
 
 
 class Analysis:
-    """Create and solve analyses for one primitive graph."""
+    """Create and solve analyses for one primitive graph.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     Analysis()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, primitive: Primitive) -> None:
         self.primitive = primitive

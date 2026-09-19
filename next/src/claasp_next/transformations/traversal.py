@@ -28,7 +28,16 @@ class GraphSourceKind(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class GraphSource:
-    """One input, component output, or structural-binding output."""
+    """One input, component output, or structural-binding output.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, ValueType
+        >>> from claasp_next.transformations import GraphSource, GraphSourceKind
+        >>> source = GraphSource("state", GraphSourceKind.INPUT, ValueType(Bit(), (4,)))
+        >>> (source.source_id, source.value_type.unit_count)
+        ('state', 4)
+    """
 
     source_id: str
     kind: GraphSourceKind

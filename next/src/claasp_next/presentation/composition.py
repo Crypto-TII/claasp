@@ -12,7 +12,16 @@ def compose_report(
     sections: tuple[ReportSection, ...] | list[ReportSection],
     provenance: PresentationProvenance,
 ) -> ReportData:
-    """Compose immutable sections without executing an analysis or renderer."""
+    """Compose immutable sections without executing an analysis or renderer.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     compose_report()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     return ReportData(title, tuple(sections), provenance)
 

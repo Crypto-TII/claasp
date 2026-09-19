@@ -8,7 +8,14 @@ from claasp_next.representations.constraints.polynomial.expression import Polyno
 
 @dataclass(frozen=True, slots=True)
 class PolynomialSystemStatistics:
-    """Structural statistics for comparing lowering policies."""
+    """Structural statistics for comparing lowering policies.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (PolynomialSystemStatistics.__dataclass_params__.frozen, tuple(field.name for field in fields(PolynomialSystemStatistics)))
+        (True, ('variable_count', 'equation_count', 'term_count', 'maximum_degree', 'degree_histogram', 'variable_incidence'))
+    """
 
     variable_count: int
     equation_count: int
@@ -20,7 +27,14 @@ class PolynomialSystemStatistics:
 
 @dataclass(frozen=True, slots=True)
 class PolynomialSystem:
-    """An ordered system of equations interpreted as ``equation == 0``."""
+    """An ordered system of equations interpreted as ``equation == 0``.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (PolynomialSystem.__dataclass_params__.frozen, tuple(field.name for field in fields(PolynomialSystem)))
+        (True, ('field', 'variables', 'equations', 'provenance'))
+    """
 
     field: PrimeField
     variables: tuple[str, ...]
@@ -39,6 +53,8 @@ class PolynomialSystem:
 
     @property
     def maximum_degree(self) -> int:
+        """Return the maximum degree for this public typed contract."""
+
         return max((equation.degree for equation in self.equations), default=-1)
 
     def evaluate(self, values: dict[str, int]) -> tuple[int, ...]:

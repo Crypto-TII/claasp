@@ -37,7 +37,15 @@ _QARMAV2_M_MATRIX = tuple(
 
 
 class AradiCompactWord(AradiSBoxCompactLinearMap):
-    """Compact Aradi graph with the canonical word-typed public boundary."""
+    """Compact Aradi graph with the canonical word-typed public boundary.
+
+    EXAMPLES::
+
+        >>> from claasp_next.transformations._inverse_realizations import AradiCompactWord
+        >>> graph = AradiCompactWord(number_of_rounds=1)
+        >>> (graph.family_name, len(graph.rounds), graph.output.value_type.encoded_bit_size)
+        ('aradi', 1, 128)
+    """
 
     def __init__(self, number_of_rounds=16):
         self.block_bit_size = 128
@@ -78,9 +86,18 @@ class AradiCompactWord(AradiSBoxCompactLinearMap):
 
 
 class KeccakSboxTheta(KeccakSbox):
-    """Keccak S-box realization with theta represented as one linear map."""
+    """Keccak S-box realization with theta represented as one linear map.
+
+    EXAMPLES::
+
+        >>> from claasp_next.transformations._inverse_realizations import KeccakSboxTheta
+        >>> graph = KeccakSboxTheta(number_of_rounds=1, word_size=8)
+        >>> (len(graph.rounds), any(type(item).__name__ == "LinearMap" for item in graph.components))
+        (1, True)
+    """
 
     def theta_definition(self, state):
+        """Author Keccak theta as one exact binary linear-map component."""
         inputs_id = []
         inputs_pos = []
         for x in range(X_NUM):
@@ -106,9 +123,18 @@ class KeccakSboxTheta(KeccakSbox):
 
 
 class XoodooSboxTheta(XoodooSbox):
-    """Xoodoo S-box realization with theta represented as one linear map."""
+    """Xoodoo S-box realization with theta represented as one linear map.
+
+    EXAMPLES::
+
+        >>> from claasp_next.transformations._inverse_realizations import XoodooSboxTheta
+        >>> graph = XoodooSboxTheta(number_of_rounds=1)
+        >>> (len(graph.rounds), any(type(item).__name__ == "LinearMap" for item in graph.components))
+        (1, True)
+    """
 
     def theta_definition(self, planes):
+        """Author Xoodoo theta as one exact binary linear-map component."""
         inputs_id, inputs_pos = calculate_inputs(planes)
         inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
         self.add_theta_xoodoo_component(inputs_id, inputs_pos, self.state_bit_size)
@@ -131,9 +157,18 @@ class XoodooSboxTheta(XoodooSbox):
 
 
 class QARMAv2Compact(QARMAv2):
-    """Canonical QARMAv2 with each authored M function kept as one linear map."""
+    """Canonical QARMAv2 with each authored M function kept as one linear map.
+
+    EXAMPLES::
+
+        >>> from claasp_next.transformations._inverse_realizations import QARMAv2Compact
+        >>> graph = QARMAv2Compact(number_of_rounds=1)
+        >>> (len(graph.rounds), graph.realization.name)
+        (3, 'permutation_linear_layer')
+    """
 
     def M_function(self, input_ids, input_pos):
+        """Author the reversible M function as one linear-map component."""
         component_id = self._component_id("linear_layer")
         self._add(
             LinearMap(
@@ -151,9 +186,18 @@ class QARMAv2Compact(QARMAv2):
 
 
 class NorxTriangular(Norx):
-    """NORX with H authored as its reversible triangular bit recurrence."""
+    """NORX with H authored as its reversible triangular bit recurrence.
+
+    EXAMPLES::
+
+        >>> from claasp_next.transformations._inverse_realizations import NorxTriangular
+        >>> graph = NorxTriangular(number_of_rounds=1, word_size=32)
+        >>> (len(graph.rounds), graph.word_bit_size)
+        (1, 32)
+    """
 
     def h_function(self, x, y):
+        """Author NORX H through its bit-triangular recurrence."""
         output_ids = []
         for bit in range(self.word_bit_size):
             inputs_id = [x.id[0], y.id[0]]
@@ -180,7 +224,15 @@ class NorxTriangular(Norx):
 
 
 class GimliTriangular(Gimli):
-    """Gimli with each SP box authored as its triangular bit recurrence."""
+    """Gimli with each SP box authored as its triangular bit recurrence.
+
+    EXAMPLES::
+
+        >>> from claasp_next.transformations._inverse_realizations import GimliTriangular
+        >>> graph = GimliTriangular(number_of_rounds=1, word_size=8)
+        >>> (len(graph.rounds), graph.word_bit_size)
+        (1, 8)
+    """
 
     def _source_bit(self, state, position):
         return self.port(state.id[0])[state.input_bit_positions[0][position]]
@@ -195,6 +247,7 @@ class GimliTriangular(Gimli):
         return self._sum_bits(left, right, self._product_bits(left, right))
 
     def sp_box(self, states):
+        """Author one Gimli SP box as a reversible triangular recurrence."""
         rotated = [[None for _ in range(N_COLS)] for _ in range(N_ROWS)]
         for column in range(N_COLS):
             for row in range(N_ROWS - 1):
@@ -249,7 +302,15 @@ class GimliTriangular(Gimli):
 
 
 def subterranean_inverse(source, output_name="output"):
-    """Author the exact inverse of the keyed Subterranean v1 round graph."""
+    """Author the exact inverse of the keyed Subterranean v1 round graph.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Subterranean
+        >>> from claasp_next.transformations._inverse_realizations import subterranean_inverse
+        >>> tuple(subterranean_inverse(Subterranean()).input_ports)
+        ('output', 'key')
+    """
 
     size = source.output.value_type.unit_count
     derived = Primitive(
@@ -440,7 +501,15 @@ def _chichi_inverse_bits(derived, output_bits, zero, one):
 
 
 def chilow_inverse(source, output_name="output"):
-    """Author the exact one-round ChiLow-40 inverse with retained tweak and key."""
+    """Author the exact one-round ChiLow-40 inverse with retained tweak and key.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Chilow
+        >>> from claasp_next.transformations._inverse_realizations import chilow_inverse
+        >>> tuple(chilow_inverse(Chilow()).input_ports)
+        ('output', 'input_tweak', 'key')
+    """
 
     if len(source.rounds) != 1 or source.output.value_type.unit_count != 40:
         raise ValueError("direct ChiLow inverse currently requires the catalogue ChiLow-40 graph")

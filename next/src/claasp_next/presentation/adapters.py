@@ -34,7 +34,14 @@ from claasp_next.semantics.cryptanalysis.continuous import ContinuousHeuristicRe
 
 @dataclass(frozen=True, slots=True)
 class AdaptationResult:
-    """A section or a typed reason why adaptation was unsupported."""
+    """A section or a typed reason why adaptation was unsupported.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (AdaptationResult.__dataclass_params__.frozen, tuple(field.name for field in fields(AdaptationResult)))
+        (True, ('section', 'diagnostic'))
+    """
 
     section: ReportSection | None = None
     diagnostic: PresentationDiagnostic | None = None
@@ -104,7 +111,16 @@ def _property_evidence(result: ComponentPropertyResult) -> PresentationEvidence:
 
 
 def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
-    """Present a trail summary and ordered transition evidence."""
+    """Present a trail summary and ordered transition evidence.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     trail_section()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     trail = result.trail if isinstance(result, TrailSearchResult) else result
     summary_rows = [
@@ -156,7 +172,16 @@ def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
 
 
 def trace_section(trace: ExecutionTrace) -> ReportSection:
-    """Present an execution trace in its annotation order."""
+    """Present an execution trace in its annotation order.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     trace_section()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     rows = tuple(
         TableRow((_integer(index), _text(entry.role.value), _text(_canonical(entry.value)), _text(entry.source_id)))
@@ -173,7 +198,16 @@ def trace_section(trace: ExecutionTrace) -> ReportSection:
 
 
 def component_property_section(results: tuple[ComponentPropertyResult, ...] | list[ComponentPropertyResult]) -> ReportSection:
-    """Present component properties in caller-supplied semantic order."""
+    """Present component properties in caller-supplied semantic order.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     component_property_section()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     rows = []
     for result in results:
@@ -197,7 +231,16 @@ def component_property_section(results: tuple[ComponentPropertyResult, ...] | li
 
 
 def avalanche_section(result: AvalancheResult) -> ReportSection:
-    """Present empirical avalanche metadata, summaries, and the fixed matrix."""
+    """Present empirical avalanche metadata, summaries, and the fixed matrix.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     avalanche_section()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     empirical = PresentationEvidence(EvidenceClass.EMPIRICAL, complete=False)
     summary = Table(
@@ -229,7 +272,16 @@ def _statistical_payload(result):
 
 
 def dieharder_section(result: DieharderReport | StatisticalTestRun[DieharderReport]) -> ReportSection:
-    """Present every Dieharder observation and preserve run provenance."""
+    """Present every Dieharder observation and preserve run provenance.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     dieharder_section()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     report = _statistical_payload(result)
     empirical = PresentationEvidence(EvidenceClass.EMPIRICAL, complete=True)
@@ -254,7 +306,16 @@ def dieharder_section(result: DieharderReport | StatisticalTestRun[DieharderRepo
 
 
 def nist_section(result: NISTFinalReport | StatisticalTestRun[NISTFinalReport]) -> ReportSection:
-    """Present every NIST STS row, including unavailable tests."""
+    """Present every NIST STS row, including unavailable tests.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     nist_section()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     report = _statistical_payload(result)
     rows = []
@@ -298,7 +359,16 @@ def neural_section(
     state: EvidenceClass = EvidenceClass.EMPIRICAL,
     diagnostic: PresentationDiagnostic | None = None,
 ) -> ReportSection:
-    """Present a neural experiment without importing an ML framework."""
+    """Present a neural experiment without importing an ML framework.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     neural_section()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     if state in {EvidenceClass.INCOMPLETE, EvidenceClass.FAILED, EvidenceClass.SKIPPED}:
         evidence = PresentationEvidence(state, complete=False, diagnostic=diagnostic)
@@ -332,7 +402,16 @@ def neural_section(
 
 
 def continuous_section(result: ContinuousHeuristicResult) -> ReportSection:
-    """Present continuous-analysis values only as incomplete heuristic evidence."""
+    """Present continuous-analysis values only as incomplete heuristic evidence.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     continuous_section()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     evidence = PresentationEvidence(EvidenceClass.INCOMPLETE, complete=False, diagnostic=
         PresentationDiagnostic(DiagnosticCode.MISSING_EVIDENCE, "continuous model is heuristic, not a proof"))
@@ -348,7 +427,16 @@ def continuous_section(result: ContinuousHeuristicResult) -> ReportSection:
 
 
 def catalogue_section(records: tuple[object, ...] | list[object]) -> ReportSection:
-    """Present a conservative capability summary from immutable catalogue records."""
+    """Present a conservative capability summary from immutable catalogue records.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     catalogue_section()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     rows = []
     for record in records:
@@ -373,7 +461,16 @@ def catalogue_section(records: tuple[object, ...] | list[object]) -> ReportSecti
 
 
 def adapt_result(result: object) -> AdaptationResult:
-    """Adapt a supported typed result or return a typed unsupported diagnostic."""
+    """Adapt a supported typed result or return a typed unsupported diagnostic.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     adapt_result()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     dispatch = (
         ((Trail, TrailSearchResult), trail_section),

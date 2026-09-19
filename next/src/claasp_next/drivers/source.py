@@ -17,7 +17,13 @@ from claasp_next.representations.source import SourceArtifact, SourceLanguage
 
 
 class SourceExecutionStatus(str, Enum):
-    """Outcome of an explicitly requested generated-source run."""
+    """Outcome of an explicitly requested generated-source run.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in SourceExecutionStatus)
+        ('success', 'failed', 'timeout', 'unavailable')
+    """
 
     SUCCESS = "success"
     FAILED = "failed"
@@ -27,7 +33,14 @@ class SourceExecutionStatus(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class SourceExecutionResult:
-    """Bounded subprocess outcome and semantic projection."""
+    """Bounded subprocess outcome and semantic projection.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (SourceExecutionResult.__dataclass_params__.frozen, tuple(field.name for field in fields(SourceExecutionResult)))
+        (True, ('status', 'output', 'values', 'command', 'runtime_seconds', 'stdout', 'stderr', 'return_code', 'source_digest', 'provenance'))
+    """
 
     status: SourceExecutionStatus
     output: tuple[int, ...] | None
@@ -48,7 +61,16 @@ PYTHON_SOURCE_DRIVER = DriverIdentity(
 
 
 def write_source(artifact: SourceArtifact, path: str | os.PathLike, *, overwrite: bool = False) -> Path:
-    """Write one source artifact to an explicit matching file path."""
+    """Write one source artifact to an explicit matching file path.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     write_source()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     if not isinstance(artifact, SourceArtifact):
         raise TypeError("write_source requires a SourceArtifact")
@@ -75,7 +97,16 @@ def run_python_source(
     *,
     timeout_seconds: float = 10.0,
 ) -> SourceExecutionResult:
-    """Run a generated Python artifact in an isolated temporary directory."""
+    """Run a generated Python artifact in an isolated temporary directory.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     run_python_source()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     if not isinstance(artifact, SourceArtifact) or artifact.language is not SourceLanguage.PYTHON:
         raise TypeError("run_python_source requires a Python SourceArtifact")

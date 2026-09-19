@@ -5,7 +5,14 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True, slots=True)
 class MiniZincModel:
-    """Ordered MiniZinc declarations, constraints, solve, and output items."""
+    """Ordered MiniZinc declarations, constraints, solve, and output items.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (MiniZincModel.__dataclass_params__.frozen, tuple(field.name for field in fields(MiniZincModel)))
+        (True, ('declarations', 'constraints', 'solve', 'includes', 'outputs', 'provenance', 'name_mapping'))
+    """
 
     declarations: tuple[str, ...]
     constraints: tuple[str, ...]

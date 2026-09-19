@@ -22,7 +22,16 @@ from claasp_next.representations.constraints.smt.trails import (
 
 
 class PresentDifferentialCPModel:
-    """Native table-constraint model for two-round PRESENT differences."""
+    """Native table-constraint model for two-round PRESENT differences.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     PresentDifferentialCPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, problem: PropagationProblem) -> None:
         if not isinstance(problem, PropagationProblem):
@@ -116,7 +125,16 @@ class PresentDifferentialCPModel:
 
 
 class PresentLinearCPModel:
-    """Native table-constraint model for three-round PRESENT masks."""
+    """Native table-constraint model for three-round PRESENT masks.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     PresentLinearCPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, problem: PropagationProblem) -> None:
         if not isinstance(problem, PropagationProblem):
@@ -216,6 +234,15 @@ class SpeckDifferentialCPModel:
 
     The reviewed slice is Speck32/64 with zero key difference. Decoded
     transitions are recounted by independent paired-carry semantics.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     SpeckDifferentialCPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
     """
 
     def __init__(self, problem: PropagationProblem, *, input_difference=None,
@@ -350,7 +377,16 @@ class SpeckDifferentialCPModel:
 
 
 class SpeckTruncatedCPModel:
-    """Compile one fixed deterministic-truncated Speck round propagation."""
+    """Compile one fixed deterministic-truncated Speck round propagation.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     SpeckTruncatedCPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(
         self, problem: PropagationProblem, input_difference: TruncatedXorDifference
@@ -398,7 +434,16 @@ class SpeckTruncatedCPModel:
 
 
 class ProbabilisticTruncatedModularAddCPModel:
-    """Native CP representation of one counter-based partial addition."""
+    """Native CP representation of one counter-based partial addition.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     ProbabilisticTruncatedModularAddCPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(
         self,
@@ -468,7 +513,16 @@ class ProbabilisticTruncatedModularAddCPModel:
 
 
 class SpeckProbabilisticTruncatedCPModel:
-    """Compose counter-based probabilistic truncated semantics over Speck."""
+    """Compose counter-based probabilistic truncated semantics over Speck.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     SpeckProbabilisticTruncatedCPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(
         self,
@@ -585,7 +639,16 @@ class SpeckProbabilisticTruncatedCPModel:
 
 
 class WordwiseDifferenceCPModel:
-    """Expose typed word states as a native MiniZinc enum."""
+    """Expose typed word states as a native MiniZinc enum.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     WordwiseDifferenceCPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, words: tuple[WordwiseXorDifference, ...]) -> None:
         if not words or any(not isinstance(word, WordwiseXorDifference) for word in words):
@@ -638,7 +701,16 @@ class WordwiseDifferenceCPModel:
 
 
 class ImpossibleBoundaryCPModel:
-    """Prove that forward and backward partial patterns contradict."""
+    """Prove that forward and backward partial patterns contradict.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     ImpossibleBoundaryCPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, boundary: ImpossiblePropagationBoundary) -> None:
         if not isinstance(boundary, ImpossiblePropagationBoundary):
@@ -696,6 +768,15 @@ class SpeckImpossibleCPModel:
     This preserves the legacy bitwise deterministic-truncated search: both
     external differences are nonzero and the forward and backward segments
     must contain opposite known bits at their shared boundary.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     SpeckImpossibleCPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
     """
 
     def __init__(self, primitive, middle_round: int) -> None:
@@ -786,7 +867,16 @@ class SpeckImpossibleCPModel:
 
 
 class SimonImpossibleCPModel:
-    """Compose the legacy fully-automatic Simon impossible fixture."""
+    """Compose the legacy fully-automatic Simon impossible fixture.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     SimonImpossibleCPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, primitive, input_pattern, output_pattern, middle_round: int) -> None:
         if primitive.family_name != "simon" or len(input_pattern.bits) != 32:
@@ -859,7 +949,16 @@ class SimonImpossibleCPModel:
 
 
 class SBoxDifferenceCPModel:
-    """Exact local feasibility model for possible and impossible differences."""
+    """Exact local feasibility model for possible and impossible differences.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     SBoxDifferenceCPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(
         self,
@@ -914,7 +1013,16 @@ class SBoxDifferenceCPModel:
 
 
 class SBoxBoomerangCPModel:
-    """Exact BCT table lowering for one bijective bit-vector S-box."""
+    """Exact BCT table lowering for one bijective bit-vector S-box.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     SBoxBoomerangCPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, component: BitVectorSBox, input_difference=None, output_difference=None) -> None:
         if not isinstance(component, BitVectorSBox):

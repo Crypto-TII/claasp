@@ -20,7 +20,14 @@ def _expression(terms: tuple[tuple[str, float], ...], constant: float = 0) -> st
 
 
 class LPExporter:
-    """Serialize :class:`MILPModel` using the widely supported LP format."""
+    """Serialize :class:`MILPModel` using the widely supported LP format.
+
+    EXAMPLES::
+
+        >>> from claasp_next.representations.constraints.milp import LPExporter, LinearVariable, MILPModel
+        >>> LPExporter().export(MILPModel((LinearVariable("x"),), ())).endswith("End\\n")
+        True
+    """
 
     def export(self, model: MILPModel) -> str:
         """Return deterministic ASCII LP text."""

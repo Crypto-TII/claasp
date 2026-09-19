@@ -31832,7 +31832,274 @@
       "qualified_name": "claasp_next.write_source"
     }
   ],
-  "example_exceptions": [],
+  "example_exceptions": [
+    {
+      "category": "abstract_protocol",
+      "evidence": "next/tests/unit/test_component_analysis_drivers.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.analysis.component_properties.ComponentPropertyDriver",
+      "reason": "The contract is abstract and has no executable implementation."
+    },
+    {
+      "category": "abstract_protocol",
+      "evidence": "next/tests/unit/test_component_analysis_drivers.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.analysis.component_properties.ComponentPropertyDriver.analyze",
+      "reason": "The contract is abstract and has no executable implementation."
+    },
+    {
+      "category": "abstract_protocol",
+      "evidence": "next/tests/unit/test_neural_driver.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.analysis.neural.NeuralTrainingDriver",
+      "reason": "The contract is abstract and has no executable implementation."
+    },
+    {
+      "category": "abstract_protocol",
+      "evidence": "next/tests/unit/test_neural_driver.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.analysis.neural.NeuralTrainingDriver.train",
+      "reason": "The contract is abstract and has no executable implementation."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_msolve_exporter.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.algebra.msolve.MsolveDriver",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_msolve_exporter.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.algebra.msolve.MsolveDriver.execute",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_singular_exporter.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.algebra.singular.SingularDriver",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_singular_exporter.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.algebra.singular.SingularDriver.execute",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_component_analysis_drivers.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.analysis.branch_number.MiniZincBranchNumberDriver",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_component_analysis_drivers.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.analysis.branch_number.MiniZincBranchNumberDriver.analyze",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "abstract_protocol",
+      "evidence": "next/tests/unit/test_representation_architecture.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.base.Driver",
+      "reason": "The contract is abstract and has no executable implementation."
+    },
+    {
+      "category": "abstract_protocol",
+      "evidence": "next/tests/unit/test_representation_architecture.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.base.Driver.execute",
+      "reason": "The contract is abstract and has no executable implementation."
+    },
+    {
+      "category": "abstract_protocol",
+      "evidence": "next/tests/unit/test_representation_architecture.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.base.SolverDriver",
+      "reason": "The contract is abstract and has no executable implementation."
+    },
+    {
+      "category": "abstract_protocol",
+      "evidence": "next/tests/unit/test_representation_architecture.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.base.SolverDriver.solve",
+      "reason": "The contract is abstract and has no executable implementation."
+    },
+    {
+      "category": "environment_owned_interaction",
+      "evidence": "next/tests/unit/test_neural_driver.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.neural.sklearn_driver.SklearnMLPDriver",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "environment_owned_interaction",
+      "evidence": "next/tests/unit/test_neural_driver.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.neural.sklearn_driver.SklearnMLPDriver.train",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_diagrams.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.renderers.latex.LaTeXDriver",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_diagrams.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.renderers.latex.LaTeXDriver.render",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "environment_owned_interaction",
+      "evidence": "next/tests/unit/test_presentation_plots.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.renderers.presentation.MatplotlibPresentationDriver",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "environment_owned_interaction",
+      "evidence": "next/tests/unit/test_presentation_plots.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.renderers.presentation.MatplotlibPresentationDriver.avalanche_matrix",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "environment_owned_interaction",
+      "evidence": "next/tests/unit/test_presentation_plots.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.renderers.presentation.MatplotlibPresentationDriver.component_radar",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "environment_owned_interaction",
+      "evidence": "next/tests/unit/test_presentation_plots.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.renderers.presentation.MatplotlibPresentationDriver.dieharder_assessments",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "environment_owned_interaction",
+      "evidence": "next/tests/unit/test_presentation_plots.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.renderers.presentation.MatplotlibPresentationDriver.nist_proportions",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_milp_model.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.solvers.glpk.GLPKSolver",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_milp_model.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.solvers.glpk.GLPKSolver.solve",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_minisat_solver.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.solvers.minisat.MinisatSolver",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_minisat_solver.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.solvers.minisat.MinisatSolver.solve",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_cp_model.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.solvers.minizinc.MiniZincSolver",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_cp_model.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.solvers.minizinc.MiniZincSolver.solve",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_cp_model.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.solvers.minizinc.MiniZincSolver.solve_all",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_smt.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.solvers.z3.Z3Solver",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_smt.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.solvers.z3.Z3Solver.incremental",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_smt.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.solvers.z3.Z3Solver.solve",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_smt.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.solvers.z3.Z3Solver.version",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_dieharder_driver.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.statistical.dieharder.DieharderDriver",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_dieharder_driver.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.statistical.dieharder.DieharderDriver.run",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_nist_driver.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.statistical.nist.NistStsDriver",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    },
+    {
+      "category": "external_executable",
+      "evidence": "next/tests/unit/test_nist_driver.py",
+      "owner": "M10.16",
+      "qualified_name": "claasp_next.drivers.statistical.nist.NistStsDriver.run",
+      "reason": "Execution intrinsically requires an external executable or environment-owned optional framework."
+    }
+  ],
   "public_api_rule": "runtime __all__ exports plus canonical public class members",
   "schema_version": 1
 }

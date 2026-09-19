@@ -21,7 +21,16 @@ C_COMPILER = DriverIdentity("claasp_c_source", DriverKind.COMPILER, "1")
 
 
 def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
-    """Compile the registered Bit/Word subset to deterministic C11 source."""
+    """Compile the registered Bit/Word subset to deterministic C11 source.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     compile_c_source()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     if not isinstance(primitive, Primitive):
         raise TypeError("C source compilation requires a Primitive")

@@ -8,7 +8,14 @@ from claasp_next.graph import Primitive
 
 @dataclass(frozen=True, slots=True)
 class CubeSumResult:
-    """An exact output-bit sum over every point of a Boolean cube."""
+    """An exact output-bit sum over every point of a Boolean cube.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (CubeSumResult.__dataclass_params__.frozen, tuple(field.name for field in fields(CubeSumResult)))
+        (True, ('parity', 'evaluations', 'complete', 'method'))
+    """
 
     parity: int
     evaluations: int
@@ -28,6 +35,15 @@ def evaluate_cube_sum(
 
     Bit positions are MSB-first, consistently with graph selections and the
     symbolic variable names. The supplied value of each cube bit is ignored.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     evaluate_cube_sum()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     if variable_input not in primitive.input_ports:

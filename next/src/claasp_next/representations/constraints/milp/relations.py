@@ -8,6 +8,15 @@ class FiniteBinaryRelationMILPModel:
 
     This is an exact baseline, not a minimum-facet or minimized-inequality
     claim. Row selectors are auxiliaries, not additional semantic witnesses.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     FiniteBinaryRelationMILPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
     """
 
     def __init__(self, columns, rows, *, row_costs=None):
@@ -28,6 +37,8 @@ class FiniteBinaryRelationMILPModel:
         self.selectors = tuple(f"__relation_row_{row}" for row in range(len(self.rows)))
 
     def milp_model(self):
+        """Compute the milp model for this public typed contract."""
+
         variables = tuple(LinearVariable(name, VariableKind.BINARY) for name in self.columns + self.selectors)
         constraints = []
         if not self.rows:
@@ -46,6 +57,8 @@ class FiniteBinaryRelationMILPModel:
             LinearExpression.from_terms(dict(zip(self.selectors, self.row_costs))))
 
     def witness(self, row):
+        """Compute the witness for this public typed contract."""
+
         row = tuple(row)
         if row not in self.rows:
             raise ValueError("row is not accepted by the relation")

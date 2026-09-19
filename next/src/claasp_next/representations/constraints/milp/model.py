@@ -7,7 +7,13 @@ from math import isfinite
 
 
 class VariableKind(str, Enum):
-    """Supported linear-model variable domains."""
+    """Supported linear-model variable domains.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in VariableKind)
+        ('binary', 'integer', 'continuous')
+    """
 
     BINARY = "binary"
     INTEGER = "integer"
@@ -15,7 +21,13 @@ class VariableKind(str, Enum):
 
 
 class ConstraintSense(str, Enum):
-    """Comparison used by a linear constraint."""
+    """Comparison used by a linear constraint.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in ConstraintSense)
+        ('<=', '=', '>=')
+    """
 
     LESS_EQUAL = "<="
     EQUAL = "="
@@ -23,7 +35,13 @@ class ConstraintSense(str, Enum):
 
 
 class ObjectiveSense(str, Enum):
-    """Direction of optimization."""
+    """Direction used by model optimization.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in ObjectiveSense)
+        ('minimize', 'maximize')
+    """
 
     MINIMIZE = "minimize"
     MAXIMIZE = "maximize"
@@ -31,7 +49,14 @@ class ObjectiveSense(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class LinearVariable:
-    """A named variable and its domain bounds."""
+    """A named variable and its domain bounds.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (LinearVariable.__dataclass_params__.frozen, tuple(field.name for field in fields(LinearVariable)))
+        (True, ('name', 'kind', 'lower_bound', 'upper_bound'))
+    """
 
     name: str
     kind: VariableKind = VariableKind.CONTINUOUS
@@ -59,7 +84,14 @@ class LinearVariable:
 
 @dataclass(frozen=True, slots=True)
 class LinearExpression:
-    """A canonical affine expression."""
+    """A canonical affine expression.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (LinearExpression.__dataclass_params__.frozen, tuple(field.name for field in fields(LinearExpression)))
+        (True, ('terms', 'constant'))
+    """
 
     terms: tuple[tuple[str, float], ...] = ()
     constant: float = 0
@@ -94,7 +126,14 @@ class LinearExpression:
 
 @dataclass(frozen=True, slots=True)
 class LinearConstraint:
-    """A named affine comparison against a scalar right-hand side."""
+    """A named affine comparison against a scalar right-hand side.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (LinearConstraint.__dataclass_params__.frozen, tuple(field.name for field in fields(LinearConstraint)))
+        (True, ('expression', 'sense', 'rhs', 'name'))
+    """
 
     expression: LinearExpression
     sense: ConstraintSense
@@ -108,7 +147,14 @@ class LinearConstraint:
 
 @dataclass(frozen=True, slots=True)
 class MILPModel:
-    """A portable linear objective, domains, and constraints."""
+    """A portable linear objective, domains, and constraints.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (MILPModel.__dataclass_params__.frozen, tuple(field.name for field in fields(MILPModel)))
+        (True, ('variables', 'constraints', 'objective', 'objective_sense'))
+    """
 
     variables: tuple[LinearVariable, ...]
     constraints: tuple[LinearConstraint, ...]

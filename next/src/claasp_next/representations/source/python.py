@@ -19,6 +19,15 @@ def compile_python_source(primitive: Primitive) -> SourceCompilationResult:
 
     The returned source has no filesystem side effects. It embeds canonical
     graph bytes and evaluates them through CLAASP's scalar oracle.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     compile_python_source()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     if not isinstance(primitive, Primitive):

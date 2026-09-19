@@ -17,6 +17,13 @@ class HybridDifferentialResult:
 
     Unknown suffix bits are not feasible exact witnesses and suffixes carry
     neither exact probabilities nor optimization claims.
+
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (HybridDifferentialResult.__dataclass_params__.frozen, tuple(field.name for field in fields(HybridDifferentialResult)))
+        (True, ('exact_prefix', 'truncated_boundaries', 'runtime_seconds'))
     """
 
     exact_prefix: Trail
@@ -25,7 +32,16 @@ class HybridDifferentialResult:
 
 
 class SpeckHybridDifferentialProblem:
-    """Select an exact data-path prefix followed by truncated round semantics."""
+    """Select an exact data-path prefix followed by truncated round semantics.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     SpeckHybridDifferentialProblem()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, primitive, *, exact_rounds, input_difference, maximum_prefix_weight=45):
         if (not isinstance(exact_rounds, int) or isinstance(exact_rounds, bool)

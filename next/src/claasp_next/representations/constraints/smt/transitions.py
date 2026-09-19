@@ -5,7 +5,16 @@ from claasp_next.representations.constraints.smt.formula import SMTFormula
 
 
 class SBoxTransitionSMTModel:
-    """Lower an S-box DDT or LAT support relation to Boolean SMT."""
+    """Lower an S-box DDT or LAT support relation to Boolean SMT.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     SBoxTransitionSMTModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, table: tuple[int, ...] | list[int], kind: TrailKind) -> None:
         if kind not in (TrailKind.XOR_DIFFERENTIAL, TrailKind.XOR_LINEAR):
@@ -70,13 +79,24 @@ class SBoxTransitionSMTModel:
 
 
 class ModularAddDifferentialSMTModel:
-    """Exact paired-carry support and unary XOR-differential weights."""
+    """Exact paired-carry support and unary XOR-differential weights.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     ModularAddDifferentialSMTModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, width):
         self.semantics = ModularAddTransitionSemantics(width)
         self.width = width
 
     def smt_formula(self):
+        """Compute the smt formula for this public typed contract."""
+
         from itertools import product
 
         variables = tuple(f"{prefix}_{bit}" for prefix in ("left", "right", "output")
@@ -106,6 +126,8 @@ class ModularAddDifferentialSMTModel:
         return SMTFormula(variables, tuple(clauses), tuple(provenance))
 
     def decode_transition(self, assignment):
+        """Compute the decode transition for this public typed contract."""
+
         from claasp_next.representations.constraints.sat import CNFFormula
         formula = self.smt_formula()
         if not CNFFormula(formula.variables, formula.assertions, formula.provenance).is_satisfied(assignment):
@@ -120,7 +142,16 @@ class ModularAddDifferentialSMTModel:
 
 
 class ModularAddLinearSMTModel:
-    """Boolean SMT relation for exact modular-add linear correlations."""
+    """Boolean SMT relation for exact modular-add linear correlations.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     ModularAddLinearSMTModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, width: int) -> None:
         self.semantics = ModularAddLinearSemantics(width)

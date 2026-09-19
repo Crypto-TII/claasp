@@ -11,6 +11,15 @@ class SBoxTransitionMILPModel:
 
     Solver objective coefficients approximate logarithmic weights, while
     decoded transitions retain exact integer counts and correlation signs.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     SBoxTransitionMILPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
     """
 
     def __init__(self, table, kind):
@@ -38,6 +47,8 @@ class SBoxTransitionMILPModel:
                 else self.semantics.xor_linear(source, target))
 
     def milp_model(self, *, input_pattern=None, output_pattern=None):
+        """Compute the milp model for this public typed contract."""
+
         model = self.relation.milp_model()
         constraints = list(model.constraints)
         width = self.semantics.width
@@ -51,6 +62,8 @@ class SBoxTransitionMILPModel:
         return self._model
 
     def decode_transition(self, assignment):
+        """Compute the decode transition for this public typed contract."""
+
         if self._model is None:
             raise ValueError("build the MILP model before decoding")
         if not self._model.is_feasible(assignment):

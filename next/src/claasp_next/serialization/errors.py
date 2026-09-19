@@ -5,7 +5,14 @@ from enum import Enum
 
 
 class SerializationFailure(str, Enum):
-    """Stable categories for rejected serialized artifacts."""
+    """Stable categories for rejected serialized artifacts.
+
+    EXAMPLES::
+
+        >>> from claasp_next import SerializationFailure
+        >>> SerializationFailure.INVALID_JSON.value
+        'invalid_json'
+    """
 
     INVALID_JSON = "invalid_json"
     DUPLICATE_FIELD = "duplicate_field"
@@ -24,7 +31,14 @@ class SerializationFailure(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class SerializationDiagnostic:
-    """Machine-readable serialization failure detail."""
+    """Machine-readable serialization failure detail.
+
+    EXAMPLES::
+
+        >>> from claasp_next import SerializationDiagnostic, SerializationFailure
+        >>> SerializationDiagnostic(SerializationFailure.INVALID_JSON, "$", "bad input").path
+        '$'
+    """
 
     reason: SerializationFailure
     path: str
@@ -32,7 +46,15 @@ class SerializationDiagnostic:
 
 
 class SerializationError(ValueError):
-    """Reject malformed or unsupported serialized data with a typed reason."""
+    """Reject malformed or unsupported serialized data with a typed reason.
+
+    EXAMPLES::
+
+        >>> from claasp_next import SerializationError, SerializationFailure
+        >>> error = SerializationError(SerializationFailure.INVALID_JSON, "bad input", path="$.value")
+        >>> (error.reason, error.path, str(error))
+        (<SerializationFailure.INVALID_JSON: 'invalid_json'>, '$.value', 'invalid_json at $.value: bad input')
+    """
 
     def __init__(self, reason: SerializationFailure | str, message: str, *, path: str = "$") -> None:
         reason = reason if isinstance(reason, SerializationFailure) else SerializationFailure(reason)
@@ -45,10 +67,12 @@ class SerializationError(ValueError):
 
     @property
     def reason(self) -> SerializationFailure:
+        """Return the stable machine-readable failure category."""
         return self.diagnostic.reason
 
     @property
     def path(self) -> str:
+        """Return the JSON-style path at which validation failed."""
         return self.diagnostic.path
 
 

@@ -5,7 +5,14 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True, slots=True)
 class DiagramNode:
-    """One input, component, or output in a diagram."""
+    """One input, component, or output in a diagram.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (DiagramNode.__dataclass_params__.frozen, tuple(field.name for field in fields(DiagramNode)))
+        (True, ('node_id', 'label', 'kind', 'round_number', 'annotation'))
+    """
 
     node_id: str
     label: str
@@ -22,7 +29,14 @@ class DiagramNode:
 
 @dataclass(frozen=True, slots=True)
 class DiagramEdge:
-    """A selection-level dependency between two diagram nodes."""
+    """A selection-level dependency between two diagram nodes.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (DiagramEdge.__dataclass_params__.frozen, tuple(field.name for field in fields(DiagramEdge)))
+        (True, ('source_id', 'destination_id', 'positions', 'input_index'))
+    """
 
     source_id: str
     destination_id: str
@@ -40,7 +54,14 @@ class DiagramEdge:
 
 @dataclass(frozen=True, slots=True)
 class DiagramRound:
-    """An ordered round group in a diagram."""
+    """An ordered round group in a diagram.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (DiagramRound.__dataclass_params__.frozen, tuple(field.name for field in fields(DiagramRound)))
+        (True, ('number', 'node_ids'))
+    """
 
     number: int
     node_ids: tuple[str, ...]
@@ -48,7 +69,14 @@ class DiagramRound:
 
 @dataclass(frozen=True, slots=True)
 class PrimitiveDiagram:
-    """Validated nodes, selection edges, and round groups."""
+    """Validated nodes, selection edges, and round groups.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (PrimitiveDiagram.__dataclass_params__.frozen, tuple(field.name for field in fields(PrimitiveDiagram)))
+        (True, ('primitive_name', 'nodes', 'edges', 'rounds'))
+    """
 
     primitive_name: str
     nodes: tuple[DiagramNode, ...]

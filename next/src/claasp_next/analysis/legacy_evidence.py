@@ -5,7 +5,14 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True, slots=True)
 class LegacyBoundedDifferentialCluster:
-    """A preserved legacy solver regression, not a newly re-proved result."""
+    """A preserved legacy solver regression, not a newly re-proved result.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (LegacyBoundedDifferentialCluster.__dataclass_params__.frozen, tuple(field.name for field in fields(LegacyBoundedDifferentialCluster)))
+        (True, ('primitive_family', 'rounds', 'input_difference', 'output_difference', 'maximum_weight', 'trail_count', 'aggregate_weight', 'provenance', 'claim_kind'))
+    """
 
     primitive_family: str
     rounds: int
@@ -27,7 +34,15 @@ class LegacyBoundedDifferentialCluster:
 
 
 def ublock_three_round_legacy_cluster() -> LegacyBoundedDifferentialCluster:
-    """Return the fixed uBlock-128 KISSAT cluster without upgrading its claim."""
+    """Return the fixed uBlock-128 KISSAT cluster without upgrading its claim.
+
+    EXAMPLES::
+
+        >>> from claasp_next.analysis import ublock_three_round_legacy_cluster
+        >>> evidence = ublock_three_round_legacy_cluster()
+        >>> (evidence.trail_count, evidence.aggregate_weight, evidence.claim_kind)
+        (8, 25.7146, 'legacy-solver-regression')
+    """
 
     return LegacyBoundedDifferentialCluster(
         primitive_family="uBlock",

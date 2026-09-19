@@ -15,7 +15,16 @@ from claasp_next.representations.constraints.smt.trails import check_present_smt
 
 
 class PresentDifferentialMILPModel:
-    """Exact two-round PRESENT XOR-differential optimization model."""
+    """Exact two-round PRESENT XOR-differential optimization model.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     PresentDifferentialMILPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, primitive: Primitive | PropagationProblem) -> None:
         problem = (
@@ -117,7 +126,16 @@ class PresentDifferentialMILPModel:
 
 
 def check_present_milp_trail(primitive: Primitive, trail: Trail) -> bool:
-    """Independently check a decoded trail using shared semantics and wiring."""
+    """Independently check a decoded trail using shared semantics and wiring.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     check_present_milp_trail()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     return check_present_smt_trail(primitive, trail)
 

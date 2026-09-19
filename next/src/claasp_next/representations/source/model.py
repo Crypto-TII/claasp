@@ -9,14 +9,26 @@ from claasp_next.provenance import DriverIdentity
 
 
 class SourceLanguage(str, Enum):
-    """Registered generated-source languages."""
+    """Registered languages for generated source artifacts.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in SourceLanguage)
+        ('python', 'c')
+    """
 
     PYTHON = "python"
     C = "c"
 
 
 class SourceStatus(str, Enum):
-    """Whether a source compiler produced an executable artifact."""
+    """Whether a source compiler produced an executable artifact.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in SourceStatus)
+        ('ready', 'unsupported')
+    """
 
     READY = "ready"
     UNSUPPORTED = "unsupported"
@@ -24,7 +36,14 @@ class SourceStatus(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class SourceDiagnostic:
-    """Typed explanation for unavailable source generation."""
+    """Typed explanation for unavailable source generation.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (SourceDiagnostic.__dataclass_params__.frozen, tuple(field.name for field in fields(SourceDiagnostic)))
+        (True, ('code', 'message', 'component_id'))
+    """
 
     code: str
     message: str
@@ -39,7 +58,14 @@ class SourceDiagnostic:
 
 @dataclass(frozen=True, slots=True)
 class SourceArtifact:
-    """Deterministic generated source with graph and compiler identities."""
+    """Deterministic generated source with graph and compiler identities.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (SourceArtifact.__dataclass_params__.frozen, tuple(field.name for field in fields(SourceArtifact)))
+        (True, ('language', 'source', 'filename', 'source_digest', 'primitive_digest', 'realization_identity', 'compiler'))
+    """
 
     language: SourceLanguage
     source: str
@@ -79,7 +105,14 @@ class SourceArtifact:
 
 @dataclass(frozen=True, slots=True)
 class SourceCompilationResult:
-    """A ready source artifact or an explicit unsupported diagnostic."""
+    """A ready source artifact or an explicit unsupported diagnostic.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (SourceCompilationResult.__dataclass_params__.frozen, tuple(field.name for field in fields(SourceCompilationResult)))
+        (True, ('status', 'artifact', 'diagnostic'))
+    """
 
     status: SourceStatus
     artifact: SourceArtifact | None = None
@@ -93,6 +126,8 @@ class SourceCompilationResult:
 
     @property
     def is_ready(self) -> bool:
+        """Return the is ready for this public typed contract."""
+
         return self.status is SourceStatus.READY
 
 

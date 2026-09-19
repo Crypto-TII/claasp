@@ -320,6 +320,7 @@ def validate_authority(authority: dict[str, Any], entries: list[dict[str, Any]])
         if live_names == recorded_names:
             violations.append("authority: public API metadata is stale")
     entry_names = {entry["qualified_name"] for entry in entries}
+    canonical_names = {entry["canonical_name"] for entry in entries}
     exceptions = authority.get("example_exceptions", [])
     seen = set()
     for exception in exceptions:
@@ -327,7 +328,7 @@ def validate_authority(authority: dict[str, Any], entries: list[dict[str, Any]])
         if name in seen:
             violations.append(f"authority: duplicate exception {name}")
         seen.add(name)
-        if name not in entry_names:
+        if name not in entry_names and name not in canonical_names:
             violations.append(f"authority: stale exception {name}")
         if exception.get("category") not in EXCEPTION_CATEGORIES:
             violations.append(f"authority: invalid exception category for {name}")

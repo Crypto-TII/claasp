@@ -4,7 +4,15 @@ from claasp_next.representations.constraints.sat.cnf import CNFFormula
 
 
 class DimacsExporter:
-    """Serialize :class:`~claasp_next.representations.constraints.sat.CNFFormula` for SAT solvers."""
+    """Serialize :class:`~claasp_next.representations.constraints.sat.CNFFormula` for SAT solvers.
+
+    EXAMPLES::
+
+        >>> from claasp_next.representations.constraints.sat import CNFFormula
+        >>> from claasp_next.representations.constraints.sat.exporters import DimacsExporter
+        >>> DimacsExporter().export(CNFFormula(("x",), ((1,),), ("fixed",)), include_variable_map=False)
+        'p cnf 1 1\\n1 0\\n'
+    """
 
     def export(self, formula: CNFFormula, *, include_variable_map: bool = True) -> str:
         """Return deterministic DIMACS text, optionally with name comments."""

@@ -25,7 +25,14 @@ def _thaw(value):
 
 @dataclass(frozen=True, slots=True)
 class InputRecord:
-    """One named primitive input and its study-default visibility."""
+    """One named primitive input and its study-default visibility.
+
+    EXAMPLES::
+
+        >>> from claasp_next.catalogue import catalogue
+        >>> tuple((item.name, item.visibility) for item in catalogue.primitive("AES").inputs)
+        (('plaintext', 'public'), ('key', 'secret'))
+    """
 
     name: str
     role: str
@@ -34,7 +41,14 @@ class InputRecord:
 
 @dataclass(frozen=True, slots=True)
 class RealizationRecord:
-    """Discovery metadata for one graph realization."""
+    """Discovery metadata for one graph realization.
+
+    EXAMPLES::
+
+        >>> from claasp_next.catalogue import catalogue
+        >>> catalogue.realizations(primitive="AES")[0].identity
+        'AES:lookup'
+    """
 
     primitive: str
     name: str
@@ -46,12 +60,21 @@ class RealizationRecord:
 
     @property
     def identity(self) -> str:
+        """Return the stable ``primitive:realization`` identity."""
         return f"{self.primitive}:{self.name}"
 
 
 @dataclass(frozen=True, slots=True)
 class ParameterSetRecord:
-    """A named immutable constructor-parameter set."""
+    """A named immutable constructor-parameter set.
+
+    EXAMPLES::
+
+        >>> from claasp_next.catalogue import ParameterSetRecord
+        >>> record = ParameterSetRecord.from_mapping("Toy", "small", {"rounds": 2})
+        >>> dict(record.values)
+        {'rounds': 2}
+    """
 
     primitive: str
     name: str
@@ -59,6 +82,7 @@ class ParameterSetRecord:
 
     @classmethod
     def from_mapping(cls, primitive: str, name: str, values: Mapping[str, object]):
+        """Freeze a constructor-parameter mapping into a catalogue record."""
         return cls(primitive, name, _freeze(dict(values)))
 
     @property
@@ -75,6 +99,13 @@ class PrimitiveRecord:
     ``bijectivity_obligation`` applies to the designated data/state input of
     each named parameter set while every auxiliary input is retained. It is
     separate from the whole-arity ``kind`` classification.
+
+    EXAMPLES::
+
+        >>> from claasp_next.catalogue import catalogue
+        >>> record = catalogue.primitive("AES")
+        >>> (record.qualified_name, record.kind)
+        ('claasp_next.primitives.block_ciphers.aes.AES', 'block_cipher')
     """
 
     name: str
@@ -99,12 +130,20 @@ class PrimitiveRecord:
 
     @property
     def qualified_name(self) -> str:
+        """Return the importable module and public class name."""
         return f"{self.module}.{self.name}"
 
 
 @dataclass(frozen=True, slots=True)
 class ComponentRecord:
-    """A public v5 base component and its teaching primitive wrapper."""
+    """A public v5 base component and its teaching primitive wrapper.
+
+    EXAMPLES::
+
+        >>> from claasp_next.catalogue import catalogue
+        >>> catalogue.components(names="SBox")[0].primitive_wrapper
+        'SBox'
+    """
 
     name: str
     module: str
@@ -113,7 +152,14 @@ class ComponentRecord:
 
 @dataclass(frozen=True, slots=True)
 class RepresentationRecord:
-    """One declared representation and its conservative compatibility edges."""
+    """One declared representation and its conservative compatibility edges.
+
+    EXAMPLES::
+
+        >>> from claasp_next.catalogue import catalogue
+        >>> sorted(catalogue.representation("boolean_cnf").domains)
+        ['Bit', 'Word']
+    """
 
     name: str
     kind: str
@@ -126,7 +172,14 @@ class RepresentationRecord:
 
 @dataclass(frozen=True, slots=True)
 class AnalysisRecord:
-    """One discoverable analysis and its representation requirements."""
+    """One discoverable analysis and its representation requirements.
+
+    EXAMPLES::
+
+        >>> from claasp_next.catalogue import catalogue
+        >>> any(item.name == "avalanche" for item in catalogue.analyses(primitive="AES"))
+        True
+    """
 
     name: str
     entry_point: str
@@ -141,7 +194,14 @@ class AnalysisRecord:
 
 @dataclass(frozen=True, slots=True)
 class DriverRecord:
-    """A result-producing driver and its side-effect-free availability rule."""
+    """A result-producing driver and its side-effect-free availability rule.
+
+    EXAMPLES::
+
+        >>> from claasp_next.catalogue import catalogue
+        >>> catalogue.driver("python_scalar").availability
+        'builtin'
+    """
 
     name: str
     kind: str
@@ -153,7 +213,15 @@ class DriverRecord:
 
 @dataclass(frozen=True, slots=True)
 class DriverAvailabilityRecord:
-    """Result of an explicit, lazy driver availability probe."""
+    """Result of an explicit, lazy driver availability probe.
+
+    EXAMPLES::
+
+        >>> from claasp_next.catalogue import catalogue
+        >>> probe = catalogue.driver_availability("python_scalar")
+        >>> (probe.available, probe.detail)
+        (True, 'part of the dependency-free core')
+    """
 
     driver: DriverRecord
     available: bool

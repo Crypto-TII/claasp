@@ -32,6 +32,8 @@ class SingularExporter:
         ideal_name: str = "I",
         monomial_order: str = "dp",
     ) -> str:
+        """Compute the export for this public typed contract."""
+
         if not isinstance(system, PolynomialSystem):
             raise TypeError("system must be a PolynomialSystem")
         for label, value in (

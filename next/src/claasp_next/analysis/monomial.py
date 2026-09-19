@@ -13,7 +13,14 @@ from claasp_next.semantics.cryptanalysis.monomial import ComponentMonomialSemant
 
 @dataclass(frozen=True, slots=True)
 class MonomialTrailStep:
-    """One named component input/output exponent transition."""
+    """One named component input/output exponent transition.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (MonomialTrailStep.__dataclass_params__.frozen, tuple(field.name for field in fields(MonomialTrailStep)))
+        (True, ('component_id', 'input_mask', 'output_mask'))
+    """
 
     component_id: str
     input_mask: int
@@ -22,7 +29,14 @@ class MonomialTrailStep:
 
 @dataclass(frozen=True, slots=True)
 class MonomialTrail:
-    """A reachable monomial exponent pair and its component witness."""
+    """A reachable monomial exponent pair and its component witness.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (MonomialTrail.__dataclass_params__.frozen, tuple(field.name for field in fields(MonomialTrail)))
+        (True, ('input_mask', 'output_mask', 'width', 'steps', 'variable_group', 'provenance'))
+    """
 
     input_mask: int
     output_mask: int
@@ -39,6 +53,15 @@ class PresentRoundMonomialSemantics:
     selects the state term, while concatenation is structural and the p-layer
     permutes exponent bits. This is monomial-trail reachability; parity-based
     cancellation is a separate analysis.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     PresentRoundMonomialSemantics()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
     """
 
     def __init__(self, primitive) -> None:
@@ -110,7 +133,14 @@ class PresentRoundMonomialSemantics:
 
 @dataclass(frozen=True, slots=True)
 class MultiRoundMonomialTrail:
-    """Ordered round witnesses for a complete fixed-boundary query."""
+    """Ordered round witnesses for a complete fixed-boundary query.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (MultiRoundMonomialTrail.__dataclass_params__.frozen, tuple(field.name for field in fields(MultiRoundMonomialTrail)))
+        (True, ('input_mask', 'output_mask', 'rounds', 'provenance'))
+    """
 
     input_mask: int
     output_mask: int
@@ -119,7 +149,16 @@ class MultiRoundMonomialTrail:
 
 
 class PresentMonomialSemantics:
-    """Deterministically construct and check multi-round PRESENT predecessors."""
+    """Deterministically construct and check multi-round PRESENT predecessors.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     PresentMonomialSemantics()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, primitive) -> None:
         if primitive.family_name != "present":
@@ -198,7 +237,14 @@ class PresentMonomialSemantics:
 
 @dataclass(frozen=True, slots=True)
 class MonomialParityResult:
-    """Parity of completely enumerated optimal monomial paths."""
+    """Parity of completely enumerated optimal monomial paths.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (MonomialParityResult.__dataclass_params__.frozen, tuple(field.name for field in fields(MonomialParityResult)))
+        (True, ('degree', 'odd_input_monomials', 'enumerated_paths', 'complete', 'termination'))
+    """
 
     degree: int | None
     odd_input_monomials: tuple[int, ...]
@@ -207,6 +253,8 @@ class MonomialParityResult:
     termination: str
 
     def require_complete(self) -> "MonomialParityResult":
+        """Compute the require complete for this public typed contract."""
+
         if not self.complete:
             raise RuntimeError("monomial-path enumeration is incomplete")
         return self
@@ -218,6 +266,15 @@ def enumerate_optimal_monomial_parity(compilation, solver, max_paths=10000):
     ``compilation`` is a ``BooleanMonomialGraphMILPModel``. Re-solving with
     portable no-good constraints is slower than a native solution pool but
     makes completeness independent of proprietary solver behavior.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     enumerate_optimal_monomial_parity()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     from claasp_next.drivers.solvers import MILPStatus

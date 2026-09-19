@@ -55,7 +55,17 @@ def _validate_value(primitive, source_id, value, path):
 
 
 def serialize_execution_trace(trace: ExecutionTrace) -> bytes:
-    """Serialize one concrete trace without serializing its graph again."""
+    """Serialize one concrete trace without serializing its graph again.
+
+    EXAMPLES::
+
+        >>> from claasp_next import serialize_execution_trace
+        >>> from claasp_next.primitives import Speck
+        >>> primitive = Speck(number_of_rounds=1)
+        >>> data = serialize_execution_trace(primitive.evaluate_with_trace(0, 0).trace)
+        >>> data.endswith(b"\\n")
+        True
+    """
 
     if not isinstance(trace, ExecutionTrace):
         raise TypeError("serialize_execution_trace requires an ExecutionTrace")
@@ -81,7 +91,17 @@ def serialize_execution_trace(trace: ExecutionTrace) -> bytes:
 
 
 def deserialize_execution_trace(data: bytes | str, primitive: Primitive) -> ExecutionTrace:
-    """Decode a concrete trace and bind it to the exact supplied primitive."""
+    """Decode a concrete trace and bind it to the exact supplied primitive.
+
+    EXAMPLES::
+
+        >>> from claasp_next import deserialize_execution_trace, serialize_execution_trace
+        >>> from claasp_next.primitives import Speck
+        >>> primitive = Speck(number_of_rounds=1)
+        >>> trace = primitive.evaluate_with_trace(0, 0).trace
+        >>> deserialize_execution_trace(serialize_execution_trace(trace), primitive) == trace
+        True
+    """
 
     envelope = _load_envelope(data, EXECUTION_TRACE_SCHEMA_ID, "execution_trace")
     payload = envelope["payload"]
@@ -196,7 +216,16 @@ def _decode_provenance(value, primitive, path):
 
 
 def serialize_evaluation_result(result: EvaluationResult) -> bytes:
-    """Serialize a concrete scalar evaluation result and its provenance."""
+    """Serialize a concrete scalar evaluation result and its provenance.
+
+    EXAMPLES::
+
+        >>> from claasp_next import serialize_evaluation_result
+        >>> from claasp_next.primitives import Present
+        >>> data = serialize_evaluation_result(Present(number_of_rounds=1).evaluate_with_trace(0, 0))
+        >>> b'"artifact":"evaluation_result"' in data
+        True
+    """
 
     if not isinstance(result, EvaluationResult):
         raise TypeError("serialize_evaluation_result requires an EvaluationResult")
@@ -230,7 +259,17 @@ def serialize_evaluation_result(result: EvaluationResult) -> bytes:
 
 
 def deserialize_evaluation_result(data: bytes | str, primitive: Primitive) -> EvaluationResult:
-    """Decode and fully validate one scalar evaluation result."""
+    """Decode and fully validate one scalar evaluation result.
+
+    EXAMPLES::
+
+        >>> from claasp_next import deserialize_evaluation_result, serialize_evaluation_result
+        >>> from claasp_next.primitives import Present
+        >>> primitive = Present(number_of_rounds=1)
+        >>> result = primitive.evaluate_with_trace(0, 0)
+        >>> deserialize_evaluation_result(serialize_evaluation_result(result), primitive).output == result.output
+        True
+    """
 
     envelope = _load_envelope(data, EVALUATION_RESULT_SCHEMA_ID, "evaluation_result")
     payload = envelope["payload"]
@@ -283,7 +322,15 @@ def deserialize_evaluation_result(data: bytes | str, primitive: Primitive) -> Ev
 
 
 def serialize_artifact(value) -> bytes:
-    """Serialize one explicitly supported graph or execution artifact."""
+    """Serialize one explicitly supported graph or execution artifact.
+
+    EXAMPLES::
+
+        >>> from claasp_next import serialize_artifact
+        >>> from claasp_next.primitives import Speck
+        >>> b'"artifact":"primitive"' in serialize_artifact(Speck(number_of_rounds=1))
+        True
+    """
 
     from claasp_next.serialization.primitive import serialize_primitive
 

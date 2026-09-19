@@ -9,7 +9,16 @@ from claasp_next.utils.matrices import identity_matrix, normalize_matrix, transp
 
 
 def matrix_rank(matrix, domain) -> int:
-    """Return exact row rank over the supplied scalar field."""
+    """Return exact row rank over the supplied scalar field.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     matrix_rank()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     rows = [list(row) for row in normalize_matrix(matrix)]
     _validate_matrix_domain(rows, domain)
@@ -36,7 +45,16 @@ def matrix_rank(matrix, domain) -> int:
 
 
 def matrix_is_mds(matrix, domain) -> bool:
-    """Return whether every square minor of a square matrix is nonsingular."""
+    """Return whether every square minor of a square matrix is nonsingular.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     matrix_is_mds()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     frozen = normalize_matrix(matrix)
     if len(frozen) != len(frozen[0]):
@@ -59,6 +77,15 @@ def exact_branch_number(matrix, domain, *, linear: bool = False, maximum_vectors
 
     Differential propagation uses ``M``. Linear-mask propagation uses
     ``M**T`` explicitly. An MDS proof avoids enumerating the full input space.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     exact_branch_number()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     frozen = normalize_matrix(matrix)
@@ -82,7 +109,16 @@ def exact_branch_number(matrix, domain, *, linear: bool = False, maximum_vectors
 
 
 def exact_matrix_order(matrix, domain, *, maximum_steps: int = 65536, offset=None) -> int | None:
-    """Return the exact linear/affine order when found within ``maximum_steps``."""
+    """Return the exact linear/affine order when found within ``maximum_steps``.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     exact_matrix_order()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     frozen = normalize_matrix(matrix)
     if len(frozen) != len(frozen[0]) or matrix_rank(frozen, domain) != len(frozen):
@@ -108,7 +144,16 @@ def exact_matrix_order(matrix, domain, *, maximum_steps: int = 65536, offset=Non
 
 
 def permutation_order(mapping) -> int:
-    """Return the least positive order of ``output[i] = input[mapping[i]]``."""
+    """Return the least positive order of ``output[i] = input[mapping[i]]``.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     permutation_order()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     mapping = tuple(mapping)
     if set(mapping) != set(range(len(mapping))):
@@ -128,7 +173,16 @@ def permutation_order(mapping) -> int:
 
 
 def expand_binary_field_matrix(matrix, field: BinaryExtensionField):
-    """Expand a polynomial-basis field matrix to its explicit MSB-first bit map."""
+    """Expand a polynomial-basis field matrix to its explicit MSB-first bit map.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     expand_binary_field_matrix()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     frozen = normalize_matrix(matrix)
     _validate_matrix_domain(frozen, field)
@@ -151,6 +205,16 @@ def expand_binary_field_matrix(matrix, field: BinaryExtensionField):
 
 
 def apply_matrix(matrix, vector, domain):
+    """Apply a finite-field matrix to one compatible vector.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit
+        >>> from claasp_next.analysis.linear_properties import apply_matrix
+        >>> apply_matrix(((1, 1), (1, 0)), (1, 0), Bit())
+        (1, 1)
+    """
+
     frozen = normalize_matrix(matrix)
     vector = tuple(vector)
     if len(vector) != len(frozen[0]):
@@ -163,6 +227,16 @@ def apply_matrix(matrix, vector, domain):
 
 
 def multiply_matrices(left, right, domain):
+    """Multiply two dimension-compatible finite-field matrices.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit
+        >>> from claasp_next.analysis.linear_properties import multiply_matrices
+        >>> multiply_matrices(((1, 1),), ((1,), (1,)), Bit())
+        ((0,),)
+    """
+
     left, right = normalize_matrix(left), normalize_matrix(right)
     if len(left[0]) != len(right):
         raise ValueError("matrix dimensions do not compose")

@@ -25,7 +25,15 @@ InverseFactory = Callable[[Component, Selection, tuple[Selection, ...], int], Co
 
 @dataclass(frozen=True, slots=True)
 class ComponentInverseSemantics:
-    """One component family's explicit recovery contract."""
+    """One component family's explicit recovery contract.
+
+    EXAMPLES::
+
+        >>> from claasp_next.components import Rotate
+        >>> from claasp_next.transformations import DEFAULT_INVERSE_REGISTRY
+        >>> DEFAULT_INVERSE_REGISTRY.semantics[Rotate].supported
+        True
+    """
 
     component_type: type[Component]
     factory: InverseFactory | None
@@ -496,6 +504,17 @@ def invert_component(
 
     This operation creates semantics only.  It neither mutates the source
     component nor inserts the result into a primitive graph.
+
+    EXAMPLES::
+
+        >>> from claasp_next import Primitive, ValueType, Word
+        >>> from claasp_next.components import Rotate
+        >>> from claasp_next.transformations import invert_component
+        >>> graph = Primitive("inverse", {"x": ValueType(Word(8), (1,))})
+        >>> inverse = invert_component(Rotate(graph.input("x"), 2, "left"),
+        ...     graph.input("x"), recover_input=0)
+        >>> (inverse.direction, inverse.amount)
+        ('right', 2)
     """
 
     if not isinstance(registry, ComponentInverseRegistry):

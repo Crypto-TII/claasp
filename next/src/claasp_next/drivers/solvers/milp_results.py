@@ -6,7 +6,13 @@ from enum import Enum
 
 
 class MILPStatus(str, Enum):
-    """Portable outcome of a linear optimization invocation."""
+    """Portable outcome of a linear optimization invocation.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in MILPStatus)
+        ('optimal', 'feasible', 'infeasible', 'unknown')
+    """
 
     OPTIMAL = "optimal"
     FEASIBLE = "feasible"
@@ -16,7 +22,14 @@ class MILPStatus(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class MILPResult:
-    """Optimization status, objective, and named primal assignment."""
+    """Optimization status, objective, and named primal assignment.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (MILPResult.__dataclass_params__.frozen, tuple(field.name for field in fields(MILPResult)))
+        (True, ('status', 'assignment', 'objective_value', 'runtime_seconds', 'stdout', 'stderr'))
+    """
 
     status: MILPStatus
     assignment: Mapping[str, float] | None

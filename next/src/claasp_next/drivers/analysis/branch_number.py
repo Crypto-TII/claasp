@@ -60,6 +60,19 @@ class BoundedBranchNumberDriver:
     A found candidate proves an upper bound on the minimum branch number.
     Results become exact only after complete support coverage or after reaching
     the mathematical lower bound (one, or two for an injective map).
+
+    EXAMPLES::
+
+        >>> from claasp_next import Bit, Port, ValueType
+        >>> from claasp_next.analysis import ComponentProperty, PropertyDomain, PropertyRequest
+        >>> from claasp_next.components import LinearMap
+        >>> from claasp_next.drivers.analysis import BoundedBranchNumberDriver
+        >>> component = LinearMap(Port("x", ValueType(Bit(), (2,))), ((1, 0), (0, 1)))
+        >>> request = PropertyRequest(ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
+        ...     PropertyDomain.BIT_LINEAR)
+        >>> result = BoundedBranchNumberDriver(1).analyze(component, request)
+        >>> (result.value, result.complete)
+        (2, True)
     """
 
     identity = DriverIdentity(
@@ -76,6 +89,8 @@ class BoundedBranchNumberDriver:
         self.maximum_input_weight = maximum_input_weight
 
     def analyze(self, component, request: PropertyRequest) -> ComponentPropertyResult:
+        """Compute the analyze for this public typed contract."""
+
         provenance = _identity(component, request, self.identity, "bounded_support_enumeration")
         if request.property not in {
             ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
@@ -130,6 +145,8 @@ class MiniZincBranchNumberDriver:
         )
 
     def analyze(self, component, request: PropertyRequest) -> ComponentPropertyResult:
+        """Compute the analyze for this public typed contract."""
+
         provenance = _identity(component, request, self.identity, "minizinc_exact_optimization")
         if request.property not in {
             ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,

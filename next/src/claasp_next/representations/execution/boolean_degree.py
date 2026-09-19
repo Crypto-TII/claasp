@@ -20,7 +20,14 @@ DegreeUnit = _Degree | tuple[_Degree, ...]
 
 @dataclass(frozen=True, slots=True)
 class BooleanDegreeResult:
-    """Output degree upper bounds relative to one selected input."""
+    """Output degree upper bounds relative to one selected input.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (BooleanDegreeResult.__dataclass_params__.frozen, tuple(field.name for field in fields(BooleanDegreeResult)))
+        (True, ('output_bounds', 'variable_input', 'sound', 'complete', 'method'))
+    """
 
     output_bounds: tuple[int, ...]
     variable_input: str
@@ -30,9 +37,20 @@ class BooleanDegreeResult:
 
 
 class BooleanDegreeEvaluator:
-    """Propagate degree bounds without constructing Boolean polynomials."""
+    """Propagate degree bounds without constructing Boolean polynomials.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Simon
+        >>> from claasp_next.representations.execution import BooleanDegreeEvaluator
+        >>> result = BooleanDegreeEvaluator().evaluate(Simon(number_of_rounds=1), "plaintext")
+        >>> (max(result.output_bounds), result.sound, result.complete)
+        (2, True, False)
+    """
 
     def evaluate(self, primitive: Primitive, variable_input: str) -> BooleanDegreeResult:
+        """Compute the evaluate for this public typed contract."""
+
         if variable_input not in primitive.input_ports:
             raise ValueError(f"unknown variable input: {variable_input}")
         capacity = primitive.input_ports[variable_input].value_type.encoded_bit_size

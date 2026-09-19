@@ -20,7 +20,16 @@ def _lines(text: str | Iterable[str]) -> Iterable[str]:
 
 
 def parse_dieharder_report(text: str | Iterable[str]) -> DieharderReport:
-    """Parse Dieharder output without fabricating results for empty output."""
+    """Parse Dieharder output without fabricating results for empty output.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     parse_dieharder_report()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     observations = []
     labels = {
@@ -71,7 +80,16 @@ def _normalize_nist_name(name: str) -> str:
 
 
 def parse_nist_final_report(text: str | Iterable[str]) -> NISTFinalReport:
-    """Parse NIST STS summary rows while retaining repeated subtests."""
+    """Parse NIST STS summary rows while retaining repeated subtests.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     parse_nist_final_report()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     rows = []
     for line in _lines(text):
@@ -107,4 +125,3 @@ def parse_nist_final_report(text: str | Iterable[str]) -> NISTFinalReport:
     if not rows:
         raise ValueError("NIST STS final report contains no result rows")
     return NISTFinalReport(tuple(rows))
-

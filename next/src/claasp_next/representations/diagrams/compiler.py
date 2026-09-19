@@ -10,7 +10,16 @@ from claasp_next.representations.diagrams.model import (
 
 
 class DiagramCompiler:
-    """Preserve graph dependencies, selections, rounds, and annotations."""
+    """Preserve graph dependencies, selections, rounds, and annotations.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Speck
+        >>> from claasp_next.representations.diagrams import DiagramCompiler
+        >>> diagram = DiagramCompiler().compile(Speck(number_of_rounds=1))
+        >>> (diagram.primitive_name, len(diagram.rounds))
+        ('speck', 1)
+    """
 
     OUTPUT_ID = "__primitive_output__"
 

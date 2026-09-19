@@ -15,7 +15,13 @@ from claasp_next.representations.constraints.sat import CNFFormula
 
 
 class CPStatus(str, Enum):
-    """Portable MiniZinc solve outcomes."""
+    """Portable MiniZinc solve outcomes.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in CPStatus)
+        ('satisfied', 'unsatisfiable', 'unknown')
+    """
 
     SATISFIED = "satisfied"
     UNSATISFIABLE = "unsatisfiable"
@@ -24,7 +30,14 @@ class CPStatus(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class CPResult:
-    """MiniZinc status, projected named values, and process diagnostics."""
+    """MiniZinc status, projected named values, and process diagnostics.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (CPResult.__dataclass_params__.frozen, tuple(field.name for field in fields(CPResult)))
+        (True, ('status', 'values', 'runtime_seconds', 'solver', 'stdout', 'stderr'))
+    """
 
     status: CPStatus
     values: Mapping[str, object] | None
@@ -56,7 +69,14 @@ class CPResult:
 
 @dataclass(frozen=True, slots=True)
 class CPEnumerationResult:
-    """A sequence of MiniZinc solutions with explicit exhaustion status."""
+    """A sequence of MiniZinc solutions with explicit exhaustion status.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (CPEnumerationResult.__dataclass_params__.frozen, tuple(field.name for field in fields(CPEnumerationResult)))
+        (True, ('status', 'solutions', 'complete', 'termination', 'runtime_seconds', 'solver', 'stdout', 'stderr'))
+    """
 
     status: CPStatus
     solutions: tuple[Mapping[str, object], ...]

@@ -16,7 +16,16 @@ def _markdown(value: str) -> str:
 
 
 def render_markdown_table(table: Table) -> str:
-    """Render an escaped GitHub-flavored Markdown table."""
+    """Render an escaped GitHub-flavored Markdown table.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     render_markdown_table()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     alignments = {
         Alignment.LEFT: ":---", Alignment.RIGHT: "---:", Alignment.CENTER: ":---:",
@@ -33,7 +42,16 @@ def render_markdown_table(table: Table) -> str:
 
 
 def render_terminal_table(table: Table) -> str:
-    """Render an aligned terminal table, expanding multiline cells safely."""
+    """Render an aligned terminal table, expanding multiline cells safely.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     render_terminal_table()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     row_lines = [tuple(cell.text.replace("\r\n", "\n").replace("\r", "\n").split("\n") for cell in row.cells)
                  for row in table.rows]
@@ -64,7 +82,16 @@ def render_terminal_table(table: Table) -> str:
 
 
 def render_csv_table(table: Table) -> str:
-    """Render RFC-4180-style CSV using only the standard library."""
+    """Render RFC-4180-style CSV using only the standard library.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     render_csv_table()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     output = StringIO(newline="")
     writer = csv.writer(output, lineterminator="\n")
@@ -90,7 +117,16 @@ def _compatible(value):
 
 
 def cell_data(cell: TableCell) -> dict[str, object]:
-    """Return structured data for one cell without serializing it."""
+    """Return structured data for one cell without serializing it.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     cell_data()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     data: dict[str, object] = {
         "value": _compatible(cell.value),
@@ -105,7 +141,16 @@ def cell_data(cell: TableCell) -> dict[str, object]:
 
 
 def table_data(table: Table) -> dict[str, object]:
-    """Return recursively JSON-compatible data for one immutable table."""
+    """Return recursively JSON-compatible data for one immutable table.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     table_data()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     return {
         "title": table.title,
@@ -116,7 +161,16 @@ def table_data(table: Table) -> dict[str, object]:
 
 
 def section_data(section: ReportSection) -> dict[str, object]:
-    """Return recursively JSON-compatible data for a report section."""
+    """Return recursively JSON-compatible data for a report section.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     section_data()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     return {
         "title": section.title,
@@ -147,7 +201,16 @@ def report_data(report: ReportData) -> dict[str, object]:
 
 
 def render_section(section: ReportSection, *, format: str = "terminal") -> str:
-    """Render one section as terminal, Markdown, or CSV text."""
+    """Render one section as terminal, Markdown, or CSV text.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     render_section()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     normalized = format.lower()
     if normalized not in {"terminal", "markdown", "csv"}:

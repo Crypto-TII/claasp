@@ -18,7 +18,13 @@ from claasp_next.provenance import DriverIdentity, DriverKind
 
 
 class NormalizationDirection(str, Enum):
-    """Meaning of increasing values on a normalized comparison axis."""
+    """Meaning of increasing values on a normalized comparison axis.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in NormalizationDirection)
+        ('higher_is_better', 'lower_is_better')
+    """
 
     HIGHER_IS_BETTER = "higher_is_better"
     LOWER_IS_BETTER = "lower_is_better"
@@ -26,7 +32,14 @@ class NormalizationDirection(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class RadarScale:
-    """Explicit normalization for one property in one mathematical domain."""
+    """Explicit normalization for one property in one mathematical domain.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (RadarScale.__dataclass_params__.frozen, tuple(field.name for field in fields(RadarScale)))
+        (True, ('property', 'domain', 'minimum', 'maximum', 'direction', 'label'))
+    """
 
     property: str
     domain: PropertyDomain
@@ -59,7 +72,14 @@ class RadarPoint:
 
 @dataclass(frozen=True, slots=True)
 class FigureArtifact:
-    """An optional figure plus deterministic series data and renderer identity."""
+    """An optional figure plus deterministic series data and renderer identity.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (FigureArtifact.__dataclass_params__.frozen, tuple(field.name for field in fields(FigureArtifact)))
+        (True, ('figure', 'kind', 'series', 'driver', 'normalization', 'omitted'))
+    """
 
     figure: object
     kind: str

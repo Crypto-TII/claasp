@@ -10,6 +10,13 @@ class CNFFormula:
 
     Literals use the DIMACS convention: variable ``variables[i - 1]`` is
     represented by integer ``i`` and negation by ``-i``.
+
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (CNFFormula.__dataclass_params__.frozen, tuple(field.name for field in fields(CNFFormula)))
+        (True, ('variables', 'clauses', 'provenance'))
     """
 
     variables: tuple[str, ...]
@@ -32,14 +39,20 @@ class CNFFormula:
 
     @property
     def variable_count(self) -> int:
+        """Return the variable count for this public typed contract."""
+
         return len(self.variables)
 
     @property
     def clause_count(self) -> int:
+        """Return the clause count for this public typed contract."""
+
         return len(self.clauses)
 
     @property
     def literal_count(self) -> int:
+        """Return the literal count for this public typed contract."""
+
         return sum(map(len, self.clauses))
 
     def is_satisfied(self, assignment: Mapping[str, int | bool]) -> bool:

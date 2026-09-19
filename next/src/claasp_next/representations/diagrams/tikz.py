@@ -7,7 +7,15 @@ from claasp_next.representations.diagrams.model import PrimitiveDiagram
 
 
 class TikZSerializer:
-    """Render a diagram as a compilable LaTeX document."""
+    """Render a diagram as a compilable LaTeX document.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Speck
+        >>> from claasp_next.representations.diagrams import TikZSerializer
+        >>> TikZSerializer().serialize(Speck(number_of_rounds=1).diagram()).startswith("\\\\documentclass")
+        True
+    """
 
     def serialize(self, diagram: PrimitiveDiagram) -> str:
         """Return deterministic TikZ with no external Python dependencies."""

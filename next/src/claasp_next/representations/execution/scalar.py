@@ -30,7 +30,14 @@ def _binary_row_masks(matrix):
 
 @dataclass(frozen=True, slots=True)
 class EvaluationResult:
-    """Values produced for primitive inputs and component outputs."""
+    """Values produced for primitive inputs and component outputs.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (EvaluationResult.__dataclass_params__.frozen, tuple(field.name for field in fields(EvaluationResult)))
+        (True, ('values', 'output', 'trace', 'provenance'))
+    """
 
     values: Mapping[str, RuntimeValue]
     output: RuntimeValue | None
@@ -38,6 +45,8 @@ class EvaluationResult:
     provenance: ResultProvenance
 
     def value_of(self, source_id: str) -> RuntimeValue:
+        """Compute the value of for this public typed contract."""
+
         try:
             return self.values[source_id]
         except KeyError as error:
@@ -106,6 +115,8 @@ class ScalarExecutionDriver:
         self._handlers[component_type] = handler
 
     def evaluate(self, primitive: Primitive, inputs: Mapping[str, Sequence[int]]) -> EvaluationResult:
+        """Compute the evaluate for this public typed contract."""
+
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
         expected_names = set(primitive.input_ports)

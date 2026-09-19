@@ -7,7 +7,14 @@ from claasp_next.provenance import ResultProvenance
 
 @dataclass(frozen=True, slots=True)
 class Representation:
-    """A named representation format and its media type."""
+    """A named representation format and its media type.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (Representation.__dataclass_params__.frozen, tuple(field.name for field in fields(Representation)))
+        (True, ('name', 'media_type'))
+    """
 
     name: str
     media_type: str
@@ -19,7 +26,14 @@ class Representation:
 
 @dataclass(frozen=True, slots=True)
 class Artifact:
-    """A concrete instance of a representation with provenance."""
+    """A concrete instance of a representation with provenance.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (Artifact.__dataclass_params__.frozen, tuple(field.name for field in fields(Artifact)))
+        (True, ('representation', 'payload', 'provenance', 'result_provenance'))
+    """
 
     representation: Representation
     payload: object

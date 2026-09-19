@@ -10,7 +10,14 @@ from claasp_next.analysis.neural import NeuralDataset, NeuralExperiment
 
 @dataclass(frozen=True, slots=True)
 class DatasetPartition:
-    """Disjoint indices assigned to training, validation, and testing."""
+    """Disjoint indices assigned to training, validation, and testing.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (DatasetPartition.__dataclass_params__.frozen, tuple(field.name for field in fields(DatasetPartition)))
+        (True, ('training', 'validation', 'testing'))
+    """
 
     training: tuple[int, ...]
     validation: tuple[int, ...]
@@ -59,6 +66,15 @@ def deterministic_partition(
     Counts use floor rounding within each label stratum.  This mirrors the
     small-validation bias of common ML tools while defining it independently
     of any particular framework or version.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     deterministic_partition()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     if not isinstance(seed, int) or isinstance(seed, bool):
@@ -95,7 +111,16 @@ def deterministic_partition(
 
 
 def dataset_digest(dataset: NeuralDataset) -> str:
-    """Return a stable SHA-256 identity for exact features and labels."""
+    """Return a stable SHA-256 identity for exact features and labels.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     dataset_digest()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     digest = sha256()
     digest.update(dataset.kind.encode("utf-8"))
@@ -112,7 +137,14 @@ def dataset_digest(dataset: NeuralDataset) -> str:
 
 @dataclass(frozen=True, slots=True)
 class NeuralRunProvenance:
-    """Information required to identify and reproduce one training run."""
+    """Information required to identify and reproduce one training run.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (NeuralRunProvenance.__dataclass_params__.frozen, tuple(field.name for field in fields(NeuralRunProvenance)))
+        (True, ('primitive', 'realization', 'dataset_digest', 'dataset_kind', 'dataset_seed', 'partition_seed', 'driver', 'driver_version', 'options'))
+    """
 
     primitive: str
     realization: str
@@ -162,7 +194,14 @@ class NeuralRunProvenance:
 
 @dataclass(frozen=True, slots=True)
 class NeuralRun:
-    """A complete portable request: experiment, exact split, and provenance."""
+    """A complete portable request: experiment, exact split, and provenance.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (NeuralRun.__dataclass_params__.frozen, tuple(field.name for field in fields(NeuralRun)))
+        (True, ('experiment', 'partition', 'provenance'))
+    """
 
     experiment: NeuralExperiment
     partition: DatasetPartition

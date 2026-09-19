@@ -5,7 +5,16 @@ from claasp_next.representations.constraints.sat import CNFFormula
 
 
 class BooleanMiniZincLowerer:
-    """Translate CNF exactly while retaining stable logical variable names."""
+    """Translate CNF exactly while retaining stable logical variable names.
+
+    EXAMPLES::
+
+        >>> from claasp_next.representations.constraints.cp import BooleanMiniZincLowerer
+        >>> from claasp_next.representations.constraints.sat import CNFFormula
+        >>> model = BooleanMiniZincLowerer().lower(CNFFormula(("x",), ((1,),), ("fixed",)))
+        >>> model.constraints
+        ('constraint v_x;',)
+    """
 
     def lower(self, formula: CNFFormula) -> MiniZincModel:
         """Return a MiniZinc Boolean model equivalent to ``formula``."""

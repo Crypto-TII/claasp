@@ -16,7 +16,14 @@ SymbolicUnit = BooleanPolynomial | tuple[BooleanPolynomial, ...]
 
 @dataclass(frozen=True, slots=True)
 class BooleanSymbolicResult:
-    """Flattened output ANFs and all graph source values."""
+    """Flattened output ANFs and all graph source values.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (BooleanSymbolicResult.__dataclass_params__.frozen, tuple(field.name for field in fields(BooleanSymbolicResult)))
+        (True, ('output_anfs', 'values'))
+    """
 
     output_anfs: tuple[BooleanPolynomial, ...]
     values: Mapping[str, tuple[SymbolicUnit, ...]]
@@ -27,6 +34,13 @@ class BooleanSymbolicEvaluator:
 
     Input variables are named with conventional prefixes (``p`` for
     plaintext, ``k`` for key) and use MSB-first flattened bit positions.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Simon
+        >>> from claasp_next.representations.execution import BooleanSymbolicEvaluator
+        >>> BooleanSymbolicEvaluator().evaluate(Simon(number_of_rounds=1)).output_anfs[0].degree
+        2
     """
 
     def evaluate(self, primitive: Primitive) -> BooleanSymbolicResult:

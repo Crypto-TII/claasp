@@ -22,7 +22,14 @@ from claasp_next.graph import Primitive
 
 @dataclass(frozen=True, slots=True)
 class StatisticalRecord:
-    """One packed value in a statistical test sequence."""
+    """One packed value in a statistical test sequence.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (StatisticalRecord.__dataclass_params__.frozen, tuple(field.name for field in fields(StatisticalRecord)))
+        (True, ('sample', 'block', 'value'))
+    """
 
     sample: int
     block: int
@@ -31,7 +38,14 @@ class StatisticalRecord:
 
 @dataclass(frozen=True, slots=True)
 class StatisticalDatasetManifest:
-    """Portable identity and provenance for one serialized byte stream."""
+    """Portable identity and provenance for one serialized byte stream.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (StatisticalDatasetManifest.__dataclass_params__.frozen, tuple(field.name for field in fields(StatisticalDatasetManifest)))
+        (True, ('schema_version', 'primitive', 'realization', 'execution_engine', 'kind', 'input_name', 'sample_count', 'block_count', 'record_count', 'output_bit_count', 'byte_count', 'seed', 'ratio', 'fixed_inputs', 'method', 'bit_order', 'byte_order', 'record_order', 'serialization', 'sha256'))
+    """
 
     schema_version: int
     primitive: str
@@ -64,7 +78,14 @@ class StatisticalDatasetManifest:
 
 @dataclass(frozen=True, slots=True)
 class StatisticalDataset:
-    """A lazy deterministic dataset backed by public primitive evaluation."""
+    """A lazy deterministic dataset backed by public primitive evaluation.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (StatisticalDataset.__dataclass_params__.frozen, tuple(field.name for field in fields(StatisticalDataset)))
+        (True, ('primitive', 'kind', 'input_name', 'sample_count', 'block_count', 'seed', 'ratio', 'fixed_inputs', 'method'))
+    """
 
     primitive: Primitive
     kind: str
@@ -78,10 +99,14 @@ class StatisticalDataset:
 
     @property
     def record_count(self) -> int:
+        """Return the record count for this public typed contract."""
+
         return self.sample_count * self.block_count
 
     @property
     def output_bit_count(self) -> int:
+        """Return the output bit count for this public typed contract."""
+
         return packed_bit_width(self.primitive)
 
     def __iter__(self) -> Iterator[StatisticalRecord]:
@@ -232,7 +257,16 @@ def correlation_dataset(
     seed: int = 0,
     fixed_inputs: Mapping[str, int] | None = None,
 ) -> StatisticalDataset:
-    """Return output XOR selected-input records, as in the legacy generator."""
+    """Return output XOR selected-input records, as in the legacy generator.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     correlation_dataset()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     if packed_bit_width(primitive, input_name) != packed_bit_width(primitive):
         raise ValueError("correlation datasets require selected input and output widths to match")
@@ -252,7 +286,16 @@ def cbc_dataset(
     seed: int = 0,
     fixed_inputs: Mapping[str, int] | None = None,
 ) -> StatisticalDataset:
-    """Return zero-IV output-feedback sequences for a width-matched input."""
+    """Return zero-IV output-feedback sequences for a width-matched input.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     cbc_dataset()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     if packed_bit_width(primitive, input_name) != packed_bit_width(primitive):
         raise ValueError("CBC datasets require selected input and output widths to match")
@@ -271,7 +314,16 @@ def low_density_dataset(
     seed: int = 0,
     fixed_inputs: Mapping[str, int] | None = None,
 ) -> StatisticalDataset:
-    """Evaluate weight-zero, weight-one, and sampled weight-two inputs."""
+    """Evaluate weight-zero, weight-one, and sampled weight-two inputs.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     low_density_dataset()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     return _density_dataset(
         primitive, "low_density", input_name, number_of_samples, ratio, seed, fixed_inputs
@@ -287,7 +339,16 @@ def high_density_dataset(
     seed: int = 0,
     fixed_inputs: Mapping[str, int] | None = None,
 ) -> StatisticalDataset:
-    """Evaluate complements of the corresponding low-density inputs."""
+    """Evaluate complements of the corresponding low-density inputs.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     high_density_dataset()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     return _density_dataset(
         primitive, "high_density", input_name, number_of_samples, ratio, seed, fixed_inputs

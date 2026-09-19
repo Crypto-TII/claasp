@@ -62,7 +62,16 @@ class WordDifferentialEnumeration:
 
 
 class WordDifferentialSMTModel:
-    """Forward difference wiring with explicit input and weight restrictions."""
+    """Forward difference wiring with explicit input and weight restrictions.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     WordDifferentialSMTModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, primitive, *, maximum_weight=None, fixed_weight=None,
                  nonzero_input=None, fixed_input_differences=None, output_difference=None):
@@ -94,6 +103,8 @@ class WordDifferentialSMTModel:
             raise ValueError("differences must fit their word type")
 
     def smt_formula(self):
+        """Compute the smt formula for this public typed contract."""
+
         variables, indices, clauses, provenance = [], {}, [], []
 
         def allocate(name):
@@ -236,6 +247,8 @@ class WordDifferentialSMTModel:
         return tuple(steps)
 
     def decode_characteristic(self, assignment):
+        """Compute the decode characteristic for this public typed contract."""
+
         from claasp_next.representations.constraints.sat import CNFFormula
         if self._formula is None:
             raise ValueError("build the formula before decoding")
@@ -251,6 +264,8 @@ class WordDifferentialSMTModel:
         return result
 
     def check_characteristic(self, trail):
+        """Compute the check characteristic for this public typed contract."""
+
         if self._formula is None:
             raise ValueError("build the formula before checking")
         values = dict(trail.semantic_assignment)
@@ -269,6 +284,8 @@ class WordDifferentialSMTModel:
                 and all(dict(inputs)[name] == value for name, value in self.fixed_input_differences.items()))
 
     def enumerate_trails(self, solver, *, limit=1000):
+        """Compute the enumerate trails for this public typed contract."""
+
         if not isinstance(limit, int) or isinstance(limit, bool) or limit <= 0:
             raise ValueError("limit must be a positive integer")
         formula = self.smt_formula()

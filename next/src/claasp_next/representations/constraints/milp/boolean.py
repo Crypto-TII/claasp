@@ -10,6 +10,15 @@ def cnf_to_milp(formula):
     A positive literal is ``x``; a negative literal is ``1-x``. Repeated
     variables are combined, including tautological positive/negative pairs.
     No convex-hull package, Sage, or proprietary solver is needed.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     cnf_to_milp()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
     if not isinstance(formula, CNFFormula):
         raise TypeError("formula must be a CNFFormula")
@@ -27,12 +36,23 @@ def cnf_to_milp(formula):
 
 
 class BooleanGraphMILPModel:
-    """Exact Bit/Word graph execution, not a differential propagation model."""
+    """Exact Bit/Word graph execution, not a differential propagation model.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     BooleanGraphMILPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, primitive):
         self.boolean_model = BooleanCNFModel(primitive)
 
     def milp_model(self):
+        """Compute the milp model for this public typed contract."""
+
         return cnf_to_milp(self.boolean_model.cnf_formula())
 
     def witness(self, evaluation):

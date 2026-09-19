@@ -4,7 +4,16 @@ from claasp_next.presentation.model import Table
 
 
 def to_dataframe(table: Table):
-    """Return a pandas DataFrame matching an immutable table's display text."""
+    """Return a pandas DataFrame matching an immutable table's display text.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     to_dataframe()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     try:
         import pandas

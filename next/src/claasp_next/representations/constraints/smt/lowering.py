@@ -6,7 +6,16 @@ from claasp_next.representations.constraints.smt.formula import SMTFormula
 
 
 class BooleanSMTModel:
-    """Compile the supported Bit/Word graph subset to Boolean SMT assertions."""
+    """Compile the supported Bit/Word graph subset to Boolean SMT assertions.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     BooleanSMTModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, primitive: Primitive) -> None:
         self.primitive = primitive

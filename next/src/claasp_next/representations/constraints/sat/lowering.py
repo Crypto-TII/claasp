@@ -27,6 +27,15 @@ class BooleanCNFModel:
     :class:`~claasp_next.components.Add` (XOR), and
     :class:`~claasp_next.components.BitVectorSBox`. It deliberately owns no
     SAT-solver dependency.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     BooleanCNFModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
     """
 
     def __init__(self, primitive: Primitive) -> None:

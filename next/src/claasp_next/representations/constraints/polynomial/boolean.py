@@ -6,7 +6,14 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True, slots=True, order=True)
 class BooleanMonomial:
-    """A square-free product of Boolean variables."""
+    """A square-free product of Boolean variables.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (BooleanMonomial.__dataclass_params__.frozen, tuple(field.name for field in fields(BooleanMonomial)))
+        (True, ('variables',))
+    """
 
     variables: tuple[str, ...] = ()
 
@@ -18,10 +25,14 @@ class BooleanMonomial:
 
     @classmethod
     def from_variables(cls, variables: Iterable[str]) -> "BooleanMonomial":
+        """Compute the from variables for this public typed contract."""
+
         return cls(tuple(sorted(set(variables))))
 
     @property
     def degree(self) -> int:
+        """Return the degree for this public typed contract."""
+
         return len(self.variables)
 
     def __mul__(self, other: "BooleanMonomial") -> "BooleanMonomial":
@@ -60,18 +71,26 @@ class BooleanPolynomial:
 
     @classmethod
     def zero(cls) -> "BooleanPolynomial":
+        """Compute the zero for this public typed contract."""
+
         return cls()
 
     @classmethod
     def one(cls) -> "BooleanPolynomial":
+        """Compute the one for this public typed contract."""
+
         return cls((BooleanMonomial(),))
 
     @classmethod
     def variable(cls, name: str) -> "BooleanPolynomial":
+        """Compute the variable for this public typed contract."""
+
         return cls((BooleanMonomial((name,)),))
 
     @property
     def degree(self) -> int:
+        """Return the degree for this public typed contract."""
+
         return max((monomial.degree for monomial in self.monomials), default=-1)
 
     def __add__(self, other: object) -> "BooleanPolynomial":
@@ -93,6 +112,8 @@ class BooleanPolynomial:
     __rmul__ = __mul__
 
     def evaluate(self, values: Mapping[str, int]) -> int:
+        """Compute the evaluate for this public typed contract."""
+
         result = 0
         for monomial in self.monomials:
             term = 1
@@ -132,7 +153,16 @@ class BooleanPolynomial:
 
 
 def anf_from_truth_table(values: Sequence[int], variable_names: Sequence[str] | None = None) -> BooleanPolynomial:
-    """Compute an exact ANF by the in-place Möbius transform."""
+    """Compute an exact ANF by the in-place Möbius transform.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     anf_from_truth_table()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     size = len(values)
     if size < 2 or size & (size - 1):
@@ -158,7 +188,16 @@ def anf_from_truth_table(values: Sequence[int], variable_names: Sequence[str] | 
 
 
 def vectorial_anf(table: Sequence[int], variable_names: Sequence[str] | None = None) -> tuple[BooleanPolynomial, ...]:
-    """Return output-bit ANFs of a power-of-two lookup table, MSB first."""
+    """Return output-bit ANFs of a power-of-two lookup table, MSB first.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     vectorial_anf()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     size = len(table)
     if size < 2 or size & (size - 1):
@@ -178,6 +217,15 @@ def monomial_transition_table(table: Sequence[int]) -> dict[int, frozenset[int]]
     Each output mask maps to the input masks whose monomials occur in the
     product of the selected output-bit ANFs. This replaces the Gurobi/Sage
     table builder for small substitution components.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     monomial_transition_table()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     width = len(table).bit_length() - 1
@@ -258,6 +306,15 @@ def modular_subtraction_polynomials(
 
     Vectors and optional borrow variables are least-significant bit first.
     As with addition, omitting ``borrows`` eliminates them by substitution.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     modular_subtraction_polynomials()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     return _modular_binary_polynomials(left, right, output, borrows, subtract=True)

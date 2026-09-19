@@ -21,7 +21,13 @@ from claasp_next.provenance import DriverIdentity
 
 
 class EvidenceClass(str, Enum):
-    """Presentation-safe classification of a result or individual value."""
+    """Presentation-safe classification of a result or individual value.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in EvidenceClass)
+        ('exact', 'proved_bound', 'empirical', 'unavailable', 'skipped', 'incomplete', 'failed')
+    """
 
     EXACT = "exact"
     PROVED_BOUND = "proved_bound"
@@ -33,7 +39,13 @@ class EvidenceClass(str, Enum):
 
 
 class Applicability(str, Enum):
-    """Whether a presentation item applies to the requested semantics."""
+    """Whether a presentation item applies to the requested semantics.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in Applicability)
+        ('applicable', 'inapplicable', 'unknown')
+    """
 
     APPLICABLE = "applicable"
     INAPPLICABLE = "inapplicable"
@@ -41,7 +53,13 @@ class Applicability(str, Enum):
 
 
 class DiagnosticCode(str, Enum):
-    """Stable presentation-layer diagnostic codes."""
+    """Stable presentation-layer diagnostic codes.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in DiagnosticCode)
+        ('unsupported_result', 'unsupported_request', 'inapplicable', 'missing_evidence', 'optional_dependency_unavailable', 'invalid_format', 'unsafe_path', 'file_exists', 'render_failed')
+    """
 
     UNSUPPORTED_RESULT = "unsupported_result"
     UNSUPPORTED_REQUEST = "unsupported_request"
@@ -56,7 +74,14 @@ class DiagnosticCode(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class PresentationDiagnostic:
-    """A typed diagnostic suitable for tables and machine-readable exports."""
+    """A typed diagnostic suitable for tables and machine-readable exports.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (PresentationDiagnostic.__dataclass_params__.frozen, tuple(field.name for field in fields(PresentationDiagnostic)))
+        (True, ('code', 'message', 'details'))
+    """
 
     code: DiagnosticCode
     message: str
@@ -79,7 +104,14 @@ class PresentationDiagnostic:
 
 @dataclass(frozen=True, slots=True)
 class PresentationEvidence:
-    """Evidence strength, applicability, and completeness for displayed data."""
+    """Evidence strength, applicability, and completeness for displayed data.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (PresentationEvidence.__dataclass_params__.frozen, tuple(field.name for field in fields(PresentationEvidence)))
+        (True, ('classification', 'applicability', 'complete', 'diagnostic', 'bound_direction'))
+    """
 
     classification: EvidenceClass
     applicability: Applicability = Applicability.APPLICABLE
@@ -124,7 +156,14 @@ class PresentationEvidence:
 
 @dataclass(frozen=True, slots=True)
 class Citation:
-    """A stable citation or fixed-evidence reference."""
+    """A stable citation or fixed-evidence reference.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (Citation.__dataclass_params__.frozen, tuple(field.name for field in fields(Citation)))
+        (True, ('identifier', 'title', 'locator'))
+    """
 
     identifier: str
     title: str
@@ -137,7 +176,14 @@ class Citation:
 
 @dataclass(frozen=True, slots=True)
 class MathematicalProvenance:
-    """Origin and method of the mathematical or experimental claim."""
+    """Origin and method of the mathematical or experimental claim.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (MathematicalProvenance.__dataclass_params__.frozen, tuple(field.name for field in fields(MathematicalProvenance)))
+        (True, ('method', 'sources', 'fixed_evidence'))
+    """
 
     method: str
     sources: tuple[str, ...] = ()
@@ -152,7 +198,14 @@ class MathematicalProvenance:
 
 @dataclass(frozen=True, slots=True)
 class PrimitiveProvenance:
-    """Primitive identity and selected graph realization."""
+    """Primitive identity and selected graph realization.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (PrimitiveProvenance.__dataclass_params__.frozen, tuple(field.name for field in fields(PrimitiveProvenance)))
+        (True, ('primitive', 'realization'))
+    """
 
     primitive: str
     realization: str | None = None
@@ -166,7 +219,14 @@ class PrimitiveProvenance:
 
 @dataclass(frozen=True, slots=True)
 class ExecutionProvenance:
-    """Execution, solver, renderer, or external-tool identity and runtime."""
+    """Execution, solver, renderer, or external-tool identity and runtime.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (ExecutionProvenance.__dataclass_params__.frozen, tuple(field.name for field in fields(ExecutionProvenance)))
+        (True, ('driver', 'command', 'options', 'runtime_seconds'))
+    """
 
     driver: DriverIdentity
     command: tuple[str, ...] = ()
@@ -192,7 +252,14 @@ class ExecutionProvenance:
 
 @dataclass(frozen=True, slots=True)
 class ReproducibilityMetadata:
-    """Dataset identities, seeds, options, and environment facts."""
+    """Dataset identities, seeds, options, and environment facts.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (ReproducibilityMetadata.__dataclass_params__.frozen, tuple(field.name for field in fields(ReproducibilityMetadata)))
+        (True, ('dataset_identities', 'seeds', 'environment'))
+    """
 
     dataset_identities: tuple[str, ...] = ()
     seeds: tuple[tuple[str, int], ...] = ()
@@ -210,7 +277,14 @@ class ReproducibilityMetadata:
 
 @dataclass(frozen=True, slots=True)
 class PresentationProvenance:
-    """Separated provenance carried by a presentation artifact."""
+    """Separated provenance carried by a presentation artifact.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (PresentationProvenance.__dataclass_params__.frozen, tuple(field.name for field in fields(PresentationProvenance)))
+        (True, ('mathematical', 'primitive', 'execution', 'reproducibility', 'citations'))
+    """
 
     mathematical: MathematicalProvenance
     primitive: PrimitiveProvenance | None = None

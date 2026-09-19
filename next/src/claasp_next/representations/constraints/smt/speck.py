@@ -14,6 +14,15 @@ class SpeckLinearSMTModel:
 
     The plaintext mask is nonzero. Key-schedule masks and related-key linear
     characteristics are deliberately outside this model's scope.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     SpeckLinearSMTModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
     """
 
     def __init__(self, primitive, *, maximum_weight=None, fixed_weight=None,

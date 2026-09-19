@@ -18,17 +18,28 @@ from claasp_next.provenance import DriverIdentity, DriverKind, ResultProvenance
 
 @dataclass(frozen=True, slots=True)
 class BatchEvaluationResult:
-    """One scalar evaluation result for every item in a batch."""
+    """One scalar evaluation result for every item in a batch.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (BatchEvaluationResult.__dataclass_params__.frozen, tuple(field.name for field in fields(BatchEvaluationResult)))
+        (True, ('items', 'provenance'))
+    """
 
     items: tuple[EvaluationResult, ...]
     provenance: ResultProvenance
 
     @property
     def realization(self):
+        """Return the realization for this public typed contract."""
+
         return self.provenance.realization
 
     @property
     def execution_engine(self) -> DriverIdentity:
+        """Return the execution engine for this public typed contract."""
+
         return self.provenance.driver
 
     @property
@@ -77,6 +88,8 @@ class BatchExecutionDriver:
         primitive: Primitive,
         inputs: Mapping[str, Sequence[Sequence[int]]],
     ) -> BatchEvaluationResult:
+        """Compute the evaluate for this public typed contract."""
+
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
 
@@ -125,6 +138,8 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
         primitive: Primitive,
         inputs: Mapping[str, Sequence[Sequence[int]]],
     ) -> BatchEvaluationResult:
+        """Compute the evaluate for this public typed contract."""
+
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
         expected_names = set(primitive.input_ports)

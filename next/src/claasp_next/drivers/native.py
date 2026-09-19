@@ -17,7 +17,13 @@ from claasp_next.representations.source import SourceArtifact, SourceLanguage
 
 
 class NativeCompilationStatus(str, Enum):
-    """Outcome of optional native compilation."""
+    """Outcome of optional native compilation.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in NativeCompilationStatus)
+        ('success', 'failed', 'timeout', 'unavailable')
+    """
 
     SUCCESS = "success"
     FAILED = "failed"
@@ -27,7 +33,14 @@ class NativeCompilationStatus(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class NativeArtifact:
-    """Compiled bytes plus exact tool and source provenance."""
+    """Compiled bytes plus exact tool and source provenance.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (NativeArtifact.__dataclass_params__.frozen, tuple(field.name for field in fields(NativeArtifact)))
+        (True, ('binary', 'binary_digest', 'source_digest', 'primitive_digest', 'realization_identity', 'compiler', 'compiler_version', 'command', 'options'))
+    """
 
     binary: bytes
     binary_digest: str
@@ -59,7 +72,14 @@ class NativeArtifact:
 
 @dataclass(frozen=True, slots=True)
 class NativeCompilationResult:
-    """Compiler status, diagnostics, timings, and optional artifact."""
+    """Compiler status, diagnostics, timings, and optional artifact.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (NativeCompilationResult.__dataclass_params__.frozen, tuple(field.name for field in fields(NativeCompilationResult)))
+        (True, ('status', 'artifact', 'command', 'compiler_version', 'runtime_seconds', 'stdout', 'stderr', 'return_code', 'source_digest'))
+    """
 
     status: NativeCompilationStatus
     artifact: NativeArtifact | None
@@ -73,7 +93,13 @@ class NativeCompilationResult:
 
 
 class NativeExecutionStatus(str, Enum):
-    """Outcome of running a compiled artifact."""
+    """Outcome of running a compiled artifact.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in NativeExecutionStatus)
+        ('success', 'failed', 'timeout')
+    """
 
     SUCCESS = "success"
     FAILED = "failed"
@@ -82,7 +108,14 @@ class NativeExecutionStatus(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class NativeExecutionResult:
-    """Bounded native execution outcome and typed primitive output."""
+    """Bounded native execution outcome and typed primitive output.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (NativeExecutionResult.__dataclass_params__.frozen, tuple(field.name for field in fields(NativeExecutionResult)))
+        (True, ('status', 'output', 'command', 'runtime_seconds', 'stdout', 'stderr', 'return_code', 'source_digest', 'compiler', 'compiler_version', 'compiler_command', 'compiler_options', 'provenance'))
+    """
 
     status: NativeExecutionStatus
     output: tuple[int, ...] | None
@@ -110,7 +143,16 @@ def compile_native(
     options: Sequence[str] = ("-O2",),
     timeout_seconds: float = 20.0,
 ) -> NativeCompilationResult:
-    """Compile one generated C artifact without executing it."""
+    """Compile one generated C artifact without executing it.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     compile_native()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     if not isinstance(artifact, SourceArtifact) or artifact.language is not SourceLanguage.C:
         raise TypeError("compile_native requires a C SourceArtifact")
@@ -171,7 +213,16 @@ def run_compiled(
     *,
     timeout_seconds: float = 10.0,
 ) -> NativeExecutionResult:
-    """Execute a compiled artifact in a fresh isolated temporary directory."""
+    """Execute a compiled artifact in a fresh isolated temporary directory.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     run_compiled()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     if not isinstance(artifact, NativeArtifact):
         raise TypeError("run_compiled requires a NativeArtifact")

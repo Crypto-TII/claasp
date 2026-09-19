@@ -7,7 +7,14 @@ from claasp_next.graph import PortLike, Selection, as_selection
 
 @dataclass(frozen=True, slots=True, init=False)
 class FixedValue:
-    """Fix every unit of a graph value to a supplied boundary value."""
+    """Fix every unit of a graph value to a supplied boundary value.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (FixedValue.__dataclass_params__.frozen, tuple(field.name for field in fields(FixedValue)))
+        (True, ('target', 'value'))
+    """
 
     target: Selection
     value: object
@@ -19,7 +26,14 @@ class FixedValue:
 
 @dataclass(frozen=True, slots=True, init=False)
 class Equal:
-    """Require two graph values to be equal unit by unit."""
+    """Require two graph values to be equal unit by unit.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (Equal.__dataclass_params__.frozen, tuple(field.name for field in fields(Equal)))
+        (True, ('left', 'right'))
+    """
 
     left: Selection
     right: Selection
@@ -34,12 +48,26 @@ class Equal:
 
 @dataclass(frozen=True, slots=True, init=False)
 class NotEqual(Equal):
-    """Require two graph values to differ in at least one unit."""
+    """Require two graph values to differ in at least one unit.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (NotEqual.__dataclass_params__.frozen, tuple(field.name for field in fields(NotEqual)))
+        (True, ('left', 'right'))
+    """
 
 
 @dataclass(frozen=True, slots=True, init=False)
 class Nonzero:
-    """Require at least one unit of a graph value to be nonzero."""
+    """Require at least one unit of a graph value to be nonzero.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (Nonzero.__dataclass_params__.frozen, tuple(field.name for field in fields(Nonzero)))
+        (True, ('target',))
+    """
 
     target: Selection
 
@@ -49,7 +77,14 @@ class Nonzero:
 
 @dataclass(frozen=True, slots=True, init=False)
 class HammingWeight:
-    """Bound the number of nonzero units in a graph value."""
+    """Bound the number of nonzero units in a graph value.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (HammingWeight.__dataclass_params__.frozen, tuple(field.name for field in fields(HammingWeight)))
+        (True, ('target', 'minimum', 'maximum'))
+    """
 
     target: Selection
     minimum: int

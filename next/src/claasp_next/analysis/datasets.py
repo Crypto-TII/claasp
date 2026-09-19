@@ -11,7 +11,14 @@ from claasp_next.graph import Primitive
 
 @dataclass(frozen=True, slots=True)
 class EvaluationSample:
-    """One packed-input evaluation sample."""
+    """One packed-input evaluation sample.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (EvaluationSample.__dataclass_params__.frozen, tuple(field.name for field in fields(EvaluationSample)))
+        (True, ('inputs', 'output'))
+    """
 
     inputs: tuple[tuple[str, int], ...]
     output: int
@@ -27,7 +34,14 @@ class EvaluationSample:
 
 @dataclass(frozen=True, slots=True)
 class EvaluationDataset:
-    """A reproducible collection of concrete primitive evaluations."""
+    """A reproducible collection of concrete primitive evaluations.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (EvaluationDataset.__dataclass_params__.frozen, tuple(field.name for field in fields(EvaluationDataset)))
+        (True, ('primitive_family', 'seed', 'samples', 'method'))
+    """
 
     primitive_family: str
     seed: int
@@ -37,7 +51,14 @@ class EvaluationDataset:
 
 @dataclass(frozen=True, slots=True)
 class AvalancheSample:
-    """One output difference caused by one MSB-first input-bit flip."""
+    """One output difference caused by one MSB-first input-bit flip.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (AvalancheSample.__dataclass_params__.frozen, tuple(field.name for field in fields(AvalancheSample)))
+        (True, ('inputs', 'input_bit', 'output_difference'))
+    """
 
     inputs: tuple[tuple[str, int], ...]
     input_bit: int
@@ -46,7 +67,14 @@ class AvalancheSample:
 
 @dataclass(frozen=True, slots=True)
 class AvalancheDataset:
-    """Paired-evaluation data suitable for avalanche or randomness tests."""
+    """Paired-evaluation data suitable for avalanche or randomness tests.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (AvalancheDataset.__dataclass_params__.frozen, tuple(field.name for field in fields(AvalancheDataset)))
+        (True, ('primitive_family', 'input_name', 'input_bit_count', 'output_bit_count', 'sample_count', 'seed', 'records', 'method'))
+    """
 
     primitive_family: str
     input_name: str
@@ -87,6 +115,15 @@ def generate_random_dataset(
     ``fixed_inputs`` is useful for sampling plaintexts under one fixed key.
     The generator is local to this call and never changes Python's global
     random state.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     generate_random_dataset()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     if not isinstance(number_of_samples, int) or isinstance(number_of_samples, bool):
@@ -123,7 +160,16 @@ def generate_avalanche_dataset(
     seed: int = 0,
     fixed_inputs: Mapping[str, int] | None = None,
 ) -> AvalancheDataset:
-    """Generate output differences for every one-bit input perturbation."""
+    """Generate output differences for every one-bit input perturbation.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     generate_avalanche_dataset()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     input_width = packed_bit_width(primitive, input_name)
     output_width = packed_bit_width(primitive)

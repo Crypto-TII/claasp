@@ -5,7 +5,15 @@ from claasp_next.representations.diagrams.model import DiagramNode, PrimitiveDia
 
 
 class ASCIIArtSerializer:
-    """Render diagram nodes as boxes with deterministic dependency routes."""
+    """Render diagram nodes as boxes with deterministic dependency routes.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Speck
+        >>> from claasp_next.representations.diagrams import ASCIIArtSerializer
+        >>> ASCIIArtSerializer().serialize(Speck(number_of_rounds=1).diagram()).startswith("primitive speck\\n")
+        True
+    """
 
     def serialize(self, diagram: PrimitiveDiagram) -> str:
         """Return stable box-and-connector ASCII art for the diagram IR."""

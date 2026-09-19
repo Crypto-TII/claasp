@@ -11,7 +11,13 @@ from claasp_next.representations.constraints.polynomial.system import Polynomial
 
 
 class PowerLoweringPolicy(str, Enum):
-    """Available translations of a fixed power map."""
+    """Available translations of a fixed power map.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in PowerLoweringPolicy)
+        ('direct', 'binary_chain')
+    """
 
     DIRECT = "direct"
     BINARY_CHAIN = "binary_chain"
@@ -57,6 +63,8 @@ class PrimeFieldPolynomialModel:
 
     @staticmethod
     def variable_name(source_id: str, position: int) -> str:
+        """Return the variable name for this public typed contract."""
+
         return f"{source_id}_{position}"
 
     def _variable(self, source_id: str, position: int) -> Polynomial:
@@ -75,6 +83,8 @@ class PrimeFieldPolynomialModel:
         return self._primitive.resolve_selection(selection, values)
 
     def polynomial_system(self) -> PolynomialSystem:
+        """Compute the polynomial system for this public typed contract."""
+
         variables = []
         for name, port in self._primitive.input_ports.items():
             variables.extend(self.variable_name(name, position) for position in range(port.value_type.unit_count))

@@ -15,6 +15,13 @@ class BooleanAlgebraicEvidence:
     A degree of ``-1`` denotes the zero polynomial.  ``complete`` is explicit
     so future bounded or solver-assisted implementations cannot accidentally
     present a heuristic result as a proof.
+
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (BooleanAlgebraicEvidence.__dataclass_params__.frozen, tuple(field.name for field in fields(BooleanAlgebraicEvidence)))
+        (True, ('output_degrees', 'cube', 'cube_degrees', 'cube_coefficients', 'balanced_output_bits', 'complete', 'method'))
     """
 
     output_degrees: tuple[int, ...]
@@ -45,6 +52,15 @@ def analyze_boolean_algebra(
     polynomial after applying ``fixed_variables``.  Thus each listed bit is
     balanced over the complete cube for every assignment of variables that
     remain symbolic.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     analyze_boolean_algebra()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     result = BooleanSymbolicEvaluator().evaluate(primitive)

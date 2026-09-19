@@ -8,7 +8,14 @@ from claasp_next.domains import PrimeField
 
 @dataclass(frozen=True, slots=True, order=True)
 class Monomial:
-    """A product represented by sorted ``(variable, exponent)`` pairs."""
+    """A product represented by sorted ``(variable, exponent)`` pairs.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (Monomial.__dataclass_params__.frozen, tuple(field.name for field in fields(Monomial)))
+        (True, ('powers',))
+    """
 
     powers: tuple[tuple[str, int], ...] = ()
 
@@ -25,10 +32,14 @@ class Monomial:
 
     @classmethod
     def variable(cls, name: str) -> "Monomial":
+        """Compute the variable for this public typed contract."""
+
         return cls(((name, 1),))
 
     @property
     def degree(self) -> int:
+        """Return the degree for this public typed contract."""
+
         return sum(exponent for _, exponent in self.powers)
 
     def __mul__(self, other: "Monomial") -> "Monomial":
@@ -47,6 +58,8 @@ class Monomial:
         return Monomial(tuple((name, power * exponent) for name, power in self.powers))
 
     def evaluate(self, values: Mapping[str, int], modulus: int) -> int:
+        """Compute the evaluate for this public typed contract."""
+
         result = 1
         for name, exponent in self.powers:
             try:
@@ -98,18 +111,26 @@ class Polynomial:
 
     @classmethod
     def zero(cls, field: PrimeField) -> "Polynomial":
+        """Compute the zero for this public typed contract."""
+
         return cls(field)
 
     @classmethod
     def constant(cls, field: PrimeField, value: int) -> "Polynomial":
+        """Compute the constant for this public typed contract."""
+
         return cls(field, {Monomial(): value})
 
     @classmethod
     def variable(cls, field: PrimeField, name: str) -> "Polynomial":
+        """Compute the variable for this public typed contract."""
+
         return cls(field, {Monomial.variable(name): 1})
 
     @property
     def degree(self) -> int:
+        """Return the degree for this public typed contract."""
+
         return max((monomial.degree for monomial, _ in self.terms), default=-1)
 
     def _coerce(self, other: object) -> "Polynomial":
@@ -166,6 +187,8 @@ class Polynomial:
         return result
 
     def evaluate(self, values: Mapping[str, int]) -> int:
+        """Compute the evaluate for this public typed contract."""
+
         return sum(
             coefficient * monomial.evaluate(values, self.field.modulus)
             for monomial, coefficient in self.terms

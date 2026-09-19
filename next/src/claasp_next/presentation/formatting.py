@@ -8,7 +8,13 @@ from math import isfinite
 
 
 class ValueKind(str, Enum):
-    """Semantic formatting kind for one table cell."""
+    """Semantic formatting kind for one table cell.
+
+    EXAMPLES::
+
+        >>> tuple(member.value for member in ValueKind)
+        ('text', 'integer', 'hexadecimal', 'bit_vector', 'word_vector', 'probability', 'correlation', 'weight', 'boolean')
+    """
 
     TEXT = "text"
     INTEGER = "integer"
@@ -23,7 +29,14 @@ class ValueKind(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class FormatSpec:
-    """Formatting request independent of any renderer."""
+    """Formatting request independent of any renderer.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (FormatSpec.__dataclass_params__.frozen, tuple(field.name for field in fields(FormatSpec)))
+        (True, ('kind', 'precision', 'bit_width', 'word_width'))
+    """
 
     kind: ValueKind = ValueKind.TEXT
     precision: int = 6

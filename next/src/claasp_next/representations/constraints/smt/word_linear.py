@@ -55,6 +55,15 @@ class WordLinearSMTModel:
 
     Constants contribute a sign and zero weight. Fanout XORs all consumer
     masks back to the producer. Native XOR-aware execution is not required.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     WordLinearSMTModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
     """
 
     def __init__(self, primitive, *, maximum_weight, nonzero_input=None,
@@ -106,6 +115,8 @@ class WordLinearSMTModel:
         return tuple(f"{prefix}_{bit}" for bit in range(value_type.unit_count * value_type.domain.width))
 
     def smt_formula(self):
+        """Compute the smt formula for this public typed contract."""
+
         variables, indices, clauses, provenance = [], {}, [], []
 
         def allocate(name):

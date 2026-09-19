@@ -107,7 +107,16 @@ def deserialize_primitive(data: bytes | str) -> Primitive:
 
 
 def primitive_digest(primitive: Primitive) -> str:
-    """Return the SHA-256 identity of canonical primitive bytes."""
+    """Return the SHA-256 identity of canonical primitive bytes.
+
+    EXAMPLES::
+
+        >>> from claasp_next import primitive_digest
+        >>> from claasp_next.primitives import Speck
+        >>> digest = primitive_digest(Speck(number_of_rounds=1))
+        >>> (len(digest), digest == primitive_digest(Speck(number_of_rounds=1)))
+        (64, True)
+    """
 
     from hashlib import sha256
 

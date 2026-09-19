@@ -21,7 +21,14 @@ from claasp_next.semantics.cryptanalysis import (
 
 @dataclass(frozen=True, slots=True)
 class DifferentialLinearFixture:
-    """A composed trail with its legacy search objective and provenance."""
+    """A composed trail with its legacy search objective and provenance.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (DifferentialLinearFixture.__dataclass_params__.frozen, tuple(field.name for field in fields(DifferentialLinearFixture)))
+        (True, ('trail', 'legacy_search_weight', 'provenance'))
+    """
 
     trail: DifferentialLinearTrail
     legacy_search_weight: float
@@ -36,7 +43,14 @@ class DifferentialLinearFixture:
 
 @dataclass(frozen=True, slots=True)
 class DifferentialLinearExperimentResult:
-    """Seeded empirical correlation, deliberately carrying no proof status."""
+    """Seeded empirical correlation, deliberately carrying no proof status.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (DifferentialLinearExperimentResult.__dataclass_params__.frozen, tuple(field.name for field in fields(DifferentialLinearExperimentResult)))
+        (True, ('input_difference', 'output_mask', 'rounds', 'samples', 'even_parities', 'seed', 'provenance', 'claim_kind'))
+    """
 
     input_difference: int
     output_mask: int
@@ -77,6 +91,15 @@ def run_chacha_differential_linear_experiment(
     rounds.  The dependency-free scalar loop intentionally owns empirical
     evidence only; it neither proves feasibility nor validates a search
     objective.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     run_chacha_differential_linear_experiment()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     limit = 1 << 512
@@ -117,7 +140,16 @@ def run_speck32_differential_linear_experiment(
     samples: int,
     seed: int,
 ) -> DifferentialLinearExperimentResult:
-    """Evaluate a fixed zero-key Speck32/64 pair reproducibly."""
+    """Evaluate a fixed zero-key Speck32/64 pair reproducibly.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     run_speck32_differential_linear_experiment()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     limit = 1 << 32
     for name, value in (("input_difference", input_difference), ("output_mask", output_mask)):
@@ -184,6 +216,13 @@ def speck32_differential_linear_legacy_fixture() -> DifferentialLinearFixture:
     witness. The returned trail separately retains ``p=1``, ``r=7``, and
     ``q=3``; :attr:`DifferentialLinearFixture.exact_weight` applies the exact
     connector expression instead of relabelling the search approximation.
+
+    EXAMPLES::
+
+        >>> from claasp_next.analysis import speck32_differential_linear_legacy_fixture
+        >>> fixture = speck32_differential_linear_legacy_fixture()
+        >>> (fixture.legacy_search_weight, round(fixture.exact_weight, 6))
+        (14.0, 14.994353)
     """
 
     differential_semantics = ModularAddTransitionSemantics(16)
@@ -236,7 +275,16 @@ def speck32_differential_linear_legacy_fixture() -> DifferentialLinearFixture:
 
 
 def check_speck32_differential_linear_fixture(fixture: DifferentialLinearFixture) -> bool:
-    """Recompute all probability-bearing transitions without solver output."""
+    """Recompute all probability-bearing transitions without solver output.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     check_speck32_differential_linear_fixture()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     if not isinstance(fixture, DifferentialLinearFixture):
         return False

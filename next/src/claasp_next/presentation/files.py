@@ -20,7 +20,14 @@ _EXTENSIONS = {
 
 @dataclass(frozen=True, slots=True)
 class WrittenReport:
-    """The explicit path, format, and UTF-8 byte count of one written report."""
+    """The explicit path, format, and UTF-8 byte count of one written report.
+
+    EXAMPLES::
+
+        >>> from dataclasses import fields
+        >>> (WrittenReport.__dataclass_params__.frozen, tuple(field.name for field in fields(WrittenReport)))
+        (True, ('path', 'format', 'byte_count'))
+    """
 
     path: Path
     format: str
@@ -55,6 +62,15 @@ def write_report(
     The function never derives directories from primitive or test names and
     never adds a timestamp. Parent creation is opt-in and applies only to the
     exact parent supplied by the caller.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     write_report()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
     """
 
     normalized = format.strip().lower()
@@ -80,7 +96,16 @@ def write_report(
 
 
 def render_report(report: ReportData, *, format: str = "terminal") -> str:
-    """Render a complete human-readable report with citations and provenance."""
+    """Render a complete human-readable report with citations and provenance.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     render_report()
+        ... except TypeError:
+        ...     print("required arguments rejected")
+        required arguments rejected
+    """
 
     normalized = format.strip().lower()
     if normalized not in {"terminal", "markdown"}:

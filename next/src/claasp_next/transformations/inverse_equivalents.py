@@ -17,7 +17,16 @@ EquivalentFactory = Callable[[Primitive], Primitive]
 
 @dataclass(frozen=True, slots=True)
 class PrimitiveInverseEquivalent:
-    """One reviewed replacement graph for inversion of a public realization."""
+    """One reviewed replacement graph for inversion of a public realization.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Aradi
+        >>> from claasp_next.transformations.inverse_equivalents import inversion_equivalent
+        >>> replacement, contract = inversion_equivalent(Aradi(number_of_rounds=1))
+        >>> (replacement.family_name, contract.source_type.rsplit(".", 1)[-1])
+        ('aradi', 'Aradi')
+    """
 
     source_type: str
     replacement_type: str
@@ -231,7 +240,15 @@ def _qualified_type(value) -> str:
 
 
 def inversion_equivalent(primitive: Primitive):
-    """Return a validated reviewed equivalent graph, when one is registered."""
+    """Return a validated reviewed equivalent graph, when one is registered.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Speck
+        >>> from claasp_next.transformations.inverse_equivalents import inversion_equivalent
+        >>> inversion_equivalent(Speck(number_of_rounds=1))
+        (None, None)
+    """
 
     contract = DEFAULT_PRIMITIVE_INVERSE_EQUIVALENTS.get(_qualified_type(primitive))
     if contract is None:
@@ -258,7 +275,15 @@ def inversion_equivalent(primitive: Primitive):
 
 
 def direct_inversion_equivalent(primitive: Primitive, output_name: str):
-    """Return a reviewed directly authored primitive inverse, when registered."""
+    """Return a reviewed directly authored primitive inverse, when registered.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Speck
+        >>> from claasp_next.transformations.inverse_equivalents import direct_inversion_equivalent
+        >>> direct_inversion_equivalent(Speck(number_of_rounds=1), "output")
+        (None, None)
+    """
 
     contract = _DIRECT_INVERSES.get(_qualified_type(primitive))
     if contract is None:

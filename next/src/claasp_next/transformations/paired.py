@@ -18,7 +18,15 @@ from claasp_next.transformations.contracts import (
 
 @dataclass(frozen=True, slots=True)
 class PairedTransformationResult:
-    """A paired graph, its scopes, and typed XOR observations."""
+    """A paired graph, its scopes, and typed XOR observations.
+
+    EXAMPLES::
+
+        >>> from claasp_next.primitives import Speck
+        >>> result = Speck(number_of_rounds=1).paired_xor(shared_inputs=("key",))
+        >>> (tuple(result.differences_by_input), tuple(result.primitive.input_ports))
+        (('plaintext',), ('left_plaintext', 'right_plaintext', 'key'))
+    """
 
     primitive: Primitive
     left_scope: CompositeInstance

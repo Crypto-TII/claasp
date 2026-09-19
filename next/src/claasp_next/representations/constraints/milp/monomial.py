@@ -14,6 +14,15 @@ class BooleanMonomialGraphMILPModel:
     components needed by Simon. Every component input has a separate edge
     exponent; fan-out is modeled as Boolean COPY rather than accidental
     equality between all consumers.
+
+
+    EXAMPLES::
+
+        >>> try:
+        ...     BooleanMonomialGraphMILPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
     """
 
     def __init__(self, primitive, output_bit: int, variable_input: str,
@@ -179,7 +188,16 @@ class BooleanMonomialGraphMILPModel:
 
 
 class MonomialTransitionMILPModel:
-    """Select one exact input/output monomial transition of a lookup table."""
+    """Select one exact input/output monomial transition of a lookup table.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     MonomialTransitionMILPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, table) -> None:
         self.table = monomial_transition_table(tuple(table))
@@ -256,7 +274,16 @@ class MonomialTransitionMILPModel:
 
 
 class PresentMonomialTrailMILPModel:
-    """Compose exact local monomial transitions over reduced PRESENT rounds."""
+    """Compose exact local monomial transitions over reduced PRESENT rounds.
+
+    EXAMPLES::
+
+        >>> try:
+        ...     PresentMonomialTrailMILPModel()
+        ... except TypeError:
+        ...     print("required configuration rejected")
+        required configuration rejected
+    """
 
     def __init__(self, primitive, input_mask: int, output_mask: int) -> None:
         from claasp_next.components import BitVectorSBox, Permutation

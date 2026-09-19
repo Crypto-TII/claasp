@@ -10,7 +10,15 @@ def ChaChaQuarterRound(
     word_size: int = 32,
     rotations: tuple[int, int, int, int] = (16, 12, 8, 7),
 ) -> CompositeDefinition:
-    """Return the four-word ChaCha quarter-round composition."""
+    """Return the four-word ChaCha quarter-round composition.
+
+    EXAMPLES::
+
+        >>> from claasp_next.composites import ChaChaQuarterRound
+        >>> hex(ChaChaQuarterRound().evaluate(
+        ...     0x11111111, 0x01020304, 0x9B8D6F43, 0x01234567))
+        '0xea2a92f4cb1cf8ce4581472e5881c4bb'
+    """
 
     if not isinstance(word_size, int) or isinstance(word_size, bool) or word_size <= 0:
         raise ValueError("word_size must be a positive integer")

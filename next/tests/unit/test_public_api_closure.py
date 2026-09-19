@@ -144,3 +144,23 @@ def test_foundational_public_api_documentation_is_closed():
     violations = public_api_closure.documentation_violations(entries, authority)
 
     assert not [violation for violation in violations if violation.startswith(prefixes)]
+
+
+def test_processing_public_api_documentation_is_closed():
+    """Keep the M10.16d representation and result-processing boundary closed."""
+
+    prefixes = (
+        "claasp_next.analysis",
+        "claasp_next.catalogue",
+        "claasp_next.composites",
+        "claasp_next.drivers",
+        "claasp_next.presentation",
+        "claasp_next.representations",
+        "claasp_next.serialization",
+        "claasp_next.transformations",
+    )
+    entries = public_api_closure.enumerate_public_api()
+    authority = public_api_closure.load_authority()
+    violations = public_api_closure.documentation_violations(entries, authority)
+
+    assert not [violation for violation in violations if violation.startswith(prefixes)]
