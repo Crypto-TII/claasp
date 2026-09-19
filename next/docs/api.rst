@@ -142,3 +142,12 @@ MILP models
 
 .. automodule:: claasp_next.representations.constraints.milp
    :members:
+
+Complete public namespace index
+-------------------------------
+
+Every module that explicitly declares the public API is listed below. This
+index is generated from the same mechanical authority used by the M10.16
+closure gate.
+
+.. include:: public_api_namespaces.rst

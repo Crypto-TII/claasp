@@ -1,13 +1,13 @@
 {
   "counts_by_code": {
-    "arg-type": 181,
+    "arg-type": 176,
     "assignment": 81,
     "attr-defined": 131,
     "call-arg": 7,
     "call-overload": 82,
     "dict-item": 29,
     "has-type": 22,
-    "import-untyped": 4,
+    "import-untyped": 1,
     "index": 73,
     "list-item": 4,
     "misc": 29,
@@ -21,11 +21,11 @@
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp_next": 721,
-    "tests": 168,
-    "tools": 24
+    "src/claasp_next": 719,
+    "tests": 163,
+    "tools": 23
   },
-  "diagnostic_count": 913,
+  "diagnostic_count": 905,
   "diagnostics": [
     {
       "code": "operator",
@@ -285,13 +285,6 @@
       "line": 328,
       "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
       "path": "src/claasp_next/drivers/native.py"
-    },
-    {
-      "code": "import-untyped",
-      "column": 1,
-      "line": 54,
-      "message": "Skipping analyzing \"sklearn.neural_network\": module is installed, but missing library stubs or py.typed marker",
-      "path": "src/claasp_next/drivers/neural/sklearn_driver.py"
     },
     {
       "code": "union-attr",
@@ -749,13 +742,6 @@
       "path": "src/claasp_next/presentation/adapters.py"
     },
     {
-      "code": "import-untyped",
-      "column": 1,
-      "line": 19,
-      "message": "Library stubs not installed for \"pandas\"",
-      "path": "src/claasp_next/presentation/dataframe.py"
-    },
-    {
       "code": "arg-type",
       "column": 40,
       "line": 72,
@@ -849,7 +835,7 @@
     {
       "code": "assignment",
       "column": 27,
-      "line": 43,
+      "line": 41,
       "message": "Incompatible types in assignment (expression has type \"dict[Never, Never]\", variable has type \"tuple[object, ...]\")",
       "path": "src/claasp_next/primitives/block_ciphers/kalyna.py"
     },
@@ -5957,13 +5943,6 @@
       "path": "tests/unit/test_presentation_plots.py"
     },
     {
-      "code": "arg-type",
-      "column": 18,
-      "line": 100,
-      "message": "Argument 1 to \"close\" has incompatible type \"object\"; expected \"int | str | Figure | Literal['all'] | None\"",
-      "path": "tests/unit/test_presentation_plots.py"
-    },
-    {
       "code": "attr-defined",
       "column": 30,
       "line": 153,
@@ -5971,38 +5950,10 @@
       "path": "tests/unit/test_presentation_plots.py"
     },
     {
-      "code": "arg-type",
-      "column": 18,
-      "line": 154,
-      "message": "Argument 1 to \"close\" has incompatible type \"object\"; expected \"int | str | Figure | Literal['all'] | None\"",
-      "path": "tests/unit/test_presentation_plots.py"
-    },
-    {
       "code": "attr-defined",
       "column": 12,
       "line": 160,
       "message": "\"object\" has no attribute \"axes\"",
-      "path": "tests/unit/test_presentation_plots.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 18,
-      "line": 164,
-      "message": "Argument 1 to \"close\" has incompatible type \"object\"; expected \"int | str | Figure | Literal['all'] | None\"",
-      "path": "tests/unit/test_presentation_plots.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 18,
-      "line": 178,
-      "message": "Argument 1 to \"close\" has incompatible type \"object\"; expected \"int | str | Figure | Literal['all'] | None\"",
-      "path": "tests/unit/test_presentation_plots.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 18,
-      "line": 189,
-      "message": "Argument 1 to \"close\" has incompatible type \"object\"; expected \"int | str | Figure | Literal['all'] | None\"",
       "path": "tests/unit/test_presentation_plots.py"
     },
     {
@@ -6291,13 +6242,6 @@
       "line": 32,
       "message": "Cannot infer type of lambda",
       "path": "tools/benchmark_batch.py"
-    },
-    {
-      "code": "import-untyped",
-      "column": 1,
-      "line": 15,
-      "message": "Skipping analyzing \"claasp.cipher\": module is installed, but missing library stubs or py.typed marker",
-      "path": "tools/capture_legacy_primitive_vectors.py"
     },
     {
       "code": "arg-type",

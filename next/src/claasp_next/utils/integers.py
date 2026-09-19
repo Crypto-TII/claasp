@@ -12,13 +12,13 @@ def coerce_exact_int(value: object, parameter_name: str) -> int:
 
     EXAMPLES::
 
-    >>> from claasp_next.utils import coerce_exact_int
-    >>> coerce_exact_int(5.0, "rounds")
-    5
-    >>> coerce_exact_int(True, "rounds")
-    Traceback (most recent call last):
-    ...
-    ValueError: rounds must be an integer
+        >>> from claasp_next.utils import coerce_exact_int
+        >>> coerce_exact_int(5.0, "rounds")
+        5
+        >>> coerce_exact_int(True, "rounds")
+        Traceback (most recent call last):
+        ...
+        ValueError: rounds must be an integer
     """
 
     if isinstance(value, (bool, str, bytes, bytearray)):
@@ -39,9 +39,9 @@ def bitmask(width: int) -> int:
 
     EXAMPLES::
 
-    >>> from claasp_next.utils import bitmask
-    >>> hex(bitmask(32))
-    '0xffffffff'
+        >>> from claasp_next.utils import bitmask
+        >>> hex(bitmask(32))
+        '0xffffffff'
     """
 
     width = coerce_exact_int(width, "width")

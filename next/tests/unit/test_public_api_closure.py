@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
+import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 
@@ -182,3 +184,28 @@ def test_primitive_catalogue_public_api_documentation_is_closed():
     assert not [
         violation for violation in violations if violation.startswith("claasp_next.primitives")
     ]
+
+
+def test_complete_public_api_audit_does_not_import_optional_packages():
+    code = """
+import importlib.util
+import sys
+from pathlib import Path
+path = Path('tools/public_api_closure.py')
+spec = importlib.util.spec_from_file_location('public_api_closure', path)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+before = set(sys.modules)
+module.enumerate_public_api()
+forbidden = {'matplotlib', 'minizinc', 'numpy', 'pandas', 'sage', 'sklearn', 'z3'}
+print(','.join(sorted(forbidden & {name.split('.')[0] for name in set(sys.modules) - before})))
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=TOOL_PATH.parents[1],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.stdout.strip() == ""

@@ -26,7 +26,7 @@ extensions = [
 
 templates_path = ["_templates"]
 master_doc = f"{guide}_guide"
-exclude_patterns = ["_build", "index.rst"]
+exclude_patterns = ["_build", "index.rst", "public_api_namespaces.rst"]
 if guide == "user":
     exclude_patterns.extend(
         [
@@ -48,6 +48,7 @@ if guide == "user":
             "component_analysis_architecture.rst",
             "presentation_architecture.rst",
             "serialization_architecture.rst",
+            "documentation_quality.rst",
         ]
     )
 else:
@@ -91,5 +92,6 @@ html_theme_options = {
 
 autodoc_member_order = "bysource"
 autodoc_typehints = "description"
+autodoc_preserve_defaults = True
 doctest_test_doctest_blocks = "default"
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}

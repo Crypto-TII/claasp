@@ -17,8 +17,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import numpy as np
-
 from claasp_next.graph.bit_builder import BitGraphPrimitive
 from claasp_next.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -38,10 +36,18 @@ round_constants = [
 ]
 
 
-m0 = np.array([[0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-m1 = np.array([[1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-m2 = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 1]])
-m3 = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0]])
+m0 = [[0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+m1 = [[1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+m2 = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 1]]
+m3 = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0]]
+
+
+def _block_matrix(block_rows):
+    return [
+        [value for block in block_row for value in block[row]]
+        for block_row in block_rows
+        for row in range(len(block_row[0]))
+    ]
 
 
 def get_shift_rows_matrix():
@@ -72,20 +78,23 @@ def get_shift_rows_matrix_inverse():
 
 
 def get_m_prime():
-    m_hat_0 = np.block([[m0, m1, m2, m3], [m1, m2, m3, m0], [m2, m3, m0, m1], [m3, m0, m1, m2]])
-
-    m_hat_1 = np.block([[m1, m2, m3, m0], [m2, m3, m0, m1], [m3, m0, m1, m2], [m0, m1, m2, m3]])
-
-    m_prime = np.block(
-        [
-            [m_hat_0, np.zeros_like(m_hat_0), np.zeros_like(m_hat_0), np.zeros_like(m_hat_0)],
-            [np.zeros_like(m_hat_0), m_hat_1, np.zeros_like(m_hat_0), np.zeros_like(m_hat_0)],
-            [np.zeros_like(m_hat_0), np.zeros_like(m_hat_0), m_hat_1, np.zeros_like(m_hat_0)],
-            [np.zeros_like(m_hat_0), np.zeros_like(m_hat_0), np.zeros_like(m_hat_0), m_hat_0],
-        ]
+    m_hat_0 = _block_matrix(
+        [[m0, m1, m2, m3], [m1, m2, m3, m0], [m2, m3, m0, m1], [m3, m0, m1, m2]]
     )
 
-    return m_prime.tolist()
+    m_hat_1 = _block_matrix(
+        [[m1, m2, m3, m0], [m2, m3, m0, m1], [m3, m0, m1, m2], [m0, m1, m2, m3]]
+    )
+
+    zero = [[0] * 16 for _ in range(16)]
+    return _block_matrix(
+        [
+            [m_hat_0, zero, zero, zero],
+            [zero, m_hat_1, zero, zero],
+            [zero, zero, m_hat_1, zero],
+            [zero, zero, zero, m_hat_0],
+        ]
+    )
 
 
 sbox = [0xB, 0xF, 0x3, 0x2, 0xA, 0xC, 0x9, 0x1, 0x6, 0x7, 0x8, 0x0, 0xE, 0x5, 0xD, 0x4]

@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-import numpy as np
-
 from claasp_next.graph.bit_builder import BitGraphPrimitive
 from claasp_next.primitive_inputs import INPUT_KEY, INPUT_PLAINTEXT
 
@@ -127,14 +125,14 @@ class Kalyna(BitGraphPrimitive):
         sboxes = {0: pi0_e, 1: pi1_e, 2: pi2_e, 3: pi3_e}
         mapping = [0, 1, 2, 3, 12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7]
 
-        M = np.zeros((128, 128), dtype=int)
+        permutation_matrix = [[0] * 128 for _ in range(128)]
 
         for output_byte_index in range(16):
             input_byte_index = mapping[output_byte_index]
             for bit_index in range(8):
                 output_bit = output_byte_index * 8 + bit_index
                 input_bit = input_byte_index * 8 + bit_index
-                M[output_bit, input_bit] = 1
+                permutation_matrix[output_bit][input_bit] = 1
 
         self.kalyna_matrix = [
             [0x01, 0x04, 0x07, 0x06, 0x08, 0x01, 0x05, 0x01],
@@ -196,7 +194,7 @@ class Kalyna(BitGraphPrimitive):
         input_ids = [c.id for c in sboxes_components]
         input_positions = [list(range(8)) for _ in range(16)]
         shift1 = self.add_linear_layer_component(
-            input_ids, input_positions, self.PRIMITIVE_BLOCK_SIZE, M.tolist()
+            input_ids, input_positions, self.PRIMITIVE_BLOCK_SIZE, permutation_matrix
         )
         g1_first = self.add_mix_column_component(
             [shift1.id],
@@ -249,7 +247,7 @@ class Kalyna(BitGraphPrimitive):
         input_ids_2 = [c.id for c in sboxes_components_2]
         input_positions_2 = [list(range(8)) for _ in range(16)]
         shift_2 = self.add_linear_layer_component(
-            input_ids_2, input_positions_2, self.PRIMITIVE_BLOCK_SIZE, M.tolist()
+            input_ids_2, input_positions_2, self.PRIMITIVE_BLOCK_SIZE, permutation_matrix
         )
         g2_first = self.add_mix_column_component(
             [shift_2.id],
@@ -302,7 +300,7 @@ class Kalyna(BitGraphPrimitive):
         input_ids_3 = [c.id for c in sboxes_components_3]
         input_positions_3 = [list(range(8)) for _ in range(16)]
         shift_3 = self.add_linear_layer_component(
-            input_ids_3, input_positions_3, self.PRIMITIVE_BLOCK_SIZE, M.tolist()
+            input_ids_3, input_positions_3, self.PRIMITIVE_BLOCK_SIZE, permutation_matrix
         )
         g3_first = self.add_mix_column_component(
             [shift_3.id],
@@ -388,7 +386,7 @@ class Kalyna(BitGraphPrimitive):
             input_ids_E = [c.id for c in sboxes_components_E]
             input_positions_E = [list(range(8)) for _ in range(16)]
             shift_E = self.add_linear_layer_component(
-                input_ids_E, input_positions_E, self.PRIMITIVE_BLOCK_SIZE, M.tolist()
+                input_ids_E, input_positions_E, self.PRIMITIVE_BLOCK_SIZE, permutation_matrix
             )
             gE_first = self.add_mix_column_component(
                 [shift_E.id],
@@ -441,7 +439,7 @@ class Kalyna(BitGraphPrimitive):
             input_ids_E2 = [c.id for c in sboxes_components_E2]
             input_positions_E2 = [list(range(8)) for _ in range(16)]
             shift_E2 = self.add_linear_layer_component(
-                input_ids_E2, input_positions_E2, self.PRIMITIVE_BLOCK_SIZE, M.tolist()
+                input_ids_E2, input_positions_E2, self.PRIMITIVE_BLOCK_SIZE, permutation_matrix
             )
             gE2_first = self.add_mix_column_component(
                 [shift_E2.id],
@@ -550,7 +548,7 @@ class Kalyna(BitGraphPrimitive):
             input_ids = [c.id for c in sboxes_components]
             input_positions = [list(range(8)) for _ in range(16)]
             shift = self.add_linear_layer_component(
-                input_ids, input_positions, self.PRIMITIVE_BLOCK_SIZE, M.tolist()
+                input_ids, input_positions, self.PRIMITIVE_BLOCK_SIZE, permutation_matrix
             )
             g_first = self.add_mix_column_component(
                 [shift.id],
@@ -635,7 +633,7 @@ class Kalyna(BitGraphPrimitive):
         input_ids = [c.id for c in sboxes_components]
         input_positions = [list(range(8)) for _ in range(16)]
         shift = self.add_linear_layer_component(
-            input_ids, input_positions, self.PRIMITIVE_BLOCK_SIZE, M.tolist()
+            input_ids, input_positions, self.PRIMITIVE_BLOCK_SIZE, permutation_matrix
         )
         g_first = self.add_mix_column_component(
             [shift.id],

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools==78.1.0", "wheel==0.45.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,13 +7,13 @@ name = "claasp-next"
 version = "0.1.0.dev0"
 description = "Sage-independent typed core for the next major CLAASP release"
 requires-python = ">=3.11"
-license = {text = "GPL-3.0-or-later"}
+license = "GPL-3.0-or-later"
 authors = [{name = "TII Cryptanalysis Team"}]
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
-docs = ["sphinx>=6", "furo>=2024.1.29"]
+dev = ["pytest==9.1.1", "build==1.3.0"]
+docs = ["sphinx==9.0.4", "furo==2025.12.19"]
 quality = ["ruff==0.16.8", "mypy==2.3.1"]
 ml = ["numpy>=1.24", "scikit-learn>=1.3"]
 presentation = ["matplotlib>=3.7", "pandas>=2"]
@@ -109,6 +109,26 @@ show_error_codes = true
 show_column_numbers = true
 pretty = false
 no_error_summary = true
+
+[[tool.mypy.overrides]]
+# Optional presentation/ML packages and the legacy capture source are absent
+# from the dependency-free quality environment.  Treat their imported APIs as
+# external boundaries whether or not a contributor happens to have them
+# installed, so the exact baseline is reproducible.
+module = [
+  "claasp",
+  "claasp.*",
+  "matplotlib",
+  "matplotlib.*",
+  "numpy",
+  "numpy.*",
+  "pandas",
+  "pandas.*",
+  "sklearn",
+  "sklearn.*",
+]
+follow_imports = "skip"
+ignore_missing_imports = true
 
 [tool.setuptools.packages.find]
 where = ["src"]

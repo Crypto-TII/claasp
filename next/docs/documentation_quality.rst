@@ -96,3 +96,8 @@ its path, position, error code, and message, and the closure command rejects
 new, stale, duplicate, or out-of-scope entries. Inline suppressions are not
 accepted. Contributors should narrow public values and immutable result types
 at their source, then update the baseline only to remove resolved diagnostics.
+Optional NumPy, pandas, Matplotlib, scikit-learn, and legacy-capture imports
+are explicit skipped-import boundaries. This makes their values ``Any`` at
+that boundary and keeps the exact result independent of packages installed on
+a contributor host; their own implementations are not part of the v5 typing
+scope.

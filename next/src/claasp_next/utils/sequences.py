@@ -28,9 +28,9 @@ def rotate_right(sequence: list[T] | tuple[T, ...], amount: int) -> list[T] | tu
 
     EXAMPLES::
 
-    >>> from claasp_next.utils import rotate_sequence_right
-    >>> rotate_sequence_right([1, 2, 3, 4, 5], 2)
-    [4, 5, 1, 2, 3]
+        >>> from claasp_next.utils import rotate_sequence_right
+        >>> rotate_sequence_right([1, 2, 3, 4, 5], 2)
+        [4, 5, 1, 2, 3]
     """
 
     _validate(sequence, amount)
