@@ -287,7 +287,7 @@
       ],
       "rationale": "Deterministic typed Python and C compilers plus explicit isolated drivers replace mutable legacy generators, shared package-directory artifacts, and implicit compilation.",
       "responsibility": "code generator",
-      "status": "owned-in-m10.15a",
+      "status": "migrated-in-m10.15f",
       "tests": [],
       "v5_destination": "next/src/claasp_next/representations/source; next/src/claasp_next/drivers/source.py"
     },
@@ -10701,7 +10701,7 @@
       ],
       "rationale": "Semantic parity, deterministic source, explicit unsupported diagnostics, safe paths, compiler provenance, and bounded subprocess tests replace generated-line and shared-library side-effect assertions.",
       "responsibility": "code generator test",
-      "status": "owned-in-m10.15a",
+      "status": "superseded-in-m10.15f",
       "tests": [
         "test_generate_bit_based_vectorized_python_code_string",
         "test_generate_evaluate_c_code_shared_library_word_based",

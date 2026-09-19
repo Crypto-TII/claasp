@@ -4,6 +4,7 @@ from claasp_next.representations.source.model import (
     SourceArtifact, SourceCompilationResult, SourceDiagnostic, SourceLanguage, SourceStatus,
 )
 from claasp_next.representations.source.python import PYTHON_COMPILER, compile_python_source
+from claasp_next.representations.source.c import C_COMPILER, compile_c_source
 
 
 def compile_source(primitive, *, target: SourceLanguage | str = SourceLanguage.PYTHON):
@@ -28,13 +29,11 @@ def compile_source(primitive, *, target: SourceLanguage | str = SourceLanguage.P
         )
     if language is SourceLanguage.PYTHON:
         return compile_python_source(primitive)
-    return SourceCompilationResult(
-        SourceStatus.UNSUPPORTED,
-        diagnostic=SourceDiagnostic("unsupported_language", "C source compilation is not available in this slice"),
-    )
+    return compile_c_source(primitive)
 
 
 __all__ = [
-    "PYTHON_COMPILER", "SourceArtifact", "SourceCompilationResult", "SourceDiagnostic",
-    "SourceLanguage", "SourceStatus", "compile_python_source", "compile_source",
+    "C_COMPILER", "PYTHON_COMPILER", "SourceArtifact", "SourceCompilationResult",
+    "SourceDiagnostic", "SourceLanguage", "SourceStatus", "compile_c_source",
+    "compile_python_source", "compile_source",
 ]

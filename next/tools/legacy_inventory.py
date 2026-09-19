@@ -1182,8 +1182,8 @@ for _path, (_destination, _disposition, _rationale) in _M10_15_OVERRIDES.items()
         "prerequisites": ["M10.14"],
         "disposition": _disposition,
         "status": (
-            "owned-in-m10.15a" if "code_generator" in _path
-            else "superseded-in-m10.15d"
+            ("migrated-in-m10.15f" if _path.startswith("claasp/") else "superseded-in-m10.15f")
+            if "code_generator" in _path else "superseded-in-m10.15d"
         ),
         "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
         "rationale": _rationale,

@@ -35,7 +35,9 @@ def test_m10_15_python_records_have_explicit_ownership_and_rationales():
     owned = [item for item in inventory["records"] if item.get("milestone_owner") == "M10.15a"]
     assert len(owned) == 11
     for item in owned:
-        assert item["status"] in {"owned-in-m10.15a", "superseded-in-m10.15d"}
+        assert item["status"] in {
+            "migrated-in-m10.15f", "superseded-in-m10.15d", "superseded-in-m10.15f",
+        }
         assert item["disposition"] in {"migrate", "supersede"}
         assert item["v5_destination"].startswith("next/")
         assert item["rationale"] and item["acceptance_criterion"]

@@ -46,6 +46,10 @@ from claasp_next.representations.source import (
 from claasp_next.drivers.source import (
     SourceExecutionResult, SourceExecutionStatus, run_python_source, write_source,
 )
+from claasp_next.drivers.native import (
+    NativeArtifact, NativeCompilationResult, NativeCompilationStatus,
+    NativeExecutionResult, NativeExecutionStatus, compile_native, run_compiled,
+)
 
 __all__ = [
     "BinaryExtensionField",
@@ -99,6 +103,11 @@ __all__ = [
     "SourceExecutionStatus",
     "SourceLanguage",
     "SourceStatus",
+    "NativeArtifact",
+    "NativeCompilationResult",
+    "NativeCompilationStatus",
+    "NativeExecutionResult",
+    "NativeExecutionStatus",
     "TransposedBatchEvaluator",
     "TransposedBatchExecutionDriver",
     "ValueType",
@@ -129,6 +138,8 @@ __all__ = [
     "compile_source",
     "run_python_source",
     "write_source",
+    "compile_native",
+    "run_compiled",
     "public_input",
     "secret_input",
 ]
