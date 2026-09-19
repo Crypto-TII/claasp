@@ -34,6 +34,14 @@
       "disposition": "supersede",
       "rationale": "Canonical bytes, safe explicit writes, isolated execution, and semantic parity replace stdout formatting and current-directory side effects; M10.10 evidence in the same file remains closed.",
       "fixed_evidence": ["next/tests/unit/test_serialization.py", "next/tests/unit/test_source_generation.py", "next/tests/integration/test_native_source_driver.py"]
+    },
+    {
+      "path": "tests/benchmark/cipher_test.py",
+      "owner": "M10.15d-f",
+      "entry_points": ["test_evaluate_using_c_with_aes_cipher", "test_evaluate_using_c_with_speck_cipher", "test_evaluate_vectorized_with_aes_cipher", "test_evaluate_vectorized_with_speck_cipher"],
+      "disposition": "supersede",
+      "rationale": "Bounded semantic parity and isolated compiler-driver tests replace pytest timing wrappers around shared-directory native builds and NumPy layouts. Scalar and avalanche benchmarks in the mixed file retain their achieved owners.",
+      "fixed_evidence": ["next/tests/unit/test_batch_evaluation.py", "next/tests/integration/test_native_source_driver.py"]
     }
   ],
   "diagram_audit": {

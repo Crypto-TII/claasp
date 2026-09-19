@@ -345,31 +345,32 @@
       "v5_destination": "next/src/claasp_next/analysis/component_properties.py; next/src/claasp_next/drivers/analysis; M10.14 presentation layer"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Typed dependency-free continuous heuristic results preserve fixed one-/two-round Speck evidence, explicit masks, binary64 precision, and tolerances without exact-proof claims.",
       "dependencies": [
         "claasp",
         "decimal",
         "multiprocessing",
         "numpy"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M10.6d6",
       "path": "claasp/cipher_modules/continuous_diffusion_analysis.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.6d6"
       ],
       "public_entry_points": [
         "ContinuousDiffusionAnalysis"
       ],
-      "rationale": null,
+      "rationale": "M10.6d6 already replaced the mutable NumPy/Sage orchestration and report coupling. M10.15 closes the stale record but does not reopen continuous-analysis semantics.",
       "responsibility": "continuous diffusion analysis",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.15d-audit",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/continuous.py; next/src/claasp_next/analysis/legacy_evidence.py"
     },
     {
       "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
@@ -397,7 +398,7 @@
       ],
       "rationale": "The achieved scalar and dependency-free batch engines remain the semantic oracle; only explicit generated-artifact execution is added as a separate driver.",
       "responsibility": "evaluator",
-      "status": "owned-in-m10.15a",
+      "status": "superseded-in-m10.15d",
       "tests": [],
       "v5_destination": "next/src/claasp_next/representations/execution; next/src/claasp_next/drivers/source.py"
     },
@@ -466,7 +467,7 @@
       ],
       "rationale": "Typed components and the registered scalar evaluator already own the mathematical behavior; free-form Sage/bitstring helpers and generated-code string helpers are not duplicated.",
       "responsibility": "generic functions",
-      "status": "owned-in-m10.15a",
+      "status": "superseded-in-m10.15d",
       "tests": [],
       "v5_destination": "next/src/claasp_next/components; next/src/claasp_next/representations/execution"
     },
@@ -529,7 +530,7 @@
       ],
       "rationale": "M10.6d6 already owns typed continuous heuristic semantics and evidence; the NumPy/Sage helper monolith is closed without reopening that milestone.",
       "responsibility": "generic functions continuous diffusion analysis",
-      "status": "owned-in-m10.15a",
+      "status": "superseded-in-m10.15d",
       "tests": [],
       "v5_destination": "next/src/claasp_next/analysis/continuous.py; next/tests/unit/test_continuous_heuristics.py"
     },
@@ -574,7 +575,7 @@
       ],
       "rationale": "The dependency-free transposed batch driver preserves scalar semantics for arbitrary domains without a required NumPy-specific bit API.",
       "responsibility": "generic functions vectorized bit",
-      "status": "owned-in-m10.15a",
+      "status": "superseded-in-m10.15d",
       "tests": [],
       "v5_destination": "next/src/claasp_next/representations/execution/batch.py"
     },
@@ -625,7 +626,7 @@
       ],
       "rationale": "Typed logical units and the dependency-free batch driver replace byte-layout heuristics and mandatory NumPy conversion helpers.",
       "responsibility": "generic functions vectorized byte",
-      "status": "owned-in-m10.15a",
+      "status": "superseded-in-m10.15d",
       "tests": [],
       "v5_destination": "next/src/claasp_next/representations/execution/batch.py"
     },
@@ -10975,12 +10976,12 @@
       "v5_destination": "next/tests/unit/test_component_properties.py; next/tests/integration/test_component_analysis_minizinc.py; M10.14 presentation tests"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Fixed continuous XOR/rotation/addition/Speck evidence and typed presentation pass independently of legacy random orchestration and nested report dictionaries.",
       "dependencies": [
         "claasp",
         "plotly"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10993,9 +10994,11 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M10.6d6",
       "path": "tests/unit/cipher_modules/continuous_diffusion_analysis_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.6d6",
+        "M10.14"
       ],
       "public_entry_points": [
         "test_continuous_tests",
@@ -11005,9 +11008,9 @@
         "test_continuous_diffusion_tests",
         "test_continuous_neutrality_measure_for_bit_j"
       ],
-      "rationale": null,
+      "rationale": "Exact continuous fixtures were achieved in M10.6d6 and presentation in M10.14; stochastic ranges, component-id parsing, and legacy report shapes are not evaluator contracts.",
       "responsibility": "continuous diffusion analysis test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m10.15d-audit",
       "tests": [
         "test_continuous_avalanche_factor",
         "test_continuous_diffusion_factor",
@@ -11016,7 +11019,7 @@
         "test_continuous_tests",
         "test_continuous_tests_report"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_continuous_heuristics.py; next/tests/unit/test_presentation_adapters.py"
     },
     {
       "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
@@ -11046,7 +11049,7 @@
       ],
       "rationale": "M10.6d6 fixed continuous-analysis evidence already covers the retained heuristic semantics independently of generated evaluator code.",
       "responsibility": "generic functions continuous diffusion analysis test",
-      "status": "owned-in-m10.15a",
+      "status": "superseded-in-m10.15d",
       "tests": [
         "test_MIX_COLUMN_generalized_continuous_diffusion_analysis",
         "test_SBOX_continuous_diffusion_analysis",
@@ -11096,7 +11099,7 @@
       ],
       "rationale": "Existing typed component/evaluator evidence plus generated-source parity preserves applicable values; expression-string and mutable helper internals are not contracts.",
       "responsibility": "generic functions test",
-      "status": "owned-in-m10.15a",
+      "status": "superseded-in-m10.15d",
       "tests": [
         "test_ROTATE",
         "test_SHIFT",
@@ -11151,7 +11154,7 @@
       ],
       "rationale": "Scalar/batch and generated-source parity retain semantic results without NumPy array-shape or debug-print contracts.",
       "responsibility": "generic functions vectorized bit test",
-      "status": "owned-in-m10.15a",
+      "status": "superseded-in-m10.15d",
       "tests": [
         "test_bit_vector_debug_branches_and_print_helpers",
         "test_bit_vector_mix_column_poly0",
@@ -11221,7 +11224,7 @@
       ],
       "rationale": "Typed batch inputs and exact scalar parity replace byte-oriented NumPy packing helpers; fixed-width source boundary cases are tested directly.",
       "responsibility": "generic functions vectorized byte test",
-      "status": "owned-in-m10.15a",
+      "status": "superseded-in-m10.15d",
       "tests": [
         "test_byte_vector_AND",
         "test_byte_vector_MODADD",

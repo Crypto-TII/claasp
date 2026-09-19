@@ -1181,10 +1181,34 @@ for _path, (_destination, _disposition, _rationale) in _M10_15_OVERRIDES.items()
         "v5_destination": _destination,
         "prerequisites": ["M10.14"],
         "disposition": _disposition,
-        "status": "owned-in-m10.15a",
+        "status": (
+            "owned-in-m10.15a" if "code_generator" in _path
+            else "superseded-in-m10.15d"
+        ),
         "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
         "rationale": _rationale,
     }
+
+MIGRATION_OVERRIDES.update({
+    "claasp/cipher_modules/continuous_diffusion_analysis.py": {
+        "milestone_owner": "M10.6d6",
+        "v5_destination": "next/src/claasp_next/semantics/cryptanalysis/continuous.py; next/src/claasp_next/analysis/legacy_evidence.py",
+        "prerequisites": ["M10.6d6"],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.15d-audit",
+        "acceptance_criterion": "Typed dependency-free continuous heuristic results preserve fixed one-/two-round Speck evidence, explicit masks, binary64 precision, and tolerances without exact-proof claims.",
+        "rationale": "M10.6d6 already replaced the mutable NumPy/Sage orchestration and report coupling. M10.15 closes the stale record but does not reopen continuous-analysis semantics.",
+    },
+    "tests/unit/cipher_modules/continuous_diffusion_analysis_test.py": {
+        "milestone_owner": "M10.6d6",
+        "v5_destination": "next/tests/unit/test_continuous_heuristics.py; next/tests/unit/test_presentation_adapters.py",
+        "prerequisites": ["M10.6d6", "M10.14"],
+        "disposition": "supersede",
+        "status": "superseded-in-m10.15d-audit",
+        "acceptance_criterion": "Fixed continuous XOR/rotation/addition/Speck evidence and typed presentation pass independently of legacy random orchestration and nested report dictionaries.",
+        "rationale": "Exact continuous fixtures were achieved in M10.6d6 and presentation in M10.14; stochastic ranges, component-id parsing, and legacy report shapes are not evaluator contracts.",
+    },
+})
 
 # M10.14 replaces the mutable catch-all Report and the dedicated NIST report
 # writer with immutable presentation artifacts and explicit adapters.  Plotting
