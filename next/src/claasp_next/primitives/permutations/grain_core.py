@@ -15,77 +15,155 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+"""Grain v1 initialization-core permutation."""
 
-from claasp_next.graph.bit_builder import BitGraphPrimitive, extract_inputs
+from claasp_next.graph.bit_builder import BitGraphPrimitive, coerce_exact_int
 from claasp_next.primitive_inputs import INPUT_STATE, PERMUTATION
 
 PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 160}]
-reference_code = """
-def grain_core_encrypt(state):
-    from claasp.utils.integer_functions import bytearray_to_wordlist, wordlist_to_bytearray
 
-    state_bit_size = 80
-    rounds = {0}
+# Absolute positions 0..79 denote LFSR bits s_i and 80..159 denote NFSR
+# bits b_i. During initialization the Grain output bit z_i is fed back
+# into both registers.
+LFSR_CORE_POLY = [
+    [0],
+    [13],
+    [23],
+    [38],
+    [51],
+    [62],
+    [25],
+    [143],
+    [3, 64],
+    [46, 64],
+    [64, 143],
+    [3, 25, 46],
+    [3, 46, 64],
+    [3, 46, 143],
+    [25, 46, 143],
+    [46, 64, 143],
+    [81],
+    [82],
+    [84],
+    [90],
+    [111],
+    [123],
+    [136],
+]
 
-    s = bytearray_to_wordlist(state, 1, state_bit_size)
+NFSR_CORE_POLY = [
+    [80],
+    [89],
+    [94],
+    [101],
+    [108],
+    [113],
+    [117],
+    [125],
+    [132],
+    [140],
+    [142],
+    [0],
+    [143, 140],
+    [117, 113],
+    [95, 89],
+    [140, 132, 125],
+    [113, 108, 101],
+    [143, 125, 108, 89],
+    [140, 132, 117, 113],
+    [143, 140, 101, 95],
+    [143, 140, 132, 125, 117],
+    [113, 108, 101, 95, 89],
+    [132, 125, 117, 113, 108, 101],
+    [25],
+    [143],
+    [3, 64],
+    [46, 64],
+    [64, 143],
+    [3, 25, 46],
+    [3, 46, 64],
+    [3, 46, 143],
+    [25, 46, 143],
+    [46, 64, 143],
+    [81],
+    [82],
+    [84],
+    [90],
+    [111],
+    [123],
+    [136],
+]
 
-    for _ in range(rounds):
-        new_bit = s[62] ^ s[51] ^ s[38] ^ s[23] ^ s[13] ^ s[0]
-        s[:79] = s[1:]
-        s[-1] = new_bit
-
-    return wordlist_to_bytearray(s, 1, state_bit_size)
-"""
+GRAIN_CORE_DESCRIPTION = [[[80, LFSR_CORE_POLY], [80, NFSR_CORE_POLY]], 1]
 
 
 class GrainCore(BitGraphPrimitive):
-    """
-    Construct an instance of the GrainCore class.
+    """Build the 160-clock initialization core of Grain v1 (Grain-80).
 
-    This class is used to store compact representations of a primitive, used to generate the corresponding primitive.
+    The 160-bit input concatenates the 80-bit LFSR ``s`` and 80-bit NFSR
+    ``b``. Positions 0 through 79 hold ``s_0`` through ``s_79``;
+    positions 80 through 159 hold ``b_0`` through ``b_79``. Each round
+    performs one initialization clock and feeds the output bit back into
+    both registers. This primitive deliberately excludes key/IV loading
+    and the later keystream-generation mode.
 
     INPUT:
 
-    - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds of the permutation. By default, the
-      primitive uses the corresponding amount given the other parameters (if available)
+    - ``number_of_rounds`` -- **integer** (default: ``None``); positive
+      number of initialization clocks; ``None`` selects the Grain v1
+      standard value of 160
+
+    OUTPUT:
+
+    - the updated 160-bit LFSR/NFSR state
+
+    RAISES:
+
+    - ``ValueError`` -- if ``number_of_rounds`` is not a positive integer
 
     EXAMPLES::
 
         >>> primitive = GrainCore()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
-        >>> output = primitive.evaluate(inputs)
-        >>> (hex(output)[:18], output.bit_length())
-        ('0x0', 0)
+        >>> initial_state = 0x0000000000000000FFFF00000000000000000000
+        >>> hex(primitive.evaluate(initial_state))
+        '0x4eb431bcc5344efb12da6d7b0599918a2f079726'
+        >>> GrainCore(number_of_rounds=0)
+        Traceback (most recent call last):
+        ...
+        ValueError: number_of_rounds must be a positive integer
     """
 
     def __init__(self, number_of_rounds=None):
-        self.state_bit_size = 80
-
         if number_of_rounds is None:
-            n = PARAMETERS_CONFIGURATION_LIST[0]["number_of_rounds"]
+            rounds = PARAMETERS_CONFIGURATION_LIST[0]["number_of_rounds"]
         else:
-            n = number_of_rounds
+            try:
+                rounds = coerce_exact_int(number_of_rounds, "number_of_rounds")
+            except ValueError:
+                raise ValueError("number_of_rounds must be a positive integer") from None
+            if rounds <= 0:
+                raise ValueError("number_of_rounds must be a positive integer")
 
+        self.state_bit_size = 160
         super().__init__(
             family_name="grain_core",
             primitive_type=PERMUTATION,
             primitive_inputs=[INPUT_STATE],
             primitive_inputs_bit_size=[self.state_bit_size],
             primitive_output_bit_size=self.state_bit_size,
-            primitive_reference_code=reference_code.format(n),
         )
 
-        state = [INPUT_STATE], [list(range(self.state_bit_size))]
-
-        for _ in range(n):
+        state_id = INPUT_STATE
+        state_positions = list(range(self.state_bit_size))
+        for _ in range(rounds):
             self.add_round()
+            state_id = self.add_fsr_component(
+                [state_id],
+                [state_positions],
+                self.state_bit_size,
+                GRAIN_CORE_DESCRIPTION,
+            ).id
+            state_positions = list(range(self.state_bit_size))
+            self.add_round_output_component([state_id], [state_positions], self.state_bit_size)
 
-            state_id_list, state_bit_positions = extract_inputs(*state, [0, 13, 23, 38, 51, 62])
-            new_bit_id = self.add_xor_component(state_id_list, state_bit_positions, 1).id
-
-            state_id_list, state_bit_positions = extract_inputs(*state, list(range(1, 80)))
-            state = state_id_list + [new_bit_id], state_bit_positions + [[0]]
-
-            self.add_round_output_component(*state, 80)
-
-        self.add_primitive_output_component(*state, 80)
+        self.add_primitive_output_component([state_id], [state_positions], self.state_bit_size)

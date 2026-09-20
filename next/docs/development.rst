@@ -90,6 +90,26 @@ explicit deferrals without rewriting files. The second exits nonzero while
 unreviewed destinations or deferred model requirements remain. Use it before
 closing M10.8; a complete inventory alone does not justify that milestone.
 
+Upstream reconciliation
+-----------------------
+
+The v5 release branch does not merge the legacy ``develop`` line. Before a
+release candidate, fetch it, review every commit after the recorded common
+ancestor, and classify each change in
+``migration/m11_upstream_reconciliation.json`` as either a behavior port or a
+v5 supersession with concrete evidence. Validate the fixed review boundary
+with:
+
+.. code-block:: console
+
+   python tools/upstream_reconciliation_closure.py --check
+
+The authority must be extended when ``develop`` advances. Never silently
+ignore a new commit or copy a legacy mutable API merely to make histories
+look alike. The current review ports the corrected 160-bit Grain v1
+initialization core and records why legacy bibliography, mutable CP-cache,
+and mutable SAT-search changes are already superseded by v5 contracts.
+
 Building the documentation
 --------------------------
 

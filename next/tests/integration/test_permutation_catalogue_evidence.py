@@ -22,7 +22,9 @@ def _primitive(record):
 @pytest.mark.parametrize("record", FIXED_VECTORS, ids=lambda item: item["legacy_id"])
 def test_every_captured_permutation_fixed_vector(record):
     primitive = _primitive(record)
-    assert record["claim"] == "legacy-fixed-vector"
+    assert record["claim"] in {"legacy-fixed-vector", "specification-fixed-vector"}
+    if record["claim"] == "specification-fixed-vector":
+        assert record["provenance"]
     for vector in record["vectors"]:
         assert primitive.evaluate(*vector["inputs"]) == vector["output"]
 
