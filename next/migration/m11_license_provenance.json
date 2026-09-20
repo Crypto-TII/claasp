@@ -1,0 +1,78 @@
+{
+  "artifact_classes": [
+    {
+      "count": 394,
+      "license_treatment": "GPL-3.0-or-later",
+      "name": "python-source",
+      "provenance": "new or migrated CLAASP implementation; migration does not extinguish predecessor copyright"
+    },
+    {
+      "count": 11,
+      "license_treatment": "GPL-3.0-or-later pending source-rights evidence",
+      "name": "lowmc-parameter-data",
+      "provenance": "copied from the GPL-licensed legacy CLAASP tree; upstream data provenance is not recorded in the repository"
+    },
+    {
+      "count": 1,
+      "license_treatment": "GPL-3.0-or-later",
+      "name": "generated-catalogue",
+      "provenance": "generated from CLAASP migration authorities"
+    },
+    {
+      "count": 1,
+      "license_treatment": "MIT notice retained inside the GPL distribution",
+      "name": "poseidon-parameter-data",
+      "provenance": "ingonyama-zk/poseidon-hash commit 5194eadce26b3fe4b1c4fe2a5ca9f6436f3b0e3d"
+    },
+    {
+      "count": 1,
+      "license_treatment": "MIT notice",
+      "name": "poseidon-notice",
+      "provenance": "third-party license text shipped beside the parameter data"
+    }
+  ],
+  "authority_owner": "M11.2",
+  "captured_at": "2026-09-20",
+  "contribution_provenance": {
+    "committed_cla_or_dco": false,
+    "github_contributor_accounts_at_capture": 30,
+    "legacy_author_identities_in_git_at_capture": 57,
+    "repository_license_inbound_rule": "GitHub Terms contributions-under-repository-license"
+  },
+  "current_license": "GPL-3.0-or-later",
+  "decision": {
+    "approval_evidence": [],
+    "candidates": ["Apache-2.0", "MIT"],
+    "legal_owner": "Technology Innovation Institute legal counsel",
+    "status": "retain-gpl-pending-legal-review"
+  },
+  "evidence": [
+    "../LICENSE",
+    "../docs/CONTRIBUTING.md",
+    "docs/parameters.rst",
+    "pyproject.toml",
+    "src/claasp_next/catalogue/data/catalogue.json",
+    "src/claasp_next/primitives/block_ciphers/lowmc/data/lowmc_constants_p128_k128_r20.dat",
+    "src/claasp_next/primitives/permutations/poseidon/data/NOTICE.md",
+    "src/claasp_next/primitives/permutations/poseidon/data/poseidon_bn254_width3.json"
+  ],
+  "initial_history": {
+    "code_commit": "f2c8ca4c0cc9cd2989cae4c4ecb49c8872784f3a",
+    "license_commit": "8fb88c5e254482012e5158136d941d3e78262686"
+  },
+  "legal_approval_requirements": [
+    "written identification of every copyright holder for migrated and new release material",
+    "applicable employee, contractor, and contributor assignments or explicit relicensing grants",
+    "resolved provenance and reuse permission for all LowMC parameter data",
+    "continued preservation of the third-party Poseidon MIT notice",
+    "written approval of the selected SPDX license by Technology Innovation Institute legal counsel"
+  ],
+  "milestone": "M11.2",
+  "sage_dependency_finding": {
+    "declared_runtime_dependency": false,
+    "imports_in_v5_release_source": 0,
+    "relicensing_effect": "none"
+  },
+  "schema_version": 1,
+  "shipped_artifact_count": 408
+}
