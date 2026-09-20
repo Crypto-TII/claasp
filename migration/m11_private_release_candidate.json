@@ -1,0 +1,97 @@
+{
+  "artifacts": [
+    {
+      "entries": 413,
+      "filename": "claasp-5.0.0rc1-py3-none-any.whl",
+      "sha256": "701f0eb8621c295cd5eb7ccef94ef7b88cfa6cfe38217ce036b3b7eb71f61709",
+      "size": 2688091,
+      "type": "wheel"
+    },
+    {
+      "entries": 491,
+      "filename": "claasp-5.0.0rc1.tar.gz",
+      "sha256": "6dbbc6c16db6c33d55adcd018dd0ea1c98b177f24db5caa9b91420aae3be6482",
+      "size": 2300131,
+      "type": "sdist"
+    }
+  ],
+  "candidate_source": {
+    "baseline_commit": "42d01f35",
+    "branch": "claasp-v5",
+    "version": "5.0.0rc1"
+  },
+  "captured_at": "2026-09-21",
+  "evidence_paths": [
+    "docker/v5/Dockerfile",
+    "docker/v5/check.sh",
+    "docker/v5/requirements.lock",
+    "migration/m11_release_environment.json",
+    "migration/m11_release_tree.json",
+    "tools/private_release_candidate_closure.py"
+  ],
+  "images": [
+    {
+      "architecture": "linux/amd64",
+      "config_digest": "sha256:50cdd6fd3fcb8577c69749411e06cb988d6b1d39a3ea4fad02922ef3bd32b66a",
+      "image_digest": "sha256:2f2fc9c414b706e2ba6eb56414bc1367c5fb612eddd7e311350b4658956d90ba",
+      "manifest_digest": "sha256:41b5776f42f40bd5509d59d6ff774ec3bdf954226a28f22603230d65fdfaf882",
+      "size": 651814585,
+      "tag": "claasp-v5-rc1:amd64"
+    },
+    {
+      "architecture": "linux/arm64",
+      "config_digest": "sha256:80f42ef5d7a79e1241b4e352635b915b098b9357732b529024fd2bff0b398c36",
+      "image_digest": "sha256:eb818be1b7477b80d402cb1dde096a989c3d6ead6d845066c7402fa116b0a22a",
+      "manifest_digest": "sha256:76f330bc7d34e1016b4292b7dff77bd5a5edf1335356aae8d9bd45d5d51a2753",
+      "size": 640163733,
+      "tag": "claasp-v5-rc1:arm64"
+    }
+  ],
+  "matrix": {
+    "dependency_free": 1740,
+    "developer_guide_doctests": 522,
+    "external": 86,
+    "failures": 0,
+    "module_doctests": 636,
+    "skips": 0,
+    "timeouts": 0,
+    "typing_reviewed_diagnostics": 900,
+    "typing_suppressions": 0,
+    "user_guide_doctests": 424,
+    "warnings": 0
+  },
+  "milestone": "M11.7",
+  "publication": {
+    "package_published": false,
+    "public_release_created": false,
+    "registry_image_published": false
+  },
+  "reviewed_build_warnings": [
+    "Chuffed uses its committed parser because Bison and Flex are intentionally absent",
+    "Chuffed optional zlib support is absent",
+    "upstream Chuffed allocation-range compiler diagnostics",
+    "upstream NIST STS unused-value and indentation compiler diagnostics"
+  ],
+  "schema_version": 1,
+  "staging": {
+    "application_status": "blocked-by-destination-prerequisites",
+    "branch_policy": {
+      "default_branch": "claasp-v5",
+      "force_pushes": false,
+      "required_approvals": 1,
+      "required_checks": [
+        "CLAASP 5 quality",
+        "CLAASP 5 release image"
+      ]
+    },
+    "documentation_visibility": "private-preview-only",
+    "image_registry_visibility": "private",
+    "organization_created": false,
+    "package_staging": "local-artifacts-only",
+    "policies_prepared": true,
+    "repository_created": false,
+    "secret_inventory_status": "pending-owner-provisioning",
+    "secret_values_committed": false,
+    "visibility": "private"
+  }
+}

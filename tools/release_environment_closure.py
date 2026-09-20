@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -93,6 +94,24 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
                     or sha256 not in dockerfile
                 ):
                     errors.append(f"source build is not pinned in Dockerfile: {name}")
+
+    patch_files = manifest.get("nist_patch_files")
+    if not isinstance(patch_files, dict) or len(patch_files) != 3:
+        errors.append("NIST patch-file authority is missing")
+    else:
+        for relative, expected_digest in sorted(patch_files.items()):
+            if not isinstance(relative, str) or not isinstance(expected_digest, str):
+                errors.append("NIST patch-file record is malformed")
+                continue
+            path = ROOT / relative
+            if not path.is_file():
+                errors.append(f"NIST patch file is missing: {relative}")
+                continue
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            if digest != expected_digest:
+                errors.append(f"NIST patch digest is stale: {relative}")
+            if dockerfile_path and relative not in dockerfile_path.read_text(encoding="utf-8"):
+                errors.append(f"NIST patch is not copied by the Dockerfile: {relative}")
 
     workflow_path = paths.get("workflow")
     if workflow_path and workflow_path.is_file():

@@ -45,7 +45,11 @@ def _active_files(root: Path) -> list[Path]:
     for relative in relative_roots:
         base = root / relative
         if base.exists():
-            files.extend(path for path in base.rglob("*") if path.is_file())
+            files.extend(
+                path
+                for path in base.rglob("*")
+                if path.is_file() and "_build" not in path.relative_to(base).parts
+            )
     files.extend(root / relative for relative in relative_files if (root / relative).exists())
     return sorted(set(files))
 

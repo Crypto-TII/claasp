@@ -61,14 +61,24 @@ def _declares_all(path: Path) -> bool:
 def public_modules(source_root: Path = SOURCE_ROOT) -> tuple[str, ...]:
     """Return modules which explicitly declare a public export list."""
 
+    previous: tuple[Path, ...] | None = None
+    paths: tuple[Path, ...] = ()
+    # Docker Desktop bind mounts can expose a transiently incomplete directory
+    # walk immediately after generated-output cleanup.  Accept only two
+    # consecutive identical snapshots; a genuinely absent module remains
+    # absent in both and is still rejected against the authority below.
+    for _ in range(5):
+        paths = tuple(sorted(source_root.rglob("*.py")))
+        if paths == previous:
+            break
+        previous = paths
     modules = []
-    for path in sorted(source_root.rglob("*.py")):
-        if not _declares_all(path):
-            continue
-        parts = list(path.relative_to(source_root.parent).with_suffix("").parts)
-        if parts[-1] == "__init__":
-            parts.pop()
-        modules.append(".".join(parts))
+    for path in paths:
+        if _declares_all(path):
+            parts = list(path.relative_to(source_root.parent).with_suffix("").parts)
+            if parts[-1] == "__init__":
+                parts.pop()
+            modules.append(".".join(parts))
     return tuple(modules)
 
 

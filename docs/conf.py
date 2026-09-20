@@ -14,7 +14,7 @@ project = "CLAASP"
 author = "TII Cryptanalysis Team"
 copyright = "Technology Innovation Institute LLC"  # noqa: A001 - required by Sphinx
 version = "5.0"
-release = "5.0.0.dev0"
+release = "5.0.0rc1"
 
 extensions = [
     "sphinx.ext.autodoc",

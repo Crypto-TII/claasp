@@ -75,9 +75,9 @@ RUN set -eux; \
     cmake --install "chuffed-${CHUFFED_VERSION}/build"; \
     rm -rf chuffed.tar.gz "chuffed-${CHUFFED_VERSION}"
 
-COPY required_dependencies/assess.c /tmp/nist-patches/assess.c
-COPY required_dependencies/utilities.c /tmp/nist-patches/utilities.c
-COPY required_dependencies/utilities.h /tmp/nist-patches/utilities.h
+COPY docker/v5/nist-patches/assess.c /tmp/nist-patches/assess.c
+COPY docker/v5/nist-patches/utilities.c /tmp/nist-patches/utilities.c
+COPY docker/v5/nist-patches/utilities.h /tmp/nist-patches/utilities.h
 
 RUN set -eux; \
     curl -fsSL \

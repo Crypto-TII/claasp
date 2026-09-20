@@ -55,3 +55,14 @@ def test_release_environment_rejects_stale_lock_count_and_source_digest():
 
     assert any("entry count" in error for error in errors)
     assert any("msolve" in error for error in errors)
+
+
+def test_release_environment_rejects_stale_nist_patch_digest():
+    manifest = _manifest()
+    patches = dict(_mapping(manifest["nist_patch_files"]))
+    patches["docker/v5/nist-patches/assess.c"] = "0" * 64
+    manifest["nist_patch_files"] = patches
+
+    errors = closure.validate_manifest(manifest)
+
+    assert any("NIST patch digest is stale" in error for error in errors)

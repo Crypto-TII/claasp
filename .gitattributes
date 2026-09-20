@@ -1,0 +1,4 @@
+# Preserve the audited upstream NIST STS patch bytes, including its historical
+# whitespace, while keeping ordinary source subject to Git's whitespace checks.
+docker/v5/nist-patches/*.c whitespace=-trailing-space,-space-before-tab
+docker/v5/nist-patches/*.h whitespace=-trailing-space,-space-before-tab

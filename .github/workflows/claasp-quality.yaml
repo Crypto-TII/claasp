@@ -99,6 +99,7 @@ jobs:
           python tools/upstream_reconciliation_closure.py --check
           python tools/bidirectional_migration_audit.py --check
           python tools/release_tree_closure.py --check
+          python tools/private_release_candidate_closure.py --check
 
       - name: Run Python and guide doctests
         run: |
@@ -123,10 +124,11 @@ jobs:
           python tools/realization_closure.py --check
           python tools/terminology_guard.py
 
-      - name: Build and audit wheel
+      - name: Build and audit distributions
         run: |
-          python -m build --wheel
+          python -m build
           python tools/wheel_audit.py dist/*.whl
+          python tools/private_release_candidate_closure.py --check --artifacts dist/*
 
   presentation-rendering:
     name: Optional presentation rendering

@@ -149,6 +149,33 @@ or a stale bidirectional audit. The final public repository transfer must keep
 the star-bearing source public; private candidate work uses a separately named
 staging repository.
 
+Private release candidate
+-------------------------
+
+The M11.7 authority records the exact local candidate images and distribution
+digests without publishing them. Validate the authority and, while the captured
+candidate files are present, their byte identity with:
+
+.. code-block:: console
+
+   python tools/private_release_candidate_closure.py --check
+   python tools/private_release_candidate_closure.py --check \
+       --candidate-artifacts dist/claasp-5.0.0rc1-py3-none-any.whl \
+       dist/claasp-5.0.0rc1.tar.gz
+
+Fresh CI builds are audited structurally with ``--artifacts dist/*`` because
+archive timestamps can change their byte digests. The gate rejects unsafe
+archive paths, caches, reports, tests, migration authorities, and development
+tools in distributions. It also enforces the unpublished boundary: local-only
+package staging, private image and documentation staging, no committed secret
+values, and the prepared branch policy.
+
+The destination organization has not been created. Applying its branch rules,
+provisioning owner-controlled secrets, pushing the private image, and enabling
+private documentation previews remain blocked by the occupied organization
+handle, unnamed owners, and absent destination permissions. Public PyPI is not
+used for staging, and no release artifact may be published before M11.8.
+
 Building the documentation
 --------------------------
 
