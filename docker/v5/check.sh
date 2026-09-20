@@ -17,6 +17,7 @@ python tools/repository_destination_closure.py --check
 python tools/license_provenance_closure.py --check
 python tools/release_environment_closure.py --check
 python tools/upstream_reconciliation_closure.py --check
+python tools/bidirectional_migration_audit.py --check
 
 python -m pytest -m 'not external' -p no:cacheprovider
 python -m pytest -m external -p no:cacheprovider

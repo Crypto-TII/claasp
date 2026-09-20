@@ -110,6 +110,25 @@ look alike. The current review ports the corrected 160-bit Grain v1
 initialization core and records why legacy bibliography, mutable CP-cache,
 and mutable SAT-search changes are already superseded by v5 contracts.
 
+Final migration audit
+---------------------
+
+The generated M11a matrix joins every legacy Python source/test record to its
+final disposition and maps every shipped package artifact back to legacy
+predecessors or an explicit new-v5 rationale. Regenerate and review both the
+machine matrix and human summary with:
+
+.. code-block:: console
+
+   python tools/bidirectional_migration_audit.py --write
+   python tools/bidirectional_migration_audit.py --check
+
+The check rejects provisional legacy states, missing destinations, duplicate
+identities, stale predecessor names, unregistered package artifacts, and
+unjustified new-v5 files. Run it immediately before and after the package/root
+rename; the committed JSON, generated summary, and package tree must change
+together.
+
 Building the documentation
 --------------------------
 

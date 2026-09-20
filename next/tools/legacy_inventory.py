@@ -395,7 +395,7 @@ MIGRATION_OVERRIDES = {
         "rationale": None,
     },
     "claasp/cipher_modules/models/utils.py": {
-        "v5_destination": "next/src/claasp_next/analysis; next/src/claasp_next/semantics/cryptanalysis; next/src/claasp_next/formatting.py",
+        "v5_destination": "next/src/claasp_next/analysis; next/src/claasp_next/semantics/cryptanalysis; next/src/claasp_next/presentation/formatting.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -651,7 +651,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Method-name dictionaries and in-place component-list rewrites conflate semantic selection with backend dispatch. v5 uses immutable propagation problems and explicit phase boundaries.",
     },
     "claasp/cipher_modules/models/sat/sat_model.py": {
-        "v5_destination": "next/src/claasp_next/representations/constraints/sat/model.py; next/src/claasp_next/drivers/solvers/minisat.py",
+        "v5_destination": "next/src/claasp_next/representations/constraints/sat/cnf.py; next/src/claasp_next/drivers/solvers/minisat.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -2036,6 +2036,138 @@ for _path, _destination in _M10_9C8_TEST_DESTINATIONS.items():
         "status": "superseded-in-m10.9c8",
         "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
         "rationale": "Component identifiers, matrix dimensions, generated clauses, and exact constraint ordering do not add semantics beyond the tested permutation and linear maps.",
+    }
+
+# M11a resolves the final broad source/test records whose behavior was already
+# delivered by focused v5 milestones but whose generated inventory retained a
+# provisional destination.  Each row names concrete release evidence instead
+# of claiming that an entire directory is its replacement.
+_M11A_FINAL_OVERRIDES = {
+    "claasp/catalog.py": (
+        "next/src/claasp_next/catalogue/catalogue.py; next/src/claasp_next/catalogue/records.py",
+        "migrate",
+        "Typed immutable catalogue records and dependency-free discovery replace AST scanning, pandas rendering, and eager solver probing.",
+    ),
+    "claasp/cipher_modules/algebraic_tests.py": (
+        "next/src/claasp_next/analysis/algebraic.py; next/src/claasp_next/representations/constraints/polynomial",
+        "migrate",
+        "Typed algebraic analysis and polynomial representations preserve the supported claims without Sage-bound mutable test objects.",
+    ),
+    "claasp/cipher_modules/avalanche_tests.py": (
+        "next/src/claasp_next/analysis/avalanche.py",
+        "migrate",
+        "Seeded immutable avalanche analysis replaces NumPy/Matplotlib-coupled mutable reporting while preserving measured criteria.",
+    ),
+    "claasp/cipher_modules/neural_network_tests.py": (
+        "next/src/claasp_next/analysis/neural.py; next/src/claasp_next/analysis/neural_experiments.py",
+        "migrate",
+        "Framework-neutral experiment contracts and optional drivers replace direct TensorFlow/Keras ownership in the core API.",
+    ),
+    "claasp/cipher_modules/statistical_tests/dataset_generator.py": (
+        "next/src/claasp_next/analysis/datasets.py; next/src/claasp_next/analysis/statistical_datasets.py",
+        "migrate",
+        "Deterministic typed dataset families replace the mutable NumPy generator and make seeds and sample shapes explicit.",
+    ),
+    "claasp/cipher_modules/statistical_tests/dieharder_statistical_tests.py": (
+        "next/src/claasp_next/drivers/statistical/dieharder.py; next/src/claasp_next/analysis/statistical_results.py",
+        "migrate",
+        "A bounded external driver and immutable parsed reports separate Dieharder execution from presentation.",
+    ),
+    "claasp/cipher_modules/statistical_tests/nist_statistical_tests.py": (
+        "next/src/claasp_next/drivers/statistical/nist.py; next/src/claasp_next/analysis/statistical_results.py",
+        "migrate",
+        "A bounded NIST STS driver and immutable report contracts replace cwd writes, timing state, and plotting concerns.",
+    ),
+    "claasp/cipher_modules/statistical_tests/nist_sts.py": (
+        "next/src/claasp_next/drivers/statistical/nist.py",
+        "supersede",
+        "The partial Python reimplementation is not a release oracle; v5 executes the pinned upstream NIST STS binary behind a typed boundary.",
+    ),
+    "claasp/cipher_modules/tester.py": (
+        "next/src/claasp_next/representations/execution/scalar.py; next/tests/unit/test_legacy_cipher_parity.py",
+        "supersede",
+        "Public scalar evaluation plus fixed semantic evidence replace random print-oriented helpers and arbitrary reference-code execution.",
+    ),
+    "tests/benchmark/cipher_test.py": (
+        "next/tests/unit/test_batch_evaluation.py; next/tests/unit/test_avalanche_analysis.py; next/tests/unit/test_native_source.py",
+        "supersede",
+        "Focused scalar, batch, avalanche, and bounded native tests replace timing-sensitive mixed benchmarks.",
+    ),
+    "tests/benchmark/sat_xor_differential_model_test.py": (
+        "next/tests/integration/test_speck_trail_enumeration.py; next/tests/unit/test_word_differential_smt.py",
+        "supersede",
+        "Typed fixed/maximum-weight formula and enumeration evidence replaces mutable SAT helper benchmarks.",
+    ),
+    "tests/benchmark/statistical_tests_test.py": (
+        "next/tests/unit/test_statistical_datasets.py; next/tests/integration/test_nist_integration.py",
+        "supersede",
+        "Deterministic dataset tests and bounded NIST integration replace environment-sensitive statistical benchmarks.",
+    ),
+    "tests/unit/catalog_test.py": (
+        "next/tests/unit/test_catalogue.py; next/tests/unit/test_catalogue_metadata.py",
+        "supersede",
+        "Typed catalogue query and metadata closure tests replace legacy AST, dataframe, and display-shape assertions.",
+    ),
+    "tests/unit/cipher_modules/avalanche_tests_test.py": (
+        "next/tests/unit/test_avalanche_analysis.py",
+        "supersede",
+        "Seeded avalanche vectors and criteria are covered directly through the immutable analysis contract.",
+    ),
+    "tests/unit/cipher_modules/neural_network_tests_test.py": (
+        "next/tests/unit/test_neural_contracts.py; next/tests/unit/test_neural_experiments.py; next/tests/integration/test_neural_driver_integration.py",
+        "supersede",
+        "Framework-neutral contracts, deterministic experiment plans, and isolated optional-driver integration replace direct Keras tests.",
+    ),
+    "tests/unit/cipher_modules/statistical_tests/dataset_generator_test.py": (
+        "next/tests/unit/test_statistical_datasets.py; next/tests/unit/test_statistical_dataset_families.py",
+        "supersede",
+        "Seeded typed dataset-family evidence replaces mutable NumPy fixture comparisons.",
+    ),
+    "tests/unit/cipher_modules/statistical_tests/dieharder_statistical_tests_test.py": (
+        "next/tests/unit/test_dieharder_driver.py; next/tests/integration/test_dieharder_integration.py",
+        "supersede",
+        "Parser diagnostics and isolated executable integration replace filesystem and chart side-effect assertions.",
+    ),
+    "tests/unit/cipher_modules/statistical_tests/nist_statistical_tests_test.py": (
+        "next/tests/unit/test_nist_driver.py; next/tests/integration/test_nist_integration.py",
+        "supersede",
+        "Typed parser, manifest, timeout, and executable evidence replaces cwd report cleanup and plotting assertions.",
+    ),
+    "tests/unit/cipher_modules/statistical_tests/nist_sts_kat_test.py": (
+        "next/tests/integration/test_nist_integration.py",
+        "supersede",
+        "The canonical image validates fixed NIST STS executable output rather than a separate partial Python implementation.",
+    ),
+    "tests/unit/cipher_modules/statistical_tests/nist_sts_test.py": (
+        "next/tests/unit/test_nist_driver.py; next/tests/integration/test_nist_integration.py",
+        "supersede",
+        "Driver parsing and pinned upstream executable integration replace tests of the removed partial Python reimplementation.",
+    ),
+    "tests/unit/ciphers/toys/cipherfour_block_cipher_tests.py": (
+        "next/tests/unit/test_toy_primitive_catalogue.py",
+        "supersede",
+        "Catalogue-wide construction and evaluation evidence covers CipherFour without stdout-oriented legacy assertions.",
+    ),
+    "tests/unit/ciphers/toys/heys_block_cipher_tests.py": (
+        "next/tests/unit/test_toy_primitive_catalogue.py",
+        "supersede",
+        "Catalogue-wide construction and deterministic evaluation evidence covers the Heys teaching primitive.",
+    ),
+    "tests/unit/utils/scip_tpi_test.py": (
+        "next/src/claasp_next/drivers/solvers/glpk.py; next/tests/integration/test_glpk_monomial_trails.py",
+        "supersede",
+        "The unsupported SCIP parallel-shell configuration is removed; the maintained open MILP boundary has typed GLPK execution evidence.",
+    ),
+}
+for _path, (_destination, _disposition, _rationale) in _M11A_FINAL_OVERRIDES.items():
+    MIGRATION_OVERRIDES[_path] = {
+        "v5_destination": _destination,
+        "prerequisites": ["M10.16", "M11.4"],
+        "milestone_owner": "M11a",
+        "disposition": _disposition,
+        "status": f"{'migrated' if _disposition == 'migrate' else 'superseded'}-in-m11a",
+        "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
+        "rationale": _rationale,
     }
 
 

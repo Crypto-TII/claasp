@@ -90,7 +90,7 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "__future__",
         "ast",
@@ -110,9 +110,11 @@
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M11a",
       "path": "claasp/catalog.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "ClassInfo",
@@ -120,11 +122,11 @@
         "RenderedText",
         "Catalog"
       ],
-      "rationale": null,
+      "rationale": "Typed immutable catalogue records and dependency-free discovery replace AST scanning, pandas rendering, and eager solver probing.",
       "responsibility": "CLAASP catalog and discovery helpers.",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m11a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/catalogue/catalogue.py; next/src/claasp_next/catalogue/records.py"
     },
     {
       "acceptance_criterion": "Concise primitive-oriented transformation entry points return validated immutable graphs and pass their focused public doctests and semantic tests.",
@@ -184,7 +186,7 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp",
         "cysignals",
@@ -196,21 +198,23 @@
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M11a",
       "path": "claasp/cipher_modules/algebraic_tests.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "AlgebraicTests"
       ],
-      "rationale": null,
+      "rationale": "Typed algebraic analysis and polynomial representations preserve the supported claims without Sage-bound mutable test objects.",
       "responsibility": "algebraic tests",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m11a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/analysis/algebraic.py; next/src/claasp_next/representations/constraints/polynomial"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp",
         "math",
@@ -223,18 +227,20 @@
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M11a",
       "path": "claasp/cipher_modules/avalanche_tests.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "AvalancheTests"
       ],
-      "rationale": null,
+      "rationale": "Seeded immutable avalanche analysis replaces NumPy/Matplotlib-coupled mutable reporting while preserving measured criteria.",
       "responsibility": "avalanche tests",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m11a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/analysis/avalanche.py"
     },
     {
       "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
@@ -2218,7 +2224,7 @@
       "responsibility": "SAT model of Cipher.",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next/representations/constraints/sat/model.py; next/src/claasp_next/drivers/solvers/minisat.py"
+      "v5_destination": "next/src/claasp_next/representations/constraints/sat/cnf.py; next/src/claasp_next/drivers/solvers/minisat.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -2974,10 +2980,10 @@
       "responsibility": "utils",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "next/src/claasp_next/analysis; next/src/claasp_next/semantics/cryptanalysis; next/src/claasp_next/formatting.py"
+      "v5_destination": "next/src/claasp_next/analysis; next/src/claasp_next/semantics/cryptanalysis; next/src/claasp_next/presentation/formatting.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp",
         "keras",
@@ -2994,18 +3000,20 @@
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M11a",
       "path": "claasp/cipher_modules/neural_network_tests.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "NeuralNetworkTests"
       ],
-      "rationale": null,
+      "rationale": "Framework-neutral experiment contracts and optional drivers replace direct TensorFlow/Keras ownership in the core API.",
       "responsibility": "neural network tests",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m11a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/analysis/neural.py; next/src/claasp_next/analysis/neural_experiments.py"
     },
     {
       "acceptance_criterion": "Immutable typed tables, sections, report artifacts, adapters, renderers, exports, citations, reproducibility metadata, and safe file output preserve applicable presentation behavior without accepting legacy nested dictionaries.",
@@ -3063,7 +3071,7 @@
       "v5_destination": "inapplicable: package marker reviewed with its containing module"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "copy",
         "enum",
@@ -3078,9 +3086,11 @@
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M11a",
       "path": "claasp/cipher_modules/statistical_tests/dataset_generator.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "DatasetType",
@@ -3088,14 +3098,14 @@
         "set_testing_data_amount",
         "DatasetGenerator"
       ],
-      "rationale": null,
+      "rationale": "Deterministic typed dataset families replace the mutable NumPy generator and make seeds and sample shapes explicit.",
       "responsibility": "dataset generator",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m11a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/analysis/datasets.py; next/src/claasp_next/analysis/statistical_datasets.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp",
         "datetime",
@@ -3110,21 +3120,23 @@
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M11a",
       "path": "claasp/cipher_modules/statistical_tests/dieharder_statistical_tests.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "DieharderTests"
       ],
-      "rationale": null,
+      "rationale": "A bounded external driver and immutable parsed reports separate Dieharder execution from presentation.",
       "responsibility": "dieharder statistical tests",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m11a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/drivers/statistical/dieharder.py; next/src/claasp_next/analysis/statistical_results.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp",
         "datetime",
@@ -3138,18 +3150,20 @@
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M11a",
       "path": "claasp/cipher_modules/statistical_tests/nist_statistical_tests.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "NISTStatisticalTests"
       ],
-      "rationale": null,
+      "rationale": "A bounded NIST STS driver and immutable report contracts replace cwd writes, timing state, and plotting concerns.",
       "responsibility": "nist statistical tests",
-      "status": "planned-or-partially-migrated",
+      "status": "migrated-in-m11a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/drivers/statistical/nist.py; next/src/claasp_next/analysis/statistical_results.py"
     },
     {
       "acceptance_criterion": "NIST typed rows retain names, bins, p-values, proportions, unavailable states, dataset identity, and tool provenance in dependency-free tables plus explicitly requested optional plots and safe exports.",
@@ -3180,7 +3194,7 @@
       "v5_destination": "next/src/claasp_next/presentation; next/src/claasp_next/drivers/renderers"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "math",
         "numpy",
@@ -3188,35 +3202,37 @@
         "scipy",
         "typing"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": false,
         "test_functions": []
       },
       "kind": "source",
+      "milestone_owner": "M11a",
       "path": "claasp/cipher_modules/statistical_tests/nist_sts.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "NISTTests",
         "parse_nist_stats",
         "parse_final_analysis_report"
       ],
-      "rationale": null,
+      "rationale": "The partial Python reimplementation is not a release oracle; v5 executes the pinned upstream NIST STS binary behind a typed boundary.",
       "responsibility": "Pure Python implementation of NIST Statistical Test Suite (STS)",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/drivers/statistical/nist.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp",
         "secrets",
         "types"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -3225,22 +3241,24 @@
         ]
       },
       "kind": "source",
+      "milestone_owner": "M11a",
       "path": "claasp/cipher_modules/tester.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "test_against_reference_code",
         "test_vector_check"
       ],
-      "rationale": null,
+      "rationale": "Public scalar evaluation plus fixed semantic evidence replace random print-oriented helpers and arbitrary reference-code execution.",
       "responsibility": "tester",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_against_reference_code",
         "test_vector_check"
       ],
-      "v5_destination": "next/src/claasp_next (destination finalized by owning migration milestone)"
+      "v5_destination": "next/src/claasp_next/representations/execution/scalar.py; next/tests/unit/test_legacy_cipher_parity.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -10393,13 +10411,13 @@
       "v5_destination": "next/src/claasp_next/utils/integers.py; next/src/claasp_next/utils/layouts.py; next/src/claasp_next/utils/sequences.py; next/src/claasp_next/analysis"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp",
         "numpy",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10414,9 +10432,11 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/benchmark/cipher_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "test_evaluate_with_speck_cipher",
@@ -10428,9 +10448,9 @@
         "test_avalanche_tests_with_speck_cipher",
         "test_avalanche_tests_with_aes_cipher"
       ],
-      "rationale": null,
+      "rationale": "Focused scalar, batch, avalanche, and bounded native tests replace timing-sensitive mixed benchmarks.",
       "responsibility": "cipher test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_avalanche_tests_with_aes_cipher",
         "test_avalanche_tests_with_speck_cipher",
@@ -10441,14 +10461,14 @@
         "test_evaluate_with_aes_cipher",
         "test_evaluate_with_speck_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_batch_evaluation.py; next/tests/unit/test_avalanche_analysis.py; next/tests/unit/test_native_source.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10462,9 +10482,11 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/benchmark/sat_xor_differential_model_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "test_build_xor_differential_trail_model_with_speck_cipher",
@@ -10475,9 +10497,9 @@
         "test_find_one_xor_differential_trail_with_fixed_weight",
         "test_find_one_xor_differential_trail_with_fixed_weight_with_aes_cipher"
       ],
-      "rationale": null,
+      "rationale": "Typed fixed/maximum-weight formula and enumeration evidence replaces mutable SAT helper benchmarks.",
       "responsibility": "sat xor differential model test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_build_xor_differential_trail_model_with_aes_cipher",
         "test_build_xor_differential_trail_model_with_speck_cipher",
@@ -10487,14 +10509,14 @@
         "test_find_one_xor_differential_trail_with_fixed_weight",
         "test_find_one_xor_differential_trail_with_fixed_weight_with_aes_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py; next/tests/unit/test_word_differential_smt.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10503,25 +10525,27 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/benchmark/statistical_tests_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "test_run_avalanche_nist_statistics_test_with_speck_cipher",
         "test_run_avalanche_nist_statistics_test_with_aes_cipher"
       ],
-      "rationale": null,
+      "rationale": "Deterministic dataset tests and bounded NIST integration replace environment-sensitive statistical benchmarks.",
       "responsibility": "statistical tests test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_run_avalanche_nist_statistics_test_with_aes_cipher",
         "test_run_avalanche_nist_statistics_test_with_speck_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_statistical_datasets.py; next/tests/integration/test_nist_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "ast",
         "builtins",
@@ -10530,7 +10554,7 @@
         "pytest",
         "types"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10566,9 +10590,11 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/unit/catalog_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "test_ciphers_filter_by_required_components_and_aliases",
@@ -10601,9 +10627,9 @@
         "test_catalog_dataframe_render_write_and_show_helpers",
         "test_catalog_solvers_flat_and_empty_modes"
       ],
-      "rationale": null,
+      "rationale": "Typed catalogue query and metadata closure tests replace legacy AST, dataframe, and display-shape assertions.",
       "responsibility": "catalog test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_allowed_cipher_component_names_includes_component_modules",
         "test_catalog_ast_and_path_helpers",
@@ -10635,14 +10661,14 @@
         "test_solvers_contains_known_entries_and_availability",
         "test_table_render_and_write"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_catalogue.py; next/tests/unit/test_catalogue_metadata.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -10652,24 +10678,26 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/unit/cipher_modules/avalanche_tests_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "test_avalanche_probability_vectors",
         "test_compute_criterion_from_avalanche_probability_vectors",
         "test_diffusion_tests"
       ],
-      "rationale": null,
+      "rationale": "Seeded avalanche vectors and criteria are covered directly through the immutable analysis contract.",
       "responsibility": "avalanche tests test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_avalanche_probability_vectors",
         "test_compute_criterion_from_avalanche_probability_vectors",
         "test_diffusion_tests"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_avalanche_analysis.py"
     },
     {
       "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
@@ -13596,12 +13624,12 @@
       "v5_destination": "next/tests/integration/test_speck_trail_enumeration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -13616,9 +13644,11 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/unit/cipher_modules/neural_network_tests_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "test_find_good_input_difference_for_neural_distinguisher",
@@ -13630,9 +13660,9 @@
         "test_neural_network_blackbox_distinguisher_tests",
         "test_neural_network_differential_distinguisher_tests"
       ],
-      "rationale": null,
+      "rationale": "Framework-neutral contracts, deterministic experiment plans, and isolated optional-driver integration replace direct Keras tests.",
       "responsibility": "neural network tests test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_find_good_input_difference_for_neural_distinguisher",
         "test_get_differential_dataset",
@@ -13643,7 +13673,7 @@
         "test_run_autond_pipeline",
         "test_train_gohr_neural_distinguisher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_neural_contracts.py; next/tests/unit/test_neural_experiments.py; next/tests/integration/test_neural_driver_integration.py"
     },
     {
       "acceptance_criterion": "Fixed typed trail, avalanche, component, statistical, neural, continuous, text-export, optional-plot, and safe-file evidence covers every retained report behavior without solver execution or pickle caches.",
@@ -13707,11 +13737,11 @@
       "v5_destination": "next/tests/unit/test_presentation_contracts.py; next/tests/unit/test_presentation_tables.py; next/tests/unit/test_presentation_adapters.py; next/tests/unit/test_presentation_exports.py; next/tests/unit/test_presentation_files.py; next/tests/unit/test_presentation_plots.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -13724,9 +13754,11 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/unit/cipher_modules/statistical_tests/dataset_generator_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "test_generate_avalanche_dataset",
@@ -13736,9 +13768,9 @@
         "test_generate_low_density_dataset",
         "test_generate_random_dataset"
       ],
-      "rationale": null,
+      "rationale": "Seeded typed dataset-family evidence replaces mutable NumPy fixture comparisons.",
       "responsibility": "dataset generator test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_generate_avalanche_dataset",
         "test_generate_cbc_dataset",
@@ -13747,14 +13779,14 @@
         "test_generate_low_density_dataset",
         "test_generate_random_dataset"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_statistical_datasets.py; next/tests/unit/test_statistical_dataset_families.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -13766,9 +13798,11 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/unit/cipher_modules/statistical_tests/dieharder_statistical_tests_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "test_run_dieharder_statistical_tests_tool",
@@ -13777,9 +13811,9 @@
         "test_generate_chart_round",
         "test_generate_chart_all"
       ],
-      "rationale": null,
+      "rationale": "Parser diagnostics and isolated executable integration replace filesystem and chart side-effect assertions.",
       "responsibility": "dieharder statistical tests test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_dieharder_statistical_tests",
         "test_generate_chart_all",
@@ -13787,7 +13821,7 @@
         "test_parse_report",
         "test_run_dieharder_statistical_tests_tool"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_dieharder_driver.py; next/tests/integration/test_dieharder_integration.py"
     },
     {
       "acceptance_criterion": "Committed NIST fixtures and fixed synthetic unavailable rows verify complete table data, deterministic aggregate series, headless figure structure, UTF-8 output, extensions, and overwrite policy.",
@@ -13821,7 +13855,7 @@
       "v5_destination": "next/tests/unit/test_presentation_adapters.py; next/tests/unit/test_presentation_plots.py; next/tests/unit/test_presentation_files.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp",
         "glob",
@@ -13832,7 +13866,7 @@
         "shutil",
         "sys"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -13852,9 +13886,11 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/unit/cipher_modules/statistical_tests/nist_statistical_tests_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "cleanup_test_reports",
@@ -13872,9 +13908,9 @@
         "test_multiple_statistical_tests",
         "test_multiple_rounds"
       ],
-      "rationale": null,
+      "rationale": "Typed parser, manifest, timeout, and executable evidence replaces cwd report cleanup and plotting assertions.",
       "responsibility": "Unit tests for NIST Statistical Tests module.",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_format_test_result",
         "test_invalid_test_type",
@@ -13890,10 +13926,10 @@
         "test_run_nist_statistical_tests_tool",
         "test_run_random_nist_statistics_test"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_nist_driver.py; next/tests/integration/test_nist_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp",
         "contextlib",
@@ -13904,7 +13940,7 @@
         "pytest",
         "typing"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -13912,29 +13948,31 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/unit/cipher_modules/statistical_tests/nist_sts_kat_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "test_nist_sts_kat_matches_claasp"
       ],
-      "rationale": null,
+      "rationale": "The canonical image validates fixed NIST STS executable output rather than a separate partial Python implementation.",
       "responsibility": "nist sts kat test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_nist_sts_kat_matches_claasp"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/integration/test_nist_integration.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp",
         "numpy",
         "pytest"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -13992,16 +14030,18 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/unit/cipher_modules/statistical_tests/nist_sts_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "TestNISTTests"
       ],
-      "rationale": null,
+      "rationale": "Driver parsing and pinned upstream executable integration replace tests of the removed partial Python reimplementation.",
       "responsibility": "nist sts test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_all_tests_return_format_consistency",
         "test_approximate_entropy_test_random",
@@ -14055,7 +14095,7 @@
         "test_universal_test_long_sequence",
         "test_universal_test_random"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_nist_driver.py; next/tests/integration/test_nist_integration.py"
     },
     {
       "acceptance_criterion": "Applicable direct inversion and partial-graph tests are preserved by independent scalar round trips, typed boundaries, and dangling-dependency validation.",
@@ -18578,13 +18618,13 @@
       "v5_destination": "next/tests/unit/test_function_catalogue.py; next/tests/integration/test_function_catalogue_evidence.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp",
         "io",
         "sys"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -18592,27 +18632,29 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/unit/ciphers/toys/cipherfour_block_cipher_tests.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "test_cipherfour_block_cipher"
       ],
-      "rationale": null,
+      "rationale": "Catalogue-wide construction and evaluation evidence covers CipherFour without stdout-oriented legacy assertions.",
       "responsibility": "cipherfour block cipher tests",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_cipherfour_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_toy_primitive_catalogue.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "claasp"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -18620,20 +18662,22 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/unit/ciphers/toys/heys_block_cipher_tests.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "test_heys_block_cipher"
       ],
-      "rationale": null,
+      "rationale": "Catalogue-wide construction and deterministic evaluation evidence covers the Heys teaching primitive.",
       "responsibility": "No official conformance test vector is provided in the Heys tutorial reference.",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_heys_block_cipher"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/tests/unit/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -20375,13 +20419,13 @@
       "v5_destination": "next/tests/unit/test_authoring_utilities.py"
     },
     {
-      "acceptance_criterion": "Owning v5 behavior passes preserved legacy fixed evidence and independent semantic checks.",
+      "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
       "dependencies": [
         "os",
         "pytest",
         "subprocess"
       ],
-      "disposition": "migrate",
+      "disposition": "supersede",
       "fixed_evidence": {
         "requires_fixture_review": true,
         "test_functions": [
@@ -20390,22 +20434,24 @@
         ]
       },
       "kind": "test",
+      "milestone_owner": "M11a",
       "path": "tests/unit/utils/scip_tpi_test.py",
       "prerequisites": [
-        "owning migration milestone"
+        "M10.16",
+        "M11.4"
       ],
       "public_entry_points": [
         "test_scip_tpi_support",
         "test_scip_parallel_configuration"
       ],
-      "rationale": null,
+      "rationale": "The unsupported SCIP parallel-shell configuration is removed; the maintained open MILP boundary has typed GLPK execution evidence.",
       "responsibility": "scip tpi test",
-      "status": "planned-or-partially-migrated",
+      "status": "superseded-in-m11a",
       "tests": [
         "test_scip_parallel_configuration",
         "test_scip_tpi_support"
       ],
-      "v5_destination": "next/tests (mapped to the owning migrated behavior)"
+      "v5_destination": "next/src/claasp_next/drivers/solvers/glpk.py; next/tests/integration/test_glpk_monomial_trails.py"
     },
     {
       "acceptance_criterion": "Legacy list/tuple rotation and boundary shift values pass without Sage; arbitrary fill values cover symbolic-sequence use.",
