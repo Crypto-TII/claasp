@@ -1281,10 +1281,60 @@ and tooling pass their documented parity and dependency-isolation tests.
 
 ### M11: Integration and release
 
-- Merge the latest `develop` into `claasp-v5`.
-- Run combined, differential, and dependency-isolation tests.
-- Rename `claasp_next` to `claasp` only after its public API is accepted.
-- Stabilize in `develop`, publish prereleases, then release CLAASP 5.0.
+CLAASP 5 will launch from a dedicated GitHub organization rather than being
+merged back into the current ``Crypto-TII/claasp`` development line.  The
+existing public repository remains public until the final transfer: changing
+its visibility would erase stars and watchers and detach its public forks.
+Private staging uses a distinct repository name; at launch the existing
+repository is transferred so its issues, pull requests, releases, stars,
+watchers, forks, links, and Git history remain attached.  The destination
+organization and repositories remain unpublished until the complete affiliated
+repository set has passed its migration gates.  GitHub organizations are
+themselves public identities even when all of their repositories are private.
+
+The dependency-ordered M11 execution plan is:
+
+1. **Destination and preservation authority.** Inventory the affiliated
+   repositories, record their target names and visibility, establish at least
+   two organization owners, verify source- and destination-side transfer
+   permissions, capture repository metadata, and create private staging
+   repositories without occupying the final transfer names.  The preferred
+   ``claasp`` organization handle is currently occupied by a personal GitHub
+   account and must be released through its owner/GitHub Support or replaced by
+   an explicitly accepted handle before external creation can complete.
+2. **License-provenance decision.** Audit every shipped source/data artifact,
+   its predecessor, copyright holder, inbound contribution terms, third-party
+   notice, dependency boundary, and generated output.  Removing SageMath does
+   not by itself authorize relicensing GPL-covered migrated code.  MIT or
+   Apache-2.0 may replace GPL-3.0-or-later only after written evidence shows
+   that every copyright holder has assigned or granted the necessary rights,
+   or all code lacking such permission has been independently replaced.  TII
+   legal review owns the final decision; until then GPL-3.0-or-later remains.
+3. **Canonical release environment.** Build a pinned multi-architecture
+   Python-3.11+ image with Chuffed, GLPK, Z3, MiniSat, Singular, msolve, and
+   LaTeX, publish it only to the private staging registry, and reproduce the
+   complete host/external/documentation/package matrix on amd64 and arm64.
+4. **Upstream reconciliation.** Fetch the latest ``develop``, classify every
+   commit absent from ``claasp-v5``, and integrate only applicable fixes with
+   explicit evidence.  Do not merge v5 back into the old repository merely to
+   use it as a release destination.
+5. **Pre-rename bidirectional audit.** Complete M11a over every legacy and v5
+   release artifact, generate both summaries, and require 100% validated
+   coverage before accepting the public API.
+6. **Release-tree and package rename.** Promote the v5 tree to the repository
+   root, rename ``claasp_next``/``claasp-next`` to ``claasp``, update imports,
+   metadata, documentation, workflows, and examples, then regenerate M11a.
+7. **Private release candidate.** Run the complete release matrix in the
+   canonical environment, build and inspect distributions and images, migrate
+   organization policies/secrets/registries/docs without publishing them, and
+   create a private release-candidate checkpoint.  Public PyPI publication is
+   not used as a private staging mechanism.
+8. **Controlled transfer and publication.** Freeze the old repository, verify
+   backups and captured metadata, transfer ``Crypto-TII/claasp`` to the accepted
+   organization without changing public visibility, install the validated v5
+   default branch, verify redirects and preserved GitHub metadata, publish the
+   documentation/images/package, and retain a clearly identified v4 maintenance
+   tag or branch.  Publish CLAASP 5.0 only after the post-transfer audit passes.
 
 #### M11a: Final bidirectional migration audit
 
@@ -1721,5 +1771,6 @@ is absent). Update this table in the same commit that changes milestone state.
 | Pinned static typing (M10.16g) | Achieved | Mypy 2.3.1 is pinned over the complete declared ``src/claasp_next``, ``tests``, ``tools``, and ``docs/conf.py`` boundary with untyped bodies checked, implicit optionals rejected, and unused/redundant suppressions rejected. Immediate strict conversion measured 928 diagnostics; corrected public utility contracts and all five prior inline ignores produced a 913-diagnostic slice checkpoint. M10.16h made optional NumPy, pandas, Matplotlib, scikit-learn, and legacy-capture imports deterministic skipped-import boundaries, so the current exact authority contains 905 diagnostics: 719 source, 163 test, 23 tool, and 0 Sphinx-config diagnostics across 18 explicit error codes. No checked module is excluded and no inline suppression is registered. The closure gate rejects tool-version drift plus new, stale, duplicate, malformed, or out-of-scope diagnostics; strict-zero typing remains tracked debt rather than a false completion claim. |
 | Documentation and quality closure (M10.16h) | Achieved | The generated API index exposes all 123 public namespaces, and the closure authority passes for 3,524 API entries and 38 narrow example exceptions (8 abstract protocol, 23 external executable, 7 environment-owned interaction). Ruff 0.16.8 reports all 578 scoped files formatted and lint-clean; mypy 2.3.1 accepts the exact 905-diagnostic regression authority with zero inline suppressions. Python/user/developer doctests pass 636/424/522 and both HTML guides build warning-free with Sphinx 9.0.4/Furo 2025.12.19. The audited wheel has 412 entries and no development artifacts, caches, binaries, or legacy C/header ABI. Darwin x86_64/Python 3.11.12 dependency-free: 1,703 passed, 86 external deselected; routine host: 1,264 passed, 3 optional-dependency skips, 518 external-or-extended deselected; Apple clang 16.0.0 native: 4 passed; pdfTeX: 1 passed. amd64 Linux/Python 3.10.12 compatibility Docker: 1,268 passed, 3 optional-dependency skips, 518 deselected; Docker external: 84 passed, 2 optional-dependency skips, 1,703 deselected, including GCC 11.4.0 native compilation and PDF rendering. The workflow enforces documentation and quality checks on Python 3.11, 3.12, and 3.13. All inventory, catalogue, realization, terminology, presentation, tooling, public-API, and M10.16 closure gates pass; no checkpoint timed out. The canonical multi-architecture Python 3.11+ image remains queued independently. |
 | Canonical v5 Docker/CI environment | Queued | Before release, replace the amd64 Python-3.10 compatibility image with a multi-architecture Python-3.11+ image containing Chuffed, GLPK, Z3, MiniSat, Singular, msolve and LaTeX; do not block the current M10.9c/M10.9d migration workstream on image construction |
-| Integration and release (M11) | Planned | Reconcile the latest `develop`, run the complete release matrix in the canonical environment, accept the public API, rename `claasp_next` to `claasp`, publish prereleases, and release 5.0 |
+| Release destination and licensing plan (M11.0) | Achieved | CLAASP 5 targets a dedicated organization with private staging and a final transfer of the still-public ``Crypto-TII/claasp`` repository so 79 stars, 14 forks, issues, pull requests, ten releases, redirects, and history remain attached. The requested ``claasp`` organization handle is occupied by a personal account, so handle release or an accepted alternative is an external prerequisite. Relicensing is a separate blocking provenance/legal decision: removal of SageMath alone is insufficient, the repository has no committed CLA/DCO, migrated code retains GPL provenance, and GPL-3.0-or-later remains authoritative until every copyright interest and third-party artifact permits MIT or Apache-2.0. |
+| Integration and release (M11) | Planned | Execute the eight dependency-ordered destination, licensing, canonical-environment, upstream-reconciliation, bidirectional-audit, package-rename, private-candidate, and controlled-publication slices without merging v5 back into the old ``develop`` line as a release destination |
 | Final bidirectional migration audit (M11a) | Planned | Machine matrix and generated human summary map every legacy artifact to v5 migrated/superseded/removed/out-of-scope ownership and every shipped v5 artifact back to legacy predecessors or an explicit new-v5 rationale; enforce 100% coverage before and after the package rename |
