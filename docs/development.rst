@@ -176,6 +176,31 @@ private documentation previews remain blocked by the occupied organization
 handle, unnamed owners, and absent destination permissions. Public PyPI is not
 used for staging, and no release artifact may be published before M11.8.
 
+Controlled publication preflight
+--------------------------------
+
+The M11.8 preflight separates validation of the transfer plan from permission
+to execute it:
+
+.. code-block:: console
+
+   python tools/publication_preflight.py --check-plan
+   python tools/publication_preflight.py --ready
+
+``--check-plan`` must pass in ordinary CI. It validates the eight-repository
+inventory, GPL-3.0-or-later launch license, ordered transfer procedure, current
+metadata capture, and the invariants that protect the public repository's
+stars, forks, history, issues, releases, and redirects. ``--ready`` intentionally
+exits with status 2 while owner-controlled prerequisites remain unresolved.
+It must pass before any freeze, transfer, visibility change, registry push, or
+public package/documentation release.
+
+The live preflight is refreshed with read-only GitHub API calls. Never put
+tokens or secret values in its machine authority. The current operator has
+administration on seven candidate repositories but read-only access to
+``jupyter-claasp-cascada-deployment``; an authorized owner must transfer that
+repository or grant the required permission.
+
 Building the documentation
 --------------------------
 

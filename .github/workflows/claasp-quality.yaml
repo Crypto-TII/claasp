@@ -100,6 +100,7 @@ jobs:
           python tools/bidirectional_migration_audit.py --check
           python tools/release_tree_closure.py --check
           python tools/private_release_candidate_closure.py --check
+          python tools/publication_preflight.py --check-plan
 
       - name: Run Python and guide doctests
         run: |

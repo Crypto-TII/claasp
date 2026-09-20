@@ -36,6 +36,7 @@ python tools/upstream_reconciliation_closure.py --check
 python tools/bidirectional_migration_audit.py --check
 python tools/release_tree_closure.py --check
 python tools/private_release_candidate_closure.py --check
+python tools/publication_preflight.py --check-plan
 
 python -m pytest -m 'not external' -p no:cacheprovider
 python -m pytest -m external -p no:cacheprovider

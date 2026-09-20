@@ -1,0 +1,164 @@
+{
+  "captured_at": "2026-09-21",
+  "destination": {
+    "accepted_handle": null,
+    "organization_created": false,
+    "preferred_handle": "claasp",
+    "preferred_handle_kind": "User",
+    "preferred_handle_status": "occupied-by-unrelated-personal-account"
+  },
+  "launch_actions": [
+    "confirm-destination-handle-and-two-owners",
+    "verify-source-and-destination-admin-permissions",
+    "create-private-staging-repositories-with-nonfinal-names",
+    "apply-private-policies-and-owner-provisioned-secrets",
+    "freeze-source-and-create-verified-backups",
+    "transfer-public-claasp-without-visibility-change",
+    "install-validated-v5-default-branch",
+    "verify-redirects-stars-forks-issues-releases-and-history",
+    "publish-documentation-images-and-package",
+    "complete-post-transfer-audit"
+  ],
+  "license_at_launch": {
+    "approved_spdx": "GPL-3.0-or-later",
+    "mit_or_apache_status": "pending-tii-legal-rights-clearance"
+  },
+  "live_evidence": {
+    "authenticated_actor": "peacker",
+    "source_organization_membership": "member",
+    "source_organization_owners_observed": [
+      "hernandezj84",
+      "iden83",
+      "ojel95"
+    ],
+    "source_repository": {
+      "default_branch": "main",
+      "forks": 14,
+      "issues_open": 19,
+      "releases": 10,
+      "stars": 79,
+      "subscribers": 5,
+      "visibility": "public"
+    }
+  },
+  "local_candidate": {
+    "commit": "5b4c3ad6",
+    "version": "5.0.0rc1"
+  },
+  "milestone": "M11.8-preflight",
+  "open_blockers": [
+    {
+      "id": "destination-handle",
+      "owner": "project-owners",
+      "resolution": "Release the personal claasp handle through its owner or GitHub Support, or explicitly approve another organization handle."
+    },
+    {
+      "id": "destination-owners",
+      "owner": "project-owners",
+      "resolution": "Name and confirm at least two owners for the destination organization."
+    },
+    {
+      "id": "destination-permissions",
+      "owner": "destination-owners",
+      "resolution": "Create the organization and grant the authenticated migration operator organization-owner and repository-administration permissions."
+    },
+    {
+      "id": "missing-source-admin",
+      "owner": "Crypto-TII-owners",
+      "resolution": "Grant transfer-capable administration for Crypto-TII/jupyter-claasp-cascada-deployment or assign its migration to an authorized owner."
+    },
+    {
+      "id": "repository-set-approval",
+      "owner": "project-owners",
+      "resolution": "Confirm the eight affiliated repositories and their final names and launch visibility."
+    }
+  ],
+  "publication_state": {
+    "artifacts_published": false,
+    "organization_created": false,
+    "repositories_transferred": false,
+    "source_frozen": false
+  },
+  "repositories": [
+    {
+      "admin": true,
+      "default_branch": "main",
+      "forks": 14,
+      "name": "claasp",
+      "stars": 79,
+      "target_visibility_before_launch": "public",
+      "visibility": "public"
+    },
+    {
+      "admin": true,
+      "default_branch": "main",
+      "forks": 0,
+      "name": "claasp-llm",
+      "stars": 0,
+      "target_visibility_before_launch": "private",
+      "visibility": "private"
+    },
+    {
+      "admin": true,
+      "default_branch": "main",
+      "forks": 0,
+      "name": "claasp-pro",
+      "stars": 0,
+      "target_visibility_before_launch": "private",
+      "visibility": "private"
+    },
+    {
+      "admin": true,
+      "default_branch": "main",
+      "forks": 0,
+      "name": "claasp-symmetric-cipher-analysis",
+      "stars": 0,
+      "target_visibility_before_launch": "private",
+      "visibility": "private"
+    },
+    {
+      "admin": true,
+      "default_branch": "main",
+      "forks": 0,
+      "name": "claasping_aradi",
+      "stars": 0,
+      "target_visibility_before_launch": "private",
+      "visibility": "public"
+    },
+    {
+      "admin": true,
+      "default_branch": "main",
+      "forks": 0,
+      "name": "claasping_ballet",
+      "stars": 0,
+      "target_visibility_before_launch": "private",
+      "visibility": "public"
+    },
+    {
+      "admin": true,
+      "default_branch": "main",
+      "forks": 0,
+      "name": "claasping_splight",
+      "stars": 0,
+      "target_visibility_before_launch": "private",
+      "visibility": "private"
+    },
+    {
+      "admin": false,
+      "default_branch": "main",
+      "forks": 0,
+      "name": "jupyter-claasp-cascada-deployment",
+      "stars": 0,
+      "target_visibility_before_launch": "private",
+      "visibility": "private"
+    }
+  ],
+  "schema_version": 1,
+  "transfer_invariants": {
+    "change_public_source_visibility": false,
+    "create_replacement_for_star_bearing_repository": false,
+    "preserve_v4_maintenance_reference": true,
+    "publish_before_post_transfer_audit": false,
+    "transfer_existing_public_repository": true
+  }
+}
