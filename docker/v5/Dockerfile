@@ -16,7 +16,7 @@ LABEL org.opencontainers.image.title="CLAASP 5 release environment" \
 ENV LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONPATH=/workspace/next/src \
+    PYTHONPATH=/workspace/src \
     PATH=/opt/claasp-venv/bin:/usr/local/bin:/usr/bin:/bin
 
 RUN apt-get -q update \
@@ -103,5 +103,5 @@ COPY docker/v5/smoke.sh /usr/local/bin/claasp-release-smoke
 RUN chmod 0755 /usr/local/bin/claasp-release-smoke \
     && claasp-release-smoke
 
-WORKDIR /workspace/next
+WORKDIR /workspace
 CMD ["bash"]

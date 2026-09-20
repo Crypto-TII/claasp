@@ -1,0 +1,43 @@
+{
+  "documentation": {
+    "example_exceptions": 38,
+    "public_api_entries": 3524,
+    "public_modules": 123
+  },
+  "evidence": [
+    ".github/workflows/claasp-quality.yaml",
+    "docs/api.rst",
+    "docs/development.rst",
+    "docs/documentation_quality.rst",
+    "docs/public_api_namespaces.rst",
+    "migration/m10_16_public_api.json",
+    "migration/m10_16_typing_baseline.json",
+    "tests/unit/test_public_api_closure.py",
+    "tests/unit/test_quality_configuration.py",
+    "tests/unit/test_wheel_audit.py",
+    "tools/documentation_quality_closure.py",
+    "tools/public_api_closure.py",
+    "tools/typecheck_closure.py",
+    "tools/wheel_audit.py"
+  ],
+  "milestone": "M10.16",
+  "quality_scope": [
+    "src/claasp",
+    "tests",
+    "tools",
+    "docs/conf.py"
+  ],
+  "schema_version": 1,
+  "typing": {
+    "diagnostics": 900,
+    "inline_suppressions": 0
+  },
+  "versions": {
+    "build": "1.3.0",
+    "furo": "2025.12.19",
+    "mypy": "2.3.1",
+    "pytest": "9.1.1",
+    "ruff": "0.16.8",
+    "sphinx": "9.0.4"
+  }
+}

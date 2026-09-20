@@ -1,0 +1,209 @@
+MILP models
+===========
+
+CLAASP's linear-model core is independent of SageMath and Python solver
+packages. Variables, affine expressions, constraints, domains, and objectives
+are explicit immutable values:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.milp import *
+   >>> variables = tuple(LinearVariable(name, VariableKind.BINARY) for name in ("x", "y"))
+   >>> model = MILPModel(
+   ...     variables,
+   ...     (LinearConstraint(LinearExpression.from_terms({"x": 2, "y": 3}), ConstraintSense.LESS_EQUAL, 3, "capacity"),),
+   ...     LinearExpression.from_terms({"x": 3, "y": 4}),
+   ...     ObjectiveSense.MAXIMIZE,
+   ... )
+   >>> model.is_feasible({"x": 0, "y": 1})
+   True
+   >>> model.objective_value({"x": 0, "y": 1})
+   4.0
+
+The deterministic CPLEX-LP exporter is suitable for multiple external
+optimizers:
+
+.. doctest::
+
+   >>> text = LPExporter().export(model)
+   >>> text.startswith("Maximize\n objective: 3 x + 4 y")
+   True
+
+The first optional adapter invokes the open-source ``glpsol`` command:
+
+.. code-block:: python
+
+   from claasp.drivers.solvers import GLPKSolver, MILPStatus
+
+   result = GLPKSolver().solve(model)
+   assert result.status is MILPStatus.OPTIMAL
+   assert result.objective_value == 4
+
+Every returned assignment is checked against the portable model and its
+objective is recomputed. Primitive trail lowering is layered on top of this
+representation in the next M10.5 checkpoint.
+
+Weighted PRESENT trails
+-----------------------
+
+The first primitive lowering composes every feasible DDT transition of all 32
+S-box instances in two-round PRESENT. It connects both layers through the
+graph's permutation, requires a nonzero input difference, and minimizes the
+sum of exact transition weights:
+
+.. doctest::
+
+   >>> from claasp.primitives import Present
+   >>> from claasp.representations.constraints.milp import PresentDifferentialMILPModel
+   >>> lowering = PresentDifferentialMILPModel(Present(number_of_rounds=2))
+   >>> trail_model = lowering.milp_model()
+   >>> len(trail_model.constraints)
+   289
+
+The dedicated GLPK integration obtains the established optimum weight 4,
+decodes all 32 transitions, and checks every DDT entry and permutation
+boundary independently of the linear constraints.
+
+The compiler also accepts the same shared ``PropagationProblem`` used by SMT:
+
+.. doctest::
+
+   >>> from claasp.semantics import XOR_DIFFERENTIAL
+   >>> from claasp.semantics.cryptanalysis import PropagationProblem
+   >>> shared = PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL)
+   >>> PresentDifferentialMILPModel(shared).problem is shared
+   True
+
+Consequently a global or per-component semantic override is selected before
+the MILP representation is chosen.
+
+Exact graph execution
+---------------------
+
+``BooleanGraphMILPModel`` translates complete Boolean execution clauses to
+binary inequalities. Negative literals are represented as ``1-x``, positive
+literals as ``x``, and every clause requires their sum to be at least one.
+This exactly represents nonlinear Boolean operations; it does not drop
+modular additions as the legacy partial execution builder did.
+
+.. doctest::
+
+   >>> from claasp.primitives import Speck
+   >>> from claasp.representations.constraints.milp import BooleanGraphMILPModel
+   >>> from claasp.representations.execution import ScalarEvaluator
+   >>> primitive = Speck(number_of_rounds=1)
+   >>> execution = BooleanGraphMILPModel(primitive)
+   >>> values = ScalarEvaluator().evaluate(primitive, {
+   ...     "plaintext": (0x6574, 0x694c), "key": (0x1918, 0x1110, 0x0908, 0x0100)})
+   >>> execution.milp_model().is_feasible(execution.witness(values))
+   True
+
+``GLPKSolver`` also accepts CNF at the shared analysis facade, so
+``primitive.analyze().recover_input(..., solver=GLPKSolver())`` needs no
+solver-specific model assembly. The dedicated integration test reproduces
+the full Speck-22 legacy output ``A86842F2``. Solver undefined outcomes are
+``MILPStatus.UNKNOWN``, never an infeasibility proof; Boolean projection
+rejects them explicitly. Solver registries and Sage backend aliases are not
+v5 API contracts. Other optimizers remain optional third-party drivers.
+
+Finite component relations
+--------------------------
+
+Exact finite relations provide a dependency-free baseline in place of Sage
+convex hulls, Espresso minimization, and global pickled inequality caches.
+``FiniteBinaryRelationMILPModel`` selects one supported row and equates every
+semantic column to that row. Row selectors are auxiliary variables: this
+is not a minimum-facet or minimum-inequality claim.
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.milp import SBoxTransitionMILPModel
+   >>> from claasp.primitives.block_ciphers.present import PRESENT_SBOX
+   >>> from claasp.semantics.cryptanalysis import TrailKind, SBoxTransitionSemantics, TruncatedXorDifference
+   >>> relation = SBoxTransitionMILPModel(PRESENT_SBOX, TrailKind.XOR_LINEAR)
+   >>> fixed = relation.milp_model(input_pattern=1, output_pattern=5)
+   >>> transition = relation.decode_transition(relation.relation.witness((0, 0, 0, 1, 0, 1, 0, 1)))
+   >>> (transition.weight, transition.sign)
+   (1.0, -1)
+   >>> semantics = SBoxTransitionSemantics(PRESENT_SBOX)
+   >>> str(semantics.truncated_xor_differential(TruncatedXorDifference.parse("0001")))
+   '???1'
+
+The complete DDT is computed by derivative counting; the signed full Walsh
+table uses an integer fast Walsh transform and is checked against independent
+transition counts. These support eight-bit tables without confusing full
+Walsh coefficients with half-Walsh legacy LAT entries or discarding nonzero
+probability-one transitions. MILP logarithmic objective coefficients are
+floating approximations; decoding retains exact counts and signs and checks
+the objective against them.
+
+``WordwiseXorDifference.xor_many`` preserves known-term cancellation, including
+recovery of a lone nonzero term. ``propagate_dense_wordwise_activity`` retains
+the legacy 256-row model-5 abstraction only for a field-linear layer whose
+coefficients are proven nonzero. It does not apply to rings with zero divisors,
+does not assume exact joint support, and is distinct from branch-number
+activity tables. S-box undisturbed outputs likewise carry no probabilities.
+
+ARX linear transitions
+----------------------
+
+Modular addition has a separate exact linear-mask lowering. Integer parity
+variables express the XOR recurrence, while binary variables represent the
+masks and unary correlation weight:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.milp import ModularAddLinearMILPModel
+   >>> addition = ModularAddLinearMILPModel(16)
+   >>> arx_model = addition.milp_model(left_mask=0x6081, right_mask=0x40c1, output_mask=0x4081)
+   >>> (len(arx_model.variables), len(arx_model.constraints))
+   (79, 124)
+
+GLPK integration restores the four modular-add transitions of the legacy
+four-round Speck32/64 weight-3 characteristic, including weights
+``2 + 0 + 0 + 1`` and signs ``+,+,+,-``. Decoding recomputes each correlation
+with the shared exact Walsh semantics.
+
+Qualified legacy evidence
+-------------------------
+
+Fixed legacy results retain an explicit claim kind when their original model
+cannot honestly be reproduced as an exact portable proof.  This keeps exact
+values separate from lower bounds, abstractions, sampled observations, and
+solver regressions:
+
+.. doctest::
+
+   >>> from claasp.semantics.cryptanalysis import legacy_wordwise_active_sbox_evidence
+   >>> activity = legacy_wordwise_active_sbox_evidence()
+   >>> activity.aes_exact
+   (1, 5, 9, 25)
+   >>> (activity.ublock_decomposed_lower_bounds, activity.ublock_published_exact)
+   ((1, 6), (1, 8, 13))
+
+The reduced-AES wordwise-impossible fixture likewise records an abstract
+incompatibility witness rather than claiming a concrete field-valued
+differential proof:
+
+.. doctest::
+
+   >>> from claasp.semantics.cryptanalysis import legacy_wordwise_impossible_fixture
+   >>> impossible = legacy_wordwise_impossible_fixture()
+   >>> (impossible.input_pattern, impossible.output_pattern)
+   ('1003000000000000', '1000000000000000')
+   >>> impossible.claim_kind
+   'abstract-incompatibility-witness'
+
+An executed uBlock solver regression is available with the same qualification
+until a typed uBlock catalogue primitive can independently reproduce it:
+
+.. doctest::
+
+   >>> from claasp.analysis import ublock_three_round_legacy_cluster
+   >>> cluster = ublock_three_round_legacy_cluster()
+   >>> (cluster.trail_count, cluster.aggregate_weight, cluster.claim_kind)
+   (8, 25.7146, 'legacy-solver-regression')
+
+Permanently license-skipped proprietary expectations are not evidence.  They
+remain in the migration matrix for provenance but are not promoted to v5
+oracle values.

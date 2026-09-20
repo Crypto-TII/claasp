@@ -1,10 +1,10 @@
 #!/bin/sh
 set -eu
 
-cd /workspace/next
+cd /workspace
 export MPLBACKEND=Agg
 export PYTHONDONTWRITEBYTECODE=1
-export PYTHONPATH=/workspace/next/src
+export PYTHONPATH=/workspace/src
 
 claasp-release-smoke
 
@@ -18,10 +18,11 @@ python tools/license_provenance_closure.py --check
 python tools/release_environment_closure.py --check
 python tools/upstream_reconciliation_closure.py --check
 python tools/bidirectional_migration_audit.py --check
+python tools/release_tree_closure.py --check
 
 python -m pytest -m 'not external' -p no:cacheprovider
 python -m pytest -m external -p no:cacheprovider
-python -m pytest --doctest-modules src/claasp_next -p no:cacheprovider -q
+python -m pytest --doctest-modules src/claasp -p no:cacheprovider -q
 make -C docs doctest
 make -C docs html
 

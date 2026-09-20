@@ -1,0 +1,386 @@
+name: CLAASP 5 quality
+
+on:
+  push:
+    branches:
+      - claasp-v5
+  pull_request:
+    branches:
+      - claasp-v5
+    paths:
+      - "**"
+      - "docs/architecture/**"
+      - ".github/workflows/claasp-quality.yaml"
+
+concurrency:
+  group: claasp-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONPATH: ${{ github.workspace }}/src
+
+jobs:
+  sage-free-tests:
+    name: Sage-free Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install isolated development package
+        run: python -m pip install -e '.[dev,docs]'
+
+      - name: Verify Sage is not installed
+        run: python -c "import importlib.util; assert importlib.util.find_spec('sage') is None"
+
+      - name: Run dependency-free tests
+        run: python -m pytest
+
+      - name: Run Python API doctests
+        run: python -m pytest --doctest-modules src/claasp
+
+      - name: Run documentation doctests
+        run: make -C docs doctest
+
+      - name: Build HTML documentation
+        run: make -C docs html
+
+  documentation-quality:
+    name: Documentation and quality Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install pinned documentation and quality tools
+        run: python -m pip install -e '.[dev,docs,quality]'
+
+      - name: Verify pinned environment
+        run: |
+          python -m pip check
+          ruff --version
+          python -m mypy --version
+          sphinx-build --version
+
+      - name: Check formatting and linting
+        run: |
+          ruff format --check src tests tools docs/conf.py
+          ruff check src tests tools docs/conf.py
+
+      - name: Check static typing and public documentation
+        run: |
+          python tools/typecheck_closure.py --check
+          python tools/public_api_closure.py --check
+          python tools/documentation_quality_closure.py --check
+          python tools/repository_destination_closure.py --check
+          python tools/license_provenance_closure.py --check
+          python tools/release_environment_closure.py --check
+          python tools/upstream_reconciliation_closure.py --check
+          python tools/bidirectional_migration_audit.py --check
+          python tools/release_tree_closure.py --check
+
+      - name: Run Python and guide doctests
+        run: |
+          python -m pytest --doctest-modules src/claasp -p no:cacheprovider -q
+          make -C docs doctest
+
+      - name: Build warning-free documentation
+        run: make -C docs html
+
+      - name: Run migration and catalogue closure gates
+        run: |
+          python tools/legacy_inventory.py --check
+          python tools/legacy_inventory.py --check-model-closure
+          python tools/legacy_inventory.py --check-catalogue-classification
+          python tools/legacy_inventory.py --check-component-closure
+          python tools/legacy_inventory.py --check-primitive-closure
+          python tools/legacy_inventory.py --check-transformation-closure
+          python tools/legacy_inventory.py --check-component-analysis-closure
+          python tools/legacy_inventory.py --check-presentation-closure
+          python tools/legacy_inventory.py --check-tooling-closure
+          python tools/catalogue_closure.py --check
+          python tools/realization_closure.py --check
+          python tools/terminology_guard.py
+
+      - name: Build and audit wheel
+        run: |
+          python -m build --wheel
+          python tools/wheel_audit.py dist/*.whl
+
+  presentation-rendering:
+    name: Optional presentation rendering
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install presentation dependencies
+        run: python -m pip install -e '.[dev,presentation]'
+
+      - name: Run headless plots and dataframe parity
+        env:
+          MPLBACKEND: Agg
+        run: python -m pytest tests/unit/test_presentation_plots.py tests/unit/test_presentation_files.py -q
+
+  singular-export:
+    name: Singular exporter integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Singular
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes singular
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Execute Singular exporter integration
+        run: python -m pytest tests/unit/test_singular_exporter.py tests/integration/test_algebra_drivers.py -q
+
+  msolve-export:
+    name: msolve exporter integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install msolve
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes msolve
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Execute msolve exporter integration
+        run: python -m pytest tests/unit/test_msolve_exporter.py tests/integration/test_algebra_drivers.py -q
+
+  minisat-execution:
+    name: MiniSat execution integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install MiniSat
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes minisat
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Execute MiniSat integration
+        run: python -m pytest -m external tests/integration/test_minisat_integration.py -q
+
+  z3-execution:
+    name: Z3 execution integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Z3
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes z3
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Execute Z3 integration
+        run: python -m pytest -m external tests/integration/test_z3_integration.py tests/integration/test_speck_trail_enumeration.py tests/integration/test_word_differential.py -q
+
+  glpk-execution:
+    name: GLPK execution integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install GLPK
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes glpk-utils
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Execute GLPK integration
+        run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py tests/integration/test_glpk_arx_transitions.py -q
+
+  latex-rendering:
+    name: LaTeX diagram rendering
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install LaTeX and TikZ
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes texlive-latex-base texlive-pictures
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Execute LaTeX rendering integration
+        run: python -m pytest -m external tests/integration/test_latex_diagram.py -q
+
+  native-source-execution:
+    name: Generated C compilation and execution
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Verify native compiler
+        run: cc --version
+
+      - name: Compile and execute generated C fixtures
+        run: python -m pytest -m external tests/integration/test_native_source_driver.py -q
+
+  minizinc-execution:
+    name: MiniZinc execution integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install MiniZinc
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes minizinc
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Execute MiniZinc integration
+        run: python -m pytest -m external tests/integration/test_minizinc_integration.py -q
+
+  dieharder-execution:
+    name: Dieharder execution integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dieharder
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes dieharder
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Execute Dieharder integration
+        run: |
+          command -v dieharder
+          python -m pytest -m external tests/integration/test_dieharder_integration.py -q
+
+
+  neural-ml-execution:
+    name: Neural distinguisher ML execution
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies with the optional ML extra
+        run: python -m pip install -e '.[dev,ml]'
+
+      - name: Execute neural distinguisher ML integration
+        run: python -m pytest -m external tests/integration/test_neural_driver_integration.py -q

@@ -1,0 +1,53 @@
+{
+  "captured_develop_head": "1e9326b9f9447045b74fdd163c09af6ffc2bb2f9",
+  "common_ancestor": "207f1a8e708c66576191c229b16e5ca43d0d2070",
+  "merge_policy": "classify-and-port-without-merging-develop",
+  "milestone": "M11.4",
+  "records": [
+    {
+      "commit": "6c804e2b982e499d916668154c61f2650d13fa5b",
+      "disposition": "ported",
+      "evidence": [
+        "src/claasp/primitives/permutations/grain_core.py",
+        "tests/unit/test_grain_core.py",
+        "migration/m10_9d7_fixed_vectors.json"
+      ],
+      "rationale": "The full 160-bit Grain v1 initialization core corrects v5's inherited 80-bit LFSR-only model. The port uses the typed feedback-register component and is fixed by two official initialization states plus independently continued keystream vectors.",
+      "subject": "Feat: implement full Grain v1 core (LFSR+NFSR+filter) in GrainCorePermutation (#522)"
+    },
+    {
+      "commit": "c8344b93cb225ce610f1f9af8ad5d35730bc4229",
+      "disposition": "superseded",
+      "evidence": [
+        "src/claasp/primitives/block_functions/siphash.py",
+        "src/claasp/primitives/permutations/chacha.py",
+        "src/claasp/representations/constraints/milp/sbox.py"
+      ],
+      "rationale": "v5 embeds the complete SipHash citation in its public docstring, makes no reduced-ChaCha attack claim requiring DEY2023, and replaces the legacy Sasaki-Todo inequality generators with exact finite-relation S-box lowering. There are no unresolved v5 citation keys to copy.",
+      "subject": "Fix: add missing references.rst entries for AumassonBernstein2012, DEY2023, SasTod17 (#523)"
+    },
+    {
+      "commit": "891f667887015ad343c90cd2d6c40077921ec1cf",
+      "disposition": "superseded",
+      "evidence": [
+        "src/claasp/representations/constraints/cp/trails.py",
+        "tests/unit/test_cp_model.py"
+      ],
+      "rationale": "The renamed mutable legacy CP S-box cache does not exist in v5. Typed CP lowering derives deterministic constraints per immutable propagation problem, so neither the misspelled name nor its mutable API is part of the release surface.",
+      "subject": "Fix: rename sbox_mant to sbox_cache throughout CP model code (#524)"
+    },
+    {
+      "commit": "1e9326b9f9447045b74fdd163c09af6ffc2bb2f9",
+      "disposition": "superseded",
+      "evidence": [
+        "src/claasp/representations/constraints/smt/word_differential.py",
+        "src/claasp/representations/constraints/smt/speck.py",
+        "tests/unit/test_word_differential_smt.py",
+        "tests/unit/test_speck_linear_smt.py"
+      ],
+      "rationale": "v5 replaced the mutable SAT search helpers with typed immutable formula builders and explicit mutually exclusive maximum_weight/fixed_weight contracts. Deterministic bounds, invalid requests, exact weights, masks, and witness validation already have direct evidence.",
+      "subject": "Refactor weight-bounded SAT trail search (#525)"
+    }
+  ],
+  "schema_version": 1
+}

@@ -5,15 +5,13 @@ on:
     branches: [claasp-v5]
     paths:
       - "docker/v5/**"
-      - "next/**"
-      - "required_dependencies/**"
+      - "**"
       - ".github/workflows/claasp-v5-release-image.yaml"
   pull_request:
     branches: [claasp-v5]
     paths:
       - "docker/v5/**"
-      - "next/**"
-      - "required_dependencies/**"
+      - "**"
       - ".github/workflows/claasp-v5-release-image.yaml"
 
 permissions:
@@ -61,6 +59,6 @@ jobs:
         run: |
           docker run --rm --platform "${{ matrix.platform }}" \
             -e PYTHONDONTWRITEBYTECODE=1 \
-            -e PYTHONPATH=/workspace/next/src \
+            -e PYTHONPATH=/workspace/src \
             -v "$GITHUB_WORKSPACE:/workspace" \
             claasp-v5-release:ci /workspace/docker/v5/check.sh
