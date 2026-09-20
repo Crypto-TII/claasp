@@ -101,6 +101,9 @@ jobs:
           python tools/typecheck_closure.py --check
           python tools/public_api_closure.py --check
           python tools/documentation_quality_closure.py --check
+          python tools/repository_destination_closure.py --check
+          python tools/license_provenance_closure.py --check
+          python tools/release_environment_closure.py --check
 
       - name: Run Python and guide doctests
         run: |

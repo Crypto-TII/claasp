@@ -90,3 +90,19 @@ def test_typing_baseline_rejects_new_stale_duplicate_and_wrong_scope_entries():
     wrong_scope["scope"] = ["src/claasp_next"]
     with pytest.raises(ValueError, match="stale checked scopes"):
         closure.validate_baseline(wrong_scope, recorded)
+
+
+def test_typing_baseline_identity_is_stable_across_architecture_columns():
+    closure = _load_tool("typecheck_closure")
+    diagnostic = {
+        "path": "src/claasp_next/example.py",
+        "line": 1,
+        "column": 1,
+        "code": "assignment",
+        "message": "fixture",
+    }
+    shifted = dict(diagnostic, column=19)
+    recorded = closure.build_baseline("mypy 2.3.1 (compiled: yes)", [diagnostic])
+    current = closure.build_baseline("mypy 2.3.1 (compiled: yes)", [shifted])
+
+    assert closure.validate_baseline(recorded, current) == ([], [])

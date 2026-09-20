@@ -63,7 +63,11 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
     if not isinstance(repositories, list) or not repositories:
         errors.append("affiliated repository inventory is missing")
     else:
-        names = [item.get("name") for item in repositories if isinstance(item, dict)]
+        names = [
+            item["name"]
+            for item in repositories
+            if isinstance(item, dict) and isinstance(item.get("name"), str)
+        ]
         if len(names) != len(repositories) or names != sorted(set(names)):
             errors.append("affiliated repository names must be complete, unique, and sorted")
         for item in repositories:

@@ -113,6 +113,21 @@ def build_baseline(version: str, diagnostics: list[dict[str, object]]) -> dict[s
     }
 
 
+def diagnostic_identity(item: dict[str, object]) -> str:
+    """Return the architecture-stable identity of one mypy diagnostic.
+
+    Mypy can report different display columns for the same expression when its
+    compiled parser differs between architectures.  Columns remain useful
+    evidence in the baseline, but are therefore not part of regression
+    identity.
+    """
+
+    return json.dumps(
+        {field: item[field] for field in ("path", "line", "code", "message")},
+        sort_keys=True,
+    )
+
+
 def validate_baseline(
     baseline: dict[str, object], current: dict[str, object]
 ) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
@@ -129,8 +144,7 @@ def validate_baseline(
     recorded = baseline.get("diagnostics")
     if not isinstance(recorded, list):
         raise ValueError("typing baseline diagnostics must be a list")
-    key = lambda item: json.dumps(item, sort_keys=True)
-    recorded_by_key = {key(item): item for item in recorded}
+    recorded_by_key = {diagnostic_identity(item): item for item in recorded}
     if len(recorded_by_key) != len(recorded):
         raise ValueError("typing baseline contains duplicate diagnostics")
     rebuilt = build_baseline(str(baseline.get("version_evidence", "")), recorded)
@@ -140,7 +154,7 @@ def validate_baseline(
     current_items = current["diagnostics"]
     if not isinstance(current_items, list):
         raise ValueError("current diagnostics must be a list")
-    current_by_key = {key(item): item for item in current_items}
+    current_by_key = {diagnostic_identity(item): item for item in current_items}
     return (
         [current_by_key[item] for item in sorted(current_by_key.keys() - recorded_by_key.keys())],
         [recorded_by_key[item] for item in sorted(recorded_by_key.keys() - current_by_key.keys())],

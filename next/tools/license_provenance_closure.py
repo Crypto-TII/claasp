@@ -5,13 +5,8 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-import subprocess
+import tomllib
 from pathlib import Path
-
-if __import__("sys").version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY = ROOT.parent
@@ -20,17 +15,16 @@ APPROVED_STATUSES = {"approved-apache-2.0", "approved-mit"}
 
 
 def release_files() -> list[str]:
-    """Return tracked files shipped from the v5 package source tree."""
+    """Return deterministic files shipped from the v5 package source tree."""
 
-    completed = subprocess.run(
-        ["git", "ls-files", "next/src/claasp_next"],
-        cwd=REPOSITORY,
-        check=True,
-        capture_output=True,
-        text=True,
+    package = ROOT / "src" / "claasp_next"
+    return sorted(
+        path.relative_to(package).as_posix()
+        for path in package.rglob("*")
+        if path.is_file()
+        and "__pycache__" not in path.parts
+        and path.suffix not in {".pyc", ".pyo"}
     )
-    prefix = "next/src/claasp_next/"
-    return [line.removeprefix(prefix) for line in completed.stdout.splitlines() if line]
 
 
 def classify_artifact(path: str) -> str | None:
@@ -90,7 +84,7 @@ def validate_manifest(manifest: dict[str, object], files: list[str] | None = Non
     if "GNU GENERAL PUBLIC LICENSE" not in license_text or "Version 3" not in license_text:
         errors.append("root GPLv3 license text is missing")
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    if decision.get("status") == "retain-gpl-pending-legal-review":
+    if isinstance(decision, dict) and decision.get("status") == "retain-gpl-pending-legal-review":
         if pyproject["project"].get("license") != "GPL-3.0-or-later":
             errors.append("package metadata changed before legal approval")
 

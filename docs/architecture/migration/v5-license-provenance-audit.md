@@ -3,7 +3,7 @@
 This is an engineering provenance audit, not legal advice. Its machine
 authority is `next/migration/m11_license_provenance.json`, enforced by
 `next/tools/license_provenance_closure.py --check`. The gate covers every
-tracked artifact shipped from `next/src/claasp_next` and prevents package
+release artifact under `next/src/claasp_next` and prevents package
 metadata from changing while legal approval is pending.
 
 ## Decision
