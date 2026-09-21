@@ -605,17 +605,13 @@ class MilpXorDifferentialModel(MilpModel):
             sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
             sage: trail = milp.find_one_xor_differential_trail(fixed_values=[key]) # random # doctest: +SKIP
         """
-        if lower_bound is not None and upper_bound is not None and lower_bound > upper_bound:
-            raise ValueError("lower_bound must be <= upper_bound")
-
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
         self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
-        _, constraints = self.weight_range_constraints(lower_bound, upper_bound, weight_precision)
-        for constraint in constraints:
+        for constraint in self.weight_range_constraints(lower_bound, upper_bound, weight_precision)[1]:
             mip.add_constraint(constraint)
         end = time.time()
         building_time = end - start

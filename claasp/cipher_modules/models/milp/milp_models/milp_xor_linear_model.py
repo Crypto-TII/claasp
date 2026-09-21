@@ -626,7 +626,7 @@ class MilpXorLinearModel(MilpModel):
             sage: trail['total_weight'] >= 1.0 # doctest: +SKIP
             True
 
-            age: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
             sage: trail = milp.find_one_xor_linear_trail(lower_bound=1, upper_bound=6) # random # doctest: +SKIP
@@ -642,17 +642,13 @@ class MilpXorLinearModel(MilpModel):
             sage: key = set_fixed_variables('key', 'not_equal', list(range(32)), [0] * 32)
             sage: trail = milp.find_one_xor_linear_trail(fixed_values=[key]) # random
         """
-        if lower_bound is not None and upper_bound is not None and lower_bound > upper_bound:
-            raise ValueError("lower_bound must be <= upper_bound")
-
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
         self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
-        _, constraints = self.weight_range_constraints(lower_bound, upper_bound, weight_precision)
-        for constraint in constraints:
+        for constraint in self.weight_range_constraints(lower_bound, upper_bound, weight_precision)[1]:
             mip.add_constraint(constraint)
         end = time.time()
         building_time = end - start
