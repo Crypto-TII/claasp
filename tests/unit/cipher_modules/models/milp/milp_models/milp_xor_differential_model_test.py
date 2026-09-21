@@ -1,3 +1,5 @@
+import pytest
+
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
 from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
@@ -69,7 +71,7 @@ def test_find_one_xor_differential_trail():
 def test_find_one_xor_differential_trail_with_fixed_weight():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     milp = MilpXorDifferentialModel(speck)
-    trail = milp.find_one_xor_differential_trail_with_fixed_weight(5)
+    trail = milp.find_one_xor_differential_trail(lower_bound=5, upper_bound=5)
     assert trail["total_weight"] == 5.0
 
     tea = TeaBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
@@ -83,8 +85,8 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
     cipher_output = set_fixed_variables(
         "cipher_output_1_16", "equal", list(range(16)), integer_to_bit_list(0x404A, 16, "big")
     )
-    trail = milp.find_one_xor_differential_trail_with_fixed_weight(
-        15, fixed_values=[key, round_0_output, cipher_output]
+    trail = milp.find_one_xor_differential_trail(
+        fixed_values=[key, round_0_output, cipher_output], lower_bound=15, upper_bound=15
     )
     assert trail["total_weight"] == 15.0
     #
@@ -99,14 +101,28 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="not_equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    trail = milp.find_one_xor_differential_trail_with_fixed_weight(5, fixed_values=[key, round_0_output, cipher_output])
+    trail = milp.find_one_xor_differential_trail(
+        fixed_values=[key, round_0_output, cipher_output], lower_bound=5, upper_bound=5
+    )
     assert trail["total_weight"] == 5.0
 
 
 def test_find_one_xor_differential_trail_with_weight_at_most():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    trail = MilpXorDifferentialModel(speck).find_one_xor_differential_trail_with_weight_at_most(5)
+    trail = MilpXorDifferentialModel(speck).find_one_xor_differential_trail(upper_bound=5)
     assert 0.0 <= trail["total_weight"] <= 5.0
 
-    trail = MilpXorDifferentialModel(speck).find_one_xor_differential_trail_with_weight_at_most(5, 3)
+    trail = MilpXorDifferentialModel(speck).find_one_xor_differential_trail(lower_bound=3, upper_bound=5)
     assert 3.0 <= trail["total_weight"] <= 5.0
+
+
+def test_find_one_xor_differential_trail_with_weight_at_least():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    trail = MilpXorDifferentialModel(speck).find_one_xor_differential_trail(lower_bound=3)
+    assert trail["total_weight"] >= 3.0
+
+
+def test_find_one_xor_differential_trail_rejects_invalid_bounds():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    with pytest.raises(ValueError, match="lower_bound must be <= upper_bound"):
+        MilpXorDifferentialModel(speck).find_one_xor_differential_trail(lower_bound=6, upper_bound=5)

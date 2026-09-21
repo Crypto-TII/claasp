@@ -574,12 +574,19 @@ class MilpXorLinearModel(MilpModel):
     def find_one_xor_linear_trail(
         self,
         fixed_values=[],
+        lower_bound=None,
+        upper_bound=None,
         weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
         solver_name=SOLVER_DEFAULT,
         external_solver_name=None,
     ):
         """
         Return a XOR linear trail, not necessarily the one with the lowest weight.
+
+        If bounds are provided, the returned trail has weight in ``[lower_bound, upper_bound]``. Passing only
+        ``lower_bound`` finds one trail with weight at least that value; passing only ``upper_bound`` finds one trail
+        with weight at most that value, and passing equal bounds fixes the trail weight.
+
         By default, the search removes the key schedule, if any.
         By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
 
@@ -587,6 +594,8 @@ class MilpXorLinearModel(MilpModel):
 
         - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed
           in standard format (see )
+        - ``lower_bound`` -- **integer** (default: `None`); lower bound on the weight of the trail
+        - ``upper_bound`` -- **integer** (default: `None`); upper bound on the weight of the trail
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
         - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
         - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
@@ -603,6 +612,27 @@ class MilpXorLinearModel(MilpModel):
             sage: milp = MilpXorLinearModel(speck)
             sage: trail = milp.find_one_xor_linear_trail() # random
 
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: trail = milp.find_one_xor_linear_trail(upper_bound=6) # random # doctest: +SKIP
+            sage: 0.0 <= trail['total_weight'] <= 6.0 # doctest: +SKIP
+            True
+
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: trail = milp.find_one_xor_linear_trail(lower_bound=1) # random # doctest: +SKIP
+            sage: trail['total_weight'] >= 1.0 # doctest: +SKIP
+            True
+
+            age: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: trail = milp.find_one_xor_linear_trail(lower_bound=1, upper_bound=6) # random # doctest: +SKIP
+            sage: 1.0 <= trail['total_weight'] <= 6.0 # doctest: +SKIP
+            True
+
             # including the key schedule in the model
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -612,136 +642,23 @@ class MilpXorLinearModel(MilpModel):
             sage: key = set_fixed_variables('key', 'not_equal', list(range(32)), [0] * 32)
             sage: trail = milp.find_one_xor_linear_trail(fixed_values=[key]) # random
         """
+        if lower_bound is not None and upper_bound is not None and lower_bound > upper_bound:
+            raise ValueError("lower_bound must be <= upper_bound")
+
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
         self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
-        end = time.time()
-        building_time = end - start
-        solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
-        solution["building_time"] = building_time
-        solution["test_name"] = "find_lowest_weight_xor_linear_trail"
-
-        return solution
-
-    def find_one_xor_linear_trail_with_weight_at_most(
-        self,
-        max_weight,
-        min_weight=0,
-        fixed_values=[],
-        weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
-        solver_name=SOLVER_DEFAULT,
-        external_solver_name=None,
-    ):
-        """
-        Return one XOR linear trail whose weight lies in ``[min_weight, max_weight]``, in standard format.
-        By default, the search removes the key schedule, if any, and the weight corresponds to the negative
-        base-2 logarithm of the correlation of the trail.
-
-        .. NOTE::
-
-            Feasibility search: returns any trail with weight in ``[min_weight, max_weight]``, not the trail of
-            lowest weight. With the default ``min_weight=0`` the returned trail may be trivial.
-
-        INPUT:
-
-        - ``max_weight`` -- **integer**; the upper bound on the weight of the trail
-        - ``min_weight`` -- **integer** (default: `0`); the lower bound on the weight of the trail
-        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
-            format
-        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
-        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
-
-        .. SEEALSO::
-
-            :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpXorLinearModel(speck)
-            sage: trail = milp.find_one_xor_linear_trail_with_weight_at_most(6)  # random
-            sage: trail['total_weight'] <= 6.0
-            True
-        """
-        start = time.time()
-        self.init_model_in_sage_milp_class(solver_name)
-        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
-        mip = self._model
-        mip.set_objective(None)
-        self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
-        _, constraints = self.weight_range_constraints(min_weight, max_weight, weight_precision)
+        _, constraints = self.weight_range_constraints(lower_bound, upper_bound, weight_precision)
         for constraint in constraints:
             mip.add_constraint(constraint)
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
         solution["building_time"] = building_time
-        solution["test_name"] = "find_one_xor_linear_trail_with_weight_at_most"
-
-        return solution
-
-    def find_one_xor_linear_trail_with_fixed_weight(
-        self,
-        fixed_weight,
-        fixed_values=[],
-        weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
-        solver_name=SOLVER_DEFAULT,
-        external_solver_name=None,
-    ):
-        """
-        Return one XOR linear trail with weight equal to ``fixed_weight`` as a list in standard format.
-        By default, the search removes the key schedule, if any.
-        By default, the weight corresponds to the negative base-2 logarithm of the correlation of the trail.
-
-        INPUT:
-
-        - ``fixed_weight`` -- **integer**; the weight found using :py:meth:`~find_lowest_weight_xor_linear_trail`
-        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
-            format
-        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
-        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
-
-        .. SEEALSO::
-
-            :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpXorLinearModel(speck)
-            sage: trail = milp.find_one_xor_linear_trail_with_fixed_weight(6) # random
-            ...
-            sage: trail['total_weight']
-            6.0
-
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
-            sage: speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
-            sage: milp = MilpXorLinearModel(speck)
-            sage: key = set_fixed_variables('key', 'not_equal', list(range(16)), [0] * 16)
-            sage: trail = milp.find_one_xor_linear_trail_with_fixed_weight(3, fixed_values=[key]) # random
-            sage: trail["total_weight"]
-            3.0
-        """
-        solution = self.find_one_xor_linear_trail_with_weight_at_most(
-            fixed_weight,
-            fixed_weight,
-            fixed_values=fixed_values,
-            weight_precision=weight_precision,
-            solver_name=solver_name,
-            external_solver_name=external_solver_name,
-        )
-        solution["test_name"] = "find_one_xor_linear_trail_with_fixed_weight"
+        solution["test_name"] = "find_one_xor_linear_trail"
 
         return solution
 
