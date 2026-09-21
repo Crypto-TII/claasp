@@ -118,7 +118,7 @@ def test_find_one_xor_linear_trail_with_fixed_weight():
     # assert trail["total_weight"] == 10.0
 
 
-def test_find_one_xor_linear_trail_with_upper_bound():
+def test_find_one_xor_linear_trail_with_weight_at_most():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     trail = MilpXorLinearModel(speck).find_one_xor_linear_trail(upper_bound=6)
     assert 0.0 <= trail["total_weight"] <= 6.0
