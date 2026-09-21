@@ -11,11 +11,24 @@ The main changes are:
   binary-extension-field elements, or prime-field elements. This allows a
   primitive to be described using the data type that naturally matches its
   specification.
-- **“Cipher” was refactored into “primitive.”** A cipher is only one kind of
-  cryptographic primitive. The main graph class is now `Primitive`, and the
-  catalogue distinguishes block ciphers, permutations, functions, and other
-  fixed-length primitive families. Names such as AES, Speck, MiMC, and
-  Poseidon no longer need an artificial `Cipher` suffix.
+- **Ports make graph wiring explicit.** A `Port` is a named, typed source of
+  data, such as a primitive input or a component output. A `Selection` chooses
+  an ordered set of logical units from that port. A connection is made when
+  such a selection is used by another component or as the primitive output; it
+  is a relationship, not a separate public object. Structural operations such
+  as joining, viewing, packing, or unpacking values are recorded as
+  `ValueBinding` objects. They can create new ports, but they are not presented
+  as cryptographic operations. This distinction keeps data sources, wiring,
+  and operations clear in every representation of the graph.
+- **“Cipher” was refactored into “primitive.”** The generic term "cipher"
+  has been replaced with the more accurate cryptographic "primitive",
+  referring to fixed input and fixed output length functions. The main graph
+  class is now `Primitive`, and the catalogue partitions primitives based on
+  whether they are keyed, bijective or not, and whether they accept parameters.
+  Precisely there are unkeyed permutations, unkeyed functions, keyed block
+  ciphers, keyed block functions, tweakable keyed block ciphers, and tweakable
+  keyed block functions. Names such as AES, Speck, ChaCha, etc. no longer need
+  an artificial `Cipher` suffix.
 - **Realizations are explicit.** CLAASP already contained cases where the same
   primitive had several implementations—for example a word implementation and
   an S-box implementation. V5 calls these *realizations*. They are grouped
@@ -26,7 +39,8 @@ The main changes are:
   jobs:
 
   - `domains` defines the kinds of values carried by a state;
-  - `graph` defines primitives, ports, rounds, connections, and metadata;
+  - `graph` defines primitives, ports, selections, structural bindings,
+    rounds, and metadata;
   - `components` defines operations such as XOR, modular addition, S-boxes,
     linear maps, and permutations;
   - `primitives` contains concrete primitive specifications;
