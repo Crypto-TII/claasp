@@ -8,6 +8,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "migration" / "m11_repository_destination.json"
+EXPECTED_REPOSITORIES = {
+    "Crypto-TII/claasp",
+    "Crypto-TII/claasping_aradi",
+    "Crypto-TII/claasping_ballet",
+    "Crypto-TII/claasping_splight",
+    "peacker/claasp_solvers_benchmarks",
+}
+EXPECTED_EXCLUSIONS = [
+    "claasp-llm",
+    "claasp-pro",
+    "claasp-symmetric-cipher-analysis",
+    "jupyter-claasp-cascada-deployment",
+]
 
 
 def validate_manifest(manifest: dict[str, object]) -> list[str]:
@@ -70,6 +83,11 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
         ]
         if len(names) != len(repositories) or names != sorted(set(names)):
             errors.append("affiliated repository names must be complete, unique, and sorted")
+        full_names = {
+            item.get("source_full_name") for item in repositories if isinstance(item, dict)
+        }
+        if full_names != EXPECTED_REPOSITORIES:
+            errors.append("initial repository scope differs from the confirmed authority")
         for item in repositories:
             if not isinstance(item, dict):
                 continue
@@ -78,9 +96,19 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
                     errors.append("the star-bearing repository must remain public before launch")
             elif item.get("target_visibility_before_launch") != "private":
                 errors.append(f"staged affiliated repository is not private: {item.get('name')!r}")
+            if item.get("name") != "claasp" and (
+                item.get("compatibility_baseline") != "legacy-claasp"
+                or item.get("migration_timing") != "final-migration-phase"
+            ):
+                errors.append(f"satellite migration timing is stale: {item.get('name')!r}")
+
+    if manifest.get("excluded_from_initial_scope") != EXPECTED_EXCLUSIONS:
+        errors.append("out-of-scope repository record is stale")
+    if manifest.get("initial_scope_confirmed_at") != "2026-09-21":
+        errors.append("initial repository scope lacks confirmation evidence")
 
     requirements = manifest.get("open_requirements")
-    if not isinstance(requirements, list) or len(requirements) != 3:
+    if not isinstance(requirements, list) or len(requirements) != 2:
         errors.append("external destination requirements are incomplete")
     return errors
 

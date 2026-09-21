@@ -12,6 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY = ROOT
 MANIFEST = ROOT / "migration" / "m11_license_provenance.json"
 APPROVED_STATUSES = {"approved-apache-2.0", "approved-mit"}
+PENDING_STATUSES = {
+    "mit-selected-pending-license-application",
+    "retain-gpl-pending-legal-review",
+}
 
 
 def release_files() -> list[str]:
@@ -73,20 +77,29 @@ def validate_manifest(manifest: dict[str, object], files: list[str] | None = Non
     else:
         status = decision.get("status")
         approval = decision.get("approval_evidence")
-        if status not in {"retain-gpl-pending-legal-review", *APPROVED_STATUSES}:
+        if status not in {*PENDING_STATUSES, *APPROVED_STATUSES}:
             errors.append("license decision status is invalid")
         if status in APPROVED_STATUSES and not approval:
             errors.append("relicensing approval has no written evidence")
-        if status == "retain-gpl-pending-legal-review" and approval:
+        if status in PENDING_STATUSES and approval:
             errors.append("pending decision must not claim approval evidence")
+        if status == "mit-selected-pending-license-application":
+            selection = decision.get("selection_evidence")
+            if (
+                decision.get("selected_target") != "MIT"
+                or decision.get("application_timing") != "after-manual-review-and-ao-validation"
+                or not isinstance(selection, str)
+                or not (ROOT / selection).is_file()
+            ):
+                errors.append("MIT selection evidence or application timing is invalid")
 
     license_text = (REPOSITORY / "LICENSE").read_text(encoding="utf-8")
     if "GNU GENERAL PUBLIC LICENSE" not in license_text or "Version 3" not in license_text:
         errors.append("root GPLv3 license text is missing")
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    if isinstance(decision, dict) and decision.get("status") == "retain-gpl-pending-legal-review":
+    if isinstance(decision, dict) and decision.get("status") in PENDING_STATUSES:
         if pyproject["project"].get("license") != "GPL-3.0-or-later":
-            errors.append("package metadata changed before legal approval")
+            errors.append("package metadata changed before the license-application slice")
 
     evidence = manifest.get("evidence")
     if not isinstance(evidence, list) or evidence != sorted(set(evidence)):

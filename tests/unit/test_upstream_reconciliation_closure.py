@@ -44,3 +44,10 @@ def test_reconciliation_rejects_duplicate_or_missing_evidence():
     manifest["records"][0]["evidence"] = ["missing.py", "missing.py"]
     errors = closure.validate_manifest(manifest)
     assert any("duplicate evidence" in error for error in errors)
+
+
+def test_reconciliation_keeps_final_freeze_open():
+    manifest = _manifest()
+    manifest["final_reconciliation_boundary"] = "complete"
+
+    assert any("future CLAASP 4 freeze" in error for error in closure.validate_manifest(manifest))

@@ -187,19 +187,25 @@ to execute it:
    python tools/publication_preflight.py --check-plan
    python tools/publication_preflight.py --ready
 
-``--check-plan`` must pass in ordinary CI. It validates the eight-repository
-inventory, GPL-3.0-or-later launch license, ordered transfer procedure, current
+``--check-plan`` must pass in ordinary CI. It validates the confirmed
+five-repository inventory, the selected MIT release target without pretending
+the still-GPL candidate has already been relicensed, the ordered transfer procedure, current
 metadata capture, and the invariants that protect the public repository's
 stars, forks, history, issues, releases, and redirects. ``--ready`` intentionally
-exits with status 2 while owner-controlled prerequisites remain unresolved.
+exits with status 2 while the human review, AO work, final CLAASP 4
+reconciliation, satellite migrations, or owner-controlled prerequisites remain unresolved.
 It must pass before any freeze, transfer, visibility change, registry push, or
 public package/documentation release.
 
 The live preflight is refreshed with read-only GitHub API calls. Never put
-tokens or secret values in its machine authority. The current operator has
-administration on seven candidate repositories but read-only access to
-``jupyter-claasp-cascada-deployment``; an authorized owner must transfer that
-repository or grant the required permission.
+tokens or secret values in its machine authority. The confirmed initial scope
+is ``claasp``, ``claasping_aradi``, ``claasping_ballet``,
+``claasping_splight``, and ``peacker/claasp_solvers_benchmarks``; the current
+operator has administration on all five. The four legacy-dependent satellite
+repositories are intentionally migrated only after manual v5 review and AO
+analysis validation. The organization handle and two-owner assignment remain
+deferred to the final phase described in
+``docs/architecture/v5-review-and-release-plan.md``.
 
 Building the documentation
 --------------------------

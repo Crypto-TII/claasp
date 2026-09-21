@@ -66,6 +66,32 @@ def _covers(destination: str, artifact: str) -> bool:
     )
 
 
+def _legacy_rationale(record: dict[str, Any], destinations: tuple[str, ...]) -> str:
+    rationale = str(record.get("rationale", "")).strip()
+    if rationale:
+        return rationale
+    responsibility = str(record.get("responsibility", "")).strip() or record["path"]
+    owner = record.get("milestone_owner") or "the reviewed migration inventory"
+    status = str(record["status"]).replace("-", " ")
+    if record["kind"] == "test":
+        return (
+            f"Legacy regression coverage for {responsibility} is {status} under {owner}; "
+            "the linked v5 fixed-vector, semantic, and catalogue evidence replaces the "
+            "legacy test-module shape."
+        )
+    if destinations:
+        return (
+            f"The {responsibility} surface is {status} under {owner}; its reviewed behavior "
+            "moves to the typed destination(s) while the legacy mutable/package-specific API "
+            "shape is not retained."
+        )
+    return (
+        f"The {responsibility} record is {status} under {owner}; its reviewed behavior is "
+        "accounted for by fixed migration evidence rather than a separately shipped v5 source "
+        "artifact."
+    )
+
+
 def build_matrix() -> dict[str, Any]:
     """Build the deterministic legacy-to-v5 and v5-to-legacy authority."""
     inventory = json.loads(INVENTORY.read_text(encoding="utf-8"))
@@ -73,6 +99,7 @@ def build_matrix() -> dict[str, Any]:
     destinations_by_legacy: dict[str, tuple[str, ...]] = {}
     for record in inventory["records"]:
         destinations = _destination_paths(record["v5_destination"])
+        public_entry_points = list(dict.fromkeys(record.get("public_entry_points", [])))
         destinations_by_legacy[record["path"]] = destinations
         legacy_records.append(
             {
@@ -81,6 +108,9 @@ def build_matrix() -> dict[str, Any]:
                 "kind": record["kind"],
                 "owner": record.get("milestone_owner"),
                 "path": record["path"],
+                "public_entry_points": public_entry_points,
+                "rationale": _legacy_rationale(record, destinations),
+                "responsibility": record["responsibility"],
                 "status": record["status"],
             }
         )
@@ -119,20 +149,50 @@ def build_matrix() -> dict[str, Any]:
     }
 
 
+def _markdown_cell(value: object) -> str:
+    text = str(value).replace("|", "\\|").replace("\n", " ")
+    return text or "—"
+
+
+def _legacy_relationship(record: dict[str, Any], destination_sources: dict[str, set[str]]) -> str:
+    destinations = record["destinations"]
+    if record["disposition"] == "remove":
+        return "removed"
+    if record["disposition"] == "inapplicable":
+        return "inapplicable"
+    if not destinations:
+        return "evidence-only"
+    if len(destinations) > 1:
+        return "split"
+    if any(len(destination_sources[destination]) > 1 for destination in destinations):
+        return "consolidated"
+    return "direct"
+
+
 def render_summary(matrix: dict[str, Any]) -> str:
-    """Render the reviewable human summary paired with the machine matrix."""
+    """Render the exhaustive human comparison paired with the machine matrix."""
     summary = matrix["summary"]
     artifacts = matrix["v5_artifacts"]
+    legacy = matrix["legacy_records"]
     grouped: dict[str, list[str]] = defaultdict(list)
     for record in artifacts:
         if record["classification"] == "new-v5":
             relative = record["path"].removeprefix("src/claasp/")
             category = relative.split("/", 1)[0] if "/" in relative else "root"
             grouped[category].append(record["path"])
+
+    destination_sources: dict[str, set[str]] = defaultdict(set)
+    for record in legacy:
+        for destination in record["destinations"]:
+            destination_sources[destination].add(record["path"])
+    relationship_counts = Counter(
+        _legacy_relationship(record, destination_sources) for record in legacy
+    )
+
     lines = [
         "# Final bidirectional migration audit",
         "",
-        "This generated M11a summary is review material; the JSON matrix and closure tool are authoritative.",
+        "This generated M11a comparison is review material; the JSON matrix and closure tool are authoritative.",
         "",
         f"- Legacy records: {summary['legacy_records']}",
         f"- Shipped v5 artifacts: {summary['v5_artifacts']}",
@@ -140,12 +200,60 @@ def render_summary(matrix: dict[str, Any]) -> str:
         + ", ".join(f"{name}={count}" for name, count in summary["legacy_by_disposition"].items()),
         "- Reverse classifications: "
         + ", ".join(f"{name}={count}" for name, count in summary["v5_by_classification"].items()),
+        "- Mapping relationships: "
+        + ", ".join(f"{name}={count}" for name, count in sorted(relationship_counts.items())),
         "",
-        "Every legacy record has a final migrated, superseded, removed, or out-of-scope disposition. Every shipped v5 artifact links to one or more legacy records or carries the category rationale shown below.",
+        "Every legacy source module, test module, and package marker appears below with its final disposition and reason. Every shipped v5 module or data artifact appears in the reverse table with its predecessor(s) or a new-v5 rationale.",
         "",
-        "## New-v5 artifact rationale groups",
+        "Relationship means: **direct** for one reviewed destination, **split** for one legacy record mapped to multiple destinations, **consolidated** when multiple legacy records share a destination, **evidence-only** when a test or cross-cutting record is closed by its recorded reason without one shipped source path, **removed** for deliberately dropped behavior, and **inapplicable** for non-behavioral or out-of-scope records.",
         "",
+        "## Complete legacy-to-v5 mapping",
+        "",
+        "| Legacy path | Kind | Public entry points | Disposition | Relationship | v5 destination(s) | Reason |",
+        "|---|---|---|---|---|---|---|",
     ]
+    for record in legacy:
+        destinations = "<br>".join(f"`{path}`" for path in record["destinations"]) or "—"
+        public = ", ".join(f"`{name}`" for name in record["public_entry_points"]) or "—"
+        relationship = _legacy_relationship(record, destination_sources)
+        lines.append(
+            "| "
+            + " | ".join(
+                (
+                    f"`{record['path']}`",
+                    _markdown_cell(record["kind"]),
+                    public,
+                    _markdown_cell(record["disposition"]),
+                    relationship,
+                    destinations,
+                    _markdown_cell(record["rationale"]),
+                )
+            )
+            + " |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Complete v5-to-legacy mapping",
+            "",
+            "| Shipped v5 artifact | Classification | Relationship | Legacy predecessor(s) or new-v5 reason |",
+            "|---|---|---|---|",
+        ]
+    )
+    for record in artifacts:
+        predecessors = record["legacy_predecessors"]
+        if predecessors:
+            evidence = "<br>".join(f"`{path}`" for path in predecessors)
+            relationship = "consolidated" if len(predecessors) > 1 else "direct"
+        else:
+            evidence = _markdown_cell(record["rationale"])
+            relationship = "new"
+        lines.append(
+            f"| `{record['path']}` | {record['classification']} | {relationship} | {evidence} |"
+        )
+
+    lines.extend(["", "## New-v5 artifact rationale groups", ""])
     for category in sorted(grouped):
         lines.extend(
             [
@@ -188,6 +296,11 @@ def validate_matrix(matrix: dict[str, Any]) -> list[str]:
             continue
         if record.get("disposition") not in allowed or "planned" in str(record.get("status")):
             errors.append(f"legacy disposition is not final: {record.get('path')}")
+        if not record.get("rationale"):
+            errors.append(f"legacy reason is missing: {record.get('path')}")
+        public = record.get("public_entry_points")
+        if not isinstance(public, list) or len(public) != len(set(public)):
+            errors.append(f"legacy public entry points are malformed: {record.get('path')}")
         for destination in record.get("destinations", ()):
             if not (ROOT / destination).exists():
                 errors.append(

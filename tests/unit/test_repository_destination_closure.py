@@ -67,3 +67,14 @@ def test_destination_gate_rejects_unreviewed_affiliated_repository():
 
     assert any("unique" in error for error in errors)
     assert any("not private" in error for error in errors)
+
+
+def test_destination_gate_rejects_scope_expansion():
+    manifest = _manifest()
+    items = manifest["affiliated_repository_candidates"]
+    assert isinstance(items, list)
+    repositories = [dict(_mapping(item)) for item in items]
+    repositories[-1]["source_full_name"] = "Crypto-TII/claasp-pro"
+    manifest["affiliated_repository_candidates"] = repositories
+
+    assert any("confirmed authority" in error for error in closure.validate_manifest(manifest))

@@ -8,6 +8,10 @@
     "preferred_handle_status": "occupied-by-unrelated-personal-account"
   },
   "launch_actions": [
+    "complete-human-v5-review-and-record-signoff",
+    "implement-and-validate-ao-analysis-workloads",
+    "freeze-and-reconcile-the-final-claasp-4-line",
+    "migrate-the-confirmed-legacy-dependent-satellite-repositories",
     "confirm-destination-handle-and-two-owners",
     "verify-source-and-destination-admin-permissions",
     "create-private-staging-repositories-with-nonfinal-names",
@@ -20,8 +24,10 @@
     "complete-post-transfer-audit"
   ],
   "license_at_launch": {
-    "approved_spdx": "GPL-3.0-or-later",
-    "mit_or_apache_status": "pending-tii-legal-rights-clearance"
+    "application_status": "selected-for-post-review-license-change",
+    "current_spdx": "GPL-3.0-or-later",
+    "selected_spdx": "MIT",
+    "selection_recorded_at": "2026-09-21"
   },
   "live_evidence": {
     "authenticated_actor": "peacker",
@@ -61,16 +67,6 @@
       "id": "destination-permissions",
       "owner": "destination-owners",
       "resolution": "Create the organization and grant the authenticated migration operator organization-owner and repository-administration permissions."
-    },
-    {
-      "id": "missing-source-admin",
-      "owner": "Crypto-TII-owners",
-      "resolution": "Grant transfer-capable administration for Crypto-TII/jupyter-claasp-cascada-deployment or assign its migration to an authorized owner."
-    },
-    {
-      "id": "repository-set-approval",
-      "owner": "project-owners",
-      "resolution": "Confirm the eight affiliated repositories and their final names and launch visibility."
     }
   ],
   "publication_state": {
@@ -85,6 +81,7 @@
       "default_branch": "main",
       "forks": 14,
       "name": "claasp",
+      "source_full_name": "Crypto-TII/claasp",
       "stars": 79,
       "target_visibility_before_launch": "public",
       "visibility": "public"
@@ -93,34 +90,18 @@
       "admin": true,
       "default_branch": "main",
       "forks": 0,
-      "name": "claasp-llm",
+      "name": "claasp_solvers_benchmarks",
+      "source_full_name": "peacker/claasp_solvers_benchmarks",
       "stars": 0,
       "target_visibility_before_launch": "private",
-      "visibility": "private"
-    },
-    {
-      "admin": true,
-      "default_branch": "main",
-      "forks": 0,
-      "name": "claasp-pro",
-      "stars": 0,
-      "target_visibility_before_launch": "private",
-      "visibility": "private"
-    },
-    {
-      "admin": true,
-      "default_branch": "main",
-      "forks": 0,
-      "name": "claasp-symmetric-cipher-analysis",
-      "stars": 0,
-      "target_visibility_before_launch": "private",
-      "visibility": "private"
+      "visibility": "public"
     },
     {
       "admin": true,
       "default_branch": "main",
       "forks": 0,
       "name": "claasping_aradi",
+      "source_full_name": "Crypto-TII/claasping_aradi",
       "stars": 0,
       "target_visibility_before_launch": "private",
       "visibility": "public"
@@ -130,6 +111,7 @@
       "default_branch": "main",
       "forks": 0,
       "name": "claasping_ballet",
+      "source_full_name": "Crypto-TII/claasping_ballet",
       "stars": 0,
       "target_visibility_before_launch": "private",
       "visibility": "public"
@@ -139,15 +121,7 @@
       "default_branch": "main",
       "forks": 0,
       "name": "claasping_splight",
-      "stars": 0,
-      "target_visibility_before_launch": "private",
-      "visibility": "private"
-    },
-    {
-      "admin": false,
-      "default_branch": "main",
-      "forks": 0,
-      "name": "jupyter-claasp-cascada-deployment",
+      "source_full_name": "Crypto-TII/claasping_splight",
       "stars": 0,
       "target_visibility_before_launch": "private",
       "visibility": "private"

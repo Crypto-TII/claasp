@@ -37,6 +37,15 @@ def test_license_gate_rejects_relicensing_without_written_evidence():
     assert any("no written evidence" in error for error in errors)
 
 
+def test_license_gate_rejects_unrecorded_mit_selection():
+    manifest = _manifest()
+    decision = dict(_mapping(manifest["decision"]))
+    decision["selected_target"] = "Apache-2.0"
+    manifest["decision"] = decision
+
+    assert any("MIT selection" in error for error in closure.validate_manifest(manifest))
+
+
 def test_license_gate_rejects_unclassified_and_stale_artifacts():
     manifest = _manifest()
     files = closure.release_files() + ["data/unreviewed.bin"]

@@ -17,12 +17,11 @@ else:
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "migration" / "m11_publication_preflight.json"
 DESTINATION = ROOT / "migration" / "m11_repository_destination.json"
+REVIEW_PLAN = ROOT / "migration" / "v5_review_release_plan.json"
 REQUIRED_BLOCKERS = {
     "destination-handle",
     "destination-owners",
     "destination-permissions",
-    "missing-source-admin",
-    "repository-set-approval",
 }
 
 
@@ -75,11 +74,15 @@ def validate_plan(
         for row in repositories:
             authority = expected_by_name.get(row.get("name"))
             if authority and (
-                row.get("visibility") != authority.get("source_visibility")
+                row.get("source_full_name") != authority.get("source_full_name")
+                or row.get("admin") is not True
+                or row.get("visibility") != authority.get("source_visibility")
                 or row.get("target_visibility_before_launch")
                 != authority.get("target_visibility_before_launch")
             ):
-                errors.append(f"repository visibility plan is stale: {row.get('name')}")
+                errors.append(
+                    f"repository identity, permission, or visibility is stale: {row.get('name')}"
+                )
         claasp: dict[str, Any] = next(
             (row for row in repositories if row.get("name") == "claasp"), {}
         )
@@ -106,11 +109,13 @@ def validate_plan(
         errors.append("preflight records an unauthorized external mutation")
 
     license_record = manifest.get("license_at_launch")
-    if (
-        not isinstance(license_record, dict)
-        or license_record.get("approved_spdx") != "GPL-3.0-or-later"
-    ):
-        errors.append("launch license exceeds reviewed rights")
+    if not isinstance(license_record, dict) or license_record != {
+        "application_status": "selected-for-post-review-license-change",
+        "current_spdx": "GPL-3.0-or-later",
+        "selected_spdx": "MIT",
+        "selection_recorded_at": "2026-09-21",
+    }:
+        errors.append("launch license selection is stale or applied prematurely")
 
     blockers = manifest.get("open_blockers")
     if not isinstance(blockers, list):
@@ -129,11 +134,22 @@ def validate_plan(
     return errors
 
 
-def readiness_blockers(manifest: dict[str, Any]) -> list[str]:
+def readiness_blockers(
+    manifest: dict[str, Any], review_plan: dict[str, Any] | None = None
+) -> list[str]:
     """Return unresolved conditions that prevent an external launch."""
 
     blockers = manifest.get("open_blockers", [])
-    return [f"{row['id']}: {row['resolution']}" for row in blockers]
+    results = [f"{row['id']}: {row['resolution']}" for row in blockers]
+    if review_plan is None:
+        review_plan = json.loads(REVIEW_PLAN.read_text(encoding="utf-8"))
+    for phase in review_plan.get("phases", []):
+        if (
+            phase.get("id") in {"R2", "R3", "R4", "R5", "R6", "R7"}
+            and phase.get("status") != "achieved"
+        ):
+            results.append(f"phase-{phase['id']}: complete {phase['name']} before publication")
+    return results
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -156,7 +172,10 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         print("M11.8 publication preflight is ready")
         return 0
-    print("M11.8 publication plan passes: 8 repositories, 5 explicit external blockers")
+    print(
+        "M11.8 publication plan passes: 5 repositories, 3 deferred organization blockers, "
+        "6 unfinished review/release phases"
+    )
     return 0
 
 

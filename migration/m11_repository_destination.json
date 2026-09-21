@@ -1,16 +1,20 @@
 {
   "affiliated_repository_candidates": [
-    {"name": "claasp", "source_visibility": "public", "target_visibility_before_launch": "public"},
-    {"name": "claasp-llm", "source_visibility": "private", "target_visibility_before_launch": "private"},
-    {"name": "claasp-pro", "source_visibility": "private", "target_visibility_before_launch": "private"},
-    {"name": "claasp-symmetric-cipher-analysis", "source_visibility": "private", "target_visibility_before_launch": "private"},
-    {"name": "claasping_aradi", "source_visibility": "public", "target_visibility_before_launch": "private"},
-    {"name": "claasping_ballet", "source_visibility": "public", "target_visibility_before_launch": "private"},
-    {"name": "claasping_splight", "source_visibility": "private", "target_visibility_before_launch": "private"},
-    {"name": "jupyter-claasp-cascada-deployment", "source_visibility": "private", "target_visibility_before_launch": "private"}
+    {"compatibility_baseline": "claasp-v5", "migration_timing": "main-review-first", "name": "claasp", "source_full_name": "Crypto-TII/claasp", "source_visibility": "public", "target_visibility_before_launch": "public"},
+    {"compatibility_baseline": "legacy-claasp", "migration_timing": "final-migration-phase", "name": "claasp_solvers_benchmarks", "source_full_name": "peacker/claasp_solvers_benchmarks", "source_visibility": "public", "target_visibility_before_launch": "private"},
+    {"compatibility_baseline": "legacy-claasp", "migration_timing": "final-migration-phase", "name": "claasping_aradi", "source_full_name": "Crypto-TII/claasping_aradi", "source_visibility": "public", "target_visibility_before_launch": "private"},
+    {"compatibility_baseline": "legacy-claasp", "migration_timing": "final-migration-phase", "name": "claasping_ballet", "source_full_name": "Crypto-TII/claasping_ballet", "source_visibility": "public", "target_visibility_before_launch": "private"},
+    {"compatibility_baseline": "legacy-claasp", "migration_timing": "final-migration-phase", "name": "claasping_splight", "source_full_name": "Crypto-TII/claasping_splight", "source_visibility": "private", "target_visibility_before_launch": "private"}
   ],
   "authority_owner": "M11.1",
   "captured_at": "2026-09-20",
+  "excluded_from_initial_scope": [
+    "claasp-llm",
+    "claasp-pro",
+    "claasp-symmetric-cipher-analysis",
+    "jupyter-claasp-cascada-deployment"
+  ],
+  "initial_scope_confirmed_at": "2026-09-21",
   "destination": {
     "accepted_handle": null,
     "minimum_owners": 2,
@@ -28,7 +32,6 @@
   "milestone": "M11.1",
   "open_requirements": [
     "The owner of the personal claasp account or GitHub Support releases the preferred handle, or the project owners approve another handle.",
-    "The project owners confirm the affiliated-repository candidate set and target names.",
     "At least two destination organization owners are named and their transfer permissions are verified."
   ],
   "schema_version": 1,

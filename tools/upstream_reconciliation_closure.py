@@ -23,6 +23,11 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
         errors.append("manifest identity or schema is invalid")
     if manifest.get("merge_policy") != "classify-and-port-without-merging-develop":
         errors.append("develop merge policy is invalid")
+    if (
+        manifest.get("last_informational_fetch_at") != "2026-09-21"
+        or manifest.get("final_reconciliation_boundary") != "pending-claasp-4-freeze"
+    ):
+        errors.append("informational fetch or future CLAASP 4 freeze boundary is stale")
     records = manifest.get("records")
     if not isinstance(records, list):
         return errors + ["reconciliation records are missing"]

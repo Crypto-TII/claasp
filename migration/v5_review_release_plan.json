@@ -1,0 +1,47 @@
+{
+  "authority": "docs/architecture/v5-review-and-release-plan.md",
+  "excluded_from_initial_scope": [
+    "claasp-llm",
+    "claasp-pro",
+    "claasp-symmetric-cipher-analysis",
+    "jupyter-claasp-cascada-deployment"
+  ],
+  "initial_repository_scope": [
+    "Crypto-TII/claasp",
+    "Crypto-TII/claasping_aradi",
+    "Crypto-TII/claasping_ballet",
+    "Crypto-TII/claasping_splight",
+    "peacker/claasp_solvers_benchmarks"
+  ],
+  "license": {
+    "application_phase": "R5",
+    "current": "GPL-3.0-or-later",
+    "selected_target": "MIT",
+    "selected_at": "2026-09-21"
+  },
+  "merge_gate": {
+    "human_confirmation": null,
+    "status": "closed-pending-human-review"
+  },
+  "phases": [
+    {"id": "R1", "name": "review-authority-and-comparison-material", "status": "achieved"},
+    {"id": "R2", "name": "manual-human-v5-review", "status": "pending-human-review"},
+    {"id": "R3", "name": "ao-analysis-requirements-and-design-probes", "status": "pending"},
+    {"id": "R4", "name": "ao-module-package-implementation", "status": "pending"},
+    {"id": "R5", "name": "post-review-candidate-and-mit-application", "status": "pending"},
+    {"id": "R6", "name": "final-claasp-4-freeze-and-reconciliation", "status": "waiting-for-upstream-freeze"},
+    {"id": "R7", "name": "final-satellite-repository-migration", "status": "pending"},
+    {"id": "R8", "name": "organization-merge-transfer-and-publication", "status": "deferred-final-step"}
+  ],
+  "predecessor_plan": {
+    "path": "docs/architecture/v5-plan.md",
+    "status": "closed-implementation-baseline"
+  },
+  "required_review_material": [
+    "docs/architecture/v5-main-changes.md",
+    "docs/final_migration_audit.md",
+    "migration/m11a_bidirectional_migration.json"
+  ],
+  "schema_version": 1,
+  "status": "active"
+}
