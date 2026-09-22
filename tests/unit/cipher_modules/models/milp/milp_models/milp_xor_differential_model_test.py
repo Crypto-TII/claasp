@@ -124,5 +124,6 @@ def test_find_one_xor_differential_trail_with_weight_at_least():
 
 def test_find_one_xor_differential_trail_rejects_invalid_bounds():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    milp = MilpXorDifferentialModel(speck)
     with pytest.raises(ValueError, match="lower_bound must be <= upper_bound"):
-        MilpXorDifferentialModel(speck).find_one_xor_differential_trail(lower_bound=6, upper_bound=5)
+        milp.find_one_xor_differential_trail(lower_bound=6, upper_bound=5)
