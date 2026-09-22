@@ -1,7 +1,7 @@
 from claasp.ciphers.block_ciphers.blowfish_block_cipher import BlowfishBlockCipher
 """
-The test vectors are taken from the Internet Draft draft-schneier-blowfish-00.txt 'Description of the Blowfish Cipher'.
-Link: https://datatracker.ietf.org/doc/html/draft-schneier-blowfish-00
+The test vectors are taken from the official Blowfish webpage
+Link: https://www.schneier.com/wp-content/uploads/2015/12/vectors-2.txt
 """
 
 def test_blowfish_block_cipher():
