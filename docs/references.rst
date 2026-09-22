@@ -242,6 +242,13 @@
         Cryptology ePrint Archive, Report 2016/660, 2016.
         https://eprint.iacr.org/2016/660.pdf
 
+.. [BKLMMNSSSTV2017]
+        Bernstein D. J., Kölbl S., Lucks S., Massolino P. M. C., Mendel F.,
+        Nawaz K., Schneider T., Schwabe P., Standaert F.-X., Todo Y., Viguier
+        B. : *Gimli: a cross-platform permutation* : In Cryptographic Hardware
+        and Embedded Systems -- CHES 2017, LNCS 10529, pp. 299-320, Springer
+        2017 : https://doi.org/10.1007/978-3-319-66787-4_15
+
 .. _claasp-ref-C:
 
 .. only:: html

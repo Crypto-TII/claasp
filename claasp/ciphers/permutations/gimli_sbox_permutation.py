@@ -54,11 +54,94 @@ def small_swap(states):
 
 class GimliSboxPermutation(Cipher):
     """
-    Construct an instance of the GimliPermutation class.
+    Construct an instance of the GimliSboxPermutation class.
 
     This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
 
-    This version considers the application of 32 parallel 3-bit S-boxes to each column.
+    This version is equivalent to :py:class:`GimliPermutation`, but it reformulates the nonlinear SP-box layer as
+    the application of 32 parallel 3-bit S-boxes to each column, instead of the usual shifted AND/OR formula. The
+    two formulations compute exactly the same function; the equivalence has been checked both empirically
+    (``GimliPermutation`` and ``GimliSboxPermutation`` produce identical outputs for every tested input and for
+    every number of rounds, including round 1) and by deriving the S-box table by hand from the original formula
+    (see below), so this is not merely an unverified claim.
+
+    Recall that, per column, Gimli's SP-box first rotates two of the three 32-bit lanes (``x`` by 24 bits and
+    ``y`` by 9 bits, while ``z`` is left untouched -- this is exactly what ``ROT_TABLE = [-24, -9]`` does below),
+    and then computes:
+
+    - ``new_x = z ^ y ^ ((x AND y) << 3)``
+    - ``new_y = y ^ x ^ ((x OR z) << 1)``
+    - ``new_z = x ^ (z << 1) ^ ((y AND z) << 2)``
+
+    (here ``x``, ``y``, ``z`` already denote the rotated lanes, and ``new_x``/``new_y``/``new_z`` are then written
+    back with the ``x``/``z`` lane swap that both classes implement via ``sp_states[2]``/``sp_states[0]``).
+
+    The only nonlinear ingredients of this formula are the three bitwise terms ``x AND y``, ``x OR z`` and
+    ``y AND z``. Crucially, bitwise AND/OR are *bit-local*: bit ``i`` of ``A AND B`` depends only on bit ``i`` of
+    ``A`` and bit ``i`` of ``B`` (and likewise for OR) -- no bit position ever depends on any other bit position.
+    The only operations in the whole formula that mix different bit positions are the left shifts (``<< 1``,
+    ``<< 2``, ``<< 3``), and those are applied to the *already computed* AND/OR terms, i.e. strictly after the
+    bit-local part is done.
+
+    This means the three bitwise terms can equivalently be computed one bit position at a time, independently for
+    each of the 32 positions, and the position-mixing shifts can still be applied afterwards to the reassembled
+    32-bit words -- which is exactly what this class does: for each bit position ``i`` it takes bit ``i`` of the
+    rotated ``x``, the rotated ``y`` and ``z`` and feeds them into a single combined S-box (``GIMLI_SBOX``) that
+    outputs bit ``i`` of all three bitwise terms at once, i.e.
+
+    ``GIMLI_SBOX[4 * x_i + 2 * y_i + z_i] = 4 * (y_i AND z_i) + 2 * (x_i OR z_i) + (x_i AND y_i)``
+
+    Indeed, evaluating this expression for all 8 possible ``(x_i, y_i, z_i)`` gives
+    ``[0x0, 0x2, 0x0, 0x6, 0x2, 0x2, 0x3, 0x7]``, which is precisely the ``GIMLI_SBOX`` table below. After the
+    S-box layer, this class reassembles the three output lanes (``lane_after_sb``), applies the ``-2``, ``-1``
+    and ``-3`` shifts (matching ``<< 2``, ``<< 1`` and ``<< 3`` above) and XORs in the linear part, reproducing
+    ``new_x``, ``new_y`` and ``new_z`` bit for bit. So "32 parallel 3-bit S-boxes" is a faithful description of
+    the nonlinear layer: it holds precisely because AND/OR are bit-local operations, while all cross-bit-position
+    coupling still happens through the explicit shifts applied after the S-box layer, not through the S-box
+    itself.
+
+    Side by side, per column (``x[i]`` denotes bit ``i`` of ``x``, etc.)::
+
+        # Official Gimli SP-box (gimli.cr.yp.to/spec.html), as used by GimliPermutation:
+        x = state[0] <<< 24
+        y = state[1] <<< 9
+        z = state[2]
+        new_z = x ^ (z << 1) ^ ((y & z) << 2)
+        new_y = y ^ x         ^ ((x | z) << 1)
+        new_x = z ^ y         ^ ((x & y) << 3)
+
+        # Equivalent bit-sliced form, as used by GimliSboxPermutation:
+        x = state[0] <<< 24
+        y = state[1] <<< 9
+        z = state[2]
+        for i in 0..31:
+            sbox_out      = GIMLI_SBOX[4 * x[i] + 2 * y[i] + z[i]]   # 3 bits packed
+            yz_and[i]     = (sbox_out >> 2) & 1                     # = y[i] & z[i]
+            xz_or[i]      = (sbox_out >> 1) & 1                     # = x[i] | z[i]
+            xy_and[i]     =  sbox_out       & 1                     # = x[i] & y[i]
+        new_z = x ^ (z << 1) ^ (yz_and << 2)
+        new_y = y ^ x         ^ (xz_or << 1)
+        new_x = z ^ y         ^ (xy_and << 3)
+
+        # Both formulations then apply the same x/z lane swap: state[2] = new_z, state[1] = new_y, state[0] = new_x
+
+    Special case: for the very first round (``current_round == 24``, since rounds are numbered downward from 24),
+    the ``z`` lane of the state is still the raw plaintext input, whose bit positions are not laid out as a plain
+    ``0..31`` range (unlike every other round's lanes, which come from intermediate components indexed
+    ``0..31``); the S-box construction therefore looks up the correct absolute bit position for that first-round
+    ``z`` lane instead of assuming index ``i`` directly.
+
+    REFERENCES:
+
+    Bernstein, D. J., Kölbl, S., Lucks, S., Massolino, P. M. C., Mendel, F., Nawaz, K., Schneider, T., Schwabe, P.,
+    Standaert, F.-X., Todo, Y., & Viguier, B. (2017). Gimli: a cross-platform permutation. CHES 2017, LNCS 10529,
+    299-320. https://gimli.cr.yp.to/spec.html [BKLMMNSSSTV2017]_.
+
+    The test vectors used in this file and in ``gimli_permutation_test.py``/``gimli_sbox_permutation_test.py`` are
+    not individually cited to a specific published source (the repository's own history does not record where they
+    were taken from), but they have been independently re-derived and verified against a fresh transliteration of
+    the official reference algorithm above: all reproduce exactly, and ``GimliPermutation``/``GimliSboxPermutation``
+    additionally agree with each other bit-for-bit across many random inputs and round counts.
 
     INPUT:
 

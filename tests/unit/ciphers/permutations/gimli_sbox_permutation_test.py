@@ -1,4 +1,26 @@
+from claasp.ciphers.permutations.gimli_permutation import GimliPermutation
 from claasp.ciphers.permutations.gimli_sbox_permutation import GimliSboxPermutation
+
+
+def test_gimli_sbox_permutation_matches_gimli_permutation():
+    # GimliSboxPermutation reformulates Gimli's shifted AND/OR SP-box as 32 parallel 3-bit S-boxes
+    # (see the class docstring for the derivation). This regression test locks in that the two
+    # formulations compute exactly the same function, for several inputs and round counts,
+    # including a single round (round_number=1), which is the only case that exercises the
+    # current_round == 24 special-case bit-indexing branch in GimliSboxPermutation.sp_box.
+    inputs = [
+        0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000,
+        (1 << 384) - 1,
+        0x111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111,
+        0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef,
+        0x1af105601000043540540354354350550000000100000001000000010000000100000001000000010000000100000001,
+    ]
+
+    for number_of_rounds in [1, 2, 3, 4, 24]:
+        gimli = GimliPermutation(number_of_rounds=number_of_rounds, word_size=32)
+        gimli_sbox = GimliSboxPermutation(number_of_rounds=number_of_rounds, word_size=32)
+        for plaintext in inputs:
+            assert gimli.evaluate([plaintext]) == gimli_sbox.evaluate([plaintext])
 
 
 def test_gimli_sbox_permutation():
