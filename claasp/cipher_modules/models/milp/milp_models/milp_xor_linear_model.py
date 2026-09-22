@@ -623,6 +623,7 @@ class MilpXorLinearModel(MilpModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
             sage: trail = milp.find_one_xor_linear_trail(lower_bound=1)
+            sage: 1.0 <= trail['total_weight']
             True
 
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
