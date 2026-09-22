@@ -51,6 +51,6 @@ def test_readiness_reports_each_owned_blocker():
 
     blockers = preflight.readiness_blockers(manifest)
 
-    assert len(blockers) == 9
+    assert len(blockers) == 11
     assert all(": " in blocker for blocker in blockers)
     assert any(blocker.startswith("phase-R2:") for blocker in blockers)

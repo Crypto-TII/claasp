@@ -1,5 +1,15 @@
 {
   "authority": "docs/architecture/v5-review-and-release-plan.md",
+  "bit_vector_workstream": {
+    "canonical_image_dependency": "Boolector",
+    "core_import_policy": "optional-driver-only",
+    "implementation_session": "dedicated-follow-up",
+    "license_and_provenance_review_required": true,
+    "reference_implementations": [
+      "ranea/CASCADA",
+      "CryptoSMT"
+    ]
+  },
   "excluded_from_initial_scope": [
     "claasp-llm",
     "claasp-pro",
@@ -14,7 +24,7 @@
     "peacker/claasp_solvers_benchmarks"
   ],
   "license": {
-    "application_phase": "R5",
+    "application_phase": "R7",
     "current": "GPL-3.0-or-later",
     "selected_target": "MIT",
     "selected_at": "2026-09-21"
@@ -26,12 +36,14 @@
   "phases": [
     {"id": "R1", "name": "review-authority-and-comparison-material", "status": "achieved"},
     {"id": "R2", "name": "manual-human-v5-review", "status": "pending-human-review"},
-    {"id": "R3", "name": "ao-analysis-requirements-and-design-probes", "status": "pending"},
-    {"id": "R4", "name": "ao-module-package-implementation", "status": "pending"},
-    {"id": "R5", "name": "post-review-candidate-and-mit-application", "status": "pending"},
-    {"id": "R6", "name": "final-claasp-4-freeze-and-reconciliation", "status": "waiting-for-upstream-freeze"},
-    {"id": "R7", "name": "final-satellite-repository-migration", "status": "pending"},
-    {"id": "R8", "name": "organization-merge-transfer-and-publication", "status": "deferred-final-step"}
+    {"id": "R3", "name": "cascada-cryptosmt-bit-vector-audit-and-design", "status": "pending"},
+    {"id": "R4", "name": "bit-vector-modelling-and-boolector-implementation", "status": "pending"},
+    {"id": "R5", "name": "ao-analysis-requirements-and-design-probes", "status": "pending"},
+    {"id": "R6", "name": "ao-module-package-implementation", "status": "pending"},
+    {"id": "R7", "name": "post-review-candidate-and-mit-application", "status": "pending"},
+    {"id": "R8", "name": "final-claasp-4-freeze-and-reconciliation", "status": "waiting-for-upstream-freeze"},
+    {"id": "R9", "name": "final-satellite-repository-migration", "status": "pending"},
+    {"id": "R10", "name": "organization-merge-transfer-and-publication", "status": "deferred-final-step"}
   ],
   "predecessor_plan": {
     "path": "docs/architecture/v5-plan.md",

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the post-implementation v5 review, AO, and release plan."""
+"""Validate the post-implementation v5 review and release plan."""
 
 from __future__ import annotations
 
@@ -47,7 +47,7 @@ def validate_plan(plan: dict[str, Any], destination: dict[str, Any]) -> list[str
 
     phases = plan.get("phases")
     if not isinstance(phases, list) or [row.get("id") for row in phases] != [
-        f"R{number}" for number in range(1, 9)
+        f"R{number}" for number in range(1, 11)
     ]:
         errors.append("review phases are missing or out of order")
     elif (
@@ -63,12 +63,21 @@ def validate_plan(plan: dict[str, Any], destination: dict[str, Any]) -> list[str
         errors.append("merge gate opened without human confirmation")
     license_record = plan.get("license")
     if license_record != {
-        "application_phase": "R5",
+        "application_phase": "R7",
         "current": "GPL-3.0-or-later",
         "selected_target": "MIT",
         "selected_at": "2026-09-21",
     }:
         errors.append("MIT selection or application phase is stale")
+
+    if plan.get("bit_vector_workstream") != {
+        "canonical_image_dependency": "Boolector",
+        "core_import_policy": "optional-driver-only",
+        "implementation_session": "dedicated-follow-up",
+        "license_and_provenance_review_required": True,
+        "reference_implementations": ["ranea/CASCADA", "CryptoSMT"],
+    }:
+        errors.append("bit-vector workstream scope or isolation policy is stale")
 
     materials = plan.get("required_review_material")
     if not isinstance(materials, list) or materials != sorted(set(materials)):

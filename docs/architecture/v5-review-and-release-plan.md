@@ -1,4 +1,4 @@
-# CLAASP v5 review, AO validation, and release plan
+# CLAASP v5 review, bit-vector/AO validation, and release plan
 
 ## Status and authority
 
@@ -10,8 +10,8 @@ passed.
 
 The next release decision is deliberately human-led. The candidate must first
 survive a careful manual review and then demonstrate that its typed graph,
-representation, analysis, and driver boundaries support the intended AO
-analysis packages without architectural workarounds.
+representation, analysis, and driver boundaries support the intended
+bit-vector and AO analysis packages without architectural workarounds.
 
 ## Confirmed initial repository scope
 
@@ -78,7 +78,46 @@ closed until the designated reviewers explicitly sign off and all blocking
 findings are resolved. Machine tests complement this review; they do not
 substitute for it.
 
-### R3. AO analysis requirements and design probes
+### R3. CASCADA/CryptoSMT bit-vector audit and design
+
+Use the checked-out reference implementations in `ranea/CASCADA` and the
+CryptoSMT workspace as design evidence, not as code to copy implicitly. In a
+dedicated follow-up session:
+
+- inventory their bit-vector expression systems, primitive models, properties,
+  searches, solver interfaces, and result contracts;
+- compare them with CLAASP's existing semantic types, SMT representation,
+  solver projections, and typed graph rather than creating a parallel stack;
+- decide which contracts belong in shared semantics, a bit-vector
+  representation, analyses, and an optional Boolector driver;
+- record fixed representative workloads, expected results, unsupported cases,
+  performance boundaries, and independent correctness checks;
+- audit licenses, authorship, and provenance before adapting any implementation
+  or model; and
+- specify the public API, serialization, diagnostics, optional-dependency
+  behavior, and canonical-image requirements before implementation.
+
+The core package must remain importable without Boolector or its Python
+bindings. The design must also decide whether the supported boundary uses an
+external executable, Python bindings, or both; this plan does not prejudge that
+choice merely because Boolector is required in the release image.
+
+### R4. Bit-vector modelling and Boolector implementation
+
+Implement the accepted R3 design as separately reviewable slices. Keep shared
+bit-vector meaning independent of solver syntax, reuse the existing graph and
+SMT infrastructure where its contracts fit, and isolate Boolector behind a
+driver. Pin the selected Boolector distribution or build in the canonical
+Docker environment without adding it to dependency-free core imports.
+
+Require deterministic model output, typed results and diagnostics,
+serialization where applicable, executable examples, cross-checks against the
+scalar reference or another independent backend, and fixed CASCADA/CryptoSMT
+parity evidence. Update API documentation, optional-tool guidance, image-size
+evidence, multi-architecture container checks, quality gates, inventory, and
+wheel audits in the same workstream.
+
+### R5. AO analysis requirements and design probes
 
 Before adding production AO packages, record representative workloads and the
 contracts they require. Each probe must answer:
@@ -99,16 +138,16 @@ before the architecture is accepted. Any architectural mismatch reopens the
 smallest affected v5 contract and receives focused parity, documentation, and
 regression evidence.
 
-### R4. AO module/package implementation
+### R6. AO module/package implementation
 
-Implement the agreed AO modules only after R3 fixes their requirements. Each
+Implement the agreed AO modules only after R5 fixes their requirements. Each
 package must include typed public APIs, deterministic examples, catalogue
 registration where applicable, dependency-isolation tests, backend parity or
 independent validation, serializable provenance-bearing results, and user and
 developer documentation. Update the public-API, documentation, typing,
 inventory, and wheel authorities in the same slices.
 
-### R5. Post-review candidate checkpoint
+### R7. Post-review candidate checkpoint
 
 Resolve every blocking review/AO finding, apply the MIT license slice with its
 authorization evidence, and build a new candidate. Repeat the complete host,
@@ -116,7 +155,7 @@ amd64, and arm64 matrix, external tools, doctests, warning-free documentation,
 format/lint/type checks, wheel/sdist audit, and all closure gates. Do not reuse
 the `5.0.0rc1` evidence for a materially changed candidate.
 
-### R6. Final CLAASP 4 freeze and reconciliation
+### R8. Final CLAASP 4 freeze and reconciliation
 
 The current `develop` line is still active and may culminate in CLAASP 4.0.
 Fetching it now is informational, not the final review boundary. Once its
@@ -130,7 +169,7 @@ maintainers declare the line frozen:
 
 Any later upstream commit invalidates this slice until classified.
 
-### R7. Final satellite-repository migration
+### R9. Final satellite-repository migration
 
 Migrate `claasping_aradi`, `claasping_ballet`, `claasping_splight`, and
 `claasp_solvers_benchmarks` only after the reviewed v5/AO API is stable. For
@@ -139,7 +178,7 @@ reviewed v5 API, add fixed behavior evidence, update packaging/documentation,
 and decide whether history is transferred, archived, or superseded. All four
 must pass their agreed gates before organization-wide publication.
 
-### R8. Organization, merge, transfer, and publication
+### R10. Organization, merge, transfer, and publication
 
 Last, resolve the `claasp` handle and name at least two owners. Revalidate
 permissions and metadata, create private staging under non-final names, freeze
@@ -153,6 +192,7 @@ documentation, and the final release.
 ## Immediate next gate
 
 R1 is machine work. R2 is the next decision gate and requires explicit human
-review confirmation. No merge is scheduled. AO requirements may be drafted in
+review confirmation. No merge is scheduled. The bit-vector work is registered
+for a dedicated session after that review. AO requirements may be drafted in
 parallel with review, but production AO APIs should wait until their design
 probes and the relevant reviewed core contracts are accepted.

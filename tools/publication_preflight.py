@@ -23,6 +23,7 @@ REQUIRED_BLOCKERS = {
     "destination-owners",
     "destination-permissions",
 }
+GATED_REVIEW_PHASES = {f"R{number}" for number in range(2, 10)}
 
 
 def validate_plan(
@@ -144,10 +145,7 @@ def readiness_blockers(
     if review_plan is None:
         review_plan = json.loads(REVIEW_PLAN.read_text(encoding="utf-8"))
     for phase in review_plan.get("phases", []):
-        if (
-            phase.get("id") in {"R2", "R3", "R4", "R5", "R6", "R7"}
-            and phase.get("status") != "achieved"
-        ):
+        if phase.get("id") in GATED_REVIEW_PHASES and phase.get("status") != "achieved":
             results.append(f"phase-{phase['id']}: complete {phase['name']} before publication")
     return results
 
@@ -172,9 +170,14 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         print("M11.8 publication preflight is ready")
         return 0
+    review_plan = json.loads(REVIEW_PLAN.read_text(encoding="utf-8"))
+    unfinished_phases = sum(
+        phase.get("id") in GATED_REVIEW_PHASES and phase.get("status") != "achieved"
+        for phase in review_plan.get("phases", [])
+    )
     print(
         "M11.8 publication plan passes: 5 repositories, 3 deferred organization blockers, "
-        "6 unfinished review/release phases"
+        f"{unfinished_phases} unfinished review/release phases"
     )
     return 0
 

@@ -47,3 +47,14 @@ def test_review_plan_rejects_license_drift():
     license_record["selected_target"] = "Apache-2.0"
 
     assert any("MIT selection" in error for error in closure.validate_plan(plan, destination))
+
+
+def test_review_plan_rejects_bit_vector_dependency_drift():
+    plan, destination = _authorities()
+    workstream = plan["bit_vector_workstream"]
+    assert isinstance(workstream, dict)
+    workstream["core_import_policy"] = "required-runtime-dependency"
+
+    assert any(
+        "bit-vector workstream" in error for error in closure.validate_plan(plan, destination)
+    )
