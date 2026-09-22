@@ -1,5 +1,7 @@
 from claasp.ciphers.block_ciphers.blowfish_block_cipher import BlowfishBlockCipher
-
+"""
+The test vectors are taken from the original Blowfish specification [Sch1994]_.
+"""
 
 def test_blowfish_block_cipher():
     test_vectors = [
