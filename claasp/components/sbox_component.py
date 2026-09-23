@@ -23,7 +23,12 @@ from operator import xor
 
 from sage.arith.misc import is_power_of_two
 from sage.crypto.sbox import SBox
-
+from claasp.cipher_modules.models.smt.utils import utils
+from claasp.cipher_modules.models.smt.utils.utils import (
+    deinterleave_qdt_matrix,
+    generate_weight_tables,
+    quasidifferential_transition_matrix,
+)
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import (
     get_dictionary_that_contains_inequalities_for_large_sboxes,
@@ -41,6 +46,9 @@ from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_DEFA
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
 from claasp.cipher_modules.models.sat.utils import constants
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
 from claasp.component import Component, free_input
 from claasp.input import Input
 
@@ -595,6 +603,7 @@ class Sbox(Component):
 
     **Benefit**: Reduces constraint bloat in models with repeated S-box instances and improves solver performance.
     """
+
     sboxes_ddt_templates = {}
     sboxes_lat_templates = {}
 
@@ -2250,7 +2259,9 @@ class Sbox(Component):
             check_table_feasibility(ddt, "DDT", "SAT")
 
             get_hamming_weight_function = lambda input_bit_len, entry: input_bit_len - int(math.log2(entry))
-            template = sat_build_table_template(ddt, get_hamming_weight_function, self.input_bit_size, self.output_bit_size)
+            template = sat_build_table_template(
+                ddt, get_hamming_weight_function, self.input_bit_size, self.output_bit_size
+            )
             self.sboxes_ddt_templates[f"{sbox_values}"] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
@@ -2321,7 +2332,9 @@ class Sbox(Component):
             check_table_feasibility(lat, "LAT", "SAT")
 
             get_hamming_weight_function = lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1
-            template = sat_build_table_template(lat, get_hamming_weight_function, self.input_bit_size, self.output_bit_size)
+            template = sat_build_table_template(
+                lat, get_hamming_weight_function, self.input_bit_size, self.output_bit_size
+            )
             self.sboxes_lat_templates[f"{sbox_values}"] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
@@ -2437,7 +2450,9 @@ class Sbox(Component):
             check_table_feasibility(ddt, "DDT", "SMT")
 
             get_hamming_weight_function = lambda input_bit_len, entry: input_bit_len - int(math.log2(entry))
-            template = smt_build_table_template(ddt, get_hamming_weight_function, self.input_bit_size, self.output_bit_size)
+            template = smt_build_table_template(
+                ddt, get_hamming_weight_function, self.input_bit_size, self.output_bit_size
+            )
             sboxes_ddt_templates[f"{sbox_values}"] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
@@ -2492,7 +2507,9 @@ class Sbox(Component):
             check_table_feasibility(lat, "LAT", "SMT")
 
             get_hamming_weight_function = lambda input_bit_len, entry: input_bit_len - int(math.log2(abs(entry))) - 1
-            template = smt_build_table_template(lat, get_hamming_weight_function, self.input_bit_size, self.output_bit_size)
+            template = smt_build_table_template(
+                lat, get_hamming_weight_function, self.input_bit_size, self.output_bit_size
+            )
             sboxes_lat_templates[f"{sbox_values}"] = template
 
         bit_ids = input_bit_ids + output_bit_ids + hw_bit_ids
@@ -2500,3 +2517,136 @@ class Sbox(Component):
         constraints = smt_get_sbox_probability_constraints(bit_ids, template)
 
         return bit_ids, constraints
+
+    def smt_xor_quasidifferential_propagation_constraints(self, model):
+        """
+        Return a variable list and SMT-LIB asserts representing the S-BOX
+        for the SMT XOR quasidifferential model.
+
+        A QDT transition is represented as:
+
+            (a, u) -> (b, v)
+
+        where:
+
+            a = input XOR difference
+            u = input quasidifferential mask
+            b = output XOR difference
+            v = output quasidifferential mask
+
+        A transition is allowed if the corresponding QDT coefficient is
+        non-zero.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = SboxCipher(bit_size=2, lookup_table=[0, 1, 3, 2])
+            sage: sbox = cipher.component_from_id('sbox_0_0')
+            sage: variables, constraints = sbox.smt_xor_quasidifferential_propagation_constraints(SmtXorQuasidifferentialModel(cipher))
+            sage: variables
+            ['sbox_0_0_0', 'sbox_0_0_1', 'qdt_sbox_0_0_0', 'qdt_sbox_0_0_1']
+            sage: len(constraints), constraints[0].startswith('(assert (or')
+            (1, True)
+
+        ``[0, 1, 3, 2]`` is linear, so every admissible transition has weight 0
+        and the S-box needs no weight indicator.
+        """
+
+        input_diff_bit_ids = self._generate_input_ids()
+        output_diff_bit_ids = self._generate_output_ids()
+
+        input_qdt_bit_ids = model._qdt_input_bit_ids(self)
+
+        output_qdt_bit_ids = [f"qdt_{output_bit_id}" for output_bit_id in output_diff_bit_ids]
+
+        sbox_values = self.description
+        cache_key = str(sbox_values)
+
+        if cache_key not in model.sboxes_qdt_templates:
+
+            def sbox_function(x):
+                return sbox_values[x]
+
+            qdt = quasidifferential_transition_matrix(
+                sbox_function,
+                self.input_bit_size,
+                self.output_bit_size,
+            )
+
+            qdt = deinterleave_qdt_matrix(
+                qdt,
+                self.input_bit_size,
+                self.output_bit_size,
+                primary="diff",
+            )
+
+            weights = generate_weight_tables(
+                qdt,
+                self.input_bit_size,
+                self.output_bit_size,
+            )
+
+            transitions = SmtXorQuasidifferentialModel.get_qdt_transitions(weights)
+
+            model.sboxes_qdt_templates[cache_key] = transitions
+            # Cache the deinterleaved QDT matrix itself too (not just the
+            # weight-grouped transitions, which discard the coefficient's
+            # sign): needed for post-processing sign computation on an
+            # already-solved trail (see
+            # SmtXorQuasidifferentialModel.compute_trail_sign).
+            model.sboxes_qdt_matrices[cache_key] = qdt
+
+        transitions = model.sboxes_qdt_templates[cache_key]
+
+        max_weight = max(transition["weight"] for transition in transitions)
+        weight_bit_ids = model._qdt_local_weight_variables(self, max_weight)
+
+        transition_formulae = []
+
+        for transition in transitions:
+            literals = []
+
+            # Input XOR difference = a
+            literals.extend(
+                model._value_literals(
+                    input_diff_bit_ids,
+                    transition["a"],
+                )
+            )
+
+            literals.extend(
+                model._value_literals(
+                    input_qdt_bit_ids,
+                    transition["u"],
+                )
+            )
+
+            literals.extend(
+                model._value_literals(
+                    output_diff_bit_ids,
+                    transition["b"],
+                )
+            )
+
+            literals.extend(
+                model._value_literals(
+                    output_qdt_bit_ids,
+                    transition["v"],
+                )
+            )
+
+            literals.extend(
+                model._qdt_weight_constraints(
+                    weight_bit_ids,
+                    transition["weight"],
+                )
+            )
+
+            transition_formulae.append(utils.smt_and(literals))
+
+        constraints = [utils.smt_assert(utils.smt_or(transition_formulae))]
+
+        variables = output_diff_bit_ids + output_qdt_bit_ids + weight_bit_ids
+
+        return variables, constraints

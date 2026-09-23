@@ -70,6 +70,7 @@ class Permutation(Component):
         sage: print(component.description)
         [[1, 0], 4]
     """
+
     def __init__(
         self,
         current_round_number,
@@ -91,9 +92,7 @@ class Permutation(Component):
 
         # Validate that output_bit_size is divisible by word_size
         if output_bit_size % word_size != 0:
-            raise ValueError(
-                f"output_bit_size ({output_bit_size}) must be divisible by word_size ({word_size})"
-            )
+            raise ValueError(f"output_bit_size ({output_bit_size}) must be divisible by word_size ({word_size})")
 
         # Validate permutation_description length
         expected_perm_len = output_bit_size // word_size
@@ -110,7 +109,9 @@ class Permutation(Component):
         if perm_set != valid_range:
             missing = valid_range - perm_set
             duplicates = [x for x in permutation_description if permutation_description.count(x) > 1]
-            out_of_range = [x for x in permutation_description if not isinstance(x, int) or x < 0 or x >= expected_perm_len]
+            out_of_range = [
+                x for x in permutation_description if not isinstance(x, int) or x < 0 or x >= expected_perm_len
+            ]
 
             error_parts = []
             if out_of_range:
@@ -388,6 +389,50 @@ class Permutation(Component):
 
         return input_bit_ids + output_bit_ids, constraints
 
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for PERMUTATION quasidifferential propagation.
+
+        A permutation matrix is orthogonal (P^{-1} = P^T), so by Theorem
+        3.2 (5) of Beyne & Rijmen, both the difference and the mask
+        propagate through the SAME bit permutation:
+
+            b = P(a)          (ordinary differential propagation)
+            u = P^T(v) = P^{-1}(v) = P(u) <=> v = P(u)   (mask, self-dual)
+
+        This is exactly the "self-duality of bit-permutations" property
+        discussed in Section 4.3 of the paper (and directly visible in
+        this component's own ``smt_xor_linear_mask_propagation_constraints``,
+        where ``output_mask[i] = input_mask[bit_perm[i]]`` -- the same
+        ``bit_perm`` used for the ordinary difference).
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = PermutationCipher(bit_size=4, permutation_description=[3, 0, 2, 1])
+            sage: permutation = cipher.component_from_id('permutation_0_0')
+            sage: variables, constraints = permutation.smt_xor_quasidifferential_propagation_constraints(SmtXorQuasidifferentialModel(cipher))
+            sage: constraints
+            ['(assert (= permutation_0_0_0 plaintext_1))',
+             '(assert (= permutation_0_0_1 plaintext_3))',
+             '(assert (= permutation_0_0_2 plaintext_2))',
+             '(assert (= permutation_0_0_3 plaintext_0))',
+             '(assert (= qdt_permutation_0_0_0 qdt_plaintext_1))',
+             '(assert (= qdt_permutation_0_0_1 qdt_plaintext_3))',
+             '(assert (= qdt_permutation_0_0_2 qdt_plaintext_2))',
+             '(assert (= qdt_permutation_0_0_3 qdt_plaintext_0))']
+        """
+
+        # Self-dual: the mask goes through the same bit permutation as
+        # the difference.
+        return model._bit_moving_propagation_constraints(
+            self, list(zip(range(self.output_bit_size), self._bit_perm()))
+        )
+
     def cp_constraints(self):
         """
         Return lists of declarations and constraints for PERMUTATION component for CP CIPHER model.
@@ -416,8 +461,7 @@ class Permutation(Component):
         bit_perm = self._bit_perm()
         cp_declarations = []
         cp_constraints = [
-            f"constraint {self.id}[{i}] = {all_inputs[bit_perm[i]]};"
-            for i in range(self.output_bit_size)
+            f"constraint {self.id}[{i}] = {all_inputs[bit_perm[i]]};" for i in range(self.output_bit_size)
         ]
 
         return cp_declarations, cp_constraints
@@ -514,10 +558,12 @@ class Permutation(Component):
 
         all_inputs_active = []
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
-            all_inputs_active.extend([
-                f"{id_link}_active[{bit_positions[j * word_size] // word_size}]"
-                for j in range(len(bit_positions) // word_size)
-            ])
+            all_inputs_active.extend(
+                [
+                    f"{id_link}_active[{bit_positions[j * word_size] // word_size}]"
+                    for j in range(len(bit_positions) // word_size)
+                ]
+            )
 
         bit_perm = self._bit_perm()
         cp_constraints = []
@@ -576,20 +622,21 @@ class Permutation(Component):
 
         all_inputs = []
         for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
-            all_inputs.extend([
-                f"{id_link}[{bit_positions[j * model_word_size] // model_word_size}]"
-                for j in range(len(bit_positions) // model_word_size)
-            ])
+            all_inputs.extend(
+                [
+                    f"{id_link}[{bit_positions[j * model_word_size] // model_word_size}]"
+                    for j in range(len(bit_positions) // model_word_size)
+                ]
+            )
 
         cp_declarations = [f"array[0..{output_num_words - 1}] of var 0..1: {output_id};"]
 
         bit_perm = self._bit_perm()
         cp_constraints = []
         for j in range(output_num_words):
-            contributing = sorted({
-                bit_perm[j * model_word_size + off] // model_word_size
-                for off in range(model_word_size)
-            })
+            contributing = sorted(
+                {bit_perm[j * model_word_size + off] // model_word_size for off in range(model_word_size)}
+            )
             contributing_refs = [all_inputs[k] for k in contributing]
             if len(contributing_refs) == 1:
                 cp_constraints.append(f"constraint {output_id}[{j}] = {contributing_refs[0]};")
@@ -626,8 +673,7 @@ class Permutation(Component):
         ]
         bit_perm = self._bit_perm()
         cp_constraints = [
-            f"constraint {self.id}_o[{i}]={self.id}_i[{bit_perm[i]}];"
-            for i in range(self.output_bit_size)
+            f"constraint {self.id}_o[{i}]={self.id}_i[{bit_perm[i]}];" for i in range(self.output_bit_size)
         ]
 
         return cp_declarations, cp_constraints
@@ -668,8 +714,7 @@ class Permutation(Component):
         variables = [(f"x[{var}]", x[var]) for var in input_vars + output_vars]
         bit_perm = self._bit_perm()
         input_vars_permuted = [input_vars[bit_perm[i]] for i in range(len(output_vars))]
-        constraints = [x[output_var] == x[input_var]
-                       for output_var, input_var in zip(output_vars, input_vars_permuted)]
+        constraints = [x[output_var] == x[input_var] for output_var, input_var in zip(output_vars, input_vars_permuted)]
 
         return variables, constraints
 
@@ -724,8 +769,7 @@ class Permutation(Component):
 
         bit_perm = self._bit_perm()
         constraints = [
-            x_class[output_var] == x_class[input_vars[bit_perm[i]]]
-            for i, output_var in enumerate(output_vars)
+            x_class[output_var] == x_class[input_vars[bit_perm[i]]] for i, output_var in enumerate(output_vars)
         ]
 
         return variables, constraints
@@ -791,16 +835,10 @@ class Permutation(Component):
         model_word_size = model.word_size
 
         if self.input_bit_size % model_word_size != 0 or self.output_bit_size % model_word_size != 0:
-            raise ValueError(
-                f"{self.id}: input/output size must be divisible by model.word_size={model_word_size}"
-            )
+            raise ValueError(f"{self.id}: input/output size must be divisible by model.word_size={model_word_size}")
 
         input_tuples, output_tuples = self._get_wordwise_input_output_full_tuples(model)
-        variables = [
-            (f"x[{var}]", x[var])
-            for word_tuple in input_tuples + output_tuples
-            for var in word_tuple
-        ]
+        variables = [(f"x[{var}]", x[var]) for word_tuple in input_tuples + output_tuples for var in word_tuple]
         constraints = []
 
         bit_perm = self._bit_perm()
