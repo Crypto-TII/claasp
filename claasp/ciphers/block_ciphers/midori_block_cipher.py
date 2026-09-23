@@ -21,7 +21,7 @@ from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 from claasp.utils.integer_functions import wordlist_to_int
 from claasp.utils.utils import extract_inputs
 
-permutation = [0, 10, 5, 15, 14, 4, 11, 1, 9, 3, 12, 6, 7, 13, 2, 8]
+permutation = [0, 7, 14, 9, 5, 2, 11, 12, 15, 8, 1, 6, 10, 13, 4, 3]
 PARAMETERS_CONFIGURATION_LIST = [
     {"block_bit_size": 64, "key_bit_size": 128, "number_of_rounds": 16},
     {"block_bit_size": 128, "key_bit_size": 128, "number_of_rounds": 20},
@@ -120,7 +120,10 @@ def midori_encrypt(plaintext, key):
                 S[i] = wordlist_to_int(S_output_permutation, 1)
 
     def shuffle_cell(S):
-        S[:] = [S[i] for i in permutation]
+        new_S = [0] * len(S)
+        for src, dst in enumerate(permutation):
+            new_S[dst] = S[src]
+        S[:] = new_S
 
     def mix_columns(S):
         for i in range(4):
@@ -241,11 +244,11 @@ class MidoriBlockCipher(Cipher):
         self.add_round()
 
         if self.block_bit_size == 64:
-            WK_id = self.add_xor_component([key_id], [list(range(key_bit_size))], 64).id
+            wk_id = self.add_xor_component([key_id], [list(range(key_bit_size))], 64).id
         else:
-            WK_id = key_id
+            wk_id = key_id
 
-        data = self.key_add(data, WK_id)
+        data = self.key_add(data, wk_id)
 
         for round_number in range(n - 1):
             round_key_id = self.round_key(key_id, round_number)
@@ -261,7 +264,7 @@ class MidoriBlockCipher(Cipher):
             self.add_round()
 
         data = self.sub_cell(data)
-        data = self.key_add(data, WK_id)
+        data = self.key_add(data, wk_id)
 
         self.add_round_output_component(data[0], data[1], self.block_bit_size)
 

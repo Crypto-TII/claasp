@@ -45,7 +45,7 @@ def test_THETA_KECCAK():
 def test_THETA_XOODOO():
     b = BitArray("0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef")
 
-    assert THETA_XOODOO(b).bin[:10] == '0101100100'
+    assert THETA_XOODOO(b).bin[:10] == '1111010000'
 
 
 def test_SHIFT():

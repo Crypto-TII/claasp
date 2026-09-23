@@ -26,11 +26,13 @@ from claasp.utils.utils import get_inputs_parameter
 KEY_NUM = 8
 KEY_SIZE = 16
 STATE_NUM = 4
-STATE_SIZE = 32
 KEY_ROT = [2, 12]
-PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 40}]
+PARAMETERS_CONFIGURATION_LIST = [
+    {"block_bit_size": 64, "number_of_rounds": 28},
+    {"block_bit_size": 128, "number_of_rounds": 40},
+]
 # fmt: off
-P_BOX = [
+P_BOX_128 = [
     [
         2, 6, 10, 14, 18, 22, 26, 30, 1, 5, 9, 13, 17, 21, 25, 29,
         0, 4, 8, 12, 16, 20, 24, 28, 3, 7, 11, 15, 19, 23, 27, 31
@@ -47,6 +49,12 @@ P_BOX = [
         3, 7, 11, 15, 19, 23, 27, 31, 2, 6, 10, 14, 18, 22, 26, 30,
         1, 5, 9, 13, 17, 21, 25, 29, 0, 4, 8, 12, 16, 20, 24, 28
     ],
+]
+P_BOX_64 = [
+    [2, 6, 10, 14, 1, 5, 9, 13, 0, 4, 8, 12, 3, 7, 11, 15],
+    [1, 5, 9, 13, 0, 4, 8, 12, 3, 7, 11, 15, 2, 6, 10, 14],
+    [0, 4, 8, 12, 3, 7, 11, 15, 2, 6, 10, 14, 1, 5, 9, 13],
+    [3, 7, 11, 15, 2, 6, 10, 14, 1, 5, 9, 13, 0, 4, 8, 12],
 ]
 ROUND_CONSTANT = [
     0x80000001, 0x80000003, 0x80000007, 0x8000000F, 0x8000001F, 0x8000003E, 0x8000003D, 0x8000003B,
@@ -65,14 +73,20 @@ class GiftBlockCipher(Cipher):
 
     This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
 
+    REFERENCES:
+
+    Specification and test vectors from [GIFT2017]_.
+
     INPUT:
 
-        - ``number_of_rounds`` -- **integer** (default: `40`); number of rounds of the block cipher
+        - ``block_bit_size`` -- **integer** (default: `128`); block size of the cipher, either 64 or 128
+        - ``number_of_rounds`` -- **integer** (default: `None`); number of rounds. If None, 28 rounds are used for a
+          64-bit block and 40 rounds for a 128-bit block
 
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.gift_block_cipher import GiftBlockCipher
-        sage: gift = GiftBlockCipher(number_of_rounds=40)
+        sage: gift = GiftBlockCipher(block_bit_size=128, number_of_rounds=40)
         sage: gift.number_of_rounds
         40
 
@@ -80,9 +94,16 @@ class GiftBlockCipher(Cipher):
         'and_0_0'
     """
 
-    def __init__(self, number_of_rounds=40):
-        self.state_bit_size = STATE_NUM * STATE_SIZE
+    def __init__(self, number_of_rounds=None, block_bit_size=128):
+        if block_bit_size not in (64, 128):
+            raise ValueError('block_bit_size must be 64 or 128')
+        if number_of_rounds is None:
+            number_of_rounds = 28 if block_bit_size == 64 else 40
+
+        self.state_bit_size = block_bit_size
+        self.state_word_size = block_bit_size // STATE_NUM
         self.key_bit_size = KEY_NUM * KEY_SIZE
+        self.p_box = P_BOX_64 if block_bit_size == 64 else P_BOX_128
 
         super().__init__(
             family_name="gift",
@@ -95,7 +116,8 @@ class GiftBlockCipher(Cipher):
         # state initialization
         state = []
         for i in range(STATE_NUM):
-            p = ComponentState([INPUT_PLAINTEXT], [[k + i * STATE_SIZE for k in range(STATE_SIZE)]])
+            bit_positions = [STATE_NUM * k + STATE_NUM - 1 - i for k in range(self.state_word_size)]
+            p = ComponentState([INPUT_PLAINTEXT], [bit_positions])
             state.append(p)
 
         # key initialization
@@ -110,27 +132,17 @@ class GiftBlockCipher(Cipher):
             self.add_round()
 
             # round constant
-            ci = ROUND_CONSTANT[r]
+            ci = (1 << (self.state_word_size - 1)) | (ROUND_CONSTANT[r] & 0x3F)
 
             # update key schedule
             if r != 0:
                 key_list = self.key_schedule(key_list)
-            round_key_u = ComponentState(
-                deepcopy(key_list[2].id) + deepcopy(key_list[3].id),
-                deepcopy(key_list[2].input_bit_positions) + deepcopy(key_list[3].input_bit_positions),
-            )
-            round_key_v = ComponentState(
-                deepcopy(key_list[6].id) + deepcopy(key_list[7].id),
-                deepcopy(key_list[6].input_bit_positions) + deepcopy(key_list[7].input_bit_positions),
-            )
+            round_key_u, round_key_v = self.get_round_keys(key_list)
             # round function
             state = self.round_function(state, round_key_u, round_key_v, ci)
 
             # round output
-            inputs = []
-            for i in range(STATE_NUM):
-                inputs.append(state[i])
-            inputs_id, inputs_pos = get_inputs_parameter(inputs)
+            inputs_id, inputs_pos = self.get_cipher_output_inputs(state)
             if r == number_of_rounds - 1:
                 self.add_cipher_output_component(inputs_id, inputs_pos, self.state_bit_size)
             else:
@@ -153,53 +165,78 @@ class GiftBlockCipher(Cipher):
 
         return key_new
 
+    def get_round_keys(self, key):
+        if self.state_bit_size == 64:
+            return deepcopy(key[6]), deepcopy(key[7])
+
+        round_key_u = ComponentState(
+            deepcopy(key[2].id) + deepcopy(key[3].id),
+            deepcopy(key[2].input_bit_positions) + deepcopy(key[3].input_bit_positions),
+        )
+        round_key_v = ComponentState(
+            deepcopy(key[6].id) + deepcopy(key[7].id),
+            deepcopy(key[6].input_bit_positions) + deepcopy(key[7].input_bit_positions),
+        )
+
+        return round_key_u, round_key_v
+
+    def get_cipher_output_inputs(self, state):
+        inputs_id = []
+        inputs_pos = []
+        for bit_position in range(self.state_word_size):
+            for state_word in reversed(state):
+                inputs_id.extend(state_word.id)
+                inputs_pos.extend([[state_word.input_bit_positions[0][bit_position]]])
+
+        return inputs_id, inputs_pos
+
     def round_function(self, state, round_key_u, round_key_v, ci):
         # subcells
         # S1 = S1 xor (S0 & S2)
         inputs_id, inputs_pos = get_inputs_parameter([state[0], state[2]])
-        self.add_and_component(inputs_id, inputs_pos, STATE_SIZE)
-        input_bit_positions = list(range(STATE_SIZE))
+        self.add_and_component(inputs_id, inputs_pos, self.state_word_size)
+        input_bit_positions = list(range(self.state_word_size))
         temp = ComponentState([self.get_current_component_id()], [input_bit_positions])
         inputs_id, inputs_pos = get_inputs_parameter([state[1], temp])
-        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, self.state_word_size)
         state[1] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S0 = S0 xor (S1 & S3)
         inputs_id, inputs_pos = get_inputs_parameter([state[1], state[3]])
-        self.add_and_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_and_component(inputs_id, inputs_pos, self.state_word_size)
         temp = ComponentState([self.get_current_component_id()], [input_bit_positions])
         inputs_id, inputs_pos = get_inputs_parameter([state[0], temp])
-        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, self.state_word_size)
         state[0] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S2 = S2 xor (S0 or S1)
         inputs_id, inputs_pos = get_inputs_parameter([state[0], state[1]])
-        self.add_or_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_or_component(inputs_id, inputs_pos, self.state_word_size)
         temp = ComponentState([self.get_current_component_id()], [input_bit_positions])
         inputs_id, inputs_pos = get_inputs_parameter([state[2], temp])
-        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, self.state_word_size)
         state[2] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S3 = S3 xor S2
         inputs_id, inputs_pos = get_inputs_parameter([state[2], state[3]])
-        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, self.state_word_size)
         state[3] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S1 = S1 xor S3
         inputs_id, inputs_pos = get_inputs_parameter([state[1], state[3]])
-        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, self.state_word_size)
         state[1] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S3 = ~S3
-        self.add_not_component(state[3].id, state[3].input_bit_positions, STATE_SIZE)
+        self.add_not_component(state[3].id, state[3].input_bit_positions, self.state_word_size)
         state[3] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S2 = S2 xor (S0 & S1)
         inputs_id, inputs_pos = get_inputs_parameter([state[0], state[1]])
-        self.add_and_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_and_component(inputs_id, inputs_pos, self.state_word_size)
         temp = ComponentState([self.get_current_component_id()], [input_bit_positions])
         inputs_id, inputs_pos = get_inputs_parameter([state[2], temp])
-        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, self.state_word_size)
         state[2] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S0, S1, S2, S3 = S3, S1, S2, S0
@@ -208,25 +245,26 @@ class GiftBlockCipher(Cipher):
         # permbits
         # Si = permutation_i(Si)
         for i in range(STATE_NUM):
-            state[i] = ComponentState(state[i].id, [deepcopy(P_BOX[i])])
+            state[i] = ComponentState(state[i].id, [deepcopy(self.p_box[i])])
 
         # addroundkey
-        # S2 = S2 xor U
-        inputs_id, inputs_pos = get_inputs_parameter([state[2], round_key_u])
-        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
-        state[2] = ComponentState([self.get_current_component_id()], [input_bit_positions])
+        key_word_u = 1 if self.state_bit_size == 64 else 2
+        key_word_v = 0 if self.state_bit_size == 64 else 1
 
-        # S1 = S1 xor V
-        inputs_id, inputs_pos = get_inputs_parameter([state[1], round_key_v])
-        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
-        state[1] = ComponentState([self.get_current_component_id()], [input_bit_positions])
+        inputs_id, inputs_pos = get_inputs_parameter([state[key_word_u], round_key_u])
+        self.add_xor_component(inputs_id, inputs_pos, self.state_word_size)
+        state[key_word_u] = ComponentState([self.get_current_component_id()], [input_bit_positions])
+
+        inputs_id, inputs_pos = get_inputs_parameter([state[key_word_v], round_key_v])
+        self.add_xor_component(inputs_id, inputs_pos, self.state_word_size)
+        state[key_word_v] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         # S3 = S3 xor ci
         # add round constant
-        self.add_constant_component(STATE_SIZE, ci)
+        self.add_constant_component(self.state_word_size, ci)
         c = ComponentState([self.get_current_component_id()], [input_bit_positions])
         inputs_id, inputs_pos = get_inputs_parameter([state[3], c])
-        self.add_xor_component(inputs_id, inputs_pos, STATE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, self.state_word_size)
         state[3] = ComponentState([self.get_current_component_id()], [input_bit_positions])
 
         return state

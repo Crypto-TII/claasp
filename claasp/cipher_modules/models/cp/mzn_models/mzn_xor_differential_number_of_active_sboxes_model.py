@@ -142,7 +142,7 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
         self.list_of_xor_all_inputs = []
         self.list_of_xor_components = []
         self.mix_column_mant = []
-        self.sbox_mant = []
+        self.sbox_cache = []
         self.input_sbox = []
         self._variables_declarations = []
         self.c = 0

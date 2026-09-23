@@ -212,12 +212,11 @@ class Permutation(Component):
              'permutation_0_0_3 -input_1', 'input_1 -permutation_0_0_3']
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        bit_perm = self._bit_perm()
-        input_bit_ids_permuted = [input_bit_ids[bit_perm[i]] for i in range(output_bit_len)]
+        output_bit_ids = self._generate_output_ids()
+        input_bit_ids_permuted = [input_bit_ids[new_position] for new_position in self._bit_perm()]
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids_permuted[i]]))
+        for output_bit_id, input_bit_id_permuted in zip(output_bit_ids, input_bit_ids_permuted):
+            constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id_permuted]))
 
         return output_bit_ids, constraints
 
@@ -275,7 +274,7 @@ class Permutation(Component):
              'input_1_1 -permutation_0_0_3_1']
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
         bit_perm = self._bit_perm()
         constraints = []
         for i in range(len(out_ids_0)):
@@ -317,12 +316,11 @@ class Permutation(Component):
              '(assert (= permutation_0_0_3 input_1))']
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        bit_perm = self._bit_perm()
-        input_bit_ids_permuted = [input_bit_ids[bit_perm[i]] for i in range(output_bit_len)]
+        output_bit_ids = self._generate_output_ids()
+        input_bit_ids_permuted = [input_bit_ids[new_position] for new_position in self._bit_perm()]
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids_permuted[i]])
+        for output_bit_id, input_bit_id_permuted in zip(output_bit_ids, input_bit_ids_permuted):
+            equation = smt_utils.smt_equivalent([output_bit_id, input_bit_id_permuted])
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
@@ -380,13 +378,12 @@ class Permutation(Component):
              '(assert (= permutation_0_0_2_o permutation_0_0_2_i))',
              '(assert (= permutation_0_0_3_o permutation_0_0_1_i))']
         """
-        input_bit_len, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        bit_perm = self._bit_perm()
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        input_bit_ids_permuted = [input_bit_ids[new_position] for new_position in self._bit_perm()]
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids[bit_perm[i]]])
+        for output_bit_id, input_bit_id_permuted in zip(output_bit_ids, input_bit_ids_permuted):
+            equation = smt_utils.smt_equivalent([output_bit_id, input_bit_id_permuted])
             constraints.append(smt_utils.smt_assert(equation))
 
         return input_bit_ids + output_bit_ids, constraints
@@ -563,14 +560,14 @@ class Permutation(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import MznXorDifferentialNumberOfActiveSboxesModel
-            sage: cipher = PresentBlockCipher(number_of_rounds=1)
+            sage: cipher = PermutationCipher(bit_size=4, permutation_description=[1, 3, 2, 0])
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(cipher)
             sage: cp.initialise_model()
-            sage: perm = cipher.component_from_id('permutation_0_17')
+            sage: perm = cipher.component_from_id('permutation_0_0')
             sage: declarations, constraints = perm.cp_xor_differential_propagation_first_step_constraints(cp)
-            sage: len(constraints) == cipher.block_bit_size // cp.word_size
+            sage: len(constraints) == cipher.output_bit_size // cp.word_size
             True
         """
         output_id = self.id

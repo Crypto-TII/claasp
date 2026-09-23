@@ -104,7 +104,7 @@ class MznModel:
                     break
         self._float_and_lat_values = []
         self._probability = False
-        self.sbox_mant = []
+        self.sbox_cache = []
         self.mix_column_mant = []
         self.modadd_twoterms_mant = []
         self.input_sbox = []

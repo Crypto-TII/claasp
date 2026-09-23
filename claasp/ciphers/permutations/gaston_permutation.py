@@ -61,6 +61,8 @@ class GastonPermutation(Cipher):
     """
     Construct an instance of the Gaston Permutation class.
 
+    The permutation parameters and reference implementation are specified in [GASTON2023]_.
+
     INPUT:
 
         - ``number_of_rounds`` -- **integer** (default: `12`); number of rounds of the permutation

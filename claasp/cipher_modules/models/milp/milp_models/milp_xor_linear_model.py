@@ -20,7 +20,6 @@ import os
 import sys
 import time
 
-import numpy as np
 from bitstring import BitArray
 
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
@@ -406,7 +405,7 @@ class MilpXorLinearModel(MilpModel):
         external_solver_name=None,
     ):
         """
-        Return all XOR linear trails with weight greater than ``min_weight`` and lower than or equal to ``max_weight``.
+        Return all XOR linear trails with weight greater than or equal to ``min_weight`` and lower than or equal to ``max_weight``.
         By default, the search removes the key schedule, if any.
 
         The value returned is a list of solutions in standard format.
@@ -417,8 +416,8 @@ class MilpXorLinearModel(MilpModel):
 
         .. NOTE::
 
-            Note that the search will start with ``min_weight`` and should end when the weight reaches a
-            value greater than the maximum cipher inputs bit-size. Fix a convenient ``max_weight`` value.
+            All trails with weight in ``[min_weight, max_weight]`` are enumerated in a single pass. Pick a
+            convenient ``max_weight``: a wide range can yield a very large number of trails.
 
         INPUT:
 
@@ -464,36 +463,31 @@ class MilpXorLinearModel(MilpModel):
 
         inputs_ids = self._cipher.inputs
         list_trails = []
-        precision = _set_weight_precision(self, "linear")
-        for weight in np.arange(min_weight, max_weight + 1, precision):
-            looking_for_other_solutions = 1
-            _, weight_constraints = self.weight_xor_linear_constraints(weight, weight_precision)
-            for constraint in weight_constraints:
-                mip.add_constraint(constraint)
-            number_new_constraints = len(weight_constraints)
-            while looking_for_other_solutions:
-                try:
-                    f = open(os.devnull, "w")
-                    sys.stdout = f
-                    solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
-                    sys.stdout = sys.__stdout__
-                    solution["building_time"] = building_time
-                    solution["test_name"] = "find_all_xor_linear_trails_with_weight_at_most"
-                    self._number_of_trails_found += 1
-                    self._verbose_print(f"trails found : {self._number_of_trails_found}")
-                    list_trails.append(solution)
-                    fixed_variables = self._get_fixed_variables_from_solution(fixed_values, inputs_ids, solution)
+        _set_weight_precision(self, "linear")
+        _, range_constraints = self.weight_range_constraints(min_weight, max_weight, weight_precision)
+        for constraint in range_constraints:
+            mip.add_constraint(constraint)
+        looking_for_other_solutions = 1
+        while looking_for_other_solutions:
+            try:
+                f = open(os.devnull, "w")
+                sys.stdout = f
+                solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
+                sys.stdout = sys.__stdout__
+                solution["building_time"] = building_time
+                solution["test_name"] = "find_all_xor_linear_trails_with_weight_at_most"
+                self._number_of_trails_found += 1
+                self._verbose_print(f"trails found : {self._number_of_trails_found}")
+                list_trails.append(solution)
+                fixed_variables = self._get_fixed_variables_from_solution(fixed_values, inputs_ids, solution)
 
-                    fix_var_constraints = self.exclude_variables_value_xor_linear_constraints(fixed_variables)
-                    for constraint in fix_var_constraints:
-                        mip.add_constraint(constraint)
-                    number_new_constraints += len(fix_var_constraints)
-                except Exception:
-                    looking_for_other_solutions = 0
-                finally:
-                    sys.stdout = sys.__stdout__
-            number_constraints = mip.number_of_constraints()
-            mip.remove_constraints(range(number_constraints - number_new_constraints, number_constraints))
+                fix_var_constraints = self.exclude_variables_value_xor_linear_constraints(fixed_variables)
+                for constraint in fix_var_constraints:
+                    mip.add_constraint(constraint)
+            except Exception:
+                looking_for_other_solutions = 0
+            finally:
+                sys.stdout = sys.__stdout__
         self._number_of_trails_found = 0
 
         return [trail for trail in list_trails if trail["status"] == SATISFIABLE]
@@ -632,6 +626,66 @@ class MilpXorLinearModel(MilpModel):
 
         return solution
 
+    def find_one_xor_linear_trail_with_weight_at_most(
+        self,
+        max_weight,
+        min_weight=0,
+        fixed_values=[],
+        weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
+        solver_name=SOLVER_DEFAULT,
+        external_solver_name=None,
+    ):
+        """
+        Return one XOR linear trail whose weight lies in ``[min_weight, max_weight]``, in standard format.
+        By default, the search removes the key schedule, if any, and the weight corresponds to the negative
+        base-2 logarithm of the correlation of the trail.
+
+        .. NOTE::
+
+            Feasibility search: returns any trail with weight in ``[min_weight, max_weight]``, not the trail of
+            lowest weight. With the default ``min_weight=0`` the returned trail may be trivial.
+
+        INPUT:
+
+        - ``max_weight`` -- **integer**; the upper bound on the weight of the trail
+        - ``min_weight`` -- **integer** (default: `0`); the lower bound on the weight of the trail
+        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
+            format
+        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
+        - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
+        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
+
+        .. SEEALSO::
+
+            :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: milp = MilpXorLinearModel(speck)
+            sage: trail = milp.find_one_xor_linear_trail_with_weight_at_most(6)  # random
+            sage: trail['total_weight'] <= 6.0
+            True
+        """
+        start = time.time()
+        self.init_model_in_sage_milp_class(solver_name)
+        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
+        mip = self._model
+        mip.set_objective(None)
+        self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
+        _, constraints = self.weight_range_constraints(min_weight, max_weight, weight_precision)
+        for constraint in constraints:
+            mip.add_constraint(constraint)
+        end = time.time()
+        building_time = end - start
+        solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
+        solution["building_time"] = building_time
+        solution["test_name"] = "find_one_xor_linear_trail_with_weight_at_most"
+
+        return solution
+
     def find_one_xor_linear_trail_with_fixed_weight(
         self,
         fixed_weight,
@@ -679,19 +733,14 @@ class MilpXorLinearModel(MilpModel):
             sage: trail["total_weight"]
             3.0
         """
-        start = time.time()
-        self.init_model_in_sage_milp_class(solver_name)
-        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
-        mip = self._model
-        mip.set_objective(None)
-        self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
-        _, constraints = self.weight_xor_linear_constraints(fixed_weight, weight_precision)
-        for constraint in constraints:
-            mip.add_constraint(constraint)
-        end = time.time()
-        building_time = end - start
-        solution = self.solve(MILP_XOR_LINEAR, solver_name, external_solver_name)
-        solution["building_time"] = building_time
+        solution = self.find_one_xor_linear_trail_with_weight_at_most(
+            fixed_weight,
+            fixed_weight,
+            fixed_values=fixed_values,
+            weight_precision=weight_precision,
+            solver_name=solver_name,
+            external_solver_name=external_solver_name,
+        )
         solution["test_name"] = "find_one_xor_linear_trail_with_fixed_weight"
 
         return solution

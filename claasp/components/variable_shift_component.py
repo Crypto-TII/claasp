@@ -454,47 +454,37 @@ class VariableShift(Component):
             'var_shift_0_2_3 -state_0_var_shift_0_2_3 key_2']  
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        input_ids = input_bit_ids[:output_bit_len]
-        shift_ids = input_bit_ids[output_bit_len:]
-        number_of_states = int(math.log2(output_bit_len)) - 1
-        states = [[f"state_{i}_{output_bit_ids[j]}" for j in range(output_bit_len)] for i in range(number_of_states)]
+        input_ids = input_bit_ids[:self.output_bit_size]
+        shift_ids = input_bit_ids[self.output_bit_size:]
+        output_bit_ids = self._generate_output_ids()
+        number_of_states = int(math.log2(self.output_bit_size)) - 1
+        states = [[f"state_{i}_{output_bit_id}" for output_bit_id in output_bit_ids] for i in range(number_of_states)]
         constraints = []
-        for j in range(output_bit_len - 1):
-            constraints.extend(
-                sat_utils.cnf_vshift_id(states[0][j], input_ids[j], input_ids[j + 1], shift_ids[output_bit_len - 1])
-            )
-        constraints.extend(
-            sat_utils.cnf_vshift_false(
-                states[0][output_bit_len - 1], input_ids[output_bit_len - 1], shift_ids[output_bit_len - 1]
-            )
-        )
+        # LSB (the state could be moved just by one position)
+        for state_id, input_id, prev_input_id in zip(states[0][:-1], input_ids[:-1], input_ids[1:]):
+            constraints.extend(sat_utils.cnf_vshift_id(state_id, input_id, prev_input_id, shift_ids[-1]))
+        constraints.extend(sat_utils.cnf_vshift_false(states[0][-1], input_ids[-1], shift_ids[-1]))
+        # middle states
         for i in range(1, number_of_states):
-            for j in range(output_bit_len - 2**i):
-                constraints.extend(
-                    sat_utils.cnf_vshift_id(
-                        states[i][j], states[i - 1][j], states[i - 1][j + 2**i], shift_ids[output_bit_len - 1 - i]
-                    )
-                )
-            for j in range(output_bit_len - 2**i, output_bit_len):
-                constraints.extend(
-                    sat_utils.cnf_vshift_false(states[i][j], states[i - 1][j], shift_ids[output_bit_len - 1 - i])
-                )
-        for j in range(output_bit_len - 2**number_of_states):
+            # state is a copy if no shift, shifted otherwise
+            for state_id, prev_state_id, shift_state_id in zip(
+                states[i][:self.output_bit_size - 2**i], states[i - 1], states[i - 1][2**i:]
+            ):
+                constraints.extend(sat_utils.cnf_vshift_id(state_id, prev_state_id, shift_state_id, shift_ids[-1 - i]))
+            # state is a copy if no shift, null otherwise
+            for state_id, prev_state_id in zip(
+                states[i][self.output_bit_size - 2**i:], states[i - 1][self.output_bit_size - 2**i:]
+            ):
+                constraints.extend(sat_utils.cnf_vshift_false(state_id, prev_state_id, shift_ids[-1 - i]))
+        # MSB straightforward in the output
+        for output_id, prev_state_id, shift_state_id in zip(
+            output_bit_ids[:-2**number_of_states], states[-1], states[-1][2**number_of_states:]
+        ):
             constraints.extend(
-                sat_utils.cnf_vshift_id(
-                    output_bit_ids[j],
-                    states[number_of_states - 1][j],
-                    states[number_of_states - 1][j + 2**number_of_states],
-                    shift_ids[output_bit_len - 1 - number_of_states],
-                )
+                sat_utils.cnf_vshift_id(output_id, prev_state_id, shift_state_id, shift_ids[-1 - number_of_states])
             )
-        for j in range(output_bit_len - 2**number_of_states, output_bit_len):
-            constraints.extend(
-                sat_utils.cnf_vshift_false(
-                    output_bit_ids[j], states[number_of_states - 1][j], shift_ids[output_bit_len - 1 - number_of_states]
-                )
-            )
+        for output_id, prev_state_id in zip(output_bit_ids[-2**number_of_states:], states[-1][-2**number_of_states:]):
+            constraints.extend(sat_utils.cnf_vshift_false(output_id, prev_state_id, shift_ids[-1 - number_of_states]))
 
         return output_bit_ids, constraints
 
@@ -537,56 +527,57 @@ class VariableShift(Component):
             '(assert (ite key_2 (not var_shift_0_2_3) (= var_shift_0_2_3 state_0_var_shift_0_2_3)))']
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        input_ids = input_bit_ids[:output_bit_len]
-        shift_ids = input_bit_ids[output_bit_len:]
+        input_ids = input_bit_ids[:self.output_bit_size]
+        shift_ids = input_bit_ids[self.output_bit_size:]
+        output_bit_ids = self._generate_output_ids()
         states = []
-        number_of_states = int(math.log2(output_bit_len)) - 1
-        for i in range(number_of_states):
-            states.append([f"state_{i}_{output_bit_ids[j]}" for j in range(output_bit_len)])
+        number_of_states = int(math.log2(self.output_bit_size)) - 1
+        states = [[f"state_{i}_{output_bit_id}" for output_bit_id in output_bit_ids] for i in range(number_of_states)]
         constraints = []
-        if len(states) <= 0:
-            raise ValueError("states must not be empty")
 
         # first shift
-        for j in range(output_bit_len - 1):
-            consequent = smt_utils.smt_equivalent((states[0][j], input_ids[j + 1]))
-            alternative = smt_utils.smt_equivalent((states[0][j], input_ids[j]))
-            shift = smt_utils.smt_ite(shift_ids[output_bit_len - 1], consequent, alternative)
+        for state_id, input_id, prev_input_id in zip(states[0][:-1], input_ids[:-1], input_ids[1:]):
+            consequent = smt_utils.smt_equivalent((state_id, prev_input_id))
+            alternative = smt_utils.smt_equivalent((state_id, input_id))
+            shift = smt_utils.smt_ite(shift_ids[-1], consequent, alternative)
             constraints.append(smt_utils.smt_assert(shift))
-        consequent = smt_utils.smt_not(states[0][output_bit_len - 1])
-        alternative = smt_utils.smt_equivalent((states[0][output_bit_len - 1], input_ids[output_bit_len - 1]))
-        shift = smt_utils.smt_ite(shift_ids[output_bit_len - 1], consequent, alternative)
+        consequent = smt_utils.smt_not(states[0][-1])
+        alternative = smt_utils.smt_equivalent((states[0][-1], input_ids[-1]))
+        shift = smt_utils.smt_ite(shift_ids[-1], consequent, alternative)
         constraints.append(smt_utils.smt_assert(shift))
 
         # intermediate shifts
         for i in range(1, number_of_states):
-            for j in range(output_bit_len - 2**i):
-                consequent = smt_utils.smt_equivalent((states[i][j], states[i - 1][j + 2**i]))
-                alternative = smt_utils.smt_equivalent((states[i][j], states[i - 1][j]))
-                shift = smt_utils.smt_ite(shift_ids[output_bit_len - 1 - i], consequent, alternative)
+            for state_id, prev_state_id, shift_state_id in zip(
+                states[i][:self.output_bit_size - 2**i], states[i - 1], states[i - 1][2**i:]
+            ):
+                consequent = smt_utils.smt_equivalent((state_id, shift_state_id))
+                alternative = smt_utils.smt_equivalent((state_id, prev_state_id))
+                shift = smt_utils.smt_ite(shift_ids[-1 - i], consequent, alternative)
                 constraints.append(smt_utils.smt_assert(shift))
-            for j in range(output_bit_len - 2**i, output_bit_len):
-                consequent = smt_utils.smt_not(states[i][j])
-                alternative = smt_utils.smt_equivalent((states[i][j], states[i - 1][j]))
-                shift = smt_utils.smt_ite(shift_ids[output_bit_len - 1 - i], consequent, alternative)
+            for state_id, prev_state_id in zip(
+                states[i][self.output_bit_size - 2**i:], states[i - 1][self.output_bit_size - 2**i:]
+            ):
+                consequent = smt_utils.smt_not(state_id)
+                alternative = smt_utils.smt_equivalent((state_id, prev_state_id))
+                shift = smt_utils.smt_ite(shift_ids[-1 - i], consequent, alternative)
                 constraints.append(smt_utils.smt_assert(shift))
 
         # last shift
-        for j in range(output_bit_len - 2**number_of_states):
-            consequent = smt_utils.smt_equivalent(
-                (output_bit_ids[j], states[number_of_states - 1][j + 2**number_of_states])
-            )
-            alternative = smt_utils.smt_equivalent((output_bit_ids[j], states[number_of_states - 1][j]))
-            shift = smt_utils.smt_ite(shift_ids[output_bit_len - 1 - number_of_states], consequent, alternative)
+        for output_id, prev_state_id, shift_state_id in zip(
+            output_bit_ids[:-2**number_of_states], states[-1], states[-1][2**number_of_states:]
+        ):
+            consequent = smt_utils.smt_equivalent((output_id, shift_state_id))
+            alternative = smt_utils.smt_equivalent((output_id, prev_state_id))
+            shift = smt_utils.smt_ite(shift_ids[-1 - number_of_states], consequent, alternative)
             constraints.append(smt_utils.smt_assert(shift))
-        for j in range(output_bit_len - 2**number_of_states, output_bit_len):
-            consequent = smt_utils.smt_not(output_bit_ids[j])
-            alternative = smt_utils.smt_equivalent((output_bit_ids[j], states[number_of_states - 1][j]))
-            shift = smt_utils.smt_ite(shift_ids[output_bit_len - 1 - number_of_states], consequent, alternative)
+        for output_id, prev_state_id in zip(output_bit_ids[-2**number_of_states:], states[-1][-2**number_of_states:]):
+            consequent = smt_utils.smt_not(output_id)
+            alternative = smt_utils.smt_equivalent((output_id, prev_state_id))
+            shift = smt_utils.smt_ite(shift_ids[-1 - number_of_states], consequent, alternative)
             constraints.append(smt_utils.smt_assert(shift))
 
         # create state variables list
-        state_bit_ids = [bit_id for state in states for bit_id in state]
+        state_bit_ids = [state_bit_id for state in states for state_bit_id in state]
 
         return state_bit_ids + output_bit_ids, constraints

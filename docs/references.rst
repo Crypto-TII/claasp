@@ -65,11 +65,31 @@
         characteristics* : IACR Transactions on Symmetric Cryptology (2017):
         99-129 : https://tosc.iacr.org/index.php/ToSC/article/view/805/759
 
+.. [A1997]
+        Adams C. : *The CAST-128 Encryption Algorithm* : RFC 2144, Network
+        Working Group, 1997 : https://datatracker.ietf.org/doc/html/rfc2144
+        
 .. [ABK1998]
         Anderson R., Biham E., Knudsen L. : *Serpent: A Proposal for the
         Advanced Encryption Standard* : First Advanced Encryption Standard
         Candidate Conference, 1998 :
         https://www.cl.cam.ac.uk/archive/rja14/Papers/serpent.pdf
+
+.. [AJN2016]
+        Aumasson J.-P., Jovanovic P., Neves S. : *NORX v3.0* : CAESAR
+        Competition, third-round submission, 2016 :
+        https://competitions.cr.yp.to/round3/norxv30.pdf
+
+.. [ASCONREF]
+        Ascon Team : *ascon-c reference implementation for NIST SP 800-232* :
+        commit 446347f21b209f3921c65ece70027c366cbe1693 :
+        https://github.com/ascon/ascon-c/tree/446347f21b209f3921c65ece70027c366cbe1693
+
+.. [AumassonBernstein2012]
+        Aumasson, J.-P., Bernstein, D. J. : *SipHash: a fast short-input PRF* :
+        INDOCRYPT 2012, Lecture Notes in Computer Science, vol. 7668, pp.
+        489-508, Springer (2012) :
+        https://cr.yp.to/siphash/siphash-20120918.pdf
 
 .. _claasp-ref-B:
 
@@ -90,6 +110,11 @@
         Biryukov A., Canniere C. D. : *Block Ciphers and Systems of Quadratic
         Equations* : In Proceedings of Fast Software Encryption 2003, LNCS
         2887, pp. 274-289, Springer-Verlag 2003
+
+.. [BDDGR23]
+        Belkheyar Y., Daemen J., Dobraunig C., Ghosh S., Rasoolzadeh S. : *BipBip: A Low-Latency
+        Tweakable Block Cipher with Small Dimensions* : In IACR Transactions on Cryptographic
+        Hardware and Embedded Systems, vol. 2023, no. 1, pp. 326-368, 2023
 
 .. [BDG+25] Y. Belkheyar, P. Derbez, S. Ghosh, G. Leander, S. Mella, L. Perrin,
         S. Rasoolzadeh, L. Stennes, S. Sun, G. Van Assche, D. Vizár,
@@ -223,6 +248,14 @@
 
         **C**
 
+.. [CDGP1993] Claesen, L., Daemen, J., Genoe, M., & Peeters, G. (1993).
+        *Subterranean: A 600 Mbit/sec Cryptographic VLSI Chip*.
+        In Proceedings of the 1993 IEEE International Conference on
+        Computer Design: VLSI in Computers & Processors (ICCD '93),
+        Cambridge, MA, USA, October 3-6, 1993, pp. 610-613.
+        IEEE Computer Society.
+        https://doi.org/10.1109/ICCD.1993.393304
+
 .. [Cou2001]
         Courtois N. : *La sécurité des primitives cryptographiques basées sur
         des problèmes algébriques multivariables* : MQ, IP, MinRank, HFE. PhD
@@ -249,6 +282,10 @@
         tool for ChaCha, Salsa and Forro (MIT licensed).
         https://github.com/murcoutinho/cryptDances
 
+.. [CryptoLUXSPARX]
+        CryptoLUX : *SPARX Reference C Implementation* :
+        https://github.com/cryptolu/SPARX/blob/master/ref-c/sparx.c
+
 .. [CZZ2023]
         Cao, W., Zhang, W., Zhou, C. : *New Automatic Search Tool for Searching
         for Impossible Differentials Using Undisturbed Bits* In: Deng, Y.,
@@ -266,6 +303,11 @@
         D'Anvers, J.-P., Karmakar, A., Roy S.S., Vercauteren F.: *Saber:
         Module-LWR Based Key Exchange, CPA-Secure Encryption and CCA-Secure
         KEM* : AFRICACRYPT 2018: 282-305.
+
+.. [DPUVGB2016]
+        Dinu D., Perrin L., Udovenko A., Velichkov V., Großschädl J.,
+        Biryukov A. : *Design Strategies for ARX with Provable Bounds:
+        Sparx and LAX* : ASIACRYPT 2016.
 
 .. [Din2021Cry]
         Dinur I. : *Cryptanalytic Applications of the Polynomial Method for
@@ -310,6 +352,19 @@
         CHAM* : Implementation repository (2025) :
         https://github.com/dampers/SAECHAM-implementations
 
+.. [DEY2023]
+        Dey, S., Garai, H. K., Maitra, S. : *Cryptanalysis of Reduced Round
+        ChaCha -- New Attack & Deeper Analysis* : IACR Transactions on
+        Symmetric Cryptology, 2023(1), 89-110 :
+        https://eprint.iacr.org/2023/134
+
+.. [DMR2019]
+        Daemen, J., Massolino, P. M. C., and Rotella, Y.
+        *The Subterranean 2.0 cipher suite.*
+        Submission to the NIST Lightweight Cryptography Standardization process,
+        version 1.1, March 29, 2019.
+        https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/subterranean-spec-round2.pdf
+
 .. _claasp-ref-E:
 
 .. only:: html
@@ -338,6 +393,25 @@
 
         **G**
 
+.. [GASTON2023]
+        El Hirch S., Daemen J., Rohit R. S., Makarim R. H. : *Twin Column
+        Parity Mixers and Gaston* : Cryptology ePrint Archive, Paper 2023/799,
+        2023 : https://eprint.iacr.org/2023/799
+
+.. [GIMLI2017]
+        Bernstein D. J., Kölbl S., Lucks S., Massolino P. M. C., Mendel F.,
+        Nawaz K., Schneider T., Schwabe P., Standaert F.-X., Todo Y., Viguier B. :
+        *Gimli: a cross-platform permutation* : CHES 2017 :
+        https://gimli.cr.yp.to/gimli-20170627.pdf
+
+.. [GIFT2017]
+        Banik S., Pandey S. K., Peyrin T., Sasaki Y., Sim S. M., Todo Y. :
+        *GIFT: A Small Present -- Towards Reaching the Limit of Lightweight Encryption* :
+        In Cryptographic Hardware and Embedded Systems -- CHES 2017, Lecture Notes in Computer Science,
+        vol. 10529, pp. 321--345. Springer (2017) : https://doi.org/10.1007/978-3-319-66787-4_16.
+        Full version: https://eprint.iacr.org/2017/622.pdf.
+        Reference implementation and test vectors: https://github.com/giftcipher/gift.
+
 .. [Go2019]
         Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning
 * : In Advances in Cryptology – CRYPTO 2019
@@ -353,6 +427,14 @@
 
         **H**
 
+.. [HJM2005]
+        Hell M., Johansson T., Meier W. : *Grain: A Stream Cipher for Constrained
+        Environments* : International Journal of Wireless and Mobile Computing,
+        2(1), 86-93, 2007 : originally presented at ECRYPT SASC 2005; a
+        subsequently tweaked version was submitted to eSTREAM as "Grain v1" and
+        selected for the eSTREAM Profile 2 portfolio :
+        https://www.ecrypt.eu.org/stream/p3ciphers/grain/grain_p3.pdf
+
 .. [He2002]
         Heys H. : *A Tutorial on Linear and Differential Cryptanalysis* : 2002
         : http://www.engr.mun.ca/~howard/PAPERS/ldc_tutorial.pdf
@@ -360,6 +442,13 @@
 .. [HP2003]
         Huffman W. C., Pless V. : *Fundamentals of Error-Correcting Codes* :
         Cambridge Univ. Press, 2003
+
+.. [HKPT2026]
+        Hu, K., Khairallah, M., Peyrin, T., & Tan, Q.
+        (2026). uKNIT: Breaking Round-Alignment for Cipher Design.
+        IACR Transactions on Symmetric Cryptology, 2026(2).
+        https://doi.org/10.46586/tosc.a0zo-4njsuvm
+        https://github.com/syllab-ntu/UKNIT
 
 .. _claasp-ref-I:
 
@@ -390,6 +479,12 @@
 .. only:: html
 
         **K**
+
+.. [XKCPREF]
+        Keccak Team : *eXtended Keccak Code Package (XKCP), reference
+        implementations of Keccak-p and Xoodoo* : commit
+        eb5244d6b95fb1c434b211bac293093e18aa8fd1 :
+        https://github.com/XKCP/XKCP/tree/eb5244d6b95fb1c434b211bac293093e18aa8fd1
 
 .. [KPG1999]
         Kipnis A., Patarin J., Goubin L. : *Unbalanced oil and vinegar
@@ -489,6 +584,13 @@
         KEA Algorithm Specifications* : Version 2.0. 29 de mayo de 1998 :
         https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
 
+.. [NISTLWCSUB] 
+        Daemen, J., Massolino, P. M. C., and Rotella, Y.
+        *Subterranean 2.0 -- Round 2 submission package*
+        (reference software, including subterranean_bit.py).
+        NIST Lightweight Cryptography Standardization process, Round 2 Candidates.
+        https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/submissions-rnd2/subterranean.zip
+
 .. _claasp-ref-O:
 
 .. only:: html
@@ -549,6 +651,12 @@
         Sun S., Gerault D., Lafourcade P., Yang Q., Todo Y., Qiao K., Hu L. :
         *Analysis of AES, SKINNY, and others with constraint programming* : In
         IACR transactions on symmetric cryptology 2017 (1), 281--306
+
+.. [SasTod17]
+        Sasaki, Y., Todo, Y. : *New Algorithm for Modeling S-box in MILP Based
+        Differential and Division Trail Search* : Codes, Cryptology and
+        Information Security (C2SI 2017), Lecture Notes in Computer Science,
+        vol. 10194, pp. 150-165, Springer (2017)
 
 .. [SGWW2020]
         Sun L., Gerault D., Wang W., Wang M. : *On the usage of deterministic
@@ -617,6 +725,13 @@
         LNCS 12804, Springer, pp. 535–564, 2021.
         DOI: 10.1007/978-3-030-81652-0_21.
 
+.. [WHZDWS2025]
+
+        Wang J., Huang T., Zeng G., Ding T., Wu S., Sun S. : *THF: Designing
+        Low-Latency Tweakable Block Ciphers* : IACR Transactions on Symmetric
+        Cryptology, 2025(4), pp. 125-166, 2025 :
+        https://eprint.iacr.org/2025/1314
+
 .. _claasp-ref-X:
 
 .. only:: html
@@ -639,3 +754,15 @@
 .. only:: html
 
         **Z**
+
+.. [ZBL+2015]
+        Zhang W., Bao Z., Lin D., Rijmen V., Yang B., Verbauwhede I. :
+        *RECTANGLE: a bit-slice lightweight block cipher suitable for multiple
+        platforms* : Science China Information Sciences, 58(12), 1-15 (2015) :
+        https://eprint.iacr.org/2014/084.pdf
+
+.. [ZDY+2019]
+        Zhang W., Ding T., Yang B., Bao Z., Xiang Z., Ji F., Zhao X. :
+        *KNOT: Algorithm Specifications and Supporting Document* : Submission to
+        the NIST Lightweight Cryptography project (2019) :
+        https://csrc.nist.gov/projects/lightweight-cryptography/round-1-candidates
