@@ -19,6 +19,7 @@ from claasp.cipher_modules.component_analysis_tests import (
     compute_branch_number_from_field_matrix,
     compute_branch_number_from_field_matrix_with_bounded_enumeration,
     compute_branch_number_from_field_matrix_with_minizinc,
+    compute_branch_number_from_field_matrix_with_sage,
     compute_word_branch_number_from_binary_matrix_with_minizinc,
     binary_matrix_of_linear_component,
     permutation_to_binary_matrix,
