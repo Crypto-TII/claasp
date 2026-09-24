@@ -1018,7 +1018,7 @@ class MilpMonomialPredictionModel:
             self.add_fsr_constraints(component)
         elif component.type == "constant":
             self.add_constant_constraints(component)
-        elif component.type in ["linear_layer", "mix_column"]:
+        elif component.type in ["linear_layer", "mix_column", "permutation"]:
             self.add_linear_layer_constraints(component)
         elif component.type in ["cipher_output", "intermediate_output"]:
             self.add_intermediate_output_constraints(component)
@@ -1507,7 +1507,7 @@ class MilpMonomialPredictionModel:
         self.build_generic_model_for_specific_output_bit(
             output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output
         )
-        self._model.setParam("PoolSolutions", 200000000)
+        self._model.setParam("PoolSolutions", 2000000000)
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
 
         self.optimize_model()
@@ -1641,7 +1641,7 @@ class MilpMonomialPredictionModel:
         self.build_generic_model_for_specific_output_bit(
             output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output
         )
-        self._model.setParam("PoolSolutions", 200000000)
+        self._model.setParam("PoolSolutions", 2000000000)
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
 
         # Convert compact cube names like "i9" -> ("initialisation_vector", 9)
@@ -1902,7 +1902,7 @@ class MilpMonomialPredictionModel:
         m = self._model
         m.Params.OutputFlag = 0
         m.setParam(GRB.Param.PoolSearchMode, 2)
-        m.setParam(GRB.Param.PoolSolutions, 200000000)
+        m.setParam(GRB.Param.PoolSolutions, 2000000000)
         m.setParam(GRB.Param.PoolGap, 0.0)
 
     def _verify_pool_completeness(self, experiment_name="computation", model=None):
@@ -2707,7 +2707,7 @@ class MilpMonomialPredictionModel:
         m = self._model
         m.Params.OutputFlag = 0
         m.setParam(GRB.Param.PoolSearchMode, 2)
-        m.setParam(GRB.Param.PoolSolutions, 200000000)
+        m.setParam(GRB.Param.PoolSolutions, 2000000000)
         m.setParam(GRB.Param.PoolGap, 0.0)
 
         cube_verbose = self.var_list_to_input_positions(cube)
@@ -2728,10 +2728,22 @@ class MilpMonomialPredictionModel:
         m.update()
         m.optimize()
 
-        if m.Status != GRB.OPTIMAL or m.SolCount == 0:
+        # Only an infeasible model proves a zero superpoly; an unfinished solve must not return one.
+        if m.Status in (GRB.INFEASIBLE, GRB.INF_OR_UNBD):
             if verbosity:
-                print(f"[INFO] Model infeasible or no valid solutions for output bit {output_bit_index}")
+                print(f"[INFO] Model infeasible for output bit {output_bit_index}, superpoly is zero")
             return self.get_boolean_polynomial_ring()(0)
+
+        if m.Status != GRB.OPTIMAL or m.SolCount == 0:
+            raise RuntimeError(
+                f"Superpoly of output bit {output_bit_index} is unreliable: Gurobi stopped with "
+                f"status {m.Status} and {m.SolCount} solutions."
+            )
+
+        if not self._verify_pool_completeness(f"superpoly of output bit {output_bit_index}"):
+            raise RuntimeError(
+                f"Superpoly of output bit {output_bit_index} is unreliable: solution pool truncated."
+            )
 
         poly_full = self.get_solutions()
 
