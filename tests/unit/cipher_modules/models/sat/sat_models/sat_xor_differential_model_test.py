@@ -3,7 +3,7 @@ from os import remove
 import numpy as np
 
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
-from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT, KISSAT_EXT, PARKISSAT_EXT
+from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT, KISSAT_EXT, MALLOB_EXT, PARKISSAT_EXT
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
@@ -106,6 +106,14 @@ def test_find_lowest_weight_xor_differential_trail():
     speck = speck_5rounds
     sat = SatXorDifferentialModel(speck, counter="parallel")
     trail = sat.find_lowest_weight_xor_differential_trail()
+
+    assert int(trail["total_weight"]) == 9
+
+
+def test_find_lowest_weight_xor_differential_trail_with_mallob():
+    speck = speck_5rounds
+    sat = SatXorDifferentialModel(speck)
+    trail = sat.find_lowest_weight_xor_differential_trail(solver_name=MALLOB_EXT, options=["-t=2"])
 
     assert int(trail["total_weight"]) == 9
 
@@ -246,6 +254,16 @@ def test_build_xor_differential_trail_model_fixed_weight_and_parkissat():
     sat.build_xor_differential_trail_model(3)
     result = sat._solve_with_external_sat_solver(XOR_DIFFERENTIAL, PARKISSAT_EXT, [f"-c={number_of_cores}"])
 
+    assert int(result["total_weight"]) == 3
+
+
+def test_build_xor_differential_trail_model_fixed_weight_and_mallob():
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    sat = SatXorDifferentialModel(speck)
+    sat.build_xor_differential_trail_model(3)
+    result = sat._solve_with_external_sat_solver(XOR_DIFFERENTIAL, MALLOB_EXT, ["-t=2"])
+
+    assert result["status"] == SATISFIABLE
     assert int(result["total_weight"]) == 3
 
 

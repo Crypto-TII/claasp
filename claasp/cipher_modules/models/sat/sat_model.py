@@ -332,6 +332,9 @@ class SatModel:
             elif solver_specs["solver_name"] == solvers.PARKISSAT_EXT:
                 input_file = f"{self.cipher_id}_{file_id}_sat_input.cnf"
                 status, sat_time, sat_memory, values = utils.run_parkissat(solver_specs, options, dimacs, input_file)
+            elif solver_specs["solver_name"] == solvers.MALLOB_EXT:
+                input_file = f"{self.cipher_id}_{file_id}_sat_input.cnf"
+                status, sat_time, sat_memory, values = utils.run_mallob(solver_specs, options, dimacs, input_file)
             elif solver_specs["solver_name"] == solvers.YICES_SAT_EXT:
                 input_file = f"{self.cipher_id}_{file_id}_sat_input.cnf"
                 status, sat_time, sat_memory, values = utils.run_yices(solver_specs, options, dimacs, input_file)
