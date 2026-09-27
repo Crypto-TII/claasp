@@ -1,6 +1,8 @@
+import shutil
 from os import remove
 
 import numpy as np
+import pytest
 
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT, KISSAT_EXT, MALLOB_EXT, PARKISSAT_EXT
@@ -9,6 +11,8 @@ from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
 from claasp.components.modadd_component import ModAdd
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, SATISFIABLE, XOR_DIFFERENTIAL
+
+requires_mallob = pytest.mark.skipif(shutil.which("mallob") is None, reason="Mallob not available in PATH")
 
 
 def count_sequences_of_ones(data, full_window_size):
@@ -110,6 +114,7 @@ def test_find_lowest_weight_xor_differential_trail():
     assert int(trail["total_weight"]) == 9
 
 
+@requires_mallob
 def test_find_lowest_weight_xor_differential_trail_with_mallob():
     speck = speck_5rounds
     sat = SatXorDifferentialModel(speck)
@@ -257,6 +262,7 @@ def test_build_xor_differential_trail_model_fixed_weight_and_parkissat():
     assert int(result["total_weight"]) == 3
 
 
+@requires_mallob
 def test_build_xor_differential_trail_model_fixed_weight_and_mallob():
     speck = SpeckBlockCipher(number_of_rounds=3)
     sat = SatXorDifferentialModel(speck)
