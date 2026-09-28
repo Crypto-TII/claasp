@@ -197,9 +197,24 @@ jobs:
           python-version: "3.12"
 
       - name: Install msolve
+        env:
+          MSOLVE_SHA256: ce0743cc33d1dc8484193268d9220e8624ed015e521903b9228b3b38a5981291
+          MSOLVE_VERSION: 0.10.1
         run: |
           sudo apt-get update
-          sudo apt-get install --yes msolve
+          sudo apt-get install --yes autoconf automake build-essential curl libflint-dev libgmp-dev libtool
+          curl --fail --location --silent --show-error \
+            "https://github.com/algebraic-solving/msolve/archive/refs/tags/v${MSOLVE_VERSION}.tar.gz" \
+            --output msolve.tar.gz
+          echo "${MSOLVE_SHA256}  msolve.tar.gz" | sha256sum --check
+          tar --extract --gzip --file msolve.tar.gz
+          cd "msolve-${MSOLVE_VERSION}"
+          ./autogen.sh
+          ./configure --prefix=/usr/local
+          make --jobs="$(nproc)"
+          make check
+          sudo make install
+          sudo ldconfig
 
       - name: Install test dependencies
         run: python -m pip install -e '.[dev]'
@@ -348,6 +363,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes minizinc
+          sudo install -m 0755 docker/v5/minizinc-wrapper.sh /usr/local/bin/minizinc
 
       - name: Install test dependencies
         run: python -m pip install -e '.[dev]'
