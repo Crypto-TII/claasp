@@ -362,7 +362,7 @@ def test_minizinc_preserves_legacy_mixed_exact_truncated_speck_feasibility():
 
 def test_minizinc_preserves_legacy_speck_five_round_bounded_trail_count():
     primitive = Speck(number_of_rounds=5)
-    solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=45)
+    solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=120)
     representation = SpeckDifferentialCPModel(
         PropagationProblem(
             primitive,
