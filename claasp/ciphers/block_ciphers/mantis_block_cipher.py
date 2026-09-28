@@ -126,7 +126,7 @@ class MantisBlockCipher(Cipher):
 
     def add_tweakey(self, current_tweak):
         permuted_tweak = self.add_word_permutation_component(
-            [current_tweak], [list(range(64))], 64, TWEAK_PERMUTATION, 4
+            [current_tweak], [list(range(64))], 64, TWEAK_PERMUTATION_INV, 4
         ).id
 
         tweakey = self.add_xor_component(
@@ -137,7 +137,7 @@ class MantisBlockCipher(Cipher):
 
     def permute_cells(self, current_state):
         permuted_state = self.add_word_permutation_component(
-            [current_state], [list(range(64))], 64, CELL_PERMUTATION, 4
+            [current_state], [list(range(64))], 64, CELL_PERMUTATION_INV, 4
         )
         return permuted_state.id
 
@@ -184,7 +184,7 @@ class MantisBlockCipher(Cipher):
 
     def permute_cells_inverse(self, current_state):
         permuted_state = self.add_word_permutation_component(
-            [current_state], [list(range(64))], 64, CELL_PERMUTATION_INV, 4
+            [current_state], [list(range(64))], 64, CELL_PERMUTATION, 4
         )
         return permuted_state.id
 
@@ -195,7 +195,7 @@ class MantisBlockCipher(Cipher):
                 [current_tweak],
                 [list(range(64))],
                 64,
-                TWEAK_PERMUTATION_INV,
+                TWEAK_PERMUTATION,
                 4
             ).id
         alpha_component = self.add_constant_component(64, MANTIS_ALPHA)
@@ -305,7 +305,7 @@ class MantisBlockCipher(Cipher):
             [current_tweak],
             [list(range(64))],
             64,
-            TWEAK_PERMUTATION_INV,
+            TWEAK_PERMUTATION,
             4
         ).id
         k0_rot1 = self.add_rotate_component(

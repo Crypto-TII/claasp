@@ -134,7 +134,7 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
         self.build_bitwise_impossible_xor_differential_trail_model(fixed_variables=fixed_values)
 
         forward_output = [c for c in self._forward_cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
-        out_size, forward_out_ids_0, forward_out_ids_1 = forward_output._generate_output_double_ids()
+        forward_out_ids_0, forward_out_ids_1 = forward_output._generate_output_double_ids()
         backward_out_ids_0 = [
             "_".join(id_.split("_")[:-2] + ["backward"] + id_.split("_")[-2:]) for id_ in forward_out_ids_0
         ]
@@ -144,12 +144,12 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
         end = time.time()
         building_time = end - start
 
-        incompatibility_ids = [f"incompatibility_{forward_output.id}_{i}" for i in range(out_size)]
+        incompatibility_ids = [f"incompatibility_{forward_output.id}_{i}" for i in range(forward_output.output_bit_size)]
 
-        for i in range(out_size):
+        for i, incompatibility_id in enumerate(incompatibility_ids):
             self._model_constraints.extend(
                 utils.incompatibility(
-                    incompatibility_ids[i],
+                    incompatibility_id,
                     (forward_out_ids_0[i], forward_out_ids_1[i]),
                     (backward_out_ids_0[i], backward_out_ids_1[i]),
                 )
@@ -236,18 +236,18 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
         incompat_ids = []
         for cid in component_id_list:
             fwd_comp = self._forward_cipher.component_from_id(cid)
-            out_size, fwd_out_ids_0, fwd_out_ids_1 = fwd_comp._generate_output_double_ids()
+            fwd_out_ids_0, fwd_out_ids_1 = fwd_comp._generate_output_double_ids()
 
-            backward_cid = cid + "_backward"
+            backward_cid = f"{cid}_backward"
             bwd_comp = self._backward_cipher.component_from_id(backward_cid)
             bwd_in_ids_0, bwd_in_ids_1 = bwd_comp._generate_input_double_ids()
 
-            for i in range(out_size):
+            for i, (fwd_out_id_0, fwd_out_id_1) in enumerate(zip(fwd_out_ids_0, fwd_out_ids_1)):
                 inv_id = f"incompatibility_{cid}_{i}"
                 incompat_ids.append(inv_id)
                 self._model_constraints.extend(
                     utils.incompatibility(
-                        inv_id, (fwd_out_ids_0[i], fwd_out_ids_1[i]), (bwd_in_ids_0[i], bwd_in_ids_1[i])
+                        inv_id, (fwd_out_id_0, fwd_out_id_1), (bwd_in_ids_0[i], bwd_in_ids_1[i])
                     )
                 )
 
@@ -327,7 +327,7 @@ class SatBitwiseImpossibleXorDifferentialModel(SatBitwiseDeterministicTruncatedX
                 # Skip this backward component because we can't map it to a forward component (es: plaintext_backward).
                 continue
 
-            _, fwd_out_ids_0, fwd_out_ids_1 = fwd_comp._generate_output_double_ids()
+            fwd_out_ids_0, fwd_out_ids_1 = fwd_comp._generate_output_double_ids()
             forward_pairs = list(zip(fwd_out_ids_0, fwd_out_ids_1))
 
             if include_all_components:

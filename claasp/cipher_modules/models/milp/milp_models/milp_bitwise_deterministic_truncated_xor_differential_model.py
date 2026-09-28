@@ -165,7 +165,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
                 WORD_OPERATION,
             )
             operation = component.description[0]
-            operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
+            operation_types = ("AND", "MODADD", "MODMUL", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 if operation in ("XOR", "MODADD") or component.type == LINEAR_LAYER:

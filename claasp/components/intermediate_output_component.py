@@ -407,7 +407,16 @@ class IntermediateOutput(CipherOutput):
             sage: smt = SmtXorLinearModel(dummy)
             sage: intermediate_component = dummy.component_from_id("intermediate_output_0_1")
             sage: intermediate_component.smt_xor_linear_mask_propagation_constraints(smt)
-            (['intermediate_output_0_1_0_o', 'intermediate_output_0_1_1_o', 'intermediate_output_0_1_2_o', 'intermediate_output_0_1_3_o', 'intermediate_output_0_1_0_i', 'intermediate_output_0_1_1_i', 'intermediate_output_0_1_2_i', 'intermediate_output_0_1_3_i'], ['(assert (= intermediate_output_0_1_0_i intermediate_output_0_1_0_o))', '(assert (= intermediate_output_0_1_1_i intermediate_output_0_1_1_o))', '(assert (= intermediate_output_0_1_2_i intermediate_output_0_1_2_o))', '(assert (= intermediate_output_0_1_3_i intermediate_output_0_1_3_o))', '(assert (= intermediate_output_0_1_0_i xor_0_0_0_o))', '(assert (= intermediate_output_0_1_1_i xor_0_0_1_o))', '(assert (= intermediate_output_0_1_2_i xor_0_0_2_o))', '(assert (= intermediate_output_0_1_3_i xor_0_0_3_o))'])
+            (['intermediate_output_0_1_0_o',
+              'intermediate_output_0_1_1_o',
+              ...
+              'intermediate_output_0_1_2_i',
+              'intermediate_output_0_1_3_i'],
+             ['(assert (= intermediate_output_0_1_0_o intermediate_output_0_1_0_i))',
+              '(assert (= intermediate_output_0_1_1_o intermediate_output_0_1_1_i))',
+              ...
+              '(assert (= intermediate_output_0_1_2_i xor_0_0_2_o))',
+              '(assert (= intermediate_output_0_1_3_i xor_0_0_3_o))'])
         """
         variables, constraints = super().smt_xor_linear_mask_propagation_constraints(model)
         bit_bindings = model.bit_bindings_for_intermediate_output[self.id]

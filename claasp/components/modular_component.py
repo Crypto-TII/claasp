@@ -153,62 +153,38 @@ class Modular(Component):
             sage: variables, constraints = component.cms_xor_linear_mask_propagation_constraints()
             sage: variables
             ['modular_0_0_0_i',
-            'modular_0_0_1_i',
-            'modular_0_0_2_i',
-            'modular_0_0_3_i',
-            'modular_0_0_4_i',
-            'modular_0_0_5_i',
-            'modular_0_0_6_i',
-            'modular_0_0_7_i',
-            'modular_0_0_0_o',
-            'modular_0_0_1_o',
-            'modular_0_0_2_o',
-            'modular_0_0_3_o',
-            'hw_modular_0_0_0_o',
-            'hw_modular_0_0_1_o',
-            'hw_modular_0_0_2_o',
-            'hw_modular_0_0_3_o']
+             'modular_0_0_1_i',
+             ...
+             'hw_modular_0_0_2_o',
+             'hw_modular_0_0_3_o']
             sage: constraints
             ['-hw_modular_0_0_0_o',
-            'x -hw_modular_0_0_1_o modular_0_0_0_o modular_0_0_0_i modular_0_0_4_i',
-            'x -hw_modular_0_0_2_o hw_modular_0_0_1_o modular_0_0_1_o modular_0_0_1_i modular_0_0_5_i',
-            'x -hw_modular_0_0_3_o hw_modular_0_0_2_o modular_0_0_2_o modular_0_0_2_i modular_0_0_6_i',
-            'hw_modular_0_0_0_o modular_0_0_0_o -modular_0_0_0_i',
-            'hw_modular_0_0_0_o -modular_0_0_0_o modular_0_0_0_i',
-            'hw_modular_0_0_1_o modular_0_0_1_o -modular_0_0_1_i',
-            'hw_modular_0_0_1_o -modular_0_0_1_o modular_0_0_1_i',
-            'hw_modular_0_0_2_o modular_0_0_2_o -modular_0_0_2_i',
-            'hw_modular_0_0_2_o -modular_0_0_2_o modular_0_0_2_i',
-            'hw_modular_0_0_3_o modular_0_0_3_o -modular_0_0_3_i',
-            'hw_modular_0_0_3_o -modular_0_0_3_o modular_0_0_3_i',
-            'hw_modular_0_0_0_o modular_0_0_0_o -modular_0_0_4_i',
-            'hw_modular_0_0_0_o -modular_0_0_0_o modular_0_0_4_i',
-            'hw_modular_0_0_1_o modular_0_0_1_o -modular_0_0_5_i',
-            'hw_modular_0_0_1_o -modular_0_0_1_o modular_0_0_5_i',
-            'hw_modular_0_0_2_o modular_0_0_2_o -modular_0_0_6_i',
-            'hw_modular_0_0_2_o -modular_0_0_2_o modular_0_0_6_i',
-            'hw_modular_0_0_3_o modular_0_0_3_o -modular_0_0_7_i',
-            'hw_modular_0_0_3_o -modular_0_0_3_o modular_0_0_7_i']
+             'x -hw_modular_0_0_1_o modular_0_0_0_o modular_0_0_0_i modular_0_0_4_i',
+             'x hw_modular_0_0_1_o modular_0_0_1_o modular_0_0_1_i modular_0_0_5_i -hw_modular_0_0_2_o',
+             'x hw_modular_0_0_2_o modular_0_0_2_o modular_0_0_2_i modular_0_0_6_i -hw_modular_0_0_3_o',
+             'hw_modular_0_0_0_o modular_0_0_0_o -modular_0_0_0_i',
+             'hw_modular_0_0_0_o -modular_0_0_0_o modular_0_0_0_i',
+             ...
+             'hw_modular_0_0_3_o modular_0_0_3_o -modular_0_0_7_i',
+             'hw_modular_0_0_3_o -modular_0_0_3_o modular_0_0_7_i']
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
+        input_bit_ids = self._generate_component_input_ids()
+        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
         constraints = [f"-{hw_bit_ids[0]}"]
-        constraints.append(f"x -{hw_bit_ids[1]} {output_bit_ids[0]} {input_bit_ids[0]} {input_bit_ids[output_bit_len]}")
-        for i in range(2, output_bit_len):
-            constraints.append(
-                f"x -{hw_bit_ids[i]} {hw_bit_ids[i - 1]} {output_bit_ids[i - 1]} "
-                f"{input_bit_ids[i - 1]} {input_bit_ids[output_bit_len + i - 1]}"
-            )
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_modadd_inequality(hw_bit_ids[i], output_bit_ids[i], input_bit_ids[i]))
-        for i in range(output_bit_len):
-            constraints.extend(
-                sat_utils.cnf_modadd_inequality(hw_bit_ids[i], output_bit_ids[i], input_bit_ids[output_bit_len + i])
-            )
-        result = input_bit_ids + output_bit_ids + hw_bit_ids, constraints
-        return result
+        constraints.append(f"x -{hw_bit_ids[1]} {output_bit_ids[0]} {lhs_input_bit_ids[0]} {rhs_input_bit_ids[0]}")
+        for new_hw_bit_id, output_bit_id, lhs_input_bit_id, rhs_input_bit_id, hw_bit_id, in zip(
+            hw_bit_ids[1:-1], output_bit_ids[1:-1], lhs_input_bit_ids[1:-1], rhs_input_bit_ids[1:-1], hw_bit_ids[2:]
+        ):
+            constraints.append(f"x {new_hw_bit_id} {output_bit_id} {lhs_input_bit_id} {rhs_input_bit_id} -{hw_bit_id}")
+        for hw_bit_id, output_bit_id, lhs_input_bit_id in zip(hw_bit_ids, output_bit_ids, lhs_input_bit_ids):
+            constraints.extend(sat_utils.cnf_modadd_inequality(hw_bit_id, output_bit_id, lhs_input_bit_id))
+        for hw_bit_id, output_bit_id, rhs_input_bit_id in zip(hw_bit_ids, output_bit_ids, rhs_input_bit_ids):
+            constraints.extend(sat_utils.cnf_modadd_inequality(hw_bit_id, output_bit_id, rhs_input_bit_id))
+
+        return input_bit_ids + output_bit_ids + hw_bit_ids, constraints
 
     def cp_continuous_differential_propagation_constraints(self, model):
         output_id_link = self.id
@@ -1324,15 +1300,15 @@ class Modular(Component):
         """
 
         def extend_constraints_for_window_size(
-            model_, output_bit_len_, window_size_, input_bit_ids_, output_bit_ids_, constraints_
+            model_, output_bit_size_, window_size_, input_bit_ids_, output_bit_ids_, constraints_
         ):
             window_size_ += 1
-            for i in range(output_bit_len_ - window_size_):
+            for i in range(output_bit_size_ - window_size_):
                 aux_var = f"full_window_track_{self.id}_{i}"
                 if model_.window_size_number_of_full_window is not None:
                     model_._window_size_full_window_vars.append(aux_var)
                 first_addend = input_bit_ids_[i : i + window_size_]
-                second_addend = input_bit_ids_[output_bit_len_ + i : output_bit_len_ + i + window_size_]
+                second_addend = input_bit_ids_[output_bit_size_ + i : output_bit_size_ + i + window_size_]
                 result = output_bit_ids_[i : i + window_size_]
                 from claasp.cipher_modules.models.sat.utils.n_window_heuristic_helper import (
                     generate_window_size_clauses,
@@ -1342,43 +1318,33 @@ class Modular(Component):
                 constraints_.extend(new_constraints)
 
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        dummy_bit_ids = [f"dummy_{output_bit_ids[i]}" for i in range(output_bit_len - 1)]
-        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
+        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        output_bit_ids = self._generate_output_ids()
+        dummy_bit_ids = [f"dummy_{output_bit_id}" for output_bit_id in output_bit_ids[:-1]]
+        hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
         constraints = []
         # Hamming weight
-        for i in range(output_bit_len - 1):
-            constraints.extend(
-                sat_utils.cnf_hw_lipmaa(
-                    hw_bit_ids[i], input_bit_ids[i + 1], input_bit_ids[output_bit_len + i + 1], output_bit_ids[i + 1]
-                )
-            )
-        constraints.append(f"-{hw_bit_ids[output_bit_len - 1]}")
+        for hw_bit_id, lhs_input_bit_id, rhs_input_bit_id, output_bit_id in zip(
+            hw_bit_ids[:-1], lhs_input_bit_ids[1:], rhs_input_bit_ids[1:], output_bit_ids[1:]
+        ):
+            constraints.extend(sat_utils.cnf_hw_lipmaa(hw_bit_id, lhs_input_bit_id, rhs_input_bit_id, output_bit_id))
+        constraints.append(f"-{hw_bit_ids[-1]}")
         # Trail validity
         # <eq(alpha << 1, beta << 1, gamma << 1) & (alfa ^ beta ^ gamma ^ (beta << 1)) = 0>
-        for i in range(output_bit_len - 1):
+        for hw_bit_id, dummy_bit_id, shifted_id, lhs_input_bit_id, rhs_input_bit_id, output_bit_id in zip(
+            hw_bit_ids[:-1], dummy_bit_ids, rhs_input_bit_ids[1:], lhs_input_bit_ids[:-1], rhs_input_bit_ids[:-1], output_bit_ids[:-1]
+        ):
             constraints.extend(
-                sat_utils.cnf_lipmaa(
-                    hw_bit_ids[i],
-                    dummy_bit_ids[i],
-                    input_bit_ids[output_bit_len + i + 1],
-                    input_bit_ids[i],
-                    input_bit_ids[output_bit_len + i],
-                    output_bit_ids[i],
-                )
+                sat_utils.cnf_lipmaa(hw_bit_id, dummy_bit_id, shifted_id, lhs_input_bit_id, rhs_input_bit_id, output_bit_id)
             )
-        constraints.extend(
-            sat_utils.cnf_xor(
-                output_bit_ids[output_bit_len - 1],
-                [input_bit_ids[output_bit_len - 1], input_bit_ids[2 * output_bit_len - 1]],
-            )
-        )
+        constraints.extend(sat_utils.cnf_xor(output_bit_ids[-1], [lhs_input_bit_ids[-1], rhs_input_bit_ids[-1]]))
 
         from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 
         if type(model) is SatXorDifferentialModel and model.window_size_by_round_values is not None:
             if model.window_size_weight_pr_vars != -1:
-                for i in range(output_bit_len - model.window_size_weight_pr_vars):
+                for i in range(self.output_bit_size - model.window_size_weight_pr_vars):
                     constraints.extend(
                         sat_utils.cnf_n_window_heuristic_on_w_vars(
                             hw_bit_ids[i : i + (model.window_size_weight_pr_vars + 1)]
@@ -1390,7 +1356,7 @@ class Modular(Component):
             window_size = model.window_size_by_round_values[component_round_number]
             if window_size != -1:
                 extend_constraints_for_window_size(
-                    model, output_bit_len, window_size, input_bit_ids, output_bit_ids, constraints
+                    model, self.output_bit_size, window_size, input_bit_ids, output_bit_ids, constraints
                 )
 
         if type(model) is SatXorDifferentialModel and model.window_size_by_component_id_values is not None:
@@ -1399,7 +1365,7 @@ class Modular(Component):
             window_size = model.window_size_by_component_id_values[self.id]
             if window_size != -1:
                 extend_constraints_for_window_size(
-                    model, output_bit_len, window_size, input_bit_ids, output_bit_ids, constraints
+                    model, self.output_bit_size, window_size, input_bit_ids, output_bit_ids, constraints
                 )
 
         variables = output_bit_ids + dummy_bit_ids + hw_bit_ids
@@ -1434,24 +1400,26 @@ class Modular(Component):
             '-carry_modular_0_0_3_0_0 -carry_modular_0_0_3_1_1'
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        lhs_in_ids_0, lhs_in_ids_1 = in_ids_0[:self.output_bit_size], in_ids_1[:self.output_bit_size]
+        rhs_in_ids_0, rhs_in_ids_1 = in_ids_0[self.output_bit_size:], in_ids_1[self.output_bit_size:]
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
         carry_ids_0 = [f"carry_{out_id}_0" for out_id in out_ids_0]
         carry_ids_1 = [f"carry_{out_id}_1" for out_id in out_ids_1]
         constraints = [f"-{carry_ids_0[-1]} -{carry_ids_1[-1]}"]
         constraints.extend(
             sat_utils.modadd_truncated_msb(
                 (out_ids_0[0], out_ids_1[0]),
-                (in_ids_0[0], in_ids_1[0]),
-                (in_ids_0[out_len], in_ids_1[out_len]),
+                (lhs_in_ids_0[0], lhs_in_ids_1[0]),
+                (rhs_in_ids_0[0], rhs_in_ids_1[0]),
                 (carry_ids_0[0], carry_ids_1[0]),
             )
         )
-        for i in range(1, out_len - 1):
+        for i in range(1, self.output_bit_size - 1):
             constraints.extend(
                 sat_utils.modadd_truncated(
                     (out_ids_0[i], out_ids_1[i]),
-                    (in_ids_0[i], in_ids_1[i]),
-                    (in_ids_0[i + out_len], in_ids_1[i + out_len]),
+                    (lhs_in_ids_0[i], lhs_in_ids_1[i]),
+                    (rhs_in_ids_0[i], rhs_in_ids_1[i]),
                     (carry_ids_0[i], carry_ids_1[i]),
                     (carry_ids_0[i - 1], carry_ids_1[i - 1]),
                 )
@@ -1459,8 +1427,8 @@ class Modular(Component):
         constraints.extend(
             sat_utils.modadd_truncated_lsb(
                 (out_ids_0[-1], out_ids_1[-1]),
-                (in_ids_0[out_len - 1], in_ids_1[out_len - 1]),
-                (in_ids_0[2 * out_len - 1], in_ids_1[2 * out_len - 1]),
+                (lhs_in_ids_0[-1], lhs_in_ids_1[-1]),
+                (rhs_in_ids_0[-1], rhs_in_ids_1[-1]),
                 (carry_ids_0[-2], carry_ids_1[-2]),
             )
         )
@@ -1496,7 +1464,8 @@ class Modular(Component):
             return clauses
 
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_len = self.output_bit_size
 
         A_t = in_ids_0[0:out_len]
         B_t = in_ids_0[out_len : 2 * out_len]
@@ -1656,34 +1625,27 @@ class Modular(Component):
             sage: constraints[0]
             '-hw_modular_0_0_0_o'
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
+        input_bit_ids = self._generate_component_input_ids()
+        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
         constraints = [f"-{hw_bit_ids[0]}"]
         constraints.extend(
-            sat_utils.cnf_xor(hw_bit_ids[1], [output_bit_ids[0], input_bit_ids[0], input_bit_ids[output_bit_len]])
+            sat_utils.cnf_xor(hw_bit_ids[1], [output_bit_ids[0], lhs_input_bit_ids[0], rhs_input_bit_ids[0]])
         )
-        for i in range(2, output_bit_len):
+        for hw_bit_id, new_hw_bit_id, output_bit_id, lhs_input_bit_id, rhs_input_bit_id, in zip(
+            hw_bit_ids[2:], hw_bit_ids[1:-1], output_bit_ids[1:-1], lhs_input_bit_ids[1:-1], rhs_input_bit_ids[1:-1]
+        ):
             constraints.extend(
-                sat_utils.cnf_xor(
-                    hw_bit_ids[i],
-                    [
-                        hw_bit_ids[i - 1],
-                        output_bit_ids[i - 1],
-                        input_bit_ids[i - 1],
-                        input_bit_ids[output_bit_len + i - 1],
-                    ],
-                )
+                sat_utils.cnf_xor(hw_bit_id, [new_hw_bit_id, output_bit_id, lhs_input_bit_id, rhs_input_bit_id])
             )
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_modadd_inequality(hw_bit_ids[i], output_bit_ids[i], input_bit_ids[i]))
-        for i in range(output_bit_len):
-            constraints.extend(
-                sat_utils.cnf_modadd_inequality(hw_bit_ids[i], output_bit_ids[i], input_bit_ids[output_bit_len + i])
-            )
-        result = input_bit_ids + output_bit_ids + hw_bit_ids, constraints
-        return result
+        for hw_bit_id, output_bit_id, lhs_input_bit_id in zip(hw_bit_ids, output_bit_ids, lhs_input_bit_ids):
+            constraints.extend(sat_utils.cnf_modadd_inequality(hw_bit_id, output_bit_id, lhs_input_bit_id))
+        for hw_bit_id, output_bit_id, rhs_input_bit_id in zip(hw_bit_ids, output_bit_ids, rhs_input_bit_ids):
+            constraints.extend(sat_utils.cnf_modadd_inequality(hw_bit_id, output_bit_id, rhs_input_bit_id))
+
+        return input_bit_ids + output_bit_ids + hw_bit_ids, constraints
 
     def smt_xor_differential_propagation_constraints(self, model=None):
         """
@@ -1712,40 +1674,32 @@ class Modular(Component):
             True
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
+        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        output_bit_ids = self._generate_output_ids()
+        hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
         constraints = []
         # Hamming weight
-        for i in range(output_bit_len - 1):
-            operation = smt_utils.smt_equivalent(
-                (input_bit_ids[i + 1], input_bit_ids[output_bit_len + i + 1], output_bit_ids[i + 1])
-            )
-            equation = smt_utils.smt_equivalent([smt_utils.smt_not(hw_bit_ids[i]), operation])
+        for hw_bit_id, lhs_input_bit_id, rhs_input_bit_id, output_bit_id in zip(
+            hw_bit_ids[:-1], lhs_input_bit_ids[1:], rhs_input_bit_ids[1:], output_bit_ids[1:]
+        ):
+            operation = smt_utils.smt_equivalent((lhs_input_bit_id, rhs_input_bit_id, output_bit_id))
+            equation = smt_utils.smt_equivalent([smt_utils.smt_not(hw_bit_id), operation])
             constraints.append(smt_utils.smt_assert(equation))
-        constraints.append(smt_utils.smt_assert(smt_utils.smt_not(hw_bit_ids[output_bit_len - 1])))
+        constraints.append(smt_utils.smt_assert(smt_utils.smt_not(hw_bit_ids[-1])))
         # Trail validity
         # <eq(alpha << 1, beta << 1, gamma << 1) & (alfa ^ beta ^ gamma ^ (beta << 1)) = 0>
-        for i in range(output_bit_len - 1):
-            lipmaa = smt_utils.smt_lipmaa(
-                hw_bit_ids[i],
-                input_bit_ids[i],
-                input_bit_ids[output_bit_len + i],
-                output_bit_ids[i],
-                input_bit_ids[output_bit_len + i + 1],
-            )
+        for hw_bit_id, lhs_input_bit_id, rhs_input_bit_id, output_bit_id, shifted_id in zip(
+            hw_bit_ids[:-1], lhs_input_bit_ids[:-1], rhs_input_bit_ids[:-1], output_bit_ids[:-1], rhs_input_bit_ids[1:]
+        ):
+            lipmaa = smt_utils.smt_lipmaa(hw_bit_id, lhs_input_bit_id, rhs_input_bit_id, output_bit_id, shifted_id)
             constraints.append(smt_utils.smt_assert(lipmaa))
         lipmaa_lsb = smt_utils.smt_not(
-            smt_utils.smt_xor(
-                [
-                    output_bit_ids[output_bit_len - 1],
-                    input_bit_ids[output_bit_len - 1],
-                    input_bit_ids[2 * output_bit_len - 1],
-                ]
-            )
+            smt_utils.smt_xor([output_bit_ids[-1], lhs_input_bit_ids[-1], rhs_input_bit_ids[-1]])
         )
         constraints.append(smt_utils.smt_assert(lipmaa_lsb))
-        result = output_bit_ids + hw_bit_ids, constraints
-        return result
+
+        return output_bit_ids + hw_bit_ids, constraints
 
     def smt_xor_linear_mask_propagation_constraints(self, model=None):
         """
@@ -1773,30 +1727,31 @@ class Modular(Component):
             sage: constraints[0]
             '(assert (not hw_modular_0_0_0_o))'
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        hw_bit_ids = [f"hw_{output_bit_ids[i]}" for i in range(output_bit_len)]
+        input_bit_ids = self._generate_component_input_ids()
+        lhs_input_bit_ids = input_bit_ids[:self.output_bit_size]
+        rhs_input_bit_ids = input_bit_ids[self.output_bit_size:]
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        hw_bit_ids = [f"hw_{output_bit_id}" for output_bit_id in output_bit_ids]
         constraints = [smt_utils.smt_assert(smt_utils.smt_not(hw_bit_ids[0]))]
-        operation = smt_utils.smt_xor((output_bit_ids[0], input_bit_ids[0], input_bit_ids[output_bit_len]))
+        operation = smt_utils.smt_xor((output_bit_ids[0], lhs_input_bit_ids[0], rhs_input_bit_ids[0]))
         equation = smt_utils.smt_equivalent((hw_bit_ids[1], operation))
         constraints.append(smt_utils.smt_assert(equation))
-        for i in range(2, output_bit_len):
-            operation = smt_utils.smt_xor(
-                (hw_bit_ids[i - 1], output_bit_ids[i - 1], input_bit_ids[i - 1], input_bit_ids[output_bit_len + i - 1])
-            )
-            equation = smt_utils.smt_equivalent((hw_bit_ids[i], operation))
+        for hw_bit_id, new_hw_bit_id, output_bit_id, lhs_input_bit_id, rhs_input_bit_id, in zip(
+            hw_bit_ids[2:], hw_bit_ids[1:-1], output_bit_ids[1:-1], lhs_input_bit_ids[1:-1], rhs_input_bit_ids[1:-1]
+        ):
+            operation = smt_utils.smt_xor((new_hw_bit_id, output_bit_id, lhs_input_bit_id, rhs_input_bit_id))
+            equation = smt_utils.smt_equivalent((hw_bit_id, operation))
             constraints.append(smt_utils.smt_assert(equation))
-        for i in range(output_bit_len):
-            antecedent = smt_utils.smt_xor((output_bit_ids[i], input_bit_ids[i]))
-            implication = smt_utils.smt_implies(antecedent, hw_bit_ids[i])
+        for hw_bit_id, output_bit_id, lhs_input_bit_id in zip(hw_bit_ids, output_bit_ids, lhs_input_bit_ids):
+            antecedent = smt_utils.smt_xor((output_bit_id, lhs_input_bit_id))
+            implication = smt_utils.smt_implies(antecedent, hw_bit_id)
             constraints.append(smt_utils.smt_assert(implication))
-        for i in range(output_bit_len):
-            antecedent = smt_utils.smt_xor((output_bit_ids[i], input_bit_ids[output_bit_len + i]))
-            implication = smt_utils.smt_implies(antecedent, hw_bit_ids[i])
+        for hw_bit_id, output_bit_id, rhs_input_bit_id in zip(hw_bit_ids, output_bit_ids, rhs_input_bit_ids):
+            antecedent = smt_utils.smt_xor((output_bit_id, rhs_input_bit_id))
+            implication = smt_utils.smt_implies(antecedent, hw_bit_id)
             constraints.append(smt_utils.smt_assert(implication))
-        result = input_bit_ids + output_bit_ids + hw_bit_ids, constraints
-        return result
+
+        return input_bit_ids + output_bit_ids + hw_bit_ids, constraints
 
     def twoterms_milp_probability_xor_linear_constraints(
         self, binary_variable, integer_variable, input_vars, output_vars, chunk_number

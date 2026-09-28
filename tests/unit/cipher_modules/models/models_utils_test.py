@@ -20,6 +20,7 @@ from claasp.cipher_modules.models.utils import (
     _w_sdpi_diff_linear_perm,
     _w_sdpi_diff_perm,
     _w_trunc_diff_linear_perm,
+    boomerang_checker_for_block_cipher_single_key,
     check_if_implemented_component,
     convert_solver_solution_to_dictionary,
     differential_checker_permutation,
@@ -170,7 +171,34 @@ def test_parallel_and_validation_paths_for_checker_helpers():
 
     with pytest.raises(ValueError, match="State size must be a multiple of 8"):
         differential_checker_permutation(cipher, 0, 0, 8, 7)
-    
+
+
+def test_boomerang_checker_for_block_cipher_single_key():
+    speck = SpeckBlockCipher(number_of_rounds=5)
+
+    # deterministic edge cases: a zero difference on either side always returns
+    assert boomerang_checker_for_block_cipher_single_key(speck, 0, 0, 4096, 32, 64, 0) == 1.0
+    assert boomerang_checker_for_block_cipher_single_key(speck, 0x81008102, 0, 4096, 32, 64, 0) == 1.0
+    assert boomerang_checker_for_block_cipher_single_key(speck, 0, 0x00008000, 4096, 32, 64, 0) == 1.0
+    # the parallel path also returns 1.0 on a deterministic case
+    assert boomerang_checker_for_block_cipher_single_key(speck, 0, 0, 4096, 32, 64, 0, num_workers=2) == 1.0
+
+    # rounds 4 -> 7 sub-distinguisher (through the boomerang switch) of the SPECK32/64
+    # characteristic from Wang, Wang, Sun, "SAT-aided Automatic Search of Boomerang
+    # Distinguishers for ARX Ciphers", ToSC, Table 6: round-4 difference 0x81008102,
+    # round-7 difference 0x0a040804, boomerang probability ~ 2^-14. Single-key, so a
+    # 3-round reduced Speck reproduces it.
+    prob = boomerang_checker_for_block_cipher_single_key(
+        SpeckBlockCipher(number_of_rounds=3), 0x81008102, 0x0a040804, 1 << 18, 32, 64, 0, seed=1
+    )
+    assert 2 ** -17 < prob < 2 ** -11
+
+    # input validation
+    with pytest.raises(ValueError, match="State size must be a multiple of 8"):
+        boomerang_checker_for_block_cipher_single_key(speck, 0, 0, 16, 7, 64, 0)
+    with pytest.raises(ValueError, match="Key size must be a multiple of 8"):
+        boomerang_checker_for_block_cipher_single_key(speck, 0, 0, 16, 32, 7, 0)
+
 
 def test_print_components_values():
     old_stdout = sys.stdout
