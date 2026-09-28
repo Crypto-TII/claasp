@@ -8,7 +8,7 @@ on:
       - "**"
       - ".github/workflows/claasp-v5-release-image.yaml"
   pull_request:
-    branches: [claasp-v5]
+    branches: [claasp-v5, develop]
     paths:
       - "docker/v5/**"
       - "**"
@@ -19,6 +19,7 @@ permissions:
 
 jobs:
   multiarch-build:
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -34,6 +35,7 @@ jobs:
           cache-to: type=gha,scope=claasp-v5-release,mode=max
 
   architecture-validation:
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
