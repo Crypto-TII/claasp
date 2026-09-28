@@ -90,10 +90,11 @@ class AlzettePermutation(Cipher):
         True
     """
 
-    def __init__(self, round_constant=SPARKLE_CONSTANTS[0]):
+def __init__(self, round_constant=SPARKLE_CONSTANTS[0]):
+        round_constant = int(round_constant) & ((1 << WORD_SIZE) - 1)
+
         self.word_size = WORD_SIZE
         self.state_bit_size = 2 * WORD_SIZE
-
         super().__init__(
             family_name='alzette',
             cipher_type=PERMUTATION,
