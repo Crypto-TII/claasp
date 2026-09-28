@@ -143,7 +143,17 @@ class SmtXorDifferentialModel(SmtModel):
         start_building_time = time.time()
         self.build_xor_differential_trail_model(weight=fixed_weight, fixed_variables=fixed_values)
         if self._counter == self._sequential_counter:
-            self._sequential_counter_greater_or_equal(fixed_weight, "dummy_hw_1")
+            hw_variables = [variable_id for variable_id in self._variables_list if variable_id.startswith("hw_")]
+            if fixed_weight > len(hw_variables):
+                return []
+            if fixed_weight == len(hw_variables):
+                self._model_constraints = (
+                    self._model_constraints[: -len(constants.MODEL_SUFFIX)]
+                    + [utils.smt_assert(variable) for variable in hw_variables]
+                    + constants.MODEL_SUFFIX
+                )
+            else:
+                self._sequential_counter_greater_or_equal(fixed_weight, "dummy_hw_1")
         end_building_time = time.time()
         solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name)
         solution["building_time_seconds"] = end_building_time - start_building_time
