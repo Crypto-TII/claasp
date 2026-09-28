@@ -65,9 +65,9 @@ class GimliSboxPermutation(Cipher):
     every number of rounds, including round 1) and by deriving the S-box table by hand from the original formula
     (see below), so this is not merely an unverified claim.
 
-    Recall that, per column, Gimli's SP-box first rotates two of the three 32-bit lanes (``x`` by 24 bits and
-    ``y`` by 9 bits, while ``z`` is left untouched -- this is exactly what ``ROT_TABLE = [-24, -9]`` does below),
-    and then computes:
+    Recall that, per column, Gimli's SP-box first rotates two of the three 32-bit lanes to the left (``x`` by 24
+    bits and ``y`` by 9 bits, while ``z`` is left untouched -- this is exactly what ``ROT_TABLE = [-24, -9]`` does
+    above), and then computes:
 
     - ``new_x = z ^ y ^ ((x AND y) << 3)``
     - ``new_y = y ^ x ^ ((x OR z) << 1)``
@@ -92,7 +92,7 @@ class GimliSboxPermutation(Cipher):
     ``GIMLI_SBOX[4 * x_i + 2 * y_i + z_i] = 4 * (y_i AND z_i) + 2 * (x_i OR z_i) + (x_i AND y_i)``
 
     Indeed, evaluating this expression for all 8 possible ``(x_i, y_i, z_i)`` gives
-    ``[0x0, 0x2, 0x0, 0x6, 0x2, 0x2, 0x3, 0x7]``, which is precisely the ``GIMLI_SBOX`` table below. After the
+    ``[0x0, 0x2, 0x0, 0x6, 0x2, 0x2, 0x3, 0x7]``, which is precisely the ``GIMLI_SBOX`` table above. After the
     S-box layer, this class reassembles the three output lanes (``lane_after_sb``), applies the ``-2``, ``-1``
     and ``-3`` shifts (matching ``<< 2``, ``<< 1`` and ``<< 3`` above) and XORs in the linear part, reproducing
     ``new_x``, ``new_y`` and ``new_z`` bit for bit. So "32 parallel 3-bit S-boxes" is a faithful description of
@@ -123,7 +123,11 @@ class GimliSboxPermutation(Cipher):
         new_y = y ^ x         ^ (xz_or << 1)
         new_x = z ^ y         ^ (xy_and << 3)
 
-        # Both formulations then apply the same x/z lane swap: state[2] = new_z, state[1] = new_y, state[0] = new_x
+        # Both formulations then apply the same x/z lane swap when writing the results back: the pipeline that
+        # starts from b[0] (labelled "x", e.g. the "Swap x <- z" comment in the code) computes new_z and is
+        # written to state[2]; the pipeline that starts from b[2] (labelled "z", e.g. "Swap z <- x") computes
+        # new_x and is written to state[0]; new_y is written to state[1], unchanged. So: state[2] = new_z,
+        # state[1] = new_y, state[0] = new_x.
 
     Special case: for the very first round (``current_round == 24``, since rounds are numbered downward from 24),
     the ``z`` lane of the state is still the raw plaintext input, whose bit positions are not laid out as a plain
@@ -137,11 +141,12 @@ class GimliSboxPermutation(Cipher):
     Standaert, F.-X., Todo, Y., & Viguier, B. (2017). Gimli: a cross-platform permutation. CHES 2017, LNCS 10529,
     299-320. https://gimli.cr.yp.to/spec.html [BKLMMNSSSTV2017]_.
 
-    The test vectors used in this file and in ``gimli_permutation_test.py``/``gimli_sbox_permutation_test.py`` are
-    not individually cited to a specific published source (the repository's own history does not record where they
-    were taken from), but they have been independently re-derived and verified against a fresh transliteration of
-    the official reference algorithm above: all reproduce exactly, and ``GimliPermutation``/``GimliSboxPermutation``
-    additionally agree with each other bit-for-bit across many random inputs and round counts.
+    The test vectors used in ``gimli_permutation_test.py`` and ``gimli_sbox_permutation_test.py`` (this class has
+    no test vectors of its own) are not individually cited to a specific published source (the repository's own
+    history does not record where they were taken from), but they have been independently re-derived and verified
+    against a fresh transliteration of the official reference algorithm above: all reproduce exactly, and
+    ``GimliPermutation``/``GimliSboxPermutation`` additionally agree with each other bit-for-bit across many random
+    inputs and round counts.
 
     INPUT:
 
