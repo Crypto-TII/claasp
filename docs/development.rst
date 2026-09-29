@@ -34,6 +34,15 @@ From the repository root, run the dependency-free unit suite:
 
    PYTHONPATH=src pytest -q -c pyproject.toml
 
+The functional tree under ``tests/unit`` mirrors ``src/claasp``. Place a test
+under the narrowest source package that owns the behavior being checked; a test
+may cover several cooperating modules and need not be split merely to create a
+one-to-one filename match. Root-level unit tests are reserved for root source
+modules and the public ``claasp`` package facade. The explicit
+``tests/unit/repository`` exception owns migration inventories, generated
+catalogues, CI policy, packaging, release closure, and other repository-level
+contracts. ``test_unit_test_layout.py`` enforces these rules.
+
 Run executable examples embedded in public Python APIs:
 
 .. code-block:: console

@@ -11,7 +11,7 @@
       "disposition": "ported",
       "evidence": [
         "src/claasp/primitives/permutations/grain_core.py",
-        "tests/unit/test_grain_core.py",
+        "tests/unit/primitives/block_ciphers/test_grain_core.py",
         "migration/m10_9d7_fixed_vectors.json"
       ],
       "rationale": "The full 160-bit Grain v1 initialization core corrects v5's inherited 80-bit LFSR-only model. The port uses the typed feedback-register component and is fixed by two official initialization states plus independently continued keystream vectors.",
@@ -33,7 +33,7 @@
       "disposition": "superseded",
       "evidence": [
         "src/claasp/representations/constraints/cp/trails.py",
-        "tests/unit/test_cp_model.py"
+        "tests/unit/representations/constraints/cp/test_cp_model.py"
       ],
       "rationale": "The renamed mutable legacy CP S-box cache does not exist in v5. Typed CP lowering derives deterministic constraints per immutable propagation problem, so neither the misspelled name nor its mutable API is part of the release surface.",
       "subject": "Fix: rename sbox_mant to sbox_cache throughout CP model code (#524)"
@@ -44,8 +44,8 @@
       "evidence": [
         "src/claasp/representations/constraints/smt/word_differential.py",
         "src/claasp/representations/constraints/smt/speck.py",
-        "tests/unit/test_word_differential_smt.py",
-        "tests/unit/test_speck_linear_smt.py"
+        "tests/unit/representations/constraints/smt/test_word_differential_smt.py",
+        "tests/unit/representations/constraints/smt/test_speck_linear_smt.py"
       ],
       "rationale": "v5 replaced the mutable SAT search helpers with typed immutable formula builders and explicit mutually exclusive maximum_weight/fixed_weight contracts. Deterministic bounds, invalid requests, exact weights, masks, and witness validation already have direct evidence.",
       "subject": "Refactor weight-bounded SAT trail search (#525)"

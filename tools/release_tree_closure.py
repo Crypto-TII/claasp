@@ -27,7 +27,7 @@ ACTIVE_TEXT_FILES = (ROOT / "README.md", ROOT / "Makefile", ROOT / "pyproject.to
 OLD_IDENTITY_EVIDENCE_PATHS = {
     Path("docs/architecture/v5-plan.md"),
     Path("docs/development.rst"),
-    Path("tests/unit/test_release_tree_closure.py"),
+    Path("tests/unit/repository/test_release_tree_closure.py"),
     Path("tools/release_tree_closure.py"),
 }
 
