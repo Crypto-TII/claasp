@@ -5,7 +5,9 @@ from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_tr
 )
 from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
 from claasp.components.not_component import Not
-
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
 
 def test_algebraic_polynomials():
     cipher = NotCipher(bit_size=64)
@@ -263,3 +265,17 @@ def test_milp_deterministic_truncated_xor_differential_constraints():
     assert str(constraints[1]) == 'x_33 == x_1'
     assert str(constraints[-2]) == 'x_62 == x_30'
     assert str(constraints[-1]) == 'x_63 == x_31'
+
+
+def test_smt_xor_quasidifferential_propagation_constraints():
+    cipher = NotCipher(bit_size=2)
+    model = SmtXorQuasidifferentialModel(cipher)
+    not_component = cipher.component_from(0, 0)
+    variables, constraints = not_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert variables == ['not_0_0_0', 'not_0_0_1', 'qdt_not_0_0_0', 'qdt_not_0_0_1']
+
+    assert constraints == ['(assert (= not_0_0_0 plaintext_0))',
+                           '(assert (= not_0_0_1 plaintext_1))',
+                           '(assert (= qdt_not_0_0_0 qdt_plaintext_0))',
+                           '(assert (= qdt_not_0_0_1 qdt_plaintext_1))']

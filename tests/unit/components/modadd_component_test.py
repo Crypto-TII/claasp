@@ -3,7 +3,9 @@ from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_tr
     MilpBitwiseDeterministicTruncatedXorDifferentialModel,
 )
 from claasp.ciphers.single_component_ciphers.modadd_cipher import ModaddCipher
-
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
 
 def test_algebraic_polynomials():
     cipher = ModaddCipher(word_bit_size=6, number_of_inputs=3)
@@ -49,3 +51,30 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
     assert str(constraints[1]) == '0 <= x_48'
     assert str(constraints[-2]) == '2 <= 4 + x_47 - 4*x_157 + 4*x_160'
     assert str(constraints[-1]) == 'x_157 <= x_15 + x_31'
+
+def test_smt_xor_quasidifferential_propagation_constraints():
+    cipher = ModaddCipher(word_bit_size=2, number_of_inputs=2, modulus=4)
+    model = SmtXorQuasidifferentialModel(cipher)
+    modadd_component = cipher.component_from(0, 0)
+    variables, constraints = modadd_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert len(variables) == 20
+    assert variables[:4] == ['modadd_0_0_0', 'modadd_0_0_1', 'qdt_modadd_0_0_0', 'qdt_modadd_0_0_1']
+    assert variables[-2:] == ['hw_qdt_modadd_0_0_0', 'hw_qdt_modadd_0_0_1']
+
+    assert len(constraints) == 23
+    assert constraints[0] == '(assert (= modadd_aprime_modadd_0_0_0 (xor key_0 modadd_0_0_0)))'
+
+
+def test_smt_xor_quasidifferential_propagation_constraints_more_than_two_operands():
+    cipher = ModaddCipher(word_bit_size=2, number_of_inputs=3, modulus=4)
+    model = SmtXorQuasidifferentialModel(cipher)
+    modadd_component = cipher.component_from(0, 0)
+
+    try:
+        modadd_component.smt_xor_quasidifferential_propagation_constraints(model)
+        raised = False
+    except NotImplementedError:
+        raised = True
+
+    assert raised

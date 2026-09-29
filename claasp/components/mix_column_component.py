@@ -116,6 +116,7 @@ class MixColumn(LinearLayer):
         sage: print(component.description[1])
         1
     """
+
     def __init__(
         self,
         current_round_number,
@@ -1246,6 +1247,47 @@ class MixColumn(LinearLayer):
         original_description = deepcopy(self.description)
         self.description = matrix_transposed
         variables, constraints = super().smt_xor_linear_mask_propagation_constraints()
+        self.description = original_description
+        result = variables, constraints
+        return result
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for MIX COLUMN quasidifferential propagation.
+
+        Same pattern used throughout this class for every other model
+        (differential, linear, MILP, SAT, ...): MixColumn stores its
+        description as ``[word_matrix, rotation/polynomial, word_size]``
+        rather than a plain bit matrix, so ``LinearLayer``'s methods --
+        which index ``self.description`` directly as a bit matrix --
+        cannot be inherited as-is. We expand to the bit-level matrix via
+        ``binary_matrix_of_linear_component``, temporarily swap
+        ``self.description`` to it, delegate to
+        ``LinearLayer.smt_xor_quasidifferential_propagation_constraints``
+        (which already implements Theorem 3.2(5): b = L(a) for the
+        difference, u = L^T(v) for the mask), and restore the original
+        description afterwards.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = MixColumnCipher(word_size=2, matrix=[[1, 1], [0, 1]], irreducible_polynomial=0x7)
+            sage: mix_column = cipher.component_from_id('mix_column_0_0')
+            sage: variables, constraints = mix_column.smt_xor_quasidifferential_propagation_constraints(SmtXorQuasidifferentialModel(cipher))
+            sage: len(variables), len(constraints)
+            (14, 12)
+            sage: constraints[0]
+            '(assert (= mix_column_0_0_0 (xor plaintext_0 plaintext_2)))'
+        """
+        matrix = binary_matrix_of_linear_component(self)
+        matrix_transposed = [[matrix[i][j] for i in range(matrix.nrows())] for j in range(matrix.ncols())]
+        original_description = deepcopy(self.description)
+        self.description = matrix_transposed
+        variables, constraints = super().smt_xor_quasidifferential_propagation_constraints(model)
         self.description = original_description
         result = variables, constraints
         return result

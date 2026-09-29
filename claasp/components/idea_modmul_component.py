@@ -50,7 +50,7 @@ class IdeaModmul(Modular):
         sage: print(component.description)
         ['IDEA_MODMUL', 2, 5]
     """
-    
+
     def __init__(
         self,
         current_round_number,
@@ -78,9 +78,7 @@ class IdeaModmul(Modular):
 
             Not implemented.
         """
-        raise NotImplementedError(
-            "Algebraic polynomials for idea_modmul are not yet implemented."
-        )
+        raise NotImplementedError("Algebraic polynomials for idea_modmul are not yet implemented.")
 
     def cms_constraints(self):
         """
@@ -90,9 +88,7 @@ class IdeaModmul(Modular):
 
             Not implemented.
         """
-        raise NotImplementedError(
-            "CMS constraints for idea_modmul are not yet implemented."
-        )
+        raise NotImplementedError("CMS constraints for idea_modmul are not yet implemented.")
 
     def cp_constraints(self):
         """
@@ -102,14 +98,12 @@ class IdeaModmul(Modular):
 
             Not implemented.
         """
-        raise NotImplementedError(
-            "CP constraints for idea_modmul are not yet implemented."
-        )
+        raise NotImplementedError("CP constraints for idea_modmul are not yet implemented.")
 
     def get_bit_based_vectorized_python_code(self, params):
         """
         Generate Python code for bit-based vectorized modular multiplication.
-        
+
         INPUT:
 
         - ``params`` -- **list**; the parameters for the function
@@ -124,7 +118,7 @@ class IdeaModmul(Modular):
         # Retrieve stored parameters
         num_inputs = self.description[1]
         modulus = self.description[2]
-        
+
         return [
             f"  {self.id} = bit_vector_idea_modmul([{','.join(params)}], "
             f"{num_inputs}, {self.output_bit_size}, {modulus})"
@@ -133,7 +127,7 @@ class IdeaModmul(Modular):
     def get_byte_based_vectorized_python_code(self, params):
         """
         Generate byte-based vectorized Python code for MODMUL evaluation.
-        
+
         INPUT:
 
         - ``params`` -- **string**; the parameters for the function
@@ -141,7 +135,7 @@ class IdeaModmul(Modular):
         # Retrieve stored modulus and word_size
         modulus = self.description[2]
         word_size = self.output_bit_size
-        
+
         return [f"  {self.id} = byte_vector_idea_modmul({params}, {modulus}, {word_size})"]
 
     def sat_constraints(self):
@@ -152,9 +146,7 @@ class IdeaModmul(Modular):
 
             Not implemented.
         """
-        raise NotImplementedError(
-            "SAT constraints for idea_modmul are not yet implemented."
-        )
+        raise NotImplementedError("SAT constraints for idea_modmul are not yet implemented.")
 
     def smt_constraints(self):
         """
@@ -164,6 +156,4 @@ class IdeaModmul(Modular):
 
             Not implemented.
         """
-        raise NotImplementedError(
-            "SMT constraints for idea_modmul are not yet implemented."
-        )
+        raise NotImplementedError("SMT constraints for idea_modmul are not yet implemented.")

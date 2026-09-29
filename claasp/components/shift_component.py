@@ -49,6 +49,7 @@ class Shift(Component):
         sage: print(component.description)
         ['SHIFT', -1]
     """
+
     def __init__(
         self,
         current_round_number,
@@ -711,7 +712,7 @@ class Shift(Component):
             shift_amount = -shift_amount
             for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids[shift_amount:]):
                 constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
-            for output_bit_id in output_bit_ids[self.output_bit_size - shift_amount:]:
+            for output_bit_id in output_bit_ids[self.output_bit_size - shift_amount :]:
                 constraints.append(f"-{output_bit_id}")
         else:
             for output_bit_id in output_bit_ids[:shift_amount]:
@@ -857,7 +858,7 @@ class Shift(Component):
             for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids[shift_amount:]):
                 equation = smt_utils.smt_equivalent((output_bit_id, input_bit_id))
                 constraints.append(smt_utils.smt_assert(equation))
-            for output_bit_id in output_bit_ids[self.output_bit_size - shift_amount:]:
+            for output_bit_id in output_bit_ids[self.output_bit_size - shift_amount :]:
                 constraints.append(smt_utils.smt_assert(smt_utils.smt_not(output_bit_id)))
         else:
             for output_bit_id in output_bit_ids[:shift_amount]:
@@ -930,3 +931,57 @@ class Shift(Component):
                 constraints.append(smt_utils.smt_assert(smt_utils.smt_not(input_bit_id)))
 
         return input_bit_ids + output_bit_ids, constraints
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for SHIFT quasidifferential propagation.
+
+        SHIFT is linear but, unlike Rotate, NOT invertible: it discards
+        the bits shifted out. Per Beyne & Rijmen, Theorem 3.2 (5), a
+        linear map L propagates differences forwards (b = L(a)) and
+        masks backwards through its TRANSPOSE (u = L^T(v)). The
+        transpose of a shift is the shift in the OPPOSITE direction,
+        and the mask bits corresponding to positions that the shift
+        discards are forced to zero -- which is precisely the structure
+        already encoded by this class's own
+        smt_xor_linear_mask_propagation_constraints, reused here with
+        the qdt_-prefixed variable names of the quasidifferential
+        model.
+
+        Weight is 0: linear maps have a delta-function correlation and
+        contribute no weight loss.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = ShiftCipher(bit_size=2, shift_amount=1)
+            sage: shift_component = cipher.component_from_id('shift_0_0')
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: variables, constraints = shift_component.smt_xor_quasidifferential_propagation_constraints(smt)
+            sage: len(variables)
+            4
+        """
+
+        # The transpose of a shift is the shift the other way, and the
+        # bits the shift discards carry a zero mask.
+        shift_amount = self.description[1]
+        inputs = list(range(self.input_bit_size))
+        outputs = list(range(self.output_bit_size))
+
+        if shift_amount < 0:
+            shift_amount = -shift_amount
+            mask_pairs = [(None, position) for position in inputs[:shift_amount]]
+            mask_pairs += list(zip(outputs[:-shift_amount], inputs[shift_amount:]))
+        else:
+            mask_pairs = list(zip(outputs[shift_amount:], inputs[:-shift_amount]))
+            mask_pairs += [(None, position) for position in inputs[-shift_amount:]]
+
+        return model._bit_moving_propagation_constraints(self, mask_pairs)

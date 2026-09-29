@@ -4,7 +4,9 @@ from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
 from claasp.components.mix_column_component import MixColumn
-
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
 MATRIX = [[1, 2], [3, 1]]
 IRREDUCIBLE_POLYNOMIAL = 0b10011
 WORD_SIZE = 4
@@ -288,3 +290,82 @@ def test_smt_xor_linear_mask_propagation_constraints():
         "(assert (= mix_column_0_0_7_o (xor dummy_0_mix_column_0_0_7_o dummy_1_mix_column_0_0_7_o "
         "dummy_5_mix_column_0_0_7_o dummy_6_mix_column_0_0_7_o)))"
     )
+
+
+def test_smt_xor_quasidifferential_propagation_constraints():
+    mix_column_component = make_mix_column_component()
+    model = SmtXorQuasidifferentialModel(make_mix_column_cipher())
+    variables, constraints = mix_column_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert len(variables) == 55
+    assert variables[0] == "mix_column_0_0_0"
+    assert variables[7] == "mix_column_0_0_7"
+    assert variables[8] == "qdt_mix_column_0_0_0"
+    assert variables[15] == "qdt_mix_column_0_0_7"
+    assert variables[16] == "qdt_dummy_1_qdt_mix_column_0_0_0"
+    assert variables[-1] == "qdt_dummy_6_qdt_mix_column_0_0_7"
+
+    assert len(constraints) == 24
+
+    # Differences: the same constraints as the ordinary model.
+    assert constraints[:8] == [
+        "(assert (= mix_column_0_0_0 (xor plaintext_0 plaintext_5)))",
+        "(assert (= mix_column_0_0_1 (xor plaintext_1 plaintext_6)))",
+        "(assert (= mix_column_0_0_2 (xor plaintext_2 plaintext_4 plaintext_7)))",
+        "(assert (= mix_column_0_0_3 (xor plaintext_3 plaintext_4)))",
+        "(assert (= mix_column_0_0_4 (xor plaintext_0 plaintext_1 plaintext_4)))",
+        "(assert (= mix_column_0_0_5 (xor plaintext_1 plaintext_2 plaintext_5)))",
+        "(assert (= mix_column_0_0_6 (xor plaintext_0 plaintext_2 plaintext_3 plaintext_6)))",
+        "(assert (= mix_column_0_0_7 (xor plaintext_0 plaintext_3 plaintext_7)))",
+    ]
+
+    # Masks: propagated backwards through the transpose, via dummy
+    # variables carrying the qdt_ naming convention.
+    assert constraints[8] == (
+        "(assert (= qdt_plaintext_0 qdt_dummy_0_qdt_mix_column_0_0_1 "
+        "qdt_dummy_0_qdt_mix_column_0_0_2 qdt_dummy_0_qdt_mix_column_0_0_4 "
+        "qdt_dummy_0_qdt_mix_column_0_0_6 qdt_dummy_0_qdt_mix_column_0_0_7))"
+    )
+    assert constraints[15] == (
+        "(assert (= qdt_plaintext_7 qdt_dummy_7_qdt_mix_column_0_0_0 "
+        "qdt_dummy_7_qdt_mix_column_0_0_2 qdt_dummy_7_qdt_mix_column_0_0_4 "
+        "qdt_dummy_7_qdt_mix_column_0_0_5))"
+    )
+    assert constraints[16] == (
+        "(assert (= qdt_mix_column_0_0_0 (xor qdt_dummy_1_qdt_mix_column_0_0_0 "
+        "qdt_dummy_3_qdt_mix_column_0_0_0 qdt_dummy_4_qdt_mix_column_0_0_0 "
+        "qdt_dummy_5_qdt_mix_column_0_0_0 qdt_dummy_6_qdt_mix_column_0_0_0 "
+        "qdt_dummy_7_qdt_mix_column_0_0_0)))"
+    )
+    assert constraints[-1] == (
+        "(assert (= qdt_mix_column_0_0_7 (xor qdt_dummy_0_qdt_mix_column_0_0_7 "
+        "qdt_dummy_1_qdt_mix_column_0_0_7 qdt_dummy_5_qdt_mix_column_0_0_7 "
+        "qdt_dummy_6_qdt_mix_column_0_0_7)))"
+    )
+
+
+def test_smt_xor_quasidifferential_propagation_constraints_restores_description():
+    """
+    MixColumn delegates to LinearLayer by temporarily swapping its
+    description for the transposed binary matrix. The swap must be
+    undone, otherwise a second call on the same component would work on
+    the wrong matrix.
+    """
+    mix_column_component = make_mix_column_component()
+    model = SmtXorQuasidifferentialModel(make_mix_column_cipher())
+
+    description_before = list(mix_column_component.description)
+    mix_column_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert list(mix_column_component.description) == description_before
+
+
+def test_smt_xor_quasidifferential_propagation_constraints_is_idempotent():
+    mix_column_component = make_mix_column_component()
+    model = SmtXorQuasidifferentialModel(make_mix_column_cipher())
+
+    first_variables, first_constraints = mix_column_component.smt_xor_quasidifferential_propagation_constraints(model)
+    second_variables, second_constraints = mix_column_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert first_variables == second_variables
+    assert first_constraints == second_constraints

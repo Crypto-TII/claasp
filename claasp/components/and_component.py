@@ -128,6 +128,7 @@ class And(MultiInputNonlinearLogicalOperator):
         sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
         ['AND', 3]
     """
+
     def __init__(
         self,
         current_round_number,
@@ -396,7 +397,7 @@ class And(MultiInputNonlinearLogicalOperator):
         output_bit_ids = self._generate_output_ids()
         constraints = []
         for i, output_bit_id in enumerate(output_bit_ids):
-            constraints.extend(sat_utils.cnf_and(output_bit_id, input_bit_ids[i::self.output_bit_size]))
+            constraints.extend(sat_utils.cnf_and(output_bit_id, input_bit_ids[i :: self.output_bit_size]))
 
         return output_bit_ids, constraints
 
@@ -425,8 +426,10 @@ class And(MultiInputNonlinearLogicalOperator):
         output_bit_ids = self._generate_output_ids()
         constraints = []
         for i, output_bit_id in enumerate(output_bit_ids):
-            operation = smt_utils.smt_and(input_bit_ids[i::self.output_bit_size])
+            operation = smt_utils.smt_and(input_bit_ids[i :: self.output_bit_size])
             equation = smt_utils.smt_equivalent((output_bit_id, operation))
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
+
+   
