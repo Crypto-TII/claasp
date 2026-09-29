@@ -248,7 +248,7 @@ BitString* bitstring_from_binary_string(char *bits, uint16_t bit_size) {
 
 BitString* bitstring_from_hex_string(char *hex_digits, uint16_t bit_size) {
     BitString *result = zero_bitstring(bit_size);
-    uint16_t hex_length = strlen(hex_digits), j = byte_size(bit_size) - 1;;
+    uint16_t hex_length = strlen(hex_digits), j = byte_size(bit_size) - 1;
     /* NUL-terminated: strtoul() requires a C string, and an un-terminated
      * app[2] is undefined behaviour -- it reads past the buffer looking for
      * a terminator, occasionally picking up an adjacent stack byte that
