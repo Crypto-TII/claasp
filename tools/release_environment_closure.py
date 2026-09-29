@@ -119,6 +119,8 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
         for value in (
             "linux/amd64",
             "linux/arm64",
+            "not external and not performance",
+            "CLAASP_DEPENDENCY_FREE_EXPRESSION",
             "docker/v5/check.sh",
             "push: false",
             "actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
@@ -134,6 +136,7 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
         check = check_path.read_text(encoding="utf-8")
         for value in (
             "-m 'not external'",
+            "CLAASP_DEPENDENCY_FREE_EXPRESSION",
             "-m external",
             "--doctest-modules",
             "make -C docs doctest",

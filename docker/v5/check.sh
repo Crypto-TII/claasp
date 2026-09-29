@@ -39,7 +39,11 @@ python tools/private_release_candidate_closure.py --check
 python tools/publication_preflight.py --check-plan
 python tools/review_release_plan_closure.py --check
 
-python -m pytest -m 'not external' -p no:cacheprovider
+if [ -n "${CLAASP_DEPENDENCY_FREE_EXPRESSION:-}" ]; then
+    python -m pytest -m "$CLAASP_DEPENDENCY_FREE_EXPRESSION" -p no:cacheprovider
+else
+    python -m pytest -m 'not external' -p no:cacheprovider
+fi
 python -m pytest -m external -p no:cacheprovider
 python -m pytest --doctest-modules src/claasp -p no:cacheprovider -q
 make -C docs doctest

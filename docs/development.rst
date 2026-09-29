@@ -46,6 +46,11 @@ Run both documentation suites:
 
    make -C docs doctest
 
+Tests marked ``performance`` assert native wall-clock budgets. The release
+matrix runs those assertions on native AMD64. Its ARM64 leg still executes the
+same inversion and round-trip fixtures under QEMU, but deselects only the
+timing assertions because emulation does not measure native performance.
+
 Formatting and linting
 ----------------------
 
