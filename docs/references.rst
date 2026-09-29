@@ -98,13 +98,13 @@
         **B**
 
 .. [BBBGPUV2020]
-        Beierle C., Biryukov A., Cardoso dos Santos L., Großschädl J.,
-        Perrin L., Udovenko A., Velichkov V., Wang Q. : *Alzette: A 64-bit
-        ARX-box (feat. CRAX and TRAX)* : In Advances in Cryptology -- CRYPTO
-        2020, LNCS 12172, pp. 419-448, Springer 2020 :
-        https://doi.org/10.1007/978-3-030-56877-1_15 (extended version:
-        Cryptology ePrint Archive, Paper 2019/1378,
-        https://eprint.iacr.org/2019/1378)
+        Beierle C., Biryukov A., dos Santos L. C., Großschädl J., Perrin L.,
+        Udovenko A., Velichkov V., Wang Q. :
+        *Alzette: A 64-Bit ARX-Box (Feat. CRAX and TRAX)* :
+        In: Micciancio D., Ristenpart T. (eds.) Advances in Cryptology –
+        CRYPTO 2020, LNCS 12172, pp. 419–448. Springer, 2020.
+        DOI: 10.1007/978-3-030-56877-1_15.
+        IACR ePrint 2019/1378, https://eprint.iacr.org/2019/1378
 
 .. [BC2003]
         Biryukov A., Canniere C. D. : *Block Ciphers and Systems of Quadratic
@@ -248,6 +248,12 @@
         B. : *Gimli: a cross-platform permutation* : In Cryptographic Hardware
         and Embedded Systems -- CHES 2017, LNCS 10529, pp. 299-320, Springer
         2017 : https://doi.org/10.1007/978-3-319-66787-4_15
+        
+.. [BSSTWW2013]
+        Beaulieu R., Shors D., Smith J., Treatman-Clark S., Weeks B., Wingers
+        L. : *The SIMON and SPECK Families of Lightweight Block Ciphers* :
+        Cryptology ePrint Archive, Report 2013/404, 2013 :
+        https://eprint.iacr.org/2013/404
 
 .. _claasp-ref-C:
 
@@ -654,6 +660,12 @@
         International Colloquium on Coding Theory and Applications. pp.
         106–113.  Springer (1988)
 
+.. [Sch1994]
+        Schneier B. : *Description of a New Variable-Length Key, 64-Bit Block
+        Cipher (Blowfish)* : Fast Software Encryption, Cambridge Security
+        Workshop Proceedings, Springer-Verlag, 1994, pp. 191-204 :
+        https://www.schneier.com/academic/archives/1994/09/description_of_a_new.html
+
 .. [SGLYTQH2017]
         Sun S., Gerault D., Lafourcade P., Yang Q., Todo Y., Qiao K., Hu L. :
         *Analysis of AES, SKINNY, and others with constraint programming* : In
@@ -755,6 +767,12 @@
         Yang B.-Y., Chen J.-M. : *Theoretical analysis of XL over small fields*
         : In Information Security and Privacy, pages 277–288, Berlin,
         Heidelberg, 2004. Springer Berlin Heidelberg
+
+.. [YZSAG2015]
+        Yang G., Zhu B., Suder V., Aagaard M. D., Gong G. : *The Simeck Family
+        of Lightweight Block Ciphers* : In Cryptographic Hardware and Embedded
+        Systems -- CHES 2015, LNCS 9293, pp. 307-329, Springer 2015 :
+        https://eprint.iacr.org/2015/612
 
 .. _claasp-ref-Z:
 

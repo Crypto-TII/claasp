@@ -39,6 +39,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
 )
@@ -1041,9 +1042,37 @@ def binary_matrix_of_linear_component(component):
         )
     elif component.type == LINEAR_LAYER:
         return matrix(GF(2), component.input_bit_size, component.description)
+    elif component.type == PERMUTATION_COMPONENT:
+        return permutation_to_binary_matrix(component)
     else:
         print("TODO : {}".format(component.id))
         return False
+
+
+def permutation_to_binary_matrix(component):
+    """
+    Return the binary matrix of a permutation component.
+
+    INPUT:
+
+    - ``component`` -- **Component object**; a permutation component from the cipher
+
+    EXAMPLES::
+
+        sage: from claasp.components.permutation_component import Permutation
+        sage: from claasp.cipher_modules.component_analysis_tests import permutation_to_binary_matrix
+        sage: from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
+        sage: from sage.modules.free_module_element import vector
+        sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
+        sage: R = BooleanPolynomialRing(4, 'p')
+        sage: permutation_to_binary_matrix(component) * vector(R, list(R.gens()))
+        (p3, p0, p2, p1)
+    """
+    binary_matrix = matrix(GF(2), component.output_bit_size, component.input_bit_size)
+    for output_bit, input_bit in enumerate(component._bit_perm()):
+        binary_matrix[output_bit, input_bit] = 1
+
+    return binary_matrix
 
 
 def branch_number(component, type, format):
