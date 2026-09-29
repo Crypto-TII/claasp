@@ -72,7 +72,7 @@ class DummyCipherForMeasures:
     def __init__(self, components):
         self._components = components
 
-    def get_all_components(self):
+    def all_components(self):
         return self._components
 
 

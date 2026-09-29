@@ -102,17 +102,17 @@ def test_fix_variables_value_constraints():
 
     speck = SpeckBlockCipher(number_of_rounds=3)
     milp = MilpXorDifferentialModel(speck)
-    fixed_values = [set_fixed_variables('plaintext','equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))])]
+    fixed_values = [set_fixed_variables('plaintext','equal',range(32),[(speck.all_components_ids()[-1],list(range(32)))])]
     trail = milp.find_one_xor_differential_trail(fixed_values=fixed_values)
-    assert trail['components_values']['plaintext']['value'] == trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+    assert trail['components_values']['plaintext']['value'] == trail['components_values'][speck.all_components_ids()[-1]]['value']
 
-    fixed_values = [set_fixed_variables('plaintext','not_equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))])]
+    fixed_values = [set_fixed_variables('plaintext','not_equal',range(32),[(speck.all_components_ids()[-1],list(range(32)))])]
     trail = milp.find_one_xor_differential_trail(fixed_values=fixed_values, solver_name='SCIP_EXT')
-    assert trail['components_values']['plaintext']['value'] != trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+    assert trail['components_values']['plaintext']['value'] != trail['components_values'][speck.all_components_ids()[-1]]['value']
 
     fixed_values = [set_fixed_variables('plaintext','equal',range(32),[0]*31+[1])]
-    fixed_values.append(set_fixed_variables(speck.get_all_components_ids()[-1],'equal',range(32),[0]*31+[1]))
-    fixed_values.append(set_fixed_variables('plaintext','not_equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))]))
+    fixed_values.append(set_fixed_variables(speck.all_components_ids()[-1],'equal',range(32),[0]*31+[1]))
+    fixed_values.append(set_fixed_variables('plaintext','not_equal',range(32),[(speck.all_components_ids()[-1],list(range(32)))]))
     trail = milp.find_one_xor_differential_trail(fixed_values=fixed_values)
     assert trail['status'] == 'UNSATISFIABLE'
 

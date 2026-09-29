@@ -25,7 +25,7 @@ from claasp.cipher_modules.models.utils import set_component_solution
 
 
 def add_prefix_id_to_components(cipher, prefix):
-    all_components = cipher.rounds.get_all_components()
+    all_components = cipher.rounds.all_components()
     for component in all_components:
         component.id = f"{prefix}_{component.id}"
         new_input_id_links = [
@@ -66,7 +66,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
         cipher2 = deepcopy(cipher)
         add_prefix_id_to_components(cipher1, "cipher1")
         for round_number in range(cipher.number_of_rounds):
-            round_components2 = cipher2.get_components_in_round(round_number)
+            round_components2 = cipher2.components_in_round(round_number)
             cipher1._rounds.rounds[round_number]._components.extend(round_components2)
         self.differential_model = SatXorDifferentialModel(cipher1)
         self.duplicate_round_cipher = cipher1
@@ -102,7 +102,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
         self._model_constraints = self.differential_model._model_constraints
         self._variables_list = self.differential_model._variables_list
         new_constraints = []
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if (component.id.startswith("cipher1_") and "modadd" in component.id) or (
                 component.id.startswith("cipher1_") and "modsub" in component.id
             ):
@@ -192,7 +192,7 @@ class SharedDifferencePairedInputDifferentialModel(SatModel):
         out_suffix = ""
         components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
         total_weight = 0
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             hex_value = self._get_component_hex_value(component, out_suffix, variable2value)
             weight = self.calculate_component_weight(component, out_suffix, variable2value)
             component_solution = set_component_solution(hex_value, weight)

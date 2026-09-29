@@ -8,7 +8,7 @@ from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
 def test_find_missing_bits():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
     cms = CmsSatCipherModel(speck)
-    cipher_output_id = speck.get_all_components_ids()[-1]
+    cipher_output_id = speck.all_components_ids()[-1]
     plaintext_bits = integer_to_bit_list(0x6574694C, 32, "big")
     plaintext = set_fixed_variables(
         component_id=INPUT_PLAINTEXT, constraint_type="equal", bit_positions=range(32), bit_values=plaintext_bits

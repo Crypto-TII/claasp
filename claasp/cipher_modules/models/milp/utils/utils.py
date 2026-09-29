@@ -774,8 +774,8 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
             i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i
         ][0]
         inconsistent_component_id = "_".join(inconsistent_component_var.split("_")[:-3])
-        full_cipher_components = model._cipher.get_all_components_ids()
-        backward_components = model._backward_cipher.get_all_components_ids() + model._backward_cipher.inputs
+        full_cipher_components = model._cipher.all_components_ids()
+        backward_components = model._backward_cipher.all_components_ids() + model._backward_cipher.inputs
         index = full_cipher_components.index(inconsistent_component_id)
         updated_cipher_components = full_cipher_components[: index + 1] + [
             c + MILP_BACKWARD_SUFFIX if c + MILP_BACKWARD_SUFFIX in backward_components else c
@@ -783,8 +783,8 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
         ]
         list_component_ids = model._forward_cipher.inputs + updated_cipher_components
     elif model._incompatible_components is not None:
-        full_cipher_components = model._cipher.get_all_components_ids()
-        backward_components = model._backward_cipher.get_all_components_ids() + model._backward_cipher.inputs
+        full_cipher_components = model._cipher.all_components_ids()
+        backward_components = model._backward_cipher.all_components_ids() + model._backward_cipher.inputs
 
         indices = []
         for id in model._incompatible_components:
@@ -802,8 +802,8 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
         ]
         list_component_ids = model._forward_cipher.inputs + updated_cipher_components
     else:
-        full_cipher_components = model._cipher.get_all_components_ids()
-        backward_components = model._backward_cipher.get_all_components_ids()
+        full_cipher_components = model._cipher.all_components_ids()
+        backward_components = model._backward_cipher.all_components_ids()
         incompatible_value = backward_components[-1]
 
         incompatible_component_id = "_".join(incompatible_value.split("_")[:-1])

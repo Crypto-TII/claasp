@@ -68,7 +68,7 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
         self._first_step_find_all_solutions = []
         super().__init__(cipher)
         self.word_size = 4
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if SBOX in component.type:
                 self.word_size = int(component.output_bit_size)
                 break
@@ -151,7 +151,7 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
         self._first_step = constraints
         self._variables_declarations.extend(self.input_xor_differential_first_step_constraints(possible_sboxes))
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             component_types = [
                 CONSTANT,
                 INTERMEDIATE_OUTPUT,
@@ -363,7 +363,7 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
             cp_declarations = [number_of_active_sboxes_declaration]
         else:
             active_sboxes_count = 0
-            for component in self._cipher.get_all_components():
+            for component in self._cipher.all_components():
                 if SBOX in component.type:
                     input_bit_positions = component.input_bit_positions
                     active_sboxes_count += len(input_bit_positions)

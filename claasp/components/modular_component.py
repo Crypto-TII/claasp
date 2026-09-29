@@ -1144,7 +1144,7 @@ class Modular(Component):
         if self.description[0].lower() not in ["modadd", "modsub"]:
             raise ValueError("component must be modular addition, or modular substraction")
 
-        round_number = model.cipher.get_round_from_component_id(self.id)
+        round_number = model.cipher.round_from_component_id(self.id)
         var_names = self.minizinc_define_var(model.input_postfix, model.output_postfix, model.data_type)
         mzn_constraints = []
         component_id = self.id
@@ -1350,7 +1350,7 @@ class Modular(Component):
                             hw_bit_ids[i : i + (model.window_size_weight_pr_vars + 1)]
                         )
                     )
-        component_round_number = model._cipher.get_round_from_component_id(self.id)
+        component_round_number = model._cipher.round_from_component_id(self.id)
 
         if type(model) is SatXorDifferentialModel and model.window_size_by_round_values is not None:
             window_size = model.window_size_by_round_values[component_round_number]

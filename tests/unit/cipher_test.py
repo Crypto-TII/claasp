@@ -157,12 +157,12 @@ def test_evaluate_with_intermediate_outputs_continuous_diffusion_analysis():
     assert output[0][0] == Decimal('-1.000000000')
 
 
-def test_get_model():
+def test_model():
     speck = SpeckBlockCipher(number_of_rounds=1)
-    assert speck.get_model("cp", "xor_differential").__class__.__name__ == "MznXorDifferentialModel"
-    assert speck.get_model("sat", "xor_differential").__class__.__name__ == "SatXorDifferentialModel"
-    assert speck.get_model("smt", "xor_linear").__class__.__name__ == "SmtXorLinearModel"
-    assert speck.get_model("milp", "xor_linear").__class__.__name__ == "MilpXorLinearModel"
+    assert speck.model("cp", "xor_differential").__class__.__name__ == "MznXorDifferentialModel"
+    assert speck.model("sat", "xor_differential").__class__.__name__ == "SatXorDifferentialModel"
+    assert speck.model("smt", "xor_linear").__class__.__name__ == "SmtXorLinearModel"
+    assert speck.model("milp", "xor_linear").__class__.__name__ == "MilpXorLinearModel"
 
 
 def test_generate_bit_based_c_code():
@@ -199,17 +199,17 @@ def test_get_current_component_id():
     assert cipher.get_current_component_id() == 'constant_1_0'
 
 
-def test_get_round_from_component_id():
+def test_round_from_component_id():
     fancy = FancyBlockCipher(number_of_rounds=2)
-    assert fancy.get_round_from_component_id('xor_1_14') == 1
+    assert fancy.round_from_component_id('xor_1_14') == 1
 
 
 def _find_dangling_input_links(cipher):
-    component_ids = {c.id for c in cipher.get_all_components()}
+    component_ids = {c.id for c in cipher.all_components()}
     declared_inputs = set(cipher.inputs)
 
     dangling = []
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         for link in component.input_id_links:
             if link and link not in component_ids and link not in declared_inputs:
                 dangling.append((component.id, link))
@@ -252,7 +252,7 @@ def test_get_partial_cipher_removes_expected_components_for_chacha_6_rounds():
         keep_key_schedule=False,
     )
 
-    partial_component_ids = {component.id for component in partial_cipher.get_all_components()}
+    partial_component_ids = {component.id for component in partial_cipher.all_components()}
     assert expected_removed_ids.isdisjoint(partial_component_ids)
 
 
@@ -315,7 +315,7 @@ def test_get_partial_cipher_removes_picture_component_subset_for_speck():
     }
 
     partial_cipher = cipher.get_partial_cipher(start_round=0, end_round=1, keep_key_schedule=False)
-    partial_component_ids = {component.id for component in partial_cipher.get_all_components()}
+    partial_component_ids = {component.id for component in partial_cipher.all_components()}
     expected_partial_component_ids = {'rot_0_3', 'xor_0_2', 'rot_1_6', 'modadd_1_7', 'xor_0_4', 'xor_1_10', 'intermediate_output_1_12', 'rot_0_0', 'intermediate_output_0_6', 'modadd_0_1', 'rot_1_9', 'xor_1_8'}
     assert picture_component_ids.isdisjoint(partial_component_ids)
     assert expected_partial_component_ids == partial_component_ids

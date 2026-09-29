@@ -50,7 +50,7 @@ def test_idea_cipher_components():
     assert first_cipher_component.description[2] == 65537  # modulus 2^16 + 1
     
     # Check that we have various component types in the cipher
-    all_components = idea.get_all_components()
+    all_components = idea.all_components()
     component_types = {c.description[0] if c.type == "word_operation" else c.type for c in all_components}
     
     # IDEA should use idea_modmul, MODADD, XOR, and ROTATE (for key schedule)
@@ -82,7 +82,7 @@ def test_idea_cipher_full_rounds():
     
     # Count idea_modmul operations: each cipher round has 4 MUL operations
     # 8 rounds × 4 = 32, plus 2 more in output transformation = 34 total
-    all_components = idea.get_all_components()
+    all_components = idea.all_components()
     modmul_components = [c for c in all_components if c.type == "word_operation" and c.description[0] == "IDEA_MODMUL"]
     
     # Each round: 2 idea_modmul (X1*Z1, X4*Z4) + 2 idea_modmul in MA box (T1*Z5, U2*Z6) = 4 per round
@@ -106,7 +106,7 @@ def test_idea_cipher_component_ids():
     assert first_cipher_component.id.startswith("idea_modmul_1_")
     
     # Check that all components have valid IDs
-    all_components = idea.get_all_components()
+    all_components = idea.all_components()
     for component in all_components:
         assert "_" in component.id
         parts = component.id.split("_")

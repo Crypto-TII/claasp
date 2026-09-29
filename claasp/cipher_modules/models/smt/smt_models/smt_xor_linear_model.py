@@ -108,7 +108,7 @@ class SmtXorLinearModel(SmtModel):
         constraints = self.fix_variables_value_xor_linear_constraints(fixed_variables)
         self._model_constraints = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             component_types = (
                 CONSTANT,
                 INTERMEDIATE_OUTPUT,
@@ -522,7 +522,7 @@ class SmtXorLinearModel(SmtModel):
         in_suffix = constants.INPUT_BIT_ID_SUFFIX
         components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
         total_weight = 0
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             hex_solution = utils.get_component_hex_value(component, out_suffix, variable2value)
             weight = self.calculate_component_weight(component, out_suffix, variable2value)
             component_solution = set_component_solution(hex_solution, weight, 1)

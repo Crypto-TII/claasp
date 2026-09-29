@@ -57,7 +57,7 @@ def add_ciphertext_and_new_plaintext_to_inputs(chacha_permutation):
 
 
 def add_prefix_id_to_components(chacha_permutation, prefix):
-    all_components = chacha_permutation.rounds.get_all_components()
+    all_components = chacha_permutation.rounds.all_components()
     for component in all_components:
         component.id = f"{prefix}_{component.id}"
         new_input_id_links = [f"{prefix}_{input_id_link}" for input_id_link in component.input_id_links]
@@ -89,9 +89,9 @@ def test_backward_direction_distinguisher():
     top_part_components = []
     bottom_part_components = []
     for round_number in range(1):
-        top_part_components.append(chacha_stream_cipher.get_components_in_round(round_number))
+        top_part_components.append(chacha_stream_cipher.components_in_round(round_number))
     for round_number in range(1, 4):
-        bottom_part_components.append(chacha_stream_cipher.get_components_in_round(round_number))
+        bottom_part_components.append(chacha_stream_cipher.components_in_round(round_number))
 
     bottom_part_components = list(itertools.chain(*bottom_part_components))
     bottom_part_components = [component.id for component in bottom_part_components]

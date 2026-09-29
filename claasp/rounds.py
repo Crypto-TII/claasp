@@ -36,7 +36,7 @@ class Rounds:
     def _build_indexes(self):
         by_id = {}
         consumers = {}
-        for component in self.get_all_components():
+        for component in self.all_components():
             by_id[component.id] = component
             seen = set()
             for link in component.input_id_links:
@@ -123,17 +123,17 @@ class Rounds:
     def components_in_round(self, round_number):
         return self.round_at(round_number).components
 
-    def get_all_components(self):
+    def all_components(self):
         components = []
         for cipher_round in self._rounds:
             components += cipher_round.components
 
         return components
 
-    def get_all_components_ids(self):
+    def all_components_ids(self):
         components_ids = []
         for cipher_round in self._rounds:
-            components_ids += cipher_round.get_components_ids()
+            components_ids += cipher_round.components_ids()
 
         return components_ids
 
@@ -150,9 +150,9 @@ class Rounds:
             self._build_indexes()
         return self._consumers.get(component_id, [])
 
-    def get_round_from_component_id(self, component_id):
+    def round_from_component_id(self, component_id):
         for cipher_round in self._rounds:
-            round_number = cipher_round.get_round_from_component_id(component_id)
+            round_number = cipher_round.round_from_component_id(component_id)
 
             if round_number is not None:
                 return round_number

@@ -60,11 +60,11 @@ def generate_all_incompatibility_constraints_for_fully_automatic_model(
     assert model_type in [MILP_BITWISE_IMPOSSIBLE_AUTO, MILP_WORDWISE_IMPOSSIBLE_AUTO]
 
     constraints = []
-    forward_output = [c for c in model._forward_cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
+    forward_output = [c for c in model._forward_cipher.all_components() if c.type == CIPHER_OUTPUT][0]
     all_inconsistent_vars = []
     backward_components = [
         c
-        for c in model._backward_cipher.get_all_components()
+        for c in model._backward_cipher.all_components()
         if c.description == ["round_output"] and set(c.input_id_links) != {forward_output.id + MILP_BACKWARD_SUFFIX}
     ]
 
@@ -72,9 +72,9 @@ def generate_all_incompatibility_constraints_for_fully_automatic_model(
     backward_key_flow = [f"{id}{MILP_BACKWARD_SUFFIX}" for id in key_flow]
 
     if include_all_components:
-        backward_components = set(model._backward_cipher.get_all_components()) - set(
+        backward_components = set(model._backward_cipher.all_components()) - {
             model._backward_cipher.component_from_id(key_flow_id) for key_flow_id in backward_key_flow
-        )
+        }
 
     for backward_component in backward_components:
         incompatibility_constraints, inconsistent_vars = generate_incompatiblity_constraints_for_component(
