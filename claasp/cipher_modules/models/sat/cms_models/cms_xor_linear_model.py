@@ -82,7 +82,8 @@ class CmsSatXorLinearModel(SatXorLinearModel):
 
         INPUT:
 
-        - None
+        - ``bit_bindings`` -- **dict**; maps each output bit identifier to the list of input bit identifiers it is
+          bound to, as returned by :py:func:`~cipher_modules.models.utils.get_bit_bindings`
 
         EXAMPLES::
 
@@ -107,12 +108,13 @@ class CmsSatXorLinearModel(SatXorLinearModel):
 
     def build_xor_linear_trail_model(self, weight=-1, fixed_variables=[]):
         """
-        Build the linear model.
+        Build the model for the search of XOR linear trails.
 
         INPUT:
 
-        - ``weight`` -- **integer** (default: `-1`)
-        - ``fixed_variables`` -- **list** (default: `[]`)
+        - ``weight`` -- **integer** (default: `-1`); a specific weight, if set to non-negative integer, fixes the
+          XOR linear trail weight
+        - ``fixed_variables`` -- **list** (default: `[]`); the variables to be fixed in standard format
 
         EXAMPLES::
 

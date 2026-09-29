@@ -85,6 +85,12 @@
         commit 446347f21b209f3921c65ece70027c366cbe1693 :
         https://github.com/ascon/ascon-c/tree/446347f21b209f3921c65ece70027c366cbe1693
 
+.. [AumassonBernstein2012]
+        Aumasson, J.-P., Bernstein, D. J. : *SipHash: a fast short-input PRF* :
+        INDOCRYPT 2012, Lecture Notes in Computer Science, vol. 7668, pp.
+        489-508, Springer (2012) :
+        https://cr.yp.to/siphash/siphash-20120918.pdf
+
 .. _claasp-ref-B:
 
 .. only:: html
@@ -92,13 +98,13 @@
         **B**
 
 .. [BBBGPUV2020]
-        Beierle C., Biryukov A., Cardoso dos Santos L., Großschädl J.,
-        Perrin L., Udovenko A., Velichkov V., Wang Q. : *Alzette: A 64-bit
-        ARX-box (feat. CRAX and TRAX)* : In Advances in Cryptology -- CRYPTO
-        2020, LNCS 12172, pp. 419-448, Springer 2020 :
-        https://doi.org/10.1007/978-3-030-56877-1_15 (extended version:
-        Cryptology ePrint Archive, Paper 2019/1378,
-        https://eprint.iacr.org/2019/1378)
+        Beierle C., Biryukov A., dos Santos L. C., Großschädl J., Perrin L.,
+        Udovenko A., Velichkov V., Wang Q. :
+        *Alzette: A 64-Bit ARX-Box (Feat. CRAX and TRAX)* :
+        In: Micciancio D., Ristenpart T. (eds.) Advances in Cryptology –
+        CRYPTO 2020, LNCS 12172, pp. 419–448. Springer, 2020.
+        DOI: 10.1007/978-3-030-56877-1_15.
+        IACR ePrint 2019/1378, https://eprint.iacr.org/2019/1378
 
 .. [BC2003]
         Biryukov A., Canniere C. D. : *Block Ciphers and Systems of Quadratic
@@ -236,6 +242,19 @@
         Cryptology ePrint Archive, Report 2016/660, 2016.
         https://eprint.iacr.org/2016/660.pdf
 
+.. [BKLMMNSSSTV2017]
+        Bernstein D. J., Kölbl S., Lucks S., Massolino P. M. C., Mendel F.,
+        Nawaz K., Schneider T., Schwabe P., Standaert F.-X., Todo Y., Viguier
+        B. : *Gimli: a cross-platform permutation* : In Cryptographic Hardware
+        and Embedded Systems -- CHES 2017, LNCS 10529, pp. 299-320, Springer
+        2017 : https://doi.org/10.1007/978-3-319-66787-4_15
+        
+.. [BSSTWW2013]
+        Beaulieu R., Shors D., Smith J., Treatman-Clark S., Weeks B., Wingers
+        L. : *The SIMON and SPECK Families of Lightweight Block Ciphers* :
+        Cryptology ePrint Archive, Report 2013/404, 2013 :
+        https://eprint.iacr.org/2013/404
+
 .. _claasp-ref-C:
 
 .. only:: html
@@ -346,7 +365,13 @@
         CHAM* : Implementation repository (2025) :
         https://github.com/dampers/SAECHAM-implementations
 
-.. [DMR2019] 
+.. [DEY2023]
+        Dey, S., Garai, H. K., Maitra, S. : *Cryptanalysis of Reduced Round
+        ChaCha -- New Attack & Deeper Analysis* : IACR Transactions on
+        Symmetric Cryptology, 2023(1), 89-110 :
+        https://eprint.iacr.org/2023/134
+
+.. [DMR2019]
         Daemen, J., Massolino, P. M. C., and Rotella, Y.
         *The Subterranean 2.0 cipher suite.*
         Submission to the NIST Lightweight Cryptography Standardization process,
@@ -414,6 +439,14 @@
 .. only:: html
 
         **H**
+
+.. [HJM2005]
+        Hell M., Johansson T., Meier W. : *Grain: A Stream Cipher for Constrained
+        Environments* : International Journal of Wireless and Mobile Computing,
+        2(1), 86-93, 2007 : originally presented at ECRYPT SASC 2005; a
+        subsequently tweaked version was submitted to eSTREAM as "Grain v1" and
+        selected for the eSTREAM Profile 2 portfolio :
+        https://www.ecrypt.eu.org/stream/p3ciphers/grain/grain_p3.pdf
 
 .. [He2002]
         Heys H. : *A Tutorial on Linear and Differential Cryptanalysis* : 2002
@@ -627,10 +660,22 @@
         International Colloquium on Coding Theory and Applications. pp.
         106–113.  Springer (1988)
 
+.. [Sch1994]
+        Schneier B. : *Description of a New Variable-Length Key, 64-Bit Block
+        Cipher (Blowfish)* : Fast Software Encryption, Cambridge Security
+        Workshop Proceedings, Springer-Verlag, 1994, pp. 191-204 :
+        https://www.schneier.com/academic/archives/1994/09/description_of_a_new.html
+
 .. [SGLYTQH2017]
         Sun S., Gerault D., Lafourcade P., Yang Q., Todo Y., Qiao K., Hu L. :
         *Analysis of AES, SKINNY, and others with constraint programming* : In
         IACR transactions on symmetric cryptology 2017 (1), 281--306
+
+.. [SasTod17]
+        Sasaki, Y., Todo, Y. : *New Algorithm for Modeling S-box in MILP Based
+        Differential and Division Trail Search* : Codes, Cryptology and
+        Information Security (C2SI 2017), Lecture Notes in Computer Science,
+        vol. 10194, pp. 150-165, Springer (2017)
 
 .. [SGWW2020]
         Sun L., Gerault D., Wang W., Wang M. : *On the usage of deterministic
@@ -722,6 +767,12 @@
         Yang B.-Y., Chen J.-M. : *Theoretical analysis of XL over small fields*
         : In Information Security and Privacy, pages 277–288, Berlin,
         Heidelberg, 2004. Springer Berlin Heidelberg
+
+.. [YZSAG2015]
+        Yang G., Zhu B., Suder V., Aagaard M. D., Gong G. : *The Simeck Family
+        of Lightweight Block Ciphers* : In Cryptographic Hardware and Embedded
+        Systems -- CHES 2015, LNCS 9293, pp. 307-329, Springer 2015 :
+        https://eprint.iacr.org/2015/612
 
 .. _claasp-ref-Z:
 

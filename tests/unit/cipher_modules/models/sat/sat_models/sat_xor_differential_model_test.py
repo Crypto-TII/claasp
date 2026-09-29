@@ -1,14 +1,18 @@
+import shutil
 from os import remove
 
 import numpy as np
+import pytest
 
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
-from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT, KISSAT_EXT, PARKISSAT_EXT
+from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT, KISSAT_EXT, MALLOB_EXT, PARKISSAT_EXT
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
 from claasp.components.modadd_component import ModAdd
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, SATISFIABLE, XOR_DIFFERENTIAL
+
+requires_mallob = pytest.mark.skipif(shutil.which("mallob") is None, reason="Mallob not available in PATH")
 
 
 def count_sequences_of_ones(data, full_window_size):
@@ -110,6 +114,15 @@ def test_find_lowest_weight_xor_differential_trail():
     assert int(trail["total_weight"]) == 9
 
 
+@requires_mallob
+def test_find_lowest_weight_xor_differential_trail_with_mallob():
+    speck = speck_5rounds
+    sat = SatXorDifferentialModel(speck)
+    trail = sat.find_lowest_weight_xor_differential_trail(solver_name=MALLOB_EXT, options=["-t=2"])
+
+    assert int(trail["total_weight"]) == 9
+
+
 def test_find_one_xor_differential_trail():
     speck = speck_5rounds
     sat = SatXorDifferentialModel(speck)
@@ -134,7 +147,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
     speck = SpeckBlockCipher(number_of_rounds=3)
     sat = SatXorDifferentialModel(speck)
     sat.set_window_size_heuristic_by_round([0, 0, 0])
-    result = sat.find_one_xor_differential_trail_with_fixed_weight(3)
+    result = sat.find_one_xor_differential_trail(lower_bound=3, upper_bound=3)
 
     assert int(result["total_weight"]) == 3
 
@@ -143,7 +156,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_ful
     speck = SpeckBlockCipher(number_of_rounds=9)
     sat = SatXorDifferentialModel(speck)
     sat.set_window_size_heuristic_by_round([2 for _ in range(9)], number_of_full_windows=1)
-    result = sat.find_one_xor_differential_trail_with_fixed_weight(30, solver_name=CADICAL_EXT)
+    result = sat.find_one_xor_differential_trail(lower_bound=30, upper_bound=30, solver_name=CADICAL_EXT)
 
     assert int(result["total_weight"]) == 30
 
@@ -156,7 +169,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_thre
     sat.set_window_size_heuristic_by_round(
         [window_size for _ in range(9)], number_of_full_windows=number_of_full_windows
     )
-    result = sat.find_one_xor_differential_trail_with_fixed_weight(30, solver_name=CADICAL_EXT)
+    result = sat.find_one_xor_differential_trail(lower_bound=30, upper_bound=30, solver_name=CADICAL_EXT)
     speck_components = speck.all_components()
     modadd_objects = list(filter(lambda obj: isinstance(obj, ModAdd), speck_components))
 
@@ -202,7 +215,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight_9_rounds():
     sat = SatXorDifferentialModel(speck)
 
     sat.set_window_size_heuristic_by_round([2 for _ in range(9)])
-    result = sat.find_one_xor_differential_trail_with_fixed_weight(30, solver_name=CADICAL_EXT)
+    result = sat.find_one_xor_differential_trail(lower_bound=30, upper_bound=30, solver_name=CADICAL_EXT)
 
     assert int(result["total_weight"]) == 30
 
@@ -234,7 +247,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight_and_window_heuristic_
         dict_of_window_heuristic_per_component[component_id] = 0
     sat = SatXorDifferentialModel(speck)
     sat.set_window_size_heuristic_by_component_id(dict_of_window_heuristic_per_component)
-    result = sat.find_one_xor_differential_trail_with_fixed_weight(3)
+    result = sat.find_one_xor_differential_trail(lower_bound=3, upper_bound=3)
 
     assert int(result["total_weight"]) == 3
 
@@ -246,6 +259,17 @@ def test_build_xor_differential_trail_model_fixed_weight_and_parkissat():
     sat.build_xor_differential_trail_model(3)
     result = sat._solve_with_external_sat_solver(XOR_DIFFERENTIAL, PARKISSAT_EXT, [f"-c={number_of_cores}"])
 
+    assert int(result["total_weight"]) == 3
+
+
+@requires_mallob
+def test_build_xor_differential_trail_model_fixed_weight_and_mallob():
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    sat = SatXorDifferentialModel(speck)
+    sat.build_xor_differential_trail_model(3)
+    result = sat._solve_with_external_sat_solver(XOR_DIFFERENTIAL, MALLOB_EXT, ["-t=2"])
+
+    assert result["status"] == SATISFIABLE
     assert int(result["total_weight"]) == 3
 
 

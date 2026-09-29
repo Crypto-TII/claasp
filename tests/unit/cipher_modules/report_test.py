@@ -133,9 +133,10 @@ def _cached_present_trail():
             set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=list(range(64)),
                                 bit_values=[0] * 64)
         ]
-        return sat_model.find_one_xor_differential_trail_with_fixed_weight(
-            fixed_weight=16,
+        return sat_model.find_one_xor_differential_trail(
             fixed_values=related_key_setting,
+            lower_bound=16,
+            upper_bound=16,
             solver_name='KISSAT_EXT')
 
     return _get_cached_result('present_r2_sat_fixed_weight_16', _generate)
@@ -301,8 +302,8 @@ def test_save_as_json():
         set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=list(range(64)),
                             bit_values=[0] * 64)
     ]
-    trail = sat.find_one_xor_differential_trail_with_fixed_weight(fixed_weight=16, fixed_values=related_key_setting,
-                                                                  solver_name='KISSAT_EXT')
+    trail = sat.find_one_xor_differential_trail(fixed_values=related_key_setting, lower_bound=16, upper_bound=16,
+                                                solver_name='KISSAT_EXT')
     trail_report = Report(trail)
     trail_report.show()
 
@@ -338,18 +339,20 @@ def test_report_accepts_cp_trail_output():
     Test that Report can be instantiated with CP model trail output directly,
     without requiring explicit 'input_parameters' or 'test_name' nesting.
     This validates that Report gracefully handles single-trial dictionaries
-    from find_one_xor_differential_trail_with_fixed_weight and similar methods.
+    from find_one_xor_differential_trail and similar methods.
     """
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
     cp = MznXorDifferentialModel(speck)
-    trail = cp.find_one_xor_differential_trail_with_fixed_weight(1, solver_name='chuffed', solve_external=False)
+    trail = cp.find_one_xor_differential_trail(
+        lower_bound=1, upper_bound=1, solver_name='chuffed', solve_external=False
+    )
 
     assert 'test_name' in trail
-    assert trail['test_name'] == 'find_one_xor_differential_trail_with_fixed_weight'
+    assert trail['test_name'] == 'find_one_xor_differential_trail'
 
     trail_report = Report(trail)
     assert trail_report.cipher == speck
-    assert trail_report.test_name == 'find_one_xor_differential_trail_with_fixed_weight'
+    assert trail_report.test_name == 'find_one_xor_differential_trail'
 
 
 def test_save_as_dataframe_uses_runtime_cwd_default(monkeypatch, tmp_path):

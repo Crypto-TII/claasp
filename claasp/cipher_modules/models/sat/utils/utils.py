@@ -853,6 +853,50 @@ def run_parkissat(solver_specs, options, dimacs_input, input_file_name):
     return status, solver_time, solver_memory, values
 
 
+def run_mallob(solver_specs, options, dimacs_input, input_file_name):
+    """
+    Call the Mallob solver specified in `solver_specs`, using an input file.
+
+    Mallob is run in its single-instance ("mono") mode, which only reads the formula from a regular file: piping the
+    formula through ``/dev/stdin`` makes Mallob report a wrong (empty) model. Mallob does not report memory usage.
+    """
+    with open(input_file_name, "wt") as input_file:
+        input_file.write(dimacs_input)
+    command = (
+        [solver_specs["keywords"]["command"]["executable"]] + solver_specs["keywords"]["command"]["options"] + options
+    )
+    command.append(f"-mono={input_file_name}")
+    try:
+        start = time.time()
+        solver_process = subprocess.run(command, capture_output=True, text=True)
+        end = time.time()
+    finally:
+        os.remove(input_file_name)
+    solver_output = solver_process.stdout.splitlines()
+    status_line = next((line for line in solver_output if line.startswith("s ")), None)
+    if status_line is None:
+        raise RuntimeError(
+            f"mallob produced no status line (exit code {solver_process.returncode}).\n"
+            f"stdout: {solver_process.stdout[-500:]}\n"
+            f"stderr: {solver_process.stderr[-500:]}"
+        )
+    status = status_line.split()[1]
+    time_line = next((line for line in solver_output if solver_specs["keywords"]["time"] in line), None)
+    if time_line is None:
+        solver_time = end - start
+    else:
+        solver_time = float(re.search(r"RESPONSE_TIME #\d+ ([0-9.]+)", time_line).group(1))
+    solver_memory = 0
+    values = []
+    if status == "SATISFIABLE":
+        for line in solver_output:
+            if line.startswith("v "):
+                values.extend(line.split()[1:])
+        values = values[:-1]
+
+    return status, solver_time, solver_memory, values
+
+
 def run_yices(solver_specs, options, dimacs_input, input_file_name):
     """Call the Yices SAT solver specified in `solver_specs`, using input file."""
     with open(input_file_name, "wt") as input_file:
