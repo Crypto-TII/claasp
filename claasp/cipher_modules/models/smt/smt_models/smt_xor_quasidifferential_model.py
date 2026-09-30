@@ -1782,11 +1782,22 @@ class SmtXorQuasidifferentialModel(SmtModel):
             {0}
         """
 
+        if INPUT_PLAINTEXT not in self._cipher.inputs:
+            raise ValueError(
+                f"{self._cipher.id}: the input mask cannot be placed automatically, "
+                f"because this cipher has no {INPUT_PLAINTEXT!r} input "
+                f"(its inputs are {self._cipher.inputs}). Build fixed_masks by hand."
+            )
+
         block_bit_size = self._cipher.output_bit_size
+        # Keep the state outputs only. The key schedule has outputs too, and
+        # setting their masks to zero would lose the round-key masks, which is
+        # where weak-key conditions come from. Both kinds have the same component
+        # type, so the description has to decide: "round_output" or "round_key_output".
         state_outputs = [
             component.id
             for component in self._cipher.get_all_components()
-            if component.type in (INTERMEDIATE_OUTPUT, CIPHER_OUTPUT)
+            if component.description[0] in ("round_output", "cipher_output")
             and component.output_bit_size == block_bit_size
         ]
         last_round = int(state_outputs[-1].split("_")[-2])
