@@ -610,7 +610,7 @@ class Constant(Component):
             sage: constant_component.sat_constraints()
             (['constant_0_0_0', 'constant_0_0_1', 'constant_0_0_2', 'constant_0_0_3'], ['-constant_0_0_0', '-constant_0_0_1', '-constant_0_0_2', 'constant_0_0_3'])
         """
-        _, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         value = int(self.description[0], 16)
         bits = map(int, f"{value:0{self.output_bit_size}b}")
         signs = ["-" * (bit ^ 1) for bit in bits]
@@ -641,7 +641,7 @@ class Constant(Component):
             sage: constant_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
             (['constant_0_0_0_0', 'constant_0_0_1_0', 'constant_0_0_2_0', 'constant_0_0_3_0', 'constant_0_0_0_1', 'constant_0_0_1_1', 'constant_0_0_2_1', 'constant_0_0_3_1'], ['-constant_0_0_0_0', '-constant_0_0_1_0', '-constant_0_0_2_0', '-constant_0_0_3_0', '-constant_0_0_0_1', '-constant_0_0_1_1', '-constant_0_0_2_1', '-constant_0_0_3_1'])
         """
-        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
         constraints = [f"-{out_id}" for out_id in out_ids_0] + [f"-{out_id}" for out_id in out_ids_1]
 
         return out_ids_0 + out_ids_1, constraints
@@ -670,7 +670,7 @@ class Constant(Component):
             sage: constant_component.sat_xor_differential_propagation_constraints()
             (['constant_0_0_0', 'constant_0_0_1', 'constant_0_0_2', 'constant_0_0_3'], ['-constant_0_0_0', '-constant_0_0_1', '-constant_0_0_2', '-constant_0_0_3'])
         """
-        _, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = [f"-{output_bit_id}" for output_bit_id in output_bit_ids]
 
         return output_bit_ids, constraints
@@ -696,8 +696,7 @@ class Constant(Component):
             sage: constant_component.sat_xor_linear_mask_propagation_constraints()
             (['constant_0_0_0_o', 'constant_0_0_1_o', 'constant_0_0_2_o', 'constant_0_0_3_o'], [])
         """
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        _, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
 
         return output_bit_ids, []
 
@@ -718,7 +717,7 @@ class Constant(Component):
             sage: constant_component.smt_constraints()
             (['constant_0_0_0', 'constant_0_0_1', 'constant_0_0_2', 'constant_0_0_3'], ['(assert (not constant_0_0_0))', '(assert (not constant_0_0_1))', '(assert (not constant_0_0_2))', '(assert constant_0_0_3)'])
         """
-        _, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         value = int(self.description[0], 16)
         bits = map(int, f"{value:0{self.output_bit_size}b}")
         constraints = [
@@ -745,7 +744,7 @@ class Constant(Component):
             sage: constant_component.smt_xor_differential_propagation_constraints()
             (['constant_0_0_0', 'constant_0_0_1', 'constant_0_0_2', 'constant_0_0_3'], ['(assert (not constant_0_0_0))', '(assert (not constant_0_0_1))', '(assert (not constant_0_0_2))', '(assert (not constant_0_0_3))'])
         """
-        _, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = [smt_utils.smt_assert(smt_utils.smt_not(output_bit_id)) for output_bit_id in output_bit_ids]
 
         return output_bit_ids, constraints
@@ -767,7 +766,6 @@ class Constant(Component):
             sage: constant_component.smt_xor_linear_mask_propagation_constraints()
             (['constant_0_0_0_o', 'constant_0_0_1_o', 'constant_0_0_2_o', 'constant_0_0_3_o'], [])
         """
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        _, output_bit_ids = self._generate_output_ids(out_suffix)
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
 
         return output_bit_ids, []

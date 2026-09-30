@@ -61,7 +61,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_input_differential_linear_model import SharedDifferencePairedInputDifferentialLinearModel
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: component_dict = {'middle_part_components': [], 'bottom_part_components': speck.get_components_in_round(4)}
+            sage: component_dict = {'middle_part_components': [], 'bottom_part_components': speck.components_in_round(4)}
             sage: model = SharedDifferencePairedInputDifferentialLinearModel(speck, component_dict)
         """
         bottom_part_components = dict_of_components["bottom_part_components"]
@@ -76,7 +76,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
             regular_component_id = regular_component_dict["component_id"]
 
             regular_component = regular_component_dict["component_object"]
-            round_number = cipher.get_round_from_component_id(regular_component_id)
+            round_number = cipher.round_from_component_id(regular_component_id)
             regular_component_copy = deepcopy(regular_component)
             regular_component_copy._id = "cipher1_" + regular_component._id
 
@@ -208,7 +208,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_input_differential_linear_model import SharedDifferencePairedInputDifferentialLinearModel
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: component_dict = {'middle_part_components': [], 'bottom_part_components': speck.get_components_in_round(4)}
+            sage: component_dict = {'middle_part_components': [], 'bottom_part_components': speck.components_in_round(4)}
             sage: model = SharedDifferencePairedInputDifferentialLinearModel(speck, component_dict)
             sage: model.build_shared_difference_paired_input_differential_model()
             ...
@@ -217,7 +217,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         constraints = SatXorLinearModel.branch_xor_linear_constraints(self.bit_bindings)
         self._model_constraints.extend(constraints)
         high_order_differential_constraints = []
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.id.startswith("cipher1_") and "modadd" in component.id:
                 component_copy_id = component.id.split("cipher1_")[1]
                 for i in range(component.output_bit_size):
@@ -280,7 +280,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         total_weight_diff = 0
         total_weight_lin = 0
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.id in [d["component_id"] for d in self.regular_components]:
                 hex_value = self._get_component_hex_value(component, "", variable2value)
 
@@ -328,9 +328,9 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
             sage: top_part_components = []
             sage: bottom_part_components = []
             sage: for round_number in range(2):
-            ....:     top_part_components.append(speck.get_components_in_round(round_number))
+            ....:     top_part_components.append(speck.components_in_round(round_number))
             sage: for round_number in range(2, 5):
-            ....:     bottom_part_components.append(speck.get_components_in_round(round_number))
+            ....:     bottom_part_components.append(speck.components_in_round(round_number))
             sage: bottom_part_components = list(itertools.chain(*bottom_part_components))
             sage: bottom_part_components = [component.id for component in bottom_part_components]
             sage: component_model_list = {

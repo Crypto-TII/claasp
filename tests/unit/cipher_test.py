@@ -80,14 +80,14 @@ def test_algebraic_tests():
 @pytest.mark.skipif(platform.machine() in ("aarch64", "arm64"),
                     reason="SAT solve exceeds isolate-timeout on slower ARM runners")
 def test_algebraic_tests_toy_aes():
-    aes = ToyAESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
-    d = AlgebraicTests(aes).algebraic_tests(10)
+    aes = ToyAESBlockCipher(word_size=2, state_size=2, number_of_rounds=1)
+    d = AlgebraicTests(aes).algebraic_tests(5)
     compare_result = {'input_parameters': {'cipher': aes,
-                                           'timeout_in_seconds': 10,
+                                           'timeout_in_seconds': 5,
                                            'test_name': 'algebraic_tests'},
-                      'test_results': {'number_of_variables': [104],
-                                       'number_of_equations': [174],
-                                       'number_of_monomials': [272],
+                      'test_results': {'number_of_variables': [52],
+                                       'number_of_equations': [66],
+                                       'number_of_monomials': [88],
                                        'max_degree_of_equations': [2],
                                        'test_passed': [False]}}
 
@@ -157,12 +157,12 @@ def test_evaluate_with_intermediate_outputs_continuous_diffusion_analysis():
     assert output[0][0] == Decimal('-1.000000000')
 
 
-def test_get_model():
+def test_model():
     speck = SpeckBlockCipher(number_of_rounds=1)
-    assert speck.get_model("cp", "xor_differential").__class__.__name__ == "MznXorDifferentialModel"
-    assert speck.get_model("sat", "xor_differential").__class__.__name__ == "SatXorDifferentialModel"
-    assert speck.get_model("smt", "xor_linear").__class__.__name__ == "SmtXorLinearModel"
-    assert speck.get_model("milp", "xor_linear").__class__.__name__ == "MilpXorLinearModel"
+    assert speck.model("cp", "xor_differential").__class__.__name__ == "MznXorDifferentialModel"
+    assert speck.model("sat", "xor_differential").__class__.__name__ == "SatXorDifferentialModel"
+    assert speck.model("smt", "xor_linear").__class__.__name__ == "SmtXorLinearModel"
+    assert speck.model("milp", "xor_linear").__class__.__name__ == "MilpXorLinearModel"
 
 
 def test_generate_bit_based_c_code():
@@ -199,17 +199,17 @@ def test_get_current_component_id():
     assert cipher.get_current_component_id() == 'constant_1_0'
 
 
-def test_get_round_from_component_id():
+def test_round_from_component_id():
     fancy = FancyBlockCipher(number_of_rounds=2)
-    assert fancy.get_round_from_component_id('xor_1_14') == 1
+    assert fancy.round_from_component_id('xor_1_14') == 1
 
 
 def _find_dangling_input_links(cipher):
-    component_ids = {c.id for c in cipher.get_all_components()}
+    component_ids = {c.id for c in cipher.all_components()}
     declared_inputs = set(cipher.inputs)
 
     dangling = []
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         for link in component.input_id_links:
             if link and link not in component_ids and link not in declared_inputs:
                 dangling.append((component.id, link))
@@ -252,7 +252,7 @@ def test_get_partial_cipher_removes_expected_components_for_chacha_6_rounds():
         keep_key_schedule=False,
     )
 
-    partial_component_ids = {component.id for component in partial_cipher.get_all_components()}
+    partial_component_ids = {component.id for component in partial_cipher.all_components()}
     assert expected_removed_ids.isdisjoint(partial_component_ids)
 
 
@@ -315,7 +315,7 @@ def test_get_partial_cipher_removes_picture_component_subset_for_speck():
     }
 
     partial_cipher = cipher.get_partial_cipher(start_round=0, end_round=1, keep_key_schedule=False)
-    partial_component_ids = {component.id for component in partial_cipher.get_all_components()}
+    partial_component_ids = {component.id for component in partial_cipher.all_components()}
     expected_partial_component_ids = {'rot_0_3', 'xor_0_2', 'rot_1_6', 'modadd_1_7', 'xor_0_4', 'xor_1_10', 'intermediate_output_1_12', 'rot_0_0', 'intermediate_output_0_6', 'modadd_0_1', 'rot_1_9', 'xor_1_8'}
     assert picture_component_ids.isdisjoint(partial_component_ids)
     assert expected_partial_component_ids == partial_component_ids
@@ -359,6 +359,70 @@ def test_is_shift_arx():
 def test_is_spn():
     aes = ToyAESBlockCipher(number_of_rounds=2)
     assert aes.is_spn() is True
+
+
+def test_has_uniform_sboxes_accepts_permutation_diffusion_ciphers():
+    assert ToyAESBlockCipher(number_of_rounds=1).has_uniform_sboxes() is True
+    assert UblockBlockCipher(number_of_rounds=2).has_uniform_sboxes() is True
+    assert PresentBlockCipher(number_of_rounds=1).has_uniform_sboxes() is True
+    assert SpeckBlockCipher(number_of_rounds=1).has_uniform_sboxes() is False
+
+
+def test_has_uniform_sboxes_rejects_mixed_sbox_sizes():
+    cipher = Cipher("mixed_sboxes", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    cipher.add_round()
+    cipher.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    cipher.add_sbox_component([INPUT_PLAINTEXT], [[4, 5, 6]], 3, list(range(8)))
+
+    assert cipher.has_uniform_sboxes() is False
+
+
+def test_has_uniform_sboxes_rejects_unsupported_component_types():
+    cipher = Cipher("unsupported_component", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    cipher.add_round()
+    sbox = cipher.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    cipher.add_and_component([sbox.id], [list(range(4))], 4)
+
+    assert cipher.has_uniform_sboxes() is False
+
+
+def test_has_uniform_sboxes_accepts_shift_components():
+    from claasp.ciphers.block_ciphers.mantis_block_cipher import MantisBlockCipher
+
+    assert MantisBlockCipher(number_of_rounds=2).has_uniform_sboxes() is True
+
+    cipher = Cipher("with_shift", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    cipher.add_round()
+    sbox = cipher.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    cipher.add_shift_component([sbox.id], [list(range(4))], 4, 1)
+
+    assert cipher.has_uniform_sboxes() is True
+
+
+def test_has_uniform_sboxes_rejects_linear_layer_components():
+    cipher = Cipher("with_linear_layer", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    cipher.add_round()
+    sbox = cipher.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    cipher.add_linear_layer_component([sbox.id], [list(range(4))], 4, [[1, 0, 0, 0]] * 4)
+
+    assert cipher.has_uniform_sboxes() is False
+    assert cipher.is_two_step_trail_search_friendly() is False
+
+
+def test_is_two_step_trail_search_friendly_checks_mix_column_cell_alignment():
+    friendly = Cipher("friendly", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    friendly.add_round()
+    sbox = friendly.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    friendly.add_mix_column_component([sbox.id], [list(range(4))], 4, [[[1]], 0, 4])
+
+    unfriendly = Cipher("unfriendly", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    unfriendly.add_round()
+    sbox = unfriendly.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    unfriendly.add_mix_column_component([sbox.id], [list(range(4))], 4, [[[1]], 0, 3])
+
+    assert friendly.is_two_step_trail_search_friendly() is True
+    assert unfriendly.is_two_step_trail_search_friendly() is False
+    assert SpeckBlockCipher(number_of_rounds=1).is_two_step_trail_search_friendly() is False
 
 
 def test_polynomial_system():

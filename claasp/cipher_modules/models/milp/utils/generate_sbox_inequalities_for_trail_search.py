@@ -165,7 +165,7 @@ def cutting_off_milp(dict_polyhedron, number_of_ineqs=None):
     - ``number_of_ineqs`` -- **integer** (default: `None`); either `None` or the number of inequalities that should be
       used for representing the S-box.
 
-    .. [SasTod17]_ "New Algorithm for Modeling S-box in MILP Based Differential and Division Trail Search"
+    See [SasTod17]_: "New Algorithm for Modeling S-box in MILP Based Differential and Division Trail Search"
     """
     from sage.matrix.constructor import matrix
     from sage.modules.free_module import VectorSpace

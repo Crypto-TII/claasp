@@ -4,7 +4,7 @@ from claasp.components.rotate_component import Rotate
 
 
 def test_algebraic_polynomials():
-    cipher = RotateCipher(bit_size=6, parameter=3)
+    cipher = RotateCipher(bit_size=6, rotation_amount=3)
     rotate_component = cipher.component_from(0, 0)
     algebraic = AlgebraicModel(cipher)
     algebraic_polynomials = rotate_component.algebraic_polynomials(algebraic)

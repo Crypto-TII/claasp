@@ -12,6 +12,8 @@ required.
   [Glucose Syrup](https://www.labri.fr/perso/lsimon/glucose/)
   + `solver_name='glucose'` 
   + `solver_name='glucose-syrup'`
+- [Mallob](https://github.com/domschrei/mallob)
+  + `solver_name='MALLOB_EXT'` (defaults to 4 Kissat threads; override with e.g. `options=['-t=12', '-satsolver=c']`)
 - [MathSAT](https://mathsat.fbk.eu/)
   + `solver_name='mathsat'`
 - [Minisat](https://github.com/niklasso/minisat)

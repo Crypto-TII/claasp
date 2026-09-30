@@ -56,7 +56,7 @@ class MznCipherModel(MznModel):
             sage: cp.build_cipher_model(fixed_variables)
         """
         self.initialise_model()
-        self.sbox_mant = []
+        self.sbox_cache = []
         variables = []
         self._variables_declarations = self.input_declarations()
         constraints = self.fix_variables_value_constraints(fixed_variables)
@@ -73,7 +73,7 @@ class MznCipherModel(MznModel):
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR")
         self._model_constraints = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types
@@ -83,7 +83,7 @@ class MznCipherModel(MznModel):
                 if component.type != SBOX:
                     variables, constraints = component.cp_constraints()
                 else:
-                    variables, constraints = component.cp_constraints(self.sbox_mant)
+                    variables, constraints = component.cp_constraints(self.sbox_cache)
 
             self._model_constraints.extend(constraints)
             self._variables_declarations.extend(variables)
@@ -118,7 +118,7 @@ class MznCipherModel(MznModel):
         new_constraint = "output["
         for element in cipher_inputs:
             new_constraint = f'{new_constraint}"{element} = "++ show({element}) ++ "\\n" ++'
-        for component_id in self._cipher.get_all_components_ids():
+        for component_id in self._cipher.all_components_ids():
             new_constraint = new_constraint + f'"{component_id} = "++ show({component_id})++ "\\n" ++ "0" ++ "\\n" ++'
         new_constraint = new_constraint[:-2] + "];"
         cp_constraints.append(new_constraint)
@@ -144,12 +144,12 @@ class MznCipherModel(MznModel):
               ...
              'array[0..31] of var 0..1: cipher_output_3_12;']
         """
-        self.sbox_mant = []
+        self.sbox_cache = []
         cp_declarations = [
             f"array[0..{bit_size - 1}] of var 0..1: {input_};"
             for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
         ]
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if CONSTANT not in component.type:
                 cp_declarations.append(f"array[0..{component.output_bit_size - 1}] of var 0..1: {component.id};")
 

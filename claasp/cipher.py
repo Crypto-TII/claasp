@@ -524,7 +524,7 @@ class Cipher:
             sage: partial = speck.get_partial_cipher(1, 2)
             sage: partial.inputs
             ['intermediate_output_0_6', 'key']
-            sage: partial.get_all_components_ids()[-1]
+            sage: partial.all_components_ids()[-1]
             'intermediate_output_3_11'
         """
         if start_round is None:
@@ -553,7 +553,7 @@ class Cipher:
     def add_suffix_to_components(self, suffix, component_id_list=None):
         renamed_inputs = self.inputs
         if component_id_list is None:
-            component_id_list = self.get_all_components_ids() + self.inputs
+            component_id_list = self.all_components_ids() + self.inputs
             renamed_inputs = [f"{input}{suffix}" if input in component_id_list else input for input in self.inputs]
         renamed_cipher = Cipher(
             f"{self.family_name}",
@@ -780,11 +780,11 @@ class Cipher:
         """
         return code_generator.generate_word_based_c_code(self, word_size, intermediate_output, verbosity)
 
-    def get_all_components(self):
-        return self._rounds.get_all_components()
+    def all_components(self):
+        return self._rounds.all_components()
 
-    def get_all_components_ids(self):
-        return self._rounds.get_all_components_ids()
+    def all_components_ids(self):
+        return self._rounds.all_components_ids()
 
     def get_all_inputs_bit_positions(self):
         return {cipher_input: range(bit_size) for cipher_input, bit_size in zip(self._inputs, self._inputs_bit_size)}
@@ -810,7 +810,7 @@ class Cipher:
     def get_successor_components(self, component):
         return self._rounds.get_successor_components(component.id)
 
-    def get_components_in_round(self, round_number):
+    def components_in_round(self, round_number):
         return self._rounds.components_in_round(round_number)
 
     def get_current_component_id(self):
@@ -842,7 +842,7 @@ class Cipher:
     def get_number_of_components_in_round(self, round_number):
         return self._rounds.number_of_components(round_number)
 
-    def get_round_from_component_id(self, component_id):
+    def round_from_component_id(self, component_id):
         """
         Return the round according to the round of the component id given as input.
 
@@ -854,10 +854,10 @@ class Cipher:
 
             sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: fancy.get_round_from_component_id('xor_1_14')
+            sage: fancy.round_from_component_id('xor_1_14')
             1
         """
-        return self._rounds.get_round_from_component_id(component_id)
+        return self._rounds.round_from_component_id(component_id)
 
     def impossible_differential_search(self, technique="sat", solver="Kissat", scenario="single-key"):
         """
@@ -972,6 +972,19 @@ class Cipher:
 
         return self._are_there_not_forbidden_components(forbidden_types, forbidden_descriptions)
 
+    def _uniform_sbox_size(self):
+        """
+        Return the common S-box ``input_bit_size`` if the cipher has at least one S-box and all
+        S-boxes share the same size, otherwise ``None``.
+
+        Shared by :meth:`is_spn` and :meth:`has_uniform_sboxes` so that the "does this cipher have
+        a single, well-defined S-box size" check lives in one place.
+        """
+        _, _, _, set_of_sbox_sizes = self.get_sizes_of_components_by_type()
+        if len(set_of_sbox_sizes) != 1:
+            return None
+        return next(iter(set_of_sbox_sizes))
+
     def is_spn(self):
         """
         Return True if the cipher is SPN.
@@ -1004,10 +1017,8 @@ class Cipher:
         ) = self.get_sizes_of_components_by_type()
         if (len(set_of_sbox_sizes) > 1) or (len(set_of_mix_column_sizes) > 1):
             return False
-        sbox_size = 0
+        sbox_size = self._uniform_sbox_size() or 0
         mix_column_size = 0
-        if len(set_of_sbox_sizes) > 0:
-            sbox_size = set_of_sbox_sizes.pop()
         if len(set_of_mix_column_sizes) > 0:
             mix_column_size = set_of_mix_column_sizes.pop()
         if sbox_size == 0 and mix_column_size == 0 or sbox_size != mix_column_size:
@@ -1018,7 +1029,108 @@ class Cipher:
                 return False
         return set_of_components <= spn_components
 
-    def get_model(self, technique, problem):
+    def has_uniform_sboxes(self):
+        """
+        Return True if the cipher has at least one S-box, all S-boxes have the same input_bit_size,
+        all S-boxes are square (``input_bit_size == output_bit_size``), and all components belong
+        to the standard SPN or permutation component set.
+
+        Less restrictive than :meth:`is_spn`: does not require MixColumns to be present or to have
+        the same cell size as the S-boxes, and allows bit/word permutation components and SHIFT
+        components (e.g. Mantis). Suitable as a compatibility check for the first-step active
+        S-box count model.
+
+        The square-S-box requirement matters because the first-step CP model derives its word
+        activity arrays from the S-box's ``output_bit_size`` (see
+        :meth:`Sbox.cp_xor_differential_first_step_constraints
+        <claasp.components.sbox_component.Sbox.cp_xor_differential_first_step_constraints>`) while
+        the common word size used everywhere else is taken from the S-box's ``input_bit_size``
+        (see :meth:`is_two_step_trail_search_friendly`); for a non-square S-box, such as DES's 6-to-4
+        S-boxes, the two disagree and the model would be built incorrectly.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: ToyAESBlockCipher(number_of_rounds=1).has_uniform_sboxes()
+            True
+            sage: from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
+            sage: UblockBlockCipher(number_of_rounds=2).has_uniform_sboxes()
+            True
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: PresentBlockCipher(number_of_rounds=1).has_uniform_sboxes()
+            True
+            sage: from claasp.ciphers.block_ciphers.mantis_block_cipher import MantisBlockCipher
+            sage: MantisBlockCipher(number_of_rounds=2).has_uniform_sboxes()
+            True
+            sage: from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
+            sage: DESBlockCipher(number_of_rounds=1).has_uniform_sboxes()
+            False
+        """
+        spn_components = {
+            CIPHER_OUTPUT,
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            MIX_COLUMN,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            "ROTATE",
+            "SHIFT",
+            "XOR",
+        }
+        if self._uniform_sbox_size() is None:
+            return False
+        if any(
+            component.type == SBOX and component.input_bit_size != component.output_bit_size
+            for component in self.all_components()
+        ):
+            return False
+        set_of_components, _, _, _ = self.get_sizes_of_components_by_type()
+        return set_of_components <= spn_components
+
+    def is_two_step_trail_search_friendly(self):
+        """
+        Return True if the cipher is compatible with the two-step XOR differential trail search
+        for counting the minimum number of active S-boxes.
+
+        The word size is determined by the common S-box input size. Checks performed:
+
+        - All S-boxes must have the same ``input_bit_size`` and all component types must belong
+          to the supported set (checked via :meth:`has_uniform_sboxes`)
+        - MixColumn cell sizes (``description[2]``) must be multiples of word_size
+
+        Key schedule components with non-aligned rotations (e.g. LBlock) do not affect correctness
+        when key differences are fixed to zero (the standard setting for differential trail
+        searches), so they are not checked here.
+
+        Note that :meth:`~claasp.cipher_modules.models.cp.mzn_model.MznModel.initialise_model`
+        calls this method for every CP model, not just the two-step search, so any diagnostic
+        emitted from here (e.g. via the ``warnings`` module) would fire on unrelated model
+        construction and break doctests throughout the codebase; that is why this is a docstring
+        note rather than a runtime warning.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: ToyAESBlockCipher(number_of_rounds=1).is_two_step_trail_search_friendly()
+            True
+            sage: ToyAESBlockCipher(number_of_rounds=2).is_two_step_trail_search_friendly()
+            True
+            sage: from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
+            sage: UblockBlockCipher(number_of_rounds=2).is_two_step_trail_search_friendly()
+            True
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: PresentBlockCipher(number_of_rounds=1).is_two_step_trail_search_friendly()
+            True
+        """
+        if not self.has_uniform_sboxes():
+            return False
+        word_size = next(c.input_bit_size for c in self.all_components() if c.type == SBOX)
+        for component in self.all_components():
+            if component.type == MIX_COLUMN and component.description[2] % word_size != 0:
+                return False
+        return True
+
+    def model(self, technique, problem):
         """
         Returns a model for a given technique and problem.
 
@@ -1050,7 +1162,7 @@ class Cipher:
         set_of_mix_column_sizes = set()
         set_of_components = set()
         set_of_rotate_and_shift_values = set()
-        for component in self._rounds.get_all_components():
+        for component in self._rounds.all_components():
             if component.type == SBOX:
                 set_of_sbox_sizes.add(component.input_bit_size)
             if component.type == MIX_COLUMN:
@@ -1462,12 +1574,12 @@ class Cipher:
             set_fixed_variables,
         )
 
-        model = self.get_model(technique, f"xor_{type}")
+        model = self.model(technique, f"xor_{type}")
         if type == "differential":
             search_function = model.find_one_xor_differential_trail
         else:
             search_function = model.find_one_xor_linear_trail
-        last_component_id = self.get_all_components()[-1].id
+        last_component_id = self.all_components()[-1].id
         impossible = []
         inputs_dictionary = self.inputs_size_to_dict()
         plain_bits = inputs_dictionary[INPUT_PLAINTEXT]
@@ -1693,6 +1805,6 @@ class Cipher:
         return ancestors_ids, descendants_ids
 
     def update_input_id_links_from_component_id(self, component_id, new_input_id_links):
-        round_number = self.get_round_from_component_id(component_id)
+        round_number = self.round_from_component_id(component_id)
         self._rounds.rounds[round_number].update_input_id_links_from_component_id(component_id, new_input_id_links)
         self._rounds._invalidate_indexes()

@@ -97,14 +97,14 @@ class MznModel:
         self._variables_declarations = []
         self._model_constraints = []
         self.c = 0
-        if self._cipher.is_spn():
-            for component in self._cipher.get_all_components():
+        if self._cipher.is_two_step_trail_search_friendly():
+            for component in self._cipher.all_components():
                 if SBOX in component.type:
                     self.word_size = int(component.output_bit_size)
                     break
         self._float_and_lat_values = []
         self._probability = False
-        self.sbox_mant = []
+        self.sbox_cache = []
         self.mix_column_mant = []
         self.modadd_twoterms_mant = []
         self.input_sbox = []
@@ -212,8 +212,8 @@ class MznModel:
             self.probability_vars.append(probability_var)
             self.component_probability_var[component.id] = probability_var
 
-            if hasattr(self._cipher, "get_round_from_component_id"):
-                round_index = self._cipher.get_round_from_component_id(component.id)
+            if hasattr(self._cipher, "round_from_component_id"):
+                round_index = self._cipher.round_from_component_id(component.id)
 
                 if round_index < len(self.probability_modadd_vars_per_round):
                     self.probability_modadd_vars_per_round[round_index].append(probability_var)
@@ -364,7 +364,7 @@ class MznModel:
             {3, 4}
         """
         set_of_sboxes_values = set()
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if SBOX in component.type:
                 set_of_sboxes_values.add(tuple(component.description))
                 input_size = component.input_bit_size
@@ -428,8 +428,8 @@ class MznModel:
             bit_positions = component["bit_positions"]
             bit_values = component["bit_values"]
             if step == "first_step":
-                if not self._cipher.is_spn():
-                    raise ValueError("Cipher is not SPN")
+                if not self._cipher.is_two_step_trail_search_friendly():
+                    raise ValueError("Cipher not compatible with the two-step trail search")
                 input_length = len(bit_positions) // self.word_size
                 bit_positions = self.calculate_bit_positions(bit_positions, input_length)
                 bit_values = self.calculate_bit_values(bit_values, input_length)
@@ -710,7 +710,7 @@ class MznModel:
                 components_values, memory, time, total_weight = self.parse_solver_information(
                     output_to_parse, truncated, solve_external
                 )
-            all_components = [*self._cipher.inputs, *self._cipher.get_all_components_ids()]
+            all_components = [*self._cipher.inputs, *self._cipher.all_components_ids()]
             for component_id in all_components:
                 solution_number = 1
                 for j, string in enumerate(output_to_parse):
