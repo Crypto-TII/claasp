@@ -2599,6 +2599,24 @@ class Sbox(Component):
 
         transitions = model.sboxes_qdt_templates[cache_key]
 
+        # Keep only the transitions that agree with this S-box's fixed input and
+        # output difference, when the characteristic decides them. The others
+        # cannot happen, so writing them out would only make the model bigger.
+        # An S-box the characteristic leaves undecided keeps its whole table.
+        if self.id in model.sbox_differences:
+            a_fixed, b_fixed = model.sbox_differences[self.id]
+            transitions = [
+                transition
+                for transition in transitions
+                if transition["a"] == a_fixed and transition["b"] == b_fixed
+            ]
+            if not transitions:
+                raise ValueError(
+                    f"{self.id}: the differential "
+                    f"{a_fixed:#x} -> {b_fixed:#x} has no quasidifferential "
+                    f"transition, so the characteristic is impossible"
+                )
+
         max_weight = max(transition["weight"] for transition in transitions)
         weight_bit_ids = model._qdt_local_weight_variables(self, max_weight)
 
