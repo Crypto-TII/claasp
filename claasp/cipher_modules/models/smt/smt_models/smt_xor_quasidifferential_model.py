@@ -1193,11 +1193,17 @@ class SmtXorQuasidifferentialModel(SmtModel):
         self,
         fixed_weight,
         fixed_values=[],
+        fixed_masks=None,
         solver_name=solvers.SOLVER_DEFAULT,
     ):
         """
         Find one XOR quasidifferential trail with a fixed total
         weight loss.
+
+        ``fixed_masks`` sets mask bits, which ``fixed_values`` cannot express.
+        If it is not given, any trail of that weight may be returned, including
+        one whose input or output mask is non-zero. ``boundary_masks()`` gives
+        the usual list.
 
         EXAMPLES::
 
@@ -1219,6 +1225,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         )
 
         self._constrain_weight_exactly(fixed_weight)
+        self._apply_fixed_masks(fixed_masks)
 
         end_building_time = time.time()
 
@@ -1761,14 +1768,12 @@ class SmtXorQuasidifferentialModel(SmtModel):
 
     def boundary_masks(self):
         """
-        The mask constraints for ``fixed_masks`` that set the input and output
-        masks of the cipher to zero. Only those two ends: the masks in between
-        stay free, and summing over them is what makes the result the exact
-        probability of the characteristic for one key.
+        The ``fixed_masks`` list that sets the cipher's input and output masks
+        to zero, leaving the masks in between free.
 
-        The output end needs every component the final round emits, not just
-        one. CLAASP emits two there, and a mask left free on either of them
-        adds trails that do not belong to the characteristic.
+        The output end covers every state output of the final round, since a
+        mask left free on any of them admits trails outside the
+        characteristic.
 
         EXAMPLES::
 
@@ -1815,6 +1820,21 @@ class SmtXorQuasidifferentialModel(SmtModel):
             for component_id in component_ids
         ]
 
+    def _apply_fixed_masks(self, fixed_masks):
+        """
+        Add the ``fixed_masks`` assertions to the model just built. Mask bits
+        need their own assertions, on the ``qdt_`` variables.
+        """
+
+        mask_constraints = self._build_fixed_mask_constraints(fixed_masks or [])
+
+        if mask_constraints:
+            self._model_constraints = (
+                self._model_constraints[: -len(constants.MODEL_SUFFIX)]
+                + mask_constraints
+                + constants.MODEL_SUFFIX
+            )
+
     def _solutions_at_weight(
         self,
         weight,
@@ -1860,14 +1880,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
 
         self._constrain_weight_exactly(weight)
 
-        mask_constraints = self._build_fixed_mask_constraints(fixed_masks)
-
-        if mask_constraints:
-            self._model_constraints = (
-                self._model_constraints[: -len(constants.MODEL_SUFFIX)]
-                + mask_constraints
-                + constants.MODEL_SUFFIX
-            )
+        self._apply_fixed_masks(fixed_masks)
 
         building_time = time.time() - start_building_time
 

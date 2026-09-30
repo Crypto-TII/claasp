@@ -37,8 +37,9 @@ def test_find_one_xor_quasidifferential_trail_on_simon():
 def test_compute_trail_sign():
     speck = SpeckBlockCipher(number_of_rounds=6)
     smt = SmtXorQuasidifferentialModel(speck)
-    fixed_values = _speck_six_round_characteristic()
-    trail = smt.find_one_xor_quasidifferential_trail_with_fixed_weight(13, fixed_values=fixed_values)
+    trail = smt.find_one_xor_quasidifferential_trail_with_fixed_weight(
+        13, fixed_values=_speck_six_round_characteristic(), fixed_masks=smt.boundary_masks()
+    )
     assert trail["total_weight"] == 13.0
     assert smt.compute_trail_sign(trail) == 1
 
