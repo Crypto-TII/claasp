@@ -26,9 +26,6 @@ from claasp.name_mappings import WORD_OPERATION
 def _rotation_modulo(amount, length):
     """
     Return ``amount`` reduced modulo ``length``, the number of rotated positions.
-
-    Rotation amounts beyond the rotated width wrap around (Keccak-p[200] applies rho offsets such as -15 to 8-bit
-    lanes); Python slicing alone would silently turn them into the identity.
     """
     return amount % length if length else 0
 
