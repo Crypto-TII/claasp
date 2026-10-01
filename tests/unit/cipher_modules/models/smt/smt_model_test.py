@@ -93,7 +93,7 @@ def test_fix_variables_value_constraints():
     ]
 
     smt = SmtXorDifferentialModel(speck)
-    cipher_output_id = speck.get_all_components_ids()[-1]
+    cipher_output_id = speck.all_components_ids()[-1]
     fixed_values = [set_fixed_variables(INPUT_PLAINTEXT, "equal", range(32), [0] * 31 + [1])]
     fixed_values.append(set_fixed_variables(INPUT_PLAINTEXT, "not_equal", range(32), [0] * 31 + [1]))
     trail = smt.find_one_xor_differential_trail(fixed_values=fixed_values)
