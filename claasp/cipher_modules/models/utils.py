@@ -1147,6 +1147,9 @@ def linear_checker_permutation(
         sage: abs(abs(correlation) - 0.5) < 0.05
         True
     """
+    # Sage doctests pass Sage Integers; numpy's generator and shapes need Python ints.
+    number_of_samples, state_size, num_workers = int(number_of_samples), int(state_size), int(num_workers)
+    seed = None if seed is None else int(seed)
     if state_size % 8 != 0:
         raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     if len(cipher.inputs) != 1:
