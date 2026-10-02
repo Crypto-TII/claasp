@@ -8,7 +8,7 @@
       "legacy_paths": ["claasp/cipher_modules/report.py", "tests/unit/cipher_modules/report_test.py"],
       "behavior": "trail views, generic result graphs, CSV/JSON/LaTeX-like tables, image output, and cleanup",
       "disposition": "supersede",
-      "destinations": ["src/claasp/presentation", "tests/unit/presentation/test_presentation_contracts.py"],
+      "destinations": ["src/claasp/presentation", "tests/unit/presentation/test_contracts.py"],
       "rationale": "Replace test-name dispatch, mutable nested dictionaries, implicit timestamps, unsafe recursive cleanup, and eager pandas/Plotly imports with typed artifacts and explicit operations.",
       "fixed_evidence": ["immutable evidence and provenance contracts", "fixed typed trail and result adapters", "deterministic text/report-data exports", "safe-path and overwrite tests"],
       "status": "achieved"

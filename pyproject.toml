@@ -20,7 +20,7 @@ presentation = ["matplotlib>=3.7", "pandas>=2"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = '-ra -m "not external and not extended"'
+addopts = '-ra --import-mode=importlib -m "not external and not extended"'
 markers = [
   "external: requires an executable supplied by a dedicated integration job",
   "extended: exhaustive dependency-free audit kept outside the routine time budget",
@@ -96,12 +96,13 @@ docstring-code-format = false
 # The inventory must add its sibling tool directory before importing the classifier.
 "tools/legacy_inventory.py" = ["E402"]
 # Matplotlib's backend must be selected before importing pyplot and renderers.
-"tests/unit/presentation/test_presentation_plots.py" = ["E402"]
+"tests/unit/drivers/renderers/test_presentation.py" = ["E402"]
 
 [tool.mypy]
 python_version = "3.11"
 files = ["src/claasp", "tests", "tools", "docs/conf.py"]
-mypy_path = "src"
+mypy_path = ["src", "tools"]
+explicit_package_bases = true
 check_untyped_defs = true
 no_implicit_optional = true
 warn_unused_ignores = true

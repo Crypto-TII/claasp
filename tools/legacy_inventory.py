@@ -279,17 +279,17 @@ M10_9D_COMPLETED_SLICES = {
     "M10.9d8",
 }
 M10_9D_TEST_DESTINATIONS = {
-    "M10.9d1": "tests/unit/primitives/block_functions/test_chacha.py",
-    "M10.9d2": "tests/unit/primitives/block_functions/test_salsa.py",
+    "M10.9d1": "tests/unit/primitives/permutations/test_chacha.py",
+    "M10.9d2": "tests/unit/primitives/permutations/test_salsa.py",
     "M10.9d4": (
-        "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
+        "tests/unit/primitives/single_component_primitives/test_package.py; tests/unit/primitives/toy_primitives/test_package.py"
     ),
     "M10.9d5": (
-        "tests/unit/primitives/test_word_block_catalogue.py; "
-        "tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
+        "tests/unit/primitives/block_ciphers/test_package.py; "
+        "tests/unit/primitives/block_ciphers/simon/test_package.py; tests/unit/primitives/block_ciphers/test_speck.py"
     ),
     "M10.9d6": (
-        "tests/unit/graph/test_catalogue_graph_migration.py; "
+        "tests/unit/graph/test_package__catalogue_migration.py; "
         "tests/integration/test_substitution_block_catalogue.py"
     ),
     "M10.9d7": (
@@ -355,7 +355,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The Sage/Gurobi monolith mixes exact symbolic algebra, structural bounds, incomplete solution pools and divide-and-conquer experiments. v5 separates these claims and rejects non-terminal enumeration as proof. Literal expectations from tests permanently skipped behind a Gurobi license are recorded as unverified claims, not promoted to oracle values.",
     },
     "tests/unit/cipher_modules/models/milp/milp_models/Gurobi/monomial_prediction_test.py": {
-        "v5_destination": "tests/unit/analysis/test_monomial_prediction.py; tests/unit/analysis/test_monomial_composition.py; tests/unit/analysis/test_algebraic_evidence.py; tests/unit/components/algebraic/test_trivium_algebra.py; tests/integration/test_glpk_monomial_prediction.py; tests/integration/test_glpk_trivium_monomials.py",
+        "v5_destination": "tests/unit/representations/constraints/polynomial/test_boolean__monomial_prediction.py; tests/unit/analysis/test_monomial.py; tests/unit/analysis/test_algebraic.py; tests/unit/analysis/test_algebraic__trivium.py; tests/integration/test_glpk_monomial_prediction.py; tests/integration/test_glpk_trivium_monomials.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -371,7 +371,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Sage branch-number MILP, MiniZinc matrix probes and cache timing are search machinery. The semantic evidence is the resulting bound plus its exact-versus-lower-bound qualification.",
     },
     "tests/unit/cipher_modules/models/milp/milp_models/milp_wordwise_branch_number_number_of_active_sboxes_model_test.py": {
-        "v5_destination": "tests/unit/representations/constraints/milp/test_sbox_activity.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_activity.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -387,7 +387,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Sage sentinel variables and graph-copy naming do not define a distinct mathematical model. The witness remains explicitly abstract and is not relabelled a concrete field-valued differential proof.",
     },
     "tests/unit/cipher_modules/models/milp/milp_models/milp_wordwise_impossible_xor_differential_model_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated.py",
         "prerequisites": [],
         "disposition": "migrate",
         "status": "migrated-in-m10.8d",
@@ -403,7 +403,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The 1,600-line utility module conflates formatting, random sampling, graph execution, multiprocessing and cryptanalytic claim types. v5 separates these concerns; empirical results carry seeds/provenance and never become SAT or optimum evidence.",
     },
     "tests/unit/cipher_modules/models/models_utils_test.py": {
-        "v5_destination": "tests/unit/test_constraints.py; tests/unit/test_results.py; tests/unit/analysis/test_composed_trails.py; tests/unit/semantics/cryptanalysis/test_continuous_heuristics.py; tests/unit/test_formatting.py",
+        "v5_destination": "tests/unit/test_constraints.py; tests/unit/test_results.py; tests/unit/analysis/test_composed.py; tests/unit/semantics/cryptanalysis/test_continuous.py; tests/unit/test_formatting.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -435,7 +435,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Integer sentinel encodings, Sage constraints and minimization of unknown indicators are representation choices. They do not define a different primitive graph or execution engine.",
     },
     "tests/unit/cipher_modules/models/milp/milp_models/milp_bitwise_deterministic_truncated_xor_differential_model_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/unit/representations/constraints/milp/test_finite_relation_milp.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated.py; tests/unit/representations/constraints/milp/test_relations.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -451,7 +451,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "A second Sage encoding of the same impossible-boundary semantics adds no public capability. Generated constraint order and arbitrary Ascon witnesses are discarded.",
     },
     "tests/unit/cipher_modules/models/milp/milp_models/milp_bitwise_impossible_xor_differential_model_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated.py; tests/integration/test_minizinc_integration.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -467,7 +467,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The legacy model exposes encoding-specific integer pairs and mutable cache-derived inequalities. v5 retains the wordwise transfer semantics independently of backend.",
     },
     "tests/unit/cipher_modules/models/milp/milp_models/milp_wordwise_deterministic_truncated_xor_differential_model_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/unit/representations/constraints/milp/test_wordwise_relation_tables.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated.py; tests/unit/semantics/cryptanalysis/test_truncated__wordwise_relations.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -499,7 +499,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "A Sage objective over activity flags is a coarse search abstraction. v5 exposes the bound as semantic evidence and never relabels it an exact differential probability.",
     },
     "tests/unit/cipher_modules/models/milp/milp_models/milp_xor_differential_number_of_active_sboxes_model_test.py": {
-        "v5_destination": "tests/unit/representations/constraints/milp/test_sbox_activity.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_activity.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -515,7 +515,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Sage variables, solver/license branches and probability-array conventions are replaced by portable representation/driver boundaries and exact Walsh decoders.",
     },
     "tests/unit/cipher_modules/models/milp/milp_models/milp_xor_linear_model_test.py": {
-        "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_linear_smt.py",
+        "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_linear.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -555,7 +555,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "A heterogeneous list of component method names, guessed unknown counts and one CNF objective do not define a distinct semantic model. v5 preserves reproducible fixed evidence and does not give sampled or approximate results SAT-proof status.",
     },
     "tests/unit/cipher_modules/models/sat/sat_models/sat_differential_linear_test.py": {
-        "v5_destination": "tests/unit/analysis/test_composed_trails.py",
+        "v5_destination": "tests/unit/analysis/test_composed.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -571,7 +571,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Per-component string dispatch and heterogeneous SAT encodings are replaced by explicit phase composition. Empirical probability estimates remain labelled observations, not model weights or solver proofs.",
     },
     "tests/unit/cipher_modules/models/sat/sat_models/sat_probabilistic_xor_truncated_differential_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated.py; tests/integration/test_minizinc_integration.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -587,7 +587,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Unknown-window limits are optional pruning constraints, not probabilities. Direct strongest propagation owns deterministic claims; probabilistic transitions carry independently checked costs.",
     },
     "tests/unit/cipher_modules/models/sat/sat_models/sat_semi_deterministic_xor_differential_model_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/unit/analysis/test_composed_trails.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated.py; tests/unit/analysis/test_composed.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -603,7 +603,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Four graph copies and equality clauses are an experimental construction, not a new propagation meaning. v5 keeps permutation execution separate from the statistical observation.",
     },
     "tests/unit/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_model_test.py": {
-        "v5_destination": "tests/unit/analysis/test_composed_trails.py",
+        "v5_destination": "tests/unit/analysis/test_composed.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -619,7 +619,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Graph inversion, prefix mutation, pickled cache files and four-copy CNF construction conflate graph editing, representation and experiment. Those concerns are separated in v5.",
     },
     "tests/unit/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_linear_model_test.py": {
-        "v5_destination": "tests/unit/analysis/test_composed_trails.py",
+        "v5_destination": "tests/unit/analysis/test_composed.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -667,7 +667,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Two Boolean variables per ternary bit, generated clause ordering and a solver-specific minimization loop are representation details. The strongest sound output is computed directly and checked independently.",
     },
     "tests/unit/cipher_modules/models/sat/sat_models/sat_bitwise_deterministic_truncated_xor_differential_model_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -683,7 +683,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Forward/backward SAT variable suffixes and graph-copy mutation are replaced by explicit impossible boundaries. Component-local Ascon arbitrary witnesses are not stable public results.",
     },
     "tests/unit/cipher_modules/models/sat/sat_models/sat_bitwise_impossible_xor_differential_model_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated.py; tests/integration/test_minizinc_integration.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -723,7 +723,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Branch literal naming, CNF ordering, sequential counters and solver dictionaries are replaced by typed masks, exact correlations and independent decoding.",
     },
     "tests/unit/cipher_modules/models/sat/sat_models/sat_xor_linear_model_test.py": {
-        "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_linear_smt.py",
+        "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_linear.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -739,7 +739,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The first-step Boolean activity search and repeated synthesized XOR components are a search heuristic. v5 records the proven branch property and independently derives the exact result-bearing second-step evidence.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_number_of_active_sboxes_model_test.py": {
-        "v5_destination": "tests/unit/representations/constraints/milp/test_sbox_activity.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_activity.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -755,7 +755,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Two sequential solver models, retries, generated tables and warning behavior are an optimization strategy rather than a distinct graph realization. Exact semantic enumeration retains its fixed results without binding the public API to the heuristic.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model_test.py": {
-        "v5_destination": "tests/unit/representations/constraints/milp/test_sbox_activity.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_activity.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -795,7 +795,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The legacy test is assertion-free construction. A separate optimized class would conflate graph realization with execution/search strategy; v5 keeps the semantic problem shared and solver selection explicit.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated.py; tests/integration/test_minizinc_integration.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -803,7 +803,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The count four is enumeration of unconstrained symmetric unknown patterns and the remaining checks are generated names, line counts, metadata and arbitrary witnesses. v5 tests the fixed mathematical boundary rather than serialization accidents.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model_arx_optimized_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated.py",
         "prerequisites": [],
         "disposition": "remove",
         "status": "removed-in-m10.8d",
@@ -819,7 +819,7 @@ MIGRATION_OVERRIDES = {
         "rationale": None,
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_semi_deterministic_truncated_xor_differential_model_test.py": {
-        "v5_destination": "tests/integration/test_minizinc_integration.py; tests/unit/semantics/cryptanalysis/test_truncated_differences.py",
+        "v5_destination": "tests/integration/test_minizinc_integration.py; tests/unit/semantics/cryptanalysis/test_truncated.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -835,7 +835,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Activity integers, negative value sentinels and generated declaration counts are replaced by explicit typed domains. Exact and coarse abstractions are labelled separately.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_wordwise_deterministic_truncated_xor_differential_model_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated.py; tests/integration/test_minizinc_integration.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -851,7 +851,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Cipher graph mutation, inverse-name correspondence, generated-line cleanup and arbitrary low-complexity witnesses are replaced by explicit directional dataflows and contradiction positions.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_impossible_xor_differential_model_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated.py; tests/integration/test_minizinc_integration.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -867,7 +867,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The legacy LBlock tests fix no input/output difference and assert counts of six placeholder-only solutions, solver metadata and arbitrary weights. They establish no reproducible cryptanalytic result beyond the shared incompatibility semantics.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_hybrid_impossible_xor_differential_model_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated.py; tests/integration/test_minizinc_integration.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -883,7 +883,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Mutable component partitions, mixed approximate/exact objectives and solver-shaped dictionaries are replaced by typed composition. Search weight, exact composed weight and sampled correlation are never conflated.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_differential_linear_model_test.py": {
-        "v5_destination": "tests/unit/analysis/test_composed_trails.py",
+        "v5_destination": "tests/unit/analysis/test_composed.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -939,7 +939,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Graph splitting, generated filenames, mutable model concatenation and solver-output parsing are representation details. Exact switch semantics and separately labelled seeded empirical evidence replace an optimizer-specific builder; an observed rate is never presented as a proof probability.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_boomerang_model_arx_optimized_test.py": {
-        "v5_destination": "tests/unit/analysis/test_composed_trails.py",
+        "v5_destination": "tests/unit/analysis/test_composed.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -963,7 +963,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The legacy floating SCIP search uses a piecewise approximation and labels numerical candidates SATISFIED. v5 preserves the underlying heuristic equations and fixed evidence but deliberately removes proof-shaped status from continuous results.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_differential_linear_continuous_model_test.py": {
-        "v5_destination": "tests/unit/semantics/cryptanalysis/test_continuous_heuristics.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_continuous.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -995,7 +995,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The module itself calls the small-S-box convex-hull code a comparison-only alternative to large-S-box Espresso generation. v5 uses the same exact finite-relation baseline for both; greedy/minimum-facet algorithms, Sage polyhedra and pickled caches are not public APIs.",
     },
     "tests/unit/cipher_modules/models/milp/utils/generate_sbox_inequalities_for_trail_search_test.py": {
-        "v5_destination": "tests/unit/representations/constraints/milp/test_sbox_milp_relation.py",
+        "v5_destination": "tests/unit/representations/constraints/milp/test_sbox.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -1011,7 +1011,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Typed strongest bitwise derivative joins retain semantics without Espresso, Sage SBox objects, mutable pickle caches or a fixed chosen cube ordering. Unknown bits remain sound abstractions, not probability-bearing joint witnesses.",
     },
     "tests/unit/cipher_modules/models/milp/utils/generate_undisturbed_bits_inequalities_for_sboxes_test.py": {
-        "v5_destination": "tests/unit/components/substitution/test_sbox_undisturbed.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated__sbox_undisturbed.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -1027,7 +1027,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The coarse domain transfer, not Espresso output or a wordsize-keyed mutable cache, owns the mathematics. This abstraction is distinct from the separate 94-row branch-number table and from exact field-matrix support.",
     },
     "tests/unit/cipher_modules/models/milp/utils/generate_inequalities_for_wordwise_truncated_mds_matrix_test.py": {
-        "v5_destination": "tests/unit/representations/constraints/milp/test_wordwise_relation_tables.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated__wordwise_relations.py",
         "prerequisites": [],
         "disposition": "migrate",
         "status": "migrated-in-m10.8d",
@@ -1043,7 +1043,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Direct semantic transfer and exact finite relations replace Espresso and mutable arity/matrix-indexed pickle caches. Unknown and nonzero words have no fabricated concrete sentinel values.",
     },
     "tests/unit/cipher_modules/models/milp/utils/generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits_test.py": {
-        "v5_destination": "tests/unit/representations/constraints/milp/test_wordwise_relation_tables.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated__wordwise_relations.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -1115,7 +1115,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The assertion-free legacy construction smoke test accepts a builder that skips modular addition; a checked complete execution witness supersedes it.",
     },
     "tests/unit/cipher_modules/models/milp/milp_models/milp_cipher_model_test.py": {
-        "v5_destination": "tests/unit/representations/constraints/milp/test_boolean_graph_milp.py; tests/integration/test_glpk_integration.py",
+        "v5_destination": "tests/unit/representations/constraints/milp/test_boolean.py; tests/integration/test_glpk_integration.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -1171,7 +1171,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Sage internal solver lists and command-format dictionaries are replaced by explicit driver objects. No installation is inferred from a registry entry. Legacy brand aliases and exact timing/memory log labels are not compatibility contracts; mathematical fixture ownership stays with separate inventoried model tests.",
     },
     "tests/unit/cipher_modules/models/sat/utils/sat_model_utils_test.py": {
-        "v5_destination": "tests/unit/representations/constraints/sat/test_boolean_cnf.py",
+        "v5_destination": "tests/unit/representations/constraints/sat/test_package.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -1179,7 +1179,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Specific literal-string ordering and intermediate names are replaced by deterministic numeric clauses, typed graph provenance and complete Boolean truth-table tests.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_test.py": {
-        "v5_destination": "tests/integration/test_word_differential.py; tests/integration/test_minizinc_integration.py; tests/unit/semantics/cryptanalysis/test_bitwise_transition_semantics.py",
+        "v5_destination": "tests/integration/test_word_differential.py; tests/integration/test_minizinc_integration.py; tests/unit/semantics/cryptanalysis/test_bitwise.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -1187,7 +1187,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "CLI solver drivers and typed independently checked characteristics replace Python MiniZinc API versus external-command duplicates, dictionary model/status tags and arbitrary intermediate component-value formatting. Identity lookup behavior is represented directly by typed Identity; fixed round-key differences are explicit.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model_test.py": {
-        "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/semantics/cryptanalysis/test_bitwise_transition_semantics.py; tests/unit/representations/constraints/smt/test_word_linear_smt.py",
+        "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/semantics/cryptanalysis/test_bitwise.py; tests/unit/representations/constraints/smt/test_word_linear.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -1195,7 +1195,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Explicit masks, typed results and terminal UNSAT replace legacy fixed-bit string formatters, scaled probability-array declarations, solve-with-API statistics dictionaries, and a hard-coded MiniZinc search annotation. No arbitrary witness or FancyBlockCipher declaration count is a public v5 contract.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_model_test.py": {
-        "v5_destination": "tests/unit/representations/constraints/milp/test_sbox_activity.py; tests/integration/test_minizinc_integration.py; tests/integration/test_speck_trail_enumeration.py",
+        "v5_destination": "tests/unit/semantics/cryptanalysis/test_activity.py; tests/integration/test_minizinc_integration.py; tests/integration/test_speck_trail_enumeration.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -1242,7 +1242,7 @@ MIGRATION_OVERRIDES = {
         ),
     },
     "tests/unit/cipher_modules/models/algebraic/constraints_test.py": {
-        "v5_destination": "tests/unit/representations/constraints/polynomial/test_boolean_polynomial_constraints.py",
+        "v5_destination": "tests/unit/representations/constraints/polynomial/test_boolean.py",
         "prerequisites": [],
         "disposition": "migrate",
         "status": "migrated-in-m10.8d",
@@ -1254,7 +1254,7 @@ MIGRATION_OVERRIDES = {
     },
     "tests/unit/cipher_modules/models/algebraic/algebraic_model_test.py": {
         "v5_destination": (
-            "tests/unit/representations/execution/test_boolean_symbolic_evaluation.py; tests/unit/representations/constraints/polynomial/test_polynomial.py"
+            "tests/unit/representations/execution/test_symbolic_boolean.py; tests/unit/representations/constraints/polynomial/test_package.py"
         ),
         "prerequisites": [],
         "disposition": "supersede",
@@ -1312,7 +1312,7 @@ MIGRATION_OVERRIDES.update(
     {
         "tests/unit/cipher_modules/models/smt/smt_model_test.py": {
             "v5_destination": (
-                "tests/unit/representations/constraints/smt/test_smt.py; tests/unit/analysis/test_analysis_constraints.py"
+                "tests/unit/representations/constraints/smt/test_package.py; tests/unit/analysis/test_constraints.py"
             ),
             "prerequisites": [],
             "disposition": "supersede",
@@ -1381,7 +1381,7 @@ _M10_15_OVERRIDES = {
         "Typed components and the registered scalar evaluator already own the mathematical behavior; free-form Sage/bitstring helpers and generated-code string helpers are not duplicated.",
     ),
     "claasp/cipher_modules/generic_functions_continuous_diffusion_analysis.py": (
-        "src/claasp/semantics/cryptanalysis/continuous.py; tests/unit/semantics/cryptanalysis/test_continuous_heuristics.py",
+        "src/claasp/semantics/cryptanalysis/continuous.py; tests/unit/semantics/cryptanalysis/test_continuous.py",
         "supersede",
         "M10.6d6 already owns typed continuous heuristic semantics and evidence; the NumPy/Sage helper monolith is closed without reopening that milestone.",
     ),
@@ -1396,27 +1396,27 @@ _M10_15_OVERRIDES = {
         "Typed logical units and the dependency-free batch driver replace byte-layout heuristics and mandatory NumPy conversion helpers.",
     ),
     "tests/unit/cipher_modules/code_generator_test.py": (
-        "tests/unit/representations/source/test_source_generation.py; tests/integration/test_native_source_driver.py",
+        "tests/unit/representations/source/test_python.py; tests/integration/test_native_source_driver.py",
         "supersede",
         "Semantic parity, deterministic source, explicit unsupported diagnostics, safe paths, compiler provenance, and bounded subprocess tests replace generated-line and shared-library side-effect assertions.",
     ),
     "tests/unit/cipher_modules/generic_functions_test.py": (
-        "tests/unit/representations/source/test_source_generation.py; tests/unit/primitives/test_batch_evaluation.py; tests/unit/components/feedback/test_feedback_register.py",
+        "tests/unit/representations/source/test_python.py; tests/unit/representations/execution/test_batch.py; tests/unit/components/feedback/test_feedback_register.py",
         "supersede",
         "Existing typed component/evaluator evidence plus generated-source parity preserves applicable values; expression-string and mutable helper internals are not contracts.",
     ),
     "tests/unit/cipher_modules/generic_functions_continuous_diffusion_analysis_test.py": (
-        "tests/unit/semantics/cryptanalysis/test_continuous_heuristics.py",
+        "tests/unit/semantics/cryptanalysis/test_continuous.py",
         "supersede",
         "M10.6d6 fixed continuous-analysis evidence already covers the retained heuristic semantics independently of generated evaluator code.",
     ),
     "tests/unit/cipher_modules/generic_functions_vectorized_bit_test.py": (
-        "tests/unit/primitives/test_batch_evaluation.py; tests/unit/representations/source/test_source_generation.py",
+        "tests/unit/representations/execution/test_batch.py; tests/unit/representations/source/test_python.py",
         "supersede",
         "Scalar/batch and generated-source parity retain semantic results without NumPy array-shape or debug-print contracts.",
     ),
     "tests/unit/cipher_modules/generic_functions_vectorized_byte_test.py": (
-        "tests/unit/primitives/test_batch_evaluation.py; tests/unit/representations/source/test_source_generation.py",
+        "tests/unit/representations/execution/test_batch.py; tests/unit/representations/source/test_python.py",
         "supersede",
         "Typed batch inputs and exact scalar parity replace byte-oriented NumPy packing helpers; fixed-width source boundary cases are tested directly.",
     ),
@@ -1449,7 +1449,7 @@ MIGRATION_OVERRIDES.update(
         },
         "tests/unit/cipher_modules/continuous_diffusion_analysis_test.py": {
             "milestone_owner": "M10.6d6",
-            "v5_destination": "tests/unit/semantics/cryptanalysis/test_continuous_heuristics.py; tests/unit/presentation/test_presentation_adapters.py",
+            "v5_destination": "tests/unit/semantics/cryptanalysis/test_continuous.py; tests/unit/presentation/test_adapters.py",
             "prerequisites": ["M10.6d6", "M10.14"],
             "disposition": "supersede",
             "status": "superseded-in-m10.15d-audit",
@@ -1477,7 +1477,7 @@ MIGRATION_OVERRIDES.update(
         },
         "tests/unit/cipher_modules/report_test.py": {
             "milestone_owner": "M10.14a",
-            "v5_destination": "tests/unit/presentation/test_presentation_contracts.py; tests/unit/presentation/test_presentation_tables.py; tests/unit/presentation/test_presentation_adapters.py; tests/unit/presentation/test_presentation_exports.py; tests/unit/presentation/test_presentation_files.py; tests/unit/presentation/test_presentation_plots.py",
+            "v5_destination": "tests/unit/presentation/test_contracts.py; tests/unit/presentation/test_dataframe.py; tests/unit/presentation/test_adapters.py; tests/unit/presentation/test_exports.py; tests/unit/presentation/test_files.py; tests/unit/drivers/renderers/test_presentation.py",
             "prerequisites": ["M10.14a"],
             "disposition": "supersede",
             "status": "superseded-in-m10.14g",
@@ -1495,7 +1495,7 @@ MIGRATION_OVERRIDES.update(
         },
         "tests/unit/cipher_modules/statistical_tests/nist_statistical_tests_report_test.py": {
             "milestone_owner": "M10.14a",
-            "v5_destination": "tests/unit/presentation/test_presentation_adapters.py; tests/unit/presentation/test_presentation_plots.py; tests/unit/presentation/test_presentation_files.py",
+            "v5_destination": "tests/unit/presentation/test_adapters.py; tests/unit/drivers/renderers/test_presentation.py; tests/unit/presentation/test_files.py",
             "prerequisites": ["M10.12d", "M10.14a"],
             "disposition": "supersede",
             "status": "superseded-in-m10.14g",
@@ -1548,7 +1548,7 @@ _CMS_TEST_REPLACEMENTS = {
     ),
     "cms_deterministic_truncated_xor_differential_model_test": (
         "supersede",
-        "tests/unit/semantics/cryptanalysis/test_truncated_differences.py",
+        "tests/unit/semantics/cryptanalysis/test_truncated.py",
         "Typed deterministic-truncated modular-add semantics and Speck propagation replace an assertion-free construction smoke test.",
     ),
 }
@@ -1652,7 +1652,7 @@ MIGRATION_OVERRIDES.update(
             "rationale": "Dynamic folder scanning and class-name matching conflict with the committed typed catalogue required by M10.9f; the remaining identifier/scenario strings have no fixed tests or reusable mathematical semantics.",
         },
         "tests/unit/component_test.py": {
-            "v5_destination": "tests/unit/graph/test_typed_graph.py; tests/unit/semantics/cryptanalysis/test_propagation_problem.py",
+            "v5_destination": "tests/unit/graph/test_package.py; tests/unit/semantics/cryptanalysis/test_problem.py",
             "prerequisites": [],
             "disposition": "supersede",
             "status": "superseded-in-m10.9c2",
@@ -1660,7 +1660,7 @@ MIGRATION_OVERRIDES.update(
             "rationale": "Backend-method aliases and their exact NotImplementedError strings came from the removed component/backend monolith; v5 tests the separated contracts directly.",
         },
         "tests/unit/utils/integer_test.py": {
-            "v5_destination": "tests/unit/utils/test_authoring_utilities.py",
+            "v5_destination": "tests/unit/utils/test_package.py",
             "prerequisites": [],
             "disposition": "migrate",
             "status": "migrated-in-m10.9c2",
@@ -1668,7 +1668,7 @@ MIGRATION_OVERRIDES.update(
             "rationale": None,
         },
         "tests/unit/utils/sequence_operations_test.py": {
-            "v5_destination": "tests/unit/utils/test_authoring_utilities.py",
+            "v5_destination": "tests/unit/utils/test_package.py",
             "prerequisites": [],
             "disposition": "migrate",
             "status": "migrated-in-m10.9c2",
@@ -1676,7 +1676,7 @@ MIGRATION_OVERRIDES.update(
             "rationale": None,
         },
         "tests/unit/utils/utils_test.py": {
-            "v5_destination": "tests/unit/utils/test_authoring_utilities.py; tests/unit/analysis/test_avalanche_analysis.py; tests/unit/semantics/cryptanalysis/test_continuous_heuristics.py",
+            "v5_destination": "tests/unit/utils/test_package.py; tests/unit/analysis/test_avalanche.py; tests/unit/semantics/cryptanalysis/test_continuous.py",
             "prerequisites": [],
             "disposition": "supersede",
             "status": "superseded-in-m10.9c2",
@@ -1731,12 +1731,12 @@ for _path, (_disposition, _destination, _rationale) in _M10_9C3_SOURCE_DISPOSITI
     }
 
 _M10_9C3_TEST_DESTINATIONS = {
-    "tests/unit/components/constant_component_test.py": "tests/unit/components/structural/test_structural_evaluation.py",
-    "tests/unit/components/permutation_component_test.py": "tests/unit/components/structural/test_structural_evaluation.py; tests/unit/graph/test_conversion_components.py",
-    "tests/unit/components/reverse_component_test.py": "tests/unit/graph/test_conversion_components.py",
-    "tests/unit/components/word_permutation_component_test.py": "tests/unit/graph/test_conversion_components.py",
-    "tests/unit/components/cipher_output_component_test.py": "tests/unit/graph/test_typed_graph.py; tests/unit/analysis/test_neural_projections.py",
-    "tests/unit/components/intermediate_output_component_test.py": "tests/unit/analysis/test_neural_projections.py; tests/unit/components/structural/test_structural_evaluation.py",
+    "tests/unit/components/constant_component_test.py": "tests/unit/components/structural/test_package.py",
+    "tests/unit/components/permutation_component_test.py": "tests/unit/components/structural/test_package.py; tests/unit/graph/test_primitive__conversions.py",
+    "tests/unit/components/reverse_component_test.py": "tests/unit/graph/test_primitive__conversions.py",
+    "tests/unit/components/word_permutation_component_test.py": "tests/unit/graph/test_primitive__conversions.py",
+    "tests/unit/components/cipher_output_component_test.py": "tests/unit/graph/test_package.py; tests/unit/analysis/test_neural__projections.py",
+    "tests/unit/components/intermediate_output_component_test.py": "tests/unit/analysis/test_neural__projections.py; tests/unit/components/structural/test_package.py",
 }
 for _path, _destination in _M10_9C3_TEST_DESTINATIONS.items():
     MIGRATION_OVERRIDES[_path] = {
@@ -1774,12 +1774,12 @@ MIGRATION_OVERRIDES["claasp/components/multi_input_non_linear_logical_operator_c
 }
 
 _M10_9C4_TEST_DESTINATIONS = {
-    "tests/unit/components/and_component_test.py": "tests/unit/components/word/test_logical_components.py; tests/unit/semantics/cryptanalysis/test_bitwise_transition_semantics.py",
-    "tests/unit/components/multi_input_non_linear_logical_operator_component_test.py": "tests/unit/components/word/test_logical_components.py",
-    "tests/unit/components/not_component_test.py": "tests/unit/components/word/test_logical_components.py",
-    "tests/unit/components/or_component_test.py": "tests/unit/components/word/test_logical_components.py",
-    "tests/unit/components/sbox_component_test.py": "tests/unit/components/substitution/test_sbox.py; tests/unit/components/substitution/test_bit_vector_sbox.py; tests/unit/semantics/cryptanalysis/test_trail_semantics.py; tests/unit/representations/constraints/milp/test_sbox_milp_relation.py; tests/unit/components/substitution/test_sbox_undisturbed.py",
-    "tests/unit/components/xor_component_test.py": "tests/unit/components/word/test_logical_components.py; tests/unit/components/word/test_word_components.py; tests/unit/representations/constraints/milp/test_wordwise_relation_tables.py",
+    "tests/unit/components/and_component_test.py": "tests/unit/components/word/test_package__logical.py; tests/unit/semantics/cryptanalysis/test_bitwise.py",
+    "tests/unit/components/multi_input_non_linear_logical_operator_component_test.py": "tests/unit/components/word/test_package__logical.py",
+    "tests/unit/components/not_component_test.py": "tests/unit/components/word/test_package__logical.py",
+    "tests/unit/components/or_component_test.py": "tests/unit/components/word/test_package__logical.py",
+    "tests/unit/components/sbox_component_test.py": "tests/unit/components/substitution/test_sbox.py; tests/unit/components/substitution/test_bit_vector_sbox.py; tests/unit/semantics/cryptanalysis/test_trails.py; tests/unit/representations/constraints/milp/test_sbox.py; tests/unit/semantics/cryptanalysis/test_truncated__sbox_undisturbed.py",
+    "tests/unit/components/xor_component_test.py": "tests/unit/components/word/test_package__logical.py; tests/unit/components/word/test_package.py; tests/unit/semantics/cryptanalysis/test_truncated__wordwise_relations.py",
 }
 for _path, _destination in _M10_9C4_TEST_DESTINATIONS.items():
     MIGRATION_OVERRIDES[_path] = {
@@ -1820,15 +1820,15 @@ MIGRATION_OVERRIDES["claasp/components/modular_component.py"] = {
 }
 
 _M10_9C5_TEST_DESTINATIONS = {
-    "tests/unit/components/idea_modmul_component_test.py": "tests/unit/components/word/test_word_arx_components.py",
-    "tests/unit/components/modadd_component_test.py": "tests/unit/components/word/test_word_arx_components.py; tests/unit/components/word/test_word_components.py; tests/unit/analysis/test_arx_trail_search.py",
-    "tests/unit/components/modmul_component_test.py": "tests/unit/components/word/test_word_arx_components.py",
-    "tests/unit/components/modsub_component_test.py": "tests/unit/components/word/test_word_arx_components.py",
-    "tests/unit/components/modular_component_test.py": "tests/unit/components/word/test_word_arx_components.py",
-    "tests/unit/components/rotate_component_test.py": "tests/unit/components/word/test_word_arx_components.py; tests/unit/components/word/test_word_components.py",
-    "tests/unit/components/shift_component_test.py": "tests/unit/components/word/test_word_arx_components.py",
-    "tests/unit/components/variable_rotate_component_test.py": "tests/unit/components/word/test_word_arx_components.py",
-    "tests/unit/components/variable_shift_component_test.py": "tests/unit/components/word/test_word_arx_components.py",
+    "tests/unit/components/idea_modmul_component_test.py": "tests/unit/components/word/test_package__arithmetic.py",
+    "tests/unit/components/modadd_component_test.py": "tests/unit/components/word/test_package__arithmetic.py; tests/unit/components/word/test_package.py; tests/unit/analysis/test_arx.py",
+    "tests/unit/components/modmul_component_test.py": "tests/unit/components/word/test_package__arithmetic.py",
+    "tests/unit/components/modsub_component_test.py": "tests/unit/components/word/test_package__arithmetic.py",
+    "tests/unit/components/modular_component_test.py": "tests/unit/components/word/test_package__arithmetic.py",
+    "tests/unit/components/rotate_component_test.py": "tests/unit/components/word/test_package__arithmetic.py; tests/unit/components/word/test_package.py",
+    "tests/unit/components/shift_component_test.py": "tests/unit/components/word/test_package__arithmetic.py",
+    "tests/unit/components/variable_rotate_component_test.py": "tests/unit/components/word/test_package__arithmetic.py",
+    "tests/unit/components/variable_shift_component_test.py": "tests/unit/components/word/test_package__arithmetic.py",
 }
 for _path, _destination in _M10_9C5_TEST_DESTINATIONS.items():
     MIGRATION_OVERRIDES[_path] = {
@@ -1855,8 +1855,8 @@ for _path, _destination in _M10_9C6_SOURCE_DESTINATIONS.items():
     }
 
 _M10_9C6_TEST_DESTINATIONS = {
-    "tests/unit/components/linear_layer_component_test.py": "tests/unit/components/word/test_linear_layer_components.py; tests/unit/components/algebraic/test_algebraic_evaluation.py",
-    "tests/unit/components/mix_column_component_test.py": "tests/unit/components/word/test_linear_layer_components.py; tests/unit/primitives/block_ciphers/test_aes.py",
+    "tests/unit/components/linear_layer_component_test.py": "tests/unit/components/algebraic/test_linear_map.py; tests/unit/components/algebraic/test_package.py",
+    "tests/unit/components/mix_column_component_test.py": "tests/unit/components/algebraic/test_linear_map.py; tests/unit/primitives/block_ciphers/aes/test_package.py",
 }
 for _path, _destination in _M10_9C6_TEST_DESTINATIONS.items():
     MIGRATION_OVERRIDES[_path] = {
@@ -1926,7 +1926,7 @@ M10_10_OVERRIDES = {
     },
     "tests/unit/cipher_modules/graph_generator_test.py": {
         "milestone_owner": "M10.10a",
-        "v5_destination": "tests/unit/transformations/test_transformation_traversal.py; tests/unit/transformations/test_graph_slicing.py",
+        "v5_destination": "tests/unit/transformations/test_traversal.py; tests/unit/transformations/test_slicing.py",
         "prerequisites": ["M10.9f6"],
         "rationale": "Exact legacy node ids and the malformed descendant edge shape are incidental; source membership, dependency direction, closure, and validated slices are preserved.",
         "acceptance_criterion": "Typed predecessor/descendant closures and top/bottom splits preserve the applicable ChaCha and Speck dependency assertions.",
@@ -1947,7 +1947,7 @@ M10_10_OVERRIDES = {
     },
     "tests/unit/editor_test.py": {
         "milestone_owner": "M10.10e",
-        "v5_destination": "tests/unit/transformations/test_graph_editing.py",
+        "v5_destination": "tests/unit/transformations/test_editing.py",
         "prerequisites": ["M10.10b", "M10.10d"],
         "rationale": "Mutable dictionaries, generated component ids, and add-without-round printing are not v5 contracts; key-schedule boundaries and reorder-only semantic equivalence are retained.",
         "acceptance_criterion": "Round/key transformations and reorder inlining have validated graphs, explicit boundaries, unchanged sources, and scalar semantic parity.",
@@ -1961,7 +1961,7 @@ M10_10_OVERRIDES = {
     },
     "tests/unit/compound_xor_differential_cipher_test.py": {
         "milestone_owner": "M10.10f",
-        "v5_destination": "tests/unit/transformations/test_paired_xor_transformation.py; tests/integration/test_paired_constraints.py",
+        "v5_destination": "tests/unit/transformations/test_paired.py; tests/integration/test_paired_constraints.py",
         "prerequisites": ["M10.10e"],
         "rationale": "The fixed compatible/incompatible Speck boundary evidence is retained through typed paired semantics; legacy SAT variable spelling and mutable copied-graph ids are superseded.",
         "acceptance_criterion": "Fixed single-key and related-key Speck observations agree with independent paired evaluation, with solver-facing feasibility checked only in the affected integration group.",
@@ -1975,7 +1975,7 @@ M10_10_OVERRIDES = {
     },
     "tests/unit/cipher_test.py": {
         "milestone_owner": "M10.10d",
-        "v5_destination": "tests/unit/transformations/test_primitive_inversion.py; tests/unit/transformations/test_graph_slicing.py; tests/unit/transformations/test_graph_editing.py",
+        "v5_destination": "tests/unit/transformations/test_inversion.py; tests/unit/transformations/test_slicing.py; tests/unit/transformations/test_editing.py",
         "prerequisites": ["M10.10c"],
         "rationale": "M10.10 owns the direct primitive inversion and partial-graph assertions in this mixed legacy module. Other test functions remain evidence for their existing analysis, execution, presentation, or compiler milestones.",
         "acceptance_criterion": "Applicable direct inversion and partial-graph tests are preserved by independent scalar round trips, typed boundaries, and dangling-dependency validation.",
@@ -2019,11 +2019,11 @@ for _path, _destination in _M10_9C8_SOURCE_DESTINATIONS.items():
     }
 
 _M10_9C8_TEST_DESTINATIONS = {
-    "tests/unit/components/shift_rows_component_test.py": "tests/unit/components/permutation/test_permutation_layers.py",
-    "tests/unit/components/sigma_component_test.py": "tests/unit/components/permutation/test_permutation_layers.py",
-    "tests/unit/components/theta_gaston_component_test.py": "tests/unit/components/permutation/test_permutation_layers.py",
-    "tests/unit/components/theta_keccak_component_test.py": "tests/unit/components/permutation/test_permutation_layers.py",
-    "tests/unit/components/theta_xoodoo_component_test.py": "tests/unit/components/permutation/test_permutation_layers.py",
+    "tests/unit/components/shift_rows_component_test.py": "tests/unit/components/permutation/test_layers.py",
+    "tests/unit/components/sigma_component_test.py": "tests/unit/components/permutation/test_layers.py",
+    "tests/unit/components/theta_gaston_component_test.py": "tests/unit/components/permutation/test_layers.py",
+    "tests/unit/components/theta_keccak_component_test.py": "tests/unit/components/permutation/test_layers.py",
+    "tests/unit/components/theta_xoodoo_component_test.py": "tests/unit/components/permutation/test_layers.py",
 }
 for _path, _destination in _M10_9C8_TEST_DESTINATIONS.items():
     MIGRATION_OVERRIDES[_path] = {
@@ -2081,17 +2081,17 @@ _M11A_FINAL_OVERRIDES = {
         "The partial Python reimplementation is not a release oracle; v5 executes the pinned upstream NIST STS binary behind a typed boundary.",
     ),
     "claasp/cipher_modules/tester.py": (
-        "src/claasp/representations/execution/scalar.py; tests/unit/primitives/test_legacy_cipher_parity.py",
+        "src/claasp/representations/execution/scalar.py; tests/unit/primitives/test_package__legacy_parity.py",
         "supersede",
         "Public scalar evaluation plus fixed semantic evidence replace random print-oriented helpers and arbitrary reference-code execution.",
     ),
     "tests/benchmark/cipher_test.py": (
-        "tests/unit/primitives/test_batch_evaluation.py; tests/unit/analysis/test_avalanche_analysis.py; tests/unit/representations/source/test_native_source.py",
+        "tests/unit/representations/execution/test_batch.py; tests/unit/analysis/test_avalanche.py; tests/unit/representations/source/test_c.py",
         "supersede",
         "Focused scalar, batch, avalanche, and bounded native tests replace timing-sensitive mixed benchmarks.",
     ),
     "tests/benchmark/sat_xor_differential_model_test.py": (
-        "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_differential_smt.py",
+        "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_differential.py",
         "supersede",
         "Typed fixed/maximum-weight formula and enumeration evidence replaces mutable SAT helper benchmarks.",
     ),
@@ -2101,17 +2101,17 @@ _M11A_FINAL_OVERRIDES = {
         "Deterministic dataset tests and bounded NIST integration replace environment-sensitive statistical benchmarks.",
     ),
     "tests/unit/catalog_test.py": (
-        "tests/unit/catalogue/test_catalogue.py; tests/unit/catalogue/test_catalogue_metadata.py",
+        "tests/unit/catalogue/test_catalogue.py; tests/unit/catalogue/test_catalogue__metadata.py",
         "supersede",
         "Typed catalogue query and metadata closure tests replace legacy AST, dataframe, and display-shape assertions.",
     ),
     "tests/unit/cipher_modules/avalanche_tests_test.py": (
-        "tests/unit/analysis/test_avalanche_analysis.py",
+        "tests/unit/analysis/test_avalanche.py",
         "supersede",
         "Seeded avalanche vectors and criteria are covered directly through the immutable analysis contract.",
     ),
     "tests/unit/cipher_modules/neural_network_tests_test.py": (
-        "tests/unit/analysis/test_neural_contracts.py; tests/unit/analysis/test_neural_experiments.py; tests/integration/test_neural_driver_integration.py",
+        "tests/unit/analysis/test_neural.py; tests/unit/analysis/test_neural_experiments.py; tests/integration/test_neural_driver_integration.py",
         "supersede",
         "Framework-neutral contracts, deterministic experiment plans, and isolated optional-driver integration replace direct Keras tests.",
     ),
@@ -2121,12 +2121,12 @@ _M11A_FINAL_OVERRIDES = {
         "Seeded typed dataset-family evidence replaces mutable NumPy fixture comparisons.",
     ),
     "tests/unit/cipher_modules/statistical_tests/dieharder_statistical_tests_test.py": (
-        "tests/unit/drivers/statistical/test_dieharder_driver.py; tests/integration/test_dieharder_integration.py",
+        "tests/unit/drivers/statistical/test_dieharder.py; tests/integration/test_dieharder_integration.py",
         "supersede",
         "Parser diagnostics and isolated executable integration replace filesystem and chart side-effect assertions.",
     ),
     "tests/unit/cipher_modules/statistical_tests/nist_statistical_tests_test.py": (
-        "tests/unit/drivers/statistical/test_nist_driver.py; tests/integration/test_nist_integration.py",
+        "tests/unit/drivers/statistical/test_nist.py; tests/integration/test_nist_integration.py",
         "supersede",
         "Typed parser, manifest, timeout, and executable evidence replaces cwd report cleanup and plotting assertions.",
     ),
@@ -2136,17 +2136,17 @@ _M11A_FINAL_OVERRIDES = {
         "The canonical image validates fixed NIST STS executable output rather than a separate partial Python implementation.",
     ),
     "tests/unit/cipher_modules/statistical_tests/nist_sts_test.py": (
-        "tests/unit/drivers/statistical/test_nist_driver.py; tests/integration/test_nist_integration.py",
+        "tests/unit/drivers/statistical/test_nist.py; tests/integration/test_nist_integration.py",
         "supersede",
         "Driver parsing and pinned upstream executable integration replace tests of the removed partial Python reimplementation.",
     ),
     "tests/unit/ciphers/toys/cipherfour_block_cipher_tests.py": (
-        "tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py",
+        "tests/unit/primitives/toy_primitives/test_package.py",
         "supersede",
         "Catalogue-wide construction and evaluation evidence covers CipherFour without stdout-oriented legacy assertions.",
     ),
     "tests/unit/ciphers/toys/heys_block_cipher_tests.py": (
-        "tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py",
+        "tests/unit/primitives/toy_primitives/test_package.py",
         "supersede",
         "Catalogue-wide construction and deterministic evaluation evidence covers the Heys teaching primitive.",
     ),
