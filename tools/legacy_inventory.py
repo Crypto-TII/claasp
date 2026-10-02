@@ -1732,9 +1732,9 @@ for _path, (_disposition, _destination, _rationale) in _M10_9C3_SOURCE_DISPOSITI
 
 _M10_9C3_TEST_DESTINATIONS = {
     "tests/unit/components/constant_component_test.py": "tests/unit/components/structural/test_structural_evaluation.py",
-    "tests/unit/components/permutation_component_test.py": "tests/unit/components/structural/test_structural_evaluation.py; tests/unit/components/conversion/test_conversion_components.py",
-    "tests/unit/components/reverse_component_test.py": "tests/unit/components/conversion/test_conversion_components.py",
-    "tests/unit/components/word_permutation_component_test.py": "tests/unit/components/conversion/test_conversion_components.py",
+    "tests/unit/components/permutation_component_test.py": "tests/unit/components/structural/test_structural_evaluation.py; tests/unit/graph/test_conversion_components.py",
+    "tests/unit/components/reverse_component_test.py": "tests/unit/graph/test_conversion_components.py",
+    "tests/unit/components/word_permutation_component_test.py": "tests/unit/graph/test_conversion_components.py",
     "tests/unit/components/cipher_output_component_test.py": "tests/unit/graph/test_typed_graph.py; tests/unit/analysis/test_neural_projections.py",
     "tests/unit/components/intermediate_output_component_test.py": "tests/unit/analysis/test_neural_projections.py; tests/unit/components/structural/test_structural_evaluation.py",
 }

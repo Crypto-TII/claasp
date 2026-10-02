@@ -19687,7 +19687,7 @@
         "test_validation_word_size_valid",
         "test_validation_zero_word_size"
       ],
-      "v5_destination": "tests/unit/components/structural/test_structural_evaluation.py; tests/unit/components/conversion/test_conversion_components.py"
+      "v5_destination": "tests/unit/components/structural/test_structural_evaluation.py; tests/unit/graph/test_conversion_components.py"
     },
     {
       "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
@@ -19724,7 +19724,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "tests/unit/components/conversion/test_conversion_components.py"
+      "v5_destination": "tests/unit/graph/test_conversion_components.py"
     },
     {
       "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
@@ -20207,7 +20207,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "tests/unit/components/conversion/test_conversion_components.py"
+      "v5_destination": "tests/unit/graph/test_conversion_components.py"
     },
     {
       "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",

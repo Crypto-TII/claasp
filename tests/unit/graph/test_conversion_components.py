@@ -1,4 +1,4 @@
-"""Semantic checks for explicit structural domain conversions."""
+"""Semantic checks for graph-level structural domain conversions."""
 
 import pytest
 
