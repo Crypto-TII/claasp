@@ -35,7 +35,14 @@ def run_mypy() -> tuple[str, list[dict[str, object]]]:
     if not version.startswith(f"mypy {PINNED_VERSION} "):
         raise RuntimeError(f"expected mypy {PINNED_VERSION}, found {version!r}")
     result = subprocess.run(
-        [sys.executable, "-m", "mypy", "--config-file", "pyproject.toml"],
+        [
+            sys.executable,
+            "-m",
+            "mypy",
+            "--no-incremental",
+            "--config-file",
+            "pyproject.toml",
+        ],
         cwd=ROOT,
         check=False,
         capture_output=True,
