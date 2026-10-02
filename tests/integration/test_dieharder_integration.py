@@ -10,6 +10,7 @@ pytestmark = pytest.mark.external
 
 
 @pytest.mark.skipif(shutil.which("dieharder") is None, reason="Dieharder is not installed")
+@pytest.mark.emulation_sensitive
 def test_dieharder_driver_executes_one_bounded_test():
     dataset = correlation_dataset(
         Speck(number_of_rounds=1),

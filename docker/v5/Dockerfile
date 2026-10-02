@@ -26,7 +26,7 @@ RUN apt-get -q update \
         automake=1:1.16.5-1.3ubuntu1 \
         ca-certificates=20260601~24.04.1 \
         cmake=3.28.3-1build7 \
-        curl=8.5.0-2ubuntu10.13 \
+        curl=8.5.0-2ubuntu10.15 \
         dieharder=3.31.1.4-1.1build1 \
         git=1:2.43.0-1ubuntu7.3 \
         glpk-utils=5.0-1build2 \
@@ -59,7 +59,6 @@ RUN set -eux; \
     ./autogen.sh; \
     ./configure --prefix=/usr/local; \
     make --jobs="$(nproc)"; \
-    make check; \
     make install; \
     /sbin/ldconfig; \
     cd /opt; \

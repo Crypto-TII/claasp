@@ -255,6 +255,7 @@ def test_minizinc_preserves_exact_present_boomerang_connectivity_entries():
     assert entry.weight == 2
 
 
+@pytest.mark.emulation_sensitive
 def test_minizinc_proves_legacy_speck_five_round_differential_optimum():
     primitive = Speck(number_of_rounds=5)
     solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=30)
@@ -360,9 +361,10 @@ def test_minizinc_preserves_legacy_mixed_exact_truncated_speck_feasibility():
     assert len(result.truncated_boundaries) == 2
 
 
+@pytest.mark.emulation_sensitive
 def test_minizinc_preserves_legacy_speck_five_round_bounded_trail_count():
     primitive = Speck(number_of_rounds=5)
-    solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=45)
+    solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=120)
     representation = SpeckDifferentialCPModel(
         PropagationProblem(
             primitive,

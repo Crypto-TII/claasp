@@ -1,9 +1,13 @@
 """Real GLPK composition of multi-round monomial trails."""
 
+import pytest
+
 from claasp.analysis import PresentMonomialSemantics
 from claasp.drivers.solvers import GLPKSolver, MILPStatus
 from claasp.primitives import Present
 from claasp.representations.constraints.milp import PresentMonomialTrailMILPModel
+
+pytestmark = pytest.mark.external
 
 
 def test_glpk_recovers_and_independently_checks_two_round_present_monomial_trail():

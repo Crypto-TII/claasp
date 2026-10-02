@@ -40,7 +40,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [linux/amd64, linux/arm64]
+        include:
+          - platform: linux/amd64
+            dependency_free_expression: not external
+            external_expression: external
+          - platform: linux/arm64
+            # QEMU preserves correctness but not meaningful native wall-clock budgets.
+            dependency_free_expression: not external and not performance
+            external_expression: external and not emulation_sensitive
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -62,5 +69,7 @@ jobs:
           docker run --rm --platform "${{ matrix.platform }}" \
             -e PYTHONDONTWRITEBYTECODE=1 \
             -e PYTHONPATH=/workspace/src \
+            -e "CLAASP_DEPENDENCY_FREE_EXPRESSION=${{ matrix.dependency_free_expression }}" \
+            -e "CLAASP_EXTERNAL_EXPRESSION=${{ matrix.external_expression }}" \
             -v "$GITHUB_WORKSPACE:/workspace" \
             claasp-v5-release:ci /workspace/docker/v5/check.sh

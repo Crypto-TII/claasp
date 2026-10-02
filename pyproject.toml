@@ -24,6 +24,8 @@ addopts = '-ra -m "not external and not extended"'
 markers = [
   "external: requires an executable supplied by a dedicated integration job",
   "extended: exhaustive dependency-free audit kept outside the routine time budget",
+  "performance: asserts a native wall-clock budget and is not valid under emulation",
+  "emulation_sensitive: invokes an external tool with a native-runtime timeout that is not valid under emulation",
 ]
 
 [tool.ruff]
