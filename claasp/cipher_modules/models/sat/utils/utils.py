@@ -841,16 +841,66 @@ def run_parkissat(solver_specs, options, dimacs_input, input_file_name):
             f"stdout: {solver_process.stdout[:500]}\n"
             f"stderr: {solver_process.stderr[:500]}"
         )
-    status = status_line.split()[1]
-    values = ""
-    if status == "SATISFIABLE":
-        value_lines = [line[2:] for line in solver_output if line.startswith("v ")]
-        values = []
-        for element in value_lines:
-            values.extend(element.split())
+    status, values = parse_parkissat_output(solver_output, status_line)
     os.remove(input_file_name)
 
     return status, solver_time, solver_memory, values
+
+
+def parse_parkissat_output(solver_output, status_line=None):
+    """
+    Extract the status and one consistent model from ParKissat output.
+
+    ParKissat-RS is a portfolio solver: when it runs with several threads (``-c=N``), more than one thread may print
+    ``v`` lines, and fragments of different models can be interleaved or duplicated. Collecting every ``v`` line of the
+    output therefore yields a literal list that is not a satisfying assignment (wrong trail values, right weight).
+    Only the model printed after the status line, up to its terminating ``0``, is kept; literals are returned ordered by
+    variable number, which is what the positional readout in ``SatModel._get_solver_solution_parsed`` expects, and a
+    variable appearing with both signs raises an error instead of being silently mis-read.
+
+    INPUT:
+
+    - ``solver_output`` -- **list**; the lines of the solver's standard output
+    - ``status_line`` -- **string** (default: `None`); the status line, looked up in ``solver_output`` when ``None``
+
+    OUTPUT:
+
+    - a tuple ``(status, values)`` where ``values`` is the list of literal strings (empty unless SATISFIABLE)
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.sat.utils.utils import parse_parkissat_output
+        sage: out = ["c thread 3", "v -1 2", "s SATISFIABLE", "v 1 -2 3", "c thread 1", "v -4 0", "v 5 0"]
+        sage: parse_parkissat_output(out)
+        ('SATISFIABLE', ['1', '-2', '3', '-4'])
+    """
+    if status_line is None:
+        status_line = next((line for line in solver_output if line.startswith("s ")), None)
+        if status_line is None:
+            raise RuntimeError("parkissat produced no status line")
+    status = status_line.split()[1]
+    if status != "SATISFIABLE":
+        return status, ""
+    start = solver_output.index(status_line) + 1
+    literals = []
+    for line in solver_output[start:]:
+        if not line.startswith("v "):
+            continue
+        tokens = line[2:].split()
+        if "0" in tokens:
+            literals.extend(tokens[: tokens.index("0")])
+            break
+        literals.extend(tokens)
+    assignment = {}
+    for token in literals:
+        variable = abs(int(token))
+        if assignment.get(variable, token) != token:
+            raise RuntimeError(
+                f"parkissat printed variable {variable} with both signs; model lines of several threads were mixed"
+            )
+        assignment[variable] = token
+    values = [assignment[variable] for variable in sorted(assignment)]
+    return status, values
 
 
 def run_mallob(solver_specs, options, dimacs_input, input_file_name):
