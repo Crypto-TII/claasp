@@ -221,10 +221,12 @@ class MilpModel:
                         a = x[f"{comp_id}_{pos}"]
                         b = x[f"{var_vals[i][0]}_{var_vals[i][1]}"]
 
-                        constraints.append(lhs <= a + b)
-                        constraints.append(lhs >= a - b)
-                        constraints.append(lhs >= b - a)
-                        constraints.append(lhs + a + b <= 2)
+                        constraints.extend([
+                            lhs <= a + b,
+                            lhs >= a - b,
+                            lhs >= b - a,
+                            lhs + a + b <= 2,
+                        ])
 
                     constraints.append(sum(x[f"{comp_id}{p}_not_equal_{n_trails}"] for p in bit_pos) >= 1)
             else:
