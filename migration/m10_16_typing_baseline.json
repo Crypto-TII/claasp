@@ -5152,25 +5152,11 @@
       "path": "tests/unit/analysis/test_algebraic.py"
     },
     {
-      "code": "arg-type",
-      "column": 42,
-      "line": 23,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/analysis/test_constraints.py"
-    },
-    {
-      "code": "union-attr",
-      "column": 12,
-      "line": 38,
-      "message": "Item \"None\" of \"DriverIdentity | None\" has no attribute \"name\"",
-      "path": "tests/unit/drivers/analysis/test_branch_number.py"
-    },
-    {
-      "code": "union-attr",
-      "column": 12,
-      "line": 66,
-      "message": "Item \"None\" of \"PropertyDiagnostic | None\" has no attribute \"code\"",
-      "path": "tests/unit/drivers/analysis/test_branch_number.py"
+      "code": "index",
+      "column": 46,
+      "line": 95,
+      "message": "Value of type \"tuple[BooleanPolynomial, ...] | None\" is not indexable",
+      "path": "tests/unit/analysis/test_algebraic__trivium.py"
     },
     {
       "code": "index",
@@ -5192,48 +5178,6 @@
       "line": 98,
       "message": "Item \"None\" of \"PropertyDiagnostic | None\" has no attribute \"code\"",
       "path": "tests/unit/analysis/test_component_properties__boolean_feedback.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 12,
-      "line": 48,
-      "message": "\"Component\" has no attribute \"mapping\"",
-      "path": "tests/unit/graph/test_component__inverse_semantics.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 12,
-      "line": 49,
-      "message": "\"Component\" has no attribute \"direction\"",
-      "path": "tests/unit/graph/test_component__inverse_semantics.py"
-    },
-    {
-      "code": "union-attr",
-      "column": 50,
-      "line": 89,
-      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
-      "path": "tests/unit/graph/test_component__inverse_semantics.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 15,
-      "line": 301,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/graph/test_component__inverse_semantics.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 30,
-      "line": 303,
-      "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/graph/test_component__inverse_semantics.py"
-    },
-    {
-      "code": "union-attr",
-      "column": 12,
-      "line": 83,
-      "message": "Item \"None\" of \"PropertyDiagnostic | None\" has no attribute \"code\"",
-      "path": "tests/unit/analysis/test_component_properties__lookup.py"
     },
     {
       "code": "index",
@@ -5265,10 +5209,31 @@
     },
     {
       "code": "attr-defined",
+      "column": 17,
+      "line": 22,
+      "message": "\"object\" has no attribute \"component_id\"",
+      "path": "tests/unit/analysis/test_component_properties__grouping.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 12,
+      "line": 83,
+      "message": "Item \"None\" of \"PropertyDiagnostic | None\" has no attribute \"code\"",
+      "path": "tests/unit/analysis/test_component_properties__lookup.py"
+    },
+    {
+      "code": "attr-defined",
       "column": 40,
       "line": 72,
       "message": "\"Component\" has no attribute \"table\"",
       "path": "tests/unit/analysis/test_composed.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 42,
+      "line": 23,
+      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/unit/analysis/test_constraints.py"
     },
     {
       "code": "misc",
@@ -5475,13 +5440,6 @@
     },
     {
       "code": "index",
-      "column": 46,
-      "line": 95,
-      "message": "Value of type \"tuple[BooleanPolynomial, ...] | None\" is not indexable",
-      "path": "tests/unit/analysis/test_algebraic__trivium.py"
-    },
-    {
-      "code": "index",
       "column": 24,
       "line": 57,
       "message": "Value of type \"tuple[int, ...] | None\" is not indexable",
@@ -5516,34 +5474,6 @@
       "path": "tests/unit/components/substitution/test_bit_vector_sbox.py"
     },
     {
-      "code": "attr-defined",
-      "column": 17,
-      "line": 22,
-      "message": "\"object\" has no attribute \"component_id\"",
-      "path": "tests/unit/analysis/test_component_properties__grouping.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 47,
-      "line": 16,
-      "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/components/word/test_package__logical.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 45,
-      "line": 17,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/components/word/test_package__logical.py"
-    },
-    {
-      "code": "assignment",
-      "column": 28,
-      "line": 96,
-      "message": "Incompatible types in assignment (expression has type \"tuple[int]\", target has type \"tuple[int, int]\")",
-      "path": "tests/unit/components/word/test_package__arithmetic.py"
-    },
-    {
       "code": "arg-type",
       "column": 20,
       "line": 12,
@@ -5565,6 +5495,97 @@
       "path": "tests/unit/components/word/test_package.py"
     },
     {
+      "code": "assignment",
+      "column": 28,
+      "line": 96,
+      "message": "Incompatible types in assignment (expression has type \"tuple[int]\", target has type \"tuple[int, int]\")",
+      "path": "tests/unit/components/word/test_package__arithmetic.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 47,
+      "line": 16,
+      "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/unit/components/word/test_package__logical.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 45,
+      "line": 17,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/unit/components/word/test_package__logical.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 12,
+      "line": 38,
+      "message": "Item \"None\" of \"DriverIdentity | None\" has no attribute \"name\"",
+      "path": "tests/unit/drivers/analysis/test_branch_number.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 12,
+      "line": 66,
+      "message": "Item \"None\" of \"PropertyDiagnostic | None\" has no attribute \"code\"",
+      "path": "tests/unit/drivers/analysis/test_branch_number.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 12,
+      "line": 92,
+      "message": "\"object\" has no attribute \"axes\"",
+      "path": "tests/unit/drivers/renderers/test_presentation.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 30,
+      "line": 153,
+      "message": "\"object\" has no attribute \"axes\"",
+      "path": "tests/unit/drivers/renderers/test_presentation.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 12,
+      "line": 160,
+      "message": "\"object\" has no attribute \"axes\"",
+      "path": "tests/unit/drivers/renderers/test_presentation.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 12,
+      "line": 48,
+      "message": "\"Component\" has no attribute \"mapping\"",
+      "path": "tests/unit/graph/test_component__inverse_semantics.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 12,
+      "line": 49,
+      "message": "\"Component\" has no attribute \"direction\"",
+      "path": "tests/unit/graph/test_component__inverse_semantics.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 50,
+      "line": 89,
+      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
+      "path": "tests/unit/graph/test_component__inverse_semantics.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 15,
+      "line": 301,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/unit/graph/test_component__inverse_semantics.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 30,
+      "line": 303,
+      "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/unit/graph/test_component__inverse_semantics.py"
+    },
+    {
       "code": "arg-type",
       "column": 41,
       "line": 12,
@@ -5577,6 +5598,13 @@
       "line": 13,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/graph/test_composite.py"
+    },
+    {
+      "code": "index",
+      "column": 12,
+      "line": 15,
+      "message": "Value of type \"tuple[int, ...] | None\" is not indexable",
+      "path": "tests/unit/parameters/test_poseidon.py"
     },
     {
       "code": "union-attr",
@@ -5612,27 +5640,6 @@
       "line": 114,
       "message": "Value of type \"object\" is not indexable",
       "path": "tests/unit/presentation/test_exports.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 12,
-      "line": 92,
-      "message": "\"object\" has no attribute \"axes\"",
-      "path": "tests/unit/drivers/renderers/test_presentation.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 30,
-      "line": 153,
-      "message": "\"object\" has no attribute \"axes\"",
-      "path": "tests/unit/drivers/renderers/test_presentation.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 12,
-      "line": 160,
-      "message": "\"object\" has no attribute \"axes\"",
-      "path": "tests/unit/drivers/renderers/test_presentation.py"
     },
     {
       "code": "index",
@@ -5698,13 +5705,6 @@
       "path": "tests/unit/primitives/permutations/poseidon/test_package.py"
     },
     {
-      "code": "index",
-      "column": 12,
-      "line": 15,
-      "message": "Value of type \"tuple[int, ...] | None\" is not indexable",
-      "path": "tests/unit/parameters/test_poseidon.py"
-    },
-    {
       "code": "operator",
       "column": 16,
       "line": 223,
@@ -5717,6 +5717,20 @@
       "line": 234,
       "message": "Unsupported right operand type for in (\"str | None\")",
       "path": "tests/unit/primitives/single_component_primitives/test_package.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 17,
+      "line": 71,
+      "message": "Need type annotation for \"FIXTURE_CASES\"",
+      "path": "tests/unit/primitives/test__realizations.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 32,
+      "line": 69,
+      "message": "\"object\" has no attribute \"items\"",
+      "path": "tests/unit/primitives/test_package__data_ownership.py"
     },
     {
       "code": "arg-type",
@@ -5759,20 +5773,6 @@
       "line": 240,
       "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
       "path": "tests/unit/primitives/test_package__legacy_parity.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 32,
-      "line": 69,
-      "message": "\"object\" has no attribute \"items\"",
-      "path": "tests/unit/primitives/test_package__data_ownership.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 17,
-      "line": 71,
-      "message": "Need type annotation for \"FIXTURE_CASES\"",
-      "path": "tests/unit/primitives/test__realizations.py"
     },
     {
       "code": "arg-type",
@@ -5943,46 +5943,53 @@
       "path": "tests/unit/transformations/test_editing.py"
     },
     {
-      "code": "var-annotated",
-      "column": 5,
-      "line": 22,
-      "message": "Need type annotation for \"cache\" (hint: \"cache: dict[<type>, <type>] = ...\")",
-      "path": "tests/unit/transformations/test_slicing.py"
+      "code": "arg-type",
+      "column": 37,
+      "line": 130,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/unit/transformations/test_inversion.py"
     },
     {
-      "code": "union-attr",
-      "column": 68,
-      "line": 40,
-      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
-      "path": "tests/unit/transformations/test_slicing.py"
+      "code": "arg-type",
+      "column": 38,
+      "line": 131,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/unit/transformations/test_inversion.py"
     },
     {
-      "code": "attr-defined",
-      "column": 12,
-      "line": 45,
-      "message": "\"object\" has no attribute \"operation\"",
-      "path": "tests/unit/transformations/test_slicing.py"
+      "code": "dict-item",
+      "column": 16,
+      "line": 137,
+      "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection | Sequence[Port | Selection]\"",
+      "path": "tests/unit/transformations/test_inversion.py"
     },
     {
-      "code": "union-attr",
-      "column": 9,
-      "line": 58,
-      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
-      "path": "tests/unit/transformations/test_slicing.py"
+      "code": "arg-type",
+      "column": 37,
+      "line": 151,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/unit/transformations/test_inversion.py"
     },
     {
-      "code": "attr-defined",
-      "column": 12,
-      "line": 75,
-      "message": "\"object\" has no attribute \"operation\"",
-      "path": "tests/unit/transformations/test_slicing.py"
+      "code": "arg-type",
+      "column": 39,
+      "line": 152,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/unit/transformations/test_inversion.py"
     },
     {
-      "code": "attr-defined",
-      "column": 18,
-      "line": 112,
-      "message": "\"object\" has no attribute \"path\"",
-      "path": "tests/unit/transformations/test_slicing.py"
+      "code": "dict-item",
+      "column": 16,
+      "line": 158,
+      "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection | Sequence[Port | Selection]\"",
+      "path": "tests/unit/transformations/test_inversion.py"
+    },
+    {
+      "code": "dict-item",
+      "column": 20,
+      "line": 223,
+      "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection | Sequence[Port | Selection]\"",
+      "path": "tests/unit/transformations/test_inversion.py"
     },
     {
       "code": "operator",
@@ -6125,53 +6132,46 @@
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
-      "code": "arg-type",
-      "column": 37,
-      "line": 130,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/transformations/test_inversion.py"
+      "code": "var-annotated",
+      "column": 5,
+      "line": 22,
+      "message": "Need type annotation for \"cache\" (hint: \"cache: dict[<type>, <type>] = ...\")",
+      "path": "tests/unit/transformations/test_slicing.py"
     },
     {
-      "code": "arg-type",
-      "column": 38,
-      "line": 131,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/transformations/test_inversion.py"
+      "code": "union-attr",
+      "column": 68,
+      "line": 40,
+      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
+      "path": "tests/unit/transformations/test_slicing.py"
     },
     {
-      "code": "dict-item",
-      "column": 16,
-      "line": 137,
-      "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection | Sequence[Port | Selection]\"",
-      "path": "tests/unit/transformations/test_inversion.py"
+      "code": "attr-defined",
+      "column": 12,
+      "line": 45,
+      "message": "\"object\" has no attribute \"operation\"",
+      "path": "tests/unit/transformations/test_slicing.py"
     },
     {
-      "code": "arg-type",
-      "column": 37,
-      "line": 151,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/transformations/test_inversion.py"
+      "code": "union-attr",
+      "column": 9,
+      "line": 58,
+      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
+      "path": "tests/unit/transformations/test_slicing.py"
     },
     {
-      "code": "arg-type",
-      "column": 39,
-      "line": 152,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/transformations/test_inversion.py"
+      "code": "attr-defined",
+      "column": 12,
+      "line": 75,
+      "message": "\"object\" has no attribute \"operation\"",
+      "path": "tests/unit/transformations/test_slicing.py"
     },
     {
-      "code": "dict-item",
-      "column": 16,
-      "line": 158,
-      "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection | Sequence[Port | Selection]\"",
-      "path": "tests/unit/transformations/test_inversion.py"
-    },
-    {
-      "code": "dict-item",
-      "column": 20,
-      "line": 223,
-      "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection | Sequence[Port | Selection]\"",
-      "path": "tests/unit/transformations/test_inversion.py"
+      "code": "attr-defined",
+      "column": 18,
+      "line": 112,
+      "message": "\"object\" has no attribute \"path\"",
+      "path": "tests/unit/transformations/test_slicing.py"
     },
     {
       "code": "arg-type",
@@ -6253,7 +6253,7 @@
     {
       "code": "arg-type",
       "column": 41,
-      "line": 723,
+      "line": 721,
       "message": "Argument 1 to \"list\" has incompatible type \"Any | object\"; expected \"Iterable[Any]\"",
       "path": "tools/generate_catalogue_metadata.py"
     },
