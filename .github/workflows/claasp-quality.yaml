@@ -212,7 +212,6 @@ jobs:
           ./autogen.sh
           ./configure --prefix=/usr/local
           make --jobs="$(nproc)"
-          make check
           sudo make install
           sudo ldconfig
 

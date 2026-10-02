@@ -103,6 +103,7 @@ def test_glpk_recovers_exact_reduced_simon_degree_fixtures(rounds, expected):
     assert model.is_feasible(result.assignment)
 
 
+@pytest.mark.emulation_sensitive
 def test_glpk_preserves_legacy_simon_thirteen_cube_degree():
     model = BooleanMonomialGraphMILPModel(
         Simon(number_of_rounds=13), 16, "plaintext", range(1, 32)

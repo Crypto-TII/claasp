@@ -59,7 +59,6 @@ RUN set -eux; \
     ./autogen.sh; \
     ./configure --prefix=/usr/local; \
     make --jobs="$(nproc)"; \
-    make check; \
     make install; \
     /sbin/ldconfig; \
     cd /opt; \

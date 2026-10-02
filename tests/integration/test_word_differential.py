@@ -102,6 +102,7 @@ def test_cp_speck_four_round_single_key_optimum_and_minmax_fixture():
     )
 
 
+@pytest.mark.emulation_sensitive
 def test_sat_fixed_nine_round_speck_cluster_preserves_27_trails_and_weight():
     """Dedicated legacy cluster check; not a routine integration workload."""
     model = WordDifferentialSMTModel(

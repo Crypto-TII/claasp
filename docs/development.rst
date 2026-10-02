@@ -50,6 +50,10 @@ Tests marked ``performance`` assert native wall-clock budgets. The release
 matrix runs those assertions on native AMD64. Its ARM64 leg still executes the
 same inversion and round-trip fixtures under QEMU, but deselects only the
 timing assertions because emulation does not measure native performance.
+External tests marked ``emulation_sensitive`` likewise keep their fixed native
+subprocess timeouts on AMD64.  The emulated ARM64 leg runs every other external
+integration test; these five bounded solver/statistical workloads remain covered
+by their dedicated native CI jobs.
 
 Formatting and linting
 ----------------------

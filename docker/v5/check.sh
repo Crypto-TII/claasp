@@ -44,7 +44,11 @@ if [ -n "${CLAASP_DEPENDENCY_FREE_EXPRESSION:-}" ]; then
 else
     python -m pytest -m 'not external' -p no:cacheprovider
 fi
-python -m pytest -m external -p no:cacheprovider
+if [ -n "${CLAASP_EXTERNAL_EXPRESSION:-}" ]; then
+    python -m pytest -m "$CLAASP_EXTERNAL_EXPRESSION" -p no:cacheprovider
+else
+    python -m pytest -m external -p no:cacheprovider
+fi
 python -m pytest --doctest-modules src/claasp -p no:cacheprovider -q
 make -C docs doctest
 make -C docs html
