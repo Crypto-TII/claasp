@@ -56,7 +56,7 @@ class MilpCipherModel(MilpModel):
         operation_types = ("NOT", "ROTATE", "SHIFT", "XOR")
         self._model_constraints = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types

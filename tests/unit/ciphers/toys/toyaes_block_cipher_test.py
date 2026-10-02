@@ -148,7 +148,7 @@ def test_aes_matrix_mds_status(word_size, state_size):
     expected_is_mds, expected_branch_number = AES_MATRIX_MDS_STATUS[(word_size, state_size)]
 
     aes = ToyAESBlockCipher(number_of_rounds=3, word_size=word_size, state_size=state_size)
-    mix_column_component = next(c for c in aes.get_all_components() if c.type == MIX_COLUMN)
+    mix_column_component = next(c for c in aes.all_components() if c.type == MIX_COLUMN)
 
     assert CipherComponentsAnalysis(aes)._is_mds(mix_column_component) == expected_is_mds
     assert branch_number(mix_column_component, "differential", "word") == expected_branch_number

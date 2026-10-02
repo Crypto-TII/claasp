@@ -21,12 +21,15 @@ from claasp.cipher_modules.component_analysis_tests import (
     compute_branch_number_from_field_matrix_with_minizinc,
     compute_branch_number_from_field_matrix_with_sage,
     compute_word_branch_number_from_binary_matrix_with_minizinc,
+    binary_matrix_of_linear_component,
+    permutation_to_binary_matrix,
 )
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.stream_ciphers.bluetooth_stream_cipher_e0 import BluetoothStreamCipherE0
 from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+from claasp.components.permutation_component import Permutation
 
 
 @pytest.fixture(scope="module")
@@ -1408,3 +1411,16 @@ class TestConsistency:
         # Both should be positive integers (they might be equal or different)
         assert isinstance(bn_diff, int) and bn_diff >= 1
         assert isinstance(bn_lin, int) and bn_lin >= 1
+
+
+def test_permutation_to_binary_matrix():
+    """Test the binary matrix of a permutation component, one entry per row."""
+    perm = [3, 0, 5, 7, 1, 6, 2, 4]
+    component = Permutation(0, 0, ["input"], [list(range(8))], 8, perm)
+    binary_matrix = binary_matrix_of_linear_component(component)
+
+    assert binary_matrix == permutation_to_binary_matrix(component)
+    for source_bit, target_bit in enumerate(perm):
+        row = binary_matrix.row(target_bit)
+        assert row[source_bit] == 1
+        assert sum(int(entry) for entry in row) == 1

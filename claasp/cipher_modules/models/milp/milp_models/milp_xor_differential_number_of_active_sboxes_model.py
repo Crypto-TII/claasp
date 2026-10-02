@@ -89,7 +89,7 @@ class MilpXorDifferentialNumberOfActiveSboxesModel(MilpXorDifferentialModel):
         for constraint in self._model_constraints:
             mip.add_constraint(constraint)
 
-        sbox_ids = [component.id for component in self._cipher.get_all_components() if component.type == SBOX]
+        sbox_ids = [component.id for component in self._cipher.all_components() if component.type == SBOX]
         mip.add_constraint(p[MILP_XOR_DIFFERENTIAL_OBJECTIVE] == sum(x[f"{sbox_id}_active"] for sbox_id in sbox_ids))
 
     def find_lowest_number_of_active_sboxes(self, fixed_values=[], solver_name=SOLVER_DEFAULT, external_solver_name=None):

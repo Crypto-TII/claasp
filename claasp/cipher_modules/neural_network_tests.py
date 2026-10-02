@@ -122,7 +122,7 @@ class NeuralNetworkTests:
             }
             for i in range(len(ds[k][1])):
 
-                if rounds_to_train and self.cipher.get_round_from_component_id(
+                if rounds_to_train and self.cipher.round_from_component_id(
                         component_output_ids[k][i]) not in rounds_to_train:
                     continue
 
@@ -183,7 +183,7 @@ class NeuralNetworkTests:
 
     def _update_component_output_ids(self, component_output_ids):
         for k in component_output_ids:
-            for component in self.cipher.get_all_components():
+            for component in self.cipher.all_components():
                 if k in component.description:
                     component_output_ids[k].append(component.id)
 
@@ -199,7 +199,7 @@ class NeuralNetworkTests:
             except:
                 partial_result[k] = {test_name: []}
 
-            for component in self.cipher.get_all_components():
+            for component in self.cipher.all_components():
 
                 if k in component.description:
                     tmp_len = component.output_bit_size

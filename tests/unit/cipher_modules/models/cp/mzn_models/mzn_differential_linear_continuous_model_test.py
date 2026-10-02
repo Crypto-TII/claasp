@@ -58,7 +58,7 @@ def test_cp_xor_test_vectors():
     cipher = SpeckBlockCipher(number_of_rounds=1)
     model = MznModel(cipher)
 
-    for c in cipher.get_all_components():
+    for c in cipher.all_components():
         print(c.id, c.description)
 
     xor_component = cipher.component_from_id("xor_0_4")

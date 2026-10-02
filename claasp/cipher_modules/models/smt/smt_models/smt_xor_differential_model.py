@@ -83,7 +83,7 @@ class SmtXorDifferentialModel(SmtModel):
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
         self._model_constraints = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types
@@ -160,7 +160,7 @@ class SmtXorDifferentialModel(SmtModel):
         while solution["total_weight"] is not None:
             solutions_list.append(solution)
             operands = self.get_operands(solution)
-            for component in self._cipher.get_all_components():
+            for component in self._cipher.all_components():
                 bit_len = component.output_bit_size
                 is_word_operation = component.type == WORD_OPERATION and component.description[0] in (
                     "AND",
@@ -439,7 +439,7 @@ class SmtXorDifferentialModel(SmtModel):
         out_suffix = ""
         components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
         total_weight = 0
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             hex_value = utils.get_component_hex_value(component, out_suffix, variable2value)
             weight = self.calculate_component_weight(component, out_suffix, variable2value)
             component_solution = set_component_solution(hex_value, weight)

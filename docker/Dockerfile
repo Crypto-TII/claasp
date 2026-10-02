@@ -364,6 +364,37 @@ RUN cd /opt/ && sage -pip install sage_numerical_backends_gurobi-9.3.1.tar.gz
 RUN apt-get install -y coinor-cbc coinor-libcbc-dev
 RUN sage -python -m pip install sage-numerical-backends-coin==9.0b12
 
+# Installing Mallob (SAT engine only: SMT, MaxSAT and Satsuma are disabled).
+# SATWITHPRE must stay enabled, otherwise the minimal build does not compile.
+# Building with an absolute build directory lets Mallob find its sub-process
+# executables from any working directory. The sed widens the per-thread clause
+# producer bit (an int "1 << id") so that thread ids >= 31 are handled correctly.
+RUN apt-get -q update \
+    && apt-get install --no-install-recommends -y libopenmpi-dev openmpi-bin gdb
+
+RUN wget -O /opt/mallob.tar.gz https://github.com/domschrei/mallob/archive/aa168a74d80911b5f81b75467f77b699e451cb73.tar.gz \
+    && tar -xf /opt/mallob.tar.gz -C /opt \
+    && rm /opt/mallob.tar.gz \
+    && mv /opt/mallob-aa168a74d80911b5f81b75467f77b699e451cb73 /opt/mallob \
+    && cd /opt/mallob \
+    && sed -i 's/1 << \(c\.producerId\|localId\)/(cls_producers_bitset) 1 << \1/' \
+        src/app/sat/sharing/filter/produced_clause_filter_commons.hpp \
+        src/app/sat/sharing/filter/exact_clause_filter.hpp src/app/sat/sharing/filter/importing_solver.hpp \
+    && MALLOB_MINIMAL=1 bash scripts/setup/cmake-make.sh /opt/mallob/build \
+        -DMALLOB_APP_SATWITHPRE=1 -DMALLOB_USE_SATSUMA=0 -DMALLOB_USE_JEMALLOC=1 \
+        -DMALLOB_USE_CADICAL=1 -DMALLOB_USE_KISSAT=1 -DMALLOB_USE_LINGELING=1 \
+        -DMALLOB_MAX_N_APPTHREADS_PER_PROCESS=128
+
+# Mallob resolves its configuration files relative to the working directory,
+# so the "mallob" wrapper passes them as absolute paths (later options override
+# earlier ones, so user-supplied options still win).
+RUN printf '%s\n' \
+    '#!/bin/sh' \
+    'export RDMAV_FORK_SAFE=1' \
+    'exec /opt/mallob/build/mallob -sat-config-dirs=/opt/mallob/config/sat/base -preprocess-config=/opt/mallob/config/satwithpre/actors_default.json "$@"' \
+    > /usr/local/bin/mallob \
+    && chmod +x /usr/local/bin/mallob
+
 
 FROM claasp-base AS claasp-lib
 

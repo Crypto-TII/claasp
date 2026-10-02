@@ -28,11 +28,13 @@ def test_find_all_xor_differential_trails_with_fixed_weight():
 def test_solving_unsatisfiability():
     speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=4)
     mzn = MznXorDifferentialModel(speck)
-    trails = mzn.find_one_xor_differential_trail_with_fixed_weight(1, solver_name=CHUFFED, solve_external=True)
+    trails = mzn.find_one_xor_differential_trail(lower_bound=1, upper_bound=1, solver_name=CHUFFED, solve_external=True)
 
     assert trails["status"] == UNSATISFIABLE
 
-    trails = mzn.find_one_xor_differential_trail_with_fixed_weight(1, solver_name=CHUFFED, solve_external=False)
+    trails = mzn.find_one_xor_differential_trail(
+        lower_bound=1, upper_bound=1, solver_name=CHUFFED, solve_external=False
+    )
 
     assert trails["status"] == UNSATISFIABLE
 
@@ -95,7 +97,7 @@ def test_find_one_xor_differential_trail():
     plaintext = set_fixed_variables(
         component_id=INPUT_PLAINTEXT, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
-    trail = mzn.find_one_xor_differential_trail([plaintext], CHUFFED, solve_external=True)
+    trail = mzn.find_one_xor_differential_trail([plaintext], solver_name=CHUFFED, solve_external=True)
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r2"
     assert trail["model_type"] == "xor_differential_one_solution"
@@ -103,7 +105,7 @@ def test_find_one_xor_differential_trail():
     assert trail["components_values"]["cipher_output_1_12"]["weight"] == 0
     assert float(trail["total_weight"]) >= 0
 
-    trail = mzn.find_one_xor_differential_trail([plaintext], CHUFFED, solve_external=False)
+    trail = mzn.find_one_xor_differential_trail([plaintext], solver_name=CHUFFED, solve_external=False)
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r2"
     assert trail["model_type"] == "xor_differential_one_solution"
@@ -118,7 +120,9 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
     plaintext = set_fixed_variables(
         component_id=INPUT_PLAINTEXT, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
-    trail = mzn.find_one_xor_differential_trail_with_fixed_weight(9, [plaintext], CHUFFED, solve_external=True)
+    trail = mzn.find_one_xor_differential_trail(
+        [plaintext], lower_bound=9, upper_bound=9, solver_name=CHUFFED, solve_external=True
+    )
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r5"
     assert trail["model_type"] == "xor_differential_one_solution"
@@ -130,7 +134,9 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
     assert trail["components_values"]["xor_3_8"]["weight"] == 0
     assert trail["total_weight"] == "9.0"
 
-    trail = mzn.find_one_xor_differential_trail_with_fixed_weight(9, [plaintext], CHUFFED, solve_external=False)
+    trail = mzn.find_one_xor_differential_trail(
+        [plaintext], lower_bound=9, upper_bound=9, solver_name=CHUFFED, solve_external=False
+    )
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r5"
     assert trail["model_type"] == "xor_differential_one_solution"
@@ -141,6 +147,3 @@ def test_find_one_xor_differential_trail_with_fixed_weight():
     assert int(trail["components_values"]["xor_3_8"]["value"], base=16) >= 0
     assert trail["components_values"]["xor_3_8"]["weight"] == 0
     assert trail["total_weight"] == "9.0"
-
-
-

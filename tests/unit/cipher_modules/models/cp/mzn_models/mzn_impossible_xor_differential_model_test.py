@@ -50,7 +50,7 @@ def test_find_all_impossible_xor_differential_trails():
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    ciphertext_id = "inverse_" + speck.get_all_components_ids()[-1]
+    ciphertext_id = "inverse_" + speck.all_components_ids()[-1]
     ciphertext = set_fixed_variables(
         component_id=ciphertext_id, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
@@ -70,7 +70,7 @@ def test_find_lowest_complexity_impossible_xor_differential_trail():
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    ciphertext_id = "inverse_" + speck.get_all_components_ids()[-1]
+    ciphertext_id = "inverse_" + speck.all_components_ids()[-1]
     ciphertext = set_fixed_variables(
         component_id=ciphertext_id, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
@@ -96,7 +96,7 @@ def test_find_one_impossible_xor_differential_trail():
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    ciphertext_id = "inverse_" + speck.get_all_components_ids()[-1]
+    ciphertext_id = "inverse_" + speck.all_components_ids()[-1]
     ciphertext = set_fixed_variables(
         component_id=ciphertext_id, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
@@ -152,7 +152,7 @@ def test_find_one_impossible_xor_differential_trail_with_initial_and_final_round
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    ciphertext_id = "inverse_" + speck.get_all_components_ids()[-1]
+    ciphertext_id = "inverse_" + speck.all_components_ids()[-1]
     ciphertext = set_fixed_variables(
         component_id=ciphertext_id, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
@@ -183,7 +183,7 @@ def test_find_one_impossible_xor_differential_trail_with_extensions():
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    ciphertext_id = speck.get_all_components_ids()[-1]
+    ciphertext_id = speck.all_components_ids()[-1]
     ciphertext = set_fixed_variables(
         component_id=ciphertext_id, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )

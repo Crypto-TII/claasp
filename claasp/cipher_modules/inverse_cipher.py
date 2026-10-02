@@ -136,7 +136,7 @@ class _CipherView:
     __slots__ = ("components", "by_id", "consumer_links", "all_bit_names")
 
     def __init__(self, cipher):
-        components = cipher.get_all_components()
+        components = cipher.all_components()
         for index, input_id in enumerate(cipher.inputs):
             description = [INPUT_KEY] if INPUT_KEY in input_id else [input_id]
             input_component = Component(
@@ -164,7 +164,7 @@ def _cipher_view_components_with_inputs(self):
     """Return the cipher's components plus one synthetic ``cipher_input`` component per cipher input.
 
     Inversion-engine internal: this is the node set the inversion loop walks. Unlike
-    ``Cipher.get_all_components()`` (real components only), the cipher's inputs (plaintext, key, ...)
+    ``Cipher.all_components()`` (real components only), the cipher's inputs (plaintext, key, ...)
     appear here as first-class nodes, so the engine can process them uniformly (e.g. invert the
     plaintext input into the inverse's cipher output). A fresh shallow copy is returned so callers
     can use it as a mutable worklist without disturbing the cached view.
@@ -305,7 +305,7 @@ def _get_all_bit_names(self):
 def _build_forward_equivalence_edges(cipher):
     """Walk the cipher's wiring and collect, for each output bit, the list of input bits it connects to."""
     dictio = {}
-    for c in cipher.get_all_components():
+    for c in cipher.all_components():
         current_bit_position = 0
         for index, input_id_link in enumerate(c.input_id_links):
             input_bit_positions = list(range(c.output_bit_size)) if c.type == "constant" else c.input_bit_positions[index]

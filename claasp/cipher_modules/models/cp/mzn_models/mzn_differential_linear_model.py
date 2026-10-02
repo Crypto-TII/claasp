@@ -78,7 +78,7 @@ class MznDifferentialLinearModel(MznModel):
         self.bottom_part_component_ids = set(bottom_part_components)
         self.top_part_component_ids = {
             component.id
-            for component in self._cipher.get_all_components()
+            for component in self._cipher.all_components()
             if component.id not in self.middle_part_component_ids | self.bottom_part_component_ids
         }
 
@@ -109,7 +109,7 @@ class MznDifferentialLinearModel(MznModel):
             raise ValueError(f"middle and bottom parts overlap: {sorted(overlap)}")
 
     def _validate_arx_only_cipher(self):
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.type in (SBOX, LINEAR_LAYER, MIX_COLUMN):
                 raise NotImplementedError("MznDifferentialLinearModel currently supports ARX ciphers only")
             if component.type == WORD_OPERATION and component.description[0] not in self._ALLOWED_WORD_OPERATIONS:
@@ -132,7 +132,7 @@ class MznDifferentialLinearModel(MznModel):
 
     def _component_model_entries(self):
         entries = []
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.id in self.bottom_part_component_ids:
                 model_type = "cp_xor_linear_mask_propagation_constraints"
             elif component.id in self.middle_part_component_ids:
@@ -148,7 +148,7 @@ class MznDifferentialLinearModel(MznModel):
         for input_name, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
             declarations.append(f"array[0..{bit_size - 1}] of var {input_domain}: {input_name};")
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.type == CONSTANT:
                 continue
 
@@ -350,7 +350,7 @@ class MznDifferentialLinearModel(MznModel):
         for cipher_input in self._cipher.inputs:
             output += f'"{cipher_input} = "++ show({cipher_input}) ++ "\\n" ++'
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             probability_expr = self._component_probability_expression(component.id)
             probability_output = self._normalize_probability_expression_for_output(probability_expr)
             output += self._component_output_header(component)
@@ -367,7 +367,7 @@ class MznDifferentialLinearModel(MznModel):
         # Probability values are scaled by 100 in CP constraints. Use a model-dependent
         # bound from cipher bit-sizes instead of a fixed constant.
         max_component_bits = 0
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             max_component_bits = max(max_component_bits, int(component.output_bit_size))
 
         max_input_bits = 0
