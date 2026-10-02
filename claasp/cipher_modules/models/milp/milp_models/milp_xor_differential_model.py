@@ -573,27 +573,27 @@ class MilpXorDifferentialModel(MilpModel):
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
-            sage: trail = milp.find_one_xor_differential_trail() # random # doctest: +SKIP
+            sage: trail = milp.find_one_xor_differential_trail() # random
 
             # single-key setting with upper bound on the weight
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
             sage: milp = MilpXorDifferentialModel(speck)
-            sage: trail = milp.find_one_xor_differential_trail(upper_bound=5) # random # doctest: +SKIP
-            sage: 0.0 <= trail['total_weight'] <= 5.0 # doctest: +SKIP
+            sage: trail = milp.find_one_xor_differential_trail(upper_bound=5) # random
+            sage: 0.0 <= trail['total_weight'] <= 5.0
             True
 
             # single-key setting with lower bound on the weight
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
             sage: milp = MilpXorDifferentialModel(speck)
-            sage: trail = milp.find_one_xor_differential_trail(lower_bound=3) # random # doctest: +SKIP
-            sage: trail['total_weight'] >= 3.0 # doctest: +SKIP
+            sage: trail = milp.find_one_xor_differential_trail(lower_bound=3) # random
+            sage: trail['total_weight'] >= 3.0
             True
 
             # single-key setting with bounded weight
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
             sage: milp = MilpXorDifferentialModel(speck)
-            sage: trail = milp.find_one_xor_differential_trail(lower_bound=3, upper_bound=5) # random # doctest: +SKIP
-            sage: 3.0 <= trail['total_weight'] <= 5.0 # doctest: +SKIP
+            sage: trail = milp.find_one_xor_differential_trail(lower_bound=3, upper_bound=5) # random
+            sage: 3.0 <= trail['total_weight'] <= 5.0
             True
 
             # related-key setting
@@ -603,7 +603,7 @@ class MilpXorDifferentialModel(MilpModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: trail = milp.find_one_xor_differential_trail(fixed_values=[key]) # random # doctest: +SKIP
+            sage: trail = milp.find_one_xor_differential_trail(fixed_values=[key]) # random
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
