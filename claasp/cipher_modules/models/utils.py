@@ -869,11 +869,18 @@ def _w_linear_sk(args):
     rng = np.random.default_rng(seed)
     fk = _repeat_input_difference(fixed_key, chunk_size, key_num_bytes)
     plaintext = rng.integers(0, 256, size=(state_num_bytes, chunk_size), dtype=np.uint8)
-    ciphertext = cipher.evaluate_vectorized([plaintext, fk])[0]
+    return _linear_parity_count(cipher, [plaintext, fk], input_mask, output_mask)
+
+
+def _linear_parity_count(cipher, inputs, input_mask, output_mask):
+    """Number of samples on which ``input_mask . inputs[0]`` and ``output_mask . cipher(inputs)`` have the same parity."""
+    plaintext = inputs[0]
+    number_of_samples = plaintext.shape[1]
+    output = cipher.evaluate_vectorized(inputs)[0]
     in_pos = _extract_bit_positions_msb(input_mask, ("1",))
     out_pos = _extract_bit_positions_msb(output_mask, ("1",))
-    in_par = np.bitwise_xor.reduce(_extract_bits_msb(plaintext, in_pos), axis=0) if len(in_pos) > 0 else np.zeros(chunk_size, dtype=np.uint8)
-    out_par = np.bitwise_xor.reduce(_extract_bits_msb(ciphertext.T, out_pos), axis=0) if len(out_pos) > 0 else np.zeros(chunk_size, dtype=np.uint8)
+    in_par = np.bitwise_xor.reduce(_extract_bits_msb(plaintext, in_pos), axis=0) if len(in_pos) > 0 else np.zeros(number_of_samples, dtype=np.uint8)
+    out_par = np.bitwise_xor.reduce(_extract_bits_msb(output.T, out_pos), axis=0) if len(out_pos) > 0 else np.zeros(number_of_samples, dtype=np.uint8)
     return int(np.count_nonzero((in_par ^ out_par) == 0))
 
 
@@ -1102,27 +1109,91 @@ def linear_checker_for_block_cipher_single_key(
     rng = np.random.default_rng(seed)
     fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
     plaintext = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
-    ciphertext = cipher.evaluate_vectorized([plaintext, fixed_key_data])[0]
+    count = _linear_parity_count(cipher, [plaintext, fixed_key_data], input_mask, output_mask)
+    return 2 * count / number_of_samples - 1.0
 
-    input_positions = _extract_bit_positions_msb(input_mask, ("1",))
-    output_positions = _extract_bit_positions_msb(output_mask, ("1",))
 
-    if input_positions:
-        input_bits = _extract_bits_msb(plaintext, input_positions)
-        input_parity = np.bitwise_xor.reduce(input_bits, axis=0)
-    else:
-        input_parity = np.zeros(number_of_samples, dtype=np.uint8)
+def linear_checker_permutation(
+    cipher, input_mask, output_mask, number_of_samples, state_size, seed=None, num_workers=1
+):
+    """
+    Verify experimentally linear approximations of permutations using the vectorized evaluator.
 
-    if output_positions:
-        output_bits = _extract_bits_msb(ciphertext.T, output_positions)
-        output_parity = np.bitwise_xor.reduce(output_bits, axis=0)
-    else:
-        output_parity = np.zeros(number_of_samples, dtype=np.uint8)
+    Keyless counterpart of ``linear_checker_for_block_cipher_single_key``: the cipher must have a single input (the
+    state). The correlation of ``input_mask . x + output_mask . P(x)`` is estimated on random states ``x``.
 
-    total_parity = input_parity ^ output_parity
-    count = np.count_nonzero(total_parity == 0)
-    corr = 2 * count / number_of_samples * 1.0 - 1
-    return corr
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_mask`` -- **integer** or **string**; input linear mask, as an integer or as a bitstring of length ``state_size``
+    - ``output_mask`` -- **integer** or **string**; output linear mask, as an integer or as a bitstring of length ``state_size``
+    - ``number_of_samples`` -- **integer**; number of random state samples
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
+        sage: from claasp.cipher_modules.models.utils import linear_checker_permutation
+        sage: keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=8)
+        sage: input_mask = 0x404040c0404040404000222222222200020000008181818181
+        sage: output_mask = 0x101
+        sage: correlation = linear_checker_permutation(keccak, input_mask, output_mask, 1 << 12, 200, seed=1)
+        sage: abs(abs(correlation) - 0.5) < 0.05
+        True
+    """
+    # Sage doctests pass Sage Integers; numpy's generator and shapes need Python ints.
+    number_of_samples, state_size, num_workers = int(number_of_samples), int(state_size), int(num_workers)
+    seed = None if seed is None else int(seed)
+    if state_size % 8 != 0:
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
+    if len(cipher.inputs) != 1:
+        raise ValueError("linear_checker_permutation needs a cipher with a single input; use "
+                         "linear_checker_for_block_cipher_single_key for keyed ciphers.")
+    if cipher.inputs_bit_size[0] != state_size:
+        raise ValueError("state_size must be equal to the cipher input size.")
+    input_mask = _mask_as_binary_string(input_mask, state_size, "Input")
+    output_mask = _mask_as_binary_string(output_mask, state_size, "Output")
+
+    state_num_bytes = int(state_size / 8)
+
+    if num_workers > 1:
+        count, total = _parallel_dispatch(
+            _w_linear_perm,
+            (cipher, input_mask, output_mask, state_num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        return 2 * count / total - 1.0
+
+    rng = np.random.default_rng(seed)
+    state = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
+    count = _linear_parity_count(cipher, [state], input_mask, output_mask)
+    return 2 * count / number_of_samples - 1.0
+
+
+def _mask_as_binary_string(mask, size, label):
+    if isinstance(mask, str):
+        if len(mask) != size:
+            raise ValueError(f"{label} mask length must be equal to state_size.")
+        if set(mask) - {"0", "1"}:
+            raise ValueError(f"{label} mask must be a bitstring of 0s and 1s.")
+        return mask
+    mask = int(mask)
+    if mask < 0 or mask >= (1 << size):
+        raise ValueError(f"{label} mask must fit in state_size bits.")
+    return _number_to_n_bit_binary_string(mask, size)
+
+
+def _w_linear_perm(args):
+    cipher, input_mask, output_mask, state_num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    state = rng.integers(0, 256, size=(state_num_bytes, chunk_size), dtype=np.uint8)
+    return _linear_parity_count(cipher, [state], input_mask, output_mask)
 
 
 def _w_boomerang_sk(args):

@@ -35,6 +35,7 @@ from claasp.cipher_modules.models.utils import (
     integer_to_bit_list,
     join_and_sanitize_strings,
     linear_checker_for_block_cipher_single_key,
+    linear_checker_permutation,
     print_components_values,
     set_component_solution,
     set_component_value_weight_sign,
@@ -49,6 +50,7 @@ from claasp.cipher_modules.models.utils import (
     write_solution_to_file,
 )
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
 from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 from claasp.name_mappings import WORD_OPERATION
@@ -763,3 +765,53 @@ def test_sequential_shared_difference_and_truncated_sk_checkers():
         cipher, 0, "1" + "0" * 7, 64, 8, seed=13, num_workers=1
     )
     assert -1.0 <= corr <= 1.0
+
+
+# Keccak-p[200] linear trails (KeccakSboxPermutation, word_size=8): 1 round, weight 1 (|c| = 2^-1); 2 rounds, weight 4 (|c| = 2^-4).
+KECCAK200_LINEAR_R1 = (0x404040c0404040404000222222222200020000008181818181, 0x101, 0.5)
+KECCAK200_LINEAR_R2 = (0x0c040404040004040404020202020200000000000808080808, 0x08000000000000400000000000000000000000000000000000, 2 ** -4)
+
+
+def test_linear_checker_permutation_keccak_p200_one_round():
+    keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=8)
+    input_mask, output_mask, expected = KECCAK200_LINEAR_R1
+    correlation = linear_checker_permutation(keccak, input_mask, output_mask, 1 << 13, 200, seed=11)
+    assert math.isclose(abs(correlation), expected, abs_tol=0.05)
+    as_bitstrings = linear_checker_permutation(keccak, format(input_mask, "0200b"), format(output_mask, "0200b"), 1 << 13, 200, seed=11)
+    assert as_bitstrings == correlation
+    parallel = linear_checker_permutation(keccak, input_mask, output_mask, 1 << 13, 200, seed=11, num_workers=2)
+    assert math.isclose(abs(parallel), expected, abs_tol=0.05)
+
+
+def test_linear_checker_permutation_keccak_p200_two_rounds():
+    keccak = KeccakSboxPermutation(number_of_rounds=2, word_size=8)
+    input_mask, output_mask, expected = KECCAK200_LINEAR_R2
+    correlation = linear_checker_permutation(keccak, input_mask, output_mask, 1 << 15, 200, seed=11)
+    assert math.isclose(abs(correlation), expected, abs_tol=0.02)
+    # a wrong output mask gives a correlation at noise level
+    noise = linear_checker_permutation(keccak, input_mask, output_mask ^ 0x1, 1 << 15, 200, seed=11)
+    assert abs(noise) < 0.03
+
+
+def test_linear_checker_permutation_rejects_invalid_arguments():
+    keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=8)
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    with pytest.raises(ValueError):
+        linear_checker_permutation(speck, 0x1, 0x1, 16, 32)
+    with pytest.raises(ValueError):
+        linear_checker_permutation(keccak, 0x1, 0x1, 16, 100)
+    with pytest.raises(ValueError):
+        linear_checker_permutation(keccak, "1" * 8, 0x1, 16, 200)
+    with pytest.raises(ValueError):
+        linear_checker_permutation(keccak, 1 << 200, 0x1, 16, 200)
+
+
+def test_linear_checker_for_block_cipher_single_key_speck32_64_trails():
+    # lowest-weight XOR linear trails of Speck32/64 found with SatXorLinearModel: 2 rounds weight 0 (|c| = 1), 3 rounds weight 1 (|c| = 2^-1)
+    speck2 = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    speck3 = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=3)
+    for key in (0x0, 0x1918111009080100):
+        exact = linear_checker_for_block_cipher_single_key(speck2, format(0x00804021, "032b"), format(0x02010200, "032b"), 1 << 12, 32, 64, key, seed=5)
+        assert abs(exact) == 1.0
+        half = linear_checker_for_block_cipher_single_key(speck3, format(0x18000028, "032b"), format(0x02050204, "032b"), 1 << 14, 32, 64, key, seed=5)
+        assert math.isclose(abs(half), 0.5, abs_tol=0.05)
