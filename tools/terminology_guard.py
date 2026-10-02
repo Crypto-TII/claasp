@@ -11,7 +11,7 @@ permutation was extracted from).
 
 This module is dependency-free (standard library only) so it can run in the
 fast unit-test job without pulling in any optional tooling. It is exercised by
-``tests/unit/test_terminology_guard.py`` and may also be run directly:
+``tests/unit/repository/test_terminology_guard.py`` and may also be run directly:
 
 .. code-block:: console
 

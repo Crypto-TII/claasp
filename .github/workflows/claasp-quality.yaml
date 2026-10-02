@@ -155,7 +155,7 @@ jobs:
       - name: Run headless plots and dataframe parity
         env:
           MPLBACKEND: Agg
-        run: python -m pytest tests/unit/test_presentation_plots.py tests/unit/test_presentation_files.py -q
+        run: python -m pytest tests/unit/presentation/test_presentation_plots.py tests/unit/presentation/test_presentation_files.py -q
 
   singular-export:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
@@ -180,7 +180,7 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute Singular exporter integration
-        run: python -m pytest tests/unit/test_singular_exporter.py tests/integration/test_algebra_drivers.py -q
+        run: python -m pytest tests/unit/drivers/algebra/test_singular_exporter.py tests/integration/test_algebra_drivers.py -q
 
   msolve-export:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
@@ -219,7 +219,7 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute msolve exporter integration
-        run: python -m pytest tests/unit/test_msolve_exporter.py tests/integration/test_algebra_drivers.py -q
+        run: python -m pytest tests/unit/drivers/algebra/test_msolve_exporter.py tests/integration/test_algebra_drivers.py -q
 
   minisat-execution:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'

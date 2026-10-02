@@ -538,7 +538,7 @@
       "responsibility": "generic functions continuous diffusion analysis",
       "status": "superseded-in-m10.15d",
       "tests": [],
-      "v5_destination": "src/claasp/semantics/cryptanalysis/continuous.py; tests/unit/test_continuous_heuristics.py"
+      "v5_destination": "src/claasp/semantics/cryptanalysis/continuous.py; tests/unit/semantics/cryptanalysis/test_continuous_heuristics.py"
     },
     {
       "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
@@ -3258,7 +3258,7 @@
         "test_against_reference_code",
         "test_vector_check"
       ],
-      "v5_destination": "src/claasp/representations/execution/scalar.py; tests/unit/test_legacy_cipher_parity.py"
+      "v5_destination": "src/claasp/representations/execution/scalar.py; tests/unit/primitives/test_legacy_cipher_parity.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -10461,7 +10461,7 @@
         "test_evaluate_with_aes_cipher",
         "test_evaluate_with_speck_cipher"
       ],
-      "v5_destination": "tests/unit/test_batch_evaluation.py; tests/unit/test_avalanche_analysis.py; tests/unit/test_native_source.py"
+      "v5_destination": "tests/unit/primitives/test_batch_evaluation.py; tests/unit/analysis/test_avalanche_analysis.py; tests/unit/representations/source/test_native_source.py"
     },
     {
       "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
@@ -10509,7 +10509,7 @@
         "test_find_one_xor_differential_trail_with_fixed_weight",
         "test_find_one_xor_differential_trail_with_fixed_weight_with_aes_cipher"
       ],
-      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/test_word_differential_smt.py"
+      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_differential_smt.py"
     },
     {
       "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
@@ -10542,7 +10542,7 @@
         "test_run_avalanche_nist_statistics_test_with_aes_cipher",
         "test_run_avalanche_nist_statistics_test_with_speck_cipher"
       ],
-      "v5_destination": "tests/unit/test_statistical_datasets.py; tests/integration/test_nist_integration.py"
+      "v5_destination": "tests/unit/analysis/test_statistical_datasets.py; tests/integration/test_nist_integration.py"
     },
     {
       "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
@@ -10661,7 +10661,7 @@
         "test_solvers_contains_known_entries_and_availability",
         "test_table_render_and_write"
       ],
-      "v5_destination": "tests/unit/test_catalogue.py; tests/unit/test_catalogue_metadata.py"
+      "v5_destination": "tests/unit/catalogue/test_catalogue.py; tests/unit/catalogue/test_catalogue_metadata.py"
     },
     {
       "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
@@ -10697,7 +10697,7 @@
         "test_compute_criterion_from_avalanche_probability_vectors",
         "test_diffusion_tests"
       ],
-      "v5_destination": "tests/unit/test_avalanche_analysis.py"
+      "v5_destination": "tests/unit/analysis/test_avalanche_analysis.py"
     },
     {
       "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
@@ -10736,7 +10736,7 @@
         "test_generic_c_functions_o_name",
         "test_get_padding_component_bit_based_c_code"
       ],
-      "v5_destination": "tests/unit/test_source_generation.py; tests/integration/test_native_source_driver.py"
+      "v5_destination": "tests/unit/representations/source/test_source_generation.py; tests/integration/test_native_source_driver.py"
     },
     {
       "acceptance_criterion": "Independent fixed evidence covers exact S-box, Boolean, matrix, branch-number, feedback, driver, applicability, and exactness contracts; plotting assertions remain assigned to M10.14.",
@@ -11001,7 +11001,7 @@
         "test_validate_irreducible_polynomial_errors",
         "test_word_grouping_is_forwarded_to_shared_minizinc_solver"
       ],
-      "v5_destination": "tests/unit/test_component_properties.py; tests/integration/test_component_analysis_minizinc.py; M10.14 presentation tests"
+      "v5_destination": "tests/unit/analysis/test_component_properties.py; tests/integration/test_component_analysis_minizinc.py; M10.14 presentation tests"
     },
     {
       "acceptance_criterion": "Fixed continuous XOR/rotation/addition/Speck evidence and typed presentation pass independently of legacy random orchestration and nested report dictionaries.",
@@ -11047,7 +11047,7 @@
         "test_continuous_tests",
         "test_continuous_tests_report"
       ],
-      "v5_destination": "tests/unit/test_continuous_heuristics.py; tests/unit/test_presentation_adapters.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_continuous_heuristics.py; tests/unit/presentation/test_presentation_adapters.py"
     },
     {
       "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
@@ -11083,7 +11083,7 @@
         "test_SBOX_continuous_diffusion_analysis",
         "test_SHIFT_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis"
       ],
-      "v5_destination": "tests/unit/test_continuous_heuristics.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_continuous_heuristics.py"
     },
     {
       "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
@@ -11140,7 +11140,7 @@
         "test_index_list_to_expression_str_word",
         "test_modmul"
       ],
-      "v5_destination": "tests/unit/test_source_generation.py; tests/unit/test_batch_evaluation.py; tests/unit/test_feedback_register.py"
+      "v5_destination": "tests/unit/representations/source/test_source_generation.py; tests/unit/primitives/test_batch_evaluation.py; tests/unit/components/feedback/test_feedback_register.py"
     },
     {
       "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
@@ -11194,7 +11194,7 @@
         "test_bit_vector_to_integer_and_concat",
         "test_bit_vector_xor_and_or_not"
       ],
-      "v5_destination": "tests/unit/test_batch_evaluation.py; tests/unit/test_source_generation.py"
+      "v5_destination": "tests/unit/primitives/test_batch_evaluation.py; tests/unit/representations/source/test_source_generation.py"
     },
     {
       "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
@@ -11272,7 +11272,7 @@
         "test_get_number_of_bytes_needed_for_bit_size",
         "test_integer_array_to_evaluate_vectorized_input"
       ],
-      "v5_destination": "tests/unit/test_batch_evaluation.py; tests/unit/test_source_generation.py"
+      "v5_destination": "tests/unit/primitives/test_batch_evaluation.py; tests/unit/representations/source/test_source_generation.py"
     },
     {
       "acceptance_criterion": "Typed predecessor/descendant closures and top/bottom splits preserve the applicable ChaCha and Speck dependency assertions.",
@@ -11304,7 +11304,7 @@
         "test_get_descendants_subgraph",
         "test_split_cipher_graph_into_top_bottom"
       ],
-      "v5_destination": "tests/unit/test_transformation_traversal.py; tests/unit/test_graph_slicing.py"
+      "v5_destination": "tests/unit/transformations/test_transformation_traversal.py; tests/unit/transformations/test_graph_slicing.py"
     },
     {
       "acceptance_criterion": "Exact Boolean and prime-field graph evaluations satisfy their polynomial semantics; equation provenance and structural statistics are tested without Sage.",
@@ -11345,7 +11345,7 @@
         "test_ring",
         "test_var_names"
       ],
-      "v5_destination": "tests/unit/test_boolean_symbolic_evaluation.py; tests/unit/test_polynomial.py"
+      "v5_destination": "tests/unit/representations/execution/test_boolean_symbolic_evaluation.py; tests/unit/representations/constraints/polynomial/test_polynomial.py"
     },
     {
       "acceptance_criterion": "Exhaustive dependency-free tests preserve vector equality and explicit/eliminated ripple addition and subtraction over complete small domains.",
@@ -11379,7 +11379,7 @@
         "test_mod_addition_polynomials",
         "test_mod_subtraction_polynomials"
       ],
-      "v5_destination": "tests/unit/test_boolean_polynomial_constraints.py"
+      "v5_destination": "tests/unit/representations/constraints/polynomial/test_boolean_polynomial_constraints.py"
     },
     {
       "acceptance_criterion": "Every fixed AES branch-table row, Midori active-count {3,4}, Speck-3 differential boundaries at weight 6, linear boundaries at weight 5, and boundary comparison SAT/UNSAT are independently preserved.",
@@ -11456,7 +11456,7 @@
         "test_parse_solver_output_time_stat_fallbacks",
         "test_solver_names"
       ],
-      "v5_destination": "tests/unit/test_sbox_activity.py; tests/integration/test_minizinc_integration.py; tests/integration/test_speck_trail_enumeration.py"
+      "v5_destination": "tests/unit/representations/constraints/milp/test_sbox_activity.py; tests/integration/test_minizinc_integration.py; tests/integration/test_speck_trail_enumeration.py"
     },
     {
       "acceptance_criterion": "The Speck32/64-8 differences 28000010 and 8000840A retain a seeded positive empirical rate; exact BCT and modular-add switch counts are independently checked.",
@@ -11495,7 +11495,7 @@
         "test_build_boomerang_model_chacha",
         "test_build_boomerang_model_speck_single_key"
       ],
-      "v5_destination": "tests/unit/test_composed_trails.py"
+      "v5_destination": "tests/unit/analysis/test_composed_trails.py"
     },
     {
       "acceptance_criterion": "Complete full-round execution is solved and independently validated rather than merely constructed.",
@@ -11573,7 +11573,7 @@
       "tests": [
         "test_build_deterministic_truncated_xor_differential_trail_model"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py"
     },
     {
       "acceptance_criterion": "The fixed Speck deterministic boundary and real MiniZinc projection are independently preserved.",
@@ -11605,7 +11605,7 @@
         "test_find_all_deterministic_truncated_xor_differential_trails",
         "test_find_one_deterministic_truncated_xor_differential_trail"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
     },
     {
       "acceptance_criterion": "All fixed component, one-/two-round and mask-correlation values are preserved with the stated tolerances and explicitly heuristic result type.",
@@ -11656,7 +11656,7 @@
         "test_generic_cp_full_round_pipeline",
         "test_generic_cp_modadd_test_vectors"
       ],
-      "v5_destination": "tests/unit/test_continuous_heuristics.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_continuous_heuristics.py"
     },
     {
       "acceptance_criterion": "Speck's fixed weight-14 decomposition and all three fixed ChaCha input/mask empirical bounds are retained with deterministic samples.",
@@ -11715,7 +11715,7 @@
         "test_optimal_semi_deterministic_differential_linear_trail_siphash",
         "test_parse_linear_bit_id_handles_valid_and_invalid_formats"
       ],
-      "v5_destination": "tests/unit/test_composed_trails.py"
+      "v5_destination": "tests/unit/analysis/test_composed_trails.py"
     },
     {
       "acceptance_criterion": "Possible and impossible middle boundaries receive real CP SAT/UNSAT checks and independent contradiction decoding.",
@@ -11753,7 +11753,7 @@
         "test_find_one_impossible_xor_differential_trail",
         "test_find_one_improbable_xor_differential_trail"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
     },
     {
       "acceptance_criterion": "The seven-round Speck split is proven UNSAT and Simon-11 fixed external/middle patterns preserve the bit-23 contradiction.",
@@ -11803,7 +11803,7 @@
         "test_find_one_impossible_xor_differential_trail_with_fully_automatic_model",
         "test_find_one_impossible_xor_differential_trail_with_initial_and_final_round"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
     },
     {
       "acceptance_criterion": "All fixed modular-add costs and Speck output/weight fixtures are solved and independently checked.",
@@ -11858,7 +11858,7 @@
         "test_modular_component_semideterministic_multiple_addends_constraints",
         "test_modular_component_semideterministic_probability_sample"
       ],
-      "v5_destination": "tests/integration/test_minizinc_integration.py; tests/unit/test_truncated_differences.py"
+      "v5_destination": "tests/integration/test_minizinc_integration.py; tests/unit/semantics/cryptanalysis/test_truncated_differences.py"
     },
     {
       "acceptance_criterion": "A fixed one-byte AES input difference becomes four guaranteed nonzero column bytes and projects losslessly through MiniZinc.",
@@ -11884,7 +11884,7 @@
       "tests": [
         "test_find_one_wordwise_deterministic_truncated_xor_differential_trail"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
     },
     {
       "acceptance_criterion": "Speck-5 optimum 9, short optimum 5, min-max 5 and fixed-weight/count evidence are independently solved and checked.",
@@ -11982,7 +11982,7 @@
         "test_find_one_xor_differential_trail_with_fixed_weight",
         "test_solving_unsatisfiability"
       ],
-      "v5_destination": "tests/integration/test_word_differential.py; tests/integration/test_minizinc_integration.py; tests/unit/test_bitwise_transition_semantics.py"
+      "v5_destination": "tests/integration/test_word_differential.py; tests/integration/test_minizinc_integration.py; tests/unit/semantics/cryptanalysis/test_bitwise_transition_semantics.py"
     },
     {
       "acceptance_criterion": "Exact AES evidence derives the active-S-box lower bound; no mutable helper-list cardinality is exposed.",
@@ -12009,7 +12009,7 @@
       "tests": [
         "test_add_additional_xor_constraints"
       ],
-      "v5_destination": "tests/unit/test_sbox_activity.py"
+      "v5_destination": "tests/unit/representations/constraints/milp/test_sbox_activity.py"
     },
     {
       "acceptance_criterion": "Independent enumeration preserves minimum weight 30, count 255 for each of four minimum column patterns, and the all-ff weight-224 characteristic.",
@@ -12061,7 +12061,7 @@
         "test_solve_full_two_steps_warns_about_non_word_aligned_key_schedule_rotations",
         "test_solve_full_two_steps_xor_differential_model"
       ],
-      "v5_destination": "tests/unit/test_sbox_activity.py"
+      "v5_destination": "tests/unit/representations/constraints/milp/test_sbox_activity.py"
     },
     {
       "acceptance_criterion": "Complete toy single-key enumeration retains 12 exact-weight-one and 13 bounded characteristics. Standard Speck-4 optimum and feasible weight 3 and the complete AND LAT are independently checked.",
@@ -12114,7 +12114,7 @@
         "test_fix_variables_value_xor_linear_constraints",
         "test_input_xor_linear_constraints"
       ],
-      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/test_bitwise_transition_semantics.py; tests/unit/test_word_linear_smt.py"
+      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/semantics/cryptanalysis/test_bitwise_transition_semantics.py; tests/unit/representations/constraints/smt/test_word_linear_smt.py"
     },
     {
       "acceptance_criterion": "Typed equal/not-equal/nonzero constraints, deterministic LP export and real GLPK SAT/UNSAT/assignment decoding are covered.",
@@ -12283,7 +12283,7 @@
         "test_sbox_milp_modeling_correctness",
         "test_solution_pool_validation_rejection"
       ],
-      "v5_destination": "tests/unit/test_monomial_prediction.py; tests/unit/test_monomial_composition.py; tests/unit/test_algebraic_evidence.py; tests/unit/test_trivium_algebra.py; tests/integration/test_glpk_monomial_prediction.py; tests/integration/test_glpk_trivium_monomials.py"
+      "v5_destination": "tests/unit/analysis/test_monomial_prediction.py; tests/unit/analysis/test_monomial_composition.py; tests/unit/analysis/test_algebraic_evidence.py; tests/unit/components/algebraic/test_trivium_algebra.py; tests/integration/test_glpk_monomial_prediction.py; tests/integration/test_glpk_trivium_monomials.py"
     },
     {
       "acceptance_criterion": "Both fixed Speck outputs are retained and exact finite-relation MILP decoding is exhaustively checked.",
@@ -12315,7 +12315,7 @@
         "test_find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail",
         "test_find_one_bitwise_deterministic_truncated_xor_differential_trail"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py; tests/unit/test_finite_relation_milp.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/unit/representations/constraints/milp/test_finite_relation_milp.py"
     },
     {
       "acceptance_criterion": "Simon input/output and both fixed middle patterns preserve their bit-23 incompatibility independently of backend.",
@@ -12356,7 +12356,7 @@
         "test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model",
         "test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model_with_external_solver"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
     },
     {
       "acceptance_criterion": "Exact binary-linear clauses match complete truth tables and full Speck-22 graph witnesses, including modular additions omitted by the legacy builder.",
@@ -12382,7 +12382,7 @@
       "tests": [
         "test_build_cipher_model"
       ],
-      "v5_destination": "tests/unit/test_boolean_graph_milp.py; tests/integration/test_glpk_integration.py"
+      "v5_destination": "tests/unit/representations/constraints/milp/test_boolean_graph_milp.py; tests/integration/test_glpk_integration.py"
     },
     {
       "acceptance_criterion": "AES 1/5/9/25, uBlock decomposed 1/6 and consolidated 1/8/9 are preserved while published uBlock exact 1/8/13 stays separate.",
@@ -12444,7 +12444,7 @@
         "test_wordwise_helpers_reject_unaligned_or_unsupported_cases",
         "test_wordwise_permutation_helpers_reject_non_word_permutations"
       ],
-      "v5_destination": "tests/unit/test_sbox_activity.py"
+      "v5_destination": "tests/unit/representations/constraints/milp/test_sbox_activity.py"
     },
     {
       "acceptance_criterion": "Every wordwise XOR/MDS row and typed AES singleton diffusion is checked exhaustively.",
@@ -12476,7 +12476,7 @@
         "test_find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail_model",
         "test_find_one_wordwise_deterministic_truncated_xor_differential_trail_model"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py; tests/unit/test_wordwise_relation_tables.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/unit/representations/constraints/milp/test_wordwise_relation_tables.py"
     },
     {
       "acceptance_criterion": "All five fixed patterns 1003..., zero key, 1000..., 22223333..., and 2000... are preserved exactly with an abstract-witness claim kind.",
@@ -12517,7 +12517,7 @@
         "test_find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model",
         "test_find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model_with_external_solver"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py"
     },
     {
       "acceptance_criterion": "Toy Speck counts 6/7, optima 1/4, and fixed feasible weights 5/15 are retained by generic independently checked graph models.",
@@ -12590,7 +12590,7 @@
         "test_find_lowest_number_of_active_sboxes_toyaes_internal_solver",
         "test_find_lowest_number_of_active_sboxes_ublock"
       ],
-      "v5_destination": "tests/unit/test_sbox_activity.py"
+      "v5_destination": "tests/unit/representations/constraints/milp/test_sbox_activity.py"
     },
     {
       "acceptance_criterion": "Toy counts 12/13, standard optimum 3 and feasible weights 1/7 retain exact signs and independent decoding.",
@@ -12650,7 +12650,7 @@
         "test_find_one_xor_linear_trail_with_weight_at_most",
         "test_fix_variables_value_xor_linear_constraints"
       ],
-      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/test_word_linear_smt.py"
+      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_linear_smt.py"
     },
     {
       "acceptance_criterion": "All 256 rows match the isolated dependency-free legacy generator, including its four fixed first/last row values.",
@@ -12676,7 +12676,7 @@
       "tests": [
         "test_generate_valid_points_for_truncated_mds_matrix"
       ],
-      "v5_destination": "tests/unit/test_wordwise_relation_tables.py"
+      "v5_destination": "tests/unit/representations/constraints/milp/test_wordwise_relation_tables.py"
     },
     {
       "acceptance_criterion": "All fixed counts/rows and full generators match; the seven fixed input cubes define exactly the same domain, and four fixed three-input XOR cubes reject no valid row.",
@@ -12711,7 +12711,7 @@
         "test_update_dictionary_that_contains_wordwise_truncated_input_inequalities",
         "test_update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs"
       ],
-      "v5_destination": "tests/unit/test_wordwise_relation_tables.py"
+      "v5_destination": "tests/unit/representations/constraints/milp/test_wordwise_relation_tables.py"
     },
     {
       "acceptance_criterion": "Every supported PRESENT DDT/LAT entry and exact objective/sign is checked; the fixed legacy facet holds for all probability-2/16 entries.",
@@ -12738,7 +12738,7 @@
       "tests": [
         "test_generate_sbox_inequalities_for_trail_search"
       ],
-      "v5_destination": "tests/unit/test_sbox_milp_relation.py"
+      "v5_destination": "tests/unit/representations/constraints/milp/test_sbox_milp_relation.py"
     },
     {
       "acceptance_criterion": "All 81 rows, four fixed undisturbed transitions and the five legacy projected forbidden cubes are independently checked.",
@@ -12765,7 +12765,7 @@
       "tests": [
         "test_update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits"
       ],
-      "v5_destination": "tests/unit/test_sbox_undisturbed.py"
+      "v5_destination": "tests/unit/components/substitution/test_sbox_undisturbed.py"
     },
     {
       "acceptance_criterion": "Fixed result conversions, formatting, seeded Speck/ChaCha experiments, boomerang evidence and continuous correlations retain executable typed coverage.",
@@ -12889,7 +12889,7 @@
         "test_worker_functions_direct",
         "test_write_solution_to_file"
       ],
-      "v5_destination": "tests/unit/test_constraints.py; tests/unit/test_results.py; tests/unit/test_composed_trails.py; tests/unit/test_continuous_heuristics.py; tests/unit/test_formatting.py"
+      "v5_destination": "tests/unit/test_constraints.py; tests/unit/test_results.py; tests/unit/analysis/test_composed_trails.py; tests/unit/semantics/cryptanalysis/test_continuous_heuristics.py; tests/unit/test_formatting.py"
     },
     {
       "acceptance_criterion": "Preserve the complete Speck32/64-22 vector 0x6574694C, 0x1918111009080100 -> 0xA86842F2 with real solving and independent evaluation.",
@@ -12941,7 +12941,7 @@
       "tests": [
         "test_build_bitwise_deterministic_truncated_xor_differential_trail_model"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py"
     },
     {
       "acceptance_criterion": "Supported full Speck32/64 differential construction is nonempty; changing the weight bound retains exact round relations and changes the explicit bound.",
@@ -12970,7 +12970,7 @@
         "test_build_xor_differential_trail_model",
         "test_build_xor_differential_trail_model_with_weight_adds_constraints"
       ],
-      "v5_destination": "tests/unit/test_cms_inventory_parity.py"
+      "v5_destination": "tests/unit/repository/test_cms_inventory_parity.py"
     },
     {
       "acceptance_criterion": "Prove Speck32/64-4 bound 2 UNSAT and bound 3 SAT; independently recount all correlations and wiring.",
@@ -13076,7 +13076,7 @@
         "test_find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail",
         "test_find_one_bitwise_deterministic_truncated_xor_differential_trail"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py"
     },
     {
       "acceptance_criterion": "Simon input 000...001 and output 000000?0?... preserve both exact middle patterns and their bit-23 incompatibility.",
@@ -13111,7 +13111,7 @@
         "test_find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components",
         "test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
     },
     {
       "acceptance_criterion": "Boolean CLI solving reproduces the fixed full Speck-22 output A86842F2 and independent scalar execution confirms it.",
@@ -13200,7 +13200,7 @@
         "test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case",
         "test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck"
       ],
-      "v5_destination": "tests/unit/test_composed_trails.py"
+      "v5_destination": "tests/unit/analysis/test_composed_trails.py"
     },
     {
       "acceptance_criterion": "The fixed four-/five-round Speck outputs and modular-add probability costs are independently retained; invalid ternary values are rejected by typed constructors.",
@@ -13249,7 +13249,7 @@
         "test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight_5_rounds",
         "test_wrong_fixed_variables_assignment"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/integration/test_minizinc_integration.py"
     },
     {
       "acceptance_criterion": "Both fixed three-round Speck outputs and the fixed reduced-ChaCha empirical evidence remain executable with explicit claim types.",
@@ -13287,7 +13287,7 @@
         "test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_configuration_unsat",
         "test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_for_chacha_1_round_satisfiable"
       ],
-      "v5_destination": "tests/unit/test_truncated_differences.py; tests/unit/test_composed_trails.py"
+      "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated_differences.py; tests/unit/analysis/test_composed_trails.py"
     },
     {
       "acceptance_criterion": "Fixed reduced-ChaCha composed observations retain empirical provenance without generated inverse-graph cache state.",
@@ -13320,7 +13320,7 @@
       "tests": [
         "test_backward_direction_distinguisher"
       ],
-      "v5_destination": "tests/unit/test_composed_trails.py"
+      "v5_destination": "tests/unit/analysis/test_composed_trails.py"
     },
     {
       "acceptance_criterion": "Reduced ChaCha fixed-difference empirical evidence is represented without claiming an exact probability or SAT proof.",
@@ -13346,7 +13346,7 @@
       "tests": [
         "test_sat_shared_difference_paired_input_differential_model_on_chacha_permutation"
       ],
-      "v5_destination": "tests/unit/test_composed_trails.py"
+      "v5_destination": "tests/unit/analysis/test_composed_trails.py"
     },
     {
       "acceptance_criterion": "Speck-5 optimum/count, fixed weights, Speck-9 27-trail aggregate 29.47 and all exact graph transitions are retained.",
@@ -13460,7 +13460,7 @@
         "test_find_one_xor_linear_trail_with_fixed_weight",
         "test_fix_variables_value_xor_linear_constraints"
       ],
-      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/test_word_linear_smt.py"
+      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_linear_smt.py"
     },
     {
       "acceptance_criterion": "Complete OR truth-table support and multi-operand XOR intermediate/output witnesses are independently checked.",
@@ -13489,7 +13489,7 @@
         "test_cnf_or",
         "test_cnf_xor_seq"
       ],
-      "v5_destination": "tests/unit/test_boolean_cnf.py"
+      "v5_destination": "tests/unit/representations/constraints/sat/test_boolean_cnf.py"
     },
     {
       "acceptance_criterion": "Portable SMT serialization and shared fixed-value constraints are deterministic; solver identity is explicit driver provenance.",
@@ -13522,7 +13522,7 @@
         "test_model_constraints",
         "test_solver_names"
       ],
-      "v5_destination": "tests/unit/test_smt.py; tests/unit/test_analysis_constraints.py"
+      "v5_destination": "tests/unit/representations/constraints/smt/test_smt.py; tests/unit/analysis/test_analysis_constraints.py"
     },
     {
       "acceptance_criterion": "Z3 recovers the full Speck32/64 designers' ciphertext and graph evaluation independently verifies the assignment.",
@@ -13673,7 +13673,7 @@
         "test_run_autond_pipeline",
         "test_train_gohr_neural_distinguisher"
       ],
-      "v5_destination": "tests/unit/test_neural_contracts.py; tests/unit/test_neural_experiments.py; tests/integration/test_neural_driver_integration.py"
+      "v5_destination": "tests/unit/analysis/test_neural_contracts.py; tests/unit/analysis/test_neural_experiments.py; tests/integration/test_neural_driver_integration.py"
     },
     {
       "acceptance_criterion": "Fixed typed trail, avalanche, component, statistical, neural, continuous, text-export, optional-plot, and safe-file evidence covers every retained report behavior without solver execution or pickle caches.",
@@ -13734,7 +13734,7 @@
         "test_show",
         "test_show_rejects_invalid_hex_word_size"
       ],
-      "v5_destination": "tests/unit/test_presentation_contracts.py; tests/unit/test_presentation_tables.py; tests/unit/test_presentation_adapters.py; tests/unit/test_presentation_exports.py; tests/unit/test_presentation_files.py; tests/unit/test_presentation_plots.py"
+      "v5_destination": "tests/unit/presentation/test_presentation_contracts.py; tests/unit/presentation/test_presentation_tables.py; tests/unit/presentation/test_presentation_adapters.py; tests/unit/presentation/test_presentation_exports.py; tests/unit/presentation/test_presentation_files.py; tests/unit/presentation/test_presentation_plots.py"
     },
     {
       "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
@@ -13779,7 +13779,7 @@
         "test_generate_low_density_dataset",
         "test_generate_random_dataset"
       ],
-      "v5_destination": "tests/unit/test_statistical_datasets.py; tests/unit/test_statistical_dataset_families.py"
+      "v5_destination": "tests/unit/analysis/test_statistical_datasets.py; tests/unit/analysis/test_statistical_dataset_families.py"
     },
     {
       "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
@@ -13821,7 +13821,7 @@
         "test_parse_report",
         "test_run_dieharder_statistical_tests_tool"
       ],
-      "v5_destination": "tests/unit/test_dieharder_driver.py; tests/integration/test_dieharder_integration.py"
+      "v5_destination": "tests/unit/drivers/statistical/test_dieharder_driver.py; tests/integration/test_dieharder_integration.py"
     },
     {
       "acceptance_criterion": "Committed NIST fixtures and fixed synthetic unavailable rows verify complete table data, deterministic aggregate series, headless figure structure, UTF-8 output, extensions, and overwrite policy.",
@@ -13852,7 +13852,7 @@
       "tests": [
         "test_generate_reports_and_charts"
       ],
-      "v5_destination": "tests/unit/test_presentation_adapters.py; tests/unit/test_presentation_plots.py; tests/unit/test_presentation_files.py"
+      "v5_destination": "tests/unit/presentation/test_presentation_adapters.py; tests/unit/presentation/test_presentation_plots.py; tests/unit/presentation/test_presentation_files.py"
     },
     {
       "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
@@ -13926,7 +13926,7 @@
         "test_run_nist_statistical_tests_tool",
         "test_run_random_nist_statistics_test"
       ],
-      "v5_destination": "tests/unit/test_nist_driver.py; tests/integration/test_nist_integration.py"
+      "v5_destination": "tests/unit/drivers/statistical/test_nist_driver.py; tests/integration/test_nist_integration.py"
     },
     {
       "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
@@ -14095,7 +14095,7 @@
         "test_universal_test_long_sequence",
         "test_universal_test_random"
       ],
-      "v5_destination": "tests/unit/test_nist_driver.py; tests/integration/test_nist_integration.py"
+      "v5_destination": "tests/unit/drivers/statistical/test_nist_driver.py; tests/integration/test_nist_integration.py"
     },
     {
       "acceptance_criterion": "Applicable direct inversion and partial-graph tests are preserved by independent scalar round trips, typed boundaries, and dangling-dependency validation.",
@@ -14245,7 +14245,7 @@
         "test_vector_check",
         "test_zero_correlation_linear_search"
       ],
-      "v5_destination": "tests/unit/test_primitive_inversion.py; tests/unit/test_graph_slicing.py; tests/unit/test_graph_editing.py"
+      "v5_destination": "tests/unit/transformations/test_primitive_inversion.py; tests/unit/transformations/test_graph_slicing.py; tests/unit/transformations/test_graph_editing.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14286,7 +14286,7 @@
         "test_aes_invalid_key_size",
         "test_aes_parameters_configuration_list"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14315,7 +14315,7 @@
       "tests": [
         "test_aradi_block_cipher_sbox_and_compact_linear_map"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14344,7 +14344,7 @@
       "tests": [
         "test_aradi_block_cipher_sbox"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14373,7 +14373,7 @@
       "tests": [
         "test_aradi_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14403,7 +14403,7 @@
       "tests": [
         "test_baksheesh_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14432,7 +14432,7 @@
       "tests": [
         "test_ballet_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14461,7 +14461,7 @@
       "tests": [
         "test_bea1_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14514,7 +14514,7 @@
         "test_single_1_custom_rounds",
         "test_structure"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14562,7 +14562,7 @@
         "test_blink_64b",
         "test_blink_invalid_configuration"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14603,7 +14603,7 @@
         "test_vector_40_bit",
         "test_vector_80_bit"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14641,7 +14641,7 @@
         "test_cham_64_128",
         "test_cham_block_cipher_structure"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14673,7 +14673,7 @@
         "test_chilow_block_cipher_32",
         "test_chilow_block_cipher_40"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14702,7 +14702,7 @@
       "tests": [
         "test_des_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14731,7 +14731,7 @@
       "tests": [
         "test_des_exact_key_length_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14760,7 +14760,7 @@
       "tests": [
         "test_fancy_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14789,7 +14789,7 @@
       "tests": [
         "test_gift_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14818,7 +14818,7 @@
       "tests": [
         "test_gift_sbox_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14847,7 +14847,7 @@
       "tests": [
         "test_gost_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14876,7 +14876,7 @@
       "tests": [
         "test_hight_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14933,7 +14933,7 @@
         "test_idea_cipher_official_vector",
         "test_idea_cipher_word_size"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14962,7 +14962,7 @@
       "tests": [
         "test_kalyna_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -14991,7 +14991,7 @@
       "tests": [
         "test_kasumi_block_cipher_test_vector"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15024,7 +15024,7 @@
         "test_katan_block_cipher",
         "test_katan_block_cipher_round_validation"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15057,7 +15057,7 @@
         "test_katan_fsr_block_cipher",
         "test_katan_fsr_block_cipher_round_validation"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15090,7 +15090,7 @@
         "test_ktantan_block_cipher",
         "test_ktantan_block_cipher_round_validation"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15123,7 +15123,7 @@
         "test_ktantan_fsr_block_cipher",
         "test_ktantan_fsr_block_cipher_round_validation"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15152,7 +15152,7 @@
       "tests": [
         "test_lblock_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15181,7 +15181,7 @@
       "tests": [
         "test_lea_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15211,7 +15211,7 @@
       "tests": [
         "test_led_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15240,7 +15240,7 @@
       "tests": [
         "test_lowmc_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15269,7 +15269,7 @@
       "tests": [
         "test_mantis_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15299,7 +15299,7 @@
       "tests": [
         "test_midori_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15334,7 +15334,7 @@
         "test_msx128_256_vector",
         "test_msx64_128_vector"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15366,7 +15366,7 @@
         "test_piccolo_block_cipher_128",
         "test_piccolo_block_cipher_80"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15395,7 +15395,7 @@
       "tests": [
         "test_present_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15424,7 +15424,7 @@
       "tests": [
         "test_prince_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15453,7 +15453,7 @@
       "tests": [
         "test_princeV2_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15483,7 +15483,7 @@
       "tests": [
         "test_qarmav2_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15513,7 +15513,7 @@
       "tests": [
         "test_qarmav2_mixcolumn_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15542,7 +15542,7 @@
       "tests": [
         "test_raiden_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15571,7 +15571,7 @@
       "tests": [
         "test_rc5_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15600,7 +15600,7 @@
       "tests": [
         "test_rectangle_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15648,7 +15648,7 @@
         "test_rijndael_invalid_key_size",
         "test_rijndael_round_count_table"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15683,7 +15683,7 @@
         "test_saecham_generated_vectors",
         "test_saecham_paper_vector"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15712,7 +15712,7 @@
       "tests": [
         "test_scarf_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15752,7 +15752,7 @@
         "test_serpent_test_vectors",
         "test_serpent_vectorized_evaluation"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15781,7 +15781,7 @@
       "tests": [
         "test_simeck_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15810,7 +15810,7 @@
       "tests": [
         "test_simeck_sbox_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15839,7 +15839,7 @@
       "tests": [
         "test_simon_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15868,7 +15868,7 @@
       "tests": [
         "test_simon_sbox_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15898,7 +15898,7 @@
       "tests": [
         "test_skinny_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15930,7 +15930,7 @@
         "test_skipjack_all_rounds",
         "test_skipjack_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15962,7 +15962,7 @@
         "test_sm4_block_cipher",
         "test_sm4_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -15991,7 +15991,7 @@
       "tests": [
         "test_sparx_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16020,7 +16020,7 @@
       "tests": [
         "test_speck_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16049,7 +16049,7 @@
       "tests": [
         "test_speedy_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16079,7 +16079,7 @@
       "tests": [
         "test_splight_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16108,7 +16108,7 @@
       "tests": [
         "test_tea_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16137,7 +16137,7 @@
       "tests": [
         "test_threefish_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16175,7 +16175,7 @@
         "test_trax_block_cipher_evaluate_tv2",
         "test_trax_block_cipher_reduced_rounds"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16204,7 +16204,7 @@
       "tests": [
         "test_twine_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16234,7 +16234,7 @@
       "tests": [
         "test_twofish_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16263,7 +16263,7 @@
       "tests": [
         "test_ublock_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16292,7 +16292,7 @@
       "tests": [
         "test_ublock_single_linear_layer_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16333,7 +16333,7 @@
         "test_vector_3",
         "test_vector_4"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16362,7 +16362,7 @@
       "tests": [
         "test_warp_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16391,7 +16391,7 @@
       "tests": [
         "test_xtea_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_word_block_catalogue.py; tests/unit/test_simon_cipher.py; tests/unit/test_speck.py"
+      "v5_destination": "tests/unit/primitives/test_word_block_catalogue.py; tests/unit/primitives/block_ciphers/test_simon_cipher.py; tests/unit/primitives/block_ciphers/test_speck.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16420,7 +16420,7 @@
       "tests": [
         "test_blake2_hash_function"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16449,7 +16449,7 @@
       "tests": [
         "test_blake_hash_function"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16478,7 +16478,7 @@
       "tests": [
         "test_md5_hash_function"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16507,7 +16507,7 @@
       "tests": [
         "test_sha1_hash_function"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16536,7 +16536,7 @@
       "tests": [
         "test_sha2_hash_function"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16565,7 +16565,7 @@
       "tests": [
         "test_whirlpool_hash_function"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16604,7 +16604,7 @@
         "test_siphash24_vectors_h_selected",
         "test_siphash_mac_parameterization"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16636,7 +16636,7 @@
         "test_ascon_permutation",
         "test_ascon_permutation_official_reference_vectors"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16665,7 +16665,7 @@
       "tests": [
         "test_ascon_sbox_sigma_no_matrix_permutation"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16694,7 +16694,7 @@
       "tests": [
         "test_ascon_sbox_sigma_permutation"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16726,7 +16726,7 @@
         "test_chacha_permutation",
         "test_toy_chacha_permutation"
       ],
-      "v5_destination": "tests/unit/test_chacha.py"
+      "v5_destination": "tests/unit/primitives/block_functions/test_chacha.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16774,7 +16774,7 @@
         "test_chaskeypi_invalid_word_size_non_positive_raises",
         "test_chaskeypi_permutation_derived_reference_vectors"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16809,7 +16809,7 @@
         "test_forro_permutation_structure",
         "test_print_state_ids"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16841,7 +16841,7 @@
         "test_gaston_permutation",
         "test_gaston_permutation_reference_vector"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16870,7 +16870,7 @@
       "tests": [
         "test_gaston_sbox_permutation"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16899,7 +16899,7 @@
       "tests": [
         "test_gaston_sbox_theta_permutation"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16931,7 +16931,7 @@
         "test_gimli_permutation",
         "test_gimli_permutation_reference_vector"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16960,7 +16960,7 @@
       "tests": [
         "test_gimli_sbox_permutation"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -16989,7 +16989,7 @@
       "tests": [
         "test_grain_core_permutation"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17022,7 +17022,7 @@
         "test_keccak_invertible_permutation",
         "test_keccak_invertible_permutation_invalid_parameters"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17058,7 +17058,7 @@
         "test_keccak_permutation_invalid_parameters",
         "test_keccak_permutation_official_reference_vector"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17091,7 +17091,7 @@
         "test_keccak_sbox_permutation",
         "test_keccak_sbox_permutation_invalid_parameters"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17123,7 +17123,7 @@
         "test_knot_permutation",
         "test_knot_permutation_reference_vectors"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17155,7 +17155,7 @@
         "test_norx_permutation",
         "test_norx_permutation_official_test_vectors"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17185,7 +17185,7 @@
       "tests": [
         "test_photon_permutation"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17217,7 +17217,7 @@
         "test_print_state_ids",
         "test_salsa_permutation"
       ],
-      "v5_destination": "tests/unit/test_salsa.py"
+      "v5_destination": "tests/unit/primitives/block_functions/test_salsa.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17246,7 +17246,7 @@
       "tests": [
         "test_sparkle_permutation"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17285,7 +17285,7 @@
         "test_speckey_permutation_reduced_rounds",
         "test_speckey_permutation_reference_vectors"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17314,7 +17314,7 @@
       "tests": [
         "test_spongent_pi_fsr_permutation"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17343,7 +17343,7 @@
       "tests": [
         "test_spongent_pi_permutation"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17372,7 +17372,7 @@
       "tests": [
         "test_spongent_pi_precomputation_permutation"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17408,7 +17408,7 @@
         "test_subterranean_permutation",
         "test_subterranean_v2_permutation"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17437,7 +17437,7 @@
       "tests": [
         "test_tinyjambu_32bits_word_permutation"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17466,7 +17466,7 @@
       "tests": [
         "test_tinyjambu_fsr_32bits_word_permutation"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17495,7 +17495,7 @@
       "tests": [
         "test_tinyjambu_permutation"
       ],
-      "v5_destination": "tests/unit/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
+      "v5_destination": "tests/unit/graph/test_catalogue_graph_migration.py; tests/integration/test_substitution_block_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17524,7 +17524,7 @@
       "tests": [
         "test_xoodoo_invertible_permutation"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17556,7 +17556,7 @@
         "test_xoodoo_permutation",
         "test_xoodoo_permutation_official_reference_vectors"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17585,7 +17585,7 @@
       "tests": [
         "test_xoodoo_sbox_permutation"
       ],
-      "v5_destination": "tests/unit/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_permutation_catalogue.py; tests/integration/test_permutation_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17618,7 +17618,7 @@
         "test_and_cipher_properties",
         "test_build_block_cipher_inputs_requires_at_least_two_inputs"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17647,7 +17647,7 @@
       "tests": [
         "test_constant_cipher_value"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17676,7 +17676,7 @@
       "tests": [
         "test_fsr_cipher_smoke"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17708,7 +17708,7 @@
         "test_idea_modmul_cipher_default_modulus",
         "test_idea_modmul_cipher_uses_explicit_modulus"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17737,7 +17737,7 @@
       "tests": [
         "test_identity_cipher"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17766,7 +17766,7 @@
       "tests": [
         "test_linear_layer_cipher_identity_matrix"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17795,7 +17795,7 @@
       "tests": [
         "test_mix_column_cipher_smoke"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17824,7 +17824,7 @@
       "tests": [
         "test_modadd_cipher_properties"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17853,7 +17853,7 @@
       "tests": [
         "test_modmul_cipher_commutative"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17882,7 +17882,7 @@
       "tests": [
         "test_modsub_cipher_non_commutative"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17911,7 +17911,7 @@
       "tests": [
         "test_not_cipher_involution"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17940,7 +17940,7 @@
       "tests": [
         "test_or_cipher_properties"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -17991,7 +17991,7 @@
         "test_permutation_cipher_word_size",
         "test_permutation_cipher_word_size_is_bijection"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18020,7 +18020,7 @@
       "tests": [
         "test_reverse_cipher_involution"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18049,7 +18049,7 @@
       "tests": [
         "test_rotate_cipher_inverse_parameters"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18078,7 +18078,7 @@
       "tests": [
         "test_sbox_cipher_identity_table_default"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18107,7 +18107,7 @@
       "tests": [
         "test_shift_cipher_hash_type"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18136,7 +18136,7 @@
       "tests": [
         "test_shift_rows_cipher_smoke"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18168,7 +18168,7 @@
         "test_sigma_cipher_default_rotation_amounts",
         "test_sigma_cipher_smoke"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18200,7 +18200,7 @@
         "test_theta_gaston_cipher_default_rotation_amounts",
         "test_theta_gaston_cipher_smoke"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18229,7 +18229,7 @@
       "tests": [
         "test_theta_keccak_cipher_smoke"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18258,7 +18258,7 @@
       "tests": [
         "test_theta_xoodoo_cipher_smoke"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18287,7 +18287,7 @@
       "tests": [
         "test_variable_rotate_cipher_zero_amount"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18316,7 +18316,7 @@
       "tests": [
         "test_variable_shift_cipher_zero_amount"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18351,7 +18351,7 @@
         "test_word_permutation_cipher_sat_xor_differential_trail_search_matches_evaluate",
         "test_word_permutation_cipher_smoke"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18380,7 +18380,7 @@
       "tests": [
         "test_xor_cipher_properties"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18409,7 +18409,7 @@
       "tests": [
         "test_a51"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18438,7 +18438,7 @@
       "tests": [
         "test_a52"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18467,7 +18467,7 @@
       "tests": [
         "test_bivium_stream_cipher_test_vector"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18496,7 +18496,7 @@
       "tests": [
         "test_bluetooth_stream_cipher_e0_test_vector"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18525,7 +18525,7 @@
       "tests": [
         "test_chacha_stream_cipher"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18557,7 +18557,7 @@
         "test_snow3g_stream_cipher_can_be_initialized_twice",
         "test_snow3g_stream_cipher_test_vector"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18586,7 +18586,7 @@
       "tests": [
         "test_trivium_stream_cipher_test_vector"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18615,7 +18615,7 @@
       "tests": [
         "test_zuc_stream_cipher_test_vector"
       ],
-      "v5_destination": "tests/unit/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
+      "v5_destination": "tests/unit/repository/test_function_catalogue.py; tests/integration/test_function_catalogue_evidence.py"
     },
     {
       "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
@@ -18647,7 +18647,7 @@
       "tests": [
         "test_cipherfour_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
@@ -18677,7 +18677,7 @@
       "tests": [
         "test_heys_block_cipher"
       ],
-      "v5_destination": "tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18746,7 +18746,7 @@
         "test_aes_block_cipher",
         "test_aes_matrix_mds_status"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18777,7 +18777,7 @@
       "tests": [
         "test_toyfeistel"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18808,7 +18808,7 @@
       "tests": [
         "test_toyspn1"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
@@ -18839,7 +18839,7 @@
       "tests": [
         "test_toyspn2"
       ],
-      "v5_destination": "tests/unit/test_single_component_primitives.py; tests/unit/test_toy_primitive_catalogue.py"
+      "v5_destination": "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py; tests/unit/primitives/toy_primitives/test_toy_primitive_catalogue.py"
     },
     {
       "acceptance_criterion": "Typed components validate graph ownership while semantic registries and representations reject unsupported operations explicitly.",
@@ -18884,7 +18884,7 @@
         "test_unimplemented_component_method_raises_not_implemented_error",
         "test_unimplemented_component_methods_accept_documented_arguments"
       ],
-      "v5_destination": "tests/unit/test_typed_graph.py; tests/unit/test_propagation_problem.py"
+      "v5_destination": "tests/unit/graph/test_typed_graph.py; tests/unit/semantics/cryptanalysis/test_propagation_problem.py"
     },
     {
       "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
@@ -18935,7 +18935,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "tests/unit/test_logical_components.py; tests/unit/test_bitwise_transition_semantics.py"
+      "v5_destination": "tests/unit/components/word/test_logical_components.py; tests/unit/semantics/cryptanalysis/test_bitwise_transition_semantics.py"
     },
     {
       "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
@@ -18965,7 +18965,7 @@
         "test_cp_constraints",
         "test_cp_wordwise_deterministic_truncated_xor_differential_constraints"
       ],
-      "v5_destination": "tests/unit/test_typed_graph.py; tests/unit/test_neural_projections.py"
+      "v5_destination": "tests/unit/graph/test_typed_graph.py; tests/unit/analysis/test_neural_projections.py"
     },
     {
       "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
@@ -19004,7 +19004,7 @@
         "test_smt_xor_differential_propagation_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "tests/unit/test_structural_evaluation.py"
+      "v5_destination": "tests/unit/components/structural/test_structural_evaluation.py"
     },
     {
       "acceptance_criterion": "Complete binary truth tables, conditional-clock behavior, field-word values, iterative clocks, validation, and scalar/batch parity preserve the tested feedback semantics.",
@@ -19031,7 +19031,7 @@
       "tests": [
         "test_fsr_algebraic_polynomials"
       ],
-      "v5_destination": "tests/unit/test_feedback_register.py"
+      "v5_destination": "tests/unit/components/feedback/test_feedback_register.py"
     },
     {
       "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
@@ -19061,7 +19061,7 @@
         "test_modmul_component_creation",
         "test_modmul_component_vectorized_code"
       ],
-      "v5_destination": "tests/unit/test_word_arx_components.py"
+      "v5_destination": "tests/unit/components/word/test_word_arx_components.py"
     },
     {
       "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
@@ -19106,7 +19106,7 @@
         "test_sat_xor_linear_mask_propagation_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "tests/unit/test_neural_projections.py; tests/unit/test_structural_evaluation.py"
+      "v5_destination": "tests/unit/analysis/test_neural_projections.py; tests/unit/components/structural/test_structural_evaluation.py"
     },
     {
       "acceptance_criterion": "Complete binary and GF(2^4) checks, the published AES MixColumns column, typed validation, and scalar/batch parity preserve the mathematical transformation.",
@@ -19177,7 +19177,7 @@
         "test_smt_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "tests/unit/test_linear_layer_components.py; tests/unit/test_algebraic_evaluation.py"
+      "v5_destination": "tests/unit/components/word/test_linear_layer_components.py; tests/unit/components/algebraic/test_algebraic_evaluation.py"
     },
     {
       "acceptance_criterion": "Complete binary and GF(2^4) checks, the published AES MixColumns column, typed validation, and scalar/batch parity preserve the mathematical transformation.",
@@ -19251,7 +19251,7 @@
         "test_smt_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "tests/unit/test_linear_layer_components.py; tests/unit/test_aes.py"
+      "v5_destination": "tests/unit/components/word/test_linear_layer_components.py; tests/unit/primitives/block_ciphers/test_aes.py"
     },
     {
       "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
@@ -19284,7 +19284,7 @@
         "test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraints",
         "test_milp_bitwise_deterministic_truncated_xor_differential_constraints"
       ],
-      "v5_destination": "tests/unit/test_word_arx_components.py; tests/unit/test_word_components.py; tests/unit/test_arx_trail_search.py"
+      "v5_destination": "tests/unit/components/word/test_word_arx_components.py; tests/unit/components/word/test_word_components.py; tests/unit/analysis/test_arx_trail_search.py"
     },
     {
       "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
@@ -19317,7 +19317,7 @@
         "test_modmul_component_creation",
         "test_sat_bitwise_deterministic_truncated_xor_differential_constraints"
       ],
-      "v5_destination": "tests/unit/test_word_arx_components.py"
+      "v5_destination": "tests/unit/components/word/test_word_arx_components.py"
     },
     {
       "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
@@ -19359,7 +19359,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "tests/unit/test_word_arx_components.py"
+      "v5_destination": "tests/unit/components/word/test_word_arx_components.py"
     },
     {
       "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
@@ -19399,7 +19399,7 @@
         "test_cp_deterministic_truncated_constraints_build_chain_for_three_inputs",
         "test_generic_sign_linear_constraints_edge_patterns"
       ],
-      "v5_destination": "tests/unit/test_word_arx_components.py"
+      "v5_destination": "tests/unit/components/word/test_word_arx_components.py"
     },
     {
       "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
@@ -19442,7 +19442,7 @@
         "test_cp_wordwise_deterministic_constraints_use_model_word_size",
         "test_cp_xor_differential_updates_model_counter_and_probability_map"
       ],
-      "v5_destination": "tests/unit/test_logical_components.py"
+      "v5_destination": "tests/unit/components/word/test_logical_components.py"
     },
     {
       "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
@@ -19523,7 +19523,7 @@
         "test_smt_xor_differential_propagation_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "tests/unit/test_logical_components.py"
+      "v5_destination": "tests/unit/components/word/test_logical_components.py"
     },
     {
       "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
@@ -19565,7 +19565,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "tests/unit/test_logical_components.py"
+      "v5_destination": "tests/unit/components/word/test_logical_components.py"
     },
     {
       "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
@@ -19687,7 +19687,7 @@
         "test_validation_word_size_valid",
         "test_validation_zero_word_size"
       ],
-      "v5_destination": "tests/unit/test_structural_evaluation.py; tests/unit/test_conversion_components.py"
+      "v5_destination": "tests/unit/components/structural/test_structural_evaluation.py; tests/unit/graph/test_conversion_components.py"
     },
     {
       "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
@@ -19724,7 +19724,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "tests/unit/test_conversion_components.py"
+      "v5_destination": "tests/unit/graph/test_conversion_components.py"
     },
     {
       "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
@@ -19757,7 +19757,7 @@
         "test_cp_inverse_constraints",
         "test_cp_xor_differential_first_step_constraints"
       ],
-      "v5_destination": "tests/unit/test_word_arx_components.py; tests/unit/test_word_components.py"
+      "v5_destination": "tests/unit/components/word/test_word_arx_components.py; tests/unit/components/word/test_word_components.py"
     },
     {
       "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
@@ -19850,7 +19850,7 @@
         "test_smt_xor_differential_propagation_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "tests/unit/test_sbox.py; tests/unit/test_bit_vector_sbox.py; tests/unit/test_trail_semantics.py; tests/unit/test_sbox_milp_relation.py; tests/unit/test_sbox_undisturbed.py"
+      "v5_destination": "tests/unit/components/substitution/test_sbox.py; tests/unit/components/substitution/test_bit_vector_sbox.py; tests/unit/semantics/cryptanalysis/test_trail_semantics.py; tests/unit/representations/constraints/milp/test_sbox_milp_relation.py; tests/unit/components/substitution/test_sbox_undisturbed.py"
     },
     {
       "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
@@ -19926,7 +19926,7 @@
         "test_smt_constraints",
         "test_smt_xor_linear_mask_propagation_constraints"
       ],
-      "v5_destination": "tests/unit/test_word_arx_components.py"
+      "v5_destination": "tests/unit/components/word/test_word_arx_components.py"
     },
     {
       "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
@@ -19964,7 +19964,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "tests/unit/test_permutation_layers.py"
+      "v5_destination": "tests/unit/components/permutation/test_permutation_layers.py"
     },
     {
       "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
@@ -20001,7 +20001,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "tests/unit/test_permutation_layers.py"
+      "v5_destination": "tests/unit/components/permutation/test_permutation_layers.py"
     },
     {
       "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
@@ -20029,7 +20029,7 @@
       "tests": [
         "test_constructor_sets_theta_gaston_identity"
       ],
-      "v5_destination": "tests/unit/test_permutation_layers.py"
+      "v5_destination": "tests/unit/components/permutation/test_permutation_layers.py"
     },
     {
       "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
@@ -20066,7 +20066,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "tests/unit/test_permutation_layers.py"
+      "v5_destination": "tests/unit/components/permutation/test_permutation_layers.py"
     },
     {
       "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
@@ -20094,7 +20094,7 @@
       "tests": [
         "test_constructor_sets_theta_xoodoo_identity"
       ],
-      "v5_destination": "tests/unit/test_permutation_layers.py"
+      "v5_destination": "tests/unit/components/permutation/test_permutation_layers.py"
     },
     {
       "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
@@ -20128,7 +20128,7 @@
         "test_get_word_based_c_code_direction",
         "test_get_word_operation_sign_updates_solution"
       ],
-      "v5_destination": "tests/unit/test_word_arx_components.py"
+      "v5_destination": "tests/unit/components/word/test_word_arx_components.py"
     },
     {
       "acceptance_criterion": "Exhaustive three-bit arithmetic, fixed word-motion values, boundary behavior, validation, and scalar/batch parity preserve applicable semantics.",
@@ -20164,7 +20164,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "tests/unit/test_word_arx_components.py"
+      "v5_destination": "tests/unit/components/word/test_word_arx_components.py"
     },
     {
       "acceptance_criterion": "Typed structural values, validation, graph boundaries, and trace projections preserve semantic assertions with independent scalar/batch checks.",
@@ -20207,7 +20207,7 @@
         "test_sat_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "tests/unit/test_conversion_components.py"
+      "v5_destination": "tests/unit/graph/test_conversion_components.py"
     },
     {
       "acceptance_criterion": "Concrete truth tables, exact S-box DDT/LAT/undisturbed relations, symbolic ANFs, and typed validation preserve all applicable semantic results.",
@@ -20264,7 +20264,7 @@
         "test_milp_wordwise_deterministic_truncated_xor_differential_simple_constraints",
         "test_smt_constraints"
       ],
-      "v5_destination": "tests/unit/test_logical_components.py; tests/unit/test_word_components.py; tests/unit/test_wordwise_relation_tables.py"
+      "v5_destination": "tests/unit/components/word/test_logical_components.py; tests/unit/components/word/test_word_components.py; tests/unit/representations/constraints/milp/test_wordwise_relation_tables.py"
     },
     {
       "acceptance_criterion": "Fixed single-key and related-key Speck observations agree with independent paired evaluation, with solver-facing feasibility checked only in the affected integration group.",
@@ -20314,7 +20314,7 @@
         "test_satisfiable_differential_trail_single_key_generated_using_claasp",
         "test_unsatisfiable_differential_trail_related_key"
       ],
-      "v5_destination": "tests/unit/test_paired_xor_transformation.py; tests/integration/test_paired_constraints.py"
+      "v5_destination": "tests/unit/transformations/test_paired_xor_transformation.py; tests/integration/test_paired_constraints.py"
     },
     {
       "acceptance_criterion": "Round/key transformations and reorder inlining have validated graphs, explicit boundaries, unchanged sources, and scalar semantic parity.",
@@ -20386,7 +20386,7 @@
         "test_replace_bit_reordering_components_as_direct_wiring_removes_only_reorder_only_components",
         "test_replace_bit_reordering_components_as_direct_wiring_rewires_permutation_component"
       ],
-      "v5_destination": "tests/unit/test_graph_editing.py"
+      "v5_destination": "tests/unit/transformations/test_graph_editing.py"
     },
     {
       "acceptance_criterion": "The exact 4-/32-bit masks and 0x67452301 little-endian bit vector are independently checked.",
@@ -20416,7 +20416,7 @@
         "test_generate_bitmask",
         "test_to_binary"
       ],
-      "v5_destination": "tests/unit/test_authoring_utilities.py"
+      "v5_destination": "tests/unit/utils/test_authoring_utilities.py"
     },
     {
       "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
@@ -20488,7 +20488,7 @@
         "test_shift_left",
         "test_shift_right"
       ],
-      "v5_destination": "tests/unit/test_authoring_utilities.py"
+      "v5_destination": "tests/unit/utils/test_authoring_utilities.py"
     },
     {
       "acceptance_criterion": "Byte layout and exact-integer fixed results remain executable; analysis semantics retain sign/distance evidence under their achieved owners.",
@@ -20574,7 +20574,7 @@
         "test_sgn_function",
         "test_signed_distance"
       ],
-      "v5_destination": "tests/unit/test_authoring_utilities.py; tests/unit/test_avalanche_analysis.py; tests/unit/test_continuous_heuristics.py"
+      "v5_destination": "tests/unit/utils/test_authoring_utilities.py; tests/unit/analysis/test_avalanche_analysis.py; tests/unit/semantics/cryptanalysis/test_continuous_heuristics.py"
     }
   ],
   "schema_version": 1,
