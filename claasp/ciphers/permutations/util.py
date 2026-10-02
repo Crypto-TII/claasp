@@ -73,6 +73,27 @@ def half_like_round_function_latin_dances(permutation, round_number, columns, di
             bottom_half_quarter_round(diagonals[0], diagonals[1], diagonals[2], diagonals[3])
 
 
+_QUARTER_STAGE_METHODS = (
+    "first_quarter_round",
+    "second_quarter_round",
+    "third_quarter_round",
+    "fourth_quarter_round",
+)
+
+
+def quarter_like_round_function_latin_dances(permutation, quarter_number, columns, diagonals):
+    """
+    Single-modular-addition granularity: each call performs exactly one of the four ARX
+    stages that together make up a full column/diagonal round (``half_half`` round mode).
+    """
+    state = permutation.state_of_components
+    stage_method = getattr(permutation, _QUARTER_STAGE_METHODS[quarter_number % 4])
+    groups = columns if (quarter_number // 4) % 2 == 0 else diagonals
+
+    for group in groups:
+        stage_method(*group, state)
+
+
 def sub_quarter_round_latin_dances(permutation, state, p1_index, p2_index, p3_index, rot_amount, cipher_name):
     p1 = get_2d_array_element_from_1d_array_index(p1_index, state, 4)
     p2 = get_2d_array_element_from_1d_array_index(p2_index, state, 4)
@@ -128,6 +149,16 @@ def init_state_latin_dances(permutation, input_plaintext):
             state_of_components[i][j] = component_state
 
 
+_QUARTER_START_STAGES = {
+    "top": 0,
+    "top_first": 0,
+    "top_second": 1,
+    "bottom": 2,
+    "bottom_first": 2,
+    "bottom_second": 3,
+}
+
+
 def init_latin_dances_cipher(
     permutation,
     super_class,
@@ -142,6 +173,7 @@ def init_latin_dances_cipher(
     quarter_round_indexes,
     word_size,
     rotations,
+    round_granularity=2,
 ):
     columns = quarter_round_indexes[0]
     diagonals = quarter_round_indexes[1]
@@ -172,12 +204,25 @@ def init_latin_dances_cipher(
     )
 
     for i in range(number_of_rounds):
-        if start_round[0] == "even":
-            j = i + 2
+        if round_granularity == 4:
+            j = i + 4 if start_round[0] == "even" else i
+            stage_label = start_round[1] if len(start_round) > 1 else "top"
+            if stage_label not in _QUARTER_START_STAGES:
+                raise ValueError(
+                    "start_round[1] must be one of "
+                    "'top' ('top_first'), 'top_second', 'bottom' ('bottom_first') or 'bottom_second' "
+                    "when round_granularity is 4"
+                )
+            j += _QUARTER_START_STAGES[stage_label]
+            permutation.add_round()
+            quarter_like_round_function_latin_dances(permutation, j, columns, diagonals)
         else:
-            j = i
-        if start_round[1] == "bottom":
-            j += 1
-        permutation.add_round()
-        half_like_round_function_latin_dances(permutation, j, columns, diagonals)
+            if start_round[0] == "even":
+                j = i + 2
+            else:
+                j = i
+            if start_round[1] == "bottom":
+                j += 1
+            permutation.add_round()
+            half_like_round_function_latin_dances(permutation, j, columns, diagonals)
         add_intermediate_output_component_latin_dances_permutations(permutation, i, number_of_rounds)

@@ -23,10 +23,12 @@ from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 COLUMNS = [[0, 4, 8, 12], [1, 5, 9, 13], [2, 6, 10, 14], [3, 7, 11, 15]]
 DIAGONALS = [[0, 5, 10, 15], [1, 6, 11, 12], [2, 7, 8, 13], [3, 4, 9, 14]]
 ROUND_MODE_HALF = "half"
+ROUND_MODE_HALF_HALF = "half_half"
 ROUND_MODE_SINGLE = "single"
 PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 20, "round_mode": ROUND_MODE_SINGLE}]
 DEFAULT_SINGLE_ROUNDS = PARAMETERS_CONFIGURATION_LIST[0]["number_of_rounds"]
 DEFAULT_HALF_ROUNDS = DEFAULT_SINGLE_ROUNDS * 2
+DEFAULT_HALF_HALF_ROUNDS = DEFAULT_HALF_ROUNDS * 2
 
 
 class ChachaPermutation(Cipher):
@@ -47,11 +49,17 @@ class ChachaPermutation(Cipher):
         - ``cipher_inputs_bit_size`` -- **integer** (default: `None`)
         - ``rotations`` -- *list of integer* (default: `[8, 7, 16, 12]`)
         - ``word_size`` -- **integer** (default: `32`)
-        - ``start_round`` -- **tuple of strings** (default: (`odd`, `top`))
-        - ``round_mode`` -- **string** (default: `"single"`); selects how ``number_of_rounds`` is interpreted. The
-            ``"half"`` mode treats the value as a count of half-rounds (legacy behaviour). The ``"single"`` mode
-            treats the value as a count of full rounds, which are converted internally into their equivalent
-            half-rounds (two half-rounds per full round).
+        - ``start_round`` -- **tuple of strings** (default: (`odd`, `top`)); the second element selects the stage
+            the permutation starts on. With ``round_mode="half_half"`` it may be one of ``"top"``
+            (alias ``"top_first"``), ``"top_second"``, ``"bottom"`` (alias ``"bottom_first"``) or
+            ``"bottom_second"``; otherwise it is ``"top"`` or ``"bottom"``.
+        - ``round_mode`` -- **string** (default: `"single"`); selects how ``number_of_rounds`` is interpreted and
+            the granularity of the generated CLAASP rounds. The ``"half"`` mode treats the value as a count of
+            half-rounds (legacy behaviour), each one made of two independent modular additions. The ``"single"``
+            mode treats the value as a count of full rounds, converted internally into their equivalent
+            half-rounds (two half-rounds per full round). The ``"half_half"`` mode treats the value as a count of
+            quarter-stages -- a single modular addition, XOR and rotation per CLAASP round, i.e. one quarter of a
+            full round (four quarter-stages per full round, two per half-round).
 
     EXAMPLES::
 
@@ -59,6 +67,10 @@ class ChachaPermutation(Cipher):
         sage: chacha = ChachaPermutation(number_of_rounds=2, round_mode="half")
         sage: chacha.number_of_rounds
         2
+
+        sage: quarter = ChachaPermutation(number_of_rounds=4, round_mode="half_half")
+        sage: quarter.number_of_rounds
+        4
     """
 
     def __init__(
@@ -74,10 +86,11 @@ class ChachaPermutation(Cipher):
         start_round=("odd", "top"),
         round_mode=ROUND_MODE_SINGLE,
     ):
-        if round_mode not in {ROUND_MODE_HALF, ROUND_MODE_SINGLE}:
-            raise ValueError("round_mode must be either 'half' or 'single'")
+        if round_mode not in {ROUND_MODE_HALF, ROUND_MODE_HALF_HALF, ROUND_MODE_SINGLE}:
+            raise ValueError("round_mode must be one of 'half', 'half_half' or 'single'")
 
         resolved_rounds = self._resolve_rounds(number_of_rounds, round_mode)
+        round_granularity = 4 if round_mode == ROUND_MODE_HALF_HALF else 2
         init_latin_dances_cipher(
             self,
             super(),
@@ -92,23 +105,40 @@ class ChachaPermutation(Cipher):
             [COLUMNS, DIAGONALS],
             word_size,
             rotations,
+            round_granularity,
         )
 
     @staticmethod
     def _resolve_rounds(number_of_rounds, round_mode):
         requested_rounds = number_of_rounds
         if requested_rounds == 0:
-            requested_rounds = DEFAULT_SINGLE_ROUNDS if round_mode == ROUND_MODE_SINGLE else DEFAULT_HALF_ROUNDS
+            requested_rounds = {
+                ROUND_MODE_SINGLE: DEFAULT_SINGLE_ROUNDS,
+                ROUND_MODE_HALF: DEFAULT_HALF_ROUNDS,
+                ROUND_MODE_HALF_HALF: DEFAULT_HALF_HALF_ROUNDS,
+            }[round_mode]
 
         if round_mode == ROUND_MODE_SINGLE:
             return requested_rounds * 2
 
         return requested_rounds
 
-    def top_half_quarter_round(self, a, b, c, d, state):
+    def first_quarter_round(self, a, b, c, d, state):
         sub_quarter_round_latin_dances(self, state, a, b, d, -self.rotation_3, "chacha")
+
+    def second_quarter_round(self, a, b, c, d, state):
         sub_quarter_round_latin_dances(self, state, c, d, b, -self.rotation_4, "chacha")
 
-    def bottom_half_quarter_round(self, a, b, c, d, state):
+    def third_quarter_round(self, a, b, c, d, state):
         sub_quarter_round_latin_dances(self, state, a, b, d, -self.rotation_1, "chacha")
+
+    def fourth_quarter_round(self, a, b, c, d, state):
         sub_quarter_round_latin_dances(self, state, c, d, b, -self.rotation_2, "chacha")
+
+    def top_half_quarter_round(self, a, b, c, d, state):
+        self.first_quarter_round(a, b, c, d, state)
+        self.second_quarter_round(a, b, c, d, state)
+
+    def bottom_half_quarter_round(self, a, b, c, d, state):
+        self.third_quarter_round(a, b, c, d, state)
+        self.fourth_quarter_round(a, b, c, d, state)
