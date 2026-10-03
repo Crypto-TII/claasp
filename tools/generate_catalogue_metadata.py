@@ -708,9 +708,7 @@ def build_catalogue() -> dict:
             evidence = (
                 sorted(test_evidence.get(source.get("milestone_owner"), ()))
                 if source is not None
-                else [
-                    "tests/unit/primitives/single_component_primitives/test_single_component_primitives.py"
-                ]
+                else ["tests/unit/primitives/single_component_primitives/test_package.py"]
             )
             primitives.append(
                 {

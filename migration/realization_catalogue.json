@@ -5,13 +5,13 @@
   "closure": {
     "status": "achieved-in-m10.9e5",
     "gate": "tools/realization_closure.py --check",
-    "equivalence_test": "tests/unit/primitives/test_primitive_realizations.py",
+    "equivalence_test": "tests/unit/primitives/test__realizations.py",
     "fixed_evidence": [
       "migration/m10_9d6_fixed_vectors.json",
       "migration/m10_9d7_fixed_vectors.json",
-      "tests/unit/primitives/test_word_block_catalogue.py",
-      "tests/unit/primitives/block_ciphers/test_simon_cipher.py",
-      "tests/unit/primitives/test_legacy_cipher_parity.py"
+      "tests/unit/primitives/block_ciphers/test_package.py",
+      "tests/unit/primitives/block_ciphers/simon/test_package.py",
+      "tests/unit/primitives/test_package__legacy_parity.py"
     ],
     "independent_differential_seed": "M10.9e:<canonical class name>",
     "interchangeable_families": 16,
