@@ -56,18 +56,21 @@ class AlzettePermutation(Cipher):
     The 64-bit input is interpreted as ``x || y`` (``x`` occupying the
     most-significant 32 bits, ``y`` the least-significant 32 bits).
 
+    REFERENCES:
+
+    Sub-round structure and rotation amounts from Algorithm 1 and Appendix
+    C/D of [BBBGPUV2020]_.  Test vectors are cross-checked against an
+    independent re-implementation of the ``ARXBOX`` macro from the
+    designers' own reference implementation of SPARKLE (submitted to the
+    NIST Lightweight Cryptography project), see
+    https://github.com/cryptolu/sparkle/blob/master/software/sparkle/sparkle.c.
+
     INPUT:
 
     - ``round_constant`` -- **integer** (default: `0xB7E15162`); the 32-bit
       round constant ``c`` baked into the permutation.  The eight constants
       recommended by the designers for use in the SPARKLE permutation family
       are available as ``SPARKLE_CONSTANTS[0..7]`` in this module.
-
-    The test vectors below are cross-checked against an independent
-    re-implementation of the ``ARXBOX`` macro from the designers' own
-    reference implementation of SPARKLE (submitted to the NIST Lightweight
-    Cryptography project), see
-    https://github.com/cryptolu/sparkle/blob/master/software/sparkle/sparkle.c.
 
     EXAMPLES::
 
