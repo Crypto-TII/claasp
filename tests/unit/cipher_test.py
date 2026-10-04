@@ -37,6 +37,7 @@ from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.ciphers.permutations.chaskeypi_permutation import ChaskeyPiPermutation
 from claasp.ciphers.block_ciphers.gift_sbox_block_cipher import GiftSboxBlockCipher
 from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
+from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
 from claasp.ciphers.permutations.photon_permutation import PhotonPermutation
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 from claasp.ciphers.permutations.sparkle_permutation import SparklePermutation
@@ -589,6 +590,26 @@ def test_zero_correlation_linear_search():
     speck6 = SpeckBlockCipher(number_of_rounds=6)
     zero_correlation_linear_approximations = speck6.zero_correlation_linear_search("smt", "YICES_EXT")
     assert len(zero_correlation_linear_approximations) > 0
+
+
+def test_find_impossible_property_related_key_without_key_raises():
+    # a keyless permutation has no key difference to vary; related-key must be refused, not KeyError
+    keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
+    with pytest.raises(ValueError, match="related-key"):
+        keccak.find_impossible_property(type="differential", scenario="related-key")
+
+
+def test_impossible_differential_search_on_keyless_permutation():
+    # single-key (the default) on a keyless cipher must not try to fix a key difference at all
+    keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
+    impossible_differentials = keccak.impossible_differential_search("sat", "kissat")
+    assert isinstance(impossible_differentials, list)
+
+
+def test_zero_correlation_linear_search_on_keyless_permutation():
+    keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
+    zero_correlation_linear_approximations = keccak.zero_correlation_linear_search("sat", "kissat")
+    assert isinstance(zero_correlation_linear_approximations, list)
 
 def test_cipher_inverse():
     key = 0xabcdef01abcdef01

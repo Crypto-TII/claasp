@@ -1563,6 +1563,11 @@ class Cipher:
         by fixing the input and output iteratively to all possible Hamming weight 1 value, and asking the solver
         to find a solution; if none is found, then the propagation is impossible.
         Return a list of impossible differentials or zero_correlation linear approximations if there are any; otherwise return an empty list
+
+        Works on a keyless permutation too: ``scenario="single-key"`` then simply does not fix any key difference
+        (there is none), fixing only the plaintext and output differences; ``scenario="related-key"`` is rejected
+        with a ``ValueError`` on a cipher with no key input, since there is no key difference to vary.
+
         INPUT:
 
         - ``type`` -- **string**; {"differential", "linear"}: the type of property to search for
@@ -1583,21 +1588,27 @@ class Cipher:
         impossible = []
         inputs_dictionary = self.inputs_size_to_dict()
         plain_bits = inputs_dictionary[INPUT_PLAINTEXT]
-        key_bits = inputs_dictionary[INPUT_KEY]
+        has_key = INPUT_KEY in inputs_dictionary
+        key_bits = inputs_dictionary.get(INPUT_KEY, 0)
+        if scenario == "related-key" and not has_key:
+            raise ValueError("scenario='related-key' requires a cipher with a key input; this cipher has none "
+                             "(use scenario='single-key', the default, for a keyless permutation)")
 
         if scenario == "single-key":
-            # Fix the key difference to be zero, and the plaintext difference to be non-zero.
+            # Fix the key difference to be zero, and the plaintext difference to be non-zero. A keyless cipher has
+            # no key difference to fix at all; every other fixed value and the search itself are unaffected.
             for input_bit_position in range(plain_bits):
                 for output_bit_position in range(plain_bits):
                     fixed_values = []
-                    fixed_values.append(
-                        set_fixed_variables(
-                            INPUT_KEY,
-                            "equal",
-                            list(range(key_bits)),
-                            integer_to_bit_list(0, key_bits, "big"),
+                    if has_key:
+                        fixed_values.append(
+                            set_fixed_variables(
+                                INPUT_KEY,
+                                "equal",
+                                list(range(key_bits)),
+                                integer_to_bit_list(0, key_bits, "big"),
+                            )
                         )
-                    )
                     fixed_values.append(
                         set_fixed_variables(
                             INPUT_PLAINTEXT,
