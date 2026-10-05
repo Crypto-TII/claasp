@@ -33,7 +33,12 @@ from claasp.cipher_modules.models.sat.utils.utils import (
     _update_component_model_types_for_linear_components,
     _update_component_model_types_for_truncated_components,
 )
-from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution
+from claasp.cipher_modules.models.utils import (
+    get_bit_bindings,
+    join_and_sanitize_strings,
+    save_trail_lower_bounds_and_time_estimates,
+    set_component_solution,
+)
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
 
 
@@ -490,7 +495,13 @@ class SatDifferentialLinearModel(SatModel):
         return solution
 
     def find_lowest_weight_xor_differential_linear_trail(
-        self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, num_unknown_vars=1, options=None
+        self,
+        fixed_values=[],
+        solver_name=solvers.SOLVER_DEFAULT,
+        num_unknown_vars=1,
+        options=None,
+        start_weight=0,
+        log=False,
     ):
         """
         Finds the differential-linear trail with the lowest weight.
@@ -499,29 +510,46 @@ class SatDifferentialLinearModel(SatModel):
         - ``fixed_values`` -- **list** (default: `[]`); specifies a list of variables that should be fixed to specific values. Each entry in the list should be a dictionary representing constraints for specific components, written in the CLAASP constraining syntax.
         - ``solver_name`` -- **str** (default: ``solvers.SOLVER_DEFAULT``); The SAT solver to use.
         - ``num_unknown_vars`` -- **int** (default: 1); number of unknown variables in the output of the middle round
+        - ``options`` -- **list of strings** (default: `None`); additional settings for the chosen solver
+        - ``start_weight`` -- **int** (default: 0); the first weight to be searched. Use it to resume a search from a
+          known lower bound: if a trail is found at ``start_weight`` itself, it is only guaranteed to have weight at
+          most ``start_weight``
+        - ``log`` -- **bool** (default: False); if ``True``, after each searched weight, append to the file
+          ``<cipher_id>__sat_find_lowest_weight_xor_differential_linear_trail_from_below__<solver_name>solver``
+          ``[_<options>].log`` the lower bound proved so far, the time spent and an estimate of the time needed by the
+          next weights (see :py:func:`~claasp.cipher_modules.models.utils.save_trail_lower_bounds_and_time_estimates`)
 
         RETURN:
         - **dict**; Solution with the trail and metadata (weight, time, memory usage).
         """
-        current_weight = 0
-        start_building_time = time.time()
-        self.build_xor_differential_linear_model(current_weight, num_unknown_vars)
+        log_file_name = (
+            f"{self._cipher}__sat_find_lowest_weight_xor_differential_linear_trail_from_below"
+            f"__{solver_name}solver{join_and_sanitize_strings(options)}.log"
+        )
+        searched_weights, search_times = [], []
+        current_weight = start_weight
+        total_time = 0
+        max_memory = 0
         constraints = self.fix_variables_value_constraints(
             fixed_values, self.regular_components, self.truncated_components, self.linear_components
         )
-        self.model_constraints.extend(constraints)
-        end_building_time = time.time()
-        solution = self.solve("XOR_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name, options=options)
-        solution["building_time_seconds"] = end_building_time - start_building_time
-        total_time = solution["solving_time_seconds"]
-        max_memory = solution["memory_megabytes"]
-        while solution["total_weight"] is None:
-            current_weight += 1
+        while True:
+            start_building_time = time.time()
             self.build_xor_differential_linear_model(current_weight, num_unknown_vars)
             self.model_constraints.extend(constraints)
+            end_building_time = time.time()
             solution = self.solve("XOR_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name, options=options)
+            end_solving_time = time.time()
+            solution["building_time_seconds"] = end_building_time - start_building_time
             total_time += solution["solving_time_seconds"]
             max_memory = max(max_memory, solution["memory_megabytes"])
+            if log:
+                searched_weights.append(current_weight)
+                search_times.append(end_solving_time - end_building_time)
+                save_trail_lower_bounds_and_time_estimates(log_file_name, solution, searched_weights, search_times)
+            if solution["total_weight"] is not None:
+                break
+            current_weight += 1
 
         solution["solving_time_seconds"] = total_time
         solution["memory_megabytes"] = max_memory
