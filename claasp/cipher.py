@@ -1564,9 +1564,18 @@ class Cipher:
         to find a solution; if none is found, then the propagation is impossible.
         Return a list of impossible differentials or zero_correlation linear approximations if there are any; otherwise return an empty list
 
-        Works on a keyless permutation too: ``scenario="single-key"`` then simply does not fix any key difference
-        (there is none), fixing only the plaintext and output differences; ``scenario="related-key"`` is rejected
-        with a ``ValueError`` on a cipher with no key input, since there is no key difference to vary.
+        Three scenarios, honestly named for what they actually fix:
+
+        - ``"single-key"`` -- the key difference is fixed to zero (requires a key input).
+        - ``"related-key"`` -- the key difference is varied instead of the plaintext difference (requires a key
+          input; raises ``ValueError`` without one -- there is no key difference to vary).
+        - ``"non-key"`` -- no key is fixed or varied at all: only the plaintext/output difference is swept. The
+          only sensible scenario for a keyless permutation, where ``"single-key"``/``"related-key"`` would be
+          vacuous or impossible; also usable on a keyed cipher to search with the key left unconstrained.
+
+        For backward compatibility, the default ``scenario="single-key"`` on a cipher with no key input is
+        silently treated as ``"non-key"`` (there is nothing else it could mean); pass ``scenario="non-key"``
+        explicitly to say so without relying on that fallback.
 
         INPUT:
 
@@ -1592,23 +1601,49 @@ class Cipher:
         key_bits = inputs_dictionary.get(INPUT_KEY, 0)
         if scenario == "related-key" and not has_key:
             raise ValueError("scenario='related-key' requires a cipher with a key input; this cipher has none "
-                             "(use scenario='single-key', the default, for a keyless permutation)")
+                             "(use scenario='non-key' for a keyless permutation)")
+        if scenario == "single-key" and not has_key:
+            scenario = "non-key"  # the default is meaningless without a key; this is its honest name
 
-        if scenario == "single-key":
-            # Fix the key difference to be zero, and the plaintext difference to be non-zero. A keyless cipher has
-            # no key difference to fix at all; every other fixed value and the search itself are unaffected.
+        if scenario == "non-key":
+            # No key to fix or vary at all (a keyless permutation, or a keyed cipher searched with the key left
+            # unconstrained): sweep only the plaintext/output Hamming-weight-1 difference.
             for input_bit_position in range(plain_bits):
                 for output_bit_position in range(plain_bits):
                     fixed_values = []
-                    if has_key:
-                        fixed_values.append(
-                            set_fixed_variables(
-                                INPUT_KEY,
-                                "equal",
-                                list(range(key_bits)),
-                                integer_to_bit_list(0, key_bits, "big"),
-                            )
+                    fixed_values.append(
+                        set_fixed_variables(
+                            INPUT_PLAINTEXT,
+                            "equal",
+                            list(range(plain_bits)),
+                            integer_to_bit_list(1 << input_bit_position, plain_bits, "big"),
                         )
+                    )
+                    fixed_values.append(
+                        set_fixed_variables(
+                            last_component_id,
+                            "equal",
+                            list(range(plain_bits)),
+                            integer_to_bit_list(1 << output_bit_position, plain_bits, "big"),
+                        )
+                    )
+                    solution = search_function(fixed_values, solver_name=solver)
+                    if solution["status"] == "UNSATISFIABLE":
+                        impossible.append((1 << input_bit_position, 1 << output_bit_position))
+        elif scenario == "single-key":
+            # Fix the key difference to be zero, and the plaintext difference to be non-zero. has_key is
+            # guaranteed True here: a keyless cipher was already converted to scenario == "non-key" above.
+            for input_bit_position in range(plain_bits):
+                for output_bit_position in range(plain_bits):
+                    fixed_values = []
+                    fixed_values.append(
+                        set_fixed_variables(
+                            INPUT_KEY,
+                            "equal",
+                            list(range(key_bits)),
+                            integer_to_bit_list(0, key_bits, "big"),
+                        )
+                    )
                     fixed_values.append(
                         set_fixed_variables(
                             INPUT_PLAINTEXT,

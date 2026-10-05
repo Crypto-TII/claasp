@@ -611,6 +611,23 @@ def test_zero_correlation_linear_search_on_keyless_permutation():
     zero_correlation_linear_approximations = keccak.zero_correlation_linear_search("sat", "kissat")
     assert isinstance(zero_correlation_linear_approximations, list)
 
+
+def test_find_impossible_property_non_key_scenario_on_keyless_permutation_matches_default():
+    # scenario="non-key" is the honestly-named option for a keyless cipher; the default scenario="single-key"
+    # is silently treated the same way for backward compatibility, and both must agree exactly.
+    keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
+    via_default = keccak.find_impossible_property(type="differential", solver="KISSAT_EXT")
+    via_non_key = keccak.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="non-key")
+    assert via_default == via_non_key
+
+
+def test_find_impossible_property_non_key_scenario_on_keyed_cipher():
+    # "non-key" is also a legitimate, different scenario on a keyed cipher: the key is left unconstrained
+    # rather than fixed to zero or varied, so it must not crash and must return a list.
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    result = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="non-key")
+    assert isinstance(result, list)
+
 def test_cipher_inverse():
     key = 0xabcdef01abcdef01
     plaintext = 0x01234567
