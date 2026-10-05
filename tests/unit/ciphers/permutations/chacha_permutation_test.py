@@ -1,4 +1,11 @@
-from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ROUND_MODE_SINGLE, ChachaPermutation
+import pytest
+
+from claasp.ciphers.permutations.chacha_permutation import (
+    ROUND_MODE_HALF,
+    ROUND_MODE_HALF_HALF,
+    ROUND_MODE_SINGLE,
+    ChachaPermutation,
+)
 
 
 def test_chacha_permutation():
@@ -38,6 +45,54 @@ def test_chacha_permutation():
     assert chacha.component_from_id("rot_0_2").description[1] == -8
 
 
+def test_chacha_permutation_half_half_round_mode():
+    chacha = ChachaPermutation(round_mode=ROUND_MODE_HALF_HALF)
+    assert chacha.number_of_rounds == 80
+
+    chacha = ChachaPermutation(number_of_rounds=80, round_mode=ROUND_MODE_HALF_HALF)
+    assert chacha.number_of_rounds == 80
+
+    # Each half_half round has exactly one modular addition per column/diagonal (a single ARX layer).
+    chacha = ChachaPermutation(number_of_rounds=1, round_mode=ROUND_MODE_HALF_HALF)
+    assert len([c for c in chacha.get_all_components() if c.id.startswith("modadd_")]) == 4
+    assert chacha.component_from_id("rot_0_2").description[1] == -16
+
+    chacha = ChachaPermutation(number_of_rounds=1, start_round=('odd', 'top_second'), round_mode=ROUND_MODE_HALF_HALF)
+    assert chacha.component_from_id("rot_0_2").description[1] == -12
+
+    chacha = ChachaPermutation(number_of_rounds=1, start_round=('odd', 'bottom'), round_mode=ROUND_MODE_HALF_HALF)
+    assert chacha.component_from_id("rot_0_2").description[1] == -8
+
+    chacha = ChachaPermutation(
+        number_of_rounds=1, start_round=('odd', 'bottom_second'), round_mode=ROUND_MODE_HALF_HALF
+    )
+    assert chacha.component_from_id("rot_0_2").description[1] == -7
+
+    with pytest.raises(ValueError):
+        ChachaPermutation(number_of_rounds=1, start_round=('odd', 'nonsense'), round_mode=ROUND_MODE_HALF_HALF)
+
+    with pytest.raises(ValueError):
+        ChachaPermutation(round_mode="not_a_mode")
+
+    # Two half_half rounds equal one half round, four half_half rounds equal one single round.
+    state = ["61707865", "3320646e", "79622d32", "6b206574",
+             "03020100", "07060504", "0b0a0908", "0f0e0d0c",
+             "13121110", "17161514", "1b1a1918", "1f1e1d1c",
+             "00000001", "09000000", "4a000000", "00000000"]
+    plaintext = int("0x" + "".join(state), 16)
+    output = int('0x837778abe238d763a67ae21e5950bb2fc4f2d0c7fc62bb2f8fa018fc3f5ec7b7335271c2f29489f3eabda8fc82e46ebdd'
+                 '19c12b4b04e16de9e83d0cb4e3c50a2', 16)
+
+    chacha_half_half = ChachaPermutation(number_of_rounds=80, round_mode=ROUND_MODE_HALF_HALF)
+    assert chacha_half_half.evaluate([plaintext], verbosity=False) == output
+
+    chacha_half = ChachaPermutation(number_of_rounds=4, round_mode=ROUND_MODE_HALF)
+    chacha_half_half = ChachaPermutation(number_of_rounds=8, round_mode=ROUND_MODE_HALF_HALF)
+    assert chacha_half.evaluate([plaintext], verbosity=False) == chacha_half_half.evaluate(
+        [plaintext], verbosity=False
+    )
+
+
 def test_toy_chacha_permutation():
     """
     The test vectors below were taken from the source code available in the URL specified in [DEY2023]_.
@@ -61,3 +116,6 @@ def test_toy_chacha_permutation():
     output = int('0xe023858e713feb86a730656ac909f76a', 16)
     assert chacha.evaluate([plaintext], verbosity=False) == output
     assert chacha.evaluate_vectorized([plaintext], evaluate_api=True) == output
+
+    chacha = ChachaPermutation(number_of_rounds=16, rotations=[2, 1, 4, 3], word_size=8, round_mode=ROUND_MODE_HALF_HALF)
+    assert chacha.evaluate([plaintext], verbosity=False) == output
