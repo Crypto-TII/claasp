@@ -1,6 +1,7 @@
 import itertools
 import math
 import platform
+from os import path, remove
 
 import pytest
 
@@ -104,6 +105,77 @@ def test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck():
         fixed_values=[key, plaintext, ciphertext_difference], solver_name=CADICAL_EXT, num_unknown_vars=2
     )
     assert trail["status"] == SATISFIABLE
+
+
+
+def test_lowest_differential_linear_trail_with_log_6_rounds_speck(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    speck = SpeckBlockCipher(number_of_rounds=6)
+    middle_part_components = [component.id for component in speck.components_in_round(2)]
+    bottom_part_components = [
+        component.id for round_number in range(3, 6) for component in speck.components_in_round(round_number)
+    ]
+    plaintext = set_fixed_variables(
+        component_id=INPUT_PLAINTEXT, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
+    )
+    key = set_fixed_variables(
+        component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
+    )
+    ciphertext_difference = set_fixed_variables(
+        component_id="cipher_output_5_12", constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
+    )
+    component_model_list = {
+        "middle_part_components": middle_part_components,
+        "bottom_part_components": bottom_part_components,
+    }
+    sat_heterogeneous_model = SatDifferentialLinearModel(speck, component_model_list)
+    # same split as test_differential_linear_trail_with_fixed_weight_6_rounds_speck, which finds a trail of weight 10
+    lowest_weight = 10
+    log_file_name = (
+        f"{speck.id}__sat_find_lowest_weight_xor_differential_linear_trail_from_below__{CADICAL_EXT}solver.log"
+    )
+    try:
+        trail = sat_heterogeneous_model.find_lowest_weight_xor_differential_linear_trail(
+            fixed_values=[key, plaintext, ciphertext_difference],
+            solver_name=CADICAL_EXT,
+            num_unknown_vars=2,
+            log=True,
+        )
+        with open(log_file_name) as f:
+            log_content = f.read()
+    finally:
+        if path.exists(log_file_name):
+            remove(log_file_name)
+
+    assert trail["status"] == SATISFIABLE
+    assert trail["total_weight"] == lowest_weight
+    log_lines = log_content.splitlines()
+
+    # every weight from 0 to lowest_weight - 1, and only those, is reported as UNSATISFIABLE, in increasing order
+    lower_bound_lines = [line for line in log_lines if " has no " in line]
+    assert len(lower_bound_lines) == lowest_weight
+    for weight, line in enumerate(lower_bound_lines):
+        assert line.endswith(f" {speck.id} has no XOR_DIFFERENTIAL_LINEAR_MODEL trail of weight <= {weight}")
+    status_lines = [line for line in log_lines if " (status: " in line]
+    assert len(status_lines) == lowest_weight + 1
+    for weight, line in enumerate(status_lines[:-1]):
+        assert f" {CADICAL_EXT} terminated the search for weight {weight} in " in line
+        assert line.endswith(" (status: UNSATISFIABLE)")
+    # a time estimate follows every lower bound except the first one
+    assert log_content.count("is expected to terminate in") == lowest_weight - 1
+
+    # the search for lowest_weight is reported as SATISFIABLE, with the weight of the returned trail
+    assert f" {CADICAL_EXT} terminated the search for weight {lowest_weight} in " in status_lines[-1]
+    assert status_lines[-1].endswith(" (status: SATISFIABLE)")
+    trail_lines = [line for line in log_lines if " has a " in line]
+    assert len(trail_lines) == 1
+    assert trail_lines[0].endswith(
+        f" {speck.id} has a XOR_DIFFERENTIAL_LINEAR_MODEL trail of weight {trail['total_weight']}"
+    )
+
+    # the log ends with the returned trail
+    assert f"'components_values': {trail['components_values']!r}" in log_lines[-1]
+    assert f"'total_weight': {trail['total_weight']!r}" in log_lines[-1]
 
 
 def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():

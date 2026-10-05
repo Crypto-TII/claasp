@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+import datetime
 import json
 import math
 import os
@@ -35,7 +36,9 @@ from claasp.name_mappings import (
     LINEAR_LAYER,
     MIX_COLUMN,
     PERMUTATION_COMPONENT,
+    SATISFIABLE,
     SBOX,
+    UNSATISFIABLE,
     WORD_OPERATION,
 )
 
@@ -326,6 +329,190 @@ def join_and_sanitize_strings(l):
         return ""
     joined = "_".join(l)
     return "_" + re.sub(r"[^a-zA-Z0-9._-]", "", joined)
+
+
+def exponential_predict(
+    x_obs,
+    y_obs,
+    x_new,
+    ci=95,
+    n_bootstrap=400,
+    window=10,
+    seed=None,
+    prediction_quantile=0.6,
+    recency_weight_strength=1.5,
+):
+    """
+    Return predictions of ``y`` at ``x_new`` by fitting ``y = a * exp(b * x)`` to the observations.
+
+    The fit is a weighted least-squares regression in log-space (``log(y) = b * x + log(a)``) in which the most
+    recent observations get the largest weights, so that the fit follows accelerating growth such as the solving
+    time of SAT/SMT searches for increasing weights. The uncertainty of the prediction is estimated by bootstrap
+    resampling of the residuals.
+
+    INPUT:
+
+    - ``x_obs`` -- **list**; observed ``x`` values
+    - ``y_obs`` -- **list**; observed ``y`` values, all strictly positive
+    - ``x_new`` -- **number** or **list**; the ``x`` values at which ``y`` is predicted
+    - ``ci`` -- **integer** (default: `95`); width in percent of the confidence interval
+    - ``n_bootstrap`` -- **integer** (default: `400`); number of bootstrap resamples
+    - ``window`` -- **integer** (default: `10`); only the last ``window`` observations are used for the fit; ``None``
+      means all observations
+    - ``seed`` -- **integer** (default: `None`); seed of the bootstrap random generator
+    - ``prediction_quantile`` -- **float** (default: `0.6`); quantile of the bootstrap predictions used as central
+      prediction (0.5 is the median, larger values are more conservative)
+    - ``recency_weight_strength`` -- **float** (default: `1.5`); strength of the exponential recency weighting
+      (0 means no weighting, larger values adapt faster to recent growth but are more sensitive to noise)
+
+    OUTPUT:
+
+    - **list**; one dictionary per value of ``x_new``, with keys ``x``, ``y_pred``, ``y_low`` and ``y_high``
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.utils import exponential_predict
+        sage: prediction = exponential_predict([1, 2, 3, 4], [2, 4, 8, 16], [5, 6], seed=0)
+        sage: [int(round(p['y_pred'])) for p in prediction]
+        [32, 64]
+    """
+    x = np.asarray(x_obs, dtype=float)
+    y = np.asarray(y_obs, dtype=float)
+    x_new = np.atleast_1d(np.asarray(x_new, dtype=float))
+
+    if x.ndim != 1 or y.ndim != 1:
+        raise ValueError("x_obs and y_obs must be 1-D arrays.")
+    if len(x) != len(y):
+        raise ValueError("x_obs and y_obs must have the same length.")
+    if len(x) < 2:
+        raise ValueError("At least 2 observations are required.")
+    if not 1 <= ci <= 99:
+        raise ValueError("ci must be between 1 and 99.")
+    if np.any(y <= 0):
+        raise ValueError("All y_obs values must be strictly positive.")
+    if not 0 < prediction_quantile < 1:
+        raise ValueError("prediction_quantile must be between 0 and 1.")
+    if recency_weight_strength < 0:
+        raise ValueError("recency_weight_strength must be >= 0.")
+    if window is not None:
+        if window < 2:
+            raise ValueError("window must be >= 2.")
+        x = x[-window:]
+        y = y[-window:]
+
+    log_y = np.log(y)
+    weights = np.exp(np.linspace(0, recency_weight_strength, len(x)))
+    slope, intercept = np.polyfit(x, log_y, deg=1, w=weights)
+    fitted_log_y = slope * x + intercept
+    residuals = log_y - fitted_log_y
+
+    rng = np.random.default_rng(None if seed is None else int(seed))
+    bootstrap_predictions = []
+    for _ in range(n_bootstrap):
+        sampled_log_y = fitted_log_y + rng.choice(residuals, size=len(x), replace=True)
+        boot_slope, boot_intercept = np.polyfit(x, sampled_log_y, deg=1, w=weights)
+        with np.errstate(over="ignore"):
+            prediction = np.exp(boot_slope * x_new + boot_intercept)
+        if np.all(np.isfinite(prediction)):
+            bootstrap_predictions.append(prediction)
+    if not bootstrap_predictions:
+        raise RuntimeError("All bootstrap fits failed.")
+
+    alpha = (100 - ci) / 2
+    central_prediction = np.percentile(bootstrap_predictions, prediction_quantile * 100, axis=0)
+    lower_bounds = np.percentile(bootstrap_predictions, alpha, axis=0)
+    upper_bounds = np.percentile(bootstrap_predictions, 100 - alpha, axis=0)
+
+    return [
+        {"x": float(x_value), "y_pred": float(pred), "y_low": float(low), "y_high": float(high)}
+        for x_value, pred, low, high in zip(x_new, central_prediction, lower_bounds, upper_bounds)
+    ]
+
+
+def save_trail_lower_bounds_and_time_estimates(file_name, solution, searched_weights, search_times):
+    """
+    Append to ``file_name`` the result of the last step of an incremental lowest-weight trail search.
+
+    The search tries weights in increasing order. If the last step is UNSATISFIABLE, the weight just searched is a lower
+    bound for the weight of the trails, and, from the second UNSATISFIABLE step on, an estimate of the time needed by
+    the next 10 steps is also written (see :py:func:`exponential_predict`). If the last step is SATISFIABLE, the
+    weight of the found trail and the full solution are written.
+
+    INPUT:
+
+    - ``file_name`` -- **string**; the path of the log file; the content is appended
+    - ``solution`` -- **dictionary**; the solution of the last step, as returned by the ``solve`` method of the model
+    - ``searched_weights`` -- **list**; the weights searched so far, the last one being the weight of ``solution``
+    - ``search_times`` -- **list**; the elapsed wall-clock time (in seconds) of each searched weight
+
+    EXAMPLES::
+
+        sage: import os
+        sage: from sage.misc.temporary_file import tmp_filename
+        sage: from claasp.cipher_modules.models.utils import save_trail_lower_bounds_and_time_estimates
+        sage: file_name = tmp_filename(ext='.log')
+        sage: solution = {'cipher': 'speck_p32_k64_o32_r5', 'model_type': 'xor_differential',
+        ....:             'solver_name': 'CADICAL_EXT', 'status': 'UNSATISFIABLE', 'total_weight': None}
+        sage: save_trail_lower_bounds_and_time_estimates(file_name, solution, [0, 1], [1.0, 2.0])
+        sage: with open(file_name) as f:
+        ....:     'has no xor_differential trail of weight <= 1' in f.read()
+        True
+        sage: os.remove(file_name)
+    """
+
+    def to_timedelta(seconds):
+        return datetime.timedelta(seconds=round(seconds))
+
+    searched_weights = [int(weight) for weight in searched_weights]
+    search_times = [float(search_time) for search_time in search_times]
+    current_weight = searched_weights[-1]
+    timestamp = str(datetime.datetime.now().replace(microsecond=0))
+    message = ""
+    if solution["status"] == UNSATISFIABLE:
+        message += (
+            f"{timestamp} {solution['cipher']} has no {solution['model_type']} trail of weight <= {current_weight}\n"
+        )
+    else:
+        message += (
+            f"{timestamp} {solution['cipher']} has a {solution['model_type']} trail of weight "
+            f"{solution['total_weight']}\n"
+        )
+    message += (
+        f"{timestamp} {solution['solver_name']} terminated the search for weight {current_weight} in "
+        f"{to_timedelta(search_times[-1])} (status: {solution['status']})\n"
+    )
+    if solution["status"] == UNSATISFIABLE and len(searched_weights) >= 2:
+        prediction_quantile, ci = 0.6, 95
+        try:
+            estimates = exponential_predict(
+                searched_weights,
+                search_times,
+                x_new=[current_weight + i for i in range(1, 11)],
+                prediction_quantile=prediction_quantile,
+                ci=ci,
+            )
+            next_estimate = estimates[0]
+            message += (
+                f"{timestamp} If UNSAT, the search for weight {int(next_estimate['x'])} is expected to terminate in "
+                f"{to_timedelta(next_estimate['y_pred'])} or within the time interval "
+                f"[{to_timedelta(next_estimate['y_low'])}, {to_timedelta(next_estimate['y_high'])}]\n"
+            )
+            message += f"obs_weights = {searched_weights}\n"
+            message += f"obs_solveTime_h = {[round(t / 3600, 4) for t in search_times]}\n"
+            message += f"next_weights = {[int(e['x']) for e in estimates]}\n"
+            message += f"estim_upperTime_h = {[round(e['y_high'] / 3600, 4) for e in estimates]} # {ci}% confidence\n"
+            message += (
+                f"estim_expecTime_h = {[round(e['y_pred'] / 3600, 4) for e in estimates]} "
+                f"# {int(prediction_quantile * 100)}th percentile\n"
+            )
+            message += f"estim_lowerTime_h = {[round(e['y_low'] / 3600, 4) for e in estimates]} # {ci}% confidence\n"
+        except (ValueError, RuntimeError, OverflowError) as error:
+            message += f"{timestamp} Time estimate unavailable: {error}\n"
+    elif solution["status"] == SATISFIABLE:
+        message += f"{solution}\n"
+    with open(file_name, "a") as f:
+        f.write(message)
+
 
 def write_model_to_file(model_to_write, file_name):
     """
