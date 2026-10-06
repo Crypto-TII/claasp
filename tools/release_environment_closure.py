@@ -12,6 +12,12 @@ ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY = ROOT
 MANIFEST = ROOT / "migration" / "m11_release_environment.json"
 LOCK_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+==[^=\s]+$")
+LINUX_TEXT_PATHS = (
+    Path("docker/v5/Dockerfile"),
+    Path("docker/v5/check.sh"),
+    Path("docker/v5/minizinc-wrapper.sh"),
+    Path("docker/v5/smoke.sh"),
+)
 
 
 def validate_manifest(manifest: dict[str, object]) -> list[str]:
@@ -24,6 +30,19 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
         errors.append("architecture matrix must cover amd64 and arm64")
     if manifest.get("python") != "3.12.3":
         errors.append("canonical Python version is stale")
+
+    attributes_path = ROOT / ".gitattributes"
+    if not attributes_path.is_file():
+        errors.append("repository line-ending authority is missing")
+    else:
+        attributes = attributes_path.read_text(encoding="utf-8")
+        for rule in ("*.sh text eol=lf", "Dockerfile text eol=lf"):
+            if rule not in attributes.splitlines():
+                errors.append(f"repository line-ending invariant is missing: {rule}")
+    for relative in LINUX_TEXT_PATHS:
+        path = ROOT / relative
+        if path.is_file() and b"\r" in path.read_bytes():
+            errors.append(f"Linux-executed file contains carriage returns: {relative}")
 
     publication = manifest.get("publication")
     if not isinstance(publication, dict):

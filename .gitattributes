@@ -2,3 +2,9 @@
 # whitespace, while keeping ordinary source subject to Git's whitespace checks.
 docker/v5/nist-patches/*.c whitespace=-trailing-space,-space-before-tab
 docker/v5/nist-patches/*.h whitespace=-trailing-space,-space-before-tab
+
+# Linux executes these files directly, including when the build context comes
+# from a Windows checkout.  A CRLF shebang makes an existing script appear to
+# be missing because the kernel looks for an interpreter whose name ends in CR.
+*.sh text eol=lf
+Dockerfile text eol=lf
