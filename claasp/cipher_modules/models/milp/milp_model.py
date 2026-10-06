@@ -32,7 +32,7 @@ Available MILP solvers are:
     * `CPLEX`_
     * `PPL`_
 
-The default choice is GLPK.
+The default choice is HiGHS (``HIGHS_EXT``, an external solver), while the models are built with GLPK.
 
 """
 
@@ -48,6 +48,7 @@ from claasp.cipher_modules.models.milp.solvers import (
     MILP_SOLVERS_INTERNAL,
     MODEL_DEFAULT_PATH,
     SOLVER_DEFAULT,
+    SOLVER_INTERNAL_DEFAULT,
 )
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_DEFAULT_WEIGHT_PRECISION
 from claasp.cipher_modules.models.milp.utils.utils import (
@@ -327,7 +328,7 @@ class MilpModel:
             Mixed Integer Program (no objective, 0 variables, 0 constraints)
         """
         if solver_name.upper().endswith("_EXT"):
-            solver_name = SOLVER_DEFAULT
+            solver_name = SOLVER_INTERNAL_DEFAULT
         self._model = MixedIntegerLinearProgram(maximization=False, solver=solver_name)
         self._binary_variable = self._model.new_variable(binary=True)
         self._integer_variable = self._model.new_variable(integer=True)
@@ -392,7 +393,7 @@ class MilpModel:
         INPUT:
 
         - ``model_type`` -- **string**; the model to solve
-        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call when building the internal Sagemath MILP model. If no external solver is specified, ``solver_name`` will also be used to solve the model.
+        - ``solver_name`` -- **string** (default: `HIGHS_EXT`); the solver to call. An external solver (whose name ends with ``_EXT``) solves the model outside of Sagemath, which is then built with ``SOLVER_INTERNAL_DEFAULT``; an internal solver is also used to build the model.
         - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLES::

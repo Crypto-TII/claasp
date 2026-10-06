@@ -353,7 +353,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=[0]*31 + [1])
             sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0]*64)
             sage: ciphertext = set_fixed_variables(component_id='cipher_output_10_13', constraint_type='equal', bit_positions=range(32), bit_values=[0]*6 + [2,0,2] + [0]*23)
-            sage: trail = milp.find_one_bitwise_impossible_xor_differential_trail(6, fixed_values=[plaintext, key, ciphertext])
+            sage: trail = milp.find_one_bitwise_impossible_xor_differential_trail(6, fixed_values=[plaintext, key, ciphertext], solver_name='GLPK')
 
             # table 10 from https://eprint.iacr.org/2014/761.pdf
             sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
@@ -404,7 +404,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=[0]*31 + [1])
             sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0]*64)
             sage: ciphertext = set_fixed_variables(component_id='cipher_output_10_13', constraint_type='equal', bit_positions=range(32), bit_values=[0]*6 + [2,0,2] + [0]*23)
-            sage: trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components(['intermediate_output_5_12'], fixed_values=[plaintext, key, ciphertext])
+            sage: trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components(['intermediate_output_5_12'], fixed_values=[plaintext, key, ciphertext], solver_name='GLPK')
 
 
             sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables

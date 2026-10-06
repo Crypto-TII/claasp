@@ -17,7 +17,11 @@
 
 import os
 
-SOLVER_DEFAULT = "GLPK"
+# HiGHS is faster than GLPK on most MILP searches, and it logs the most information (see milp_progress_log.py)
+SOLVER_DEFAULT = "HIGHS_EXT"
+# the solver of Sage used to build the models (an external solver only solves the model written by Sage), and by the
+# searches that solve the models inside Sage
+SOLVER_INTERNAL_DEFAULT = "GLPK"
 MODEL_DEFAULT_PATH = os.getcwd()
 
 

@@ -7,6 +7,7 @@ from claasp.cipher_modules.models.milp.milp_model import (
 )
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -135,7 +136,7 @@ def test_solve():
     assert differential_solution["model_type"] == "xor_differential"
     assert differential_solution["components_values"]["key"]["weight"] == 0
     assert differential_solution["components_values"]["modadd_0_1"]["weight"] >= 0
-    assert differential_solution["solver_name"] == "GLPK"
+    assert differential_solution["solver_name"] == SOLVER_DEFAULT
     assert differential_solution["total_weight"] >= 0.0
 
     milp = MilpXorLinearModel(speck)
@@ -147,5 +148,5 @@ def test_solve():
     assert linear_solution["model_type"] == XOR_LINEAR
     assert differential_solution["components_values"]["key"]["weight"] == 0
     assert linear_solution["components_values"]["modadd_1_7_i"]["weight"] >= 0
-    assert linear_solution["solver_name"] == "GLPK"
+    assert linear_solution["solver_name"] == SOLVER_DEFAULT
     assert linear_solution["total_weight"] >= 0.0
