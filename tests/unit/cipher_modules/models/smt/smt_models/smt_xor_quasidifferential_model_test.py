@@ -1,6 +1,7 @@
 
 import pytest
 
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
 from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
     SmtXorQuasidifferentialModel,
 )
@@ -36,8 +37,9 @@ def test_find_one_xor_quasidifferential_trail_on_simon():
 def test_compute_trail_sign():
     speck = SpeckBlockCipher(number_of_rounds=6)
     smt = SmtXorQuasidifferentialModel(speck)
-    fixed_values = _speck_six_round_characteristic()
-    trail = smt.find_one_xor_quasidifferential_trail_with_fixed_weight(13, fixed_values=fixed_values)
+    trail = smt.find_one_xor_quasidifferential_trail_with_fixed_weight(
+        13, fixed_values=_speck_six_round_characteristic(), fixed_masks=smt.boundary_masks()
+    )
     assert trail["total_weight"] == 13.0
     assert smt.compute_trail_sign(trail) == 1
 
@@ -432,3 +434,95 @@ def _speck_six_round_characteristic():
         fixed_values.append(set_fixed_variables(component_id, "equal", range(32), bit_values))
 
     return fixed_values
+
+
+def _rectangle_three_round_key_alternating():
+    """The first three rounds of the 14-round RECTANGLE characteristic of
+    Beyne & Rijmen, CRYPTO 2022, Table 11, differential i, on the
+    key-alternating form.
+
+    The paper prints the 4x16 state column-major (bit 4*col + row) and CLAASP
+    stores it row-major (bit 16*row + col), so these are the paper's rows 0, 2,
+    4 and 6 transposed.
+    """
+    rectangle = RectangleBlockCipher(number_of_rounds=3).remove_key_schedule()
+    differences = {
+        INPUT_PLAINTEXT: 0x0000010021000000,
+        "intermediate_output_0_31": 0x0000020042000000,
+        "intermediate_output_1_31": 0x0000040084000000,
+        "intermediate_output_2_32": 0x0000080008010000,
+    }
+    fixed_values = [
+        set_fixed_variables(input_id, "equal", range(64), (0,) * 64)
+        for input_id in rectangle.inputs
+        if input_id.startswith("key")
+    ]
+    for component_id, difference in differences.items():
+        fixed_values.append(
+            set_fixed_variables(component_id, "equal", range(64), integer_to_bit_list(difference, 64, "big"))
+        )
+
+    return rectangle, fixed_values
+
+
+def test_sbox_differences_are_derived_from_the_characteristic():
+    rectangle, fixed_values = _rectangle_three_round_key_alternating()
+    smt = SmtXorQuasidifferentialModel(rectangle)
+    assert smt.sbox_differences == {}
+
+    smt.build_xor_quasidifferential_trail_model(fixed_variables=fixed_values)
+
+    sboxes = [component.id for component in rectangle.get_all_components() if component.type == "sbox"]
+    assert len(sboxes) == 48
+    assert sorted(smt.sbox_differences) == sorted(sboxes)
+
+
+def test_sbox_constraints_are_restricted_to_the_derived_differences():
+    rectangle, fixed_values = _rectangle_three_round_key_alternating()
+    sbox = next(component for component in rectangle.get_all_components() if component.type == "sbox")
+
+    unrestricted = SmtXorQuasidifferentialModel(rectangle)
+    _, before = sbox.smt_xor_quasidifferential_propagation_constraints(unrestricted)
+
+    restricted = SmtXorQuasidifferentialModel(rectangle)
+    restricted.build_xor_quasidifferential_trail_model(fixed_variables=fixed_values)
+    _, after = sbox.smt_xor_quasidifferential_propagation_constraints(restricted)
+
+    assert before[0].count("(and ") == 10885
+    assert after[0].count("(and ") < before[0].count("(and ")
+
+
+def test_averaged_probability_agrees_with_the_differential_model():
+    """Theorem 4.3: averaging over keys leaves only the zero-key-mask trail, so
+    the quasidifferential model must reproduce the characteristic weight that
+    the differential model reports, by a completely separate route."""
+    rectangle, fixed_values = _rectangle_three_round_key_alternating()
+    weight = SmtXorDifferentialModel(rectangle).find_one_xor_differential_trail(
+        fixed_values=fixed_values
+    )["total_weight"]
+    assert weight == 15.0
+
+    smt = SmtXorQuasidifferentialModel(rectangle)
+    average = smt.estimate_fixed_key_probability(
+        min_weight=15, max_weight=17, fixed_values=fixed_values, fixed_masks=smt.boundary_masks()
+    )
+
+    assert not average["truncated"]
+    assert average["num_trails"] == 1
+    assert average["estimated_probability"] == 2.0**-15
+
+
+def test_fixed_key_probability_on_a_key_alternating_cipher():
+    """For one key nothing cancels, so the extra weight-17 trail counts too and
+    the answer differs from the average."""
+    rectangle, fixed_values = _rectangle_three_round_key_alternating()
+    smt = SmtXorQuasidifferentialModel(rectangle)
+
+    result = smt.estimate_fixed_key_probability(
+        min_weight=15, max_weight=17, fixed_values=fixed_values,
+        fixed_masks=smt.boundary_masks(), key=0,
+    )
+
+    assert not result["truncated"]
+    assert result["num_trails"] == 2
+    assert result["estimated_probability"] == 2.0**-15 + 2.0**-17

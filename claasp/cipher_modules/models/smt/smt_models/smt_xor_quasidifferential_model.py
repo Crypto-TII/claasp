@@ -28,6 +28,7 @@ from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,
     INPUT_KEY,
+    INPUT_PLAINTEXT,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
@@ -92,6 +93,12 @@ class SmtXorQuasidifferentialModel(SmtModel):
         self.sboxes_qdt_templates = {}
         self.sboxes_qdt_matrices = {}
 
+        # The input and output difference of each S-box, once a characteristic
+        # is given: {sbox_id: (a, b)}. An S-box appears here only if the
+        # characteristic decides both of its differences. An S-box whose
+        # differences are not decided is left out, and writes out its full table.
+        self.sbox_differences = {}
+
         # Which components read each wire bit, and which ids are read at
         # all. A consumer is recorded once per READ, not once per
         # component: see _component_wire_reads.
@@ -139,6 +146,15 @@ class SmtXorQuasidifferentialModel(SmtModel):
             fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
 
         constraints = self.fix_variables_value_constraints(fixed_variables)
+
+        # Work out each S-box's input and output difference from the values the
+        # caller already fixed. The S-box can then leave every transition that
+        # disagrees with them out of the model, nearly all of them, instead of
+        # writing them down for the solver to rule out one by one.
+        self.sbox_differences = self._sbox_differences_from(
+            self._known_differences(fixed_variables)
+        )
+
         component_types = (
             CIPHER_OUTPUT,
             CONSTANT,
@@ -197,6 +213,439 @@ class SmtXorQuasidifferentialModel(SmtModel):
 
         self._model_constraints = constants.MODEL_PREFIX + self._declarations + constraints + constants.MODEL_SUFFIX
 
+
+
+    def _input_wires(self, component):
+        """
+        Where each input bit of ``component`` comes from, as
+        ``(source_id, bit_position)``, in the order the component reads them.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: smt._input_wires(cipher.component_from_id('xor_0_0'))
+            [('plaintext', 0), ('plaintext', 1), ('key', 0), ('key', 1)]
+        """
+
+        return [
+            (source_id, position)
+            for source_id, position, _ in self._component_wire_reads(component)
+        ]
+
+    def _difference_bit_map(self, component):
+        """
+        For a component that only moves its bits around, which input bit
+        each output bit is a copy of. Entry ``i`` is the position in
+        ``_input_wires`` that output bit ``i`` copies, or ``None`` if the
+        component forces output bit ``i`` to zero, as a shift does.
+
+        The whole result is ``None`` for a component that does more than
+        move bits, an S-box above all, whose output difference does not
+        follow from its input difference at all.
+
+        Difference and mask both travel along this same map, so both
+        directions of the propagation read it: forward looks up where an
+        output bit came from, backward where an input bit went.
+
+        Each case mirrors that component's own ``smt_constraints``, so the
+        two cannot drift apart.
+
+        EXAMPLES:
+
+        A rotation by one, on two bits, swaps them::
+
+            sage: from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = RotateCipher(bit_size=2, rotation_amount=1)
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: smt._difference_bit_map(cipher.component_from_id('rot_0_0'))
+            [1, 0]
+
+        An S-box does more than move bits, so it is refused::
+
+            sage: from claasp.ciphers.block_ciphers.rectangle_block_cipher import RectangleBlockCipher
+            sage: rectangle = RectangleBlockCipher(number_of_rounds=1)
+            sage: smt = SmtXorQuasidifferentialModel(rectangle)
+            sage: smt._difference_bit_map(rectangle.component_from_id('sbox_0_1')) is None
+            True
+        """
+
+        positions = list(range(len(self._input_wires(component))))
+        output_bit_size = component.output_bit_size
+
+        if component.type in (CIPHER_OUTPUT, INTERMEDIATE_OUTPUT):
+            # These only concatenate the bits they read.
+            return positions if len(positions) == output_bit_size else None
+
+        if component.type == PERMUTATION_COMPONENT:
+            return list(component._bit_perm())
+
+        if component.type != WORD_OPERATION:
+            return None
+
+        operation = component.description[0]
+
+        if operation == "NOT":
+            # Theorem 3.2 (4): a translation leaves the difference alone.
+            return positions if len(positions) == output_bit_size else None
+
+        if operation == "ROTATE":
+            rotation = component.description[1]
+
+            return positions[-rotation:] + positions[:-rotation]
+
+        if operation == "SHIFT":
+            shift_amount = component.description[1]
+            bit_map = [None] * output_bit_size
+
+            if shift_amount < 0:
+                shift_amount = -shift_amount
+                for index in range(output_bit_size - shift_amount):
+                    bit_map[index] = shift_amount + index
+            else:
+                for index in range(output_bit_size - shift_amount):
+                    bit_map[shift_amount + index] = index
+
+            return bit_map
+
+        return None
+
+    def _wire_bit(self, known, source_id, position):
+        """
+        Bit ``position`` of ``source_id``'s difference, or ``None`` when it
+        is not known yet.
+        """
+
+        bits = known.get(source_id)
+
+        return None if bits is None else bits[position]
+
+    def _learn(self, known, id_, positions_and_bits):
+        """
+        Record difference bits of ``id_``, and say whether any were new.
+
+        A bit already recorded with the other value means the fixed values
+        contradict each other, which is raised rather than dropped.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: smt = SmtXorQuasidifferentialModel(XorCipher(word_bit_size=2, number_of_inputs=2))
+            sage: known = {}
+            sage: smt._learn(known, 'plaintext', [(0, 1)]), known
+            (True, {'plaintext': [1, None]})
+            sage: smt._learn(known, 'plaintext', [(0, 1)])
+            False
+        """
+
+        bits = known.setdefault(id_, [None] * self._bit_size_of(id_))
+        changed = False
+
+        for position, bit in positions_and_bits:
+            if bit is None:
+                continue
+
+            if bits[position] is None:
+                bits[position] = bit
+                changed = True
+
+            elif bits[position] != bit:
+                raise ValueError(
+                    f"{id_} bit {position}: the fixed values force both "
+                    f"{bits[position]} and {bit}, so they contradict each other"
+                )
+
+        return changed
+
+    def _propagate_forward(self, component, known):
+        """
+        Work out ``component``'s output difference from its inputs, and say
+        whether anything was learned.
+
+        Only components whose output difference follows from their input
+        difference. An S-box's does not, which is the whole reason its
+        difference has to come from the fixed values instead.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: known = {'plaintext': [1, 0], 'key': [1, 1]}
+            sage: smt._propagate_forward(cipher.component_from_id('xor_0_0'), known)
+            True
+            sage: known['xor_0_0']
+            [0, 1]
+        """
+
+        if component.type == CONSTANT:
+            # A constant is the same in both members of the pair.
+            return self._learn(
+                known,
+                component.id,
+                [(position, 0) for position in range(component.output_bit_size)],
+            )
+
+        wires = self._input_wires(component)
+        input_bits = [self._wire_bit(known, source_id, position) for source_id, position in wires]
+        output_bit_size = component.output_bit_size
+
+        if component.type == WORD_OPERATION and component.description[0] == "XOR":
+            learned = []
+
+            for position in range(output_bit_size):
+                operands = input_bits[position::output_bit_size]
+
+                if None not in operands:
+                    learned.append((position, sum(operands) % 2))
+
+            return self._learn(known, component.id, learned)
+
+        bit_map = self._difference_bit_map(component)
+
+        if bit_map is None or None in input_bits:
+            return False
+
+        return self._learn(
+            known,
+            component.id,
+            [
+                (position, 0 if source is None else input_bits[source])
+                for position, source in enumerate(bit_map)
+            ],
+        )
+
+    def _propagate_backward(self, component, known):
+        """
+        Work out ``component``'s input differences from its output, and say
+        whether anything was learned.
+
+        This is the direction an S-box layer needs: the caller fixes a round
+        output, and the S-box output differences are only reachable by
+        pulling that back through the linear layer above them.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = RotateCipher(bit_size=2, rotation_amount=1)
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: known = {'rot_0_0': [1, 0]}
+            sage: smt._propagate_backward(cipher.component_from_id('rot_0_0'), known)
+            True
+            sage: known['plaintext']
+            [0, 1]
+        """
+
+        output_bits = known.get(component.id)
+
+        if output_bits is None:
+            return False
+
+        wires = self._input_wires(component)
+
+        if component.type == WORD_OPERATION and component.description[0] == "XOR":
+            return self._xor_backward(component, wires, output_bits, known)
+
+        bit_map = self._difference_bit_map(component)
+
+        if bit_map is None:
+            return False
+
+        changed = False
+
+        for position, source in enumerate(bit_map):
+            if source is None or output_bits[position] is None:
+                continue
+
+            source_id, source_position = wires[source]
+            changed |= self._learn(known, source_id, [(source_position, output_bits[position])])
+
+        return changed
+
+    def _xor_backward(self, component, wires, output_bits, known):
+        """
+        Solve an XOR for its one unknown operand, bit position by bit
+        position, given its ``_input_wires`` and its known output
+        difference. A position whose operands are all known teaches nothing,
+        and one with two or more unknowns is not determined, so only the
+        single-unknown case is used.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: xor = cipher.component_from_id('xor_0_0')
+            sage: known = {'xor_0_0': [0, 1], 'key': [1, 1]}
+            sage: smt._xor_backward(xor, smt._input_wires(xor), known['xor_0_0'], known)
+            True
+            sage: known['plaintext']
+            [1, 0]
+        """
+
+        output_bit_size = component.output_bit_size
+        changed = False
+
+        for position in range(output_bit_size):
+            if output_bits[position] is None:
+                continue
+
+            column = list(range(position, len(wires), output_bit_size))
+            unknown = [index for index in column if self._wire_bit(known, *wires[index]) is None]
+
+            if len(unknown) != 1:
+                continue
+
+            parity = output_bits[position]
+
+            for index in column:
+                if index != unknown[0]:
+                    parity ^= self._wire_bit(known, *wires[index])
+
+            source_id, source_position = wires[unknown[0]]
+            changed |= self._learn(known, source_id, [(source_position, parity)])
+
+        return changed
+
+    def _known_differences(self, fixed_variables):
+        """
+        The difference of every wire that ``fixed_variables`` already
+        settles, as ``{id: [bit, ...]}`` with ``None`` where a bit is still
+        unknown.
+
+        The fixed values are the starting point. From there differences are
+        pushed forward and pulled backward through the components that only
+        move or combine bits, until nothing more is learned. Nothing is
+        guessed: a bit is recorded only where the wiring forces it, so a
+        characteristic that leaves wires undecided simply leaves them
+        undecided here.
+
+        INPUT:
+
+        - ``fixed_variables`` -- **list**; difference constraints, built
+          with ``set_fixed_variables``
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: fixed = [set_fixed_variables('plaintext', 'equal', range(2), [1, 0]),
+            ....:          set_fixed_variables('key', 'equal', range(2), [1, 1])]
+            sage: smt._known_differences(fixed)['xor_0_0']
+            [0, 1]
+
+        Fixing the output instead works just as well, since the XOR is also
+        pulled backward:
+
+            sage: fixed = [set_fixed_variables('xor_0_0', 'equal', range(2), [0, 1]),
+            ....:          set_fixed_variables('key', 'equal', range(2), [1, 1])]
+            sage: smt._known_differences(fixed)['plaintext']
+            [1, 0]
+        """
+
+        known = {}
+        cipher_ids = set(self._cipher.inputs) | {
+            component.id for component in self._cipher.get_all_components()
+        }
+
+        for fixed in fixed_variables:
+            if fixed.get("constraint_type") != "equal" or fixed["component_id"] not in cipher_ids:
+                continue
+
+            self._learn(
+                known,
+                fixed["component_id"],
+                zip(fixed["bit_positions"], (int(bit) for bit in fixed["bit_values"])),
+            )
+
+        changed = True
+
+        while changed:
+            changed = False
+
+            for component in self._cipher.get_all_components():
+                changed |= self._propagate_forward(component, known)
+                changed |= self._propagate_backward(component, known)
+
+        return known
+
+    def _sbox_differences_from(self, known):
+        """
+        Collect the S-boxes from ``known``, as ``{sbox_id: (a, b)}``: one
+        entry per S-box whose input difference ``a`` and output difference
+        ``b`` are both known. ``known`` is the map of wire differences that
+        ``_known_differences`` builds.
+
+        Only S-boxes need this. An S-box is modelled from a table, one case
+        for each transition it allows, and fixing ``a`` and ``b`` keeps only
+        the few cases that agree with them. Every other component is modelled
+        from a formula, so it is small already.
+
+        An S-box that the characteristic does not decide is left out, and
+        keeps its whole table. That is slower to solve but just as correct,
+        which is why this is safe to do automatically.
+
+        INPUT:
+
+        - ``known`` -- **dictionary**; a ``_known_differences`` map
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.rectangle_block_cipher import RectangleBlockCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: smt = SmtXorQuasidifferentialModel(RectangleBlockCipher(number_of_rounds=1))
+            sage: smt._sbox_differences_from({})
+            {}
+        """
+
+        differences = {}
+
+        for component in self._cipher.get_all_components():
+            if component.type != SBOX:
+                continue
+
+            output_bits = known.get(component.id)
+
+            if output_bits is None or None in output_bits:
+                continue
+
+            input_bits = [
+                self._wire_bit(known, source_id, position)
+                for source_id, position in self._input_wires(component)
+            ]
+
+            if None in input_bits:
+                continue
+
+            differences[component.id] = (
+                self._bits_to_integer(input_bits),
+                self._bits_to_integer(output_bits),
+            )
+
+        return differences
+
+    @staticmethod
+    def _bits_to_integer(bits):
+        """
+        The integer of a bit list, bit 0 being the most significant.
+        """
+
+        value = 0
+
+        for bit in bits:
+            value = (value << 1) | bit
+
+        return value
 
 
     def _qdt_local_weight_variables(
@@ -744,11 +1193,17 @@ class SmtXorQuasidifferentialModel(SmtModel):
         self,
         fixed_weight,
         fixed_values=[],
+        fixed_masks=None,
         solver_name=solvers.SOLVER_DEFAULT,
     ):
         """
         Find one XOR quasidifferential trail with a fixed total
         weight loss.
+
+        ``fixed_masks`` sets mask bits, which ``fixed_values`` cannot express.
+        If it is not given, any trail of that weight may be returned, including
+        one whose input or output mask is non-zero. ``boundary_masks()`` gives
+        the usual list.
 
         EXAMPLES::
 
@@ -770,6 +1225,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         )
 
         self._constrain_weight_exactly(fixed_weight)
+        self._apply_fixed_masks(fixed_masks)
 
         end_building_time = time.time()
 
@@ -1265,7 +1721,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         if fixed_masks is None:
             fixed_masks = []
 
-        key_input = INPUT_KEY if INPUT_KEY in self._cipher.inputs else None
+        key_input_names = self._key_inputs()
 
         trails = []
         total = 0.0
@@ -1290,7 +1746,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
             num_trails_found += len(solutions)
 
             for solution in solutions:
-                trail = self._trail_record(solution, key_input, key)
+                trail = self._trail_record(solution, key_input_names, key)
 
                 if trail is None:
                     continue
@@ -1309,6 +1765,75 @@ class SmtXorQuasidifferentialModel(SmtModel):
             "truncated": bool(truncated_weights),
             "truncated_weights": truncated_weights,
         }
+
+    def boundary_masks(self):
+        """
+        The ``fixed_masks`` list that sets the cipher's input and output masks
+        to zero, leaving the masks in between free.
+
+        The output end covers every state output of the final round, since a
+        mask left free on any of them admits trails outside the
+        characteristic.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.rectangle_block_cipher import RectangleBlockCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: rectangle = RectangleBlockCipher(number_of_rounds=3)
+            sage: masks = SmtXorQuasidifferentialModel(rectangle).boundary_masks()
+            sage: [entry['component_id'] for entry in masks]
+            ['plaintext', 'intermediate_output_2_32', 'cipher_output_2_33']
+            sage: set(masks[0]['bit_values'])
+            {0}
+        """
+
+        if INPUT_PLAINTEXT not in self._cipher.inputs:
+            raise ValueError(
+                f"{self._cipher.id}: the input mask cannot be placed automatically, "
+                f"because this cipher has no {INPUT_PLAINTEXT!r} input "
+                f"(its inputs are {self._cipher.inputs}). Build fixed_masks by hand."
+            )
+
+        block_bit_size = self._cipher.output_bit_size
+        # Keep the state outputs only. The key schedule has outputs too, and
+        # setting their masks to zero would lose the round-key masks, which is
+        # where weak-key conditions come from. Both kinds have the same component
+        # type, so the description has to decide: "round_output" or "round_key_output".
+        state_outputs = [
+            component.id
+            for component in self._cipher.get_all_components()
+            if component.description[0] in ("round_output", "cipher_output")
+            and component.output_bit_size == block_bit_size
+        ]
+        last_round = int(state_outputs[-1].split("_")[-2])
+
+        component_ids = [INPUT_PLAINTEXT] + [
+            output_id for output_id in state_outputs if int(output_id.split("_")[-2]) == last_round
+        ]
+
+        return [
+            {
+                "component_id": component_id,
+                "bit_positions": range(block_bit_size),
+                "bit_values": [0] * block_bit_size,
+            }
+            for component_id in component_ids
+        ]
+
+    def _apply_fixed_masks(self, fixed_masks):
+        """
+        Add the ``fixed_masks`` assertions to the model just built. Mask bits
+        need their own assertions, on the ``qdt_`` variables.
+        """
+
+        mask_constraints = self._build_fixed_mask_constraints(fixed_masks or [])
+
+        if mask_constraints:
+            self._model_constraints = (
+                self._model_constraints[: -len(constants.MODEL_SUFFIX)]
+                + mask_constraints
+                + constants.MODEL_SUFFIX
+            )
 
     def _solutions_at_weight(
         self,
@@ -1355,14 +1880,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
 
         self._constrain_weight_exactly(weight)
 
-        mask_constraints = self._build_fixed_mask_constraints(fixed_masks)
-
-        if mask_constraints:
-            self._model_constraints = (
-                self._model_constraints[: -len(constants.MODEL_SUFFIX)]
-                + mask_constraints
-                + constants.MODEL_SUFFIX
-            )
+        self._apply_fixed_masks(fixed_masks)
 
         building_time = time.time() - start_building_time
 
@@ -1392,10 +1910,23 @@ class SmtXorQuasidifferentialModel(SmtModel):
 
         return solutions, False
 
+    def _key_inputs(self):
+        """
+        The names of the cipher's key inputs: ``key``, or the one input per
+        round key that ``Cipher.remove_key_schedule()`` leaves behind, named
+        ``key_0_2``, ``key_1_2`` and so on.
+        """
+
+        return [
+            input_id
+            for input_id in self._cipher.inputs
+            if input_id == INPUT_KEY or input_id.startswith(f"{INPUT_KEY}_")
+        ]
+
     def _trail_record(
         self,
         solution,
-        key_input,
+        key_input_names,
         key,
     ):
         """
@@ -1407,6 +1938,12 @@ class SmtXorQuasidifferentialModel(SmtModel):
         nothing is killed, and the factor is that trail's own
         character.
 
+        ``key_input_names`` says where to read masks from; ``key`` is the key
+        value, or ``None`` to average over all keys. Those masks are joined
+        in cipher-input order into the single integer ``"key_mask"``, while
+        ``"key_mask_per_input"`` keeps them split by input, which is what a
+        caller needs to state a weak-key condition on one round key.
+
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -1414,17 +1951,21 @@ class SmtXorQuasidifferentialModel(SmtModel):
             sage: smt = SmtXorQuasidifferentialModel(SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=1))
             sage: smt.build_xor_quasidifferential_trail_model(weight=0)
             sage: solution = smt.solve('xor_quasidifferential')
-            sage: record = smt._trail_record(solution, 'key', 0)
+            sage: record = smt._trail_record(solution, ['key'], 0)
             sage: sorted(record)
-            ['correlation', 'key_mask', 'sign', 'weight']
+            ['correlation', 'key_mask', 'key_mask_per_input', 'sign', 'weight']
             sage: record['weight']
             0.0
         """
 
         key_mask = 0
+        key_mask_per_input = {}
 
-        if key_input is not None:
-            key_mask = int(solution["components_values"][key_input].get("mask", "0x0"), 16)
+        for input_id in key_input_names:
+            size = self._cipher.inputs_bit_size[self._cipher.inputs.index(input_id)]
+            value = int(solution["components_values"][input_id].get("mask", "0x0"), 16)
+            key_mask_per_input[input_id] = value
+            key_mask = (key_mask << size) | value
 
         if key is None:
             key_factor = 0 if key_mask else 1
@@ -1441,6 +1982,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
             "sign": sign,
             "weight": weight,
             "key_mask": key_mask,
+            "key_mask_per_input": key_mask_per_input,
             "correlation": key_factor * sign * (2.0 ** (-weight)),
         }
 
