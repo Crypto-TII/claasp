@@ -2,7 +2,7 @@
 
 from claasp.graph import Primitive
 from claasp.representations.constraints.sat import BooleanCNFModel
-from claasp.representations.constraints.smt.formula import SMTFormula
+from claasp.representations.constraints.smt.model import SMTFormula
 
 
 class BooleanSMTModel:
@@ -10,11 +10,12 @@ class BooleanSMTModel:
 
     EXAMPLES::
 
-        >>> try:
-        ...     BooleanSMTModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
+        >>> from claasp.primitives import Speck
+        >>> formula = BooleanSMTModel(Speck(number_of_rounds=1)).smt_formula()
+        >>> formula.assertion_count > 400
+        True
+        >>> "modular_add_0_1" in formula.provenance
+        True
     """
 
     def __init__(self, primitive: Primitive) -> None:

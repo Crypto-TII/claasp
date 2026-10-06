@@ -115,7 +115,7 @@ Requirements:
 
 ## Constraint-model organization PR
 
-Status: **Next PR**
+Status: **In progress**
 
 Normalize where backend-specific component models live. The current placement
 is inconsistent: S-box models, for example, are spread across SMT
@@ -148,6 +148,21 @@ Use explicit class names when a component has several models, for example
 
 This should be a behavior-preserving move with import compatibility handled
 deliberately and tests retained for each public model.
+
+Implementation inventory notes:
+
+- SAT currently has functional component encodings only; no SAT-local
+  differential, linear, truncated, or boomerang component model exists to
+  rename or move.
+- The SMT Speck and generic word models assemble complete trails, so their
+  implementation belongs in ``trails.py`` even though compatibility modules
+  retain the previous import paths.
+- CP ``WordwiseDifferenceCPModel`` and ``ImpossibleBoundaryCPModel`` describe
+  fixed search boundaries rather than component encodings, so they remain in
+  ``trails.py``. The local S-box and probabilistic-truncated modular-add models
+  move under ``components/``.
+- Generic S-box selector names remain compatibility exports; new code can use
+  explicit XOR-differential and XOR-linear class names.
 
 ## Constraint-model provenance infrastructure PR
 

@@ -26056,22 +26056,28 @@
       "qualified_name": "claasp.representations.constraints.cp.PresentLinearCPModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.cp.trails.ProbabilisticTruncatedModularAddCPModel",
-      "defined_in": "claasp.representations.constraints.cp.trails",
+      "canonical_name": "claasp.representations.constraints.cp.components.modular_add.ProbabilisticTruncatedModularAddCPModel",
+      "defined_in": "claasp.representations.constraints.cp.components.modular_add",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.cp.ProbabilisticTruncatedModularAddCPModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.cp.trails.SBoxBoomerangCPModel",
-      "defined_in": "claasp.representations.constraints.cp.trails",
+      "canonical_name": "claasp.representations.constraints.cp.components.sbox.SBoxBoomerangCPModel",
+      "defined_in": "claasp.representations.constraints.cp.components.sbox",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.cp.SBoxBoomerangCPModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.cp.trails.SBoxDifferenceCPModel",
-      "defined_in": "claasp.representations.constraints.cp.trails",
+      "canonical_name": "claasp.representations.constraints.cp.components.sbox.SBoxXorDifferentialCPModel",
+      "defined_in": "claasp.representations.constraints.cp.components.sbox",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.cp.SBoxDifferenceCPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components.sbox.SBoxXorDifferentialCPModel",
+      "defined_in": "claasp.representations.constraints.cp.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.cp.SBoxXorDifferentialCPModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.cp.trails.SimonImpossibleCPModel",
@@ -26108,6 +26114,87 @@
       "defined_in": "claasp.representations.constraints.cp.trails",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.cp.WordwiseDifferenceCPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components",
+      "defined_in": "claasp.representations.constraints.cp.components",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.cp.components"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components.modular_add.ProbabilisticTruncatedModularAddCPModel",
+      "defined_in": "claasp.representations.constraints.cp.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.cp.components.ProbabilisticTruncatedModularAddCPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components.sbox.SBoxBoomerangCPModel",
+      "defined_in": "claasp.representations.constraints.cp.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.cp.components.SBoxBoomerangCPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components.sbox.SBoxXorDifferentialCPModel",
+      "defined_in": "claasp.representations.constraints.cp.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.cp.components.SBoxDifferenceCPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components.sbox.SBoxXorDifferentialCPModel",
+      "defined_in": "claasp.representations.constraints.cp.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.cp.components.SBoxXorDifferentialCPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components.modular_add.ProbabilisticTruncatedModularAddCPModel.__init__",
+      "defined_in": "claasp.representations.constraints.cp.components.modular_add",
+      "documented_by": "claasp.representations.constraints.cp.components.modular_add.ProbabilisticTruncatedModularAddCPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.cp.components.modular_add.ProbabilisticTruncatedModularAddCPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components.modular_add.ProbabilisticTruncatedModularAddCPModel.cp_model",
+      "defined_in": "claasp.representations.constraints.cp.components.modular_add",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.components.modular_add.ProbabilisticTruncatedModularAddCPModel.cp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components.modular_add.ProbabilisticTruncatedModularAddCPModel.decode_transition",
+      "defined_in": "claasp.representations.constraints.cp.components.modular_add",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.components.modular_add.ProbabilisticTruncatedModularAddCPModel.decode_transition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components.sbox.SBoxBoomerangCPModel.__init__",
+      "defined_in": "claasp.representations.constraints.cp.components.sbox",
+      "documented_by": "claasp.representations.constraints.cp.components.sbox.SBoxBoomerangCPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.cp.components.sbox.SBoxBoomerangCPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components.sbox.SBoxBoomerangCPModel.cp_model",
+      "defined_in": "claasp.representations.constraints.cp.components.sbox",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.components.sbox.SBoxBoomerangCPModel.cp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components.sbox.SBoxBoomerangCPModel.decode",
+      "defined_in": "claasp.representations.constraints.cp.components.sbox",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.components.sbox.SBoxBoomerangCPModel.decode"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components.sbox.SBoxXorDifferentialCPModel.__init__",
+      "defined_in": "claasp.representations.constraints.cp.components.sbox",
+      "documented_by": "claasp.representations.constraints.cp.components.sbox.SBoxXorDifferentialCPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.cp.components.sbox.SBoxXorDifferentialCPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.components.sbox.SBoxXorDifferentialCPModel.cp_model",
+      "defined_in": "claasp.representations.constraints.cp.components.sbox",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.components.sbox.SBoxXorDifferentialCPModel.cp_model"
     },
     {
       "canonical_name": "claasp.representations.constraints.cp.lowering.BooleanMiniZincLowerer.__init__",
@@ -26242,57 +26329,6 @@
       "qualified_name": "claasp.representations.constraints.cp.trails.PresentLinearCPModel.decode_trail"
     },
     {
-      "canonical_name": "claasp.representations.constraints.cp.trails.ProbabilisticTruncatedModularAddCPModel.__init__",
-      "defined_in": "claasp.representations.constraints.cp.trails",
-      "documented_by": "claasp.representations.constraints.cp.trails.ProbabilisticTruncatedModularAddCPModel",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.cp.trails.ProbabilisticTruncatedModularAddCPModel.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.cp.trails.ProbabilisticTruncatedModularAddCPModel.cp_model",
-      "defined_in": "claasp.representations.constraints.cp.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.cp.trails.ProbabilisticTruncatedModularAddCPModel.cp_model"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.cp.trails.ProbabilisticTruncatedModularAddCPModel.decode_transition",
-      "defined_in": "claasp.representations.constraints.cp.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.cp.trails.ProbabilisticTruncatedModularAddCPModel.decode_transition"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.cp.trails.SBoxBoomerangCPModel.__init__",
-      "defined_in": "claasp.representations.constraints.cp.trails",
-      "documented_by": "claasp.representations.constraints.cp.trails.SBoxBoomerangCPModel",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.cp.trails.SBoxBoomerangCPModel.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.cp.trails.SBoxBoomerangCPModel.cp_model",
-      "defined_in": "claasp.representations.constraints.cp.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.cp.trails.SBoxBoomerangCPModel.cp_model"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.cp.trails.SBoxBoomerangCPModel.decode",
-      "defined_in": "claasp.representations.constraints.cp.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.cp.trails.SBoxBoomerangCPModel.decode"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.cp.trails.SBoxDifferenceCPModel.__init__",
-      "defined_in": "claasp.representations.constraints.cp.trails",
-      "documented_by": "claasp.representations.constraints.cp.trails.SBoxDifferenceCPModel",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.cp.trails.SBoxDifferenceCPModel.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.cp.trails.SBoxDifferenceCPModel.cp_model",
-      "defined_in": "claasp.representations.constraints.cp.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.cp.trails.SBoxDifferenceCPModel.cp_model"
-    },
-    {
       "canonical_name": "claasp.representations.constraints.cp.trails.SimonImpossibleCPModel.__init__",
       "defined_in": "claasp.representations.constraints.cp.trails",
       "documented_by": "claasp.representations.constraints.cp.trails.SimonImpossibleCPModel",
@@ -26407,14 +26443,14 @@
       "qualified_name": "claasp.representations.constraints.milp"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.boolean.BooleanGraphMILPModel",
-      "defined_in": "claasp.representations.constraints.milp.boolean",
+      "canonical_name": "claasp.representations.constraints.milp.lowering.BooleanGraphMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.lowering",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.milp.BooleanGraphMILPModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.monomial.BooleanMonomialGraphMILPModel",
-      "defined_in": "claasp.representations.constraints.milp.monomial",
+      "canonical_name": "claasp.representations.constraints.milp.lowering.BooleanMonomialGraphMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.lowering",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.milp.BooleanMonomialGraphMILPModel"
     },
@@ -26425,8 +26461,8 @@
       "qualified_name": "claasp.representations.constraints.milp.ConstraintSense"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.relations.FiniteBinaryRelationMILPModel",
-      "defined_in": "claasp.representations.constraints.milp.relations",
+      "canonical_name": "claasp.representations.constraints.milp.components.relations.FiniteBinaryRelationMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.relations",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.milp.FiniteBinaryRelationMILPModel"
     },
@@ -26461,14 +26497,14 @@
       "qualified_name": "claasp.representations.constraints.milp.MILPModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.transitions.ModularAddLinearMILPModel",
-      "defined_in": "claasp.representations.constraints.milp.transitions",
+      "canonical_name": "claasp.representations.constraints.milp.components.modular_add.ModularAddLinearMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.modular_add",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.milp.ModularAddLinearMILPModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.monomial.MonomialTransitionMILPModel",
-      "defined_in": "claasp.representations.constraints.milp.monomial",
+      "canonical_name": "claasp.representations.constraints.milp.components.monomial.MonomialTransitionMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.monomial",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.milp.MonomialTransitionMILPModel"
     },
@@ -26485,16 +26521,28 @@
       "qualified_name": "claasp.representations.constraints.milp.PresentDifferentialMILPModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.monomial.PresentMonomialTrailMILPModel",
-      "defined_in": "claasp.representations.constraints.milp.monomial",
+      "canonical_name": "claasp.representations.constraints.milp.trails.PresentMonomialTrailMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.trails",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.milp.PresentMonomialTrailMILPModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.sbox.SBoxTransitionMILPModel",
-      "defined_in": "claasp.representations.constraints.milp.sbox",
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxTransitionMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.milp.SBoxTransitionMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxXorDifferentialMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.SBoxXorDifferentialMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxXorLinearMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.SBoxXorLinearMILPModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.model.VariableKind",
@@ -26503,35 +26551,156 @@
       "qualified_name": "claasp.representations.constraints.milp.VariableKind"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.boolean.BooleanGraphMILPModel.__init__",
-      "defined_in": "claasp.representations.constraints.milp.boolean",
-      "documented_by": "claasp.representations.constraints.milp.boolean.BooleanGraphMILPModel",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.milp.boolean.BooleanGraphMILPModel.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.boolean.BooleanGraphMILPModel.milp_model",
-      "defined_in": "claasp.representations.constraints.milp.boolean",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.boolean.BooleanGraphMILPModel.milp_model"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.boolean.BooleanGraphMILPModel.witness",
-      "defined_in": "claasp.representations.constraints.milp.boolean",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.boolean.BooleanGraphMILPModel.witness"
-    },
-    {
       "canonical_name": "claasp.representations.constraints.milp.trails.check_present_milp_trail",
       "defined_in": "claasp.representations.constraints.milp.trails",
       "kind": "function",
       "qualified_name": "claasp.representations.constraints.milp.check_present_milp_trail"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.boolean.cnf_to_milp",
-      "defined_in": "claasp.representations.constraints.milp.boolean",
+      "canonical_name": "claasp.representations.constraints.milp.lowering.cnf_to_milp",
+      "defined_in": "claasp.representations.constraints.milp.lowering",
       "kind": "function",
       "qualified_name": "claasp.representations.constraints.milp.cnf_to_milp"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components",
+      "defined_in": "claasp.representations.constraints.milp.components",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.milp.components"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.relations.FiniteBinaryRelationMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.relations",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.FiniteBinaryRelationMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.modular_add.ModularAddLinearMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.ModularAddLinearMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.monomial.MonomialTransitionMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.monomial",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.MonomialTransitionMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxTransitionMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.SBoxTransitionMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxXorDifferentialMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.SBoxXorDifferentialMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxXorLinearMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.SBoxXorLinearMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.modular_add.ModularAddLinearMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.modular_add",
+      "documented_by": "claasp.representations.constraints.milp.components.modular_add.ModularAddLinearMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.modular_add.ModularAddLinearMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.modular_add.ModularAddLinearMILPModel.decode_transition",
+      "defined_in": "claasp.representations.constraints.milp.components.modular_add",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.modular_add.ModularAddLinearMILPModel.decode_transition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.modular_add.ModularAddLinearMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.components.modular_add",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.modular_add.ModularAddLinearMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.monomial.MonomialTransitionMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.monomial",
+      "documented_by": "claasp.representations.constraints.milp.components.monomial.MonomialTransitionMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.monomial.MonomialTransitionMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.monomial.MonomialTransitionMILPModel.assignment",
+      "defined_in": "claasp.representations.constraints.milp.components.monomial",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.monomial.MonomialTransitionMILPModel.assignment"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.monomial.MonomialTransitionMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.components.monomial",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.monomial.MonomialTransitionMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.relations.FiniteBinaryRelationMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.relations",
+      "documented_by": "claasp.representations.constraints.milp.components.relations.FiniteBinaryRelationMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.relations.FiniteBinaryRelationMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.relations.FiniteBinaryRelationMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.components.relations",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.relations.FiniteBinaryRelationMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.relations.FiniteBinaryRelationMILPModel.witness",
+      "defined_in": "claasp.representations.constraints.milp.components.relations",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.relations.FiniteBinaryRelationMILPModel.witness"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxTransitionMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "documented_by": "claasp.representations.constraints.milp.components.sbox.SBoxTransitionMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.sbox.SBoxTransitionMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxTransitionMILPModel.decode_transition",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.components.sbox.SBoxXorDifferentialMILPModel",
+        "claasp.representations.constraints.milp.components.sbox.SBoxXorLinearMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.sbox.SBoxTransitionMILPModel.decode_transition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxTransitionMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.components.sbox.SBoxXorDifferentialMILPModel",
+        "claasp.representations.constraints.milp.components.sbox.SBoxXorLinearMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.sbox.SBoxTransitionMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxXorDifferentialMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "documented_by": "claasp.representations.constraints.milp.components.sbox.SBoxXorDifferentialMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.sbox.SBoxXorDifferentialMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxXorLinearMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "documented_by": "claasp.representations.constraints.milp.components.sbox.SBoxXorLinearMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.sbox.SBoxXorLinearMILPModel.__init__"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.exporter.LPExporter.__init__",
@@ -26545,6 +26714,38 @@
       "defined_in": "claasp.representations.constraints.milp.exporter",
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.milp.exporter.LPExporter.export"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.lowering.BooleanGraphMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.lowering",
+      "documented_by": "claasp.representations.constraints.milp.lowering.BooleanGraphMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.lowering.BooleanGraphMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.lowering.BooleanGraphMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.lowering",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.lowering.BooleanGraphMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.lowering.BooleanGraphMILPModel.witness",
+      "defined_in": "claasp.representations.constraints.milp.lowering",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.lowering.BooleanGraphMILPModel.witness"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.lowering.BooleanMonomialGraphMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.lowering",
+      "documented_by": "claasp.representations.constraints.milp.lowering.BooleanMonomialGraphMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.lowering.BooleanMonomialGraphMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.lowering.BooleanMonomialGraphMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.lowering",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.lowering.BooleanMonomialGraphMILPModel.milp_model"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.model.ConstraintSense.EQUAL",
@@ -26774,95 +26975,6 @@
       "qualified_name": "claasp.representations.constraints.milp.model.VariableKind.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.monomial.BooleanMonomialGraphMILPModel.__init__",
-      "defined_in": "claasp.representations.constraints.milp.monomial",
-      "documented_by": "claasp.representations.constraints.milp.monomial.BooleanMonomialGraphMILPModel",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.milp.monomial.BooleanMonomialGraphMILPModel.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.monomial.BooleanMonomialGraphMILPModel.milp_model",
-      "defined_in": "claasp.representations.constraints.milp.monomial",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.monomial.BooleanMonomialGraphMILPModel.milp_model"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.monomial.MonomialTransitionMILPModel.__init__",
-      "defined_in": "claasp.representations.constraints.milp.monomial",
-      "documented_by": "claasp.representations.constraints.milp.monomial.MonomialTransitionMILPModel",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.milp.monomial.MonomialTransitionMILPModel.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.monomial.MonomialTransitionMILPModel.assignment",
-      "defined_in": "claasp.representations.constraints.milp.monomial",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.monomial.MonomialTransitionMILPModel.assignment"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.monomial.MonomialTransitionMILPModel.milp_model",
-      "defined_in": "claasp.representations.constraints.milp.monomial",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.monomial.MonomialTransitionMILPModel.milp_model"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.monomial.PresentMonomialTrailMILPModel.__init__",
-      "defined_in": "claasp.representations.constraints.milp.monomial",
-      "documented_by": "claasp.representations.constraints.milp.monomial.PresentMonomialTrailMILPModel",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.milp.monomial.PresentMonomialTrailMILPModel.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.monomial.PresentMonomialTrailMILPModel.decode_trail",
-      "defined_in": "claasp.representations.constraints.milp.monomial",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.monomial.PresentMonomialTrailMILPModel.decode_trail"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.monomial.PresentMonomialTrailMILPModel.milp_model",
-      "defined_in": "claasp.representations.constraints.milp.monomial",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.monomial.PresentMonomialTrailMILPModel.milp_model"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.relations.FiniteBinaryRelationMILPModel.__init__",
-      "defined_in": "claasp.representations.constraints.milp.relations",
-      "documented_by": "claasp.representations.constraints.milp.relations.FiniteBinaryRelationMILPModel",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.milp.relations.FiniteBinaryRelationMILPModel.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.relations.FiniteBinaryRelationMILPModel.milp_model",
-      "defined_in": "claasp.representations.constraints.milp.relations",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.relations.FiniteBinaryRelationMILPModel.milp_model"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.relations.FiniteBinaryRelationMILPModel.witness",
-      "defined_in": "claasp.representations.constraints.milp.relations",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.relations.FiniteBinaryRelationMILPModel.witness"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.sbox.SBoxTransitionMILPModel.__init__",
-      "defined_in": "claasp.representations.constraints.milp.sbox",
-      "documented_by": "claasp.representations.constraints.milp.sbox.SBoxTransitionMILPModel",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.milp.sbox.SBoxTransitionMILPModel.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.sbox.SBoxTransitionMILPModel.decode_transition",
-      "defined_in": "claasp.representations.constraints.milp.sbox",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.sbox.SBoxTransitionMILPModel.decode_transition"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.sbox.SBoxTransitionMILPModel.milp_model",
-      "defined_in": "claasp.representations.constraints.milp.sbox",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.sbox.SBoxTransitionMILPModel.milp_model"
-    },
-    {
       "canonical_name": "claasp.representations.constraints.milp.trails.PresentDifferentialMILPModel.__init__",
       "defined_in": "claasp.representations.constraints.milp.trails",
       "documented_by": "claasp.representations.constraints.milp.trails.PresentDifferentialMILPModel",
@@ -26882,23 +26994,23 @@
       "qualified_name": "claasp.representations.constraints.milp.trails.PresentDifferentialMILPModel.milp_model"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.transitions.ModularAddLinearMILPModel.__init__",
-      "defined_in": "claasp.representations.constraints.milp.transitions",
-      "documented_by": "claasp.representations.constraints.milp.transitions.ModularAddLinearMILPModel",
+      "canonical_name": "claasp.representations.constraints.milp.trails.PresentMonomialTrailMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.trails",
+      "documented_by": "claasp.representations.constraints.milp.trails.PresentMonomialTrailMILPModel",
       "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.milp.transitions.ModularAddLinearMILPModel.__init__"
+      "qualified_name": "claasp.representations.constraints.milp.trails.PresentMonomialTrailMILPModel.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.transitions.ModularAddLinearMILPModel.decode_transition",
-      "defined_in": "claasp.representations.constraints.milp.transitions",
+      "canonical_name": "claasp.representations.constraints.milp.trails.PresentMonomialTrailMILPModel.decode_trail",
+      "defined_in": "claasp.representations.constraints.milp.trails",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.transitions.ModularAddLinearMILPModel.decode_transition"
+      "qualified_name": "claasp.representations.constraints.milp.trails.PresentMonomialTrailMILPModel.decode_trail"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.transitions.ModularAddLinearMILPModel.milp_model",
-      "defined_in": "claasp.representations.constraints.milp.transitions",
+      "canonical_name": "claasp.representations.constraints.milp.trails.PresentMonomialTrailMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.trails",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.transitions.ModularAddLinearMILPModel.milp_model"
+      "qualified_name": "claasp.representations.constraints.milp.trails.PresentMonomialTrailMILPModel.milp_model"
     },
     {
       "canonical_name": "claasp.representations.constraints.polynomial",
@@ -27360,62 +27472,116 @@
       "qualified_name": "claasp.representations.constraints.sat.BooleanCNFModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.sat.cnf.CNFFormula",
-      "defined_in": "claasp.representations.constraints.sat.cnf",
+      "canonical_name": "claasp.representations.constraints.sat.components.boolean.BooleanFunctionalSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.boolean",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.BooleanFunctionalSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula",
+      "defined_in": "claasp.representations.constraints.sat.model",
       "kind": "dataclass",
       "qualified_name": "claasp.representations.constraints.sat.CNFFormula"
     },
     {
-      "canonical_name": "claasp.representations.constraints.sat.cnf.CNFFormula.__init__",
-      "defined_in": "claasp.representations.constraints.sat.cnf",
-      "documented_by": "claasp.representations.constraints.sat.cnf.CNFFormula",
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddFunctionalSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.ModularAddFunctionalSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.sbox.SBoxFunctionalSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.SBoxFunctionalSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.wiring.WiringFunctionalSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.wiring",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.WiringFunctionalSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components",
+      "defined_in": "claasp.representations.constraints.sat.components",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.sat.components"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.boolean.BooleanFunctionalSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.boolean",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.BooleanFunctionalSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddFunctionalSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.ModularAddFunctionalSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.sbox.SBoxFunctionalSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.SBoxFunctionalSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.wiring.WiringFunctionalSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.wiring",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.WiringFunctionalSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.boolean.BooleanFunctionalSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.components.boolean",
+      "documented_by": "claasp.representations.constraints.sat.components.boolean.BooleanFunctionalSATModel",
       "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.sat.cnf.CNFFormula.__init__"
+      "qualified_name": "claasp.representations.constraints.sat.components.boolean.BooleanFunctionalSATModel.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.sat.cnf.CNFFormula.clause_count",
-      "defined_in": "claasp.representations.constraints.sat.cnf",
-      "kind": "property",
-      "qualified_name": "claasp.representations.constraints.sat.cnf.CNFFormula.clause_count"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.cnf.CNFFormula.clauses",
-      "defined_in": "claasp.representations.constraints.sat.cnf",
-      "documented_by": "claasp.representations.constraints.sat.cnf.CNFFormula",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.representations.constraints.sat.cnf.CNFFormula.clauses"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.cnf.CNFFormula.is_satisfied",
-      "defined_in": "claasp.representations.constraints.sat.cnf",
+      "canonical_name": "claasp.representations.constraints.sat.components.boolean.BooleanFunctionalSATModel.encode",
+      "defined_in": "claasp.representations.constraints.sat.components.boolean",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.sat.cnf.CNFFormula.is_satisfied"
+      "qualified_name": "claasp.representations.constraints.sat.components.boolean.BooleanFunctionalSATModel.encode"
     },
     {
-      "canonical_name": "claasp.representations.constraints.sat.cnf.CNFFormula.literal_count",
-      "defined_in": "claasp.representations.constraints.sat.cnf",
-      "kind": "property",
-      "qualified_name": "claasp.representations.constraints.sat.cnf.CNFFormula.literal_count"
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddFunctionalSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "documented_by": "claasp.representations.constraints.sat.components.modular_add.ModularAddFunctionalSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddFunctionalSATModel.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.sat.cnf.CNFFormula.provenance",
-      "defined_in": "claasp.representations.constraints.sat.cnf",
-      "documented_by": "claasp.representations.constraints.sat.cnf.CNFFormula",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.representations.constraints.sat.cnf.CNFFormula.provenance"
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddFunctionalSATModel.encode",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddFunctionalSATModel.encode"
     },
     {
-      "canonical_name": "claasp.representations.constraints.sat.cnf.CNFFormula.variable_count",
-      "defined_in": "claasp.representations.constraints.sat.cnf",
-      "kind": "property",
-      "qualified_name": "claasp.representations.constraints.sat.cnf.CNFFormula.variable_count"
+      "canonical_name": "claasp.representations.constraints.sat.components.sbox.SBoxFunctionalSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.components.sbox",
+      "documented_by": "claasp.representations.constraints.sat.components.sbox.SBoxFunctionalSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.components.sbox.SBoxFunctionalSATModel.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.sat.cnf.CNFFormula.variables",
-      "defined_in": "claasp.representations.constraints.sat.cnf",
-      "documented_by": "claasp.representations.constraints.sat.cnf.CNFFormula",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.representations.constraints.sat.cnf.CNFFormula.variables"
+      "canonical_name": "claasp.representations.constraints.sat.components.sbox.SBoxFunctionalSATModel.encode",
+      "defined_in": "claasp.representations.constraints.sat.components.sbox",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.components.sbox.SBoxFunctionalSATModel.encode"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.wiring.WiringFunctionalSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.components.wiring",
+      "documented_by": "claasp.representations.constraints.sat.components.wiring.WiringFunctionalSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.components.wiring.WiringFunctionalSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.wiring.WiringFunctionalSATModel.encode",
+      "defined_in": "claasp.representations.constraints.sat.components.wiring",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.components.wiring.WiringFunctionalSATModel.encode"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.exporters",
@@ -27462,6 +27628,76 @@
       "qualified_name": "claasp.representations.constraints.sat.lowering.BooleanCNFModel.witness"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.model",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.sat.model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula.__init__",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "documented_by": "claasp.representations.constraints.sat.model.CNFFormula",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula.clause_count",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "kind": "property",
+      "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula.clause_count"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula.clauses",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "documented_by": "claasp.representations.constraints.sat.model.CNFFormula",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula.clauses"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula.is_satisfied",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula.is_satisfied"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula.literal_count",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "kind": "property",
+      "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula.literal_count"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula.provenance",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "documented_by": "claasp.representations.constraints.sat.model.CNFFormula",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula.provenance"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula.variable_count",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "kind": "property",
+      "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula.variable_count"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula.variables",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "documented_by": "claasp.representations.constraints.sat.model.CNFFormula",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula.variables"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.sat.trails"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.smt",
       "defined_in": "claasp.representations.constraints.smt",
       "kind": "module",
@@ -27474,14 +27710,14 @@
       "qualified_name": "claasp.representations.constraints.smt.BooleanSMTModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.transitions.ModularAddDifferentialSMTModel",
-      "defined_in": "claasp.representations.constraints.smt.transitions",
+      "canonical_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddDifferentialSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.components.modular_add",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.smt.ModularAddDifferentialSMTModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.transitions.ModularAddLinearSMTModel",
-      "defined_in": "claasp.representations.constraints.smt.transitions",
+      "canonical_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddLinearSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.components.modular_add",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.smt.ModularAddLinearSMTModel"
     },
@@ -27498,74 +27734,161 @@
       "qualified_name": "claasp.representations.constraints.smt.PresentLinearSMTModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.transitions.SBoxTransitionSMTModel",
-      "defined_in": "claasp.representations.constraints.smt.transitions",
+      "canonical_name": "claasp.representations.constraints.smt.components.sbox.SBoxTransitionSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.components.sbox",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.smt.SBoxTransitionSMTModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.formula.SMTFormula",
-      "defined_in": "claasp.representations.constraints.smt.formula",
+      "canonical_name": "claasp.representations.constraints.smt.components.sbox.SBoxXorDifferentialSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.smt.SBoxXorDifferentialSMTModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.sbox.SBoxXorLinearSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.smt.SBoxXorLinearSMTModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.model.SMTFormula",
+      "defined_in": "claasp.representations.constraints.smt.model",
       "kind": "dataclass",
       "qualified_name": "claasp.representations.constraints.smt.SMTFormula"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.speck.SpeckLinearSMTModel",
-      "defined_in": "claasp.representations.constraints.smt.speck",
+      "canonical_name": "claasp.representations.constraints.smt.trails.SpeckLinearSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.trails",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.smt.SpeckLinearSMTModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel",
-      "defined_in": "claasp.representations.constraints.smt.word_differential",
+      "canonical_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.trails",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.smt.WordDifferentialSMTModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel",
-      "defined_in": "claasp.representations.constraints.smt.word_linear",
+      "canonical_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.trails",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.smt.WordLinearSMTModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.formula.SMTFormula.__init__",
-      "defined_in": "claasp.representations.constraints.smt.formula",
-      "documented_by": "claasp.representations.constraints.smt.formula.SMTFormula",
+      "canonical_name": "claasp.representations.constraints.smt.components",
+      "defined_in": "claasp.representations.constraints.smt.components",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.smt.components"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddDifferentialSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.smt.components.ModularAddDifferentialSMTModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddLinearSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.smt.components.ModularAddLinearSMTModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.sbox.SBoxTransitionSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.smt.components.SBoxTransitionSMTModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.sbox.SBoxXorDifferentialSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.smt.components.SBoxXorDifferentialSMTModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.sbox.SBoxXorLinearSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.smt.components.SBoxXorLinearSMTModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddDifferentialSMTModel.__init__",
+      "defined_in": "claasp.representations.constraints.smt.components.modular_add",
+      "documented_by": "claasp.representations.constraints.smt.components.modular_add.ModularAddDifferentialSMTModel",
       "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.smt.formula.SMTFormula.__init__"
+      "qualified_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddDifferentialSMTModel.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.formula.SMTFormula.assertion_count",
-      "defined_in": "claasp.representations.constraints.smt.formula",
-      "kind": "property",
-      "qualified_name": "claasp.representations.constraints.smt.formula.SMTFormula.assertion_count"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.smt.formula.SMTFormula.assertions",
-      "defined_in": "claasp.representations.constraints.smt.formula",
-      "documented_by": "claasp.representations.constraints.smt.formula.SMTFormula",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.representations.constraints.smt.formula.SMTFormula.assertions"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.smt.formula.SMTFormula.from_cnf",
-      "defined_in": "claasp.representations.constraints.smt.formula",
+      "canonical_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddDifferentialSMTModel.decode_transition",
+      "defined_in": "claasp.representations.constraints.smt.components.modular_add",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.formula.SMTFormula.from_cnf"
+      "qualified_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddDifferentialSMTModel.decode_transition"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.formula.SMTFormula.provenance",
-      "defined_in": "claasp.representations.constraints.smt.formula",
-      "documented_by": "claasp.representations.constraints.smt.formula.SMTFormula",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.representations.constraints.smt.formula.SMTFormula.provenance"
+      "canonical_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddDifferentialSMTModel.smt_formula",
+      "defined_in": "claasp.representations.constraints.smt.components.modular_add",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddDifferentialSMTModel.smt_formula"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.formula.SMTFormula.variables",
-      "defined_in": "claasp.representations.constraints.smt.formula",
-      "documented_by": "claasp.representations.constraints.smt.formula.SMTFormula",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.representations.constraints.smt.formula.SMTFormula.variables"
+      "canonical_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddLinearSMTModel.__init__",
+      "defined_in": "claasp.representations.constraints.smt.components.modular_add",
+      "documented_by": "claasp.representations.constraints.smt.components.modular_add.ModularAddLinearSMTModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddLinearSMTModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddLinearSMTModel.decode_transition",
+      "defined_in": "claasp.representations.constraints.smt.components.modular_add",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddLinearSMTModel.decode_transition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddLinearSMTModel.smt_formula",
+      "defined_in": "claasp.representations.constraints.smt.components.modular_add",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.smt.components.modular_add.ModularAddLinearSMTModel.smt_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.sbox.SBoxTransitionSMTModel.__init__",
+      "defined_in": "claasp.representations.constraints.smt.components.sbox",
+      "documented_by": "claasp.representations.constraints.smt.components.sbox.SBoxTransitionSMTModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.smt.components.sbox.SBoxTransitionSMTModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.sbox.SBoxTransitionSMTModel.decode_transition",
+      "defined_in": "claasp.representations.constraints.smt.components.sbox",
+      "inherited_by": [
+        "claasp.representations.constraints.smt.components.sbox.SBoxXorDifferentialSMTModel",
+        "claasp.representations.constraints.smt.components.sbox.SBoxXorLinearSMTModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.smt.components.sbox.SBoxTransitionSMTModel.decode_transition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.sbox.SBoxTransitionSMTModel.smt_formula",
+      "defined_in": "claasp.representations.constraints.smt.components.sbox",
+      "inherited_by": [
+        "claasp.representations.constraints.smt.components.sbox.SBoxXorDifferentialSMTModel",
+        "claasp.representations.constraints.smt.components.sbox.SBoxXorLinearSMTModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.smt.components.sbox.SBoxTransitionSMTModel.smt_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.sbox.SBoxXorDifferentialSMTModel.__init__",
+      "defined_in": "claasp.representations.constraints.smt.components.sbox",
+      "documented_by": "claasp.representations.constraints.smt.components.sbox.SBoxXorDifferentialSMTModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.smt.components.sbox.SBoxXorDifferentialSMTModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.components.sbox.SBoxXorLinearSMTModel.__init__",
+      "defined_in": "claasp.representations.constraints.smt.components.sbox",
+      "documented_by": "claasp.representations.constraints.smt.components.sbox.SBoxXorLinearSMTModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.smt.components.sbox.SBoxXorLinearSMTModel.__init__"
     },
     {
       "canonical_name": "claasp.representations.constraints.smt.lowering.BooleanSMTModel.__init__",
@@ -27581,23 +27904,56 @@
       "qualified_name": "claasp.representations.constraints.smt.lowering.BooleanSMTModel.smt_formula"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.speck.SpeckLinearSMTModel.__init__",
-      "defined_in": "claasp.representations.constraints.smt.speck",
-      "documented_by": "claasp.representations.constraints.smt.speck.SpeckLinearSMTModel",
+      "canonical_name": "claasp.representations.constraints.smt.model",
+      "defined_in": "claasp.representations.constraints.smt.model",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.smt.model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.model.SMTFormula",
+      "defined_in": "claasp.representations.constraints.smt.model",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.smt.model.SMTFormula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.model.SMTFormula.__init__",
+      "defined_in": "claasp.representations.constraints.smt.model",
+      "documented_by": "claasp.representations.constraints.smt.model.SMTFormula",
       "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.smt.speck.SpeckLinearSMTModel.__init__"
+      "qualified_name": "claasp.representations.constraints.smt.model.SMTFormula.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.speck.SpeckLinearSMTModel.decode_trail",
-      "defined_in": "claasp.representations.constraints.smt.speck",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.speck.SpeckLinearSMTModel.decode_trail"
+      "canonical_name": "claasp.representations.constraints.smt.model.SMTFormula.assertion_count",
+      "defined_in": "claasp.representations.constraints.smt.model",
+      "kind": "property",
+      "qualified_name": "claasp.representations.constraints.smt.model.SMTFormula.assertion_count"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.speck.SpeckLinearSMTModel.smt_formula",
-      "defined_in": "claasp.representations.constraints.smt.speck",
+      "canonical_name": "claasp.representations.constraints.smt.model.SMTFormula.assertions",
+      "defined_in": "claasp.representations.constraints.smt.model",
+      "documented_by": "claasp.representations.constraints.smt.model.SMTFormula",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.smt.model.SMTFormula.assertions"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.model.SMTFormula.from_cnf",
+      "defined_in": "claasp.representations.constraints.smt.model",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.speck.SpeckLinearSMTModel.smt_formula"
+      "qualified_name": "claasp.representations.constraints.smt.model.SMTFormula.from_cnf"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.model.SMTFormula.provenance",
+      "defined_in": "claasp.representations.constraints.smt.model",
+      "documented_by": "claasp.representations.constraints.smt.model.SMTFormula",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.smt.model.SMTFormula.provenance"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.model.SMTFormula.variables",
+      "defined_in": "claasp.representations.constraints.smt.model",
+      "documented_by": "claasp.representations.constraints.smt.model.SMTFormula",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.smt.model.SMTFormula.variables"
     },
     {
       "canonical_name": "claasp.representations.constraints.smt.trails.PresentDifferentialSMTModel.__init__",
@@ -27638,123 +27994,85 @@
       "qualified_name": "claasp.representations.constraints.smt.trails.PresentLinearSMTModel.smt_formula"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.transitions.ModularAddDifferentialSMTModel.__init__",
-      "defined_in": "claasp.representations.constraints.smt.transitions",
-      "documented_by": "claasp.representations.constraints.smt.transitions.ModularAddDifferentialSMTModel",
+      "canonical_name": "claasp.representations.constraints.smt.trails.SpeckLinearSMTModel.__init__",
+      "defined_in": "claasp.representations.constraints.smt.trails",
+      "documented_by": "claasp.representations.constraints.smt.trails.SpeckLinearSMTModel",
       "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.smt.transitions.ModularAddDifferentialSMTModel.__init__"
+      "qualified_name": "claasp.representations.constraints.smt.trails.SpeckLinearSMTModel.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.transitions.ModularAddDifferentialSMTModel.decode_transition",
-      "defined_in": "claasp.representations.constraints.smt.transitions",
+      "canonical_name": "claasp.representations.constraints.smt.trails.SpeckLinearSMTModel.decode_trail",
+      "defined_in": "claasp.representations.constraints.smt.trails",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.transitions.ModularAddDifferentialSMTModel.decode_transition"
+      "qualified_name": "claasp.representations.constraints.smt.trails.SpeckLinearSMTModel.decode_trail"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.transitions.ModularAddDifferentialSMTModel.smt_formula",
-      "defined_in": "claasp.representations.constraints.smt.transitions",
+      "canonical_name": "claasp.representations.constraints.smt.trails.SpeckLinearSMTModel.smt_formula",
+      "defined_in": "claasp.representations.constraints.smt.trails",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.transitions.ModularAddDifferentialSMTModel.smt_formula"
+      "qualified_name": "claasp.representations.constraints.smt.trails.SpeckLinearSMTModel.smt_formula"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.transitions.ModularAddLinearSMTModel.__init__",
-      "defined_in": "claasp.representations.constraints.smt.transitions",
-      "documented_by": "claasp.representations.constraints.smt.transitions.ModularAddLinearSMTModel",
+      "canonical_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.__init__",
+      "defined_in": "claasp.representations.constraints.smt.trails",
+      "documented_by": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel",
       "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.smt.transitions.ModularAddLinearSMTModel.__init__"
+      "qualified_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.transitions.ModularAddLinearSMTModel.decode_transition",
-      "defined_in": "claasp.representations.constraints.smt.transitions",
+      "canonical_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.check_characteristic",
+      "defined_in": "claasp.representations.constraints.smt.trails",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.transitions.ModularAddLinearSMTModel.decode_transition"
+      "qualified_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.check_characteristic"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.transitions.ModularAddLinearSMTModel.smt_formula",
-      "defined_in": "claasp.representations.constraints.smt.transitions",
+      "canonical_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.decode_characteristic",
+      "defined_in": "claasp.representations.constraints.smt.trails",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.transitions.ModularAddLinearSMTModel.smt_formula"
+      "qualified_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.decode_characteristic"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.transitions.SBoxTransitionSMTModel.__init__",
-      "defined_in": "claasp.representations.constraints.smt.transitions",
-      "documented_by": "claasp.representations.constraints.smt.transitions.SBoxTransitionSMTModel",
+      "canonical_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.enumerate_trails",
+      "defined_in": "claasp.representations.constraints.smt.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.enumerate_trails"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.smt_formula",
+      "defined_in": "claasp.representations.constraints.smt.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.smt_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.__init__",
+      "defined_in": "claasp.representations.constraints.smt.trails",
+      "documented_by": "claasp.representations.constraints.smt.trails.WordLinearSMTModel",
       "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.smt.transitions.SBoxTransitionSMTModel.__init__"
+      "qualified_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.transitions.SBoxTransitionSMTModel.decode_transition",
-      "defined_in": "claasp.representations.constraints.smt.transitions",
+      "canonical_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.check_characteristic",
+      "defined_in": "claasp.representations.constraints.smt.trails",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.transitions.SBoxTransitionSMTModel.decode_transition"
+      "qualified_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.check_characteristic"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.transitions.SBoxTransitionSMTModel.smt_formula",
-      "defined_in": "claasp.representations.constraints.smt.transitions",
+      "canonical_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.decode_characteristic",
+      "defined_in": "claasp.representations.constraints.smt.trails",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.transitions.SBoxTransitionSMTModel.smt_formula"
+      "qualified_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.decode_characteristic"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.__init__",
-      "defined_in": "claasp.representations.constraints.smt.word_differential",
-      "documented_by": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.check_characteristic",
-      "defined_in": "claasp.representations.constraints.smt.word_differential",
+      "canonical_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.enumerate_trails",
+      "defined_in": "claasp.representations.constraints.smt.trails",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.check_characteristic"
+      "qualified_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.enumerate_trails"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.decode_characteristic",
-      "defined_in": "claasp.representations.constraints.smt.word_differential",
+      "canonical_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.smt_formula",
+      "defined_in": "claasp.representations.constraints.smt.trails",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.decode_characteristic"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.enumerate_trails",
-      "defined_in": "claasp.representations.constraints.smt.word_differential",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.enumerate_trails"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.smt_formula",
-      "defined_in": "claasp.representations.constraints.smt.word_differential",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.smt_formula"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.__init__",
-      "defined_in": "claasp.representations.constraints.smt.word_linear",
-      "documented_by": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.check_characteristic",
-      "defined_in": "claasp.representations.constraints.smt.word_linear",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.check_characteristic"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.decode_characteristic",
-      "defined_in": "claasp.representations.constraints.smt.word_linear",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.decode_characteristic"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.enumerate_trails",
-      "defined_in": "claasp.representations.constraints.smt.word_linear",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.enumerate_trails"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.smt_formula",
-      "defined_in": "claasp.representations.constraints.smt.word_linear",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.smt_formula"
+      "qualified_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.smt_formula"
     },
     {
       "canonical_name": "claasp.representations.diagrams",

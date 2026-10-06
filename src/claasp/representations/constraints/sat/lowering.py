@@ -15,9 +15,65 @@ from claasp.components import (
 )
 from claasp.domains import Bit, Word
 from claasp.graph import Primitive
-from claasp.representations.constraints.sat.cnf import CNFFormula
+from claasp.representations.constraints.sat.components import (
+    BooleanFunctionalSATModel,
+    ModularAddFunctionalSATModel,
+    SBoxFunctionalSATModel,
+    WiringFunctionalSATModel,
+)
 from claasp.representations.constraints.sat.encoding import encode_unit, unit_variable_names
+from claasp.representations.constraints.sat.model import CNFFormula
 from claasp.representations.execution import EvaluationResult
+
+
+class _CNFEncodingContext:
+    def __init__(self, variables) -> None:
+        self.variables = variables
+        self.indices = {name: index + 1 for index, name in enumerate(variables)}
+        self.clauses = []
+        self.provenance = []
+        self.auxiliary = []
+
+    def allocate(self, name):
+        self.indices[name] = len(self.variables) + 1
+        self.variables.append(name)
+        return name
+
+    def add_clause(self, literals, label):
+        self.clauses.append(literals)
+        self.provenance.append(label)
+
+    def equal(self, output, input_, label):
+        x, y = self.indices[input_], self.indices[output]
+        self.add_clause((-x, y), label)
+        self.add_clause((x, -y), label)
+
+    def xor(self, output, left, right, label):
+        a, b, y = self.indices[left], self.indices[right], self.indices[output]
+        self.add_clause((-a, -b, -y), label)
+        self.add_clause((a, b, -y), label)
+        self.add_clause((a, -b, y), label)
+        self.add_clause((-a, b, y), label)
+
+    def majority(self, output, left, right, carry, label):
+        a, b, c, y = (
+            self.indices[left],
+            self.indices[right],
+            self.indices[carry],
+            self.indices[output],
+        )
+        self.add_clause((-a, -b, y), label)
+        self.add_clause((-a, -c, y), label)
+        self.add_clause((-b, -c, y), label)
+        self.add_clause((a, b, -y), label)
+        self.add_clause((a, c, -y), label)
+        self.add_clause((b, c, -y), label)
+
+    def and_(self, output, left, right, label):
+        a, b, y = self.indices[left], self.indices[right], self.indices[output]
+        self.add_clause((-a, -b, y), label)
+        self.add_clause((a, -y), label)
+        self.add_clause((b, -y), label)
 
 
 class BooleanCNFModel:
@@ -31,11 +87,13 @@ class BooleanCNFModel:
 
     EXAMPLES::
 
-        >>> try:
-        ...     BooleanCNFModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
+        >>> from claasp.primitives import Speck
+        >>> primitive = Speck(number_of_rounds=1)
+        >>> formula = BooleanCNFModel(primitive).cnf_formula()
+        >>> (len(formula.variables), len(formula.clauses))
+        (206, 403)
+        >>> "modular_add_0_1" in formula.provenance
+        True
     """
 
     def __init__(self, primitive: Primitive) -> None:
@@ -73,46 +131,7 @@ class BooleanCNFModel:
             for position in range(port.value_type.unit_count)
             for name in unit_variable_names(port.owner_id, port.value_type, position)
         ]
-        indices = {name: index + 1 for index, name in enumerate(variables)}
-        clauses: list[tuple[int, ...]] = []
-        provenance: list[str] = []
-        auxiliary: list[tuple[str, tuple[str, ...]]] = []
-
-        def allocate(name: str) -> str:
-            indices[name] = len(variables) + 1
-            variables.append(name)
-            return name
-
-        def add_clause(literals: tuple[int, ...], label: str) -> None:
-            clauses.append(literals)
-            provenance.append(label)
-
-        def equal(output: str, input_: str, label: str) -> None:
-            x, y = indices[input_], indices[output]
-            add_clause((-x, y), label)
-            add_clause((x, -y), label)
-
-        def xor(output: str, left: str, right: str, label: str) -> None:
-            a, b, y = indices[left], indices[right], indices[output]
-            add_clause((-a, -b, -y), label)
-            add_clause((a, b, -y), label)
-            add_clause((a, -b, y), label)
-            add_clause((-a, b, y), label)
-
-        def majority(output: str, left: str, right: str, carry: str, label: str) -> None:
-            a, b, c, y = indices[left], indices[right], indices[carry], indices[output]
-            add_clause((-a, -b, y), label)
-            add_clause((-a, -c, y), label)
-            add_clause((-b, -c, y), label)
-            add_clause((a, b, -y), label)
-            add_clause((a, c, -y), label)
-            add_clause((b, c, -y), label)
-
-        def and_(output: str, left: str, right: str, label: str) -> None:
-            a, b, y = indices[left], indices[right], indices[output]
-            add_clause((-a, -b, y), label)
-            add_clause((a, -y), label)
-            add_clause((b, -y), label)
+        context = _CNFEncodingContext(variables)
 
         for component in self.primitive.components:
             label = component.component_id
@@ -130,136 +149,24 @@ class BooleanCNFModel:
                 selected.append(
                     [tuple(names[start : start + width]) for start in range(0, len(names), width)]
                 )
-            if isinstance(component, Constant):
-                for output, value in zip(outputs, component.values):
-                    for bit_name, bit in zip(output, encode_unit(value, component.output_type)):
-                        add_clause(((indices[bit_name] if bit else -indices[bit_name]),), label)
-            elif isinstance(component, Identity):
-                for output, input_ in zip(outputs, selected[0]):
-                    for output_bit, input_bit in zip(output, input_):
-                        equal(output_bit, input_bit, label)
-            elif isinstance(component, Permutation):
-                for output, position in zip(outputs, component.mapping):
-                    for output_bit, input_bit in zip(output, selected[0][position]):
-                        equal(output_bit, input_bit, label)
-            elif isinstance(component, Add):
-                for position, output in enumerate(outputs):
-                    operands = [group[position][0] for group in selected]
-                    accumulator = operands[0]
-                    for operand_number, operand in enumerate(operands[1:], start=1):
-                        is_last = operand_number == len(operands) - 1
-                        target = (
-                            output[0] if is_last else f"__aux_{label}_{position}_{operand_number}"
-                        )
-                        if not is_last:
-                            allocate(target)
-                            auxiliary.append(("xor", (target, accumulator, operand)))
-                        xor(target, accumulator, operand, label)
-                        accumulator = target
-            elif isinstance(component, Xor):
-                for position, output in enumerate(outputs):
-                    for bit, target_output in enumerate(output):
-                        operands = [group[position][bit] for group in selected]
-                        accumulator = operands[0]
-                        for operand_number, operand in enumerate(operands[1:], start=1):
-                            is_last = operand_number == len(operands) - 1
-                            target = (
-                                target_output
-                                if is_last
-                                else allocate(f"__aux_{label}_{position}_{bit}_{operand_number}")
-                            )
-                            if not is_last:
-                                auxiliary.append(("xor", (target, accumulator, operand)))
-                            xor(target, accumulator, operand, label)
-                            accumulator = target
-            elif isinstance(component, BitwiseAnd):
-                for position, output in enumerate(outputs):
-                    for bit, target in enumerate(output):
-                        and_(target, selected[0][position][bit], selected[1][position][bit], label)
-            elif isinstance(component, Rotate):
-                width = component.output_type.domain.width
-                offset = component.amount if component.direction == "left" else -component.amount
-                for output, input_ in zip(outputs, selected[0]):
-                    for bit, output_bit in enumerate(output):
-                        equal(output_bit, input_[(bit + offset) % width], label)
+            if isinstance(component, (Constant, Identity, Permutation, Rotate)):
+                WiringFunctionalSATModel(component).encode(context, outputs, selected)
+            elif isinstance(component, (Add, Xor, BitwiseAnd)):
+                BooleanFunctionalSATModel(component).encode(context, outputs, selected)
             elif isinstance(component, ModularAdd):
-                width = component.output_type.domain.width
-                for position, output in enumerate(outputs):
-                    accumulator = selected[0][position]
-                    for operand_number, operand in enumerate(
-                        (group[position] for group in selected[1:]), start=1
-                    ):
-                        is_last = operand_number == len(selected) - 1
-                        target = (
-                            output
-                            if is_last
-                            else tuple(
-                                allocate(f"__aux_{label}_{position}_{operand_number}_{bit}")
-                                for bit in range(width)
-                            )
-                        )
-                        carry = None
-                        for bit in range(width - 1, -1, -1):
-                            if carry is None:
-                                xor(target[bit], accumulator[bit], operand[bit], label)
-                                if not is_last:
-                                    auxiliary.append(
-                                        ("xor", (target[bit], accumulator[bit], operand[bit]))
-                                    )
-                            else:
-                                partial = allocate(
-                                    f"__aux_{label}_{position}_{operand_number}_xor_{bit}"
-                                )
-                                xor(partial, accumulator[bit], operand[bit], label)
-                                xor(target[bit], partial, carry, label)
-                                auxiliary.append(("xor", (partial, accumulator[bit], operand[bit])))
-                                if not is_last:
-                                    auxiliary.append(("xor", (target[bit], partial, carry)))
-                            if bit:
-                                next_carry = allocate(
-                                    f"__aux_{label}_{position}_{operand_number}_carry_{bit}"
-                                )
-                                if carry is None:
-                                    and_(next_carry, accumulator[bit], operand[bit], label)
-                                    auxiliary.append(
-                                        ("and", (next_carry, accumulator[bit], operand[bit]))
-                                    )
-                                else:
-                                    majority(
-                                        next_carry, accumulator[bit], operand[bit], carry, label
-                                    )
-                                    auxiliary.append(
-                                        (
-                                            "majority",
-                                            (next_carry, accumulator[bit], operand[bit], carry),
-                                        )
-                                    )
-                                carry = next_carry
-                        accumulator = target
+                ModularAddFunctionalSATModel(component).encode(context, outputs, selected)
             elif isinstance(component, BitVectorSBox):
-                inputs = [group[0] for group in selected[0]]
-                outputs = [group[0] for group in outputs]
-                input_width = len(inputs)
-                output_width = len(outputs)
-                for input_value, output_value in enumerate(component.table):
-                    antecedent = tuple(
-                        -indices[name]
-                        if (input_value >> (input_width - 1 - i)) & 1
-                        else indices[name]
-                        for i, name in enumerate(inputs)
-                    )
-                    for i, output in enumerate(outputs):
-                        expected = (output_value >> (output_width - 1 - i)) & 1
-                        literal = indices[output] if expected else -indices[output]
-                        add_clause(antecedent + (literal,), label)
+                SBoxFunctionalSATModel(component).encode(context, outputs, selected)
             else:
                 raise NotImplementedError(
                     f"BooleanCNFModel does not support {type(component).__name__} "
                     f"component {label!r}"
                 )
 
-        self._auxiliary_definitions = tuple(auxiliary)
-        self._formula = CNFFormula(tuple(variables), tuple(clauses), tuple(provenance))
+        self._auxiliary_definitions = tuple(context.auxiliary)
+        self._formula = CNFFormula(
+            tuple(context.variables), tuple(context.clauses), tuple(context.provenance)
+        )
         return self._formula
 
     def witness(self, evaluation: EvaluationResult) -> Mapping[str, int]:
