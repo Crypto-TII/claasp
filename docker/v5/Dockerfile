@@ -45,7 +45,8 @@ RUN apt-get -q update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY docker/v5/minizinc-wrapper.sh /usr/local/bin/minizinc
-RUN chmod 0755 /usr/local/bin/minizinc
+RUN sed -i 's/\r$//' /usr/local/bin/minizinc \
+    && chmod 0755 /usr/local/bin/minizinc
 
 WORKDIR /opt
 
@@ -99,8 +100,9 @@ RUN python3 -m venv /opt/claasp-venv \
     && rm /tmp/requirements.lock
 
 COPY docker/v5/smoke.sh /usr/local/bin/claasp-release-smoke
-RUN chmod 0755 /usr/local/bin/claasp-release-smoke \
-    && claasp-release-smoke
+RUN sed -i 's/\r$//' /usr/local/bin/claasp-release-smoke \
+    && chmod 0755 /usr/local/bin/claasp-release-smoke \
+    && /usr/local/bin/claasp-release-smoke
 
 WORKDIR /workspace
 CMD ["bash"]

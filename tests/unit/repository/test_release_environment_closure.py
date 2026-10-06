@@ -37,6 +37,20 @@ def test_committed_release_environment_authority_passes():
     assert 'exec /usr/bin/minizinc --no-optimize "$@"' in wrapper.read_text(encoding="utf-8")
 
 
+def test_release_environment_requires_lf_linux_entry_points(monkeypatch, tmp_path):
+    attributes = tmp_path / ".gitattributes"
+    attributes.write_text("*.sh text eol=lf\nDockerfile text eol=lf\n", encoding="utf-8")
+    smoke = tmp_path / "docker" / "v5" / "smoke.sh"
+    smoke.parent.mkdir(parents=True)
+    smoke.write_bytes(b"#!/bin/sh\r\nexit 0\r\n")
+    monkeypatch.setattr(closure, "ROOT", tmp_path)
+    monkeypatch.setattr(closure, "LINUX_TEXT_PATHS", (Path("docker/v5/smoke.sh"),))
+
+    errors = closure.validate_manifest(_manifest())
+
+    assert "Linux-executed file contains carriage returns: docker/v5/smoke.sh" in errors
+
+
 def test_release_environment_rejects_single_architecture_and_public_registry():
     manifest = _manifest()
     manifest["architecture_matrix"] = ["linux/amd64"]
