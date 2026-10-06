@@ -21,7 +21,7 @@ output bits in MSB-first order:
 
 .. doctest::
 
-   >>> result = primitive.analyze().avalanche(
+   >>> result = primitive.analysis.avalanche(
    ...     "plaintext", 4, seed=9, fixed_inputs={"key": 0}
    ... )
    >>> result.input_bit_count, result.output_bit_count
@@ -32,8 +32,8 @@ output bits in MSB-first order:
    (False, 'empirical_paired_evaluation')
 
 The probability matrix is empirical evidence, never a proof of the strict
-avalanche criterion. Later M10.12 checkpoints add the remaining optional NIST
-STS and Dieharder drivers and parsers.
+avalanche criterion. NIST STS and Dieharder are available through optional
+drivers and parsers.
 
 Streaming dataset families
 --------------------------
@@ -58,12 +58,12 @@ blocks without materializing the complete experiment:
    >>> density.block_count, tuple(density.iter_selected_inputs())[:3]
    (33, (0, 2147483648, 1073741824))
 
-Correlation retains the legacy output-XOR-input construction. CBC begins at
-the zero chaining value and feeds each output into the next evaluation.
+Correlation uses the output-XOR-input construction. CBC begins at the zero
+chaining value and feeds each output into the next evaluation.
 Density datasets contain weight zero and one inputs plus a seeded ratio of
-weight-two inputs; high density uses their bitwise complements. The v5 seeded
-selection removes the legacy generator's nondeterministic subset behavior.
-Round-specific streams await the stable public trace-projection API.
+weight-two inputs; high density uses their bitwise complements. Seeded
+selection makes the chosen subset reproducible. Round-specific streams are
+not currently part of the public API.
 
 Serialization and identity
 --------------------------

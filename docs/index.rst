@@ -14,6 +14,7 @@ systems and solvers are optional backends.
    :caption: Start here
 
    getting_started
+   quick_analysis_scripts
    primitive_authoring
    analysis
    traditional_primitives

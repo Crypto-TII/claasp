@@ -29,7 +29,7 @@ through the same graph-level recovery API as MiniSat:
 
    plaintext = 0x6574694C
    ciphertext = primitive.evaluate(plaintext, 0x1918111009080100)
-   result = primitive.analyze().recover_input(
+   result = primitive.analysis.recover_input(
        "key",
        known_inputs={"plaintext": plaintext},
        output=ciphertext,
@@ -77,7 +77,7 @@ For simple enumeration, use the analysis facade:
 
 .. code-block:: python
 
-   result = ToySpeck(2).analyze().enumerate_xor_differential_trails(
+   result = ToySpeck(2).analysis.enumerate_xor_differential_trails(
        1, solver=Z3Solver(timeout_seconds=10), limit=10,
    ).require_complete()
    assert len(result.trails) == 7  # six weight-one, one weight-zero

@@ -99,7 +99,7 @@ modular additions as the legacy partial execution builder did.
    True
 
 ``GLPKSolver`` also accepts CNF at the shared analysis facade, so
-``primitive.analyze().recover_input(..., solver=GLPKSolver())`` needs no
+``primitive.analysis.recover_input(..., solver=GLPKSolver())`` needs no
 solver-specific model assembly. The dedicated integration test reproduces
 the full Speck-22 legacy output ``A86842F2``. Solver undefined outcomes are
 ``MILPStatus.UNKNOWN``, never an infeasibility proof; Boolean projection

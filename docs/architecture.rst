@@ -83,7 +83,7 @@ representation. Exporting only serializes an already lowered model.
 For example, a word-level ``ModularAdd`` remains a single component in a
 Speck graph. Boolean lowering expands it into sum and carry constraints; SMT
 export writes the resulting assertions as SMT-LIB. Users normally invoke the
-complete pipeline through ``primitive.analyze()`` and do not call these stages.
+complete pipeline through ``primitive.analysis`` and do not call these stages.
 
 Annotations, traces, and trails
 -------------------------------

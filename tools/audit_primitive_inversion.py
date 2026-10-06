@@ -25,7 +25,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_REPORT = ROOT / "docs" / "primitive_inversion_audit.md"
+DEFAULT_REPORT = ROOT / "docs" / "architecture" / "audits" / "primitive_inversion_audit.md"
 
 
 class _InversionTimeout(Exception):

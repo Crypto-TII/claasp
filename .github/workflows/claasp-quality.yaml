@@ -221,9 +221,9 @@ jobs:
       - name: Execute msolve exporter integration
         run: python -m pytest tests/unit/representations/constraints/polynomial/exporters/test_msolve.py tests/integration/test_algebra_drivers.py -q
 
-  minisat-execution:
+  sat-execution:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
-    name: MiniSat execution integration
+    name: SAT execution integration
     runs-on: ubuntu-latest
 
     steps:
@@ -235,16 +235,27 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install MiniSat
+      - name: Install Kissat and MiniSat
         run: |
           sudo apt-get update
-          sudo apt-get install --yes minisat
+          sudo apt-get install --yes build-essential curl minisat
+          KISSAT_VERSION=4.0.4
+          KISSAT_SHA256=bfe93eaa6323b48011e4b1fcf74b3f2e20f9de544767e728009e5b2018296193
+          curl --fail --location --silent --show-error \
+            "https://github.com/arminbiere/kissat/archive/refs/tags/rel-${KISSAT_VERSION}.tar.gz" \
+            --output kissat.tar.gz
+          echo "${KISSAT_SHA256}  kissat.tar.gz" | sha256sum --check
+          tar --extract --gzip --file kissat.tar.gz
+          cd "kissat-rel-${KISSAT_VERSION}"
+          ./configure
+          make --jobs="$(nproc)"
+          sudo install -m 0755 build/kissat /usr/local/bin/kissat
 
       - name: Install test dependencies
         run: python -m pip install -e '.[dev]'
 
-      - name: Execute MiniSat integration
-        run: python -m pytest -m external tests/integration/test_minisat_integration.py -q
+      - name: Execute SAT integration
+        run: python -m pytest -m external tests/integration/test_kissat_integration.py tests/integration/test_minisat_integration.py -q
 
   z3-execution:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'

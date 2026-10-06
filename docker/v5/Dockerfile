@@ -7,6 +7,8 @@ ARG CHUFFED_SHA256=39426a580690759ecf77ec5704caf5f2e21d41ff0aa09028827f5156bf5cb
 ARG NIST_STS_SHA256=0238d2f1d26e120e3cc748ed2d4c674cdc636de37fc4027c76cc2a394fff9157
 ARG MSOLVE_VERSION=0.10.1
 ARG MSOLVE_SHA256=ce0743cc33d1dc8484193268d9220e8624ed015e521903b9228b3b38a5981291
+ARG KISSAT_VERSION=4.0.4
+ARG KISSAT_SHA256=bfe93eaa6323b48011e4b1fcf74b3f2e20f9de544767e728009e5b2018296193
 ARG DEBIAN_FRONTEND=noninteractive
 
 LABEL org.opencontainers.image.title="CLAASP 5 release environment" \
@@ -49,6 +51,20 @@ RUN sed -i 's/\r$//' /usr/local/bin/minizinc \
     && chmod 0755 /usr/local/bin/minizinc
 
 WORKDIR /opt
+
+RUN set -eux; \
+    curl -fsSL \
+        "https://github.com/arminbiere/kissat/archive/refs/tags/rel-${KISSAT_VERSION}.tar.gz" \
+        -o kissat.tar.gz; \
+    echo "${KISSAT_SHA256}  kissat.tar.gz" | sha256sum -c -; \
+    tar -xzf kissat.tar.gz; \
+    cd "kissat-rel-${KISSAT_VERSION}"; \
+    ./configure; \
+    make --jobs="$(nproc)"; \
+    install -m 0755 build/kissat /usr/local/bin/kissat; \
+    kissat --version; \
+    cd /opt; \
+    rm -rf kissat.tar.gz "kissat-rel-${KISSAT_VERSION}"
 
 RUN set -eux; \
     curl -fsSL \

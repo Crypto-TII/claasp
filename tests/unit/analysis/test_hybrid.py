@@ -5,7 +5,7 @@ from dataclasses import replace
 import pytest
 
 from claasp.analysis import HybridDifferentialResult, SpeckHybridDifferentialProblem
-from claasp.analysis.arx import find_two_round_speck_xor_differential
+from claasp.analysis.arx import _find_two_round_speck_xor_differential_bounded
 from claasp.primitives import Speck
 from claasp.semantics.cryptanalysis import (
     TruncatedXorDifference,
@@ -14,7 +14,7 @@ from claasp.semantics.cryptanalysis import (
 
 
 def test_exact_prefix_and_sound_suffix_are_independently_checked():
-    prefix = find_two_round_speck_xor_differential(Speck(number_of_rounds=2)).trail
+    prefix = _find_two_round_speck_xor_differential_bounded(Speck(number_of_rounds=2)).trail
     primitive = Speck(number_of_rounds=3)
     problem = SpeckHybridDifferentialProblem(
         primitive,

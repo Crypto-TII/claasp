@@ -7,7 +7,7 @@ from hashlib import sha256
 from claasp.analysis.boolean import lower_boolean_problem
 from claasp.analysis.constraints import FixedValue
 from claasp.analysis.problem import AnalysisProblem
-from claasp.drivers.solvers import MinisatSolver, SatStatus
+from claasp.drivers.solvers import KissatSolver, SatStatus
 from claasp.graph import Primitive, Selection
 from claasp.provenance import DriverIdentity, DriverKind, ResultProvenance
 from claasp.representations.constraints.sat.cnf import CNFFormula
@@ -73,7 +73,7 @@ class Analysis:
         if problem.primitive is not self.primitive:
             raise ValueError("analysis problem belongs to a different primitive")
         formula = lower_boolean_problem(problem)
-        selected_solver = MinisatSolver() if solver is None else solver
+        selected_solver = KissatSolver() if solver is None else solver
         if not hasattr(selected_solver, "solve"):
             raise TypeError("solver must provide a solve(formula) method")
         solved = selected_solver.solve(formula)
@@ -99,7 +99,7 @@ class Analysis:
         if not problem.projections:
             raise ValueError("solution enumeration requires at least one projection")
         formula = lower_boolean_problem(problem)
-        selected_solver = MinisatSolver() if solver is None else solver
+        selected_solver = KissatSolver() if solver is None else solver
         if not hasattr(selected_solver, "solve"):
             raise TypeError("solver must provide a solve(formula) method")
         results = []
@@ -188,13 +188,15 @@ class Analysis:
         )
         return self.solve(problem, solver)
 
-    def find_lowest_weight_xor_differential_trail(self):
-        """Find the lowest-weight trail supported by the reviewed graph slice."""
+    def find_lowest_weight_xor_differential_trail(self, *, solver=None):
+        """Find a lowest-weight trail, using Kissat by default for ARX."""
 
         if self.primitive.family_name == "speck":
             from claasp.analysis.arx import find_two_round_speck_xor_differential
 
-            return find_two_round_speck_xor_differential(self.primitive)
+            return find_two_round_speck_xor_differential(self.primitive, solver=solver)
+        if solver is not None:
+            raise TypeError("the selected differential search does not accept a solver")
         from claasp.analysis.spn import find_two_round_spn_xor_differential
 
         return find_two_round_spn_xor_differential(self.primitive)
@@ -226,7 +228,7 @@ class Analysis:
 
             >>> from claasp.analysis import PropertyDomain
             >>> from claasp.primitives import Present
-            >>> groups = Present(number_of_rounds=1).analyze().component_groups(PropertyDomain.LOOKUP_TABLE)
+            >>> groups = Present(number_of_rounds=1).analysis.component_groups(PropertyDomain.LOOKUP_TABLE)
             >>> max(group.count for group in groups)
             17
         """
@@ -248,7 +250,7 @@ class Analysis:
             >>> from claasp.primitives import Present
             >>> primitive = Present(number_of_rounds=1)
             >>> sbox = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
-            >>> result = primitive.analyze().component_property(
+            >>> result = primitive.analysis.component_property(
             ...     sbox, ComponentProperty.DIFFERENTIAL_UNIFORMITY,
             ...     PropertyDomain.LOOKUP_TABLE)
             >>> result.value, result.claim.value

@@ -1,7 +1,9 @@
 """Exact small-round SPN trail search over typed primitive graphs."""
 
 from math import inf
+from time import perf_counter
 
+from claasp.analysis._trail_propagation import xor_differential_component_transitions
 from claasp.components import BitVectorSBox, Permutation
 from claasp.domains import Bit
 from claasp.graph import Primitive
@@ -9,6 +11,7 @@ from claasp.semantics.cryptanalysis import (
     SBoxTransitionSemantics,
     Trail,
     TrailKind,
+    TrailSearchMetadata,
     TrailSearchResult,
     TrailStep,
     XorDifference,
@@ -25,6 +28,7 @@ def find_two_round_spn_xor_differential(primitive: Primitive) -> TrailSearchResu
     nonzero-transition lower bound for both substitution layers.
     """
 
+    started = perf_counter()
     _validate_present_slice(primitive)
     first_sboxes = _round_sboxes(primitive, 1)
     second_sboxes = _round_sboxes(primitive, 2)
@@ -95,11 +99,17 @@ def find_two_round_spn_xor_differential(primitive: Primitive) -> TrailSearchResu
         step.transition.input_pattern.value != 0 for step in best[1].steps[1:]
     )
     lower_bound = minimum_nonzero_weight * (1 + active_second_layer)
-    return TrailSearchResult(
-        best[1],
-        lower_bound,
-        "legacy CLAASP MilpXorDifferentialModel PRESENT-2 regression",
+    trail = best[1]
+    metadata = TrailSearchMetadata(
+        "single-active-nibble enumeration with exact S-box DDT transitions",
+        runtime_seconds=perf_counter() - started,
     )
+    components = xor_differential_component_transitions(
+        primitive,
+        trail,
+        input_differences={"plaintext": trail.input_pattern.value, "key": 0},
+    )
+    return TrailSearchResult(trail, lower_bound, metadata, components)
 
 
 def check_spn_trail(primitive: Primitive, trail: Trail) -> bool:
@@ -139,6 +149,7 @@ def check_spn_trail(primitive: Primitive, trail: Trail) -> bool:
 def find_three_round_spn_xor_linear(primitive: Primitive) -> TrailSearchResult:
     """Reproduce the preserved three-round PRESENT linear weight bound."""
 
+    started = perf_counter()
     _validate_present_linear_slice(primitive)
     layers = tuple(_round_sboxes(primitive, round_number) for round_number in range(1, 4))
     permutations = tuple(
@@ -193,7 +204,10 @@ def find_three_round_spn_xor_linear(primitive: Primitive) -> TrailSearchResult:
     return TrailSearchResult(
         best[1],
         4.0,
-        "legacy CLAASP disabled PRESENT-3 MilpXorLinearModel weight-4 fixture",
+        TrailSearchMetadata(
+            "single-active-nibble enumeration with exact S-box LAT transitions",
+            runtime_seconds=perf_counter() - started,
+        ),
     )
 
 

@@ -14,6 +14,7 @@ analysis guides for your own work.
    :caption: Getting started
 
    getting_started
+   quick_analysis_scripts
    concepts
    traditional_primitives
    primitive_catalogue

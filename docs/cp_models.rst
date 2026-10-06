@@ -104,7 +104,7 @@ the ordinary analysis API works unchanged:
    primitive = Speck(number_of_rounds=1)
    plaintext = 0x6574694C
    ciphertext = primitive.evaluate(plaintext, 0x1918111009080100)
-   result = primitive.analyze().recover_input(
+   result = primitive.analysis.recover_input(
        "key",
        known_inputs={"plaintext": plaintext},
        output=ciphertext,

@@ -827,12 +827,18 @@ class Primitive:
         }
         return ScalarExecutionDriver().evaluate(self, decoded)
 
-    def analyze(self):
-        """Return the high-level analysis facade for this primitive."""
+    @property
+    def analysis(self):
+        """Return the high-level analysis capabilities for this primitive."""
 
         from claasp.analysis import Analysis
 
         return Analysis(self)
+
+    def analyze(self):
+        """Return the high-level analysis capabilities for this primitive."""
+
+        return self.analysis
 
     def inverse(self, recover_input: str | int = 0, **options):
         """Return a validated inverse graph for one primitive input.

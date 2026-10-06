@@ -17,15 +17,15 @@
     "return-value": 4,
     "type-var": 2,
     "union-attr": 54,
-    "var-annotated": 126
+    "var-annotated": 121
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 719,
+    "src/claasp": 714,
     "tests": 161,
     "tools": 20
   },
-  "diagnostic_count": 900,
+  "diagnostic_count": 895,
   "diagnostics": [
     {
       "code": "operator",
@@ -156,35 +156,35 @@
     {
       "code": "arg-type",
       "column": 51,
-      "line": 68,
+      "line": 72,
       "message": "Argument 1 to \"TrailStep\" has incompatible type \"str | None\"; expected \"str\"",
       "path": "src/claasp/analysis/spn.py"
     },
     {
       "code": "arg-type",
       "column": 31,
-      "line": 75,
+      "line": 79,
       "message": "Argument 1 to \"TrailStep\" has incompatible type \"str | None\"; expected \"str\"",
       "path": "src/claasp/analysis/spn.py"
     },
     {
       "code": "arg-type",
       "column": 36,
-      "line": 163,
+      "line": 174,
       "message": "Argument 1 to \"TrailStep\" has incompatible type \"str | None\"; expected \"str\"",
       "path": "src/claasp/analysis/spn.py"
     },
     {
       "code": "arg-type",
       "column": 39,
-      "line": 174,
+      "line": 185,
       "message": "Argument 1 to \"TrailStep\" has incompatible type \"str | None\"; expected \"str\"",
       "path": "src/claasp/analysis/spn.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 270,
+      "line": 284,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "src/claasp/analysis/spn.py"
     },
@@ -688,56 +688,56 @@
     {
       "code": "assignment",
       "column": 17,
-      "line": 388,
+      "line": 451,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, str, str, str]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "assignment",
       "column": 17,
-      "line": 454,
+      "line": 517,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, str, str, str]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 660,
+      "line": 723,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"AvalancheResult\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 660,
+      "line": 723,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"ContinuousHeuristicResult\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 660,
+      "line": 723,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"DieharderReport | StatisticalTestRun[DieharderReport]\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 660,
+      "line": 723,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"ExecutionTrace\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 660,
+      "line": 723,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"NISTFinalReport | StatisticalTestRun[NISTFinalReport]\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 660,
+      "line": 723,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"Trail | TrailSearchResult\"",
       "path": "src/claasp/presentation/adapters.py"
     },
@@ -4334,14 +4334,14 @@
     },
     {
       "code": "operator",
-      "column": 29,
+      "column": 67,
       "line": 245,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/representations/source/c.py"
     },
     {
       "code": "operator",
-      "column": 34,
+      "column": 72,
       "line": 247,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/representations/source/c.py"
@@ -4376,7 +4376,7 @@
     },
     {
       "code": "type-var",
-      "column": 30,
+      "column": 64,
       "line": 206,
       "message": "Value of type variable \"SupportsRichComparisonT\" of \"sorted\" cannot be \"str | None\"",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
@@ -4429,41 +4429,6 @@
       "line": 318,
       "message": "Cannot infer type of lambda",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 346,
-      "message": "Need type annotation for \"outputs\" (hint: \"outputs: set[<type>] = ...\")",
-      "path": "src/claasp/semantics/cryptanalysis/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 13,
-      "line": 417,
-      "message": "Need type annotation for \"next_carries\"",
-      "path": "src/claasp/semantics/cryptanalysis/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 13,
-      "line": 447,
-      "message": "Need type annotation for \"next_states\"",
-      "path": "src/claasp/semantics/cryptanalysis/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 464,
-      "message": "Need type annotation for \"counts\"",
-      "path": "src/claasp/semantics/cryptanalysis/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 13,
-      "line": 520,
-      "message": "Need type annotation for \"next_carries\"",
-      "path": "src/claasp/semantics/cryptanalysis/trails.py"
     },
     {
       "code": "operator",
@@ -5406,14 +5371,14 @@
     {
       "code": "index",
       "column": 9,
-      "line": 169,
+      "line": 170,
       "message": "Unsupported target for indexed assignment (\"Mapping[str, object]\")",
       "path": "tests/unit/catalogue/test_catalogue.py"
     },
     {
       "code": "operator",
       "column": 12,
-      "line": 212,
+      "line": 213,
       "message": "Unsupported right operand type for in (\"str | None\")",
       "path": "tests/unit/catalogue/test_catalogue.py"
     },
@@ -5609,21 +5574,21 @@
     {
       "code": "union-attr",
       "column": 12,
-      "line": 116,
+      "line": 139,
       "message": "Item \"None\" of \"PresentationEvidence | None\" has no attribute \"classification\"",
       "path": "tests/unit/presentation/test_adapters.py"
     },
     {
       "code": "union-attr",
       "column": 12,
-      "line": 143,
+      "line": 166,
       "message": "Item \"None\" of \"PresentationDiagnostic | None\" has no attribute \"code\"",
       "path": "tests/unit/presentation/test_adapters.py"
     },
     {
       "code": "union-attr",
       "column": 12,
-      "line": 182,
+      "line": 205,
       "message": "Item \"None\" of \"PresentationDiagnostic | None\" has no attribute \"code\"",
       "path": "tests/unit/presentation/test_adapters.py"
     },
@@ -6232,28 +6197,28 @@
     {
       "code": "var-annotated",
       "column": 19,
-      "line": 290,
+      "line": 297,
       "message": "Need type annotation for \"REPRESENTATIONS\"",
       "path": "tools/generate_catalogue_metadata.py"
     },
     {
       "code": "var-annotated",
       "column": 12,
-      "line": 478,
+      "line": 485,
       "message": "Need type annotation for \"ANALYSES\"",
       "path": "tools/generate_catalogue_metadata.py"
     },
     {
       "code": "var-annotated",
       "column": 5,
-      "line": 661,
+      "line": 668,
       "message": "Need type annotation for \"test_evidence\" (hint: \"test_evidence: dict[<type>, <type>] = ...\")",
       "path": "tools/generate_catalogue_metadata.py"
     },
     {
       "code": "arg-type",
       "column": 41,
-      "line": 721,
+      "line": 728,
       "message": "Argument 1 to \"list\" has incompatible type \"Any | object\"; expected \"Iterable[Any]\"",
       "path": "tools/generate_catalogue_metadata.py"
     },

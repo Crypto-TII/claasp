@@ -34,7 +34,7 @@ workflow is deliberately shorter:
 
 .. code-block:: python
 
-   result = primitive.analyze().recover_input(
+   result = primitive.analysis.recover_input(
        "key",
        known_inputs={"plaintext": 1},
        output=0,
@@ -63,7 +63,7 @@ a one-round Speck32/64 plaintext/ciphertext pair:
    primitive = Speck(number_of_rounds=1)
    plaintext = 0x6574694C
    ciphertext = primitive.evaluate(plaintext, 0x1918111009080100)
-   result = primitive.analyze().recover_input(
+   result = primitive.analysis.recover_input(
        "key",
        known_inputs={"plaintext": plaintext},
        output=ciphertext,
@@ -100,17 +100,19 @@ weight. Impossible transitions have zero numerator and infinite weight.
 SPN trail search
 ----------------
 
-The first reviewed graph-level search slice reproduces the legacy two-round
-PRESENT XOR-differential optimum. The result distinguishes a proven optimum
-from a mere feasible trail and records its provenance:
+The graph-level search finds the two-round PRESENT XOR-differential optimum.
+The result distinguishes a proven optimum from a mere feasible trail and
+records structured search metadata and the complete cipher-state propagation:
 
 .. doctest::
 
    >>> from claasp.primitives import Present
    >>> primitive = Present(number_of_rounds=2)
-   >>> result = primitive.analyze().find_lowest_weight_xor_differential_trail()
+   >>> result = primitive.analysis.find_lowest_weight_xor_differential_trail()
    >>> (result.trail.total_weight, result.lower_bound, result.is_optimal)
    (4.0, 4.0, True)
+   >>> (result.metadata.solver, len(result.component_transitions))
+   (None, 37)
 
 The search reads the S-box and permutation semantics from the typed graph.
 Every returned transition and the wiring between both substitution layers are
@@ -127,14 +129,19 @@ reproduces the preserved two-round Speck32/64 optimum:
 
    >>> from claasp.primitives import Speck
    >>> primitive = Speck(number_of_rounds=2)
-   >>> result = primitive.analyze().find_lowest_weight_xor_differential_trail()
+   >>> result = primitive.analysis.find_lowest_weight_xor_differential_trail()
    >>> (result.trail.total_weight, result.is_optimal)
    (1.0, True)
-   >>> hex(result.trail.input_pattern.value)
-   '0x400000'
+   >>> len(result.component_transitions)
+   10
 
-The regression checker independently recomputes both modular-add
-probabilities and the rotations/XOR wiring through both Speck rounds.
+The ten reported transitions cover every rotation, modular addition, and XOR
+on the two-round cipher-state path. The default search fixes the key difference
+to zero, so its all-zero key schedule is omitted. An independent checker
+recomputes both modular-add probabilities and the rotations/XOR wiring.
+The default method uses Kissat and binary search over the maximum permitted
+weight. The particular optimum returned may change when several trails have
+the same minimum weight.
 
 Truncated and impossible differences
 ------------------------------------
@@ -158,7 +165,7 @@ the graph facade:
 
    >>> from claasp.primitives import Present
    >>> primitive = Present(number_of_rounds=1)
-   >>> primitive.analyze().is_xor_differential_transition_possible("sbox_1_0", 1, 1)
+   >>> primitive.analysis.is_xor_differential_transition_possible("sbox_1_0", 1, 1)
    False
 
 Linear trail search
@@ -171,7 +178,7 @@ weight-4 fixture:
 .. doctest::
 
    >>> from claasp.primitives import Present
-   >>> result = Present(number_of_rounds=3).analyze().find_lowest_weight_xor_linear_trail()
+   >>> result = Present(number_of_rounds=3).analysis.find_lowest_weight_xor_linear_trail()
    >>> (result.trail.total_weight, result.is_optimal)
    (4.0, True)
    >>> any(step.transition.sign == -1 for step in result.trail.steps)
@@ -184,14 +191,14 @@ facade call:
 .. doctest::
 
    >>> from claasp.primitives import Speck
-   >>> result = Speck(number_of_rounds=4).analyze().find_lowest_weight_xor_linear_trail()
+   >>> result = Speck(number_of_rounds=4).analysis.find_lowest_weight_xor_linear_trail()
    >>> (result.trail.total_weight, result.is_optimal)
    (3.0, True)
    >>> (hex(result.trail.input_pattern.value), hex(result.trail.output_pattern.value))
    ('0x40b010c1', '0x2c102010')
 
 Word-graph characteristics can also be enumerated with
-``primitive.analyze().enumerate_xor_linear_trails(maximum_weight, solver=solver)``.
+``primitive.analysis.enumerate_xor_linear_trails(maximum_weight, solver=solver)``.
 The default fixes the key value to zero and folds its dependent subgraph;
 ``nonzero_input="key"`` includes key-schedule masks instead. Results retain graph/realization identities, solver
 version, signed component correlations, and proof-completeness metadata.
@@ -208,7 +215,7 @@ are not a sum over trails or a whole-primitive linear-hull claim.
    '0xe2'
 
 Word-graph differential enumeration is available through
-``primitive.analyze().enumerate_xor_differential_trails(maximum_weight,
+``primitive.analysis.enumerate_xor_differential_trails(maximum_weight,
 solver=...)``. The default fixes key difference zero; choose
 ``nonzero_input="key"`` for related-key propagation. Supply ``fixed_weight``
 instead of a maximum for an exact-weight search. Always call

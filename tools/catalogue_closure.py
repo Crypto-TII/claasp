@@ -30,7 +30,7 @@ def check() -> tuple[int, int, int, int, int]:
     assert {name: item["module"] for name, item in by_name.items()} == ALL_EXPORTS
     assert {item["name"]: item["module"] for item in catalogue["components"]} == single_components
     assert len(catalogue["components"]) == 23
-    assert len({item["name"] for item in catalogue["drivers"]}) == len(catalogue["drivers"]) == 24
+    assert len({item["name"] for item in catalogue["drivers"]}) == len(catalogue["drivers"]) == 25
     representations = catalogue["representations"]
     analyses = catalogue["analyses"]
     representation_names = {item["name"] for item in representations}

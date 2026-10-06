@@ -1,8 +1,17 @@
+from io import StringIO
+
+import pytest
+
+from claasp.analysis._trail_propagation import xor_differential_component_transitions
 from claasp.analysis.arx import check_speck_linear_trail, check_speck_trail
 from claasp.primitives import Speck
 from claasp.semantics.cryptanalysis import (
     ModularAddLinearSemantics,
     ModularAddTransitionSemantics,
+    Trail,
+    TrailKind,
+    TrailStep,
+    XorDifference,
 )
 
 
@@ -20,16 +29,55 @@ def test_modular_add_transition_counts_are_exact():
     assert semantics.check(deterministic)
 
 
-def test_two_round_speck_reproduces_legacy_optimum_and_checks_wiring():
+@pytest.mark.external
+def test_two_round_speck_finds_exact_optimum_and_checks_wiring():
     primitive = Speck(number_of_rounds=2)
 
-    result = primitive.analyze().find_lowest_weight_xor_differential_trail()
+    result = primitive.analysis.find_lowest_weight_xor_differential_trail()
 
     assert result.trail.total_weight == 1.0
     assert result.lower_bound == 1.0
     assert result.is_optimal
-    assert result.trail.input_pattern.value == 0x00400000
+    assert result.provenance == (
+        "SAT optimization by binary search over the differential-weight bound"
+    )
+    assert result.metadata.solver == "Kissat"
+    assert result.metadata.solver_version is not None
+    assert result.metadata.runtime_seconds is not None
+    assert result.metadata.runtime_seconds >= 0
+    assert result.metadata.peak_memory_bytes is not None
+    assert result.metadata.peak_memory_bytes > 0
+    assert len(result.component_transitions) == 10
+    assert [item.component for item in result.component_transitions] == [
+        "rotate right 7",
+        "modular addition",
+        "XOR",
+        "rotate left 2",
+        "XOR",
+    ] * 2
+    assert {
+        "constant_0_5",
+        "rotate_0_6",
+        "modular_add_0_7",
+        "xor_0_8",
+        "rotate_0_9",
+        "xor_0_10",
+    }.isdisjoint(item.component_id for item in result.component_transitions)
     assert check_speck_trail(primitive, result.trail)
+
+    output = StringIO()
+    result.show(file=output)
+    rendered = output.getvalue()
+    assert f"0x{result.trail.input_pattern.value:08x}" in rendered
+    assert f"0x{result.trail.output_pattern.value:08x}" in rendered
+    assert "total weight" in rendered
+    assert "proved optimal" in rendered
+    assert "solver" in rendered and "Kissat" in rendered
+    assert "runtime" in rendered and "peak memory" in rendered
+    assert "rotate_0_0" in rendered
+    assert "xor_1_4" in rendered
+    assert "modular_add_0_1" in rendered
+    assert "Graph locations are evidence references" not in rendered
 
 
 def test_modular_add_linear_correlation_retains_exact_sign():
@@ -43,13 +91,43 @@ def test_modular_add_linear_correlation_retains_exact_sign():
     assert transition.sign == -1
 
 
-def test_four_round_speck_reproduces_legacy_linear_optimum():
+def test_related_key_component_propagation_retains_the_key_schedule():
+    primitive = Speck(number_of_rounds=2)
+    semantics = ModularAddTransitionSemantics(16)
+    trail = Trail(
+        TrailKind.XOR_DIFFERENTIAL,
+        XorDifference(0, 32),
+        XorDifference(0x02040200, 32),
+        (
+            TrailStep("modular_add_0_1", semantics.xor_differential(0, 0, 0)),
+            TrailStep("modular_add_0_7", semantics.xor_differential(0, 1, 1)),
+            TrailStep(
+                "modular_add_1_1",
+                semantics.xor_differential(0x0200, 1, 0x0201),
+            ),
+        ),
+    )
+
+    components = xor_differential_component_transitions(
+        primitive,
+        trail,
+        input_differences={"plaintext": 0, "key": 1},
+    )
+
+    assert len(components) == 16
+    assert "modular_add_0_7" in {item.component_id for item in components}
+
+
+def test_four_round_speck_returns_verified_linear_optimum():
     primitive = Speck(number_of_rounds=4)
 
-    result = primitive.analyze().find_lowest_weight_xor_linear_trail()
+    result = primitive.analysis.find_lowest_weight_xor_linear_trail()
 
     assert result.trail.total_weight == 3.0
     assert result.is_optimal
     assert result.trail.input_pattern.value == 0x40B010C1
     assert result.trail.output_pattern.value == 0x2C102010
+    assert result.provenance == (
+        "fixed-trail verification with exact modular-addition correlations"
+    )
     assert check_speck_linear_trail(primitive, result.trail)

@@ -157,6 +157,91 @@ class TrailStep:
 
 
 @dataclass(frozen=True, slots=True)
+class TrailComponentTransition:
+    """One component-level propagation retained for displaying a full trail.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import (
+        ...     TrailComponentTransition, XorDifference)
+        >>> component = TrailComponentTransition(
+        ...     0, "rotate_0", "rotate right 7",
+        ...     XorDifference(0x40, 16), XorDifference(0x80, 16))
+        >>> (component.component, component.weight)
+        ('rotate right 7', 0.0)
+    """
+
+    round_number: int
+    component_id: str
+    component: str
+    input_pattern: BitPattern | None
+    output_pattern: BitPattern
+    local_transition: Transition | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.round_number, int) or isinstance(self.round_number, bool):
+            raise TypeError("round_number must be an integer")
+        if self.round_number < 0:
+            raise ValueError("round_number must be nonnegative")
+        if not self.component_id:
+            raise ValueError("component_id must not be empty")
+        if not self.component:
+            raise ValueError("component must not be empty")
+        if self.local_transition is not None and (
+            self.input_pattern != self.local_transition.input_pattern
+            or self.output_pattern != self.local_transition.output_pattern
+        ):
+            raise ValueError("local transition patterns must match the component propagation")
+
+    @property
+    def weight(self) -> float:
+        """Return zero for deterministic wiring and the exact local weight otherwise."""
+
+        return 0.0 if self.local_transition is None else self.local_transition.weight
+
+
+@dataclass(frozen=True, slots=True)
+class TrailSearchMetadata:
+    """Structured information about how a trail search was performed.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import TrailSearchMetadata
+        >>> metadata = TrailSearchMetadata(
+        ...     "exact enumeration", runtime_seconds=0.25)
+        >>> (metadata.solver, metadata.runtime_seconds, metadata.peak_memory_bytes)
+        (None, 0.25, None)
+    """
+
+    technique: str
+    solver: str | None = None
+    solver_version: str | None = None
+    runtime_seconds: float | None = None
+    peak_memory_bytes: int | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.technique, str) or not self.technique:
+            raise ValueError("trail-search technique must not be empty")
+        for name, value in (("solver", self.solver), ("solver_version", self.solver_version)):
+            if value is not None and (not isinstance(value, str) or not value):
+                raise ValueError(f"{name} must be a nonempty string or None")
+        if self.solver is None and self.solver_version is not None:
+            raise ValueError("solver_version requires a solver")
+        if self.runtime_seconds is not None and (
+            isinstance(self.runtime_seconds, bool)
+            or not isinstance(self.runtime_seconds, (int, float))
+            or self.runtime_seconds < 0
+        ):
+            raise ValueError("runtime_seconds must be nonnegative or None")
+        if self.peak_memory_bytes is not None and (
+            isinstance(self.peak_memory_bytes, bool)
+            or not isinstance(self.peak_memory_bytes, int)
+            or self.peak_memory_bytes < 0
+        ):
+            raise ValueError("peak_memory_bytes must be nonnegative or None")
+
+
+@dataclass(frozen=True, slots=True)
 class Trail:
     """A checked sequence of component transitions.
 
@@ -221,26 +306,74 @@ class Trail:
 
 @dataclass(frozen=True, slots=True)
 class TrailSearchResult:
-    """A trail together with its optimization claim and provenance.
+    """A trail together with its optimization claim and search metadata.
 
     EXAMPLES::
 
         >>> from claasp.semantics.cryptanalysis import (Trail, TrailKind,
-        ...     TrailSearchResult, XorDifference)
+        ...     TrailSearchMetadata, TrailSearchResult, XorDifference)
         >>> trail = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(0, 1),
         ...     XorDifference(0, 1), ())
-        >>> TrailSearchResult(trail, 0.0, "exhaustive").is_optimal
+        >>> metadata = TrailSearchMetadata("exhaustive enumeration")
+        >>> TrailSearchResult(trail, 0.0, metadata).is_optimal
         True
     """
 
     trail: Trail
     lower_bound: float
-    provenance: str
+    metadata: TrailSearchMetadata
+    component_transitions: tuple[TrailComponentTransition, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.metadata, TrailSearchMetadata):
+            raise TypeError("metadata must be TrailSearchMetadata")
+        expected = XorDifference if self.trail.kind is TrailKind.XOR_DIFFERENTIAL else XorMask
+        for component in self.component_transitions:
+            if not isinstance(component.output_pattern, expected) or (
+                component.input_pattern is not None
+                and not isinstance(component.input_pattern, expected)
+            ):
+                raise TypeError("component propagation patterns must match the trail kind")
+
+    @property
+    def provenance(self) -> str:
+        """Return the search technique as a concise provenance description."""
+
+        return self.metadata.technique
 
     @property
     def is_optimal(self) -> bool:
         """Return whether the trail meets the claimed lower bound."""
         return self.trail.total_weight == self.lower_bound
+
+    def show(self, *, format: str = "terminal", file=None) -> None:  # noqa: A002
+        """Display the trail summary and its ordered transitions.
+
+        Presentation is imported only when this convenience method is called;
+        producing and checking the typed result remain independent of a
+        renderer. ``format`` may be ``"terminal"`` or ``"markdown"``.
+
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> from claasp.semantics.cryptanalysis import (
+            ...     Trail, TrailKind, TrailSearchMetadata, TrailSearchResult,
+            ...     XorDifference)
+            >>> trail = Trail(TrailKind.XOR_DIFFERENTIAL,
+            ...     XorDifference(1, 4), XorDifference(2, 4), ())
+            >>> output = StringIO()
+            >>> metadata = TrailSearchMetadata("example")
+            >>> TrailSearchResult(trail, 0.0, metadata).show(file=output)
+            >>> "0x1" in output.getvalue()
+            True
+        """
+
+        import sys
+
+        from claasp.presentation import render_section, trail_section
+
+        destination = sys.stdout if file is None else file
+        destination.write(render_section(trail_section(self), format=format))
 
 
 class SBoxTransitionSemantics:
@@ -343,7 +476,7 @@ class SBoxTransitionSemantics:
 
         if not isinstance(difference, TruncatedXorDifference) or len(difference.bits) != self.width:
             raise ValueError("truncated difference must match the S-box width")
-        outputs = set()
+        outputs: set[int] = set()
         for alpha in range(len(self.table)):
             if any(
                 bit is not TruncatedBit.UNKNOWN
@@ -414,7 +547,7 @@ class ModularAddTransitionSemantics:
                 raise ValueError(f"differences must be integers in range({self.mask + 1})")
         carries = {(0, 0): 1}
         for bit in range(self.width):
-            next_carries = defaultdict(int)
+            next_carries: defaultdict[tuple[int, int], int] = defaultdict(int)
             expected = (output_difference >> bit) & 1
             left_delta = (left_difference >> bit) & 1
             right_delta = (right_difference >> bit) & 1
@@ -444,7 +577,7 @@ class ModularAddTransitionSemantics:
                 raise ValueError(f"differences must be integers in range({self.mask + 1})")
         states = {(0, 0, 0): 1}
         for bit in range(self.width):
-            next_states = defaultdict(int)
+            next_states: defaultdict[tuple[int, int, int], int] = defaultdict(int)
             left_delta = (left_difference >> bit) & 1
             right_delta = (right_difference >> bit) & 1
             for (carry, paired_carry, output), count in states.items():
@@ -461,7 +594,7 @@ class ModularAddTransitionSemantics:
                             )
                         ] += count
             states = next_states
-        counts = defaultdict(int)
+        counts: defaultdict[int, int] = defaultdict(int)
         for (_, _, output), count in states.items():
             counts[output] += count
         return tuple(
@@ -517,7 +650,7 @@ class ModularAddLinearSemantics:
                 raise ValueError(f"masks must be integers in range({self.mask + 1})")
         carries = {0: 1}
         for bit in range(self.width):
-            next_carries = defaultdict(int)
+            next_carries: defaultdict[int, int] = defaultdict(int)
             for carry, walsh in carries.items():
                 for left in (0, 1):
                     for right in (0, 1):

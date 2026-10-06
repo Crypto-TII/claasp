@@ -143,7 +143,7 @@ class CompositeDefinition:
     def analyze(self, output: str = "output"):
         """Return the ordinary analysis facade for one named output."""
 
-        return self.as_primitive(output).analyze()
+        return self.as_primitive(output).analysis
 
 
 @dataclass(frozen=True, slots=True)

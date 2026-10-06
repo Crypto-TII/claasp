@@ -34,13 +34,12 @@ artificial integer:
    >>> poseidon.evaluate((0, 1))
    (4, 15)
 
-Architecture and migration status
----------------------------------
+Package and architecture
+------------------------
 
-CLAASP 5 ships as the ``claasp`` distribution and import package. The legacy
-Sage-based implementation remains available from the ``v4-maintenance`` Git
-branch. Primitive descriptions, evaluation, mathematical models, exporters,
-and solver processes remain separate layers.
+CLAASP 5 ships as the ``claasp`` distribution and import package. Primitive
+descriptions, evaluation, mathematical models, exporters, and solver processes
+are separate layers.
 
 See :doc:`concepts` for typed-unit details and :doc:`parameters` for verified
 AO parameter catalogues. Boolean and polynomial representations are described

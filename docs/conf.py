@@ -56,6 +56,7 @@ else:
         [
             "user_guide.rst",
             "getting_started.rst",
+            "quick_analysis_scripts.rst",
             "traditional_primitives.rst",
             "composite_blocks.rst",
             "batch_evaluation.rst",

@@ -11,7 +11,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 INVENTORY = ROOT / "migration/legacy_inventory.json"
 MATRIX = ROOT / "migration/m11a_bidirectional_migration.json"
-SUMMARY = ROOT / "docs/final_migration_audit.md"
+SUMMARY = ROOT / "docs/architecture/audits/final_migration_audit.md"
 
 NEW_V5_RATIONALES = {
     "analysis": "New typed analysis composition, evidence, and result contracts separate claims from execution.",

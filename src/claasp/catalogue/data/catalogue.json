@@ -34,6 +34,7 @@
     {
       "drivers": [
         "glpk",
+        "kissat",
         "minisat",
         "minizinc",
         "z3"
@@ -80,7 +81,9 @@
       "restriction": null
     },
     {
-      "drivers": [],
+      "drivers": [
+        "kissat"
+      ],
       "entry_point": "Primitive.analyze().find_lowest_weight_xor_differential_trail",
       "evidence": "exact",
       "kind": "xor_differential",
@@ -89,7 +92,9 @@
         "Present",
         "Speck"
       ],
-      "representations": [],
+      "representations": [
+        "boolean_cnf"
+      ],
       "required_components": [],
       "restriction": "reviewed reduced-round slice only"
     },
@@ -125,6 +130,7 @@
     {
       "drivers": [
         "glpk",
+        "kissat",
         "minisat",
         "minizinc",
         "z3"
@@ -143,6 +149,7 @@
     {
       "drivers": [
         "glpk",
+        "kissat",
         "minisat",
         "minizinc",
         "z3"
@@ -340,6 +347,16 @@
       "name": "minizinc_chuffed",
       "representations": [],
       "target": "minizinc:chuffed"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.kissat:KissatSolver",
+      "kind": "solver",
+      "name": "kissat",
+      "representations": [
+        "boolean_cnf"
+      ],
+      "target": "kissat"
     },
     {
       "availability": "executable",
@@ -11941,6 +11958,7 @@
       ],
       "drivers": [
         "glpk",
+        "kissat",
         "minisat",
         "minizinc",
         "z3"

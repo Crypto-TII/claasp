@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from fractions import Fraction
 from math import isinf
 
 from claasp.analysis.avalanche import AvalancheResult
@@ -43,7 +44,7 @@ from claasp.presentation.model import (
     TableColumn,
     TableRow,
 )
-from claasp.semantics.cryptanalysis import Trail, TrailSearchResult
+from claasp.semantics.cryptanalysis import BitPattern, Trail, TrailSearchResult
 from claasp.semantics.cryptanalysis.continuous import ContinuousHeuristicResult
 
 
@@ -107,6 +108,17 @@ def _canonical(value: object) -> str:
     raise TypeError(f"unsupported presentation value {type(value).__name__}")
 
 
+def _bit_pattern(pattern: BitPattern) -> str:
+    width = pattern.width
+    digits = (width + 3) // 4
+    return f"0x{pattern.value:0{digits}x}"
+
+
+def _ratio(numerator: int, denominator: int) -> str:
+    reduced = Fraction(numerator, denominator)
+    return f"{reduced.numerator}/{reduced.denominator}"
+
+
 def _property_evidence(result: ComponentPropertyResult) -> PresentationEvidence:
     mapping = {
         PropertyClaim.EXACT: (EvidenceClass.EXACT, None),
@@ -147,15 +159,8 @@ def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
     trail = result.trail if isinstance(result, TrailSearchResult) else result
     summary_rows = [
         TableRow((_text("kind"), _text(trail.kind.value))),
-        TableRow(
-            (_text("input"), _text(f"0x{trail.input_pattern.value:x}/{trail.input_pattern.width}"))
-        ),
-        TableRow(
-            (
-                _text("output"),
-                _text(f"0x{trail.output_pattern.value:x}/{trail.output_pattern.width}"),
-            )
-        ),
+        TableRow((_text("input"), _text(_bit_pattern(trail.input_pattern)))),
+        TableRow((_text("output"), _text(_bit_pattern(trail.output_pattern)))),
         TableRow((_text("total weight"), _number(trail.total_weight, ValueKind.WEIGHT))),
     ]
     if isinstance(result, TrailSearchResult):
@@ -169,46 +174,104 @@ def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
                 TableRow(
                     (_text("lower bound"), _number(result.lower_bound, ValueKind.WEIGHT, evidence))
                 ),
-                TableRow((_text("solver/method provenance"), _text(result.provenance))),
+                TableRow(
+                    (
+                        _text("optimality"),
+                        _text("proved optimal" if result.is_optimal else "not proved"),
+                    )
+                ),
+                TableRow((_text("search method"), _text(result.metadata.technique))),
+                TableRow((_text("solver"), _text(result.metadata.solver or "not used"))),
+                TableRow(
+                    (
+                        _text("runtime"),
+                        _text(
+                            "not reported"
+                            if result.metadata.runtime_seconds is None
+                            else f"{result.metadata.runtime_seconds:.6f} seconds"
+                        ),
+                    )
+                ),
+                TableRow(
+                    (
+                        _text("peak memory"),
+                        _text(
+                            "not reported"
+                            if result.metadata.peak_memory_bytes is None
+                            else f"{result.metadata.peak_memory_bytes} bytes"
+                        ),
+                    )
+                ),
             )
         )
+        if result.metadata.solver_version is not None:
+            summary_rows.insert(
+                -2,
+                TableRow((_text("solver version"), _text(result.metadata.solver_version))),
+            )
     summary = Table(
         (TableColumn("field", "Field"), TableColumn("value", "Value", Alignment.RIGHT)),
         tuple(summary_rows),
         "Trail summary",
     )
-    steps = Table(
-        (
-            TableColumn("step", "Step", Alignment.RIGHT),
-            TableColumn("kind", "Kind"),
-            TableColumn("input", "Input"),
-            TableColumn("output", "Output"),
-            TableColumn("ratio", "Exact ratio", Alignment.RIGHT),
-            TableColumn("sign", "Sign", Alignment.RIGHT),
-            TableColumn("weight", "Weight", Alignment.RIGHT),
-            TableColumn("reference", "Graph location (evidence)"),
-        ),
-        tuple(
+    if isinstance(result, TrailSearchResult) and result.component_transitions:
+        transition_rows = tuple(
             TableRow(
                 (
-                    _integer(index),
+                    _integer(component.round_number),
+                    _text(component.component),
+                    _text(
+                        "—"
+                        if component.input_pattern is None
+                        else _bit_pattern(component.input_pattern)
+                    ),
+                    _text(_bit_pattern(component.output_pattern)),
+                    _text(
+                        "1/1"
+                        if component.local_transition is None
+                        else _ratio(
+                            component.local_transition.numerator,
+                            component.local_transition.denominator,
+                        )
+                    ),
+                    _integer(
+                        1 if component.local_transition is None else component.local_transition.sign
+                    ),
+                    _number(component.weight, ValueKind.WEIGHT),
+                    _text(component.component_id),
+                )
+            )
+            for component in result.component_transitions
+        )
+    else:
+        transition_rows = tuple(
+            TableRow(
+                (
+                    _text("—"),
                     _text(step.transition.kind.value),
-                    _text(
-                        f"0x{step.transition.input_pattern.value:x}/{step.transition.input_pattern.width}"
-                    ),
-                    _text(
-                        f"0x{step.transition.output_pattern.value:x}/{step.transition.output_pattern.width}"
-                    ),
-                    _text(f"{step.transition.numerator}/{step.transition.denominator}"),
+                    _text(_bit_pattern(step.transition.input_pattern)),
+                    _text(_bit_pattern(step.transition.output_pattern)),
+                    _text(_ratio(step.transition.numerator, step.transition.denominator)),
                     _integer(step.transition.sign),
                     _number(step.transition.weight, ValueKind.WEIGHT),
                     _text(step.component_id),
                 )
             )
-            for index, step in enumerate(trail.steps, 1)
+            for step in trail.steps
+        )
+    steps = Table(
+        (
+            TableColumn("round", "Round", Alignment.RIGHT),
+            TableColumn("component", "Component"),
+            TableColumn("input", "Input"),
+            TableColumn("output", "Output"),
+            TableColumn("ratio", "Exact ratio", Alignment.RIGHT),
+            TableColumn("sign", "Sign", Alignment.RIGHT),
+            TableColumn("weight", "Weight", Alignment.RIGHT),
+            TableColumn("component_id", "Component ID"),
         ),
-        "Ordered transition evidence",
-        ("Graph locations are evidence references, not semantic report identity.",),
+        transition_rows,
+        "Component transitions",
     )
     return ReportSection("Trail", tables=(summary, steps))
 
@@ -241,7 +304,7 @@ def trace_section(trace: ExecutionTrace) -> ReportSection:
             TableColumn("order", "Order", Alignment.RIGHT),
             TableColumn("role", "Role"),
             TableColumn("value", "Value"),
-            TableColumn("reference", "Graph location (evidence)"),
+            TableColumn("component", "Component"),
         ),
         rows,
         "Concrete trace",

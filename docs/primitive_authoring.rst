@@ -200,11 +200,11 @@ simple Fibonacci register, or construct ``FeedbackRegisterSpec`` and
 ``FeedbackTerm`` values for multiple, nonlinear, or clocked registers.
 
 The folder is a one-to-one view of the public base-component classes, including
-v5 additions such as ``Add``, ``Multiply``, ``Power``, and ``BinaryAffineMap``.
+``Add``, ``Multiply``, ``Power``, and ``BinaryAffineMap``.
 Structural joins and bit/word views are deliberately absent. Every wrapper has exactly one round and one
-component, and its class docstring contains a runnable minimal example. Legacy
-names such as ``Modadd``, ``Sbox``, and ``Fsr`` are deliberately not aliases in
-the unreleased v5 API.
+component, and its class docstring contains a runnable minimal example.
+Component class names use consistent Python capitalization, such as
+``ModularAdd``, ``SBox``, and ``FeedbackRegister``.
 
 Lookup tables are immutable validated values rather than loose lists once they
 enter the component layer. ``LookupTable`` owns input/output widths, entry
@@ -227,8 +227,7 @@ choosing its kind or constructing the component.
 
 Other one-component primitives follow the same rule: pass the mathematical
 parameter directly. A permutation uses ``output[i] = input[mapping[i]]`` and
-rotation direction is an explicit word, so there are no alternate legacy
-encodings to learn.
+rotation direction is an explicit word.
 
 .. doctest::
 

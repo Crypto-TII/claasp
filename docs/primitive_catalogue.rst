@@ -1,8 +1,8 @@
 Primitive catalogue
 ===================
 
-The public catalogue contains every fixed-length primitive tracked by the v5
-migration inventory. Classes are available from ``claasp.primitives`` for
+The public catalogue describes the fixed-length primitives supported by
+CLAASP. Classes are available from ``claasp.primitives`` for
 ordinary use and from semantic category modules when the distinction matters:
 
 * ``block_ciphers`` and ``tweakable_block_ciphers`` are keyed permutations;
@@ -88,7 +88,7 @@ than being inferred from package names. Queries work in either direction:
    >>> [item.name for item in catalogue.components(representation="boolean_cnf")]
    ['Add', 'BitVectorSBox', 'BitwiseAnd', 'Constant', 'Identity', 'ModularAdd', 'Permutation', 'Rotate', 'Xor']
    >>> [item.name for item in catalogue.drivers(representation="boolean_cnf")]
-   ['minizinc', 'minisat', 'z3', 'glpk']
+   ['minizinc', 'kissat', 'minisat', 'z3', 'glpk']
    >>> "enumerate_xor_differential_trails" in {
    ...     item.name for item in catalogue.analyses(primitive="Speck")}
    True
@@ -214,6 +214,6 @@ realizations without changing the canonical import path. For example,
 and feedback-register realizations. AES uses a package for reusable blocks and
 multiple realizations, LowMC for vetted constant files, and Poseidon for its
 typed parameter catalogue and licensed data. Simon, Simeck, and Gimli S-box
-forms are labelled legacy-regression realizations, not descriptions of their
-canonical specifications. There are no runtime frozen-graph indexes or
+forms are explicitly labelled alternate realizations, not descriptions of
+their canonical specifications. There are no runtime frozen-graph indexes or
 compressed graph specifications.

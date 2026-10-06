@@ -9,15 +9,32 @@ citations, realization identity, and execution metadata separate.
 Trail and trace summaries
 -------------------------
 
-A trail report retains its kind, boundary patterns, total weight, proof bound,
-ordered transitions, and method provenance. Graph locations are labelled as
-optional evidence references rather than report identity:
+A trail report shows its kind, input and output patterns, total weight, proof
+bound, optimality, search method, solver, runtime, memory measurement when
+available, and the primitive component responsible for each transition:
+
+.. doctest::
+
+   >>> from claasp.primitives import Speck
+   >>> result = Speck(number_of_rounds=2).analysis.find_lowest_weight_xor_differential_trail()
+   >>> result.show()  # doctest: +ELLIPSIS
+   Trail
+   ...
+
+``show()`` is the convenient interactive form. The explicit presentation API
+below provides immutable report data and selectable output formats for tools
+and exports.
+
+The default searches use a zero key difference. Their reports include every
+cipher-state component but omit the resulting all-zero key schedule. A
+related-key result must retain its key-schedule propagation as well.
 
 .. doctest::
 
    >>> from claasp.presentation import render_section, trail_section
    >>> from claasp.semantics.cryptanalysis import (
-   ...     Trail, TrailKind, TrailSearchResult, TrailStep, Transition, XorDifference,
+   ...     Trail, TrailKind, TrailSearchMetadata, TrailSearchResult, TrailStep,
+   ...     Transition, XorDifference,
    ... )
    >>> transition = Transition(
    ...     TrailKind.XOR_DIFFERENTIAL,
@@ -28,15 +45,15 @@ optional evidence references rather than report identity:
    ...     XorDifference(1, 4), XorDifference(3, 4),
    ...     (TrailStep("sbox_0_0", transition),),
    ... )
-   >>> section = trail_section(TrailSearchResult(trail, 2.0, "fixed PRESENT evidence"))
+   >>> metadata = TrailSearchMetadata("fixed PRESENT evidence")
+   >>> section = trail_section(TrailSearchResult(trail, 2.0, metadata))
    >>> "total weight" in render_section(section, format="terminal")
    True
    >>> section.tables[1].rows[0].cells[-1].text
    'sbox_0_0'
 
-``trace_section(execution_trace)`` similarly follows the immutable annotation
-order and labels source ids as graph-location evidence. It does not assume
-that different realizations have corresponding internal component ids.
+``trace_section(execution_trace)`` similarly lists intermediate values in
+execution order and names the component that produced each value.
 
 Exact, bounded, and unavailable properties
 ------------------------------------------
@@ -96,8 +113,8 @@ Text and report-data export
 ---------------------------
 
 Terminal, Markdown, and CSV consume the same immutable table. ``report_data``
-returns ordinary JSON-compatible dictionaries and lists; it is a presentation
-export, not the versioned graph/result serialization owned by M10.15.
+returns ordinary JSON-compatible dictionaries and lists. It is a presentation
+export, not the versioned graph/result serialization format.
 
 .. doctest::
 

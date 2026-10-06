@@ -92,7 +92,7 @@ The main changes are:
   environment all have automated checks.
 
 The migration does not assume that every old API should be reproduced exactly.
-The complete comparison in `../final_migration_audit.md` lists every legacy
+The complete comparison in `audits/final_migration_audit.md` lists every legacy
 source and test record and every shipped v5 artifact. It shows what moved
 directly, what was split or combined, what was removed, and what is new, with a
 reason for each decision.

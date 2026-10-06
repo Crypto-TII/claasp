@@ -6,7 +6,9 @@ from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.semantics.cryptanalysis import (
     SBoxTransitionSemantics,
     Trail,
+    TrailComponentTransition,
     TrailKind,
+    TrailSearchMetadata,
     TrailStep,
     Transition,
     XorDifference,
@@ -58,3 +60,35 @@ def test_transition_kinds_and_pattern_widths_are_explicit():
         )
     with pytest.raises(ValueError, match="fit"):
         XorDifference(16, 4)
+
+
+def test_trail_search_metadata_distinguishes_unavailable_measurements():
+    metadata = TrailSearchMetadata("exact enumeration", runtime_seconds=0.25)
+
+    assert metadata.solver is None
+    assert metadata.peak_memory_bytes is None
+    with pytest.raises(ValueError, match="solver_version requires"):
+        TrailSearchMetadata("exact enumeration", solver_version="1.0")
+
+
+def test_component_transition_checks_embedded_local_transition_patterns():
+    local = SBoxTransitionSemantics(PRESENT_SBOX).xor_differential(0x1, 0x3)
+
+    component = TrailComponentTransition(
+        0,
+        "sbox_0",
+        "S-box",
+        XorDifference(0x1, 4),
+        XorDifference(0x3, 4),
+        local,
+    )
+    assert component.weight == 2.0
+    with pytest.raises(ValueError, match="must match"):
+        TrailComponentTransition(
+            0,
+            "sbox_0",
+            "S-box",
+            XorDifference(0x1, 4),
+            XorDifference(0x2, 4),
+            local,
+        )

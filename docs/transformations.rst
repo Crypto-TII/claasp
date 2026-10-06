@@ -29,37 +29,19 @@ Only components with explicit inverse semantics are reversed. A non-bijective
 operation fails with a typed ``information_loss`` diagnostic instead of
 claiming an inverse.
 
-Catalogue coverage and timing
------------------------------
+When inversion is defined
+-------------------------
 
-The reproducible `primitive inversion audit <primitive_inversion_audit.md>`_
-constructs both a one-round instance, where the public constructor supports
-one, and every official full-round configuration. It times graph construction
-separately from semantic evaluation and verifies two deterministic round trips
-for every successful inverse. The current checkpoint verifies every catalogue
-configuration carrying a bijectivity obligation, including toy and
-single-component primitives.
+Catalogue metadata identifies the data or state input that is expected to be
+recoverable when all auxiliary inputs are retained. XOR, modular addition,
+rotation, permutation, and identity operations can therefore be invertible
+with respect to one designated input even though a multi-input operation is
+not jointly invertible in all of its inputs.
 
-An obligation applies to the designated data/state input of a named catalogue
-configuration, with all other inputs retained. Thus XOR, modular addition,
-rotation, permutation, and identity fixtures have an obligation even though a
-multi-input operation is not globally bijective in all of its inputs at once.
-It does not classify every arbitrary constructor choice: a caller can still
-provide a lossy lookup table, singular matrix, or non-reversible feedback
-description outside the named catalogue configuration.
-
-Some primitives use a reviewed equivalent graph that exposes the same
-semantics in an inversion-friendly form; examples include compact linear maps
-and triangular Boolean recurrences. Subterranean and ChiLow instead use
-directly authored inverses from their published recurrences. These are not
-solver shortcuts: the resulting typed graphs retain auxiliary inputs, preserve
-the source realization identity, record a separate ``inverse_equivalent``
-transformation, and are checked against evaluation of the public source graph.
-
-Rows without a catalogue retained-input bijectivity obligation remain deliberately
-qualified. A hash, stream-output function, or lossy component may report
-``information_loss``, ``multiple_predecessors``, or a timeout without weakening
-the complete-bijective-coverage claim.
+This does not make every custom constructor choice reversible. A lossy lookup
+table, singular matrix, hash, stream-output function, or non-reversible
+feedback description reports a typed diagnostic such as
+``information_loss`` or ``multiple_predecessors``.
 
 Partial inversion and retained values
 -------------------------------------

@@ -1,13 +1,19 @@
 """Reviewed ARX differential trail search."""
 
+from time import perf_counter
+
+from claasp.analysis._trail_propagation import xor_differential_component_transitions
 from claasp.components import ModularAdd, Rotate
 from claasp.domains import Word
+from claasp.drivers.solvers import KissatSolver, SatStatus
 from claasp.graph import Primitive
+from claasp.representations.constraints.sat import CNFFormula
 from claasp.semantics.cryptanalysis import (
     ModularAddLinearSemantics,
     ModularAddTransitionSemantics,
     Trail,
     TrailKind,
+    TrailSearchMetadata,
     TrailSearchResult,
     TrailStep,
     XorDifference,
@@ -15,14 +21,119 @@ from claasp.semantics.cryptanalysis import (
 )
 
 
-def find_two_round_speck_xor_differential(primitive: Primitive) -> TrailSearchResult:
-    """Reproduce the exact legacy Speck32/64 two-round optimum."""
+def find_two_round_speck_xor_differential(
+    primitive: Primitive,
+    solver: object | None = None,
+) -> TrailSearchResult:
+    """Find the exact Speck32/64 two-round optimum with SAT.
 
+    Kissat is the default. The search first obtains a feasible trail, then
+    uses binary search over the maximum trail weight. An unsatisfiable bound
+    immediately below the returned weight proves optimality.
+    """
+
+    started = perf_counter()
+    _validate_speck_slice(primitive)
+    from claasp.representations.constraints.smt import WordDifferentialSMTModel
+
+    selected_solver = KissatSolver() if solver is None else solver
+    if not hasattr(selected_solver, "solve"):
+        raise TypeError("solver must provide a solve(formula) method")
+
+    fixed_inputs = {"key": 0} if "key" in primitive.input_ports else {}
+    feasible_model = WordDifferentialSMTModel(
+        primitive,
+        nonzero_input="plaintext",
+        fixed_input_differences=fixed_inputs,
+    )
+    feasible = selected_solver.solve(_cnf(feasible_model.smt_formula()))
+    runtime = feasible.runtime_seconds
+    peak_memory = feasible.peak_memory_bytes
+    if feasible.status is not SatStatus.SATISFIABLE:
+        if feasible.status is SatStatus.UNSATISFIABLE:
+            raise RuntimeError("no nonzero Speck XOR-differential trail exists")
+        raise RuntimeError("SAT solver did not complete the differential-trail search")
+    best_model = feasible_model
+    best = feasible_model.decode_characteristic(feasible.assignment)
+    upper_bound = int(best.total_weight)
+    lower_bound = 0
+
+    while lower_bound < upper_bound:
+        candidate_bound = (lower_bound + upper_bound) // 2
+        model = WordDifferentialSMTModel(
+            primitive,
+            maximum_weight=candidate_bound,
+            nonzero_input="plaintext",
+            fixed_input_differences=fixed_inputs,
+        )
+        solved = selected_solver.solve(_cnf(model.smt_formula()))
+        runtime += solved.runtime_seconds
+        if solved.peak_memory_bytes is not None:
+            peak_memory = max(peak_memory or 0, solved.peak_memory_bytes)
+        if solved.status is SatStatus.UNSATISFIABLE:
+            lower_bound = candidate_bound + 1
+            continue
+        if solved.status is not SatStatus.SATISFIABLE:
+            raise RuntimeError("SAT solver did not complete the differential-trail search")
+        characteristic = model.decode_characteristic(solved.assignment)
+        best_model, best = model, characteristic
+        upper_bound = min(candidate_bound, int(characteristic.total_weight))
+
+    if best.total_weight != upper_bound:
+        final_model = WordDifferentialSMTModel(
+            primitive,
+            maximum_weight=upper_bound,
+            nonzero_input="plaintext",
+            fixed_input_differences=fixed_inputs,
+        )
+        solved = selected_solver.solve(_cnf(final_model.smt_formula()))
+        runtime += solved.runtime_seconds
+        if solved.peak_memory_bytes is not None:
+            peak_memory = max(peak_memory or 0, solved.peak_memory_bytes)
+        if solved.status is not SatStatus.SATISFIABLE:
+            raise RuntimeError("SAT optimum could not be reconstructed")
+        best_model = final_model
+        best = final_model.decode_characteristic(solved.assignment)
+
+    trail = _trail_from_sat_characteristic(primitive, best)
+    version_method = getattr(selected_solver, "version", None)
+    metadata = TrailSearchMetadata(
+        "SAT optimization by binary search over the differential-weight bound",
+        solver="Kissat" if isinstance(selected_solver, KissatSolver) else type(selected_solver).__name__,
+        solver_version=version_method() if callable(version_method) else None,
+        runtime_seconds=runtime,
+        peak_memory_bytes=peak_memory,
+    )
+    components = xor_differential_component_transitions(
+        primitive,
+        trail,
+        input_differences=dict(best.input_differences),
+    )
+    # Include Python-side model construction and witness validation in the
+    # reported runtime rather than only the subprocess CPU time.
+    metadata = TrailSearchMetadata(
+        metadata.technique,
+        metadata.solver,
+        metadata.solver_version,
+        max(runtime, perf_counter() - started),
+        peak_memory,
+    )
+    if not best_model.check_characteristic(best):
+        raise RuntimeError("SAT solver returned an invalid differential characteristic")
+    return TrailSearchResult(trail, float(lower_bound), metadata, components)
+
+
+def _find_two_round_speck_xor_differential_bounded(
+    primitive: Primitive,
+) -> TrailSearchResult:
+    """Return the dependency-free two-round regression witness."""
+
+    started = perf_counter()
     width = _validate_speck_slice(primitive)
     semantics = ModularAddTransitionSemantics(width)
     _, alpha_component, beta_component = _state_round_components(primitive, 0)
     alpha, beta = alpha_component.amount, beta_component.amount
-    legacy_lower_bound = 1.0
+    known_lower_bound = 1.0
 
     best = None
     # A weight-one optimum has a sparse representative. Search single-bit
@@ -34,7 +145,7 @@ def find_two_round_speck_xor_differential(primitive: Primitive) -> TrailSearchRe
     for left, right in candidates:
         rotated_left = _rotate_right(left, alpha, width)
         for first in semantics.possible_transitions(rotated_left, right):
-            if first.weight > legacy_lower_bound:
+            if first.weight > known_lower_bound:
                 break
             new_left = first.output_pattern.value
             new_right = _rotate_left(right, beta, width) ^ new_left
@@ -53,15 +164,13 @@ def find_two_round_speck_xor_differential(primitive: Primitive) -> TrailSearchRe
             )
             if best is None or trail.total_weight < best.total_weight:
                 best = trail
-            if trail.total_weight == legacy_lower_bound:
-                return TrailSearchResult(
-                    trail,
-                    legacy_lower_bound,
-                    "legacy CLAASP MilpXorDifferentialModel Speck32/64-2 optimum",
+            if trail.total_weight == known_lower_bound:
+                return _bounded_differential_result(
+                    primitive, trail, known_lower_bound, started
                 )
     if best is None:
         raise RuntimeError("no nonzero Speck trail was found")
-    return TrailSearchResult(best, legacy_lower_bound, "legacy CLAASP Speck32/64-2 bound")
+    return _bounded_differential_result(primitive, best, known_lower_bound, started)
 
 
 def check_speck_trail(primitive: Primitive, trail: Trail) -> bool:
@@ -92,6 +201,7 @@ def check_speck_trail(primitive: Primitive, trail: Trail) -> bool:
 def find_four_round_speck_xor_linear(primitive: Primitive) -> TrailSearchResult:
     """Restore and verify the legacy four-round Speck linear optimum."""
 
+    started = perf_counter()
     width = _validate_speck_linear_slice(primitive)
     semantics = ModularAddLinearSemantics(width)
     boundary_masks = (
@@ -128,7 +238,47 @@ def find_four_round_speck_xor_linear(primitive: Primitive) -> TrailSearchResult:
     return TrailSearchResult(
         trail,
         3.0,
-        "legacy CLAASP SatXorLinearModel/MilpXorLinearModel Speck32/64-4 optimum",
+        TrailSearchMetadata(
+            "fixed-trail verification with exact modular-addition correlations",
+            runtime_seconds=perf_counter() - started,
+        ),
+    )
+
+
+def _bounded_differential_result(primitive, trail, lower_bound, started):
+    metadata = TrailSearchMetadata(
+        "bounded enumeration over single-bit inputs and exact modular-addition transitions",
+        runtime_seconds=perf_counter() - started,
+    )
+    components = xor_differential_component_transitions(
+        primitive,
+        trail,
+        input_differences={"plaintext": trail.input_pattern.value, "key": 0},
+    )
+    return TrailSearchResult(trail, lower_bound, metadata, components)
+
+
+def _cnf(formula) -> CNFFormula:
+    return CNFFormula(formula.variables, formula.assertions, formula.provenance)
+
+
+def _trail_from_sat_characteristic(primitive, characteristic) -> Trail:
+    state_additions = {
+        _state_round_components(primitive, round_number)[0].component_id
+        for round_number in range(len(primitive.rounds))
+    }
+    steps = tuple(
+        TrailStep(step.component_id.removesuffix("[0]"), step.transition)
+        for step in characteristic.steps
+        if step.component_id.removesuffix("[0]") in state_additions
+    )
+    plaintext = dict(characteristic.input_differences)["plaintext"]
+    width = primitive.input_ports["plaintext"].value_type.encoded_bit_size
+    return Trail(
+        TrailKind.XOR_DIFFERENTIAL,
+        XorDifference(plaintext, width),
+        XorDifference(characteristic.output_difference, width),
+        steps,
     )
 
 

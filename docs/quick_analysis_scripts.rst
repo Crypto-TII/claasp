@@ -1,0 +1,112 @@
+Quick analysis scripts
+======================
+
+These small, copyable examples answer common questions about a primitive.
+Most use only CLAASP's Python implementation; trail search uses Kissat. The
+linked guides explain the full result types and other optional backends.
+
+Find an XOR differential trail
+------------------------------
+
+An XOR differential trail records how an input difference propagates through
+the rounds. Its weight is :math:`-\log_2(p)`, where :math:`p` is the trail
+probability represented by the model.
+
+.. doctest::
+
+   >>> from claasp.primitives import Speck
+   >>> speck = Speck(number_of_rounds=2)
+   >>> differential = speck.analysis.find_lowest_weight_xor_differential_trail()
+   >>> differential.show()  # doctest: +ELLIPSIS
+   Trail
+   ...
+
+The report shows the input and output differences, total weight 1, and a
+matching lower bound of 1. The matching bound means this is a proved optimum,
+not merely the best trail encountered so far. Kissat may choose any one of
+several trails having that optimal weight. See :doc:`analysis` for constraints,
+enumeration, and solver-backed searches.
+
+Find an XOR linear trail
+------------------------
+
+A linear trail follows masks rather than differences. The interface is the
+same:
+
+.. doctest::
+
+   >>> speck = Speck(number_of_rounds=4)
+   >>> linear = speck.analysis.find_lowest_weight_xor_linear_trail()
+   >>> linear.show()  # doctest: +ELLIPSIS
+   Trail
+   ...
+
+This report shows input mask ``0x40b010c1``, output mask ``0x2c102010``, and
+weight 3. For a linear trail, weight is the negative base-two logarithm of the
+absolute trail correlation.
+
+Measure avalanche behavior
+--------------------------
+
+The avalanche analysis evaluates random plaintexts, flips each plaintext bit,
+and records the observed output-bit changes:
+
+.. doctest::
+
+   >>> speck = Speck(number_of_rounds=2)
+   >>> avalanche = speck.analysis.avalanche(
+   ...     "plaintext", 8, seed=9, fixed_inputs={"key": 0}
+   ... )
+   >>> avalanche.sample_count
+   8
+   >>> round(sum(avalanche.mean_changed_output_bits) / avalanche.input_bit_count, 2)
+   9.47
+
+Increase the sample count for an actual experiment. The fixed seed makes runs
+with the same parameters reproducible. See :doc:`statistical_testing` for the
+probability matrix, dataset families, NIST STS, and Dieharder integration.
+
+Create a neural-distinguisher dataset
+-------------------------------------
+
+CLAASP can generate labelled related-pair data without importing a
+machine-learning framework:
+
+.. doctest::
+
+   >>> from claasp.analysis import xor_differential_dataset
+   >>> dataset = xor_differential_dataset(
+   ...     speck,
+   ...     {"plaintext": 0x00400000, "key": 0},
+   ...     samples=4,
+   ...     seed=7,
+   ... )
+   >>> dataset.sample_count, dataset.feature_width, dataset.labels
+   (4, 64, (0, 1, 1, 0))
+
+See :doc:`neural_distinguishers` for dataset partitions and the optional
+training driver.
+
+Inspect AES round values
+------------------------
+
+When debugging or comparing an implementation with a specification, retain
+the intermediate values from one evaluation:
+
+.. doctest::
+
+   >>> from claasp.primitives import AES
+   >>> aes = AES(number_of_rounds=2)
+   >>> plaintext = 0x00112233445566778899AABBCCDDEEFF
+   >>> key = 0x000102030405060708090A0B0C0D0E0F
+   >>> execution = aes.evaluate_with_trace(plaintext=plaintext, key=key)
+   >>> for round_number, state in enumerate(aes.round_states, start=1):
+   ...     value = execution.value_of(state["add_round_key"].owner_id)
+   ...     print(round_number, bytes(value).hex())
+   1 89d810e8855ace682d1843d8cb128fe4
+   2 4915598f55e5d7a0daca94fa1f0a63f7
+
+An execution trace is the record of concrete values produced by one run. It
+is useful for inspecting intermediate states and is unrelated to the
+number-theoretic meaning of "trace". See :doc:`concepts` for the distinction
+between an evaluation result and its trace.

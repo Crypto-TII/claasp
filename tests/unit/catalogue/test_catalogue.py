@@ -115,6 +115,7 @@ def test_representation_component_queries_are_bidirectional():
 def test_representation_driver_queries_are_bidirectional():
     assert tuple(item.name for item in catalogue.drivers(representation="boolean_cnf")) == (
         "minizinc",
+        "kissat",
         "minisat",
         "z3",
         "glpk",

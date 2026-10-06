@@ -65,20 +65,15 @@ do not cover every sample exactly once.
 Round and component projections
 --------------------------------
 
-Legacy CLAASP could train a distinguisher not only on a primitive's final
-output but also on an intermediate round's state, a round key, or an
-arbitrary component -- matching component ids against substrings such as
-``round_output``, ``round_key_output``, and the final output id in
-``claasp.cipher_modules.neural_network_tests``. The v5 replacements,
-``component_output_dataset`` and ``xor_differential_component_dataset``,
-cover the same ground without a description-string match: they read the
-requested component's value directly out of the primitive's typed
+``component_output_dataset`` and ``xor_differential_component_dataset`` can
+train or evaluate a distinguisher on an intermediate round state, a round
+key, or an arbitrary component instead of only the primitive's final output.
+They read the requested component's value directly from the primitive's typed
 ``ExecutionTrace`` (see ``claasp.annotations``), produced by
 ``Primitive.evaluate_with_trace``. ``round_component_ids`` selects every
 component CLAASP added while building one round, so passing it as
-``component_ids`` projects that round's full state -- covering the legacy
-``round_output``/``round_key_output`` cases -- while a single id targets one
-exact wire:
+``component_ids`` projects that round's full state, while a single id targets
+one exact wire:
 
 .. doctest::
 
@@ -107,11 +102,9 @@ Optional ML training drivers
 ``NeuralTrainingDriver`` implementations live under
 ``claasp.drivers.neural`` and are never imported by
 ``claasp``'s core. The bundled ``SklearnMLPDriver`` trains a small
-``sklearn.neural_network.MLPClassifier``. scikit-learn was chosen over
-legacy's TensorFlow/Keras (``docker/Dockerfile`` pins ``tensorflow==2.13.0``)
-specifically to keep the optional ``ml`` extra (``pip install
-'claasp[ml]'``) light and fast in CI; nothing prevents an equivalent
-TensorFlow, Keras, or PyTorch driver behind the same protocol. The
+``sklearn.neural_network.MLPClassifier``. The optional ``ml`` extra (installed
+with ``pip install 'claasp[ml]'``) uses scikit-learn; an equivalent TensorFlow,
+Keras, or PyTorch driver can implement the same protocol. The
 scikit-learn import happens inside ``train``, so constructing a
 ``SklearnMLPDriver`` never requires the extra -- only calling ``train`` does::
 
