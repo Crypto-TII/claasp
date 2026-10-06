@@ -88,6 +88,9 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
             "MSOLVE_SHA256=",
             "NIST_STS_SHA256=",
             "minizinc-wrapper.sh /usr/local/bin/minizinc",
+            "sed -i 's/\\r$//' /usr/local/bin/minizinc",
+            "sed -i 's/\\r$//' /usr/local/bin/claasp-release-smoke",
+            "&& /usr/local/bin/claasp-release-smoke",
             "PYTHONDONTWRITEBYTECODE=1",
             "PYTHONPATH=/workspace/src",
         ]
