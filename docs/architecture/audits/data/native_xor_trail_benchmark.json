@@ -1,0 +1,90 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "results": [
+    {
+      "assignment_valid": true,
+      "construction_seconds_median": 0.0010431034999669464,
+      "expanded_cnf_exact": null,
+      "formulation": "ordinary_cnf",
+      "kind": "xor_differential",
+      "literals": 1584,
+      "native_xor_records": 0,
+      "ordinary_clauses": 501,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported",
+      "repeats": 10,
+      "solver": "CryptoMiniSatSolver",
+      "solver_seconds_median": 0.0009615415000325811,
+      "solver_status": "satisfiable",
+      "solver_version": "CryptoMiniSat version 5.11.15",
+      "trail_valid": true,
+      "variables": 187
+    },
+    {
+      "assignment_valid": true,
+      "construction_seconds_median": 0.002997583000023951,
+      "expanded_cnf_exact": true,
+      "formulation": "native_xor",
+      "kind": "xor_differential",
+      "literals": 1128,
+      "native_xor_records": 60,
+      "ordinary_clauses": 327,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported",
+      "repeats": 10,
+      "solver": "CryptoMiniSatSolver",
+      "solver_seconds_median": 0.00083554150000964,
+      "solver_status": "satisfiable",
+      "solver_version": "CryptoMiniSat version 5.11.15",
+      "trail_valid": true,
+      "variables": 187
+    },
+    {
+      "assignment_valid": true,
+      "construction_seconds_median": 0.002426395999975739,
+      "expanded_cnf_exact": null,
+      "formulation": "ordinary_cnf",
+      "kind": "xor_linear",
+      "literals": 1939,
+      "native_xor_records": 0,
+      "ordinary_clauses": 706,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported",
+      "repeats": 10,
+      "solver": "CryptoMiniSatSolver",
+      "solver_seconds_median": 0.0018566045000625309,
+      "solver_status": "satisfiable",
+      "solver_version": "CryptoMiniSat version 5.11.15",
+      "trail_valid": true,
+      "variables": 296
+    },
+    {
+      "assignment_valid": true,
+      "construction_seconds_median": 0.004216187499935131,
+      "expanded_cnf_exact": true,
+      "formulation": "native_xor",
+      "kind": "xor_linear",
+      "literals": 275,
+      "native_xor_records": 197,
+      "ordinary_clauses": 138,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported",
+      "repeats": 10,
+      "solver": "CryptoMiniSatSolver",
+      "solver_seconds_median": 0.0009164585000007719,
+      "solver_status": "satisfiable",
+      "solver_version": "CryptoMiniSat version 5.11.15",
+      "trail_valid": true,
+      "variables": 296
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "timeout_seconds": 30,
+    "xor_differential": "ToySpeck-2, fixed weight 1, nonzero plaintext, zero key difference",
+    "xor_linear": "ToySpeck-3, maximum weight 1, nonzero plaintext, concrete zero key"
+  }
+}

@@ -1,7 +1,7 @@
 """Complete SAT assembly for weighted word-graph trail searches."""
 
 from contextlib import nullcontext
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from hashlib import sha256
 from typing import Any
 
@@ -18,7 +18,8 @@ from claasp.representations.constraints.sat.components import (
     ModularAddLinearSATModel,
     ModularAddNWindowSATModel,
 )
-from claasp.representations.constraints.sat.model import CNFFormula
+from claasp.representations.constraints.sat.lowering import _native_xor_formula
+from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
 from claasp.representations.constraints.smt.trails import (
     WordDifferentialEnumeration,
     WordDifferentialSMTModel,
@@ -345,6 +346,10 @@ def _enumeration_metadata(model, formula, solver, extra=()):
             getattr(getattr(model.primitive, "realization", None), "name", "default"),
         ),
         ("backend", "sat"),
+        (
+            "formulation",
+            "native_xor" if isinstance(formula, NativeXorCNFFormula) else "ordinary_cnf",
+        ),
         ("solver", type(solver).__name__),
         ("executable", str(getattr(solver, "executable", "embedded"))),
         (
@@ -372,6 +377,11 @@ def _enumeration_metadata(model, formula, solver, extra=()):
 def _enumerate(model, formula, solver, enumeration_type, metadata, limit):
     if not isinstance(limit, int) or isinstance(limit, bool) or limit <= 0:
         raise ValueError("limit must be a positive integer")
+    if isinstance(formula, NativeXorCNFFormula):
+        from claasp.drivers.solvers.cryptominisat import CryptoMiniSatSolver
+
+        if not isinstance(solver, CryptoMiniSatSolver):
+            raise TypeError("native-XOR trail formulas require CryptoMiniSatSolver")
     indices = {name: index for index, name in enumerate(formula.variables, 1)}
     trails: list[Any] = []
     blocks: list[tuple[int, ...]] = []
@@ -383,11 +393,10 @@ def _enumerate(model, formula, solver, enumeration_type, metadata, limit):
     )
     with context as execution:
         while True:
-            current = CNFFormula(
-                formula.variables,
-                formula.clauses + tuple(blocks),
-                formula.provenance + ("characteristic_block",) * len(blocks),
-                formula.constraint_models,
+            current = replace(
+                formula,
+                clauses=formula.clauses + tuple(blocks),
+                provenance=formula.provenance + ("characteristic_block",) * len(blocks),
             )
             result = execution.solve(current)
             runtime += result.runtime_seconds
@@ -611,8 +620,92 @@ class WordLinearSATModel:
         return _enumerate(self, formula, solver, WordLinearEnumeration, metadata, limit)
 
 
+class WordDifferentialNativeXorSATModel(WordDifferentialSATModel):
+    """Lower complete differential trails with verified native XOR records.
+
+    Only clause groups that exactly equal a canonical parity relation are
+    replaced. Expanding the native records therefore reconstructs the ordinary
+    CNF formula exactly, while CryptoMiniSat can consume the compact form.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToySpeck
+        >>> model = WordDifferentialNativeXorSATModel(ToySpeck(2), fixed_weight=1)
+        >>> formula = model.cnf_formula()
+        >>> (formula.native_xor_count > 0, formula.expanded_cnf().clause_count)
+        (True, 484)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "WordDifferentialNativeXorSATModel",
+        "xor_differential",
+        "canonical parity groups as CryptoMiniSat native XOR records",
+        "Each replaced parity group is verified against its complete ordinary-CNF expansion.",
+    )
+
+    def cnf_formula(self) -> NativeXorCNFFormula:
+        """Return the complete trail formula with exact native parity records."""
+
+        formula = _native_xor_formula(super().cnf_formula())
+        result = replace(
+            formula,
+            constraint_models=tuple(
+                item for item in formula.constraint_models if item.model != self.model_provenance
+            )
+            + (
+                ConstraintModelApplication(
+                    self.model_provenance,
+                    tuple(str(component.component_id) for component in self.primitive.components),
+                ),
+            ),
+        )
+        self._formula = result
+        return result
+
+
+class WordLinearNativeXorSATModel(WordLinearSATModel):
+    """Lower complete linear trails with verified native XOR records.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToySpeck
+        >>> model = WordLinearNativeXorSATModel(ToySpeck(3), maximum_weight=1)
+        >>> formula = model.cnf_formula()
+        >>> (formula.native_xor_count > 0, formula.clause_count < 706)
+        (True, True)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "WordLinearNativeXorSATModel",
+        "xor_linear",
+        "canonical parity groups as CryptoMiniSat native XOR records",
+        "Each replaced parity group is verified against its complete ordinary-CNF expansion.",
+    )
+
+    def cnf_formula(self) -> NativeXorCNFFormula:
+        """Return the complete trail formula with exact native parity records."""
+
+        formula = _native_xor_formula(super().cnf_formula())
+        return replace(
+            formula,
+            constraint_models=tuple(
+                item for item in formula.constraint_models if item.model != self.model_provenance
+            )
+            + (
+                ConstraintModelApplication(
+                    self.model_provenance,
+                    tuple(str(component.component_id) for component in self.primitive.components),
+                ),
+            ),
+        )
+
+
 __all__ = [
     "NWindowSATStrategy",
+    "WordDifferentialNativeXorSATModel",
     "WordDifferentialSATModel",
+    "WordLinearNativeXorSATModel",
     "WordLinearSATModel",
 ]

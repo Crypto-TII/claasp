@@ -6,7 +6,9 @@ from claasp.drivers.solvers import CryptoMiniSatSolver, KissatSolver, MinisatSol
 from claasp.primitives import ToySpeck
 from claasp.representations.constraints.sat import (
     NWindowSATStrategy,
+    WordDifferentialNativeXorSATModel,
     WordDifferentialSATModel,
+    WordLinearNativeXorSATModel,
     WordLinearSATModel,
 )
 
@@ -79,4 +81,36 @@ def test_toy_speck_n_window_counts_are_independently_checked(strategy, expected)
         CryptoMiniSatSolver(timeout_seconds=10), limit=10
     ).require_complete()
     assert len(result.trails) == expected
+    assert all(model.check_characteristic(trail) for trail in result.trails)
+
+
+@pytest.mark.parametrize(
+    "model,expected",
+    (
+        (
+            WordDifferentialNativeXorSATModel(
+                ToySpeck(2),
+                fixed_weight=1,
+                nonzero_input="plaintext",
+                fixed_input_differences={"key": 0},
+            ),
+            6,
+        ),
+        (
+            WordLinearNativeXorSATModel(
+                ToySpeck(3),
+                maximum_weight=1,
+                nonzero_input="plaintext",
+                fixed_inputs={"key": 0},
+            ),
+            13,
+        ),
+    ),
+)
+def test_native_xor_trail_counts_match_ordinary_cnf(model, expected):
+    result = model.enumerate_trails(
+        CryptoMiniSatSolver(timeout_seconds=10), limit=20
+    ).require_complete()
+    assert len(result.trails) == expected
+    assert dict(result.reproducibility)["formulation"] == "native_xor"
     assert all(model.check_characteristic(trail) for trail in result.trails)

@@ -4,12 +4,18 @@ from itertools import product
 
 import pytest
 
-from claasp.primitives import Simon, Speck
+from claasp.drivers.solvers import MinisatSolver
+from claasp.primitives import Simon, Speck, ToySpeck
 from claasp.representations.constraints.sat import (
     BooleanCNFModel,
     BooleanNativeXorModel,
     CryptoMiniSatDimacsExporter,
     NativeXorCNFFormula,
+    NWindowSATStrategy,
+    WordDifferentialNativeXorSATModel,
+    WordDifferentialSATModel,
+    WordLinearNativeXorSATModel,
+    WordLinearSATModel,
 )
 from claasp.representations.execution import ScalarEvaluator
 
@@ -53,3 +59,64 @@ def test_cryptominisat_export_uses_documented_extended_dimacs_records():
     formula = NativeXorCNFFormula(("a", "b", "y"), ((1,),), ("fixed",), (), ((1, 2, -3),), ("xor",))
     text = CryptoMiniSatDimacsExporter().export(formula, include_variable_map=False)
     assert text == "p cnf 3 2\n1 0\nx1 2 -3 0\n"
+
+
+@pytest.mark.parametrize(
+    "ordinary,native,expected_native_count",
+    (
+        (
+            WordDifferentialSATModel(
+                ToySpeck(2),
+                fixed_weight=1,
+                nonzero_input="plaintext",
+                fixed_input_differences={"key": 0},
+            ),
+            WordDifferentialNativeXorSATModel(
+                ToySpeck(2),
+                fixed_weight=1,
+                nonzero_input="plaintext",
+                fixed_input_differences={"key": 0},
+            ),
+            60,
+        ),
+        (
+            WordLinearSATModel(
+                ToySpeck(3),
+                maximum_weight=1,
+                nonzero_input="plaintext",
+                fixed_inputs={"key": 0},
+            ),
+            WordLinearNativeXorSATModel(
+                ToySpeck(3),
+                maximum_weight=1,
+                nonzero_input="plaintext",
+                fixed_inputs={"key": 0},
+            ),
+            197,
+        ),
+    ),
+)
+def test_native_xor_trails_expand_exactly_to_ordinary_cnf(ordinary, native, expected_native_count):
+    ordinary_formula = ordinary.cnf_formula()
+    native_formula = native.cnf_formula()
+    expanded = native_formula.expanded_cnf()
+    canonical = lambda clauses: {frozenset(clause) for clause in clauses}
+    assert native_formula.native_xor_count == expected_native_count
+    assert canonical(expanded.clauses) == canonical(ordinary_formula.clauses)
+    assert expanded.clause_count == ordinary_formula.clause_count
+
+
+def test_native_xor_reencoding_composes_with_n_window_and_rejects_other_solvers():
+    options = {
+        "fixed_weight": 1,
+        "nonzero_input": "plaintext",
+        "fixed_input_differences": {"key": 0},
+        "n_window": NWindowSATStrategy(1),
+    }
+    ordinary = WordDifferentialSATModel(ToySpeck(2), **options).cnf_formula()
+    model = WordDifferentialNativeXorSATModel(ToySpeck(2), **options)
+    native = model.cnf_formula()
+    canonical = lambda clauses: {frozenset(clause) for clause in clauses}
+    assert canonical(native.expanded_cnf().clauses) == canonical(ordinary.clauses)
+    with pytest.raises(TypeError, match="CryptoMiniSatSolver"):
+        model.enumerate_trails(MinisatSolver(), limit=1)
