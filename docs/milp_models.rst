@@ -3,7 +3,31 @@ MILP models
 
 CLAASP's linear-model core is independent of SageMath and Python solver
 packages. Variables, affine expressions, constraints, domains, and objectives
-are explicit immutable values:
+are explicit immutable values.
+
+Generic weighted Word trails
+----------------------------
+
+``WordDifferentialMILPModel`` and ``WordLinearMILPModel`` translate the exact
+reviewed Boolean Word-graph relations to portable binary inequalities and add
+the corresponding trail-weight objective.
+
+.. doctest::
+
+   >>> from claasp.primitives import ToySpeck
+   >>> from claasp.representations.constraints.milp import WordDifferentialMILPModel
+   >>> model = WordDifferentialMILPModel(
+   ...     ToySpeck(2), fixed_weight=1,
+   ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
+   ... )
+   >>> formulation = model.milp_model()
+   >>> (len(formulation.variables), len(formulation.constraints), len(formulation.objective.terms))
+   (187, 501, 9)
+
+The portable clause-to-inequality formulation remains distinct from recovered
+component-specific convex-hull strategies and from optional Gurobi searches.
+
+The core model objects can also be assembled directly:
 
 .. doctest::
 
