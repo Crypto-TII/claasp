@@ -12,8 +12,10 @@ from claasp.primitives import ToySpeck
 from claasp.representations.constraints.sat import (
     ImpossibleBoundarySATModel,
     ModularAddDeterministicTruncatedSATModel,
+    ModularSubtractDeterministicTruncatedSATModel,
     WordDeterministicTruncatedSATModel,
 )
+from claasp.transformations import invert_primitive
 
 pytestmark = pytest.mark.external
 
@@ -42,6 +44,42 @@ def test_deterministic_truncated_modadd_accepts_only_the_semantic_output(solver_
         formula, boundary | _fixed(model, "output", "0000")
     )
     assert rejected.status is SatStatus.UNSATISFIABLE
+
+
+@pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
+def test_deterministic_truncated_modsub_accepts_only_the_semantic_output(solver_type):
+    model = ModularSubtractDeterministicTruncatedSATModel(4)
+    formula = model.cnf_formula()
+    boundary = _fixed(model, "left", "0001") | _fixed(model, "right", "0001")
+    accepted = solver_type(timeout_seconds=10).solve(
+        formula, boundary | _fixed(model, "output", "???0")
+    )
+    assert accepted.status is SatStatus.SATISFIABLE
+    assert tuple(map(str, model.decode_transition(accepted.assignment))) == (
+        "0001",
+        "0001",
+        "???0",
+    )
+
+    rejected = solver_type(timeout_seconds=10).solve(
+        formula, boundary | _fixed(model, "output", "0000")
+    )
+    assert rejected.status is SatStatus.UNSATISFIABLE
+
+
+@pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
+def test_deterministic_truncated_inverse_toy_speck_uses_modular_subtract(solver_type):
+    inverse = invert_primitive(
+        ToySpeck(2), recover_input="plaintext", retained_inputs=("key",)
+    ).primitive
+    model = WordDeterministicTruncatedSATModel(
+        inverse, fixed_input_patterns={"output": "00000001", "key": "0" * 16}
+    )
+    result = solver_type(timeout_seconds=10).solve(model.cnf_formula())
+    assert result.status is SatStatus.SATISFIABLE
+    trail = model.decode_characteristic(result.assignment)
+    assert str(trail.output_pattern) == "?????00?"
+    assert model.check_characteristic(trail)
 
 
 @pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))

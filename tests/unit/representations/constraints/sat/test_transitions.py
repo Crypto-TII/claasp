@@ -11,10 +11,15 @@ from claasp.representations.constraints.sat import (
     ModularAddDifferentialSATModel,
     ModularAddLinearSATModel,
     ModularAddNWindowSATModel,
+    ModularSubtractDeterministicTruncatedSATModel,
     SBoxXorDifferentialSATModel,
     SBoxXorLinearSATModel,
 )
-from claasp.semantics.cryptanalysis import TruncatedXorDifference, truncated_modular_add
+from claasp.semantics.cryptanalysis import (
+    TruncatedXorDifference,
+    truncated_modular_add,
+    truncated_modular_subtract,
+)
 
 
 def _solutions(formula):
@@ -132,8 +137,15 @@ def test_sat_modadd_n_window_matches_direct_carry_difference_definition(window_s
     assert formula.constraint_models[0].model is model.model_provenance
 
 
-def test_sat_modadd_deterministic_truncated_matches_every_two_bit_pattern():
-    model = ModularAddDeterministicTruncatedSATModel(2)
+@pytest.mark.parametrize(
+    "model_type,semantics",
+    (
+        (ModularAddDeterministicTruncatedSATModel, truncated_modular_add),
+        (ModularSubtractDeterministicTruncatedSATModel, truncated_modular_subtract),
+    ),
+)
+def test_sat_modular_deterministic_truncated_matches_every_two_bit_pattern(model_type, semantics):
+    model = model_type(2)
     formula = model.cnf_formula()
 
     def boundary_assignment(prefix, pattern):
@@ -146,9 +158,7 @@ def test_sat_modadd_deterministic_truncated_matches_every_two_bit_pattern():
     patterns = tuple("".join(bits) for bits in product("01?", repeat=2))
     for left, right in product(patterns, repeat=2):
         expected = str(
-            truncated_modular_add(
-                TruncatedXorDifference.parse(left), TruncatedXorDifference.parse(right)
-            )
+            semantics(TruncatedXorDifference.parse(left), TruncatedXorDifference.parse(right))
         )
         for output in patterns:
             boundary = (
