@@ -6,6 +6,29 @@ small immutable representation that owns MiniZinc language items; external
 process execution belongs to ``MiniZincSolver`` under ``drivers``. Neither the
 core graph nor the representation imports the MiniZinc Python package.
 
+Generic weighted Word trails
+----------------------------
+
+``WordDifferentialCPModel`` and ``WordLinearCPModel`` provide portable generic
+MiniZinc searches for the reviewed Word-graph subset. They translate the exact
+Boolean relations, retain stable logical names, and independently recheck the
+decoded characteristic.
+
+.. doctest::
+
+   >>> from claasp.primitives import ToySpeck
+   >>> from claasp.representations.constraints.cp import WordDifferentialCPModel
+   >>> model = WordDifferentialCPModel(
+   ...     ToySpeck(2), fixed_weight=1,
+   ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
+   ... )
+   >>> query = model.cp_model()
+   >>> (len(query.declarations), len(query.constraints))
+   (187, 501)
+
+This portable formulation is the compatibility baseline. It does not claim to
+be equivalent in size or speed to the legacy ARX-specialized MiniZinc builder.
+
 Fixed Speck differential boundaries
 -----------------------------------
 

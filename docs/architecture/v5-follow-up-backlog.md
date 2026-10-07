@@ -527,6 +527,14 @@ decoded trails are checked again through typed semantics. The committed ten-run
 benchmark records the identical 200-variable, 829-constraint fixture without
 replacing the specialized Speck CP model or ranking unlike solvers.
 
+The portable generic CP trail slice adds ``WordDifferentialCPModel`` and
+``WordLinearCPModel``. Both translate the complete reviewed Boolean Word-graph
+relation to MiniZinc with stable logical names, then reuse independent typed
+decoding. Chuffed solves fixed/bounded-weight ToySpeck fixtures for both
+semantics. The committed ten-run benchmark characterizes this compatibility
+baseline; the distinct legacy ARX-optimized carry formulation remains a
+separate candidate and no default changes.
+
 The first deterministic-truncated MILP component slice recovers the legacy
 indicator-based AND abstraction as
 ``BitwiseAndDeterministicTruncatedMILPModel`` and adds

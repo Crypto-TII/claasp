@@ -21,6 +21,8 @@ from claasp.representations.constraints.cp import (
     SpeckProbabilisticTruncatedCPModel,
     SpeckTruncatedCPModel,
     WordDeterministicTruncatedCPModel,
+    WordDifferentialCPModel,
+    WordLinearCPModel,
     WordwiseDifferenceCPModel,
 )
 from claasp.representations.constraints.smt.trails import (
@@ -82,6 +84,31 @@ def test_minizinc_preserves_generic_deterministic_truncated_toy_speck_trail():
         ToySpeck(2), fixed_input_patterns=fixed, output_pattern="00000000"
     )
     assert solver.solve(rejected.cp_model()).status is CPStatus.UNSATISFIABLE
+
+
+@pytest.mark.parametrize(
+    "model",
+    (
+        WordDifferentialCPModel(
+            ToySpeck(2),
+            fixed_weight=1,
+            fixed_input_differences={"key": 0},
+            nonzero_input="plaintext",
+        ),
+        WordLinearCPModel(
+            ToySpeck(3),
+            maximum_weight=1,
+            fixed_inputs={"key": 0},
+            nonzero_input="plaintext",
+        ),
+    ),
+)
+def test_minizinc_preserves_generic_weighted_word_trails(model):
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_characteristic(solved.assignment)
+    assert 0 <= trail.total_weight <= 1
+    assert model.check_characteristic(trail)
 
 
 def _test_solver(*, require_chuffed=False):
