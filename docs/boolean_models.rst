@@ -168,3 +168,79 @@ workloads.
      - 2.562
      - 0.879
      - not reported
+
+Optional n-window strategy
+--------------------------
+
+``NWindowSATStrategy`` recovers the legacy modular-add carry-difference
+heuristic without adding SymPy, joblib, Sage, or generated pickle files. It is
+strictly opt in: omitting ``n_window`` leaves the exact differential formula
+unchanged. A window of size ``n`` rejects ``n + 1`` consecutive ones in
+``left_difference XOR right_difference XOR output_difference`` for each
+modular addition.
+
+For example, applying a two-bit window to every addition adds a separately
+identified constraint layer:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.sat import NWindowSATStrategy
+   >>> bounded_model = WordDifferentialSATModel(
+   ...     ToySpeck(2), fixed_weight=1, nonzero_input="plaintext",
+   ...     fixed_input_differences={"key": 0},
+   ...     n_window=NWindowSATStrategy(2),
+   ... )
+   >>> bounded_formula = bounded_model.cnf_formula()
+   >>> (bounded_formula.variable_count, bounded_formula.clause_count)
+   (202, 594)
+   >>> "n_window_run_bound" in bounded_formula.provenance
+   True
+
+Use ``by_round=(...)`` or ``by_component={...}`` when additions need different
+windows. The component mapping deliberately names every modular addition so a
+graph change cannot silently leave one unconstrained. Optional
+``number_of_full_windows`` and ``full_window_operator`` (``"at_least"``,
+``"at_most"``, or ``"exactly"``) constrain the global count of overlapping
+full windows.
+
+The ten-run ARM64 comparison in
+``architecture/audits/data/sat_n_window_benchmark.json`` uses the same
+ToySpeck-4 boundaries and maximum weight for every row. The heuristic adds
+21--42 variables and 189--224 clauses on this small workload. Median solve
+times vary by strategy and solver, so these data do not establish a generally
+faster formulation; they establish reproducibility and show that pruning must
+offset real encoding overhead on the intended larger searches.
+
+.. list-table:: Median solve time in milliseconds
+   :header-rows: 1
+
+   * - Strategy
+     - Variables
+     - Clauses
+     - MiniSat
+     - Kissat
+     - CryptoMiniSat
+   * - Exact
+     - 239
+     - 830
+     - 1.009
+     - 2.596
+     - 1.098
+   * - Window 0
+     - 260
+     - 1,019
+     - 0.961
+     - 1.501
+     - 0.960
+   * - Window 1
+     - 281
+     - 1,054
+     - 0.873
+     - 3.165
+     - 1.088
+   * - Window 2
+     - 274
+     - 1,047
+     - 0.871
+     - 3.133
+     - 1.013

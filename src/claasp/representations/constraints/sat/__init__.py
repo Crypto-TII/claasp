@@ -7,6 +7,7 @@ from claasp.representations.constraints.sat.components import (
     ModularAddFunctionalSATModel,
     ModularAddLinearSATModel,
     ModularAddNativeXorSATModel,
+    ModularAddNWindowSATModel,
     SBoxFunctionalSATModel,
     SBoxTransitionSATModel,
     SBoxXorDifferentialSATModel,
@@ -17,6 +18,7 @@ from claasp.representations.constraints.sat.exporters import CryptoMiniSatDimacs
 from claasp.representations.constraints.sat.lowering import BooleanCNFModel, BooleanNativeXorModel
 from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
 from claasp.representations.constraints.sat.trails import (
+    NWindowSATStrategy,
     WordDifferentialSATModel,
     WordLinearSATModel,
 )
@@ -32,6 +34,8 @@ __all__ = [
     "ModularAddFunctionalSATModel",
     "ModularAddLinearSATModel",
     "ModularAddNativeXorSATModel",
+    "ModularAddNWindowSATModel",
+    "NWindowSATStrategy",
     "NativeXorCNFFormula",
     "SBoxFunctionalSATModel",
     "SBoxTransitionSATModel",
