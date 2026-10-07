@@ -575,6 +575,30 @@ does not claim the probability of a concrete four-evaluation experiment.
 Differential-linear SAT boundaries
 ----------------------------------
 
+The semi-deterministic alternative replaces the deterministic middle with the
+recovered look-ahead-window modular-add encoding. Its estimated middle weight
+is reported separately because the legacy objective did not consistently mix
+that fixed-point estimate with exact differential and linear weights.
+
+.. doctest::
+
+   >>> from claasp.primitives import Speck
+   >>> from claasp.representations.constraints.sat import (
+   ...     WordSemiDeterministicDifferentialLinearSATModel,
+   ... )
+   >>> semi_dl = WordSemiDeterministicDifferentialLinearSATModel(
+   ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
+   ...     differential_maximum_weight=16,
+   ...     middle_maximum_scaled_weight=None, linear_maximum_weight=16,
+   ... )
+   >>> formula = semi_dl.cnf_formula()
+   >>> "semi_deterministic_weight_code" in formula.provenance
+   True
+
+Set ``middle_maximum_scaled_weight`` when a bound on the historical
+hundredths-of-a-bit cost is desired. Leaving it as ``None`` preserves all
+middle transitions and avoids the large repeated-literal cardinality counter.
+
 ``DifferentialToTruncatedSATModel`` and ``TruncatedToLinearSATModel`` expose
 the two boundary relations recovered from the legacy differential-linear SAT
 model. The upper relation keeps an incoming XOR difference exact in the

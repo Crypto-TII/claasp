@@ -46,6 +46,8 @@ from claasp.representations.constraints.sat.trails import (
     WordDifferentialSATModel,
     WordLinearNativeXorSATModel,
     WordLinearSATModel,
+    WordSemiDeterministicDifferentialLinearSATModel,
+    WordSemiDeterministicDifferentialLinearSATTrail,
 )
 
 __all__ = [
@@ -94,4 +96,6 @@ __all__ = [
     "WordDifferentialNativeXorSATModel",
     "WordLinearSATModel",
     "WordLinearNativeXorSATModel",
+    "WordSemiDeterministicDifferentialLinearSATModel",
+    "WordSemiDeterministicDifferentialLinearSATTrail",
 ]

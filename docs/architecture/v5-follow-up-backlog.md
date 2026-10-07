@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box and bitwise-AND MILP strategies plus SAT/CMS recovery slices implemented; next: semi-deterministic-middle and remaining backend strategies**
+Status: **S-box and bitwise-AND MILP strategies plus SAT/CMS recovery slices implemented; next: remaining CP, MILP, boomerang, and monomial strategies**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -586,6 +586,18 @@ same fixed-weight Speck32/64-3 fixture. CryptoMiniSat 5.11.15 exceeded the
 ten-run benchmark reports only the two completing solvers rather than hiding
 or generalizing from that limitation. The high-order interpretation and
 precise source of the boundary remain ``TBD``.
+
+The semi-deterministic-middle slice adds
+``WordSemiDeterministicDifferentialLinearSATModel``. It replaces the exact
+three-valued middle with the recovered look-ahead-window modular-add relation
+while retaining independently decoded exact-differential and XOR-linear
+sections. The upper and lower connectors are rechecked from typed values.
+Because the legacy search did not consistently combine the middle fixed-point
+cost with its differential-plus-twice-linear objective, the v5 result reports
+``legacy_objective_weight`` and ``middle_weight`` separately. MiniSat and
+Kissat solve the same unbounded-middle Speck32/64-3 fixture; the ten-run
+benchmark records both without selecting a new default. Literature provenance
+for the semi-deterministic relation remains ``TBD``.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and
