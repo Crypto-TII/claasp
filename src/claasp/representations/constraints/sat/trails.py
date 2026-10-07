@@ -28,6 +28,7 @@ from claasp.representations.constraints import (
     _unaudited_model,
 )
 from claasp.representations.constraints.sat.components import (
+    DifferentialToTruncatedSATModel,
     ImpossibleBoundarySATModel,
     ModularAddDeterministicTruncatedSATModel,
     ModularAddDifferentialSATModel,
@@ -36,6 +37,7 @@ from claasp.representations.constraints.sat.components import (
     ModularAddSemiDeterministicTruncatedSATModel,
     ModularSubtractDeterministicTruncatedSATModel,
     ProbabilisticTruncatedModularAddSATModel,
+    TruncatedToLinearSATModel,
 )
 from claasp.representations.constraints.sat.lowering import _native_xor_formula
 from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
@@ -1719,6 +1721,278 @@ class WordLinearSATModel:
             (("fixed_inputs", repr(tuple(sorted(self.fixed_inputs.items())))),),
         )
         return _enumerate(self, formula, solver, WordLinearEnumeration, metadata, limit)
+
+
+@dataclass(frozen=True, slots=True)
+class WordDeterministicDifferentialLinearSATTrail:
+    """One decoded differential, deterministic-truncated, and linear witness.
+
+    The objective is the characteristic convention used by the legacy SAT
+    search: differential weight plus twice the linear-correlation weight. The
+    deterministic middle contributes no probability estimate.
+
+    EXAMPLES::
+
+        >>> from types import SimpleNamespace
+        >>> trail = WordDeterministicDifferentialLinearSATTrail(
+        ...     SimpleNamespace(total_weight=2),
+        ...     SimpleNamespace(),
+        ...     SimpleNamespace(total_weight=3),
+        ... )
+        >>> trail.total_weight
+        8
+    """
+
+    differential: Any
+    middle: WordDeterministicTruncatedCharacteristic
+    linear: Any
+
+    @property
+    def total_weight(self):
+        """Return differential weight plus twice the linear weight."""
+
+        return self.differential.total_weight + 2 * self.linear.total_weight
+
+
+class WordDeterministicDifferentialLinearSATModel:
+    """Compose exact, truncated, and linear SAT searches over round slices.
+
+    This recovered strategy keeps all three submodels independently decodable.
+    The upper connector converts the prefix output difference to an exact
+    truncated state; the lower connector forces masks to zero only at unknown
+    middle bits.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = WordDeterministicDifferentialLinearSATModel(
+        ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
+        ...     differential_maximum_weight=16, linear_maximum_weight=16,
+        ... )
+        >>> formula = model.cnf_formula()
+        >>> (formula.variable_count > 0, "differential_to_truncated_exact" in formula.provenance)
+        (True, True)
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.SAT,
+        "WordDeterministicDifferentialLinearSATModel",
+        "differential_linear",
+        "round-sliced differential, deterministic-truncated, and linear composition",
+        "Recovered from CLAASP's SAT composition; exact primary-source correspondence remains unaudited.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        prefix_rounds: int,
+        middle_rounds: int,
+        differential_maximum_weight: int,
+        linear_maximum_weight: int,
+        input_difference: int | None = None,
+        output_mask: int | None = None,
+    ) -> None:
+        counts = (prefix_rounds, middle_rounds)
+        if any(not isinstance(value, int) or isinstance(value, bool) or value <= 0 for value in counts):
+            raise ValueError("prefix_rounds and middle_rounds must be positive integers")
+        if prefix_rounds + middle_rounds >= len(primitive.rounds):
+            raise ValueError("the differential, middle, and linear slices must all be nonempty")
+        for weight in (differential_maximum_weight, linear_maximum_weight):
+            if not isinstance(weight, int) or isinstance(weight, bool) or weight < 0:
+                raise ValueError("weight bounds must be nonnegative integers")
+        block_width = sum(
+            port.value_type.unit_count * port.value_type.domain.width
+            for name, port in primitive.input_ports.items()
+            if name == "plaintext"
+        )
+        if not block_width:
+            raise NotImplementedError("differential-linear SAT assembly requires plaintext")
+        for value, label in ((input_difference, "input difference"), (output_mask, "output mask")):
+            if value is not None and (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or not 0 <= value < 1 << block_width
+            ):
+                raise ValueError(f"{label} must fit the primitive block width")
+        self.primitive = primitive
+        self.prefix_rounds = prefix_rounds
+        self.middle_rounds = middle_rounds
+        self.suffix_rounds = len(primitive.rounds) - prefix_rounds - middle_rounds
+        self.differential_maximum_weight = differential_maximum_weight
+        self.linear_maximum_weight = linear_maximum_weight
+        self.input_difference = input_difference
+        self.output_mask = output_mask
+        self._formula: CNFFormula | None = None
+        self._maps: dict[str, dict[str, str]] = {}
+
+    @staticmethod
+    def _zero_pattern(port):
+        return "0" * (port.value_type.unit_count * port.value_type.domain.width)
+
+    def cnf_formula(self) -> CNFFormula:
+        """Return the complete round-sliced differential-linear formula."""
+
+        prefix_end = self.prefix_rounds - 1
+        middle_end = prefix_end + self.middle_rounds
+        prefix_primitive = slice_rounds(self.primitive, 0, prefix_end).primitive
+        middle_primitive = slice_rounds(self.primitive, self.prefix_rounds, middle_end).primitive
+        suffix_primitive = slice_rounds(self.primitive, middle_end + 1, len(self.primitive.rounds) - 1).primitive
+
+        prefix_fixed = {"key": 0} if "key" in prefix_primitive.input_ports else {}
+        if self.input_difference is not None:
+            prefix_fixed["plaintext"] = self.input_difference
+        self._prefix = WordDifferentialSATModel(
+            prefix_primitive,
+            maximum_weight=self.differential_maximum_weight,
+            nonzero_input="plaintext" if self.input_difference is None else None,
+            fixed_input_differences=prefix_fixed,
+        )
+        middle_fixed = {
+            name: self._zero_pattern(port)
+            for name, port in middle_primitive.input_ports.items()
+            if name != "state"
+        }
+        self._middle = WordDeterministicTruncatedSATModel(
+            middle_primitive, fixed_input_patterns=middle_fixed
+        )
+        suffix_fixed = {
+            name: 0 for name in suffix_primitive.input_ports if name != "state"
+        }
+        self._linear = WordLinearSATModel(
+            suffix_primitive,
+            maximum_weight=self.linear_maximum_weight,
+            fixed_input_masks=suffix_fixed,
+        )
+        subformulas = (
+            ("differential", self._prefix.cnf_formula()),
+            ("middle", self._middle.cnf_formula()),
+            ("linear", self._linear.cnf_formula()),
+        )
+
+        variables: list[str] = []
+        indices: dict[str, int] = {}
+        clauses: list[tuple[int, ...]] = []
+        provenance: list[str] = []
+        applications = []
+        maps = {}
+
+        def allocate(name):
+            if name not in indices:
+                variables.append(name)
+                indices[name] = len(variables)
+            return name
+
+        def append_formula(namespace, formula):
+            mapping = {name: allocate(f"{namespace}_{name}") for name in formula.variables}
+            remap = {position: indices[mapping[name]] for position, name in enumerate(formula.variables, 1)}
+            for clause, label in zip(formula.clauses, formula.provenance):
+                clauses.append(
+                    tuple(remap[abs(literal)] * (1 if literal > 0 else -1) for literal in clause)
+                )
+                provenance.append(label)
+            applications.extend(formula.constraint_models)
+            maps[namespace] = mapping
+
+        for namespace, formula in subformulas:
+            append_formula(namespace, formula)
+
+        def append_connector(formula, mapping):
+            remap = {position: indices[mapping[name]] for position, name in enumerate(formula.variables, 1)}
+            for clause, label in zip(formula.clauses, formula.provenance):
+                clauses.append(
+                    tuple(remap[abs(literal)] * (1 if literal > 0 else -1) for literal in clause)
+                )
+                provenance.append(label)
+            applications.extend(formula.constraint_models)
+
+        prefix_output = self._prefix._shared._output
+        middle_input = self._middle._ports["state"]
+        if len(prefix_output) != len(middle_input):
+            raise ValueError("upper differential-linear boundary widths disagree")
+        upper = DifferentialToTruncatedSATModel(len(prefix_output)).cnf_formula()
+        append_connector(
+            upper,
+            {
+                **{
+                    f"difference_{bit}": maps["differential"][name]
+                    for bit, name in enumerate(prefix_output)
+                },
+                **{
+                    f"truncated_{bit}_{field}": maps["middle"][pair[position]]
+                    for bit, pair in enumerate(middle_input)
+                    for position, field in enumerate(("unknown", "value"))
+                },
+            },
+        )
+
+        middle_output = self._middle._output
+        linear_input = self._linear._shared._ports["state"]
+        if len(middle_output) != len(linear_input):
+            raise ValueError("lower differential-linear boundary widths disagree")
+        lower = TruncatedToLinearSATModel(len(linear_input)).cnf_formula()
+        append_connector(
+            lower,
+            {
+                **{
+                    f"truncated_{bit}_{field}": maps["middle"][pair[position]]
+                    for bit, pair in enumerate(middle_output)
+                    for position, field in enumerate(("unknown", "value"))
+                },
+                **{
+                    f"mask_{bit}": maps["linear"][name]
+                    for bit, name in enumerate(linear_input)
+                },
+            },
+        )
+
+        linear_output = tuple(maps["linear"][name] for name in self._linear._shared._output)
+        if self.output_mask is None:
+            clauses.append(tuple(indices[name] for name in linear_output))
+            provenance.append("nonzero_differential_linear_output_mask")
+        else:
+            for bit, name in enumerate(linear_output):
+                value = self.output_mask & (1 << (len(linear_output) - 1 - bit))
+                clauses.append(((indices[name] if value else -indices[name]),))
+                provenance.append("fixed_differential_linear_output_mask")
+
+        applications.append(ConstraintModelApplication(self.model_provenance))
+        self._maps = maps
+        self._formula = CNFFormula(
+            tuple(variables), tuple(clauses), tuple(provenance), tuple(applications)
+        )
+        return self._formula
+
+    def decode_trail(self, assignment) -> WordDeterministicDifferentialLinearSATTrail:
+        """Decode all three sections and independently check both connectors."""
+
+        if self._formula is None:
+            raise ValueError("build the formula before decoding")
+        if not self._formula.is_satisfied(assignment):
+            raise ValueError("invalid differential-linear SAT witness")
+
+        def project(namespace):
+            return {local: assignment[global_name] for local, global_name in self._maps[namespace].items()}
+
+        differential = self._prefix.decode_characteristic(project("differential"))
+        middle = self._middle.decode_characteristic(project("middle"))
+        linear = self._linear.decode_characteristic(project("linear"))
+        middle_input = dict(middle.input_patterns)["state"]
+        if any(bit is TruncatedBit.UNKNOWN for bit in middle_input.bits):
+            raise ValueError("upper differential-linear boundary is not exact")
+        if differential.output_difference != int(str(middle_input), 2):
+            raise ValueError("upper differential-linear boundary values disagree")
+        state_mask = dict(linear.input_masks)["state"]
+        mask_bits = tuple(
+            (state_mask >> (len(middle.output_pattern.bits) - bit - 1)) & 1
+            for bit in range(len(middle.output_pattern.bits))
+        )
+        if any(
+            bit is TruncatedBit.UNKNOWN and mask
+            for bit, mask in zip(middle.output_pattern.bits, mask_bits)
+        ):
+            raise ValueError("lower differential-linear boundary is incompatible")
+        return WordDeterministicDifferentialLinearSATTrail(differential, middle, linear)
 
 
 class WordDifferentialNativeXorSATModel(WordDifferentialSATModel):

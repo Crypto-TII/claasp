@@ -13,6 +13,7 @@ from claasp.representations.constraints.sat import (
     SpeckImpossibleSATModel,
     SpeckProbabilisticTruncatedSATModel,
     SpeckSemiDeterministicTruncatedSATModel,
+    WordDeterministicDifferentialLinearSATModel,
     WordDeterministicTruncatedSATModel,
     WordDifferentialSATModel,
     WordLinearSATModel,
@@ -216,3 +217,50 @@ def test_speck_semi_deterministic_sat_reuses_graph_assembly_compactly():
     assert formula.clause_count < portable.clause_count
     assert len(model._round_models) == 2
     assert any(item.model == model.model_provenance for item in formula.constraint_models)
+
+
+def test_deterministic_differential_linear_sat_assembles_three_round_slices():
+    model = WordDeterministicDifferentialLinearSATModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=1,
+        middle_rounds=1,
+        differential_maximum_weight=16,
+        linear_maximum_weight=16,
+    )
+    formula = model.cnf_formula()
+    assert (formula.variable_count, formula.clause_count, formula.literal_count) == (
+        2543,
+        7151,
+        23144,
+    )
+    assert "differential_to_truncated_exact" in formula.provenance
+    assert "truncated_to_linear_compatibility" in formula.provenance
+    assert "nonzero_differential_linear_output_mask" in formula.provenance
+
+
+def test_deterministic_differential_linear_sat_validates_partition_and_bounds():
+    primitive = Speck(number_of_rounds=3)
+    with pytest.raises(ValueError, match="positive"):
+        WordDeterministicDifferentialLinearSATModel(
+            primitive,
+            prefix_rounds=0,
+            middle_rounds=1,
+            differential_maximum_weight=1,
+            linear_maximum_weight=1,
+        )
+    with pytest.raises(ValueError, match="all be nonempty"):
+        WordDeterministicDifferentialLinearSATModel(
+            primitive,
+            prefix_rounds=1,
+            middle_rounds=2,
+            differential_maximum_weight=1,
+            linear_maximum_weight=1,
+        )
+    with pytest.raises(ValueError, match="nonnegative"):
+        WordDeterministicDifferentialLinearSATModel(
+            primitive,
+            prefix_rounds=1,
+            middle_rounds=1,
+            differential_maximum_weight=-1,
+            linear_maximum_weight=1,
+        )
