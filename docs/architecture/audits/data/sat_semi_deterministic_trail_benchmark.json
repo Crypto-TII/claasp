@@ -1,0 +1,110 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "results": [
+    {
+      "assignment_valid": true,
+      "clauses": 1327845,
+      "construction_seconds_median": 0.9084606884999857,
+      "literals": 4877959,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported",
+      "repeats": 10,
+      "solver": "MinisatSolver",
+      "solver_seconds_median": 3.138625875999992,
+      "solver_status": "satisfiable",
+      "solver_version": "1:2.2.1-8build1",
+      "strategy": "portable_counter",
+      "trail_valid": true,
+      "variables": 554782
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 1327845,
+      "construction_seconds_median": 0.9717673124999919,
+      "literals": 4877959,
+      "peak_memory_bytes_median": 733122560.0,
+      "peak_memory_status": "measured",
+      "repeats": 10,
+      "solver": "KissatSolver",
+      "solver_seconds_median": 0.5644512919999443,
+      "solver_status": "satisfiable",
+      "solver_version": "4.0.4",
+      "strategy": "portable_counter",
+      "trail_valid": true,
+      "variables": 554782
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 1327845,
+      "construction_seconds_median": 0.9511162510000304,
+      "literals": 4877959,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported",
+      "repeats": 10,
+      "solver": "CryptoMiniSatSolver",
+      "solver_seconds_median": 0.6401182500000004,
+      "solver_status": "satisfiable",
+      "solver_version": "CryptoMiniSat version 5.11.15",
+      "strategy": "portable_counter",
+      "trail_valid": true,
+      "variables": 554782
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 1116019,
+      "construction_seconds_median": 0.55590668800005,
+      "literals": 2790799,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported",
+      "repeats": 10,
+      "solver": "MinisatSolver",
+      "solver_seconds_median": 0.257796520500051,
+      "solver_status": "satisfiable",
+      "solver_version": "1:2.2.1-8build1",
+      "strategy": "recovered_windows",
+      "trail_valid": true,
+      "variables": 554272
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 1116019,
+      "construction_seconds_median": 0.5597309579999319,
+      "literals": 2790799,
+      "peak_memory_bytes_median": 733122560.0,
+      "peak_memory_status": "measured",
+      "repeats": 10,
+      "solver": "KissatSolver",
+      "solver_seconds_median": 0.308348333500021,
+      "solver_status": "satisfiable",
+      "solver_version": "4.0.4",
+      "strategy": "recovered_windows",
+      "trail_valid": true,
+      "variables": 554272
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 1116019,
+      "construction_seconds_median": 0.5335271875001126,
+      "literals": 2790799,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported",
+      "repeats": 10,
+      "solver": "CryptoMiniSatSolver",
+      "solver_seconds_median": 0.2511778334999235,
+      "solver_status": "satisfiable",
+      "solver_version": "CryptoMiniSat version 5.11.15",
+      "strategy": "recovered_windows",
+      "trail_valid": true,
+      "variables": 554272
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "comparison": "same graph, boundaries, objective, solver, settings, and host",
+    "description": "Speck32/64-2 trail with scaled weight at most 100",
+    "timeout_seconds": 30
+  }
+}

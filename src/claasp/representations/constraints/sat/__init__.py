@@ -24,9 +24,12 @@ from claasp.representations.constraints.sat.lowering import BooleanCNFModel, Boo
 from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
 from claasp.representations.constraints.sat.trails import (
     NWindowSATStrategy,
+    SemiDeterministicModularAddTransition,
     SpeckImpossibleSATModel,
     SpeckImpossibleSATTrail,
     SpeckProbabilisticTruncatedSATModel,
+    SpeckSemiDeterministicTruncatedSATModel,
+    SpeckSemiDeterministicTruncatedTrail,
     WordDeterministicTruncatedCharacteristic,
     WordDeterministicTruncatedEnumeration,
     WordDeterministicTruncatedSATModel,
@@ -62,6 +65,9 @@ __all__ = [
     "SpeckImpossibleSATModel",
     "SpeckImpossibleSATTrail",
     "SpeckProbabilisticTruncatedSATModel",
+    "SemiDeterministicModularAddTransition",
+    "SpeckSemiDeterministicTruncatedSATModel",
+    "SpeckSemiDeterministicTruncatedTrail",
     "WiringFunctionalSATModel",
     "WordDeterministicTruncatedCharacteristic",
     "WordDeterministicTruncatedEnumeration",
