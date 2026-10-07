@@ -252,8 +252,97 @@ not a universal winner.
 
 The reduced formulations use far fewer variables than one-hot and far fewer
 constraints than the full hull, while solver times are close on this tiny
-case. Larger S-boxes and complete trail searches require separate benchmarks
-before any default-selection decision.
+case. Complete trail searches require separate benchmarks before any
+default-selection decision.
+
+Large-S-box Espresso strategy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Eight-bit S-boxes can explicitly select the recovered Espresso
+product-of-sums formulation. The committed AES bundle is validated against all
+65,536 input/output pairs when first loaded, then cached as immutable data.
+Espresso is needed only to regenerate the bundle:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.milp import SBoxXorDifferentialEspressoMILPModel
+   >>> aes_system = load_bundled_sbox_milp_inequalities(
+   ...     "aes", TrailKind.XOR_DIFFERENTIAL,
+   ...     SBoxMILPInequalityStrategy.ESPRESSO,
+   ... )
+   >>> aes_relation = SBoxXorDifferentialEspressoMILPModel(aes_system)
+   >>> aes_model = aes_relation.milp_model(input_pattern=1, output_pattern=31)
+   >>> aes_transition = aes_relation.decode_transition(aes_relation.witness(1, 31))
+   >>> (aes_transition.numerator, aes_transition.denominator, aes_transition.weight)
+   (4, 256, 6.0)
+   >>> (len(aes_model.variables), aes_relation.inequality_count)
+   (19, 8661)
+
+The legacy ``-okiss`` parser expected header lines not emitted by the Espresso
+2.3 executable in the CLAASP Docker image. The recovery therefore parses
+standard ``espresso -epos`` output and rejects empty output instead of copying
+the silent empty-constraint behavior. The generated clauses are independently
+checked as bit-set relations before a model is exposed.
+
+Regenerate the committed AES data with::
+
+   PYTHONPATH=src python tools/generate_large_sbox_milp_inequalities.py \
+       --name aes --builtin aes \
+       --output src/claasp/representations/constraints/milp/data/aes_sbox_milp_inequalities.json
+
+The five-run canonical-Docker benchmark is recorded in
+``architecture/audits/data/aes_sbox_milp_strategy_benchmark.json``. Construction
+medians below use the immutable bundle cache; ``Cold ms`` includes the first
+exhaustive bundle validation. Memory is the maximum reported by GLPK.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Semantics
+     - Strategy
+     - Variables
+     - Constraints
+     - Cold ms
+     - Build ms
+     - Solve ms
+     - MiB
+   * - Differential
+     - one-hot
+     - 32,402
+     - 25
+     - 223.5
+     - 226.4
+     - 316.7
+     - 40.8
+   * - Differential
+     - Espresso
+     - 19
+     - 8,687
+     - 1,739.1
+     - 82.2
+     - 94.2
+     - 15.6
+   * - Linear
+     - one-hot
+     - 60,962
+     - 25
+     - 437.9
+     - 488.9
+     - 670.7
+     - 76.7
+   * - Linear
+     - Espresso
+     - 33
+     - 38,498
+     - 5,693.7
+     - 382.1
+     - 300.5
+     - 56.7
+
+On this single-S-box workload Espresso trades many constraints for dramatically
+fewer binary variables, smaller LP exports, lower GLPK memory, and lower solve
+times after the one-time validation. One workload is not sufficient to change
+the portable one-hot default.
 
 ``WordwiseXorDifference.xor_many`` preserves known-term cancellation, including
 recovery of a lone nonzero term. ``propagate_dense_wordwise_activity`` retains
