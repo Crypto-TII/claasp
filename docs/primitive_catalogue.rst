@@ -88,7 +88,7 @@ than being inferred from package names. Queries work in either direction:
    >>> [item.name for item in catalogue.components(representation="boolean_cnf")]
    ['Add', 'BitVectorSBox', 'BitwiseAnd', 'Constant', 'Identity', 'ModularAdd', 'Permutation', 'Rotate', 'Xor']
    >>> [item.name for item in catalogue.drivers(representation="boolean_cnf")]
-   ['minizinc', 'kissat', 'minisat', 'z3', 'glpk']
+   ['minizinc', 'kissat', 'cryptominisat', 'minisat', 'z3', 'glpk']
    >>> "enumerate_xor_differential_trails" in {
    ...     item.name for item in catalogue.analyses(primitive="Speck")}
    True

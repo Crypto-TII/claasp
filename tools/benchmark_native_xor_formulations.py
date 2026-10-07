@@ -11,6 +11,7 @@ from pathlib import Path
 from statistics import median
 from time import monotonic
 
+from claasp.drivers.solvers import CryptoMiniSatSolver, KissatSolver, SatStatus
 from claasp.primitives import Simon, Speck
 from claasp.representations.constraints.sat import (
     BooleanCNFModel,
@@ -21,8 +22,8 @@ from claasp.representations.constraints.sat import (
 from claasp.representations.constraints.sat.exporters import DimacsExporter
 
 
-def _benchmark(name, primitive, strategy, repeats):
-    times = []
+def _benchmark(name, primitive, strategy, solver_name, repeats):
+    construction_times = []
     formula = None
     for _ in range(repeats):
         started = monotonic()
@@ -31,7 +32,7 @@ def _benchmark(name, primitive, strategy, repeats):
             if strategy == "native_xor"
             else BooleanCNFModel(primitive).cnf_formula()
         )
-        times.append(monotonic() - started)
+        construction_times.append(monotonic() - started)
     assert formula is not None
     if strategy == "native_xor":
         if not isinstance(formula, NativeXorCNFFormula):
@@ -43,6 +44,27 @@ def _benchmark(name, primitive, strategy, repeats):
         exported = DimacsExporter().export(formula, include_variable_map=False)
         native_count = 0
         expanded_count = formula.clause_count
+    assumptions = {
+        variable: 0
+        for variable in formula.variables
+        if any(variable.startswith(f"{name}_") for name in primitive.input_ports)
+    }
+    solver = (
+        CryptoMiniSatSolver(timeout_seconds=60)
+        if solver_name == "cryptominisat"
+        else KissatSolver(timeout_seconds=60)
+    )
+    results = [solver.solve(formula, assumptions) for _ in range(repeats)]
+    if any(result.status is not SatStatus.SATISFIABLE for result in results):
+        raise RuntimeError(f"{solver.__class__.__name__} did not solve {name} as satisfiable")
+    if any(
+        result.assignment is None or not formula.is_satisfied(result.assignment)
+        for result in results
+    ):
+        raise RuntimeError(f"{solver.__class__.__name__} returned an invalid assignment")
+    peak_memory = tuple(
+        result.peak_memory_bytes for result in results if result.peak_memory_bytes is not None
+    )
     return {
         "primitive": name,
         "strategy": strategy,
@@ -52,9 +74,14 @@ def _benchmark(name, primitive, strategy, repeats):
         "native_xor_clauses": native_count,
         "expanded_cnf_clauses": expanded_count,
         "export_bytes": len(exported.encode("ascii")),
-        "construction_seconds_median": median(times),
-        "solver": None,
-        "solver_status": "not_run: CryptoMiniSat is not installed in the canonical image",
+        "construction_seconds_median": median(construction_times),
+        "solver": solver.__class__.__name__,
+        "solver_version": solver.version(),
+        "solver_seconds_median": median(result.runtime_seconds for result in results),
+        "solver_status": SatStatus.SATISFIABLE.value,
+        "assignment_valid": True,
+        "peak_memory_bytes_median": median(peak_memory) if peak_memory else None,
+        "peak_memory_status": "measured" if peak_memory else "not_reported",
     }
 
 
@@ -70,12 +97,22 @@ def main() -> None:
         ("Simon-1", Simon(number_of_rounds=1)),
     )
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
+        "workload": {
+            "primitives": ["Speck-1", "Simon-1"],
+            "input_assignment": "all-zero",
+            "objective": "satisfiability",
+            "timeout_seconds": 60,
+        },
         "environment": {"platform": platform.platform(), "python": sys.version.split()[0]},
         "results": [
-            _benchmark(name, primitive, strategy, arguments.repeats)
+            _benchmark(name, primitive, strategy, solver, arguments.repeats)
             for name, primitive in primitives
-            for strategy in ("ordinary_cnf", "native_xor")
+            for strategy, solver in (
+                ("ordinary_cnf", "kissat"),
+                ("ordinary_cnf", "cryptominisat"),
+                ("native_xor", "cryptominisat"),
+            )
         ],
     }
     rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"

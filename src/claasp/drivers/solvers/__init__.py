@@ -1,6 +1,7 @@
 """Optional external constraint-solver drivers."""
 
 from claasp.drivers.solvers.base import SatResult, SatStatus
+from claasp.drivers.solvers.cryptominisat import CryptoMiniSatSolver
 from claasp.drivers.solvers.kissat import KissatSolver
 from claasp.drivers.solvers.milp_results import MILPResult, MILPStatus
 from claasp.drivers.solvers.minisat import MinisatSolver
@@ -15,6 +16,7 @@ __all__ = [
     "CPEnumerationResult",
     "CPResult",
     "CPStatus",
+    "CryptoMiniSatSolver",
     "GLPKSolver",
     "KissatSolver",
     "MILPResult",

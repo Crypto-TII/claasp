@@ -133,6 +133,7 @@ Boolean models
 
 .. automodule:: claasp.representations.constraints.sat.exporters
    :members:
+   :no-index:
 
 .. automodule:: claasp.drivers.solvers
    :members:
