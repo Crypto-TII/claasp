@@ -21,6 +21,7 @@ __all__ = [
     "SpeckTruncatedCPModel",
     "WordwiseDifferenceCPModel",
     "WordDeterministicTruncatedCPModel",
+    "WordDeterministicDifferentialLinearCPModel",
     "WordDifferentialCPModel",
     "WordLinearCPModel",
 ]
@@ -53,6 +54,7 @@ def __getattr__(name: str):
         "SpeckTruncatedCPModel",
         "WordwiseDifferenceCPModel",
         "WordDeterministicTruncatedCPModel",
+        "WordDeterministicDifferentialLinearCPModel",
         "WordDifferentialCPModel",
         "WordLinearCPModel",
     }:

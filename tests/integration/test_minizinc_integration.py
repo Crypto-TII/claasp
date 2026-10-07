@@ -20,6 +20,7 @@ from claasp.representations.constraints.cp import (
     SpeckImpossibleCPModel,
     SpeckProbabilisticTruncatedCPModel,
     SpeckTruncatedCPModel,
+    WordDeterministicDifferentialLinearCPModel,
     WordDeterministicTruncatedCPModel,
     WordDifferentialCPModel,
     WordLinearCPModel,
@@ -109,6 +110,20 @@ def test_minizinc_preserves_generic_weighted_word_trails(model):
     trail = model.decode_characteristic(solved.assignment)
     assert 0 <= trail.total_weight <= 1
     assert model.check_characteristic(trail)
+
+
+def test_minizinc_preserves_deterministic_differential_linear_composition():
+    model = WordDeterministicDifferentialLinearCPModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=1,
+        middle_rounds=1,
+        differential_maximum_weight=16,
+        linear_maximum_weight=16,
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.linear.output_mask != 0
 
 
 def _test_solver(*, require_chuffed=False):

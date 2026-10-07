@@ -1,11 +1,25 @@
 """Complete CP trail assembly."""
 
-from claasp.primitives import ToySpeck
+from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints.cp import (
+    WordDeterministicDifferentialLinearCPModel,
     WordDeterministicTruncatedCPModel,
     WordDifferentialCPModel,
     WordLinearCPModel,
 )
+
+
+def test_differential_linear_cp_assembles_complete_composition():
+    model = WordDeterministicDifferentialLinearCPModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=1,
+        middle_rounds=1,
+        differential_maximum_weight=16,
+        linear_maximum_weight=16,
+    )
+    query = model.cp_model()
+    assert (len(query.declarations), len(query.constraints)) == (2543, 7151)
+    assert query.constraint_models[0].model == model.model_provenance
 
 
 def test_deterministic_truncated_cp_assembles_complete_word_graph():

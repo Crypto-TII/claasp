@@ -543,6 +543,13 @@ the committed ten-run benchmark characterizes this portable baseline. It does
 not replace recovered component-specific convex hulls or the still-optional
 Gurobi capability.
 
+The portable CP differential-linear slice adds
+``WordDeterministicDifferentialLinearCPModel``. Exact MiniZinc translation
+preserves the reviewed differential, deterministic-truncated, connector, and
+linear clauses; decoded Chuffed witnesses are independently rechecked by the
+typed composition. The continuous legacy search remains explicitly heuristic
+and outside this proof-producing model.
+
 The first deterministic-truncated MILP component slice recovers the legacy
 indicator-based AND abstraction as
 ``BitwiseAndDeterministicTruncatedMILPModel`` and adds
