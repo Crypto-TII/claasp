@@ -6,6 +6,8 @@ import pytest
 
 from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.milp import (
+    BitwiseAndDeterministicTruncatedMILPModel,
+    BitwiseAndDeterministicTruncatedOneHotMILPModel,
     BitwiseAndOneHotMILPModel,
     BitwiseAndXorDifferentialMILPModel,
     BitwiseAndXorLinearMILPModel,
@@ -41,3 +43,17 @@ def test_bitwise_and_milp_validates_configuration():
 def test_bitwise_and_milp_requires_model_before_decoding():
     with pytest.raises(ValueError, match="build"):
         BitwiseAndXorLinearMILPModel(1).decode_transition({})
+
+
+@pytest.mark.parametrize(
+    ("model", "variables", "constraints"),
+    (
+        (BitwiseAndDeterministicTruncatedOneHotMILPModel(2), 24, 8),
+        (BitwiseAndDeterministicTruncatedMILPModel(2), 8, 6),
+    ),
+)
+def test_bitwise_and_truncated_milp_formulation_sizes(model, variables, constraints):
+    formulation = model.milp_model()
+    assert len(formulation.variables) == variables
+    assert len(formulation.constraints) == constraints
+    assert formulation.constraint_models[0].model.backend is ConstraintBackend.MILP
