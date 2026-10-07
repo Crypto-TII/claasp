@@ -10,6 +10,7 @@ from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.sat import (
     NWindowSATStrategy,
+    SharedDifferencePairedWordDifferentialLinearSATModel,
     SharedDifferencePairedWordDifferentialSATModel,
     SpeckImpossibleSATModel,
     SpeckProbabilisticTruncatedSATModel,
@@ -79,8 +80,42 @@ def test_shared_difference_paired_sat_validates_total_weight_configuration():
             ToySpeck(2), maximum_total_weight=1, fixed_total_weight=1
         )
     with pytest.raises(ValueError, match="nonnegative"):
-        SharedDifferencePairedWordDifferentialSATModel(
-            ToySpeck(2), maximum_total_weight=True
+        SharedDifferencePairedWordDifferentialSATModel(ToySpeck(2), maximum_total_weight=True)
+
+
+def test_shared_difference_paired_differential_linear_sat_assembles_both_boundaries():
+    model = SharedDifferencePairedWordDifferentialLinearSATModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=2,
+        paired_differential_maximum_weight=32,
+        linear_maximum_weight=16,
+        fixed_total_weight=8,
+    )
+    formula = model.cnf_formula()
+    assert (formula.variable_count, formula.clause_count, formula.literal_count) == (
+        13608,
+        29492,
+        77847,
+    )
+    assert formula.provenance.count("paired_differential_linear_boundary") == 64
+
+
+def test_shared_difference_paired_differential_linear_sat_validates_configuration():
+    with pytest.raises(ValueError, match="both be nonempty"):
+        SharedDifferencePairedWordDifferentialLinearSATModel(
+            Speck(number_of_rounds=3),
+            prefix_rounds=3,
+            paired_differential_maximum_weight=1,
+            linear_maximum_weight=1,
+        )
+    with pytest.raises(ValueError, match="choose"):
+        SharedDifferencePairedWordDifferentialLinearSATModel(
+            Speck(number_of_rounds=3),
+            prefix_rounds=2,
+            paired_differential_maximum_weight=1,
+            linear_maximum_weight=1,
+            maximum_total_weight=1,
+            fixed_total_weight=1,
         )
 
 

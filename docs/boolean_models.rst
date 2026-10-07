@@ -550,6 +550,28 @@ The ten-run comparison in
 ``architecture/audits/data/sat_shared_difference_paired_benchmark.json`` uses
 the same fixed-weight ToySpeck-2 formula with and without the exclusion layer.
 
+The paired-input strategy can also be joined directly to an XOR-linear suffix.
+At the boundary, every active suffix mask bit requires the corresponding output
+difference bit to be zero in both differential characteristics.
+
+.. doctest::
+
+   >>> from claasp.primitives import Speck
+   >>> from claasp.representations.constraints.sat import (
+   ...     SharedDifferencePairedWordDifferentialLinearSATModel,
+   ... )
+   >>> paired_dl = SharedDifferencePairedWordDifferentialLinearSATModel(
+   ...     Speck(number_of_rounds=3), prefix_rounds=2,
+   ...     paired_differential_maximum_weight=32,
+   ...     linear_maximum_weight=16, fixed_total_weight=8,
+   ... )
+   >>> paired_dl.cnf_formula().provenance.count("paired_differential_linear_boundary")
+   64
+
+``fixed_total_weight`` follows the recovered convention: the two differential
+weights plus twice the linear-correlation weight. This characteristic model
+does not claim the probability of a concrete four-evaluation experiment.
+
 Differential-linear SAT boundaries
 ----------------------------------
 

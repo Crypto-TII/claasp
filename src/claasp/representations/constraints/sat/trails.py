@@ -1794,10 +1794,7 @@ class SharedDifferencePairedWordDifferentialSATModel:
             }
             for clause, label in zip(formula.clauses, formula.provenance):
                 add(
-                    (
-                        remap[abs(literal)] * (1 if literal > 0 else -1)
-                        for literal in clause
-                    ),
+                    (remap[abs(literal)] * (1 if literal > 0 else -1) for literal in clause),
                     label,
                 )
             applications.extend(formula.constraint_models)
@@ -1813,7 +1810,9 @@ class SharedDifferencePairedWordDifferentialSATModel:
                 add((left_index, -right_index), "paired_shared_input_difference")
 
         additions = tuple(
-            component for component in self.primitive.components if isinstance(component, ModularAdd)
+            component
+            for component in self.primitive.components
+            if isinstance(component, ModularAdd)
         )
         for component in additions:
             left = self.left_model._shared._ports[component.component_id]
@@ -1897,7 +1896,9 @@ class SharedDifferencePairedWordDifferentialSATModel:
                 continue
             left_names = self.left_model._shared._ports[component.component_id]
             right_names = self.right_model._shared._ports[component.component_id]
-            if any(left_assignment[a] and right_assignment[b] for a, b in zip(left_names, right_names)):
+            if any(
+                left_assignment[a] and right_assignment[b] for a, b in zip(left_names, right_names)
+            ):
                 raise ValueError("paired modular-add output differences overlap")
         trail = SharedDifferencePairedSATTrail(left, right)
         bound = self.fixed_total_weight
@@ -1994,6 +1995,271 @@ class WordLinearSATModel:
 
 
 @dataclass(frozen=True, slots=True)
+class SharedDifferencePairedDifferentialLinearSATTrail:
+    """Two shared-input differential prefixes joined to one linear suffix.
+
+    The objective is both differential weights plus twice the linear weight.
+
+    EXAMPLES::
+
+        >>> from types import SimpleNamespace
+        >>> trail = SharedDifferencePairedDifferentialLinearSATTrail(
+        ...     SimpleNamespace(total_weight=5), SimpleNamespace(total_weight=3)
+        ... )
+        >>> trail.total_weight
+        11
+    """
+
+    paired_differential: SharedDifferencePairedSATTrail
+    linear: Any
+
+    @property
+    def total_weight(self):
+        """Return both differential weights plus twice the linear weight."""
+
+        return self.paired_differential.total_weight + 2 * self.linear.total_weight
+
+
+class SharedDifferencePairedWordDifferentialLinearSATModel:
+    """Recover the legacy paired-input differential-linear SAT composition.
+
+    Two exact differential characteristics share an external input difference
+    and obey the recovered modular-add output exclusions. A mask entering the
+    suffix may be active only where both prefix output differences are zero.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = SharedDifferencePairedWordDifferentialLinearSATModel(
+        ...     Speck(number_of_rounds=3), prefix_rounds=2,
+        ...     paired_differential_maximum_weight=16,
+        ...     linear_maximum_weight=16,
+        ... )
+        >>> formula = model.cnf_formula()
+        >>> (formula.variable_count > 0, formula.provenance.count("paired_differential_linear_boundary"))
+        (True, 64)
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.SAT,
+        "SharedDifferencePairedWordDifferentialLinearSATModel",
+        "shared_difference_paired_input_differential_linear",
+        "two shared-input differential prefixes joined to one linear suffix",
+        "Recovered from legacy CLAASP; its high-order interpretation and boundary provenance remain unaudited.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        prefix_rounds: int,
+        paired_differential_maximum_weight: int,
+        linear_maximum_weight: int,
+        maximum_total_weight: int | None = None,
+        fixed_total_weight: int | None = None,
+        input_difference: int | None = None,
+        output_mask: int | None = None,
+    ) -> None:
+        if not isinstance(prefix_rounds, int) or isinstance(prefix_rounds, bool):
+            raise ValueError("prefix_rounds must be an integer")
+        if not 0 < prefix_rounds < len(primitive.rounds):
+            raise ValueError("the differential prefix and linear suffix must both be nonempty")
+        if maximum_total_weight is not None and fixed_total_weight is not None:
+            raise ValueError("choose maximum_total_weight or fixed_total_weight, not both")
+        for weight in (
+            paired_differential_maximum_weight,
+            linear_maximum_weight,
+            maximum_total_weight,
+            fixed_total_weight,
+        ):
+            if weight is not None and (
+                not isinstance(weight, int) or isinstance(weight, bool) or weight < 0
+            ):
+                raise ValueError("weight bounds must be nonnegative integers")
+        block_width = sum(
+            port.value_type.unit_count * port.value_type.domain.width
+            for name, port in primitive.input_ports.items()
+            if name == "plaintext"
+        )
+        if not block_width:
+            raise NotImplementedError("paired differential-linear SAT assembly requires plaintext")
+        for value, label in ((input_difference, "input difference"), (output_mask, "output mask")):
+            if value is not None and (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or not 0 <= value < 1 << block_width
+            ):
+                raise ValueError(f"{label} must fit the primitive block width")
+        self.primitive = primitive
+        self.prefix_rounds = prefix_rounds
+        self.paired_differential_maximum_weight = paired_differential_maximum_weight
+        self.linear_maximum_weight = linear_maximum_weight
+        self.maximum_total_weight = maximum_total_weight
+        self.fixed_total_weight = fixed_total_weight
+        self.input_difference = input_difference
+        self.output_mask = output_mask
+        self._formula: CNFFormula | None = None
+        self._maps: dict[str, dict[str, str]] = {}
+
+    def cnf_formula(self) -> CNFFormula:
+        """Return the complete paired differential-linear formula."""
+
+        prefix = slice_rounds(self.primitive, 0, self.prefix_rounds - 1).primitive
+        suffix = slice_rounds(
+            self.primitive, self.prefix_rounds, len(self.primitive.rounds) - 1
+        ).primitive
+        fixed_differences = {"key": 0} if "key" in prefix.input_ports else {}
+        if self.input_difference is not None:
+            fixed_differences["plaintext"] = self.input_difference
+        self._paired = SharedDifferencePairedWordDifferentialSATModel(
+            prefix,
+            maximum_total_weight=self.paired_differential_maximum_weight,
+            nonzero_input="plaintext" if self.input_difference is None else None,
+            fixed_input_differences=fixed_differences,
+        )
+        fixed_masks = {name: 0 for name in suffix.input_ports if name != "state"}
+        self._linear = WordLinearSATModel(
+            suffix,
+            maximum_weight=self.linear_maximum_weight,
+            fixed_input_masks=fixed_masks,
+        )
+        paired_formula = self._paired.cnf_formula()
+        linear_formula = self._linear.cnf_formula()
+        subformulas = (("paired", paired_formula), ("linear", linear_formula))
+        variables: list[str] = []
+        indices: dict[str, int] = {}
+        clauses: list[tuple[int, ...]] = []
+        provenance: list[str] = []
+        applications: list[ConstraintModelApplication] = []
+        maps: dict[str, dict[str, str]] = {}
+
+        def allocate(name):
+            if name not in indices:
+                variables.append(name)
+                indices[name] = len(variables)
+            return name
+
+        def add(literals, label):
+            clauses.append(tuple(literals))
+            provenance.append(label)
+
+        for namespace, formula in subformulas:
+            mapping = {name: allocate(f"{namespace}_{name}") for name in formula.variables}
+            remap = {
+                position: indices[mapping[name]]
+                for position, name in enumerate(formula.variables, 1)
+            }
+            for clause, label in zip(formula.clauses, formula.provenance):
+                add(
+                    (remap[abs(literal)] * (1 if literal > 0 else -1) for literal in clause),
+                    label,
+                )
+            applications.extend(formula.constraint_models)
+            maps[namespace] = mapping
+
+        linear_input = self._linear._shared._ports["state"]
+        for side, model in (("left", self._paired.left_model), ("right", self._paired.right_model)):
+            paired_output = model._shared._output
+            if len(paired_output) != len(linear_input):
+                raise ValueError("paired differential-linear boundary widths disagree")
+            for difference, mask in zip(paired_output, linear_input):
+                add(
+                    (
+                        -indices[maps["paired"][self._paired._maps[side][difference]]],
+                        -indices[maps["linear"][mask]],
+                    ),
+                    "paired_differential_linear_boundary",
+                )
+
+        linear_output = tuple(maps["linear"][name] for name in self._linear._shared._output)
+        if self.output_mask is None:
+            add(
+                (indices[name] for name in linear_output),
+                "nonzero_paired_differential_linear_output_mask",
+            )
+        else:
+            for bit, name in enumerate(linear_output):
+                value = self.output_mask & (1 << (len(linear_output) - 1 - bit))
+                add(
+                    ((indices[name] if value else -indices[name]),),
+                    "fixed_paired_differential_linear_output_mask",
+                )
+
+        differential_weights = [
+            maps["paired"][name]
+            for name in paired_formula.variables
+            if name.startswith(("left_weight_", "right_weight_"))
+        ]
+        linear_weights = [
+            maps["linear"][name] for name in linear_formula.variables if name.startswith("weight_")
+        ]
+        objective_weights = differential_weights + linear_weights + linear_weights
+        bound = (
+            self.fixed_total_weight
+            if self.fixed_total_weight is not None
+            else self.maximum_total_weight
+        )
+        if bound is not None:
+            _at_most(objective_weights, bound, allocate, indices, add, "__paired_dl_weight")
+        if self.fixed_total_weight is not None:
+            if self.fixed_total_weight > len(objective_weights):
+                impossible = allocate("__paired_dl_impossible_weight")
+                add((indices[impossible],), "paired_dl_fixed_weight")
+                add((-indices[impossible],), "paired_dl_fixed_weight")
+            else:
+                complements = []
+                for position, name in enumerate(objective_weights):
+                    complement = allocate(f"__paired_dl_weight_complement_{position}")
+                    add((indices[name], indices[complement]), "paired_dl_fixed_weight")
+                    add((-indices[name], -indices[complement]), "paired_dl_fixed_weight")
+                    complements.append(complement)
+                _at_most(
+                    complements,
+                    len(objective_weights) - self.fixed_total_weight,
+                    allocate,
+                    indices,
+                    add,
+                    "__paired_dl_lower_weight",
+                )
+
+        applications.append(ConstraintModelApplication(self.model_provenance))
+        self._maps = maps
+        self._formula = CNFFormula(
+            tuple(variables), tuple(clauses), tuple(provenance), tuple(applications)
+        )
+        return self._formula
+
+    def decode_trail(self, assignment) -> SharedDifferencePairedDifferentialLinearSATTrail:
+        """Decode and independently check the paired prefix and shared boundary."""
+
+        if self._formula is None:
+            raise ValueError("build the formula before decoding")
+        if not self._formula.is_satisfied(assignment):
+            raise ValueError("invalid paired differential-linear SAT witness")
+        paired_assignment = {
+            local: assignment[global_name] for local, global_name in self._maps["paired"].items()
+        }
+        linear_assignment = {
+            local: assignment[global_name] for local, global_name in self._maps["linear"].items()
+        }
+        paired = self._paired.decode_trail(paired_assignment)
+        linear = self._linear.decode_characteristic(linear_assignment)
+        state_mask = dict(linear.input_masks)["state"]
+        width = len(self._linear._shared._ports["state"])
+        mask_bits = tuple((state_mask >> (width - bit - 1)) & 1 for bit in range(width))
+        for difference in (paired.left.output_difference, paired.right.output_difference):
+            difference_bits = tuple((difference >> (width - bit - 1)) & 1 for bit in range(width))
+            if any(mask and active for mask, active in zip(mask_bits, difference_bits)):
+                raise ValueError("paired differential-linear boundary is incompatible")
+        trail = SharedDifferencePairedDifferentialLinearSATTrail(paired, linear)
+        if self.fixed_total_weight is not None and trail.total_weight != self.fixed_total_weight:
+            raise ValueError("paired differential-linear trail changed its fixed weight")
+        if self.maximum_total_weight is not None and trail.total_weight > self.maximum_total_weight:
+            raise ValueError("paired differential-linear trail exceeds its total-weight bound")
+        return trail
+
+
+@dataclass(frozen=True, slots=True)
 class WordDeterministicDifferentialLinearSATTrail:
     """One decoded differential, deterministic-truncated, and linear witness.
 
@@ -2064,7 +2330,9 @@ class WordDeterministicDifferentialLinearSATModel:
         output_mask: int | None = None,
     ) -> None:
         counts = (prefix_rounds, middle_rounds)
-        if any(not isinstance(value, int) or isinstance(value, bool) or value <= 0 for value in counts):
+        if any(
+            not isinstance(value, int) or isinstance(value, bool) or value <= 0 for value in counts
+        ):
             raise ValueError("prefix_rounds and middle_rounds must be positive integers")
         if prefix_rounds + middle_rounds >= len(primitive.rounds):
             raise ValueError("the differential, middle, and linear slices must all be nonempty")
@@ -2107,7 +2375,9 @@ class WordDeterministicDifferentialLinearSATModel:
         middle_end = prefix_end + self.middle_rounds
         prefix_primitive = slice_rounds(self.primitive, 0, prefix_end).primitive
         middle_primitive = slice_rounds(self.primitive, self.prefix_rounds, middle_end).primitive
-        suffix_primitive = slice_rounds(self.primitive, middle_end + 1, len(self.primitive.rounds) - 1).primitive
+        suffix_primitive = slice_rounds(
+            self.primitive, middle_end + 1, len(self.primitive.rounds) - 1
+        ).primitive
 
         prefix_fixed = {"key": 0} if "key" in prefix_primitive.input_ports else {}
         if self.input_difference is not None:
@@ -2126,9 +2396,7 @@ class WordDeterministicDifferentialLinearSATModel:
         self._middle = WordDeterministicTruncatedSATModel(
             middle_primitive, fixed_input_patterns=middle_fixed
         )
-        suffix_fixed = {
-            name: 0 for name in suffix_primitive.input_ports if name != "state"
-        }
+        suffix_fixed = {name: 0 for name in suffix_primitive.input_ports if name != "state"}
         self._linear = WordLinearSATModel(
             suffix_primitive,
             maximum_weight=self.linear_maximum_weight,
@@ -2155,7 +2423,10 @@ class WordDeterministicDifferentialLinearSATModel:
 
         def append_formula(namespace, formula):
             mapping = {name: allocate(f"{namespace}_{name}") for name in formula.variables}
-            remap = {position: indices[mapping[name]] for position, name in enumerate(formula.variables, 1)}
+            remap = {
+                position: indices[mapping[name]]
+                for position, name in enumerate(formula.variables, 1)
+            }
             for clause, label in zip(formula.clauses, formula.provenance):
                 clauses.append(
                     tuple(remap[abs(literal)] * (1 if literal > 0 else -1) for literal in clause)
@@ -2168,7 +2439,10 @@ class WordDeterministicDifferentialLinearSATModel:
             append_formula(namespace, formula)
 
         def append_connector(formula, mapping):
-            remap = {position: indices[mapping[name]] for position, name in enumerate(formula.variables, 1)}
+            remap = {
+                position: indices[mapping[name]]
+                for position, name in enumerate(formula.variables, 1)
+            }
             for clause, label in zip(formula.clauses, formula.provenance):
                 clauses.append(
                     tuple(remap[abs(literal)] * (1 if literal > 0 else -1) for literal in clause)
@@ -2209,10 +2483,7 @@ class WordDeterministicDifferentialLinearSATModel:
                     for bit, pair in enumerate(middle_output)
                     for position, field in enumerate(("unknown", "value"))
                 },
-                **{
-                    f"mask_{bit}": maps["linear"][name]
-                    for bit, name in enumerate(linear_input)
-                },
+                **{f"mask_{bit}": maps["linear"][name] for bit, name in enumerate(linear_input)},
             },
         )
 
@@ -2242,7 +2513,10 @@ class WordDeterministicDifferentialLinearSATModel:
             raise ValueError("invalid differential-linear SAT witness")
 
         def project(namespace):
-            return {local: assignment[global_name] for local, global_name in self._maps[namespace].items()}
+            return {
+                local: assignment[global_name]
+                for local, global_name in self._maps[namespace].items()
+            }
 
         differential = self._prefix.decode_characteristic(project("differential"))
         middle = self._middle.decode_characteristic(project("middle"))
@@ -2354,6 +2628,8 @@ __all__ = [
     "SpeckProbabilisticTruncatedSATModel",
     "SemiDeterministicModularAddTransition",
     "SharedDifferencePairedSATTrail",
+    "SharedDifferencePairedDifferentialLinearSATTrail",
+    "SharedDifferencePairedWordDifferentialLinearSATModel",
     "SharedDifferencePairedWordDifferentialSATModel",
     "SpeckSemiDeterministicTruncatedSATModel",
     "SpeckSemiDeterministicTruncatedTrail",
