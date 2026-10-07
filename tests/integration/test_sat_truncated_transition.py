@@ -13,6 +13,7 @@ from claasp.representations.constraints.sat import (
     ImpossibleBoundarySATModel,
     ModularAddDeterministicTruncatedSATModel,
     ModularSubtractDeterministicTruncatedSATModel,
+    ProbabilisticTruncatedModularAddSATModel,
     SpeckImpossibleSATModel,
     WordDeterministicTruncatedSATModel,
 )
@@ -103,6 +104,18 @@ def test_deterministic_truncated_toy_speck_trail_is_solver_independent(solver_ty
     )
     result = solver_type(timeout_seconds=10).solve(rejected.cnf_formula())
     assert result.status is SatStatus.UNSATISFIABLE
+
+
+@pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
+def test_probabilistic_truncated_modadd_preserves_counter_based_cost(solver_type):
+    model = ProbabilisticTruncatedModularAddSATModel(
+        2, left_pattern="01", right_pattern="00", output_pattern="01"
+    )
+    result = solver_type(timeout_seconds=10).solve(model.cnf_formula())
+    assert result.status is SatStatus.SATISFIABLE
+    transition = model.decode_transition(result.assignment)
+    assert str(transition.carry_difference) == "00"
+    assert transition.costs == (100, 0)
 
 
 def test_deterministic_truncated_enumeration_blocks_semantic_patterns():

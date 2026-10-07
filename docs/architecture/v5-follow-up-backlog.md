@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box MILP, local SAT exact/truncated/impossible relations, native-XOR output/trails, SAT exact/truncated/impossible trail assembly, and n-window heuristic implemented; next: semi-/probabilistic truncated SAT variants**
+Status: **S-box MILP, local SAT exact/truncated/impossible/probabilistic relations, native-XOR output/trails, SAT exact/truncated/impossible trail assembly, and n-window heuristic implemented; next: probabilistic truncated SAT graph assembly and legacy semi-deterministic windows**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -443,6 +443,16 @@ Decoded witnesses independently recheck both transformed graphs and the typed
 ``ImpossiblePropagationBoundary``. MiniSat, Kissat, and CryptoMiniSat agree on
 the Speck32/64-3 fixture; the committed ten-run benchmark uses the identical
 formula for all three and makes no general solver-performance claim.
+
+The first probabilistic-truncated SAT slice adds the local
+``ProbabilisticTruncatedModularAddSATModel``. Instead of copying the legacy
+generated clauses, it emits ordinary CNF directly from the reviewed typed
+counter-based recurrence already shared with CP: explicit carry differences,
+zero-run lengths, and the fixed-point costs 0, 4, 9, 19, 41, and 100. An
+exhaustive width-two test checks every canonical input, output, carry, and cost
+combination against ``check_probabilistic_truncated_modular_add``; all three
+SAT solvers reproduce a nonzero-cost fixture. Whole-graph weight assembly and
+the distinct legacy semi-deterministic window formulations remain next.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and
