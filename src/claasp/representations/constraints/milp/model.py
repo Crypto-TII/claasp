@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from enum import Enum
 from math import isfinite
 
+from claasp.representations.constraints import ConstraintModelApplication
+
 
 class VariableKind(str, Enum):
     """Supported linear-model variable domains.
@@ -155,13 +157,14 @@ class MILPModel:
 
         >>> from dataclasses import fields
         >>> (MILPModel.__dataclass_params__.frozen, tuple(field.name for field in fields(MILPModel)))
-        (True, ('variables', 'constraints', 'objective', 'objective_sense'))
+        (True, ('variables', 'constraints', 'objective', 'objective_sense', 'constraint_models'))
     """
 
     variables: tuple[LinearVariable, ...]
     constraints: tuple[LinearConstraint, ...]
     objective: LinearExpression = LinearExpression()
     objective_sense: ObjectiveSense = ObjectiveSense.MINIMIZE
+    constraint_models: tuple[ConstraintModelApplication, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.variables:
@@ -176,6 +179,8 @@ class MILPModel:
         referenced.update(name for name, _ in self.objective.terms)
         if unknown := referenced - known:
             raise ValueError(f"expressions refer to unknown variables: {sorted(unknown)!r}")
+        if any(not isinstance(item, ConstraintModelApplication) for item in self.constraint_models):
+            raise TypeError("constraint_models must contain ConstraintModelApplication values")
 
     def objective_value(self, assignment: Mapping[str, int | float]) -> float:
         """Independently evaluate the objective value."""

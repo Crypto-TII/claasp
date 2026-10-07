@@ -1,6 +1,7 @@
 """Functional SAT encoding for modular addition."""
 
 from claasp.components import ModularAdd
+from claasp.representations.constraints import ConstraintBackend, _direct_model
 
 
 class ModularAddFunctionalSATModel:
@@ -18,6 +19,14 @@ class ModularAddFunctionalSATModel:
         >>> encoding.component.component_id in formula.provenance
         True
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "ModularAddFunctionalSATModel",
+        "functional",
+        "ripple-carry Boolean clauses",
+        "The clauses are generated directly from full-adder truth tables.",
+    )
 
     def __init__(self, component) -> None:
         if not isinstance(component, ModularAdd):

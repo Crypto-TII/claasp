@@ -1,7 +1,14 @@
 """Exact weighted trail lowering to the portable MILP representation."""
 
+from typing import cast
+
 from claasp.components import BitVectorSBox, Permutation
 from claasp.graph import Primitive
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _direct_model,
+)
 from claasp.representations.constraints.milp.model import (
     ConstraintSense,
     LinearConstraint,
@@ -34,6 +41,14 @@ class PresentDifferentialMILPModel:
         >>> (model.objective_sense.value, len(model.constraints))
         ('minimize', 289)
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "PresentDifferentialMILPModel",
+        "xor_differential",
+        "one-hot exhaustive DDT row selection",
+        "The S-box support and weights are enumerated directly from the supplied table.",
+    )
 
     def __init__(self, primitive: Primitive | PropagationProblem) -> None:
         problem = (
@@ -121,6 +136,12 @@ class PresentDifferentialMILPModel:
             tuple(constraints),
             LinearExpression.from_terms(objective),
             ObjectiveSense.MINIMIZE,
+            (
+                ConstraintModelApplication(
+                    self.model_provenance,
+                    tuple(cast(str, component_id) for component_id, _, _ in self._records),
+                ),
+            ),
         )
 
     def decode_trail(self, assignment) -> Trail:
@@ -238,6 +259,14 @@ class PresentMonomialTrailMILPModel:
         True
     """
 
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "PresentMonomialTrailMILPModel",
+        "division_property",
+        "exhaustive monomial-transition row selection",
+        "The relation is derived exhaustively from the lookup-table ANF.",
+    )
+
     def __init__(self, primitive, input_mask: int, output_mask: int) -> None:
         from claasp.components import BitVectorSBox, Permutation
 
@@ -352,7 +381,20 @@ class PresentMonomialTrailMILPModel:
                     ),
                 )
             )
-        return MILPModel(tuple(variables), tuple(constraints))
+        return MILPModel(
+            tuple(variables),
+            tuple(constraints),
+            constraint_models=(
+                ConstraintModelApplication(
+                    self.model_provenance,
+                    tuple(
+                        cast(str, component.component_id)
+                        for round_number in range(1, self.round_count + 1)
+                        for component in _round_sboxes(self.primitive, round_number)
+                    ),
+                ),
+            ),
+        )
 
     def decode_trail(self, assignment):
         """Decode a solver witness and validate it with independent semantics."""

@@ -1,5 +1,10 @@
 """SMT encodings of modular-addition transition relations."""
 
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _unaudited_model,
+)
 from claasp.representations.constraints.smt.model import SMTFormula
 from claasp.semantics.cryptanalysis import (
     ModularAddLinearSemantics,
@@ -18,6 +23,14 @@ class ModularAddDifferentialSMTModel:
         >>> formula.variables[-3:]
         ('weight_0', 'weight_1', 'weight_2')
     """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.SMT,
+        "ModularAddDifferentialSMTModel",
+        "xor_differential",
+        "paired-carry Boolean support with unary weight",
+        "The exact correspondence with a primary-source construction has not been audited.",
+    )
 
     def __init__(self, width):
         self.semantics = ModularAddTransitionSemantics(width)
@@ -55,7 +68,12 @@ class ModularAddDifferentialSMTModel:
             for bits in product((0, 1), repeat=4):
                 if bits[3] != int(not (bits[0] == bits[1] == bits[2])):
                     forbid(lower + (f"weight_{bit}",), bits, "differential_weight")
-        return SMTFormula(variables, tuple(clauses), tuple(provenance))
+        return SMTFormula(
+            variables,
+            tuple(clauses),
+            tuple(provenance),
+            (ConstraintModelApplication(self.model_provenance),),
+        )
 
     def decode_transition(self, assignment):
         """Decode and validate a modular-add XOR-differential transition."""
@@ -92,6 +110,14 @@ class ModularAddLinearSMTModel:
         >>> formula.provenance[-1]
         'fixed_output'
     """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.SMT,
+        "ModularAddLinearSMTModel",
+        "xor_linear",
+        "Boolean mask recurrence with unary weight",
+        "The exact correspondence with a primary-source construction has not been audited.",
+    )
 
     def __init__(self, width: int) -> None:
         self.semantics = ModularAddLinearSemantics(width)
@@ -148,7 +174,12 @@ class ModularAddLinearSMTModel:
                 variable = offset + bit + 1
                 clauses.append((variable if encoded else -variable,))
                 provenance.append(f"fixed_{prefix}")
-        return SMTFormula(variables, tuple(clauses), tuple(provenance))
+        return SMTFormula(
+            variables,
+            tuple(clauses),
+            tuple(provenance),
+            (ConstraintModelApplication(self.model_provenance),),
+        )
 
     def decode_transition(self, assignment: dict[str, int]):
         """Project masks to the shared exact Walsh-correlation semantics."""

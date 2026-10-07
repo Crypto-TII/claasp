@@ -18,6 +18,11 @@ from claasp.components import (
 from claasp.domains import Word
 from claasp.drivers.solvers import SatStatus
 from claasp.graph import Primitive
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _direct_model,
+)
 from claasp.representations.constraints.smt.components.modular_add import (
     ModularAddDifferentialSMTModel,
     ModularAddLinearSMTModel,
@@ -39,6 +44,28 @@ from claasp.semantics.cryptanalysis import (
 )
 
 
+def _component_applications(primitive, default, specialized=()):
+    """Group graph components by the concrete encoding that lowered them."""
+
+    grouped = {model: [] for _, model in specialized}
+    grouped[default] = []
+    for component in primitive.components:
+        model = next(
+            (
+                model
+                for component_type, model in specialized
+                if isinstance(component, component_type)
+            ),
+            default,
+        )
+        grouped[model].append(component.component_id)
+    return tuple(
+        ConstraintModelApplication(model, tuple(component_ids))
+        for model, component_ids in grouped.items()
+        if component_ids
+    )
+
+
 class PresentDifferentialSMTModel:
     """Exact two-round PRESENT XOR-differential model with a weight bound.
 
@@ -50,6 +77,14 @@ class PresentDifferentialSMTModel:
         >>> (len(formula.variables) < 700, formula.assertion_count < 30000)
         (True, True)
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SMT,
+        "PresentDifferentialSMTModel",
+        "xor_differential",
+        "exhaustive S-box transition clauses",
+        "The S-box support and weights are enumerated directly from the supplied table.",
+    )
 
     def __init__(
         self, primitive: Primitive | PropagationProblem, maximum_weight: int | None = None
@@ -152,7 +187,17 @@ class PresentDifferentialSMTModel:
         self._transition_records = tuple(records)
         self._input_names = plaintext
         self._second_output_names = second_output
-        return SMTFormula(tuple(variables), tuple(clauses), tuple(provenance))
+        return SMTFormula(
+            tuple(variables),
+            tuple(clauses),
+            tuple(provenance),
+            (
+                ConstraintModelApplication(
+                    self.model_provenance,
+                    tuple(component_id for component_id, _, _ in self._transition_records),
+                ),
+            ),
+        )
 
     def decode_trail(self, assignment: dict[str, int]) -> Trail:
         """Project a satisfying assignment to shared, independently checkable semantics."""
@@ -189,6 +234,14 @@ class PresentLinearSMTModel:
         >>> (len(formula.variables) < 1000, formula.assertion_count < 40000)
         (True, True)
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SMT,
+        "PresentLinearSMTModel",
+        "xor_linear",
+        "exhaustive S-box transition clauses",
+        "The signed S-box support and weights are enumerated directly from the supplied table.",
+    )
 
     def __init__(
         self, primitive: Primitive | PropagationProblem, maximum_weight: int | None = None
@@ -281,7 +334,17 @@ class PresentLinearSMTModel:
         self._transition_records = tuple(records)
         self._input_names = input_names
         self._last_output_names = last_output
-        return SMTFormula(tuple(variables), tuple(clauses), tuple(provenance))
+        return SMTFormula(
+            tuple(variables),
+            tuple(clauses),
+            tuple(provenance),
+            (
+                ConstraintModelApplication(
+                    self.model_provenance,
+                    tuple(component_id for component_id, _, _ in self._transition_records),
+                ),
+            ),
+        )
 
     def decode_trail(self, assignment: dict[str, int]) -> Trail:
         """Project a model to shared transitions, including correlation signs."""
@@ -446,6 +509,14 @@ class SpeckLinearSMTModel:
         True
     """
 
+    model_provenance = _direct_model(
+        ConstraintBackend.SMT,
+        "SpeckLinearSMTModel",
+        "xor_linear",
+        "direct graph-mask composition",
+        "Rotation and XOR mask relations are expressed directly from graph wiring.",
+    )
+
     def __init__(
         self,
         primitive,
@@ -560,7 +631,16 @@ class SpeckLinearSMTModel:
                     add,
                 )
         self._states = states
-        return SMTFormula(tuple(variables), tuple(clauses), tuple(provenance))
+        return SMTFormula(
+            tuple(variables),
+            tuple(clauses),
+            tuple(provenance),
+            _component_applications(
+                self.primitive,
+                self.model_provenance,
+                ((ModularAdd, ModularAddLinearSMTModel.model_provenance),),
+            ),
+        )
 
     def decode_trail(self, assignment):
         """Recount correlations and reject invalid wiring or requested weights."""
@@ -661,6 +741,14 @@ class WordLinearSMTModel:
         >>> "nonzero_external_mask" in model.smt_formula().provenance
         True
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SMT,
+        "WordLinearSMTModel",
+        "xor_linear",
+        "direct word-graph mask composition",
+        "Non-addition component relations are derived directly from graph wiring and truth tables.",
+    )
 
     def __init__(
         self,
@@ -861,7 +949,16 @@ class WordLinearSMTModel:
         self._ports, self._edges, self._records, self._output = ports, edges, records, output
         self._folded_values = folded
         self._semantic_names = semantic_names
-        self._formula = SMTFormula(tuple(variables), tuple(clauses), tuple(provenance))
+        self._formula = SMTFormula(
+            tuple(variables),
+            tuple(clauses),
+            tuple(provenance),
+            _component_applications(
+                self.primitive,
+                self.model_provenance,
+                ((ModularAdd, ModularAddLinearSMTModel.model_provenance),),
+            ),
+        )
         return self._formula
 
     def decode_characteristic(self, assignment):
@@ -1179,6 +1276,14 @@ class WordDifferentialSMTModel:
         True
     """
 
+    model_provenance = _direct_model(
+        ConstraintBackend.SMT,
+        "WordDifferentialSMTModel",
+        "xor_differential",
+        "direct word-graph difference composition",
+        "Non-addition component relations are derived directly from graph wiring and truth tables.",
+    )
+
     def __init__(
         self,
         primitive,
@@ -1365,7 +1470,16 @@ class WordDifferentialSMTModel:
                     add,
                 )
         self._ports, self._operands, self._output = ports, operands_by_id, output
-        self._formula = SMTFormula(tuple(variables), tuple(clauses), tuple(provenance))
+        self._formula = SMTFormula(
+            tuple(variables),
+            tuple(clauses),
+            tuple(provenance),
+            _component_applications(
+                self.primitive,
+                self.model_provenance,
+                ((ModularAdd, ModularAddDifferentialSMTModel.model_provenance),),
+            ),
+        )
         return self._formula
 
     def _steps_and_wiring(self, values):

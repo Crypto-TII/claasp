@@ -1,5 +1,10 @@
 """MILP encoding of modular-addition component trail relations."""
 
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _unaudited_model,
+)
 from claasp.representations.constraints.milp.model import (
     ConstraintSense,
     LinearConstraint,
@@ -25,6 +30,14 @@ class ModularAddLinearMILPModel:
         >>> tuple(name for name, coefficient in model.objective.terms if coefficient == 1)
         ('weight_0', 'weight_1', 'weight_2', 'weight_3')
     """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.MILP,
+        "ModularAddLinearMILPModel",
+        "xor_linear",
+        "exact finite modular-add mask relation",
+        "The exact correspondence with a primary-source construction has not been audited.",
+    )
 
     def __init__(self, width: int) -> None:
         if not isinstance(width, int) or isinstance(width, bool) or width < 2:
@@ -89,6 +102,7 @@ class ModularAddLinearMILPModel:
             tuple(constraints),
             LinearExpression.from_terms({name: 1 for name in weight}),
             ObjectiveSense.MINIMIZE,
+            (ConstraintModelApplication(self.model_provenance),),
         )
 
     def decode_transition(self, assignment):

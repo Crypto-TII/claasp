@@ -1,6 +1,7 @@
 """Lower typed bit graphs to the Boolean CNF representation."""
 
 from collections.abc import Mapping
+from typing import cast
 
 from claasp.components import (
     Add,
@@ -15,6 +16,7 @@ from claasp.components import (
 )
 from claasp.domains import Bit, Word
 from claasp.graph import Primitive
+from claasp.representations.constraints import ConstraintModelApplication
 from claasp.representations.constraints.sat.components import (
     BooleanFunctionalSATModel,
     ModularAddFunctionalSATModel,
@@ -33,6 +35,7 @@ class _CNFEncodingContext:
         self.clauses = []
         self.provenance = []
         self.auxiliary = []
+        self.constraint_models = []
 
     def allocate(self, name):
         self.indices[name] = len(self.variables) + 1
@@ -134,7 +137,7 @@ class BooleanCNFModel:
         context = _CNFEncodingContext(variables)
 
         for component in self.primitive.components:
-            label = component.component_id
+            label = cast(str, component.component_id)
             outputs = [
                 unit_variable_names(label, component.output_type, i)
                 for i in range(component.output_type.unit_count)
@@ -149,23 +152,36 @@ class BooleanCNFModel:
                 selected.append(
                     [tuple(names[start : start + width]) for start in range(0, len(names), width)]
                 )
+            encoding: (
+                WiringFunctionalSATModel
+                | BooleanFunctionalSATModel
+                | ModularAddFunctionalSATModel
+                | SBoxFunctionalSATModel
+            )
             if isinstance(component, (Constant, Identity, Permutation, Rotate)):
-                WiringFunctionalSATModel(component).encode(context, outputs, selected)
+                encoding = WiringFunctionalSATModel(component)
             elif isinstance(component, (Add, Xor, BitwiseAnd)):
-                BooleanFunctionalSATModel(component).encode(context, outputs, selected)
+                encoding = BooleanFunctionalSATModel(component)
             elif isinstance(component, ModularAdd):
-                ModularAddFunctionalSATModel(component).encode(context, outputs, selected)
+                encoding = ModularAddFunctionalSATModel(component)
             elif isinstance(component, BitVectorSBox):
-                SBoxFunctionalSATModel(component).encode(context, outputs, selected)
+                encoding = SBoxFunctionalSATModel(component)
             else:
                 raise NotImplementedError(
                     f"BooleanCNFModel does not support {type(component).__name__} "
                     f"component {label!r}"
                 )
+            encoding.encode(context, outputs, selected)
+            context.constraint_models.append(
+                ConstraintModelApplication(encoding.model_provenance, (label,))
+            )
 
         self._auxiliary_definitions = tuple(context.auxiliary)
         self._formula = CNFFormula(
-            tuple(context.variables), tuple(context.clauses), tuple(context.provenance)
+            tuple(context.variables),
+            tuple(context.clauses),
+            tuple(context.provenance),
+            tuple(context.constraint_models),
         )
         return self._formula
 

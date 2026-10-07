@@ -1,6 +1,7 @@
 """Functional SAT encoding for bit-vector S-boxes."""
 
 from claasp.components import BitVectorSBox
+from claasp.representations.constraints import ConstraintBackend, _direct_model
 
 
 class SBoxFunctionalSATModel:
@@ -18,6 +19,14 @@ class SBoxFunctionalSATModel:
         >>> encoding.component.component_id in formula.provenance
         True
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "SBoxFunctionalSATModel",
+        "functional",
+        "exhaustive truth-table implication clauses",
+        "The clauses are generated exhaustively from the supplied lookup table.",
+    )
 
     def __init__(self, component) -> None:
         if not isinstance(component, BitVectorSBox):

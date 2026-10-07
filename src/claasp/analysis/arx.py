@@ -99,7 +99,9 @@ def find_two_round_speck_xor_differential(
     version_method = getattr(selected_solver, "version", None)
     metadata = TrailSearchMetadata(
         "SAT optimization by binary search over the differential-weight bound",
-        solver="Kissat" if isinstance(selected_solver, KissatSolver) else type(selected_solver).__name__,
+        solver="Kissat"
+        if isinstance(selected_solver, KissatSolver)
+        else type(selected_solver).__name__,
         solver_version=version_method() if callable(version_method) else None,
         runtime_seconds=runtime,
         peak_memory_bytes=peak_memory,
@@ -120,7 +122,8 @@ def find_two_round_speck_xor_differential(
     )
     if not best_model.check_characteristic(best):
         raise RuntimeError("SAT solver returned an invalid differential characteristic")
-    return TrailSearchResult(trail, float(lower_bound), metadata, components)
+    constraint_models = best_model.smt_formula().constraint_models
+    return TrailSearchResult(trail, float(lower_bound), metadata, components, constraint_models)
 
 
 def _find_two_round_speck_xor_differential_bounded(
@@ -165,9 +168,7 @@ def _find_two_round_speck_xor_differential_bounded(
             if best is None or trail.total_weight < best.total_weight:
                 best = trail
             if trail.total_weight == known_lower_bound:
-                return _bounded_differential_result(
-                    primitive, trail, known_lower_bound, started
-                )
+                return _bounded_differential_result(primitive, trail, known_lower_bound, started)
     if best is None:
         raise RuntimeError("no nonzero Speck trail was found")
     return _bounded_differential_result(primitive, best, known_lower_bound, started)
@@ -259,7 +260,12 @@ def _bounded_differential_result(primitive, trail, lower_bound, started):
 
 
 def _cnf(formula) -> CNFFormula:
-    return CNFFormula(formula.variables, formula.assertions, formula.provenance)
+    return CNFFormula(
+        formula.variables,
+        formula.assertions,
+        formula.provenance,
+        formula.constraint_models,
+    )
 
 
 def _trail_from_sat_characteristic(primitive, characteristic) -> Trail:

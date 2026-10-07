@@ -37,4 +37,5 @@ class BooleanMiniZincLowerer:
             constraints,
             provenance=formula.provenance,
             name_mapping=tuple(zip(encoded, formula.variables)),
+            constraint_models=formula.constraint_models,
         )

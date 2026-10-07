@@ -135,6 +135,36 @@ MILP follows this boundary as well. Its immutable linear model, LP exporter,
 and trail lowerings live in ``representations.constraints.milp``; GLPK process
 execution and portable MILP result decoding live in ``drivers.solvers``.
 
+Constraint-model provenance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Every backend-specific component encoding declares structured provenance.
+``VERIFIED`` means that its exact constraints have been checked against a
+primary source and records a URL or DOI plus a precise locator. Direct or
+exhaustively generated encodings use ``N/A``. Encodings awaiting a separate
+literature audit use ``TBD``; that status must not be replaced by a citation
+to a paper that only introduces the surrounding cryptanalytic technique.
+
+The declaration follows the constraints through backend lowering. Applications
+also record which graph components used that encoding:
+
+.. doctest::
+
+   >>> from claasp.primitives import Speck
+   >>> from claasp.representations.constraints.sat import BooleanCNFModel
+   >>> formula = BooleanCNFModel(Speck(number_of_rounds=1)).cnf_formula()
+   >>> additions = [item for item in formula.constraint_models
+   ...              if item.model.component_model == "ModularAddFunctionalSATModel"]
+   >>> additions[0].model.reference_status.value
+   'N/A'
+   >>> additions[0].component_ids
+   ('modular_add_0_1',)
+
+Trail searches retain these applications in ``TrailSearchResult``. Presentation
+adapters render the model-emitted compact reference beside each modeled
+component and deduplicate any ``VERIFIED`` records into the report bibliography.
+Neither the trail semantics nor the presentation layer guesses a source.
+
 Sparse polynomial systems and their Singular/msolve serializers live in
 ``representations.constraints.polynomial``. The optional executable processes
 are reusable ``SingularDriver`` and ``MsolveDriver`` objects under

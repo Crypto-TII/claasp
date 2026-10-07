@@ -1,7 +1,13 @@
 """Exact probability-bearing S-box component relations for MILP."""
 
 from math import log2
+from typing import ClassVar
 
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _direct_model,
+)
 from claasp.representations.constraints.milp.components.relations import (
     FiniteBinaryRelationMILPModel,
 )
@@ -31,11 +37,29 @@ class SBoxTransitionMILPModel:
         2
     """
 
+    model_provenance_by_kind: ClassVar = {
+        TrailKind.XOR_DIFFERENTIAL: _direct_model(
+            ConstraintBackend.MILP,
+            "SBoxXorDifferentialMILPModel",
+            "xor_differential",
+            "one-hot exhaustive DDT row selection",
+            "The finite relation is enumerated directly from the supplied S-box table.",
+        ),
+        TrailKind.XOR_LINEAR: _direct_model(
+            ConstraintBackend.MILP,
+            "SBoxXorLinearMILPModel",
+            "xor_linear",
+            "one-hot exhaustive LAT row selection",
+            "The finite relation is enumerated directly from the supplied S-box table.",
+        ),
+    }
+
     def __init__(self, table, kind):
         if kind not in (TrailKind.XOR_DIFFERENTIAL, TrailKind.XOR_LINEAR):
             raise ValueError("S-box MILP requires differential or linear semantics")
         self.semantics = SBoxTransitionSemantics(table)
         self.kind = kind
+        self.model_provenance = self.model_provenance_by_kind[kind]
         self.columns = tuple(
             f"{prefix}_{bit}"
             for prefix in ("input", "output")
@@ -87,7 +111,12 @@ class SBoxTransitionMILPModel:
                             f"fixed_{prefix}_{bit}",
                         )
                     )
-        self._model = MILPModel(model.variables, tuple(constraints), model.objective)
+        self._model = MILPModel(
+            model.variables,
+            tuple(constraints),
+            model.objective,
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
         return self._model
 
     def decode_transition(self, assignment):
@@ -124,8 +153,11 @@ class SBoxXorDifferentialMILPModel(SBoxTransitionMILPModel):
         2
     """
 
+    model_provenance = SBoxTransitionMILPModel.model_provenance_by_kind[TrailKind.XOR_DIFFERENTIAL]
+
     def __init__(self, table) -> None:
         super().__init__(table, TrailKind.XOR_DIFFERENTIAL)
+        self.model_provenance = type(self).model_provenance
 
 
 class SBoxXorLinearMILPModel(SBoxTransitionMILPModel):
@@ -140,5 +172,8 @@ class SBoxXorLinearMILPModel(SBoxTransitionMILPModel):
         2
     """
 
+    model_provenance = SBoxTransitionMILPModel.model_provenance_by_kind[TrailKind.XOR_LINEAR]
+
     def __init__(self, table) -> None:
         super().__init__(table, TrailKind.XOR_LINEAR)
+        self.model_provenance = type(self).model_provenance

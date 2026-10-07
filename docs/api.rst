@@ -107,6 +107,12 @@ Presentation
 .. automodule:: claasp.presentation
    :members:
 
+Constraint model provenance
+---------------------------
+
+.. automodule:: claasp.representations.constraints
+   :members:
+
 Polynomial models
 -----------------
 

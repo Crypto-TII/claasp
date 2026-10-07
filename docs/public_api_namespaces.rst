@@ -559,6 +559,12 @@ claasp.representations
 .. automodule:: claasp.representations
    :no-index:
 
+claasp.representations.constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints
+   :no-index:
+
 claasp.representations.constraints.cp
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
