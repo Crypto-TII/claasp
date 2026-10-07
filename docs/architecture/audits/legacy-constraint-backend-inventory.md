@@ -246,7 +246,7 @@ benchmark it.
 | Generic MILP differential/linear | `milp/milp_models/milp_xor_differential_model.py`, `milp_xor_linear_model.py`, `components/*` | Local S-box/modular-add and PRESENT slices | Legacy Sage; selected MILP solver | Pending | Pending |
 | MILP activity/truncated/impossible | `milp/milp_models/milp_*active_sboxes*.py`, `milp_*truncated*.py`, `milp_*impossible*.py`, `milp/utils/*truncated*.py` | Typed activity/truncated semantics and finite relations | Legacy Sage, optionally Espresso; selected MILP solver | Pending | Pending |
 | SAT differential/linear | `sat/sat_models/sat_xor_differential_model.py`, `sat_xor_linear_model.py`, `sat/utils/n_window_heuristic_helper.py`, `components/*` | Exact local S-box and modular-add differential/linear SAT models; generic graph-wide trail assembly and n-window remain pending | Selected SAT solver | Complete exhaustive PRESENT support, 1-3-bit modular-add differential, and 3-bit modular-add linear parity; MiniSat integration fixtures pass | Local component benchmark deferred to the native-XOR comparison; generic trail benchmark pending assembly |
-| CryptoMiniSat native XOR | `sat/cms_models/*.py`, `components/*` | Ordinary CNF baseline | CryptoMiniSat | Pending | Pending |
+| CryptoMiniSat native XOR | `sat/cms_models/*.py`, `components/*` at `3aacc275` | Typed mixed CNF/native-XOR container, explicit functional graph lowering, ordinary-CNF expansion oracle, and extended-DIMACS exporter | CryptoMiniSat only for solving; generation and validation are dependency-free | Functional Speck-1 and Simon-1 native constraints expand exactly to the ordinary CNF baseline and accept independently evaluated witnesses | [Canonical formulation benchmark](data/native_xor_formulation_benchmark.json): ten construction runs; solver fields explicitly not run because CryptoMiniSat is absent from the image |
 | SAT truncated/impossible | `sat/sat_models/sat_*truncated*.py`, `sat_bitwise_impossible_xor_differential_model.py`, `components/*` | Typed semantics and reviewed CP slices | Selected SAT solver | Pending | Pending |
 | SAT differential-linear/paired input | `sat/sat_models/sat_differential_linear_model.py`, `sat_shared_difference_paired_input_*.py` | Typed composed/paired semantics | Selected SAT solver | Pending | Pending |
 | SMT differential/linear | `smt/smt_models/smt_xor_differential_model.py`, `smt_xor_linear_model.py`, `components/*` | Local and word-level v5 SMT models | Z3, Yices, or MathSAT driver | Pending component-coverage comparison | Pending |
@@ -266,9 +266,10 @@ they start with `components/`, which is relative to `claasp/`.
    adds eight-bit parity and benchmark coverage.
 2. **SAT/CMS and modular-add strategy PRs.** The first slice restores explicit
    local S-box and modular-add XOR-differential and XOR-linear SAT models with
-   exhaustive small-domain parity. Following slices recover generic trail
-   assembly, native-XOR CMS output, and the separately switchable n-window
-   heuristic, then benchmark ordinary CNF against native XOR.
+   exhaustive small-domain parity. The second slice restores typed native-XOR
+   functional output and its extended-DIMACS exporter. Following slices recover
+   generic trail assembly and the separately switchable n-window heuristic,
+   then add solver-time benchmarks when CryptoMiniSat is available.
 3. **Linear-layer and truncated-model PRs.** Recover bitwise/wordwise,
    deterministic/semi-deterministic, branch-number, undisturbed-bit, and
    impossible formulations across MILP, SAT, SMT, and CP in component-sized

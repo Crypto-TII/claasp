@@ -28174,10 +28174,28 @@
       "qualified_name": "claasp.representations.constraints.sat.BooleanFunctionalSATModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.lowering.BooleanNativeXorModel",
+      "defined_in": "claasp.representations.constraints.sat.lowering",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.BooleanNativeXorModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.boolean.BooleanNativeXorSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.boolean",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.BooleanNativeXorSATModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula",
       "defined_in": "claasp.representations.constraints.sat.model",
       "kind": "dataclass",
       "qualified_name": "claasp.representations.constraints.sat.CNFFormula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.exporters.dimacs.CryptoMiniSatDimacsExporter",
+      "defined_in": "claasp.representations.constraints.sat.exporters.dimacs",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.CryptoMiniSatDimacsExporter"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddDifferentialSATModel",
@@ -28196,6 +28214,18 @@
       "defined_in": "claasp.representations.constraints.sat.components.modular_add",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.sat.ModularAddLinearSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNativeXorSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.ModularAddNativeXorSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.NativeXorCNFFormula"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.sbox.SBoxFunctionalSATModel",
@@ -28240,6 +28270,12 @@
       "qualified_name": "claasp.representations.constraints.sat.components.BooleanFunctionalSATModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.components.boolean.BooleanNativeXorSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.boolean",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.BooleanNativeXorSATModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddDifferentialSATModel",
       "defined_in": "claasp.representations.constraints.sat.components.modular_add",
       "kind": "class",
@@ -28256,6 +28292,12 @@
       "defined_in": "claasp.representations.constraints.sat.components.modular_add",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.sat.components.ModularAddLinearSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNativeXorSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.ModularAddNativeXorSATModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.sbox.SBoxFunctionalSATModel",
@@ -28288,6 +28330,18 @@
       "qualified_name": "claasp.representations.constraints.sat.components.WiringFunctionalSATModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.components.boolean",
+      "defined_in": "claasp.representations.constraints.sat.components.boolean",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.sat.components.boolean"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.boolean.BooleanFunctionalSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.boolean",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.boolean.BooleanFunctionalSATModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.components.boolean.BooleanFunctionalSATModel.__init__",
       "defined_in": "claasp.representations.constraints.sat.components.boolean",
       "documented_by": "claasp.representations.constraints.sat.components.boolean.BooleanFunctionalSATModel",
@@ -28297,8 +28351,24 @@
     {
       "canonical_name": "claasp.representations.constraints.sat.components.boolean.BooleanFunctionalSATModel.encode",
       "defined_in": "claasp.representations.constraints.sat.components.boolean",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.components.boolean.BooleanNativeXorSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.components.boolean.BooleanFunctionalSATModel.encode"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.boolean.BooleanNativeXorSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.boolean",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.boolean.BooleanNativeXorSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.boolean.BooleanNativeXorSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.components.boolean",
+      "documented_by": "claasp.representations.constraints.sat.components.boolean.BooleanNativeXorSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.components.boolean.BooleanNativeXorSATModel.__init__"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.modular_add",
@@ -28347,6 +28417,9 @@
     {
       "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddFunctionalSATModel.encode",
       "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.components.modular_add.ModularAddNativeXorSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddFunctionalSATModel.encode"
     },
@@ -28374,6 +28447,19 @@
       "defined_in": "claasp.representations.constraints.sat.components.modular_add",
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddLinearSATModel.decode_transition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNativeXorSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNativeXorSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNativeXorSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "documented_by": "claasp.representations.constraints.sat.components.modular_add.ModularAddNativeXorSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNativeXorSATModel.__init__"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.sbox",
@@ -28479,10 +28565,29 @@
       "qualified_name": "claasp.representations.constraints.sat.exporters"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.exporters.dimacs.CryptoMiniSatDimacsExporter",
+      "defined_in": "claasp.representations.constraints.sat.exporters.dimacs",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.exporters.CryptoMiniSatDimacsExporter"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.exporters.dimacs.DimacsExporter",
       "defined_in": "claasp.representations.constraints.sat.exporters.dimacs",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.sat.exporters.DimacsExporter"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.exporters.dimacs.CryptoMiniSatDimacsExporter.__init__",
+      "defined_in": "claasp.representations.constraints.sat.exporters.dimacs",
+      "documented_by": "claasp.representations.constraints.sat.exporters.dimacs.CryptoMiniSatDimacsExporter",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.exporters.dimacs.CryptoMiniSatDimacsExporter.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.exporters.dimacs.CryptoMiniSatDimacsExporter.export",
+      "defined_in": "claasp.representations.constraints.sat.exporters.dimacs",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.exporters.dimacs.CryptoMiniSatDimacsExporter.export"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.exporters.dimacs.DimacsExporter.__init__",
@@ -28507,14 +28612,33 @@
     {
       "canonical_name": "claasp.representations.constraints.sat.lowering.BooleanCNFModel.cnf_formula",
       "defined_in": "claasp.representations.constraints.sat.lowering",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.lowering.BooleanNativeXorModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.lowering.BooleanCNFModel.cnf_formula"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.lowering.BooleanCNFModel.witness",
       "defined_in": "claasp.representations.constraints.sat.lowering",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.lowering.BooleanNativeXorModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.lowering.BooleanCNFModel.witness"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.lowering.BooleanNativeXorModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.lowering",
+      "documented_by": "claasp.representations.constraints.sat.lowering.BooleanNativeXorModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.lowering.BooleanNativeXorModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.lowering.BooleanNativeXorModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.lowering",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.lowering.BooleanNativeXorModel.cnf_formula"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.model",
@@ -28538,6 +28662,9 @@
     {
       "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula.clause_count",
       "defined_in": "claasp.representations.constraints.sat.model",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.model.NativeXorCNFFormula"
+      ],
       "kind": "property",
       "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula.clause_count"
     },
@@ -28558,12 +28685,18 @@
     {
       "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula.is_satisfied",
       "defined_in": "claasp.representations.constraints.sat.model",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.model.NativeXorCNFFormula"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula.is_satisfied"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula.literal_count",
       "defined_in": "claasp.representations.constraints.sat.model",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.model.NativeXorCNFFormula"
+      ],
       "kind": "property",
       "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula.literal_count"
     },
@@ -28577,6 +28710,9 @@
     {
       "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula.variable_count",
       "defined_in": "claasp.representations.constraints.sat.model",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.model.NativeXorCNFFormula"
+      ],
       "kind": "property",
       "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula.variable_count"
     },
@@ -28586,6 +28722,79 @@
       "documented_by": "claasp.representations.constraints.sat.model.CNFFormula",
       "kind": "dataclass_field",
       "qualified_name": "claasp.representations.constraints.sat.model.CNFFormula.variables"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.__init__",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "documented_by": "claasp.representations.constraints.sat.model.NativeXorCNFFormula",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.clauses",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "documented_by": "claasp.representations.constraints.sat.model.NativeXorCNFFormula",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.clauses"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.constraint_models",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "documented_by": "claasp.representations.constraints.sat.model.NativeXorCNFFormula",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.constraint_models"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.expanded_cnf",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.expanded_cnf"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.is_satisfied",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.is_satisfied"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.native_xor_count",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "kind": "property",
+      "qualified_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.native_xor_count"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.provenance",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "documented_by": "claasp.representations.constraints.sat.model.NativeXorCNFFormula",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.provenance"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.variables",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "documented_by": "claasp.representations.constraints.sat.model.NativeXorCNFFormula",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.variables"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.xor_clauses",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "documented_by": "claasp.representations.constraints.sat.model.NativeXorCNFFormula",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.xor_clauses"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.xor_provenance",
+      "defined_in": "claasp.representations.constraints.sat.model",
+      "documented_by": "claasp.representations.constraints.sat.model.NativeXorCNFFormula",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.xor_provenance"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails",

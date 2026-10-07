@@ -19,12 +19,14 @@ from claasp.graph import Primitive
 from claasp.representations.constraints import ConstraintModelApplication
 from claasp.representations.constraints.sat.components import (
     BooleanFunctionalSATModel,
+    BooleanNativeXorSATModel,
     ModularAddFunctionalSATModel,
+    ModularAddNativeXorSATModel,
     SBoxFunctionalSATModel,
     WiringFunctionalSATModel,
 )
 from claasp.representations.constraints.sat.encoding import encode_unit, unit_variable_names
-from claasp.representations.constraints.sat.model import CNFFormula
+from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
 from claasp.representations.execution import EvaluationResult
 
 
@@ -79,6 +81,17 @@ class _CNFEncodingContext:
         self.add_clause((b, -y), label)
 
 
+class _NativeXorEncodingContext(_CNFEncodingContext):
+    def __init__(self, variables) -> None:
+        super().__init__(variables)
+        self.xor_clauses: list[tuple[int, ...]] = []
+        self.xor_provenance: list[str] = []
+
+    def xor(self, output, left, right, label):
+        self.xor_clauses.append((-self.indices[output], self.indices[left], self.indices[right]))
+        self.xor_provenance.append(label)
+
+
 class BooleanCNFModel:
     """Compile a homogeneous Bit or Word graph to CNF.
 
@@ -99,18 +112,19 @@ class BooleanCNFModel:
         True
     """
 
-    def __init__(self, primitive: Primitive) -> None:
+    def __init__(self, primitive: Primitive, *, native_xor: bool = False) -> None:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
         self.primitive = primitive
+        self.native_xor = native_xor
         self._auxiliary_definitions: tuple[tuple[str, tuple[str, ...]], ...] = ()
-        self._formula: CNFFormula | None = None
+        self._formula: CNFFormula | NativeXorCNFFormula | None = None
 
     @staticmethod
     def _name(source_id: str, position: int) -> str:
         return f"{source_id}_{position}"
 
-    def cnf_formula(self) -> CNFFormula:
+    def cnf_formula(self) -> CNFFormula | NativeXorCNFFormula:
         """Return the deterministic CNF representation, compiling it once."""
 
         if self._formula is not None:
@@ -134,7 +148,11 @@ class BooleanCNFModel:
             for position in range(port.value_type.unit_count)
             for name in unit_variable_names(port.owner_id, port.value_type, position)
         ]
-        context = _CNFEncodingContext(variables)
+        context = (
+            _NativeXorEncodingContext(variables)
+            if self.native_xor
+            else _CNFEncodingContext(variables)
+        )
 
         for component in self.primitive.components:
             label = cast(str, component.component_id)
@@ -161,9 +179,17 @@ class BooleanCNFModel:
             if isinstance(component, (Constant, Identity, Permutation, Rotate)):
                 encoding = WiringFunctionalSATModel(component)
             elif isinstance(component, (Add, Xor, BitwiseAnd)):
-                encoding = BooleanFunctionalSATModel(component)
+                encoding = (
+                    BooleanNativeXorSATModel(component)
+                    if self.native_xor
+                    else BooleanFunctionalSATModel(component)
+                )
             elif isinstance(component, ModularAdd):
-                encoding = ModularAddFunctionalSATModel(component)
+                encoding = (
+                    ModularAddNativeXorSATModel(component)
+                    if self.native_xor
+                    else ModularAddFunctionalSATModel(component)
+                )
             elif isinstance(component, BitVectorSBox):
                 encoding = SBoxFunctionalSATModel(component)
             else:
@@ -177,11 +203,20 @@ class BooleanCNFModel:
             )
 
         self._auxiliary_definitions = tuple(context.auxiliary)
-        self._formula = CNFFormula(
+        arguments = (
             tuple(context.variables),
             tuple(context.clauses),
             tuple(context.provenance),
             tuple(context.constraint_models),
+        )
+        self._formula = (
+            NativeXorCNFFormula(
+                *arguments,
+                tuple(context.xor_clauses),
+                tuple(context.xor_provenance),
+            )
+            if isinstance(context, _NativeXorEncodingContext)
+            else CNFFormula(*arguments)
         )
         return self._formula
 
@@ -225,3 +260,26 @@ class BooleanCNFModel:
         width = value_type.domain.encoded_bit_size
         position, local_bit = divmod(flat_bit, width)
         return unit_variable_names(owner_id, value_type, position)[local_bit]
+
+
+class BooleanNativeXorModel(BooleanCNFModel):
+    """Compile a Boolean graph using native parity constraints where possible.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> formula = BooleanNativeXorModel(Speck(number_of_rounds=1)).cnf_formula()
+        >>> (formula.native_xor_count > 0, formula.clause_count < 403)
+        (True, True)
+    """
+
+    def __init__(self, primitive: Primitive) -> None:
+        super().__init__(primitive, native_xor=True)
+
+    def cnf_formula(self) -> NativeXorCNFFormula:
+        """Return CNF plus native XOR constraints."""
+
+        formula = super().cnf_formula()
+        if not isinstance(formula, NativeXorCNFFormula):  # pragma: no cover - constructor invariant
+            raise RuntimeError("native XOR lowering returned an ordinary CNF formula")
+        return formula

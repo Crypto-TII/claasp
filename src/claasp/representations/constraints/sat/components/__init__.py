@@ -1,10 +1,14 @@
 """Backend-specific functional SAT component encodings."""
 
-from claasp.representations.constraints.sat.components.boolean import BooleanFunctionalSATModel
+from claasp.representations.constraints.sat.components.boolean import (
+    BooleanFunctionalSATModel,
+    BooleanNativeXorSATModel,
+)
 from claasp.representations.constraints.sat.components.modular_add import (
     ModularAddDifferentialSATModel,
     ModularAddFunctionalSATModel,
     ModularAddLinearSATModel,
+    ModularAddNativeXorSATModel,
 )
 from claasp.representations.constraints.sat.components.sbox import (
     SBoxFunctionalSATModel,
@@ -16,9 +20,11 @@ from claasp.representations.constraints.sat.components.wiring import WiringFunct
 
 __all__ = [
     "BooleanFunctionalSATModel",
+    "BooleanNativeXorSATModel",
     "ModularAddDifferentialSATModel",
     "ModularAddFunctionalSATModel",
     "ModularAddLinearSATModel",
+    "ModularAddNativeXorSATModel",
     "SBoxFunctionalSATModel",
     "SBoxTransitionSATModel",
     "SBoxXorDifferentialSATModel",
