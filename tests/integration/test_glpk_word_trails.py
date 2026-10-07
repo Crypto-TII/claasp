@@ -5,6 +5,7 @@ import pytest
 from claasp.drivers.solvers import GLPKSolver, MILPStatus
 from claasp.primitives import ToySpeck
 from claasp.representations.constraints.milp import (
+    WordDeterministicTruncatedMILPModel,
     WordDifferentialMILPModel,
     WordLinearMILPModel,
 )
@@ -34,4 +35,17 @@ def test_glpk_solves_and_independently_checks_word_trails(model):
     assert solved.status is MILPStatus.OPTIMAL
     trail = model.decode_characteristic(solved.assignment)
     assert 0 <= trail.total_weight <= 1
+    assert model.check_characteristic(trail)
+
+
+def test_glpk_solves_and_independently_checks_deterministic_truncated_trail():
+    model = WordDeterministicTruncatedMILPModel(
+        ToySpeck(2),
+        fixed_input_patterns={"plaintext": "00000001", "key": "0" * 16},
+        output_pattern="???0????",
+    )
+    solved = GLPKSolver(timeout_seconds=30).solve(model.milp_model())
+    assert solved.status is MILPStatus.OPTIMAL
+    trail = model.decode_characteristic(solved.assignment)
+    assert str(trail.output_pattern) == "???0????"
     assert model.check_characteristic(trail)

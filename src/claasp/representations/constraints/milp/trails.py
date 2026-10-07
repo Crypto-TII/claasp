@@ -291,6 +291,81 @@ class WordDifferentialMILPModel:
         return self._sat_model.check_characteristic(trail)
 
 
+class WordDeterministicTruncatedMILPModel:
+    """Assemble deterministic-truncated Word graphs as portable MILP.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToySpeck
+        >>> model = WordDeterministicTruncatedMILPModel(
+        ...     ToySpeck(2),
+        ...     fixed_input_patterns={"plaintext": "00000001", "key": "0" * 16},
+        ...     output_pattern="???0????",
+        ... )
+        >>> formulation = model.milp_model()
+        >>> (len(formulation.variables), len(formulation.constraints))
+        (200, 829)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "WordDeterministicTruncatedMILPModel",
+        "deterministic_truncated_xor",
+        "exact MILP translation of the reviewed ternary Word-graph relation",
+        "The portable formulation preserves every clause as one linear inequality.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        fixed_input_patterns=None,
+        output_pattern=None,
+        nonzero_input=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import (
+            WordDeterministicTruncatedSATModel,
+        )
+
+        self._sat_model = WordDeterministicTruncatedSATModel(
+            primitive,
+            fixed_input_patterns=fixed_input_patterns,
+            output_pattern=output_pattern,
+            nonzero_input=nonzero_input,
+        )
+        self.primitive = primitive
+        self._model: MILPModel | None = None
+
+    def milp_model(self) -> MILPModel:
+        """Return the exact portable MILP formulation."""
+
+        from claasp.representations.constraints.milp.lowering import cnf_to_milp
+
+        translated = cnf_to_milp(self._sat_model.cnf_formula())
+        self._model = MILPModel(
+            translated.variables,
+            translated.constraints,
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._model
+
+    def decode_characteristic(self, assignment):
+        """Decode and independently validate a complete MILP assignment."""
+
+        if self._model is None:
+            raise ValueError("build the MILP model before decoding")
+        return self._sat_model.decode_characteristic(
+            {name: int(round(value)) for name, value in assignment.items()}
+        )
+
+    def check_characteristic(self, trail) -> bool:
+        """Recheck ternary component transitions, wiring, and boundaries."""
+
+        if self._model is None:
+            raise ValueError("build the MILP model before checking")
+        return self._sat_model.check_characteristic(trail)
+
+
 class WordLinearMILPModel:
     """Assemble exact XOR-linear Word graphs as portable MILP.
 
