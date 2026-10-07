@@ -572,6 +572,13 @@ typed decoding. The committed 32-bit comparison records formulation size,
 construction, and solve time; remaining truncated MILP components and generic
 graph assembly stay separate recovery slices.
 
+The portable graph-level MILP slice adds
+``WordDeterministicTruncatedMILPModel``. It translates the same exhaustively
+checked ternary clauses used by the SAT model into exact linear inequalities,
+then decodes and independently rechecks the complete Word graph. GLPK solves
+the reviewed fixed-boundary ToySpeck fixture without Sage or a proprietary
+solver; specialized activity and impossible-search strategies remain separate.
+
 The first differential-linear SAT slice recovers the local upper and lower
 boundary clauses as ``DifferentialToTruncatedSATModel`` and
 ``TruncatedToLinearSATModel``. Exhaustive Boolean tests establish the complete
