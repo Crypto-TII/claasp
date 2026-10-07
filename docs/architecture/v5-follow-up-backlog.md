@@ -579,7 +579,7 @@ reviewed PR; retain both strategies when each has a practical advantage.
 
 ## Repository migration-audit test PR
 
-Status: **Next PR**
+Status: **Complete**
 
 The constraint-layout follow-up exposed that the committed bidirectional
 migration and license-provenance inventories no longer match the shipped tree,
@@ -612,3 +612,14 @@ Review
   an ordinary module unit test.
 - Remove user-facing references to the migration audit regardless of the test
   decision.
+
+Resolution: retain the bidirectional audit as a repository/release contract.
+Its generated matrix remains the authority for legacy and shipped-artifact
+coverage, while the review-plan closure now validates the live matrix summary
+rather than duplicating fixed counts that become stale after every recovery
+module. The focused committed-audit test completes in under one second on the
+development host, so it remains in the ordinary repository suite. Unit tests
+whose scope spans multiple implementation modules now use the established
+``test_<owner>__<topic>.py`` naming convention, making package ownership
+explicit without inventing empty source modules. The four accidental generic
+``cipher-state`` phrases in user documentation now use ``data-state``.
