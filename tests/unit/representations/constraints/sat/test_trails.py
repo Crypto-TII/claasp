@@ -11,6 +11,7 @@ from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.sat import (
     NWindowSATStrategy,
     SpeckImpossibleSATModel,
+    SpeckProbabilisticTruncatedSATModel,
     WordDeterministicTruncatedSATModel,
     WordDifferentialSATModel,
     WordLinearSATModel,
@@ -171,3 +172,26 @@ def test_speck_impossible_sat_validates_supported_slice_and_patterns():
         SpeckImpossibleSATModel(primitive, middle_round=True)
     with pytest.raises(ValueError, match="contain 32 bits"):
         SpeckImpossibleSATModel(primitive, middle_round=1, input_pattern="0")
+
+
+def test_speck_probabilistic_sat_assembles_local_round_relations():
+    model = SpeckProbabilisticTruncatedSATModel(
+        Speck(number_of_rounds=2),
+        "00000000011111001110000000000000",
+        "???????????????1???????????????1",
+    )
+    formula = model.cnf_formula()
+    assert formula.variable_count == 1182
+    assert formula.clause_count == 215309
+    assert len(model._round_models) == 2
+    assert all(item.model.backend is ConstraintBackend.SAT for item in formula.constraint_models)
+
+
+def test_speck_probabilistic_sat_validates_boundaries_and_weight_bound():
+    primitive = Speck(number_of_rounds=2)
+    with pytest.raises(ValueError, match="32 bits"):
+        SpeckProbabilisticTruncatedSATModel(primitive, "0", "0" * 32)
+    with pytest.raises(ValueError, match="nonnegative integer"):
+        SpeckProbabilisticTruncatedSATModel(
+            primitive, "0" * 32, "0" * 32, maximum_scaled_weight=True
+        )

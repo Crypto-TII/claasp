@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box MILP, local SAT exact/truncated/impossible/probabilistic relations, native-XOR output/trails, SAT exact/truncated/impossible trail assembly, and n-window heuristic implemented; next: probabilistic truncated SAT graph assembly and legacy semi-deterministic windows**
+Status: **S-box MILP, local SAT exact/truncated/impossible/probabilistic relations, native-XOR output/trails, SAT exact/truncated/impossible/probabilistic trail assembly, and n-window heuristic implemented; next: legacy semi-deterministic SAT windows**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -451,8 +451,18 @@ counter-based recurrence already shared with CP: explicit carry differences,
 zero-run lengths, and the fixed-point costs 0, 4, 9, 19, 41, and 100. An
 exhaustive width-two test checks every canonical input, output, carry, and cost
 combination against ``check_probabilistic_truncated_modular_add``; all three
-SAT solvers reproduce a nonzero-cost fixture. Whole-graph weight assembly and
-the distinct legacy semi-deterministic window formulations remain next.
+SAT solvers reproduce a nonzero-cost fixture.
+
+The following whole-graph slice adds
+``SpeckProbabilisticTruncatedSATModel``. It composes one reviewed local relation
+per round, direct ternary rotations and XOR wiring, fixed external boundaries,
+and an optional maximum scaled-weight constraint. The established two-round CP
+fixture is satisfiable at its minimum bound of 100 under MiniSat, Kissat, and
+CryptoMiniSat, and every decoded round is independently rechecked. The
+committed ten-run benchmark also records the portable CNF cost—554,782
+variables and 1,327,845 clauses for this bounded fixture—so compact legacy
+semi-deterministic windows remain a performance-recovery target rather than
+being treated as equivalent without measurement.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and

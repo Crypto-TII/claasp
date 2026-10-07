@@ -23,6 +23,7 @@ from claasp.representations.constraints import (
     ConstraintModelApplication,
     ConstraintModelProvenance,
     _direct_model,
+    _unaudited_model,
 )
 from claasp.representations.constraints.sat.components import (
     ImpossibleBoundarySATModel,
@@ -31,6 +32,7 @@ from claasp.representations.constraints.sat.components import (
     ModularAddLinearSATModel,
     ModularAddNWindowSATModel,
     ModularSubtractDeterministicTruncatedSATModel,
+    ProbabilisticTruncatedModularAddSATModel,
 )
 from claasp.representations.constraints.sat.lowering import _native_xor_formula
 from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
@@ -42,6 +44,7 @@ from claasp.representations.constraints.smt.trails import (
 )
 from claasp.semantics.cryptanalysis import (
     ImpossiblePropagationBoundary,
+    ProbabilisticTruncatedTrail,
     TruncatedBit,
     TruncatedXorDifference,
     truncated_modular_add,
@@ -1102,6 +1105,251 @@ class SpeckImpossibleSATModel:
         )
 
 
+class SpeckProbabilisticTruncatedSATModel:
+    """Compose counter-based probabilistic truncated SAT over Speck32/64.
+
+    Each round reuses :class:`ProbabilisticTruncatedModularAddSATModel`; the
+    remaining rotations and XOR are wired directly in canonical ternary form.
+    Solver assignments decode to typed transitions whose costs and state
+    propagation are independently rechecked.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = SpeckProbabilisticTruncatedSATModel(
+        ...     Speck(number_of_rounds=2),
+        ...     "00000000011111001110000000000000",
+        ...     "???????????????1???????????????1",
+        ... )
+        >>> formula = model.cnf_formula()
+        >>> (formula.variable_count > 900, formula.clause_count > 200000)
+        (True, True)
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.SAT,
+        "SpeckProbabilisticTruncatedSATModel",
+        "probabilistic_truncated_xor",
+        "counter-based Speck round composition in ordinary CNF",
+        "The exact correspondence with a primary-source construction has not been audited.",
+    )
+
+    def __init__(
+        self, primitive, input_pattern, output_pattern, *, maximum_scaled_weight=None
+    ) -> None:
+        plaintext = primitive.input_ports.get("plaintext")
+        if (
+            primitive.family_name != "speck"
+            or plaintext is None
+            or not isinstance(plaintext.value_type.domain, Word)
+            or plaintext.value_type.domain.width != 16
+        ):
+            raise NotImplementedError("the reviewed probabilistic slice supports Speck32/64")
+        self.primitive = primitive
+        self.width = 16
+        self.input_pattern = self._coerce(input_pattern)
+        self.output_pattern = self._coerce(output_pattern)
+        if maximum_scaled_weight is not None and (
+            not isinstance(maximum_scaled_weight, int)
+            or isinstance(maximum_scaled_weight, bool)
+            or maximum_scaled_weight < 0
+        ):
+            raise ValueError("maximum_scaled_weight must be a nonnegative integer")
+        self.maximum_scaled_weight = maximum_scaled_weight
+        self._formula: CNFFormula | None = None
+        self._round_models: list[ProbabilisticTruncatedModularAddSATModel] = []
+        self._round_maps: list[dict[str, str]] = []
+        self._states: tuple[tuple[tuple[tuple[str, str], ...], ...], ...] = ()
+
+    def _coerce(self, pattern):
+        if isinstance(pattern, str):
+            pattern = TruncatedXorDifference.parse(pattern)
+        if not isinstance(pattern, TruncatedXorDifference):
+            raise TypeError("boundaries must be strings or TruncatedXorDifference values")
+        if len(pattern.bits) != 2 * self.width:
+            raise ValueError("Speck32 boundaries must contain 32 bits")
+        return pattern
+
+    def cnf_formula(self) -> CNFFormula:
+        """Return fixed boundaries and every probabilistic Speck round in CNF."""
+
+        variables: list[str] = []
+        indices: dict[str, int] = {}
+        clauses: list[tuple[int, ...]] = []
+        provenance: list[str] = []
+
+        def allocate(name):
+            if name not in indices:
+                variables.append(name)
+                indices[name] = len(variables)
+            return name
+
+        def add(literals, label):
+            clauses.append(tuple(literals))
+            provenance.append(label)
+
+        states = tuple(
+            tuple(
+                tuple(
+                    (
+                        allocate(f"state_{boundary}_{word}_{bit}_unknown"),
+                        allocate(f"state_{boundary}_{word}_{bit}_value"),
+                    )
+                    for bit in range(self.width)
+                )
+                for word in range(2)
+            )
+            for boundary in range(len(self.primitive.rounds) + 1)
+        )
+        for boundary in states:
+            for word in boundary:
+                for unknown, value in word:
+                    add((-indices[unknown], -indices[value]), "truncated_canonical_unknown")
+
+        symbols = ((0, 0), (0, 1), (1, 0))
+
+        def xor_relation(left, right, output):
+            for left_value in symbols:
+                for right_value in symbols:
+                    expected = (
+                        (1, 0)
+                        if (1, 0) in (left_value, right_value)
+                        else (0, left_value[1] ^ right_value[1])
+                    )
+                    for candidate in symbols:
+                        if candidate == expected:
+                            continue
+                        add(
+                            tuple(
+                                -indices[name] if bit else indices[name]
+                                for pair, encoded in (
+                                    (left, left_value),
+                                    (right, right_value),
+                                    (output, candidate),
+                                )
+                                for name, bit in zip(pair, encoded)
+                            ),
+                            "probabilistic_truncated_xor",
+                        )
+
+        round_models = []
+        round_maps = []
+        applications: list[ConstraintModelApplication] = []
+        weighted_costs: list[str] = []
+        for round_number in range(len(self.primitive.rounds)):
+            operations = self.primitive.round_operations[round_number]
+            alpha = operations["rotate_right"].amount
+            beta = operations["rotate_left"].amount
+            local_model = ProbabilisticTruncatedModularAddSATModel(self.width)
+            local = local_model.cnf_formula()
+            mapping = {}
+            for bit in range(self.width):
+                for field_number, field in enumerate(("unknown", "value")):
+                    mapping[f"left_{bit}_{field}"] = states[round_number][0][
+                        (bit - alpha) % self.width
+                    ][field_number]
+                    mapping[f"right_{bit}_{field}"] = states[round_number][1][bit][field_number]
+                    mapping[f"output_{bit}_{field}"] = states[round_number + 1][0][bit][
+                        field_number
+                    ]
+            for name in local.variables:
+                mapping.setdefault(name, allocate(f"round_{round_number}__{name}"))
+            local_indices = {
+                position: indices[mapping[name]] for position, name in enumerate(local.variables, 1)
+            }
+            for clause, label in zip(local.clauses, local.provenance):
+                add(
+                    tuple(
+                        local_indices[abs(literal)] * (1 if literal > 0 else -1)
+                        for literal in clause
+                    ),
+                    label,
+                )
+            for bit in range(self.width):
+                xor_relation(
+                    states[round_number][1][(bit + beta) % self.width],
+                    states[round_number + 1][0][bit],
+                    states[round_number + 1][1][bit],
+                )
+            round_models.append(local_model)
+            round_maps.append(mapping)
+            applications.extend(local.constraint_models)
+            weighted_costs.extend(
+                mapping[f"cost_{bit}_{cost}"]
+                for bit in range(self.width)
+                for cost in (4, 9, 19, 41, 100)
+                for _ in range(cost)
+            )
+
+        def fix(boundary, pattern, label):
+            pairs = states[boundary][0] + states[boundary][1]
+            for pair, bit in zip(pairs, pattern.bits):
+                encoded = (1, 0) if bit is TruncatedBit.UNKNOWN else (0, int(bit.value))
+                for name, value in zip(pair, encoded):
+                    add(((indices[name] if value else -indices[name]),), label)
+
+        fix(0, self.input_pattern, "fixed_probabilistic_input")
+        fix(-1, self.output_pattern, "fixed_probabilistic_output")
+        add(
+            (indices[name] for pair in states[0][0] + states[0][1] for name in pair),
+            "probabilistic_nonzero_input",
+        )
+        if self.maximum_scaled_weight is not None:
+            _at_most(
+                weighted_costs,
+                self.maximum_scaled_weight,
+                allocate,
+                indices,
+                add,
+                "__probabilistic_weight",
+            )
+        self._round_models = round_models
+        self._round_maps = round_maps
+        self._states = states
+        self._formula = CNFFormula(
+            tuple(variables),
+            tuple(clauses),
+            tuple(provenance),
+            tuple(applications) + (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._formula
+
+    def decode_trail(self, assignment) -> ProbabilisticTruncatedTrail:
+        """Decode and independently validate every round and state boundary."""
+
+        if self._formula is None:
+            raise ValueError("build the formula before decoding")
+        if not self._formula.is_satisfied(assignment):
+            raise ValueError("invalid probabilistic truncated SAT witness")
+        transitions = []
+        for local_model, mapping in zip(self._round_models, self._round_maps):
+            local_assignment = {name: assignment[mapped] for name, mapped in mapping.items()}
+            transitions.append(local_model.decode_transition(local_assignment))
+        for round_number, transition in enumerate(transitions):
+            operations = self.primitive.round_operations[round_number]
+            expected_left = (
+                self.input_pattern.bits[: self.width]
+                if round_number == 0
+                else transitions[round_number - 1].output.bits
+            )
+            if transition.left != TruncatedXorDifference(expected_left).rotate_right(
+                operations["rotate_right"].amount
+            ):
+                raise ValueError("probabilistic trail violates the Speck left rotation")
+            right = _truncated_pattern(self._states[round_number][1], assignment)
+            next_right = right.rotate_left(operations["rotate_left"].amount).xor(transition.output)
+            if next_right != _truncated_pattern(self._states[round_number + 1][1], assignment):
+                raise ValueError("probabilistic trail violates the Speck XOR wiring")
+        output = TruncatedXorDifference(
+            _truncated_pattern(self._states[-1][0], assignment).bits
+            + _truncated_pattern(self._states[-1][1], assignment).bits
+        )
+        trail = ProbabilisticTruncatedTrail(self.input_pattern, output, tuple(transitions))
+        if trail.output_pattern != self.output_pattern:
+            raise ValueError("decoded probabilistic trail changed its output boundary")
+        return trail
+
+
 class WordDifferentialSATModel:
     """Assemble exact XOR-differential component relations as ordinary CNF.
 
@@ -1394,6 +1642,7 @@ __all__ = [
     "NWindowSATStrategy",
     "SpeckImpossibleSATModel",
     "SpeckImpossibleSATTrail",
+    "SpeckProbabilisticTruncatedSATModel",
     "WordDeterministicTruncatedCharacteristic",
     "WordDeterministicTruncatedEnumeration",
     "WordDeterministicTruncatedSATModel",
