@@ -102,7 +102,7 @@ SPN trail search
 
 The graph-level search finds the two-round PRESENT XOR-differential optimum.
 The result distinguishes a proven optimum from a mere feasible trail and
-records structured search metadata and the complete cipher-state propagation:
+records structured search metadata and the complete data-state propagation:
 
 .. doctest::
 
@@ -136,7 +136,7 @@ reproduces the preserved two-round Speck32/64 optimum:
    10
 
 The ten reported transitions cover every rotation, modular addition, and XOR
-on the two-round cipher-state path. The default search fixes the key difference
+on the two-round data-state path. The default search fixes the key difference
 to zero, so its all-zero key schedule is omitted. An independent checker
 recomputes both modular-add probabilities and the rotations/XOR wiring.
 The default method uses Kissat and binary search over the maximum permitted

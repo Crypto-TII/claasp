@@ -26,7 +26,7 @@ below provides immutable report data and selectable output formats for tools
 and exports.
 
 The default searches use a zero key difference. Their reports include every
-cipher-state component but omit the resulting all-zero key schedule. A
+data-state component but omit the resulting all-zero key schedule. A
 related-key result must retain its key-schedule propagation as well.
 
 .. doctest::

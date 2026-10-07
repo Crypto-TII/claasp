@@ -92,7 +92,7 @@ memory depend on the machine:
        1 | XOR              | 0x00080002 | 0x000a |         1/1 |    1 |      0 | xor_1_4
 
 The displayed report contains the input and output differences, total weight,
-proof bound, search metadata, and every cipher-state transition. Here the
+proof bound, search metadata, and every data-state transition. Here the
 weight is 1, corresponding to trail probability :math:`2^{-1}` in the
 differential model. The matching lower bound confirms that no lower-weight
 trail exists for this instance. This is a single-key search, so the all-zero
