@@ -2,10 +2,11 @@
 
 import pytest
 
-from claasp.drivers.solvers import CryptoMiniSatSolver, KissatSolver, MinisatSolver
-from claasp.primitives import ToySpeck
+from claasp.drivers.solvers import CryptoMiniSatSolver, KissatSolver, MinisatSolver, SatStatus
+from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints.sat import (
     NWindowSATStrategy,
+    WordDeterministicDifferentialLinearSATModel,
     WordDifferentialNativeXorSATModel,
     WordDifferentialSATModel,
     WordLinearNativeXorSATModel,
@@ -13,6 +14,28 @@ from claasp.representations.constraints.sat import (
 )
 
 pytestmark = pytest.mark.external
+
+
+@pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
+def test_deterministic_differential_linear_speck_trail_is_solver_independent(solver_type):
+    model = WordDeterministicDifferentialLinearSATModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=1,
+        middle_rounds=1,
+        differential_maximum_weight=16,
+        linear_maximum_weight=16,
+    )
+    result = solver_type(timeout_seconds=30).solve(model.cnf_formula())
+    assert result.status is SatStatus.SATISFIABLE
+    trail = model.decode_trail(result.assignment)
+    middle_input = dict(trail.middle.input_patterns)["state"]
+    assert trail.differential.output_difference == int(str(middle_input), 2)
+    state_mask = dict(trail.linear.input_masks)["state"]
+    assert all(
+        bit.value != "?" or not (state_mask >> (31 - position)) & 1
+        for position, bit in enumerate(trail.middle.output_pattern.bits)
+    )
+    assert trail.linear.output_mask != 0
 
 
 @pytest.mark.parametrize("solver_type", [MinisatSolver, KissatSolver, CryptoMiniSatSolver])

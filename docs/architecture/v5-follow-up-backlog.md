@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box and bitwise-AND MILP strategies plus SAT/CMS recovery slices implemented; next: whole-graph differential-linear and remaining backend strategies**
+Status: **S-box and bitwise-AND MILP strategies plus SAT/CMS recovery slices implemented; next: paired-input differential-linear and remaining backend strategies**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -542,6 +542,19 @@ The later develop model incorporates the relevant corrections plus additional
 fixes, so the branch is archaeological evidence rather than the sole oracle.
 Whole-graph differential/truncated/linear composition remains a separate
 recovery slice.
+
+The following whole-graph slice adds
+``WordDeterministicDifferentialLinearSATModel``. It uses public round slicing
+to compose independently decodable exact-differential,
+deterministic-truncated, and XOR-linear submodels, joining them with the two
+recovered boundary relations. The output witness retains all three typed
+characteristics, rechecks both boundaries without consulting the clauses, and
+reports the legacy deterministic-middle objective without assigning a
+probability to the middle. MiniSat, Kissat, and CryptoMiniSat solve and decode
+the same Speck32/64-3 fixture. The committed ten-run benchmark uses one
+identical 2,543-variable, 7,151-clause formula under all three solvers and
+makes no longer-round performance claim. Paired-input variants and the
+semi-deterministic middle remain separate recovery work.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and

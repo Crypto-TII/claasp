@@ -533,3 +533,36 @@ of 192 and 576 for exhaustive forbidden assignments; the direct lower
 connector uses 64 clauses and 128 literals instead of 96 and 288. Median solve
 times are recorded for reproducibility, but this local benchmark does not
 establish whole-trail performance or change a default.
+
+Complete deterministic-middle composition is available as
+``WordDeterministicDifferentialLinearSATModel``. Round counts explicitly split
+the primitive into a differential prefix, deterministic-truncated middle, and
+linear suffix. Each section reuses its standalone model, and a decoded result
+contains all three independently checked characteristics:
+
+.. doctest::
+
+   >>> from claasp.primitives import Speck
+   >>> from claasp.representations.constraints.sat import (
+   ...     WordDeterministicDifferentialLinearSATModel,
+   ... )
+   >>> composed = WordDeterministicDifferentialLinearSATModel(
+   ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
+   ...     differential_maximum_weight=16, linear_maximum_weight=16,
+   ... )
+   >>> composed_formula = composed.cnf_formula()
+   >>> (composed_formula.variable_count, composed_formula.clause_count)
+   (2543, 7151)
+
+The model fixes auxiliary/key differences and masks to zero, requires a
+nonzero differential input unless one is supplied, and requires a nonzero
+linear output unless an output mask is supplied. Its ``total_weight`` follows
+the legacy deterministic-middle SAT objective: differential weight plus twice
+the linear weight. It does not assign a probability to the truncated middle.
+
+The complete Speck32/64-3 benchmark in
+``architecture/audits/data/sat_differential_linear_trail_benchmark.json`` uses
+the identical 2,543-variable, 7,151-clause formula for MiniSat, Kissat, and
+CryptoMiniSat. Median solve times were 2.593, 1.150, and 2.013 milliseconds.
+This is a reproducibility fixture, not a solver ranking or a claim about
+longer-round search performance.
