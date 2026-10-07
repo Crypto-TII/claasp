@@ -166,7 +166,7 @@ Implementation inventory notes:
 
 ## Constraint-model provenance infrastructure PR
 
-Status: **Next PR, after model organization**
+Status: **In progress**
 
 References belong to the backend-specific constraint model that implements the
 encoding. They do not belong to `component_analysis`, the component class, or a
@@ -198,6 +198,21 @@ constraints.
 Add a coverage test that rejects a model with no explicit status. A
 `VERIFIED` entry must have a primary-source URL or DOI and a precise locator.
 
+Implementation discoveries:
+
+- Existing clause-level ``provenance`` values describe generated constraints
+  and solver diagnostics, so structured model provenance is carried separately
+  as ``constraint_models`` rather than changing their meaning.
+- One model declaration may apply to many graph component IDs. Lowering records
+  that relationship explicitly so reports do not reconstruct it from class or
+  component names.
+- SAT-to-SMT, SAT-to-MILP, and SAT-to-MiniZinc translations preserve the
+  originating component-model declarations.
+- Direct truth-table, full-adder, wiring, and exhaustive finite-relation
+  encodings are marked ``N/A``. The modular-add differential, linear, and
+  probabilistic-truncated correspondences remain ``TBD`` for later literature
+  audits; this PR introduces no ``VERIFIED`` production entry.
+
 ## Constraint-model literature audit PRs
 
 Status: **Research; split by backend or component family**
@@ -226,6 +241,14 @@ Record unresolved cases as `TBD`; never guess.
 ## Repository migration-audit test PR
 
 Status: **Next PR**
+
+The constraint-layout follow-up exposed that the committed bidirectional
+migration and license-provenance inventories no longer match the shipped tree,
+which already contains the new backend component packages, Kissat driver, and
+trail-reporting support. The review-release-plan path-order check and the
+terminology guard also fail on the current stacked base. These repository-wide
+authority updates remain deliberately deferred to that dedicated PR rather
+than being folded into constraint-model provenance work.
 
 Review
 `tests/unit/repository/test_bidirectional_migration_audit.py::test_committed_bidirectional_migration_audit_passes`.

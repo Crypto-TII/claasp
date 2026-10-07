@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from math import inf, log2
 
+from claasp.representations.constraints import ConstraintModelApplication
 from claasp.semantics.base import XOR_DIFFERENTIAL, XOR_LINEAR
 
 
@@ -323,10 +324,19 @@ class TrailSearchResult:
     lower_bound: float
     metadata: TrailSearchMetadata
     component_transitions: tuple[TrailComponentTransition, ...] = ()
+    constraint_models: tuple[ConstraintModelApplication, ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.metadata, TrailSearchMetadata):
             raise TypeError("metadata must be TrailSearchMetadata")
+        if any(not isinstance(item, ConstraintModelApplication) for item in self.constraint_models):
+            raise TypeError("constraint_models must contain ConstraintModelApplication values")
+        assignments = {}
+        for application in self.constraint_models:
+            for component_id in application.component_ids:
+                previous = assignments.setdefault(component_id, application.model)
+                if previous != application.model:
+                    raise ValueError("a component cannot use conflicting constraint models")
         expected = XorDifference if self.trail.kind is TrailKind.XOR_DIFFERENTIAL else XorMask
         for component in self.component_transitions:
             if not isinstance(component.output_pattern, expected) or (

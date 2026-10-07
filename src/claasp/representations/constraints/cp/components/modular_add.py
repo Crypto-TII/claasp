@@ -1,5 +1,10 @@
 """CP encoding of local modular-addition transition relations."""
 
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _unaudited_model,
+)
 from claasp.representations.constraints.cp.model import MiniZincModel
 from claasp.semantics.cryptanalysis import (
     ProbabilisticTruncatedModularAddTransition,
@@ -23,6 +28,14 @@ class ProbabilisticTruncatedModularAddCPModel:
         >>> query.solve
         'solve minimize scaled_weight;'
     """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.CP,
+        "ProbabilisticTruncatedModularAddCPModel",
+        "probabilistic_truncated_xor",
+        "counter-based partial-addition relation",
+        "The exact correspondence with a primary-source construction has not been audited.",
+    )
 
     def __init__(
         self,
@@ -76,6 +89,7 @@ class ProbabilisticTruncatedModularAddCPModel:
             tuple(constraints),
             solve="solve minimize scaled_weight;",
             provenance=("legacy counter_based_modadd_semideterministic fixture",),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
         )
 
     def decode_transition(self, assignment) -> ProbabilisticTruncatedModularAddTransition:

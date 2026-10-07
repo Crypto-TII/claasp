@@ -3,6 +3,8 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from claasp.representations.constraints import ConstraintModelApplication
+
 
 @dataclass(frozen=True, slots=True)
 class CNFFormula:
@@ -16,12 +18,13 @@ class CNFFormula:
 
         >>> from dataclasses import fields
         >>> (CNFFormula.__dataclass_params__.frozen, tuple(field.name for field in fields(CNFFormula)))
-        (True, ('variables', 'clauses', 'provenance'))
+        (True, ('variables', 'clauses', 'provenance', 'constraint_models'))
     """
 
     variables: tuple[str, ...]
     clauses: tuple[tuple[int, ...], ...]
     provenance: tuple[str, ...]
+    constraint_models: tuple[ConstraintModelApplication, ...] = ()
 
     def __post_init__(self) -> None:
         if len(set(self.variables)) != len(self.variables):
@@ -30,6 +33,8 @@ class CNFFormula:
             raise ValueError("CNF variable names must not be empty")
         if len(self.provenance) != len(self.clauses):
             raise ValueError("each CNF clause requires one provenance label")
+        if any(not isinstance(item, ConstraintModelApplication) for item in self.constraint_models):
+            raise TypeError("constraint_models must contain ConstraintModelApplication values")
         limit = len(self.variables)
         for clause in self.clauses:
             if not clause:

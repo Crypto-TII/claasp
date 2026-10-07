@@ -1,5 +1,10 @@
 """Exact finite binary component relations for MILP."""
 
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _direct_model,
+)
 from claasp.representations.constraints.milp.model import (
     ConstraintSense,
     LinearConstraint,
@@ -27,6 +32,14 @@ class FiniteBinaryRelationMILPModel:
         >>> model.is_feasible(witness)
         True
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "FiniteBinaryRelationMILPModel",
+        "finite_relation",
+        "one-hot exhaustive row selection",
+        "The relation is encoded directly from its complete set of rows.",
+    )
 
     def __init__(self, columns, rows, *, row_costs=None):
         self.columns = tuple(columns)
@@ -94,6 +107,7 @@ class FiniteBinaryRelationMILPModel:
             variables,
             tuple(constraints),
             LinearExpression.from_terms(dict(zip(self.selectors, self.row_costs))),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
         )
 
     def witness(self, row):

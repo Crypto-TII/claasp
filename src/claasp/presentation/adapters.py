@@ -30,6 +30,7 @@ from claasp.catalogue.records import (
 )
 from claasp.presentation.contracts import (
     Applicability,
+    Citation,
     DiagnosticCode,
     EvidenceClass,
     PresentationDiagnostic,
@@ -44,6 +45,7 @@ from claasp.presentation.model import (
     TableColumn,
     TableRow,
 )
+from claasp.representations.constraints import ConstraintReferenceStatus
 from claasp.semantics.cryptanalysis import BitPattern, Trail, TrailSearchResult
 from claasp.semantics.cryptanalysis.continuous import ContinuousHeuristicResult
 
@@ -157,6 +159,13 @@ def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
     """
 
     trail = result.trail if isinstance(result, TrailSearchResult) else result
+    constraint_models = result.constraint_models if isinstance(result, TrailSearchResult) else ()
+    references = {
+        component_id: application.model.compact_reference
+        for application in constraint_models
+        for component_id in application.component_ids
+    }
+    show_references = bool(constraint_models)
     summary_rows = [
         TableRow((_text("kind"), _text(trail.kind.value))),
         TableRow((_text("input"), _text(_bit_pattern(trail.input_pattern)))),
@@ -239,6 +248,11 @@ def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
                     ),
                     _number(component.weight, ValueKind.WEIGHT),
                     _text(component.component_id),
+                    *(
+                        (_text(references.get(component.component_id, "not recorded")),)
+                        if show_references
+                        else ()
+                    ),
                 )
             )
             for component in result.component_transitions
@@ -255,6 +269,11 @@ def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
                     _integer(step.transition.sign),
                     _number(step.transition.weight, ValueKind.WEIGHT),
                     _text(step.component_id),
+                    *(
+                        (_text(references.get(step.component_id, "not recorded")),)
+                        if show_references
+                        else ()
+                    ),
                 )
             )
             for step in trail.steps
@@ -269,11 +288,27 @@ def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
             TableColumn("sign", "Sign", Alignment.RIGHT),
             TableColumn("weight", "Weight", Alignment.RIGHT),
             TableColumn("component_id", "Component ID"),
+        )
+        + (
+            (TableColumn("constraint_reference", "Constraint model reference"),)
+            if show_references
+            else ()
         ),
         transition_rows,
         "Component transitions",
     )
-    return ReportSection("Trail", tables=(summary, steps))
+    citation_values = {
+        (model.reference_identifier, model.reference_title, model.source_locator): Citation(
+            model.reference_identifier, model.reference_title, model.source_locator
+        )
+        for model in dict.fromkeys(application.model for application in constraint_models)
+        if model.reference_status is ConstraintReferenceStatus.VERIFIED
+        and model.reference_identifier is not None
+        and model.reference_title is not None
+    }
+    return ReportSection(
+        "Trail", tables=(summary, steps), citations=tuple(citation_values.values())
+    )
 
 
 def trace_section(trace: ExecutionTrace) -> ReportSection:

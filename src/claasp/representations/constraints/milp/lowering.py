@@ -50,6 +50,7 @@ def cnf_to_milp(formula):
     return MILPModel(
         tuple(LinearVariable(name, VariableKind.BINARY) for name in formula.variables),
         tuple(constraints),
+        constraint_models=formula.constraint_models,
     )
 
 

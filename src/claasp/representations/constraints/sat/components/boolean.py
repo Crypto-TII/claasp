@@ -1,6 +1,7 @@
 """Functional SAT encodings for Boolean operators."""
 
 from claasp.components import Add, BitwiseAnd, Xor
+from claasp.representations.constraints import ConstraintBackend, _direct_model
 
 
 class BooleanFunctionalSATModel:
@@ -18,6 +19,14 @@ class BooleanFunctionalSATModel:
         >>> encoding.component.component_id in formula.provenance
         True
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "BooleanFunctionalSATModel",
+        "functional",
+        "direct Boolean operator clauses",
+        "The clauses are generated directly from XOR and AND truth tables.",
+    )
 
     def __init__(self, component) -> None:
         if not isinstance(component, (Add, BitwiseAnd, Xor)):

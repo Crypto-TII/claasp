@@ -1,6 +1,13 @@
 """CP encodings of local S-box transition relations."""
 
+from typing import cast
+
 from claasp.components import BitVectorSBox
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _direct_model,
+)
 from claasp.representations.constraints.cp.model import MiniZincModel
 from claasp.semantics import XOR_DIFFERENTIAL
 from claasp.semantics.cryptanalysis import (
@@ -26,6 +33,14 @@ class SBoxXorDifferentialCPModel:
         >>> query.constraints[-2:]
         ('constraint input_difference = 1;', 'constraint output_difference = 3;')
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "SBoxXorDifferentialCPModel",
+        "xor_differential",
+        "exhaustive DDT table constraint",
+        "The feasible rows are enumerated directly from the supplied S-box table.",
+    )
 
     def __init__(
         self,
@@ -78,6 +93,11 @@ class SBoxXorDifferentialCPModel:
             constraints,
             includes=('include "table.mzn";',),
             provenance=self.problem.provenance,
+            constraint_models=(
+                ConstraintModelApplication(
+                    self.model_provenance, (cast(str, self.component.component_id),)
+                ),
+            ),
         )
 
 
@@ -97,6 +117,14 @@ class SBoxBoomerangCPModel:
         >>> query.solve
         'solve maximize quartet_count;'
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "SBoxBoomerangCPModel",
+        "boomerang",
+        "exhaustive BCT table constraint",
+        "The connectivity rows are enumerated directly from the supplied bijective S-box table.",
+    )
 
     def __init__(
         self, component: BitVectorSBox, input_difference=None, output_difference=None
@@ -148,6 +176,11 @@ class SBoxBoomerangCPModel:
             includes=('include "table.mzn";',),
             solve="solve maximize quartet_count;",
             provenance=(f"exact exhaustive BCT for {self.component.component_id}",),
+            constraint_models=(
+                ConstraintModelApplication(
+                    self.model_provenance, (cast(str, self.component.component_id),)
+                ),
+            ),
         )
 
     def decode(self, assignment):

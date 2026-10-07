@@ -1,5 +1,12 @@
 """SMT encodings of S-box transition relations."""
 
+from typing import ClassVar
+
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _direct_model,
+)
 from claasp.representations.constraints.smt.model import SMTFormula
 from claasp.semantics.cryptanalysis import SBoxTransitionSemantics, TrailKind
 
@@ -20,11 +27,29 @@ class SBoxTransitionSMTModel:
         ('fixed_input', 'fixed_output')
     """
 
+    model_provenance_by_kind: ClassVar = {
+        TrailKind.XOR_DIFFERENTIAL: _direct_model(
+            ConstraintBackend.SMT,
+            "SBoxXorDifferentialSMTModel",
+            "xor_differential",
+            "exhaustive DDT forbidden assignments",
+            "Support and weights are enumerated directly from the supplied S-box table.",
+        ),
+        TrailKind.XOR_LINEAR: _direct_model(
+            ConstraintBackend.SMT,
+            "SBoxXorLinearSMTModel",
+            "xor_linear",
+            "exhaustive LAT forbidden assignments",
+            "Support, weights, and signs are enumerated directly from the supplied S-box table.",
+        ),
+    }
+
     def __init__(self, table: tuple[int, ...] | list[int], kind: TrailKind) -> None:
         if kind not in (TrailKind.XOR_DIFFERENTIAL, TrailKind.XOR_LINEAR):
             raise ValueError("S-box SMT model requires differential or linear semantics")
         self.semantics = SBoxTransitionSemantics(table)
         self.kind = kind
+        self.model_provenance = self.model_provenance_by_kind[kind]
 
     def smt_formula(
         self,
@@ -69,7 +94,12 @@ class SBoxTransitionSMTModel:
                 variable = offset + bit + 1
                 clauses.append((variable if encoded else -variable,))
                 provenance.append(f"fixed_{prefix}")
-        return SMTFormula(variables, tuple(clauses), tuple(provenance))
+        return SMTFormula(
+            variables,
+            tuple(clauses),
+            tuple(provenance),
+            (ConstraintModelApplication(self.model_provenance),),
+        )
 
     def decode_transition(self, assignment: dict[str, int]):
         """Project an SMT assignment back to the shared transition object."""
@@ -95,8 +125,11 @@ class SBoxXorDifferentialSMTModel(SBoxTransitionSMTModel):
         (True, True)
     """
 
+    model_provenance = SBoxTransitionSMTModel.model_provenance_by_kind[TrailKind.XOR_DIFFERENTIAL]
+
     def __init__(self, table: tuple[int, ...] | list[int]) -> None:
         super().__init__(table, TrailKind.XOR_DIFFERENTIAL)
+        self.model_provenance = type(self).model_provenance
 
 
 class SBoxXorLinearSMTModel(SBoxTransitionSMTModel):
@@ -110,8 +143,11 @@ class SBoxXorLinearSMTModel(SBoxTransitionSMTModel):
         (True, 1)
     """
 
+    model_provenance = SBoxTransitionSMTModel.model_provenance_by_kind[TrailKind.XOR_LINEAR]
+
     def __init__(self, table: tuple[int, ...] | list[int]) -> None:
         super().__init__(table, TrailKind.XOR_LINEAR)
+        self.model_provenance = type(self).model_provenance
 
 
 def _bits(value: int, width: int) -> tuple[int, ...]:

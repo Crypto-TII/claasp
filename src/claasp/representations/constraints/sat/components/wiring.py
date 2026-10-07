@@ -1,6 +1,7 @@
 """Functional SAT encodings for constants and structural wiring."""
 
 from claasp.components import Constant, Identity, Permutation, Rotate
+from claasp.representations.constraints import ConstraintBackend, _direct_model
 from claasp.representations.constraints.sat.encoding import encode_unit
 
 
@@ -19,6 +20,14 @@ class WiringFunctionalSATModel:
         >>> encoding.component.component_id in formula.provenance
         True
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "WiringFunctionalSATModel",
+        "functional",
+        "direct equality and constant clauses",
+        "The encoding follows the graph wiring definition directly.",
+    )
 
     def __init__(self, component) -> None:
         if not isinstance(component, (Constant, Identity, Permutation, Rotate)):

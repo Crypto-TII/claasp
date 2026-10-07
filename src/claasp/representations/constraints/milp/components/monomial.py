@@ -1,5 +1,10 @@
 """Exact MILP encoding of component monomial transitions."""
 
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _direct_model,
+)
 from claasp.representations.constraints.milp.model import (
     ConstraintSense,
     LinearConstraint,
@@ -22,6 +27,14 @@ class MonomialTransitionMILPModel:
         >>> model.is_feasible(witness)
         True
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "MonomialTransitionMILPModel",
+        "division_property",
+        "exhaustive monomial-transition row selection",
+        "The finite relation is derived exhaustively from the lookup table ANF.",
+    )
 
     def __init__(self, table) -> None:
         self.table = monomial_transition_table(tuple(table))
@@ -107,7 +120,11 @@ class MonomialTransitionMILPModel:
                         f"fix_output_{bit}",
                     )
                 )
-        return MILPModel(variables, tuple(constraints))
+        return MILPModel(
+            variables,
+            tuple(constraints),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
 
     def assignment(self, input_mask: int, output_mask: int) -> dict[str, int]:
         """Build and independently validate a witness for one transition."""
