@@ -1,7 +1,8 @@
-from claasp.primitives import Present
+from claasp.primitives import Present, ToySpeck
 from claasp.representations.constraints.smt import (
     PresentDifferentialSMTModel,
     PresentLinearSMTModel,
+    WordDeterministicTruncatedSMTModel,
 )
 
 
@@ -24,3 +25,14 @@ def test_present_linear_smt_formula_is_deterministic_and_bounded():
     assert len(formula.variables) < 1000
     assert formula.assertion_count < 40000
     assert "nonzero_linear_input" in formula.provenance
+
+
+def test_deterministic_truncated_smt_assembles_complete_word_graph():
+    model = WordDeterministicTruncatedSMTModel(
+        ToySpeck(2),
+        fixed_input_patterns={"plaintext": "00000001", "key": "0" * 16},
+        output_pattern="???0????",
+    )
+    formula = model.smt_formula()
+    assert formula.assertion_count > 0
+    assert formula.constraint_models[0].model == model.model_provenance

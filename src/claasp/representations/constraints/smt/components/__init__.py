@@ -9,9 +9,13 @@ from claasp.representations.constraints.smt.components.sbox import (
     SBoxXorDifferentialSMTModel,
     SBoxXorLinearSMTModel,
 )
+from claasp.representations.constraints.smt.components.truncated import (
+    ModularAddDeterministicTruncatedSMTModel,
+)
 
 __all__ = [
     "ModularAddDifferentialSMTModel",
+    "ModularAddDeterministicTruncatedSMTModel",
     "ModularAddLinearSMTModel",
     "SBoxTransitionSMTModel",
     "SBoxXorDifferentialSMTModel",

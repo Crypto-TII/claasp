@@ -1,6 +1,7 @@
 """Dependency-free SMT constraint representations."""
 
 from claasp.representations.constraints.smt.components import (
+    ModularAddDeterministicTruncatedSMTModel,
     ModularAddDifferentialSMTModel,
     ModularAddLinearSMTModel,
     SBoxTransitionSMTModel,
@@ -13,6 +14,7 @@ from claasp.representations.constraints.smt.trails import (
     PresentDifferentialSMTModel,
     PresentLinearSMTModel,
     SpeckLinearSMTModel,
+    WordDeterministicTruncatedSMTModel,
     WordDifferentialSMTModel,
     WordLinearSMTModel,
 )
@@ -20,6 +22,7 @@ from claasp.representations.constraints.smt.trails import (
 __all__ = [
     "BooleanSMTModel",
     "ModularAddDifferentialSMTModel",
+    "ModularAddDeterministicTruncatedSMTModel",
     "ModularAddLinearSMTModel",
     "PresentDifferentialSMTModel",
     "PresentLinearSMTModel",
@@ -29,5 +32,6 @@ __all__ = [
     "SMTFormula",
     "SpeckLinearSMTModel",
     "WordDifferentialSMTModel",
+    "WordDeterministicTruncatedSMTModel",
     "WordLinearSMTModel",
 ]

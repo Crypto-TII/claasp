@@ -4,13 +4,15 @@ import pytest
 
 from claasp.analysis import AnalysisProblem, FixedValue, TrailKind
 from claasp.drivers.solvers import SatStatus, Z3Solver
-from claasp.primitives import Present, Speck
+from claasp.primitives import Present, Speck, ToySpeck
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints.smt import (
+    ModularAddDeterministicTruncatedSMTModel,
     ModularAddLinearSMTModel,
     PresentDifferentialSMTModel,
     PresentLinearSMTModel,
     SBoxTransitionSMTModel,
+    WordDeterministicTruncatedSMTModel,
 )
 from claasp.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -18,6 +20,48 @@ from claasp.representations.constraints.smt.trails import (
 )
 
 pytestmark = pytest.mark.external
+
+
+def test_z3_preserves_deterministic_truncated_modular_add_relation():
+    solver = Z3Solver(timeout_seconds=10)
+    accepted_model = ModularAddDeterministicTruncatedSMTModel(4)
+    accepted = solver.solve(
+        accepted_model.smt_formula(left_pattern="0001", right_pattern="0001", output_pattern="???0")
+    )
+    assert accepted.status is SatStatus.SATISFIABLE
+    assert tuple(map(str, accepted_model.decode_transition(accepted.assignment))) == (
+        "0001",
+        "0001",
+        "???0",
+    )
+
+    rejected_model = ModularAddDeterministicTruncatedSMTModel(4)
+    rejected = solver.solve(
+        rejected_model.smt_formula(left_pattern="0001", right_pattern="0001", output_pattern="0000")
+    )
+    assert rejected.status is SatStatus.UNSATISFIABLE
+
+
+def test_z3_preserves_deterministic_truncated_toy_speck_trail():
+    options = {
+        "fixed_input_patterns": {"plaintext": "00000001", "key": "0" * 16},
+        "output_pattern": "???0????",
+    }
+    model = WordDeterministicTruncatedSMTModel(ToySpeck(2), **options)
+    solved = Z3Solver(timeout_seconds=10).solve(model.smt_formula())
+    assert solved.status is SatStatus.SATISFIABLE
+    trail = model.decode_characteristic(solved.assignment)
+    assert str(trail.output_pattern) == "???0????"
+    assert model.check_characteristic(trail)
+
+    rejected = WordDeterministicTruncatedSMTModel(
+        ToySpeck(2),
+        fixed_input_patterns=options["fixed_input_patterns"],
+        output_pattern="00000000",
+    )
+    assert (
+        Z3Solver(timeout_seconds=10).solve(rejected.smt_formula()).status is SatStatus.UNSATISFIABLE
+    )
 
 
 def test_z3_incremental_queries_reject_mutation_and_close_process():
