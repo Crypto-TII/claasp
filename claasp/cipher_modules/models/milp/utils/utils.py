@@ -64,11 +64,17 @@ def _get_data(data_keywords, lines):
 
 
 def _get_variables_value(internal_variables, read_file):
+    # the variables are integer, hence their values are rounded: solvers may write them with a numerical error and in
+    # scientific notation (e.g. HiGHS writes "1e-13" or "-2e-13" for 0), whose sign and exponent are part of the number
+    number = r"[-+]?(?:[0-9]+[.]?[0-9]*|[.][0-9]+)(?:[eE][-+]?[0-9]+)?"
+    # the solution is read once, keeping the first value written for each index
+    values = {}
+    for index, value in re.findall(r"[xyz]_([0-9]+)[\s]+[\*]?[\s]*(%s)" % number, read_file):
+        values.setdefault(int(index), float(round(float(value))))
     variables_value = {}
     for key in internal_variables.keys():
         index = int(re.search(r"\d+", str(internal_variables[key])).group()) + 1
-        match = re.search(r"[xyz]_%s[\s]+[\*]?[\s]*([0-9]*[.]?[0-9]+)" % index, read_file)
-        variables_value[key] = float(match.group(1)) if match else 0.0
+        variables_value[key] = values.get(index, 0.0)
     return variables_value
 
 

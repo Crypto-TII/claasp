@@ -26,7 +26,7 @@ from claasp.cipher_modules.component_analysis_tests import (
     instantiate_matrix_over_correct_field,
 )
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
-from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT, SOLVER_INTERNAL_DEFAULT
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
 from claasp.name_mappings import MIX_COLUMN, SBOX
 
@@ -292,7 +292,7 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
 
         return sbox_active_terms
 
-    def find_lowest_number_of_active_sboxes(self, fixed_values=[], solver_name=SOLVER_DEFAULT):
+    def find_lowest_number_of_active_sboxes(self, fixed_values=[], solver_name=SOLVER_INTERNAL_DEFAULT):
         """
         Return the solution representing the minimum number of active S-boxes.
 
@@ -301,7 +301,8 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
         - ``fixed_values`` -- *list of dict*, the variables to be fixed in standard format (see
           :py:meth:`~cipher_modules.models.utils.set_fixed_variables`); typically
           :py:meth:`~cipher_modules.models.utils.get_single_key_scenario_format_for_fixed_values`
-        - ``solver_name`` -- *str*, the solver to call
+        - ``solver_name`` -- *str* (default: `GLPK`), the solver of Sage to call; the model is always solved inside
+          Sage, hence an external solver (whose name ends with ``_EXT``) is replaced by ``SOLVER_INTERNAL_DEFAULT``
 
         EXAMPLE::
 
