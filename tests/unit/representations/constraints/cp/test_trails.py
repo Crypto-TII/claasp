@@ -2,12 +2,24 @@
 
 from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints.cp import (
+    SpeckSemiDeterministicTruncatedCPModel,
     WordDeterministicDifferentialLinearCPModel,
     WordDeterministicTruncatedCPModel,
     WordDifferentialCPModel,
     WordLinearCPModel,
     WordSemiDeterministicDifferentialLinearCPModel,
 )
+
+
+def test_semi_deterministic_truncated_cp_assembles_complete_speck_graph():
+    model = SpeckSemiDeterministicTruncatedCPModel(
+        Speck(number_of_rounds=2),
+        "00000000011111001110000000000000",
+        "???????????????1???????????????1",
+    )
+    query = model.cp_model()
+    assert (len(query.declarations), len(query.constraints)) == (672, 3483)
+    assert query.constraint_models[0].model == model.model_provenance
 
 
 def test_semi_deterministic_differential_linear_cp_assembles_complete_composition():

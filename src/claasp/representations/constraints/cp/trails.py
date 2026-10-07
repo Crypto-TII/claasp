@@ -1389,6 +1389,70 @@ class WordDeterministicDifferentialLinearCPModel:
         return self._sat_model.decode_trail(assignment)
 
 
+class SpeckSemiDeterministicTruncatedCPModel:
+    """Assemble recovered look-ahead-window Speck trails as MiniZinc.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = SpeckSemiDeterministicTruncatedCPModel(
+        ...     Speck(number_of_rounds=2),
+        ...     "00000000011111001110000000000000",
+        ...     "???????????????1???????????????1",
+        ... )
+        >>> query = model.cp_model()
+        >>> (len(query.declarations), len(query.constraints))
+        (672, 3483)
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.CP,
+        "SpeckSemiDeterministicTruncatedCPModel",
+        "semi_deterministic_truncated_xor",
+        "exact MiniZinc translation of the recovered look-ahead-window Speck model",
+        "The exact correspondence with a primary-source construction has not been audited.",
+    )
+
+    def __init__(
+        self, primitive, input_pattern, output_pattern, *, maximum_scaled_weight=None
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import (
+            SpeckSemiDeterministicTruncatedSATModel,
+        )
+
+        self._sat_model = SpeckSemiDeterministicTruncatedSATModel(
+            primitive,
+            input_pattern,
+            output_pattern,
+            maximum_scaled_weight=maximum_scaled_weight,
+        )
+        self.primitive = primitive
+        self._query: MiniZincModel | None = None
+
+    def cp_model(self) -> MiniZincModel:
+        """Return the exact portable MiniZinc query."""
+
+        lowered = BooleanMiniZincLowerer().lower(self._sat_model.cnf_formula())
+        self._query = MiniZincModel(
+            lowered.declarations,
+            lowered.constraints,
+            lowered.solve,
+            lowered.includes,
+            lowered.outputs,
+            lowered.provenance,
+            lowered.name_mapping,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_trail(self, assignment):
+        """Decode and independently validate the complete Speck trail."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        return self._sat_model.decode_trail(assignment)
+
+
 class WordSemiDeterministicDifferentialLinearCPModel:
     """Assemble semi-deterministic differential-linear trails as MiniZinc.
 

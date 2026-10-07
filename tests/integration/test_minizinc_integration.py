@@ -19,6 +19,7 @@ from claasp.representations.constraints.cp import (
     SpeckDifferentialCPModel,
     SpeckImpossibleCPModel,
     SpeckProbabilisticTruncatedCPModel,
+    SpeckSemiDeterministicTruncatedCPModel,
     SpeckTruncatedCPModel,
     WordDeterministicDifferentialLinearCPModel,
     WordDeterministicTruncatedCPModel,
@@ -141,6 +142,20 @@ def test_minizinc_preserves_semi_deterministic_differential_linear_composition()
     trail = model.decode_trail(solved.assignment)
     assert trail.linear.output_mask != 0
     assert trail.middle_weight >= 0
+
+
+def test_minizinc_preserves_semi_deterministic_truncated_speck_trail():
+    output_pattern = "???????????????1???????????????1"
+    model = SpeckSemiDeterministicTruncatedCPModel(
+        Speck(number_of_rounds=2),
+        "00000000011111001110000000000000",
+        output_pattern,
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert str(trail.output_pattern) == output_pattern
+    assert len(trail.transitions) == 2
 
 
 def _test_solver(*, require_chuffed=False):

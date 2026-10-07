@@ -557,6 +557,12 @@ translating the complete composition exactly to MiniZinc. Chuffed solves and
 independently decodes the reviewed Speck32/64-3 fixture; the middle relation's
 literature correspondence remains unaudited and is not strengthened here.
 
+The standalone CP slice adds ``SpeckSemiDeterministicTruncatedCPModel`` for
+complete Speck32/64 trails. It exposes fixed typed boundaries and decodes every
+look-ahead-window transition independently after Chuffed solves the exact
+MiniZinc translation. This recovers the reviewed legacy search strategy without
+claiming provenance that the earlier SAT recovery deliberately left unaudited.
+
 The first deterministic-truncated MILP component slice recovers the legacy
 indicator-based AND abstraction as
 ``BitwiseAndDeterministicTruncatedMILPModel`` and adds
