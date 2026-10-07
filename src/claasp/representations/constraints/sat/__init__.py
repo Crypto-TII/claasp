@@ -3,6 +3,7 @@
 from claasp.representations.constraints.sat.components import (
     BooleanFunctionalSATModel,
     BooleanNativeXorSATModel,
+    DifferentialToTruncatedSATModel,
     ImpossibleBoundarySATModel,
     ModularAddDeterministicTruncatedSATModel,
     ModularAddDifferentialSATModel,
@@ -17,6 +18,7 @@ from claasp.representations.constraints.sat.components import (
     SBoxTransitionSATModel,
     SBoxXorDifferentialSATModel,
     SBoxXorLinearSATModel,
+    TruncatedToLinearSATModel,
     WiringFunctionalSATModel,
 )
 from claasp.representations.constraints.sat.exporters import CryptoMiniSatDimacsExporter
@@ -46,6 +48,7 @@ __all__ = [
     "BooleanNativeXorSATModel",
     "CNFFormula",
     "CryptoMiniSatDimacsExporter",
+    "DifferentialToTruncatedSATModel",
     "ImpossibleBoundarySATModel",
     "ModularAddDifferentialSATModel",
     "ModularAddDeterministicTruncatedSATModel",
@@ -68,6 +71,7 @@ __all__ = [
     "SemiDeterministicModularAddTransition",
     "SpeckSemiDeterministicTruncatedSATModel",
     "SpeckSemiDeterministicTruncatedTrail",
+    "TruncatedToLinearSATModel",
     "WiringFunctionalSATModel",
     "WordDeterministicTruncatedCharacteristic",
     "WordDeterministicTruncatedEnumeration",

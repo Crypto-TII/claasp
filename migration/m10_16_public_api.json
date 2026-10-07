@@ -28472,6 +28472,12 @@
       "qualified_name": "claasp.representations.constraints.sat.CryptoMiniSatDimacsExporter"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.components.differential_linear.DifferentialToTruncatedSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.differential_linear",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.DifferentialToTruncatedSATModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.components.truncated.ImpossibleBoundarySATModel",
       "defined_in": "claasp.representations.constraints.sat.components.truncated",
       "kind": "class",
@@ -28604,6 +28610,12 @@
       "qualified_name": "claasp.representations.constraints.sat.SpeckSemiDeterministicTruncatedTrail"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.components.differential_linear.TruncatedToLinearSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.differential_linear",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.TruncatedToLinearSATModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.components.wiring.WiringFunctionalSATModel",
       "defined_in": "claasp.representations.constraints.sat.components.wiring",
       "kind": "class",
@@ -28668,6 +28680,12 @@
       "defined_in": "claasp.representations.constraints.sat.components.boolean",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.sat.components.BooleanNativeXorSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.differential_linear.DifferentialToTruncatedSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.differential_linear",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.DifferentialToTruncatedSATModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.truncated.ImpossibleBoundarySATModel",
@@ -28754,6 +28772,12 @@
       "qualified_name": "claasp.representations.constraints.sat.components.SBoxXorLinearSATModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.components.differential_linear.TruncatedToLinearSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.differential_linear",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.TruncatedToLinearSATModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.components.wiring.WiringFunctionalSATModel",
       "defined_in": "claasp.representations.constraints.sat.components.wiring",
       "kind": "class",
@@ -28799,6 +28823,62 @@
       "documented_by": "claasp.representations.constraints.sat.components.boolean.BooleanNativeXorSATModel",
       "kind": "constructor",
       "qualified_name": "claasp.representations.constraints.sat.components.boolean.BooleanNativeXorSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.differential_linear",
+      "defined_in": "claasp.representations.constraints.sat.components.differential_linear",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.sat.components.differential_linear"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.differential_linear.DifferentialToTruncatedSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.differential_linear",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.differential_linear.DifferentialToTruncatedSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.differential_linear.DifferentialToTruncatedSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.components.differential_linear",
+      "documented_by": "claasp.representations.constraints.sat.components.differential_linear.DifferentialToTruncatedSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.components.differential_linear.DifferentialToTruncatedSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.differential_linear.DifferentialToTruncatedSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.components.differential_linear",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.components.differential_linear.DifferentialToTruncatedSATModel.cnf_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.differential_linear.DifferentialToTruncatedSATModel.decode_boundary",
+      "defined_in": "claasp.representations.constraints.sat.components.differential_linear",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.components.differential_linear.DifferentialToTruncatedSATModel.decode_boundary"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.differential_linear.TruncatedToLinearSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.differential_linear",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.differential_linear.TruncatedToLinearSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.differential_linear.TruncatedToLinearSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.components.differential_linear",
+      "documented_by": "claasp.representations.constraints.sat.components.differential_linear.TruncatedToLinearSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.components.differential_linear.TruncatedToLinearSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.differential_linear.TruncatedToLinearSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.components.differential_linear",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.components.differential_linear.TruncatedToLinearSATModel.cnf_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.differential_linear.TruncatedToLinearSATModel.decode_boundary",
+      "defined_in": "claasp.representations.constraints.sat.components.differential_linear",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.components.differential_linear.TruncatedToLinearSATModel.decode_boundary"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.modular_add",

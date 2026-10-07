@@ -493,3 +493,43 @@ general default. Ordinary CNF remains the portable default.
      - 197
      - 4.216
      - 0.916
+
+Differential-linear SAT boundaries
+----------------------------------
+
+``DifferentialToTruncatedSATModel`` and ``TruncatedToLinearSATModel`` expose
+the two boundary relations recovered from the legacy differential-linear SAT
+model. The upper relation keeps an incoming XOR difference exact in the
+truncated representation. The lower relation permits an active linear mask
+only where the truncated difference is known.
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.sat import (
+   ...     DifferentialToTruncatedSATModel, TruncatedToLinearSATModel,
+   ... )
+   >>> from claasp.semantics.cryptanalysis import XorDifference, XorMask
+   >>> upper = DifferentialToTruncatedSATModel(
+   ...     4, difference=XorDifference(10, 4), truncated_pattern="1010"
+   ... )
+   >>> (upper.cnf_formula().variable_count, upper.cnf_formula().clause_count)
+   (12, 24)
+   >>> lower = TruncatedToLinearSATModel(
+   ...     4, truncated_pattern="?010", mask=XorMask(2, 4)
+   ... )
+   >>> (lower.cnf_formula().variable_count, lower.cnf_formula().clause_count)
+   (12, 20)
+
+These are connector models, not a complete trail search. Their decoded
+assignments return typed differences, truncated patterns, and masks. Literature
+provenance remains ``TBD`` until a primary source is matched to these exact SAT
+clauses.
+
+The ten-run ARM64 comparison in
+``architecture/audits/data/sat_differential_linear_boundary_benchmark.json``
+uses the same 32-bit truth tables, assignments, and three canonical SAT
+solvers. The direct upper connector uses 96 clauses and 160 literals instead
+of 192 and 576 for exhaustive forbidden assignments; the direct lower
+connector uses 64 clauses and 128 literals instead of 96 and 288. Median solve
+times are recorded for reproducibility, but this local benchmark does not
+establish whole-trail performance or change a default.

@@ -10,6 +10,7 @@ from claasp.drivers.solvers import (
 )
 from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints.sat import (
+    DifferentialToTruncatedSATModel,
     ImpossibleBoundarySATModel,
     ModularAddDeterministicTruncatedSATModel,
     ModularAddSemiDeterministicTruncatedSATModel,
@@ -18,11 +19,48 @@ from claasp.representations.constraints.sat import (
     SpeckImpossibleSATModel,
     SpeckProbabilisticTruncatedSATModel,
     SpeckSemiDeterministicTruncatedSATModel,
+    TruncatedToLinearSATModel,
     WordDeterministicTruncatedSATModel,
 )
+from claasp.semantics.cryptanalysis import XorDifference, XorMask
 from claasp.transformations import invert_primitive
 
 pytestmark = pytest.mark.external
+
+
+@pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
+def test_differential_linear_boundary_connectors_preserve_legacy_relations(solver_type):
+    upper = DifferentialToTruncatedSATModel(
+        1, difference=XorDifference(1, 1), truncated_pattern="1"
+    )
+    result = solver_type(timeout_seconds=10).solve(upper.cnf_formula())
+    assert result.status is SatStatus.SATISFIABLE
+    difference, middle = upper.decode_boundary(result.assignment)
+    assert difference == XorDifference(1, 1)
+    assert str(middle) == "1"
+
+    rejected_upper = DifferentialToTruncatedSATModel(
+        1, difference=XorDifference(1, 1), truncated_pattern="?"
+    )
+    assert (
+        solver_type(timeout_seconds=10).solve(rejected_upper.cnf_formula()).status
+        is SatStatus.UNSATISFIABLE
+    )
+
+    lower = TruncatedToLinearSATModel(1, truncated_pattern="?", mask=XorMask(0, 1))
+    result = solver_type(timeout_seconds=10).solve(lower.cnf_formula())
+    assert result.status is SatStatus.SATISFIABLE
+    middle, mask = lower.decode_boundary(result.assignment)
+    assert str(middle) == "?"
+    assert mask == XorMask(0, 1)
+
+    rejected_lower = TruncatedToLinearSATModel(
+        1, truncated_pattern="?", mask=XorMask(1, 1)
+    )
+    assert (
+        solver_type(timeout_seconds=10).solve(rejected_lower.cnf_formula()).status
+        is SatStatus.UNSATISFIABLE
+    )
 
 
 def _fixed(model, prefix, pattern):
