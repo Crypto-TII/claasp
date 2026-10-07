@@ -26665,6 +26665,24 @@
       "qualified_name": "claasp.representations.constraints.milp"
     },
     {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndOneHotMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.BitwiseAndOneHotMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorDifferentialMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.BitwiseAndXorDifferentialMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorLinearMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.BitwiseAndXorLinearMILPModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.milp.lowering.BooleanGraphMILPModel",
       "defined_in": "claasp.representations.constraints.milp.lowering",
       "kind": "class",
@@ -26857,6 +26875,24 @@
       "qualified_name": "claasp.representations.constraints.milp.components"
     },
     {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndOneHotMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.BitwiseAndOneHotMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorDifferentialMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.BitwiseAndXorDifferentialMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorLinearMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.BitwiseAndXorLinearMILPModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.milp.components.relations.FiniteBinaryRelationMILPModel",
       "defined_in": "claasp.representations.constraints.milp.components.relations",
       "kind": "class",
@@ -26957,6 +26993,71 @@
       "defined_in": "claasp.representations.constraints.milp.components.sbox_inequalities",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.milp.components.SBoxXorLinearMinimumMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.milp.components.bitwise_and"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndOneHotMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndOneHotMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndOneHotMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "documented_by": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndOneHotMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndOneHotMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndOneHotMILPModel.decode_transition",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorDifferentialMILPModel",
+        "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorLinearMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndOneHotMILPModel.decode_transition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndOneHotMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorDifferentialMILPModel",
+        "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorLinearMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndOneHotMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorDifferentialMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorDifferentialMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorDifferentialMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "documented_by": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorDifferentialMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorDifferentialMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorLinearMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorLinearMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorLinearMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
+      "documented_by": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorLinearMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.bitwise_and.BitwiseAndXorLinearMILPModel.__init__"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.components.sbox_inequalities.load_bundled_sbox_milp_inequalities",

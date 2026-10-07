@@ -3,9 +3,9 @@
 This generated M11a comparison is review material; the JSON matrix and closure tool are authoritative.
 
 - Legacy records: 581
-- Shipped v5 artifacts: 437
+- Shipped v5 artifacts: 438
 - Legacy dispositions: inapplicable=34, migrate=332, remove=8, supersede=207
-- Reverse classifications: legacy-lineage=394, new-v5=43
+- Reverse classifications: legacy-lineage=395, new-v5=43
 - Mapping relationships: consolidated=57, direct=152, evidence-only=256, inapplicable=34, removed=8, split=74
 
 Every legacy source module, test module, and package marker appears below with its final disposition and reason. Every shipped v5 module or data artifact appears in the reverse table with its predecessor(s) or a new-v5 rationale.
@@ -941,6 +941,7 @@ Relationship means: **direct** for one reviewed destination, **split** for one l
 | `src/claasp/representations/constraints/milp/__init__.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/milp/milp_model.py`<br>`claasp/cipher_modules/models/milp/utils/milp_name_mappings.py`<br>`claasp/cipher_modules/models/milp/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/milp/boolean.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/milp/milp_model.py`<br>`claasp/cipher_modules/models/milp/milp_models/milp_cipher_model.py`<br>`claasp/cipher_modules/models/milp/utils/generate_inequalities_for_xor_with_n_input_bits.py`<br>`claasp/cipher_modules/models/milp/utils/milp_name_mappings.py`<br>`claasp/cipher_modules/models/milp/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/milp/components/__init__.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/milp/milp_model.py`<br>`claasp/cipher_modules/models/milp/utils/milp_name_mappings.py`<br>`claasp/cipher_modules/models/milp/utils/utils.py`<br>`claasp/component.py` |
+| `src/claasp/representations/constraints/milp/components/bitwise_and.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/milp/milp_model.py`<br>`claasp/cipher_modules/models/milp/utils/milp_name_mappings.py`<br>`claasp/cipher_modules/models/milp/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/milp/components/modular_add.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/milp/milp_model.py`<br>`claasp/cipher_modules/models/milp/utils/milp_name_mappings.py`<br>`claasp/cipher_modules/models/milp/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/milp/components/monomial.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/milp/milp_model.py`<br>`claasp/cipher_modules/models/milp/utils/milp_name_mappings.py`<br>`claasp/cipher_modules/models/milp/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/milp/components/relations.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/milp/milp_model.py`<br>`claasp/cipher_modules/models/milp/utils/milp_name_mappings.py`<br>`claasp/cipher_modules/models/milp/utils/utils.py`<br>`claasp/component.py` |

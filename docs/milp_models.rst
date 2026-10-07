@@ -138,6 +138,43 @@ probability-one transitions. MILP logarithmic objective coefficients are
 floating approximations; decoding retains exact counts and signs and checks
 the objective against them.
 
+Bitwise-AND inequality strategies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``BitwiseAndOneHotMILPModel`` is the portable exhaustive-row baseline.
+``BitwiseAndXorDifferentialMILPModel`` and
+``BitwiseAndXorLinearMILPModel`` recover the compact legacy inequalities while
+keeping strategy selection explicit:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.milp import (
+   ...     BitwiseAndOneHotMILPModel,
+   ...     BitwiseAndXorDifferentialMILPModel,
+   ... )
+   >>> portable = BitwiseAndOneHotMILPModel(2, TrailKind.XOR_DIFFERENTIAL)
+   >>> recovered = BitwiseAndXorDifferentialMILPModel(2)
+   >>> portable_model = portable.milp_model(left_pattern=1, right_pattern=0, output_pattern=1)
+   >>> recovered_model = recovered.milp_model(left_pattern=1, right_pattern=0, output_pattern=1)
+   >>> (len(portable_model.variables), len(recovered_model.variables))
+   (22, 8)
+
+The recovered differential relation uses four inequalities per output bit;
+the linear relation uses two. Exhaustive one-bit GLPK tests compare both models
+with ``BitwiseAndSemantics``, including impossible transitions, probability
+weights, and signed linear transitions. Decoding independently rechecks the
+result instead of trusting solver feasibility alone.
+
+The ten-run ARM64 benchmark in
+``architecture/audits/data/milp_bitwise_and_benchmark.json`` fixes the same
+supported 32-bit transition for both strategies. The recovered differential
+model uses 128 variables and 224 constraints versus 352 and 256 for one-hot;
+the recovered linear model uses 96 and 160 versus 256 and 224. Median GLPK
+solve times were 0.707 versus 1.352 milliseconds for differential and 0.602
+versus 0.935 milliseconds for linear. This small fixed workload preserves the
+legacy strategy as a practical alternative; it does not establish a universal
+default.
+
 Small-S-box inequality strategies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
