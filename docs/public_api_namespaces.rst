@@ -643,6 +643,12 @@ claasp.representations.constraints.sat.components.boolean
 .. automodule:: claasp.representations.constraints.sat.components.boolean
    :no-index:
 
+claasp.representations.constraints.sat.components.differential_linear
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.differential_linear
+   :no-index:
+
 claasp.representations.constraints.sat.components.modular_add
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

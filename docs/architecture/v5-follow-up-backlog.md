@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box and bitwise-AND MILP strategies plus SAT/CMS recovery slices implemented; next: remaining linear-layer and truncated backend strategies**
+Status: **S-box and bitwise-AND MILP strategies plus SAT/CMS recovery slices implemented; next: whole-graph differential-linear and remaining backend strategies**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -525,6 +525,23 @@ baseline. All nine pairs of one-bit ternary inputs pass GLPK and independent
 typed decoding. The committed 32-bit comparison records formulation size,
 construction, and solve time; remaining truncated MILP components and generic
 graph assembly stay separate recovery slices.
+
+The first differential-linear SAT slice recovers the local upper and lower
+boundary clauses as ``DifferentialToTruncatedSATModel`` and
+``TruncatedToLinearSATModel``. Exhaustive Boolean tests establish the complete
+one-bit truth tables, while MiniSat, Kissat, and CryptoMiniSat accept and reject
+the same fixed boundaries. The canonical 32-bit benchmark compares the direct
+relations with exhaustive forbidden-assignment CNF under identical solvers and
+inputs. The direct upper relation halves the clause count and the direct lower
+relation removes one third of the clauses. Both models retain ``TBD``
+literature provenance. The audited ``origin/develop`` source has SHA-256
+``d980c748168ab6387d07cec786a73831472c7c6185b2c04c4e86783fa478958e``;
+the corrective branch at ``af85330e`` has SHA-256
+``ed77f50a89bfc502598f847fddd1ee8ece92e63c3ce059def2c401e8b0fdca8b``.
+The later develop model incorporates the relevant corrections plus additional
+fixes, so the branch is archaeological evidence rather than the sole oracle.
+Whole-graph differential/truncated/linear composition remains a separate
+recovery slice.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and

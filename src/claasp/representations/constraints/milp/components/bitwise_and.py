@@ -173,7 +173,7 @@ class BitwiseAndOneHotMILPModel:
         return transition
 
 
-class _BitwiseAndReducedMILPModel(BitwiseAndOneHotMILPModel):
+class _BitwiseAndReducedMILPBase(BitwiseAndOneHotMILPModel):
     def milp_model(
         self, *, left_pattern=None, right_pattern=None, output_pattern=None
     ) -> MILPModel:
@@ -241,7 +241,7 @@ class _BitwiseAndReducedMILPModel(BitwiseAndOneHotMILPModel):
         )
 
 
-class BitwiseAndXorDifferentialMILPModel(_BitwiseAndReducedMILPModel):
+class BitwiseAndXorDifferentialMILPModel(_BitwiseAndReducedMILPBase):
     """Recover the four legacy reduced inequalities per AND output bit.
 
     EXAMPLES::
@@ -264,7 +264,7 @@ class BitwiseAndXorDifferentialMILPModel(_BitwiseAndReducedMILPModel):
         super().__init__(width, TrailKind.XOR_DIFFERENTIAL)
 
 
-class BitwiseAndXorLinearMILPModel(_BitwiseAndReducedMILPModel):
+class BitwiseAndXorLinearMILPModel(_BitwiseAndReducedMILPBase):
     """Recover the two legacy reduced XOR-linear inequalities per AND bit.
 
     EXAMPLES::
