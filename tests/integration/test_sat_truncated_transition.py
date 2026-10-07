@@ -8,7 +8,11 @@ from claasp.drivers.solvers import (
     MinisatSolver,
     SatStatus,
 )
-from claasp.representations.constraints.sat import ModularAddDeterministicTruncatedSATModel
+from claasp.primitives import ToySpeck
+from claasp.representations.constraints.sat import (
+    ModularAddDeterministicTruncatedSATModel,
+    WordDeterministicTruncatedSATModel,
+)
 
 pytestmark = pytest.mark.external
 
@@ -37,3 +41,35 @@ def test_deterministic_truncated_modadd_accepts_only_the_semantic_output(solver_
         formula, boundary | _fixed(model, "output", "0000")
     )
     assert rejected.status is SatStatus.UNSATISFIABLE
+
+
+@pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
+def test_deterministic_truncated_toy_speck_trail_is_solver_independent(solver_type):
+    options = {
+        "fixed_input_patterns": {"plaintext": "00000001", "key": "0" * 16},
+        "output_pattern": "???0????",
+    }
+    model = WordDeterministicTruncatedSATModel(ToySpeck(2), **options)
+    result = solver_type(timeout_seconds=10).solve(model.cnf_formula())
+    assert result.status is SatStatus.SATISFIABLE
+    trail = model.decode_characteristic(result.assignment)
+    assert str(trail.output_pattern) == "???0????"
+    assert model.check_characteristic(trail)
+
+    rejected = WordDeterministicTruncatedSATModel(
+        ToySpeck(2),
+        fixed_input_patterns=options["fixed_input_patterns"],
+        output_pattern="00000000",
+    )
+    result = solver_type(timeout_seconds=10).solve(rejected.cnf_formula())
+    assert result.status is SatStatus.UNSATISFIABLE
+
+
+def test_deterministic_truncated_enumeration_blocks_semantic_patterns():
+    model = WordDeterministicTruncatedSATModel(
+        ToySpeck(2),
+        fixed_input_patterns={"plaintext": "00000001", "key": "0" * 16},
+    )
+    result = model.enumerate_trails(MinisatSolver(timeout_seconds=10), limit=2)
+    assert result.complete and len(result.trails) == 1
+    assert str(result.trails[0].output_pattern) == "???0????"

@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box MILP, local SAT exact/truncated transitions, native-XOR output/trails, SAT trail assembly, and n-window heuristic implemented; next: deterministic-truncated whole-graph assembly**
+Status: **S-box MILP, local SAT exact/truncated transitions, native-XOR output/trails, SAT exact/truncated trail assembly, and n-window heuristic implemented; next: impossible and semi-/probabilistic truncated SAT variants**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -404,9 +404,15 @@ unknown representation, projects it to the typed ternary semantics when
 decoding, and exhaustively checks every two-bit input/output pattern against
 the independent paired-carry implementation. MiniSat, Kissat, and
 CryptoMiniSat fixtures agree on a four-bit accepted and rejected boundary.
-Whole-graph deterministic-truncated assembly, followed by impossible and
-semi-/probabilistic variants, remains next; a solver benchmark is deferred
-until a complete comparable search exists.
+The following deterministic-truncated SAT slice adds
+``WordDeterministicTruncatedSATModel`` for constants, identities, permutations,
+rotations, XOR, and modular addition over Word graphs. Port trits are canonical
+while the local recovered addition retains its legacy internal representation.
+Decoded trails are independently propagated with typed semantics; MiniSat,
+Kissat, and CryptoMiniSat agree on accepted and rejected ToySpeck-2 boundaries.
+The committed ten-run benchmark uses an identical fixed propagation for all
+three solvers and makes no general performance claim. Impossible and
+semi-/probabilistic truncated SAT variants remain next.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and

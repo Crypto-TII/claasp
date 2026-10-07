@@ -169,6 +169,74 @@ workloads.
      - 0.879
      - not reported
 
+Deterministic-truncated SAT trails
+----------------------------------
+
+``WordDeterministicTruncatedSATModel`` composes deterministic three-valued
+propagation across the ARX Word subset: constants, identities, permutations,
+rotations, XOR, and modular addition. ``0`` and ``1`` are known XOR
+differences; ``?`` means that both differences remain possible. Modular
+addition uses the recovered paired-carry clauses, and decoded solver witnesses
+are independently propagated again with the typed truncated semantics.
+
+The following complete ToySpeck-2 search fixes the plaintext and key patterns.
+Its output is not supplied to the model, so ``???0????`` is computed by the
+assembled component constraints:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.sat import (
+   ...     WordDeterministicTruncatedSATModel,
+   ... )
+   >>> truncated_model = WordDeterministicTruncatedSATModel(
+   ...     ToySpeck(2),
+   ...     fixed_input_patterns={"plaintext": "00000001", "key": "0" * 16},
+   ... )
+   >>> truncated_formula = truncated_model.cnf_formula()
+   >>> (truncated_formula.variable_count, truncated_formula.clause_count)
+   (200, 813)
+
+Call ``enumerate_trails(solver, limit=...)`` to obtain typed
+``WordDeterministicTruncatedCharacteristic`` values. Enumeration blocks the
+canonical port trits, rather than internal carry witnesses, so one semantic
+trail is not counted more than once. ``fixed_input_patterns``,
+``output_pattern``, and ``nonzero_input`` provide explicit search boundaries.
+Components outside the documented ARX/structural subset are rejected instead
+of receiving an approximate encoding.
+
+The reproducible ten-run ARM64 benchmark in
+``architecture/audits/data/sat_truncated_trail_benchmark.json`` uses the same
+fixed ToySpeck-2 propagation for all three solvers. It establishes solver
+parity for this workload, not a general performance ranking.
+
+.. list-table:: Median time in milliseconds
+   :header-rows: 1
+
+   * - Solver
+     - Variables
+     - Clauses
+     - Build ms
+     - Solve ms
+     - Peak MiB
+   * - MiniSat 2.2.1
+     - 200
+     - 829
+     - 1.246
+     - 0.935
+     - not reported
+   * - Kissat 4.0.4
+     - 200
+     - 829
+     - 1.261
+     - 0.444
+     - 27.9
+   * - CryptoMiniSat 5.11.15
+     - 200
+     - 829
+     - 1.306
+     - 0.944
+     - not reported
+
 Optional n-window strategy
 --------------------------
 
