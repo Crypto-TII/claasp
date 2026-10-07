@@ -6,10 +6,11 @@ import pytest
 
 from claasp import Primitive, ValueType, Word
 from claasp.components import BitwiseAnd, ModularAdd, Xor
-from claasp.primitives import ToySpeck
+from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.sat import (
     NWindowSATStrategy,
+    SpeckImpossibleSATModel,
     WordDeterministicTruncatedSATModel,
     WordDifferentialSATModel,
     WordLinearSATModel,
@@ -147,3 +148,26 @@ def test_deterministic_truncated_sat_restriction_validation():
         output_pattern="???0????",
     )
     assert "truncated_fixed_output" in model.cnf_formula().provenance
+
+
+def test_speck_impossible_sat_composes_transformed_directional_graphs():
+    model = SpeckImpossibleSATModel(Speck(number_of_rounds=3), middle_round=1)
+    formula = model.cnf_formula()
+    assert formula.variable_count == 1568
+    assert formula.clause_count == 5674
+    assert "truncated_incompatibility_exists" in formula.provenance
+    assert any(item.model == model.model_provenance for item in formula.constraint_models)
+    assert any(
+        item.model.component_model == "ModularSubtractDeterministicTruncatedSATModel"
+        for item in formula.constraint_models
+    )
+
+
+def test_speck_impossible_sat_validates_supported_slice_and_patterns():
+    primitive = Speck(number_of_rounds=3)
+    with pytest.raises(ValueError, match="inside the primitive"):
+        SpeckImpossibleSATModel(primitive, middle_round=0)
+    with pytest.raises(TypeError, match="integer"):
+        SpeckImpossibleSATModel(primitive, middle_round=True)
+    with pytest.raises(ValueError, match="contain 32 bits"):
+        SpeckImpossibleSATModel(primitive, middle_round=1, input_pattern="0")

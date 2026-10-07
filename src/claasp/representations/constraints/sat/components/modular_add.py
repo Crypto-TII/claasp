@@ -456,7 +456,7 @@ class ModularSubtractDeterministicTruncatedSATModel(ModularAddDeterministicTrunc
 
     The recovered legacy implementation deliberately used the same local
     clauses for modular addition and subtraction. Decoding remains independent
-    and checks :func:`truncated_modular_subtract` explicitly.
+    and checks ``truncated_modular_subtract`` explicitly.
 
     EXAMPLES::
 
