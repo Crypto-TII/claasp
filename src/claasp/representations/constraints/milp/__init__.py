@@ -1,6 +1,9 @@
 """Dependency-free mixed-integer linear constraint representations."""
 
 from claasp.representations.constraints.milp.components import (
+    BitwiseAndOneHotMILPModel,
+    BitwiseAndXorDifferentialMILPModel,
+    BitwiseAndXorLinearMILPModel,
     FiniteBinaryRelationMILPModel,
     ModularAddLinearMILPModel,
     MonomialTransitionMILPModel,
@@ -42,6 +45,9 @@ from claasp.representations.constraints.milp.trails import (
 )
 
 __all__ = [
+    "BitwiseAndOneHotMILPModel",
+    "BitwiseAndXorDifferentialMILPModel",
+    "BitwiseAndXorLinearMILPModel",
     "BooleanGraphMILPModel",
     "BooleanMonomialGraphMILPModel",
     "ConstraintSense",

@@ -589,6 +589,12 @@ claasp.representations.constraints.milp.components
 .. automodule:: claasp.representations.constraints.milp.components
    :no-index:
 
+claasp.representations.constraints.milp.components.bitwise_and
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.milp.components.bitwise_and
+   :no-index:
+
 claasp.representations.constraints.milp.components.sbox_inequalities
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

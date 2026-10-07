@@ -1,0 +1,78 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "results": [
+    {
+      "assignment_valid": true,
+      "constraints": 256,
+      "construction_seconds_median": 0.0007285210001555242,
+      "kind": "xor_differential",
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_glpk_driver",
+      "repeats": 10,
+      "solver": "GLPKSolver",
+      "solver_seconds_median": 0.0013524164999125787,
+      "solver_status": "optimal",
+      "solver_version": "GLPSOL--GLPK LP/MIP Solver 5.0",
+      "strategy": "portable_one_hot",
+      "transition_valid": true,
+      "variables": 352
+    },
+    {
+      "assignment_valid": true,
+      "constraints": 224,
+      "construction_seconds_median": 0.00032433349997518235,
+      "kind": "xor_differential",
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_glpk_driver",
+      "repeats": 10,
+      "solver": "GLPKSolver",
+      "solver_seconds_median": 0.000707395500057828,
+      "solver_status": "optimal",
+      "solver_version": "GLPSOL--GLPK LP/MIP Solver 5.0",
+      "strategy": "recovered_reduced",
+      "transition_valid": true,
+      "variables": 128
+    },
+    {
+      "assignment_valid": true,
+      "constraints": 224,
+      "construction_seconds_median": 0.0005255834998934006,
+      "kind": "xor_linear",
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_glpk_driver",
+      "repeats": 10,
+      "solver": "GLPKSolver",
+      "solver_seconds_median": 0.0009345835001113301,
+      "solver_status": "optimal",
+      "solver_version": "GLPSOL--GLPK LP/MIP Solver 5.0",
+      "strategy": "portable_one_hot",
+      "transition_valid": true,
+      "variables": 256
+    },
+    {
+      "assignment_valid": true,
+      "constraints": 160,
+      "construction_seconds_median": 0.0002369579999594862,
+      "kind": "xor_linear",
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_glpk_driver",
+      "repeats": 10,
+      "solver": "GLPKSolver",
+      "solver_seconds_median": 0.0006019794998337602,
+      "solver_status": "optimal",
+      "solver_version": "GLPSOL--GLPK LP/MIP Solver 5.0",
+      "strategy": "recovered_reduced",
+      "transition_valid": true,
+      "variables": 96
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "comparison": "same relation, masks, objective, solver, settings, and host",
+    "description": "fixed supported 32-bit two-input AND transition",
+    "timeout_seconds": 30
+  }
+}

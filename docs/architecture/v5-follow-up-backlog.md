@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box MILP, local SAT exact/truncated/impossible/probabilistic/semi-deterministic relations, native-XOR output/trails, SAT exact/truncated/impossible/probabilistic trail assembly, and n-window heuristic implemented; next: semi-deterministic SAT graph assembly**
+Status: **S-box and bitwise-AND MILP strategies plus SAT/CMS recovery slices implemented; next: remaining linear-layer and truncated backend strategies**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -486,6 +486,18 @@ decode and independently validate a weight-100 witness under MiniSat, Kissat,
 and CryptoMiniSat. The committed ten-run benchmark records construction,
 solve, and peak-memory measurements; default selection remains deferred until
 broader primitive and round-count coverage exists.
+
+The next MILP component slice recovers the compact two-input bitwise-AND
+differential and linear inequalities as
+``BitwiseAndXorDifferentialMILPModel`` and
+``BitwiseAndXorLinearMILPModel``. The audited legacy generator is
+``generate_inequalities_for_and_operation_2_input_bits.py`` at ``3aacc275``
+(SHA-256 ``29aedacefb55ac192ed22e5123c0ee40829593e991ac1e4ca6e254615df4d85e``).
+The new ``BitwiseAndOneHotMILPModel`` supplies an explicit portable baseline.
+Exhaustive one-bit GLPK tests match independent DDT/LAT semantics, and the
+committed 32-bit benchmark compares construction and solve time without
+changing a default. Literature provenance remains TBD until the exact legacy
+inequalities are matched to a primary-source construction.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and
