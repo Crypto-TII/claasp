@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box MILP, local SAT exact/truncated transitions, native-XOR output/trails, SAT exact/truncated trail assembly, and n-window heuristic implemented; next: impossible and semi-/probabilistic truncated SAT variants**
+Status: **S-box MILP, local SAT exact/truncated/impossible relations, native-XOR output/trails, SAT exact/truncated trail assembly, and n-window heuristic implemented; next: whole-graph impossible and semi-/probabilistic truncated SAT variants**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -413,6 +413,17 @@ Kissat, and CryptoMiniSat agree on accepted and rejected ToySpeck-2 boundaries.
 The committed ten-run benchmark uses an identical fixed propagation for all
 three solvers and makes no general performance claim. Impossible and
 semi-/probabilistic truncated SAT variants remain next.
+
+The first impossible-SAT slice recovers the legacy six-clause per-bit
+incompatibility indicator from ``utils.incompatibility`` at commit
+``3aacc2758059de85682a9c6d0eda2cd75940e747`` as the explicitly named
+``ImpossibleBoundarySATModel``. Exhaustive Boolean-encoding tests prove each
+indicator is true exactly for two known opposite trits, including both legacy
+encodings of an unknown value bit. Solver fixtures reproduce the typed
+``ImpossiblePropagationBoundary`` contradiction positions under MiniSat,
+Kissat, and CryptoMiniSat and reject a compatible boundary. Whole-graph
+forward/backward assembly and a comparable benchmark remain separate next
+steps.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and

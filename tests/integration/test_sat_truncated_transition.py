@@ -10,6 +10,7 @@ from claasp.drivers.solvers import (
 )
 from claasp.primitives import ToySpeck
 from claasp.representations.constraints.sat import (
+    ImpossibleBoundarySATModel,
     ModularAddDeterministicTruncatedSATModel,
     WordDeterministicTruncatedSATModel,
 )
@@ -73,3 +74,16 @@ def test_deterministic_truncated_enumeration_blocks_semantic_patterns():
     result = model.enumerate_trails(MinisatSolver(timeout_seconds=10), limit=2)
     assert result.complete and len(result.trails) == 1
     assert str(result.trails[0].output_pattern) == "???0????"
+
+
+@pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
+def test_impossible_boundary_sat_recovers_exact_contradiction_positions(solver_type):
+    model = ImpossibleBoundarySATModel(5, forward_pattern="01??0", backward_pattern="00?11")
+    result = solver_type(timeout_seconds=10).solve(model.cnf_formula())
+    assert result.status is SatStatus.SATISFIABLE
+    boundary = model.decode_boundary(result.assignment)
+    assert boundary.contradictory_positions == (1, 4)
+
+    compatible = ImpossibleBoundarySATModel(5, forward_pattern="01??0", backward_pattern="01?00")
+    result = solver_type(timeout_seconds=10).solve(compatible.cnf_formula())
+    assert result.status is SatStatus.UNSATISFIABLE
