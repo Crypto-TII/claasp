@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **Inventory complete; next: S-box MILP strategy recovery**
+Status: **Small-S-box MILP recovery implemented; next: large-S-box Espresso**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -329,13 +329,19 @@ The inventory covers:
 - solver-specific inequality generators, caches, and preprocessing paths that
   materially change the generated formulation.
 
-The first recovery PR should add the legacy small-S-box convex-hull and reduced
-inequality strategies as explicit MILP alternatives to the portable one-hot
-baseline. Include differential and linear propagation, exhaustive relation
-parity for representative 4-bit S-boxes, and reproducible formulation/solver
-benchmarks. Keep large-S-box Espresso support in the same PR only if the
-optional-tool boundary and 8-bit parity tests remain reviewable; otherwise
-split it into the immediately following PR.
+The first recovery PR adds the legacy small-S-box full convex hull, greedy
+reduction, and minimum-cardinality facet cover as explicit MILP alternatives
+to the portable one-hot baseline. Differential and signed-linear propagation
+are checked exhaustively over every PRESENT input/output pair. A committed
+ten-run GLPK benchmark records construction time, formulation size, solve time,
+memory, validity, and optimal status in the canonical Docker image. Sage is
+used only by the reproducible offline generator; generated inequalities have
+no Sage runtime dependency. The portable one-hot formulation remains the
+default.
+
+The immediately following recovery PR must add the large-S-box Espresso
+strategy with independent eight-bit parity tests and comparable benchmarks.
+This split keeps the optional-tool boundary and generated data reviewable.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and

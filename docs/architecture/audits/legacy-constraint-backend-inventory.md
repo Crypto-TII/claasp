@@ -241,7 +241,7 @@ benchmark it.
 | CP truncated/impossible | `cp/mzn_models/mzn_*truncated*.py`, `mzn_*impossible*.py`, `components/*` | Speck/Simon/wordwise CP slices | MiniZinc and selected solver | Pending | Pending |
 | CP differential-linear | `cp/mzn_models/mzn_differential_linear_model.py`, `mzn_differential_linear_continuous_model.py`, `minizinc_utils/mzn_continuous_predicates.py` | Typed composition and continuous semantics | MiniZinc; SCIP for the continuous model | Pending | Pending |
 | CP ARX boomerang | `cp/mzn_models/mzn_boomerang_model_arx_optimized.py`, `minizinc_utils/mzn_bct_predicates.py` | Local `SBoxBoomerangCPModel` | MiniZinc and selected solver | Pending | Pending |
-| MILP S-box convex hull/reduced inequalities | `milp/utils/generate_sbox_inequalities_for_trail_search.py`, `components/sbox_component.py` | One-hot `SBoxTransitionMILPModel` | Sage for legacy generation; selected MILP solver | Pending | Pending; first recovery PR |
+| MILP small-S-box convex hull/reduced inequalities | `milp/utils/generate_sbox_inequalities_for_trail_search.py`, `components/sbox_component.py` at `3aacc275` | One-hot `SBoxTransitionMILPModel` remains default; explicit full-hull, greedy, and minimum alternatives | Sage 9.5 and GLPK 5.0 for offline generation; no Sage runtime dependency; selected MILP solver | Complete for all 256 PRESENT input/output pairs under differential and signed-linear semantics for all three strategies | [Canonical GLPK Docker benchmark](data/sbox_milp_strategy_benchmark.json): ten runs of each recovered strategy and one-hot baseline |
 | MILP large-S-box Espresso | `milp/utils/generate_inequalities_for_large_sboxes.py`, `components/sbox_component.py` | One-hot `SBoxTransitionMILPModel` | Espresso; selected MILP solver | Pending | Pending |
 | Generic MILP differential/linear | `milp/milp_models/milp_xor_differential_model.py`, `milp_xor_linear_model.py`, `components/*` | Local S-box/modular-add and PRESENT slices | Legacy Sage; selected MILP solver | Pending | Pending |
 | MILP activity/truncated/impossible | `milp/milp_models/milp_*active_sboxes*.py`, `milp_*truncated*.py`, `milp_*impossible*.py`, `milp/utils/*truncated*.py` | Typed activity/truncated semantics and finite relations | Legacy Sage, optionally Espresso; selected MILP solver | Pending | Pending |
@@ -259,10 +259,11 @@ they start with `components/`, which is relative to `claasp/`.
 
 ## Recovery and benchmark order
 
-1. **S-box MILP strategy PR.** Recover convex-hull/reduced-inequality and
-   large-S-box Espresso strategies alongside the portable one-hot baseline.
-   This is the smallest controlled comparison and covers both differential and
-   linear propagation.
+1. **S-box MILP strategy PRs.** The first slice recovers four-bit full-hull,
+   greedy, and minimum-cardinality inequality strategies alongside the portable
+   one-hot baseline for differential and signed-linear propagation. The
+   immediately following slice recovers large-S-box Espresso strategies and
+   adds eight-bit parity and benchmark coverage.
 2. **SAT/CMS and modular-add strategy PRs.** Recover generic XOR-differential
    and XOR-linear SAT assembly, native-XOR CMS output, and the optional n-window
    heuristic. Cross-check modular-add support exhaustively at small widths.

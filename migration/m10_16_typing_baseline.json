@@ -5,7 +5,7 @@
     "attr-defined": 130,
     "call-arg": 7,
     "call-overload": 82,
-    "dict-item": 29,
+    "dict-item": 28,
     "has-type": 22,
     "import-untyped": 1,
     "index": 72,
@@ -22,10 +22,10 @@
   "counts_by_scope": {
     "docs/conf.py": 0,
     "src/claasp": 704,
-    "tests": 161,
+    "tests": 160,
     "tools": 20
   },
-  "diagnostic_count": 885,
+  "diagnostic_count": 884,
   "diagnostics": [
     {
       "code": "operator",
@@ -4257,14 +4257,14 @@
     },
     {
       "code": "operator",
-      "column": 29,
+      "column": 67,
       "line": 245,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/representations/source/c.py"
     },
     {
       "code": "operator",
-      "column": 34,
+      "column": 72,
       "line": 247,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/representations/source/c.py"
@@ -4299,7 +4299,7 @@
     },
     {
       "code": "type-var",
-      "column": 30,
+      "column": 64,
       "line": 206,
       "message": "Value of type variable \"SupportsRichComparisonT\" of \"sorted\" cannot be \"str | None\"",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
@@ -4961,13 +4961,6 @@
       "line": 34,
       "message": "Item \"None\" of \"str | None\" has no attribute \"strip\"",
       "path": "tests/integration/test_algebra_drivers.py"
-    },
-    {
-      "code": "dict-item",
-      "column": 10,
-      "line": 62,
-      "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection\"",
-      "path": "tests/integration/test_glpk_integration.py"
     },
     {
       "code": "arg-type",
@@ -6232,5 +6225,5 @@
     "tools",
     "docs/conf.py"
   ],
-  "version_evidence": "mypy 2.3.1 (compiled: no)"
+  "version_evidence": "mypy 2.3.1 (compiled: yes)"
 }

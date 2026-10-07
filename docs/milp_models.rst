@@ -109,8 +109,9 @@ v5 API contracts. Other optimizers remain optional third-party drivers.
 Finite component relations
 --------------------------
 
-Exact finite relations provide a dependency-free baseline in place of Sage
-convex hulls, Espresso minimization, and global pickled inequality caches.
+Exact finite relations provide the dependency-free baseline alongside recovered
+convex-hull strategies. They do not require Sage, Espresso, or global pickled
+inequality caches at runtime.
 ``FiniteBinaryRelationMILPModel`` selects one supported row and equates every
 semantic column to that row. Row selectors are auxiliary variables: this
 is not a minimum-facet or minimum-inequality claim.
@@ -136,6 +137,123 @@ Walsh coefficients with half-Walsh legacy LAT entries or discarding nonzero
 probability-one transitions. MILP logarithmic objective coefficients are
 floating approximations; decoding retains exact counts and signs and checks
 the objective against them.
+
+Small-S-box inequality strategies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The legacy full convex hull, greedy facet reduction, and minimum-cardinality
+facet cover are available as explicitly named alternatives for four-bit
+S-boxes. The portable one-hot ``SBoxTransitionMILPModel`` remains the default.
+For example, load the generated PRESENT differential inequalities and select
+the minimum-cardinality formulation explicitly:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.milp import (
+   ...     SBoxMILPInequalityStrategy,
+   ...     SBoxXorDifferentialMinimumMILPModel,
+   ...     load_bundled_sbox_milp_inequalities,
+   ... )
+   >>> system = load_bundled_sbox_milp_inequalities(
+   ...     "present", TrailKind.XOR_DIFFERENTIAL,
+   ...     SBoxMILPInequalityStrategy.MINIMUM,
+   ... )
+   >>> relation = SBoxXorDifferentialMinimumMILPModel(system)
+   >>> model = relation.milp_model(input_pattern=1, output_pattern=3)
+   >>> transition = relation.decode_transition(relation.witness(1, 3))
+   >>> (transition.numerator, transition.denominator, transition.weight)
+   (4, 16, 2.0)
+   >>> (len(model.variables), relation.inequality_count)
+   (11, 25)
+
+The committed JSON bundle was generated from legacy CLAASP commit
+``3aacc275`` with ``tools/generate_sbox_milp_inequalities.py`` under Sage 9.5.
+Sage and GLPK are generation-time tools only; importing and solving the
+resulting v5 models remains Sage-free. Regenerate the data with a Sage Python
+environment and verify that the resulting file is unchanged::
+
+   PYTHONPATH=src sage -python tools/generate_sbox_milp_inequalities.py \
+       --name present --table 12,5,6,11,9,0,10,13,3,14,15,8,4,7,1,2 \
+       --output src/claasp/representations/constraints/milp/data/present_sbox_milp_inequalities.json
+
+The reproducible GLPK benchmark in
+``architecture/audits/data/sbox_milp_strategy_benchmark.json`` used ten runs
+of one optimized PRESENT S-box transition in the canonical x86_64 Docker
+image. Times below are medians in milliseconds; memory is the maximum reported
+by GLPK. This deliberately small workload establishes a controlled comparison,
+not a universal winner.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Semantics
+     - Strategy
+     - Variables
+     - Constraints
+     - Build ms
+     - Solve ms
+     - KiB
+   * - Differential
+     - one-hot
+     - 105
+     - 13
+     - 0.686
+     - 23.422
+     - 110.1
+   * - Differential
+     - full hull
+     - 11
+     - 512
+     - 22.773
+     - 24.966
+     - 566.3
+   * - Differential
+     - greedy
+     - 11
+     - 44
+     - 4.707
+     - 25.646
+     - 87.9
+   * - Differential
+     - minimum
+     - 11
+     - 39
+     - 4.572
+     - 23.912
+     - 83.2
+   * - Linear
+     - one-hot
+     - 141
+     - 13
+     - 0.890
+     - 22.749
+     - 141.5
+   * - Linear
+     - full hull
+     - 13
+     - 1,071
+     - 45.376
+     - 29.295
+     - 1,201
+   * - Linear
+     - greedy
+     - 13
+     - 61
+     - 5.494
+     - 24.434
+     - 111.4
+   * - Linear
+     - minimum
+     - 13
+     - 53
+     - 6.281
+     - 25.229
+     - 91.2
+
+The reduced formulations use far fewer variables than one-hot and far fewer
+constraints than the full hull, while solver times are close on this tiny
+case. Larger S-boxes and complete trail searches require separate benchmarks
+before any default-selection decision.
 
 ``WordwiseXorDifference.xor_many`` preserves known-term cancellation, including
 recovery of a lone nonzero term. ``propagate_dense_wordwise_activity`` retains
