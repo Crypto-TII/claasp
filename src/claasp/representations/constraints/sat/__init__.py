@@ -27,7 +27,9 @@ from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCN
 from claasp.representations.constraints.sat.trails import (
     NWindowSATStrategy,
     SemiDeterministicModularAddTransition,
+    SharedDifferencePairedDifferentialLinearSATTrail,
     SharedDifferencePairedSATTrail,
+    SharedDifferencePairedWordDifferentialLinearSATModel,
     SharedDifferencePairedWordDifferentialSATModel,
     SpeckImpossibleSATModel,
     SpeckImpossibleSATTrail,
@@ -75,6 +77,8 @@ __all__ = [
     "SpeckProbabilisticTruncatedSATModel",
     "SemiDeterministicModularAddTransition",
     "SharedDifferencePairedSATTrail",
+    "SharedDifferencePairedDifferentialLinearSATTrail",
+    "SharedDifferencePairedWordDifferentialLinearSATModel",
     "SharedDifferencePairedWordDifferentialSATModel",
     "SpeckSemiDeterministicTruncatedSATModel",
     "SpeckSemiDeterministicTruncatedTrail",

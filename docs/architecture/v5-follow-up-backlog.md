@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box and bitwise-AND MILP strategies plus SAT/CMS recovery slices implemented; next: paired-input differential-linear and remaining backend strategies**
+Status: **S-box and bitwise-AND MILP strategies plus SAT/CMS recovery slices implemented; next: semi-deterministic-middle and remaining backend strategies**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -574,6 +574,18 @@ bits; it is not concrete four-copy evaluation. Independent decoding and fixed
 summed weight pass under all three SAT solvers. The committed ToySpeck-2
 benchmark compares the shared-input formula with and without the exclusion
 layer. Literature provenance remains ``TBD``.
+
+The paired-input differential-linear slice adds
+``SharedDifferencePairedWordDifferentialLinearSATModel``. It composes the
+recovered paired differential prefix with one XOR-linear suffix, preserving the
+legacy boundary rule that an active suffix mask requires both prefix output
+differences to be zero. The fixed objective is both differential weights plus
+twice the linear weight. MiniSat and Kissat solve and independently decode the
+same fixed-weight Speck32/64-3 fixture. CryptoMiniSat 5.11.15 exceeded the
+30-second local timeout on this sequential-counter formula, so the committed
+ten-run benchmark reports only the two completing solvers rather than hiding
+or generalizing from that limitation. The high-order interpretation and
+precise source of the boundary remain ``TBD``.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and

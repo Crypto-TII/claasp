@@ -6,6 +6,7 @@ from claasp.drivers.solvers import CryptoMiniSatSolver, KissatSolver, MinisatSol
 from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints.sat import (
     NWindowSATStrategy,
+    SharedDifferencePairedWordDifferentialLinearSATModel,
     SharedDifferencePairedWordDifferentialSATModel,
     WordDeterministicDifferentialLinearSATModel,
     WordDifferentialNativeXorSATModel,
@@ -15,6 +16,22 @@ from claasp.representations.constraints.sat import (
 )
 
 pytestmark = pytest.mark.external
+
+
+@pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver))
+def test_shared_difference_paired_differential_linear_is_solver_independent(solver_type):
+    model = SharedDifferencePairedWordDifferentialLinearSATModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=2,
+        paired_differential_maximum_weight=32,
+        linear_maximum_weight=16,
+        fixed_total_weight=8,
+    )
+    result = solver_type(timeout_seconds=30).solve(model.cnf_formula())
+    assert result.status is SatStatus.SATISFIABLE
+    trail = model.decode_trail(result.assignment)
+    assert trail.total_weight == 8
+    assert trail.linear.output_mask != 0
 
 
 @pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
