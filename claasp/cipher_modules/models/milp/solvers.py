@@ -138,7 +138,8 @@ MILP_SOLVERS_EXTERNAL = [
                 "end": "",
                 "format": ["executable", "output_file", "input_file"],
             },
-            "time": r"[\s]+Timing [\s]+([0-9]*[.]?[0-9]+) \(total\)",
+            # e.g. HiGHS 1.10.0 writes "Timing <seconds> (total)", HiGHS 1.15.1 writes "Timing <seconds>"
+            "time": r"[\s]+Timing [\s]+([0-9]*[.]?[0-9]+)(?: \(total\))?",
             "unsat_condition": r"[\s]+Status[\s]+Infeasible",
         },
     },

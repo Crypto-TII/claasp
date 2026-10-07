@@ -56,19 +56,19 @@ ENV PATH="/opt/gurobi/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/gurobi/lib:${LD_LIBRARY_PATH}"
 
 # Installing Soplex (for SCIP)
-RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-603.tar.gz \
-    && tar -xf release-603.tar.gz \
-    && rm release-603.tar.gz \
-    && cd soplex-release-603 \
+RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-716.tar.gz \
+    && tar -xf release-716.tar.gz \
+    && rm release-716.tar.gz \
+    && cd soplex-release-716 \
     && mkdir build \
     && cd build \
     && cmake .. \
     && make
 
-ENV SOPLEX_HOME="/opt/soplex-release-603/build"
+ENV SOPLEX_HOME="/opt/soplex-release-716/build"
 
 # Installing HiGHS
-RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.10.0/source-archive.tar.gz \
+RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.15.1/source-archive.tar.gz \
     && tar -xf source-archive.tar.gz \
     && rm source-archive.tar.gz \
     && cd HiGHS \
@@ -89,17 +89,17 @@ RUN git clone --depth 1 https://github.com/tinycthread/tinycthread.git \
     && ldconfig
 
 # Installing SCIP with TPI support for parallel solving using TinyCThread
-RUN wget https://github.com/scipopt/scip/archive/refs/tags/v803.tar.gz \
-    && tar -xf v803.tar.gz \
-    && rm v803.tar.gz \
-    && cd scip-803 \
+RUN wget https://github.com/scipopt/scip/archive/refs/tags/v924.tar.gz \
+    && tar -xf v924.tar.gz \
+    && rm v924.tar.gz \
+    && cd scip-924 \
     && mkdir build \
     && cd build \
     && cmake .. -DAUTOBUILD=on -DSOPLEX_DIR=${SOPLEX_HOME} -DTPI=tny -DCMAKE_PREFIX_PATH=/usr/local \
     && make -j$(nproc)
 
-ENV PATH="${PATH}:/opt/scip-803/build/bin"
-ENV LD_LIBRARY_PATH="/opt/scip-803/build/lib:/usr/local/lib:${LD_LIBRARY_PATH}"
+ENV PATH="${PATH}:/opt/scip-924/build/bin"
+ENV LD_LIBRARY_PATH="/opt/scip-924/build/lib:/usr/local/lib:${LD_LIBRARY_PATH}"
 
 # Installing SageMath tools
 RUN sage -pip install bitstring==4.0.1 \
@@ -167,7 +167,7 @@ RUN mkdir -p /usr/local/share/minizinc && cp -r /MiniZinc/share/minizinc/* /usr/
 RUN printf '%s\n' \
   '#!/bin/sh' \
   'export LD_LIBRARY_PATH=/MiniZinc/lib:"$LD_LIBRARY_PATH"' \
-  'export SCIPOPTDIR=/opt/scip-803/build' \
+  'export SCIPOPTDIR=/opt/scip-924/build' \
   'export PATH="$SCIPOPTDIR/bin:$PATH"' \
   'export LD_LIBRARY_PATH="$SCIPOPTDIR/lib:$LD_LIBRARY_PATH"' \
   'exec /MiniZinc/bin/minizinc "$@"' \
