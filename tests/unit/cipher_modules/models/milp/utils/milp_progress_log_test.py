@@ -1,4 +1,8 @@
+import contextlib
+import io
 import os
+import sys
+import tempfile
 import time
 
 import pytest
@@ -203,7 +207,24 @@ def test_glpk_error_messages_are_still_printed():
             os.remove(progress_log.file_name)
 
 
-def test_progress_log_failure_does_not_stop_the_search(capsys):
+def _run_capturing_standard_output(function):
+    # the output written to the file descriptor 1, also by C libraries (e.g. GLPK), is captured in a file; the capture
+    # fixtures of pytest (capsys, capfd) are not used, since they are not available with pytest-isolate
+    sys.stdout.flush()
+    with tempfile.TemporaryFile() as captured_output:
+        saved_standard_output = os.dup(1)
+        os.dup2(captured_output.fileno(), 1)
+        try:
+            result = function()
+            sys.stdout.flush()
+        finally:
+            os.dup2(saved_standard_output, 1)
+            os.close(saved_standard_output)
+        captured_output.seek(0)
+        return result, captured_output.read().decode(errors="replace")
+
+
+def test_progress_log_failure_does_not_stop_the_search():
     speck = SpeckBlockCipher(number_of_rounds=2)
     milp = MilpXorDifferentialModel(speck)
     progress_log = create_progress_log(milp, "find_lowest_weight_xor_differential_trail", "SCIP_EXT", 2, time.time())
@@ -211,12 +232,14 @@ def test_progress_log_failure_does_not_stop_the_search(capsys):
     try:
         progress_log.file_name = os.path.join(f"missing_directory_{time.time()}", "file.log")
         scip_header = " time | node  | dualbound   | primalbound  |  gap   | compl. "
-        progress_log.process_line(scip_header)
-        progress_log.process_line("  1.0s|     1 | 0.000000e+00 | 9.000000e+02 |    Inf | unknown")
-        assert "Live logging of the search stopped because of an error" in capsys.readouterr().out
-        progress_log.process_line("  2.0s|     2 | 1.000000e+02 | 8.000000e+02 |    Inf | unknown")
-        progress_log.write_final({"status": "UNSATISFIABLE"})
-        assert capsys.readouterr().out == ""
+        with contextlib.redirect_stdout(io.StringIO()) as output:
+            progress_log.process_line(scip_header)
+            progress_log.process_line("  1.0s|     1 | 0.000000e+00 | 9.000000e+02 |    Inf | unknown")
+        assert "Live logging of the search stopped because of an error" in output.getvalue()
+        with contextlib.redirect_stdout(io.StringIO()) as output:
+            progress_log.process_line("  2.0s|     2 | 1.000000e+02 | 8.000000e+02 |    Inf | unknown")
+            progress_log.write_final({"status": "UNSATISFIABLE"})
+        assert output.getvalue() == ""
     finally:
         if os.path.exists(log_file_name):
             os.remove(log_file_name)
@@ -284,19 +307,20 @@ def test_find_lowest_weight_xor_differential_trail_with_log():
         assert not [file_name for file_name in os.listdir() if file_name.endswith(("_improving.sol", "_options.txt"))]
 
 
-def test_find_lowest_weight_xor_differential_trail_with_log_and_glpk(capfd):
+def test_find_lowest_weight_xor_differential_trail_with_log_and_glpk():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     plaintext = set_fixed_variables("plaintext", "not_equal", range(32), integer_to_bit_list(0, 32, "little"))
     key = set_fixed_variables("key", "equal", range(64), integer_to_bit_list(0, 64, "little"))
     for solver_name in ["GLPK", "GLPK_EXT"]:
         milp = MilpXorDifferentialModel(speck)
         log_file_name = f"{speck.id}__milp_find_lowest_weight_xor_differential_trail__{solver_name}solver.log"
-        capfd.readouterr()
-        trail, lines = _read_log_of_lowest_weight_search(
-            lambda: milp.find_lowest_weight_xor_differential_trail(
-                fixed_values=[plaintext, key], solver_name=solver_name, log=True
-            ),
-            log_file_name,
+        (trail, lines), output = _run_capturing_standard_output(
+            lambda: _read_log_of_lowest_weight_search(
+                lambda: milp.find_lowest_weight_xor_differential_trail(
+                    fixed_values=[plaintext, key], solver_name=solver_name, log=True
+                ),
+                log_file_name,
+            )
         )
 
         assert trail["total_weight"] == 1.0
@@ -308,7 +332,7 @@ def test_find_lowest_weight_xor_differential_trail_with_log_and_glpk(capfd):
         assert lines[-1].startswith("plaintext 0x")
         if solver_name == "GLPK":
             # the output of the GLPK library goes to the log only
-            assert "mip =" not in capfd.readouterr().out
+            assert "mip =" not in output
 
 
 @pytest.mark.skip(reason="Requires Gurobi license")
