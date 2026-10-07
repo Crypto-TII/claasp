@@ -10,6 +10,7 @@ from claasp.primitives import ToySpeck
 from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.sat import (
     NWindowSATStrategy,
+    WordDeterministicTruncatedSATModel,
     WordDifferentialSATModel,
     WordLinearSATModel,
 )
@@ -17,6 +18,7 @@ from claasp.representations.constraints.smt import (
     WordDifferentialSMTModel,
     WordLinearSMTModel,
 )
+from claasp.semantics.cryptanalysis import TruncatedXorDifference
 
 
 def _primitive(component):
@@ -113,3 +115,35 @@ def test_n_window_strategy_rejects_incomplete_component_configuration():
     )
     with pytest.raises(ValueError, match="every modular-add component"):
         model.cnf_formula()
+
+
+def test_deterministic_truncated_sat_assembles_and_independently_checks_toy_speck():
+    model = WordDeterministicTruncatedSATModel(
+        ToySpeck(2),
+        fixed_input_patterns={"plaintext": "00000001", "key": "0" * 16},
+    )
+    formula = model.cnf_formula()
+    assert formula.variable_count == 200
+    assert formula.clause_count == 813
+    assert any(item.model == model.model_provenance for item in formula.constraint_models)
+    assert any(
+        item.model.encoding_name == "legacy two-bit paired-carry clauses"
+        for item in formula.constraint_models
+    )
+
+
+def test_deterministic_truncated_sat_restriction_validation():
+    primitive = ToySpeck(2)
+    with pytest.raises(ValueError, match="unknown fixed input"):
+        WordDeterministicTruncatedSATModel(primitive, fixed_input_patterns={"missing": "0"})
+    with pytest.raises(ValueError, match="contain 8 bits"):
+        WordDeterministicTruncatedSATModel(primitive, fixed_input_patterns={"plaintext": "0"})
+    model = WordDeterministicTruncatedSATModel(
+        primitive,
+        fixed_input_patterns={
+            "plaintext": TruncatedXorDifference.parse("00000001"),
+            "key": "0" * 16,
+        },
+        output_pattern="???0????",
+    )
+    assert "truncated_fixed_output" in model.cnf_formula().provenance

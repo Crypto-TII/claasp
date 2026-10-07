@@ -20,6 +20,9 @@ from claasp.representations.constraints.sat.lowering import BooleanCNFModel, Boo
 from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
 from claasp.representations.constraints.sat.trails import (
     NWindowSATStrategy,
+    WordDeterministicTruncatedCharacteristic,
+    WordDeterministicTruncatedEnumeration,
+    WordDeterministicTruncatedSATModel,
     WordDifferentialNativeXorSATModel,
     WordDifferentialSATModel,
     WordLinearNativeXorSATModel,
@@ -46,6 +49,9 @@ __all__ = [
     "SBoxXorDifferentialSATModel",
     "SBoxXorLinearSATModel",
     "WiringFunctionalSATModel",
+    "WordDeterministicTruncatedCharacteristic",
+    "WordDeterministicTruncatedEnumeration",
+    "WordDeterministicTruncatedSATModel",
     "WordDifferentialSATModel",
     "WordDifferentialNativeXorSATModel",
     "WordLinearSATModel",

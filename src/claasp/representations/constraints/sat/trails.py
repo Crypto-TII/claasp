@@ -3,9 +3,11 @@
 from contextlib import nullcontext
 from dataclasses import dataclass, replace
 from hashlib import sha256
+from itertools import product
 from typing import Any
 
-from claasp.components import ModularAdd
+from claasp.components import Add, Constant, Identity, ModularAdd, Permutation, Rotate, Xor
+from claasp.domains import Word
 from claasp.drivers.solvers import SatStatus
 from claasp.representations.constraints import (
     ConstraintBackend,
@@ -14,6 +16,7 @@ from claasp.representations.constraints import (
     _direct_model,
 )
 from claasp.representations.constraints.sat.components import (
+    ModularAddDeterministicTruncatedSATModel,
     ModularAddDifferentialSATModel,
     ModularAddLinearSATModel,
     ModularAddNWindowSATModel,
@@ -25,6 +28,11 @@ from claasp.representations.constraints.smt.trails import (
     WordDifferentialSMTModel,
     WordLinearEnumeration,
     WordLinearSMTModel,
+)
+from claasp.semantics.cryptanalysis import (
+    TruncatedBit,
+    TruncatedXorDifference,
+    truncated_modular_add,
 )
 
 
@@ -414,6 +422,458 @@ def _enumerate(model, formula, solver, enumeration_type, metadata, limit):
             )
 
 
+@dataclass(frozen=True, slots=True)
+class WordDeterministicTruncatedCharacteristic:
+    """One independently checked deterministic-truncated Word-graph witness.
+
+    EXAMPLES::
+
+        >>> zero = TruncatedXorDifference.parse("0")
+        >>> characteristic = WordDeterministicTruncatedCharacteristic(
+        ...     (("plaintext", zero),), zero, (), ()
+        ... )
+        >>> str(characteristic.output_pattern)
+        '0'
+    """
+
+    input_patterns: tuple[tuple[str, TruncatedXorDifference], ...]
+    output_pattern: TruncatedXorDifference
+    component_patterns: tuple[tuple[str, TruncatedXorDifference], ...]
+    semantic_assignment: tuple[tuple[str, int], ...]
+
+
+@dataclass(frozen=True, slots=True)
+class WordDeterministicTruncatedEnumeration:
+    """Results and reproducibility metadata from a truncated SAT search.
+
+    EXAMPLES::
+
+        >>> result = WordDeterministicTruncatedEnumeration(
+        ...     (), True, 0.01, (("solver", "MinisatSolver"),)
+        ... )
+        >>> (result.complete, dict(result.metadata)["solver"])
+        (True, 'MinisatSolver')
+    """
+
+    trails: tuple[WordDeterministicTruncatedCharacteristic, ...]
+    complete: bool
+    runtime_seconds: float
+    metadata: tuple[tuple[str, str], ...]
+
+
+def _truncated_pattern(bits, assignment):
+    return TruncatedXorDifference(
+        tuple(
+            TruncatedBit.UNKNOWN
+            if assignment[unknown]
+            else TruncatedBit.ONE
+            if assignment[value]
+            else TruncatedBit.ZERO
+            for unknown, value in bits
+        )
+    )
+
+
+class WordDeterministicTruncatedSATModel:
+    """Assemble deterministic-truncated ARX Word graphs as ordinary CNF.
+
+    Port trits use a canonical ``(unknown, value)`` representation. Structural
+    wiring and XOR are composed directly, while every two-input modular-add
+    step reuses :class:`ModularAddDeterministicTruncatedSATModel`. Decoding
+    independently propagates the typed three-valued semantics over the graph.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToySpeck
+        >>> model = WordDeterministicTruncatedSATModel(
+        ...     ToySpeck(2), fixed_input_patterns={"key": "0" * 16},
+        ...     nonzero_input="plaintext",
+        ... )
+        >>> formula = model.cnf_formula()
+        >>> (formula.variable_count > 0, "truncated_nonzero_input" in formula.provenance)
+        (True, True)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "WordDeterministicTruncatedSATModel",
+        "deterministic_truncated_xor",
+        "direct ARX word-graph composition with paired-carry modular addition",
+        "Graph wiring is direct; modular addition reuses the recovered legacy clauses.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        fixed_input_patterns=None,
+        output_pattern=None,
+        nonzero_input=None,
+    ) -> None:
+        self.primitive = primitive
+        if nonzero_input is not None and nonzero_input not in primitive.input_ports:
+            raise ValueError("unknown nonzero input")
+        self.nonzero_input = nonzero_input
+        fixed = dict(fixed_input_patterns or {})
+        unknown = set(fixed) - set(primitive.input_ports)
+        if unknown:
+            raise ValueError(f"unknown fixed input pattern: {sorted(unknown)!r}")
+        self.fixed_input_patterns = {
+            name: self._coerce(pattern, primitive.input_ports[name].value_type)
+            for name, pattern in fixed.items()
+        }
+        self.output_pattern = (
+            None
+            if output_pattern is None
+            else self._coerce(output_pattern, primitive.output.value_type)
+        )
+        self._formula: CNFFormula | None = None
+        self._ports: dict[str, tuple[tuple[str, str], ...]] = {}
+        self._operands: dict[str, tuple[tuple[tuple[str, str], ...], ...]] = {}
+        self._output: tuple[tuple[str, str], ...] = ()
+        self._semantic_names: tuple[str, ...] = ()
+
+    @staticmethod
+    def _coerce(pattern, value_type):
+        if not isinstance(value_type.domain, Word):
+            raise NotImplementedError("truncated SAT lowering requires Word domains")
+        if isinstance(pattern, str):
+            pattern = TruncatedXorDifference.parse(pattern)
+        if not isinstance(pattern, TruncatedXorDifference):
+            raise TypeError("truncated patterns must be strings or TruncatedXorDifference values")
+        expected = value_type.unit_count * value_type.domain.width
+        if len(pattern.bits) != expected:
+            raise ValueError(f"truncated pattern must contain {expected} bits")
+        return pattern
+
+    def cnf_formula(self) -> CNFFormula:
+        """Return the complete deterministic-truncated graph formula."""
+
+        variables, indices, clauses, provenance = [], {}, [], []
+
+        def allocate(name):
+            if name not in indices:
+                variables.append(name)
+                indices[name] = len(variables)
+            return name
+
+        def add(literals, label):
+            clauses.append(tuple(literals))
+            provenance.append(label)
+
+        def pair(name):
+            result = (allocate(name + "_unknown"), allocate(name + "_value"))
+            add((-indices[result[0]], -indices[result[1]]), "truncated_canonical_unknown")
+            return result
+
+        def equal(left, right, label):
+            for source, target in zip(left, right):
+                add((-indices[source], indices[target]), label)
+                add((indices[source], -indices[target]), label)
+
+        def xor_relation(operands, output, label):
+            symbols = ((0, 0), (0, 1), (1, 0))
+            for inputs in product(symbols, repeat=len(operands)):
+                expected = (1, 0) if (1, 0) in inputs else (0, sum(v for _, v in inputs) % 2)
+                for candidate in symbols:
+                    if candidate == expected:
+                        continue
+                    add(
+                        (
+                            -indices[name] if bit else indices[name]
+                            for names_pair, bits_pair in zip(
+                                (*operands, output), (*inputs, candidate)
+                            )
+                            for name, bit in zip(names_pair, bits_pair)
+                        ),
+                        label,
+                    )
+
+        sources = [(name, port.value_type) for name, port in self.primitive.input_ports.items()]
+        sources += [(item.component_id, item.output_type) for item in self.primitive.components]
+        ports = {}
+        for name, value_type in sources:
+            if not isinstance(value_type.domain, Word):
+                raise NotImplementedError("truncated SAT lowering requires Word domains")
+            ports[name] = tuple(
+                pair(f"truncated_{name}_{bit}")
+                for bit in range(value_type.unit_count * value_type.domain.width)
+            )
+
+        def selected(selection):
+            return tuple(
+                ports[owner_id][bit]
+                for owner_id, bit in self.primitive.selection_bit_sources(selection)
+            )
+
+        operands_by_id = {}
+        for component in self.primitive.components:
+            component_id = component.component_id
+            operands = tuple(selected(selection) for selection in component.inputs)
+            operands_by_id[component_id] = operands
+            output = ports[component_id]
+            width = component.output_type.domain.width
+            if isinstance(component, ModularAdd):
+                for unit in range(component.output_type.unit_count):
+                    accumulator = operands[0][unit * width : (unit + 1) * width]
+                    for operand_number, operand_group in enumerate(operands[1:], 1):
+                        operand = operand_group[unit * width : (unit + 1) * width]
+                        last = operand_number == len(operands) - 1
+                        target = (
+                            output[unit * width : (unit + 1) * width]
+                            if last
+                            else tuple(
+                                pair(f"__truncated_{component_id}_{unit}_{operand_number}_{bit}")
+                                for bit in range(width)
+                            )
+                        )
+                        local = ModularAddDeterministicTruncatedSATModel(width).cnf_formula()
+                        mapping = {}
+                        for prefix, names in (
+                            ("left", accumulator),
+                            ("right", operand),
+                            ("output", target),
+                        ):
+                            for bit, names_pair in enumerate(names):
+                                for field, name in zip(("unknown", "value"), names_pair):
+                                    mapping[f"{prefix}_{bit}_{field}"] = name
+                        for name in local.variables:
+                            if name not in mapping:
+                                mapping[name] = allocate(
+                                    f"__truncated_{component_id}_{unit}_{operand_number}_{name}"
+                                )
+                        remap = {
+                            position: indices[mapping[name]]
+                            for position, name in enumerate(local.variables, 1)
+                        }
+                        for clause, label in zip(local.clauses, local.provenance):
+                            add(
+                                (
+                                    remap[abs(literal)] * (1 if literal > 0 else -1)
+                                    for literal in clause
+                                ),
+                                label,
+                            )
+                        accumulator = target
+            elif isinstance(component, (Xor, Add)):
+                for bit, target in enumerate(output):
+                    xor_relation(
+                        tuple(operand[bit] for operand in operands), target, "truncated_xor"
+                    )
+            elif isinstance(component, Identity):
+                for source, target in zip(operands[0], output):
+                    equal(source, target, "truncated_identity")
+            elif isinstance(component, Permutation):
+                units = tuple(
+                    operands[0][start : start + width]
+                    for start in range(0, len(operands[0]), width)
+                )
+                for target_unit, source_unit in enumerate(component.mapping):
+                    for source, target in zip(
+                        units[source_unit], output[target_unit * width : (target_unit + 1) * width]
+                    ):
+                        equal(source, target, "truncated_permutation")
+            elif isinstance(component, Rotate):
+                offset = component.amount if component.direction == "right" else -component.amount
+                for unit in range(component.output_type.unit_count):
+                    source = operands[0][unit * width : (unit + 1) * width]
+                    target = output[unit * width : (unit + 1) * width]
+                    for bit in range(width):
+                        equal(source[bit], target[(bit + offset) % width], "truncated_rotate")
+            elif isinstance(component, Constant):
+                for unknown_name, value_name in output:
+                    add((-indices[unknown_name],), "truncated_zero_constant")
+                    add((-indices[value_name],), "truncated_zero_constant")
+            else:
+                raise NotImplementedError(
+                    f"no deterministic-truncated SAT semantics for {type(component).__name__}"
+                )
+
+        output = selected(self.primitive.output)
+        if self.nonzero_input is not None:
+            add(
+                (indices[name] for names_pair in ports[self.nonzero_input] for name in names_pair),
+                "truncated_nonzero_input",
+            )
+
+        def fix(names, pattern, label):
+            for names_pair, bit in zip(names, pattern.bits):
+                encoded = (1, 0) if bit is TruncatedBit.UNKNOWN else (0, int(bit.value))
+                for name, value in zip(names_pair, encoded):
+                    add(((indices[name] if value else -indices[name]),), label)
+
+        for name, pattern in self.fixed_input_patterns.items():
+            fix(ports[name], pattern, "truncated_fixed_input")
+        if self.output_pattern is not None:
+            fix(output, self.output_pattern, "truncated_fixed_output")
+
+        self._ports, self._operands, self._output = ports, operands_by_id, output
+        self._semantic_names = tuple(
+            name for names in ports.values() for names_pair in names for name in names_pair
+        )
+        self._formula = CNFFormula(
+            tuple(variables),
+            tuple(clauses),
+            tuple(provenance),
+            _component_applications(
+                self.primitive,
+                self.model_provenance,
+                ((ModularAdd, ModularAddDeterministicTruncatedSATModel.model_provenance),),
+            ),
+        )
+        return self._formula
+
+    @staticmethod
+    def _units(pattern, width):
+        return tuple(
+            TruncatedXorDifference(pattern.bits[start : start + width])
+            for start in range(0, len(pattern.bits), width)
+        )
+
+    def _evaluate(self, assignment):
+        patterns = {
+            name: _truncated_pattern(bits, assignment) for name, bits in self._ports.items()
+        }
+        for component in self.primitive.components:
+            width = component.output_type.domain.width
+            operands = tuple(
+                _truncated_pattern(names, assignment)
+                for names in self._operands[component.component_id]
+            )
+            operand_units = tuple(self._units(pattern, width) for pattern in operands)
+            if isinstance(component, ModularAdd):
+                expected_units = []
+                for items in zip(*operand_units):
+                    value = items[0]
+                    for operand in items[1:]:
+                        value = truncated_modular_add(value, operand)
+                    expected_units.append(value)
+            elif isinstance(component, (Xor, Add)):
+                expected_units = []
+                for items in zip(*operand_units):
+                    value = items[0]
+                    for operand in items[1:]:
+                        value = value.xor(operand)
+                    expected_units.append(value)
+            elif isinstance(component, (Identity, Permutation)):
+                items = operand_units[0]
+                expected_units = (
+                    [items[position] for position in component.mapping]
+                    if isinstance(component, Permutation)
+                    else list(items)
+                )
+            elif isinstance(component, Rotate):
+                method = "rotate_right" if component.direction == "right" else "rotate_left"
+                expected_units = [
+                    getattr(item, method)(component.amount) for item in operand_units[0]
+                ]
+            elif isinstance(component, Constant):
+                expected_units = [
+                    TruncatedXorDifference.parse("0" * width)
+                ] * component.output_type.unit_count
+            else:
+                return None
+            expected = TruncatedXorDifference(
+                tuple(bit for unit in expected_units for bit in unit.bits)
+            )
+            if patterns[component.component_id] != expected:
+                return None
+        return patterns
+
+    def decode_characteristic(self, assignment):
+        """Decode and independently validate a complete SAT assignment."""
+
+        if self._formula is None:
+            raise ValueError("build the formula before decoding")
+        if not self._formula.is_satisfied(assignment):
+            raise ValueError("invalid deterministic-truncated SAT witness")
+        patterns = self._evaluate(assignment)
+        if patterns is None:
+            raise ValueError("truncated witness violates independent graph propagation")
+        result = WordDeterministicTruncatedCharacteristic(
+            tuple((name, patterns[name]) for name in self.primitive.input_ports),
+            _truncated_pattern(self._output, assignment),
+            tuple(
+                (item.component_id, patterns[item.component_id])
+                for item in self.primitive.components
+            ),
+            tuple((name, int(bool(assignment[name]))) for name in self._semantic_names),
+        )
+        if not self.check_characteristic(result):
+            raise ValueError("truncated witness violates requested boundaries")
+        return result
+
+    def check_characteristic(self, trail) -> bool:
+        """Recheck graph propagation and requested boundary restrictions."""
+
+        if self._formula is None:
+            raise ValueError("build the formula before checking")
+        values = dict(trail.semantic_assignment)
+        if (
+            len(values) != len(trail.semantic_assignment)
+            or set(values) != set(self._semantic_names)
+            or any(value not in (0, 1) for value in values.values())
+        ):
+            return False
+        patterns = self._evaluate(values)
+        if patterns is None:
+            return False
+        inputs = tuple((name, patterns[name]) for name in self.primitive.input_ports)
+        output = _truncated_pattern(self._output, values)
+        components = tuple(
+            (item.component_id, patterns[item.component_id]) for item in self.primitive.components
+        )
+        selected_input = None if self.nonzero_input is None else dict(inputs)[self.nonzero_input]
+        return (
+            trail.input_patterns == inputs
+            and trail.output_pattern == output
+            and trail.component_patterns == components
+            and (self.output_pattern is None or output == self.output_pattern)
+            and (
+                selected_input is None
+                or selected_input != TruncatedXorDifference.parse("0" * len(selected_input.bits))
+            )
+            and all(
+                dict(inputs)[name] == pattern for name, pattern in self.fixed_input_patterns.items()
+            )
+        )
+
+    def enumerate_trails(self, solver, *, limit=1000):
+        """Enumerate distinct port-pattern characteristics."""
+
+        formula = self.cnf_formula()
+        metadata = _enumeration_metadata(
+            self,
+            formula,
+            solver,
+            (
+                (
+                    "fixed_input_patterns",
+                    repr(
+                        tuple(
+                            sorted(
+                                (name, str(value))
+                                for name, value in self.fixed_input_patterns.items()
+                            )
+                        )
+                    ),
+                ),
+                (
+                    "output_pattern",
+                    repr(None if self.output_pattern is None else str(self.output_pattern)),
+                ),
+            ),
+        )
+        return _enumerate(
+            self,
+            formula,
+            solver,
+            WordDeterministicTruncatedEnumeration,
+            metadata,
+            limit,
+        )
+
+
 class WordDifferentialSATModel:
     """Assemble exact XOR-differential component relations as ordinary CNF.
 
@@ -704,6 +1164,9 @@ class WordLinearNativeXorSATModel(WordLinearSATModel):
 
 __all__ = [
     "NWindowSATStrategy",
+    "WordDeterministicTruncatedCharacteristic",
+    "WordDeterministicTruncatedEnumeration",
+    "WordDeterministicTruncatedSATModel",
     "WordDifferentialNativeXorSATModel",
     "WordDifferentialSATModel",
     "WordLinearNativeXorSATModel",
