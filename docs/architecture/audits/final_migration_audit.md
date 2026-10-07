@@ -3,9 +3,9 @@
 This generated M11a comparison is review material; the JSON matrix and closure tool are authoritative.
 
 - Legacy records: 581
-- Shipped v5 artifacts: 439
+- Shipped v5 artifacts: 440
 - Legacy dispositions: inapplicable=34, migrate=332, remove=8, supersede=207
-- Reverse classifications: legacy-lineage=396, new-v5=43
+- Reverse classifications: legacy-lineage=397, new-v5=43
 - Mapping relationships: consolidated=57, direct=152, evidence-only=256, inapplicable=34, removed=8, split=74
 
 Every legacy source module, test module, and package marker appears below with its final disposition and reason. Every shipped v5 module or data artifact appears in the reverse table with its predecessor(s) or a new-v5 rationale.
@@ -935,6 +935,7 @@ Relationship means: **direct** for one reviewed destination, **split** for one l
 | `src/claasp/representations/constraints/cp/components/__init__.py` | legacy-lineage | direct | `claasp/component.py` |
 | `src/claasp/representations/constraints/cp/components/modular_add.py` | legacy-lineage | direct | `claasp/component.py` |
 | `src/claasp/representations/constraints/cp/components/sbox.py` | legacy-lineage | direct | `claasp/component.py` |
+| `src/claasp/representations/constraints/cp/components/truncated.py` | legacy-lineage | direct | `claasp/component.py` |
 | `src/claasp/representations/constraints/cp/lowering.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/cp/mzn_models/mzn_cipher_model.py`<br>`claasp/cipher_modules/models/cp/mzn_models/mzn_cipher_model_arx_optimized.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/cp/model.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/cp/minizinc_utils/utils.py`<br>`claasp/cipher_modules/models/cp/mzn_model.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/cp/trails.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/cp/minizinc_utils/usefulfunctions.py`<br>`claasp/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model.py`<br>`claasp/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model_arx_optimized.py`<br>`claasp/cipher_modules/models/cp/mzn_models/mzn_hybrid_impossible_xor_differential_model.py`<br>`claasp/cipher_modules/models/cp/mzn_models/mzn_impossible_xor_differential_model.py`<br>`claasp/cipher_modules/models/cp/mzn_models/mzn_semi_deterministic_truncated_xor_differential_model.py`<br>`claasp/cipher_modules/models/cp/mzn_models/mzn_wordwise_deterministic_truncated_xor_differential_model.py`<br>`claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model.py`<br>`claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_arx_optimized.py`<br>`claasp/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model.py`<br>`claasp/cipher_modules/models/milp/milp_models/milp_bitwise_impossible_xor_differential_model.py`<br>`claasp/cipher_modules/models/milp/utils/mzn_predicates.py`<br>`claasp/cipher_modules/models/sat/cms_models/cms_xor_differential_model.py`<br>`claasp/cipher_modules/models/sat/sat_models/sat_bitwise_impossible_xor_differential_model.py`<br>`claasp/cipher_modules/models/sat/sat_models/sat_probabilistic_xor_truncated_differential_model.py`<br>`claasp/cipher_modules/models/sat/utils/mzn_predicates.py`<br>`claasp/component.py` |

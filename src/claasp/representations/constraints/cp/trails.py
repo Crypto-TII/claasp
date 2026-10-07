@@ -2,6 +2,14 @@
 
 from claasp.components import BitVectorSBox, Permutation, Rotate
 from claasp.domains import Word
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _direct_model,
+)
+from claasp.representations.constraints.cp.components import (
+    ModularAddDeterministicTruncatedCPModel as _ModularAddDeterministicTruncatedCPModel,
+)
 from claasp.representations.constraints.cp.components import (
     ProbabilisticTruncatedModularAddCPModel as _ProbabilisticTruncatedModularAddCPModel,
 )
@@ -14,6 +22,7 @@ from claasp.representations.constraints.cp.components import (
 from claasp.representations.constraints.cp.components import (
     SBoxXorDifferentialCPModel as _SBoxXorDifferentialCPModel,
 )
+from claasp.representations.constraints.cp.lowering import BooleanMiniZincLowerer
 from claasp.representations.constraints.cp.model import MiniZincModel
 from claasp.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -40,6 +49,7 @@ from claasp.semantics.cryptanalysis import (
     propagate_two_word_speck_round,
 )
 
+ModularAddDeterministicTruncatedCPModel = _ModularAddDeterministicTruncatedCPModel
 ProbabilisticTruncatedModularAddCPModel = _ProbabilisticTruncatedModularAddCPModel
 SBoxBoomerangCPModel = _SBoxBoomerangCPModel
 SBoxDifferenceCPModel = _SBoxDifferenceCPModel
@@ -1071,6 +1081,82 @@ predicate modular_addition_xor_difference(
     ) /\
     ((a[length(a)-1] != b[length(a)-1]) = c[length(a)-1]);
 """.strip()
+
+
+class WordDeterministicTruncatedCPModel:
+    """Assemble deterministic-truncated Word graphs as MiniZinc CP.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToySpeck
+        >>> model = WordDeterministicTruncatedCPModel(
+        ...     ToySpeck(2),
+        ...     fixed_input_patterns={"key": "0" * 16},
+        ...     nonzero_input="plaintext",
+        ... )
+        >>> query = model.cp_model()
+        >>> (len(query.declarations) > 0, query.constraint_models[0].model.backend.value)
+        (True, 'cp')
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "WordDeterministicTruncatedCPModel",
+        "deterministic_truncated_xor",
+        "MiniZinc translation of deterministic-truncated Word graph clauses",
+        "Graph wiring and recovered paired-carry clauses are translated exactly.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        fixed_input_patterns=None,
+        output_pattern=None,
+        nonzero_input=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import (
+            WordDeterministicTruncatedSATModel,
+        )
+
+        self._sat_model = WordDeterministicTruncatedSATModel(
+            primitive,
+            fixed_input_patterns=fixed_input_patterns,
+            output_pattern=output_pattern,
+            nonzero_input=nonzero_input,
+        )
+        self.primitive = primitive
+        self._query: MiniZincModel | None = None
+
+    def cp_model(self) -> MiniZincModel:
+        """Return the complete deterministic-truncated graph query."""
+
+        lowered = BooleanMiniZincLowerer().lower(self._sat_model.cnf_formula())
+        self._query = MiniZincModel(
+            lowered.declarations,
+            lowered.constraints,
+            lowered.solve,
+            lowered.includes,
+            lowered.outputs,
+            lowered.provenance,
+            lowered.name_mapping,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_characteristic(self, assignment):
+        """Decode and independently validate a complete CP assignment."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        return self._sat_model.decode_characteristic(assignment)
+
+    def check_characteristic(self, trail) -> bool:
+        """Recheck graph propagation and requested boundary restrictions."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before checking")
+        return self._sat_model.check_characteristic(trail)
 
 
 _DETERMINISTIC_TRUNCATED_MODADD_PREDICATE = r"""
