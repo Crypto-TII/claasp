@@ -10,6 +10,7 @@ from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.sat import (
     NWindowSATStrategy,
+    SharedDifferencePairedWordDifferentialSATModel,
     SpeckImpossibleSATModel,
     SpeckProbabilisticTruncatedSATModel,
     SpeckSemiDeterministicTruncatedSATModel,
@@ -53,6 +54,34 @@ def test_differential_sat_assembly_matches_shared_boolean_formula():
     trail = sat.decode_characteristic(assignment)
     assert trail.total_weight == 2 and sat.check_characteristic(trail)
     assert not sat.check_characteristic(replace(trail, output_difference=0))
+
+
+def test_shared_difference_paired_sat_recovers_modadd_exclusion_and_weight_bound():
+    model = SharedDifferencePairedWordDifferentialSATModel(
+        ToySpeck(2),
+        maximum_total_weight=2,
+        fixed_input_differences={"key": 0},
+        nonzero_input="plaintext",
+    )
+    formula = model.cnf_formula()
+    assert (formula.variable_count, formula.clause_count, formula.literal_count) == (
+        230,
+        788,
+        2645,
+    )
+    assert formula.provenance.count("paired_modadd_output_exclusion") == 12
+    assert formula.provenance.count("paired_shared_input_difference") == 48
+
+
+def test_shared_difference_paired_sat_validates_total_weight_configuration():
+    with pytest.raises(ValueError, match="choose"):
+        SharedDifferencePairedWordDifferentialSATModel(
+            ToySpeck(2), maximum_total_weight=1, fixed_total_weight=1
+        )
+    with pytest.raises(ValueError, match="nonnegative"):
+        SharedDifferencePairedWordDifferentialSATModel(
+            ToySpeck(2), maximum_total_weight=True
+        )
 
 
 def test_linear_sat_assembly_matches_shared_boolean_formula():

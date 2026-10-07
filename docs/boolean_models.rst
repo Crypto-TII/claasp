@@ -522,6 +522,34 @@ was 0.948 ms instead of 1.219 ms, while median construction time increased
 from 1.275 ms to 4.115 ms. Ordinary CNF remains the default because this one
 small fixture does not establish a general performance policy.
 
+Shared-difference paired characteristics
+----------------------------------------
+
+Shared-difference paired characteristics are exposed separately through
+``SharedDifferencePairedWordDifferentialSATModel``. The model builds two
+differential characteristics, makes every external input difference identical,
+and forbids corresponding modular-add output bits from being active in both
+copies.
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.sat import (
+   ...     SharedDifferencePairedWordDifferentialSATModel,
+   ... )
+   >>> paired = SharedDifferencePairedWordDifferentialSATModel(
+   ...     ToySpeck(2), maximum_total_weight=5,
+   ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
+   ... )
+   >>> paired.cnf_formula().provenance.count("paired_modadd_output_exclusion")
+   12
+
+The decoded result contains both independently checked characteristics and
+their summed weight. The legacy exclusion rule remains ``TBD`` for literature
+provenance and is not described as an exact four-evaluation probability model.
+The ten-run comparison in
+``architecture/audits/data/sat_shared_difference_paired_benchmark.json`` uses
+the same fixed-weight ToySpeck-2 formula with and without the exclusion layer.
+
 Differential-linear SAT boundaries
 ----------------------------------
 

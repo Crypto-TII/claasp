@@ -1673,6 +1673,241 @@ class WordDifferentialSATModel:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class SharedDifferencePairedSATTrail:
+    """Two characteristics sharing one input difference.
+
+    Corresponding modular-add output differences are mutually exclusive, as
+    in the recovered legacy high-order characteristic search.
+
+    EXAMPLES::
+
+        >>> from types import SimpleNamespace
+        >>> trail = SharedDifferencePairedSATTrail(
+        ...     SimpleNamespace(total_weight=2), SimpleNamespace(total_weight=3)
+        ... )
+        >>> trail.total_weight
+        5
+    """
+
+    left: Any
+    right: Any
+
+    @property
+    def total_weight(self):
+        """Return the sum of both component-characteristic weights."""
+
+        return self.left.total_weight + self.right.total_weight
+
+
+class SharedDifferencePairedWordDifferentialSATModel:
+    """Recover the legacy shared-difference paired characteristic search.
+
+    This is deliberately not the exact four-evaluation paired graph. It
+    composes two XOR-differential characteristics with identical external
+    input differences and forbids corresponding modular-add output bits from
+    being active in both copies.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToySpeck
+        >>> model = SharedDifferencePairedWordDifferentialSATModel(
+        ...     ToySpeck(2), maximum_total_weight=2,
+        ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
+        ... )
+        >>> formula = model.cnf_formula()
+        >>> (formula.variable_count > 0, "paired_modadd_output_exclusion" in formula.provenance)
+        (True, True)
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.SAT,
+        "SharedDifferencePairedWordDifferentialSATModel",
+        "shared_difference_paired_input_differential",
+        "two shared-input-difference characteristics with modular-add output exclusion",
+        "Recovered from legacy CLAASP; its precise high-order interpretation remains unaudited.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        maximum_total_weight=None,
+        fixed_total_weight=None,
+        nonzero_input=None,
+        fixed_input_differences=None,
+        left_output_difference=None,
+        right_output_difference=None,
+    ) -> None:
+        if maximum_total_weight is not None and fixed_total_weight is not None:
+            raise ValueError("choose maximum_total_weight or fixed_total_weight, not both")
+        for weight in (maximum_total_weight, fixed_total_weight):
+            if weight is not None and (
+                not isinstance(weight, int) or isinstance(weight, bool) or weight < 0
+            ):
+                raise ValueError("total weights must be nonnegative integers")
+        options = {
+            "nonzero_input": nonzero_input,
+            "fixed_input_differences": fixed_input_differences,
+        }
+        self.left_model = WordDifferentialSATModel(
+            primitive, output_difference=left_output_difference, **options
+        )
+        self.right_model = WordDifferentialSATModel(
+            primitive, output_difference=right_output_difference, **options
+        )
+        self.primitive = primitive
+        self.maximum_total_weight = maximum_total_weight
+        self.fixed_total_weight = fixed_total_weight
+        self._formula: CNFFormula | None = None
+        self._maps: dict[str, dict[str, str]] = {}
+
+    def cnf_formula(self) -> CNFFormula:
+        """Return the paired characteristic formula."""
+
+        subformulas = (
+            ("left", self.left_model.cnf_formula()),
+            ("right", self.right_model.cnf_formula()),
+        )
+        variables: list[str] = []
+        indices: dict[str, int] = {}
+        clauses: list[tuple[int, ...]] = []
+        provenance: list[str] = []
+        applications: list[ConstraintModelApplication] = []
+        maps: dict[str, dict[str, str]] = {}
+
+        def allocate(name):
+            if name not in indices:
+                variables.append(name)
+                indices[name] = len(variables)
+            return name
+
+        def add(literals, label):
+            clauses.append(tuple(literals))
+            provenance.append(label)
+
+        for namespace, formula in subformulas:
+            mapping = {name: allocate(f"{namespace}_{name}") for name in formula.variables}
+            remap = {
+                position: indices[mapping[name]]
+                for position, name in enumerate(formula.variables, 1)
+            }
+            for clause, label in zip(formula.clauses, formula.provenance):
+                add(
+                    (
+                        remap[abs(literal)] * (1 if literal > 0 else -1)
+                        for literal in clause
+                    ),
+                    label,
+                )
+            applications.extend(formula.constraint_models)
+            maps[namespace] = mapping
+
+        for input_name in self.primitive.input_ports:
+            left = self.left_model._shared._ports[input_name]
+            right = self.right_model._shared._ports[input_name]
+            for left_name, right_name in zip(left, right):
+                left_index = indices[maps["left"][left_name]]
+                right_index = indices[maps["right"][right_name]]
+                add((-left_index, right_index), "paired_shared_input_difference")
+                add((left_index, -right_index), "paired_shared_input_difference")
+
+        additions = tuple(
+            component for component in self.primitive.components if isinstance(component, ModularAdd)
+        )
+        for component in additions:
+            left = self.left_model._shared._ports[component.component_id]
+            right = self.right_model._shared._ports[component.component_id]
+            for left_name, right_name in zip(left, right):
+                add(
+                    (
+                        -indices[maps["left"][left_name]],
+                        -indices[maps["right"][right_name]],
+                    ),
+                    "paired_modadd_output_exclusion",
+                )
+
+        weights = [
+            maps[namespace][name]
+            for namespace, formula in subformulas
+            for name in formula.variables
+            if name.startswith("weight_")
+        ]
+        bound = (
+            self.fixed_total_weight
+            if self.fixed_total_weight is not None
+            else self.maximum_total_weight
+        )
+        if bound is not None:
+            _at_most(weights, bound, allocate, indices, add, "__paired_weight")
+        if self.fixed_total_weight is not None:
+            if self.fixed_total_weight > len(weights):
+                impossible = allocate("__paired_impossible_weight")
+                add((indices[impossible],), "paired_fixed_weight")
+                add((-indices[impossible],), "paired_fixed_weight")
+            else:
+                complements = []
+                for position, name in enumerate(weights):
+                    complement = allocate(f"__paired_weight_complement_{position}")
+                    add((indices[name], indices[complement]), "paired_fixed_weight")
+                    add((-indices[name], -indices[complement]), "paired_fixed_weight")
+                    complements.append(complement)
+                _at_most(
+                    complements,
+                    len(weights) - self.fixed_total_weight,
+                    allocate,
+                    indices,
+                    add,
+                    "__paired_lower_weight",
+                )
+
+        applications.append(
+            ConstraintModelApplication(
+                self.model_provenance,
+                tuple(str(component.component_id) for component in additions),
+            )
+        )
+        self._maps = maps
+        self._formula = CNFFormula(
+            tuple(variables), tuple(clauses), tuple(provenance), tuple(applications)
+        )
+        return self._formula
+
+    def decode_trail(self, assignment) -> SharedDifferencePairedSATTrail:
+        """Decode both characteristics and recheck the paired restrictions."""
+
+        if self._formula is None:
+            raise ValueError("build the formula before decoding")
+        if not self._formula.is_satisfied(assignment):
+            raise ValueError("invalid shared-difference paired SAT witness")
+
+        def project(namespace):
+            return {
+                local: assignment[global_name]
+                for local, global_name in self._maps[namespace].items()
+            }
+
+        left_assignment, right_assignment = project("left"), project("right")
+        left = self.left_model.decode_characteristic(left_assignment)
+        right = self.right_model.decode_characteristic(right_assignment)
+        if left.input_differences != right.input_differences:
+            raise ValueError("paired characteristics do not share their input difference")
+        for component in self.primitive.components:
+            if not isinstance(component, ModularAdd):
+                continue
+            left_names = self.left_model._shared._ports[component.component_id]
+            right_names = self.right_model._shared._ports[component.component_id]
+            if any(left_assignment[a] and right_assignment[b] for a, b in zip(left_names, right_names)):
+                raise ValueError("paired modular-add output differences overlap")
+        trail = SharedDifferencePairedSATTrail(left, right)
+        bound = self.fixed_total_weight
+        if bound is not None and trail.total_weight != bound:
+            raise ValueError("paired trail changed its fixed total weight")
+        if self.maximum_total_weight is not None and trail.total_weight > self.maximum_total_weight:
+            raise ValueError("paired trail exceeds its total-weight bound")
+        return trail
+
+
 class WordLinearSATModel:
     """Assemble exact XOR-linear component masks and fanout as ordinary CNF.
 
@@ -2118,6 +2353,8 @@ __all__ = [
     "SpeckImpossibleSATTrail",
     "SpeckProbabilisticTruncatedSATModel",
     "SemiDeterministicModularAddTransition",
+    "SharedDifferencePairedSATTrail",
+    "SharedDifferencePairedWordDifferentialSATModel",
     "SpeckSemiDeterministicTruncatedSATModel",
     "SpeckSemiDeterministicTruncatedTrail",
     "WordDeterministicTruncatedCharacteristic",
