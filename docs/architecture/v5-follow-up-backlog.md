@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box MILP, local SAT transitions, native-XOR output, and SAT trail assembly implemented; next: n-window heuristic**
+Status: **S-box MILP, local SAT transitions, native-XOR output, SAT trail assembly, and n-window heuristic implemented; next: native-XOR trail lowering**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -378,9 +378,17 @@ The SAT trail-assembly slice adds explicitly named whole-graph differential and
 linear models that reuse the reviewed backend-neutral Boolean relations but
 return SAT containers and SAT provenance. Exact toy-Speck counts are preserved
 under MiniSat, Kissat, and CryptoMiniSat, and the committed ten-run benchmark
-uses identical formulas and restrictions across the three solvers. The
-optional n-window heuristic remains next; native-XOR trail lowering should
-build on the mixed container rather than reintroducing legacy string clauses.
+uses identical formulas and restrictions across the three solvers.
+
+The optional n-window slice recovers uniform, per-round, and per-component
+selection plus global overlapping full-window counts. Its direct parity and
+conjunction CNF is generated in pure Python rather than restoring the legacy
+SymPy/joblib/pickle generation path. Exhaustive four-bit fixtures match the
+carry-difference definition, solver fixtures independently recheck complete
+trails, and the committed exact-versus-window benchmark records the encoding
+overhead without claiming a generally faster strategy. Native-XOR trail
+lowering should next build on the mixed container rather than reintroducing
+legacy string clauses.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and

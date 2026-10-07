@@ -28241,10 +28241,22 @@
       "qualified_name": "claasp.representations.constraints.sat.ModularAddLinearSATModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNWindowSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.ModularAddNWindowSATModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNativeXorSATModel",
       "defined_in": "claasp.representations.constraints.sat.components.modular_add",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.sat.ModularAddNativeXorSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.NWindowSATStrategy"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula",
@@ -28329,6 +28341,12 @@
       "defined_in": "claasp.representations.constraints.sat.components.modular_add",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.sat.components.ModularAddLinearSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNWindowSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.ModularAddNWindowSATModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNativeXorSATModel",
@@ -28484,6 +28502,25 @@
       "defined_in": "claasp.representations.constraints.sat.components.modular_add",
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddLinearSATModel.decode_transition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNWindowSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNWindowSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNWindowSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "documented_by": "claasp.representations.constraints.sat.components.modular_add.ModularAddNWindowSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNWindowSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNWindowSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNWindowSATModel.cnf_formula"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNativeXorSATModel",
@@ -28838,6 +28875,60 @@
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "module",
       "qualified_name": "claasp.representations.constraints.sat.trails"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.__init__",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.NWindowSATStrategy",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.by_component",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.NWindowSATStrategy",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.by_component"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.by_round",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.NWindowSATStrategy",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.by_round"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.full_window_operator",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.NWindowSATStrategy",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.full_window_operator"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.number_of_full_windows",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.NWindowSATStrategy",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.number_of_full_windows"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.selections",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.selections"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.window_size",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.NWindowSATStrategy",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.window_size"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel",

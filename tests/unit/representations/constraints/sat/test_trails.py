@@ -5,9 +5,11 @@ from dataclasses import replace
 import pytest
 
 from claasp import Primitive, ValueType, Word
-from claasp.components import BitwiseAnd, Xor
+from claasp.components import BitwiseAnd, ModularAdd, Xor
+from claasp.primitives import ToySpeck
 from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.sat import (
+    NWindowSATStrategy,
     WordDifferentialSATModel,
     WordLinearSATModel,
 )
@@ -72,3 +74,42 @@ def test_sat_enumeration_rejects_nonpositive_or_boolean_limits(model_type):
     model = model_type(primitive, **options)
     with pytest.raises(ValueError, match="positive integer"):
         model.enumerate_trails(object(), limit=True)
+
+
+def test_n_window_strategy_is_opt_in_and_supports_legacy_selectors():
+    primitive = ToySpeck(2)
+    exact = WordDifferentialSATModel(primitive, fixed_weight=1).cnf_formula()
+    uniform = WordDifferentialSATModel(
+        primitive, fixed_weight=1, n_window=NWindowSATStrategy(2)
+    ).cnf_formula()
+    by_round = WordDifferentialSATModel(
+        primitive,
+        fixed_weight=1,
+        n_window=NWindowSATStrategy(by_round=(2, 2)),
+    ).cnf_formula()
+    component_windows = {
+        component.component_id: 2
+        for component in primitive.components
+        if isinstance(component, ModularAdd)
+    }
+    by_component = WordDifferentialSATModel(
+        primitive,
+        fixed_weight=1,
+        n_window=NWindowSATStrategy(by_component=component_windows),
+    ).cnf_formula()
+    assert "n_window_run_bound" not in exact.provenance
+    assert uniform.clauses == by_round.clauses == by_component.clauses
+    assert any(
+        item.model.encoding_name == "direct carry-difference run bound"
+        for item in uniform.constraint_models
+    )
+
+
+def test_n_window_strategy_rejects_incomplete_component_configuration():
+    model = WordDifferentialSATModel(
+        ToySpeck(2),
+        fixed_weight=1,
+        n_window=NWindowSATStrategy(by_component={"unknown": 2}),
+    )
+    with pytest.raises(ValueError, match="every modular-add component"):
+        model.cnf_formula()

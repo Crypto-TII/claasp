@@ -5,6 +5,7 @@ import pytest
 from claasp.drivers.solvers import CryptoMiniSatSolver, KissatSolver, MinisatSolver
 from claasp.primitives import ToySpeck
 from claasp.representations.constraints.sat import (
+    NWindowSATStrategy,
     WordDifferentialSATModel,
     WordLinearSATModel,
 )
@@ -41,4 +42,41 @@ def test_toy_speck_linear_single_key_count_with_cryptominisat():
     assert len(result.trails) == 13
     assert sum(trail.total_weight == 1 for trail in result.trails) == 12
     assert all(dict(trail.input_masks)["key"] == 0 for trail in result.trails)
+    assert all(model.check_characteristic(trail) for trail in result.trails)
+
+
+@pytest.mark.parametrize(
+    "strategy,expected",
+    (
+        (NWindowSATStrategy(0), 4),
+        (
+            NWindowSATStrategy(1, number_of_full_windows=0, full_window_operator="exactly"),
+            4,
+        ),
+        (
+            NWindowSATStrategy(1, number_of_full_windows=1, full_window_operator="exactly"),
+            2,
+        ),
+        (
+            NWindowSATStrategy(1, number_of_full_windows=1, full_window_operator="at_least"),
+            2,
+        ),
+        (
+            NWindowSATStrategy(1, number_of_full_windows=0, full_window_operator="at_most"),
+            4,
+        ),
+    ),
+)
+def test_toy_speck_n_window_counts_are_independently_checked(strategy, expected):
+    model = WordDifferentialSATModel(
+        ToySpeck(2),
+        fixed_weight=1,
+        nonzero_input="plaintext",
+        fixed_input_differences={"key": 0},
+        n_window=strategy,
+    )
+    result = model.enumerate_trails(
+        CryptoMiniSatSolver(timeout_seconds=10), limit=10
+    ).require_complete()
+    assert len(result.trails) == expected
     assert all(model.check_characteristic(trail) for trail in result.trails)

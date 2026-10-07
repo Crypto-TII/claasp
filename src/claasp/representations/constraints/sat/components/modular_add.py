@@ -169,6 +169,109 @@ class ModularAddDifferentialSATModel:
         return transition
 
 
+class ModularAddNWindowSATModel:
+    """Bound consecutive modular-add carry differences with direct CNF.
+
+    A carry-difference bit is the XOR of the two input differences and the
+    output difference at the same position.  The least-significant bit is
+    omitted because exact modular-add support fixes it to zero.  A window of
+    size ``n`` forbids ``n + 1`` consecutive carry-difference ones and exposes
+    variables identifying every run of exactly ``n`` positions for optional
+    whole-trail counting.
+
+    EXAMPLES::
+
+        >>> model = ModularAddNWindowSATModel(4, 2)
+        >>> formula = model.cnf_formula()
+        >>> (model.carry_difference_names, model.full_window_names)
+        (('carry_difference_0', 'carry_difference_1', 'carry_difference_2'), ('full_window_0', 'full_window_1'))
+        >>> formula.provenance.count("n_window_run_bound")
+        1
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "ModularAddNWindowSATModel",
+        "xor_differential",
+        "direct carry-difference run bound",
+        "Pure-Python parity and conjunction clauses recover the optional legacy n-window heuristic.",
+    )
+
+    def __init__(self, width: int, window_size: int) -> None:
+        if not isinstance(width, int) or isinstance(width, bool) or width < 2:
+            raise ValueError("width must be an integer of at least two")
+        if (
+            not isinstance(window_size, int)
+            or isinstance(window_size, bool)
+            or not 0 <= window_size <= width - 1
+        ):
+            raise ValueError("window_size must be between zero and width - 1")
+        self.width = width
+        self.window_size = window_size
+        self.carry_difference_names = tuple(f"carry_difference_{bit}" for bit in range(width - 1))
+        self.full_window_names = (
+            tuple(f"full_window_{start}" for start in range(width - window_size))
+            if window_size
+            else ()
+        )
+
+    def cnf_formula(self) -> CNFFormula:
+        """Return parity, run-bound, and full-window indicator clauses."""
+
+        boundary_names = tuple(
+            f"{prefix}_{bit}" for prefix in ("left", "right", "output") for bit in range(self.width)
+        )
+        variables = boundary_names + self.carry_difference_names + self.full_window_names
+        indices = {name: index for index, name in enumerate(variables, 1)}
+        clauses = []
+        provenance = []
+
+        def add(literals, label):
+            clauses.append(tuple(literals))
+            provenance.append(label)
+
+        for bit, carry in enumerate(self.carry_difference_names):
+            names = (carry, f"left_{bit}", f"right_{bit}", f"output_{bit}")
+            for assignment in range(16):
+                values = tuple((assignment >> (3 - position)) & 1 for position in range(4))
+                if sum(values) % 2 == 0:
+                    continue
+                add(
+                    (
+                        -indices[name] if value else indices[name]
+                        for name, value in zip(names, values)
+                    ),
+                    "n_window_carry_difference",
+                )
+
+        run_length = self.window_size + 1
+        for start in range(len(self.carry_difference_names) - run_length + 1):
+            add(
+                (
+                    -indices[name]
+                    for name in self.carry_difference_names[start : start + run_length]
+                ),
+                "n_window_run_bound",
+            )
+
+        if self.window_size:
+            for start, full_window in enumerate(self.full_window_names):
+                window = self.carry_difference_names[start : start + self.window_size]
+                for carry in window:
+                    add((-indices[full_window], indices[carry]), "n_window_full_indicator")
+                add(
+                    (indices[full_window], *(-indices[carry] for carry in window)),
+                    "n_window_full_indicator",
+                )
+
+        return CNFFormula(
+            variables,
+            tuple(clauses),
+            tuple(provenance),
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+
+
 class ModularAddLinearSATModel:
     """Exact modular-add XOR-linear mask recurrence in CNF.
 
@@ -251,4 +354,5 @@ __all__ = [
     "ModularAddFunctionalSATModel",
     "ModularAddLinearSATModel",
     "ModularAddNativeXorSATModel",
+    "ModularAddNWindowSATModel",
 ]

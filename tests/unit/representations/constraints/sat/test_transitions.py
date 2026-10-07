@@ -9,6 +9,7 @@ from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.sat import (
     ModularAddDifferentialSATModel,
     ModularAddLinearSATModel,
+    ModularAddNWindowSATModel,
     SBoxXorDifferentialSATModel,
     SBoxXorLinearSATModel,
 )
@@ -99,3 +100,31 @@ def test_sat_modadd_linear_matches_every_three_bit_mask_triple():
         if transition.is_possible
     }
     assert decoded == expected
+
+
+@pytest.mark.parametrize("window_size", range(4))
+def test_sat_modadd_n_window_matches_direct_carry_difference_definition(window_size):
+    model = ModularAddNWindowSATModel(4, window_size)
+    formula = model.cnf_formula()
+    for left, right, output in product(range(16), repeat=3):
+        assignment = {
+            f"{prefix}_{bit}": (value >> (3 - bit)) & 1
+            for prefix, value in zip(("left", "right", "output"), (left, right, output))
+            for bit in range(4)
+        }
+        carries = tuple(
+            assignment[f"left_{bit}"] ^ assignment[f"right_{bit}"] ^ assignment[f"output_{bit}"]
+            for bit in range(3)
+        )
+        assignment.update(zip(model.carry_difference_names, carries))
+        assignment.update(
+            (name, int(all(carries[start : start + window_size])))
+            for start, name in enumerate(model.full_window_names)
+        )
+        run_length = window_size + 1
+        expected = not any(
+            all(carries[start : start + run_length])
+            for start in range(len(carries) - run_length + 1)
+        )
+        assert formula.is_satisfied(assignment) is expected
+    assert formula.constraint_models[0].model is model.model_provenance
