@@ -20,6 +20,7 @@ from claasp.components import (
 )
 from claasp.domains import Word
 from claasp.drivers.solvers import SatStatus
+from claasp.primitives import Speck
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
@@ -1248,8 +1249,8 @@ class SpeckProbabilisticTruncatedSATModel:
             raise NotImplementedError("the reviewed probabilistic slice supports Speck32/64")
         self.primitive = primitive
         self.width = 16
-        self.input_pattern = self._coerce(input_pattern)
-        self.output_pattern = self._coerce(output_pattern)
+        self.input_pattern = None if input_pattern is None else self._coerce(input_pattern)
+        self.output_pattern = None if output_pattern is None else self._coerce(output_pattern)
         if maximum_scaled_weight is not None and (
             not isinstance(maximum_scaled_weight, int)
             or isinstance(maximum_scaled_weight, bool)
@@ -1386,8 +1387,10 @@ class SpeckProbabilisticTruncatedSATModel:
                 for name, value in zip(pair, encoded):
                     add(((indices[name] if value else -indices[name]),), label)
 
-        fix(0, self.input_pattern, "fixed_probabilistic_input")
-        fix(-1, self.output_pattern, "fixed_probabilistic_output")
+        if self.input_pattern is not None:
+            fix(0, self.input_pattern, "fixed_probabilistic_input")
+        if self.output_pattern is not None:
+            fix(-1, self.output_pattern, "fixed_probabilistic_output")
         add(
             (indices[name] for pair in states[0][0] + states[0][1] for name in pair),
             "probabilistic_nonzero_input",
@@ -1429,6 +1432,10 @@ class SpeckProbabilisticTruncatedSATModel:
             raise ValueError("build the formula before decoding")
         if not self._formula.is_satisfied(assignment):
             raise ValueError("invalid probabilistic truncated SAT witness")
+        input_pattern = TruncatedXorDifference(
+            _truncated_pattern(self._states[0][0], assignment).bits
+            + _truncated_pattern(self._states[0][1], assignment).bits
+        )
         transitions = []
         for local_model, mapping in zip(self._round_models, self._round_maps):
             local_assignment = {name: assignment[mapped] for name, mapped in mapping.items()}
@@ -1436,7 +1443,7 @@ class SpeckProbabilisticTruncatedSATModel:
         for round_number, transition in enumerate(transitions):
             operations = self.primitive.round_operations[round_number]
             expected_left = (
-                self.input_pattern.bits[: self.width]
+                input_pattern.bits[: self.width]
                 if round_number == 0
                 else transitions[round_number - 1].output.bits
             )
@@ -1452,8 +1459,10 @@ class SpeckProbabilisticTruncatedSATModel:
             _truncated_pattern(self._states[-1][0], assignment).bits
             + _truncated_pattern(self._states[-1][1], assignment).bits
         )
-        trail = ProbabilisticTruncatedTrail(self.input_pattern, output, tuple(transitions))
-        if trail.output_pattern != self.output_pattern:
+        trail = ProbabilisticTruncatedTrail(input_pattern, output, tuple(transitions))
+        if self.input_pattern is not None and trail.input_pattern != self.input_pattern:
+            raise ValueError("decoded probabilistic trail changed its input boundary")
+        if self.output_pattern is not None and trail.output_pattern != self.output_pattern:
             raise ValueError("decoded probabilistic trail changed its output boundary")
         return trail
 
@@ -1520,6 +1529,10 @@ class SpeckSemiDeterministicTruncatedSATModel(SpeckProbabilisticTruncatedSATMode
             raise ValueError("build the formula before decoding")
         if not self._formula.is_satisfied(assignment):
             raise ValueError("invalid semi-deterministic truncated SAT witness")
+        input_pattern = TruncatedXorDifference(
+            _truncated_pattern(self._states[0][0], assignment).bits
+            + _truncated_pattern(self._states[0][1], assignment).bits
+        )
         transitions = []
         for local_model, mapping in zip(self._round_models, self._round_maps):
             local_assignment = {name: assignment[mapped] for name, mapped in mapping.items()}
@@ -1530,7 +1543,7 @@ class SpeckSemiDeterministicTruncatedSATModel(SpeckProbabilisticTruncatedSATMode
         for round_number, transition in enumerate(transitions):
             operations = self.primitive.round_operations[round_number]
             expected_left = (
-                self.input_pattern.bits[: self.width]
+                input_pattern.bits[: self.width]
                 if round_number == 0
                 else transitions[round_number - 1].output.bits
             )
@@ -1546,8 +1559,10 @@ class SpeckSemiDeterministicTruncatedSATModel(SpeckProbabilisticTruncatedSATMode
             _truncated_pattern(self._states[-1][0], assignment).bits
             + _truncated_pattern(self._states[-1][1], assignment).bits
         )
-        trail = SpeckSemiDeterministicTruncatedTrail(self.input_pattern, output, tuple(transitions))
-        if trail.output_pattern != self.output_pattern:
+        trail = SpeckSemiDeterministicTruncatedTrail(input_pattern, output, tuple(transitions))
+        if self.input_pattern is not None and trail.input_pattern != self.input_pattern:
+            raise ValueError("decoded semi-deterministic trail changed its input boundary")
+        if self.output_pattern is not None and trail.output_pattern != self.output_pattern:
             raise ValueError("decoded semi-deterministic trail changed its output boundary")
         return trail
 
@@ -2260,6 +2275,285 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
 
 
 @dataclass(frozen=True, slots=True)
+class WordSemiDeterministicDifferentialLinearSATTrail:
+    """An exact differential, semi-deterministic middle, and linear suffix.
+
+    EXAMPLES::
+
+        >>> from types import SimpleNamespace
+        >>> trail = WordSemiDeterministicDifferentialLinearSATTrail(
+        ...     SimpleNamespace(total_weight=2),
+        ...     SimpleNamespace(weight=0.41),
+        ...     SimpleNamespace(total_weight=3),
+        ... )
+        >>> (trail.legacy_objective_weight, trail.middle_weight)
+        (8, 0.41)
+    """
+
+    differential: Any
+    middle: SpeckSemiDeterministicTruncatedTrail
+    linear: Any
+
+    @property
+    def legacy_objective_weight(self):
+        """Return the historical differential-plus-twice-linear objective."""
+
+        return self.differential.total_weight + 2 * self.linear.total_weight
+
+    @property
+    def middle_weight(self):
+        """Return the recovered semi-deterministic middle estimate separately."""
+
+        return self.middle.weight
+
+
+class WordSemiDeterministicDifferentialLinearSATModel:
+    """Compose exact, semi-deterministic, and linear Speck SAT searches.
+
+    The middle uses the recovered look-ahead-window modular-add encoding. Its
+    estimated weight is reported separately because the legacy objective did
+    not consistently account for that fixed-point quantity.
+
+    EXAMPLES::
+
+        >>> model = WordSemiDeterministicDifferentialLinearSATModel(
+        ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
+        ...     differential_maximum_weight=16,
+        ...     middle_maximum_scaled_weight=100,
+        ...     linear_maximum_weight=16,
+        ... )
+        >>> formula = model.cnf_formula()
+        >>> (formula.variable_count > 0, "differential_to_truncated_exact" in formula.provenance)
+        (True, True)
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.SAT,
+        "WordSemiDeterministicDifferentialLinearSATModel",
+        "differential_linear",
+        "round-sliced differential, semi-deterministic-truncated, and linear composition",
+        "Recovered from legacy CLAASP; the middle probability and exact literature correspondence remain unaudited.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        prefix_rounds: int,
+        middle_rounds: int,
+        differential_maximum_weight: int,
+        middle_maximum_scaled_weight: int | None,
+        linear_maximum_weight: int,
+        input_difference: int | None = None,
+        output_mask: int | None = None,
+    ) -> None:
+        if primitive.family_name != "speck":
+            raise NotImplementedError("the reviewed semi-deterministic composition supports Speck")
+        counts = (prefix_rounds, middle_rounds)
+        if any(
+            not isinstance(value, int) or isinstance(value, bool) or value <= 0 for value in counts
+        ):
+            raise ValueError("prefix_rounds and middle_rounds must be positive integers")
+        if prefix_rounds + middle_rounds >= len(primitive.rounds):
+            raise ValueError("the differential, middle, and linear slices must all be nonempty")
+        for weight in (
+            differential_maximum_weight,
+            middle_maximum_scaled_weight,
+            linear_maximum_weight,
+        ):
+            if weight is not None and (
+                not isinstance(weight, int) or isinstance(weight, bool) or weight < 0
+            ):
+                raise ValueError("weight bounds must be nonnegative integers")
+        block_width = (
+            primitive.input_ports["plaintext"].value_type.unit_count
+            * primitive.input_ports["plaintext"].value_type.domain.width
+        )
+        for value, label in ((input_difference, "input difference"), (output_mask, "output mask")):
+            if value is not None and (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or not 0 <= value < 1 << block_width
+            ):
+                raise ValueError(f"{label} must fit the primitive block width")
+        self.primitive = primitive
+        self.prefix_rounds = prefix_rounds
+        self.middle_rounds = middle_rounds
+        self.differential_maximum_weight = differential_maximum_weight
+        self.middle_maximum_scaled_weight = middle_maximum_scaled_weight
+        self.linear_maximum_weight = linear_maximum_weight
+        self.input_difference = input_difference
+        self.output_mask = output_mask
+        self._formula: CNFFormula | None = None
+        self._maps: dict[str, dict[str, str]] = {}
+
+    def cnf_formula(self) -> CNFFormula:
+        """Return the complete semi-deterministic differential-linear formula."""
+
+        prefix_end = self.prefix_rounds - 1
+        middle_end = prefix_end + self.middle_rounds
+        prefix = slice_rounds(self.primitive, 0, prefix_end).primitive
+        suffix = slice_rounds(
+            self.primitive, middle_end + 1, len(self.primitive.rounds) - 1
+        ).primitive
+        fixed_differences = {"key": 0} if "key" in prefix.input_ports else {}
+        if self.input_difference is not None:
+            fixed_differences["plaintext"] = self.input_difference
+        self._prefix = WordDifferentialSATModel(
+            prefix,
+            maximum_weight=self.differential_maximum_weight,
+            nonzero_input="plaintext" if self.input_difference is None else None,
+            fixed_input_differences=fixed_differences,
+        )
+        self._middle = SpeckSemiDeterministicTruncatedSATModel(
+            Speck(number_of_rounds=self.middle_rounds),
+            None,
+            None,
+            maximum_scaled_weight=self.middle_maximum_scaled_weight,
+        )
+        fixed_masks = {name: 0 for name in suffix.input_ports if name != "state"}
+        self._linear = WordLinearSATModel(
+            suffix,
+            maximum_weight=self.linear_maximum_weight,
+            fixed_input_masks=fixed_masks,
+        )
+        subformulas = (
+            ("differential", self._prefix.cnf_formula()),
+            ("middle", self._middle.cnf_formula()),
+            ("linear", self._linear.cnf_formula()),
+        )
+        variables: list[str] = []
+        indices: dict[str, int] = {}
+        clauses: list[tuple[int, ...]] = []
+        provenance: list[str] = []
+        applications: list[ConstraintModelApplication] = []
+        maps: dict[str, dict[str, str]] = {}
+
+        def allocate(name):
+            if name not in indices:
+                variables.append(name)
+                indices[name] = len(variables)
+            return name
+
+        def add(literals, label):
+            clauses.append(tuple(literals))
+            provenance.append(label)
+
+        for namespace, formula in subformulas:
+            mapping = {name: allocate(f"{namespace}_{name}") for name in formula.variables}
+            remap = {
+                position: indices[mapping[name]]
+                for position, name in enumerate(formula.variables, 1)
+            }
+            for clause, label in zip(formula.clauses, formula.provenance):
+                add(
+                    (remap[abs(literal)] * (1 if literal > 0 else -1) for literal in clause),
+                    label,
+                )
+            applications.extend(formula.constraint_models)
+            maps[namespace] = mapping
+
+        middle_input = self._middle._states[0][0] + self._middle._states[0][1]
+        prefix_output = self._prefix._shared._output
+        if len(prefix_output) != len(middle_input):
+            raise ValueError("upper semi-deterministic boundary widths disagree")
+        upper = DifferentialToTruncatedSATModel(len(prefix_output)).cnf_formula()
+        upper_mapping = {
+            **{
+                f"difference_{bit}": maps["differential"][name]
+                for bit, name in enumerate(prefix_output)
+            },
+            **{
+                f"truncated_{bit}_{field}": maps["middle"][pair[position]]
+                for bit, pair in enumerate(middle_input)
+                for position, field in enumerate(("unknown", "value"))
+            },
+        }
+        self._append_connector(upper, upper_mapping, indices, add, applications)
+
+        middle_output = self._middle._states[-1][0] + self._middle._states[-1][1]
+        linear_input = self._linear._shared._ports["state"]
+        if len(middle_output) != len(linear_input):
+            raise ValueError("lower semi-deterministic boundary widths disagree")
+        lower = TruncatedToLinearSATModel(len(linear_input)).cnf_formula()
+        lower_mapping = {
+            **{
+                f"truncated_{bit}_{field}": maps["middle"][pair[position]]
+                for bit, pair in enumerate(middle_output)
+                for position, field in enumerate(("unknown", "value"))
+            },
+            **{f"mask_{bit}": maps["linear"][name] for bit, name in enumerate(linear_input)},
+        }
+        self._append_connector(lower, lower_mapping, indices, add, applications)
+
+        linear_output = tuple(maps["linear"][name] for name in self._linear._shared._output)
+        if self.output_mask is None:
+            add(
+                (indices[name] for name in linear_output),
+                "nonzero_semi_differential_linear_output_mask",
+            )
+        else:
+            for bit, name in enumerate(linear_output):
+                value = self.output_mask & (1 << (len(linear_output) - 1 - bit))
+                add(
+                    ((indices[name] if value else -indices[name]),),
+                    "fixed_semi_differential_linear_output_mask",
+                )
+
+        applications.append(ConstraintModelApplication(self.model_provenance))
+        self._maps = maps
+        self._formula = CNFFormula(
+            tuple(variables), tuple(clauses), tuple(provenance), tuple(applications)
+        )
+        return self._formula
+
+    @staticmethod
+    def _append_connector(formula, mapping, indices, add, applications):
+        remap = {
+            position: indices[mapping[name]] for position, name in enumerate(formula.variables, 1)
+        }
+        for clause, label in zip(formula.clauses, formula.provenance):
+            add(
+                (remap[abs(literal)] * (1 if literal > 0 else -1) for literal in clause),
+                label,
+            )
+        applications.extend(formula.constraint_models)
+
+    def decode_trail(self, assignment) -> WordSemiDeterministicDifferentialLinearSATTrail:
+        """Decode all sections and independently check both connectors."""
+
+        if self._formula is None:
+            raise ValueError("build the formula before decoding")
+        if not self._formula.is_satisfied(assignment):
+            raise ValueError("invalid semi-deterministic differential-linear SAT witness")
+
+        def project(namespace):
+            return {
+                local: assignment[global_name]
+                for local, global_name in self._maps[namespace].items()
+            }
+
+        differential = self._prefix.decode_characteristic(project("differential"))
+        middle = self._middle.decode_trail(project("middle"))
+        linear = self._linear.decode_characteristic(project("linear"))
+        if any(bit is TruncatedBit.UNKNOWN for bit in middle.input_pattern.bits):
+            raise ValueError("upper semi-deterministic boundary is not exact")
+        if differential.output_difference != int(str(middle.input_pattern), 2):
+            raise ValueError("upper semi-deterministic boundary values disagree")
+        state_mask = dict(linear.input_masks)["state"]
+        mask_bits = tuple(
+            (state_mask >> (len(middle.output_pattern.bits) - bit - 1)) & 1
+            for bit in range(len(middle.output_pattern.bits))
+        )
+        if any(
+            bit is TruncatedBit.UNKNOWN and mask
+            for bit, mask in zip(middle.output_pattern.bits, mask_bits)
+        ):
+            raise ValueError("lower semi-deterministic boundary is incompatible")
+        return WordSemiDeterministicDifferentialLinearSATTrail(differential, middle, linear)
+
+
+@dataclass(frozen=True, slots=True)
 class WordDeterministicDifferentialLinearSATTrail:
     """One decoded differential, deterministic-truncated, and linear witness.
 
@@ -2641,4 +2935,6 @@ __all__ = [
     "WordDifferentialSATModel",
     "WordLinearNativeXorSATModel",
     "WordLinearSATModel",
+    "WordSemiDeterministicDifferentialLinearSATModel",
+    "WordSemiDeterministicDifferentialLinearSATTrail",
 ]

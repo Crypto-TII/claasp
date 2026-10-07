@@ -13,9 +13,28 @@ from claasp.representations.constraints.sat import (
     WordDifferentialSATModel,
     WordLinearNativeXorSATModel,
     WordLinearSATModel,
+    WordSemiDeterministicDifferentialLinearSATModel,
 )
 
 pytestmark = pytest.mark.external
+
+
+@pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver))
+def test_semi_deterministic_differential_linear_is_solver_independent(solver_type):
+    model = WordSemiDeterministicDifferentialLinearSATModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=1,
+        middle_rounds=1,
+        differential_maximum_weight=16,
+        middle_maximum_scaled_weight=None,
+        linear_maximum_weight=16,
+    )
+    result = solver_type(timeout_seconds=30).solve(model.cnf_formula())
+    assert result.status is SatStatus.SATISFIABLE
+    trail = model.decode_trail(result.assignment)
+    assert trail.linear.output_mask != 0
+    assert trail.legacy_objective_weight >= 0
+    assert trail.middle_weight >= 0
 
 
 @pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver))

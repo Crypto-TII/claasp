@@ -19,6 +19,7 @@ from claasp.representations.constraints.sat import (
     WordDeterministicTruncatedSATModel,
     WordDifferentialSATModel,
     WordLinearSATModel,
+    WordSemiDeterministicDifferentialLinearSATModel,
 )
 from claasp.representations.constraints.smt import (
     WordDifferentialSMTModel,
@@ -326,5 +327,37 @@ def test_deterministic_differential_linear_sat_validates_partition_and_bounds():
             prefix_rounds=1,
             middle_rounds=1,
             differential_maximum_weight=-1,
+            linear_maximum_weight=1,
+        )
+
+
+def test_semi_deterministic_differential_linear_sat_assembles_recovered_middle():
+    model = WordSemiDeterministicDifferentialLinearSATModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=1,
+        middle_rounds=1,
+        differential_maximum_weight=16,
+        middle_maximum_scaled_weight=None,
+        linear_maximum_weight=16,
+    )
+    formula = model.cnf_formula()
+    assert (formula.variable_count, formula.clause_count, formula.literal_count) == (
+        2303,
+        6599,
+        22737,
+    )
+    assert "semi_deterministic_weight_code" in formula.provenance
+    assert formula.provenance.count("differential_to_truncated_exact") == 96
+    assert formula.provenance.count("truncated_to_linear_compatibility") == 32
+
+
+def test_semi_deterministic_differential_linear_sat_validates_configuration():
+    with pytest.raises(NotImplementedError, match="supports Speck"):
+        WordSemiDeterministicDifferentialLinearSATModel(
+            ToySpeck(3),
+            prefix_rounds=1,
+            middle_rounds=1,
+            differential_maximum_weight=1,
+            middle_maximum_scaled_weight=None,
             linear_maximum_weight=1,
         )
