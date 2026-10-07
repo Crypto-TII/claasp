@@ -1,5 +1,7 @@
 """Complete SAT assembly for weighted word-graph trail searches."""
 
+from __future__ import annotations
+
 from contextlib import nullcontext
 from dataclasses import dataclass, replace
 from hashlib import sha256
@@ -31,6 +33,7 @@ from claasp.representations.constraints.sat.components import (
     ModularAddDifferentialSATModel,
     ModularAddLinearSATModel,
     ModularAddNWindowSATModel,
+    ModularAddSemiDeterministicTruncatedSATModel,
     ModularSubtractDeterministicTruncatedSATModel,
     ProbabilisticTruncatedModularAddSATModel,
 )
@@ -1105,6 +1108,66 @@ class SpeckImpossibleSATModel:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class SemiDeterministicModularAddTransition:
+    """Decoded transition produced by the recovered window formulation.
+
+    EXAMPLES::
+
+        >>> transition = SemiDeterministicModularAddTransition(
+        ...     TruncatedXorDifference.parse("01"),
+        ...     TruncatedXorDifference.parse("00"),
+        ...     TruncatedXorDifference.parse("01"),
+        ...     100,
+        ... )
+        >>> transition.weight
+        1.0
+    """
+
+    left: TruncatedXorDifference
+    right: TruncatedXorDifference
+    output: TruncatedXorDifference
+    scaled_weight: int
+
+    @property
+    def weight(self) -> float:
+        """Return the base-two probability weight."""
+
+        return self.scaled_weight / 100
+
+
+@dataclass(frozen=True, slots=True)
+class SpeckSemiDeterministicTruncatedTrail:
+    """A decoded Speck trail using recovered look-ahead-window additions.
+
+    EXAMPLES::
+
+        >>> empty = SpeckSemiDeterministicTruncatedTrail(
+        ...     TruncatedXorDifference.parse("00"),
+        ...     TruncatedXorDifference.parse("00"),
+        ...     (),
+        ... )
+        >>> (empty.scaled_weight, empty.weight)
+        (0, 0.0)
+    """
+
+    input_pattern: TruncatedXorDifference
+    output_pattern: TruncatedXorDifference
+    transitions: tuple[SemiDeterministicModularAddTransition, ...]
+
+    @property
+    def scaled_weight(self) -> int:
+        """Return the sum of the historical fixed-point transition costs."""
+
+        return sum(transition.scaled_weight for transition in self.transitions)
+
+    @property
+    def weight(self) -> float:
+        """Return the base-two probability weight."""
+
+        return self.scaled_weight / 100
+
+
 class SpeckProbabilisticTruncatedSATModel:
     """Compose counter-based probabilistic truncated SAT over Speck32/64.
 
@@ -1133,6 +1196,7 @@ class SpeckProbabilisticTruncatedSATModel:
         "counter-based Speck round composition in ordinary CNF",
         "The exact correspondence with a primary-source construction has not been audited.",
     )
+    _addition_model_type: type[Any] = ProbabilisticTruncatedModularAddSATModel
 
     def __init__(
         self, primitive, input_pattern, output_pattern, *, maximum_scaled_weight=None
@@ -1157,7 +1221,7 @@ class SpeckProbabilisticTruncatedSATModel:
             raise ValueError("maximum_scaled_weight must be a nonnegative integer")
         self.maximum_scaled_weight = maximum_scaled_weight
         self._formula: CNFFormula | None = None
-        self._round_models: list[ProbabilisticTruncatedModularAddSATModel] = []
+        self._round_models: list[Any] = []
         self._round_maps: list[dict[str, str]] = []
         self._states: tuple[tuple[tuple[tuple[str, str], ...], ...], ...] = ()
 
@@ -1240,7 +1304,7 @@ class SpeckProbabilisticTruncatedSATModel:
             operations = self.primitive.round_operations[round_number]
             alpha = operations["rotate_right"].amount
             beta = operations["rotate_left"].amount
-            local_model = ProbabilisticTruncatedModularAddSATModel(self.width)
+            local_model = self._addition_model_type(self.width)
             local = local_model.cnf_formula()
             mapping = {}
             for bit in range(self.width):
@@ -1275,10 +1339,7 @@ class SpeckProbabilisticTruncatedSATModel:
             round_maps.append(mapping)
             applications.extend(local.constraint_models)
             weighted_costs.extend(
-                mapping[f"cost_{bit}_{cost}"]
-                for bit in range(self.width)
-                for cost in (4, 9, 19, 41, 100)
-                for _ in range(cost)
+                self._weighted_cost_names(mapping, round_number, allocate, indices, add)
             )
 
         def fix(boundary, pattern, label):
@@ -1314,7 +1375,17 @@ class SpeckProbabilisticTruncatedSATModel:
         )
         return self._formula
 
-    def decode_trail(self, assignment) -> ProbabilisticTruncatedTrail:
+    def _weighted_cost_names(self, mapping, _round_number, _allocate, _indices, _add):
+        return (
+            mapping[f"cost_{bit}_{cost}"]
+            for bit in range(self.width)
+            for cost in (4, 9, 19, 41, 100)
+            for _ in range(cost)
+        )
+
+    def decode_trail(
+        self, assignment
+    ) -> ProbabilisticTruncatedTrail | SpeckSemiDeterministicTruncatedTrail:
         """Decode and independently validate every round and state boundary."""
 
         if self._formula is None:
@@ -1347,6 +1418,100 @@ class SpeckProbabilisticTruncatedSATModel:
         trail = ProbabilisticTruncatedTrail(self.input_pattern, output, tuple(transitions))
         if trail.output_pattern != self.output_pattern:
             raise ValueError("decoded probabilistic trail changed its output boundary")
+        return trail
+
+
+class SpeckSemiDeterministicTruncatedSATModel(SpeckProbabilisticTruncatedSATModel):
+    """Compose recovered look-ahead-window additions over Speck32/64.
+
+    This formulation keeps the same graph wiring, boundaries, and scaled-weight
+    interface as :class:`SpeckProbabilisticTruncatedSATModel`, making the two
+    encodings directly comparable without changing the selected SAT solver.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = SpeckSemiDeterministicTruncatedSATModel(
+        ...     Speck(number_of_rounds=2),
+        ...     "00000000011111001110000000000000",
+        ...     "???????????????1???????????????1",
+        ...     maximum_scaled_weight=100,
+        ... )
+        >>> formula = model.cnf_formula()
+        >>> formula.clause_count < 1200000
+        True
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.SAT,
+        "SpeckSemiDeterministicTruncatedSATModel",
+        "semi_deterministic_truncated_xor",
+        "recovered look-ahead-window Speck round composition in ordinary CNF",
+        "The exact correspondence with a primary-source construction has not been audited.",
+    )
+    _addition_model_type = ModularAddSemiDeterministicTruncatedSATModel
+
+    def _weighted_cost_names(self, mapping, round_number, allocate, indices, add):
+        weighted: list[str] = []
+        weights = (0, 4, 9, 19, 41, 100)
+        for bit in range(self.width):
+            selectors = []
+            for code, weight in enumerate(weights):
+                selector = allocate(f"round_{round_number}__weight_{bit}_{weight}")
+                selectors.append(selector)
+                desired = tuple(
+                    indices[mapping[f"weight_{field}_{bit}"]] * (1 if code & mask else -1)
+                    for field, mask in (("p", 4), ("q", 2), ("r", 1))
+                )
+                for literal in desired:
+                    add((-indices[selector], literal), "semi_deterministic_weight_selector")
+                add(
+                    (indices[selector], *(-literal for literal in desired)),
+                    "semi_deterministic_weight_selector",
+                )
+                weighted.extend(selector for _ in range(weight))
+            add(
+                (indices[selector] for selector in selectors),
+                "semi_deterministic_weight_code",
+            )
+        return weighted
+
+    def decode_trail(self, assignment) -> SpeckSemiDeterministicTruncatedTrail:
+        """Decode and independently validate recovered round transitions."""
+
+        if self._formula is None:
+            raise ValueError("build the formula before decoding")
+        if not self._formula.is_satisfied(assignment):
+            raise ValueError("invalid semi-deterministic truncated SAT witness")
+        transitions = []
+        for local_model, mapping in zip(self._round_models, self._round_maps):
+            local_assignment = {name: assignment[mapped] for name, mapped in mapping.items()}
+            left, right, output, scaled_weight = local_model.decode_transition(local_assignment)
+            transitions.append(
+                SemiDeterministicModularAddTransition(left, right, output, scaled_weight)
+            )
+        for round_number, transition in enumerate(transitions):
+            operations = self.primitive.round_operations[round_number]
+            expected_left = (
+                self.input_pattern.bits[: self.width]
+                if round_number == 0
+                else transitions[round_number - 1].output.bits
+            )
+            if transition.left != TruncatedXorDifference(expected_left).rotate_right(
+                operations["rotate_right"].amount
+            ):
+                raise ValueError("semi-deterministic trail violates the Speck left rotation")
+            right = _truncated_pattern(self._states[round_number][1], assignment)
+            next_right = right.rotate_left(operations["rotate_left"].amount).xor(transition.output)
+            if next_right != _truncated_pattern(self._states[round_number + 1][1], assignment):
+                raise ValueError("semi-deterministic trail violates the Speck XOR wiring")
+        output = TruncatedXorDifference(
+            _truncated_pattern(self._states[-1][0], assignment).bits
+            + _truncated_pattern(self._states[-1][1], assignment).bits
+        )
+        trail = SpeckSemiDeterministicTruncatedTrail(self.input_pattern, output, tuple(transitions))
+        if trail.output_pattern != self.output_pattern:
+            raise ValueError("decoded semi-deterministic trail changed its output boundary")
         return trail
 
 
@@ -1643,6 +1808,9 @@ __all__ = [
     "SpeckImpossibleSATModel",
     "SpeckImpossibleSATTrail",
     "SpeckProbabilisticTruncatedSATModel",
+    "SemiDeterministicModularAddTransition",
+    "SpeckSemiDeterministicTruncatedSATModel",
+    "SpeckSemiDeterministicTruncatedTrail",
     "WordDeterministicTruncatedCharacteristic",
     "WordDeterministicTruncatedEnumeration",
     "WordDeterministicTruncatedSATModel",

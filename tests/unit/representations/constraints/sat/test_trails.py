@@ -12,6 +12,7 @@ from claasp.representations.constraints.sat import (
     NWindowSATStrategy,
     SpeckImpossibleSATModel,
     SpeckProbabilisticTruncatedSATModel,
+    SpeckSemiDeterministicTruncatedSATModel,
     WordDeterministicTruncatedSATModel,
     WordDifferentialSATModel,
     WordLinearSATModel,
@@ -195,3 +196,23 @@ def test_speck_probabilistic_sat_validates_boundaries_and_weight_bound():
         SpeckProbabilisticTruncatedSATModel(
             primitive, "0" * 32, "0" * 32, maximum_scaled_weight=True
         )
+
+
+def test_speck_semi_deterministic_sat_reuses_graph_assembly_compactly():
+    portable = SpeckProbabilisticTruncatedSATModel(
+        Speck(number_of_rounds=2),
+        "00000000011111001110000000000000",
+        "???????????????1???????????????1",
+        maximum_scaled_weight=100,
+    ).cnf_formula()
+    model = SpeckSemiDeterministicTruncatedSATModel(
+        Speck(number_of_rounds=2),
+        "00000000011111001110000000000000",
+        "???????????????1???????????????1",
+        maximum_scaled_weight=100,
+    )
+    formula = model.cnf_formula()
+    assert formula.variable_count > 0
+    assert formula.clause_count < portable.clause_count
+    assert len(model._round_models) == 2
+    assert any(item.model == model.model_provenance for item in formula.constraint_models)

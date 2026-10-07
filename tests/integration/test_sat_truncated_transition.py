@@ -17,6 +17,7 @@ from claasp.representations.constraints.sat import (
     ProbabilisticTruncatedModularAddSATModel,
     SpeckImpossibleSATModel,
     SpeckProbabilisticTruncatedSATModel,
+    SpeckSemiDeterministicTruncatedSATModel,
     WordDeterministicTruncatedSATModel,
 )
 from claasp.transformations import invert_primitive
@@ -180,6 +181,21 @@ def test_speck_impossible_sat_rejects_zero_external_differences():
 @pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
 def test_speck_probabilistic_sat_preserves_minimum_cp_fixture(solver_type):
     model = SpeckProbabilisticTruncatedSATModel(
+        Speck(number_of_rounds=2),
+        "00000000011111001110000000000000",
+        "???????????????1???????????????1",
+        maximum_scaled_weight=100,
+    )
+    result = solver_type(timeout_seconds=30).solve(model.cnf_formula())
+    assert result.status is SatStatus.SATISFIABLE
+    trail = model.decode_trail(result.assignment)
+    assert trail.scaled_weight == 100
+    assert str(trail.output_pattern) == "???????????????1???????????????1"
+
+
+@pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
+def test_speck_semi_deterministic_sat_preserves_shared_fixture(solver_type):
+    model = SpeckSemiDeterministicTruncatedSATModel(
         Speck(number_of_rounds=2),
         "00000000011111001110000000000000",
         "???????????????1???????????????1",

@@ -320,6 +320,37 @@ large—554,782 variables and 1,327,845 clauses—and Kissat reported a median
 692.6 MiB peak. The data establishes correctness and a concrete optimization
 target; it does not make a general solver-performance claim.
 
+The recovered alternative, ``SpeckSemiDeterministicTruncatedSATModel``, uses
+the historical look-ahead-window clauses while preserving the same graph,
+boundary, and scaled-weight interface:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.sat import (
+   ...     SpeckSemiDeterministicTruncatedSATModel,
+   ... )
+   >>> recovered_model = SpeckSemiDeterministicTruncatedSATModel(
+   ...     Speck(number_of_rounds=2),
+   ...     "00000000011111001110000000000000",
+   ...     "???????????????1???????????????1",
+   ...     maximum_scaled_weight=100,
+   ... )
+   >>> recovered_formula = recovered_model.cnf_formula()
+   >>> (recovered_formula.variable_count, recovered_formula.clause_count)
+   (554272, 1116019)
+
+Solving and passing the assignment to ``recovered_model.decode_trail`` returns
+a ``SpeckSemiDeterministicTruncatedTrail``. Decoding projects the legacy
+two-bit unknown representation to canonical trits, checks rotations and XOR
+wiring independently, and reports the sum of the recovered per-bit costs.
+
+The like-for-like ten-run ARM64 benchmark in
+``architecture/audits/data/sat_semi_deterministic_trail_benchmark.json`` found
+median solve times of 0.258, 0.308, and 0.251 seconds for the recovered model
+under MiniSat, Kissat, and CryptoMiniSat. The portable model took 3.139, 0.564,
+and 0.640 seconds respectively. These results justify retaining the recovered
+strategy, but cover only one workload and do not establish a new default.
+
 Optional n-window strategy
 --------------------------
 

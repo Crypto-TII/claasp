@@ -28319,6 +28319,12 @@
       "qualified_name": "claasp.representations.constraints.sat.SBoxXorLinearSATModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.SemiDeterministicModularAddTransition"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATModel",
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "class",
@@ -28335,6 +28341,18 @@
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.sat.SpeckProbabilisticTruncatedSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedSATModel",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.SpeckSemiDeterministicTruncatedSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.SpeckSemiDeterministicTruncatedTrail"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.wiring.WiringFunctionalSATModel",
@@ -29191,6 +29209,53 @@
       "qualified_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.window_size"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition.__init__",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition.left",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition.left"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition.output",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition.output"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition.right",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition.right"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition.scaled_weight",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition.scaled_weight"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition.weight",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "property",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SemiDeterministicModularAddTransition.weight"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATModel",
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "class",
@@ -29272,14 +29337,85 @@
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.SpeckProbabilisticTruncatedSATModel.cnf_formula",
       "defined_in": "claasp.representations.constraints.sat.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.trails.SpeckProbabilisticTruncatedSATModel.cnf_formula"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.SpeckProbabilisticTruncatedSATModel.decode_trail",
       "defined_in": "claasp.representations.constraints.sat.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.trails.SpeckProbabilisticTruncatedSATModel.decode_trail"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedSATModel",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedSATModel.decode_trail",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedSATModel.decode_trail"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail.__init__",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail.input_pattern",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail.input_pattern"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail.output_pattern",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail.output_pattern"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail.scaled_weight",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "property",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail.scaled_weight"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail.transitions",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail.transitions"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail.weight",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "property",
+      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckSemiDeterministicTruncatedTrail.weight"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordDeterministicTruncatedCharacteristic",

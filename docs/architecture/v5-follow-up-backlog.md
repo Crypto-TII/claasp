@@ -475,8 +475,17 @@ least-significant weight code to zero. All three SAT solvers reproduce the
 shared 16-bit weight-100 fixture. On that fixture the window strategy uses 144
 variables and 1,037 clauses versus 495 and 107,350 for the counter-based
 baseline; the committed ten-run benchmark records construction, solver, and
-memory data without generalizing from one transition. Whole-graph assembly is
-the next comparison gate.
+memory data without generalizing from one transition.
+
+The whole-graph comparison adds ``SpeckSemiDeterministicTruncatedSATModel`` and
+uses the same two-round graph, fixed boundaries, weight bound, solver settings,
+and host as ``SpeckProbabilisticTruncatedSATModel``. The recovered formulation
+uses 554,272 variables, 1,116,019 clauses, and 2,790,799 literals versus
+554,782, 1,327,845, and 4,877,959 for the portable counter formulation. Both
+decode and independently validate a weight-100 witness under MiniSat, Kissat,
+and CryptoMiniSat. The committed ten-run benchmark records construction,
+solve, and peak-memory measurements; default selection remains deferred until
+broader primitive and round-count coverage exists.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and
