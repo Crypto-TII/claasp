@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box MILP, local SAT transitions, native-XOR output/trails, SAT trail assembly, and n-window heuristic implemented; next: SAT truncated/impossible models**
+Status: **S-box MILP, local SAT exact/truncated transitions, native-XOR output/trails, SAT trail assembly, and n-window heuristic implemented; next: deterministic-truncated whole-graph assembly**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -396,6 +396,17 @@ requires the CryptoMiniSat driver for direct enumeration. Its committed
 ordinary-versus-native benchmark uses identical restrictions and leaves
 ordinary CNF as the portable default. SAT truncated and impossible models are
 the next recovery slice.
+
+The first truncated-SAT slice recovers the legacy two-bit paired-carry clauses
+for deterministic-truncated modular addition as the explicitly named
+``ModularAddDeterministicTruncatedSATModel``. It retains the legacy redundant
+unknown representation, projects it to the typed ternary semantics when
+decoding, and exhaustively checks every two-bit input/output pattern against
+the independent paired-carry implementation. MiniSat, Kissat, and
+CryptoMiniSat fixtures agree on a four-bit accepted and rejected boundary.
+Whole-graph deterministic-truncated assembly, followed by impossible and
+semi-/probabilistic variants, remains next; a solver benchmark is deferred
+until a complete comparable search exists.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and

@@ -5,6 +5,7 @@ from claasp.representations.constraints.sat.components.boolean import (
     BooleanNativeXorSATModel,
 )
 from claasp.representations.constraints.sat.components.modular_add import (
+    ModularAddDeterministicTruncatedSATModel,
     ModularAddDifferentialSATModel,
     ModularAddFunctionalSATModel,
     ModularAddLinearSATModel,
@@ -23,6 +24,7 @@ __all__ = [
     "BooleanFunctionalSATModel",
     "BooleanNativeXorSATModel",
     "ModularAddDifferentialSATModel",
+    "ModularAddDeterministicTruncatedSATModel",
     "ModularAddFunctionalSATModel",
     "ModularAddLinearSATModel",
     "ModularAddNativeXorSATModel",
