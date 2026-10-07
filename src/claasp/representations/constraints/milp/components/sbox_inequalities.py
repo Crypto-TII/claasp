@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from enum import Enum
+from functools import cache
 from importlib.resources import files
 from math import log2
 
@@ -31,12 +32,13 @@ class SBoxMILPInequalityStrategy(str, Enum):
     EXAMPLES::
 
         >>> tuple(item.value for item in SBoxMILPInequalityStrategy)
-        ('convex_hull', 'greedy', 'minimum')
+        ('convex_hull', 'greedy', 'minimum', 'espresso')
     """
 
     CONVEX_HULL = "convex_hull"
     GREEDY = "greedy"
     MINIMUM = "minimum"
+    ESPRESSO = "espresso"
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,8 +101,8 @@ class SBoxMILPInequalitySystem:
         if not self.legacy_commit or not self.legacy_path:
             raise ValueError("legacy source commit and path are required")
         semantics = SBoxTransitionSemantics(self.table)
-        if semantics.width > 4:
-            raise ValueError("recovered convex-hull strategies currently support at most 4 bits")
+        if semantics.width > 8:
+            raise ValueError("recovered inequality strategies currently support at most 8 bits")
         expected_width = 1 + 2 * semantics.width
         if any(len(item) != expected_width for group in self.groups for item in group.inequalities):
             raise ValueError("inequality width does not match the S-box")
@@ -116,6 +118,9 @@ class SBoxMILPInequalitySystem:
         return len(self.table).bit_length() - 1
 
     def _validate_relation(self, semantics: SBoxTransitionSemantics) -> None:
+        if self.strategy is SBoxMILPInequalityStrategy.ESPRESSO:
+            self._validate_espresso_relation(semantics)
+            return
         by_count = {group.transition_count: group for group in self.groups}
         observed: set[int] = set()
         size = len(self.table)
@@ -142,6 +147,34 @@ class SBoxMILPInequalitySystem:
         if observed != set(by_count):
             raise ValueError("inequality groups do not cover every active transition class")
 
+    def _validate_espresso_relation(self, semantics: SBoxTransitionSemantics) -> None:
+        size = len(self.table)
+        universe = (1 << (size * size)) - 1
+        expected: dict[int, int] = {group.transition_count: 0 for group in self.groups}
+        observed: set[int] = set()
+        for source in range(size):
+            for target in range(size):
+                transition = (
+                    semantics.xor_differential(source, target)
+                    if self.kind is TrailKind.XOR_DIFFERENTIAL
+                    else semantics.xor_linear(source, target)
+                )
+                if transition.is_possible and (source or target):
+                    signed_count = transition.sign * transition.numerator
+                    observed.add(signed_count)
+                    if signed_count in expected:
+                        expected[signed_count] |= 1 << (source * size + target)
+        for group in self.groups:
+            accepted = universe
+            for inequality in group.inequalities:
+                accepted &= ~_espresso_excluded_points(inequality, self.width)
+            if accepted != expected[group.transition_count]:
+                raise ValueError(
+                    f"espresso inequalities disagree for count {group.transition_count}"
+                )
+        if observed != set(expected):
+            raise ValueError("inequality groups do not cover every active transition class")
+
 
 def load_bundled_sbox_milp_inequalities(
     name: str,
@@ -166,6 +199,15 @@ def load_bundled_sbox_milp_inequalities(
         raise ValueError("S-box inequalities require differential or linear semantics")
     if not isinstance(strategy, SBoxMILPInequalityStrategy):
         raise TypeError("strategy must be an SBoxMILPInequalityStrategy")
+    return _load_bundled_sbox_milp_inequalities(name, kind, strategy)
+
+
+@cache
+def _load_bundled_sbox_milp_inequalities(
+    name: str,
+    kind: TrailKind,
+    strategy: SBoxMILPInequalityStrategy,
+) -> SBoxMILPInequalitySystem:
     resource = files("claasp.representations.constraints.milp").joinpath(
         "data", f"{name}_sbox_milp_inequalities.json"
     )
@@ -547,6 +589,66 @@ class SBoxXorLinearMinimumMILPModel(_SBoxInequalityFormulation):
         )
 
 
+class SBoxXorDifferentialEspressoMILPModel(_SBoxInequalityFormulation):
+    """Use Espresso product-of-sums clauses for DDT count classes.
+
+    EXAMPLES::
+
+        >>> system = load_bundled_sbox_milp_inequalities(
+        ...     "aes", TrailKind.XOR_DIFFERENTIAL,
+        ...     SBoxMILPInequalityStrategy.ESPRESSO,
+        ... )
+        >>> relation = SBoxXorDifferentialEspressoMILPModel(system)
+        >>> model = relation.milp_model(input_pattern=1, output_pattern=31)
+        >>> model.is_feasible(relation.witness(1, 31))
+        True
+    """
+
+    model_provenance = _provenance(
+        "SBoxXorDifferentialEspressoMILPModel",
+        "xor_differential",
+        "legacy large-S-box Espresso product of sums",
+    )
+
+    def __init__(self, system: SBoxMILPInequalitySystem) -> None:
+        super().__init__(
+            system,
+            TrailKind.XOR_DIFFERENTIAL,
+            SBoxMILPInequalityStrategy.ESPRESSO,
+            type(self).model_provenance,
+        )
+
+
+class SBoxXorLinearEspressoMILPModel(_SBoxInequalityFormulation):
+    """Use Espresso product-of-sums clauses for signed LAT classes.
+
+    EXAMPLES::
+
+        >>> system = load_bundled_sbox_milp_inequalities(
+        ...     "aes", TrailKind.XOR_LINEAR,
+        ...     SBoxMILPInequalityStrategy.ESPRESSO,
+        ... )
+        >>> relation = SBoxXorLinearEspressoMILPModel(system)
+        >>> model = relation.milp_model(input_pattern=1, output_pattern=72)
+        >>> model.is_feasible(relation.witness(1, 72))
+        True
+    """
+
+    model_provenance = _provenance(
+        "SBoxXorLinearEspressoMILPModel",
+        "xor_linear",
+        "legacy large-S-box Espresso product of sums",
+    )
+
+    def __init__(self, system: SBoxMILPInequalitySystem) -> None:
+        super().__init__(
+            system,
+            TrailKind.XOR_LINEAR,
+            SBoxMILPInequalityStrategy.ESPRESSO,
+            type(self).model_provenance,
+        )
+
+
 def _selector(count: int) -> str:
     return f"count_{_count_token(count)}"
 
@@ -567,14 +669,38 @@ def _contains(inequality: tuple[int, ...], point: tuple[int, ...]) -> bool:
     )
 
 
+def _espresso_excluded_points(inequality: tuple[int, ...], width: int) -> int:
+    coefficients = inequality[1:]
+    if any(value not in (-1, 0, 1) for value in coefficients):
+        raise ValueError("Espresso clauses require coefficients in {-1, 0, 1}")
+    if inequality[0] != sum(value == -1 for value in coefficients) - 1:
+        raise ValueError("invalid Espresso clause constant")
+    fixed = [(index, int(value == -1)) for index, value in enumerate(coefficients) if value]
+    free = [index for index, value in enumerate(coefficients) if not value]
+    excluded = 0
+    for suffix in range(1 << len(free)):
+        point = [0] * (2 * width)
+        for index, value in fixed:
+            point[index] = value
+        for offset, index in enumerate(free):
+            point[index] = (suffix >> offset) & 1
+        value = 0
+        for bit in point:
+            value = (value << 1) | bit
+        excluded |= 1 << value
+    return excluded
+
+
 __all__ = [
     "SBoxMILPInequalityGroup",
     "SBoxMILPInequalityStrategy",
     "SBoxMILPInequalitySystem",
     "SBoxXorDifferentialConvexHullMILPModel",
+    "SBoxXorDifferentialEspressoMILPModel",
     "SBoxXorDifferentialGreedyMILPModel",
     "SBoxXorDifferentialMinimumMILPModel",
     "SBoxXorLinearConvexHullMILPModel",
+    "SBoxXorLinearEspressoMILPModel",
     "SBoxXorLinearGreedyMILPModel",
     "SBoxXorLinearMinimumMILPModel",
     "load_bundled_sbox_milp_inequalities",

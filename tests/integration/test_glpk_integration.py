@@ -15,9 +15,11 @@ from claasp.representations.constraints.milp import (
     SBoxMILPInequalityStrategy,
     SBoxTransitionMILPModel,
     SBoxXorDifferentialConvexHullMILPModel,
+    SBoxXorDifferentialEspressoMILPModel,
     SBoxXorDifferentialGreedyMILPModel,
     SBoxXorDifferentialMinimumMILPModel,
     SBoxXorLinearConvexHullMILPModel,
+    SBoxXorLinearEspressoMILPModel,
     SBoxXorLinearGreedyMILPModel,
     SBoxXorLinearMinimumMILPModel,
     VariableKind,
@@ -185,6 +187,43 @@ def test_glpk_proves_impossible_recovered_sbox_transition(strategy, model_type):
     relation = model_type(system)
     result = GLPKSolver(timeout_seconds=10).solve(
         relation.milp_model(input_pattern=1, output_pattern=1)
+    )
+    assert result.status is MILPStatus.INFEASIBLE
+    assert result.assignment is None
+
+
+@pytest.mark.parametrize(
+    "kind,model_type,output,weight,sign",
+    (
+        (
+            TrailKind.XOR_DIFFERENTIAL,
+            SBoxXorDifferentialEspressoMILPModel,
+            31,
+            6,
+            1,
+        ),
+        (TrailKind.XOR_LINEAR, SBoxXorLinearEspressoMILPModel, 72, 3, -1),
+    ),
+)
+def test_glpk_solves_recovered_aes_espresso_strategies(kind, model_type, output, weight, sign):
+    system = load_bundled_sbox_milp_inequalities("aes", kind, SBoxMILPInequalityStrategy.ESPRESSO)
+    relation = model_type(system)
+    result = GLPKSolver(timeout_seconds=60).solve(
+        relation.milp_model(input_pattern=1, output_pattern=output)
+    )
+    assert result.status is MILPStatus.OPTIMAL
+    transition = relation.decode_transition(result.assignment)
+    assert (transition.weight, transition.sign) == (weight, sign)
+    assert result.objective_value == weight
+
+
+def test_glpk_proves_impossible_aes_espresso_transition():
+    system = load_bundled_sbox_milp_inequalities(
+        "aes", TrailKind.XOR_DIFFERENTIAL, SBoxMILPInequalityStrategy.ESPRESSO
+    )
+    relation = SBoxXorDifferentialEspressoMILPModel(system)
+    result = GLPKSolver(timeout_seconds=60).solve(
+        relation.milp_model(input_pattern=1, output_pattern=0)
     )
     assert result.status is MILPStatus.INFEASIBLE
     assert result.assignment is None

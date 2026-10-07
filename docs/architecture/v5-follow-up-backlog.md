@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **Small-S-box MILP recovery implemented; next: large-S-box Espresso**
+Status: **S-box MILP recovery implemented; next: SAT/CMS and modular-add strategies**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -339,9 +339,14 @@ used only by the reproducible offline generator; generated inequalities have
 no Sage runtime dependency. The portable one-hot formulation remains the
 default.
 
-The immediately following recovery PR must add the large-S-box Espresso
-strategy with independent eight-bit parity tests and comparable benchmarks.
-This split keeps the optional-tool boundary and generated data reviewable.
+The immediately following recovery PR adds explicit AES differential and
+signed-linear Espresso strategies with independent exhaustive eight-bit parity
+tests and comparable GLPK benchmarks. Espresso remains an offline generator;
+the generated bundle has no runtime tool dependency. Recovery also repairs a
+legacy parser assumption: ``espresso -epos -okiss`` emits no header in the
+Docker image, so slicing away four presumed header lines silently yielded no
+clauses. The recovered generator parses ordinary ``-epos`` records, rejects
+empty output, and validates the complete accepted relation.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and

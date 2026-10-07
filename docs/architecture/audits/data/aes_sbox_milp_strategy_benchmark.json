@@ -1,0 +1,100 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "solver": "GLPSOL--GLPK LP/MIP Solver 5.0"
+  },
+  "results": [
+    {
+      "constraints": 25,
+      "construction_seconds_first": 0.22352287500001466,
+      "construction_seconds_median": 0.22639241699999957,
+      "kind": "xor_differential",
+      "lp_bytes": 8140521,
+      "objective": 6.0,
+      "repeats": 5,
+      "solver_memory_bytes_max": 42729416,
+      "solver_seconds_median": 0.31671270799998297,
+      "strategy": "one_hot",
+      "transition": {
+        "denominator": 256,
+        "input": 1,
+        "numerator": 4,
+        "output": 31,
+        "sign": 1
+      },
+      "variables": 32402,
+      "wall_seconds_median": 0.4942180830000211
+    },
+    {
+      "constraints": 8687,
+      "construction_seconds_first": 1.739051250000017,
+      "construction_seconds_median": 0.08215250000000651,
+      "kind": "xor_differential",
+      "lp_bytes": 1633674,
+      "objective": 6.0,
+      "repeats": 5,
+      "solver_memory_bytes_max": 16339904,
+      "solver_seconds_median": 0.09419754099999977,
+      "strategy": "espresso",
+      "transition": {
+        "denominator": 256,
+        "input": 1,
+        "numerator": 4,
+        "output": 31,
+        "sign": 1
+      },
+      "variables": 19,
+      "wall_seconds_median": 0.15987100000000964
+    },
+    {
+      "constraints": 25,
+      "construction_seconds_first": 0.4378566249999949,
+      "construction_seconds_median": 0.48892866700001036,
+      "kind": "xor_linear",
+      "lp_bytes": 15859799,
+      "objective": 3.0,
+      "repeats": 5,
+      "solver_memory_bytes_max": 80441672,
+      "solver_seconds_median": 0.6706838329999982,
+      "strategy": "one_hot",
+      "transition": {
+        "denominator": 256,
+        "input": 1,
+        "numerator": 32,
+        "output": 136,
+        "sign": 1
+      },
+      "variables": 60962,
+      "wall_seconds_median": 1.0388765840000076
+    },
+    {
+      "constraints": 38498,
+      "construction_seconds_first": 5.693671585999994,
+      "construction_seconds_median": 0.382116625000009,
+      "kind": "xor_linear",
+      "lp_bytes": 6045590,
+      "objective": 3.0,
+      "repeats": 5,
+      "solver_memory_bytes_max": 59496976,
+      "solver_seconds_median": 0.3004801250000071,
+      "strategy": "espresso",
+      "transition": {
+        "denominator": 256,
+        "input": 1,
+        "numerator": 32,
+        "output": 192,
+        "sign": -1
+      },
+      "variables": 33,
+      "wall_seconds_median": 0.55629220900002
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "input_pattern": 1,
+    "objective": "minimum XOR trail weight",
+    "output_pattern": "optimized",
+    "sbox": "AES"
+  }
+}
