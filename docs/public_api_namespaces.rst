@@ -643,6 +643,12 @@ claasp.representations.constraints.sat.components.sbox
 .. automodule:: claasp.representations.constraints.sat.components.sbox
    :no-index:
 
+claasp.representations.constraints.sat.components.truncated
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.truncated
+   :no-index:
+
 claasp.representations.constraints.sat.exporters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
