@@ -3,7 +3,7 @@
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
-    _unaudited_model,
+    _verified_model,
 )
 from claasp.representations.constraints.smt.model import SMTFormula
 from claasp.semantics.cryptanalysis import (
@@ -24,12 +24,14 @@ class ModularAddDifferentialSMTModel:
         ('weight_0', 'weight_1', 'weight_2')
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.SMT,
         "ModularAddDifferentialSMTModel",
         "xor_differential",
         "paired-carry Boolean support with unary weight",
-        "The exact correspondence with a primary-source construction has not been audited.",
+        "https://eprint.iacr.org/2001/001",
+        "Efficient Algorithms for Computing Differential Properties of Addition",
+        "section 4, Algorithm 2 and Theorem 1",
     )
 
     def __init__(self, width):
@@ -111,12 +113,14 @@ class ModularAddLinearSMTModel:
         'fixed_output'
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.SMT,
         "ModularAddLinearSMTModel",
         "xor_linear",
         "Boolean mask recurrence with unary weight",
-        "The exact correspondence with a primary-source construction has not been audited.",
+        "10.1007/978-3-319-39555-5_26",
+        "Automatic Search of Linear Trails in ARX with Applications to SPECK and Chaskey",
+        "section 3.1, Proposition 1 and equation (1)",
     )
 
     def __init__(self, width: int) -> None:

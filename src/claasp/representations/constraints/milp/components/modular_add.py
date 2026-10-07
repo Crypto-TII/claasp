@@ -3,7 +3,7 @@
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
-    _unaudited_model,
+    _verified_model,
 )
 from claasp.representations.constraints.milp.model import (
     ConstraintSense,
@@ -31,12 +31,14 @@ class ModularAddLinearMILPModel:
         ('weight_0', 'weight_1', 'weight_2', 'weight_3')
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.MILP,
         "ModularAddLinearMILPModel",
         "xor_linear",
         "exact finite modular-add mask relation",
-        "The exact correspondence with a primary-source construction has not been audited.",
+        "10.1007/978-3-319-39555-5_26",
+        "Automatic Search of Linear Trails in ARX with Applications to SPECK and Chaskey",
+        "section 3.1, Proposition 1 and equation (1)",
     )
 
     def __init__(self, width: int) -> None:
