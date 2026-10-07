@@ -6,7 +6,13 @@ from claasp import Bit, Primitive, ValueType
 from claasp.components import Add
 from claasp.drivers.solvers import MinisatSolver, SatStatus
 from claasp.primitives import Present80, Simon, Speck
-from claasp.representations.constraints.sat import BooleanCNFModel
+from claasp.primitives.block_ciphers.present import PRESENT_SBOX
+from claasp.representations.constraints.sat import (
+    BooleanCNFModel,
+    ModularAddDifferentialSATModel,
+    ModularAddLinearSATModel,
+    SBoxXorDifferentialSATModel,
+)
 
 pytestmark = pytest.mark.external
 
@@ -81,3 +87,42 @@ def test_and_word_graph_recovers_a_simon_plaintext():
     assert result.is_satisfiable
     assert result.value("plaintext") == plaintext
     assert primitive.evaluate(result.value("plaintext"), key) == ciphertext
+
+
+def test_minisat_solves_and_refutes_sbox_differential_transitions():
+    relation = SBoxXorDifferentialSATModel(PRESENT_SBOX)
+    result = MinisatSolver(timeout_seconds=10).solve(
+        relation.cnf_formula(input_pattern=1, output_pattern=3)
+    )
+    assert result.status is SatStatus.SATISFIABLE
+    assert relation.decode_transition(result.assignment).weight == 2
+
+    impossible = MinisatSolver(timeout_seconds=10).solve(
+        relation.cnf_formula(input_pattern=1, output_pattern=1)
+    )
+    assert impossible.status is SatStatus.UNSATISFIABLE
+
+
+@pytest.mark.parametrize(
+    "relation,masks,weight,sign",
+    (
+        (ModularAddDifferentialSATModel(4), (1, 1, 2), 2, 1),
+        (ModularAddLinearSATModel(4), (2, 2, 2), 1, 1),
+    ),
+)
+def test_minisat_solves_modular_add_transition_models(relation, masks, weight, sign):
+    names = (
+        ("left_mask", "right_mask", "output_mask")
+        if isinstance(relation, ModularAddLinearSATModel)
+        else ()
+    )
+    formula = relation.cnf_formula(**dict(zip(names, masks))) if names else relation.cnf_formula()
+    assumptions = {
+        f"{prefix}_{bit}": (value >> (relation.width - 1 - bit)) & 1
+        for prefix, value in zip(("left", "right", "output"), masks)
+        for bit in range(relation.width)
+    }
+    result = MinisatSolver(timeout_seconds=10).solve(formula, assumptions)
+    assert result.status is SatStatus.SATISFIABLE
+    transition = relation.decode_transition(result.assignment)
+    assert (transition.weight, transition.sign) == (weight, sign)

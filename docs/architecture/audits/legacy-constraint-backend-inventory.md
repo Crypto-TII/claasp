@@ -245,7 +245,7 @@ benchmark it.
 | MILP large-S-box Espresso | `milp/utils/generate_inequalities_for_large_sboxes.py`, `components/sbox_component.py` at `3aacc275` | One-hot `SBoxTransitionMILPModel` remains default; explicit differential and signed-linear Espresso alternatives | Espresso 2.3 for offline generation only; no runtime Espresso dependency; selected MILP solver | Complete for all 65,536 AES input/output pairs under differential and signed-linear semantics | [Canonical GLPK Docker benchmark](data/aes_sbox_milp_strategy_benchmark.json): five runs of each Espresso strategy and one-hot baseline |
 | Generic MILP differential/linear | `milp/milp_models/milp_xor_differential_model.py`, `milp_xor_linear_model.py`, `components/*` | Local S-box/modular-add and PRESENT slices | Legacy Sage; selected MILP solver | Pending | Pending |
 | MILP activity/truncated/impossible | `milp/milp_models/milp_*active_sboxes*.py`, `milp_*truncated*.py`, `milp_*impossible*.py`, `milp/utils/*truncated*.py` | Typed activity/truncated semantics and finite relations | Legacy Sage, optionally Espresso; selected MILP solver | Pending | Pending |
-| SAT differential/linear | `sat/sat_models/sat_xor_differential_model.py`, `sat_xor_linear_model.py`, `sat/utils/n_window_heuristic_helper.py`, `components/*` | No generic v5 SAT trail model | Selected SAT solver | Pending | Pending |
+| SAT differential/linear | `sat/sat_models/sat_xor_differential_model.py`, `sat_xor_linear_model.py`, `sat/utils/n_window_heuristic_helper.py`, `components/*` | Exact local S-box and modular-add differential/linear SAT models; generic graph-wide trail assembly and n-window remain pending | Selected SAT solver | Complete exhaustive PRESENT support, 1-3-bit modular-add differential, and 3-bit modular-add linear parity; MiniSat integration fixtures pass | Local component benchmark deferred to the native-XOR comparison; generic trail benchmark pending assembly |
 | CryptoMiniSat native XOR | `sat/cms_models/*.py`, `components/*` | Ordinary CNF baseline | CryptoMiniSat | Pending | Pending |
 | SAT truncated/impossible | `sat/sat_models/sat_*truncated*.py`, `sat_bitwise_impossible_xor_differential_model.py`, `components/*` | Typed semantics and reviewed CP slices | Selected SAT solver | Pending | Pending |
 | SAT differential-linear/paired input | `sat/sat_models/sat_differential_linear_model.py`, `sat_shared_difference_paired_input_*.py` | Typed composed/paired semantics | Selected SAT solver | Pending | Pending |
@@ -264,9 +264,11 @@ they start with `components/`, which is relative to `claasp/`.
    one-hot baseline for differential and signed-linear propagation. The
    immediately following slice recovers large-S-box Espresso strategies and
    adds eight-bit parity and benchmark coverage.
-2. **SAT/CMS and modular-add strategy PRs.** Recover generic XOR-differential
-   and XOR-linear SAT assembly, native-XOR CMS output, and the optional n-window
-   heuristic. Cross-check modular-add support exhaustively at small widths.
+2. **SAT/CMS and modular-add strategy PRs.** The first slice restores explicit
+   local S-box and modular-add XOR-differential and XOR-linear SAT models with
+   exhaustive small-domain parity. Following slices recover generic trail
+   assembly, native-XOR CMS output, and the separately switchable n-window
+   heuristic, then benchmark ordinary CNF against native XOR.
 3. **Linear-layer and truncated-model PRs.** Recover bitwise/wordwise,
    deterministic/semi-deterministic, branch-number, undisturbed-bit, and
    impossible formulations across MILP, SAT, SMT, and CP in component-sized

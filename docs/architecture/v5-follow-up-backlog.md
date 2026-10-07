@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box MILP recovery implemented; next: SAT/CMS and modular-add strategies**
+Status: **S-box MILP and local SAT transition recovery implemented; next: SAT trail assembly/CMS**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -347,6 +347,15 @@ legacy parser assumption: ``espresso -epos -okiss`` emits no header in the
 Docker image, so slicing away four presumed header lines silently yielded no
 clauses. The recovered generator parses ordinary ``-epos`` records, rejects
 empty output, and validates the complete accepted relation.
+
+The first SAT recovery slice adds explicitly named differential and linear SAT
+models for S-boxes and modular addition. It exhaustively checks PRESENT support,
+small modular-add support and weights, and focused MiniSat solving. The modular
+addition classes reuse the already verified backend-neutral Boolean clauses but
+publish SAT provenance and SAT containers; they do not duplicate a competing
+formula. Generic graph-wide trail assembly, native-XOR CryptoMiniSat output,
+the optional n-window heuristic, and their like-for-like benchmarks remain in
+the immediately following slices.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and
