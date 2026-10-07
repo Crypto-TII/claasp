@@ -1209,6 +1209,82 @@ class WordLinearSMTModel:
                 )
 
 
+class WordDeterministicTruncatedSMTModel:
+    """Assemble deterministic-truncated Word graphs as Boolean SMT.
+
+    Graph wiring and paired-carry clauses reuse the independently checked SAT
+    construction, then cross the explicit immutable SMT container boundary.
+    Decoding replays the typed three-valued graph semantics.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToySpeck
+        >>> model = WordDeterministicTruncatedSMTModel(
+        ...     ToySpeck(2),
+        ...     fixed_input_patterns={"key": "0" * 16},
+        ...     nonzero_input="plaintext",
+        ... )
+        >>> formula = model.smt_formula()
+        >>> (formula.assertion_count > 0, formula.constraint_models[0].model.backend.value)
+        (True, 'smt')
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SMT,
+        "WordDeterministicTruncatedSMTModel",
+        "deterministic_truncated_xor",
+        "Boolean SMT translation of deterministic-truncated Word graph clauses",
+        "The graph and paired-carry clauses are translated without changing their semantics.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        fixed_input_patterns=None,
+        output_pattern=None,
+        nonzero_input=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import (
+            WordDeterministicTruncatedSATModel,
+        )
+
+        self._sat_model = WordDeterministicTruncatedSATModel(
+            primitive,
+            fixed_input_patterns=fixed_input_patterns,
+            output_pattern=output_pattern,
+            nonzero_input=nonzero_input,
+        )
+        self.primitive = primitive
+        self._formula: SMTFormula | None = None
+
+    def smt_formula(self) -> SMTFormula:
+        """Return the complete deterministic-truncated graph formula."""
+
+        cnf = self._sat_model.cnf_formula()
+        self._formula = SMTFormula(
+            cnf.variables,
+            cnf.clauses,
+            cnf.provenance,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._formula
+
+    def decode_characteristic(self, assignment):
+        """Decode and independently validate a complete SMT assignment."""
+
+        if self._formula is None:
+            raise ValueError("build the SMT formula before decoding")
+        return self._sat_model.decode_characteristic(assignment)
+
+    def check_characteristic(self, trail) -> bool:
+        """Recheck graph propagation and requested boundary restrictions."""
+
+        if self._formula is None:
+            raise ValueError("build the SMT formula before checking")
+        return self._sat_model.check_characteristic(trail)
+
+
 def _packed(names, assignment):
     value = 0
     for name in names:

@@ -499,6 +499,15 @@ committed 32-bit benchmark compares construction and solve time without
 changing a default. Literature provenance remains TBD until the exact legacy
 inequalities are matched to a primary-source construction.
 
+The deterministic-truncated SMT slice adds
+``ModularAddDeterministicTruncatedSMTModel`` and
+``WordDeterministicTruncatedSMTModel``. The immutable SMT formula preserves the
+same paired-carry Boolean relation already checked exhaustively in SAT, while
+publishing SMT provenance and executing through Z3. Accepted and rejected
+local additions and complete ToySpeck-2 boundaries match the typed semantics.
+The committed ten-run benchmark uses the identical 200-variable, 829-assertion
+fixture as the SAT benchmark and makes no cross-solver ranking claim.
+
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and
 provenance. Keep optional solver dependencies isolated, give each formulation

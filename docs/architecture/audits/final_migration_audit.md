@@ -3,9 +3,9 @@
 This generated M11a comparison is review material; the JSON matrix and closure tool are authoritative.
 
 - Legacy records: 581
-- Shipped v5 artifacts: 438
+- Shipped v5 artifacts: 439
 - Legacy dispositions: inapplicable=34, migrate=332, remove=8, supersede=207
-- Reverse classifications: legacy-lineage=395, new-v5=43
+- Reverse classifications: legacy-lineage=396, new-v5=43
 - Mapping relationships: consolidated=57, direct=152, evidence-only=256, inapplicable=34, removed=8, split=74
 
 Every legacy source module, test module, and package marker appears below with its final disposition and reason. Every shipped v5 module or data artifact appears in the reverse table with its predecessor(s) or a new-v5 rationale.
@@ -985,6 +985,7 @@ Relationship means: **direct** for one reviewed destination, **split** for one l
 | `src/claasp/representations/constraints/smt/components/__init__.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/smt/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/smt/components/modular_add.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/smt/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/smt/components/sbox.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/smt/utils/utils.py`<br>`claasp/component.py` |
+| `src/claasp/representations/constraints/smt/components/truncated.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/smt/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/smt/exporter.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/smt/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/smt/formula.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/smt/smt_model.py`<br>`claasp/cipher_modules/models/smt/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/smt/lowering.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/smt/smt_models/smt_cipher_model.py`<br>`claasp/cipher_modules/models/smt/utils/utils.py`<br>`claasp/component.py` |

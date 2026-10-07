@@ -283,3 +283,36 @@ The AND provider retains the legacy one-bit DDT counts
    >>> entry = BitwiseAndSemantics(1).xor_linear(1, 1, 1)
    >>> (entry.numerator, entry.denominator, entry.sign, entry.weight)
    (2, 4, -1, 1.0)
+
+Deterministic-truncated SMT
+---------------------------
+
+``ModularAddDeterministicTruncatedSMTModel`` exposes the recovered two-bit
+paired-carry clauses through the immutable SMT container. Complete Word graphs
+use ``WordDeterministicTruncatedSMTModel``:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.smt import (
+   ...     WordDeterministicTruncatedSMTModel,
+   ... )
+   >>> truncated = WordDeterministicTruncatedSMTModel(
+   ...     ToySpeck(2),
+   ...     fixed_input_patterns={"plaintext": "00000001", "key": "0" * 16},
+   ...     output_pattern="???0????",
+   ... )
+   >>> truncated_formula = truncated.smt_formula()
+   >>> (len(truncated_formula.variables), truncated_formula.assertion_count)
+   (200, 829)
+
+The SMT model deliberately preserves the same Boolean relation as the
+exhaustively checked SAT formulation. It adds backend-specific provenance and
+Z3 execution without claiming a distinct mathematical encoding. Decoding
+independently propagates the typed ternary semantics across the graph.
+
+The ten-run ARM64 Z3 benchmark in
+``architecture/audits/data/smt_deterministic_truncated_benchmark.json`` uses
+the same ToySpeck-2 fixture as the SAT benchmark. Median construction and solve
+times were 1.414 and 8.519 milliseconds. The formula has the same 200 variables
+and 829 Boolean assertions; the result establishes executable SMT parity, not
+a cross-solver performance ranking.

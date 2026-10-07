@@ -691,6 +691,12 @@ claasp.representations.constraints.smt.components
 .. automodule:: claasp.representations.constraints.smt.components
    :no-index:
 
+claasp.representations.constraints.smt.components.truncated
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.smt.components.truncated
+   :no-index:
+
 claasp.representations.constraints.smt.model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
