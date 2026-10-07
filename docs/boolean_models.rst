@@ -237,6 +237,48 @@ parity for this workload, not a general performance ranking.
      - 0.944
      - not reported
 
+Impossible-differential SAT trails
+-----------------------------------
+
+``SpeckImpossibleSATModel`` turns a round split into two ordinary-CNF graph
+searches. The prefix propagates a nonzero plaintext difference forward. The
+suffix is inverted and propagates a nonzero ciphertext difference backward.
+Both use zero key difference. At the shared state, the search requires at
+least one bit that the forward trail fixes to ``0`` and the backward trail
+fixes to ``1``, or vice versa. Such a contradiction proves that the two
+partial propagations cannot belong to one complete differential trail.
+
+This example builds a three-round Speck32/64 search split after round one:
+
+.. doctest::
+
+   >>> from claasp.primitives import Speck
+   >>> from claasp.representations.constraints.sat import SpeckImpossibleSATModel
+   >>> impossible_model = SpeckImpossibleSATModel(
+   ...     Speck(number_of_rounds=3), middle_round=1,
+   ... )
+   >>> impossible_formula = impossible_model.cnf_formula()
+   >>> (impossible_formula.variable_count, impossible_formula.clause_count)
+   (1568, 5674)
+   >>> "truncated_incompatibility_exists" in impossible_formula.provenance
+   True
+
+Solve ``impossible_formula`` with MiniSat, Kissat, or CryptoMiniSat, then call
+``impossible_model.decode_trail(result.assignment)``. The returned
+``SpeckImpossibleSATTrail`` contains both independently rechecked directional
+characteristics and an ``ImpossiblePropagationBoundary``. Its
+``contradictory_positions`` identifies the exact middle-state bits that prove
+incompatibility. Optional ``input_pattern`` and ``output_pattern`` arguments
+fix either external difference when reproducing a particular search.
+
+The ten-run ARM64 benchmark in
+``architecture/audits/data/sat_impossible_trail_benchmark.json`` uses the same
+Speck32/64-3 formula for all three solvers. Median build times are 10.96,
+10.71, and 10.70 milliseconds for MiniSat, Kissat, and CryptoMiniSat;
+corresponding solve times are 2.85, 1.14, and 2.10 milliseconds. These results
+establish solver parity for this small workload and do not establish a general
+performance ranking.
+
 Optional n-window strategy
 --------------------------
 

@@ -8,11 +8,12 @@ from claasp.drivers.solvers import (
     MinisatSolver,
     SatStatus,
 )
-from claasp.primitives import ToySpeck
+from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints.sat import (
     ImpossibleBoundarySATModel,
     ModularAddDeterministicTruncatedSATModel,
     ModularSubtractDeterministicTruncatedSATModel,
+    SpeckImpossibleSATModel,
     WordDeterministicTruncatedSATModel,
 )
 from claasp.transformations import invert_primitive
@@ -124,4 +125,26 @@ def test_impossible_boundary_sat_recovers_exact_contradiction_positions(solver_t
 
     compatible = ImpossibleBoundarySATModel(5, forward_pattern="01??0", backward_pattern="01?00")
     result = solver_type(timeout_seconds=10).solve(compatible.cnf_formula())
+    assert result.status is SatStatus.UNSATISFIABLE
+
+
+@pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
+def test_speck_impossible_sat_decodes_both_directional_graphs(solver_type):
+    model = SpeckImpossibleSATModel(Speck(number_of_rounds=3), middle_round=1)
+    result = solver_type(timeout_seconds=30).solve(model.cnf_formula())
+    assert result.status is SatStatus.SATISFIABLE
+    trail = model.decode_trail(result.assignment)
+    assert trail.boundary.is_impossible
+    assert trail.boundary.forward == trail.forward.output_pattern
+    assert trail.boundary.backward == trail.backward.output_pattern
+
+
+def test_speck_impossible_sat_rejects_zero_external_differences():
+    model = SpeckImpossibleSATModel(
+        Speck(number_of_rounds=3),
+        middle_round=1,
+        input_pattern="0" * 32,
+        output_pattern="0" * 32,
+    )
+    result = MinisatSolver(timeout_seconds=30).solve(model.cnf_formula())
     assert result.status is SatStatus.UNSATISFIABLE

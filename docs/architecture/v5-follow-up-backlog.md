@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box MILP, local SAT exact/truncated/impossible relations, native-XOR output/trails, SAT exact/truncated trail assembly, and n-window heuristic implemented; next: whole-graph impossible and semi-/probabilistic truncated SAT variants**
+Status: **S-box MILP, local SAT exact/truncated/impossible relations, native-XOR output/trails, SAT exact/truncated/impossible trail assembly, and n-window heuristic implemented; next: semi-/probabilistic truncated SAT variants**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -432,7 +432,17 @@ retains that formula but gives subtraction separate provenance and validates
 decoding against ``truncated_modular_subtract``. Exhaustive two-bit patterns
 and all three SAT solvers establish parity, and
 ``WordDeterministicTruncatedSATModel`` now lowers inverse graphs containing
-``ModularSubtract``. Whole-graph impossible assembly remains next.
+``ModularSubtract``.
+
+The whole-graph impossible-SAT slice adds ``SpeckImpossibleSATModel``. It uses
+the public round-slicing and inversion transformations to compose a forward
+prefix and backward suffix rather than maintaining a second hand-written
+round recurrence. Both directions reuse ``WordDeterministicTruncatedSATModel``
+with zero key difference and meet through ``ImpossibleBoundarySATModel``.
+Decoded witnesses independently recheck both transformed graphs and the typed
+``ImpossiblePropagationBoundary``. MiniSat, Kissat, and CryptoMiniSat agree on
+the Speck32/64-3 fixture; the committed ten-run benchmark uses the identical
+formula for all three and makes no general solver-performance claim.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and

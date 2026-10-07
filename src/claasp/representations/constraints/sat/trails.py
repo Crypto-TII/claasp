@@ -25,6 +25,7 @@ from claasp.representations.constraints import (
     _direct_model,
 )
 from claasp.representations.constraints.sat.components import (
+    ImpossibleBoundarySATModel,
     ModularAddDeterministicTruncatedSATModel,
     ModularAddDifferentialSATModel,
     ModularAddLinearSATModel,
@@ -40,11 +41,13 @@ from claasp.representations.constraints.smt.trails import (
     WordLinearSMTModel,
 )
 from claasp.semantics.cryptanalysis import (
+    ImpossiblePropagationBoundary,
     TruncatedBit,
     TruncatedXorDifference,
     truncated_modular_add,
     truncated_modular_subtract,
 )
+from claasp.transformations import invert_primitive, slice_rounds
 
 
 def _component_applications(primitive, default, specialized):
@@ -900,6 +903,205 @@ class WordDeterministicTruncatedSATModel:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class SpeckImpossibleSATTrail:
+    """One independently checked impossible-differential SAT witness.
+
+    EXAMPLES::
+
+        >>> zero = TruncatedXorDifference.parse("00")
+        >>> characteristic = WordDeterministicTruncatedCharacteristic((), zero, (), ())
+        >>> trail = SpeckImpossibleSATTrail(
+        ...     characteristic, characteristic,
+        ...     ImpossiblePropagationBoundary(
+        ...         TruncatedXorDifference.parse("01"),
+        ...         TruncatedXorDifference.parse("00"),
+        ...     ),
+        ...     (),
+        ... )
+        >>> trail.boundary.contradictory_positions
+        (1,)
+    """
+
+    forward: WordDeterministicTruncatedCharacteristic
+    backward: WordDeterministicTruncatedCharacteristic
+    boundary: ImpossiblePropagationBoundary
+    semantic_assignment: tuple[tuple[str, int], ...]
+
+
+class SpeckImpossibleSATModel:
+    """Search a zero-key Speck impossible differential across a round split.
+
+    The prefix propagates a plaintext difference forward. The suffix is sliced
+    from the same primitive, inverted, and propagates an output difference
+    backward. Their middle-state trits are joined by exact incompatibility
+    indicators, at least one of which must identify opposite known bits.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = SpeckImpossibleSATModel(Speck(number_of_rounds=3), middle_round=1)
+        >>> formula = model.cnf_formula()
+        >>> (formula.variable_count > 0, "truncated_incompatibility_exists" in formula.provenance)
+        (True, True)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "SpeckImpossibleSATModel",
+        "impossible_xor_differential",
+        "forward/backward deterministic-truncated graph composition",
+        "The whole-graph assembly composes reviewed encodings without a literature claim.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        middle_round: int,
+        *,
+        input_pattern=None,
+        output_pattern=None,
+    ) -> None:
+        plaintext = primitive.input_ports.get("plaintext")
+        if (
+            primitive.family_name != "speck"
+            or plaintext is None
+            or not isinstance(plaintext.value_type.domain, Word)
+            or plaintext.value_type.domain.width != 16
+        ):
+            raise NotImplementedError("the reviewed impossible slice supports Speck32/64")
+        if not isinstance(middle_round, int) or isinstance(middle_round, bool):
+            raise TypeError("middle_round must be an integer")
+        if not 1 <= middle_round < len(primitive.rounds):
+            raise ValueError("middle_round must be inside the primitive")
+        self.primitive = primitive
+        self.middle_round = middle_round
+        prefix = slice_rounds(primitive, 0, middle_round - 1).primitive
+        suffix = slice_rounds(primitive, middle_round, len(primitive.rounds) - 1).primitive
+        inverse = invert_primitive(
+            suffix, recover_input="state", retained_inputs=("key",)
+        ).primitive
+        zero_key = "0" * (
+            primitive.input_ports["key"].value_type.unit_count
+            * primitive.input_ports["key"].value_type.domain.width
+        )
+        forward_patterns = {"key": zero_key}
+        if input_pattern is not None:
+            forward_patterns["plaintext"] = input_pattern
+        self.forward_model = WordDeterministicTruncatedSATModel(
+            prefix,
+            fixed_input_patterns=forward_patterns,
+            nonzero_input="plaintext",
+        )
+        self.backward_model = WordDeterministicTruncatedSATModel(
+            inverse,
+            fixed_input_patterns={
+                "key": zero_key,
+                **({"output": output_pattern} if output_pattern is not None else {}),
+            },
+            nonzero_input="output",
+        )
+        self._formula: CNFFormula | None = None
+        self._forward_map: dict[str, str] = {}
+        self._backward_map: dict[str, str] = {}
+        self._boundary_map: dict[str, str] = {}
+
+    def cnf_formula(self) -> CNFFormula:
+        """Return the composed forward, backward, and contradiction formula."""
+
+        forward = self.forward_model.cnf_formula()
+        backward = self.backward_model.cnf_formula()
+        variables: list[str] = []
+        clauses: list[tuple[int, ...]] = []
+        provenance: list[str] = []
+        indices: dict[str, int] = {}
+
+        def allocate(name):
+            if name not in indices:
+                variables.append(name)
+                indices[name] = len(variables)
+            return name
+
+        def append_formula(formula, prefix):
+            mapping = {name: allocate(prefix + name) for name in formula.variables}
+            local = {
+                position: indices[mapping[name]]
+                for position, name in enumerate(formula.variables, 1)
+            }
+            clauses.extend(
+                tuple(local[abs(literal)] * (1 if literal > 0 else -1) for literal in clause)
+                for clause in formula.clauses
+            )
+            provenance.extend(formula.provenance)
+            return mapping
+
+        self._forward_map = append_formula(forward, "forward__")
+        self._backward_map = append_formula(backward, "backward__")
+        boundary_model = ImpossibleBoundarySATModel(len(self.forward_model._output))
+        boundary = boundary_model.cnf_formula()
+        mapped = {}
+        for bit in range(boundary_model.width):
+            for field_number, field in enumerate(("unknown", "value")):
+                mapped[f"forward_{bit}_{field}"] = self._forward_map[
+                    self.forward_model._output[bit][field_number]
+                ]
+                mapped[f"backward_{bit}_{field}"] = self._backward_map[
+                    self.backward_model._output[bit][field_number]
+                ]
+        for name in boundary.variables:
+            mapped.setdefault(name, allocate("boundary__" + name))
+        local = {
+            position: indices[mapped[name]] for position, name in enumerate(boundary.variables, 1)
+        }
+        clauses.extend(
+            tuple(local[abs(literal)] * (1 if literal > 0 else -1) for literal in clause)
+            for clause in boundary.clauses
+        )
+        provenance.extend(boundary.provenance)
+        self._boundary_map = mapped
+        self._formula = CNFFormula(
+            tuple(variables),
+            tuple(clauses),
+            tuple(provenance),
+            forward.constraint_models
+            + backward.constraint_models
+            + boundary.constraint_models
+            + (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._formula
+
+    def decode_trail(self, assignment) -> SpeckImpossibleSATTrail:
+        """Decode and independently validate a complete SAT assignment."""
+
+        if self._formula is None:
+            raise ValueError("build the formula before decoding")
+        if not self._formula.is_satisfied(assignment):
+            raise ValueError("invalid impossible-differential SAT witness")
+        forward_assignment = {
+            name: assignment[mapped] for name, mapped in self._forward_map.items()
+        }
+        backward_assignment = {
+            name: assignment[mapped] for name, mapped in self._backward_map.items()
+        }
+        boundary_assignment = {
+            name: assignment[mapped] for name, mapped in self._boundary_map.items()
+        }
+        forward = self.forward_model.decode_characteristic(forward_assignment)
+        backward = self.backward_model.decode_characteristic(backward_assignment)
+        boundary = ImpossibleBoundarySATModel(len(forward.output_pattern.bits)).decode_boundary(
+            boundary_assignment
+        )
+        expected = ImpossiblePropagationBoundary(forward.output_pattern, backward.output_pattern)
+        if boundary != expected or not boundary.is_impossible:
+            raise ValueError("decoded directional trails do not form an impossible boundary")
+        return SpeckImpossibleSATTrail(
+            forward,
+            backward,
+            boundary,
+            tuple((name, int(bool(assignment[name]))) for name in self._formula.variables),
+        )
+
+
 class WordDifferentialSATModel:
     """Assemble exact XOR-differential component relations as ordinary CNF.
 
@@ -1190,6 +1392,8 @@ class WordLinearNativeXorSATModel(WordLinearSATModel):
 
 __all__ = [
     "NWindowSATStrategy",
+    "SpeckImpossibleSATModel",
+    "SpeckImpossibleSATTrail",
     "WordDeterministicTruncatedCharacteristic",
     "WordDeterministicTruncatedEnumeration",
     "WordDeterministicTruncatedSATModel",
