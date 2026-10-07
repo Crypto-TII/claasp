@@ -1159,6 +1159,161 @@ class WordDeterministicTruncatedCPModel:
         return self._sat_model.check_characteristic(trail)
 
 
+class WordDifferentialCPModel:
+    """Assemble exact XOR-differential Word graphs as portable MiniZinc.
+
+    The complete reviewed Boolean relation is translated exactly to MiniZinc;
+    decoding delegates to the independently checked Word-graph semantics.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToySpeck
+        >>> model = WordDifferentialCPModel(
+        ...     ToySpeck(2), fixed_weight=1,
+        ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
+        ... )
+        >>> query = model.cp_model()
+        >>> (len(query.declarations), query.constraint_models[0].model.backend.value)
+        (187, 'cp')
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "WordDifferentialCPModel",
+        "xor_differential",
+        "exact MiniZinc translation of the reviewed Boolean Word-graph relation",
+        "The portable CP formulation preserves the complete Boolean relation without a literature claim.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        maximum_weight=None,
+        fixed_weight=None,
+        nonzero_input=None,
+        fixed_input_differences=None,
+        output_difference=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import WordDifferentialSATModel
+
+        self._sat_model = WordDifferentialSATModel(
+            primitive,
+            maximum_weight=maximum_weight,
+            fixed_weight=fixed_weight,
+            nonzero_input=nonzero_input,
+            fixed_input_differences=fixed_input_differences,
+            output_difference=output_difference,
+        )
+        self.primitive = primitive
+        self._query: MiniZincModel | None = None
+
+    def cp_model(self) -> MiniZincModel:
+        """Return the exact portable MiniZinc query."""
+
+        lowered = BooleanMiniZincLowerer().lower(self._sat_model.cnf_formula())
+        self._query = MiniZincModel(
+            lowered.declarations,
+            lowered.constraints,
+            lowered.solve,
+            lowered.includes,
+            lowered.outputs,
+            lowered.provenance,
+            lowered.name_mapping,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_characteristic(self, assignment):
+        """Decode and independently validate a complete CP assignment."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        return self._sat_model.decode_characteristic(assignment)
+
+    def check_characteristic(self, trail) -> bool:
+        """Recheck component transitions, wiring, and requested boundaries."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before checking")
+        return self._sat_model.check_characteristic(trail)
+
+
+class WordLinearCPModel:
+    """Assemble exact XOR-linear Word graphs as portable MiniZinc.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToySpeck
+        >>> model = WordLinearCPModel(
+        ...     ToySpeck(3), maximum_weight=1,
+        ...     fixed_inputs={"key": 0}, nonzero_input="plaintext",
+        ... )
+        >>> query = model.cp_model()
+        >>> (len(query.declarations) > 0, query.constraint_models[0].model.backend.value)
+        (True, 'cp')
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "WordLinearCPModel",
+        "xor_linear",
+        "exact MiniZinc translation of the reviewed Boolean Word-graph relation",
+        "The portable CP formulation preserves the complete Boolean relation without a literature claim.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        maximum_weight,
+        nonzero_input=None,
+        fixed_input_masks=None,
+        fixed_inputs=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import WordLinearSATModel
+
+        self._sat_model = WordLinearSATModel(
+            primitive,
+            maximum_weight=maximum_weight,
+            nonzero_input=nonzero_input,
+            fixed_input_masks=fixed_input_masks,
+            fixed_inputs=fixed_inputs,
+        )
+        self.primitive = primitive
+        self._query: MiniZincModel | None = None
+
+    def cp_model(self) -> MiniZincModel:
+        """Return the exact portable MiniZinc query."""
+
+        lowered = BooleanMiniZincLowerer().lower(self._sat_model.cnf_formula())
+        self._query = MiniZincModel(
+            lowered.declarations,
+            lowered.constraints,
+            lowered.solve,
+            lowered.includes,
+            lowered.outputs,
+            lowered.provenance,
+            lowered.name_mapping,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_characteristic(self, assignment):
+        """Decode and independently validate a complete CP assignment."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        return self._sat_model.decode_characteristic(assignment)
+
+    def check_characteristic(self, trail) -> bool:
+        """Recheck component masks, signs, wiring, and requested boundaries."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before checking")
+        return self._sat_model.check_characteristic(trail)
+
+
 _DETERMINISTIC_TRUNCATED_MODADD_PREDICATE = r"""
 function var 0..2: truncated_xor2(var 0..2: a, var 0..2: b) =
     if a < 2 /\ b < 2 then (a + b) mod 2 else 2 endif;
