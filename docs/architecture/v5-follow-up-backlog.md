@@ -517,6 +517,15 @@ decoded trails are checked again through typed semantics. The committed ten-run
 benchmark records the identical 200-variable, 829-constraint fixture without
 replacing the specialized Speck CP model or ranking unlike solvers.
 
+The first deterministic-truncated MILP component slice recovers the legacy
+indicator-based AND abstraction as
+``BitwiseAndDeterministicTruncatedMILPModel`` and adds
+``BitwiseAndDeterministicTruncatedOneHotMILPModel`` as an explicit portable
+baseline. All nine pairs of one-bit ternary inputs pass GLPK and independent
+typed decoding. The committed 32-bit comparison records formulation size,
+construction, and solve time; remaining truncated MILP components and generic
+graph assembly stay separate recovery slices.
+
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and
 provenance. Keep optional solver dependencies isolated, give each formulation

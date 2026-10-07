@@ -15,7 +15,12 @@ from claasp.representations.constraints.milp.model import (
     ObjectiveSense,
     VariableKind,
 )
-from claasp.semantics.cryptanalysis import BitwiseAndSemantics, TrailKind
+from claasp.semantics.cryptanalysis import (
+    BitwiseAndSemantics,
+    TrailKind,
+    TruncatedBit,
+    TruncatedXorDifference,
+)
 
 _DIFFERENTIAL_ROWS = (
     (0, 0, 0, 0),
@@ -282,7 +287,196 @@ class BitwiseAndXorLinearMILPModel(_BitwiseAndReducedMILPModel):
         super().__init__(width, TrailKind.XOR_LINEAR)
 
 
+class BitwiseAndDeterministicTruncatedOneHotMILPModel:
+    """Portable exhaustive-row baseline for conservative truncated AND.
+
+    EXAMPLES::
+
+        >>> model = BitwiseAndDeterministicTruncatedOneHotMILPModel(2)
+        >>> formulation = model.milp_model(left_pattern="0?", right_pattern="00")
+        >>> (len(formulation.variables), len(formulation.constraints))
+        (24, 12)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "BitwiseAndDeterministicTruncatedOneHotMILPModel",
+        "deterministic_truncated_xor",
+        "one-hot exhaustive conservative AND relation",
+        "All nine pairs of ternary inputs are selected directly.",
+    )
+
+    def __init__(self, width: int) -> None:
+        if not isinstance(width, int) or isinstance(width, bool) or width <= 0:
+            raise ValueError("width must be a positive integer")
+        self.width = width
+        self._groups: tuple[tuple[str, ...], ...] = ()
+
+    def _coerce(self, pattern):
+        if pattern is None:
+            return None
+        if isinstance(pattern, str):
+            pattern = TruncatedXorDifference.parse(pattern)
+        if not isinstance(pattern, TruncatedXorDifference):
+            raise TypeError("patterns must be strings or TruncatedXorDifference values")
+        if len(pattern.bits) != self.width:
+            raise ValueError(f"patterns must contain {self.width} bits")
+        return pattern
+
+    @staticmethod
+    def _value(bit):
+        return bit.encoded
+
+    def milp_model(self, *, left_pattern=None, right_pattern=None, output_pattern=None):
+        """Return the exhaustive ternary relation with optional fixed patterns."""
+
+        patterns = tuple(map(self._coerce, (left_pattern, right_pattern, output_pattern)))
+        variables: list[LinearVariable] = []
+        constraints: list[LinearConstraint] = []
+
+        def ternary(name):
+            variables.append(LinearVariable(name, VariableKind.INTEGER, 0, 2))
+            return name
+
+        def binary(name):
+            variables.append(LinearVariable(name, VariableKind.BINARY))
+            return name
+
+        left = tuple(ternary(f"left_{bit}") for bit in range(self.width))
+        right = tuple(ternary(f"right_{bit}") for bit in range(self.width))
+        output = tuple(ternary(f"output_{bit}") for bit in range(self.width))
+        rows = tuple((a, b, 0 if a == b == 0 else 2) for a in range(3) for b in range(3))
+        for bit in range(self.width):
+            selectors = tuple(binary(f"row_{bit}_{row}") for row in range(len(rows)))
+            constraints.append(_constraint(dict.fromkeys(selectors, 1), ConstraintSense.EQUAL, 1))
+            for position, name in enumerate((left[bit], right[bit], output[bit])):
+                terms = {name: 1}
+                terms.update(
+                    {
+                        selector: -row[position]
+                        for selector, row in zip(selectors, rows)
+                        if row[position]
+                    }
+                )
+                constraints.append(_constraint(terms, ConstraintSense.EQUAL, 0))
+        for prefix, names, pattern in zip(
+            ("left", "right", "output"), self._groups_for(left, right, output), patterns
+        ):
+            if pattern is None:
+                continue
+            for bit, (name, value) in enumerate(zip(names, map(self._value, pattern.bits))):
+                constraints.append(
+                    _constraint({name: 1}, ConstraintSense.EQUAL, value, f"fixed_{prefix}_{bit}")
+                )
+        self._groups = left, right, output
+        return MILPModel(
+            tuple(variables),
+            tuple(constraints),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+
+    @staticmethod
+    def _groups_for(left, right, output):
+        return left, right, output
+
+    def decode_transition(self, assignment):
+        """Decode and independently validate one ternary AND transition."""
+
+        if not self._groups:
+            raise ValueError("build the MILP model before decoding")
+
+        def pattern(names):
+            values = tuple(round(assignment[name]) for name in names)
+            if any(value not in (0, 1, 2) for value in values):
+                raise ValueError("truncated assignment contains an invalid trit")
+            symbols = (TruncatedBit.ZERO, TruncatedBit.ONE, TruncatedBit.UNKNOWN)
+            return TruncatedXorDifference(tuple(symbols[value] for value in values))
+
+        left, right, output = (pattern(group) for group in self._groups)
+        expected = TruncatedXorDifference(
+            tuple(
+                TruncatedBit.ZERO
+                if left_bit is right_bit is TruncatedBit.ZERO
+                else TruncatedBit.UNKNOWN
+                for left_bit, right_bit in zip(left.bits, right.bits)
+            )
+        )
+        if output != expected:
+            raise ValueError("truncated output disagrees with conservative AND semantics")
+        return left, right, output
+
+
+class BitwiseAndDeterministicTruncatedMILPModel(BitwiseAndDeterministicTruncatedOneHotMILPModel):
+    """Recover the compact legacy zero-versus-unknown AND formulation.
+
+    EXAMPLES::
+
+        >>> model = BitwiseAndDeterministicTruncatedMILPModel(2)
+        >>> formulation = model.milp_model(left_pattern="0?", right_pattern="00")
+        >>> (len(formulation.variables), len(formulation.constraints))
+        (8, 10)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "BitwiseAndDeterministicTruncatedMILPModel",
+        "deterministic_truncated_xor",
+        "legacy indicator-based conservative AND relation",
+        "The output is zero exactly when every input trit is zero, and unknown otherwise.",
+    )
+
+    def milp_model(self, *, left_pattern=None, right_pattern=None, output_pattern=None):
+        """Return the compact indicator formulation with fixed patterns."""
+
+        patterns = tuple(map(self._coerce, (left_pattern, right_pattern, output_pattern)))
+        variables: list[LinearVariable] = []
+        constraints: list[LinearConstraint] = []
+        left = tuple(f"left_{bit}" for bit in range(self.width))
+        right = tuple(f"right_{bit}" for bit in range(self.width))
+        output = tuple(f"output_{bit}" for bit in range(self.width))
+        active = tuple(f"active_{bit}" for bit in range(self.width))
+        variables.extend(
+            LinearVariable(name, VariableKind.INTEGER, 0, 2)
+            for group in (left, right, output)
+            for name in group
+        )
+        variables.extend(LinearVariable(name, VariableKind.BINARY) for name in active)
+        for bit in range(self.width):
+            constraints.extend(
+                (
+                    _constraint(
+                        {left[bit]: 1, right[bit]: 1, active[bit]: -4},
+                        ConstraintSense.LESS_EQUAL,
+                        0,
+                    ),
+                    _constraint(
+                        {left[bit]: 1, right[bit]: 1, active[bit]: -1},
+                        ConstraintSense.GREATER_EQUAL,
+                        0,
+                    ),
+                    _constraint({output[bit]: 1, active[bit]: -2}, ConstraintSense.EQUAL, 0),
+                )
+            )
+        for prefix, names, pattern in zip(
+            ("left", "right", "output"), self._groups_for(left, right, output), patterns
+        ):
+            if pattern is None:
+                continue
+            for bit, (name, value) in enumerate(zip(names, map(self._value, pattern.bits))):
+                constraints.append(
+                    _constraint({name: 1}, ConstraintSense.EQUAL, value, f"fixed_{prefix}_{bit}")
+                )
+        self._groups = left, right, output
+        return MILPModel(
+            tuple(variables),
+            tuple(constraints),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+
+
 __all__ = [
+    "BitwiseAndDeterministicTruncatedMILPModel",
+    "BitwiseAndDeterministicTruncatedOneHotMILPModel",
     "BitwiseAndOneHotMILPModel",
     "BitwiseAndXorDifferentialMILPModel",
     "BitwiseAndXorLinearMILPModel",

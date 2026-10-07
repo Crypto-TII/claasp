@@ -1,6 +1,8 @@
 """Backend-specific MILP component encodings."""
 
 from claasp.representations.constraints.milp.components.bitwise_and import (
+    BitwiseAndDeterministicTruncatedMILPModel,
+    BitwiseAndDeterministicTruncatedOneHotMILPModel,
     BitwiseAndOneHotMILPModel,
     BitwiseAndXorDifferentialMILPModel,
     BitwiseAndXorLinearMILPModel,
@@ -35,6 +37,8 @@ from claasp.representations.constraints.milp.components.sbox_inequalities import
 )
 
 __all__ = [
+    "BitwiseAndDeterministicTruncatedMILPModel",
+    "BitwiseAndDeterministicTruncatedOneHotMILPModel",
     "BitwiseAndOneHotMILPModel",
     "BitwiseAndXorDifferentialMILPModel",
     "BitwiseAndXorLinearMILPModel",

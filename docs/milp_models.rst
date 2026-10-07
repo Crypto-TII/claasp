@@ -175,6 +175,33 @@ versus 0.935 milliseconds for linear. This small fixed workload preserves the
 legacy strategy as a practical alternative; it does not establish a universal
 default.
 
+The deterministic-truncated variants model the conservative rule separately:
+AND outputs a known zero only when both input differences are known zero, and
+outputs unknown otherwise. ``BitwiseAndDeterministicTruncatedOneHotMILPModel``
+is the exhaustive portable baseline;
+``BitwiseAndDeterministicTruncatedMILPModel`` recovers the legacy binary
+indicator formulation:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.milp import (
+   ...     BitwiseAndDeterministicTruncatedMILPModel,
+   ... )
+   >>> truncated_and = BitwiseAndDeterministicTruncatedMILPModel(2)
+   >>> truncated_model = truncated_and.milp_model(
+   ...     left_pattern="0?", right_pattern="00", output_pattern="0?"
+   ... )
+   >>> (len(truncated_model.variables), len(truncated_model.constraints))
+   (8, 12)
+
+All nine one-bit ternary input pairs are checked through GLPK and independently
+decoded as ``TruncatedXorDifference`` values. The ten-run ARM64 benchmark in
+``architecture/audits/data/milp_truncated_and_benchmark.json`` fixes the same
+32-bit transition for both strategies. The recovered model uses 128 variables
+and 192 constraints versus 384 and 224 for one-hot; median GLPK solve times
+were 0.737 and 1.399 milliseconds respectively. This workload does not select
+a repository-wide default.
+
 Small-S-box inequality strategies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
