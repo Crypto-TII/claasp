@@ -550,6 +550,13 @@ linear clauses; decoded Chuffed witnesses are independently rechecked by the
 typed composition. The continuous legacy search remains explicitly heuristic
 and outside this proof-producing model.
 
+The matching semi-deterministic CP slice adds
+``WordSemiDeterministicDifferentialLinearCPModel``. It preserves the recovered
+look-ahead-window middle and its deliberately separate estimated weight while
+translating the complete composition exactly to MiniZinc. Chuffed solves and
+independently decodes the reviewed Speck32/64-3 fixture; the middle relation's
+literature correspondence remains unaudited and is not strengthened here.
+
 The first deterministic-truncated MILP component slice recovers the legacy
 indicator-based AND abstraction as
 ``BitwiseAndDeterministicTruncatedMILPModel`` and adds

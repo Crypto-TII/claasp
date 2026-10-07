@@ -6,6 +6,7 @@ from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
     _direct_model,
+    _unaudited_model,
 )
 from claasp.representations.constraints.cp.components import (
     ModularAddDeterministicTruncatedCPModel as _ModularAddDeterministicTruncatedCPModel,
@@ -1357,6 +1358,84 @@ class WordDeterministicDifferentialLinearCPModel:
             prefix_rounds=prefix_rounds,
             middle_rounds=middle_rounds,
             differential_maximum_weight=differential_maximum_weight,
+            linear_maximum_weight=linear_maximum_weight,
+            input_difference=input_difference,
+            output_mask=output_mask,
+        )
+        self.primitive = primitive
+        self._query: MiniZincModel | None = None
+
+    def cp_model(self) -> MiniZincModel:
+        """Return the exact portable MiniZinc query."""
+
+        lowered = BooleanMiniZincLowerer().lower(self._sat_model.cnf_formula())
+        self._query = MiniZincModel(
+            lowered.declarations,
+            lowered.constraints,
+            lowered.solve,
+            lowered.includes,
+            lowered.outputs,
+            lowered.provenance,
+            lowered.name_mapping,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_trail(self, assignment):
+        """Decode and independently validate all three trail sections."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        return self._sat_model.decode_trail(assignment)
+
+
+class WordSemiDeterministicDifferentialLinearCPModel:
+    """Assemble semi-deterministic differential-linear trails as MiniZinc.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = WordSemiDeterministicDifferentialLinearCPModel(
+        ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
+        ...     differential_maximum_weight=16,
+        ...     middle_maximum_scaled_weight=None,
+        ...     linear_maximum_weight=16,
+        ... )
+        >>> query = model.cp_model()
+        >>> (len(query.declarations), len(query.constraints))
+        (2303, 6599)
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.CP,
+        "WordSemiDeterministicDifferentialLinearCPModel",
+        "differential_linear",
+        "exact MiniZinc translation of the recovered semi-deterministic composition",
+        "The middle probability and exact literature correspondence remain unaudited.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        prefix_rounds,
+        middle_rounds,
+        differential_maximum_weight,
+        middle_maximum_scaled_weight,
+        linear_maximum_weight,
+        input_difference=None,
+        output_mask=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import (
+            WordSemiDeterministicDifferentialLinearSATModel,
+        )
+
+        self._sat_model = WordSemiDeterministicDifferentialLinearSATModel(
+            primitive,
+            prefix_rounds=prefix_rounds,
+            middle_rounds=middle_rounds,
+            differential_maximum_weight=differential_maximum_weight,
+            middle_maximum_scaled_weight=middle_maximum_scaled_weight,
             linear_maximum_weight=linear_maximum_weight,
             input_difference=input_difference,
             output_mask=output_mask,
