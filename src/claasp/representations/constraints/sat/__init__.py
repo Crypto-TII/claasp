@@ -3,6 +3,7 @@
 from claasp.representations.constraints.sat.components import (
     BooleanFunctionalSATModel,
     BooleanNativeXorSATModel,
+    ModularAddDeterministicTruncatedSATModel,
     ModularAddDifferentialSATModel,
     ModularAddFunctionalSATModel,
     ModularAddLinearSATModel,
@@ -33,6 +34,7 @@ __all__ = [
     "CNFFormula",
     "CryptoMiniSatDimacsExporter",
     "ModularAddDifferentialSATModel",
+    "ModularAddDeterministicTruncatedSATModel",
     "ModularAddFunctionalSATModel",
     "ModularAddLinearSATModel",
     "ModularAddNativeXorSATModel",

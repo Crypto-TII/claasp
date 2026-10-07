@@ -7,12 +7,14 @@ import pytest
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.sat import (
+    ModularAddDeterministicTruncatedSATModel,
     ModularAddDifferentialSATModel,
     ModularAddLinearSATModel,
     ModularAddNWindowSATModel,
     SBoxXorDifferentialSATModel,
     SBoxXorLinearSATModel,
 )
+from claasp.semantics.cryptanalysis import TruncatedXorDifference, truncated_modular_add
 
 
 def _solutions(formula):
@@ -128,3 +130,45 @@ def test_sat_modadd_n_window_matches_direct_carry_difference_definition(window_s
         )
         assert formula.is_satisfied(assignment) is expected
     assert formula.constraint_models[0].model is model.model_provenance
+
+
+def test_sat_modadd_deterministic_truncated_matches_every_two_bit_pattern():
+    model = ModularAddDeterministicTruncatedSATModel(2)
+    formula = model.cnf_formula()
+
+    def boundary_assignment(prefix, pattern):
+        return {
+            f"{prefix}_{bit}_{field}": value
+            for bit, encoded in enumerate(model.encode_pattern(pattern))
+            for field, value in zip(("unknown", "value"), encoded)
+        }
+
+    patterns = tuple("".join(bits) for bits in product("01?", repeat=2))
+    for left, right in product(patterns, repeat=2):
+        expected = str(
+            truncated_modular_add(
+                TruncatedXorDifference.parse(left), TruncatedXorDifference.parse(right)
+            )
+        )
+        for output in patterns:
+            boundary = (
+                boundary_assignment("left", left)
+                | boundary_assignment("right", right)
+                | boundary_assignment("output", output)
+            )
+            witnesses = []
+            for carry_bits in product((0, 1), repeat=4):
+                assignment = boundary | {
+                    f"carry_{bit}_{field}": value
+                    for bit in range(2)
+                    for field, value in zip(("unknown", "value"), carry_bits[2 * bit : 2 * bit + 2])
+                }
+                if formula.is_satisfied(assignment):
+                    witnesses.append(assignment)
+            assert bool(witnesses) is (output == expected)
+            if witnesses:
+                assert tuple(map(str, model.decode_transition(witnesses[0]))) == (
+                    left,
+                    right,
+                    output,
+                )

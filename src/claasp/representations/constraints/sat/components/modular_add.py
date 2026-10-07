@@ -272,6 +272,185 @@ class ModularAddNWindowSATModel:
         )
 
 
+class ModularAddDeterministicTruncatedSATModel:
+    """Recover the legacy two-bit deterministic-truncated addition clauses.
+
+    Each trit uses an ``unknown`` flag and a value bit. The value bit is
+    ignored whenever ``unknown`` is true, matching the legacy SAT encoding.
+    Decoding projects that redundant representation to ``0``, ``1``, or ``?``
+    and checks it against the backend-neutral paired-carry semantics.
+
+    EXAMPLES::
+
+        >>> model = ModularAddDeterministicTruncatedSATModel(4)
+        >>> formula = model.cnf_formula()
+        >>> (formula.variable_count, formula.clause_count)
+        (32, 47)
+        >>> model.encode_pattern("10??")
+        ((0, 1), (0, 0), (1, 0), (1, 0))
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "ModularAddDeterministicTruncatedSATModel",
+        "deterministic_truncated_xor",
+        "legacy two-bit paired-carry clauses",
+        "The dependency-free clauses recover the legacy deterministic-truncated modular-add encoding.",
+    )
+
+    def __init__(self, width: int) -> None:
+        if not isinstance(width, int) or isinstance(width, bool) or width < 2:
+            raise ValueError("width must be an integer of at least two")
+        self.width = width
+
+    @staticmethod
+    def encode_pattern(pattern: str) -> tuple[tuple[int, int], ...]:
+        """Encode a user pattern with canonical value zero for unknown trits."""
+
+        from claasp.semantics.cryptanalysis import TruncatedXorDifference
+
+        difference = TruncatedXorDifference.parse(pattern)
+        return tuple(
+            (int(bit.encoded == 2), 0 if bit.encoded == 2 else bit.encoded)
+            for bit in difference.bits
+        )
+
+    def cnf_formula(self) -> CNFFormula:
+        """Return the recovered local modular-add formula."""
+
+        variables = tuple(
+            f"{prefix}_{bit}_{field}"
+            for prefix in ("left", "right", "output", "carry")
+            for bit in range(self.width)
+            for field in ("unknown", "value")
+        )
+        indices = {name: index for index, name in enumerate(variables, 1)}
+        clauses = []
+        provenance = []
+
+        def pair(prefix, bit):
+            return (f"{prefix}_{bit}_unknown", f"{prefix}_{bit}_value")
+
+        def add(items, label):
+            clauses.append(
+                tuple(indices[name] if positive else -indices[name] for name, positive in items)
+            )
+            provenance.append(label)
+
+        def lsb(result, left, right, next_carry):
+            return (
+                ((next_carry[0], True), (next_carry[1], False)),
+                ((next_carry[0], True), (right[1], False)),
+                ((next_carry[0], True), (result[0], False)),
+                ((next_carry[0], True), (result[1], False)),
+                ((result[0], True), (left[0], False)),
+                ((result[0], True), (right[0], False)),
+                ((left[0], True), (right[0], True), (result[0], False)),
+                ((left[1], True), (right[1], True), (result[0], True), (next_carry[0], False)),
+                ((left[1], True), (result[0], True), (result[1], True), (right[1], False)),
+                ((right[1], True), (result[0], True), (result[1], True), (left[1], False)),
+                ((result[0], True), (left[1], False), (right[1], False), (result[1], False)),
+            )
+
+        def middle(result, left, right, carry, next_carry):
+            return (
+                ((next_carry[0], True), (next_carry[1], False)),
+                ((next_carry[0], True), (right[1], False)),
+                ((next_carry[0], True), (result[0], False)),
+                ((next_carry[0], True), (result[1], False)),
+                ((result[0], True), (carry[0], False)),
+                ((result[0], True), (carry[1], False)),
+                ((result[0], True), (left[0], False)),
+                ((result[0], True), (right[0], False)),
+                ((left[1], True), (right[1], True), (result[0], True), (next_carry[0], False)),
+                ((left[1], True), (result[0], True), (result[1], True), (right[1], False)),
+                ((right[1], True), (result[0], True), (result[1], True), (left[1], False)),
+                (
+                    (carry[0], True),
+                    (carry[1], True),
+                    (left[0], True),
+                    (right[0], True),
+                    (result[0], False),
+                ),
+                ((result[0], True), (left[1], False), (right[1], False), (result[1], False)),
+            )
+
+        def msb(result, left, right, carry):
+            return (
+                ((result[0], True), (carry[0], False)),
+                ((result[0], True), (carry[1], False)),
+                ((result[0], True), (left[0], False)),
+                ((result[0], True), (right[0], False)),
+                ((left[1], True), (right[1], True), (result[0], True), (result[1], False)),
+                ((left[1], True), (result[0], True), (result[1], True), (right[1], False)),
+                ((right[1], True), (result[0], True), (result[1], True), (left[1], False)),
+                (
+                    (carry[0], True),
+                    (carry[1], True),
+                    (left[0], True),
+                    (right[0], True),
+                    (result[0], False),
+                ),
+                ((result[0], True), (left[1], False), (right[1], False), (result[1], False)),
+            )
+
+        final_carry = pair("carry", self.width - 1)
+        add(((final_carry[0], False), (final_carry[1], False)), "truncated_carry_domain")
+        for clause in msb(pair("output", 0), pair("left", 0), pair("right", 0), pair("carry", 0)):
+            add(clause, "truncated_modadd_msb")
+        for bit in range(1, self.width - 1):
+            for clause in middle(
+                pair("output", bit),
+                pair("left", bit),
+                pair("right", bit),
+                pair("carry", bit),
+                pair("carry", bit - 1),
+            ):
+                add(clause, "truncated_modadd_middle")
+        for clause in lsb(
+            pair("output", self.width - 1),
+            pair("left", self.width - 1),
+            pair("right", self.width - 1),
+            pair("carry", self.width - 2),
+        ):
+            add(clause, "truncated_modadd_lsb")
+        return CNFFormula(
+            variables,
+            tuple(clauses),
+            tuple(provenance),
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+
+    def decode_transition(self, assignment):
+        """Decode and independently check one satisfying local assignment."""
+
+        from claasp.semantics.cryptanalysis import (
+            TruncatedBit,
+            TruncatedXorDifference,
+            truncated_modular_add,
+        )
+
+        formula = self.cnf_formula()
+        if not formula.is_satisfied(assignment):
+            raise ValueError("invalid deterministic-truncated modular-add witness")
+
+        def pattern(prefix):
+            bits = []
+            for bit in range(self.width):
+                if assignment[f"{prefix}_{bit}_unknown"]:
+                    bits.append(TruncatedBit.UNKNOWN)
+                elif assignment[f"{prefix}_{bit}_value"]:
+                    bits.append(TruncatedBit.ONE)
+                else:
+                    bits.append(TruncatedBit.ZERO)
+            return TruncatedXorDifference(tuple(bits))
+
+        left, right, output = (pattern(prefix) for prefix in ("left", "right", "output"))
+        if output != truncated_modular_add(left, right):
+            raise ValueError("truncated output disagrees with paired-carry semantics")
+        return left, right, output
+
+
 class ModularAddLinearSATModel:
     """Exact modular-add XOR-linear mask recurrence in CNF.
 
@@ -351,6 +530,7 @@ def _integer(assignment, prefix: str, width: int) -> int:
 
 __all__ = [
     "ModularAddDifferentialSATModel",
+    "ModularAddDeterministicTruncatedSATModel",
     "ModularAddFunctionalSATModel",
     "ModularAddLinearSATModel",
     "ModularAddNativeXorSATModel",
