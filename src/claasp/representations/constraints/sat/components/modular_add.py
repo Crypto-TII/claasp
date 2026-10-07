@@ -99,6 +99,24 @@ class ModularAddFunctionalSATModel:
                 accumulator = target
 
 
+class ModularAddNativeXorSATModel(ModularAddFunctionalSATModel):
+    """Use native parity records inside the functional ripple-carry adder.
+
+    EXAMPLES::
+
+        >>> ModularAddNativeXorSATModel.model_provenance.encoding_name
+        'ripple-carry with CryptoMiniSat native XOR records'
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "ModularAddNativeXorSATModel",
+        "functional",
+        "ripple-carry with CryptoMiniSat native XOR records",
+        "Sum parity is native XOR; carry majority constraints remain ordinary CNF.",
+    )
+
+
 class ModularAddDifferentialSATModel:
     """Exact paired-carry CNF support and unary XOR-differential weights.
 
@@ -232,4 +250,5 @@ __all__ = [
     "ModularAddDifferentialSATModel",
     "ModularAddFunctionalSATModel",
     "ModularAddLinearSATModel",
+    "ModularAddNativeXorSATModel",
 ]

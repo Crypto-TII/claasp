@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box MILP and local SAT transition recovery implemented; next: SAT trail assembly/CMS**
+Status: **S-box MILP, local SAT transitions, and native-XOR output implemented; next: SAT trail assembly**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -353,9 +353,23 @@ models for S-boxes and modular addition. It exhaustively checks PRESENT support,
 small modular-add support and weights, and focused MiniSat solving. The modular
 addition classes reuse the already verified backend-neutral Boolean clauses but
 publish SAT provenance and SAT containers; they do not duplicate a competing
-formula. Generic graph-wide trail assembly, native-XOR CryptoMiniSat output,
-the optional n-window heuristic, and their like-for-like benchmarks remain in
-the immediately following slices.
+formula. Generic graph-wide trail assembly, the optional n-window heuristic,
+and their like-for-like solver benchmarks remain in the immediately following
+slices.
+
+The native-XOR slice adds an immutable mixed CNF/parity container, explicit
+functional component strategies, an independently checkable ordinary-CNF
+expansion, and the CryptoMiniSat extended-DIMACS exporter. Functional Speck and
+Simon formulas expand exactly to their ordinary CNF baselines. The canonical
+image does not contain CryptoMiniSat, so the committed benchmark records
+formulation construction, variables, ordinary clauses, native XOR clauses,
+expanded clause counts, and export bytes while marking solver time/status as
+not run. Do not infer a solver-speed advantage from formulation size. Add the
+like-for-like solver benchmark when a pinned CryptoMiniSat job is available.
+
+Generic XOR-differential/XOR-linear trail assembly and the optional n-window
+heuristic remain next; native-XOR trail lowering should build on the mixed
+container rather than reintroducing legacy string clauses.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and

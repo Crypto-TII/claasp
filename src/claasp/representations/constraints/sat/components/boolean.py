@@ -77,3 +77,28 @@ class BooleanFunctionalSATModel:
                     context.and_(
                         target, selected[0][position][bit], selected[1][position][bit], label
                     )
+
+
+class BooleanNativeXorSATModel(BooleanFunctionalSATModel):
+    """Encode Boolean operators with native parity records when available.
+
+    EXAMPLES::
+
+        >>> from claasp.components import Xor
+        >>> from claasp.primitives import Simon
+        >>> component = next(item for item in Simon(number_of_rounds=1).components
+        ...                  if isinstance(item, Xor))
+        >>> BooleanNativeXorSATModel(component).model_provenance.encoding_name
+        'CryptoMiniSat native XOR records'
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "BooleanNativeXorSATModel",
+        "functional",
+        "CryptoMiniSat native XOR records",
+        "Parity equations are emitted directly; non-XOR operators retain ordinary CNF.",
+    )
+
+
+__all__ = ["BooleanFunctionalSATModel", "BooleanNativeXorSATModel"]
