@@ -279,6 +279,47 @@ corresponding solve times are 2.85, 1.14, and 2.10 milliseconds. These results
 establish solver parity for this small workload and do not establish a general
 performance ranking.
 
+Probabilistic-truncated SAT trails
+----------------------------------
+
+``SpeckProbabilisticTruncatedSATModel`` composes the counter-based partial
+addition relation over complete Speck32/64 rounds. Unlike deterministic
+truncation, a partial modular addition can choose a compatible carry
+difference and records its probability cost. Costs use the historical CLAASP
+fixed-point scale: 100 units are one bit of probability weight.
+
+The established two-round fixture has minimum scaled weight 100. Supplying
+that value as an upper bound turns the SAT query into a reproducible decision
+problem:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.sat import (
+   ...     SpeckProbabilisticTruncatedSATModel,
+   ... )
+   >>> probabilistic_model = SpeckProbabilisticTruncatedSATModel(
+   ...     Speck(number_of_rounds=2),
+   ...     "00000000011111001110000000000000",
+   ...     "???????????????1???????????????1",
+   ...     maximum_scaled_weight=100,
+   ... )
+   >>> probabilistic_formula = probabilistic_model.cnf_formula()
+   >>> (probabilistic_formula.variable_count, probabilistic_formula.clause_count)
+   (554782, 1327845)
+
+After solving, ``probabilistic_model.decode_trail(result.assignment)`` returns
+a ``ProbabilisticTruncatedTrail``. Its ``scaled_weight`` and ``weight`` are 100
+and 1.0 for this boundary. Decoding checks every modular-add transition against
+the independent counter-based semantics and checks the round rotations and XOR
+wiring again.
+
+The ten-run ARM64 benchmark in
+``architecture/audits/data/sat_probabilistic_trail_benchmark.json`` records the
+same bounded formula under all three canonical SAT solvers. The formulation is
+large—554,782 variables and 1,327,845 clauses—and Kissat reported a median
+692.6 MiB peak. The data establishes correctness and a concrete optimization
+target; it does not make a general solver-performance claim.
+
 Optional n-window strategy
 --------------------------
 
