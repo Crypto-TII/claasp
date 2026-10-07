@@ -287,7 +287,14 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **Next: inventory PR; then split by backend and model family**
+Status: **Inventory complete; next: S-box MILP strategy recovery**
+
+The repository-wide inventory is recorded in
+[`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
+It covers every legacy backend search-model class, the component/backend
+encoding surface, formulation generators, and relevant unmerged legacy
+branches. The inventory identifies recovery candidates; it does not certify
+correctness or performance.
 
 The CLAASP 5 migration is complete. This program does not reopen the migration:
 it deliberately preserves established constraint-generation methods that were
@@ -297,15 +304,14 @@ supported baselines. Recovered methods must be added as explicitly named
 alternative strategies until like-for-like evidence justifies any change of
 default.
 
-Start with a repository-wide legacy-method inventory. For every legacy
-component/backend/model combination, record whether it is:
+The inventory classifies every legacy component/backend/model combination as:
 
 - already represented equivalently in CLAASP 5;
 - superseded by a documented CLAASP 5 strategy;
 - absent from CLAASP 5 and a candidate for recovery; or
 - obsolete, incorrect, or out of scope, with the supporting evidence.
 
-The initial inventory must cover at least:
+The inventory covers:
 
 - S-box differential and linear MILP convex-hull, impossible-point, reduced
   inequality, and large-S-box encodings, including the legacy strategies
@@ -322,6 +328,14 @@ The initial inventory must cover at least:
   Gurobi implementations, alongside the portable MILP models; and
 - solver-specific inequality generators, caches, and preprocessing paths that
   materially change the generated formulation.
+
+The first recovery PR should add the legacy small-S-box convex-hull and reduced
+inequality strategies as explicit MILP alternatives to the portable one-hot
+baseline. Include differential and linear propagation, exhaustive relation
+parity for representative 4-bit S-boxes, and reproducible formulation/solver
+benchmarks. Keep large-S-box Espresso support in the same PR only if the
+optional-tool boundary and 8-bit parity tests remain reviewable; otherwise
+split it into the immediately following PR.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and
