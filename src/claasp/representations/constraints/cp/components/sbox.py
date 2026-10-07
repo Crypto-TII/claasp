@@ -7,6 +7,7 @@ from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
     _direct_model,
+    _verified_model,
 )
 from claasp.representations.constraints.cp.model import MiniZincModel
 from claasp.semantics import XOR_DIFFERENTIAL
@@ -118,12 +119,14 @@ class SBoxBoomerangCPModel:
         'solve maximize quartet_count;'
     """
 
-    model_provenance = _direct_model(
+    model_provenance = _verified_model(
         ConstraintBackend.CP,
         "SBoxBoomerangCPModel",
         "boomerang",
         "exhaustive BCT table constraint",
-        "The connectivity rows are enumerated directly from the supplied bijective S-box table.",
+        "10.1007/978-3-319-78375-8_22",
+        "Boomerang Connectivity Table: A New Cryptanalysis Tool",
+        "section 3.1, Definition 3.1",
     )
 
     def __init__(

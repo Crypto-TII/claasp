@@ -8,6 +8,7 @@ from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
     _direct_model,
+    _verified_model,
 )
 from claasp.representations.constraints.milp.model import (
     ConstraintSense,
@@ -259,12 +260,14 @@ class PresentMonomialTrailMILPModel:
         True
     """
 
-    model_provenance = _direct_model(
+    model_provenance = _verified_model(
         ConstraintBackend.MILP,
         "PresentMonomialTrailMILPModel",
         "division_property",
         "exhaustive monomial-transition row selection",
-        "The relation is derived exhaustively from the lookup-table ANF.",
+        "https://eprint.iacr.org/2020/1048",
+        "An Algebraic Formulation of the Division Property: Revisiting Degree Evaluations, Cube Attacks, and Key-Independent Sums",
+        "section 3, Definition 1; section 4.2",
     )
 
     def __init__(self, primitive, input_mask: int, output_mask: int) -> None:

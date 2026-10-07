@@ -1,5 +1,12 @@
 """Select and compose MILP component encodings for complete graphs."""
 
+from typing import cast
+
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _verified_model,
+)
 from claasp.representations.constraints.sat import BooleanCNFModel, CNFFormula
 
 from .model import (
@@ -105,6 +112,16 @@ class BooleanMonomialGraphMILPModel:
         >>> len(model.objective.terms)
         32
     """
+
+    model_provenance = _verified_model(
+        ConstraintBackend.MILP,
+        "BooleanMonomialGraphMILPModel",
+        "monomial_prediction",
+        "COPY, AND, XOR, and bit-permutation monomial-trail rules",
+        "https://eprint.iacr.org/2020/1048",
+        "An Algebraic Formulation of the Division Property: Revisiting Degree Evaluations, Cube Attacks, and Key-Independent Sums",
+        "section 4.2, MILP model for the monomial trail of f^(i)",
+    )
 
     def __init__(
         self, primitive, output_bit: int, variable_input: str, variable_positions=None
@@ -313,4 +330,17 @@ class BooleanMonomialGraphMILPModel:
         objective = LinearExpression.from_terms(
             {self._wire(self.variable_input, bit): 1 for bit in self.variable_positions}
         )
-        return MILPModel(tuple(variables), tuple(constraints), objective, ObjectiveSense.MAXIMIZE)
+        return MILPModel(
+            tuple(variables),
+            tuple(constraints),
+            objective,
+            ObjectiveSense.MAXIMIZE,
+            constraint_models=(
+                ConstraintModelApplication(
+                    self.model_provenance,
+                    tuple(
+                        cast(str, component.component_id) for component in self.primitive.components
+                    ),
+                ),
+            ),
+        )

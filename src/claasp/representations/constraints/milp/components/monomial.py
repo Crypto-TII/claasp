@@ -3,7 +3,7 @@
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
-    _direct_model,
+    _verified_model,
 )
 from claasp.representations.constraints.milp.model import (
     ConstraintSense,
@@ -28,12 +28,14 @@ class MonomialTransitionMILPModel:
         True
     """
 
-    model_provenance = _direct_model(
+    model_provenance = _verified_model(
         ConstraintBackend.MILP,
         "MonomialTransitionMILPModel",
         "division_property",
         "exhaustive monomial-transition row selection",
-        "The finite relation is derived exhaustively from the lookup table ANF.",
+        "https://eprint.iacr.org/2020/1048",
+        "An Algebraic Formulation of the Division Property: Revisiting Degree Evaluations, Cube Attacks, and Key-Independent Sums",
+        "section 3, Definition 1",
     )
 
     def __init__(self, table) -> None:

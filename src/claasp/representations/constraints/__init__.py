@@ -167,6 +167,44 @@ def _unaudited_model(
     )
 
 
+def _verified_model(
+    backend: ConstraintBackend,
+    component_model: str,
+    analysis_kind: str,
+    encoding_name: str,
+    reference_identifier: str,
+    reference_title: str,
+    source_locator: str,
+) -> ConstraintModelProvenance:
+    """Construct a ``VERIFIED`` declaration for an audited encoding.
+
+    EXAMPLES::
+
+        >>> record = _verified_model(
+        ...     ConstraintBackend.SMT,
+        ...     "ExampleSMTModel",
+        ...     "xor_differential",
+        ...     "published Boolean relation",
+        ...     "https://example.test/paper",
+        ...     "Example primary source",
+        ...     "section 3, equation 7",
+        ... )
+        >>> record.compact_reference
+        'https://example.test/paper (section 3, equation 7)'
+    """
+
+    return ConstraintModelProvenance(
+        backend,
+        component_model,
+        analysis_kind,
+        encoding_name,
+        ConstraintReferenceStatus.VERIFIED,
+        reference_identifier,
+        reference_title,
+        source_locator,
+    )
+
+
 __all__ = [
     "ConstraintBackend",
     "ConstraintModelApplication",

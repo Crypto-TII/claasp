@@ -1,11 +1,12 @@
 import importlib
 import inspect
 import pkgutil
+from typing import cast
 
 import pytest
 
 from claasp.presentation import trail_section
-from claasp.primitives import Speck, ToySpeck
+from claasp.primitives import Simon, Speck, ToySpeck
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
@@ -15,23 +16,35 @@ from claasp.representations.constraints import (
 from claasp.representations.constraints.cp import components as cp_components
 from claasp.representations.constraints.cp.components import (
     ProbabilisticTruncatedModularAddCPModel,
+    SBoxBoomerangCPModel,
+    SBoxXorDifferentialCPModel,
 )
 from claasp.representations.constraints.cp.lowering import BooleanMiniZincLowerer
 from claasp.representations.constraints.milp import components as milp_components
 from claasp.representations.constraints.milp.components import (
     ModularAddLinearMILPModel,
+    MonomialTransitionMILPModel,
+    SBoxXorDifferentialMILPModel,
+    SBoxXorLinearMILPModel,
 )
-from claasp.representations.constraints.milp.lowering import cnf_to_milp
+from claasp.representations.constraints.milp.lowering import (
+    BooleanMonomialGraphMILPModel,
+    cnf_to_milp,
+)
+from claasp.representations.constraints.milp.trails import PresentMonomialTrailMILPModel
 from claasp.representations.constraints.sat import BooleanCNFModel
 from claasp.representations.constraints.sat import components as sat_components
 from claasp.representations.constraints.sat.components import (
     ModularAddFunctionalSATModel,
     SBoxFunctionalSATModel,
+    WiringFunctionalSATModel,
 )
 from claasp.representations.constraints.smt import components as smt_components
 from claasp.representations.constraints.smt.components import (
     ModularAddDifferentialSMTModel,
     ModularAddLinearSMTModel,
+    SBoxXorDifferentialSMTModel,
+    SBoxXorLinearSMTModel,
 )
 from claasp.representations.constraints.smt.model import SMTFormula
 from claasp.representations.constraints.smt.trails import WordDifferentialSMTModel
@@ -72,10 +85,10 @@ def test_every_component_model_declares_an_explicit_reference_status():
     assert all(isinstance(record, ConstraintModelProvenance) for record in records)
     assert all(isinstance(record.reference_status, ConstraintReferenceStatus) for record in records)
     assert {record.backend for record in records} == set(ConstraintBackend)
-    assert ConstraintReferenceStatus.VERIFIED not in {record.reference_status for record in records}
+    assert ConstraintReferenceStatus.VERIFIED in {record.reference_status for record in records}
 
 
-def test_direct_models_are_na_and_unaudited_modular_add_models_are_tbd():
+def test_direct_and_audited_modular_add_models_declare_their_reference_status():
     assert SBoxFunctionalSATModel.model_provenance.reference_status is (
         ConstraintReferenceStatus.NOT_APPLICABLE
     )
@@ -83,11 +96,72 @@ def test_direct_models_are_na_and_unaudited_modular_add_models_are_tbd():
         ModularAddDifferentialSMTModel,
         ModularAddLinearSMTModel,
         ModularAddLinearMILPModel,
-        ProbabilisticTruncatedModularAddCPModel,
     ):
-        assert model.model_provenance.reference_status is (
-            ConstraintReferenceStatus.TO_BE_DETERMINED
-        )
+        assert model.model_provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+    assert ProbabilisticTruncatedModularAddCPModel.model_provenance.reference_status is (
+        ConstraintReferenceStatus.TO_BE_DETERMINED
+    )
+
+
+def test_audited_modular_add_models_name_the_verified_primary_source_and_locator():
+    differential = ModularAddDifferentialSMTModel.model_provenance
+    assert differential.reference_identifier == "https://eprint.iacr.org/2001/001"
+    assert differential.source_locator == "section 4, Algorithm 2 and Theorem 1"
+
+    for model in (ModularAddLinearSMTModel, ModularAddLinearMILPModel):
+        provenance = model.model_provenance
+        assert provenance.reference_identifier == "10.1007/978-3-319-39555-5_26"
+        assert provenance.source_locator == "section 3.1, Proposition 1 and equation (1)"
+
+
+def test_audited_boomerang_model_names_the_bct_definition():
+    provenance = SBoxBoomerangCPModel.model_provenance
+
+    assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+    assert provenance.reference_identifier == "10.1007/978-3-319-78375-8_22"
+    assert provenance.source_locator == "section 3.1, Definition 3.1"
+
+
+def test_audited_monomial_models_name_the_monomial_prediction_construction():
+    models = (
+        MonomialTransitionMILPModel,
+        BooleanMonomialGraphMILPModel,
+        PresentMonomialTrailMILPModel,
+    )
+
+    for model in models:
+        provenance = model.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+        assert provenance.reference_identifier == "https://eprint.iacr.org/2020/1048"
+        assert provenance.source_locator in {
+            "section 3, Definition 1",
+            "section 3, Definition 1; section 4.2",
+            "section 4.2, MILP model for the monomial trail of f^(i)",
+        }
+
+
+def test_exhaustive_sbox_tables_and_direct_linear_wiring_remain_not_applicable():
+    for model in (
+        SBoxXorDifferentialCPModel,
+        SBoxXorDifferentialMILPModel,
+        SBoxXorLinearMILPModel,
+        SBoxXorDifferentialSMTModel,
+        SBoxXorLinearSMTModel,
+        WiringFunctionalSATModel,
+    ):
+        assert model.model_provenance.reference_status is (ConstraintReferenceStatus.NOT_APPLICABLE)
+
+
+def test_monomial_graph_lowering_propagates_its_verified_model_declaration():
+    primitive = Simon(number_of_rounds=1)
+    model = BooleanMonomialGraphMILPModel(primitive, 0, "plaintext").milp_model()
+
+    assert model.constraint_models == (
+        ConstraintModelApplication(
+            BooleanMonomialGraphMILPModel.model_provenance,
+            tuple(cast(str, component.component_id) for component in primitive.components),
+        ),
+    )
 
 
 def test_verified_reference_requires_a_stable_identifier_and_precise_locator():
@@ -137,7 +211,8 @@ def test_complete_trail_lowering_retains_the_modular_add_model_declaration():
         if application.model is ModularAddDifferentialSMTModel.model_provenance
     )
     assert modular_add.component_ids
-    assert modular_add.model.reference_status is ConstraintReferenceStatus.TO_BE_DETERMINED
+    assert modular_add.model.reference_status is ConstraintReferenceStatus.VERIFIED
+    assert modular_add.model.reference_identifier == "https://eprint.iacr.org/2001/001"
 
 
 def test_trail_report_maps_references_and_deduplicates_verified_citations():

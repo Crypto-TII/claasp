@@ -166,7 +166,7 @@ Implementation inventory notes:
 
 ## Constraint-model provenance infrastructure PR
 
-Status: **In progress**
+Status: **Complete**
 
 References belong to the backend-specific constraint model that implements the
 encoding. They do not belong to `component_analysis`, the component class, or a
@@ -209,9 +209,8 @@ Implementation discoveries:
 - SAT-to-SMT, SAT-to-MILP, and SAT-to-MiniZinc translations preserve the
   originating component-model declarations.
 - Direct truth-table, full-adder, wiring, and exhaustive finite-relation
-  encodings are marked ``N/A``. The modular-add differential, linear, and
-  probabilistic-truncated correspondences remain ``TBD`` for later literature
-  audits; this PR introduces no ``VERIFIED`` production entry.
+  encodings are marked ``N/A``. The infrastructure PR initially left every
+  modular-add correspondence ``TBD``; the audited statuses are recorded below.
 
 ## Constraint-model literature audit PRs
 
@@ -238,6 +237,113 @@ In particular:
 Prefer several small audit PRs over one repository-wide literature claim.
 Record unresolved cases as `TBD`; never guess.
 
+Modular-addition audit discoveries:
+
+- The exact SMT XOR-differential support and unary-weight relation matches
+  Lipmaa--Moriai, Section 4, Algorithm 2 and Theorem 1. Legacy CLAASP also
+  identifies its equivalent SAT and SMT helpers as the Lipmaa--Moriai
+  algorithm.
+- The exact SMT and MILP XOR-linear relations both encode Liu--Wang--Rijmen,
+  Section 3.1, Proposition 1 and Equation (1). The backend-specific clauses
+  and inequalities are two representations of the same mask recurrence,
+  support conditions, and Hamming-weight objective. Legacy CLAASP cites that
+  construction for both SAT and SMT and points its Boolean inequality helper
+  directly to Equation (1).
+- The probabilistic-truncated CP model remains `TBD`. Legacy CLAASP contains
+  the counter-based predicate and scaled cost table, but no primary-source
+  attribution or derivation was found; a later audit must establish the exact
+  origin before attaching a citation.
+
+S-box, linear-layer, and monomial audit discoveries:
+
+- The CP S-box boomerang model computes the BCT entry exactly as defined by
+  Cid--Huang--Peyrin--Sasaki--Song, Section 3.1, Definition 3.1, before exposing
+  the nonzero rows through a generic MiniZinc table constraint. Legacy CLAASP
+  includes the same BCT paper in its bibliography, although its surviving BCT
+  implementation targets a different modular-add search.
+- The local S-box monomial-transition table and the complete PRESENT monomial
+  trail implement the monomial-trail relation of Hu--Sun--Wang--Wang, Section 3,
+  Definition 1. The Boolean graph MILP uses the COPY, AND, XOR, and direct
+  bit-permutation rules given in Section 4.2. Legacy CLAASP's Gurobi monomial
+  model builds the same transition relation from products of output-coordinate
+  ANFs but does not carry the paper citation.
+- The current CP, SMT, and MILP XOR-differential and XOR-linear S-box models
+  remain `N/A`: they enumerate their DDT or LAT relation directly and then use
+  generic table, forbidden-assignment, or one-hot row selection. Legacy CLAASP
+  cites Sun et al., Abdelkhalek et al., and Sasaki--Todo for convex-hull and
+  inequality-reduction encodings, but those are not the encodings implemented
+  by these CLAASP 5 models.
+- Functional permutations, rotations, identities, and the PRESENT permutation
+  layer remain `N/A` where they are direct wiring. The monomial-prediction
+  lowering is separately verified because its COPY and bit-permutation
+  propagation rules are part of the audited monomial-trail construction.
+- CLAASP 5 currently exposes a typed differential-linear trail container but no
+  backend differential-linear constraint model to which a model reference can
+  be attached. Legacy CLAASP associates its continuous MiniZinc operations with
+  Bellini--Gérault--Grados--Makarim--Peyrin, including an explicit pointer to
+  Equation (5). Treat that implementation as a candidate for the legacy
+  backend recovery program below rather than as evidence of an incomplete v5
+  migration, and do not cite the representation-only trail type.
+
+## Legacy constraint-backend recovery and benchmarking program
+
+Status: **Next: inventory PR; then split by backend and model family**
+
+The CLAASP 5 migration is complete. This program does not reopen the migration:
+it deliberately preserves established constraint-generation methods that were
+implemented in legacy CLAASP but are not represented by an equivalent v5
+backend strategy. The portable, dependency-free v5 implementations remain
+supported baselines. Recovered methods must be added as explicitly named
+alternative strategies until like-for-like evidence justifies any change of
+default.
+
+Start with a repository-wide legacy-method inventory. For every legacy
+component/backend/model combination, record whether it is:
+
+- already represented equivalently in CLAASP 5;
+- superseded by a documented CLAASP 5 strategy;
+- absent from CLAASP 5 and a candidate for recovery; or
+- obsolete, incorrect, or out of scope, with the supporting evidence.
+
+The initial inventory must cover at least:
+
+- S-box differential and linear MILP convex-hull, impossible-point, reduced
+  inequality, and large-S-box encodings, including the legacy strategies
+  associated with Sun et al., Abdelkhalek et al., and Sasaki--Todo;
+- alternative SAT, SMT, CP, and MILP S-box differential and linear encodings,
+  rather than assuming that direct DDT/LAT enumeration is universally best;
+- bitwise and wordwise deterministic, semi-deterministic, probabilistic
+  truncated, and impossible models for S-boxes, modular operations, linear
+  layers, and mix-column or branch-number constraints;
+- differential-linear SAT and MiniZinc models, including the legacy continuous
+  predicates associated with Bellini et al. Equation (5);
+- boomerang and BCT-based models for S-box and ARX components;
+- monomial-prediction and division-property models, including the legacy
+  Gurobi implementations, alongside the portable MILP models; and
+- solver-specific inequality generators, caches, and preprocessing paths that
+  materially change the generated formulation.
+
+Recover each selected strategy in a small component- or backend-scoped PR.
+Before copying code, generated inequalities, or data, verify its license and
+provenance. Keep optional solver dependencies isolated, give each formulation
+an explicit public name, and add compatibility imports only where an existing
+public import requires them. Restore or reconstruct focused fixtures and test
+behavioral parity independently of performance.
+
+Benchmark recovered and portable strategies under the same primitive, round
+count, boundary conditions, trail objective, solver and version, solver
+settings, hardware, and timeout. Record at least model-construction time,
+variables, clauses or constraints, solve time, peak memory, result validity,
+and optimality or timeout status. Do not describe either implementation as
+better based only on formulation size or results from incomparable runs.
+
+The inventory and every recovery PR must update a shared comparison matrix
+with the strategy name, supported semantics, source provenance, dependencies,
+parity-test status, and benchmark coverage. Do not remove the portable model or
+switch a default in a recovery PR. If benchmarks establish a consistent winner
+or a workload-dependent tradeoff, make the default-selection policy a separate
+reviewed PR; retain both strategies when each has a practical advantage.
+
 ## Repository migration-audit test PR
 
 Status: **Next PR**
@@ -249,6 +355,18 @@ trail-reporting support. The review-release-plan path-order check and the
 terminology guard also fail on the current stacked base. These repository-wide
 authority updates remain deliberately deferred to that dedicated PR rather
 than being folded into constraint-model provenance work.
+
+The unit-test layout check also expects
+``tests/unit/representations/constraints/test_provenance.py`` to mirror a
+``constraints/provenance.py`` source module, although the provenance contract
+currently lives in the package ``__init__.py``. Resolve that ownership mismatch
+in the same repository-audit cleanup rather than moving public modules during a
+literature audit.
+
+The full module-doctest run also exposes a stale catalogue example: its
+expected supported-tool list predates the Kissat driver now shipped by the
+repository. Update that generated or documented expectation in the
+repository-audit cleanup rather than mixing it into a constraint-model audit.
 
 Review
 `tests/unit/repository/test_bidirectional_migration_audit.py::test_committed_bidirectional_migration_audit_passes`.
