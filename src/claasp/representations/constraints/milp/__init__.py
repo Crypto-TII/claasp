@@ -43,6 +43,7 @@ from claasp.representations.constraints.milp.model import (
 from claasp.representations.constraints.milp.trails import (
     PresentDifferentialMILPModel,
     PresentMonomialTrailMILPModel,
+    WordDeterministicDifferentialLinearMILPModel,
     WordDeterministicTruncatedMILPModel,
     WordDifferentialMILPModel,
     WordLinearMILPModel,
@@ -84,6 +85,7 @@ __all__ = [
     "SBoxXorLinearMinimumMILPModel",
     "SBoxXorLinearMILPModel",
     "VariableKind",
+    "WordDeterministicDifferentialLinearMILPModel",
     "WordDeterministicTruncatedMILPModel",
     "WordDifferentialMILPModel",
     "WordLinearMILPModel",
