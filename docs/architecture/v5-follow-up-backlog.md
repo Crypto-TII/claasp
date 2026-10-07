@@ -535,6 +535,14 @@ semantics. The committed ten-run benchmark characterizes this compatibility
 baseline; the distinct legacy ARX-optimized carry formulation remains a
 separate candidate and no default changes.
 
+The matching portable generic MILP slice adds ``WordDifferentialMILPModel``
+and ``WordLinearMILPModel``. Each exact CNF clause becomes one binary linear
+inequality, while semantic weight variables define the minimization objective.
+GLPK solves and independently validates fixed/bounded-weight ToySpeck fixtures;
+the committed ten-run benchmark characterizes this portable baseline. It does
+not replace recovered component-specific convex hulls or the still-optional
+Gurobi capability.
+
 The first deterministic-truncated MILP component slice recovers the legacy
 indicator-based AND abstraction as
 ``BitwiseAndDeterministicTruncatedMILPModel`` and adds

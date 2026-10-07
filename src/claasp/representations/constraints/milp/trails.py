@@ -205,6 +205,175 @@ def check_present_milp_trail(primitive: Primitive, trail: Trail) -> bool:
     return check_present_smt_trail(primitive, trail)
 
 
+class WordDifferentialMILPModel:
+    """Assemble exact XOR-differential Word graphs as portable MILP.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToySpeck
+        >>> model = WordDifferentialMILPModel(
+        ...     ToySpeck(2), fixed_weight=1,
+        ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
+        ... )
+        >>> formulation = model.milp_model()
+        >>> (len(formulation.variables), len(formulation.constraints))
+        (187, 501)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "WordDifferentialMILPModel",
+        "xor_differential",
+        "exact MILP translation of the reviewed Boolean Word-graph relation",
+        "The portable formulation preserves every clause as one linear inequality.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        maximum_weight=None,
+        fixed_weight=None,
+        nonzero_input=None,
+        fixed_input_differences=None,
+        output_difference=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import WordDifferentialSATModel
+
+        self._sat_model = WordDifferentialSATModel(
+            primitive,
+            maximum_weight=maximum_weight,
+            fixed_weight=fixed_weight,
+            nonzero_input=nonzero_input,
+            fixed_input_differences=fixed_input_differences,
+            output_difference=output_difference,
+        )
+        self.primitive = primitive
+        self._model: MILPModel | None = None
+
+    def milp_model(self) -> MILPModel:
+        """Return the exact portable MILP formulation."""
+
+        from claasp.representations.constraints.milp.lowering import cnf_to_milp
+
+        translated = cnf_to_milp(self._sat_model.cnf_formula())
+        objective = LinearExpression.from_terms(
+            {
+                variable.name: 1
+                for variable in translated.variables
+                if variable.name.startswith("weight_")
+                and not variable.name.startswith(("weight_complement", "weight_counter"))
+            }
+        )
+        self._model = MILPModel(
+            translated.variables,
+            translated.constraints,
+            objective,
+            ObjectiveSense.MINIMIZE,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._model
+
+    def decode_characteristic(self, assignment):
+        """Decode and independently validate a complete MILP assignment."""
+
+        if self._model is None:
+            raise ValueError("build the MILP model before decoding")
+        return self._sat_model.decode_characteristic(
+            {name: int(round(value)) for name, value in assignment.items()}
+        )
+
+    def check_characteristic(self, trail) -> bool:
+        """Recheck component transitions, wiring, and requested boundaries."""
+
+        if self._model is None:
+            raise ValueError("build the MILP model before checking")
+        return self._sat_model.check_characteristic(trail)
+
+
+class WordLinearMILPModel:
+    """Assemble exact XOR-linear Word graphs as portable MILP.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToySpeck
+        >>> model = WordLinearMILPModel(
+        ...     ToySpeck(3), maximum_weight=1,
+        ...     fixed_inputs={"key": 0}, nonzero_input="plaintext",
+        ... )
+        >>> formulation = model.milp_model()
+        >>> (len(formulation.variables), len(formulation.constraints))
+        (296, 706)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "WordLinearMILPModel",
+        "xor_linear",
+        "exact MILP translation of the reviewed Boolean Word-graph relation",
+        "The portable formulation preserves every clause as one linear inequality.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        maximum_weight,
+        nonzero_input=None,
+        fixed_input_masks=None,
+        fixed_inputs=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import WordLinearSATModel
+
+        self._sat_model = WordLinearSATModel(
+            primitive,
+            maximum_weight=maximum_weight,
+            nonzero_input=nonzero_input,
+            fixed_input_masks=fixed_input_masks,
+            fixed_inputs=fixed_inputs,
+        )
+        self.primitive = primitive
+        self._model: MILPModel | None = None
+
+    def milp_model(self) -> MILPModel:
+        """Return the exact portable MILP formulation."""
+
+        from claasp.representations.constraints.milp.lowering import cnf_to_milp
+
+        translated = cnf_to_milp(self._sat_model.cnf_formula())
+        objective = LinearExpression.from_terms(
+            {
+                variable.name: 1
+                for variable in translated.variables
+                if "_weight_" in variable.name and not variable.name.startswith("__")
+            }
+        )
+        self._model = MILPModel(
+            translated.variables,
+            translated.constraints,
+            objective,
+            ObjectiveSense.MINIMIZE,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._model
+
+    def decode_characteristic(self, assignment):
+        """Decode and independently validate a complete MILP assignment."""
+
+        if self._model is None:
+            raise ValueError("build the MILP model before decoding")
+        return self._sat_model.decode_characteristic(
+            {name: int(round(value)) for name, value in assignment.items()}
+        )
+
+    def check_characteristic(self, trail) -> bool:
+        """Recheck component masks, signs, wiring, and requested boundaries."""
+
+        if self._model is None:
+            raise ValueError("build the MILP model before checking")
+        return self._sat_model.check_characteristic(trail)
+
+
 def _equal(terms, rhs):
     return LinearConstraint(LinearExpression.from_terms(terms), ConstraintSense.EQUAL, rhs)
 
