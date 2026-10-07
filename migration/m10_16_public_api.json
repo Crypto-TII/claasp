@@ -28295,10 +28295,22 @@
       "qualified_name": "claasp.representations.constraints.sat.WiringFunctionalSATModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialNativeXorSATModel",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.WordDifferentialNativeXorSATModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel",
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.sat.WordDifferentialSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.WordLinearNativeXorSATModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel",
@@ -28931,6 +28943,25 @@
       "qualified_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy.window_size"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialNativeXorSATModel",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialNativeXorSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialNativeXorSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordDifferentialNativeXorSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialNativeXorSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialNativeXorSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialNativeXorSATModel.cnf_formula"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel",
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "class",
@@ -28946,26 +28977,57 @@
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.check_characteristic",
       "defined_in": "claasp.representations.constraints.sat.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.trails.WordDifferentialNativeXorSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.check_characteristic"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.cnf_formula",
       "defined_in": "claasp.representations.constraints.sat.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.trails.WordDifferentialNativeXorSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.cnf_formula"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.decode_characteristic",
       "defined_in": "claasp.representations.constraints.sat.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.trails.WordDifferentialNativeXorSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.decode_characteristic"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.enumerate_trails",
       "defined_in": "claasp.representations.constraints.sat.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.trails.WordDifferentialNativeXorSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.enumerate_trails"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel.cnf_formula"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel",
@@ -28983,24 +29045,36 @@
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.check_characteristic",
       "defined_in": "claasp.representations.constraints.sat.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.check_characteristic"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.cnf_formula",
       "defined_in": "claasp.representations.constraints.sat.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.cnf_formula"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.decode_characteristic",
       "defined_in": "claasp.representations.constraints.sat.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.decode_characteristic"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.enumerate_trails",
       "defined_in": "claasp.representations.constraints.sat.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.enumerate_trails"
     },

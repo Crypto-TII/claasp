@@ -1,5 +1,6 @@
 """Lower typed bit graphs to the Boolean CNF representation."""
 
+from collections import defaultdict
 from collections.abc import Mapping
 from typing import cast
 
@@ -90,6 +91,55 @@ class _NativeXorEncodingContext(_CNFEncodingContext):
     def xor(self, output, left, right, label):
         self.xor_clauses.append((-self.indices[output], self.indices[left], self.indices[right]))
         self.xor_provenance.append(label)
+
+
+def _native_xor_formula(formula: CNFFormula) -> NativeXorCNFFormula:
+    """Replace only complete canonical parity-CNF groups with native XOR records."""
+
+    grouped = defaultdict(list)
+    for position, clause in enumerate(formula.clauses):
+        support = tuple(sorted(abs(literal) for literal in clause))
+        if len(support) >= 2 and len(set(support)) == len(support):
+            grouped[support].append(position)
+
+    removed = set()
+    xor_clauses = []
+    xor_provenance = []
+    for support, positions in grouped.items():
+        forbidden_even: set[frozenset[int]] = set()
+        forbidden_odd: set[frozenset[int]] = set()
+        for assignment in range(1 << len(support)):
+            values = tuple(
+                (assignment >> (len(support) - 1 - bit)) & 1 for bit in range(len(support))
+            )
+            expected_clause = frozenset(
+                -index if value else index for index, value in zip(support, values)
+            )
+            (forbidden_odd if sum(values) % 2 else forbidden_even).add(expected_clause)
+        actual = {frozenset(formula.clauses[position]) for position in positions}
+        if len(actual) != len(positions):
+            continue
+        if actual == forbidden_even:
+            native = support
+        elif actual == forbidden_odd:
+            native = (-support[0], *support[1:])
+        else:
+            continue
+        removed.update(positions)
+        xor_clauses.append(native)
+        labels = tuple(dict.fromkeys(formula.provenance[position] for position in positions))
+        xor_provenance.append("native_xor:" + "+".join(labels))
+
+    return NativeXorCNFFormula(
+        formula.variables,
+        tuple(clause for position, clause in enumerate(formula.clauses) if position not in removed),
+        tuple(
+            label for position, label in enumerate(formula.provenance) if position not in removed
+        ),
+        formula.constraint_models,
+        tuple(xor_clauses),
+        tuple(xor_provenance),
+    )
 
 
 class BooleanCNFModel:

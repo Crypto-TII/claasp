@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box MILP, local SAT transitions, native-XOR output, SAT trail assembly, and n-window heuristic implemented; next: native-XOR trail lowering**
+Status: **S-box MILP, local SAT transitions, native-XOR output/trails, SAT trail assembly, and n-window heuristic implemented; next: SAT truncated/impossible models**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -386,9 +386,16 @@ conjunction CNF is generated in pure Python rather than restoring the legacy
 SymPy/joblib/pickle generation path. Exhaustive four-bit fixtures match the
 carry-difference definition, solver fixtures independently recheck complete
 trails, and the committed exact-versus-window benchmark records the encoding
-overhead without claiming a generally faster strategy. Native-XOR trail
-lowering should next build on the mixed container rather than reintroducing
-legacy string clauses.
+overhead without claiming a generally faster strategy.
+
+The native-XOR trail slice adds explicitly named differential and linear
+alternatives on the existing mixed container. It replaces only complete
+canonical parity clause groups, proves exact recovery by expanding every
+native record back to the ordinary formula, preserves exact trail counts, and
+requires the CryptoMiniSat driver for direct enumeration. Its committed
+ordinary-versus-native benchmark uses identical restrictions and leaves
+ordinary CNF as the portable default. SAT truncated and impossible models are
+the next recovery slice.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and

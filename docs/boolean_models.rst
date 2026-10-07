@@ -244,3 +244,70 @@ offset real encoding overhead on the intended larger searches.
      - 0.871
      - 3.133
      - 1.013
+
+Native-XOR trail formulas
+-------------------------
+
+``WordDifferentialNativeXorSATModel`` and ``WordLinearNativeXorSATModel`` are
+explicit CryptoMiniSat alternatives to the portable ordinary-CNF trail
+models. The lowering replaces a clause group only after proving that the whole
+group is one canonical even- or odd-parity relation. Its independent
+``expanded_cnf()`` oracle therefore reconstructs the ordinary formula exactly.
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.sat import WordDifferentialNativeXorSATModel
+   >>> native_model = WordDifferentialNativeXorSATModel(
+   ...     ToySpeck(2), fixed_weight=1, nonzero_input="plaintext",
+   ...     fixed_input_differences={"key": 0},
+   ... )
+   >>> native_formula = native_model.cnf_formula()
+   >>> (native_formula.clause_count, native_formula.native_xor_count)
+   (327, 60)
+   >>> native_formula.expanded_cnf().clause_count
+   501
+
+Enumeration requires ``CryptoMiniSatSolver`` so a driver that understands only
+ordinary DIMACS cannot silently ignore parity records. Use the ordinary model
+or explicitly call ``expanded_cnf()`` for another solver.
+
+The ten-run ARM64 benchmark in
+``architecture/audits/data/native_xor_trail_benchmark.json`` compares both
+formulations through the same CryptoMiniSat 5.11.15 driver and identical
+boundaries. Native XOR reduced median solving time on these two toy workloads,
+but construction took longer and the sample is too small to establish a
+general default. Ordinary CNF remains the portable default.
+
+.. list-table:: Ordinary CNF versus native XOR under CryptoMiniSat
+   :header-rows: 1
+
+   * - Semantics
+     - Formulation
+     - CNF clauses
+     - XOR records
+     - Build ms
+     - Solve ms
+   * - Differential
+     - Ordinary CNF
+     - 501
+     - 0
+     - 1.043
+     - 0.962
+   * - Differential
+     - Native XOR
+     - 327
+     - 60
+     - 2.998
+     - 0.836
+   * - Linear
+     - Ordinary CNF
+     - 706
+     - 0
+     - 2.426
+     - 1.857
+   * - Linear
+     - Native XOR
+     - 138
+     - 197
+     - 4.216
+     - 0.916
