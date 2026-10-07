@@ -566,6 +566,15 @@ identical 2,543-variable, 7,151-clause formula under all three solvers and
 makes no longer-round performance claim. Paired-input variants and the
 semi-deterministic middle remain separate recovery work.
 
+The shared-difference paired-input slice adds
+``SharedDifferencePairedWordDifferentialSATModel`` and a typed paired result.
+The legacy relation is two differential characteristics with one shared
+external difference plus mutual exclusion of corresponding modular-add output
+bits; it is not concrete four-copy evaluation. Independent decoding and fixed
+summed weight pass under all three SAT solvers. The committed ToySpeck-2
+benchmark compares the shared-input formula with and without the exclusion
+layer. Literature provenance remains ``TBD``.
+
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and
 provenance. Keep optional solver dependencies isolated, give each formulation
