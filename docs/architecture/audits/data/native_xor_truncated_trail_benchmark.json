@@ -1,0 +1,46 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "results": [
+    {
+      "assignment_valid": true,
+      "cnf_clauses": 829,
+      "construction_seconds_median": 0.001275124500352831,
+      "native_xor_records": 0,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_cryptominisat_driver",
+      "repeats": 10,
+      "solver": "CryptoMiniSatSolver",
+      "solver_seconds_median": 0.0012187915003778471,
+      "solver_status": "satisfiable",
+      "solver_version": "c CryptoMiniSat version 5.11.15",
+      "strategy": "ordinary_cnf",
+      "trail_valid": true,
+      "variables": 200
+    },
+    {
+      "assignment_valid": true,
+      "cnf_clauses": 733,
+      "construction_seconds_median": 0.004114666499845043,
+      "native_xor_records": 48,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_cryptominisat_driver",
+      "repeats": 10,
+      "solver": "CryptoMiniSatSolver",
+      "solver_seconds_median": 0.0009476454997638939,
+      "solver_status": "satisfiable",
+      "solver_version": "c CryptoMiniSat version 5.11.15",
+      "strategy": "native_xor",
+      "trail_valid": true,
+      "variables": 200
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "comparison": "same relation, boundaries, solver, settings, and host",
+    "description": "fixed ToySpeck-2 deterministic-truncated propagation",
+    "timeout_seconds": 30
+  }
+}

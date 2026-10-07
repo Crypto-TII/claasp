@@ -911,6 +911,41 @@ class WordDeterministicTruncatedSATModel:
         )
 
 
+class WordDeterministicTruncatedNativeXorSATModel(WordDeterministicTruncatedSATModel):
+    """Use native XOR records for exact parity groups in truncated trails.
+
+    The historical CryptoMiniSat wrapper emitted the same clauses as its
+    ordinary-SAT parent and warned that no advantage was known. This explicit
+    v5 alternative re-encodes only complete canonical parity groups; expanding
+    every native record reconstructs the ordinary formula exactly.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToySpeck
+        >>> model = WordDeterministicTruncatedNativeXorSATModel(
+        ...     ToySpeck(2), fixed_input_patterns={"key": "0" * 16}
+        ... )
+        >>> formula = model.cnf_formula()
+        >>> (formula.native_xor_count, formula.expanded_cnf().clause_count)
+        (48, 797)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "WordDeterministicTruncatedNativeXorSATModel",
+        "deterministic_truncated_xor",
+        "canonical parity groups as CryptoMiniSat native XOR records",
+        "Each replaced parity group is verified against its complete ordinary-CNF expansion.",
+    )
+
+    def cnf_formula(self) -> NativeXorCNFFormula:
+        """Return the complete truncated formula with native parity records."""
+
+        formula = _native_xor_formula(super().cnf_formula())
+        self._formula = formula
+        return formula
+
+
 @dataclass(frozen=True, slots=True)
 class SpeckImpossibleSATTrail:
     """One independently checked impossible-differential SAT witness.
@@ -2087,6 +2122,7 @@ __all__ = [
     "SpeckSemiDeterministicTruncatedTrail",
     "WordDeterministicTruncatedCharacteristic",
     "WordDeterministicTruncatedEnumeration",
+    "WordDeterministicTruncatedNativeXorSATModel",
     "WordDeterministicTruncatedSATModel",
     "WordDifferentialNativeXorSATModel",
     "WordDifferentialSATModel",

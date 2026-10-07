@@ -12,6 +12,8 @@ from claasp.representations.constraints.sat import (
     CryptoMiniSatDimacsExporter,
     NativeXorCNFFormula,
     NWindowSATStrategy,
+    WordDeterministicTruncatedNativeXorSATModel,
+    WordDeterministicTruncatedSATModel,
     WordDifferentialNativeXorSATModel,
     WordDifferentialSATModel,
     WordLinearNativeXorSATModel,
@@ -117,6 +119,22 @@ def test_native_xor_reencoding_composes_with_n_window_and_rejects_other_solvers(
     model = WordDifferentialNativeXorSATModel(ToySpeck(2), **options)
     native = model.cnf_formula()
     canonical = lambda clauses: {frozenset(clause) for clause in clauses}
+    assert canonical(native.expanded_cnf().clauses) == canonical(ordinary.clauses)
+    with pytest.raises(TypeError, match="CryptoMiniSatSolver"):
+        model.enumerate_trails(MinisatSolver(), limit=1)
+
+
+def test_native_xor_truncated_expansion_reconstructs_ordinary_cnf():
+    options = {
+        "fixed_input_patterns": {"plaintext": "00000001", "key": "0" * 16},
+        "output_pattern": "???0????",
+    }
+    ordinary = WordDeterministicTruncatedSATModel(ToySpeck(2), **options).cnf_formula()
+    model = WordDeterministicTruncatedNativeXorSATModel(ToySpeck(2), **options)
+    native = model.cnf_formula()
+    canonical = lambda clauses: {frozenset(clause) for clause in clauses}
+    assert native.native_xor_count == 48
+    assert native.clause_count == 733
     assert canonical(native.expanded_cnf().clauses) == canonical(ordinary.clauses)
     with pytest.raises(TypeError, match="CryptoMiniSatSolver"):
         model.enumerate_trails(MinisatSolver(), limit=1)

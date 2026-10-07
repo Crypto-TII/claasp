@@ -397,6 +397,16 @@ ordinary-versus-native benchmark uses identical restrictions and leaves
 ordinary CNF as the portable default. SAT truncated and impossible models are
 the next recovery slice.
 
+The deterministic-truncated native-XOR slice adds
+``WordDeterministicTruncatedNativeXorSATModel``. Legacy
+``CmsSatDeterministicTruncatedXorDifferentialModel`` did not contain a distinct
+encoding: it printed a warning and reused ordinary SAT unchanged. The v5
+alternative instead replaces only complete canonical parity groups and checks
+exact recovery through ordinary-CNF expansion. On the fixed ToySpeck-2
+fixture it uses 733 CNF clauses and 48 native records instead of 829 ordinary
+clauses. The ten-run CryptoMiniSat comparison records lower median solve time
+but higher construction time, so ordinary CNF remains the default.
+
 The first truncated-SAT slice recovers the legacy two-bit paired-carry clauses
 for deterministic-truncated modular addition as the explicitly named
 ``ModularAddDeterministicTruncatedSATModel``. It retains the legacy redundant

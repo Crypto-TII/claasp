@@ -20,6 +20,7 @@ from claasp.representations.constraints.sat import (
     SpeckProbabilisticTruncatedSATModel,
     SpeckSemiDeterministicTruncatedSATModel,
     TruncatedToLinearSATModel,
+    WordDeterministicTruncatedNativeXorSATModel,
     WordDeterministicTruncatedSATModel,
 )
 from claasp.semantics.cryptanalysis import XorDifference, XorMask
@@ -179,6 +180,19 @@ def test_deterministic_truncated_enumeration_blocks_semantic_patterns():
     result = model.enumerate_trails(MinisatSolver(timeout_seconds=10), limit=2)
     assert result.complete and len(result.trails) == 1
     assert str(result.trails[0].output_pattern) == "???0????"
+
+
+def test_native_xor_deterministic_truncated_matches_ordinary_witness():
+    options = {
+        "fixed_input_patterns": {"plaintext": "00000001", "key": "0" * 16},
+        "output_pattern": "???0????",
+    }
+    model = WordDeterministicTruncatedNativeXorSATModel(ToySpeck(2), **options)
+    result = CryptoMiniSatSolver(timeout_seconds=10).solve(model.cnf_formula())
+    assert result.status is SatStatus.SATISFIABLE
+    trail = model.decode_characteristic(result.assignment)
+    assert str(trail.output_pattern) == "???0????"
+    assert model.check_characteristic(trail)
 
 
 @pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))

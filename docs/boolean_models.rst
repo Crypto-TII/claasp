@@ -494,6 +494,34 @@ general default. Ordinary CNF remains the portable default.
      - 4.216
      - 0.916
 
+``WordDeterministicTruncatedNativeXorSATModel`` provides the corresponding
+opt-in formulation for deterministic-truncated trails:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.sat import (
+   ...     WordDeterministicTruncatedNativeXorSATModel,
+   ... )
+   >>> truncated_native = WordDeterministicTruncatedNativeXorSATModel(
+   ...     ToySpeck(2),
+   ...     fixed_input_patterns={"plaintext": "00000001", "key": "0" * 16},
+   ...     output_pattern="???0????",
+   ... )
+   >>> truncated_formula = truncated_native.cnf_formula()
+   >>> (truncated_formula.clause_count, truncated_formula.native_xor_count)
+   (733, 48)
+
+The legacy CryptoMiniSat subclass only printed a warning and reused ordinary
+CNF unchanged. The v5 strategy finds complete parity groups in graph wiring
+and proves equivalence by expanding every native record back to the ordinary
+formula. The ten-run ARM64 comparison in
+``architecture/audits/data/native_xor_truncated_trail_benchmark.json`` uses
+the same fixed ToySpeck-2 propagation and CryptoMiniSat 5.11.15. Native XOR
+reduced 829 ordinary clauses to 733 plus 48 parity records; median solve time
+was 0.948 ms instead of 1.219 ms, while median construction time increased
+from 1.275 ms to 4.115 ms. Ordinary CNF remains the default because this one
+small fixture does not establish a general performance policy.
+
 Differential-linear SAT boundaries
 ----------------------------------
 
