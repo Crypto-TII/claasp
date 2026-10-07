@@ -643,6 +643,12 @@ claasp.representations.constraints.sat.components.sbox
 .. automodule:: claasp.representations.constraints.sat.components.sbox
    :no-index:
 
+claasp.representations.constraints.sat.components.semi_deterministic
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.semi_deterministic
+   :no-index:
+
 claasp.representations.constraints.sat.components.truncated
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

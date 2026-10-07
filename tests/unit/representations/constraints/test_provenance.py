@@ -36,6 +36,7 @@ from claasp.representations.constraints.sat import BooleanCNFModel
 from claasp.representations.constraints.sat import components as sat_components
 from claasp.representations.constraints.sat.components import (
     ModularAddFunctionalSATModel,
+    ModularAddSemiDeterministicTruncatedSATModel,
     ProbabilisticTruncatedModularAddSATModel,
     SBoxFunctionalSATModel,
     WiringFunctionalSATModel,
@@ -102,6 +103,7 @@ def test_direct_and_audited_modular_add_models_declare_their_reference_status():
     for probabilistic_model in (
         ProbabilisticTruncatedModularAddCPModel,
         ProbabilisticTruncatedModularAddSATModel,
+        ModularAddSemiDeterministicTruncatedSATModel,
     ):
         assert probabilistic_model.model_provenance.reference_status is (
             ConstraintReferenceStatus.TO_BE_DETERMINED
