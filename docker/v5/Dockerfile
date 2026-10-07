@@ -36,6 +36,7 @@ RUN apt-get -q update \
         minisat=1:2.2.1-8build1 \
         minizinc=2.8.2+dfsg1-1build2 \
         libflint-dev=3.0.1-3.1build1 \
+        libcdd-tools=094m-1.1build1 \
         libgmp-dev=2:6.3.0+dfsg-2ubuntu6.1 \
         libtool=2.4.7-7build1 \
         python3=3.12.3-0ubuntu2.1 \

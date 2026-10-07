@@ -334,10 +334,14 @@ reduction, and minimum-cardinality facet cover as explicit MILP alternatives
 to the portable one-hot baseline. Differential and signed-linear propagation
 are checked exhaustively over every PRESENT input/output pair. A committed
 ten-run GLPK benchmark records construction time, formulation size, solve time,
-memory, validity, and optimal status in the canonical Docker image. Sage is
-used only by the reproducible offline generator; generated inequalities have
-no Sage runtime dependency. The portable one-hot formulation remains the
-default.
+memory, validity, and optimal status in the canonical Docker image. The
+reproducible offline generator uses cddlib's exact-GMP executable and GLPK
+directly from ordinary Python; generated inequalities have no runtime generator
+dependency. The portable one-hot formulation remains the default.
+Direct GLPK preserves the legacy minimum cardinalities but can select a
+different co-optimal facet cover than Sage's GLPK wrapper. The pinned generator
+output and exhaustive relation checks therefore define the reproducible v5
+artifact without treating one tied optimum as a mathematical requirement.
 
 The immediately following recovery PR adds explicit AES differential and
 signed-linear Espresso strategies with independent exhaustive eight-bit parity

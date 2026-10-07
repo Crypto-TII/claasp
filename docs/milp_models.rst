@@ -166,19 +166,26 @@ the minimum-cardinality formulation explicitly:
    >>> (len(model.variables), relation.inequality_count)
    (11, 25)
 
-The committed JSON bundle was generated from legacy CLAASP commit
-``3aacc275`` with ``tools/generate_sbox_milp_inequalities.py`` under Sage 9.5.
-Sage and GLPK are generation-time tools only; importing and solving the
-resulting v5 models remains Sage-free. Regenerate the data with a Sage Python
-environment and verify that the resulting file is unchanged::
+The committed JSON bundle recovers the algorithm from legacy CLAASP commit
+``3aacc275``. The generator uses the exact-GMP ``cddexec_gmp`` program from
+cddlib 0.94m for convex-hull conversion and GLPK 5.0 for minimum-cardinality
+facet cover. Both are pinned generation tools in the canonical image. Loading
+and constructing the resulting v5 models needs no generator dependency; GLPK
+remains available separately as an optional runtime solver. Regenerate the data
+with ordinary Python and verify that the resulting file is unchanged::
 
-   PYTHONPATH=src sage -python tools/generate_sbox_milp_inequalities.py \
+   python tools/generate_sbox_milp_inequalities.py \
        --name present --table 12,5,6,11,9,0,10,13,3,14,15,8,4,7,1,2 \
        --output src/claasp/representations/constraints/milp/data/present_sbox_milp_inequalities.json
 
+GLPK may select a different member of a tied optimum when its version or model
+ordering changes. The pinned toolchain makes the committed choice reproducible;
+exhaustive tests independently verify the exact relation and the established
+minimum cardinalities.
+
 The reproducible GLPK benchmark in
 ``architecture/audits/data/sbox_milp_strategy_benchmark.json`` used ten runs
-of one optimized PRESENT S-box transition in the canonical x86_64 Docker
+of one optimized PRESENT S-box transition in the canonical ARM64 Docker
 image. Times below are medians in milliseconds; memory is the maximum reported
 by GLPK. This deliberately small workload establishes a controlled comparison,
 not a universal winner.
@@ -197,58 +204,58 @@ not a universal winner.
      - one-hot
      - 105
      - 13
-     - 0.686
-     - 23.422
-     - 110.1
+     - 0.331
+     - 0.777
+     - 110
    * - Differential
      - full hull
      - 11
      - 512
-     - 22.773
-     - 24.966
-     - 566.3
+     - 1.488
+     - 1.874
+     - 566
    * - Differential
      - greedy
      - 11
      - 44
-     - 4.707
-     - 25.646
-     - 87.9
+     - 0.138
+     - 0.692
+     - 88
    * - Differential
      - minimum
      - 11
      - 39
-     - 4.572
-     - 23.912
-     - 83.2
+     - 0.122
+     - 0.703
+     - 83
    * - Linear
      - one-hot
      - 141
      - 13
-     - 0.890
-     - 22.749
-     - 141.5
+     - 0.477
+     - 0.921
+     - 141
    * - Linear
      - full hull
      - 13
      - 1,071
-     - 45.376
-     - 29.295
+     - 3.242
+     - 3.695
      - 1,201
    * - Linear
      - greedy
      - 13
      - 61
-     - 5.494
-     - 24.434
-     - 111.4
+     - 0.190
+     - 0.753
+     - 111
    * - Linear
      - minimum
      - 13
      - 53
-     - 6.281
-     - 25.229
-     - 91.2
+     - 0.162
+     - 0.705
+     - 106
 
 The reduced formulations use far fewer variables than one-hot and far fewer
 constraints than the full hull, while solver times are close on this tiny
