@@ -1314,6 +1314,80 @@ class WordLinearCPModel:
         return self._sat_model.check_characteristic(trail)
 
 
+class WordDeterministicDifferentialLinearCPModel:
+    """Assemble deterministic-middle differential-linear trails as MiniZinc.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = WordDeterministicDifferentialLinearCPModel(
+        ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
+        ...     differential_maximum_weight=16, linear_maximum_weight=16,
+        ... )
+        >>> query = model.cp_model()
+        >>> (len(query.declarations), len(query.constraints))
+        (2543, 7151)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "WordDeterministicDifferentialLinearCPModel",
+        "differential_linear",
+        "exact MiniZinc translation of the reviewed deterministic-middle composition",
+        "The portable CP formulation preserves the reviewed Boolean composition exactly.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        prefix_rounds,
+        middle_rounds,
+        differential_maximum_weight,
+        linear_maximum_weight,
+        input_difference=None,
+        output_mask=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import (
+            WordDeterministicDifferentialLinearSATModel,
+        )
+
+        self._sat_model = WordDeterministicDifferentialLinearSATModel(
+            primitive,
+            prefix_rounds=prefix_rounds,
+            middle_rounds=middle_rounds,
+            differential_maximum_weight=differential_maximum_weight,
+            linear_maximum_weight=linear_maximum_weight,
+            input_difference=input_difference,
+            output_mask=output_mask,
+        )
+        self.primitive = primitive
+        self._query: MiniZincModel | None = None
+
+    def cp_model(self) -> MiniZincModel:
+        """Return the exact portable MiniZinc query."""
+
+        lowered = BooleanMiniZincLowerer().lower(self._sat_model.cnf_formula())
+        self._query = MiniZincModel(
+            lowered.declarations,
+            lowered.constraints,
+            lowered.solve,
+            lowered.includes,
+            lowered.outputs,
+            lowered.provenance,
+            lowered.name_mapping,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_trail(self, assignment):
+        """Decode and independently validate all three trail sections."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        return self._sat_model.decode_trail(assignment)
+
+
 _DETERMINISTIC_TRUNCATED_MODADD_PREDICATE = r"""
 function var 0..2: truncated_xor2(var 0..2: a, var 0..2: b) =
     if a < 2 /\ b < 2 then (a + b) mod 2 else 2 endif;
