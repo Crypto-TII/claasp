@@ -8,8 +8,12 @@ from claasp.representations.constraints.cp.components.sbox import (
     SBoxDifferenceCPModel,
     SBoxXorDifferentialCPModel,
 )
+from claasp.representations.constraints.cp.components.truncated import (
+    ModularAddDeterministicTruncatedCPModel,
+)
 
 __all__ = [
+    "ModularAddDeterministicTruncatedCPModel",
     "ProbabilisticTruncatedModularAddCPModel",
     "SBoxBoomerangCPModel",
     "SBoxDifferenceCPModel",

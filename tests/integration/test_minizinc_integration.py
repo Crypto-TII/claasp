@@ -5,10 +5,11 @@ import pytest
 
 from claasp.analysis import AnalysisProblem, FixedValue
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
-from claasp.primitives import AES, Present, Simon, Speck
+from claasp.primitives import AES, Present, Simon, Speck, ToySpeck
 from claasp.representations.constraints.cp import (
     ImpossibleBoundaryCPModel,
     MiniZincModel,
+    ModularAddDeterministicTruncatedCPModel,
     PresentDifferentialCPModel,
     PresentLinearCPModel,
     ProbabilisticTruncatedModularAddCPModel,
@@ -19,6 +20,7 @@ from claasp.representations.constraints.cp import (
     SpeckImpossibleCPModel,
     SpeckProbabilisticTruncatedCPModel,
     SpeckTruncatedCPModel,
+    WordDeterministicTruncatedCPModel,
     WordwiseDifferenceCPModel,
 )
 from claasp.representations.constraints.smt.trails import (
@@ -42,6 +44,44 @@ from claasp.semantics.cryptanalysis import (
 )
 
 pytestmark = pytest.mark.external
+
+
+def test_minizinc_preserves_deterministic_truncated_modular_add_relation():
+    solver = MiniZincSolver(solver=_test_solver())
+    accepted_model = ModularAddDeterministicTruncatedCPModel(4)
+    accepted = solver.solve(
+        accepted_model.cp_model(left_pattern="0001", right_pattern="0001", output_pattern="???0")
+    )
+    assert accepted.status is CPStatus.SATISFIED
+    assert tuple(map(str, accepted_model.decode_transition(accepted.assignment))) == (
+        "0001",
+        "0001",
+        "???0",
+    )
+
+    rejected_model = ModularAddDeterministicTruncatedCPModel(4)
+    rejected = solver.solve(
+        rejected_model.cp_model(left_pattern="0001", right_pattern="0001", output_pattern="0000")
+    )
+    assert rejected.status is CPStatus.UNSATISFIABLE
+
+
+def test_minizinc_preserves_generic_deterministic_truncated_toy_speck_trail():
+    solver = MiniZincSolver(solver=_test_solver())
+    fixed = {"plaintext": "00000001", "key": "0" * 16}
+    model = WordDeterministicTruncatedCPModel(
+        ToySpeck(2), fixed_input_patterns=fixed, output_pattern="???0????"
+    )
+    solved = solver.solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_characteristic(solved.assignment)
+    assert str(trail.output_pattern) == "???0????"
+    assert model.check_characteristic(trail)
+
+    rejected = WordDeterministicTruncatedCPModel(
+        ToySpeck(2), fixed_input_patterns=fixed, output_pattern="00000000"
+    )
+    assert solver.solve(rejected.cp_model()).status is CPStatus.UNSATISFIABLE
 
 
 def _test_solver(*, require_chuffed=False):

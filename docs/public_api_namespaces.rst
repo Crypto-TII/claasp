@@ -577,6 +577,12 @@ claasp.representations.constraints.cp.components
 .. automodule:: claasp.representations.constraints.cp.components
    :no-index:
 
+claasp.representations.constraints.cp.components.truncated
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.cp.components.truncated
+   :no-index:
+
 claasp.representations.constraints.milp
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

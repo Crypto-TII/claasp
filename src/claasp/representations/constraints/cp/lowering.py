@@ -1,7 +1,13 @@
 """Lower portable Boolean constraints to MiniZinc CP items."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from claasp.representations.constraints.cp.model import MiniZincModel
-from claasp.representations.constraints.sat import CNFFormula
+
+if TYPE_CHECKING:
+    from claasp.representations.constraints.sat.model import CNFFormula
 
 
 class BooleanMiniZincLowerer:
@@ -18,6 +24,8 @@ class BooleanMiniZincLowerer:
 
     def lower(self, formula: CNFFormula) -> MiniZincModel:
         """Return a MiniZinc Boolean model equivalent to ``formula``."""
+
+        from claasp.representations.constraints.sat.model import CNFFormula
 
         if not isinstance(formula, CNFFormula):
             raise TypeError("formula must be a CNFFormula")

@@ -7,6 +7,7 @@ __all__ = [
     "BooleanMiniZincLowerer",
     "ImpossibleBoundaryCPModel",
     "MiniZincModel",
+    "ModularAddDeterministicTruncatedCPModel",
     "PresentDifferentialCPModel",
     "PresentLinearCPModel",
     "ProbabilisticTruncatedModularAddCPModel",
@@ -19,6 +20,7 @@ __all__ = [
     "SpeckProbabilisticTruncatedCPModel",
     "SpeckTruncatedCPModel",
     "WordwiseDifferenceCPModel",
+    "WordDeterministicTruncatedCPModel",
 ]
 
 
@@ -39,6 +41,7 @@ def __getattr__(name: str):
         return SpeckDifferentialCPModel
     if name in {
         "ImpossibleBoundaryCPModel",
+        "ModularAddDeterministicTruncatedCPModel",
         "SBoxDifferenceCPModel",
         "SBoxBoomerangCPModel",
         "ProbabilisticTruncatedModularAddCPModel",
@@ -47,6 +50,7 @@ def __getattr__(name: str):
         "SpeckProbabilisticTruncatedCPModel",
         "SpeckTruncatedCPModel",
         "WordwiseDifferenceCPModel",
+        "WordDeterministicTruncatedCPModel",
     }:
         from claasp.representations.constraints.cp import trails
 

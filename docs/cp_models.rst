@@ -236,6 +236,40 @@ weight 9 satisfiable for five rounds, reproducing the legacy optimized-CP
 result. The decoded five additions are then recounted with independent
 paired-carry semantics; no solver-reported probability is trusted.
 
+Generic deterministic-truncated CP
+----------------------------------
+
+``ModularAddDeterministicTruncatedCPModel`` translates the recovered two-bit
+paired-carry relation exactly into MiniZinc Boolean constraints. Complete Word
+graphs use ``WordDeterministicTruncatedCPModel``:
+
+.. doctest::
+
+   >>> from claasp.primitives import ToySpeck
+   >>> from claasp.representations.constraints.cp import (
+   ...     WordDeterministicTruncatedCPModel,
+   ... )
+   >>> truncated = WordDeterministicTruncatedCPModel(
+   ...     ToySpeck(2),
+   ...     fixed_input_patterns={"plaintext": "00000001", "key": "0" * 16},
+   ...     output_pattern="???0????",
+   ... )
+   >>> query = truncated.cp_model()
+   >>> (len(query.declarations), len(query.constraints))
+   (200, 829)
+
+The generic model complements the specialized ``SpeckTruncatedCPModel``. It
+supports typed Word graphs and fixed boundary searches while retaining direct
+CP provenance. Decoding replays the ternary graph semantics and rejects a
+solver assignment that violates the paired-carry relation.
+
+The ten-run ARM64 benchmark in
+``architecture/audits/data/cp_deterministic_truncated_benchmark.json`` uses
+the same ToySpeck-2 fixture as the SAT and SMT comparisons. Median MiniZinc
+construction and Chuffed solve times were 1.646 and 39.042 milliseconds. The
+query has the same 200 variables and 829 Boolean constraints; the result
+establishes backend parity, not a cross-solver performance ranking.
+
 Probabilistic truncated addition
 --------------------------------
 

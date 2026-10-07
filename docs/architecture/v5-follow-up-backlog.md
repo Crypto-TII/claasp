@@ -508,6 +508,15 @@ local additions and complete ToySpeck-2 boundaries match the typed semantics.
 The committed ten-run benchmark uses the identical 200-variable, 829-assertion
 fixture as the SAT benchmark and makes no cross-solver ranking claim.
 
+The matching deterministic-truncated CP slice adds
+``ModularAddDeterministicTruncatedCPModel`` and
+``WordDeterministicTruncatedCPModel``. Exact Boolean-to-MiniZinc lowering keeps
+the recovered paired-carry relation and graph wiring unchanged. Chuffed accepts
+and rejects the same local and complete ToySpeck-2 boundaries as SAT and SMT;
+decoded trails are checked again through typed semantics. The committed ten-run
+benchmark records the identical 200-variable, 829-constraint fixture without
+replacing the specialized Speck CP model or ranking unlike solvers.
+
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and
 provenance. Keep optional solver dependencies isolated, give each formulation
