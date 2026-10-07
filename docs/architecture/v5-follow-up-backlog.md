@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box MILP, local SAT transitions, and native-XOR output implemented; next: SAT trail assembly**
+Status: **S-box MILP, local SAT transitions, native-XOR output, and SAT trail assembly implemented; next: n-window heuristic**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -374,9 +374,13 @@ and validity checks. The benchmark reports unavailable CryptoMiniSat
 peak-memory data as not reported and makes no formulation-only speed claim
 from the cross-solver runs.
 
-Generic XOR-differential/XOR-linear trail assembly and the optional n-window
-heuristic remain next; native-XOR trail lowering should build on the mixed
-container rather than reintroducing legacy string clauses.
+The SAT trail-assembly slice adds explicitly named whole-graph differential and
+linear models that reuse the reviewed backend-neutral Boolean relations but
+return SAT containers and SAT provenance. Exact toy-Speck counts are preserved
+under MiniSat, Kissat, and CryptoMiniSat, and the committed ten-run benchmark
+uses identical formulas and restrictions across the three solvers. The
+optional n-window heuristic remains next; native-XOR trail lowering should
+build on the mixed container rather than reintroducing legacy string clauses.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and
