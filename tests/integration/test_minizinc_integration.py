@@ -24,6 +24,7 @@ from claasp.representations.constraints.cp import (
     WordDeterministicTruncatedCPModel,
     WordDifferentialCPModel,
     WordLinearCPModel,
+    WordSemiDeterministicDifferentialLinearCPModel,
     WordwiseDifferenceCPModel,
 )
 from claasp.representations.constraints.smt.trails import (
@@ -124,6 +125,22 @@ def test_minizinc_preserves_deterministic_differential_linear_composition():
     assert solved.status is CPStatus.SATISFIED
     trail = model.decode_trail(solved.assignment)
     assert trail.linear.output_mask != 0
+
+
+def test_minizinc_preserves_semi_deterministic_differential_linear_composition():
+    model = WordSemiDeterministicDifferentialLinearCPModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=1,
+        middle_rounds=1,
+        differential_maximum_weight=16,
+        middle_maximum_scaled_weight=None,
+        linear_maximum_weight=16,
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.linear.output_mask != 0
+    assert trail.middle_weight >= 0
 
 
 def _test_solver(*, require_chuffed=False):

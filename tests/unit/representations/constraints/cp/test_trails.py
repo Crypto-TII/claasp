@@ -6,7 +6,22 @@ from claasp.representations.constraints.cp import (
     WordDeterministicTruncatedCPModel,
     WordDifferentialCPModel,
     WordLinearCPModel,
+    WordSemiDeterministicDifferentialLinearCPModel,
 )
+
+
+def test_semi_deterministic_differential_linear_cp_assembles_complete_composition():
+    model = WordSemiDeterministicDifferentialLinearCPModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=1,
+        middle_rounds=1,
+        differential_maximum_weight=16,
+        middle_maximum_scaled_weight=None,
+        linear_maximum_weight=16,
+    )
+    query = model.cp_model()
+    assert (len(query.declarations), len(query.constraints)) == (2303, 6599)
+    assert query.constraint_models[0].model == model.model_provenance
 
 
 def test_differential_linear_cp_assembles_complete_composition():

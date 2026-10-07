@@ -24,6 +24,7 @@ __all__ = [
     "WordDeterministicDifferentialLinearCPModel",
     "WordDifferentialCPModel",
     "WordLinearCPModel",
+    "WordSemiDeterministicDifferentialLinearCPModel",
 ]
 
 
@@ -57,6 +58,7 @@ def __getattr__(name: str):
         "WordDeterministicDifferentialLinearCPModel",
         "WordDifferentialCPModel",
         "WordLinearCPModel",
+        "WordSemiDeterministicDifferentialLinearCPModel",
     }:
         from claasp.representations.constraints.cp import trails
 
