@@ -44,6 +44,8 @@ def classify_artifact(path: str) -> str | None:
         return "poseidon-parameter-data"
     if path == "primitives/permutations/poseidon/data/NOTICE.md":
         return "poseidon-notice"
+    if path.startswith("representations/constraints/") and path.endswith(".json"):
+        return "generated-constraint-data"
     return None
 
 

@@ -12,8 +12,16 @@ from claasp.representations.constraints.milp import (
     LinearVariable,
     MILPModel,
     ObjectiveSense,
+    SBoxMILPInequalityStrategy,
     SBoxTransitionMILPModel,
+    SBoxXorDifferentialConvexHullMILPModel,
+    SBoxXorDifferentialGreedyMILPModel,
+    SBoxXorDifferentialMinimumMILPModel,
+    SBoxXorLinearConvexHullMILPModel,
+    SBoxXorLinearGreedyMILPModel,
+    SBoxXorLinearMinimumMILPModel,
     VariableKind,
+    load_bundled_sbox_milp_inequalities,
 )
 from claasp.semantics.cryptanalysis import TrailKind
 
@@ -53,13 +61,15 @@ def test_glpk_reports_an_infeasible_model_without_a_witness():
 
 def test_glpk_preserves_complete_speck_execution_not_legacy_partial_model():
     primitive = Speck(number_of_rounds=22)
+    output = primitive.output
+    assert output is not None
     problem = AnalysisProblem(
         primitive,
         (
             FixedValue(primitive.input("plaintext"), 0x6574694C),
             FixedValue(primitive.input("key"), 0x1918111009080100),
         ),
-        {"ciphertext": primitive.output},
+        {"ciphertext": output},
     )
     result = primitive.analyze().solve(problem, GLPKSolver(timeout_seconds=10))
     assert result.is_satisfiable
@@ -90,6 +100,94 @@ def test_glpk_proves_impossible_finite_sbox_relation():
         relation.milp_model(input_pattern=1, output_pattern=1)
     )
     assert result.status is MILPStatus.INFEASIBLE and result.assignment is None
+
+
+@pytest.mark.parametrize(
+    "kind,strategy,model_type,output,weight,sign",
+    (
+        (
+            TrailKind.XOR_DIFFERENTIAL,
+            SBoxMILPInequalityStrategy.CONVEX_HULL,
+            SBoxXorDifferentialConvexHullMILPModel,
+            3,
+            2,
+            1,
+        ),
+        (
+            TrailKind.XOR_DIFFERENTIAL,
+            SBoxMILPInequalityStrategy.GREEDY,
+            SBoxXorDifferentialGreedyMILPModel,
+            3,
+            2,
+            1,
+        ),
+        (
+            TrailKind.XOR_DIFFERENTIAL,
+            SBoxMILPInequalityStrategy.MINIMUM,
+            SBoxXorDifferentialMinimumMILPModel,
+            3,
+            2,
+            1,
+        ),
+        (
+            TrailKind.XOR_LINEAR,
+            SBoxMILPInequalityStrategy.CONVEX_HULL,
+            SBoxXorLinearConvexHullMILPModel,
+            5,
+            1,
+            -1,
+        ),
+        (
+            TrailKind.XOR_LINEAR,
+            SBoxMILPInequalityStrategy.GREEDY,
+            SBoxXorLinearGreedyMILPModel,
+            5,
+            1,
+            -1,
+        ),
+        (
+            TrailKind.XOR_LINEAR,
+            SBoxMILPInequalityStrategy.MINIMUM,
+            SBoxXorLinearMinimumMILPModel,
+            5,
+            1,
+            -1,
+        ),
+    ),
+)
+def test_glpk_solves_recovered_sbox_inequality_strategies(
+    kind, strategy, model_type, output, weight, sign
+):
+    system = load_bundled_sbox_milp_inequalities("present", kind, strategy)
+    relation = model_type(system)
+    result = GLPKSolver(timeout_seconds=10).solve(
+        relation.milp_model(input_pattern=1, output_pattern=output)
+    )
+    assert result.status is MILPStatus.OPTIMAL
+    transition = relation.decode_transition(result.assignment)
+    assert (transition.weight, transition.sign) == (weight, sign)
+    assert result.objective_value == weight
+
+
+@pytest.mark.parametrize(
+    "strategy,model_type",
+    (
+        (
+            SBoxMILPInequalityStrategy.CONVEX_HULL,
+            SBoxXorDifferentialConvexHullMILPModel,
+        ),
+        (SBoxMILPInequalityStrategy.GREEDY, SBoxXorDifferentialGreedyMILPModel),
+        (SBoxMILPInequalityStrategy.MINIMUM, SBoxXorDifferentialMinimumMILPModel),
+    ),
+)
+def test_glpk_proves_impossible_recovered_sbox_transition(strategy, model_type):
+    system = load_bundled_sbox_milp_inequalities("present", TrailKind.XOR_DIFFERENTIAL, strategy)
+    relation = model_type(system)
+    result = GLPKSolver(timeout_seconds=10).solve(
+        relation.milp_model(input_pattern=1, output_pattern=1)
+    )
+    assert result.status is MILPStatus.INFEASIBLE
+    assert result.assignment is None
 
 
 @pytest.mark.parametrize("rounds, expected", ((1, 2), (2, 3), (4, 8)))
