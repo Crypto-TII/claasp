@@ -1,7 +1,13 @@
 """Functional SAT encoding for modular addition."""
 
 from claasp.components import ModularAdd
-from claasp.representations.constraints import ConstraintBackend, _direct_model
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _direct_model,
+    _verified_model,
+)
+from claasp.representations.constraints.sat.model import CNFFormula
 
 
 class ModularAddFunctionalSATModel:
@@ -91,3 +97,139 @@ class ModularAddFunctionalSATModel:
                             )
                         carry = next_carry
                 accumulator = target
+
+
+class ModularAddDifferentialSATModel:
+    """Exact paired-carry CNF support and unary XOR-differential weights.
+
+    EXAMPLES::
+
+        >>> model = ModularAddDifferentialSATModel(4)
+        >>> formula = model.cnf_formula()
+        >>> formula.variables[-3:]
+        ('weight_0', 'weight_1', 'weight_2')
+        >>> formula.constraint_models[0].model.backend.value
+        'sat'
+    """
+
+    model_provenance = _verified_model(
+        ConstraintBackend.SAT,
+        "ModularAddDifferentialSATModel",
+        "xor_differential",
+        "paired-carry Boolean support with unary weight",
+        "https://eprint.iacr.org/2001/001",
+        "Efficient Algorithms for Computing Differential Properties of Addition",
+        "section 4, Algorithm 2 and Theorem 1",
+    )
+
+    def __init__(self, width: int) -> None:
+        from claasp.representations.constraints.smt.components.modular_add import (
+            ModularAddDifferentialSMTModel,
+        )
+
+        self._shared = ModularAddDifferentialSMTModel(width)
+        self.semantics = self._shared.semantics
+        self.width = self._shared.width
+
+    def cnf_formula(self) -> CNFFormula:
+        """Return the backend-neutral Boolean clauses in a SAT container."""
+
+        return _as_cnf(self._shared.smt_formula(), self.model_provenance)
+
+    def decode_transition(self, assignment):
+        """Validate and decode one complete modular-add assignment."""
+
+        if not self.cnf_formula().is_satisfied(assignment):
+            raise ValueError("invalid modular-add differential witness")
+        transition = self.semantics.xor_differential(
+            *(_integer(assignment, prefix, self.width) for prefix in ("left", "right", "output"))
+        )
+        if not transition.is_possible or transition.weight != sum(
+            assignment[f"weight_{bit}"] for bit in range(self.width - 1)
+        ):
+            raise ValueError("modular-add differential weight disagrees with exact semantics")
+        return transition
+
+
+class ModularAddLinearSATModel:
+    """Exact modular-add XOR-linear mask recurrence in CNF.
+
+    EXAMPLES::
+
+        >>> model = ModularAddLinearSATModel(4)
+        >>> formula = model.cnf_formula(left_mask=1, right_mask=0, output_mask=1)
+        >>> (formula.variables[-1], formula.provenance[-1])
+        ('weight_3', 'fixed_output')
+    """
+
+    model_provenance = _verified_model(
+        ConstraintBackend.SAT,
+        "ModularAddLinearSATModel",
+        "xor_linear",
+        "Boolean mask recurrence with unary weight",
+        "10.1007/978-3-319-39555-5_26",
+        "Automatic Search of Linear Trails in ARX with Applications to SPECK and Chaskey",
+        "section 3.1, Proposition 1 and equation (1)",
+    )
+
+    def __init__(self, width: int) -> None:
+        from claasp.representations.constraints.smt.components.modular_add import (
+            ModularAddLinearSMTModel,
+        )
+
+        self._shared = ModularAddLinearSMTModel(width)
+        self.semantics = self._shared.semantics
+        self.width = self._shared.width
+
+    def cnf_formula(
+        self,
+        *,
+        left_mask: int | None = None,
+        right_mask: int | None = None,
+        output_mask: int | None = None,
+    ) -> CNFFormula:
+        """Return exact mask support with optional fixed masks."""
+
+        formula = self._shared.smt_formula(
+            left_mask=left_mask,
+            right_mask=right_mask,
+            output_mask=output_mask,
+        )
+        return _as_cnf(formula, self.model_provenance)
+
+    def decode_transition(self, assignment):
+        """Validate and decode one complete modular-add mask assignment."""
+
+        if not self.cnf_formula().is_satisfied(assignment):
+            raise ValueError("invalid modular-add linear witness")
+        transition = self.semantics.xor_linear(
+            *(_integer(assignment, prefix, self.width) for prefix in ("left", "right", "output"))
+        )
+        if not transition.is_possible or transition.weight != sum(
+            assignment[f"weight_{bit}"] for bit in range(self.width)
+        ):
+            raise ValueError("modular-add linear weight disagrees with exact semantics")
+        return transition
+
+
+def _as_cnf(formula, provenance) -> CNFFormula:
+    return CNFFormula(
+        formula.variables,
+        formula.assertions,
+        formula.provenance,
+        (ConstraintModelApplication(provenance),),
+    )
+
+
+def _integer(assignment, prefix: str, width: int) -> int:
+    value = 0
+    for bit in range(width):
+        value = (value << 1) | assignment[f"{prefix}_{bit}"]
+    return value
+
+
+__all__ = [
+    "ModularAddDifferentialSATModel",
+    "ModularAddFunctionalSATModel",
+    "ModularAddLinearSATModel",
+]
