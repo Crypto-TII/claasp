@@ -163,11 +163,13 @@ def anf_from_truth_table(
 
     EXAMPLES::
 
-        >>> try:
-        ...     anf_from_truth_table()
-        ... except TypeError:
-        ...     print("required arguments rejected")
-        required arguments rejected
+        >>> polynomial = anf_from_truth_table((0, 1, 1, 0), ("x", "y"))
+        >>> [
+        ...     polynomial.evaluate({"x": x, "y": y})
+        ...     for x in (0, 1)
+        ...     for y in (0, 1)
+        ... ]
+        [0, 1, 1, 0]
     """
 
     size = len(values)
@@ -200,11 +202,11 @@ def vectorial_anf(
 
     EXAMPLES::
 
-        >>> try:
-        ...     vectorial_anf()
-        ... except TypeError:
-        ...     print("required arguments rejected")
-        required arguments rejected
+        >>> output_bits = vectorial_anf((0, 1, 2, 3), ("x", "y"))
+        >>> tuple(polynomial.degree for polynomial in output_bits)
+        (1, 1)
+        >>> tuple(polynomial.evaluate({"x": 1, "y": 0}) for polynomial in output_bits)
+        (1, 0)
     """
 
     size = len(table)
@@ -232,11 +234,9 @@ def monomial_transition_table(table: Sequence[int]) -> dict[int, frozenset[int]]
 
     EXAMPLES::
 
-        >>> try:
-        ...     monomial_transition_table()
-        ... except TypeError:
-        ...     print("required arguments rejected")
-        required arguments rejected
+        >>> transitions = monomial_transition_table((0, 1, 2, 3))
+        >>> {output: sorted(inputs) for output, inputs in transitions.items()}
+        {0: [0], 1: [1], 2: [2], 3: [3]}
     """
 
     width = len(table).bit_length() - 1
@@ -321,11 +321,14 @@ def modular_subtraction_polynomials(
 
     EXAMPLES::
 
-        >>> try:
-        ...     modular_subtraction_polynomials()
-        ... except TypeError:
-        ...     print("required arguments rejected")
-        required arguments rejected
+        >>> x = tuple(BooleanPolynomial.variable(f"x{i}") for i in range(3))
+        >>> y = tuple(BooleanPolynomial.variable(f"y{i}") for i in range(3))
+        >>> z = tuple(BooleanPolynomial.variable(f"z{i}") for i in range(3))
+        >>> equations = modular_subtraction_polynomials(x, y, z)
+        >>> values = {"x0": 1, "x1": 1, "x2": 0, "y0": 1, "y1": 0, "y2": 1,
+        ...           "z0": 0, "z1": 1, "z2": 1}
+        >>> tuple(equation.evaluate(values) for equation in equations)
+        (0, 0, 0)
     """
 
     return _modular_binary_polynomials(left, right, output, borrows, subtract=True)

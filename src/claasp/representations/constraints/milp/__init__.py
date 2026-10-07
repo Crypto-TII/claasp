@@ -1,7 +1,19 @@
 """Dependency-free mixed-integer linear constraint representations."""
 
-from claasp.representations.constraints.milp.boolean import BooleanGraphMILPModel, cnf_to_milp
+from claasp.representations.constraints.milp.components import (
+    FiniteBinaryRelationMILPModel,
+    ModularAddLinearMILPModel,
+    MonomialTransitionMILPModel,
+    SBoxTransitionMILPModel,
+    SBoxXorDifferentialMILPModel,
+    SBoxXorLinearMILPModel,
+)
 from claasp.representations.constraints.milp.exporter import LPExporter
+from claasp.representations.constraints.milp.lowering import (
+    BooleanGraphMILPModel,
+    BooleanMonomialGraphMILPModel,
+    cnf_to_milp,
+)
 from claasp.representations.constraints.milp.model import (
     ConstraintSense,
     LinearConstraint,
@@ -11,18 +23,11 @@ from claasp.representations.constraints.milp.model import (
     ObjectiveSense,
     VariableKind,
 )
-from claasp.representations.constraints.milp.monomial import (
-    BooleanMonomialGraphMILPModel,
-    MonomialTransitionMILPModel,
-    PresentMonomialTrailMILPModel,
-)
-from claasp.representations.constraints.milp.relations import FiniteBinaryRelationMILPModel
-from claasp.representations.constraints.milp.sbox import SBoxTransitionMILPModel
 from claasp.representations.constraints.milp.trails import (
     PresentDifferentialMILPModel,
+    PresentMonomialTrailMILPModel,
     check_present_milp_trail,
 )
-from claasp.representations.constraints.milp.transitions import ModularAddLinearMILPModel
 
 __all__ = [
     "BooleanGraphMILPModel",
@@ -40,6 +45,8 @@ __all__ = [
     "PresentDifferentialMILPModel",
     "PresentMonomialTrailMILPModel",
     "SBoxTransitionMILPModel",
+    "SBoxXorDifferentialMILPModel",
+    "SBoxXorLinearMILPModel",
     "VariableKind",
     "check_present_milp_trail",
     "cnf_to_milp",

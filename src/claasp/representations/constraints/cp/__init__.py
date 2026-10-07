@@ -12,6 +12,7 @@ __all__ = [
     "ProbabilisticTruncatedModularAddCPModel",
     "SBoxBoomerangCPModel",
     "SBoxDifferenceCPModel",
+    "SBoxXorDifferentialCPModel",
     "SimonImpossibleCPModel",
     "SpeckDifferentialCPModel",
     "SpeckImpossibleCPModel",
@@ -50,4 +51,10 @@ def __getattr__(name: str):
         from claasp.representations.constraints.cp import trails
 
         return getattr(trails, name)
+    if name == "SBoxXorDifferentialCPModel":
+        from claasp.representations.constraints.cp.components import (
+            SBoxXorDifferentialCPModel,
+        )
+
+        return SBoxXorDifferentialCPModel
     raise AttributeError(name)

@@ -565,10 +565,22 @@ claasp.representations.constraints.cp
 .. automodule:: claasp.representations.constraints.cp
    :no-index:
 
+claasp.representations.constraints.cp.components
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.cp.components
+   :no-index:
+
 claasp.representations.constraints.milp
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.representations.constraints.milp
+   :no-index:
+
+claasp.representations.constraints.milp.components
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.milp.components
    :no-index:
 
 claasp.representations.constraints.polynomial
@@ -589,16 +601,46 @@ claasp.representations.constraints.sat
 .. automodule:: claasp.representations.constraints.sat
    :no-index:
 
+claasp.representations.constraints.sat.components
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components
+   :no-index:
+
 claasp.representations.constraints.sat.exporters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.representations.constraints.sat.exporters
    :no-index:
 
+claasp.representations.constraints.sat.model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.model
+   :no-index:
+
+claasp.representations.constraints.sat.trails
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.trails
+   :no-index:
+
 claasp.representations.constraints.smt
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.representations.constraints.smt
+   :no-index:
+
+claasp.representations.constraints.smt.components
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.smt.components
+   :no-index:
+
+claasp.representations.constraints.smt.model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.smt.model
    :no-index:
 
 claasp.representations.diagrams

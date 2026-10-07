@@ -2,6 +2,18 @@
 
 from claasp.components import BitVectorSBox, Permutation, Rotate
 from claasp.domains import Word
+from claasp.representations.constraints.cp.components import (
+    ProbabilisticTruncatedModularAddCPModel as _ProbabilisticTruncatedModularAddCPModel,
+)
+from claasp.representations.constraints.cp.components import (
+    SBoxBoomerangCPModel as _SBoxBoomerangCPModel,
+)
+from claasp.representations.constraints.cp.components import (
+    SBoxDifferenceCPModel as _SBoxDifferenceCPModel,
+)
+from claasp.representations.constraints.cp.components import (
+    SBoxXorDifferentialCPModel as _SBoxXorDifferentialCPModel,
+)
 from claasp.representations.constraints.cp.model import MiniZincModel
 from claasp.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -14,7 +26,6 @@ from claasp.semantics.cryptanalysis import (
     ProbabilisticTruncatedModularAddTransition,
     ProbabilisticTruncatedTrail,
     PropagationProblem,
-    SBoxBoomerangSemantics,
     Trail,
     TrailKind,
     TrailStep,
@@ -29,17 +40,24 @@ from claasp.semantics.cryptanalysis import (
     propagate_two_word_speck_round,
 )
 
+ProbabilisticTruncatedModularAddCPModel = _ProbabilisticTruncatedModularAddCPModel
+SBoxBoomerangCPModel = _SBoxBoomerangCPModel
+SBoxDifferenceCPModel = _SBoxDifferenceCPModel
+SBoxXorDifferentialCPModel = _SBoxXorDifferentialCPModel
+
 
 class PresentDifferentialCPModel:
     """Native table-constraint model for two-round PRESENT differences.
 
     EXAMPLES::
 
-        >>> try:
-        ...     PresentDifferentialCPModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
+        >>> from claasp.primitives import Present
+        >>> problem = PropagationProblem(
+        ...     Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=4
+        ... )
+        >>> query = PresentDifferentialCPModel(problem).cp_model()
+        >>> (query.includes, query.constraints[-1].endswith("<= 4;"))
+        (('include "table.mzn";',), True)
     """
 
     def __init__(self, problem: PropagationProblem) -> None:
@@ -143,11 +161,13 @@ class PresentLinearCPModel:
 
     EXAMPLES::
 
-        >>> try:
-        ...     PresentLinearCPModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
+        >>> from claasp.primitives import Present
+        >>> problem = PropagationProblem(
+        ...     Present(number_of_rounds=3), XOR_LINEAR, maximum_weight=4
+        ... )
+        >>> query = PresentLinearCPModel(problem).cp_model()
+        >>> (query.includes, query.constraints[-1].endswith("<= 4;"))
+        (('include "table.mzn";',), True)
     """
 
     def __init__(self, problem: PropagationProblem) -> None:
@@ -257,11 +277,15 @@ class SpeckDifferentialCPModel:
 
     EXAMPLES::
 
-        >>> try:
-        ...     SpeckDifferentialCPModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
+        >>> from claasp.primitives import Speck
+        >>> problem = PropagationProblem(
+        ...     Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=6
+        ... )
+        >>> model = SpeckDifferentialCPModel(
+        ...     problem, input_difference=0x02110A04, output_difference=0x80008000
+        ... )
+        >>> model.cp_model().constraints[-1].endswith("<= 6;")
+        True
     """
 
     def __init__(
@@ -415,11 +439,16 @@ class SpeckTruncatedCPModel:
 
     EXAMPLES::
 
-        >>> try:
-        ...     SpeckTruncatedCPModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
+        >>> from claasp.primitives import Speck
+        >>> problem = PropagationProblem(
+        ...     Speck(number_of_rounds=2), DETERMINISTIC_TRUNCATED_XOR
+        ... )
+        >>> difference = TruncatedXorDifference.parse(
+        ...     "00000000011111001110000000000000"
+        ... )
+        >>> model = SpeckTruncatedCPModel(problem, difference)
+        >>> str(model.expected_output)
+        '????100000000000????100000000011'
     """
 
     def __init__(
@@ -469,99 +498,23 @@ class SpeckTruncatedCPModel:
         return pattern
 
 
-class ProbabilisticTruncatedModularAddCPModel:
-    """Native CP representation of one counter-based partial addition.
-
-    EXAMPLES::
-
-        >>> try:
-        ...     ProbabilisticTruncatedModularAddCPModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
-    """
-
-    def __init__(
-        self,
-        left: TruncatedXorDifference,
-        right: TruncatedXorDifference,
-        output: TruncatedXorDifference,
-        carry_difference: TruncatedXorDifference | None = None,
-    ) -> None:
-        if not all(isinstance(item, TruncatedXorDifference) for item in (left, right, output)):
-            raise TypeError("left, right, and output must be truncated differences")
-        width = len(left.bits)
-        if len(right.bits) != width or len(output.bits) != width:
-            raise ValueError("probabilistic truncated operands must have equal widths")
-        if carry_difference is not None and len(carry_difference.bits) != width:
-            raise ValueError("carry difference must have the operand width")
-        self.left = left
-        self.right = right
-        self.output = output
-        self.carry_difference = carry_difference
-        self.width = width
-
-    def cp_model(self) -> MiniZincModel:
-        """Fix the boundary patterns and minimize the legacy scaled cost."""
-
-        last = self.width - 1
-        declarations = (
-            _PROBABILISTIC_TRUNCATED_MODADD_PREDICATE,
-            f"array[0..{last}] of var 0..2: left;",
-            f"array[0..{last}] of var 0..2: right;",
-            f"array[0..{last}] of var 0..2: output_difference;",
-            f"array[0..{last}] of var 0..2: carry_difference;",
-            f"array[0..{last}] of var {{0,4,9,19,41,100}}: costs;",
-            "var int: scaled_weight;",
-        )
-        constraints = [
-            _fixed_array("left", self.left),
-            _fixed_array("right", self.right),
-            _fixed_array("output_difference", self.output),
-        ]
-        if self.carry_difference is not None:
-            constraints.append(_fixed_array("carry_difference", self.carry_difference))
-        constraints.extend(
-            (
-                "constraint counter_based_probabilistic_truncated_modadd(left, right, "
-                "output_difference, carry_difference, costs, scaled_weight);",
-                "constraint costs[" + str(last) + "] = 0;",
-            )
-        )
-        return MiniZincModel(
-            declarations,
-            tuple(constraints),
-            solve="solve minimize scaled_weight;",
-            provenance=("legacy counter_based_modadd_semideterministic fixture",),
-        )
-
-    def decode_transition(self, assignment) -> ProbabilisticTruncatedModularAddTransition:
-        """Project and independently check the optimized partial transition."""
-
-        transition = ProbabilisticTruncatedModularAddTransition(
-            self.left,
-            self.right,
-            self.output,
-            _decode_truncated(assignment["carry_difference"]),
-            tuple(int(value) for value in assignment["costs"]),
-        )
-        if transition.scaled_weight != int(assignment["scaled_weight"]):
-            raise ValueError("MiniZinc returned an inconsistent scaled weight")
-        if not check_probabilistic_truncated_modular_add(transition):
-            raise ValueError("MiniZinc returned an invalid probabilistic truncated transition")
-        return transition
-
-
 class SpeckProbabilisticTruncatedCPModel:
     """Compose counter-based probabilistic truncated semantics over Speck.
 
     EXAMPLES::
 
-        >>> try:
-        ...     SpeckProbabilisticTruncatedCPModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
+        >>> from claasp.primitives import Speck
+        >>> from claasp.semantics import PROBABILISTIC_TRUNCATED_XOR
+        >>> problem = PropagationProblem(
+        ...     Speck(number_of_rounds=2), PROBABILISTIC_TRUNCATED_XOR
+        ... )
+        >>> model = SpeckProbabilisticTruncatedCPModel(
+        ...     problem,
+        ...     TruncatedXorDifference.parse("00000000011111001110000000000000"),
+        ...     TruncatedXorDifference.parse("???????????????1???????????????1"),
+        ... )
+        >>> model.cp_model().solve
+        'solve minimize scaled_weight;'
     """
 
     def __init__(
@@ -689,11 +642,14 @@ class WordwiseDifferenceCPModel:
 
     EXAMPLES::
 
-        >>> try:
-        ...     WordwiseDifferenceCPModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
+        >>> words = (
+        ...     WordwiseXorDifference(8, WordwiseDifferenceKind.ZERO),
+        ...     WordwiseXorDifference.known(8, 0x53),
+        ...     WordwiseXorDifference(8, WordwiseDifferenceKind.UNKNOWN),
+        ... )
+        >>> query = WordwiseDifferenceCPModel(words).cp_model()
+        >>> query.declarations[0]
+        'enum WordDifferenceState = {ZERO, KNOWN, NONZERO, UNKNOWN};'
     """
 
     def __init__(self, words: tuple[WordwiseXorDifference, ...]) -> None:
@@ -752,11 +708,14 @@ class ImpossibleBoundaryCPModel:
 
     EXAMPLES::
 
-        >>> try:
-        ...     ImpossibleBoundaryCPModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
+        >>> boundary = ImpossiblePropagationBoundary(
+        ...     TruncatedXorDifference.parse("01??0"),
+        ...     TruncatedXorDifference.parse("00?11"),
+        ... )
+        >>> boundary.contradictory_positions
+        (1, 4)
+        >>> ImpossibleBoundaryCPModel(boundary).cp_model().constraints[-1]
+        'constraint exists(i in 0..4)(contradiction[i]);'
     """
 
     def __init__(self, boundary: ImpossiblePropagationBoundary) -> None:
@@ -817,11 +776,10 @@ class SpeckImpossibleCPModel:
 
     EXAMPLES::
 
-        >>> try:
-        ...     SpeckImpossibleCPModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
+        >>> from claasp.primitives import Speck
+        >>> model = SpeckImpossibleCPModel(Speck(number_of_rounds=7), middle_round=3)
+        >>> model.cp_model().provenance[-1]
+        '7 rounds, split after round 3, zero key difference'
     """
 
     def __init__(self, primitive, middle_round: int) -> None:
@@ -914,11 +872,15 @@ class SimonImpossibleCPModel:
 
     EXAMPLES::
 
-        >>> try:
-        ...     SimonImpossibleCPModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
+        >>> from claasp.primitives import Simon
+        >>> model = SimonImpossibleCPModel(
+        ...     Simon(number_of_rounds=11),
+        ...     TruncatedXorDifference.parse("00000000000000000000000000000001"),
+        ...     TruncatedXorDifference.parse("000000?0?00000000000000000000000"),
+        ...     middle_round=6,
+        ... )
+        >>> model.cp_model().provenance[-1]
+        'legacy Simon32/64 11-round fully-automatic impossible fixture'
     """
 
     def __init__(self, primitive, input_pattern, output_pattern, middle_round: int) -> None:
@@ -1012,147 +974,6 @@ class SimonImpossibleCPModel:
         if decoded != ImpossiblePropagationBoundary(forward, backward) or not decoded.is_impossible:
             raise ValueError("MiniZinc returned an invalid Simon impossible boundary")
         return decoded
-
-
-class SBoxDifferenceCPModel:
-    """Exact local feasibility model for possible and impossible differences.
-
-    EXAMPLES::
-
-        >>> try:
-        ...     SBoxDifferenceCPModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
-    """
-
-    def __init__(
-        self,
-        problem: PropagationProblem,
-        component_id: str,
-        input_difference: int,
-        output_difference: int,
-    ) -> None:
-        if problem.semantics != XOR_DIFFERENTIAL:
-            raise ValueError("impossible-pair CP lowering requires XOR-differential semantics")
-        component = next(
-            (item for item in problem.components if item.component_id == component_id), None
-        )
-        if not isinstance(component, BitVectorSBox):
-            raise ValueError("component_id must select a scoped bit-vector S-box")
-        width = component.output_type.unit_count
-        limit = 1 << width
-        if not 0 <= input_difference < limit or not 0 <= output_difference < limit:
-            raise ValueError("difference is outside the S-box width")
-        self.problem = problem
-        self.component = component
-        self.input_difference = input_difference
-        self.output_difference = output_difference
-
-    def cp_model(self) -> MiniZincModel:
-        """Return a table whose absence of a fixed pair proves impossibility."""
-
-        semantics = self.problem.provider_for(self.component)
-        width = self.component.output_type.unit_count
-        feasible = [
-            (source, target)
-            for source in range(1 << width)
-            for target in range(1 << width)
-            if semantics.transition((source,), target).is_possible
-        ]
-        values = ",".join(str(item) for row in feasible for item in row)
-        declarations = (
-            f"array[0..{len(feasible) - 1}, 1..2] of int: transitions = "
-            f"array2d(0..{len(feasible) - 1}, 1..2, [{values}]);",
-            f"var 0..{(1 << width) - 1}: input_difference;",
-            f"var 0..{(1 << width) - 1}: output_difference;",
-        )
-        constraints = (
-            "constraint table([input_difference,output_difference], transitions);",
-            f"constraint input_difference = {self.input_difference};",
-            f"constraint output_difference = {self.output_difference};",
-        )
-        return MiniZincModel(
-            declarations,
-            constraints,
-            includes=('include "table.mzn";',),
-            provenance=self.problem.provenance,
-        )
-
-
-class SBoxBoomerangCPModel:
-    """Exact BCT table lowering for one bijective bit-vector S-box.
-
-    EXAMPLES::
-
-        >>> try:
-        ...     SBoxBoomerangCPModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
-    """
-
-    def __init__(
-        self, component: BitVectorSBox, input_difference=None, output_difference=None
-    ) -> None:
-        if not isinstance(component, BitVectorSBox):
-            raise TypeError("component must be a BitVectorSBox")
-        semantics = SBoxBoomerangSemantics(component.table)
-        for name, value in (
-            ("input_difference", input_difference),
-            ("output_difference", output_difference),
-        ):
-            if value is not None and (
-                not isinstance(value, int) or not 0 <= value < len(component.table)
-            ):
-                raise ValueError(f"{name} must fit the S-box width")
-        self.component = component
-        self.semantics = semantics
-        self.input_difference = input_difference
-        self.output_difference = output_difference
-
-    def cp_model(self) -> MiniZincModel:
-        """Lower every nonzero BCT entry with its exact quartet count."""
-
-        rows = []
-        for source in range(len(self.component.table)):
-            for target in range(len(self.component.table)):
-                entry = self.semantics.connectivity(source, target)
-                if entry.is_possible:
-                    rows.append((source, target, entry.count))
-        flattened = ",".join(str(value) for row in rows for value in row)
-        limit = len(self.component.table) - 1
-        declarations = (
-            f"array[0..{len(rows) - 1}, 1..3] of int: bct = "
-            f"array2d(0..{len(rows) - 1}, 1..3, [{flattened}]);",
-            f"var 0..{limit}: input_difference;",
-            f"var 0..{limit}: output_difference;",
-            f"var 1..{len(self.component.table)}: quartet_count;",
-        )
-        constraints = [
-            "constraint table([input_difference, output_difference, quartet_count], bct);"
-        ]
-        if self.input_difference is not None:
-            constraints.append(f"constraint input_difference = {self.input_difference};")
-        if self.output_difference is not None:
-            constraints.append(f"constraint output_difference = {self.output_difference};")
-        return MiniZincModel(
-            declarations,
-            tuple(constraints),
-            includes=('include "table.mzn";',),
-            solve="solve maximize quartet_count;",
-            provenance=(f"exact exhaustive BCT for {self.component.component_id}",),
-        )
-
-    def decode(self, assignment):
-        """Decode and independently recompute the selected BCT entry."""
-
-        entry = self.semantics.connectivity(
-            int(assignment["input_difference"]), int(assignment["output_difference"])
-        )
-        if entry.count != int(assignment["quartet_count"]):
-            raise ValueError("MiniZinc returned an invalid BCT count")
-        return entry
 
 
 def _bits(value, width):

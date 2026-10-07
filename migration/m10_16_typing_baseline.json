@@ -1,31 +1,31 @@
 {
   "counts_by_code": {
-    "arg-type": 174,
-    "assignment": 79,
+    "arg-type": 161,
+    "assignment": 76,
     "attr-defined": 130,
     "call-arg": 7,
     "call-overload": 82,
     "dict-item": 29,
     "has-type": 22,
     "import-untyped": 1,
-    "index": 73,
+    "index": 72,
     "list-item": 4,
-    "misc": 29,
+    "misc": 28,
     "no-redef": 1,
     "operator": 79,
     "override": 4,
     "return-value": 4,
     "type-var": 2,
     "union-attr": 54,
-    "var-annotated": 121
+    "var-annotated": 124
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 714,
+    "src/claasp": 699,
     "tests": 161,
     "tools": 20
   },
-  "diagnostic_count": 895,
+  "diagnostic_count": 880,
   "diagnostics": [
     {
       "code": "operator",
@@ -3257,156 +3257,156 @@
     {
       "code": "assignment",
       "column": 25,
-      "line": 106,
+      "line": 124,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[Any, ...], tuple[str, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 29,
-      "line": 107,
+      "line": 125,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 35,
-      "line": 108,
+      "line": 126,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 27,
-      "line": 211,
+      "line": 231,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 25,
-      "line": 216,
+      "line": 236,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[str, ...], tuple[str, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 29,
-      "line": 217,
+      "line": 237,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "index",
       "column": 28,
-      "line": 386,
+      "line": 410,
       "message": "Value of type \"object\" is not indexable",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "operator",
       "column": 16,
-      "line": 397,
+      "line": 421,
       "message": "Unsupported operand types for > (\"float\" and \"None\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 598,
+      "line": 551,
       "message": "Need type annotation for \"constraints\" (hint: \"constraints: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "misc",
       "column": 20,
-      "line": 738,
+      "line": 694,
       "message": "Enum index should be a string (actual index type \"Any | str | None\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 23,
-      "line": 938,
+      "line": 900,
       "message": "Need type annotation for \"constraints\" (hint: \"constraints: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 1179,
+      "line": 1000,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 35,
-      "message": "Need type annotation for \"terms\" (hint: \"terms: dict[<type>, <type>] = ...\")",
-      "path": "src/claasp/representations/constraints/milp/boolean.py"
+      "code": "assignment",
+      "column": 24,
+      "line": 86,
+      "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, ...], tuple[Any, ...], tuple[Any, ...]]\", variable has type \"tuple[()]\")",
+      "path": "src/claasp/representations/constraints/milp/components/modular_add.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 91,
+      "line": 37,
+      "message": "Need type annotation for \"terms\" (hint: \"terms: dict[<type>, <type>] = ...\")",
+      "path": "src/claasp/representations/constraints/milp/lowering.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 166,
       "message": "Need type annotation for \"uses\" (hint: \"uses: dict[<type>, <type>] = ...\")",
-      "path": "src/claasp/representations/constraints/milp/monomial.py"
+      "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "assignment",
       "column": 21,
-      "line": 134,
+      "line": 209,
       "message": "Incompatible types in assignment (expression has type \"tuple[Any, ...]\", variable has type \"list[Any]\")",
-      "path": "src/claasp/representations/constraints/milp/monomial.py"
+      "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "arg-type",
       "column": 44,
-      "line": 163,
+      "line": 238,
       "message": "Argument 1 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
-      "path": "src/claasp/representations/constraints/milp/monomial.py"
+      "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "operator",
       "column": 31,
-      "line": 164,
+      "line": 239,
       "message": "Unsupported operand types for * (\"int\" and \"None\")",
-      "path": "src/claasp/representations/constraints/milp/monomial.py"
+      "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "operator",
       "column": 47,
-      "line": 165,
+      "line": 240,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
-      "path": "src/claasp/representations/constraints/milp/monomial.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 415,
-      "message": "Need type annotation for \"variables\" (hint: \"variables: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/milp/monomial.py"
+      "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "assignment",
       "column": 25,
-      "line": 115,
+      "line": 116,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[Any, ...], tuple[Any, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/milp/trails.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 187,
+      "line": 211,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "src/claasp/representations/constraints/milp/trails.py"
     },
     {
-      "code": "assignment",
-      "column": 24,
-      "line": 84,
-      "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, ...], tuple[Any, ...], tuple[Any, ...]]\", variable has type \"tuple[()]\")",
-      "path": "src/claasp/representations/constraints/milp/transitions.py"
+      "code": "var-annotated",
+      "column": 9,
+      "line": 277,
+      "message": "Need type annotation for \"variables\" (hint: \"variables: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/milp/trails.py"
     },
     {
       "code": "arg-type",
@@ -3507,6 +3507,20 @@
       "path": "src/claasp/representations/constraints/polynomial/lowering.py"
     },
     {
+      "code": "attr-defined",
+      "column": 17,
+      "line": 32,
+      "message": "\"Domain\" has no attribute \"width\"",
+      "path": "src/claasp/representations/constraints/sat/components/modular_add.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 21,
+      "line": 48,
+      "message": "\"Domain\" has no attribute \"width\"",
+      "path": "src/claasp/representations/constraints/sat/components/wiring.py"
+    },
+    {
       "code": "var-annotated",
       "column": 9,
       "line": 22,
@@ -3514,312 +3528,193 @@
       "path": "src/claasp/representations/constraints/sat/exporters/dimacs.py"
     },
     {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 33,
+      "message": "Need type annotation for \"clauses\" (hint: \"clauses: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/sat/lowering.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 34,
+      "message": "Need type annotation for \"provenance\" (hint: \"provenance: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/sat/lowering.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 35,
+      "message": "Need type annotation for \"auxiliary\" (hint: \"auxiliary: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/sat/lowering.py"
+    },
+    {
       "code": "arg-type",
       "column": 37,
-      "line": 120,
+      "line": 139,
       "message": "Argument 1 to \"unit_variable_names\" has incompatible type \"str | None\"; expected \"str\"",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "operator",
       "column": 42,
-      "line": 131,
+      "line": 150,
       "message": "Unsupported operand types for + (\"int\" and \"None\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "arg-type",
       "column": 92,
-      "line": 131,
+      "line": 150,
       "message": "Argument 3 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "arg-type",
-      "column": 91,
-      "line": 136,
-      "message": "Argument 2 to \"add_clause\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 54,
-      "line": 140,
-      "message": "Argument 3 to \"equal\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 54,
-      "line": 144,
-      "message": "Argument 3 to \"equal\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 59,
-      "line": 157,
-      "message": "Argument 4 to \"xor\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 63,
-      "line": 173,
-      "message": "Argument 4 to \"xor\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 94,
-      "line": 178,
-      "message": "Argument 4 to \"and_\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 25,
-      "line": 180,
-      "message": "\"Domain\" has no attribute \"width\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 75,
-      "line": 184,
-      "message": "Argument 3 to \"equal\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 25,
-      "line": 186,
-      "message": "\"Domain\" has no attribute \"width\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "assignment",
-      "column": 35,
-      "line": 188,
-      "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"str\")",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "assignment",
-      "column": 21,
-      "line": 189,
-      "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"str\")",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "assignment",
-      "column": 29,
-      "line": 194,
-      "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"str\")",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 82,
-      "line": 204,
-      "message": "Argument 4 to \"xor\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 78,
-      "line": 213,
-      "message": "Argument 4 to \"xor\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 66,
-      "line": 214,
-      "message": "Argument 4 to \"xor\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 86,
-      "line": 223,
-      "message": "Argument 4 to \"and_\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 92,
-      "line": 229,
-      "message": "Argument 5 to \"majority\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "misc",
-      "column": 28,
-      "line": 241,
-      "message": "List comprehension has incompatible type List[str]; expected List[tuple[str, ...]]",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "index",
-      "column": 43,
-      "line": 253,
-      "message": "Invalid index type \"tuple[str, ...]\" for \"dict[str, int]\"; expected type \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 61,
-      "line": 254,
-      "message": "Argument 2 to \"add_clause\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "assignment",
-      "column": 24,
-      "line": 144,
-      "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, ...], ...]\", variable has type \"tuple[()]\")",
-      "path": "src/claasp/representations/constraints/smt/speck.py"
+      "column": 32,
+      "line": 132,
+      "message": "Argument 1 to \"extend\" of \"list\" has incompatible type \"tuple[tuple[int, int, int], tuple[int, int, int]]\"; expected \"Iterable[tuple[int]]\"",
+      "path": "src/claasp/representations/constraints/smt/components/modular_add.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 83,
+      "line": 107,
       "message": "Need type annotation for \"weight_names\" (hint: \"weight_names: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "assignment",
       "column": 36,
-      "line": 128,
+      "line": 152,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[Any, ...], tuple[Any, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 218,
+      "line": 242,
       "message": "Need type annotation for \"weight_names\" (hint: \"weight_names: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "assignment",
       "column": 36,
-      "line": 257,
+      "line": 281,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[Any, ...], tuple[Any, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 374,
+      "line": 398,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
-      "code": "arg-type",
-      "column": 32,
-      "line": 208,
-      "message": "Argument 1 to \"extend\" of \"list\" has incompatible type \"tuple[tuple[int, int, int], tuple[int, int, int]]\"; expected \"Iterable[tuple[int]]\"",
-      "path": "src/claasp/representations/constraints/smt/transitions.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 430,
-      "message": "Need type annotation for \"trails\" (hint: \"trails: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/word_differential.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 17,
-      "line": 430,
-      "message": "Need type annotation for \"blocks\" (hint: \"blocks: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/word_differential.py"
+      "code": "assignment",
+      "column": 24,
+      "line": 562,
+      "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, ...], ...]\", variable has type \"tuple[()]\")",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 21,
-      "line": 165,
+      "line": 754,
       "message": "Need type annotation for \"consumers\"",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 25,
-      "line": 166,
+      "line": 755,
       "message": "Need type annotation for \"weights\" (hint: \"weights: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "assignment",
       "column": 45,
-      "line": 185,
+      "line": 774,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, ...], ...]\", target has type \"tuple[()]\")",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "assignment",
       "column": 21,
-      "line": 217,
+      "line": 806,
       "message": "Incompatible types in assignment (expression has type \"tuple[Any, ...]\", variable has type \"int\")",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "index",
       "column": 56,
-      "line": 218,
+      "line": 807,
       "message": "Value of type \"int\" is not indexable",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "arg-type",
       "column": 36,
-      "line": 221,
+      "line": 810,
       "message": "Argument 1 to \"append\" of \"list\" has incompatible type \"tuple[str | None, int, Any, None]\"; expected \"tuple[str | None, int, Any, str]\"",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "assignment",
       "column": 17,
-      "line": 223,
+      "line": 812,
       "message": "Incompatible types in assignment (expression has type \"tuple[Any, ...]\", variable has type \"int\")",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "call-overload",
       "column": 43,
-      "line": 224,
+      "line": 813,
       "message": "No overload variant of \"zip\" matches argument types \"int\", \"tuple[Any, ...]\"",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 24,
-      "line": 375,
+      "line": 964,
       "message": "Need type annotation for \"names\"",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 13,
-      "line": 379,
+      "line": 968,
       "message": "Need type annotation for \"edge_names\"",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 495,
+      "line": 1084,
       "message": "Need type annotation for \"trails\" (hint: \"trails: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 17,
-      "line": 495,
+      "line": 1084,
       "message": "Need type annotation for \"blocks\" (hint: \"blocks: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 1528,
+      "message": "Need type annotation for \"trails\" (hint: \"trails: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 17,
+      "line": 1528,
+      "message": "Need type annotation for \"blocks\" (hint: \"blocks: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
@@ -4334,14 +4229,14 @@
     },
     {
       "code": "operator",
-      "column": 67,
+      "column": 29,
       "line": 245,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/representations/source/c.py"
     },
     {
       "code": "operator",
-      "column": 72,
+      "column": 34,
       "line": 247,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/representations/source/c.py"
@@ -4376,7 +4271,7 @@
     },
     {
       "code": "type-var",
-      "column": 64,
+      "column": 30,
       "line": 206,
       "message": "Value of type variable \"SupportsRichComparisonT\" of \"sorted\" cannot be \"str | None\"",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"

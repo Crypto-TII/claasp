@@ -1,19 +1,21 @@
 """Dependency-free SMT constraint representations."""
 
-from claasp.representations.constraints.smt.formula import SMTFormula
-from claasp.representations.constraints.smt.lowering import BooleanSMTModel
-from claasp.representations.constraints.smt.speck import SpeckLinearSMTModel
-from claasp.representations.constraints.smt.trails import (
-    PresentDifferentialSMTModel,
-    PresentLinearSMTModel,
-)
-from claasp.representations.constraints.smt.transitions import (
+from claasp.representations.constraints.smt.components import (
     ModularAddDifferentialSMTModel,
     ModularAddLinearSMTModel,
     SBoxTransitionSMTModel,
+    SBoxXorDifferentialSMTModel,
+    SBoxXorLinearSMTModel,
 )
-from claasp.representations.constraints.smt.word_differential import WordDifferentialSMTModel
-from claasp.representations.constraints.smt.word_linear import WordLinearSMTModel
+from claasp.representations.constraints.smt.lowering import BooleanSMTModel
+from claasp.representations.constraints.smt.model import SMTFormula
+from claasp.representations.constraints.smt.trails import (
+    PresentDifferentialSMTModel,
+    PresentLinearSMTModel,
+    SpeckLinearSMTModel,
+    WordDifferentialSMTModel,
+    WordLinearSMTModel,
+)
 
 __all__ = [
     "BooleanSMTModel",
@@ -22,6 +24,8 @@ __all__ = [
     "PresentDifferentialSMTModel",
     "PresentLinearSMTModel",
     "SBoxTransitionSMTModel",
+    "SBoxXorDifferentialSMTModel",
+    "SBoxXorLinearSMTModel",
     "SMTFormula",
     "SpeckLinearSMTModel",
     "WordDifferentialSMTModel",
