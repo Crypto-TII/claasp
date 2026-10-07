@@ -33,6 +33,7 @@
     },
     {
       "drivers": [
+        "cryptominisat",
         "glpk",
         "kissat",
         "minisat",
@@ -129,6 +130,7 @@
     },
     {
       "drivers": [
+        "cryptominisat",
         "glpk",
         "kissat",
         "minisat",
@@ -148,6 +150,7 @@
     },
     {
       "drivers": [
+        "cryptominisat",
         "glpk",
         "kissat",
         "minisat",
@@ -357,6 +360,16 @@
         "boolean_cnf"
       ],
       "target": "kissat"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.cryptominisat:CryptoMiniSatSolver",
+      "kind": "solver",
+      "name": "cryptominisat",
+      "representations": [
+        "boolean_cnf"
+      ],
+      "target": "cryptominisat5"
     },
     {
       "availability": "executable",
@@ -11957,6 +11970,7 @@
         "Word"
       ],
       "drivers": [
+        "cryptominisat",
         "glpk",
         "kissat",
         "minisat",

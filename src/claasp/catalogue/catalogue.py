@@ -162,7 +162,7 @@ class Catalogue:
         >>> [item.name for item in catalogue.representations(component="BitVectorSBox")]
         ['boolean_cnf', 'boolean_smt', 'concrete_execution', 'primitive_serialization', 'python_generated_source', 'c_generated_source', 'primitive_diagram', 'sbox_transition_table', 'component_properties']
         >>> [item.name for item in catalogue.drivers(representation="boolean_cnf")]
-        ['minizinc', 'minisat', 'z3', 'glpk']
+        ['minizinc', 'kissat', 'cryptominisat', 'minisat', 'z3', 'glpk']
     """
 
     def __init__(self) -> None:

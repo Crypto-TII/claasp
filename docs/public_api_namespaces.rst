@@ -589,6 +589,18 @@ claasp.representations.constraints.milp.components
 .. automodule:: claasp.representations.constraints.milp.components
    :no-index:
 
+claasp.representations.constraints.milp.components.sbox_inequalities
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.milp.components.sbox_inequalities
+   :no-index:
+
+claasp.representations.constraints.milp.sbox
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.milp.sbox
+   :no-index:
+
 claasp.representations.constraints.polynomial
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -611,6 +623,24 @@ claasp.representations.constraints.sat.components
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.representations.constraints.sat.components
+   :no-index:
+
+claasp.representations.constraints.sat.components.boolean
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.boolean
+   :no-index:
+
+claasp.representations.constraints.sat.components.modular_add
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.modular_add
+   :no-index:
+
+claasp.representations.constraints.sat.components.sbox
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.sbox
    :no-index:
 
 claasp.representations.constraints.sat.exporters

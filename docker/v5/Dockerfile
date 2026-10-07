@@ -28,6 +28,7 @@ RUN apt-get -q update \
         automake=1:1.16.5-1.3ubuntu1 \
         ca-certificates=20260601~24.04.1 \
         cmake=3.28.3-1build7 \
+        cryptominisat=5.11.15+dfsg1-1.1build1 \
         curl=8.5.0-2ubuntu10.15 \
         dieharder=3.31.1.4-1.1build1 \
         git=1:2.43.0-1ubuntu7.3 \

@@ -361,11 +361,14 @@ The native-XOR slice adds an immutable mixed CNF/parity container, explicit
 functional component strategies, an independently checkable ordinary-CNF
 expansion, and the CryptoMiniSat extended-DIMACS exporter. Functional Speck and
 Simon formulas expand exactly to their ordinary CNF baselines. The canonical
-image does not contain CryptoMiniSat, so the committed benchmark records
-formulation construction, variables, ordinary clauses, native XOR clauses,
-expanded clause counts, and export bytes while marking solver time/status as
-not run. Do not infer a solver-speed advantage from formulation size. Add the
-like-for-like solver benchmark when a pinned CryptoMiniSat job is available.
+image now pins CryptoMiniSat 5.11.15 on both supported architectures and tests
+signed native-XOR clauses through the public command-line driver. The committed
+benchmark compares ordinary CNF under Kissat with native-XOR output under
+CryptoMiniSat, and separately compares ordinary and native-XOR input under
+CryptoMiniSat. All runs use identical primitives, fixed inputs, repeat counts,
+and validity checks. The benchmark reports unavailable CryptoMiniSat
+peak-memory data as not reported and makes no formulation-only speed claim
+from the cross-solver runs.
 
 Generic XOR-differential/XOR-linear trail assembly and the optional n-window
 heuristic remain next; native-XOR trail lowering should build on the mixed
