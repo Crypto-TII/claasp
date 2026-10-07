@@ -11,6 +11,7 @@ from claasp.representations.constraints.sat.components.modular_add import (
     ModularAddLinearSATModel,
     ModularAddNativeXorSATModel,
     ModularAddNWindowSATModel,
+    ModularSubtractDeterministicTruncatedSATModel,
 )
 from claasp.representations.constraints.sat.components.sbox import (
     SBoxFunctionalSATModel,
@@ -31,6 +32,7 @@ __all__ = [
     "ModularAddLinearSATModel",
     "ModularAddNativeXorSATModel",
     "ModularAddNWindowSATModel",
+    "ModularSubtractDeterministicTruncatedSATModel",
     "SBoxFunctionalSATModel",
     "SBoxTransitionSATModel",
     "SBoxXorDifferentialSATModel",

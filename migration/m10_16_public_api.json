@@ -28265,6 +28265,12 @@
       "qualified_name": "claasp.representations.constraints.sat.ModularAddNativeXorSATModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.ModularSubtractDeterministicTruncatedSATModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.trails.NWindowSATStrategy",
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "dataclass",
@@ -28409,6 +28415,12 @@
       "qualified_name": "claasp.representations.constraints.sat.components.ModularAddNativeXorSATModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.ModularSubtractDeterministicTruncatedSATModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.components.sbox.SBoxFunctionalSATModel",
       "defined_in": "claasp.representations.constraints.sat.components.sbox",
       "kind": "class",
@@ -28501,18 +28513,27 @@
     {
       "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddDeterministicTruncatedSATModel.cnf_formula",
       "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddDeterministicTruncatedSATModel.cnf_formula"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddDeterministicTruncatedSATModel.decode_transition",
       "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddDeterministicTruncatedSATModel.decode_transition"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddDeterministicTruncatedSATModel.encode_pattern",
       "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddDeterministicTruncatedSATModel.encode_pattern"
     },
@@ -28619,6 +28640,31 @@
       "documented_by": "claasp.representations.constraints.sat.components.modular_add.ModularAddNativeXorSATModel",
       "kind": "constructor",
       "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddNativeXorSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "documented_by": "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel.cnf_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel.decode_transition",
+      "defined_in": "claasp.representations.constraints.sat.components.modular_add",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.components.modular_add.ModularSubtractDeterministicTruncatedSATModel.decode_transition"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.sbox",

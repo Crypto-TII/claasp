@@ -451,6 +451,70 @@ class ModularAddDeterministicTruncatedSATModel:
         return left, right, output
 
 
+class ModularSubtractDeterministicTruncatedSATModel(ModularAddDeterministicTruncatedSATModel):
+    """Encode deterministic-truncated subtraction with paired-borrow clauses.
+
+    The recovered legacy implementation deliberately used the same local
+    clauses for modular addition and subtraction. Decoding remains independent
+    and checks :func:`truncated_modular_subtract` explicitly.
+
+    EXAMPLES::
+
+        >>> model = ModularSubtractDeterministicTruncatedSATModel(4)
+        >>> formula = model.cnf_formula()
+        >>> (formula.variable_count, formula.constraint_models[0].model.component_model)
+        (32, 'ModularSubtractDeterministicTruncatedSATModel')
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "ModularSubtractDeterministicTruncatedSATModel",
+        "deterministic_truncated_xor",
+        "legacy two-bit paired-borrow clauses",
+        "Legacy modular subtraction reuses the paired-carry Boolean relation.",
+    )
+
+    def cnf_formula(self) -> CNFFormula:
+        """Return the recovered relation with subtraction provenance."""
+
+        formula = super().cnf_formula()
+        return CNFFormula(
+            formula.variables,
+            formula.clauses,
+            formula.provenance,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+
+    def decode_transition(self, assignment):
+        """Decode and independently check a truncated subtraction witness."""
+
+        from claasp.semantics.cryptanalysis import (
+            TruncatedBit,
+            TruncatedXorDifference,
+            truncated_modular_subtract,
+        )
+
+        formula = self.cnf_formula()
+        if not formula.is_satisfied(assignment):
+            raise ValueError("invalid deterministic-truncated modular-subtract witness")
+
+        def pattern(prefix):
+            bits = []
+            for bit in range(self.width):
+                if assignment[f"{prefix}_{bit}_unknown"]:
+                    bits.append(TruncatedBit.UNKNOWN)
+                elif assignment[f"{prefix}_{bit}_value"]:
+                    bits.append(TruncatedBit.ONE)
+                else:
+                    bits.append(TruncatedBit.ZERO)
+            return TruncatedXorDifference(tuple(bits))
+
+        left, right, output = (pattern(prefix) for prefix in ("left", "right", "output"))
+        if output != truncated_modular_subtract(left, right):
+            raise ValueError("truncated output disagrees with paired-borrow semantics")
+        return left, right, output
+
+
 class ModularAddLinearSATModel:
     """Exact modular-add XOR-linear mask recurrence in CNF.
 
@@ -535,4 +599,5 @@ __all__ = [
     "ModularAddLinearSATModel",
     "ModularAddNativeXorSATModel",
     "ModularAddNWindowSATModel",
+    "ModularSubtractDeterministicTruncatedSATModel",
 ]

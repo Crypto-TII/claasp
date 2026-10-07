@@ -425,6 +425,15 @@ Kissat, and CryptoMiniSat and reject a compatible boundary. Whole-graph
 forward/backward assembly and a comparable benchmark remain separate next
 steps.
 
+The modular-subtraction prerequisite for backward ARX graphs is recovered as
+``ModularSubtractDeterministicTruncatedSATModel``. Legacy CLAASP deliberately
+used the same paired-carry clauses for ``MODADD`` and ``MODSUB``; CLAASP 5
+retains that formula but gives subtraction separate provenance and validates
+decoding against ``truncated_modular_subtract``. Exhaustive two-bit patterns
+and all three SAT solvers establish parity, and
+``WordDeterministicTruncatedSATModel`` now lowers inverse graphs containing
+``ModularSubtract``. Whole-graph impossible assembly remains next.
+
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and
 provenance. Keep optional solver dependencies isolated, give each formulation

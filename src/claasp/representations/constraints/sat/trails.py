@@ -6,7 +6,16 @@ from hashlib import sha256
 from itertools import product
 from typing import Any
 
-from claasp.components import Add, Constant, Identity, ModularAdd, Permutation, Rotate, Xor
+from claasp.components import (
+    Add,
+    Constant,
+    Identity,
+    ModularAdd,
+    ModularSubtract,
+    Permutation,
+    Rotate,
+    Xor,
+)
 from claasp.domains import Word
 from claasp.drivers.solvers import SatStatus
 from claasp.representations.constraints import (
@@ -20,6 +29,7 @@ from claasp.representations.constraints.sat.components import (
     ModularAddDifferentialSATModel,
     ModularAddLinearSATModel,
     ModularAddNWindowSATModel,
+    ModularSubtractDeterministicTruncatedSATModel,
 )
 from claasp.representations.constraints.sat.lowering import _native_xor_formula
 from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
@@ -33,6 +43,7 @@ from claasp.semantics.cryptanalysis import (
     TruncatedBit,
     TruncatedXorDifference,
     truncated_modular_add,
+    truncated_modular_subtract,
 )
 
 
@@ -613,7 +624,7 @@ class WordDeterministicTruncatedSATModel:
             operands_by_id[component_id] = operands
             output = ports[component_id]
             width = component.output_type.domain.width
-            if isinstance(component, ModularAdd):
+            if isinstance(component, (ModularAdd, ModularSubtract)):
                 for unit in range(component.output_type.unit_count):
                     accumulator = operands[0][unit * width : (unit + 1) * width]
                     for operand_number, operand_group in enumerate(operands[1:], 1):
@@ -627,7 +638,12 @@ class WordDeterministicTruncatedSATModel:
                                 for bit in range(width)
                             )
                         )
-                        local = ModularAddDeterministicTruncatedSATModel(width).cnf_formula()
+                        local_type = (
+                            ModularAddDeterministicTruncatedSATModel
+                            if isinstance(component, ModularAdd)
+                            else ModularSubtractDeterministicTruncatedSATModel
+                        )
+                        local = local_type(width).cnf_formula()
                         mapping = {}
                         for prefix, names in (
                             ("left", accumulator),
@@ -718,7 +734,13 @@ class WordDeterministicTruncatedSATModel:
             _component_applications(
                 self.primitive,
                 self.model_provenance,
-                ((ModularAdd, ModularAddDeterministicTruncatedSATModel.model_provenance),),
+                (
+                    (ModularAdd, ModularAddDeterministicTruncatedSATModel.model_provenance),
+                    (
+                        ModularSubtract,
+                        ModularSubtractDeterministicTruncatedSATModel.model_provenance,
+                    ),
+                ),
             ),
         )
         return self._formula
@@ -741,12 +763,16 @@ class WordDeterministicTruncatedSATModel:
                 for names in self._operands[component.component_id]
             )
             operand_units = tuple(self._units(pattern, width) for pattern in operands)
-            if isinstance(component, ModularAdd):
+            if isinstance(component, (ModularAdd, ModularSubtract)):
                 expected_units = []
                 for items in zip(*operand_units):
                     value = items[0]
                     for operand in items[1:]:
-                        value = truncated_modular_add(value, operand)
+                        value = (
+                            truncated_modular_add(value, operand)
+                            if isinstance(component, ModularAdd)
+                            else truncated_modular_subtract(value, operand)
+                        )
                     expected_units.append(value)
             elif isinstance(component, (Xor, Add)):
                 expected_units = []
