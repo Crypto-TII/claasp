@@ -12,6 +12,7 @@ from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints.sat import (
     ImpossibleBoundarySATModel,
     ModularAddDeterministicTruncatedSATModel,
+    ModularAddSemiDeterministicTruncatedSATModel,
     ModularSubtractDeterministicTruncatedSATModel,
     ProbabilisticTruncatedModularAddSATModel,
     SpeckImpossibleSATModel,
@@ -117,6 +118,18 @@ def test_probabilistic_truncated_modadd_preserves_counter_based_cost(solver_type
     transition = model.decode_transition(result.assignment)
     assert str(transition.carry_difference) == "00"
     assert transition.costs == (100, 0)
+
+
+@pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
+def test_semi_deterministic_modadd_preserves_legacy_weight_code(solver_type):
+    model = ModularAddSemiDeterministicTruncatedSATModel(
+        4, left_pattern="0001", right_pattern="0000", output_pattern="0001"
+    )
+    result = solver_type(timeout_seconds=10).solve(model.cnf_formula())
+    assert result.status is SatStatus.SATISFIABLE
+    left, right, output, scaled_weight = model.decode_transition(result.assignment)
+    assert tuple(map(str, (left, right, output))) == ("0001", "0000", "0001")
+    assert scaled_weight == 100
 
 
 def test_deterministic_truncated_enumeration_blocks_semantic_patterns():

@@ -287,7 +287,7 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box MILP, local SAT exact/truncated/impossible/probabilistic relations, native-XOR output/trails, SAT exact/truncated/impossible/probabilistic trail assembly, and n-window heuristic implemented; next: legacy semi-deterministic SAT windows**
+Status: **S-box MILP, local SAT exact/truncated/impossible/probabilistic/semi-deterministic relations, native-XOR output/trails, SAT exact/truncated/impossible/probabilistic trail assembly, and n-window heuristic implemented; next: semi-deterministic SAT graph assembly**
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -463,6 +463,20 @@ committed ten-run benchmark also records the portable CNF cost—554,782
 variables and 1,327,845 clauses for this bounded fixture—so compact legacy
 semi-deterministic windows remain a performance-recovery target rather than
 being treated as equivalent without measurement.
+
+The local semi-deterministic slice recovers look-ahead windows 0 through 3 as
+``ModularAddSemiDeterministicTruncatedSATModel``. A repository tool reads only
+the four static generators from the legacy GPL source at commit
+``3aacc2758059de85682a9c6d0eda2cd75940e747``, rejects a source whose SHA-256
+has changed, validates every emitted literal, and writes dependency-free
+templates. The model retains the legacy redundant value bit for unknown trits
+and the three-bit probability codes, while canonicalizing the unconstrained
+least-significant weight code to zero. All three SAT solvers reproduce the
+shared 16-bit weight-100 fixture. On that fixture the window strategy uses 144
+variables and 1,037 clauses versus 495 and 107,350 for the counter-based
+baseline; the committed ten-run benchmark records construction, solver, and
+memory data without generalizing from one transition. Whole-graph assembly is
+the next comparison gate.
 
 Recover each selected strategy in a small component- or backend-scoped PR.
 Before copying code, generated inequalities, or data, verify its license and
