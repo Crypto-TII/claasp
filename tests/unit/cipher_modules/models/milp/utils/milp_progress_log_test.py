@@ -118,7 +118,8 @@ def test_highs_improving_solutions_are_read_incrementally():
     try:
         assert improving_solutions.solver_command_arguments().startswith(" --options_file ")
         options_file_paths = [path for path in improving_solutions.file_paths() if path.endswith("_options.txt")]
-        assert len(options_file_paths) == 1 and os.path.exists(options_file_paths[0])
+        assert len(options_file_paths) == 1
+        assert os.path.exists(options_file_paths[0])
         assert improving_solutions.read_new_solutions() == []
 
         with open(improving_solutions.file_path, "w") as solutions_file:
@@ -171,13 +172,14 @@ def test_gurobi_improving_solutions_are_read_when_complete():
 def test_create_progress_log_with_unsupported_solvers():
     milp = MilpXorDifferentialModel(SpeckBlockCipher(number_of_rounds=2))
     search_name = "find_lowest_weight_xor_differential_trail"
+    start_time = time.time()
 
     with pytest.raises(ValueError, match="not available for the GLPK/EXACT solver"):
-        create_progress_log(milp, search_name, "GLPK/exact", 2, time.time())
+        create_progress_log(milp, search_name, "GLPK/exact", 2, start_time)
     with pytest.raises(ValueError, match="not available for the COIN solver"):
-        create_progress_log(milp, search_name, "Coin", 2, time.time())
+        create_progress_log(milp, search_name, "Coin", 2, start_time)
     with pytest.raises(ValueError, match="not available for the GUROBI solver"):
-        create_progress_log(milp, search_name, "Gurobi", 2, time.time())
+        create_progress_log(milp, search_name, "Gurobi", 2, start_time)
 
 
 def test_progress_log_never_writes_a_lower_bound_above_the_bound_of_the_solver():
