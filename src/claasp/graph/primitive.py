@@ -4,6 +4,7 @@ import re
 from collections.abc import Iterable, Mapping, Sequence
 from copy import copy
 from dataclasses import dataclass
+from inspect import Parameter, formatannotation, signature
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
@@ -29,6 +30,73 @@ from claasp.graph.value_type import ValueType
 
 if TYPE_CHECKING:
     from claasp.analysis import Analysis
+    from claasp.catalogue import ParameterSetRecord
+
+
+class _OfficialInstances(tuple):
+    """Immutable official constructor configurations with a readable display."""
+
+    primitive_name: str
+
+    def __new__(
+        cls,
+        primitive_name: str,
+        values: Iterable["ParameterSetRecord"],
+    ) -> "_OfficialInstances":
+        instance = super().__new__(cls, values)
+        instance.primitive_name = primitive_name
+        return instance
+
+    def __repr__(self) -> str:
+        lines = [f"Official instances for {self.primitive_name} ({len(self)})"]
+        if not self:
+            lines.append("  None declared in the primitive catalogue")
+            return "\n".join(lines)
+        for index, record in enumerate(self):
+            arguments = ", ".join(f"{name}={value!r}" for name, value in record.values.items())
+            lines.append(f"  [{index}] {self.primitive_name}({arguments})")
+        return "\n".join(lines)
+
+
+class _ConstructorParameters(Mapping[str, Parameter]):
+    """Read-only public constructor signature with concise shell output."""
+
+    def __init__(self, primitive_class: type) -> None:
+        self.primitive_name = primitive_class.__name__
+        self._values = {
+            name: item
+            for name, item in signature(primitive_class).parameters.items()
+            if not name.startswith("_")
+        }
+
+    def __getitem__(self, name: str) -> Parameter:
+        return self._values[name]
+
+    def __iter__(self):
+        return iter(self._values)
+
+    def __len__(self) -> int:
+        return len(self._values)
+
+    @staticmethod
+    def _format_default(value: object) -> str:
+        if value is Parameter.empty:
+            return "required"
+        if isinstance(value, (tuple, list)) and len(value) > 8:
+            return f"<{type(value).__name__} with {len(value)} items>"
+        rendered = repr(value)
+        return rendered if len(rendered) <= 80 else f"<{type(value).__name__}>"
+
+    def __repr__(self) -> str:
+        lines = [f"Customizable parameters for {self.primitive_name} ({len(self)})"]
+        for item in self._values.values():
+            if item.annotation is Parameter.empty:
+                annotation = ""
+            else:
+                annotation_name = formatannotation(item.annotation).replace("collections.abc.", "")
+                annotation = f": {annotation_name}"
+            lines.append(f"  {item.name}{annotation} = {self._format_default(item.default)}")
+        return "\n".join(lines)
 
 
 @dataclass(frozen=True, slots=True)
@@ -733,6 +801,56 @@ class Primitive:
         return self._kind
 
     @property
+    def instances(self) -> tuple["ParameterSetRecord", ...]:
+        """Return specification-approved configurations for this primitive.
+
+        This catalogue-backed list excludes valid study configurations such as
+        reduced-round variants.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import AES
+            >>> AES(number_of_rounds=5).instances
+            Official instances for AES (3)
+              [0] AES(key_bit_size=128, number_of_rounds=10)
+              [1] AES(key_bit_size=192, number_of_rounds=12)
+              [2] AES(key_bit_size=256, number_of_rounds=14)
+        """
+
+        from claasp.catalogue import catalogue
+
+        primitive_name = type(self).__name__
+        records: tuple[ParameterSetRecord, ...] = ()
+        for primitive_class in type(self).__mro__:
+            try:
+                catalogue_record = catalogue.primitive(primitive_class.__name__)
+            except KeyError:
+                continue
+            primitive_name = catalogue_record.name
+            if catalogue_record.authenticity == "canonical":
+                records = catalogue_record.parameter_sets
+            break
+        return _OfficialInstances(primitive_name, records)
+
+    @property
+    def parameters(self) -> Mapping[str, Parameter]:
+        """Return the parameters accepted by this primitive's constructor.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import AES
+            >>> AES().parameters
+            Customizable parameters for AES (3)
+              key_bit_size: int = 128
+              number_of_rounds: int | None = None
+              realization: str = 'lookup'
+            >>> AES().parameters["number_of_rounds"].default is None
+            True
+        """
+
+        return _ConstructorParameters(type(self))
+
+    @property
     def graph(self) -> PrimitiveGraph:
         """Return the read-only structural view of this primitive."""
 
@@ -1408,10 +1526,13 @@ class Primitive:
         return DiagramCompiler().compile(self, annotation)
 
     def draw(self, format: str = "ascii", annotation=None):  # noqa: A002 - public format API
-        """Render this primitive as routed ASCII art, TikZ, or PDF.
+        """Render the primitive's low-level component graph.
 
-        PDF rendering requires the optional ``pdflatex`` command. ASCII and
-        TikZ generation have no third-party dependencies.
+        This is a wiring diagram for inspecting component dependencies,
+        selections, traces, or trails. It is not a compact, high-level overview,
+        so large primitives can produce very long output. PDF rendering requires
+        the optional ``pdflatex`` command;
+        ASCII and TikZ generation have no third-party dependencies.
         """
 
         from claasp.representations.diagrams import ASCIIArtSerializer, TikZSerializer
