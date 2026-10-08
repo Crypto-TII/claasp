@@ -757,8 +757,17 @@ known-value cancellation, abstract nonzero and unknown states, bijective S-box
 activity, direct wiring, and the reviewed dense nonzero-coefficient field-linear
 abstraction. Chuffed and GLPK solve and independently decode the same one-round
 ToyAES fixture in the [ten-run benchmark](audits/data/wordwise_deterministic_graph_benchmark.json).
-Whole-graph wordwise impossible composition can now reuse this propagation;
-unsupported components remain explicit rather than being silently skipped.
+The following wordwise impossible slice now composes those forward and inverse
+graphs around a published round boundary. ``WordwiseImpossibleCPModel`` and
+``WordwiseImpossibleMILPModel`` select exactly one of the recovered legacy
+incompatibility pairs and independently verify both typed directional trails
+and the selected pair. ToyAES now publishes its authored round states so the
+standard validated slicing and inversion transformations can build the two
+halves. Chuffed and GLPK solve the same two-round fixture in the
+[ten-run benchmark](audits/data/wordwise_impossible_graph_benchmark.json).
+This remains an abstract incompatibility witness, not a relabeled concrete
+differential proof. Unsupported components remain explicit rather than being
+silently skipped.
 
 The functional component coverage slice extends the shared Boolean lowering
 with direct OR and NOT truth-table clauses plus zero-filling fixed shifts.

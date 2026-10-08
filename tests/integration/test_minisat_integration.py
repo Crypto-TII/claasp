@@ -13,6 +13,7 @@ from claasp.representations.constraints.sat import (
     ModularAddLinearSATModel,
     SBoxXorDifferentialSATModel,
     WordwiseDeterministicTruncatedSATModel,
+    WordwiseImpossibleSATModel,
 )
 from claasp.semantics.cryptanalysis import WordwiseDifferenceKind, WordwiseXorDifference
 
@@ -40,6 +41,25 @@ def test_minisat_solves_complete_four_state_wordwise_graph():
         WordwiseDifferenceKind.ZERO,
     )
     assert model.check_characteristic(trail)
+
+
+def test_minisat_solves_complete_wordwise_impossible_graphs():
+    model = WordwiseImpossibleSATModel(
+        ToyAES(number_of_rounds=2, word_size=4, state_size=2),
+        middle_round=1,
+        active_input="plaintext",
+        zero_difference_inputs=("key",),
+    )
+    solved = MinisatSolver(timeout_seconds=30).solve(model.cnf_formula())
+    trail = model.decode_trail(solved.assignment)
+
+    assert solved.status is SatStatus.SATISFIABLE
+    assert len(trail.middle.contradictory_positions) == 1
+    position = trail.middle.contradictory_positions[0]
+    assert (
+        trail.middle.forward_states[position],
+        trail.middle.backward_states[position],
+    ) in model._INCOMPATIBLE
 
 
 def test_minisat_solves_and_refutes_named_present_constraints():

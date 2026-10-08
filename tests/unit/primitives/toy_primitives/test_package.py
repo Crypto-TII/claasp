@@ -142,3 +142,11 @@ def test_reduced_and_custom_toy_parameters():
     )
     table = tuple(range(1, 16)) + (0,)
     assert ToySPN1(8, 8, -2, table, 10).evaluate(0xFF, 0xFE) == 0x6C
+
+
+def test_toy_aes_publishes_each_round_state_for_validated_slicing():
+    primitive = ToyAES(number_of_rounds=3, word_size=4, state_size=2)
+
+    assert len(primitive.round_states) == 3
+    assert primitive.output is not None
+    assert primitive.round_states[-1] == primitive.output.source

@@ -117,4 +117,5 @@ class ToyAES(Primitive):
                 columns.append(self.add_component(Add((columns[-1], old_columns[column]))))
             round_key = _concat(self, columns)
             state = self.add_component(Add((state, round_key)))
+            self.add_round_state(state)
         self.set_output(state)

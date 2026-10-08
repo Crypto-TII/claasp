@@ -39,6 +39,7 @@ from claasp.representations.constraints.cp import (
     WordSemiDeterministicDifferentialLinearCPModel,
     WordwiseDeterministicTruncatedCPModel,
     WordwiseDifferenceCPModel,
+    WordwiseImpossibleCPModel,
 )
 from claasp.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -823,6 +824,27 @@ def test_minizinc_solves_generic_word_impossible_split():
     )
     assert solved.status is CPStatus.SATISFIED
     assert model.decode_trail(solved.assignment).boundary.is_impossible
+
+
+def test_minizinc_solves_complete_wordwise_impossible_graphs():
+    model = WordwiseImpossibleCPModel(
+        ToyAES(number_of_rounds=2, word_size=4, state_size=2),
+        middle_round=1,
+        active_input="plaintext",
+        zero_difference_inputs=("key",),
+    )
+    solved = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=30).solve(
+        model.cp_model()
+    )
+    trail = model.decode_trail(solved.assignment)
+
+    assert solved.status is CPStatus.SATISFIED
+    assert len(trail.middle.contradictory_positions) == 1
+    position = trail.middle.contradictory_positions[0]
+    assert (
+        trail.middle.forward_states[position],
+        trail.middle.backward_states[position],
+    ) in model._sat_model._INCOMPATIBLE
 
 
 def test_minizinc_preserves_legacy_simon_eleven_round_impossible_fixture():

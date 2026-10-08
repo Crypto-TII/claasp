@@ -2434,6 +2434,78 @@ class WordImpossibleCPModel:
         return self._sat_model.decode_trail(assignment)
 
 
+class WordwiseImpossibleCPModel:
+    """Search a split-round four-state wordwise contradiction in MiniZinc.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToyAES
+        >>> model = WordwiseImpossibleCPModel(
+        ...     ToyAES(number_of_rounds=2, word_size=4, state_size=2), 1,
+        ...     active_input="plaintext", zero_difference_inputs=("key",),
+        ... )
+        >>> query = model.cp_model()
+        >>> (len(query.declarations), "wordwise_contradiction_exists" in query.provenance)
+        (736, True)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "WordwiseImpossibleCPModel",
+        "wordwise_impossible_xor_differential",
+        "MiniZinc translation of composed four-state forward/backward graphs",
+        "The selected abstract incompatibility is decoded independently.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        middle_round,
+        *,
+        active_input,
+        zero_difference_inputs=(),
+        input_differences=None,
+        output_differences=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import (
+            WordwiseImpossibleSATModel,
+        )
+
+        self._sat_model = WordwiseImpossibleSATModel(
+            primitive,
+            middle_round,
+            active_input=active_input,
+            zero_difference_inputs=zero_difference_inputs,
+            input_differences=input_differences,
+            output_differences=output_differences,
+        )
+        self.primitive = primitive
+        self._query: MiniZincModel | None = None
+
+    def cp_model(self) -> MiniZincModel:
+        """Return the complete MiniZinc feasibility query."""
+
+        lowered = BooleanMiniZincLowerer().lower(self._sat_model.cnf_formula())
+        self._query = MiniZincModel(
+            lowered.declarations,
+            lowered.constraints,
+            lowered.solve,
+            lowered.includes,
+            lowered.outputs,
+            lowered.provenance,
+            lowered.name_mapping,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_trail(self, assignment):
+        """Decode both directions and independently verify the contradiction."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        return self._sat_model.decode_trail(assignment)
+
+
 class SpeckSemiDeterministicTruncatedCPModel:
     """Assemble recovered look-ahead-window Speck trails as MiniZinc.
 

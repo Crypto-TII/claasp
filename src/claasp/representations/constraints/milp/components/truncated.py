@@ -55,7 +55,7 @@ class WordwiseImpossibleBoundaryMILPModel:
         "WordwiseImpossibleBoundaryMILPModel",
         "wordwise_impossible_xor_differential",
         "legacy four-state middle incompatibility selector",
-        "The local relation is recovered exactly; whole-graph wordwise propagation remains separate.",
+        "The local relation is exact; complete graph composition is exposed by the trail model.",
     )
 
     _INCOMPATIBLE = ((0, 1), (0, 2), (1, 0), (2, 0))
