@@ -5,6 +5,7 @@ from claasp.representations.constraints.milp import (
     WordDeterministicTruncatedMILPModel,
     WordDifferentialMILPModel,
     WordLinearMILPModel,
+    WordSemiDeterministicDifferentialLinearMILPModel,
 )
 
 
@@ -56,6 +57,22 @@ def test_differential_linear_milp_preserves_formula_size_and_objective():
     )
     formulation = model.milp_model()
     assert (len(formulation.variables), len(formulation.constraints)) == (2543, 7151)
+    assert len(formulation.objective.terms) == 63
+    assert set(coefficient for _, coefficient in formulation.objective.terms) == {1.0, 2.0}
+    assert formulation.constraint_models[0].model == model.model_provenance
+
+
+def test_semi_differential_linear_milp_preserves_formula_size_and_objective():
+    model = WordSemiDeterministicDifferentialLinearMILPModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=1,
+        middle_rounds=1,
+        differential_maximum_weight=16,
+        middle_maximum_scaled_weight=None,
+        linear_maximum_weight=16,
+    )
+    formulation = model.milp_model()
+    assert (len(formulation.variables), len(formulation.constraints)) == (2303, 6599)
     assert len(formulation.objective.terms) == 63
     assert set(coefficient for _, coefficient in formulation.objective.terms) == {1.0, 2.0}
     assert formulation.constraint_models[0].model == model.model_provenance

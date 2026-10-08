@@ -587,6 +587,13 @@ correlation weights with coefficient two. Counter and complement auxiliaries
 remain feasibility variables. GLPK decodes and independently validates all
 three sections on Speck32/64-3.
 
+The matching semi-deterministic MILP composition adds
+``WordSemiDeterministicDifferentialLinearMILPModel``. It translates the
+recovered look-ahead-window middle exactly but deliberately excludes that
+unaudited estimate from the historical outer objective. The decoded result
+continues to expose ``middle_weight`` separately, and GLPK independently
+validates the differential, middle, and linear sections.
+
 The first differential-linear SAT slice recovers the local upper and lower
 boundary clauses as ``DifferentialToTruncatedSATModel`` and
 ``TruncatedToLinearSATModel``. Exhaustive Boolean tests establish the complete

@@ -9,6 +9,7 @@ from claasp.representations.constraints.milp import (
     WordDeterministicTruncatedMILPModel,
     WordDifferentialMILPModel,
     WordLinearMILPModel,
+    WordSemiDeterministicDifferentialLinearMILPModel,
 )
 
 pytestmark = pytest.mark.external
@@ -64,3 +65,19 @@ def test_glpk_solves_and_independently_checks_differential_linear_trail():
     assert solved.status is MILPStatus.OPTIMAL
     trail = model.decode_trail(solved.assignment)
     assert trail.linear.output_mask != 0
+
+
+def test_glpk_solves_and_independently_checks_semi_differential_linear_trail():
+    model = WordSemiDeterministicDifferentialLinearMILPModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=1,
+        middle_rounds=1,
+        differential_maximum_weight=16,
+        middle_maximum_scaled_weight=None,
+        linear_maximum_weight=16,
+    )
+    solved = GLPKSolver(timeout_seconds=30).solve(model.milp_model())
+    assert solved.status is MILPStatus.OPTIMAL
+    trail = model.decode_trail(solved.assignment)
+    assert trail.linear.output_mask != 0
+    assert trail.middle_weight >= 0
