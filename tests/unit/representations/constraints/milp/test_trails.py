@@ -3,6 +3,7 @@ from claasp.representations.constraints.milp import (
     PresentActiveSBoxesMILPModel,
     PresentDifferentialMILPModel,
     PresentFixedActiveSBoxesMILPModel,
+    SpeckImpossibleMILPModel,
     SpeckSemiDeterministicTruncatedMILPModel,
     WordDeterministicDifferentialLinearMILPModel,
     WordDeterministicTruncatedMILPModel,
@@ -70,6 +71,13 @@ def test_portable_deterministic_truncated_milp_preserves_formula_size():
     )
     formulation = model.milp_model()
     assert (len(formulation.variables), len(formulation.constraints)) == (200, 829)
+    assert formulation.constraint_models[0].model == model.model_provenance
+
+
+def test_speck_impossible_milp_preserves_complete_split_formula():
+    model = SpeckImpossibleMILPModel(Speck(number_of_rounds=3), middle_round=1)
+    formulation = model.milp_model()
+    assert (len(formulation.variables), len(formulation.constraints)) == (1568, 5674)
     assert formulation.constraint_models[0].model == model.model_provenance
 
 

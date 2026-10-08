@@ -5,6 +5,7 @@ import pytest
 from claasp.drivers.solvers import GLPKSolver, MILPStatus
 from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints.milp import (
+    SpeckImpossibleMILPModel,
     SpeckSemiDeterministicTruncatedMILPModel,
     WordDeterministicDifferentialLinearMILPModel,
     WordDeterministicTruncatedMILPModel,
@@ -52,6 +53,15 @@ def test_glpk_solves_and_independently_checks_deterministic_truncated_trail():
     trail = model.decode_characteristic(solved.assignment)
     assert str(trail.output_pattern) == "???0????"
     assert model.check_characteristic(trail)
+
+
+def test_glpk_solves_and_decodes_speck_impossible_split():
+    model = SpeckImpossibleMILPModel(Speck(number_of_rounds=3), middle_round=1)
+    solved = GLPKSolver(timeout_seconds=30).solve(model.milp_model())
+    assert solved.status is MILPStatus.OPTIMAL
+    trail = model.decode_trail(solved.assignment)
+    assert trail.boundary.is_impossible
+    assert trail.boundary.contradictory_positions
 
 
 def test_glpk_solves_and_independently_checks_semi_deterministic_truncated_trail():
