@@ -12,6 +12,10 @@ from claasp.representations.constraints import (
     _unaudited_model,
 )
 from claasp.representations.constraints.cp.components import (
+    HybridImpossibleBoundaryResult,
+    HybridSBoxCPModel,
+)
+from claasp.representations.constraints.cp.components import (
     ModularAddBoomerangCPModel as _ModularAddBoomerangCPModel,
 )
 from claasp.representations.constraints.cp.components import (
@@ -1127,6 +1131,270 @@ class SpeckContinuousMaskOptimizationCPModel(SpeckContinuousHeuristicCPModel):
             correlation,
             -log2(correlation) if correlation else inf,
         )
+
+
+class PresentHybridImpossibleCPModel:
+    """Search a tagged hybrid-impossible boundary in a PRESENT SPN graph.
+
+    Round-key XORs disappear under the reviewed zero-key-difference policy.
+    Forward S-boxes and inverse S-boxes use distinct component tags, while the
+    P-layer wiring is represented exactly in both directions.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Present
+        >>> model = PresentHybridImpossibleCPModel(
+        ...     Present(number_of_rounds=2), middle_round=1
+        ... )
+        >>> query = model.cp_model()
+        >>> (query.solve, len(model.nonlinear_groups))
+        ('solve satisfy;', 32)
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.CP,
+        "PresentHybridImpossibleCPModel",
+        "hybrid_impossible_xor_differential",
+        "whole-graph PRESENT tagged forward/backward propagation and middle incompatibility",
+        "This recovers the deterministic zero-key-difference SPN path; probabilistic key schedules remain separate.",
+    )
+
+    def __init__(self, primitive, *, middle_round: int) -> None:
+        if primitive.family_name != "present":
+            raise NotImplementedError("the reviewed hybrid graph supports PRESENT")
+        rounds = len(primitive.rounds)
+        if not 1 <= middle_round < rounds:
+            raise ValueError("middle_round must be inside the primitive")
+        self.primitive, self.middle_round, self.rounds = primitive, middle_round, rounds
+        permutation = _component(primitive, f"p_layer_{middle_round}", Permutation).mapping
+        inverse_positions = tuple(permutation.index(position) for position in range(64))
+        forward_groups = tuple(
+            tuple(inverse_positions[4 * nibble + offset] for offset in range(4))
+            for nibble in range(16)
+        )
+        backward_groups = tuple(tuple(range(4 * nibble, 4 * nibble + 4)) for nibble in range(16))
+        self.nonlinear_groups = forward_groups + tuple(
+            group for group in backward_groups if group not in forward_groups
+        )
+        self.maximum_tag = 10 * 32 * rounds
+        self._query: MiniZincModel | None = None
+        self._forward_models: dict[tuple[int, int], HybridSBoxCPModel] = {}
+        self._backward_models: dict[tuple[int, int], HybridSBoxCPModel] = {}
+
+    @staticmethod
+    def _fixed_pattern(name, pattern):
+        if pattern is None:
+            return ()
+        values = tuple(int(value) for value in pattern)
+        if len(values) != 64 or any(value not in (0, 1, 2) for value in values):
+            raise ValueError("fixed PRESENT hybrid boundaries require 64 ternary symbols")
+        return tuple(
+            f"constraint {name}[{position}] = {value};"
+            for position, value in enumerate(values)
+        )
+
+    def cp_model(self, *, input_pattern=None, output_pattern=None):
+        """Return complete deterministic forward/backward PRESENT assembly."""
+
+        declarations = [
+            f"set of int: HybridDomain = 0..2 union {{i | i in 10..{self.maximum_tag} where i mod 10 = 0}};"
+        ]
+        constraints = []
+        for boundary in range(self.middle_round + 1):
+            declarations.append(f"array[0..63] of var HybridDomain: forward_{boundary};")
+        for boundary in range(self.middle_round, self.rounds + 1):
+            declarations.append(f"array[0..63] of var HybridDomain: backward_{boundary};")
+        constraints.extend(self._fixed_pattern("forward_0", input_pattern))
+        constraints.extend(self._fixed_pattern(f"backward_{self.rounds}", output_pattern))
+        constraints.extend(
+            (
+                "constraint exists(i in 0..63)(forward_0[i] != 0);",
+                f"constraint exists(i in 0..63)(backward_{self.rounds}[i] != 0);",
+            )
+        )
+
+        for round_number in range(1, self.middle_round + 1):
+            permutation = _component(self.primitive, f"p_layer_{round_number}", Permutation).mapping
+            for nibble, component in enumerate(_round_sboxes(self.primitive, round_number)):
+                input_name = f"forward_sbox_{round_number}_{nibble}_input"
+                output_name = f"forward_sbox_{round_number}_{nibble}_output"
+                declarations.extend(
+                    (
+                        f"array[0..3] of var HybridDomain: {input_name};",
+                        f"array[0..3] of var HybridDomain: {output_name};",
+                    )
+                )
+                constraints.extend(
+                    f"constraint {input_name}[{offset}] = forward_{round_number - 1}[{4 * nibble + offset}];"
+                    for offset in range(4)
+                )
+                model = HybridSBoxCPModel(
+                    component.table,
+                    output_tag=10 * ((round_number - 1) * 16 + nibble + 1),
+                    maximum_tag=self.maximum_tag,
+                )
+                self._forward_models[round_number, nibble] = model
+                constraints.append(model.relation_constraint(input_name, output_name))
+            constraints.extend(
+                f"constraint forward_{round_number}[{position}] = "
+                f"forward_sbox_{round_number}_{permutation[position] // 4}_output[{permutation[position] % 4}];"
+                for position in range(64)
+            )
+
+        for round_number in reversed(range(self.middle_round + 1, self.rounds + 1)):
+            permutation = _component(self.primitive, f"p_layer_{round_number}", Permutation).mapping
+            inverse_positions = tuple(permutation.index(position) for position in range(64))
+            table = _round_sboxes(self.primitive, round_number)[0].table
+            inverse_table = tuple(table.index(value) for value in range(len(table)))
+            for nibble in range(16):
+                input_name = f"backward_sbox_{round_number}_{nibble}_input"
+                output_name = f"backward_sbox_{round_number}_{nibble}_output"
+                declarations.extend(
+                    (
+                        f"array[0..3] of var HybridDomain: {input_name};",
+                        f"array[0..3] of var HybridDomain: {output_name};",
+                    )
+                )
+                constraints.extend(
+                    f"constraint {input_name}[{offset}] = backward_{round_number}[{inverse_positions[4 * nibble + offset]}];"
+                    for offset in range(4)
+                )
+                tag_number = self.rounds * 16 + (round_number - 1) * 16 + nibble + 1
+                model = HybridSBoxCPModel(
+                    inverse_table,
+                    output_tag=10 * tag_number,
+                    maximum_tag=self.maximum_tag,
+                )
+                self._backward_models[round_number, nibble] = model
+                constraints.append(model.relation_constraint(input_name, output_name))
+                constraints.extend(
+                    f"constraint backward_{round_number - 1}[{4 * nibble + offset}] = {output_name}[{offset}];"
+                    for offset in range(4)
+                )
+
+        indicator_count = 64 + len(self.nonlinear_groups)
+        declarations.append(f"array[0..{indicator_count - 1}] of var bool: contradiction;")
+        constraints.extend(
+            f"constraint contradiction[{position}] <-> "
+            f"(forward_{self.middle_round}[{position}] + backward_{self.middle_round}[{position}] = 1);"
+            for position in range(64)
+        )
+        for number, group in enumerate(self.nonlinear_groups):
+            forward_equal = " /\\ ".join(
+                f"forward_{self.middle_round}[{position}] = forward_{self.middle_round}[{group[0]}]"
+                for position in group[1:]
+            )
+            backward_equal = " /\\ ".join(
+                f"backward_{self.middle_round}[{position}] = backward_{self.middle_round}[{group[0]}]"
+                for position in group[1:]
+            )
+            forward_zero = " /\\ ".join(
+                f"forward_{self.middle_round}[{position}] = 0" for position in group
+            )
+            backward_zero = " /\\ ".join(
+                f"backward_{self.middle_round}[{position}] = 0" for position in group
+            )
+            constraints.append(
+                f"constraint contradiction[{64 + number}] <-> "
+                f"(((forward_{self.middle_round}[{group[0]}] > 2) /\\ {forward_equal} /\\ {backward_zero}) \\/ "
+                f"((backward_{self.middle_round}[{group[0]}] > 2) /\\ {backward_equal} /\\ {forward_zero}));"
+            )
+        constraints.append(
+            f"constraint exists(i in 0..{indicator_count - 1})(contradiction[i]);"
+        )
+        self._query = MiniZincModel(
+            tuple(declarations),
+            tuple(constraints),
+            provenance=(
+                "recovered deterministic hybrid PRESENT graph",
+                "zero key difference",
+            ),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_boundary(self, assignment):
+        """Recheck every S-box, permutation edge, and middle contradiction."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        for (round_number, nibble), model in self._forward_models.items():
+            source = tuple(
+                int(value)
+                for value in assignment[f"forward_sbox_{round_number}_{nibble}_input"]
+            )
+            target = tuple(
+                int(value)
+                for value in assignment[f"forward_sbox_{round_number}_{nibble}_output"]
+            )
+            if target not in model.accepted_outputs(source):
+                raise ValueError("invalid forward hybrid S-box transition")
+        for round_number in range(1, self.middle_round + 1):
+            permutation = _component(
+                self.primitive, f"p_layer_{round_number}", Permutation
+            ).mapping
+            raw = tuple(
+                int(value)
+                for nibble in range(16)
+                for value in assignment[f"forward_sbox_{round_number}_{nibble}_output"]
+            )
+            state = tuple(int(value) for value in assignment[f"forward_{round_number}"])
+            if state != tuple(raw[position] for position in permutation):
+                raise ValueError("invalid forward hybrid permutation wiring")
+        for (round_number, nibble), model in self._backward_models.items():
+            source = tuple(
+                int(value)
+                for value in assignment[f"backward_sbox_{round_number}_{nibble}_input"]
+            )
+            target = tuple(
+                int(value)
+                for value in assignment[f"backward_sbox_{round_number}_{nibble}_output"]
+            )
+            if target not in model.accepted_outputs(source):
+                raise ValueError("invalid backward hybrid S-box transition")
+        for round_number in range(self.middle_round + 1, self.rounds + 1):
+            permutation = _component(
+                self.primitive, f"p_layer_{round_number}", Permutation
+            ).mapping
+            inverse_positions = tuple(permutation.index(position) for position in range(64))
+            next_state = tuple(int(value) for value in assignment[f"backward_{round_number}"])
+            raw = tuple(
+                int(value)
+                for nibble in range(16)
+                for value in assignment[f"backward_sbox_{round_number}_{nibble}_input"]
+            )
+            previous = tuple(
+                int(value)
+                for nibble in range(16)
+                for value in assignment[f"backward_sbox_{round_number}_{nibble}_output"]
+            )
+            decoded_previous = tuple(
+                int(value) for value in assignment[f"backward_{round_number - 1}"]
+            )
+            if raw != tuple(next_state[position] for position in inverse_positions):
+                raise ValueError("invalid backward hybrid permutation wiring")
+            if previous != decoded_previous:
+                raise ValueError("invalid backward hybrid state wiring")
+        forward = tuple(int(value) for value in assignment[f"forward_{self.middle_round}"])
+        backward = tuple(int(value) for value in assignment[f"backward_{self.middle_round}"])
+        bitwise = tuple(position for position, pair in enumerate(zip(forward, backward)) if sum(pair) == 1)
+        groups = tuple(
+            number
+            for number, group in enumerate(self.nonlinear_groups)
+            if (
+                len({forward[position] for position in group}) == 1
+                and forward[group[0]] > 2
+                and all(backward[position] == 0 for position in group)
+            )
+            or (
+                len({backward[position] for position in group}) == 1
+                and backward[group[0]] > 2
+                and all(forward[position] == 0 for position in group)
+            )
+        )
+        if not bitwise and not groups:
+            raise ValueError("decoded PRESENT hybrid boundary is compatible")
+        return HybridImpossibleBoundaryResult(forward, backward, bitwise, groups)
 
 
 class ImpossibleBoundaryCPModel:

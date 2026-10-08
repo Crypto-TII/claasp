@@ -357,6 +357,82 @@ class HybridSBoxCPModel:
                 cases.append((tuple(bit.encoded for bit in source.bits), encoded))
         return tuple(cases)
 
+    def accepted_outputs(self, source):
+        """Return every reviewed hybrid output allowed for ``source``.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives.block_ciphers.present import PRESENT_SBOX
+            >>> model = HybridSBoxCPModel(PRESENT_SBOX, output_tag=20)
+            >>> model.accepted_outputs((10, 10, 10, 10))
+            ((20, 20, 20, 20),)
+        """
+
+        source = tuple(int(value) for value in source)
+        if len(source) != self.semantics.width:
+            raise ValueError("hybrid S-box inputs must match the S-box width")
+        if all(value == 0 for value in source):
+            return ((0,) * self.semantics.width,)
+        tagged = (self.output_tag,) * self.semantics.width
+        if 1 in source:
+            outputs = [tagged]
+            if all(value <= 2 for value in source):
+                typed = TruncatedXorDifference(
+                    tuple(
+                        TruncatedBit.UNKNOWN if value == 2 else TruncatedBit(str(value))
+                        for value in source
+                    )
+                )
+                exact = tuple(
+                    bit.encoded for bit in self.semantics.truncated_xor_differential(typed).bits
+                )
+                if exact != (2,) * self.semantics.width:
+                    outputs.append(exact)
+            return tuple(outputs)
+        if all(value > 2 and value == source[0] for value in source):
+            return (tagged,)
+        return ((2,) * self.semantics.width,)
+
+    def relation_constraint(self, input_name: str, result_name: str) -> str:
+        """Return the composable MiniZinc constraint for two named arrays."""
+
+        zero = " /\\ ".join(f"{input_name}[{bit}] = 0" for bit in range(self.semantics.width))
+        zero_output = " /\\ ".join(
+            f"{result_name}[{bit}] = 0" for bit in range(self.semantics.width)
+        )
+        active = " \\/ ".join(f"{input_name}[{bit}] = 1" for bit in range(self.semantics.width))
+        tagged = " /\\ ".join(
+            f"{result_name}[{bit}] = {self.output_tag}" for bit in range(self.semantics.width)
+        )
+        same_tag = " /\\ ".join(
+            [
+                *(f"{input_name}[{bit}] > 2" for bit in range(self.semantics.width)),
+                *(
+                    f"{input_name}[{bit}] = {input_name}[0]"
+                    for bit in range(1, self.semantics.width)
+                ),
+            ]
+        )
+        unknown = " /\\ ".join(
+            f"{result_name}[{bit}] = 2" for bit in range(self.semantics.width)
+        )
+        exact = " \\/ ".join(
+            "("
+            + " /\\ ".join(
+                [
+                    *(f"{input_name}[{i}] = {value}" for i, value in enumerate(source)),
+                    *(f"{result_name}[{i}] = {value}" for i, value in enumerate(target)),
+                ]
+            )
+            + ")"
+            for source, target in self._exact_cases()
+        )
+        return (
+            f"constraint if {zero} then {zero_output} elseif ({active}) then "
+            f"(({tagged}) \\/ ({exact})) elseif ({same_tag}) then {tagged} "
+            f"else {unknown} endif;"
+        )
+
     def cp_model(self, *, input_pattern=None, output_pattern=None):
         """Return the tagged S-box relation with optional fixed boundaries."""
 
@@ -375,27 +451,7 @@ class HybridSBoxCPModel:
                     f"constraint {name}[{position}] = {value};"
                     for position, value in enumerate(pattern)
                 )
-        zero = " /\\ ".join(f"input[{bit}] = 0" for bit in range(self.semantics.width))
-        zero_output = " /\\ ".join(f"result[{bit}] = 0" for bit in range(self.semantics.width))
-        active = " \\/ ".join(f"input[{bit}] = 1" for bit in range(self.semantics.width))
-        tagged = " /\\ ".join(f"result[{bit}] = {self.output_tag}" for bit in range(self.semantics.width))
-        same_tag = " /\\ ".join(
-            [*(f"input[{bit}] > 2" for bit in range(self.semantics.width)), *(f"input[{bit}] = input[0]" for bit in range(1, self.semantics.width))]
-        )
-        unknown = " /\\ ".join(f"result[{bit}] = 2" for bit in range(self.semantics.width))
-        exact = " \\/ ".join(
-            "(" + " /\\ ".join(
-                [
-                    *(f"input[{i}] = {value}" for i, value in enumerate(source)),
-                    *(f"result[{i}] = {value}" for i, value in enumerate(target)),
-                ]
-            ) + ")"
-            for source, target in self._exact_cases()
-        )
-        constraints.append(
-            f"constraint if {zero} then {zero_output} elseif ({active}) then (({tagged}) \\/ ({exact})) "
-            f"elseif ({same_tag}) then {tagged} else {unknown} endif;"
-        )
+        constraints.append(self.relation_constraint("input", "result"))
         self._query = MiniZincModel(
             declarations,
             tuple(constraints),
@@ -411,22 +467,7 @@ class HybridSBoxCPModel:
             raise ValueError("build the CP model before decoding")
         source = tuple(int(value) for value in assignment["input"])
         target = tuple(int(value) for value in assignment["result"])
-        if all(value == 0 for value in source):
-            expected = {(0,) * self.semantics.width}
-        elif 1 in source:
-            expected = {(self.output_tag,) * self.semantics.width}
-            if all(value <= 2 for value in source):
-                typed = TruncatedXorDifference(
-                    tuple(TruncatedBit.UNKNOWN if value == 2 else TruncatedBit(str(value)) for value in source)
-                )
-                exact = tuple(bit.encoded for bit in self.semantics.truncated_xor_differential(typed).bits)
-                if exact != (2,) * self.semantics.width:
-                    expected.add(exact)
-        elif all(value > 2 and value == source[0] for value in source):
-            expected = {(self.output_tag,) * self.semantics.width}
-        else:
-            expected = {(2,) * self.semantics.width}
-        if target not in expected:
+        if target not in self.accepted_outputs(source):
             raise ValueError("hybrid S-box output disagrees with recovered semantics")
         return source, target
 

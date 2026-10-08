@@ -9,6 +9,7 @@ from claasp.representations.constraints.cp import (
     PresentActiveSBoxesCPModel,
     PresentDifferentialCPModel,
     PresentFixedActiveSBoxesCPModel,
+    PresentHybridImpossibleCPModel,
     SBoxBoomerangCPModel,
     SBoxBoomerangTrailCPModel,
     SpeckARXWindowDifferentialCPModel,
@@ -139,6 +140,14 @@ def test_speck_continuous_mask_selection_is_exact_for_fixed_output():
     query = model.cp_model()
     assert sum(constraint.endswith("= 1;") for constraint in query.constraints[-32:]) == 1
     assert model.absolute_correlation == max(abs(value) for value in model._expected.values)
+
+
+def test_present_hybrid_impossible_cp_assembles_both_graph_directions():
+    model = PresentHybridImpossibleCPModel(Present(number_of_rounds=2), middle_round=1)
+    query = model.cp_model()
+    assert len(model._forward_models) == len(model._backward_models) == 16
+    assert len(model.nonlinear_groups) == 32
+    assert query.constraint_models[0].model == model.model_provenance
 
 
 def test_present_active_sboxes_cp_reuses_exact_tables():

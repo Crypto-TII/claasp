@@ -568,6 +568,17 @@ the [ten-run component benchmark](audits/data/cp_hybrid_tagged_components_benchm
 and decoders re-evaluate them independently. Complete structural graph
 assembly and probabilistic key-schedule composition remain separate.
 
+The whole-graph hybrid slice adds ``PresentHybridImpossibleCPModel`` for the
+reviewed deterministic SPN path. It assembles forward and inverse S-box
+relations around exact P-layer wiring, assigns a distinct nonlinear tag to
+each component, and applies the audited bitwise-or-tagged middle rule to both
+forward- and inverse-component groups. The decoder independently rechecks
+every S-box transition, permutation edge, and selected contradiction. Chuffed
+solves the two-round fixture in the [ten-run benchmark](audits/data/cp_hybrid_present_graph_benchmark.json).
+This closes deterministic zero-key-difference structural assembly without
+pretending to recover the legacy probabilistic key-schedule mode, which
+remains separate work.
+
 The deterministic-truncated SMT slice adds
 ``ModularAddDeterministicTruncatedSMTModel`` and
 ``WordDeterministicTruncatedSMTModel``. The immutable SMT formula preserves the

@@ -21,6 +21,7 @@ from claasp.representations.constraints.cp import (
     PresentActiveSBoxesCPModel,
     PresentDifferentialCPModel,
     PresentFixedActiveSBoxesCPModel,
+    PresentHybridImpossibleCPModel,
     PresentLinearCPModel,
     ProbabilisticTruncatedModularAddCPModel,
     SBoxBoomerangCPModel,
@@ -211,6 +212,14 @@ def test_minizinc_preserves_hybrid_sbox_branches(source, target):
     )
     assert solved.status is CPStatus.SATISFIED
     assert model.decode_transition(solved.assignment) == (source, target)
+
+
+def test_minizinc_solves_complete_present_hybrid_impossible_graph():
+    model = PresentHybridImpossibleCPModel(Present(number_of_rounds=2), middle_round=1)
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    boundary = model.decode_boundary(solved.assignment)
+    assert boundary.bitwise_positions or boundary.tagged_groups
 
 
 def test_minizinc_proves_present_two_round_active_sbox_optimum():
