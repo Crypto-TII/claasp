@@ -300,6 +300,100 @@ class MonomialParityResult:
         return self
 
 
+@dataclass(frozen=True, slots=True)
+class SolutionPoolMonomialParityResult:
+    """Parity-cancelled input monomials projected from an optimal path pool.
+
+    Variable names retain their full input identity, so bits from different
+    inputs cannot cancel accidentally.
+
+    EXAMPLES::
+
+        >>> result = SolutionPoolMonomialParityResult(
+        ...     (("key[0]", "plaintext[1]"),), 3, True, "exhaustive_pool"
+        ... )
+        >>> result.maximum_degree("key")
+        1
+    """
+
+    odd_input_monomials: tuple[tuple[str, ...], ...]
+    enumerated_paths: int
+    complete: bool
+    termination: str
+
+    def require_complete(self) -> "SolutionPoolMonomialParityResult":
+        """Reject a pool whose capacity or solver termination hid paths."""
+
+        if not self.complete:
+            raise RuntimeError("monomial solution-pool projection is incomplete")
+        return self
+
+    def maximum_degree(self, input_name: str) -> int:
+        """Return the largest surviving degree in one named primitive input."""
+
+        self.require_complete()
+        prefix = f"{input_name}["
+        return max(
+            (sum(variable.startswith(prefix) for variable in monomial) for monomial in self.odd_input_monomials),
+            default=0,
+        )
+
+
+def project_optimal_pool_monomial_parity(compilation, pool):
+    """Project a validated optimal solution pool and cancel equal paths mod two.
+
+    This is the dependency-free counterpart of the legacy Sage Boolean-ring
+    conversion. It operates in time linear in the returned assignments and
+    symbolic input width. A truncated Gurobi pool remains visibly incomplete;
+    callers must not interpret its provisional parity as an ANF.
+
+    EXAMPLES::
+
+        >>> from claasp.drivers.solvers import GurobiSolutionPoolResult, MILPStatus
+        >>> from claasp.primitives import Simon
+        >>> from claasp.representations.constraints.milp import BooleanMonomialGraphMILPModel
+        >>> graph = BooleanMonomialGraphMILPModel(Simon(number_of_rounds=1), 0, "plaintext")
+        >>> assignment = {variable.name: 0.0 for variable in graph.milp_model().variables}
+        >>> assignment[graph._wire("plaintext", 0)] = 1.0
+        >>> pool = GurobiSolutionPoolResult(MILPStatus.OPTIMAL, (assignment,), 1.0, 0.0, True)
+        >>> project_optimal_pool_monomial_parity(graph, pool).odd_input_monomials
+        (('plaintext[0]',),)
+    """
+
+    from claasp.drivers.solvers import GurobiSolutionPoolResult, MILPStatus
+
+    if not isinstance(pool, GurobiSolutionPoolResult):
+        raise TypeError("pool must be a GurobiSolutionPoolResult")
+    if pool.status is not MILPStatus.OPTIMAL:
+        return SolutionPoolMonomialParityResult(
+            (), len(pool.assignments), False, pool.status.value
+        )
+    input_variables: list[tuple[str, str]] = []
+    for input_name, port in compilation.primitive.input_ports.items():
+        width = compilation._width(port.value_type)
+        input_variables.extend(
+            (compilation._wire(input_name, bit), f"{input_name}[{bit}]")
+            for bit in range(width)
+        )
+    parity: dict[tuple[str, ...], bool] = {}
+    for assignment in pool.assignments:
+        missing = tuple(name for name, _ in input_variables if name not in assignment)
+        if missing:
+            raise ValueError(f"solution-pool assignment omits input variable {missing[0]!r}")
+        monomial = tuple(
+            public_name
+            for solver_name, public_name in input_variables
+            if round(assignment[solver_name]) == 1
+        )
+        parity[monomial] = not parity.get(monomial, False)
+    return SolutionPoolMonomialParityResult(
+        tuple(sorted(monomial for monomial, odd in parity.items() if odd)),
+        len(pool.assignments),
+        pool.is_exhaustive,
+        "exhaustive_pool" if pool.is_exhaustive else "pool_capacity",
+    )
+
+
 def enumerate_optimal_monomial_parity(compilation, solver, max_paths=10000):
     """Enumerate optimal paths until UNSAT and aggregate input masks mod two.
 

@@ -59,7 +59,9 @@ from claasp.analysis.monomial import (
     MultiRoundMonomialTrail,
     PresentMonomialSemantics,
     PresentRoundMonomialSemantics,
+    SolutionPoolMonomialParityResult,
     enumerate_optimal_monomial_parity,
+    project_optimal_pool_monomial_parity,
 )
 from claasp.analysis.neural import (
     NeuralDataset,
@@ -177,6 +179,7 @@ __all__ = [
     "NotEqual",
     "PresentMonomialSemantics",
     "PresentRoundMonomialSemantics",
+    "SolutionPoolMonomialParityResult",
     "PropertyClaim",
     "PropertyDiagnostic",
     "PropertyDomain",
@@ -210,6 +213,7 @@ __all__ = [
     "deterministic_partition",
     "enumerate_optimal_monomial_parity",
     "evaluate_cube_sum",
+    "project_optimal_pool_monomial_parity",
     "generate_avalanche_dataset",
     "generate_random_dataset",
     "high_density_dataset",

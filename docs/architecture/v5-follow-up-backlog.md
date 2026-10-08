@@ -782,6 +782,17 @@ has neither ``gurobipy`` nor a license. Reconstructing monomial parity from
 those assignments remains a distinct scientific step: reachability solutions
 cannot be XORed blindly when several internal paths project to one monomial.
 
+The pool-projection follow-up adds
+``project_optimal_pool_monomial_parity``. It projects every validated optimal
+assignment onto the complete, fully named primitive-input support and toggles
+equal monomials modulo two, matching the legacy Boolean-ring cancellation
+without a Sage runtime. ``SolutionPoolMonomialParityResult`` refuses to
+certify a pool that reached its configured capacity and can report surviving
+degree in any named input without merging key and public-variable bits. The
+[synthetic ten-run benchmark](audits/data/milp_monomial_pool_projection_benchmark.json)
+records linear projection of 10,000 paths; Gurobi remains optional and
+non-default.
+
 The boomerang assembly follow-up adds
 ``ModularAddBoomerangTrailCPModel``. It namespaces complete top and bottom
 ``WordDifferentialCPModel`` formulas, links their exposed switch word to the
