@@ -9,6 +9,7 @@ from claasp.primitives import AES, Present, Simon, Speck, ToySpeck
 from claasp.representations.constraints.cp import (
     ImpossibleBoundaryCPModel,
     MiniZincModel,
+    ModularAddBoomerangCPModel,
     ModularAddDeterministicTruncatedCPModel,
     PresentActiveSBoxesCPModel,
     PresentDifferentialCPModel,
@@ -54,6 +55,23 @@ from claasp.semantics.cryptanalysis import (
 )
 
 pytestmark = pytest.mark.external
+
+
+def test_minizinc_modadd_boomerang_automaton_accepts_exactly_possible_switches():
+    possible = ModularAddBoomerangCPModel(
+        4, delta_left=1, delta_right=0, nabla_output=1, nabla_right=0
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(possible.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    assert possible.decode_connectivity(solved.assignment).count == 128
+
+    impossible = ModularAddBoomerangCPModel(
+        2, delta_left=0, delta_right=1, nabla_output=0, nabla_right=1
+    )
+    rejected = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(
+        impossible.cp_model()
+    )
+    assert rejected.status is CPStatus.UNSATISFIABLE
 
 
 def test_minizinc_continuous_speck_matches_independent_python_heuristic():
