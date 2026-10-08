@@ -14,6 +14,8 @@ from claasp.representations.constraints.milp import (
     ObjectiveSense,
     SBoxMILPInequalityStrategy,
     SBoxTransitionMILPModel,
+    SBoxUndisturbedBitsEspressoMILPModel,
+    SBoxUndisturbedBitsMILPModel,
     SBoxXorDifferentialConvexHullMILPModel,
     SBoxXorDifferentialEspressoMILPModel,
     SBoxXorDifferentialGreedyMILPModel,
@@ -28,6 +30,24 @@ from claasp.representations.constraints.milp import (
 from claasp.semantics.cryptanalysis import TrailKind
 
 pytestmark = pytest.mark.external
+
+
+@pytest.mark.parametrize(
+    "model_type,arguments",
+    (
+        (SBoxUndisturbedBitsMILPModel, (PRESENT_SBOX,)),
+        (SBoxUndisturbedBitsEspressoMILPModel, (PRESENT_SBOX, "present")),
+    ),
+)
+def test_glpk_solves_undisturbed_sbox_strategies(model_type, arguments):
+    relation = model_type(*arguments)
+    solved = GLPKSolver(timeout_seconds=10).solve(
+        relation.milp_model(input_pattern="0001", output_pattern="???1")
+    )
+
+    assert solved.status is MILPStatus.OPTIMAL
+    source, output = relation.decode_transition(solved.assignment)
+    assert (str(source), str(output)) == ("0001", "???1")
 
 
 def test_glpk_optimizes_and_returns_an_independently_checked_witness():

@@ -18,8 +18,11 @@ from claasp.representations.constraints.milp.components.relations import (
 )
 from claasp.representations.constraints.milp.components.sbox import (
     SBoxTransitionMILPModel,
+    SBoxUndisturbedBitsEspressoMILPModel,
+    SBoxUndisturbedBitsMILPModel,
     SBoxXorDifferentialMILPModel,
     SBoxXorLinearMILPModel,
+    load_bundled_undisturbed_sbox_espresso,
 )
 from claasp.representations.constraints.milp.components.sbox_inequalities import (
     SBoxMILPInequalityGroup,
@@ -54,6 +57,8 @@ __all__ = [
     "SBoxMILPInequalityStrategy",
     "SBoxMILPInequalitySystem",
     "SBoxTransitionMILPModel",
+    "SBoxUndisturbedBitsEspressoMILPModel",
+    "SBoxUndisturbedBitsMILPModel",
     "SBoxXorDifferentialConvexHullMILPModel",
     "SBoxXorDifferentialEspressoMILPModel",
     "SBoxXorDifferentialGreedyMILPModel",
@@ -67,5 +72,6 @@ __all__ = [
     "WordwiseImpossibleBoundaryMILPModel",
     "WordwiseImpossibleBoundaryResult",
     "load_bundled_sbox_milp_inequalities",
+    "load_bundled_undisturbed_sbox_espresso",
     "wordwise_pattern",
 ]

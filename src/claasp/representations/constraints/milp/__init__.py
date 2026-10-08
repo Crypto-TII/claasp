@@ -13,6 +13,8 @@ from claasp.representations.constraints.milp.components import (
     SBoxMILPInequalityStrategy,
     SBoxMILPInequalitySystem,
     SBoxTransitionMILPModel,
+    SBoxUndisturbedBitsEspressoMILPModel,
+    SBoxUndisturbedBitsMILPModel,
     SBoxXorDifferentialConvexHullMILPModel,
     SBoxXorDifferentialEspressoMILPModel,
     SBoxXorDifferentialGreedyMILPModel,
@@ -26,6 +28,7 @@ from claasp.representations.constraints.milp.components import (
     WordwiseImpossibleBoundaryMILPModel,
     WordwiseImpossibleBoundaryResult,
     load_bundled_sbox_milp_inequalities,
+    load_bundled_undisturbed_sbox_espresso,
     wordwise_pattern,
 )
 from claasp.representations.constraints.milp.exporter import LPExporter
@@ -101,6 +104,8 @@ __all__ = [
     "SBoxMILPInequalityStrategy",
     "SBoxMILPInequalitySystem",
     "SBoxTransitionMILPModel",
+    "SBoxUndisturbedBitsEspressoMILPModel",
+    "SBoxUndisturbedBitsMILPModel",
     "SBoxXorDifferentialConvexHullMILPModel",
     "SBoxXorDifferentialEspressoMILPModel",
     "SBoxXorDifferentialGreedyMILPModel",
@@ -129,5 +134,6 @@ __all__ = [
     "check_present_milp_trail",
     "cnf_to_milp",
     "load_bundled_sbox_milp_inequalities",
+    "load_bundled_undisturbed_sbox_espresso",
     "wordwise_pattern",
 ]

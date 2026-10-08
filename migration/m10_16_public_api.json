@@ -27544,6 +27544,18 @@
       "qualified_name": "claasp.representations.constraints.milp.SBoxTransitionMILPModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsEspressoMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.SBoxUndisturbedBitsEspressoMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.SBoxUndisturbedBitsMILPModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.milp.components.sbox_inequalities.SBoxXorDifferentialConvexHullMILPModel",
       "defined_in": "claasp.representations.constraints.milp.components.sbox_inequalities",
       "kind": "class",
@@ -27784,6 +27796,18 @@
       "qualified_name": "claasp.representations.constraints.milp.components.SBoxTransitionMILPModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsEspressoMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.SBoxUndisturbedBitsEspressoMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.SBoxUndisturbedBitsMILPModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.milp.components.sbox_inequalities.SBoxXorDifferentialConvexHullMILPModel",
       "defined_in": "claasp.representations.constraints.milp.components.sbox_inequalities",
       "kind": "class",
@@ -27977,6 +28001,12 @@
       "qualified_name": "claasp.representations.constraints.milp.components.load_bundled_sbox_milp_inequalities"
     },
     {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.load_bundled_undisturbed_sbox_espresso",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "kind": "function",
+      "qualified_name": "claasp.representations.constraints.milp.components.load_bundled_undisturbed_sbox_espresso"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.milp.components.modular_add.ModularAddLinearMILPModel.__init__",
       "defined_in": "claasp.representations.constraints.milp.components.modular_add",
       "documented_by": "claasp.representations.constraints.milp.components.modular_add.ModularAddLinearMILPModel",
@@ -28059,6 +28089,44 @@
       ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.milp.components.sbox.SBoxTransitionMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsEspressoMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "documented_by": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsEspressoMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsEspressoMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsEspressoMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsEspressoMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "documented_by": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsMILPModel.decode_transition",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsEspressoMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsMILPModel.decode_transition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsEspressoMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.sbox.SBoxUndisturbedBitsMILPModel.milp_model"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.components.sbox.SBoxXorDifferentialMILPModel.__init__",
@@ -28397,6 +28465,12 @@
       "defined_in": "claasp.representations.constraints.milp.components.sbox_inequalities",
       "kind": "function",
       "qualified_name": "claasp.representations.constraints.milp.load_bundled_sbox_milp_inequalities"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.sbox.load_bundled_undisturbed_sbox_espresso",
+      "defined_in": "claasp.representations.constraints.milp.components.sbox",
+      "kind": "function",
+      "qualified_name": "claasp.representations.constraints.milp.load_bundled_undisturbed_sbox_espresso"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.lowering.BooleanGraphMILPModel.__init__",
