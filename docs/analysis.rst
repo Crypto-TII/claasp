@@ -138,7 +138,9 @@ records structured search metadata and the complete data-state propagation:
 
    >>> from claasp.primitives import Present
    >>> primitive = Present(number_of_rounds=2)
-   >>> result = primitive.analysis.find_optimal_trail(kind="xor_differential")
+   >>> result = primitive.analysis.find_optimal_trail(
+   ...     kind="xor_differential", backend="dependency_free"
+   ... )
    >>> (result.trail.total_weight, result.lower_bound, result.is_optimal)
    (4.0, 4.0, True)
    >>> (result.metadata.solver, len(result.component_transitions))
@@ -159,7 +161,9 @@ reproduces the preserved two-round Speck32/64 optimum:
 
    >>> from claasp.primitives import Speck
    >>> primitive = Speck(number_of_rounds=2)
-   >>> result = primitive.analysis.find_optimal_trail(kind="xor_differential")
+   >>> result = primitive.analysis.find_optimal_trail(
+   ...     kind="xor_differential", backend="dependency_free"
+   ... )
    >>> (result.trail.total_weight, result.is_optimal)
    (1.0, True)
    >>> len(result.component_transitions)
@@ -169,9 +173,10 @@ The ten reported transitions cover every rotation, modular addition, and XOR
 on the two-round data-state path. The default search fixes the key difference
 to zero, so its all-zero key schedule is omitted. An independent checker
 recomputes both modular-add probabilities and the rotations/XOR wiring.
-The default method uses Kissat and binary search over the maximum permitted
-weight. The particular optimum returned may change when several trails have
-the same minimum weight.
+The explicit dependency-free method uses exact Matsui branch-and-bound. The
+default method uses Kissat and binary search over the maximum permitted
+weight. Either backend may return a different representative when several
+trails have the same minimum weight.
 
 Truncated and impossible differences
 ------------------------------------

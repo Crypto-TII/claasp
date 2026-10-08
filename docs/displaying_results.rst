@@ -16,7 +16,7 @@ together with the relative and cumulative probability:
 
    >>> from claasp.primitives import Speck
    >>> result = Speck(number_of_rounds=2).analysis.find_optimal_trail(
-   ...     kind="xor_differential"
+   ...     kind="xor_differential", backend="dependency_free"
    ... )
    >>> result.show()  # doctest: +ELLIPSIS
    Trail

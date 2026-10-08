@@ -1,9 +1,9 @@
 Quick analysis scripts
 ======================
 
-These small, copyable examples answer common questions about a primitive.
-Most use only CLAASP's Python implementation; trail search uses Kissat. The
-linked guides explain the full result types and other optional backends.
+These small, copyable examples answer common questions about a primitive and
+use only CLAASP's Python implementation. The linked guides explain the full
+result types and optional solver backends.
 
 Find an optimal XOR differential trail
 ---------------------------------------
@@ -16,7 +16,9 @@ probability represented by the model.
 
    >>> from claasp.primitives import Speck
    >>> speck = Speck(number_of_rounds=2)
-   >>> differential = speck.analysis.find_optimal_trail(kind="xor_differential")
+   >>> differential = speck.analysis.find_optimal_trail(
+   ...     kind="xor_differential", backend="dependency_free"
+   ... )
    >>> differential.show()  # doctest: +ELLIPSIS
    Trail
    ...
@@ -25,9 +27,9 @@ The report shows one difference per round, each round's probability, and the
 cumulative probability. Its total weight is 1 and the matching lower bound is
 1, so this is a proved optimum rather than merely the best trail encountered
 so far. Use ``differential.show(details=True)`` to inspect every component and
-the search metadata. Kissat may choose any one of several trails having that
-optimal weight. See :doc:`analysis` for constraints, enumeration, and
-solver-backed searches.
+the search metadata. Another exact backend may choose a different trail with
+the same optimal weight. See :doc:`analysis` for constraints, enumeration,
+and solver-backed searches.
 
 Find an optimal XOR linear trail
 ---------------------------------

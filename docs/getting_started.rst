@@ -21,9 +21,8 @@ installed package:
 
    python -c "import claasp; print('CLAASP import OK')"
 
-Evaluation and avalanche experiments need no external program. The trail
-search later on this page also needs the optional Kissat executable; its
-installation is described where it is first used.
+The evaluation, trail-search, and avalanche examples on this page need no
+external program.
 
 Choose a primitive
 ------------------
@@ -227,22 +226,16 @@ exists.
 
 This example deliberately uses two-round Speck32/64 so the search finishes
 quickly. It is a reduced-round analysis target, not a secure block-cipher
-configuration. The default search uses the optional Kissat SAT solver. On
-macOS or Linux with Homebrew, install it and confirm that it is on ``PATH``:
-
-.. code-block:: console
-
-   brew install kissat
-   kissat --version
-
-On other systems, build Kissat from its official source distribution. Then
-run the search:
+configuration. Select the dependency-free search so the example needs no
+external solver:
 
 .. doctest::
 
    >>> from claasp.primitives import Speck
    >>> speck = Speck(number_of_rounds=2)
-   >>> result = speck.analysis.find_optimal_trail(kind="xor_differential")
+   >>> result = speck.analysis.find_optimal_trail(
+   ...     kind="xor_differential", backend="dependency_free"
+   ... )
 
 ``result`` is a ``TrailSearchResult``: it contains the mathematical trail and
 the evidence for the search claim. Inspect the stable fields directly:
@@ -254,7 +247,7 @@ the evidence for the search claim. Inspect the stable fields directly:
    >>> (result.trail.total_weight, result.lower_bound, result.is_optimal)
    (1.0, 1.0, True)
    >>> (result.metadata.solver, len(result.component_transitions))
-   ('Kissat', 10)
+   (None, 10)
 
 Read those values as follows:
 
@@ -264,8 +257,8 @@ Read those values as follows:
   ``is_optimal`` is true: no lower-weight trail exists for this instance.
 * ``component_transitions`` contains the ten checked rotations, modular
   additions, and XOR operations on the two-round data path.
-* ``metadata`` records how the search was performed. Runtime and peak memory,
-  when available, depend on the machine.
+* ``metadata`` records how the search was performed. A ``None`` solver means
+  that this search ran inside Python rather than calling an external program.
 
 For an interactive, human-readable report, use:
 
