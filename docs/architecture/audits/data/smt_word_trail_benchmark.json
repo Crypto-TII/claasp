@@ -1,0 +1,44 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "results": [
+    {
+      "assertions": 500,
+      "assignment_valid": true,
+      "construction_seconds_median": 0.0008460835001642408,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_z3_driver",
+      "repeats": 10,
+      "semantics": "xor_differential",
+      "solver": "Z3Solver",
+      "solver_seconds_median": 0.005492437499924563,
+      "solver_status": "satisfiable",
+      "solver_version": "Z3 version 4.8.12 - 64 bit",
+      "trail_valid": true,
+      "variables": 187
+    },
+    {
+      "assertions": 487,
+      "assignment_valid": true,
+      "construction_seconds_median": 0.0011625415004345996,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_z3_driver",
+      "repeats": 10,
+      "semantics": "xor_linear",
+      "solver": "Z3Solver",
+      "solver_seconds_median": 0.005233792000126414,
+      "solver_status": "satisfiable",
+      "solver_version": "Z3 version 4.8.12 - 64 bit",
+      "trail_valid": true,
+      "variables": 208
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "description": "fixed-weight differential and bounded-weight linear ToySpeck-2 trails",
+    "sat_comparison": "docs/architecture/audits/data/sat_trail_assembly_benchmark.json",
+    "timeout_seconds": 30
+  }
+}
