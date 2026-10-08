@@ -1,6 +1,7 @@
 """Deterministic-truncated CP component encodings."""
 
 from dataclasses import dataclass
+from itertools import product
 
 from claasp.representations.constraints import (
     ConstraintBackend,
@@ -10,6 +11,11 @@ from claasp.representations.constraints import (
 )
 from claasp.representations.constraints.cp.lowering import BooleanMiniZincLowerer
 from claasp.representations.constraints.cp.model import MiniZincModel
+from claasp.semantics.cryptanalysis import (
+    SBoxTransitionSemantics,
+    TruncatedBit,
+    TruncatedXorDifference,
+)
 
 
 class ModularAddDeterministicTruncatedCPModel:
@@ -230,8 +236,205 @@ class HybridImpossibleBoundaryCPModel:
         return HybridImpossibleBoundaryResult(forward, backward, bitwise, groups)
 
 
+class HybridXorCPModel:
+    """Recover the legacy tagged deterministic-truncated XOR rule.
+
+    EXAMPLES::
+
+        >>> model = HybridXorCPModel(2)
+        >>> query = model.cp_model(left=(10, 0), right=(0, 1), output=(10, 1))
+        >>> query.solve
+        'solve satisfy;'
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.CP,
+        "HybridXorCPModel",
+        "hybrid_impossible_xor_differential",
+        "legacy tagged deterministic-truncated XOR propagation",
+        "Zero preserves a nonlinear tag; other abstract combinations become unknown.",
+    )
+
+    def __init__(self, width: int, *, maximum_tag: int = 800) -> None:
+        if width < 1 or maximum_tag < 10 or maximum_tag % 10:
+            raise ValueError("width must be positive and maximum_tag a positive multiple of ten")
+        self.width, self.maximum_tag = width, maximum_tag
+        self._query: MiniZincModel | None = None
+
+    @staticmethod
+    def propagate(left: int, right: int) -> int:
+        """Return the reviewed legacy result for two hybrid symbols."""
+
+        if left < 2 and right < 2:
+            return (left + right) % 2
+        if right == 0:
+            return left
+        if left == 0:
+            return right
+        return 2
+
+    def cp_model(self, *, left=None, right=None, output=None):
+        """Return independent per-bit tagged-XOR constraints."""
+
+        domain = f"0..2 union {{i | i in 10..{self.maximum_tag} where i mod 10 = 0}}"
+        declarations = (f"set of int: HybridDomain = {domain};",) + tuple(
+            f"array[0..{self.width - 1}] of var HybridDomain: {name};"
+            for name in ("left", "right", "result")
+        )
+        constraints: list[str] = []
+        for name, pattern in (("left", left), ("right", right), ("result", output)):
+            if pattern is not None:
+                if len(pattern) != self.width:
+                    raise ValueError("hybrid XOR patterns must match the width")
+                constraints.extend(
+                    f"constraint {name}[{position}] = {value};"
+                    for position, value in enumerate(pattern)
+                )
+        constraints.extend(
+            f"constraint if left[{bit}] < 2 /\\ right[{bit}] < 2 then "
+            f"result[{bit}] = (left[{bit}] + right[{bit}]) mod 2 "
+            f"elseif right[{bit}] = 0 then result[{bit}] = left[{bit}] "
+            f"elseif left[{bit}] = 0 then result[{bit}] = right[{bit}] "
+            f"else result[{bit}] = 2 endif;"
+            for bit in range(self.width)
+        )
+        self._query = MiniZincModel(
+            declarations,
+            tuple(constraints),
+            provenance=("recovered legacy hybrid XOR propagation",),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_transition(self, assignment):
+        """Decode and independently re-evaluate every bit."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        left, right, output = (
+            tuple(int(value) for value in assignment[name])
+            for name in ("left", "right", "result")
+        )
+        if tuple(self.propagate(a, b) for a, b in zip(left, right)) != output:
+            raise ValueError("hybrid XOR output disagrees with recovered semantics")
+        return left, right, output
+
+
+class HybridSBoxCPModel:
+    """Recover the legacy tagged S-box abstraction for one component.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives.block_ciphers.present import PRESENT_SBOX
+        >>> model = HybridSBoxCPModel(PRESENT_SBOX, output_tag=10)
+        >>> "result[0] = 10" in model.cp_model(input_pattern=(1, 0, 0, 0)).constraints[-1]
+        True
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.CP,
+        "HybridSBoxCPModel",
+        "hybrid_impossible_xor_differential",
+        "legacy tagged S-box abstraction with exact undisturbed-bit alternative",
+        "Active inputs may emit one component tag or an exact nontrivial ternary propagation.",
+    )
+
+    def __init__(self, table, *, output_tag: int, maximum_tag: int = 800) -> None:
+        self.semantics = SBoxTransitionSemantics(table)
+        if output_tag < 10 or output_tag % 10 or output_tag > maximum_tag:
+            raise ValueError("output_tag must be a configured positive multiple of ten")
+        self.output_tag, self.maximum_tag = output_tag, maximum_tag
+        self._query: MiniZincModel | None = None
+
+    def _exact_cases(self):
+        symbols = (TruncatedBit.ZERO, TruncatedBit.ONE, TruncatedBit.UNKNOWN)
+        cases = []
+        for values in product(symbols, repeat=self.semantics.width):
+            source = TruncatedXorDifference(values)
+            target = self.semantics.truncated_xor_differential(source)
+            encoded = tuple(bit.encoded for bit in target.bits)
+            if encoded != (2,) * self.semantics.width:
+                cases.append((tuple(bit.encoded for bit in source.bits), encoded))
+        return tuple(cases)
+
+    def cp_model(self, *, input_pattern=None, output_pattern=None):
+        """Return the tagged S-box relation with optional fixed boundaries."""
+
+        last = self.semantics.width - 1
+        declarations = (
+            f"set of int: HybridDomain = 0..2 union {{i | i in 10..{self.maximum_tag} where i mod 10 = 0}};",
+            f"array[0..{last}] of var HybridDomain: input;",
+            f"array[0..{last}] of var HybridDomain: result;",
+        )
+        constraints: list[str] = []
+        for name, pattern in (("input", input_pattern), ("result", output_pattern)):
+            if pattern is not None:
+                if len(pattern) != self.semantics.width:
+                    raise ValueError("hybrid S-box patterns must match the S-box width")
+                constraints.extend(
+                    f"constraint {name}[{position}] = {value};"
+                    for position, value in enumerate(pattern)
+                )
+        zero = " /\\ ".join(f"input[{bit}] = 0" for bit in range(self.semantics.width))
+        zero_output = " /\\ ".join(f"result[{bit}] = 0" for bit in range(self.semantics.width))
+        active = " \\/ ".join(f"input[{bit}] = 1" for bit in range(self.semantics.width))
+        tagged = " /\\ ".join(f"result[{bit}] = {self.output_tag}" for bit in range(self.semantics.width))
+        same_tag = " /\\ ".join(
+            [*(f"input[{bit}] > 2" for bit in range(self.semantics.width)), *(f"input[{bit}] = input[0]" for bit in range(1, self.semantics.width))]
+        )
+        unknown = " /\\ ".join(f"result[{bit}] = 2" for bit in range(self.semantics.width))
+        exact = " \\/ ".join(
+            "(" + " /\\ ".join(
+                [
+                    *(f"input[{i}] = {value}" for i, value in enumerate(source)),
+                    *(f"result[{i}] = {value}" for i, value in enumerate(target)),
+                ]
+            ) + ")"
+            for source, target in self._exact_cases()
+        )
+        constraints.append(
+            f"constraint if {zero} then {zero_output} elseif ({active}) then (({tagged}) \\/ ({exact})) "
+            f"elseif ({same_tag}) then {tagged} else {unknown} endif;"
+        )
+        self._query = MiniZincModel(
+            declarations,
+            tuple(constraints),
+            provenance=("recovered legacy hybrid S-box propagation",),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_transition(self, assignment):
+        """Decode and independently verify one accepted legacy branch."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        source = tuple(int(value) for value in assignment["input"])
+        target = tuple(int(value) for value in assignment["result"])
+        if all(value == 0 for value in source):
+            expected = {(0,) * self.semantics.width}
+        elif 1 in source:
+            expected = {(self.output_tag,) * self.semantics.width}
+            if all(value <= 2 for value in source):
+                typed = TruncatedXorDifference(
+                    tuple(TruncatedBit.UNKNOWN if value == 2 else TruncatedBit(str(value)) for value in source)
+                )
+                exact = tuple(bit.encoded for bit in self.semantics.truncated_xor_differential(typed).bits)
+                if exact != (2,) * self.semantics.width:
+                    expected.add(exact)
+        elif all(value > 2 and value == source[0] for value in source):
+            expected = {(self.output_tag,) * self.semantics.width}
+        else:
+            expected = {(2,) * self.semantics.width}
+        if target not in expected:
+            raise ValueError("hybrid S-box output disagrees with recovered semantics")
+        return source, target
+
+
 __all__ = [
     "HybridImpossibleBoundaryCPModel",
     "HybridImpossibleBoundaryResult",
+    "HybridSBoxCPModel",
+    "HybridXorCPModel",
     "ModularAddDeterministicTruncatedCPModel",
 ]

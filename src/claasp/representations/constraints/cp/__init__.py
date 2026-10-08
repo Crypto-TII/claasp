@@ -3,6 +3,8 @@
 from claasp.representations.constraints.cp.components import (
     HybridImpossibleBoundaryCPModel,
     HybridImpossibleBoundaryResult,
+    HybridSBoxCPModel,
+    HybridXorCPModel,
     ModularAddBoomerangCPModel,
 )
 from claasp.representations.constraints.cp.lowering import BooleanMiniZincLowerer
@@ -12,6 +14,8 @@ __all__ = [
     "BooleanMiniZincLowerer",
     "HybridImpossibleBoundaryCPModel",
     "HybridImpossibleBoundaryResult",
+    "HybridSBoxCPModel",
+    "HybridXorCPModel",
     "ImpossibleBoundaryCPModel",
     "MiniZincModel",
     "ModularAddBoomerangCPModel",

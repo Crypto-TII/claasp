@@ -8,8 +8,11 @@ from claasp.analysis import AnalysisProblem, FixedValue
 from claasp.components import ModularAdd
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
 from claasp.primitives import AES, Present, Simon, Speck, ToyAES, ToySpeck
+from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints.cp import (
     HybridImpossibleBoundaryCPModel,
+    HybridSBoxCPModel,
+    HybridXorCPModel,
     ImpossibleBoundaryCPModel,
     MiniZincModel,
     ModularAddBoomerangCPModel,
@@ -169,6 +172,33 @@ def test_minizinc_rejects_compatible_hybrid_boundary():
         model.cp_model(forward=(10, 10, 10, 10), backward=(10, 10, 10, 10))
     )
     assert solved.status is CPStatus.UNSATISFIABLE
+
+
+def test_minizinc_preserves_hybrid_tag_through_zero_xor():
+    model = HybridXorCPModel(2)
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(
+        model.cp_model(left=(10, 0), right=(0, 1), output=(10, 1))
+    )
+    assert solved.status is CPStatus.SATISFIED
+    assert model.decode_transition(solved.assignment) == ((10, 0), (0, 1), (10, 1))
+
+
+@pytest.mark.parametrize(
+    "source,target",
+    (
+        ((0, 0, 0, 0), (0, 0, 0, 0)),
+        ((1, 0, 0, 0), (20, 20, 20, 20)),
+        ((10, 10, 10, 10), (20, 20, 20, 20)),
+        ((10, 0, 10, 0), (2, 2, 2, 2)),
+    ),
+)
+def test_minizinc_preserves_hybrid_sbox_branches(source, target):
+    model = HybridSBoxCPModel(PRESENT_SBOX, output_tag=20)
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(
+        model.cp_model(input_pattern=source, output_pattern=target)
+    )
+    assert solved.status is CPStatus.SATISFIED
+    assert model.decode_transition(solved.assignment) == (source, target)
 
 
 def test_minizinc_proves_present_two_round_active_sbox_optimum():

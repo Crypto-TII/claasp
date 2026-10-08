@@ -1,0 +1,23 @@
+{
+  "cases": {
+    "sbox_fresh_tag": {
+      "constraints": 9,
+      "declarations": 3,
+      "median_construction_seconds": 0.0009434584999326034,
+      "median_solve_seconds": 0.025480250000327942
+    },
+    "sbox_retag": {
+      "constraints": 9,
+      "declarations": 3,
+      "median_construction_seconds": 0.0010000629990827292,
+      "median_solve_seconds": 0.028003937000903534
+    },
+    "xor_tag_passthrough": {
+      "constraints": 8,
+      "declarations": 4,
+      "median_construction_seconds": 0.000017521000700071454,
+      "median_solve_seconds": 0.026506000000154017
+    }
+  },
+  "environment": "claasp-v5-espresso:test linux/arm64, MiniZinc/Chuffed, 10 runs"
+}
