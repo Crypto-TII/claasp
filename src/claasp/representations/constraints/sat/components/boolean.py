@@ -1,11 +1,11 @@
 """Functional SAT encodings for Boolean operators."""
 
-from claasp.components import Add, BitwiseAnd, Xor
+from claasp.components import Add, BitwiseAnd, BitwiseNot, BitwiseOr, Xor
 from claasp.representations.constraints import ConstraintBackend, _direct_model
 
 
 class BooleanFunctionalSATModel:
-    """Encode one functional XOR or bitwise-AND component.
+    """Encode one functional bitwise Boolean component.
 
     EXAMPLES::
 
@@ -25,12 +25,12 @@ class BooleanFunctionalSATModel:
         "BooleanFunctionalSATModel",
         "functional",
         "direct Boolean operator clauses",
-        "The clauses are generated directly from XOR and AND truth tables.",
+        "The clauses are generated directly from XOR, AND, OR, and NOT truth tables.",
     )
 
     def __init__(self, component) -> None:
-        if not isinstance(component, (Add, BitwiseAnd, Xor)):
-            raise TypeError("component must be Add, Xor, or BitwiseAnd")
+        if not isinstance(component, (Add, BitwiseAnd, BitwiseNot, BitwiseOr, Xor)):
+            raise TypeError("component must be Add, Xor, BitwiseAnd, BitwiseOr, or BitwiseNot")
         self.component = component
 
     def encode(self, context, outputs, selected) -> None:
@@ -71,12 +71,34 @@ class BooleanFunctionalSATModel:
                             context.auxiliary.append(("xor", (target, accumulator, operand)))
                         context.xor(target, accumulator, operand, label)
                         accumulator = target
-        else:
+        elif isinstance(component, BitwiseAnd):
             for position, output in enumerate(outputs):
                 for bit, target in enumerate(output):
                     context.and_(
                         target, selected[0][position][bit], selected[1][position][bit], label
                     )
+        elif isinstance(component, BitwiseOr):
+            for position, output in enumerate(outputs):
+                for bit, target_output in enumerate(output):
+                    operands = [group[position][bit] for group in selected]
+                    accumulator = operands[0]
+                    for operand_number, operand in enumerate(operands[1:], start=1):
+                        is_last = operand_number == len(operands) - 1
+                        target = (
+                            target_output
+                            if is_last
+                            else context.allocate(
+                                f"__aux_{label}_{position}_{bit}_{operand_number}"
+                            )
+                        )
+                        if not is_last:
+                            context.auxiliary.append(("or", (target, accumulator, operand)))
+                        context.or_(target, accumulator, operand, label)
+                        accumulator = target
+        else:
+            for position, output in enumerate(outputs):
+                for bit, target in enumerate(output):
+                    context.not_(target, selected[0][position][bit], label)
 
 
 class BooleanNativeXorSATModel(BooleanFunctionalSATModel):

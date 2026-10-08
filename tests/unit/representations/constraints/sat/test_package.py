@@ -7,6 +7,7 @@ from claasp.components import Add
 from claasp.domains import Bit
 from claasp.graph import Primitive, ValueType
 from claasp.primitives import MiMC, Present80, Simon, Speck
+from claasp.primitives.single_component_primitives import BitwiseNot, BitwiseOr, Shift
 from claasp.representations.constraints.sat import BooleanCNFModel, CNFFormula
 from claasp.representations.constraints.sat.exporters import DimacsExporter
 from claasp.representations.execution import ScalarEvaluator
@@ -87,6 +88,32 @@ def test_simon_and_rotation_graph_has_an_independently_checked_cnf_witness():
     )
     changed = dict(witness)
     changed[f"{and_component.component_id}_0_0"] ^= 1
+    assert not formula.is_satisfied(changed)
+
+
+@pytest.mark.parametrize(
+    ("primitive", "inputs"),
+    (
+        (BitwiseOr(8, 3), (0x81, 0x24, 0x18)),
+        (BitwiseNot(8), (0xA5,)),
+        (Shift(8, 3, "left"), (0xA5,)),
+        (Shift(8, 3, "right"), (0xA5,)),
+        (Shift(8, 12, "left"), (0xA5,)),
+    ),
+)
+def test_additional_legacy_word_operations_have_exact_functional_witnesses(primitive, inputs):
+    evaluation = primitive.evaluate_with_trace(*inputs)
+    model = BooleanCNFModel(primitive)
+    formula = model.cnf_formula()
+    witness = model.witness(evaluation)
+    assert formula.is_satisfied(witness)
+    output_name = next(
+        name
+        for name in formula.variables
+        if name.startswith("bitwise_") or name.startswith("shift_")
+    )
+    changed = dict(witness)
+    changed[output_name] ^= 1
     assert not formula.is_satisfied(changed)
 
 

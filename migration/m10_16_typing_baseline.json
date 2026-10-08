@@ -1,8 +1,8 @@
 {
   "counts_by_code": {
-    "arg-type": 165,
+    "arg-type": 170,
     "assignment": 76,
-    "attr-defined": 132,
+    "attr-defined": 133,
     "call-arg": 7,
     "call-overload": 82,
     "dict-item": 28,
@@ -16,16 +16,16 @@
     "override": 4,
     "return-value": 4,
     "type-var": 2,
-    "union-attr": 64,
+    "union-attr": 69,
     "var-annotated": 135
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 712,
-    "tests": 166,
-    "tools": 31
+    "src/claasp": 713,
+    "tests": 168,
+    "tools": 39
   },
-  "diagnostic_count": 909,
+  "diagnostic_count": 920,
   "diagnostics": [
     {
       "code": "operator",
@@ -3584,6 +3584,13 @@
       "path": "src/claasp/representations/constraints/sat/components/wiring.py"
     },
     {
+      "code": "attr-defined",
+      "column": 21,
+      "line": 63,
+      "message": "\"Domain\" has no attribute \"width\"",
+      "path": "src/claasp/representations/constraints/sat/components/wiring.py"
+    },
+    {
       "code": "var-annotated",
       "column": 9,
       "line": 23,
@@ -3593,42 +3600,42 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 38,
+      "line": 41,
       "message": "Need type annotation for \"clauses\" (hint: \"clauses: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 39,
+      "line": 42,
       "message": "Need type annotation for \"provenance\" (hint: \"provenance: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 40,
+      "line": 43,
       "message": "Need type annotation for \"auxiliary\" (hint: \"auxiliary: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 41,
+      "line": 44,
       "message": "Need type annotation for \"constraint_models\" (hint: \"constraint_models: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "operator",
       "column": 42,
-      "line": 221,
+      "line": 235,
       "message": "Unsupported operand types for + (\"int\" and \"None\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "arg-type",
       "column": 92,
-      "line": 221,
+      "line": 235,
       "message": "Argument 3 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
@@ -5020,6 +5027,20 @@
     },
     {
       "code": "arg-type",
+      "column": 29,
+      "line": 42,
+      "message": "Argument 1 to \"is_satisfied\" of \"CNFFormula\" has incompatible type \"Mapping[str, int] | None\"; expected \"Mapping[str, int | bool]\"",
+      "path": "tests/integration/test_functional_component_backends.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 29,
+      "line": 52,
+      "message": "Argument 1 to \"is_satisfied\" of \"CNFFormula\" has incompatible type \"Mapping[str, int] | None\"; expected \"Mapping[str, int | bool]\"",
+      "path": "tests/integration/test_functional_component_backends.py"
+    },
+    {
+      "code": "arg-type",
       "column": 33,
       "line": 31,
       "message": "Argument 1 to \"is_satisfied\" of \"CNFFormula\" has incompatible type \"Mapping[str, int] | None\"; expected \"Mapping[str, int | bool]\"",
@@ -5770,14 +5791,14 @@
     {
       "code": "misc",
       "column": 19,
-      "line": 19,
+      "line": 20,
       "message": "Generator has incompatible item type \"Port\"; expected \"Selection\"",
       "path": "tests/unit/representations/constraints/sat/test_package.py"
     },
     {
       "code": "arg-type",
       "column": 18,
-      "line": 138,
+      "line": 165,
       "message": "Argument 1 to \"Multiply\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/representations/constraints/sat/test_package.py"
     },
@@ -6256,6 +6277,62 @@
       "line": 87,
       "message": "Item \"None\" of \"Any | None\" has no attribute \"constraints\"",
       "path": "tools/benchmark_cp_boomerang_trails.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 33,
+      "line": 72,
+      "message": "Argument 1 to \"solve\" of \"MiniZincSolver\" has incompatible type \"CNFFormula | SMTFormula | MiniZincModel | Any\"; expected \"MiniZincModel | CNFFormula\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 33,
+      "line": 72,
+      "message": "Argument 1 to \"solve\" of \"MinisatSolver\" has incompatible type \"CNFFormula | SMTFormula | MiniZincModel | Any\"; expected \"CNFFormula\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 14,
+      "line": 74,
+      "message": "Item \"CPResult\" of \"SatResult | Any | CPResult\" has no attribute \"is_feasible\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 14,
+      "line": 74,
+      "message": "Item \"SatResult\" of \"SatResult | Any | CPResult\" has no attribute \"is_feasible\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 37,
+      "line": 74,
+      "message": "Item \"CNFFormula\" of \"CNFFormula | SMTFormula | MiniZincModel | Any\" has no attribute \"is_feasible\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 37,
+      "line": 74,
+      "message": "Item \"MiniZincModel\" of \"CNFFormula | SMTFormula | MiniZincModel | Any\" has no attribute \"is_feasible\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 37,
+      "line": 74,
+      "message": "Item \"SMTFormula\" of \"CNFFormula | SMTFormula | MiniZincModel | Any\" has no attribute \"is_feasible\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 65,
+      "line": 76,
+      "message": "Argument 1 to \"is_satisfied\" of \"CNFFormula\" has incompatible type \"Mapping[str, int] | Any | None\"; expected \"Mapping[str, int | bool]\"",
+      "path": "tools/benchmark_functional_word_components.py"
     },
     {
       "code": "union-attr",

@@ -1,6 +1,6 @@
 """Functional SAT encodings for constants and structural wiring."""
 
-from claasp.components import Constant, Identity, Permutation, Rotate
+from claasp.components import Constant, Identity, Permutation, Rotate, Shift
 from claasp.representations.constraints import ConstraintBackend, _direct_model
 from claasp.representations.constraints.sat.encoding import encode_unit
 
@@ -30,7 +30,7 @@ class WiringFunctionalSATModel:
     )
 
     def __init__(self, component) -> None:
-        if not isinstance(component, (Constant, Identity, Permutation, Rotate)):
+        if not isinstance(component, (Constant, Identity, Permutation, Rotate, Shift)):
             raise TypeError("component must be a constant or wiring component")
         self.component = component
 
@@ -53,9 +53,19 @@ class WiringFunctionalSATModel:
             for output, position in zip(outputs, component.mapping):
                 for output_bit, input_bit in zip(output, selected[0][position]):
                     context.equal(output_bit, input_bit, label)
-        else:
+        elif isinstance(component, Rotate):
             width = component.output_type.domain.width
             offset = component.amount if component.direction == "left" else -component.amount
             for output, input_ in zip(outputs, selected[0]):
                 for bit, output_bit in enumerate(output):
                     context.equal(output_bit, input_[(bit + offset) % width], label)
+        else:
+            width = component.output_type.domain.width
+            offset = component.amount if component.direction == "left" else -component.amount
+            for output, input_ in zip(outputs, selected[0]):
+                for bit, output_bit in enumerate(output):
+                    source = bit + offset
+                    if 0 <= source < width:
+                        context.equal(output_bit, input_[source], label)
+                    else:
+                        context.add_clause((-context.indices[output_bit],), label)
