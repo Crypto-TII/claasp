@@ -696,6 +696,12 @@ DDT weight objective without changing any transition or wiring constraint.
 GLPK proves weight four at two active S-boxes, and independent decoding checks
 both the requested activity and the exact characteristic weight.
 
+The first MILP impossible-differential slice adds ``SpeckImpossibleMILPModel``.
+It translates the reviewed transformed forward/backward deterministic-truncated
+graphs and exact middle incompatibility indicators clause-for-clause. GLPK
+returns a split-round contradiction whose two directional trails and
+contradictory positions are independently decoded and checked.
+
 The corresponding CP slice adds ``PresentActiveSBoxesCPModel`` over the same
 two-round exact DDT relation. Native MiniZinc Boolean activity indicators are
 equivalent to nonzero four-bit S-box inputs; Chuffed proves the same optimum of

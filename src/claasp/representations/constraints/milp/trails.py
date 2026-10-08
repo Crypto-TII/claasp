@@ -462,6 +462,65 @@ class WordDeterministicTruncatedMILPModel:
         return self._sat_model.check_characteristic(trail)
 
 
+class SpeckImpossibleMILPModel:
+    """Search a split-round Speck impossible differential as portable MILP.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = SpeckImpossibleMILPModel(
+        ...     Speck(number_of_rounds=3), middle_round=1
+        ... )
+        >>> formulation = model.milp_model()
+        >>> (len(formulation.variables), len(formulation.constraints))
+        (1568, 5674)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "SpeckImpossibleMILPModel",
+        "impossible_xor_differential",
+        "exact MILP translation of forward/backward truncated graph composition",
+        "The portable formulation preserves each reviewed Boolean clause as an inequality.",
+    )
+
+    def __init__(
+        self, primitive, middle_round: int, *, input_pattern=None, output_pattern=None
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import SpeckImpossibleSATModel
+
+        self._sat_model = SpeckImpossibleSATModel(
+            primitive,
+            middle_round,
+            input_pattern=input_pattern,
+            output_pattern=output_pattern,
+        )
+        self.primitive = primitive
+        self._model: MILPModel | None = None
+
+    def milp_model(self) -> MILPModel:
+        """Return the exact portable MILP feasibility formulation."""
+
+        from claasp.representations.constraints.milp.lowering import cnf_to_milp
+
+        translated = cnf_to_milp(self._sat_model.cnf_formula())
+        self._model = MILPModel(
+            translated.variables,
+            translated.constraints,
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._model
+
+    def decode_trail(self, assignment):
+        """Decode and independently validate both directions and contradiction."""
+
+        if self._model is None:
+            raise ValueError("build the MILP model before decoding")
+        return self._sat_model.decode_trail(
+            {name: int(round(value)) for name, value in assignment.items()}
+        )
+
+
 class SpeckSemiDeterministicTruncatedMILPModel:
     """Assemble recovered look-ahead-window Speck trails as MILP.
 
