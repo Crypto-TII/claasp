@@ -9,7 +9,7 @@ def test_bit_vector_sbox_maps_one_msb_first_nibble():
     primitive = Primitive("nibble", {"value": ValueType(Bit(), (4,))})
     primitive._builder.add_round()
     output = primitive._builder.add_component(
-        BitVectorSBox(primitive.input("value"), PRESENT_SBOX, component_id="sbox")
+        BitVectorSBox(primitive.graph.input("value"), PRESENT_SBOX, component_id="sbox")
     )
     primitive._builder.set_output(output)
 
@@ -20,4 +20,4 @@ def test_bit_vector_sbox_maps_one_msb_first_nibble():
 def test_bit_vector_sbox_validates_output_width():
     primitive = Primitive("nibble", {"value": ValueType(Bit(), (2,))})
     with pytest.raises(ValueError, match="fit in 2 bits"):
-        BitVectorSBox(primitive.input("value"), (0, 1, 2, 4), component_id="sbox")
+        BitVectorSBox(primitive.graph.input("value"), (0, 1, 2, 4), component_id="sbox")

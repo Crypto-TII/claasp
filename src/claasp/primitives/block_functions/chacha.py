@@ -30,7 +30,7 @@ class ChaChaKeystreamBlock(Primitive):
     EXAMPLES::
 
         >>> primitive = ChaChaKeystreamBlock()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x617078653320646e', 511)
@@ -75,15 +75,17 @@ class ChaChaKeystreamBlock(Primitive):
         )
         initial_bits = [constant_bits[index * 32 : (index + 1) * 32] for index in range(4)]
         initial_bits += [
-            self.input("key")[_little_endian_word_positions(index)] for index in range(8)
+            self.graph.input("key")[_little_endian_word_positions(index)] for index in range(8)
         ]
         initial_bits.append(counter_bits)
         initial_bits += [
-            self.input("nonce")[_little_endian_word_positions(index)] for index in range(3)
+            self.graph.input("nonce")[_little_endian_word_positions(index)] for index in range(3)
         ]
         feed_forward = [self._builder.pack_bits(bits, 32) for bits in initial_bits]
         state = [
-            self._builder.pack_bits(self.input("plaintext")[index * 32 : (index + 1) * 32], 32)
+            self._builder.pack_bits(
+                self.graph.input("plaintext")[index * 32 : (index + 1) * 32], 32
+            )
             for index in range(16)
         ]
         for half_round in range(half_rounds):
@@ -103,7 +105,9 @@ class ChaChaKeystreamBlock(Primitive):
                 )
         self._builder.add_round()
         summed = [
-            self._builder.add_component(ModularAdd((before, after), component_id=f"feed_forward_{index}"))
+            self._builder.add_component(
+                ModularAdd((before, after), component_id=f"feed_forward_{index}")
+            )
             for index, (before, after) in enumerate(zip(feed_forward, state))
         ]
         bits = [self._builder.unpack_bits(word) for word in summed]

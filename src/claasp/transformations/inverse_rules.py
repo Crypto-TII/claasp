@@ -79,8 +79,8 @@ class ComponentInverseRegistry:
         >>> from claasp import Primitive, ValueType, Word
         >>> from claasp.components import Rotate
         >>> graph = Primitive("rule", {"x": ValueType(Word(8), (1,)), "y": ValueType(Word(8), (1,))})
-        >>> component = Rotate(graph.input("x"), 3, "left")
-        >>> inverse = DEFAULT_INVERSE_REGISTRY.invert(component, graph.input("y"), recover_input=0)
+        >>> component = Rotate(graph.graph.input("x"), 3, "left")
+        >>> inverse = DEFAULT_INVERSE_REGISTRY.invert(component, graph.graph.input("y"), recover_input=0)
         >>> (type(inverse).__name__, inverse.amount, inverse.direction)
         ('Rotate', 3, 'right')
     """
@@ -590,8 +590,8 @@ def invert_component(
         >>> from claasp.components import Rotate
         >>> from claasp.transformations import invert_component
         >>> graph = Primitive("inverse", {"x": ValueType(Word(8), (1,))})
-        >>> inverse = invert_component(Rotate(graph.input("x"), 2, "left"),
-        ...     graph.input("x"), recover_input=0)
+        >>> inverse = invert_component(Rotate(graph.graph.input("x"), 2, "left"),
+        ...     graph.graph.input("x"), recover_input=0)
         >>> (inverse.direction, inverse.amount)
         ('right', 2)
     """

@@ -39,11 +39,11 @@ class ChaCha(Primitive):
         word_size: int = 32,
         rotations: tuple[int, int, int, int] = (16, 12, 8, 7),
     ) -> None:
-        number_of_rounds = Primitive.validate_positive_integer(
+        number_of_rounds = Primitive._validate_positive_integer(
             number_of_rounds,
             name="number_of_rounds",
         )
-        word_size = Primitive.validate_positive_integer(word_size, name="word_size")
+        word_size = Primitive._validate_positive_integer(word_size, name="word_size")
         if len(rotations) != 4 or any(
             not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < word_size
             for value in rotations
@@ -55,7 +55,7 @@ class ChaCha(Primitive):
             {"state": ValueType(Word(word_size), (16,))},
             kind=PrimitiveKind.PERMUTATION,
         )
-        state = [self.input("state")[index] for index in range(16)]
+        state = [self.graph.input("state")[index] for index in range(16)]
 
         def quarter_round(a, b, c, d):
             a = self._builder.add_component(ModularAdd((a, b)))

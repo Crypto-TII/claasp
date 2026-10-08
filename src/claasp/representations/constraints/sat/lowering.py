@@ -231,8 +231,8 @@ class BooleanCNFModel:
 
         if self._formula is not None:
             return self._formula
-        sources = list(self.primitive.input_ports.values()) + [
-            component.output for component in self.primitive.components
+        sources = list(self.primitive.graph.input_ports.values()) + [
+            component.output for component in self.primitive.graph.components
         ]
         for port in sources:
             if not isinstance(port.value_type.domain, (Bit, Word)):
@@ -256,7 +256,7 @@ class BooleanCNFModel:
             else _CNFEncodingContext(variables)
         )
 
-        for component in self.primitive.components:
+        for component in self.primitive.graph.components:
             label = cast(str, component.component_id)
             outputs = [
                 unit_variable_names(label, component.output_type, i)
@@ -267,7 +267,7 @@ class BooleanCNFModel:
                 width = item.value_type.domain.encoded_bit_size
                 names = [
                     self._bit_name(owner_id, bit)
-                    for owner_id, bit in self.primitive.selection_bit_sources(item)
+                    for owner_id, bit in self.primitive.graph.selection_bit_sources(item)
                 ]
                 selected.append(
                     [tuple(names[start : start + width]) for start in range(0, len(names), width)]
@@ -347,8 +347,10 @@ class BooleanCNFModel:
         assignment = {
             name: bit
             for source_id, values in evaluation.values.items()
-            if source_id in self.primitive.input_ports
-            or any(component.component_id == source_id for component in self.primitive.components)
+            if source_id in self.primitive.graph.input_ports
+            or any(
+                component.component_id == source_id for component in self.primitive.graph.components
+            )
             for position, value in enumerate(values)
             for name, bit in zip(
                 unit_variable_names(source_id, self._port_type(source_id), position),
@@ -389,8 +391,8 @@ class BooleanCNFModel:
         return {name: assignment[name] for name in formula.variables}
 
     def _port_type(self, owner_id: str):
-        for port in list(self.primitive.input_ports.values()) + [
-            item.output for item in self.primitive.components
+        for port in list(self.primitive.graph.input_ports.values()) + [
+            item.output for item in self.primitive.graph.components
         ]:
             if port.owner_id == owner_id:
                 return port.value_type

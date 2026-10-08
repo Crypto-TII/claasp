@@ -45,8 +45,8 @@ class Present(Primitive):
         key_type = ValueType(bit, (key_bit_size,))
         counter_type = ValueType(bit, (5,))
         super().__init__("present", {"plaintext": state_type, "key": key_type})
-        state = self.input("plaintext")
-        key = self.input("key")
+        state = self.graph.input("plaintext")
+        key = self.graph.input("key")
 
         for round_number in range(1, number_of_rounds + 1):
             self._builder.add_round()
@@ -72,7 +72,9 @@ class Present(Primitive):
             )
             key = self._update_key(key, round_number, key_type, counter_type, key_bit_size)
 
-        state = self._builder.add_component(Add((state, key[:64]), component_id="final_add_round_key"))
+        state = self._builder.add_component(
+            Add((state, key[:64]), component_id="final_add_round_key")
+        )
         self._builder.set_output(state)
 
     def _update_key(
@@ -127,7 +129,7 @@ class Present80(Present):
     EXAMPLES::
 
         >>> primitive = Present80()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x5579c1387b228445', 63)

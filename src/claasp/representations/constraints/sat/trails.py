@@ -69,7 +69,7 @@ from claasp.transformations import invert_primitive, slice_rounds
 def _component_applications(primitive, default, specialized):
     grouped: dict[ConstraintModelProvenance, list[str]] = {model: [] for _, model in specialized}
     grouped[default] = []
-    for component in primitive.components:
+    for component in primitive.graph.components:
         model = next(
             (
                 model
@@ -172,16 +172,18 @@ class NWindowSATStrategy:
         """Return validated ``(component, window_size)`` selections."""
 
         additions = tuple(
-            component for component in primitive.components if isinstance(component, ModularAdd)
+            component
+            for component in primitive.graph.components
+            if isinstance(component, ModularAdd)
         )
         if self.window_size is not None:
             selected = tuple((component, self.window_size) for component in additions)
         elif self.by_round is not None:
-            if len(self.by_round) != len(primitive.rounds):
+            if len(self.by_round) != len(primitive.graph.rounds):
                 raise ValueError("per-round windows must match the primitive round count")
             round_numbers = {
                 component.component_id: primitive_round.number
-                for primitive_round in primitive.rounds
+                for primitive_round in primitive.graph.rounds
                 for component in primitive_round.components
             }
             selected = tuple(
@@ -400,10 +402,10 @@ def _enumeration_metadata(model, formula, solver, extra=()):
             sha256(
                 repr(
                     (
-                        model.primitive.input_ports,
-                        model.primitive.bindings,
-                        tuple(model.primitive.components),
-                        model.primitive.output,
+                        model.primitive.graph.input_ports,
+                        model.primitive.graph.bindings,
+                        tuple(model.primitive.graph.components),
+                        model.primitive.graph.output,
                     )
                 ).encode()
             ).hexdigest(),
@@ -541,21 +543,21 @@ class WordDeterministicTruncatedSATModel:
         nonzero_input=None,
     ) -> None:
         self.primitive = primitive
-        if nonzero_input is not None and nonzero_input not in primitive.input_ports:
+        if nonzero_input is not None and nonzero_input not in primitive.graph.input_ports:
             raise ValueError("unknown nonzero input")
         self.nonzero_input = nonzero_input
         fixed = dict(fixed_input_patterns or {})
-        unknown = set(fixed) - set(primitive.input_ports)
+        unknown = set(fixed) - set(primitive.graph.input_ports)
         if unknown:
             raise ValueError(f"unknown fixed input pattern: {sorted(unknown)!r}")
         self.fixed_input_patterns = {
-            name: self._coerce(pattern, primitive.input_ports[name].value_type)
+            name: self._coerce(pattern, primitive.graph.input_ports[name].value_type)
             for name, pattern in fixed.items()
         }
         self.output_pattern = (
             None
             if output_pattern is None
-            else self._coerce(output_pattern, primitive.output.value_type)
+            else self._coerce(output_pattern, primitive.graph.output.value_type)
         )
         self._formula: CNFFormula | None = None
         self._ports: dict[str, tuple[tuple[str, str], ...]] = {}
@@ -619,8 +621,12 @@ class WordDeterministicTruncatedSATModel:
                         label,
                     )
 
-        sources = [(name, port.value_type) for name, port in self.primitive.input_ports.items()]
-        sources += [(item.component_id, item.output_type) for item in self.primitive.components]
+        sources = [
+            (name, port.value_type) for name, port in self.primitive.graph.input_ports.items()
+        ]
+        sources += [
+            (item.component_id, item.output_type) for item in self.primitive.graph.components
+        ]
         ports = {}
         for name, value_type in sources:
             if not isinstance(value_type.domain, Word):
@@ -633,11 +639,11 @@ class WordDeterministicTruncatedSATModel:
         def selected(selection):
             return tuple(
                 ports[owner_id][bit]
-                for owner_id, bit in self.primitive.selection_bit_sources(selection)
+                for owner_id, bit in self.primitive.graph.selection_bit_sources(selection)
             )
 
         operands_by_id = {}
-        for component in self.primitive.components:
+        for component in self.primitive.graph.components:
             component_id = component.component_id
             operands = tuple(selected(selection) for selection in component.inputs)
             operands_by_id[component_id] = operands
@@ -724,7 +730,7 @@ class WordDeterministicTruncatedSATModel:
                     f"no deterministic-truncated SAT semantics for {type(component).__name__}"
                 )
 
-        output = selected(self.primitive.output)
+        output = selected(self.primitive.graph.output)
         if self.nonzero_input is not None:
             add(
                 (indices[name] for names_pair in ports[self.nonzero_input] for name in names_pair),
@@ -775,7 +781,7 @@ class WordDeterministicTruncatedSATModel:
         patterns = {
             name: _truncated_pattern(bits, assignment) for name, bits in self._ports.items()
         }
-        for component in self.primitive.components:
+        for component in self.primitive.graph.components:
             width = component.output_type.domain.width
             operands = tuple(
                 _truncated_pattern(names, assignment)
@@ -836,11 +842,11 @@ class WordDeterministicTruncatedSATModel:
         if patterns is None:
             raise ValueError("truncated witness violates independent graph propagation")
         result = WordDeterministicTruncatedCharacteristic(
-            tuple((name, patterns[name]) for name in self.primitive.input_ports),
+            tuple((name, patterns[name]) for name in self.primitive.graph.input_ports),
             _truncated_pattern(self._output, assignment),
             tuple(
                 (item.component_id, patterns[item.component_id])
-                for item in self.primitive.components
+                for item in self.primitive.graph.components
             ),
             tuple((name, int(bool(assignment[name]))) for name in self._semantic_names),
         )
@@ -863,10 +869,11 @@ class WordDeterministicTruncatedSATModel:
         patterns = self._evaluate(values)
         if patterns is None:
             return False
-        inputs = tuple((name, patterns[name]) for name in self.primitive.input_ports)
+        inputs = tuple((name, patterns[name]) for name in self.primitive.graph.input_ports)
         output = _truncated_pattern(self._output, values)
         components = tuple(
-            (item.component_id, patterns[item.component_id]) for item in self.primitive.components
+            (item.component_id, patterns[item.component_id])
+            for item in self.primitive.graph.components
         )
         selected_input = None if self.nonzero_input is None else dict(inputs)[self.nonzero_input]
         return (
@@ -980,25 +987,25 @@ class WordwiseDeterministicTruncatedSATModel:
         nonzero_input=None,
     ) -> None:
         self.primitive = primitive
-        if nonzero_input is not None and nonzero_input not in primitive.input_ports:
+        if nonzero_input is not None and nonzero_input not in primitive.graph.input_ports:
             raise ValueError("unknown nonzero input")
-        if any(name not in primitive.input_ports for name in zero_difference_inputs):
+        if any(name not in primitive.graph.input_ports for name in zero_difference_inputs):
             raise ValueError("unknown zero-difference input")
         if nonzero_input in zero_difference_inputs:
             raise ValueError("an input cannot be both zero and nonzero")
         self.nonzero_input = nonzero_input
         self.zero_difference_inputs = tuple(zero_difference_inputs)
         fixed = dict(fixed_input_differences or {})
-        if unknown := set(fixed) - set(primitive.input_ports):
+        if unknown := set(fixed) - set(primitive.graph.input_ports):
             raise ValueError(f"unknown fixed input differences: {sorted(unknown)!r}")
         self.fixed_input_differences = {
-            name: self._coerce(values, primitive.input_ports[name].value_type)
+            name: self._coerce(values, primitive.graph.input_ports[name].value_type)
             for name, values in fixed.items()
         }
         self.output_differences = (
             None
             if output_differences is None
-            else self._coerce(output_differences, primitive.output.value_type)
+            else self._coerce(output_differences, primitive.graph.output.value_type)
         )
         self._formula: CNFFormula | None = None
         self._ports: dict[str, tuple[Any, ...]] = {}
@@ -1118,7 +1125,7 @@ class WordwiseDeterministicTruncatedSATModel:
                     label,
                 )
 
-        bindings = {item.binding_id: item for item in self.primitive.bindings}
+        bindings = {item.binding_id: item for item in self.primitive.graph.bindings}
 
         def resolve(owner, position):
             binding = bindings.get(owner)
@@ -1140,8 +1147,12 @@ class WordwiseDeterministicTruncatedSATModel:
                 f"wordwise propagation does not support {binding.kind.value} binding {owner!r}"
             )
 
-        sources = [(name, port.value_type) for name, port in self.primitive.input_ports.items()]
-        sources += [(item.component_id, item.output_type) for item in self.primitive.components]
+        sources = [
+            (name, port.value_type) for name, port in self.primitive.graph.input_ports.items()
+        ]
+        sources += [
+            (item.component_id, item.output_type) for item in self.primitive.graph.components
+        ]
         ports = {
             name: tuple(
                 word(f"wordwise_{name}_{position}", value_type.domain.encoded_bit_size)
@@ -1158,7 +1169,7 @@ class WordwiseDeterministicTruncatedSATModel:
             )
 
         operands_by_id = {}
-        for component in self.primitive.components:
+        for component in self.primitive.graph.components:
             operands = tuple(selected(selection) for selection in component.inputs)
             operands_by_id[component.component_id] = operands
             output = ports[component.component_id]
@@ -1231,7 +1242,7 @@ class WordwiseDeterministicTruncatedSATModel:
                     f"no wordwise deterministic semantics for {type(component).__name__}"
                 )
 
-        output = selected(self.primitive.output)
+        output = selected(self.primitive.graph.output)
 
         def fix(words, differences, label):
             for encoded, difference in zip(words, differences):
@@ -1246,7 +1257,7 @@ class WordwiseDeterministicTruncatedSATModel:
                 ports[name],
                 tuple(
                     WordwiseXorDifference(
-                        self.primitive.input_ports[name].value_type.domain.encoded_bit_size,
+                        self.primitive.graph.input_ports[name].value_type.domain.encoded_bit_size,
                         WordwiseDifferenceKind.ZERO,
                     )
                     for _ in ports[name]
@@ -1301,7 +1312,7 @@ class WordwiseDeterministicTruncatedSATModel:
         patterns = {
             name: self._decode_words(words, assignment) for name, words in self._ports.items()
         }
-        for component in self.primitive.components:
+        for component in self.primitive.graph.components:
             operands = tuple(
                 self._decode_words(words, assignment)
                 for words in self._operands[component.component_id]
@@ -1365,11 +1376,11 @@ class WordwiseDeterministicTruncatedSATModel:
         if patterns is None:
             raise ValueError("wordwise witness violates independent graph propagation")
         trail = WordwiseDeterministicTruncatedCharacteristic(
-            tuple((name, patterns[name]) for name in self.primitive.input_ports),
+            tuple((name, patterns[name]) for name in self.primitive.graph.input_ports),
             self._decode_words(self._output, projected),
             tuple(
                 (component.component_id, patterns[component.component_id])
-                for component in self.primitive.components
+                for component in self.primitive.graph.components
             ),
             tuple((name, projected[name]) for name in self._semantic_names),
         )
@@ -1390,11 +1401,11 @@ class WordwiseDeterministicTruncatedSATModel:
         patterns = self._evaluate(assignment)
         if patterns is None:
             return False
-        inputs = tuple((name, patterns[name]) for name in self.primitive.input_ports)
+        inputs = tuple((name, patterns[name]) for name in self.primitive.graph.input_ports)
         output = self._decode_words(self._output, assignment)
         components = tuple(
             (component.component_id, patterns[component.component_id])
-            for component in self.primitive.components
+            for component in self.primitive.graph.components
         )
         return (
             trail.input_differences == inputs
@@ -1543,32 +1554,32 @@ class WordImpossibleSATModel:
         input_pattern=None,
         output_pattern=None,
     ) -> None:
-        selected = primitive.input_ports.get(active_input)
+        selected = primitive.graph.input_ports.get(active_input)
         if selected is None or not isinstance(selected.value_type.domain, Word):
             raise ValueError("active_input must name a Word-domain primitive input")
         if not isinstance(zero_difference_inputs, tuple) or any(
-            name == active_input or name not in primitive.input_ports
+            name == active_input or name not in primitive.graph.input_ports
             for name in zero_difference_inputs
         ):
             raise ValueError("zero_difference_inputs must name other primitive inputs")
         if not isinstance(middle_round, int) or isinstance(middle_round, bool):
             raise TypeError("middle_round must be an integer")
-        if not 1 <= middle_round < len(primitive.rounds):
+        if not 1 <= middle_round < len(primitive.graph.rounds):
             raise ValueError("middle_round must be inside the primitive")
         self.primitive = primitive
         self.middle_round = middle_round
         self.active_input = active_input
         self.zero_difference_inputs = zero_difference_inputs
         prefix = slice_rounds(primitive, 0, middle_round - 1).primitive
-        suffix = slice_rounds(primitive, middle_round, len(primitive.rounds) - 1).primitive
+        suffix = slice_rounds(primitive, middle_round, len(primitive.graph.rounds) - 1).primitive
         inverse = invert_primitive(
             suffix, recover_input="state", retained_inputs=zero_difference_inputs
         ).primitive
         zero_patterns = {
             name: "0"
             * (
-                primitive.input_ports[name].value_type.unit_count
-                * primitive.input_ports[name].value_type.domain.width
+                primitive.graph.input_ports[name].value_type.unit_count
+                * primitive.graph.input_ports[name].value_type.domain.width
             )
             for name in zero_difference_inputs
         }
@@ -1719,9 +1730,11 @@ def find_word_impossible_sat(
 
     from claasp.drivers.solvers import SatStatus
 
-    available = tuple(range(1, len(primitive.rounds)))
+    available = tuple(range(1, len(primitive.graph.rounds)))
     rounds = available if split_order is None else tuple(split_order)
-    if len(rounds) != len(set(rounds)) or any(round_number not in available for round_number in rounds):
+    if len(rounds) != len(set(rounds)) or any(
+        round_number not in available for round_number in rounds
+    ):
         raise ValueError("split_order must contain unique internal round numbers")
     attempted = []
     for middle_round in rounds:
@@ -1748,9 +1761,7 @@ def find_word_impossible_sat(
             return AutomaticWordImpossibleSATResult(
                 None, None, tuple(attempted), solved.status.value
             )
-    return AutomaticWordImpossibleSATResult(
-        None, None, tuple(attempted), "exhausted_unsat"
-    )
+    return AutomaticWordImpossibleSATResult(None, None, tuple(attempted), "exhausted_unsat")
 
 
 @dataclass(frozen=True, slots=True)
@@ -1822,23 +1833,23 @@ class WordwiseImpossibleSATModel:
         input_differences=None,
         output_differences=None,
     ) -> None:
-        if active_input not in primitive.input_ports:
+        if active_input not in primitive.graph.input_ports:
             raise ValueError("active_input must name a primitive input")
         if not isinstance(zero_difference_inputs, tuple) or any(
-            name == active_input or name not in primitive.input_ports
+            name == active_input or name not in primitive.graph.input_ports
             for name in zero_difference_inputs
         ):
             raise ValueError("zero_difference_inputs must name other primitive inputs")
         if not isinstance(middle_round, int) or isinstance(middle_round, bool):
             raise TypeError("middle_round must be an integer")
-        if not 1 <= middle_round < len(primitive.rounds):
+        if not 1 <= middle_round < len(primitive.graph.rounds):
             raise ValueError("middle_round must be inside the primitive")
         self.primitive = primitive
         self.middle_round = middle_round
         self.active_input = active_input
         self.zero_difference_inputs = zero_difference_inputs
         prefix = slice_rounds(primitive, 0, middle_round - 1).primitive
-        suffix = slice_rounds(primitive, middle_round, len(primitive.rounds) - 1).primitive
+        suffix = slice_rounds(primitive, middle_round, len(primitive.graph.rounds) - 1).primitive
         inverse = invert_primitive(
             suffix, recover_input="state", retained_inputs=zero_difference_inputs
         ).primitive
@@ -1853,11 +1864,13 @@ class WordwiseImpossibleSATModel:
             )
 
         forward_fixed = {
-            name: zeros(primitive.input_ports[name]) for name in zero_difference_inputs
+            name: zeros(primitive.graph.input_ports[name]) for name in zero_difference_inputs
         }
         if input_differences is not None:
             forward_fixed[active_input] = input_differences
-        backward_fixed = {name: zeros(inverse.input_ports[name]) for name in zero_difference_inputs}
+        backward_fixed = {
+            name: zeros(inverse.graph.input_ports[name]) for name in zero_difference_inputs
+        }
         if output_differences is not None:
             backward_fixed["output"] = output_differences
         self.forward_model = WordwiseDeterministicTruncatedSATModel(
@@ -1998,7 +2011,7 @@ class SpeckImpossibleSATModel(WordImpossibleSATModel):
     )
 
     def __init__(self, primitive, middle_round: int, *, input_pattern=None, output_pattern=None):
-        plaintext = primitive.input_ports.get("plaintext")
+        plaintext = primitive.graph.input_ports.get("plaintext")
         if (
             primitive.family_name != "speck"
             or plaintext is None
@@ -2109,7 +2122,7 @@ class SpeckProbabilisticTruncatedSATModel:
     def __init__(
         self, primitive, input_pattern, output_pattern, *, maximum_scaled_weight=None
     ) -> None:
-        plaintext = primitive.input_ports.get("plaintext")
+        plaintext = primitive.graph.input_ports.get("plaintext")
         if (
             primitive.family_name != "speck"
             or plaintext is None
@@ -2171,7 +2184,7 @@ class SpeckProbabilisticTruncatedSATModel:
                 )
                 for word in range(2)
             )
-            for boundary in range(len(self.primitive.rounds) + 1)
+            for boundary in range(len(self.primitive.graph.rounds) + 1)
         )
         for boundary in states:
             for word in boundary:
@@ -2208,8 +2221,8 @@ class SpeckProbabilisticTruncatedSATModel:
         round_maps = []
         applications: list[ConstraintModelApplication] = []
         weighted_costs: list[str] = []
-        for round_number in range(len(self.primitive.rounds)):
-            operations = self.primitive.round_operations[round_number]
+        for round_number in range(len(self.primitive.graph.rounds)):
+            operations = self.primitive.graph.round_operations[round_number]
             alpha = operations["rotate_right"].amount
             beta = operations["rotate_left"].amount
             local_model = self._addition_model_type(self.width)
@@ -2311,7 +2324,7 @@ class SpeckProbabilisticTruncatedSATModel:
             local_assignment = {name: assignment[mapped] for name, mapped in mapping.items()}
             transitions.append(local_model.decode_transition(local_assignment))
         for round_number, transition in enumerate(transitions):
-            operations = self.primitive.round_operations[round_number]
+            operations = self.primitive.graph.round_operations[round_number]
             expected_left = (
                 input_pattern.bits[: self.width]
                 if round_number == 0
@@ -2411,7 +2424,7 @@ class SpeckSemiDeterministicTruncatedSATModel(SpeckProbabilisticTruncatedSATMode
                 SemiDeterministicModularAddTransition(left, right, output, scaled_weight)
             )
         for round_number, transition in enumerate(transitions):
-            operations = self.primitive.round_operations[round_number]
+            operations = self.primitive.graph.round_operations[round_number]
             expected_left = (
                 input_pattern.bits[: self.width]
                 if round_number == 0
@@ -2685,7 +2698,7 @@ class SharedDifferencePairedWordDifferentialSATModel:
             applications.extend(formula.constraint_models)
             maps[namespace] = mapping
 
-        for input_name in self.primitive.input_ports:
+        for input_name in self.primitive.graph.input_ports:
             left = self.left_model._shared._ports[input_name]
             right = self.right_model._shared._ports[input_name]
             for left_name, right_name in zip(left, right):
@@ -2696,7 +2709,7 @@ class SharedDifferencePairedWordDifferentialSATModel:
 
         additions = tuple(
             component
-            for component in self.primitive.components
+            for component in self.primitive.graph.components
             if isinstance(component, ModularAdd)
         )
         for component in additions:
@@ -2776,7 +2789,7 @@ class SharedDifferencePairedWordDifferentialSATModel:
         right = self.right_model.decode_characteristic(right_assignment)
         if left.input_differences != right.input_differences:
             raise ValueError("paired characteristics do not share their input difference")
-        for component in self.primitive.components:
+        for component in self.primitive.graph.components:
             if not isinstance(component, ModularAdd):
                 continue
             left_names = self.left_model._shared._ports[component.component_id]
@@ -2947,7 +2960,7 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
     ) -> None:
         if not isinstance(prefix_rounds, int) or isinstance(prefix_rounds, bool):
             raise ValueError("prefix_rounds must be an integer")
-        if not 0 < prefix_rounds < len(primitive.rounds):
+        if not 0 < prefix_rounds < len(primitive.graph.rounds):
             raise ValueError("the differential prefix and linear suffix must both be nonempty")
         if maximum_total_weight is not None and fixed_total_weight is not None:
             raise ValueError("choose maximum_total_weight or fixed_total_weight, not both")
@@ -2963,7 +2976,7 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
                 raise ValueError("weight bounds must be nonnegative integers")
         block_width = sum(
             port.value_type.unit_count * port.value_type.domain.width
-            for name, port in primitive.input_ports.items()
+            for name, port in primitive.graph.input_ports.items()
             if name == "plaintext"
         )
         if not block_width:
@@ -2991,9 +3004,9 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
 
         prefix = slice_rounds(self.primitive, 0, self.prefix_rounds - 1).primitive
         suffix = slice_rounds(
-            self.primitive, self.prefix_rounds, len(self.primitive.rounds) - 1
+            self.primitive, self.prefix_rounds, len(self.primitive.graph.rounds) - 1
         ).primitive
-        fixed_differences = {"key": 0} if "key" in prefix.input_ports else {}
+        fixed_differences = {"key": 0} if "key" in prefix.graph.input_ports else {}
         if self.input_difference is not None:
             fixed_differences["plaintext"] = self.input_difference
         self._paired = SharedDifferencePairedWordDifferentialSATModel(
@@ -3002,7 +3015,7 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
             nonzero_input="plaintext" if self.input_difference is None else None,
             fixed_input_differences=fixed_differences,
         )
-        fixed_masks = {name: 0 for name in suffix.input_ports if name != "state"}
+        fixed_masks = {name: 0 for name in suffix.graph.input_ports if name != "state"}
         self._linear = WordLinearSATModel(
             suffix,
             maximum_weight=self.linear_maximum_weight,
@@ -3224,7 +3237,7 @@ class WordSemiDeterministicDifferentialLinearSATModel:
             not isinstance(value, int) or isinstance(value, bool) or value <= 0 for value in counts
         ):
             raise ValueError("prefix_rounds and middle_rounds must be positive integers")
-        if prefix_rounds + middle_rounds >= len(primitive.rounds):
+        if prefix_rounds + middle_rounds >= len(primitive.graph.rounds):
             raise ValueError("the differential, middle, and linear slices must all be nonempty")
         for weight in (
             differential_maximum_weight,
@@ -3236,8 +3249,8 @@ class WordSemiDeterministicDifferentialLinearSATModel:
             ):
                 raise ValueError("weight bounds must be nonnegative integers")
         block_width = (
-            primitive.input_ports["plaintext"].value_type.unit_count
-            * primitive.input_ports["plaintext"].value_type.domain.width
+            primitive.graph.input_ports["plaintext"].value_type.unit_count
+            * primitive.graph.input_ports["plaintext"].value_type.domain.width
         )
         for value, label in ((input_difference, "input difference"), (output_mask, "output mask")):
             if value is not None and (
@@ -3264,9 +3277,9 @@ class WordSemiDeterministicDifferentialLinearSATModel:
         middle_end = prefix_end + self.middle_rounds
         prefix = slice_rounds(self.primitive, 0, prefix_end).primitive
         suffix = slice_rounds(
-            self.primitive, middle_end + 1, len(self.primitive.rounds) - 1
+            self.primitive, middle_end + 1, len(self.primitive.graph.rounds) - 1
         ).primitive
-        fixed_differences = {"key": 0} if "key" in prefix.input_ports else {}
+        fixed_differences = {"key": 0} if "key" in prefix.graph.input_ports else {}
         if self.input_difference is not None:
             fixed_differences["plaintext"] = self.input_difference
         self._prefix = WordDifferentialSATModel(
@@ -3281,7 +3294,7 @@ class WordSemiDeterministicDifferentialLinearSATModel:
             None,
             maximum_scaled_weight=self.middle_maximum_scaled_weight,
         )
-        fixed_masks = {name: 0 for name in suffix.input_ports if name != "state"}
+        fixed_masks = {name: 0 for name in suffix.graph.input_ports if name != "state"}
         self._linear = WordLinearSATModel(
             suffix,
             maximum_weight=self.linear_maximum_weight,
@@ -3498,14 +3511,14 @@ class WordDeterministicDifferentialLinearSATModel:
             not isinstance(value, int) or isinstance(value, bool) or value <= 0 for value in counts
         ):
             raise ValueError("prefix_rounds and middle_rounds must be positive integers")
-        if prefix_rounds + middle_rounds >= len(primitive.rounds):
+        if prefix_rounds + middle_rounds >= len(primitive.graph.rounds):
             raise ValueError("the differential, middle, and linear slices must all be nonempty")
         for weight in (differential_maximum_weight, linear_maximum_weight):
             if not isinstance(weight, int) or isinstance(weight, bool) or weight < 0:
                 raise ValueError("weight bounds must be nonnegative integers")
         block_width = sum(
             port.value_type.unit_count * port.value_type.domain.width
-            for name, port in primitive.input_ports.items()
+            for name, port in primitive.graph.input_ports.items()
             if name == "plaintext"
         )
         if not block_width:
@@ -3520,7 +3533,7 @@ class WordDeterministicDifferentialLinearSATModel:
         self.primitive = primitive
         self.prefix_rounds = prefix_rounds
         self.middle_rounds = middle_rounds
-        self.suffix_rounds = len(primitive.rounds) - prefix_rounds - middle_rounds
+        self.suffix_rounds = len(primitive.graph.rounds) - prefix_rounds - middle_rounds
         self.differential_maximum_weight = differential_maximum_weight
         self.linear_maximum_weight = linear_maximum_weight
         self.input_difference = input_difference
@@ -3540,10 +3553,10 @@ class WordDeterministicDifferentialLinearSATModel:
         prefix_primitive = slice_rounds(self.primitive, 0, prefix_end).primitive
         middle_primitive = slice_rounds(self.primitive, self.prefix_rounds, middle_end).primitive
         suffix_primitive = slice_rounds(
-            self.primitive, middle_end + 1, len(self.primitive.rounds) - 1
+            self.primitive, middle_end + 1, len(self.primitive.graph.rounds) - 1
         ).primitive
 
-        prefix_fixed = {"key": 0} if "key" in prefix_primitive.input_ports else {}
+        prefix_fixed = {"key": 0} if "key" in prefix_primitive.graph.input_ports else {}
         if self.input_difference is not None:
             prefix_fixed["plaintext"] = self.input_difference
         self._prefix = WordDifferentialSATModel(
@@ -3554,13 +3567,13 @@ class WordDeterministicDifferentialLinearSATModel:
         )
         middle_fixed = {
             name: self._zero_pattern(port)
-            for name, port in middle_primitive.input_ports.items()
+            for name, port in middle_primitive.graph.input_ports.items()
             if name != "state"
         }
         self._middle = WordDeterministicTruncatedSATModel(
             middle_primitive, fixed_input_patterns=middle_fixed
         )
-        suffix_fixed = {name: 0 for name in suffix_primitive.input_ports if name != "state"}
+        suffix_fixed = {name: 0 for name in suffix_primitive.graph.input_ports if name != "state"}
         self._linear = WordLinearSATModel(
             suffix_primitive,
             maximum_weight=self.linear_maximum_weight,
@@ -3739,7 +3752,9 @@ class WordDifferentialNativeXorSATModel(WordDifferentialSATModel):
             + (
                 ConstraintModelApplication(
                     self.model_provenance,
-                    tuple(str(component.component_id) for component in self.primitive.components),
+                    tuple(
+                        str(component.component_id) for component in self.primitive.graph.components
+                    ),
                 ),
             ),
         )
@@ -3779,7 +3794,9 @@ class WordLinearNativeXorSATModel(WordLinearSATModel):
             + (
                 ConstraintModelApplication(
                     self.model_provenance,
-                    tuple(str(component.component_id) for component in self.primitive.components),
+                    tuple(
+                        str(component.component_id) for component in self.primitive.graph.components
+                    ),
                 ),
             ),
         )

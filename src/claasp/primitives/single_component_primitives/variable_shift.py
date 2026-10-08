@@ -24,7 +24,7 @@ class VariableShift(Primitive):
     EXAMPLES::
 
         >>> primitive = VariableShift()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -50,8 +50,8 @@ class VariableShift(Primitive):
         self._builder.set_output(
             self._builder.add_component(
                 VariableShiftComponent(
-                    self.input("input"),
-                    self.input("amount"),
+                    self.graph.input("input"),
+                    self.graph.input("amount"),
                     direction,
                 )
             )

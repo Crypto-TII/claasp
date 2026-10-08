@@ -35,16 +35,12 @@ def test_toy_speck_nonzero_key_linear_enumeration_preserves_legacy_counts(weight
     """SMT (bound 2) and SAT (bound 3) Speck8/16 four-round legacy fixtures."""
     model = WordLinearSMTModel(ToySpeck(), maximum_weight=weight, nonzero_input="key")
     if weight == 2:
-        result = (
-            model.primitive.analyze()
-            .enumerate_xor_linear_trails(
-                weight,
-                solver=Z3Solver(timeout_seconds=10),
-                nonzero_input="key",
-                limit=100,
-            )
-            .require_complete()
-        )
+        result = model.primitive.analysis.enumerate_xor_linear_trails(
+            weight,
+            solver=Z3Solver(timeout_seconds=10),
+            nonzero_input="key",
+            limit=100,
+        ).require_complete()
         model.smt_formula()
     else:
         result = model.enumerate_trails(Z3Solver(timeout_seconds=10), limit=100).require_complete()
@@ -62,8 +58,7 @@ def test_cp_toy_three_round_single_key_linear_counts_are_preserved():
     """mzn_xor_linear_model_test.py fixes counts 12 at weight 1 and 13 through 1."""
     result = (
         ToySpeck(3)
-        .analyze()
-        .enumerate_xor_linear_trails(
+        .analysis.enumerate_xor_linear_trails(
             1,
             solver=Z3Solver(timeout_seconds=10),
             limit=20,

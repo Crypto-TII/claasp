@@ -57,7 +57,7 @@ class Mantis(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Mantis()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xd4bebab887d3bdb6', 64)

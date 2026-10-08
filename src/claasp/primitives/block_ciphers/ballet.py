@@ -57,7 +57,7 @@ class Ballet(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Ballet()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x47f9d1bc25716f4e', 127)

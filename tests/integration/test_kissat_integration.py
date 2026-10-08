@@ -21,8 +21,8 @@ def test_kissat_solves_named_cnf_and_reports_version():
         primitive._builder.add_component(
             Add(
                 (
-                    primitive.input("plaintext").select_all(),
-                    primitive.input("key").select_all(),
+                    primitive.graph.input("plaintext").select_all(),
+                    primitive.graph.input("key").select_all(),
                 )
             )
         )

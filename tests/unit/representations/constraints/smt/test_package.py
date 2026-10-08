@@ -10,7 +10,11 @@ from claasp.representations.constraints.smt.exporter import SMTLibExporter
 def _xor_primitive():
     primitive = Primitive("xor", {"x": ValueType(Bit(), (1,)), "y": ValueType(Bit(), (1,))})
     primitive._builder.add_round()
-    primitive._builder.set_output(primitive._builder.add_component(Add((primitive.input("x"), primitive.input("y")))))
+    primitive._builder.set_output(
+        primitive._builder.add_component(
+            Add((primitive.graph.input("x"), primitive.graph.input("y")))
+        )
+    )
     return primitive
 
 

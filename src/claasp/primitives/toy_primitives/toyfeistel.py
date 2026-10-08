@@ -14,7 +14,7 @@ class ToyFeistel(Primitive):
     EXAMPLES::
 
         >>> primitive = ToyFeistel()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xa6', 8)
@@ -35,8 +35,8 @@ class ToyFeistel(Primitive):
         super().__init__(
             "toyfeistel", {"plaintext": bit_type(block_bit_size), "key": bit_type(key_bit_size)}
         )
-        state = self.input("plaintext").select_all()
-        key = self.input("key").select_all()
+        state = self.graph.input("plaintext").select_all()
+        key = self.graph.input("key").select_all()
         left_positions = tuple(range(half))
         right_positions = tuple(range(half, block_bit_size))
         for round_number in range(1, number_of_rounds + 1):

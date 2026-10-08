@@ -386,12 +386,12 @@ def semantic_component_groups(primitive, domain: PropertyDomain) -> tuple[Compon
         domain = PropertyDomain(domain)
 
     locations = {}
-    for round_index, round_ in enumerate(primitive.rounds):
+    for round_index, round_ in enumerate(primitive.graph.rounds):
         for component_index, component in enumerate(round_.components):
             locations[id(component)] = f"round[{round_index}]/component[{component_index}]"
 
     grouped: dict[ComponentSemanticKey, list[ComponentOccurrence]] = {}
-    for component in primitive.components:
+    for component in primitive.graph.components:
         key = semantic_component_key(component, domain)
         grouped.setdefault(key, []).append(
             ComponentOccurrence(component, locations.get(id(component)))

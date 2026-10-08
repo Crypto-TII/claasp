@@ -65,12 +65,16 @@ def bit_and(primitive, *items, component_id=None):
 
 def rotate(primitive, item, amount, component_id=None):
     direction = "right" if amount >= 0 else "left"
-    return primitive._builder.add_component(Rotate(item, abs(amount), direction, component_id=component_id))
+    return primitive._builder.add_component(
+        Rotate(item, abs(amount), direction, component_id=component_id)
+    )
 
 
 def shift(primitive, item, amount, component_id=None):
     direction = "right" if amount >= 0 else "left"
-    return primitive._builder.add_component(Shift(item, abs(amount), direction, component_id=component_id))
+    return primitive._builder.add_component(
+        Shift(item, abs(amount), direction, component_id=component_id)
+    )
 
 
 def variable_rotate(primitive, item, amount, *, left=True, component_id=None):

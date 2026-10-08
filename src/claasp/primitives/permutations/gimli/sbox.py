@@ -67,7 +67,7 @@ class GimliSbox(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = GimliSbox()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x6467d8c407dcf83b', 383)

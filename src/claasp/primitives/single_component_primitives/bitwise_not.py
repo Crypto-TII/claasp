@@ -22,7 +22,7 @@ class BitwiseNot(Primitive):
     EXAMPLES::
 
         >>> primitive = BitwiseNot()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xf', 4)
@@ -33,7 +33,9 @@ class BitwiseNot(Primitive):
         value_type = ValueType(Word(bit_size), (1,))
         super().__init__("not", {"input": value_type}, kind=PrimitiveKind.PERMUTATION)
         self._builder.add_round()
-        self._builder.set_output(self._builder.add_component(BitwiseNotComponent(self.input("input"))))
+        self._builder.set_output(
+            self._builder.add_component(BitwiseNotComponent(self.graph.input("input")))
+        )
 
 
 __all__ = ["BitwiseNot"]

@@ -137,11 +137,11 @@ class BooleanMonomialGraphMILPModel:
     ) -> None:
         from claasp.domains import Bit, Word
 
-        if variable_input not in primitive.input_ports:
+        if variable_input not in primitive.graph.input_ports:
             raise ValueError(f"unknown variable input: {variable_input}")
-        if primitive.output is None:
+        if primitive.graph.output is None:
             raise ValueError("primitive must have an output")
-        output_width = primitive.output.value_type.encoded_bit_size
+        output_width = primitive.graph.output.value_type.encoded_bit_size
         if (
             not isinstance(output_bit, int)
             or isinstance(output_bit, bool)
@@ -149,14 +149,14 @@ class BooleanMonomialGraphMILPModel:
             or not 0 <= output_bit < output_width
         ):
             raise ValueError("output_bit must fit the primitive output")
-        domains = [port.value_type.domain for port in primitive.input_ports.values()]
-        domains += [component.output_type.domain for component in primitive.components]
+        domains = [port.value_type.domain for port in primitive.graph.input_ports.values()]
+        domains += [component.output_type.domain for component in primitive.graph.components]
         if not all(isinstance(domain, (Bit, Word)) for domain in domains):
             raise TypeError("Boolean monomial graph models require Bit or Word domains")
         self.primitive = primitive
         self.output_bit = output_bit
         self.variable_input = variable_input
-        selected_width = self._width(primitive.input_ports[variable_input].value_type)
+        selected_width = self._width(primitive.graph.input_ports[variable_input].value_type)
         self.variable_positions = tuple(
             range(selected_width) if variable_positions is None else variable_positions
         )
@@ -198,17 +198,17 @@ class BooleanMonomialGraphMILPModel:
                 variables.append(LinearVariable(name, VariableKind.BINARY))
                 uses[name] = []
 
-        for name, port in self.primitive.input_ports.items():
+        for name, port in self.primitive.graph.input_ports.items():
             add_wire(name, self._width(port.value_type))
-        for component in self.primitive.components:
+        for component in self.primitive.graph.components:
             add_wire(component.component_id, self._width(component.output_type))
 
-        for component_index, component in enumerate(self.primitive.components):
+        for component_index, component in enumerate(self.primitive.graph.components):
             operand_edges = []
             for operand, selection in enumerate(component.inputs):
                 edges = []
                 for bit, (owner_id, source_bit) in enumerate(
-                    self.primitive.selection_bit_sources(selection)
+                    self.primitive.graph.selection_bit_sources(selection)
                 ):
                     edge = self._edge(component_index, operand, bit)
                     variables.append(LinearVariable(edge, VariableKind.BINARY))
@@ -279,7 +279,7 @@ class BooleanMonomialGraphMILPModel:
                 )
 
         for bit, (owner_id, source_bit) in enumerate(
-            self.primitive.selection_bit_sources(self.primitive.output)
+            self.primitive.graph.selection_bit_sources(self.primitive.graph.output)
         ):
             edge = f"primitive_output_{bit}"
             variables.append(LinearVariable(edge, VariableKind.BINARY))
@@ -324,7 +324,9 @@ class BooleanMonomialGraphMILPModel:
                 )
             )
 
-        selected_width = self._width(self.primitive.input_ports[self.variable_input].value_type)
+        selected_width = self._width(
+            self.primitive.graph.input_ports[self.variable_input].value_type
+        )
         selected_positions = set(self.variable_positions)
         for bit in range(selected_width):
             if bit not in selected_positions:
@@ -348,7 +350,8 @@ class BooleanMonomialGraphMILPModel:
                 ConstraintModelApplication(
                     self.model_provenance,
                     tuple(
-                        cast(str, component.component_id) for component in self.primitive.components
+                        cast(str, component.component_id)
+                        for component in self.primitive.graph.components
                     ),
                 ),
             ),

@@ -25,7 +25,7 @@ class SBoxXorDifferentialCPModel:
         >>> from claasp.components import BitVectorSBox
         >>> from claasp.primitives import Present
         >>> primitive = Present(number_of_rounds=1)
-        >>> sbox = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+        >>> sbox = next(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
         >>> problem = PropagationProblem(
         ...     primitive, XOR_DIFFERENTIAL, component_ids=(sbox.component_id,)
         ... )
@@ -110,7 +110,7 @@ class SBoxBoomerangCPModel:
         >>> from claasp.components import BitVectorSBox
         >>> from claasp.primitives import Present
         >>> primitive = Present(number_of_rounds=1)
-        >>> sbox = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+        >>> sbox = next(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
         >>> model = SBoxBoomerangCPModel(sbox, input_difference=1, output_difference=2)
         >>> query = model.cp_model()
         >>> query.constraints[-2:]

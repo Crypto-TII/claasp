@@ -19,13 +19,13 @@ Constructing a primitive builds this description; it does not evaluate it:
 
    >>> from claasp.primitives import AES
    >>> aes = AES(number_of_rounds=2)
-   >>> aes.input("plaintext").owner_id
+   >>> aes.graph.input("plaintext").owner_id
    'plaintext'
-   >>> aes.input("key").owner_id
+   >>> aes.graph.input("key").owner_id
    'key'
-   >>> len(aes.round_states)
+   >>> len(aes.graph.round_states)
    2
-   >>> len(aes.components) > 0
+   >>> len(aes.graph.components) > 0
    True
 
 Domains

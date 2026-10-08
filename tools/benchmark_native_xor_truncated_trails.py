@@ -87,8 +87,7 @@ def main():
         },
         "environment": {"platform": platform.platform(), "python": sys.version.split()[0]},
         "results": [
-            _benchmark(strategy, arguments.repeats)
-            for strategy in ("ordinary_cnf", "native_xor")
+            _benchmark(strategy, arguments.repeats) for strategy in ("ordinary_cnf", "native_xor")
         ],
     }
     rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"

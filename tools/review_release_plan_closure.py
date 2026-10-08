@@ -91,7 +91,9 @@ def validate_plan(plan: dict[str, Any], destination: dict[str, Any]) -> list[str
     legacy = matrix.get("legacy_records", [])
     artifacts = matrix.get("v5_artifacts", [])
     expected_summary = {
-        "legacy_by_disposition": dict(sorted(Counter(row["disposition"] for row in legacy).items())),
+        "legacy_by_disposition": dict(
+            sorted(Counter(row["disposition"] for row in legacy).items())
+        ),
         "legacy_records": len(legacy),
         "v5_artifacts": len(artifacts),
         "v5_by_classification": dict(

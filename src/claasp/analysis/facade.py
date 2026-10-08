@@ -188,23 +188,24 @@ class Analysis:
     ) -> AnalysisResult:
         """Recover one unknown input from known inputs and primitive output."""
 
-        if input_name not in self.primitive.input_ports:
+        if input_name not in self.primitive.graph.input_ports:
             raise ValueError(f"unknown primitive input {input_name!r}")
         if input_name in known_inputs:
             raise ValueError("the recovered input must not also be fixed")
-        expected_known = set(self.primitive.input_ports) - {input_name}
+        expected_known = set(self.primitive.graph.input_ports) - {input_name}
         if set(known_inputs) != expected_known:
             raise ValueError(f"known_inputs must contain exactly {sorted(expected_known)!r}")
-        if self.primitive.output is None:
+        if self.primitive.graph.output is None:
             raise ValueError("primitive has no declared output")
         constraints = [
-            FixedValue(self.primitive.input(name), value) for name, value in known_inputs.items()
+            FixedValue(self.primitive.graph.input(name), value)
+            for name, value in known_inputs.items()
         ]
-        constraints.append(FixedValue(self.primitive.output, output))
+        constraints.append(FixedValue(self.primitive.graph.output, output))
         problem = AnalysisProblem(
             self.primitive,
             constraints,
-            {input_name: self.primitive.input(input_name)},
+            {input_name: self.primitive.graph.input(input_name)},
         )
         return self.solve(problem, solver)
 
@@ -339,7 +340,7 @@ class Analysis:
             >>> from claasp.components import BitVectorSBox
             >>> from claasp.primitives import Present
             >>> primitive = Present(number_of_rounds=1)
-            >>> sbox = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+            >>> sbox = next(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
             >>> result = primitive.analysis.component_property(
             ...     sbox, ComponentProperty.DIFFERENTIAL_UNIFORMITY,
             ...     PropertyDomain.LOOKUP_TABLE)
@@ -408,12 +409,12 @@ class Analysis:
         from claasp.graph import Component
 
         if isinstance(component, Component):
-            if not any(item is component for item in self.primitive.components):
+            if not any(item is component for item in self.primitive.graph.components):
                 raise ValueError("component does not belong to this primitive graph")
             return component
         if isinstance(component, str):
             matches = tuple(
-                item for item in self.primitive.components if item.component_id == component
+                item for item in self.primitive.graph.components if item.component_id == component
             )
             if len(matches) != 1:
                 raise KeyError(f"primitive component {component!r} does not exist")
@@ -429,7 +430,7 @@ class Analysis:
         from claasp.semantics.cryptanalysis import SBoxTransitionSemantics
 
         component = next(
-            (item for item in self.primitive.components if item.component_id == component_id),
+            (item for item in self.primitive.graph.components if item.component_id == component_id),
             None,
         )
         if not isinstance(component, BitVectorSBox):
@@ -463,7 +464,9 @@ class Analysis:
 
         if fixed_input_differences is None:
             fixed_input_differences = (
-                {"key": 0} if "key" in self.primitive.input_ports and nonzero_input != "key" else {}
+                {"key": 0}
+                if "key" in self.primitive.graph.input_ports and nonzero_input != "key"
+                else {}
             )
         model = WordDifferentialSMTModel(
             self.primitive,
@@ -496,7 +499,9 @@ class Analysis:
 
         if fixed_inputs is None and fixed_input_masks is None:
             fixed_inputs = (
-                {"key": 0} if "key" in self.primitive.input_ports and nonzero_input != "key" else {}
+                {"key": 0}
+                if "key" in self.primitive.graph.input_ports and nonzero_input != "key"
+                else {}
             )
         model = WordLinearSMTModel(
             self.primitive,

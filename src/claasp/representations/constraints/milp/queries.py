@@ -105,12 +105,12 @@ class CubeSuperpolyQuery:
         if symbolic_input is None and self.symbolic_positions:
             raise ValueError("symbolic_input is required for symbolic_positions")
         for name in (cube_input, symbolic_input):
-            if name is not None and name not in primitive.input_ports:
+            if name is not None and name not in primitive.graph.input_ports:
                 raise ValueError(f"unknown primitive input {name!r}")
         for name, value in self.fixed_inputs.items():
-            if name not in primitive.input_ports:
+            if name not in primitive.graph.input_ports:
                 raise ValueError(f"unknown fixed input {name!r}")
-            primitive._decode_boundary(value, primitive.input_ports[name].value_type)
+            primitive._decode_boundary(value, primitive.graph.input_ports[name].value_type)
         self._validate_positions(cube_input, self.cube_positions, "cube_positions")
         if symbolic_input is not None:
             self._validate_positions(symbolic_input, self.symbolic_positions, "symbolic_positions")
@@ -124,7 +124,7 @@ class CubeSuperpolyQuery:
             raise ValueError("maximum_dimension must be a positive integer")
         if len(self.cube_positions) + len(self.symbolic_positions) > maximum_dimension:
             raise ValueError("query dimension exceeds maximum_dimension")
-        output_size = primitive.output.value_type.encoded_bit_size
+        output_size = primitive.graph.output.value_type.encoded_bit_size
         if (
             output_size is None
             or not isinstance(output_bit, int)
@@ -133,7 +133,7 @@ class CubeSuperpolyQuery:
             raise ValueError("output_bit must select a bit-encoded primitive output")
 
     def _validate_positions(self, name, positions, label):
-        size = self.primitive.input_ports[name].value_type.encoded_bit_size
+        size = self.primitive.graph.input_ports[name].value_type.encoded_bit_size
         if (
             size is None
             or len(set(positions)) != len(positions)
@@ -153,13 +153,13 @@ class CubeSuperpolyQuery:
         return value
 
     def _output_value(self, cube_mask, symbolic_mask):
-        values = {name: self.fixed_inputs.get(name, 0) for name in self.primitive.input_ports}
-        cube_size = self.primitive.input_ports[self.cube_input].value_type.encoded_bit_size
+        values = {name: self.fixed_inputs.get(name, 0) for name in self.primitive.graph.input_ports}
+        cube_size = self.primitive.graph.input_ports[self.cube_input].value_type.encoded_bit_size
         values[self.cube_input] = self._set_positions(
             values[self.cube_input], cube_size, self.cube_positions, cube_mask
         )
         if self.symbolic_input is not None:
-            symbolic_size = self.primitive.input_ports[
+            symbolic_size = self.primitive.graph.input_ports[
                 self.symbolic_input
             ].value_type.encoded_bit_size
             values[self.symbolic_input] = self._set_positions(
@@ -169,7 +169,7 @@ class CubeSuperpolyQuery:
                 symbolic_mask,
             )
         encoded = self.primitive.evaluate(values)
-        size = self.primitive.output.value_type.encoded_bit_size
+        size = self.primitive.graph.output.value_type.encoded_bit_size
         return (encoded >> (size - self.output_bit - 1)) & 1
 
     def compute(self) -> CubeSuperpolyResult:

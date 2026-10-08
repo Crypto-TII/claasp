@@ -711,16 +711,20 @@ def build_catalogue() -> dict:
                 else {
                     "official_name": name,
                     "input_roles": [
-                        descriptor.role for descriptor in primitive.input_descriptors.values()
+                        descriptor.role for descriptor in primitive.graph.input_descriptors.values()
                     ],
                     "bijectivity_obligation": fallback_obligation,
                     "classification_basis": fallback_basis,
                 }
             )
-            component_names = {type(component).__name__ for component in primitive.components}
+            component_names = {type(component).__name__ for component in primitive.graph.components}
             domain_names = {
-                type(port.value_type.domain).__name__ for port in primitive.input_ports.values()
-            } | {type(component.output_type.domain).__name__ for component in primitive.components}
+                type(port.value_type.domain).__name__
+                for port in primitive.graph.input_ports.values()
+            } | {
+                type(component.output_type.domain).__name__
+                for component in primitive.graph.components
+            }
             labels = []
             if name in EQUIVALENT_EXPORTS:
                 labels.append("equivalent_realization")
@@ -750,7 +754,7 @@ def build_catalogue() -> dict:
                             "role": descriptor.role,
                             "visibility": descriptor.visibility.value,
                         }
-                        for input_name, descriptor in primitive.input_descriptors.items()
+                        for input_name, descriptor in primitive.graph.input_descriptors.items()
                     ],
                     "bijectivity_obligation": classification["bijectivity_obligation"],
                     "components": sorted(component_names),

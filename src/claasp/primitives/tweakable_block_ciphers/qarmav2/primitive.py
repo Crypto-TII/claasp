@@ -44,7 +44,7 @@ class QARMAv2(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = QARMAv2()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xcfbeb4d546c9b062', 64)

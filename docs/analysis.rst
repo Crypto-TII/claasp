@@ -21,10 +21,10 @@ results therefore remain meaningful when the solver changes.
    >>> problem = AnalysisProblem(
    ...     primitive,
    ...     constraints=(
-   ...         FixedValue(primitive.input("plaintext"), 1),
-   ...         FixedValue(primitive.output, 0),
+   ...         FixedValue(primitive.graph.input("plaintext"), 1),
+   ...         FixedValue(primitive.graph.output, 0),
    ...     ),
-   ...     projections={"key": primitive.input("key")},
+   ...     projections={"key": primitive.graph.input("key")},
    ... )
    >>> [type(item).__name__ for item in problem.constraints]
    ['FixedValue', 'FixedValue']
@@ -107,8 +107,7 @@ where the selected solver-backed search supports it. Unsupported combinations
 raise an explicit exception; CLAASP never substitutes a different backend or
 search meaning silently.
 
-``primitive.analyze()`` remains a supported CLAASP 5 compatibility alias for
-``primitive.analysis``. The longer
+The longer
 ``find_lowest_weight_xor_differential_trail()`` and
 ``find_lowest_weight_xor_linear_trail()`` methods also retain their existing
 defaults, while new examples use the common typed entry point.

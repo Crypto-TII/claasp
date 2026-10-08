@@ -65,7 +65,9 @@ def shift_bits(primitive, source: PortLike, amount: int, *, component_id=None):
     width = source.value_type.unit_count
     word = primitive._builder.pack_bits(source, width)
     direction = "right" if amount >= 0 else "left"
-    output = primitive._builder.add_component(Shift(word, abs(amount), direction, component_id=component_id))
+    output = primitive._builder.add_component(
+        Shift(word, abs(amount), direction, component_id=component_id)
+    )
     return primitive._builder.unpack_bits(output)
 
 

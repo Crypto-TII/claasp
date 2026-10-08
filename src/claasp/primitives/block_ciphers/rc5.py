@@ -35,7 +35,7 @@ class RC5(Primitive):
     EXAMPLES::
 
         >>> primitive = RC5()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xd9dd7e74', 32)
@@ -65,7 +65,7 @@ class RC5(Primitive):
         if key_size in (0, 1):
             key_words = [constant(self, word_size, 0)]
         else:
-            key_bytes = self.input("key")
+            key_bytes = self.graph.input("key")
             key_words = []
             count = max(1, ceil((key_size // 8) / byte_count))
             for index in range(count):
@@ -96,7 +96,7 @@ class RC5(Primitive):
             i = (i + 1) % len(schedule)
             j = (j + 1) % len(key_words)
 
-        plain_bytes = self.input("plaintext")
+        plain_bytes = self.graph.input("plaintext")
         a = add(
             self,
             pack_little_endian([select(plain_bytes, i) for i in range(byte_count)]),

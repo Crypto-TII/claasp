@@ -46,7 +46,7 @@ class AradiSBox(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = AradiSBox()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xd06c8ab75d191521', 128)

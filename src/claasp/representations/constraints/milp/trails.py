@@ -77,7 +77,7 @@ class PresentDifferentialMILPModel:
         if problem.semantics != XOR_DIFFERENTIAL:
             raise ValueError("differential MILP lowering requires the XOR-differential semantics")
         primitive = problem.primitive
-        if primitive.family_name != "present" or len(primitive.rounds) != 2:
+        if primitive.family_name != "present" or len(primitive.graph.rounds) != 2:
             raise NotImplementedError("weighted MILP trail model currently supports PRESENT-2")
         self.primitive = primitive
         self.problem = problem
@@ -163,7 +163,9 @@ class PresentDifferentialMILPModel:
 
         if not self._records:
             raise ValueError("build the MILP model before decoding a trail")
-        components = {component.component_id: component for component in self.primitive.components}
+        components = {
+            component.component_id: component for component in self.primitive.graph.components
+        }
         steps = []
         for component_id, inputs, outputs in self._records:
             semantics = self.problem.provider_for(components[component_id])
@@ -324,10 +326,10 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
         active_input: str,
         zero_difference_inputs: tuple[str, ...] = (),
     ) -> None:
-        if active_input not in primitive.input_ports:
+        if active_input not in primitive.graph.input_ports:
             raise ValueError("active_input must name a primitive input")
         if not isinstance(zero_difference_inputs, tuple) or any(
-            name == active_input or name not in primitive.input_ports
+            name == active_input or name not in primitive.graph.input_ports
             for name in zero_difference_inputs
         ):
             raise ValueError("zero_difference_inputs must name other primitive inputs")
@@ -354,14 +356,14 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
                 variables.append(LinearVariable(name, VariableKind.BINARY))
             return name
 
-        for owner, port in self.primitive.input_ports.items():
+        for owner, port in self.primitive.graph.input_ports.items():
             for position in range(port.value_type.unit_count):
                 binary(self._name(owner, position))
-        for component in self.primitive.components:
+        for component in self.primitive.graph.components:
             for position in range(component.output_type.unit_count):
                 binary(self._name(component.component_id, position))
 
-        bindings = {item.binding_id: item for item in self.primitive.bindings}
+        bindings = {item.binding_id: item for item in self.primitive.graph.bindings}
 
         def resolve(owner, position):
             binding = bindings.get(owner)
@@ -397,7 +399,7 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
             )
 
         sbox_variables = []
-        for component in self.primitive.components:
+        for component in self.primitive.graph.components:
             output = tuple(
                 self._name(component.component_id, position)
                 for position in range(component.output_type.unit_count)
@@ -512,7 +514,7 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
                 )
 
         for owner in self.zero_difference_inputs:
-            for position in range(self.primitive.input_ports[owner].value_type.unit_count):
+            for position in range(self.primitive.graph.input_ports[owner].value_type.unit_count):
                 constraints.append(
                     LinearConstraint(
                         LinearExpression.from_terms({self._name(owner, position): 1}),
@@ -524,7 +526,7 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
         active_names = tuple(
             self._name(self.active_input, position)
             for position in range(
-                self.primitive.input_ports[self.active_input].value_type.unit_count
+                self.primitive.graph.input_ports[self.active_input].value_type.unit_count
             )
         )
         constraints.append(
@@ -578,7 +580,7 @@ def check_present_milp_trail(primitive: Primitive, trail: Trail) -> bool:
         >>> problem = PropagationProblem(primitive, XOR_DIFFERENTIAL)
         >>> sboxes = tuple(
         ...     component
-        ...     for component in primitive.components
+        ...     for component in primitive.graph.components
         ...     if isinstance(component, BitVectorSBox)
         ...     and component.component_id.startswith("sbox_")
         ... )
@@ -1005,7 +1007,7 @@ class SpeckImpossibleMILPModel(WordImpossibleMILPModel):
     def __init__(
         self, primitive, middle_round: int, *, input_pattern=None, output_pattern=None
     ) -> None:
-        plaintext = primitive.input_ports.get("plaintext")
+        plaintext = primitive.graph.input_ports.get("plaintext")
         if primitive.family_name != "speck" or plaintext is None:
             raise NotImplementedError("the reviewed impossible slice supports Speck32/64")
         super().__init__(
@@ -1374,7 +1376,7 @@ def _round_sboxes(primitive, round_number):
     prefix = f"sbox_{round_number}_"
     result = tuple(
         component
-        for component in primitive.components
+        for component in primitive.graph.components
         if isinstance(component, BitVectorSBox) and component.component_id.startswith(prefix)
     )
     if len(result) != 16:
@@ -1384,7 +1386,7 @@ def _round_sboxes(primitive, round_number):
 
 def _component(primitive, component_id, expected_type):
     component = next(
-        (item for item in primitive.components if item.component_id == component_id), None
+        (item for item in primitive.graph.components if item.component_id == component_id), None
     )
     if not isinstance(component, expected_type):
         raise ValueError(f"primitive is missing {component_id!r}")
@@ -1426,10 +1428,10 @@ class PresentMonomialTrailMILPModel:
         self.primitive = primitive
         self.input_mask = input_mask
         self.output_mask = output_mask
-        self.round_count = len(primitive.rounds)
+        self.round_count = len(primitive.graph.rounds)
         first_sbox = next(
             component
-            for component in primitive.components
+            for component in primitive.graph.components
             if isinstance(component, BitVectorSBox) and component.component_id == "sbox_1_0"
         )
         table = monomial_transition_table(first_sbox.table)
@@ -1441,7 +1443,7 @@ class PresentMonomialTrailMILPModel:
         self.permutations = tuple(
             next(
                 component
-                for component in primitive.components
+                for component in primitive.graph.components
                 if isinstance(component, Permutation)
                 and component.component_id == f"p_layer_{round_number}"
             )

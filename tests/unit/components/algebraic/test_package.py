@@ -9,9 +9,13 @@ def test_prime_field_algebraic_components():
     vector_type = ValueType(field, (2,))
     primitive = Primitive("field_algebra", {"left": vector_type, "right": vector_type})
     primitive._builder.add_round()
-    addition = Add((primitive.input("left"), primitive.input("right")), component_id="add_0_0")
+    addition = Add(
+        (primitive.graph.input("left"), primitive.graph.input("right")), component_id="add_0_0"
+    )
     addition_output = primitive._builder.add_component(addition)
-    product = Multiply((addition_output, primitive.input("right")), component_id="multiply_0_1")
+    product = Multiply(
+        (addition_output, primitive.graph.input("right")), component_id="multiply_0_1"
+    )
     product_output = primitive._builder.add_component(product)
     power = Power(product_output, 3, component_id="power_0_2")
     primitive._builder.add_component(power)
@@ -29,7 +33,7 @@ def test_aes_field_multiplication_and_linear_map():
     primitive = Primitive("aes_field", {"state": vector_type})
     primitive._builder.add_round()
     linear_map = LinearMap(
-        primitive.input("state"),
+        primitive.graph.input("state"),
         ((2, 3), (1, 1)),
         component_id="linear_map_0_0",
     )
@@ -47,7 +51,7 @@ def test_algebraic_components_reject_different_value_types():
     primitive = Primitive("mixed", {"left": prime, "right": other_prime})
 
     with pytest.raises(ValueError, match="identical value types"):
-        Add((primitive.input("left"), primitive.input("right")), component_id="bad")
+        Add((primitive.graph.input("left"), primitive.graph.input("right")), component_id="bad")
 
 
 def test_binary_affine_map_composes_with_field_inverse_to_form_aes_sbox():
@@ -56,7 +60,7 @@ def test_binary_affine_map_composes_with_field_inverse_to_form_aes_sbox():
     field = BinaryExtensionField(8, 0x11B)
     primitive = Primitive("aes_substitution", {"values": ValueType(field, (256,))})
     primitive._builder.add_round()
-    inverse = primitive._builder.add_component(Power(primitive.input("values"), 254))
+    inverse = primitive._builder.add_component(Power(primitive.graph.input("values"), 254))
     affine = primitive._builder.add_component(BinaryAffineMap(inverse, AES_AFFINE_MATRIX, 0x63))
     primitive._builder.set_output(affine)
 

@@ -39,7 +39,7 @@ class Whirlpool(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Whirlpool()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xfb49073c4d7e581a', 512)

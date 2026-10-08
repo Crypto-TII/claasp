@@ -41,7 +41,7 @@ class Ascon(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Ascon()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x78ea7ae5cfebb108', 319)

@@ -22,7 +22,7 @@ def _binary_primitive(component_type, width=3, **kwargs):
     primitive = Primitive(component_type.__name__, {"left": value_type, "right": value_type})
     primitive._builder.add_round()
     output = primitive._builder.add_component(
-        component_type((primitive.input("left"), primitive.input("right")), **kwargs)
+        component_type((primitive.graph.input("left"), primitive.graph.input("right")), **kwargs)
     )
     primitive._builder.set_output(output)
     return primitive
@@ -68,9 +68,11 @@ def _motion_primitive(component_type, direction, *, variable=False):
     primitive = Primitive(component_type.__name__, inputs)
     primitive._builder.add_round()
     if variable:
-        component = component_type(primitive.input("values"), primitive.input("amount"), direction)
+        component = component_type(
+            primitive.graph.input("values"), primitive.graph.input("amount"), direction
+        )
     else:
-        component = component_type(primitive.input("values"), 3, direction)
+        component = component_type(primitive.graph.input("values"), 3, direction)
     output = primitive._builder.add_component(component)
     primitive._builder.set_output(output)
     return primitive
@@ -101,10 +103,14 @@ def test_shift_saturates_while_rotation_reduces_amount_modulo_width():
     value_type = ValueType(Word(8), (1,))
     shifted = Primitive("shift", {"value": value_type})
     shifted._builder.add_round()
-    shifted._builder.set_output(shifted._builder.add_component(Shift(shifted.input("value"), 11, "left")))
+    shifted._builder.set_output(
+        shifted._builder.add_component(Shift(shifted.graph.input("value"), 11, "left"))
+    )
     rotated = Primitive("rotate", {"value": value_type})
     rotated._builder.add_round()
-    rotated._builder.set_output(rotated._builder.add_component(Rotate(rotated.input("value"), 11, "left")))
+    rotated._builder.set_output(
+        rotated._builder.add_component(Rotate(rotated.graph.input("value"), 11, "left"))
+    )
     assert ScalarEvaluator().evaluate(shifted, {"value": (0x32,)}).output == (0,)
     assert ScalarEvaluator().evaluate(rotated, {"value": (0x32,)}).output == (0x91,)
 
@@ -124,6 +130,8 @@ def test_variable_amount_and_modulus_validation_are_explicit():
     amounts = ValueType(Word(4), (2,))
     primitive = Primitive("validation", {"value": value_type, "amount": amounts})
     with pytest.raises(ValueError, match="exactly one word"):
-        VariableRotate(primitive.input("value"), primitive.input("amount"), "left")
+        VariableRotate(primitive.graph.input("value"), primitive.graph.input("amount"), "left")
     with pytest.raises(ValueError, match="2..256"):
-        ModularMultiply((primitive.input("value"), primitive.input("value")), modulus=257)
+        ModularMultiply(
+            (primitive.graph.input("value"), primitive.graph.input("value")), modulus=257
+        )

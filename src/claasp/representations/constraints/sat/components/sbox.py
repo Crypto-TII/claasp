@@ -21,7 +21,7 @@ class SBoxFunctionalSATModel:
         >>> from claasp.primitives import Present80
         >>> from claasp.representations.constraints.sat import BooleanCNFModel
         >>> primitive = Present80(number_of_rounds=1)
-        >>> component = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+        >>> component = next(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
         >>> encoding = SBoxFunctionalSATModel(component)
         >>> formula = BooleanCNFModel(primitive).cnf_formula()
         >>> encoding.component.component_id in formula.provenance

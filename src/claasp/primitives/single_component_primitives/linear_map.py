@@ -28,7 +28,7 @@ class LinearMap(Primitive):
     EXAMPLES::
 
         >>> primitive = LinearMap()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -44,7 +44,7 @@ class LinearMap(Primitive):
         )
         super().__init__("linear_map", {"input": ValueType(domain, (len(matrix[0]),))}, kind=kind)
         self._builder.add_round()
-        output = self._builder.add_component(LinearMapComponent(self.input("input"), matrix))
+        output = self._builder.add_component(LinearMapComponent(self.graph.input("input"), matrix))
         self._builder.set_output(output)
 
 

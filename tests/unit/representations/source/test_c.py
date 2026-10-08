@@ -26,7 +26,7 @@ def test_c_source_reports_unsupported_field_components_honestly():
     primitive._builder.add_round()
     output = primitive._builder.add_component(
         FeedbackRegister(
-            primitive.input("state"),
+            primitive.graph.input("state"),
             (FeedbackRegisterSpec(4, (FeedbackTerm(0), FeedbackTerm(1))),),
         )
     )

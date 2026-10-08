@@ -22,7 +22,7 @@ class ModularSubtract(Primitive):
     EXAMPLES::
 
         >>> primitive = ModularSubtract()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -35,7 +35,7 @@ class ModularSubtract(Primitive):
             kind=PrimitiveKind.FUNCTION,
         )
         self._builder.add_round()
-        operands = self.inputs()
+        operands = self.graph.inputs()
         output = self._builder.add_component(ModularSubtractComponent(operands))
         self._builder.set_output(output)
 

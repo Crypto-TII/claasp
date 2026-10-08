@@ -55,7 +55,9 @@ def test_exact_cube_superpoly_accounts_for_parity_and_key_coefficients():
     )
     primitive._builder.add_round()
     primitive._builder.set_output(
-        primitive._builder.add_component(BitwiseAnd((primitive.input("plaintext"), primitive.input("key"))))
+        primitive._builder.add_component(
+            BitwiseAnd((primitive.graph.input("plaintext"), primitive.graph.input("key")))
+        )
     )
     result = CubeSuperpolyQuery(
         primitive,
@@ -86,17 +88,17 @@ def test_cube_superpoly_dimension_and_positions_are_explicitly_bounded():
 
 
 def test_complete_solution_pool_projects_full_input_monomials_with_parity():
-    compilation = BooleanMonomialGraphMILPModel(
-        Simon(number_of_rounds=1), 0, "plaintext"
-    )
+    compilation = BooleanMonomialGraphMILPModel(Simon(number_of_rounds=1), 0, "plaintext")
     names = {
         f"{input_name}[{bit}]": compilation._wire(input_name, bit)
-        for input_name, port in compilation.primitive.input_ports.items()
+        for input_name, port in compilation.primitive.graph.input_ports.items()
         for bit in range(compilation._width(port.value_type))
     }
 
     def assignment(*active):
-        return {solver_name: float(public_name in active) for public_name, solver_name in names.items()}
+        return {
+            solver_name: float(public_name in active) for public_name, solver_name in names.items()
+        }
 
     pool = GurobiSolutionPoolResult(
         MILPStatus.OPTIMAL,
@@ -117,17 +119,13 @@ def test_complete_solution_pool_projects_full_input_monomials_with_parity():
 
 
 def test_truncated_solution_pool_cannot_certify_projected_parity():
-    compilation = BooleanMonomialGraphMILPModel(
-        Simon(number_of_rounds=1), 0, "plaintext"
-    )
+    compilation = BooleanMonomialGraphMILPModel(Simon(number_of_rounds=1), 0, "plaintext")
     assignment = {
         compilation._wire(input_name, bit): 0.0
-        for input_name, port in compilation.primitive.input_ports.items()
+        for input_name, port in compilation.primitive.graph.input_ports.items()
         for bit in range(compilation._width(port.value_type))
     }
-    pool = GurobiSolutionPoolResult(
-        MILPStatus.OPTIMAL, (assignment,), 0.0, 0.0, False
-    )
+    pool = GurobiSolutionPoolResult(MILPStatus.OPTIMAL, (assignment,), 0.0, 0.0, False)
     result = project_optimal_pool_monomial_parity(compilation, pool)
     assert result.termination == "pool_capacity"
     with pytest.raises(RuntimeError, match="incomplete"):

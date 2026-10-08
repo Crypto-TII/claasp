@@ -32,7 +32,7 @@ class SBox(Primitive):
     EXAMPLES::
 
         >>> primitive = SBox()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -54,7 +54,7 @@ class SBox(Primitive):
         kind = PrimitiveKind.PERMUTATION if table.is_bijective() else PrimitiveKind.FUNCTION
         super().__init__("sbox", {"input": ValueType(domain, (unit_count,))}, kind=kind)
         self._builder.add_round()
-        output = self._builder.add_component(SBoxComponent(self.input("input"), table))
+        output = self._builder.add_component(SBoxComponent(self.graph.input("input"), table))
         self._builder.set_output(output)
 
 

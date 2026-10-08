@@ -23,7 +23,7 @@ class TRAX(Primitive):
     EXAMPLES::
 
         >>> primitive = TRAX()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x76e1920dad2b0f28', 255)
@@ -36,10 +36,10 @@ class TRAX(Primitive):
             "trax",
             {"plaintext": word_type(32, 8), "key": word_type(32, 8), "tweak": word_type(32, 4)},
         )
-        state_x = [select(self.input("plaintext"), 2 * i) for i in range(4)]
-        state_y = [select(self.input("plaintext"), 2 * i + 1) for i in range(4)]
-        key = [select(self.input("key"), i) for i in range(8)]
-        tweak = [select(self.input("tweak"), i) for i in range(4)]
+        state_x = [select(self.graph.input("plaintext"), 2 * i) for i in range(4)]
+        state_y = [select(self.graph.input("plaintext"), 2 * i + 1) for i in range(4)]
+        key = [select(self.graph.input("key"), i) for i in range(8)]
+        tweak = [select(self.graph.input("tweak"), i) for i in range(4)]
 
         def update_key(values, step):
             k = list(values)

@@ -11,7 +11,7 @@ class ToySPN1(Primitive):
     EXAMPLES::
 
         >>> primitive = ToySPN1()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -32,11 +32,11 @@ class ToySPN1(Primitive):
         super().__init__(
             "toyspn1", {"plaintext": bit_type(block_bit_size), "key": bit_type(key_bit_size)}
         )
-        state = self.input("plaintext")
+        state = self.graph.input("plaintext")
         for round_number in range(number_of_rounds):
             self._builder.add_round()
             state = xor_bits(
-                self, state, self.input("key"), component_id=f"round_{round_number}_key_add"
+                self, state, self.graph.input("key"), component_id=f"round_{round_number}_key_add"
             )
             state = sbox_layer(
                 self, state, tuple(sbox), component_id_prefix=f"round_{round_number}_sbox"

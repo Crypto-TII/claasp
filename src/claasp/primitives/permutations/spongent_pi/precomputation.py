@@ -110,7 +110,7 @@ class SpongentPiPrecomputation(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = SpongentPiPrecomputation()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xcaed745fb9d13ede', 160)

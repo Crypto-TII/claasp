@@ -100,7 +100,7 @@ class ComponentSemanticsRegistry:
         >>> from claasp.primitives import Present
         >>> from claasp.semantics import XOR_DIFFERENTIAL
         >>> from claasp.semantics.cryptanalysis import default_component_semantics
-        >>> component = next(item for item in Present(number_of_rounds=1).components
+        >>> component = next(item for item in Present(number_of_rounds=1).graph.components
         ...     if isinstance(item, BitVectorSBox))
         >>> default_component_semantics().provider(component, XOR_DIFFERENTIAL).transition((1,), 3).weight
         2.0
@@ -148,7 +148,7 @@ class PropagationProblem:
         >>> from claasp.semantics import XOR_DIFFERENTIAL
         >>> from claasp.semantics.cryptanalysis import PropagationProblem
         >>> primitive = Present(number_of_rounds=1)
-        >>> component = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+        >>> component = next(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
         >>> problem = PropagationProblem(primitive, XOR_DIFFERENTIAL,
         ...     component_ids=(component.component_id,), provenance=("reviewed",))
         >>> problem.provider_for(component).transition((1,), 3).weight
@@ -195,13 +195,13 @@ class PropagationProblem:
         ):
             raise ValueError("maximum_weight must be a nonnegative integer or None")
         identifiers = (
-            tuple(component.component_id for component in primitive.components)
+            tuple(component.component_id for component in primitive.graph.components)
             if component_ids is None
             else tuple(component_ids)
         )
         if len(set(identifiers)) != len(identifiers):
             raise ValueError("propagation component IDs must be unique")
-        known = {component.component_id for component in primitive.components}
+        known = {component.component_id for component in primitive.graph.components}
         if unknown := set(identifiers) - known:
             raise ValueError(f"unknown propagation components: {sorted(unknown)!r}")
         selected_registry = registry or default_component_semantics()
@@ -225,7 +225,7 @@ class PropagationProblem:
         selected = set(self.component_ids)
         return tuple(
             component
-            for component in self.primitive.components
+            for component in self.primitive.graph.components
             if component.component_id in selected
         )
 

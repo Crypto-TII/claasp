@@ -48,9 +48,9 @@ shows the alternative reusable-block style used by ``CustomAES``.
    >>> key = 0x000102030405060708090A0B0C0D0E0F
    >>> f"{built.evaluate(plaintext, key):032x}"
    '69c4e0d86a7b0430d8cdb78070b4c55a'
-   >>> built.scope("round_1").definition.name
+   >>> built.graph.scope("round_1").definition.name
    'AESRound'
-   >>> built.scope("key_schedule/sub_word_1").definition.name
+   >>> built.graph.scope("key_schedule/sub_word_1").definition.name
    'ParallelSBoxLayer'
 
 Experimental changes use ``CustomAES`` so results cannot be mistaken for
@@ -67,7 +67,7 @@ exhaustive-analysis instances.
    ('custom_aes', 'custom_aes')
    >>> dict(no_mix.provenance)
    {'derived_from': 'AES', 'modifications': 'removed MixColumns'}
-   >>> any(component.component_id.endswith("/mix_columns") for component in no_mix.components)
+   >>> any(component.component_id.endswith("/mix_columns") for component in no_mix.graph.components)
    False
    >>> no_mix.evaluate(plaintext, key) != AES(number_of_rounds=2).evaluate(plaintext, key)
    True

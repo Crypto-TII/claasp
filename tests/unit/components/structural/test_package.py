@@ -15,7 +15,9 @@ def test_same_permutation_operates_on_different_domains(domain, values):
     value_type = ValueType(domain, (3,))
     primitive = Primitive("permutation", {"state": value_type})
     primitive._builder.add_round()
-    permutation = Permutation(primitive.input("state"), (2, 0, 1), component_id="permutation_0_0")
+    permutation = Permutation(
+        primitive.graph.input("state"), (2, 0, 1), component_id="permutation_0_0"
+    )
     primitive._builder.add_component(permutation)
 
     result = ScalarEvaluator().evaluate(primitive, {"state": values})
@@ -29,8 +31,8 @@ def test_selection_identity_and_concatenation_use_logical_units():
     state_type = ValueType(field, (4,))
     primitive = Primitive("selection", {"state": state_type})
     primitive._builder.add_round()
-    high = Identity(primitive.input("state")[3, 2], component_id="identity_0_0")
-    low = Identity(primitive.input("state")[1, 0], component_id="identity_0_1")
+    high = Identity(primitive.graph.input("state")[3, 2], component_id="identity_0_0")
+    low = Identity(primitive.graph.input("state")[1, 0], component_id="identity_0_1")
     high_port = primitive._builder.add_component(high)
     low_port = primitive._builder.add_component(low)
     joined = primitive._builder.join(high_port, low_port)
@@ -39,8 +41,8 @@ def test_selection_identity_and_concatenation_use_logical_units():
     result = ScalarEvaluator().evaluate(primitive, {"state": (10, 20, 30, 40)})
 
     assert result.output == (40, 30, 20, 10)
-    assert len(primitive.components) == 2
-    assert len(primitive.bindings) == 1
+    assert len(primitive.graph.components) == 2
+    assert len(primitive.graph.bindings) == 1
 
 
 def test_primitive_output_accepts_multi_source_structural_wiring():
@@ -53,18 +55,20 @@ def test_primitive_output_accepts_multi_source_structural_wiring():
         },
     )
     primitive._builder.add_round()
-    primitive._builder.set_output((primitive.input("left"), primitive.input("right")[1, 0]))
+    primitive._builder.set_output(
+        (primitive.graph.input("left"), primitive.graph.input("right")[1, 0])
+    )
 
     assert primitive.evaluate((1, 2), (3, 4)) == (1, 2, 4, 3)
-    assert primitive.components == ()
-    assert len(primitive.bindings) == 1
+    assert primitive.graph.components == ()
+    assert len(primitive.graph.bindings) == 1
 
 
 def test_join_keeps_one_source_as_wiring_and_normalizes_multiple_sources():
     field = PrimeField(17)
     primitive = Primitive("wiring", {"state": ValueType(field, (2,))})
     primitive._builder.add_round()
-    state = primitive.input("state")
+    state = primitive.graph.input("state")
 
     assert primitive._builder.join(state).source == state
     joined = primitive._builder.join(state[1], state[0])
@@ -76,7 +80,7 @@ def test_join_keeps_one_source_as_wiring_and_normalizes_multiple_sources():
 def test_structural_binding_resolution_is_not_limited_by_python_recursion_depth():
     primitive = Primitive("deep_wiring", {"state": ValueType(Bit(), (1,))})
     primitive._builder.add_round()
-    state = primitive.input("state")
+    state = primitive.graph.input("state")
     for _ in range(1_100):
         state = primitive._builder.view(state)
     primitive._builder.set_output(state)
@@ -116,7 +120,7 @@ def test_scalar_evaluator_rejects_unsupported_base_component():
     primitive = Primitive("unsupported", {"state": value_type})
     primitive._builder.add_round()
     primitive._builder.add_component(
-        Component("unknown_0_0", (primitive.input("state").select_all(),), value_type)
+        Component("unknown_0_0", (primitive.graph.input("state").select_all(),), value_type)
     )
 
     with pytest.raises(NotImplementedError, match="does not support Component"):

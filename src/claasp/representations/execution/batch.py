@@ -107,7 +107,7 @@ class BatchExecutionDriver:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
 
-        expected_names = set(primitive.input_ports)
+        expected_names = set(primitive.graph.input_ports)
         actual_names = set(inputs)
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
@@ -123,7 +123,7 @@ class BatchExecutionDriver:
 
         results = []
         for item_index in range(batch_size):
-            item_inputs = {name: inputs[name][item_index] for name in primitive.input_ports}
+            item_inputs = {name: inputs[name][item_index] for name in primitive.graph.input_ports}
             results.append(self._scalar_evaluator.evaluate(primitive, item_inputs))
         return BatchEvaluationResult(
             tuple(results), ResultProvenance.for_primitive(primitive, self.identity)
@@ -158,7 +158,7 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
 
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
-        expected_names = set(primitive.input_ports)
+        expected_names = set(primitive.graph.input_ports)
         actual_names = set(inputs)
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
@@ -172,7 +172,7 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
         batch_size = batch_sizes.pop() if batch_sizes else 0
 
         values: dict[str, tuple[RuntimeValue, ...]] = {}
-        for name, port in primitive.input_ports.items():
+        for name, port in primitive.graph.input_ports.items():
             batch = tuple(tuple(item) for item in inputs[name])
             for item in batch:
                 self._scalar_evaluator._validate_value(
@@ -181,10 +181,10 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
             values[name] = batch
 
         binding_caches = [{} for _ in range(batch_size)]
-        for component in primitive.components:
+        for component in primitive.graph.components:
             selected = tuple(
                 tuple(
-                    primitive.resolve_selection(
+                    primitive.graph.resolve_selection(
                         item,
                         {source_id: batch[lane] for source_id, batch in values.items()},
                         binding_caches[lane],
@@ -207,12 +207,12 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
         for lane in range(batch_size):
             lane_values = {source_id: batch[lane] for source_id, batch in values.items()}
             output = None
-            if primitive.output is not None:
-                output = primitive.resolve_selection(
-                    primitive.output, lane_values, binding_caches[lane]
+            if primitive.graph.output is not None:
+                output = primitive.graph.resolve_selection(
+                    primitive.graph.output, lane_values, binding_caches[lane]
                 )
-            for binding in primitive.bindings:
-                primitive.resolve_selection(
+            for binding in primitive.graph.bindings:
+                primitive.graph.resolve_selection(
                     binding.output.select_all(), lane_values, binding_caches[lane]
                 )
             from claasp.annotations import ExecutionTrace, GraphAnnotation

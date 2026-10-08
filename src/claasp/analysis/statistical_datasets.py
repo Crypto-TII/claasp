@@ -188,7 +188,7 @@ class StatisticalDataset:
             name: fixed[name]
             if name in fixed
             else random.getrandbits(packed_bit_width(self.primitive, name))
-            for name in self.primitive.input_ports
+            for name in self.primitive.graph.input_ports
             if name != self.input_name
         }
 
@@ -386,7 +386,7 @@ def _dataset(primitive, kind, input_name, samples, blocks, seed, ratio, fixed_in
     if not isinstance(seed, int) or isinstance(seed, bool):
         raise TypeError("seed must be an integer")
     fixed = dict(fixed_inputs or {})
-    unexpected = set(fixed) - (set(primitive.input_ports) - {input_name})
+    unexpected = set(fixed) - (set(primitive.graph.input_ports) - {input_name})
     if unexpected:
         raise ValueError(f"fixed_inputs contains selected or unknown inputs: {sorted(unexpected)}")
     return StatisticalDataset(

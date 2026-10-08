@@ -111,14 +111,14 @@ class Trivium(Primitive):
     A reduced instance exposes the same graph with fewer clocks:
 
         >>> reduced = Trivium(number_of_initialization_clocks=13, keystream_bit_size=1)
-        >>> len(reduced.rounds), reduced.evaluate(key=1 << 79, iv=0)
+        >>> len(reduced.graph.rounds), reduced.evaluate(key=1 << 79, iv=0)
         (15, 1)
 
 
     EXAMPLES::
 
         >>> primitive = Trivium()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xdf07fd641a9aa0d8', 64)
@@ -152,7 +152,7 @@ class Trivium(Primitive):
         self._builder.add_round()
         zero = self._builder.add_component(Constant(_BIT, (0,), component_id="zero"))[0]
         one = self._builder.add_component(Constant(_BIT, (1,), component_id="one"))[0]
-        key, iv = self.input("key"), self.input("iv")
+        key, iv = self.graph.input("key"), self.graph.input("iv")
         state: list[Port | Selection] = (
             # register A: s1..s80 hold the key, s81..s93 are zero
             [key[KEY_BIT_SIZE - 1 - index] for index in range(KEY_BIT_SIZE)]
@@ -186,7 +186,9 @@ class Trivium(Primitive):
             )
         feedback = []
         for tap_a, tap_b, and_left, and_right, feedback_tap in _REGISTERS:
-            product = self._builder.add_component(BitwiseAnd((state[and_left - 1], state[and_right - 1])))
+            product = self._builder.add_component(
+                BitwiseAnd((state[and_left - 1], state[and_right - 1]))
+            )
             feedback.append(
                 self._builder.add_component(
                     Xor(

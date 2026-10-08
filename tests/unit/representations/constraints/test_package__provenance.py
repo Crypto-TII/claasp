@@ -410,7 +410,7 @@ def test_monomial_graph_lowering_propagates_its_verified_model_declaration():
     assert model.constraint_models == (
         ConstraintModelApplication(
             BooleanMonomialGraphMILPModel.model_provenance,
-            tuple(cast(str, component.component_id) for component in primitive.components),
+            tuple(cast(str, component.component_id) for component in primitive.graph.components),
         ),
     )
 

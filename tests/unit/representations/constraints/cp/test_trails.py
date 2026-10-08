@@ -43,7 +43,9 @@ def _single_add(name):
     )
     primitive._builder.add_round()
     primitive._builder.set_output(
-        primitive._builder.add_component(ModularAdd((primitive.input("left"), primitive.input("right"))))
+        primitive._builder.add_component(
+            ModularAdd((primitive.graph.input("left"), primitive.graph.input("right")))
+        )
     )
     return primitive
 
@@ -92,7 +94,7 @@ def test_sbox_boomerang_cp_namespaces_and_links_complete_present_trails():
     )
     sbox = next(
         component
-        for component in upper.primitive.components
+        for component in upper.primitive.graph.components
         if component.component_id == "sbox_1_0"
     )
     model = SBoxBoomerangTrailCPModel(upper, lower, SBoxBoomerangCPModel(sbox), nibble=3)
@@ -113,8 +115,8 @@ def test_speck_boomerang_cp_automatically_partitions_and_links_all_switch_words(
     )
     query = model.cp_model()
     source = query.source()
-    assert model.upper_graph.output.value_type.unit_count == 2
-    assert tuple(model.lower_graph.input_ports) == ("switch_output", "switch_right", "key")
+    assert model.upper_graph.graph.output.value_type.unit_count == 2
+    assert tuple(model.lower_graph.graph.input_ports) == ("switch_output", "switch_right", "key")
     assert "constraint switch_delta_right[0]" in source
     assert "constraint switch_nabla_output[0]" in source
     assert query.constraint_models[-1].model == model.model_provenance

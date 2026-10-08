@@ -13,7 +13,7 @@ class IDEA(Primitive):
     EXAMPLES::
 
         >>> primitive = IDEA()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x1000100000000', 49)
@@ -30,7 +30,7 @@ class IDEA(Primitive):
             },
         )
         self._builder.add_round()
-        key_state = self.input("key").select_all()
+        key_state = self.graph.input("key").select_all()
         subkeys = []
         needed = 6 * number_of_rounds + 4
         while len(subkeys) < needed:
@@ -42,7 +42,7 @@ class IDEA(Primitive):
             if len(subkeys) < needed:
                 mapping = tuple((index + 25) % 128 for index in range(128))
                 key_state = self._builder.add_component(Permutation(key_state, mapping))
-        state = [select(self.input("plaintext"), index) for index in range(4)]
+        state = [select(self.graph.input("plaintext"), index) for index in range(4)]
         for round_number in range(number_of_rounds):
             self._builder.add_round()
             k1, k2, k3, k4, k5, k6 = subkeys[6 * round_number : 6 * (round_number + 1)]

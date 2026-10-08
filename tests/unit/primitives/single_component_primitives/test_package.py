@@ -160,7 +160,8 @@ def test_catalogue_is_one_to_one_with_public_base_components():
     assert {primitive.__name__ for primitive in CLASSES} == expected
     assert all(primitive().__class__.__name__ == primitive.__name__ for primitive in CLASSES)
     assert all(
-        type(primitive().components[0]).__name__ == primitive.__name__ for primitive in CLASSES
+        type(primitive().graph.components[0]).__name__ == primitive.__name__
+        for primitive in CLASSES
     )
 
 
@@ -217,8 +218,8 @@ def test_each_wrapper_is_a_documented_one_round_one_component_example():
     advertised = CATEGORY_EXPORTS["single_component_primitives"]
     for primitive_class in CLASSES:
         primitive = primitive_class()
-        assert len(primitive.rounds) == 1
-        assert len(primitive.components) == 1
+        assert len(primitive.graph.rounds) == 1
+        assert len(primitive.graph.components) == 1
         assert primitive_class.__module__ == advertised[primitive_class.__name__]
         assert ">>>" in inspect.getdoc(primitive_class)
         source = inspect.getsource(primitive_class)

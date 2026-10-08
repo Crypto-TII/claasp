@@ -28,7 +28,7 @@ def _primitive(domain, unit_count, spec, clocks=1):
     primitive = Primitive("feedback_register", {"state": ValueType(domain, (unit_count,))})
     primitive._builder.add_round()
     output = primitive._builder.add_component(
-        FeedbackRegister(primitive.input("state"), (spec,), clocks=clocks)
+        FeedbackRegister(primitive.graph.input("state"), (spec,), clocks=clocks)
     )
     primitive._builder.set_output(output)
     return primitive
@@ -99,7 +99,7 @@ def test_inverse_field_word_register_recovers_nonunit_pivot():
     inverse._builder.set_output(
         inverse._builder.add_component(
             FeedbackRegister(
-                inverse.input("state"),
+                inverse.graph.input("state"),
                 (spec,),
                 clocks=2,
                 direction="inverse",
@@ -116,11 +116,11 @@ def test_feedback_register_validation_rejects_ambiguous_word_arithmetic():
     primitive = Primitive("invalid", {"state": ValueType(Word(4), (2,))})
     spec = FeedbackRegisterSpec(2, (FeedbackTerm((0,)),))
     with pytest.raises(ValueError, match="Bit or BinaryExtensionField"):
-        FeedbackRegister(primitive.input("state"), (spec,))
+        FeedbackRegister(primitive.graph.input("state"), (spec,))
 
     bit_primitive = Primitive("invalid_positions", {"state": ValueType(Bit(), (2,))})
     with pytest.raises(ValueError, match="outside"):
         FeedbackRegister(
-            bit_primitive.input("state"),
+            bit_primitive.graph.input("state"),
             (FeedbackRegisterSpec(2, (FeedbackTerm((2,)),)),),
         )

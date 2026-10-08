@@ -43,7 +43,7 @@ class TinyJambuFSRWordBased(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = TinyJambuFSRWordBased()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xc07a21053c7ca049', 128)

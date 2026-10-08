@@ -62,7 +62,11 @@ def xor_rows(width: int, operands: int) -> tuple[tuple[int, ...], ...]:
 def mds_rows(width: int, inputs: int, outputs: int) -> tuple[tuple[int, ...], ...]:
     kinds = tuple(WordwiseDifferenceKind)
     return tuple(
-        tuple(bit for kind in input_kinds for bit in _encode(_from_kind(width, kind), include_value=False))
+        tuple(
+            bit
+            for kind in input_kinds
+            for bit in _encode(_from_kind(width, kind), include_value=False)
+        )
         + tuple(
             bit
             for item in propagate_dense_wordwise_activity(
@@ -78,7 +82,11 @@ def _espresso(rows: tuple[tuple[int, ...], ...]) -> tuple[str, ...]:
     width = len(rows[0])
     source = [f".i {width}", ".o 1", *(f"{''.join(map(str, row))} 1" for row in rows), ".e"]
     completed = subprocess.run(
-        ["espresso", "-epos"], input="\n".join(source) + "\n", text=True, capture_output=True, check=True
+        ["espresso", "-epos"],
+        input="\n".join(source) + "\n",
+        text=True,
+        capture_output=True,
+        check=True,
     )
     clauses = tuple(
         sorted(
@@ -110,7 +118,11 @@ def generate(width: int, operands: int, dimensions: tuple[int, int]) -> dict[str
         "generator": {"tool": "espresso", "arguments": ["-epos"]},
         "word_width": width,
         "xor": {"operands": operands, "row_count": len(xor), "clauses": list(_espresso(xor))},
-        "mds": {"dimensions": list(dimensions), "row_count": len(mds), "clauses": list(_espresso(mds))},
+        "mds": {
+            "dimensions": list(dimensions),
+            "row_count": len(mds),
+            "clauses": list(_espresso(mds)),
+        },
     }
 
 

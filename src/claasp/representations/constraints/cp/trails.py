@@ -99,7 +99,7 @@ class PresentDifferentialCPModel:
             raise ValueError("differential CP lowering requires XOR-differential semantics")
         if problem.maximum_weight is None:
             raise ValueError("differential CP lowering requires maximum_weight")
-        if problem.primitive.family_name != "present" or len(problem.primitive.rounds) != 2:
+        if problem.primitive.family_name != "present" or len(problem.primitive.graph.rounds) != 2:
             raise NotImplementedError("differential CP lowering currently supports PRESENT-2")
         self.problem = problem
         self.primitive = problem.primitive
@@ -169,7 +169,9 @@ class PresentDifferentialCPModel:
 
         if not self._records:
             raise ValueError("build the CP model before decoding a trail")
-        components = {component.component_id: component for component in self.primitive.components}
+        components = {
+            component.component_id: component for component in self.primitive.graph.components
+        }
         steps = []
         for component_id, inputs, outputs in self._records:
             semantics = self.problem.provider_for(components[component_id])
@@ -360,7 +362,7 @@ class PresentProbabilisticKeyScheduleCPModel:
     )
 
     def __init__(self, primitive, *, input_difference=None, maximum_weight=None) -> None:
-        key = primitive.input_ports.get("key")
+        key = primitive.graph.input_ports.get("key")
         if primitive.family_name != "present" or key is None or key.value_type.unit_count != 80:
             raise NotImplementedError("the reviewed key-schedule model supports PRESENT-80")
         if input_difference is not None and (
@@ -376,7 +378,7 @@ class PresentProbabilisticKeyScheduleCPModel:
         ):
             raise ValueError("maximum_weight must be a nonnegative integer")
         self.primitive = primitive
-        self.rounds = len(primitive.rounds)
+        self.rounds = len(primitive.graph.rounds)
         self.input_difference = input_difference
         self.maximum_weight = maximum_weight
         self._query: MiniZincModel | None = None
@@ -431,9 +433,7 @@ class PresentProbabilisticKeyScheduleCPModel:
                 for position in range(4, 80)
             )
         if self.maximum_weight is not None:
-            constraints.append(
-                f"constraint {' + '.join(weights)} <= {self.maximum_weight};"
-            )
+            constraints.append(f"constraint {' + '.join(weights)} <= {self.maximum_weight};")
         self._query = MiniZincModel(
             tuple(declarations),
             tuple(constraints),
@@ -507,7 +507,7 @@ class PresentLinearCPModel:
             raise ValueError("linear CP lowering requires XOR-linear semantics")
         if problem.maximum_weight is None:
             raise ValueError("linear CP lowering requires maximum_weight")
-        if problem.primitive.family_name != "present" or len(problem.primitive.rounds) != 3:
+        if problem.primitive.family_name != "present" or len(problem.primitive.graph.rounds) != 3:
             raise NotImplementedError("linear CP lowering currently supports PRESENT-3")
         self.problem = problem
         self.primitive = problem.primitive
@@ -579,7 +579,9 @@ class PresentLinearCPModel:
 
         if not self._records:
             raise ValueError("build the CP model before decoding a trail")
-        components = {component.component_id: component for component in self.primitive.components}
+        components = {
+            component.component_id: component for component in self.primitive.graph.components
+        }
         steps = []
         for component_id, inputs, outputs in self._records:
             semantics = self.problem.provider_for(components[component_id])
@@ -640,7 +642,7 @@ class SpeckDifferentialCPModel:
             raise TypeError("problem must be a PropagationProblem")
         if problem.semantics != XOR_DIFFERENTIAL:
             raise ValueError("Speck CP lowering requires XOR-differential semantics")
-        plaintext = problem.primitive.input_ports.get("plaintext")
+        plaintext = problem.primitive.graph.input_ports.get("plaintext")
         if (
             problem.primitive.family_name != "speck"
             or plaintext is None
@@ -661,11 +663,11 @@ class SpeckDifferentialCPModel:
         if boundary_relation not in (None, "equal", "not_equal"):
             raise ValueError("boundary_relation must be equal or not_equal")
         self.boundary_relation = boundary_relation
-        self.round_count = len(self.primitive.rounds) if round_count is None else round_count
+        self.round_count = len(self.primitive.graph.rounds) if round_count is None else round_count
         if (
             not isinstance(self.round_count, int)
             or isinstance(self.round_count, bool)
-            or not 1 <= self.round_count <= len(self.primitive.rounds)
+            or not 1 <= self.round_count <= len(self.primitive.graph.rounds)
         ):
             raise ValueError("round_count must select a nonempty Speck prefix")
 
@@ -749,7 +751,9 @@ class SpeckDifferentialCPModel:
             next_right = _rotate_left_integer(right, beta, self.width) ^ output
             if next_right != _boolean_word(assignment[f"y_{round_number + 1}"]):
                 raise ValueError("MiniZinc returned invalid Speck round wiring")
-            component_id = self.primitive.round_operations[round_number]["modular_add"].component_id
+            component_id = self.primitive.graph.round_operations[round_number][
+                "modular_add"
+            ].component_id
             steps.append(TrailStep(component_id, transition))
             left, right = output, next_right
         trail = Trail(
@@ -959,7 +963,7 @@ class SpeckProbabilisticTruncatedCPModel:
 
         if problem.semantics != PROBABILISTIC_TRUNCATED_XOR:
             raise ValueError("Speck model requires probabilistic-truncated XOR semantics")
-        plaintext = problem.primitive.input_ports.get("plaintext")
+        plaintext = problem.primitive.graph.input_ports.get("plaintext")
         if (
             problem.primitive.family_name != "speck"
             or plaintext is None
@@ -978,7 +982,7 @@ class SpeckProbabilisticTruncatedCPModel:
     def cp_model(self) -> MiniZincModel:
         """Compile fixed boundaries and minimize the composed scaled weight."""
 
-        rounds = len(self.primitive.rounds)
+        rounds = len(self.primitive.graph.rounds)
         declarations = [_PROBABILISTIC_TRUNCATED_MODADD_PREDICATE]
         constraints = []
         for boundary in range(rounds + 1):
@@ -1040,7 +1044,7 @@ class SpeckProbabilisticTruncatedCPModel:
         transitions = []
         left = TruncatedXorDifference(self.input_pattern.bits[:16])
         right = TruncatedXorDifference(self.input_pattern.bits[16:])
-        for round_number in range(len(self.primitive.rounds)):
+        for round_number in range(len(self.primitive.graph.rounds)):
             alpha = _component(self.primitive, f"round_{round_number}_rotate_right", Rotate).amount
             beta = _component(self.primitive, f"round_{round_number}_rotate_left", Rotate).amount
             output = _decode_truncated(assignment[f"x_{round_number + 1}"])
@@ -1392,7 +1396,7 @@ class PresentHybridImpossibleCPModel:
     def __init__(self, primitive, *, middle_round: int) -> None:
         if primitive.family_name != "present":
             raise NotImplementedError("the reviewed hybrid graph supports PRESENT")
-        rounds = len(primitive.rounds)
+        rounds = len(primitive.graph.rounds)
         if not 1 <= middle_round < rounds:
             raise ValueError("middle_round must be inside the primitive")
         self.primitive, self.middle_round, self.rounds = primitive, middle_round, rounds
@@ -1419,8 +1423,7 @@ class PresentHybridImpossibleCPModel:
         if len(values) != 64 or any(value not in (0, 1, 2) for value in values):
             raise ValueError("fixed PRESENT hybrid boundaries require 64 ternary symbols")
         return tuple(
-            f"constraint {name}[{position}] = {value};"
-            for position, value in enumerate(values)
+            f"constraint {name}[{position}] = {value};" for position, value in enumerate(values)
         )
 
     def cp_model(self, *, input_pattern=None, output_pattern=None):
@@ -1529,9 +1532,7 @@ class PresentHybridImpossibleCPModel:
                 f"(((forward_{self.middle_round}[{group[0]}] > 2) /\\ {forward_equal} /\\ {backward_zero}) \\/ "
                 f"((backward_{self.middle_round}[{group[0]}] > 2) /\\ {backward_equal} /\\ {forward_zero}));"
             )
-        constraints.append(
-            f"constraint exists(i in 0..{indicator_count - 1})(contradiction[i]);"
-        )
+        constraints.append(f"constraint exists(i in 0..{indicator_count - 1})(contradiction[i]);")
         self._query = MiniZincModel(
             tuple(declarations),
             tuple(constraints),
@@ -1550,19 +1551,15 @@ class PresentHybridImpossibleCPModel:
             raise ValueError("build the CP model before decoding")
         for (round_number, nibble), model in self._forward_models.items():
             source = tuple(
-                int(value)
-                for value in assignment[f"forward_sbox_{round_number}_{nibble}_input"]
+                int(value) for value in assignment[f"forward_sbox_{round_number}_{nibble}_input"]
             )
             target = tuple(
-                int(value)
-                for value in assignment[f"forward_sbox_{round_number}_{nibble}_output"]
+                int(value) for value in assignment[f"forward_sbox_{round_number}_{nibble}_output"]
             )
             if target not in model.accepted_outputs(source):
                 raise ValueError("invalid forward hybrid S-box transition")
         for round_number in range(1, self.middle_round + 1):
-            permutation = _component(
-                self.primitive, f"p_layer_{round_number}", Permutation
-            ).mapping
+            permutation = _component(self.primitive, f"p_layer_{round_number}", Permutation).mapping
             raw = tuple(
                 int(value)
                 for nibble in range(16)
@@ -1573,19 +1570,15 @@ class PresentHybridImpossibleCPModel:
                 raise ValueError("invalid forward hybrid permutation wiring")
         for (round_number, nibble), model in self._backward_models.items():
             source = tuple(
-                int(value)
-                for value in assignment[f"backward_sbox_{round_number}_{nibble}_input"]
+                int(value) for value in assignment[f"backward_sbox_{round_number}_{nibble}_input"]
             )
             target = tuple(
-                int(value)
-                for value in assignment[f"backward_sbox_{round_number}_{nibble}_output"]
+                int(value) for value in assignment[f"backward_sbox_{round_number}_{nibble}_output"]
             )
             if target not in model.accepted_outputs(source):
                 raise ValueError("invalid backward hybrid S-box transition")
         for round_number in range(self.middle_round + 1, self.rounds + 1):
-            permutation = _component(
-                self.primitive, f"p_layer_{round_number}", Permutation
-            ).mapping
+            permutation = _component(self.primitive, f"p_layer_{round_number}", Permutation).mapping
             inverse_positions = tuple(permutation.index(position) for position in range(64))
             next_state = tuple(int(value) for value in assignment[f"backward_{round_number}"])
             raw = tuple(
@@ -1607,7 +1600,9 @@ class PresentHybridImpossibleCPModel:
                 raise ValueError("invalid backward hybrid state wiring")
         forward = tuple(int(value) for value in assignment[f"forward_{self.middle_round}"])
         backward = tuple(int(value) for value in assignment[f"backward_{self.middle_round}"])
-        bitwise = tuple(position for position, pair in enumerate(zip(forward, backward)) if sum(pair) == 1)
+        bitwise = tuple(
+            position for position, pair in enumerate(zip(forward, backward)) if sum(pair) == 1
+        )
         groups = tuple(
             number
             for number, group in enumerate(self.nonlinear_groups)
@@ -1724,7 +1719,7 @@ class SpeckImpossibleCPModel:
     )
 
     def __init__(self, primitive, middle_round: int) -> None:
-        plaintext = primitive.input_ports.get("plaintext")
+        plaintext = primitive.graph.input_ports.get("plaintext")
         if (
             primitive.family_name != "speck"
             or plaintext is None
@@ -1732,7 +1727,7 @@ class SpeckImpossibleCPModel:
             or plaintext.value_type.domain.width != 16
         ):
             raise NotImplementedError("the reviewed impossible slice supports Speck32/64")
-        if not 1 <= middle_round < len(primitive.rounds):
+        if not 1 <= middle_round < len(primitive.graph.rounds):
             raise ValueError("middle_round must be inside the primitive")
         self.primitive = primitive
         self.middle_round = middle_round
@@ -1741,7 +1736,7 @@ class SpeckImpossibleCPModel:
     def cp_model(self) -> MiniZincModel:
         """Compile independent forward/backward segments meeting in conflict."""
 
-        rounds = len(self.primitive.rounds)
+        rounds = len(self.primitive.graph.rounds)
         declarations = [_DETERMINISTIC_TRUNCATED_MODADD_PREDICATE]
         constraints = []
         for prefix, boundaries in (
@@ -1838,7 +1833,7 @@ class SimonImpossibleCPModel:
             raise NotImplementedError("the reviewed impossible slice supports Simon32/64")
         if len(output_pattern.bits) != 32:
             raise ValueError("Simon32 output patterns must contain 32 bits")
-        if not 1 <= middle_round < len(primitive.rounds):
+        if not 1 <= middle_round < len(primitive.graph.rounds):
             raise ValueError("middle_round must be inside the primitive")
         self.primitive, self.input_pattern = primitive, input_pattern
         self.output_pattern, self.middle_round = output_pattern, middle_round
@@ -1846,7 +1841,7 @@ class SimonImpossibleCPModel:
     def cp_model(self) -> MiniZincModel:
         """Compile directional Simon propagation and a middle contradiction."""
 
-        rounds = len(self.primitive.rounds)
+        rounds = len(self.primitive.graph.rounds)
         declarations, constraints = [_SIMON_TRUNCATED_FUNCTIONS], []
         for prefix, boundaries in (
             ("forward", range(self.middle_round + 1)),
@@ -1910,7 +1905,7 @@ class SimonImpossibleCPModel:
         for _ in range(self.middle_round):
             forward = propagate_two_word_simon_round(forward)
         backward = self.output_pattern
-        for _ in range(len(self.primitive.rounds) - self.middle_round):
+        for _ in range(len(self.primitive.graph.rounds) - self.middle_round):
             backward = propagate_two_word_simon_inverse_round(backward)
         decoded = ImpossiblePropagationBoundary(
             TruncatedXorDifference(
@@ -1947,7 +1942,7 @@ def _round_sboxes(primitive, round_number):
     prefix = f"sbox_{round_number}_"
     result = tuple(
         component
-        for component in primitive.components
+        for component in primitive.graph.components
         if isinstance(component, BitVectorSBox) and component.component_id.startswith(prefix)
     )
     if len(result) != 16:
@@ -1957,13 +1952,13 @@ def _round_sboxes(primitive, round_number):
 
 def _component(primitive, component_id, expected_type):
     component = next(
-        (item for item in primitive.components if item.component_id == component_id), None
+        (item for item in primitive.graph.components if item.component_id == component_id), None
     )
     if component is None and primitive.family_name == "speck":
         parts = component_id.split("_")
         if len(parts) >= 4 and parts[0] == "round" and parts[1].isdigit():
             operation = "_".join(parts[2:])
-            component = primitive.round_operations[int(parts[1])].get(operation)
+            component = primitive.graph.round_operations[int(parts[1])].get(operation)
     if not isinstance(component, expected_type):
         raise ValueError(f"primitive is missing {component_id!r}")
     return component
@@ -2351,19 +2346,19 @@ class ModularAddBoomerangTrailCPModel:
         if full_switch == (lower_input is not None):
             raise ValueError("choose lower_input or both lower_output_input and lower_right_input")
         if full_switch and (
-            lower_output_input not in lower.primitive.input_ports
-            or lower_right_input not in lower.primitive.input_ports
+            lower_output_input not in lower.primitive.graph.input_ports
+            or lower_right_input not in lower.primitive.graph.input_ports
         ):
             raise ValueError("full switch inputs must name bottom-graph inputs")
-        if not full_switch and lower_input not in lower.primitive.input_ports:
+        if not full_switch and lower_input not in lower.primitive.graph.input_ports:
             raise ValueError("lower_input must name a bottom-graph input")
-        upper_size = upper.primitive.output.value_type.encoded_bit_size
+        upper_size = upper.primitive.graph.output.value_type.encoded_bit_size
         expected_upper_size = 2 * switch.width if full_switch else switch.width
         if upper_size != expected_upper_size:
             raise ValueError(f"top output must contain exactly {expected_upper_size} bits")
         lower_names = (lower_output_input, lower_right_input) if full_switch else (lower_input,)
         if any(
-            lower.primitive.input_ports[name].value_type.encoded_bit_size != switch.width
+            lower.primitive.graph.input_ports[name].value_type.encoded_bit_size != switch.width
             for name in lower_names
         ):
             raise ValueError("each selected bottom input must contain exactly one switch word")
@@ -2576,10 +2571,10 @@ class SpeckBoomerangCPModel:
         if (
             not isinstance(switch_round, int)
             or isinstance(switch_round, bool)
-            or not 0 <= switch_round < len(primitive.rounds)
+            or not 0 <= switch_round < len(primitive.graph.rounds)
         ):
             raise ValueError("switch_round must select a Speck round")
-        component = primitive.round_operations[switch_round]["modular_add"]
+        component = primitive.graph.round_operations[switch_round]["modular_add"]
         upper_graph = slice_primitive(
             primitive,
             component.inputs,
@@ -2587,12 +2582,12 @@ class SpeckBoomerangCPModel:
         ).primitive
         lower_graph = slice_primitive(
             primitive,
-            primitive.output,
+            primitive.graph.output,
             inputs={"switch_output": component.output, "switch_right": component.inputs[1]},
             family_name=f"{primitive.family_name}_boomerang_lower_{switch_round}",
         ).primitive
-        upper_fixed = {"key": 0} if "key" in upper_graph.input_ports else {}
-        lower_fixed = {"key": 0} if "key" in lower_graph.input_ports else {}
+        upper_fixed = {"key": 0} if "key" in upper_graph.graph.input_ports else {}
+        lower_fixed = {"key": 0} if "key" in lower_graph.graph.input_ports else {}
         upper = WordDifferentialCPModel(
             upper_graph,
             maximum_weight=upper_maximum_weight,

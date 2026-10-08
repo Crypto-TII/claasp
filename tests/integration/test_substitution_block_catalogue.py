@@ -32,10 +32,13 @@ def test_every_m10_9d6_default_graph_preserves_legacy_zero_regression(vector):
     assert primitive.evaluate(*vector["inputs"]) == vector["output"]
     decoded = {
         name: (primitive._decode_boundary(value, port.value_type),)
-        for (name, port), value in zip(primitive.input_ports.items(), vector["inputs"])
+        for (name, port), value in zip(primitive.graph.input_ports.items(), vector["inputs"])
     }
     batch_output = BatchEvaluator().evaluate(primitive, decoded).outputs[0]
-    assert primitive._encode_boundary(batch_output, primitive.output.value_type) == vector["output"]
+    assert (
+        primitive._encode_boundary(batch_output, primitive.graph.output.value_type)
+        == vector["output"]
+    )
     assert vector["claim"] == "legacy-regression"
 
 

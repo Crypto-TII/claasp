@@ -47,7 +47,7 @@ def _benchmark(name, primitive, strategy, solver_name, repeats):
     assumptions = {
         variable: 0
         for variable in formula.variables
-        if any(variable.startswith(f"{name}_") for name in primitive.input_ports)
+        if any(variable.startswith(f"{name}_") for name in primitive.graph.input_ports)
     }
     solver = (
         CryptoMiniSatSolver(timeout_seconds=60)

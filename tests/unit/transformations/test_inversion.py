@@ -66,22 +66,24 @@ def test_reviewed_retained_input_obligations_round_trip(primitive_name):
     record = catalogue.primitive(primitive_name)
     parameters = dict(record.parameter_sets[0].values)
     primitive = load_export(primitive_name)(**parameters)
-    by_role = {primitive.input_descriptor(name).role: name for name in primitive.input_ports}
+    by_role = {
+        primitive.graph.input_descriptor(name).role: name for name in primitive.graph.input_ports
+    }
     recover_input = next(
         (
             by_role[role]
             for role in ("plaintext", "state", "input_state", "input")
             if role in by_role
         ),
-        next(iter(primitive.input_ports)),
+        next(iter(primitive.graph.input_ports)),
     )
-    inverse = primitive.inverse(recover_input).primitive
+    inverse = primitive.edit.inverse(recover_input).primitive
 
     assert record.bijectivity_obligation
     for sample in (0x13579BDF, 0xECA86420):
         values = {
             name: (sample * (index + 1)) & ((1 << port.value_type.encoded_bit_size) - 1)
-            for index, (name, port) in enumerate(primitive.input_ports.items())
+            for index, (name, port) in enumerate(primitive.graph.input_ports.items())
         }
         output = primitive.evaluate(values)
         inverse_values = {"output": output}
@@ -110,15 +112,15 @@ def test_representative_bit_and_feistel_primitive_inverses_match_fixed_evidence(
 
 def test_inverse_preserves_realization_and_records_transformation_separately():
     primitive = Speck(number_of_rounds=2)
-    result = primitive.inverse()
+    result = primitive.edit.inverse()
     inverse = result.primitive
 
     assert inverse.kind is PrimitiveKind.BLOCK_CIPHER
     assert inverse.realization is primitive.realization
     assert inverse.transformation_provenance[-1].operation == "inverse"
     assert primitive.transformation_provenance == ()
-    assert not any(isinstance(component, Identity) for component in inverse.components)
-    assert tuple(inverse.input_ports) == ("output", "key")
+    assert not any(isinstance(component, Identity) for component in inverse.graph.components)
+    assert tuple(inverse.graph.input_ports) == ("output", "key")
 
 
 def test_partial_inverse_recovers_through_equivalent_fanout_wires():
@@ -127,19 +129,19 @@ def test_partial_inverse_recovers_through_equivalent_fanout_wires():
         {"left": ValueType(Word(8), (1,)), "right": ValueType(Word(8), (1,))},
     )
     graph._builder.add_round()
-    first = graph._builder.add_component(Xor(graph.inputs()))
-    second = graph._builder.add_component(Xor((first, graph.input("right"))))
+    first = graph._builder.add_component(Xor(graph.graph.inputs()))
+    second = graph._builder.add_component(Xor((first, graph.graph.input("right"))))
     graph._builder.set_output(second)
 
     inverse = partial_inverse(
         graph,
-        graph.input("left"),
-        known={"observed": graph.output, "right": graph.input("right")},
+        graph.graph.input("left"),
+        known={"observed": graph.graph.output, "right": graph.graph.input("right")},
     ).primitive
 
     assert inverse.evaluate(0xA5, 0x3C) == 0xA5
-    assert len(inverse.components) == 2
-    assert not any(isinstance(component, Identity) for component in inverse.components)
+    assert len(inverse.graph.components) == 2
+    assert not any(isinstance(component, Identity) for component in inverse.graph.components)
 
 
 def test_partial_inverse_can_recover_an_internal_wire():
@@ -148,14 +150,14 @@ def test_partial_inverse_can_recover_an_internal_wire():
         {"left": ValueType(Word(8), (1,)), "right": ValueType(Word(8), (1,))},
     )
     graph._builder.add_round()
-    mixed = graph._builder.add_component(Xor(graph.inputs()))
-    rotated = graph._builder.add_component(Xor((mixed, graph.input("right"))))
+    mixed = graph._builder.add_component(Xor(graph.graph.inputs()))
+    rotated = graph._builder.add_component(Xor((mixed, graph.graph.input("right"))))
     graph._builder.set_output(rotated)
 
     inverse = partial_inverse(
         graph,
         mixed,
-        known={"observed": graph.output, "right": graph.input("right")},
+        known={"observed": graph.graph.output, "right": graph.graph.input("right")},
     ).primitive
     assert inverse.evaluate(0xA5, 0x3C) == 0x99
 
@@ -167,7 +169,7 @@ def test_joint_xor_region_recovers_multiple_predecessors_without_a_solver():
         kind=PrimitiveKind.PERMUTATION,
     )
     graph._builder.add_round()
-    state = graph.input("state")
+    state = graph.graph.input("state")
     x, y, z = (state[index] for index in range(3))
     outputs = (
         graph._builder.add_component(Xor((x, y))),
@@ -185,15 +187,18 @@ def test_joint_xor_region_recovers_multiple_predecessors_without_a_solver():
 def test_pack_unpack_bindings_remain_structural_during_inversion():
     graph = Primitive("packed", {"state": ValueType(Word(8), (1,))}, kind=PrimitiveKind.PERMUTATION)
     graph._builder.add_round()
-    bits = graph._builder.unpack_bits(graph.input("state"))
+    bits = graph._builder.unpack_bits(graph.graph.input("state"))
     permuted = graph._builder.add_component(Permutation(bits, (7, 6, 5, 4, 3, 2, 1, 0)))
     graph._builder.set_output(graph._builder.pack_bits(permuted, 8))
 
     inverse = invert_primitive(graph).primitive
     for value in (0, 1, 0x5A, 0x80, 0xFF):
         assert inverse.evaluate(graph.evaluate(value)) == value
-    assert tuple(binding.kind.value for binding in inverse.bindings) == ("unpack_bits", "pack_bits")
-    assert not any(isinstance(component, Identity) for component in inverse.components)
+    assert tuple(binding.kind.value for binding in inverse.graph.bindings) == (
+        "unpack_bits",
+        "pack_bits",
+    )
+    assert not any(isinstance(component, Identity) for component in inverse.graph.components)
 
 
 def test_stalls_report_multiple_predecessors_information_loss_and_disconnection():
@@ -204,7 +209,9 @@ def test_stalls_report_multiple_predecessors_information_loss_and_disconnection(
 
     shifted = Primitive("shifted", {"state": ValueType(Word(8), (1,))})
     shifted._builder.add_round()
-    shifted._builder.set_output(shifted._builder.add_component(Shift(shifted.input("state"), 1, "left", "loss")))
+    shifted._builder.set_output(
+        shifted._builder.add_component(Shift(shifted.graph.input("state"), 1, "left", "loss"))
+    )
     with pytest.raises(TransformationError) as loss:
         invert_primitive(shifted)
     assert loss.value.reason is TransformationFailureReason.INFORMATION_LOSS
@@ -215,12 +222,12 @@ def test_stalls_report_multiple_predecessors_information_loss_and_disconnection(
         {"left": ValueType(Bit(), (1,)), "right": ValueType(Bit(), (1,))},
     )
     disconnected._builder.add_round()
-    disconnected._builder.set_output(disconnected.input("right"))
+    disconnected._builder.set_output(disconnected.graph.input("right"))
     with pytest.raises(TransformationError) as absent:
         partial_inverse(
             disconnected,
-            disconnected.input("left"),
-            known={"observed": disconnected.output},
+            disconnected.graph.input("left"),
+            known={"observed": disconnected.graph.output},
         )
     assert absent.value.reason is TransformationFailureReason.DISCONNECTED_DEPENDENCY
 

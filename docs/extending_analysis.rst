@@ -71,7 +71,7 @@ SAT, SMT, MILP, or CP representation is chosen:
    >>> from claasp.semantics import XOR_DIFFERENTIAL
    >>> from claasp.semantics.cryptanalysis import PropagationProblem
    >>> primitive = Present(number_of_rounds=1)
-   >>> sbox = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+   >>> sbox = next(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
    >>> problem = PropagationProblem(primitive, XOR_DIFFERENTIAL, component_ids=(sbox.component_id,), maximum_weight=4, provenance=("experiment-1",))
    >>> problem.provider_for(sbox).transition((1,), 3).weight
    2.0

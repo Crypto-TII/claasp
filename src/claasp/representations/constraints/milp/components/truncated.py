@@ -59,7 +59,11 @@ def _kind_value(width, kind):
 
 def _word_columns(prefix, width, *, include_value):
     columns = (f"{prefix}_kind_msb", f"{prefix}_kind_lsb")
-    return columns + tuple(f"{prefix}_value_{bit}" for bit in range(width)) if include_value else columns
+    return (
+        columns + tuple(f"{prefix}_value_{bit}" for bit in range(width))
+        if include_value
+        else columns
+    )
 
 
 def _decode_word(assignment, prefix, width, *, include_value):
@@ -70,8 +74,7 @@ def _decode_word(assignment, prefix, width, *, include_value):
         if not include_value:
             return WordwiseXorDifference.known(width, 1)
         value = sum(
-            round(assignment[f"{prefix}_value_{bit}"]) << (width - bit - 1)
-            for bit in range(width)
+            round(assignment[f"{prefix}_value_{bit}"]) << (width - bit - 1) for bit in range(width)
         )
         return WordwiseXorDifference.known(width, value)
     return WordwiseXorDifference(width, kind)
@@ -113,7 +116,12 @@ def load_bundled_wordwise_espresso(name="wordwise_4bit_xor2_mds4x4"):
     except FileNotFoundError as error:
         raise ValueError(f"no bundled wordwise system named {name!r}") from error
     if payload.get("schema_version") != 1 or set(payload) != {
-        "schema_version", "legacy_source", "generator", "word_width", "xor", "mds"
+        "schema_version",
+        "legacy_source",
+        "generator",
+        "word_width",
+        "xor",
+        "mds",
     }:
         raise ValueError("unsupported wordwise Espresso bundle")
     return payload
@@ -302,7 +310,10 @@ class WordwiseTruncatedMDSMILPModel:
 
     def _fixed(self, inputs, outputs):
         constraints = []
-        for side, values, count in (("input", inputs, self.dimensions[1]), ("output", outputs, self.dimensions[0])):
+        for side, values, count in (
+            ("input", inputs, self.dimensions[1]),
+            ("output", outputs, self.dimensions[0]),
+        ):
             if values is None:
                 continue
             if len(values) != count:

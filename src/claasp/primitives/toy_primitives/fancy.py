@@ -50,7 +50,7 @@ class Fancy(Primitive):
     EXAMPLES::
 
         >>> primitive = Fancy()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xca3417', 24)
@@ -64,8 +64,8 @@ class Fancy(Primitive):
         if number_of_rounds <= 0:
             raise ValueError("number_of_rounds must be positive")
         super().__init__("fancy", {"plaintext": bit_type(24), "key": bit_type(24)})
-        state = self.input("plaintext").select_all()
-        key = self.input("key").select_all()
+        state = self.graph.input("plaintext").select_all()
+        key = self.graph.input("key").select_all()
         key_xor = key_and = None
         for round_number in range(number_of_rounds):
             self._builder.add_round()
@@ -74,7 +74,9 @@ class Fancy(Primitive):
             )
             if round_number % 2 == 0:
                 # The legacy description stores one output column per row.
-                state = self._builder.add_component(LinearMap(substituted, tuple(zip(*LINEAR_LAYER))))
+                state = self._builder.add_component(
+                    LinearMap(substituted, tuple(zip(*LINEAR_LAYER)))
+                )
                 if round_number == 0:
                     key_xor = xor_bits(self, key[:12], key[12:])
                     key_and = and_bits(self, key_xor, key[12:])

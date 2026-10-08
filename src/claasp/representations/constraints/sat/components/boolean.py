@@ -13,7 +13,7 @@ class BooleanFunctionalSATModel:
         >>> from claasp.primitives import Simon
         >>> from claasp.representations.constraints.sat import BooleanCNFModel
         >>> primitive = Simon(number_of_rounds=1)
-        >>> component = next(item for item in primitive.components if isinstance(item, BitwiseAnd))
+        >>> component = next(item for item in primitive.graph.components if isinstance(item, BitwiseAnd))
         >>> encoding = BooleanFunctionalSATModel(component)
         >>> formula = BooleanCNFModel(primitive).cnf_formula()
         >>> encoding.component.component_id in formula.provenance
@@ -122,7 +122,7 @@ class BooleanNativeXorSATModel(BooleanFunctionalSATModel):
 
         >>> from claasp.components import Xor
         >>> from claasp.primitives import Simon
-        >>> component = next(item for item in Simon(number_of_rounds=1).components
+        >>> component = next(item for item in Simon(number_of_rounds=1).graph.components
         ...                  if isinstance(item, Xor))
         >>> BooleanNativeXorSATModel(component).model_provenance.encoding_name
         'CryptoMiniSat native XOR records'

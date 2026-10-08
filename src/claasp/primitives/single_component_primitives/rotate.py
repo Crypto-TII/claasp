@@ -23,7 +23,7 @@ class Rotate(Primitive):
     EXAMPLES::
 
         >>> primitive = Rotate()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -42,7 +42,11 @@ class Rotate(Primitive):
             kind=PrimitiveKind.PERMUTATION,
         )
         self._builder.add_round()
-        self._builder.set_output(self._builder.add_component(RotateComponent(self.input("input"), amount, direction)))
+        self._builder.set_output(
+            self._builder.add_component(
+                RotateComponent(self.graph.input("input"), amount, direction)
+            )
+        )
 
 
 __all__ = ["Rotate"]

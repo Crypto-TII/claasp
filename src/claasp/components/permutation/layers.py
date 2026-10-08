@@ -49,7 +49,7 @@ def shift_rows(
         >>> from claasp import Primitive, ValueType, Word
         >>> from claasp.components import shift_rows
         >>> graph = Primitive("rows", {"state": ValueType(Word(8), (8,))})
-        >>> shift_rows(graph.input("state"), 4, (1, 2)).mapping
+        >>> shift_rows(graph.graph.input("state"), 4, (1, 2)).mapping
         (3, 0, 1, 2, 6, 7, 4, 5)
     """
 
@@ -83,7 +83,7 @@ def sigma(
         >>> from claasp import Bit, Primitive, ValueType
         >>> from claasp.components import sigma
         >>> graph = Primitive("sigma", {"x": ValueType(Bit(), (4,))})
-        >>> sigma(graph.input("x"), (1, 3)).matrix[0]
+        >>> sigma(graph.graph.input("x"), (1, 3)).matrix[0]
         (1, 1, 0, 1)
     """
 
@@ -138,7 +138,7 @@ def keccak_theta(component_input: PortLike, component_id: str | None = None) -> 
         >>> from claasp import Bit, Primitive, ValueType
         >>> from claasp.components import keccak_theta
         >>> graph = Primitive("theta", {"x": ValueType(Bit(), (25,))})
-        >>> len(keccak_theta(graph.input("x")).matrix)
+        >>> len(keccak_theta(graph.graph.input("x")).matrix)
         25
     """
 
@@ -176,7 +176,7 @@ def xoodoo_theta(component_input: PortLike, component_id: str | None = None) -> 
         >>> from claasp import Bit, Primitive, ValueType
         >>> from claasp.components import xoodoo_theta
         >>> graph = Primitive("theta", {"x": ValueType(Bit(), (12,))})
-        >>> len(xoodoo_theta(graph.input("x")).matrix)
+        >>> len(xoodoo_theta(graph.graph.input("x")).matrix)
         12
     """
 
@@ -225,7 +225,7 @@ def gaston_theta(
         >>> from claasp import Bit, Primitive, ValueType
         >>> from claasp.components import gaston_theta
         >>> graph = Primitive("theta", {"x": ValueType(Bit(), (320,))})
-        >>> len(gaston_theta(graph.input("x")).matrix)
+        >>> len(gaston_theta(graph.graph.input("x")).matrix)
         320
     """
 

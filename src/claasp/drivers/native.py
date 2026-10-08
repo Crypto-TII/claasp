@@ -325,7 +325,7 @@ def run_compiled(
             )
         try:
             packed = int(completed.stdout.strip(), 16)
-            output = primitive._decode_boundary(packed, primitive.output.value_type)
+            output = primitive._decode_boundary(packed, primitive.graph.output.value_type)
         except (TypeError, ValueError) as error:
             return _native_result(
                 NativeExecutionStatus.FAILED,
@@ -385,10 +385,10 @@ def _compiler_version(executable):
 
 
 def _hex_arguments(primitive, inputs):
-    if not isinstance(inputs, Mapping) or set(inputs) != set(primitive.input_ports):
+    if not isinstance(inputs, Mapping) or set(inputs) != set(primitive.graph.input_ports):
         raise ValueError("native inputs must match primitive input names exactly")
     arguments = []
-    for name, descriptor in primitive.input_descriptors.items():
+    for name, descriptor in primitive.graph.input_descriptors.items():
         value = inputs[name]
         if isinstance(value, int) and not isinstance(value, bool):
             packed = value

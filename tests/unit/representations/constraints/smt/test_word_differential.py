@@ -18,7 +18,9 @@ def _primitive(component):
         "boolean_word", {"left": ValueType(Word(2), (1,)), "key": ValueType(Word(2), (1,))}
     )
     primitive._builder.add_round()
-    output = primitive._builder.add_component(component((primitive.input("left"), primitive.input("key"))))
+    output = primitive._builder.add_component(
+        component((primitive.graph.input("left"), primitive.graph.input("key")))
+    )
     primitive._builder.set_output(output)
     return primitive
 

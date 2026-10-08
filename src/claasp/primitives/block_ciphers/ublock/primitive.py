@@ -88,7 +88,7 @@ class Ublock(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Ublock()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x144f09912b6b7bd2', 125)

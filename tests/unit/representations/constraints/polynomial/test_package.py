@@ -56,7 +56,9 @@ def test_poseidon_execution_satisfies_lowered_equations():
 
     assert system.maximum_degree == 3
     assert system.evaluate(_assignment_from_evaluation(evaluation)) == (0,) * len(system.equations)
-    assert set(system.provenance) == {component.component_id for component in primitive.components}
+    assert set(system.provenance) == {
+        component.component_id for component in primitive.graph.components
+    }
 
 
 def test_prime_field_model_rejects_bit_graph():

@@ -51,7 +51,7 @@ class SpeckHybridDifferentialProblem:
         if (
             not isinstance(exact_rounds, int)
             or isinstance(exact_rounds, bool)
-            or not 1 <= exact_rounds < len(primitive.rounds)
+            or not 1 <= exact_rounds < len(primitive.graph.rounds)
         ):
             raise ValueError("exact_rounds must leave a nonempty truncated suffix")
         self.primitive = primitive
@@ -76,7 +76,7 @@ class SpeckHybridDifferentialProblem:
             raise RuntimeError("exact hybrid prefix did not complete with a feasible result")
         prefix = self.prefix_model.decode_trail(solved.assignment)
         boundaries = [TruncatedXorDifference.parse(f"{prefix.output_pattern.value:032b}")]
-        for round_number in range(self.exact_rounds, len(self.primitive.rounds)):
+        for round_number in range(self.exact_rounds, len(self.primitive.graph.rounds)):
             boundaries.append(
                 propagate_two_word_speck_round(self.primitive, boundaries[-1], round_number)
             )
@@ -98,7 +98,7 @@ class SpeckHybridDifferentialProblem:
         left, right = divmod(prefix.input_pattern.value, 1 << 16)
         semantics = ModularAddTransitionSemantics(16)
         for r, step in enumerate(prefix.steps):
-            operations = self.primitive.round_operations[r]
+            operations = self.primitive.graph.round_operations[r]
             alpha = operations["rotate_right"].amount
             beta = operations["rotate_left"].amount
             rotated_left = ((left >> alpha) | (left << (16 - alpha))) & 0xFFFF
@@ -113,6 +113,6 @@ class SpeckHybridDifferentialProblem:
         if prefix.output_pattern.value != (left << 16) | right:
             return False
         expected = [TruncatedXorDifference.parse(f"{prefix.output_pattern.value:032b}")]
-        for r in range(self.exact_rounds, len(self.primitive.rounds)):
+        for r in range(self.exact_rounds, len(self.primitive.graph.rounds)):
             expected.append(propagate_two_word_speck_round(self.primitive, expected[-1], r))
         return result.truncated_boundaries == tuple(expected)
