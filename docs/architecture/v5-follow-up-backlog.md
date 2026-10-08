@@ -690,6 +690,12 @@ weighted trail model and changes only the objective to count selectors with a
 nonzero input difference. GLPK proves the optimum of two active S-boxes, and
 the decoded trail passes the independent shared-semantics checker.
 
+The MILP second stage adds ``PresentFixedActiveSBoxesMILPModel``. It fixes the
+first-stage optimum through one exact selector-sum equality and restores the
+DDT weight objective without changing any transition or wiring constraint.
+GLPK proves weight four at two active S-boxes, and independent decoding checks
+both the requested activity and the exact characteristic weight.
+
 The corresponding CP slice adds ``PresentActiveSBoxesCPModel`` over the same
 two-round exact DDT relation. Native MiniZinc Boolean activity indicators are
 equivalent to nonzero four-bit S-box inputs; Chuffed proves the same optimum of

@@ -2,6 +2,7 @@ from claasp.primitives import Present, Speck, ToySpeck
 from claasp.representations.constraints.milp import (
     PresentActiveSBoxesMILPModel,
     PresentDifferentialMILPModel,
+    PresentFixedActiveSBoxesMILPModel,
     SpeckSemiDeterministicTruncatedMILPModel,
     WordDeterministicDifferentialLinearMILPModel,
     WordDeterministicTruncatedMILPModel,
@@ -31,6 +32,18 @@ def test_present_active_sbox_model_reuses_exact_feasible_region():
     assert len(active.objective.terms) == 32 * 96
     assert set(coefficient for _, coefficient in active.objective.terms) == {1.0}
     assert active.constraint_models[0].model == PresentActiveSBoxesMILPModel.model_provenance
+
+
+def test_present_fixed_activity_model_keeps_weight_objective():
+    model = PresentFixedActiveSBoxesMILPModel(
+        Present(number_of_rounds=2), active_sboxes=2
+    )
+    formulation = model.milp_model()
+    assert (len(formulation.variables), len(formulation.constraints)) == (3296, 290)
+    assert formulation.constraints[-1].name == "fixed_active_sboxes"
+    assert formulation.constraints[-1].rhs == 2
+    assert len(formulation.objective.terms) == 32 * 96
+    assert formulation.constraint_models[0].model == model.model_provenance
 
 
 def test_portable_word_milp_trails_preserve_formula_sizes_and_objectives():

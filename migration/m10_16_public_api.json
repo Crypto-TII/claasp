@@ -27040,6 +27040,12 @@
       "qualified_name": "claasp.representations.constraints.milp.PresentDifferentialMILPModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.milp.trails.PresentFixedActiveSBoxesMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.PresentFixedActiveSBoxesMILPModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.milp.trails.PresentMonomialTrailMILPModel",
       "defined_in": "claasp.representations.constraints.milp.trails",
       "kind": "class",
@@ -28197,7 +28203,8 @@
       "canonical_name": "claasp.representations.constraints.milp.trails.PresentDifferentialMILPModel.decode_trail",
       "defined_in": "claasp.representations.constraints.milp.trails",
       "inherited_by": [
-        "claasp.representations.constraints.milp.trails.PresentActiveSBoxesMILPModel"
+        "claasp.representations.constraints.milp.trails.PresentActiveSBoxesMILPModel",
+        "claasp.representations.constraints.milp.trails.PresentFixedActiveSBoxesMILPModel"
       ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.milp.trails.PresentDifferentialMILPModel.decode_trail"
@@ -28206,10 +28213,24 @@
       "canonical_name": "claasp.representations.constraints.milp.trails.PresentDifferentialMILPModel.milp_model",
       "defined_in": "claasp.representations.constraints.milp.trails",
       "inherited_by": [
-        "claasp.representations.constraints.milp.trails.PresentActiveSBoxesMILPModel"
+        "claasp.representations.constraints.milp.trails.PresentActiveSBoxesMILPModel",
+        "claasp.representations.constraints.milp.trails.PresentFixedActiveSBoxesMILPModel"
       ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.milp.trails.PresentDifferentialMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.trails.PresentFixedActiveSBoxesMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.trails",
+      "documented_by": "claasp.representations.constraints.milp.trails.PresentFixedActiveSBoxesMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.trails.PresentFixedActiveSBoxesMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.trails.PresentFixedActiveSBoxesMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.trails.PresentFixedActiveSBoxesMILPModel.milp_model"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.trails.PresentMonomialTrailMILPModel.__init__",
