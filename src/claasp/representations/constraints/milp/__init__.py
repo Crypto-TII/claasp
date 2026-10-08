@@ -23,7 +23,10 @@ from claasp.representations.constraints.milp.components import (
     SBoxXorLinearGreedyMILPModel,
     SBoxXorLinearMILPModel,
     SBoxXorLinearMinimumMILPModel,
+    WordwiseImpossibleBoundaryMILPModel,
+    WordwiseImpossibleBoundaryResult,
     load_bundled_sbox_milp_inequalities,
+    wordwise_pattern,
 )
 from claasp.representations.constraints.milp.exporter import LPExporter
 from claasp.representations.constraints.milp.lowering import (
@@ -117,7 +120,10 @@ __all__ = [
     "WordSemiDeterministicDifferentialLinearMILPModel",
     "WordwiseActivityResult",
     "WordwiseBranchNumberActiveSBoxesMILPModel",
+    "WordwiseImpossibleBoundaryMILPModel",
+    "WordwiseImpossibleBoundaryResult",
     "check_present_milp_trail",
     "cnf_to_milp",
     "load_bundled_sbox_milp_inequalities",
+    "wordwise_pattern",
 ]

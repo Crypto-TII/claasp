@@ -35,6 +35,11 @@ from claasp.representations.constraints.milp.components.sbox_inequalities import
     SBoxXorLinearMinimumMILPModel,
     load_bundled_sbox_milp_inequalities,
 )
+from claasp.representations.constraints.milp.components.truncated import (
+    WordwiseImpossibleBoundaryMILPModel,
+    WordwiseImpossibleBoundaryResult,
+    wordwise_pattern,
+)
 
 __all__ = [
     "BitwiseAndDeterministicTruncatedMILPModel",
@@ -59,5 +64,8 @@ __all__ = [
     "SBoxXorLinearGreedyMILPModel",
     "SBoxXorLinearMinimumMILPModel",
     "SBoxXorLinearMILPModel",
+    "WordwiseImpossibleBoundaryMILPModel",
+    "WordwiseImpossibleBoundaryResult",
     "load_bundled_sbox_milp_inequalities",
+    "wordwise_pattern",
 ]
