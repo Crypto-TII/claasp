@@ -40,7 +40,7 @@ representation layer.
 | Legacy class | Model kind | v5 coverage | Disposition |
 |---|---|---|---|
 | `MznModel` and `MiniZincModelParts` | Backend container, solver invocation, parsing, weight constraints | `cp.model.MiniZincModel` plus the MiniZinc driver | Covered; do not port wrapper |
-| `MznCipherModel` | Functional component execution | CNF-to-MiniZinc lowering for constants, structural wiring, XOR/add, AND, OR, NOT, fixed and variable shifts/rotations, modular addition/subtraction, and bit-vector S-boxes | Partial; recover remaining multiplication and specialized component encodings, not mutable dispatch |
+| `MznCipherModel` | Functional component execution | CNF-to-MiniZinc lowering for constants, structural wiring, XOR/add/multiply over GF(2), AND, OR, NOT, fixed and variable shifts/rotations, modular addition/subtraction/power-of-two multiplication, and bit-vector S-boxes | Partial; IDEA and explicit non-power-of-two multiplication are extensions because legacy exposes no functional backend encoding |
 | `MznCipherModelARXOptimized` | Functional ARX construction | Portable Boolean lowering | Inspect; its legacy builder can omit modular addition, so do not port the class as an optimization |
 | `MznXorDifferentialModel` | Exact XOR-differential trail search | Local/native models plus portable generic `WordDifferentialCPModel` | Covered for the reviewed Word graph subset; continue component coverage |
 | `MznXorDifferentialModelARXOptimized` | ARX XOR-differential search with per-round n-window pruning | `SpeckARXWindowDifferentialCPModel` over the exact Speck CP formulation | Recovered for reviewed Speck32/64 slices as an opt-in heuristic |
@@ -78,7 +78,7 @@ representation layer.
 | Legacy class | Model kind | v5 coverage | Disposition |
 |---|---|---|---|
 | `SatModel` | CNF container, solver selection, parsing, weight constraints | `CNFFormula`, exporters, and explicit SAT drivers | Covered; do not port wrapper |
-| `SatCipherModel` | Functional execution | Exact `BooleanCNFModel` for constants, structural wiring, XOR/add, AND, OR, NOT, fixed and variable shifts/rotations, modular addition/subtraction, and bit-vector S-boxes | Partial; recover remaining multiplication and specialized component coverage, not mutable dispatch |
+| `SatCipherModel` | Functional execution | Exact `BooleanCNFModel` for constants, structural wiring, XOR/add/multiply over GF(2), AND, OR, NOT, fixed and variable shifts/rotations, modular addition/subtraction/power-of-two multiplication, and bit-vector S-boxes | Covered for established functional encodings; IDEA's legacy methods are explicit stubs, while non-power-of-two multiplication is a v5 extension |
 | `CmsSatCipherModel` | Functional execution using native XOR clauses | `BooleanNativeXorSATModel` plus extended-DIMACS export | Recovered for the reviewed Boolean graph subset and benchmarked against ordinary CNF |
 | `SatXorDifferentialModel` | Exact weighted XOR-differential search and n-window heuristic | `WordDifferentialSATModel` plus opt-in `NWindowSATStrategy` | Generic assembly and dependency-free uniform/per-round/per-component n-window strategy recovered |
 | `CmsSatXorDifferentialModel` | XOR-differential search with native XOR clauses | `WordDifferentialNativeXorSATModel` | Recovered for the typed Word graph subset and benchmarked against ordinary CNF |
@@ -99,7 +99,7 @@ representation layer.
 | Legacy class | Model kind | v5 coverage | Disposition |
 |---|---|---|---|
 | `SmtModel` | SMT-LIB container, solver invocation, parsing, weight constraints | `SMTFormula`, exporter, and explicit drivers | Covered; do not port wrapper |
-| `SmtCipherModel` | Functional execution | CNF-derived `BooleanSMTModel` for constants, structural wiring, XOR/add, AND, OR, NOT, fixed and variable shifts/rotations, modular addition/subtraction, and bit-vector S-boxes | Partial; recover remaining multiplication and specialized component coverage, not mutable dispatch |
+| `SmtCipherModel` | Functional execution | CNF-derived `BooleanSMTModel` for constants, structural wiring, XOR/add/multiply over GF(2), AND, OR, NOT, fixed and variable shifts/rotations, modular addition/subtraction/power-of-two multiplication, and bit-vector S-boxes | Covered for established functional encodings; IDEA's legacy methods are explicit stubs, while non-power-of-two multiplication is a v5 extension |
 | `SmtXorDifferentialModel` | Weighted XOR-differential search | Local S-box/modular-add encodings and generic word-differential composition | Reviewed Word subset covered with exact SAT-formula parity and independent Z3 decoding; continue unsupported components |
 | `SmtXorLinearModel` | Weighted XOR-linear search | Local S-box/modular-add encodings and generic word-linear composition | Reviewed Word subset covered with exact SAT-formula parity and independent Z3 decoding; continue unsupported components |
 | `SmtDeterministicTruncatedXorDifferentialModel` | Deterministic truncated search | Local modular-add and generic Word-graph SMT strategies | Covered by the recovered paired-carry Boolean relation and typed independent decoding |
@@ -167,8 +167,8 @@ The current v5 local component models cover a much smaller but explicit set:
 
 - functional SAT for constants, identity/permutation/fixed and variable
   shift/rotation wiring, XOR/add, bitwise AND/OR/NOT, modular
-  addition/subtraction, and bit-vector S-boxes; SMT, CP, and functional MILP
-  reuse this supported CNF subset;
+  addition/subtraction/power-of-two multiplication, and bit-vector S-boxes;
+  SMT, CP, and functional MILP reuse this supported CNF subset;
 - XOR-differential and XOR-linear S-box relations in SMT and MILP, plus the
   XOR-differential S-box and BCT relations in CP;
 - XOR-differential and XOR-linear modular addition in SMT, XOR-linear modular
@@ -234,7 +234,7 @@ benchmark it.
 
 | Strategy family | Legacy source | v5 baseline | Optional dependencies | Parity | Benchmark |
 |---|---|---|---|---|---|
-| Functional component models | `cp/mzn_models/mzn_cipher_model.py`, `milp/milp_models/milp_cipher_model.py`, `sat/sat_models/sat_cipher_model.py`, `smt/smt_models/smt_cipher_model.py`, `components/*` | `BooleanCNFModel` and derived SMT/CP/MILP forms | MiniSat, Z3, MiniZinc/Chuffed, and GLPK | OR, NOT, fixed and variable shifts/rotations, and exact sequential ripple-borrow subtraction join the existing subset; exhaustive non-power-of-two shift tests preserve CLAASP's modulo-width amount semantics and one composed graph solves with validated assignments on all four backends | [Cross-backend functional word components](data/functional_word_components_benchmark.json); modular multiplication and specialized components remain |
+| Functional component models | `cp/mzn_models/mzn_cipher_model.py`, `milp/milp_models/milp_cipher_model.py`, `sat/sat_models/sat_cipher_model.py`, `smt/smt_models/smt_cipher_model.py`, `components/*` | `BooleanCNFModel` and derived SMT/CP/MILP forms | MiniSat, Z3, MiniZinc/Chuffed, and GLPK | OR, NOT, fixed and variable shifts/rotations, exact sequential ripple-borrow subtraction, GF(2) multiplication, and power-of-two modular multiplication join the existing subset; exhaustive small-width tests and one composed graph validate the relations | [Cross-backend functional word components](data/functional_word_components_benchmark.json); IDEA and explicit non-power-of-two modular multiplication remain v5 extension work because their legacy backend methods are absent or explicit stubs |
 | CP XOR differential | `cp/mzn_models/mzn_xor_differential_model.py`, `components/*` | Local CP S-box plus portable generic `WordDifferentialCPModel` | MiniZinc and selected CP/MIP solver | Exact ToySpeck fixed-weight witness decoded and independently rechecked under Chuffed | [Portable generic Word trails](data/cp_word_trail_benchmark.json) |
 | CP ARX optimized differential | `cp/mzn_models/mzn_xor_differential_model_arx_optimized.py`, `components/modular_component.py` | Exact `SpeckDifferentialCPModel` plus opt-in `SpeckARXWindowDifferentialCPModel` | MiniZinc and selected solver | Legacy-disabled window equals the exact baseline; a three-bit per-round window solves and independently decodes under Chuffed | [Exact versus n-window Speck](data/cp_arx_window_benchmark.json) |
 | CP active-S-box/two-step search | `cp/mzn_models/mzn_xor_differential_number_of_active_sboxes_model.py`, `mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model.py` | Exact two-stage PRESENT activity then fixed-activity weight optimization | MiniZinc and selected solver | Chuffed proves two active S-boxes then weight four; decoded DDT trails recheck independently | [Activity](data/cp_active_sboxes_benchmark.json) and [fixed activity](data/cp_fixed_active_sboxes_benchmark.json); generic component coverage pending |

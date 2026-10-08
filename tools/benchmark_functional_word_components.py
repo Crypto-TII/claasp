@@ -12,6 +12,7 @@ from claasp import Primitive, ValueType, Word
 from claasp.components import (
     BitwiseNot,
     BitwiseOr,
+    ModularMultiply,
     ModularSubtract,
     Shift,
     VariableRotate,
@@ -49,10 +50,11 @@ def _primitive():
     right = primitive.add_component(Shift(left, 2, "right"))
     rotated = primitive.add_component(VariableRotate(right, primitive.input("amount"), "left"))
     shifted = primitive.add_component(VariableShift(rotated, primitive.input("amount"), "right"))
+    subtracted = primitive.add_component(
+        ModularSubtract((shifted, primitive.input("a"), primitive.input("b")))
+    )
     primitive.set_output(
-        primitive.add_component(
-            ModularSubtract((shifted, primitive.input("a"), primitive.input("b")))
-        )
+        primitive.add_component(ModularMultiply((subtracted, primitive.input("c"))))
     )
     return primitive
 
@@ -113,7 +115,7 @@ def main():
         "workload": {
             "description": (
                 "8-bit OR, NOT, fixed and variable shift/rotation, and three-input "
-                "modular-subtract graph"
+                "modular-subtract and power-of-two modular-multiply graph"
             ),
             "variables": len(cnf.variables),
             "clauses": len(cnf.clauses),

@@ -745,6 +745,16 @@ directions; the shared functional benchmark exercises the resulting CNF under
 MiniSat, Z3, Chuffed, and GLPK. Modular multiplication and specialized
 components remain.
 
+The functional multiplication follow-up adds an exact shift-and-add Boolean
+encoding for multiplication modulo ``2**word_width`` and component-wise
+``GF(2)`` multiplication. Sequential products support every declared operand;
+exhaustive three-bit, three-input tests cover all 512 assignments, and native
+XOR expansion is checked against ordinary CNF. The legacy IDEA component at
+the audited v3.2.0 tag explicitly raises ``NotImplementedError`` for SAT, SMT,
+and CP constraints, so no established backend encoding exists to recover.
+IDEA zero-encoded multiplication and ``ModularMultiply`` with an explicit
+non-power-of-two modulus remain honest extension work.
+
 The first active-S-box recovery adds ``PresentActiveSBoxesMILPModel``. It keeps
 the exact two-round PRESENT DDT feasible region byte-for-byte identical to the
 weighted trail model and changes only the objective to count selectors with a

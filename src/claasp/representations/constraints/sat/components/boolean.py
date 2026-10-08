@@ -1,6 +1,6 @@
 """Functional SAT encodings for Boolean operators."""
 
-from claasp.components import Add, BitwiseAnd, BitwiseNot, BitwiseOr, Xor
+from claasp.components import Add, BitwiseAnd, BitwiseNot, BitwiseOr, Multiply, Xor
 from claasp.representations.constraints import ConstraintBackend, _direct_model
 
 
@@ -29,8 +29,10 @@ class BooleanFunctionalSATModel:
     )
 
     def __init__(self, component) -> None:
-        if not isinstance(component, (Add, BitwiseAnd, BitwiseNot, BitwiseOr, Xor)):
-            raise TypeError("component must be Add, Xor, BitwiseAnd, BitwiseOr, or BitwiseNot")
+        if not isinstance(component, (Add, BitwiseAnd, BitwiseNot, BitwiseOr, Multiply, Xor)):
+            raise TypeError(
+                "component must be Add, Multiply, Xor, BitwiseAnd, BitwiseOr, or BitwiseNot"
+            )
         self.component = component
 
     def encode(self, context, outputs, selected) -> None:
@@ -71,12 +73,24 @@ class BooleanFunctionalSATModel:
                             context.auxiliary.append(("xor", (target, accumulator, operand)))
                         context.xor(target, accumulator, operand, label)
                         accumulator = target
-        elif isinstance(component, BitwiseAnd):
+        elif isinstance(component, (BitwiseAnd, Multiply)):
             for position, output in enumerate(outputs):
                 for bit, target in enumerate(output):
-                    context.and_(
-                        target, selected[0][position][bit], selected[1][position][bit], label
-                    )
+                    operands = [group[position][bit] for group in selected]
+                    accumulator = operands[0]
+                    for operand_number, operand in enumerate(operands[1:], start=1):
+                        is_last = operand_number == len(operands) - 1
+                        intermediate = (
+                            target
+                            if is_last
+                            else context.allocate(
+                                f"__aux_{label}_{position}_{bit}_{operand_number}"
+                            )
+                        )
+                        context.and_(intermediate, accumulator, operand, label)
+                        if not is_last:
+                            context.auxiliary.append(("and", (intermediate, accumulator, operand)))
+                        accumulator = intermediate
         elif isinstance(component, BitwiseOr):
             for position, output in enumerate(outputs):
                 for bit, target_output in enumerate(output):
