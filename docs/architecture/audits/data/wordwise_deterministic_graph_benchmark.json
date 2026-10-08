@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "workload": {
+    "description": "one-round 4-bit-field ToyAES four-state wordwise propagation with one known active plaintext unit and zero key",
+    "timeout_seconds": 30
+  },
+  "results": [
+    {
+      "backend": "Chuffed",
+      "variables": 324,
+      "constraints": 1274,
+      "construction_seconds_median": 0.0011927914997613698,
+      "solver_seconds_median": 0.048340145999645756,
+      "repeats": 10,
+      "assignment_valid": true,
+      "solver_status": "satisfied"
+    },
+    {
+      "backend": "GLPK",
+      "variables": 324,
+      "constraints": 1274,
+      "construction_seconds_median": 0.0031699169999228616,
+      "solver_seconds_median": 0.004994333000013285,
+      "repeats": 10,
+      "assignment_valid": true,
+      "solver_status": "optimal"
+    }
+  ]
+}

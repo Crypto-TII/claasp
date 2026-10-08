@@ -14,9 +14,14 @@ from claasp.representations.constraints.milp import (
     WordLinearMILPModel,
     WordSemiDeterministicDifferentialLinearMILPModel,
     WordwiseBranchNumberActiveSBoxesMILPModel,
+    WordwiseDeterministicTruncatedMILPModel,
     WordwiseImpossibleBoundaryMILPModel,
 )
-from claasp.semantics.cryptanalysis import legacy_wordwise_impossible_fixture
+from claasp.semantics.cryptanalysis import (
+    WordwiseDifferenceKind,
+    WordwiseXorDifference,
+    legacy_wordwise_impossible_fixture,
+)
 
 pytestmark = pytest.mark.external
 
@@ -31,6 +36,29 @@ def test_glpk_recovers_toyaes_wordwise_active_sbox_sequence():
         solved = GLPKSolver(timeout_seconds=30).solve(model.milp_model())
         assert solved.status is MILPStatus.OPTIMAL
         assert model.decode_activity(solved.assignment).active_sboxes == expected
+
+
+def test_glpk_solves_complete_four_state_wordwise_graph():
+    zero = WordwiseXorDifference(4, WordwiseDifferenceKind.ZERO)
+    model = WordwiseDeterministicTruncatedMILPModel(
+        ToyAES(number_of_rounds=1, word_size=4, state_size=2),
+        fixed_input_differences={
+            "plaintext": (WordwiseXorDifference.known(4, 1), zero, zero, zero)
+        },
+        zero_difference_inputs=("key",),
+    )
+
+    solved = GLPKSolver(timeout_seconds=30).solve(model.milp_model())
+    trail = model.decode_characteristic(solved.assignment)
+
+    assert solved.status is MILPStatus.OPTIMAL
+    assert tuple(item.kind for item in trail.output_differences) == (
+        WordwiseDifferenceKind.NONZERO,
+        WordwiseDifferenceKind.ZERO,
+        WordwiseDifferenceKind.ZERO,
+        WordwiseDifferenceKind.ZERO,
+    )
+    assert model.check_characteristic(trail)
 
 
 @pytest.mark.parametrize(

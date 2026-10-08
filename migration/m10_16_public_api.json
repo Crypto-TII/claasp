@@ -26536,6 +26536,12 @@
       "qualified_name": "claasp.representations.constraints.cp.WordSemiDeterministicDifferentialLinearCPModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.cp.trails.WordwiseDeterministicTruncatedCPModel",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.cp.WordwiseDeterministicTruncatedCPModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.cp.trails.WordwiseDifferenceCPModel",
       "defined_in": "claasp.representations.constraints.cp.trails",
       "kind": "class",
@@ -27283,6 +27289,31 @@
       "qualified_name": "claasp.representations.constraints.cp.trails.WordSemiDeterministicDifferentialLinearCPModel.decode_trail"
     },
     {
+      "canonical_name": "claasp.representations.constraints.cp.trails.WordwiseDeterministicTruncatedCPModel.__init__",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "documented_by": "claasp.representations.constraints.cp.trails.WordwiseDeterministicTruncatedCPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.cp.trails.WordwiseDeterministicTruncatedCPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.WordwiseDeterministicTruncatedCPModel.check_characteristic",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.trails.WordwiseDeterministicTruncatedCPModel.check_characteristic"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.WordwiseDeterministicTruncatedCPModel.cp_model",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.trails.WordwiseDeterministicTruncatedCPModel.cp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.WordwiseDeterministicTruncatedCPModel.decode_characteristic",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.trails.WordwiseDeterministicTruncatedCPModel.decode_characteristic"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.cp.trails.WordwiseDifferenceCPModel.__init__",
       "defined_in": "claasp.representations.constraints.cp.trails",
       "documented_by": "claasp.representations.constraints.cp.trails.WordwiseDifferenceCPModel",
@@ -27612,6 +27643,12 @@
       "defined_in": "claasp.representations.constraints.milp.trails",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.milp.WordwiseBranchNumberActiveSBoxesMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.trails.WordwiseDeterministicTruncatedMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.WordwiseDeterministicTruncatedMILPModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseImpossibleBoundaryMILPModel",
@@ -29076,6 +29113,31 @@
       "qualified_name": "claasp.representations.constraints.milp.trails.WordwiseBranchNumberActiveSBoxesMILPModel.milp_model"
     },
     {
+      "canonical_name": "claasp.representations.constraints.milp.trails.WordwiseDeterministicTruncatedMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.trails",
+      "documented_by": "claasp.representations.constraints.milp.trails.WordwiseDeterministicTruncatedMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.trails.WordwiseDeterministicTruncatedMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.trails.WordwiseDeterministicTruncatedMILPModel.check_characteristic",
+      "defined_in": "claasp.representations.constraints.milp.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.trails.WordwiseDeterministicTruncatedMILPModel.check_characteristic"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.trails.WordwiseDeterministicTruncatedMILPModel.decode_characteristic",
+      "defined_in": "claasp.representations.constraints.milp.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.trails.WordwiseDeterministicTruncatedMILPModel.decode_characteristic"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.trails.WordwiseDeterministicTruncatedMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.trails.WordwiseDeterministicTruncatedMILPModel.milp_model"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.milp.components.truncated.wordwise_pattern",
       "defined_in": "claasp.representations.constraints.milp.components.truncated",
       "kind": "function",
@@ -29857,6 +29919,18 @@
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "dataclass",
       "qualified_name": "claasp.representations.constraints.sat.WordSemiDeterministicDifferentialLinearSATTrail"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.WordwiseDeterministicTruncatedCharacteristic"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedSATModel",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.WordwiseDeterministicTruncatedSATModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components",
@@ -31604,6 +31678,66 @@
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "property",
       "qualified_name": "claasp.representations.constraints.sat.trails.WordSemiDeterministicDifferentialLinearSATTrail.middle_weight"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic.__init__",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic.component_differences",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic.component_differences"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic.input_differences",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic.input_differences"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic.output_differences",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic.output_differences"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic.semantic_assignment",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedCharacteristic.semantic_assignment"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedSATModel.check_characteristic",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedSATModel.check_characteristic"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedSATModel.cnf_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedSATModel.decode_characteristic",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordwiseDeterministicTruncatedSATModel.decode_characteristic"
     },
     {
       "canonical_name": "claasp.representations.constraints.smt",
