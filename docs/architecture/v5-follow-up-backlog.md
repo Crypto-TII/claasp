@@ -4,16 +4,15 @@ This is a living engineering backlog for review findings that should not be
 forced into one pull request. It is not user documentation and is not included
 in a Sphinx table of contents.
 
-The status labels describe the current working tree, not necessarily changes
-already merged into the target branch:
+The status labels describe the latest merged target branch:
 
-- **In progress**: implemented or being implemented in the current worktree;
+- **Complete**: merged and verified on the target branch;
 - **Next PR**: sufficiently defined follow-up work;
 - **Research**: requires design or literature validation before implementation.
 
 ## Current documentation and first-use PR
 
-Status: **In progress**
+Status: **Complete**
 
 - Keep migration reports and audit terminology out of the user guide. User
   documentation must describe stable CLAASP concepts rather than migration
@@ -41,12 +40,12 @@ Status: **In progress**
   records and audits under `docs/architecture/`.
 - Provide contributing and test-running instructions in the developer guide.
 
-Before opening the PR, verify both Sphinx builds and doctest suites and inspect
+Completion included both Sphinx builds and doctest suites plus inspection of
 the generated Getting started and Transformations HTML pages.
 
 ## Trail result and report usability PR
 
-Status: **In progress; split from the documentation PR before review**
+Status: **Complete; delivered with the documentation and first-use work**
 
 - Return a first-class trail result that can be displayed with `trail.show()`.
 - Display bit patterns without the redundant `/width` suffix when the table
@@ -115,11 +114,11 @@ Requirements:
 
 ## Constraint-model organization PR
 
-Status: **In progress**
+Status: **Complete**
 
-Normalize where backend-specific component models live. The current placement
-is inconsistent: S-box models, for example, are spread across SMT
-`transitions.py`, MILP `sbox.py`, CP `trails.py`, and SAT `lowering.py`.
+The completed move normalized backend-specific component models under the
+layout below. Previous compatibility modules remain only where public imports
+require them.
 
 Target layout:
 
@@ -146,14 +145,18 @@ Use explicit class names when a component has several models, for example
 `SBoxFunctionalSATModel`, `SBoxXorDifferentialSATModel`, and
 `SBoxXorLinearSATModel`.
 
-This should be a behavior-preserving move with import compatibility handled
-deliberately and tests retained for each public model.
+This was a behavior-preserving move with deliberate compatibility exports and
+tests retained for each public model.
 
-Implementation inventory notes:
+Current implementation notes:
 
-- SAT currently has functional component encodings only; no SAT-local
-  differential, linear, truncated, or boomerang component model exists to
-  rename or move.
+- SAT now has explicit functional, differential, linear, deterministic-,
+  probabilistic-, and semi-deterministic-truncated local component models.
+  Differential-linear boundary relations also live under ``components/``;
+  boomerang remains a CP-local component family.
+- Complete deterministic and semi-deterministic differential-linear trail
+  models now exist for SAT, CP, and MILP. They are recovered backend models,
+  not outstanding organization work.
 - The SMT Speck and generic word models assemble complete trails, so their
   implementation belongs in ``trails.py`` even though compatibility modules
   retain the previous import paths.
@@ -331,6 +334,11 @@ joint orchestration between independently recovered submodels are ordinary
 extension work, not an indefinite legacy-recovery queue. Provenance and exact
 paper-to-encoding claims remain owned by the separate literature audit.
 
+The paragraphs below are a chronological record of already merged recovery
+PRs. “First,” “following,” and “next” describe merge order, not pending work.
+The current disposition is authoritative in the inventory linked below and in
+the completed provenance ledger above.
+
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
 It covers every legacy backend search-model class, the component/backend
@@ -400,8 +408,8 @@ small modular-add support and weights, and focused MiniSat solving. The modular
 addition classes reuse the already verified backend-neutral Boolean clauses but
 publish SAT provenance and SAT containers; they do not duplicate a competing
 formula. Generic graph-wide trail assembly, the optional n-window heuristic,
-and their like-for-like solver benchmarks remain in the immediately following
-slices.
+and their like-for-like solver benchmarks were delivered in the immediately
+following slices.
 
 The native-XOR slice adds an immutable mixed CNF/parity container, explicit
 functional component strategies, an independently checkable ordinary-CNF
@@ -437,7 +445,7 @@ native record back to the ordinary formula, preserves exact trail counts, and
 requires the CryptoMiniSat driver for direct enumeration. Its committed
 ordinary-versus-native benchmark uses identical restrictions and leaves
 ordinary CNF as the portable default. SAT truncated and impossible models are
-the next recovery slice.
+recorded in the next recovery slice.
 
 The deterministic-truncated native-XOR slice adds
 ``WordDeterministicTruncatedNativeXorSATModel``. Legacy
@@ -513,8 +521,9 @@ fixture is satisfiable at its minimum bound of 100 under MiniSat, Kissat, and
 CryptoMiniSat, and every decoded round is independently rechecked. The
 committed ten-run benchmark also records the portable CNF cost—554,782
 variables and 1,327,845 clauses for this bounded fixture—so compact legacy
-semi-deterministic windows remain a performance-recovery target rather than
-being treated as equivalent without measurement.
+semi-deterministic windows were retained as a measured recovery target rather
+than being treated as equivalent without evidence. They were delivered in the
+following slices.
 
 The local semi-deterministic slice recovers look-ahead windows 0 through 3 as
 ``ModularAddSemiDeterministicTruncatedSATModel``. A repository tool reads only
@@ -562,7 +571,8 @@ transitions; GLPK solves and independently decodes both strategies in the
 [ten-run comparison](audits/data/milp_undisturbed_sbox_benchmark.json). The
 canonical Docker recipe now pins Espresso 2.3 for regeneration and checks it
 in the release smoke test. The one-hot formulation remains the default, and
-literature correspondence remains ``TBD`` pending a separate provenance audit.
+the provenance audit classifies both exhaustive and Espresso forms as `N/A`
+because they encode direct finite projections of the S-box relation.
 
 The wordwise-Espresso slice recovers both legacy generated relations as
 explicit alternatives: ``WordwiseXorEspressoMILPModel`` for four-bit,
@@ -574,8 +584,9 @@ and 256 typed rows; GLPK solves and independently decodes fixed transitions for
 all four formulations. The [ten-run comparison](audits/data/milp_wordwise_espresso_benchmark.json)
 records substantially smaller generated formulations for this reviewed size.
 Generation uses the pinned offline Espresso tool and commits deterministic JSON
-rather than restoring mutable pickle caches. Literature correspondence remains
-``TBD`` pending a separate provenance audit.
+rather than restoring mutable pickle caches. The provenance audit verifies the
+four-state XOR and dense-MDS relations against Sun--Gérault--Wang--Wang,
+Sections 2.1, 3.1, and 3.2.
 
 The XOR-inequality slice recovers the legacy no-auxiliary formulation as
 ``XorImpossiblePointMILPModel``. It generates one excluding inequality for
@@ -686,7 +697,8 @@ The matching semi-deterministic CP slice adds
 look-ahead-window middle and its deliberately separate estimated weight while
 translating the complete composition exactly to MiniZinc. Chuffed solves and
 independently decodes the reviewed Speck32/64-3 fixture; the middle relation's
-literature correspondence remains unaudited and is not strengthened here.
+literature correspondence was audited and remains `TBD` because no matching
+primary-source construction was found.
 
 The standalone CP slice adds ``SpeckSemiDeterministicTruncatedCPModel`` for
 complete Speck32/64 trails. It exposes fixed typed boundaries and decodes every
@@ -721,7 +733,7 @@ three sections on Speck32/64-3.
 The matching semi-deterministic MILP composition adds
 ``WordSemiDeterministicDifferentialLinearMILPModel``. It translates the
 recovered look-ahead-window middle exactly but deliberately excludes that
-unaudited estimate from the historical outer objective. The decoded result
+unresolved estimate from the historical outer objective. The decoded result
 continues to expose ``middle_weight`` separately, and GLPK independently
 validates the differential, middle, and linear sections.
 
@@ -738,8 +750,10 @@ one-bit truth tables, while MiniSat, Kissat, and CryptoMiniSat accept and reject
 the same fixed boundaries. The canonical 32-bit benchmark compares the direct
 relations with exhaustive forbidden-assignment CNF under identical solvers and
 inputs. The direct upper relation halves the clause count and the direct lower
-relation removes one third of the clauses. Both models retain ``TBD``
-literature provenance. The audited ``origin/develop`` source has SHA-256
+relation removes one third of the clauses. The provenance audit classifies
+both direct connector models as `N/A`; they are complete one-bit relations,
+not paper-derived constructions. The audited ``origin/develop`` source has
+SHA-256
 ``d980c748168ab6387d07cec786a73831472c7c6185b2c04c4e86783fa478958e``;
 the corrective branch at ``af85330e`` has SHA-256
 ``ed77f50a89bfc502598f847fddd1ee8ece92e63c3ce059def2c401e8b0fdca8b``.
@@ -794,12 +808,11 @@ Kissat solve the same unbounded-middle Speck32/64-3 fixture; the ten-run
 benchmark records both without selecting a new default. Literature provenance
 for the semi-deterministic relation remains ``TBD``.
 
-Recover each selected strategy in a small component- or backend-scoped PR.
-Before copying code, generated inequalities, or data, verify its license and
-provenance. Keep optional solver dependencies isolated, give each formulation
-an explicit public name, and add compatibility imports only where an existing
-public import requires them. Restore or reconstruct focused fixtures and test
-behavioral parity independently of performance.
+The completed series recovered each selected strategy in a small component- or
+backend-scoped PR. It verified licenses before copying code or generated data,
+kept optional solver dependencies isolated, gave alternatives explicit public
+names, and retained compatibility imports where public imports required them.
+Focused fixtures established behavioral parity independently of performance.
 
 The recovery ledger was reconciled after the cross-backend slices: native-XOR
 functional SAT, probabilistic and semi-deterministic truncated SAT, and both
@@ -1023,14 +1036,16 @@ carry/borrow automaton rather than copied as an opaque legacy table. Exhaustive
 three-bit testing checks all 4,096 switch tuples against direct quartet
 counting; decoded 16-bit witnesses are independently counted by the scalable
 semantic automaton. This is the local switch needed by the legacy top/bottom
-search, not yet the complete boomerang trail assembler or weight objective.
+search. The complete trail assembler and corrected boomerang probability
+weight were delivered by the later composition and correctness PRs below.
 
 The first high-level monomial-query recovery adds ``MonomialDegreeMILPModel``
 and ``CubeMonomialFeasibilityMILPModel`` over the verified portable Boolean
 monomial graph. GLPK recovers a degree-two witness for a one-round Simon output
 bit, accepts its selected two-bit cube, and rejects an excluded cube. These
 queries do not pretend to recover parity: superpoly coefficients and tightness
-by solution-pool parity still need an explicit complete-enumeration strategy.
+by solution-pool parity were deliberately left to the later exact-superpoly,
+solution-pool, and parity-projection follow-ups recorded below.
 
 The conditional deterministic-truncated ARX audit found no second formulation
 to port. The legacy
