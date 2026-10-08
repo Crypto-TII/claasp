@@ -1,5 +1,8 @@
 """Native CP lowering of shared cryptanalytic trail semantics."""
 
+import re
+from dataclasses import dataclass
+
 from claasp.components import BitVectorSBox, Permutation, Rotate
 from claasp.domains import Word
 from claasp.representations.constraints import (
@@ -7,6 +10,9 @@ from claasp.representations.constraints import (
     ConstraintModelApplication,
     _direct_model,
     _unaudited_model,
+)
+from claasp.representations.constraints.cp.components import (
+    ModularAddBoomerangCPModel as _ModularAddBoomerangCPModel,
 )
 from claasp.representations.constraints.cp.components import (
     ModularAddDeterministicTruncatedCPModel as _ModularAddDeterministicTruncatedCPModel,
@@ -51,6 +57,7 @@ from claasp.semantics.cryptanalysis import (
 )
 
 ModularAddDeterministicTruncatedCPModel = _ModularAddDeterministicTruncatedCPModel
+ModularAddBoomerangCPModel = _ModularAddBoomerangCPModel
 ProbabilisticTruncatedModularAddCPModel = _ProbabilisticTruncatedModularAddCPModel
 SBoxBoomerangCPModel = _SBoxBoomerangCPModel
 SBoxDifferenceCPModel = _SBoxDifferenceCPModel
@@ -1555,6 +1562,222 @@ class WordDifferentialCPModel:
         if self._query is None:
             raise ValueError("build the CP model before checking")
         return self._sat_model.check_characteristic(trail)
+
+
+@dataclass(frozen=True, slots=True)
+class ModularAddBoomerangTrailResult:
+    """Two exact differential characteristics joined by one add switch.
+
+    EXAMPLES::
+
+        >>> from types import SimpleNamespace
+        >>> result = ModularAddBoomerangTrailResult(
+        ...     SimpleNamespace(total_weight=2), SimpleNamespace(weight=1),
+        ...     SimpleNamespace(total_weight=3),
+        ... )
+        >>> (result.search_weight, result.total_weight)
+        (5, 6)
+    """
+
+    upper: object
+    switch: object
+    lower: object
+
+    @property
+    def search_weight(self):
+        """Return the upper-plus-lower objective optimized by the CP model."""
+
+        return self.upper.total_weight + self.lower.total_weight
+
+    @property
+    def total_weight(self):
+        """Return the decoded characteristic weight including the switch."""
+
+        return self.search_weight + self.switch.weight
+
+
+class ModularAddBoomerangTrailCPModel:
+    """Compose top and bottom Word trails through an exact modular-add switch.
+
+    The supplied top graph must expose the switch word as its output. The
+    selected bottom input is connected to the lower side of the switch. The
+    CP objective minimizes the two characteristic weights; the exact switch
+    count and weight are decoded and reported separately because the recovered
+    legacy ARX objective did not charge the switch relation.
+
+    EXAMPLES::
+
+        >>> from claasp import Primitive, ValueType, Word
+        >>> from claasp.components import ModularAdd
+        >>> def add_graph(name):
+        ...     graph = Primitive(name, {"left": ValueType(Word(4), (1,)),
+        ...         "right": ValueType(Word(4), (1,))})
+        ...     graph.add_round()
+        ...     graph.set_output(graph.add_component(
+        ...         ModularAdd((graph.input("left"), graph.input("right")))))
+        ...     return graph
+        >>> options = dict(maximum_weight=3, nonzero_input="left",
+        ...     fixed_input_differences={"right": 0})
+        >>> model = ModularAddBoomerangTrailCPModel(
+        ...     WordDifferentialCPModel(add_graph("top"), **options),
+        ...     WordDifferentialCPModel(add_graph("bottom"), **options),
+        ...     ModularAddBoomerangCPModel(4), lower_input="left")
+        >>> "switch_delta_left" in model.cp_model().source()
+        True
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.CP,
+        "ModularAddBoomerangTrailCPModel",
+        "boomerang",
+        "complete top/switch/bottom MiniZinc composition",
+        "The switch is exact; the search objective preserves the legacy upper-plus-lower cost.",
+    )
+
+    def __init__(self, upper, lower, switch, *, lower_input) -> None:
+        if not isinstance(upper, WordDifferentialCPModel) or not isinstance(
+            lower, WordDifferentialCPModel
+        ):
+            raise TypeError("upper and lower must be WordDifferentialCPModel instances")
+        if not isinstance(switch, ModularAddBoomerangCPModel):
+            raise TypeError("switch must be a ModularAddBoomerangCPModel")
+        if lower_input not in lower.primitive.input_ports:
+            raise ValueError("lower_input must name a bottom-graph input")
+        upper_size = upper.primitive.output.value_type.encoded_bit_size
+        lower_size = lower.primitive.input_ports[lower_input].value_type.encoded_bit_size
+        if upper_size != switch.width:
+            raise ValueError("top output must contain exactly one switch word")
+        if lower_size != switch.width:
+            raise ValueError("selected bottom input must contain exactly one switch word")
+        self.upper = upper
+        self.lower = lower
+        self.switch = switch
+        self.lower_input = lower_input
+        self._query: MiniZincModel | None = None
+
+    @staticmethod
+    def _rewrite(lines, replacements):
+        if not replacements:
+            return tuple(lines)
+        pattern = re.compile(r"\b(" + "|".join(map(re.escape, replacements)) + r")\b")
+        return tuple(
+            pattern.sub(lambda match: replacements[match.group(0)], line) for line in lines
+        )
+
+    @classmethod
+    def _boolean_namespace(cls, query, prefix):
+        replacements = {encoded: prefix + encoded for encoded, _ in query.name_mapping}
+        return (
+            cls._rewrite(query.declarations, replacements),
+            cls._rewrite(query.constraints, replacements),
+            {logical: replacements[encoded] for encoded, logical in query.name_mapping},
+            tuple(
+                (replacements[encoded], f"{prefix[:-1]}::{logical}")
+                for encoded, logical in query.name_mapping
+            ),
+        )
+
+    def cp_model(self) -> MiniZincModel:
+        """Return one solver query containing both trails and their switch."""
+
+        upper_query = self.upper.cp_model()
+        lower_query = self.lower.cp_model()
+        switch_query = self.switch.cp_model()
+        upper_declarations, upper_constraints, upper_names, upper_mapping = self._boolean_namespace(
+            upper_query, "upper_"
+        )
+        lower_declarations, lower_constraints, lower_names, lower_mapping = self._boolean_namespace(
+            lower_query, "lower_"
+        )
+        switch_names = {
+            name: "switch_" + name
+            for name in (
+                "delta_left",
+                "delta_right",
+                "nabla_output",
+                "nabla_right",
+                "state",
+                "transitions",
+                "switch_possible",
+            )
+        }
+        switch_declarations = self._rewrite(switch_query.declarations, switch_names)
+        switch_constraints = self._rewrite(switch_query.constraints, switch_names)
+        upper_output = self.upper._sat_model._shared._output
+        lower_input = self.lower._sat_model._shared._ports[self.lower_input]
+        links = []
+        for bit in range(self.switch.width):
+            links.extend(
+                (
+                    f"constraint switch_delta_left[{bit}] = bool2int("
+                    f"{upper_names[upper_output[self.switch.width - bit - 1]]});",
+                    f"constraint switch_nabla_right[{bit}] = bool2int("
+                    f"{lower_names[lower_input[self.switch.width - bit - 1]]});",
+                )
+            )
+        upper_weights = tuple(
+            upper_names[name]
+            for name in self.upper._sat_model._shared._formula.variables
+            if name.startswith("weight_") and not name.startswith("weight_complement_")
+        )
+        lower_weights = tuple(
+            lower_names[name]
+            for name in self.lower._sat_model._shared._formula.variables
+            if name.startswith("weight_") and not name.startswith("weight_complement_")
+        )
+        objective = upper_weights + lower_weights
+        solve = (
+            "solve minimize " + " + ".join(f"bool2int({name})" for name in objective) + ";"
+            if objective
+            else "solve satisfy;"
+        )
+        self._query = MiniZincModel(
+            upper_declarations + lower_declarations + switch_declarations,
+            upper_constraints + lower_constraints + switch_constraints + tuple(links),
+            solve,
+            tuple(
+                dict.fromkeys(
+                    (*upper_query.includes, *lower_query.includes, *switch_query.includes)
+                )
+            ),
+            provenance=(
+                "exact top and bottom Word differential relations",
+                "exact modular-add boomerang feasibility switch",
+                "legacy objective excludes switch weight",
+            ),
+            name_mapping=upper_mapping + lower_mapping,
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_trail(self, assignment):
+        """Decode and independently recheck both trails and the exact switch."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        upper_assignment = {
+            name.removeprefix("upper::"): int(value)
+            for name, value in assignment.items()
+            if name.startswith("upper::")
+        }
+        lower_assignment = {
+            name.removeprefix("lower::"): int(value)
+            for name, value in assignment.items()
+            if name.startswith("lower::")
+        }
+        switch_assignment = {
+            name.removeprefix("switch_"): value
+            for name, value in assignment.items()
+            if name.startswith("switch_")
+        }
+        upper = self.upper.decode_characteristic(upper_assignment)
+        lower = self.lower.decode_characteristic(lower_assignment)
+        switch = self.switch.decode_connectivity(switch_assignment)
+        if upper.output_difference != switch.delta_left.value:
+            raise ValueError("top trail does not meet the modular-add switch")
+        if dict(lower.input_differences)[self.lower_input] != switch.nabla_right.value:
+            raise ValueError("bottom trail does not leave the modular-add switch")
+        return ModularAddBoomerangTrailResult(upper, switch, lower)
 
 
 class WordLinearCPModel:

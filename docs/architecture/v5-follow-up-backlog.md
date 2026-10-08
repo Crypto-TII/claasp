@@ -701,6 +701,15 @@ dimension guard makes the exponential cost visible; the optional Gurobi
 driver remains available for a future scalable solution-pool strategy and is
 not selected by default.
 
+The boomerang assembly follow-up adds
+``ModularAddBoomerangTrailCPModel``. It namespaces complete top and bottom
+``WordDifferentialCPModel`` formulas, links their exposed switch word to the
+exact carry/borrow automaton, and minimizes the recovered upper-plus-lower
+characteristic cost. Decoding independently checks both trails and recomputes
+the switch quartet count; the result reports the search weight separately from
+the exact decoded weight including that switch. Automatic legacy graph
+partitioning and S-box-switch graph assembly remain distinct work.
+
 The first active-S-box recovery adds ``PresentActiveSBoxesMILPModel``. It keeps
 the exact two-round PRESENT DDT feasible region byte-for-byte identical to the
 weighted trail model and changes only the objective to count selectors with a

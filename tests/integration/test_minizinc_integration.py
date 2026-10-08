@@ -3,13 +3,16 @@ import subprocess
 
 import pytest
 
+from claasp import Primitive, ValueType, Word
 from claasp.analysis import AnalysisProblem, FixedValue
+from claasp.components import ModularAdd
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
 from claasp.primitives import AES, Present, Simon, Speck, ToySpeck
 from claasp.representations.constraints.cp import (
     ImpossibleBoundaryCPModel,
     MiniZincModel,
     ModularAddBoomerangCPModel,
+    ModularAddBoomerangTrailCPModel,
     ModularAddDeterministicTruncatedCPModel,
     PresentActiveSBoxesCPModel,
     PresentDifferentialCPModel,
@@ -72,6 +75,40 @@ def test_minizinc_modadd_boomerang_automaton_accepts_exactly_possible_switches()
         impossible.cp_model()
     )
     assert rejected.status is CPStatus.UNSATISFIABLE
+
+
+def test_minizinc_solves_and_decodes_complete_modadd_boomerang_composition():
+    def graph(name):
+        primitive = Primitive(
+            name,
+            {
+                "left": ValueType(Word(4), (1,)),
+                "right": ValueType(Word(4), (1,)),
+            },
+        )
+        primitive.add_round()
+        primitive.set_output(
+            primitive.add_component(ModularAdd((primitive.input("left"), primitive.input("right"))))
+        )
+        return primitive
+
+    options = {
+        "maximum_weight": 3,
+        "nonzero_input": "left",
+        "fixed_input_differences": {"right": 0},
+    }
+    model = ModularAddBoomerangTrailCPModel(
+        WordDifferentialCPModel(graph("upper"), **options),
+        WordDifferentialCPModel(graph("lower"), **options),
+        ModularAddBoomerangCPModel(4),
+        lower_input="left",
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.upper.output_difference == trail.switch.delta_left.value
+    assert dict(trail.lower.input_differences)["left"] == trail.switch.nabla_right.value
+    assert trail.total_weight >= trail.search_weight
 
 
 def test_minizinc_continuous_speck_matches_independent_python_heuristic():

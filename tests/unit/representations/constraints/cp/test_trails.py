@@ -1,7 +1,11 @@
 """Complete CP trail assembly."""
 
+from claasp import Primitive, ValueType, Word
+from claasp.components import ModularAdd
 from claasp.primitives import Present, Speck, ToySpeck
 from claasp.representations.constraints.cp import (
+    ModularAddBoomerangCPModel,
+    ModularAddBoomerangTrailCPModel,
     PresentActiveSBoxesCPModel,
     PresentFixedActiveSBoxesCPModel,
     SpeckARXWindowDifferentialCPModel,
@@ -16,6 +20,43 @@ from claasp.representations.constraints.cp import (
 )
 from claasp.semantics import XOR_DIFFERENTIAL
 from claasp.semantics.cryptanalysis import PropagationProblem
+
+
+def _single_add(name):
+    primitive = Primitive(
+        name,
+        {
+            "left": ValueType(Word(4), (1,)),
+            "right": ValueType(Word(4), (1,)),
+        },
+    )
+    primitive.add_round()
+    primitive.set_output(
+        primitive.add_component(ModularAdd((primitive.input("left"), primitive.input("right"))))
+    )
+    return primitive
+
+
+def _boomerang_model():
+    options = {
+        "maximum_weight": 3,
+        "nonzero_input": "left",
+        "fixed_input_differences": {"right": 0},
+    }
+    return ModularAddBoomerangTrailCPModel(
+        WordDifferentialCPModel(_single_add("upper"), **options),
+        WordDifferentialCPModel(_single_add("lower"), **options),
+        ModularAddBoomerangCPModel(4),
+        lower_input="left",
+    )
+
+
+def test_modadd_boomerang_cp_namespaces_and_links_complete_trails():
+    query = _boomerang_model().cp_model()
+    assert query.solve.startswith("solve minimize")
+    assert "constraint switch_delta_left[0] = bool2int(upper_" in query.source()
+    assert "constraint switch_nabla_right[0] = bool2int(lower_" in query.source()
+    assert query.constraint_models[0].model == ModularAddBoomerangTrailCPModel.model_provenance
 
 
 def test_generic_word_impossible_cp_preserves_complete_split_formula():
