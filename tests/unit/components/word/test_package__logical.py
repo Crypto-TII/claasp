@@ -11,12 +11,12 @@ from claasp.representations.execution import BooleanDegreeEvaluator, BooleanSymb
 def _logical_primitive(width: int = 4) -> Primitive:
     value_type = ValueType(Word(width), (1,))
     primitive = Primitive("logical", {"left": value_type, "right": value_type})
-    primitive.add_round()
-    either = primitive.add_component(BitwiseOr((primitive.input("left"), primitive.input("right"))))
-    both = primitive.add_component(BitwiseAnd((primitive.input("left"), primitive.input("right"))))
-    exclusive = primitive.add_component(Xor((either, both)))
-    output = primitive.add_component(BitwiseNot(exclusive))
-    primitive.set_output(output)
+    primitive._builder.add_round()
+    either = primitive._builder.add_component(BitwiseOr((primitive.input("left"), primitive.input("right"))))
+    both = primitive._builder.add_component(BitwiseAnd((primitive.input("left"), primitive.input("right"))))
+    exclusive = primitive._builder.add_component(Xor((either, both)))
+    output = primitive._builder.add_component(BitwiseNot(exclusive))
+    primitive._builder.set_output(output)
     return primitive
 
 

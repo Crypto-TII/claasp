@@ -38,18 +38,18 @@ class ToySpeck(Primitive):
         round_key = key[3]
 
         def round_function(x, y, key):
-            x = self.add_component(Rotate(x, 0, "right"))
-            x = self.add_component(ModularAdd((x, y)))
-            x = self.add_component(Xor((x, key)))
-            y = self.add_component(Rotate(y, 3, "left"))
-            y = self.add_component(Xor((y, x)))
+            x = self._builder.add_component(Rotate(x, 0, "right"))
+            x = self._builder.add_component(ModularAdd((x, y)))
+            x = self._builder.add_component(Xor((x, key)))
+            y = self._builder.add_component(Rotate(y, 3, "left"))
+            y = self._builder.add_component(Xor((y, x)))
             return x, y
 
         for round_number in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             x, y = round_function(x, y, round_key)
             if round_number + 1 < rounds:
                 index = round_number % len(schedule)
-                constant = self.add_component(Constant(word_type, (round_number,)))
+                constant = self._builder.add_component(Constant(word_type, (round_number,)))
                 schedule[index], round_key = round_function(schedule[index], round_key, constant)
-        self.set_output((x, y))
+        self._builder.set_output((x, y))

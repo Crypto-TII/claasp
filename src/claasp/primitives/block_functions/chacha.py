@@ -58,15 +58,15 @@ class ChaChaKeystreamBlock(Primitive):
             {"plaintext": bit_vector(512), "key": bit_vector(256), "nonce": bit_vector(96)},
             provenance=(("identity", "ChaCha keystream block"),),
         )
-        self.add_round()
-        constant_bits = self.add_component(
+        self._builder.add_round()
+        constant_bits = self._builder.add_component(
             Constant(
                 bit_vector(128),
                 bits_from_int(chacha_constants & ((1 << 128) - 1), 128),
                 component_id="constants",
             )
         )
-        counter_bits = self.add_component(
+        counter_bits = self._builder.add_component(
             Constant(
                 bit_vector(32),
                 bits_from_int(block_count & 0xFFFFFFFF, 32),
@@ -81,14 +81,14 @@ class ChaChaKeystreamBlock(Primitive):
         initial_bits += [
             self.input("nonce")[_little_endian_word_positions(index)] for index in range(3)
         ]
-        feed_forward = [self.pack_bits(bits, 32) for bits in initial_bits]
+        feed_forward = [self._builder.pack_bits(bits, 32) for bits in initial_bits]
         state = [
-            self.pack_bits(self.input("plaintext")[index * 32 : (index + 1) * 32], 32)
+            self._builder.pack_bits(self.input("plaintext")[index * 32 : (index + 1) * 32], 32)
             for index in range(16)
         ]
         for half_round in range(half_rounds):
             if half_round:
-                self.add_round()
+                self._builder.add_round()
             groups = _COLUMNS if (half_round // 2) % 2 == 0 else _DIAGONALS
             rotations = (16, 12) if half_round % 2 == 0 else (8, 7)
             for quarter, indexes in enumerate(groups):
@@ -101,24 +101,24 @@ class ChaChaKeystreamBlock(Primitive):
                     rotations,
                     f"r{half_round}_q{quarter}",
                 )
-        self.add_round()
+        self._builder.add_round()
         summed = [
-            self.add_component(ModularAdd((before, after), component_id=f"feed_forward_{index}"))
+            self._builder.add_component(ModularAdd((before, after), component_id=f"feed_forward_{index}"))
             for index, (before, after) in enumerate(zip(feed_forward, state))
         ]
-        bits = [self.unpack_bits(word) for word in summed]
-        self.set_output(bits)
+        bits = [self._builder.unpack_bits(word) for word in summed]
+        self._builder.set_output(bits)
 
     def _half_quarter_round(self, a, b, c, d, rotations, prefix):
-        a = self.add_component(ModularAdd((a, b), component_id=f"{prefix}_add0"))
+        a = self._builder.add_component(ModularAdd((a, b), component_id=f"{prefix}_add0"))
         d = self._xor_rotate(d, a, rotations[0], f"{prefix}_dr0")
-        c = self.add_component(ModularAdd((c, d), component_id=f"{prefix}_add1"))
+        c = self._builder.add_component(ModularAdd((c, d), component_id=f"{prefix}_add1"))
         b = self._xor_rotate(b, c, rotations[1], f"{prefix}_br0")
         return a, b, c, d
 
     def _xor_rotate(self, left, right, amount, component_id):
-        mixed = self.add_component(Xor((left, right), component_id=f"{component_id}_xor"))
-        return self.add_component(Rotate(mixed, amount, "left", component_id=component_id))
+        mixed = self._builder.add_component(Xor((left, right), component_id=f"{component_id}_xor"))
+        return self._builder.add_component(Rotate(mixed, amount, "left", component_id=component_id))
 
 
 __all__ = ["PARAMETERS_CONFIGURATION_LIST", "ChaChaKeystreamBlock"]

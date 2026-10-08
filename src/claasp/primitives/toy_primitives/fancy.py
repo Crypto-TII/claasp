@@ -68,13 +68,13 @@ class Fancy(Primitive):
         key = self.input("key").select_all()
         key_xor = key_and = None
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             substituted = sbox_layer(
                 self, state, SBOX, component_id_prefix=f"round_{round_number}_sbox"
             )
             if round_number % 2 == 0:
                 # The legacy description stores one output column per row.
-                state = self.add_component(LinearMap(substituted, tuple(zip(*LINEAR_LAYER))))
+                state = self._builder.add_component(LinearMap(substituted, tuple(zip(*LINEAR_LAYER))))
                 if round_number == 0:
                     key_xor = xor_bits(self, key[:12], key[12:])
                     key_and = and_bits(self, key_xor, key[12:])
@@ -102,4 +102,4 @@ class Fancy(Primitive):
                 xor_left = xor_bits(self, add_left, rotated, key_and[:6])
                 xor_right = xor_bits(self, add_right, shifted, key_and[6:])
                 state = concatenate(self, (add_left, xor_left, add_right, xor_right))
-        self.set_output(state)
+        self._builder.set_output(state)

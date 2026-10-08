@@ -72,7 +72,7 @@ class SHA1(BitGraphPrimitive):
             for i in range(16)
         ]
 
-        self.add_round()
+        self._builder.add_round()
         Kt = self.add_constant_component(word_size, K[0])
         initial_state = [self.add_constant_component(word_size, h) for h in H]
         A = initial_state[0]
@@ -84,55 +84,55 @@ class SHA1(BitGraphPrimitive):
         E, D, C, B, A = D, C, ROT_30_B, A, TEMP
         for t in range(1, min(16, number_of_rounds)):
             self.add_round_output_component_in_sha1(A, B, C, D, E)
-            self.add_round()
+            self._builder.add_round()
             TEMP, ROT_30_B = self.rounds_0_19(A, B, C, D, E, Kt, W[t])
             E, D, C, B, A = D, C, ROT_30_B, A, TEMP
 
         for t in range(16, min(20, number_of_rounds)):
             self.add_round_output_component_in_sha1(A, B, C, D, E)
-            self.add_round()
+            self._builder.add_round()
             W.append(self.schedule(W, t))
             TEMP, S_30_B = self.rounds_0_19(A, B, C, D, E, Kt, W[t])
             E, D, C, B, A = D, C, S_30_B, A, TEMP
 
         if number_of_rounds >= 20:
             self.add_round_output_component_in_sha1(A, B, C, D, E)
-            self.add_round()
+            self._builder.add_round()
             Kt = self.add_constant_component(word_size, K[1])
             W.append(self.schedule(W, 20))
             TEMP, S_30_B = self.rounds_20_39(A, B, C, D, E, Kt, W[20])
             E, D, C, B, A = D, C, S_30_B, A, TEMP
             for t in range(21, min(40, number_of_rounds)):
                 self.add_round_output_component_in_sha1(A, B, C, D, E)
-                self.add_round()
+                self._builder.add_round()
                 W.append(self.schedule(W, t))
                 TEMP, S_30_B = self.rounds_20_39(A, B, C, D, E, Kt, W[t])
                 E, D, C, B, A = D, C, S_30_B, A, TEMP
 
         if number_of_rounds >= 40:
             self.add_round_output_component_in_sha1(A, B, C, D, E)
-            self.add_round()
+            self._builder.add_round()
             Kt = self.add_constant_component(word_size, K[2])
             W.append(self.schedule(W, 40))
             TEMP, S_30_B = self.rounds_40_59(A, B, C, D, E, Kt, W[40])
             E, D, C, B, A = D, C, S_30_B, A, TEMP
             for t in range(41, min(60, number_of_rounds)):
                 self.add_round_output_component_in_sha1(A, B, C, D, E)
-                self.add_round()
+                self._builder.add_round()
                 W.append(self.schedule(W, t))
                 TEMP, S_30_B = self.rounds_40_59(A, B, C, D, E, Kt, W[t])
                 E, D, C, B, A = D, C, S_30_B, A, TEMP
 
         if number_of_rounds >= 60:
             self.add_round_output_component_in_sha1(A, B, C, D, E)
-            self.add_round()
+            self._builder.add_round()
             Kt = self.add_constant_component(word_size, K[3])
             W.append(self.schedule(W, 60))
             TEMP, S_30_B = self.rounds_20_39(A, B, C, D, E, Kt, W[60])
             E, D, C, B, A = D, C, S_30_B, A, TEMP
             for t in range(61, number_of_rounds):
                 self.add_round_output_component_in_sha1(A, B, C, D, E)
-                self.add_round()
+                self._builder.add_round()
                 W.append(self.schedule(W, t))
                 TEMP, S_30_B = self.rounds_20_39(A, B, C, D, E, Kt, W[t])
                 E, D, C, B, A = D, C, S_30_B, A, TEMP

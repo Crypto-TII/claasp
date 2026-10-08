@@ -2302,15 +2302,15 @@ class ModularAddBoomerangTrailCPModel:
 
     EXAMPLES::
 
-        >>> from claasp import Primitive, ValueType, Word
+        >>> from claasp import PrimitiveBuilder, ValueType, Word
         >>> from claasp.components import ModularAdd
         >>> def add_graph(name):
-        ...     graph = Primitive(name, {"left": ValueType(Word(4), (1,)),
+        ...     builder = PrimitiveBuilder(name, {"left": ValueType(Word(4), (1,)),
         ...         "right": ValueType(Word(4), (1,))})
-        ...     graph.add_round()
-        ...     graph.set_output(graph.add_component(
-        ...         ModularAdd((graph.input("left"), graph.input("right")))))
-        ...     return graph
+        ...     builder.add_round()
+        ...     output = builder.add_component(
+        ...         ModularAdd((builder.input("left"), builder.input("right"))))
+        ...     return builder.build(output)
         >>> options = dict(maximum_weight=3, nonzero_input="left",
         ...     fixed_input_differences={"right": 0})
         >>> model = ModularAddBoomerangTrailCPModel(

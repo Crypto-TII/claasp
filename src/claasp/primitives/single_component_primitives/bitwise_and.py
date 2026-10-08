@@ -34,10 +34,10 @@ class BitwiseAnd(Primitive):
             word_inputs(word_bit_size, number_of_inputs),
             kind=PrimitiveKind.FUNCTION,
         )
-        self.add_round()
+        self._builder.add_round()
         operands = self.inputs()
-        output = self.add_component(BitwiseAndComponent(operands))
-        self.set_output(output)
+        output = self._builder.add_component(BitwiseAndComponent(operands))
+        self._builder.set_output(output)
 
 
 __all__ = ["BitwiseAnd"]

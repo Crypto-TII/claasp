@@ -67,10 +67,10 @@ def test_prune_orphans_reconstructs_only_the_output_dependency_closure():
         "orphans",
         {"left": ValueType(Word(8), (1,)), "right": ValueType(Word(8), (1,))},
     )
-    graph.add_round()
-    output = graph.add_component(Xor(graph.inputs()), primitive_round=graph.rounds[-1])
-    graph.add_component(Shift(graph.input("left"), 1, "left"))
-    graph.set_output(output)
+    graph._builder.add_round()
+    output = graph._builder.add_component(Xor(graph.inputs()), primitive_round=graph.rounds[-1])
+    graph._builder.add_component(Shift(graph.input("left"), 1, "left"))
+    graph._builder.set_output(output)
 
     pruned = prune_orphans(graph).primitive
 
@@ -96,20 +96,20 @@ def test_inline_reorderings_preserves_speck_and_present_semantics():
 
 def test_inline_reorderings_only_removes_permutation_matrices():
     graph = Primitive("linear", {"state": ValueType(Bit(), (3,))}, kind=PrimitiveKind.PERMUTATION)
-    graph.add_round()
-    reordered = graph.add_component(
+    graph._builder.add_round()
+    reordered = graph._builder.add_component(
         LinearMap(
             graph.input("state"),
             ((0, 1, 0), (0, 0, 1), (1, 0, 0)),
         )
     )
-    mixed = graph.add_component(
+    mixed = graph._builder.add_component(
         LinearMap(
             reordered,
             ((1, 1, 0), (0, 1, 0), (0, 0, 1)),
         )
     )
-    graph.set_output(mixed)
+    graph._builder.set_output(mixed)
 
     transformed = graph.with_inlined_reorderings().primitive
 

@@ -235,13 +235,13 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
         target_domain = target_type.domain
         value = selection
         if not isinstance(source_domain, Bit):
-            value = normalized.unpack_bits(value)
+            value = normalized._builder.unpack_bits(value)
         if isinstance(target_domain, Bit):
             converted = value
         elif isinstance(target_domain, Word):
-            converted = normalized.pack_bits(value, target_domain.width)
+            converted = normalized._builder.pack_bits(value, target_domain.width)
         elif isinstance(target_domain, BinaryExtensionField):
-            converted = normalized.pack_bits(
+            converted = normalized._builder.pack_bits(
                 value,
                 target_domain.degree,
                 output_domain=target_domain,
@@ -270,11 +270,11 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
                     remapped[item.source.owner_id][item.positions] for item in binding.inputs
                 )
                 if binding.kind is BindingKind.JOIN:
-                    output = normalized.join(*inputs)
+                    output = normalized._builder.join(*inputs)
                 elif binding.kind is BindingKind.VIEW:
-                    output = normalized.view(inputs[0])
+                    output = normalized._builder.view(inputs[0])
                 elif binding.kind is BindingKind.PACK_BITS:
-                    output = normalized.pack_bits(
+                    output = normalized._builder.pack_bits(
                         inputs[0],
                         binding.word_width,
                         output_domain=(
@@ -284,13 +284,13 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
                         ),
                     )
                 else:
-                    output = normalized.unpack_bits(inputs[0])
+                    output = normalized._builder.unpack_bits(inputs[0])
                 remapped[binding.binding_id] = as_selection(output)
                 pending_bindings.remove(binding)
                 changed = True
 
     for round_index, candidate_round in enumerate(candidate_rounds):
-        normalized.add_round()
+        normalized._builder.add_round()
         if round_index == 0:
             for name, port in candidate.input_ports.items():
                 remapped[name] = as_selection(
@@ -305,13 +305,13 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
                 "inputs",
                 tuple(remapped[item.source.owner_id][item.positions] for item in component.inputs),
             )
-            remapped[component.component_id] = normalized.add_component(cloned).select_all()
+            remapped[component.component_id] = normalized._builder.add_component(cloned).select_all()
     drain_bindings()
     if pending_bindings:
         raise ValueError("realization contains unresolved structural bindings")
 
     candidate_output = remapped[candidate.output.source.owner_id][candidate.output.positions]
-    normalized.set_output(
+    normalized._builder.set_output(
         convert(candidate_output, reference.output.value_type, "__realization_output")
     )
     return normalized

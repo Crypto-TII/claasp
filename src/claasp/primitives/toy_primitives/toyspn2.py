@@ -36,7 +36,7 @@ class ToySPN2(Primitive):
         state = self.input("plaintext")
         round_key = self.input("key")
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             round_key = rotate_bits(
                 self,
                 round_key,
@@ -50,4 +50,4 @@ class ToySPN2(Primitive):
             state = rotate_bits(
                 self, state, rotation_layer, component_id=f"round_{round_number}_rotation"
             )
-        self.set_output(state)
+        self._builder.set_output(state)

@@ -138,7 +138,7 @@ class KtantanFSR(BitGraphPrimitive):
         fsr = None
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
 
             fa_poly = fa_poly_with_ir if get_ir_bit(round_number, ir_mode) else fa_poly_no_ir
 

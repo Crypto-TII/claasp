@@ -138,7 +138,7 @@ class Serpent(BitGraphPrimitive):
 
         # Open the first CLAASP round.
         # The complete key schedule and encryption round 0 are represented here.
-        self.add_round()
+        self._builder.add_round()
 
         internal_key = self.add_intermediate_output_component(
             [INPUT_KEY],
@@ -167,7 +167,7 @@ class Serpent(BitGraphPrimitive):
         for round_index in range(self.number_of_requested_rounds):
             # Round 0 has already been opened before the key schedule.
             if round_index > 0:
-                self.add_round()
+                self._builder.add_round()
 
             # Key mixing: state XOR Ki.
             state = self.add_xor_component(

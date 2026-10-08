@@ -46,9 +46,9 @@ class VariableShift(Primitive):
             },
             kind=PrimitiveKind.FUNCTION,
         )
-        self.add_round()
-        self.set_output(
-            self.add_component(
+        self._builder.add_round()
+        self._builder.set_output(
+            self._builder.add_component(
                 VariableShiftComponent(
                     self.input("input"),
                     self.input("amount"),

@@ -104,7 +104,7 @@ class SPARX(Primitive):
             return [xor(self, values[2], new_x), xor(self, values[3], new_y), x, y]
 
         for round_number in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             updated = []
             for index, value in enumerate(state):
                 for arx_round in range(arx_rounds):
@@ -113,4 +113,4 @@ class SPARX(Primitive):
                 key = key_update(key, round_number * word_count + index + 1)
             state = diffusion(updated)
         state = [xor(self, value, key[index]) for index, value in enumerate(state)]
-        self.set_output(concatenate(self, *state))
+        self._builder.set_output(concatenate(self, *state))

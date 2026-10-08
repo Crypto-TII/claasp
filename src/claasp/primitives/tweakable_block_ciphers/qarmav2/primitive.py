@@ -138,7 +138,7 @@ class QARMAv2(BitGraphPrimitive):
             list(range(16, 24)) + list(range(8, 16)) + list(range(8)) + list(range(24, 32))
         )
 
-        self.add_round()
+        self._builder.add_round()
 
         # Key initialization
         key_state = self.key_initialization(key_bit_size)
@@ -157,14 +157,14 @@ class QARMAv2(BitGraphPrimitive):
             state, tweak_state = self.direct_round(
                 state, key_state, tweak_state, tweak_permutation, constants_states, round_number
             )
-            self.add_round()
+            self._builder.add_round()
 
         # Reflector
         state, key_state = self.reflector(state, key_state)
 
         # Inverse encryption
         for round_number in list(range(1, number_of_rounds + 1))[::-1]:
-            self.add_round()
+            self._builder.add_round()
             state, tweak_state = self.inverse_round(
                 state, key_state, tweak_state, tweak_permutation, constants_states, round_number
             )

@@ -72,7 +72,7 @@ class Splight(BitGraphPrimitive):
         ]
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             keys = self.key_schedule(keys, round_number)
             self.add_round_key_output_component(
                 keys[0].id, keys[0].input_bit_positions, self.half_size

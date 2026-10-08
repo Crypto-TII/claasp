@@ -37,7 +37,7 @@ class Heys(Primitive):
         state = self.input("plaintext")
         key = self.input("key")
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             round_key = key[
                 tuple(range(round_number * block_bit_size, (round_number + 1) * block_bit_size))
             ]
@@ -58,4 +58,4 @@ class Heys(Primitive):
                 )
             ],
         )
-        self.set_output(state)
+        self._builder.set_output(state)

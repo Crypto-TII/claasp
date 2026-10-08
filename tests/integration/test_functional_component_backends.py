@@ -23,15 +23,15 @@ pytestmark = pytest.mark.external
 def _primitive():
     value_type = ValueType(Word(8), (1,))
     primitive = Primitive("or_not_shift", {name: value_type for name in ("a", "b", "c")})
-    primitive.add_round()
-    merged = primitive.add_component(
+    primitive._builder.add_round()
+    merged = primitive._builder.add_component(
         BitwiseOr((primitive.input("a"), primitive.input("b"), primitive.input("c")))
     )
-    complemented = primitive.add_component(BitwiseNot(merged))
-    left = primitive.add_component(Shift(complemented, 3, "left"))
-    right = primitive.add_component(Shift(left, 2, "right"))
-    primitive.set_output(
-        primitive.add_component(
+    complemented = primitive._builder.add_component(BitwiseNot(merged))
+    left = primitive._builder.add_component(Shift(complemented, 3, "left"))
+    right = primitive._builder.add_component(Shift(left, 2, "right"))
+    primitive._builder.set_output(
+        primitive._builder.add_component(
             ModularSubtract((right, primitive.input("a"), primitive.input("b")))
         )
     )

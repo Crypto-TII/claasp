@@ -48,13 +48,13 @@ class LEA(Primitive):
         )
         state = [select(self.input("plaintext"), index) for index in range(4)]
         key = [select(self.input("key"), index) for index in range(key_word_count)]
-        self.add_round()
+        self._builder.add_round()
         if reorder_input_and_output:
             state = [byte_swap(self, value, 32) for value in state]
             key = [byte_swap(self, value, 32) for value in key]
         for round_number in range(rounds):
             if round_number:
-                self.add_round()
+                self._builder.add_round()
             delta = DELTA[round_number % key_word_count]
             if key_bit_size in (128, 192):
                 operations = 4 if key_bit_size == 128 else 6
@@ -107,4 +107,4 @@ class LEA(Primitive):
             ]
         if reorder_input_and_output:
             state = [byte_swap(self, value, 32) for value in state]
-        self.set_output(concatenate(self, *state))
+        self._builder.set_output(concatenate(self, *state))

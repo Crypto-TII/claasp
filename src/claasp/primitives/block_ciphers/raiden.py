@@ -35,7 +35,7 @@ class Raiden(Primitive):
         block = [select(self.input("plaintext"), index) for index in range(2)]
         key = [select(self.input("key"), index) for index in range(4)]
         for round_number in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             key_sum = add(self, key[2], key[3])
             shifted = variable_shift(self, key[0], key[2], left=True)
             subkey = add(self, key[0], key[1], xor(self, key_sum, shifted))
@@ -49,4 +49,4 @@ class Raiden(Primitive):
                 block[index] = add(
                     self, block[index], xor(self, shift(self, summed, -left_shift_amount), mixed)
                 )
-        self.set_output(concatenate(self, *block))
+        self._builder.set_output(concatenate(self, *block))

@@ -48,11 +48,11 @@ class Permutation(Component):
 
         EXAMPLES::
 
-            >>> from claasp import Bit, Primitive, ValueType
+            >>> from claasp import Bit, PrimitiveBuilder, ValueType
             >>> from claasp.components import Permutation
-            >>> graph = Primitive("reverse", {"x": ValueType(Bit(), (4,))})
-            >>> _ = graph.add_round()
-            >>> Permutation.reverse(graph.input("x")).mapping
+            >>> builder = PrimitiveBuilder("reverse", {"x": ValueType(Bit(), (4,))})
+            >>> _ = builder.add_round()
+            >>> Permutation.reverse(builder.input("x")).mapping
             (3, 2, 1, 0)
         """
 

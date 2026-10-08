@@ -214,7 +214,7 @@ class HIGHT(Primitive):
             )
 
         for round_number in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             if round_number == 0 and transformations_flag:
                 state = initial(state)
             entries = temporary[4 * round_number : 4 * round_number + 4]
@@ -236,4 +236,4 @@ class HIGHT(Primitive):
             ]
             if round_number == rounds - 1 and transformations_flag:
                 state = final(state)
-        self.set_output(concatenate(self, *state))
+        self._builder.set_output(concatenate(self, *state))

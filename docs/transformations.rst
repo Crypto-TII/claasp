@@ -52,15 +52,15 @@ recovered from an XOR output:
 
 .. doctest::
 
-   >>> from claasp import Primitive, ValueType, Word, partial_inverse
+   >>> from claasp import PrimitiveBuilder, ValueType, Word, partial_inverse
    >>> from claasp.components import Xor
-   >>> graph = Primitive("mix", {
+   >>> builder = PrimitiveBuilder("mix", {
    ...     "left": ValueType(Word(8), (1,)),
    ...     "right": ValueType(Word(8), (1,)),
    ... })
-   >>> _ = graph.add_round()
-   >>> mixed = graph.add_component(Xor(graph.inputs()))
-   >>> graph.set_output(mixed)
+   >>> _ = builder.add_round()
+   >>> mixed = builder.add_component(Xor(builder.inputs()))
+   >>> graph = builder.build(mixed)
    >>> recovery = partial_inverse(
    ...     graph,
    ...     graph.input("left"),

@@ -112,7 +112,7 @@ class AradiSBoxCompactLinearMap(BitGraphPrimitive):
         key = INPUT_KEY
 
         for round_i in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             round_key = self.get_round_key_id(key, round_i)
             state = self.round_function(state, round_key, round_i)
             key = self.update_key(key, round_i)

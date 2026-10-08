@@ -153,7 +153,7 @@ class SpongentPiPrecomputation(BitGraphPrimitive):
         for round_number in range(number_of_rounds):
             # round function
             # initial current round element
-            self.add_round()
+            self._builder.add_round()
 
             # round function
             state = self.round_function(state, round_number)

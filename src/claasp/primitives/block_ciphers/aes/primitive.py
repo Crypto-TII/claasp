@@ -51,9 +51,9 @@ def _validate_parameters(key_bit_size, number_of_rounds, realization):
 
 def _sub_bytes(primitive, state, realization):
     if realization == "lookup":
-        return primitive.add_component(SBox(state, AES_SBOX))
-    inverse = primitive.add_component(Power(state, 254))
-    return primitive.add_component(BinaryAffineMap(inverse, AES_AFFINE_MATRIX, 0x63))
+        return primitive._builder.add_component(SBox(state, AES_SBOX))
+    inverse = primitive._builder.add_component(Power(state, 254))
+    return primitive._builder.add_component(BinaryAffineMap(inverse, AES_AFFINE_MATRIX, 0x63))
 
 
 def _key_schedule(primitive, key, key_word_count, number_of_rounds, realization):
@@ -72,21 +72,21 @@ def _key_schedule(primitive, key, key_word_count, number_of_rounds, realization)
                 temporary.positions[0],
             )
             temporary = _sub_bytes(primitive, temporary, realization)
-            round_constant = primitive.add_component(
+            round_constant = primitive._builder.add_component(
                 Constant(
                     word_type,
                     (ROUND_CONSTANTS[word_index // key_word_count - 1], 0, 0, 0),
                 )
             )
-            temporary = primitive.add_component(Add((temporary, round_constant)))
+            temporary = primitive._builder.add_component(Add((temporary, round_constant)))
         elif key_word_count == 8 and word_index % key_word_count == 4:
             temporary = _sub_bytes(primitive, temporary, realization)
-        words.append(primitive.add_component(Add((words[word_index - key_word_count], temporary))))
+        words.append(primitive._builder.add_component(Add((words[word_index - key_word_count], temporary))))
 
     return [
         key[:16]
         if round_number == 0
-        else primitive.join(*words[4 * round_number : 4 * round_number + 4])
+        else primitive._builder.join(*words[4 * round_number : 4 * round_number + 4])
         for round_number in range(number_of_rounds + 1)
     ]
 
@@ -150,31 +150,31 @@ class AES(Primitive):
         )
 
         # KEYEXPANSION(key)
-        self.add_round()
-        round_keys = self.set_round_keys(
+        self._builder.add_round()
+        round_keys = self._builder.set_round_keys(
             _key_schedule(self, self.input("key"), self.Nk, rounds, descriptor.name),
         )
 
         # state <- ADDROUNDKEY(state, round_key[0])
-        state = self.add_component(Add((self.input("plaintext"), round_keys[0])))
+        state = self._builder.add_component(Add((self.input("plaintext"), round_keys[0])))
         self.initial_state = state
 
         # Rounds 1..Nr follow FIPS 197's main algorithm. Reduced studies retain
         # MixColumns because they are prefixes of the standard AES execution.
         for round_number in range(1, rounds + 1):
-            self.add_round()
+            self._builder.add_round()
             state = _sub_bytes(self, state, descriptor.name)
             boundaries = {"sub_bytes": state}
-            state = self.add_component(Permutation(state, SHIFT_ROWS_MAPPING))
+            state = self._builder.add_component(Permutation(state, SHIFT_ROWS_MAPPING))
             boundaries["shift_rows"] = state
             if round_number != configuration["number_of_rounds"]:
-                state = self.add_component(LinearMap(state, MIX_COLUMNS_MATRIX))
+                state = self._builder.add_component(LinearMap(state, MIX_COLUMNS_MATRIX))
                 boundaries["mix_columns"] = state
-            state = self.add_component(Add((state, round_keys[round_number])))
+            state = self._builder.add_component(Add((state, round_keys[round_number])))
             boundaries["add_round_key"] = state
-            self.add_round_state(**boundaries)
+            self._builder.add_round_state(**boundaries)
 
-        self.set_output(state)
+        self._builder.set_output(state)
 
     @classmethod
     def realize(cls, name: str = "lookup", **parameters) -> "AES":

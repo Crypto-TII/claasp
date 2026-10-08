@@ -13,7 +13,6 @@
     "misc": 29,
     "no-redef": 1,
     "operator": 79,
-    "override": 4,
     "return-value": 4,
     "type-var": 2,
     "union-attr": 69,
@@ -21,11 +20,11 @@
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 722,
+    "src/claasp": 718,
     "tests": 167,
     "tools": 38
   },
-  "diagnostic_count": 927,
+  "diagnostic_count": 923,
   "diagnostics": [
     {
       "code": "operator",
@@ -442,14 +441,14 @@
     },
     {
       "code": "arg-type",
-      "column": 48,
+      "column": 54,
       "line": 427,
       "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/graph/bit_builder.py"
     },
     {
       "code": "arg-type",
-      "column": 55,
+      "column": 61,
       "line": 429,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/graph/bit_builder.py"
@@ -506,35 +505,35 @@
     {
       "code": "arg-type",
       "column": 37,
-      "line": 700,
+      "line": 698,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port, ...]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/graph/bit_builder.py"
     },
     {
       "code": "assignment",
       "column": 36,
-      "line": 710,
+      "line": 708,
       "message": "Incompatible types in assignment (expression has type \"Port\", variable has type \"Selection\")",
       "path": "src/claasp/graph/bit_builder.py"
     },
     {
       "code": "arg-type",
-      "column": 39,
-      "line": 712,
+      "column": 57,
+      "line": 709,
       "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, ...]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/graph/bit_builder.py"
     },
     {
       "code": "assignment",
       "column": 21,
-      "line": 721,
+      "line": 718,
       "message": "Incompatible types in assignment (expression has type \"Port | Selection\", variable has type \"Selection\")",
       "path": "src/claasp/graph/bit_builder.py"
     },
     {
       "code": "assignment",
       "column": 18,
-      "line": 722,
+      "line": 719,
       "message": "Incompatible types in assignment (expression has type \"Selection\", variable has type \"Port\")",
       "path": "src/claasp/graph/bit_builder.py"
     },
@@ -597,77 +596,77 @@
     {
       "code": "operator",
       "column": 25,
-      "line": 295,
+      "line": 298,
       "message": "\"object\" not callable",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "index",
       "column": 26,
-      "line": 592,
+      "line": 595,
       "message": "Invalid index type \"str | None\" for \"dict[str, Component]\"; expected type \"str\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "index",
       "column": 21,
-      "line": 593,
+      "line": 596,
       "message": "Invalid index type \"str | None\" for \"dict[str, Port]\"; expected type \"str\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "operator",
       "column": 34,
-      "line": 738,
+      "line": 741,
       "message": "Unsupported operand types for + (\"int\" and \"None\")",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "arg-type",
       "column": 54,
-      "line": 739,
+      "line": 742,
       "message": "Argument 3 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "misc",
       "column": 25,
-      "line": 743,
+      "line": 746,
       "message": "Generator has incompatible item type \"int\"; expected \"bool\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "operator",
       "column": 38,
-      "line": 743,
+      "line": 746,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "var-annotated",
       "column": 17,
-      "line": 751,
+      "line": 754,
       "message": "Need type annotation for \"result_units\" (hint: \"result_units: list[<type>] = ...\")",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "operator",
       "column": 39,
-      "line": 755,
+      "line": 758,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "arg-type",
       "column": 46,
-      "line": 756,
+      "line": 759,
       "message": "Argument 1 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "index",
       "column": 26,
-      "line": 882,
+      "line": 885,
       "message": "Invalid index type \"str | None\" for \"dict[str, Selection]\"; expected type \"str\"",
       "path": "src/claasp/graph/primitive.py"
     },
@@ -682,7 +681,7 @@
       "code": "arg-type",
       "column": 25,
       "line": 279,
-      "message": "Argument 2 to \"pack_bits\" of \"Primitive\" has incompatible type \"int | None\"; expected \"int\"",
+      "message": "Argument 2 to \"pack_bits\" of \"PrimitiveBuilder\" has incompatible type \"int | None\"; expected \"int\"",
       "path": "src/claasp/graph/realization.py"
     },
     {
@@ -743,21 +742,21 @@
     },
     {
       "code": "arg-type",
-      "column": 40,
+      "column": 49,
       "line": 74,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Any]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/aes/custom.py"
     },
     {
       "code": "arg-type",
-      "column": 40,
+      "column": 49,
       "line": 159,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, object]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/aes/primitive.py"
     },
     {
       "code": "arg-type",
-      "column": 44,
+      "column": 53,
       "line": 173,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, object]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/aes/primitive.py"
@@ -796,13 +795,6 @@
       "line": 210,
       "message": "Need type annotation for \"inputs_pos\" (hint: \"inputs_pos: list[<type>] = ...\")",
       "path": "src/claasp/primitives/block_ciphers/gift/sbox.py"
-    },
-    {
-      "code": "override",
-      "column": 5,
-      "line": 120,
-      "message": "Signature of \"add_round_key\" incompatible with supertype \"claasp.graph.primitive.Primitive\"",
-      "path": "src/claasp/primitives/block_ciphers/gost.py"
     },
     {
       "code": "arg-type",
@@ -1365,20 +1357,6 @@
       "path": "src/claasp/primitives/block_ciphers/led.py"
     },
     {
-      "code": "override",
-      "column": 5,
-      "line": 189,
-      "message": "Signature of \"add_round_key\" incompatible with supertype \"claasp.graph.primitive.Primitive\"",
-      "path": "src/claasp/primitives/block_ciphers/led.py"
-    },
-    {
-      "code": "override",
-      "column": 5,
-      "line": 148,
-      "message": "Signature of \"add_round_key\" incompatible with supertype \"claasp.graph.primitive.Primitive\"",
-      "path": "src/claasp/primitives/block_ciphers/lowmc/primitive.py"
-    },
-    {
       "code": "call-arg",
       "column": 48,
       "line": 295,
@@ -1527,7 +1505,7 @@
     },
     {
       "code": "arg-type",
-      "column": 40,
+      "column": 49,
       "line": 75,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Selection]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/present.py"
@@ -1545,13 +1523,6 @@
       "line": 117,
       "message": "Incompatible return value type (got \"Port | Selection\", expected \"Port\")",
       "path": "src/claasp/primitives/block_ciphers/present.py"
-    },
-    {
-      "code": "override",
-      "column": 5,
-      "line": 112,
-      "message": "Signature of \"add_round_key\" incompatible with supertype \"claasp.graph.primitive.Primitive\"",
-      "path": "src/claasp/primitives/block_ciphers/rectangle.py"
     },
     {
       "code": "call-arg",
@@ -1590,7 +1561,7 @@
     },
     {
       "code": "arg-type",
-      "column": 56,
+      "column": 65,
       "line": 87,
       "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Any]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
@@ -1604,14 +1575,14 @@
     },
     {
       "code": "arg-type",
-      "column": 51,
+      "column": 60,
       "line": 106,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
     },
     {
       "code": "arg-type",
-      "column": 43,
+      "column": 52,
       "line": 108,
       "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
@@ -1940,7 +1911,7 @@
     },
     {
       "code": "arg-type",
-      "column": 43,
+      "column": 52,
       "line": 106,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_functions/chacha.py"
@@ -2997,14 +2968,14 @@
     },
     {
       "code": "arg-type",
-      "column": 47,
+      "column": 56,
       "line": 95,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port | Selection, Port | Selection]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/permutations/salsa.py"
     },
     {
       "code": "arg-type",
-      "column": 39,
+      "column": 48,
       "line": 99,
       "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port | Selection, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/permutations/salsa.py"
@@ -3081,35 +3052,35 @@
     },
     {
       "code": "arg-type",
-      "column": 50,
+      "column": 59,
       "line": 47,
       "message": "Argument 1 to \"Add\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/single_component_primitives/add.py"
     },
     {
       "code": "arg-type",
-      "column": 57,
+      "column": 66,
       "line": 39,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/single_component_primitives/bitwise_and.py"
     },
     {
       "code": "arg-type",
-      "column": 57,
+      "column": 66,
       "line": 39,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/single_component_primitives/modular_add.py"
     },
     {
       "code": "arg-type",
-      "column": 55,
+      "column": 64,
       "line": 47,
       "message": "Argument 1 to \"Multiply\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/single_component_primitives/multiply.py"
     },
     {
       "code": "arg-type",
-      "column": 50,
+      "column": 59,
       "line": 37,
       "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/single_component_primitives/xor.py"
@@ -3123,7 +3094,7 @@
     },
     {
       "code": "arg-type",
-      "column": 40,
+      "column": 49,
       "line": 78,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
@@ -3137,7 +3108,7 @@
     },
     {
       "code": "arg-type",
-      "column": 47,
+      "column": 56,
       "line": 115,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port, Selection]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
@@ -3151,14 +3122,14 @@
     },
     {
       "code": "arg-type",
-      "column": 55,
+      "column": 64,
       "line": 117,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Selection]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
     },
     {
       "code": "arg-type",
-      "column": 44,
+      "column": 53,
       "line": 119,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Any]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
@@ -4579,9 +4550,9 @@
     },
     {
       "code": "arg-type",
-      "column": 47,
+      "column": 65,
       "line": 322,
-      "message": "Argument 1 to \"join\" of \"Primitive\" has incompatible type \"*list[None]\"; expected \"Port | Selection\"",
+      "message": "Argument 1 to \"join\" of \"PrimitiveBuilder\" has incompatible type \"*list[None]\"; expected \"Port | Selection\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
@@ -4621,28 +4592,28 @@
     },
     {
       "code": "arg-type",
-      "column": 39,
+      "column": 48,
       "line": 376,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Selection, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "arg-type",
-      "column": 48,
+      "column": 57,
       "line": 378,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Selection, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "arg-type",
-      "column": 49,
+      "column": 58,
       "line": 383,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Any, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "arg-type",
-      "column": 54,
+      "column": 63,
       "line": 384,
       "message": "Argument 1 to \"Multiply\" has incompatible type \"tuple[Any, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
@@ -4656,7 +4627,7 @@
     },
     {
       "code": "arg-type",
-      "column": 58,
+      "column": 67,
       "line": 385,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Any, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
@@ -5111,14 +5082,14 @@
     },
     {
       "code": "arg-type",
-      "column": 42,
+      "column": 51,
       "line": 89,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/integration/test_minisat_integration.py"
     },
     {
       "code": "arg-type",
-      "column": 48,
+      "column": 57,
       "line": 102,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/integration/test_minizinc_integration.py"
@@ -5279,7 +5250,7 @@
     },
     {
       "code": "arg-type",
-      "column": 42,
+      "column": 51,
       "line": 23,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/analysis/test_constraints.py"
@@ -5531,7 +5502,7 @@
     },
     {
       "code": "arg-type",
-      "column": 42,
+      "column": 51,
       "line": 15,
       "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/components/word/test_package.py"
@@ -5552,14 +5523,14 @@
     },
     {
       "code": "arg-type",
-      "column": 47,
+      "column": 56,
       "line": 16,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/components/word/test_package__logical.py"
     },
     {
       "code": "arg-type",
-      "column": 45,
+      "column": 54,
       "line": 17,
       "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/components/word/test_package__logical.py"
@@ -5832,14 +5803,14 @@
     },
     {
       "code": "arg-type",
-      "column": 44,
+      "column": 53,
       "line": 46,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/representations/constraints/cp/test_trails.py"
     },
     {
       "code": "arg-type",
-      "column": 44,
+      "column": 53,
       "line": 58,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/representations/constraints/milp/test_monomial.py"
@@ -5860,14 +5831,14 @@
     },
     {
       "code": "arg-type",
-      "column": 54,
+      "column": 72,
       "line": 13,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/representations/constraints/smt/test_package.py"
     },
     {
       "code": "arg-type",
-      "column": 42,
+      "column": 51,
       "line": 18,
       "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/representations/constraints/smt/test_word_linear.py"
@@ -5944,14 +5915,14 @@
     },
     {
       "code": "arg-type",
-      "column": 41,
+      "column": 50,
       "line": 69,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/test_package.py"
     },
     {
       "code": "arg-type",
-      "column": 42,
+      "column": 51,
       "line": 70,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/test_package.py"
@@ -5965,7 +5936,7 @@
     },
     {
       "code": "arg-type",
-      "column": 37,
+      "column": 46,
       "line": 77,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/test_package.py"
@@ -5993,7 +5964,7 @@
     },
     {
       "code": "arg-type",
-      "column": 38,
+      "column": 47,
       "line": 71,
       "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/transformations/test_editing.py"
@@ -6007,14 +5978,14 @@
     },
     {
       "code": "arg-type",
-      "column": 37,
+      "column": 46,
       "line": 130,
       "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/transformations/test_inversion.py"
     },
     {
       "code": "arg-type",
-      "column": 38,
+      "column": 47,
       "line": 131,
       "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/transformations/test_inversion.py"
@@ -6028,14 +5999,14 @@
     },
     {
       "code": "arg-type",
-      "column": 37,
+      "column": 46,
       "line": 151,
       "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/transformations/test_inversion.py"
     },
     {
       "code": "arg-type",
-      "column": 39,
+      "column": 48,
       "line": 152,
       "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/transformations/test_inversion.py"
@@ -6238,7 +6209,7 @@
     },
     {
       "code": "arg-type",
-      "column": 41,
+      "column": 50,
       "line": 21,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/transformations/test_traversal.py"
@@ -6301,7 +6272,7 @@
     },
     {
       "code": "arg-type",
-      "column": 44,
+      "column": 20,
       "line": 44,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tools/benchmark_cp_boomerang_trails.py"
@@ -6330,56 +6301,56 @@
     {
       "code": "arg-type",
       "column": 33,
-      "line": 94,
+      "line": 92,
       "message": "Argument 1 to \"solve\" of \"MiniZincSolver\" has incompatible type \"CNFFormula | SMTFormula | MiniZincModel | Any\"; expected \"MiniZincModel | CNFFormula\"",
       "path": "tools/benchmark_functional_word_components.py"
     },
     {
       "code": "arg-type",
       "column": 33,
-      "line": 94,
+      "line": 92,
       "message": "Argument 1 to \"solve\" of \"MinisatSolver\" has incompatible type \"CNFFormula | SMTFormula | MiniZincModel | Any\"; expected \"CNFFormula\"",
       "path": "tools/benchmark_functional_word_components.py"
     },
     {
       "code": "union-attr",
       "column": 14,
-      "line": 96,
+      "line": 94,
       "message": "Item \"CPResult\" of \"SatResult | Any | CPResult\" has no attribute \"is_feasible\"",
       "path": "tools/benchmark_functional_word_components.py"
     },
     {
       "code": "union-attr",
       "column": 14,
-      "line": 96,
+      "line": 94,
       "message": "Item \"SatResult\" of \"SatResult | Any | CPResult\" has no attribute \"is_feasible\"",
       "path": "tools/benchmark_functional_word_components.py"
     },
     {
       "code": "union-attr",
       "column": 37,
-      "line": 96,
+      "line": 94,
       "message": "Item \"CNFFormula\" of \"CNFFormula | SMTFormula | MiniZincModel | Any\" has no attribute \"is_feasible\"",
       "path": "tools/benchmark_functional_word_components.py"
     },
     {
       "code": "union-attr",
       "column": 37,
-      "line": 96,
+      "line": 94,
       "message": "Item \"MiniZincModel\" of \"CNFFormula | SMTFormula | MiniZincModel | Any\" has no attribute \"is_feasible\"",
       "path": "tools/benchmark_functional_word_components.py"
     },
     {
       "code": "union-attr",
       "column": 37,
-      "line": 96,
+      "line": 94,
       "message": "Item \"SMTFormula\" of \"CNFFormula | SMTFormula | MiniZincModel | Any\" has no attribute \"is_feasible\"",
       "path": "tools/benchmark_functional_word_components.py"
     },
     {
       "code": "arg-type",
       "column": 65,
-      "line": 98,
+      "line": 96,
       "message": "Argument 1 to \"is_satisfied\" of \"CNFFormula\" has incompatible type \"Mapping[str, int] | Any | None\"; expected \"Mapping[str, int | bool]\"",
       "path": "tools/benchmark_functional_word_components.py"
     },

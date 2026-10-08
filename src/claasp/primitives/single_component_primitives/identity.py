@@ -33,8 +33,8 @@ class Identity(Primitive):
             {"input": ValueType(Bit(), (bit_size,))},
             kind=PrimitiveKind.PERMUTATION,
         )
-        self.add_round()
-        self.set_output(self.add_component(IdentityComponent(self.input("input"))))
+        self._builder.add_round()
+        self._builder.set_output(self._builder.add_component(IdentityComponent(self.input("input"))))
 
 
 __all__ = ["Identity"]

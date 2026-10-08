@@ -268,14 +268,14 @@ def slice_primitive(
         elif source.kind is GraphSourceKind.COMPONENT:
             original_round = round_by_component[source_id]
             if original_round != active_round:
-                derived_round_by_original[original_round] = derived.add_round()
+                derived_round_by_original[original_round] = derived._builder.add_round()
                 active_round = original_round
             component = copy(component_by_id[source_id])
             object.__setattr__(component, "inputs", tuple(remap(item) for item in component.inputs))
-            source_ports[source_id] = derived.add_component(component)
+            source_ports[source_id] = derived._builder.add_component(component)
 
     transformed_outputs = tuple(remap(selection) for selection in output_selections)
-    derived.set_output(
+    derived._builder.set_output(
         transformed_outputs if len(transformed_outputs) > 1 else transformed_outputs[0]
     )
 

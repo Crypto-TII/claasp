@@ -120,7 +120,7 @@ class KeccakSbox(BitGraphPrimitive):
 
         # round function
         for round_number in range(0, number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
 
             # round parameter
             ci = self.get_ci(round_number + round_offset)

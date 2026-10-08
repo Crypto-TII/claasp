@@ -119,7 +119,7 @@ def _scoped_observation(parent, scope, observation):
             "one paired observation must use one scalar domain",
             source_ids=tuple(selection.source.owner_id for selection in selections),
         )
-    return as_selection(parent.join(*selections))
+    return as_selection(parent._builder.join(*selections))
 
 
 def paired_xor_primitive(
@@ -175,7 +175,7 @@ def paired_xor_primitive(
         provenance=primitive.provenance,
     )
     paired.realization = primitive.realization
-    paired.add_round()
+    paired._builder.add_round()
     definition = _definition_from_primitive(primitive)
     left_bindings = {
         name: paired.input(name if name in shared else f"left_{name}")
@@ -185,14 +185,14 @@ def paired_xor_primitive(
         name: paired.input(name if name in shared else f"right_{name}")
         for name in primitive.input_ports
     }
-    left_scope = paired.add_composite(definition, left_bindings, scope_id="left")
-    right_scope = paired.add_composite(definition, right_bindings, scope_id="right")
+    left_scope = paired._builder.add_composite(definition, left_bindings, scope_id="left")
+    right_scope = paired._builder.add_composite(definition, right_bindings, scope_id="right")
 
     input_differences = []
     for name in primitive.input_ports:
         if name in shared:
             continue
-        difference = paired.add_component(
+        difference = paired._builder.add_component(
             _difference_component(
                 paired.input(f"left_{name}").select_all(),
                 paired.input(f"right_{name}").select_all(),
@@ -205,18 +205,18 @@ def paired_xor_primitive(
         for observation in observations:
             left = _scoped_observation(paired, left_scope, observation)
             right = _scoped_observation(paired, right_scope, observation)
-            result.append(paired.add_component(_difference_component(left, right)).select_all())
+            result.append(paired._builder.add_component(_difference_component(left, right)).select_all())
         return tuple(result)
 
     round_differences = differences(tuple(getattr(primitive, "round_states", ())))
     key_differences = differences(tuple(getattr(primitive, "round_keys", ())))
-    output_difference = paired.add_component(
+    output_difference = paired._builder.add_component(
         _difference_component(
             left_scope.output(),
             right_scope.output(),
         )
     ).select_all()
-    paired.set_output(output_difference)
+    paired._builder.set_output(output_difference)
     record = TransformationRecord(
         "paired_xor",
         (("shared_inputs", ",".join(shared)),),

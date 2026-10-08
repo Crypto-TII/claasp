@@ -67,7 +67,7 @@ class Ascon(BitGraphPrimitive):
         # round function
         for r in range(12 - number_of_rounds, 12):
             # initial current round element
-            self.add_round()
+            self._builder.add_round()
 
             # round parameter
             ci = 0xF0 - r * 0x10 + r * 0x1

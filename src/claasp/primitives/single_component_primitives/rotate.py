@@ -41,8 +41,8 @@ class Rotate(Primitive):
             {"input": ValueType(Word(bit_size), (1,))},
             kind=PrimitiveKind.PERMUTATION,
         )
-        self.add_round()
-        self.set_output(self.add_component(RotateComponent(self.input("input"), amount, direction)))
+        self._builder.add_round()
+        self._builder.set_output(self._builder.add_component(RotateComponent(self.input("input"), amount, direction)))
 
 
 __all__ = ["Rotate"]

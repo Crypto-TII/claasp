@@ -121,7 +121,7 @@ class SpongentPi(BitGraphPrimitive):
             )
 
         # initial current round element
-        self.add_round()
+        self._builder.add_round()
         # constant 0
         self.add_constant_component(SBOX_CELL_SIZE, 0)
         const_0 = BitState([self.get_current_component_id()], [list(range(CONSTANT_ZERO_LEN))])
@@ -143,7 +143,7 @@ class SpongentPi(BitGraphPrimitive):
             else:
                 self.add_round_output_component(inputs_id, inputs_pos, self.state_bit_size)
                 # next round initialization
-                self.add_round()
+                self._builder.add_round()
                 # update icounter
                 icounter = self.icounter_update(icounter, const_0)
 

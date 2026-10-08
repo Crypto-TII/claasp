@@ -77,9 +77,9 @@ def test_round_reduction_is_a_validated_prefix_and_does_not_mutate_source():
 
 def test_partial_boundary_reports_missing_units_exactly():
     primitive = Primitive("partial", {"state": ValueType(Bit(), (4,))})
-    primitive.add_round()
-    copied = primitive.add_component(Identity(primitive.input("state"), "copy"))
-    primitive.set_output(copied)
+    primitive._builder.add_round()
+    copied = primitive._builder.add_component(Identity(primitive.input("state"), "copy"))
+    primitive._builder.set_output(copied)
 
     try:
         slice_primitive(primitive, copied, inputs={"known": primitive.input("state")[:2]})
@@ -101,10 +101,10 @@ def test_slice_preserves_structural_bindings_and_complete_composite_scopes():
         "scoped",
         {"left": ValueType(Bit(), (1,)), "right": ValueType(Bit(), (1,))},
     )
-    primitive.add_round()
-    joined = primitive.join(primitive.input("left"), primitive.input("right"))
-    instance = primitive.add_composite(definition, {"value": joined}, scope_id="block")
-    primitive.set_output(instance.output())
+    primitive._builder.add_round()
+    joined = primitive._builder.join(primitive.input("left"), primitive.input("right"))
+    instance = primitive._builder.add_composite(definition, {"value": joined}, scope_id="block")
+    primitive._builder.set_output(instance.output())
 
     derived = slice_primitive(primitive).primitive
 

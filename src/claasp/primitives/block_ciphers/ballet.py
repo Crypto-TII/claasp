@@ -85,7 +85,7 @@ class Ballet(BitGraphPrimitive):
         state_0, state_1, state_2, state_3, key_0, key_1, t_0, t_1 = self.round_initialization()
 
         for round_number in range(self.r):
-            self.add_round()
+            self._builder.add_round()
 
             if round_number == self.r - 1:
                 # encryption

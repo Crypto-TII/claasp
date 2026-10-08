@@ -47,9 +47,9 @@ class Power(Primitive):
             PrimitiveKind.PERMUTATION if gcd(exponent, order - 1) == 1 else PrimitiveKind.FUNCTION
         )
         super().__init__("power", {"input": ValueType(domain, (unit_count,))}, kind=kind)
-        self.add_round()
-        output = self.add_component(PowerComponent(self.input("input"), exponent))
-        self.set_output(output)
+        self._builder.add_round()
+        output = self._builder.add_component(PowerComponent(self.input("input"), exponent))
+        self._builder.set_output(output)
 
 
 __all__ = ["Power"]

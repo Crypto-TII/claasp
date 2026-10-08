@@ -7,17 +7,17 @@ results therefore remain meaningful when the solver changes.
 
 .. doctest::
 
-   >>> from claasp import Bit, Primitive, ValueType
+   >>> from claasp import Bit, PrimitiveBuilder, ValueType
    >>> from claasp.analysis import AnalysisProblem, FixedValue
    >>> from claasp.components import Add
-   >>> primitive = Primitive("xor", {
+   >>> builder = PrimitiveBuilder("xor", {
    ...     "plaintext": ValueType(Bit(), (1,)),
    ...     "key": ValueType(Bit(), (1,)),
    ... })
-   >>> primitive.add_round()
+   >>> builder.add_round()
    Round(number=0)
-   >>> output = primitive.add_component(Add((primitive.input("plaintext"), primitive.input("key"))))
-   >>> primitive.set_output(output)
+   >>> output = builder.add_component(Add((builder.input("plaintext"), builder.input("key"))))
+   >>> primitive = builder.build(output)
    >>> problem = AnalysisProblem(
    ...     primitive,
    ...     constraints=(

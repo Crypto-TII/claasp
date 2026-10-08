@@ -43,9 +43,9 @@ class Multiply(Primitive):
             algebraic_inputs(domain, unit_count, number_of_inputs),
             kind=PrimitiveKind.FUNCTION,
         )
-        self.add_round()
-        output = self.add_component(MultiplyComponent(self.inputs()))
-        self.set_output(output)
+        self._builder.add_round()
+        output = self._builder.add_component(MultiplyComponent(self.inputs()))
+        self._builder.set_output(output)
 
 
 __all__ = ["Multiply"]

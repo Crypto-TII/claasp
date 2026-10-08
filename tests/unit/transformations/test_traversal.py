@@ -15,11 +15,11 @@ def _graph():
     primitive = Primitive(
         "traversal", {"left": ValueType(Bit(), (4,)), "right": ValueType(Bit(), (4,))}
     )
-    primitive.add_round()
-    joined = primitive.join(primitive.input("left")[:2], primitive.input("right")[:2])
-    copied = primitive.add_component(Identity(joined, "copy"))
-    mixed = primitive.add_component(Add((copied, primitive.input("left")), "mixed"))
-    primitive.set_output(mixed)
+    primitive._builder.add_round()
+    joined = primitive._builder.join(primitive.input("left")[:2], primitive.input("right")[:2])
+    copied = primitive._builder.add_component(Identity(joined, "copy"))
+    mixed = primitive._builder.add_component(Add((copied, primitive.input("left")), "mixed"))
+    primitive._builder.set_output(mixed)
     return primitive
 
 

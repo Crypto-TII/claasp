@@ -79,18 +79,18 @@ class Simon(Primitive):
         ]
         z = _Z[_Z_INDEX[width][key_words]]
         for round_number in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             if round_number >= key_words:
                 index = round_number - key_words
-                operation = self.add_component(Rotate(round_keys[-1], 3, "right"))
+                operation = self._builder.add_component(Rotate(round_keys[-1], 3, "right"))
                 if key_words == 4:
-                    operation = self.add_component(Xor((operation, round_keys[index + 1])))
-                rotated = self.add_component(Rotate(operation, 1, "right"))
-                constant = self.add_component(
+                    operation = self._builder.add_component(Xor((operation, round_keys[index + 1])))
+                rotated = self._builder.add_component(Rotate(operation, 1, "right"))
+                constant = self._builder.add_component(
                     Constant(word_type, (((1 << width) - 4) ^ ((z >> (61 - index % 62)) & 1),))
                 )
                 round_keys.append(
-                    self.add_component(
+                    self._builder.add_component(
                         Xor(
                             (constant, round_keys[index], operation, rotated),
                             component_id=f"round_key_{round_number}",
@@ -98,15 +98,15 @@ class Simon(Primitive):
                     )
                 )
             left, right = self._round(left, right, round_keys[round_number], round_number)
-        self.set_output((left, right))
+        self._builder.set_output((left, right))
 
     def _round(self, left, right, round_key, round_number):
-        rotate_1 = self.add_component(Rotate(left, 1, "left"))
-        rotate_8 = self.add_component(Rotate(left, 8, "left"))
-        nonlinear = self.add_component(BitwiseAnd((rotate_1, rotate_8)))
-        rotate_2 = self.add_component(Rotate(left, 2, "left"))
-        function = self.add_component(Xor((nonlinear, rotate_2)))
-        new_left = self.add_component(
+        rotate_1 = self._builder.add_component(Rotate(left, 1, "left"))
+        rotate_8 = self._builder.add_component(Rotate(left, 8, "left"))
+        nonlinear = self._builder.add_component(BitwiseAnd((rotate_1, rotate_8)))
+        rotate_2 = self._builder.add_component(Rotate(left, 2, "left"))
+        function = self._builder.add_component(Xor((nonlinear, rotate_2)))
+        new_left = self._builder.add_component(
             Xor((right, function, round_key), component_id=f"round_{round_number}_xor")
         )
         return new_left, left

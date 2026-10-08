@@ -76,7 +76,7 @@ class LBlock(BitGraphPrimitive):
         key = INPUT_KEY
 
         for round_i in range(1, number_of_rounds + 1):
-            self.add_round()
+            self._builder.add_round()
             round_key = self.add_round_key_output_component([key], [list(range(32))], 32).id  #
             state = self.round_function(state, round_key)
             key = self.update_key(key, round_i)

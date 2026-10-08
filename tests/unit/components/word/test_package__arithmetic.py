@@ -20,11 +20,11 @@ from claasp.components import (
 def _binary_primitive(component_type, width=3, **kwargs):
     value_type = ValueType(Word(width), (1,))
     primitive = Primitive(component_type.__name__, {"left": value_type, "right": value_type})
-    primitive.add_round()
-    output = primitive.add_component(
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
         component_type((primitive.input("left"), primitive.input("right")), **kwargs)
     )
-    primitive.set_output(output)
+    primitive._builder.set_output(output)
     return primitive
 
 
@@ -66,13 +66,13 @@ def _motion_primitive(component_type, direction, *, variable=False):
     if variable:
         inputs["amount"] = ValueType(Word(4), (1,))
     primitive = Primitive(component_type.__name__, inputs)
-    primitive.add_round()
+    primitive._builder.add_round()
     if variable:
         component = component_type(primitive.input("values"), primitive.input("amount"), direction)
     else:
         component = component_type(primitive.input("values"), 3, direction)
-    output = primitive.add_component(component)
-    primitive.set_output(output)
+    output = primitive._builder.add_component(component)
+    primitive._builder.set_output(output)
     return primitive
 
 
@@ -100,11 +100,11 @@ def test_fixed_and_variable_word_motion(component_type, variable, direction, exp
 def test_shift_saturates_while_rotation_reduces_amount_modulo_width():
     value_type = ValueType(Word(8), (1,))
     shifted = Primitive("shift", {"value": value_type})
-    shifted.add_round()
-    shifted.set_output(shifted.add_component(Shift(shifted.input("value"), 11, "left")))
+    shifted._builder.add_round()
+    shifted._builder.set_output(shifted._builder.add_component(Shift(shifted.input("value"), 11, "left")))
     rotated = Primitive("rotate", {"value": value_type})
-    rotated.add_round()
-    rotated.set_output(rotated.add_component(Rotate(rotated.input("value"), 11, "left")))
+    rotated._builder.add_round()
+    rotated._builder.set_output(rotated._builder.add_component(Rotate(rotated.input("value"), 11, "left")))
     assert ScalarEvaluator().evaluate(shifted, {"value": (0x32,)}).output == (0,)
     assert ScalarEvaluator().evaluate(rotated, {"value": (0x32,)}).output == (0x91,)
 

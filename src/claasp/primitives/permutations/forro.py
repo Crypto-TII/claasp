@@ -98,7 +98,7 @@ class Forro(BitGraphPrimitive):
             self.state_of_components = state_of_components
 
         for round_index in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             self._round_function(round_index)
             add_intermediate_output_component_latin_dances_permutations(
                 self, round_index, number_of_rounds

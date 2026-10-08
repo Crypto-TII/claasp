@@ -47,7 +47,7 @@ class Simeck(Primitive):
             return xor(self, y, nonlinear, round_key), x
 
         for round_number in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             left, right = feistel(left, right, keys[3])
             if round_number != rounds - 1:
                 new_key, keys[3] = feistel(
@@ -56,4 +56,4 @@ class Simeck(Primitive):
                     constant(self, width, c_value ^ ((z_value >> round_number) & 1)),
                 )
                 keys = [new_key, keys[0], keys[1], keys[3]]
-        self.set_output(concatenate(self, left, right))
+        self._builder.set_output(concatenate(self, left, right))

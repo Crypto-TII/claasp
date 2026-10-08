@@ -56,11 +56,11 @@ def test_bijective_substitution_inverse_round_trips_exhaustively(component_type)
     source = Primitive("source", {"x": value_type})
     component = component_type(source.input("x"), (2, 0, 3, 1))
     destination = Primitive("destination", {"y": component.output_type})
-    destination.add_round()
-    inverse = destination.add_component(
+    destination._builder.add_round()
+    inverse = destination._builder.add_component(
         invert_component(component, destination.input("y"), recover_input=0)
     )
-    destination.set_output(inverse)
+    destination._builder.set_output(inverse)
 
     for value in range(4):
         forward = component.table[value]
@@ -72,9 +72,9 @@ def test_linear_and_binary_affine_inverse_round_trip_independent_evaluation():
     bit_graph = Primitive("linear", {"x": ValueType(Bit(), (3,))})
     linear = LinearMap(bit_graph.input("x"), ((1, 1, 0), (0, 1, 1), (1, 1, 1)))
     inverse_graph = Primitive("linear_inverse", {"y": linear.output_type})
-    inverse_graph.add_round()
-    inverse_graph.set_output(
-        inverse_graph.add_component(
+    inverse_graph._builder.add_round()
+    inverse_graph._builder.set_output(
+        inverse_graph._builder.add_component(
             invert_component(linear, inverse_graph.input("y"), recover_input=0)
         )
     )
@@ -99,16 +99,16 @@ def test_linear_and_binary_affine_inverse_round_trip_independent_evaluation():
         0b1010,
     )
     affine_inverse = Primitive("affine_inverse", {"y": affine.output_type})
-    affine_inverse.add_round()
-    affine_inverse.set_output(
-        affine_inverse.add_component(
+    affine_inverse._builder.add_round()
+    affine_inverse._builder.set_output(
+        affine_inverse._builder.add_component(
             invert_component(affine, affine_inverse.input("y"), recover_input=0)
         )
     )
     forward_graph = Primitive("affine_forward", {"x": ValueType(field, (1,))})
-    forward_graph.add_round()
-    forward_graph.set_output(
-        forward_graph.add_component(
+    forward_graph._builder.add_round()
+    forward_graph._builder.set_output(
+        forward_graph._builder.add_component(
             BinaryAffineMap(forward_graph.input("x"), affine.matrix, affine.offset)
         )
     )
@@ -124,12 +124,12 @@ def test_power_inverse_round_trips_finite_fields(domain, exponent):
     source = Primitive("power", {"x": ValueType(domain, (1,))})
     component = Power(source.input("x"), exponent)
     forward = Primitive("forward", {"x": ValueType(domain, (1,))})
-    forward.add_round()
-    forward.set_output(forward.add_component(Power(forward.input("x"), exponent)))
+    forward._builder.add_round()
+    forward._builder.set_output(forward._builder.add_component(Power(forward.input("x"), exponent)))
     inverse = Primitive("inverse", {"y": ValueType(domain, (1,))})
-    inverse.add_round()
-    inverse.set_output(
-        inverse.add_component(invert_component(component, inverse.input("y"), recover_input=0))
+    inverse._builder.add_round()
+    inverse._builder.set_output(
+        inverse._builder.add_component(invert_component(component, inverse.input("y"), recover_input=0))
     )
     cardinality = domain.modulus if isinstance(domain, PrimeField) else 1 << domain.degree
     assert tuple(
@@ -149,14 +149,14 @@ def test_multi_input_recovery_uses_retained_auxiliaries(component_type):
             "c": ValueType(Word(4), (1,)),
         },
     )
-    inverse.add_round()
+    inverse._builder.add_round()
     recovered = invert_component(
         component,
         inverse.input("output"),
         recover_input=1,
         auxiliary_inputs={0: inverse.input("a"), 2: inverse.input("c")},
     )
-    inverse.set_output(inverse.add_component(recovered))
+    inverse._builder.set_output(inverse._builder.add_component(recovered))
 
     operation = (
         (lambda a, b, c: a ^ b ^ c) if component_type is Xor else (lambda a, b, c: (a + b + c) & 15)
@@ -177,14 +177,14 @@ def test_modular_subtract_recovers_each_operand():
                 **{name: ValueType(Word(4), (1,)) for name in names},
             },
         )
-        inverse.add_round()
+        inverse._builder.add_round()
         auxiliaries = {
             index: inverse.input(name)
             for index, name in enumerate(("a", "b", "c"))
             if index != recover
         }
-        inverse.set_output(
-            inverse.add_component(
+        inverse._builder.set_output(
+            inverse._builder.add_component(
                 invert_component(
                     component,
                     inverse.input("output"),
@@ -211,7 +211,7 @@ def test_idea_multiply_recovers_each_operand_exhaustively():
                 **{name: ValueType(Word(4), (1,)) for name in retained},
             },
         )
-        inverse.add_round()
+        inverse._builder.add_round()
         auxiliaries = {
             index: inverse.input(name)
             for index, name in enumerate(("a", "b", "c"))
@@ -223,7 +223,7 @@ def test_idea_multiply_recovers_each_operand_exhaustively():
             recover_input=recover,
             auxiliary_inputs=auxiliaries,
         )
-        inverse.set_output(inverse.add_component(recovered))
+        inverse._builder.set_output(inverse._builder.add_component(recovered))
         for values in itertools.product(range(16), repeat=3):
             encoded = tuple(16 if value == 0 else value for value in values)
             output = encoded[0] * encoded[1] * encoded[2] % 17
@@ -240,9 +240,9 @@ def test_reversible_feedback_register_inverse_round_trips_all_states():
         clocks=3,
     )
     forward = Primitive("forward", {"state": ValueType(Bit(), (4,))})
-    forward.add_round()
-    forward.set_output(
-        forward.add_component(
+    forward._builder.add_round()
+    forward._builder.set_output(
+        forward._builder.add_component(
             FeedbackRegister(
                 forward.input("state"),
                 component.registers,
@@ -251,9 +251,9 @@ def test_reversible_feedback_register_inverse_round_trips_all_states():
         )
     )
     inverse = Primitive("inverse", {"state": ValueType(Bit(), (4,))})
-    inverse.add_round()
+    inverse._builder.add_round()
     recovered = invert_component(component, inverse.input("state"), recover_input=0)
-    inverse.set_output(inverse.add_component(recovered))
+    inverse._builder.set_output(inverse._builder.add_component(recovered))
 
     for state in range(16):
         assert inverse.evaluate(forward.evaluate(state)) == state

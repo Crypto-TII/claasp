@@ -131,7 +131,7 @@ def _assembled(derived: Primitive, equivalents: Mapping[Atom, Selection], atoms:
             current_positions = [piece.positions[0]]
     if current_source is not None:
         groups.append(current_source[tuple(current_positions)])
-    return as_selection(derived.join(*groups))
+    return as_selection(derived._builder.join(*groups))
 
 
 def _assign(
@@ -180,12 +180,12 @@ def _propagate_binding(binding, derived, equivalents, *, changed_atoms=None):
         for index, output_atom in enumerate(output_atoms):
             group = input_atoms[index * width : (index + 1) * width]
             if output_atom in equivalents and not all(atom in equivalents for atom in group):
-                bits = derived.unpack_bits(equivalents[output_atom])
+                bits = derived._builder.unpack_bits(equivalents[output_atom])
                 changed |= _assign(equivalents, group, bits, changed_atoms=changed_atoms)
             elif output_atom not in equivalents and all(atom in equivalents for atom in group):
                 bits = _assembled(derived, equivalents, group)
                 domain = binding.output_type.domain
-                packed = derived.pack_bits(
+                packed = derived._builder.pack_bits(
                     bits,
                     width,
                     output_domain=domain if isinstance(domain, BinaryExtensionField) else None,
@@ -198,12 +198,12 @@ def _propagate_binding(binding, derived, equivalents, *, changed_atoms=None):
         for index, input_atom in enumerate(input_atoms):
             group = output_atoms[index * width : (index + 1) * width]
             if input_atom in equivalents and not all(atom in equivalents for atom in group):
-                bits = derived.unpack_bits(equivalents[input_atom])
+                bits = derived._builder.unpack_bits(equivalents[input_atom])
                 changed |= _assign(equivalents, group, bits, changed_atoms=changed_atoms)
             elif input_atom not in equivalents and all(atom in equivalents for atom in group):
                 bits = _assembled(derived, equivalents, group)
                 domain = binding.inputs[0].value_type.domain
-                packed = derived.pack_bits(
+                packed = derived._builder.pack_bits(
                     bits,
                     width,
                     output_domain=domain if isinstance(domain, BinaryExtensionField) else None,
@@ -344,7 +344,7 @@ def _recover_xor_region(
         if isinstance(domain, Bit):
             bits = (selection,)
         elif isinstance(domain, (Word, BinaryExtensionField)):
-            unpacked = derived.unpack_bits(selection)
+            unpacked = derived._builder.unpack_bits(selection)
             bits = tuple(unpacked[index] for index in range(unpacked.value_type.unit_count))
         else:
             return None
@@ -434,13 +434,13 @@ def _recover_xor_region(
                 for source_id, position in sorted(expressions[bit])
             )
             bits.append(
-                selections[0] if len(selections) == 1 else derived.add_component(Add(selections))
+                selections[0] if len(selections) == 1 else derived._builder.add_component(Add(selections))
             )
         if isinstance(port.value_type.domain, Bit):
             value = bits[0]
         else:
-            value = derived.pack_bits(
-                derived.join(*bits),
+            value = derived._builder.pack_bits(
+                derived._builder.join(*bits),
                 domain_width,
                 output_domain=(
                     port.value_type.domain
@@ -468,12 +468,12 @@ def partial_inverse(
 
     EXAMPLES::
 
-        >>> from claasp import Primitive, ValueType, Word
+        >>> from claasp import PrimitiveBuilder, ValueType, Word
         >>> from claasp.components import Xor
-        >>> graph = Primitive("xor", {"left": ValueType(Word(4), (1,)), "right": ValueType(Word(4), (1,))})
-        >>> _ = graph.add_round()
-        >>> mixed = graph.add_component(Xor(graph.inputs()))
-        >>> graph.set_output(mixed)
+        >>> builder = PrimitiveBuilder("xor", {"left": ValueType(Word(4), (1,)), "right": ValueType(Word(4), (1,))})
+        >>> _ = builder.add_round()
+        >>> mixed = builder.add_component(Xor(builder.inputs()))
+        >>> graph = builder.build(mixed)
         >>> recovered = partial_inverse(graph, graph.input("left"), known={"output": graph.output, "right": graph.input("right")}).primitive
         >>> recovered.evaluate(0x9, 0x3)
         10
@@ -493,7 +493,7 @@ def partial_inverse(
         provenance=primitive.provenance,
     )
     derived.realization = primitive.realization
-    derived.add_round()
+    derived._builder.add_round()
     equivalents: dict[Atom, Selection] = {}
     bit_cache = {}
     region_cache = {}
@@ -586,7 +586,7 @@ def partial_inverse(
                 "inputs",
                 tuple(_assembled(derived, equivalents, atoms) for atoms in input_atoms),
             )
-            result = derived.add_component(clone)
+            result = derived._builder.add_component(clone)
             _assign(equivalents, output_atoms, result, changed_atoms=changed_atoms)
             produced.add(component_id)
             schedule(changed_atoms)
@@ -627,7 +627,7 @@ def partial_inverse(
         except TransformationError as error:
             stalled_errors[operation_index] = error
             continue
-        result = derived.add_component(inverse)
+        result = derived._builder.add_component(inverse)
         _assign(
             equivalents,
             input_atoms[recover],
@@ -665,7 +665,7 @@ def partial_inverse(
             source_ids=missing,
         )
 
-    derived.set_output(_assembled(derived, equivalents, target_atoms))
+    derived._builder.set_output(_assembled(derived, equivalents, target_atoms))
     record = TransformationRecord(
         "partial_inverse",
         (("target", target_selection.source.owner_id), ("known", ",".join(boundaries))),

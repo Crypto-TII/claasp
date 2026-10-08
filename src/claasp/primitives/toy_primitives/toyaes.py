@@ -39,7 +39,7 @@ ROUND_CONSTANT_WORDS = {
 
 def _concat(primitive, items, component_id=None):
     del component_id
-    return primitive.join(*items)
+    return primitive._builder.join(*items)
 
 
 class ToyAES(Primitive):
@@ -74,8 +74,8 @@ class ToyAES(Primitive):
             provenance=(("derived_from", "AES"), ("purpose", "small-field teaching family")),
         )
 
-        self.add_round()
-        state = self.add_component(Add((self.input("key"), self.input("plaintext"))))
+        self._builder.add_round()
+        state = self._builder.add_component(Add((self.input("key"), self.input("plaintext"))))
         round_key = self.input("key").select_all()
         shift_mapping = tuple(
             ((column + row) % state_size) * state_size + row
@@ -84,12 +84,12 @@ class ToyAES(Primitive):
         )
         for round_number in range(number_of_rounds):
             if round_number:
-                self.add_round()
-            state = self.add_component(SBox(state, SBOXES[word_size]))
-            state = self.add_component(Permutation(state, shift_mapping))
+                self._builder.add_round()
+            state = self._builder.add_component(SBox(state, SBOXES[word_size]))
+            state = self._builder.add_component(Permutation(state, shift_mapping))
             if round_number != number_of_rounds - 1:
                 columns = tuple(
-                    self.add_component(
+                    self._builder.add_component(
                         LinearMap(
                             state[tuple(range(column * state_size, (column + 1) * state_size))],
                             self.mix_column_matrix,
@@ -105,17 +105,17 @@ class ToyAES(Primitive):
             )
             last = old_columns[-1]
             rotated = last[tuple(range(1, state_size)) + (0,)]
-            substituted = self.add_component(SBox(rotated, SBOXES[word_size]))
-            constant = self.add_component(
+            substituted = self._builder.add_component(SBox(rotated, SBOXES[word_size]))
+            constant = self._builder.add_component(
                 Constant(
                     ValueType(field, (state_size,)),
                     (ROUND_CONSTANT_WORDS[word_size][round_number],) + (0,) * (state_size - 1),
                 )
             )
-            columns = [self.add_component(Add((substituted, constant, old_columns[0])))]
+            columns = [self._builder.add_component(Add((substituted, constant, old_columns[0])))]
             for column in range(1, state_size):
-                columns.append(self.add_component(Add((columns[-1], old_columns[column]))))
+                columns.append(self._builder.add_component(Add((columns[-1], old_columns[column]))))
             round_key = _concat(self, columns)
-            state = self.add_component(Add((state, round_key)))
-            self.add_round_state(state)
-        self.set_output(state)
+            state = self._builder.add_component(Add((state, round_key)))
+            self._builder.add_round_state(state)
+        self._builder.set_output(state)

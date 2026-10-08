@@ -32,8 +32,8 @@ class BitwiseNot(Primitive):
         bit_size = positive(bit_size, "bit_size")
         value_type = ValueType(Word(bit_size), (1,))
         super().__init__("not", {"input": value_type}, kind=PrimitiveKind.PERMUTATION)
-        self.add_round()
-        self.set_output(self.add_component(BitwiseNotComponent(self.input("input"))))
+        self._builder.add_round()
+        self._builder.set_output(self._builder.add_component(BitwiseNotComponent(self.input("input"))))
 
 
 __all__ = ["BitwiseNot"]

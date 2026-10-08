@@ -92,7 +92,7 @@ class Ktantan(BitGraphPrimitive):
         ka, kb = self._expand_round_keys(key_bits, number_of_rounds)
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
 
             for _ in range(self._config["steps"]):
                 fa = self._round_function_a(l1, ka, round_number, ir_mode)

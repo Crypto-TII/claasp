@@ -53,9 +53,9 @@ class BinaryAffineMap(Primitive):
             else PrimitiveKind.FUNCTION
         )
         super().__init__("binary_affine_map", {"input": ValueType(field, (unit_count,))}, kind=kind)
-        self.add_round()
-        output = self.add_component(BinaryAffineMapComponent(self.input("input"), matrix, offset))
-        self.set_output(output)
+        self._builder.add_round()
+        output = self._builder.add_component(BinaryAffineMapComponent(self.input("input"), matrix, offset))
+        self._builder.set_output(output)
 
 
 __all__ = ["BinaryAffineMap"]

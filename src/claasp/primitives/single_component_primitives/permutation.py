@@ -45,9 +45,9 @@ class Permutation(Primitive):
             {"input": ValueType(domain, (count,))},
             kind=PrimitiveKind.PERMUTATION,
         )
-        self.add_round()
-        self.set_output(
-            self.add_component(
+        self._builder.add_round()
+        self._builder.set_output(
+            self._builder.add_component(
                 PermutationComponent(
                     self.input("input"),
                     mapping,

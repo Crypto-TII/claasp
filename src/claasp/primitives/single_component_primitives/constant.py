@@ -32,14 +32,14 @@ class Constant(Primitive):
     def __init__(self, output_bit_size: int = 3, value: int = 0b010) -> None:
         output_bit_size = positive(output_bit_size, "output_bit_size")
         super().__init__("constant", {}, kind=PrimitiveKind.FUNCTION)
-        self.add_round()
-        output = self.add_component(
+        self._builder.add_round()
+        output = self._builder.add_component(
             ConstantComponent(
                 ValueType(Bit(), (output_bit_size,)),
                 bits_from_int(value, output_bit_size),
             )
         )
-        self.set_output(output)
+        self._builder.set_output(output)
 
 
 __all__ = ["Constant"]

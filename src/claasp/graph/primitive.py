@@ -95,22 +95,23 @@ class PrimitiveDetails:
 
 
 class Primitive:
-    """Build a validated round-oriented directed acyclic graph.
+    """A validated, executable round-oriented directed acyclic graph.
 
     A primitive owns typed input ports, immutable component descriptions, and
-    an explicit output binding. Components are evaluated by representations;
-    adding one here only authors graph structure.
+    an explicit output binding. Use :class:`PrimitiveBuilder` to author a new
+    graph; completed primitives expose evaluation, analysis, transformations,
+    and read-only graph inspection.
 
     EXAMPLES::
 
-        >>> from claasp import Primitive, ValueType, Word
+        >>> from claasp import PrimitiveBuilder, ValueType, Word
         >>> from claasp.components import Xor
         >>> nibble = ValueType(Word(4), (1,))
-        >>> primitive = Primitive("xor_nibbles", {"left": nibble, "right": nibble})
-        >>> primitive.add_round()
+        >>> builder = PrimitiveBuilder("xor_nibbles", {"left": nibble, "right": nibble})
+        >>> builder.add_round()
         Round(number=0)
-        >>> output = primitive.add_component(Xor(primitive.inputs()))
-        >>> primitive.set_output(output)
+        >>> output = builder.add_component(Xor(builder.inputs()))
+        >>> primitive = builder.build(output)
         >>> primitive.evaluate(0b1010, 0b0011)
         9
         >>> (primitive.family_name, len(primitive.rounds), len(primitive.components))
@@ -162,6 +163,7 @@ class Primitive:
         provenance: tuple[tuple[str, str], ...] = (),
         instance_name: str | None = None,
         round_count: int | None = None,
+        _builder: "PrimitiveBuilder | None" = None,
     ) -> None:
         if not isinstance(family_name, str):
             raise TypeError("family_name must be a string")
@@ -215,6 +217,7 @@ class Primitive:
         self._bindings: dict[str, ValueBinding] = {}
         self._scopes: dict[str, object] = {}
         self._output: Selection | None = None
+        self._builder = _builder or PrimitiveBuilder._for_primitive(self)
         if not hasattr(self, "realization"):
             self.realization = self.available_realizations()[0]
 
@@ -423,25 +426,25 @@ class Primitive:
 
         return tuple(self._rounds)
 
-    def set_round_keys(self, round_keys: Iterable[object]) -> Sequence[object]:
+    def _publish_round_keys(self, round_keys: Iterable[object]) -> Sequence[object]:
         """Publish round keys without exposing their storage representation."""
 
         self.round_keys = tuple(round_keys)
         return self.round_keys
 
-    def add_round_key(self, round_key: object) -> object:
+    def _publish_round_key(self, round_key: object) -> object:
         """Publish one round key in authoring order."""
 
         self.round_keys = (*getattr(self, "round_keys", ()), round_key)
         return round_key
 
-    def set_round_states(self, round_states: Iterable[object]) -> Sequence[object]:
+    def _publish_round_states(self, round_states: Iterable[object]) -> Sequence[object]:
         """Publish round states without exposing their storage representation."""
 
         self.round_states = tuple(round_states)
         return self.round_states
 
-    def add_round_state(self, *values: object, **boundaries: object) -> object:
+    def _publish_round_state(self, *values: object, **boundaries: object) -> object:
         """Publish one positional or named round-state observation."""
 
         if values and boundaries:
@@ -457,13 +460,13 @@ class Primitive:
         self.round_states = (*getattr(self, "round_states", ()), state)
         return state
 
-    def set_key_schedule_states(self, states: Iterable[object]) -> Sequence[object]:
+    def _publish_key_schedule_states(self, states: Iterable[object]) -> Sequence[object]:
         """Publish key-schedule states without exposing their storage representation."""
 
         self.key_schedule_states = tuple(states)
         return self.key_schedule_states
 
-    def add_key_schedule_state(self, *values: object) -> object:
+    def _publish_key_schedule_state(self, *values: object) -> object:
         """Publish one key-schedule state in authoring order."""
 
         if not values:
@@ -472,13 +475,13 @@ class Primitive:
         self.key_schedule_states = (*getattr(self, "key_schedule_states", ()), state)
         return state
 
-    def set_round_operations(self, operations: Iterable[object]) -> Sequence[object]:
+    def _publish_round_operations(self, operations: Iterable[object]) -> Sequence[object]:
         """Publish round-operation landmarks without exposing their storage representation."""
 
         self.round_operations = tuple(operations)
         return self.round_operations
 
-    def add_round_operations(self, **operations: object) -> Mapping[str, object]:
+    def _publish_round_operation(self, **operations: object) -> Mapping[str, object]:
         """Publish named operation landmarks for one round."""
 
         if not operations:
@@ -549,14 +552,14 @@ class Primitive:
         except KeyError as error:
             raise KeyError(f"composite scope {path!r} does not exist") from error
 
-    def add_round(self) -> Round:
+    def _add_round(self) -> Round:
         """Append and return the next sequential primitive round."""
 
         primitive_round = Round(len(self._rounds))
         self._rounds.append(primitive_round)
         return primitive_round
 
-    def add_component(self, component: Component, *, primitive_round: Round | None = None) -> Port:
+    def _add_component(self, component: Component, *, primitive_round: Round | None = None) -> Port:
         """Validate and append a component, returning its output port."""
 
         if not isinstance(component, Component):
@@ -593,7 +596,7 @@ class Primitive:
         self._ports[component.component_id] = component.output
         return component.output
 
-    def join(self, *values: PortLike) -> PortLike:
+    def _join(self, *values: PortLike) -> PortLike:
         """Join homogeneous values as structural wiring.
 
         A single value remains a selection. Multiple sources become an
@@ -611,7 +614,7 @@ class Primitive:
         output_type = ValueType(domain, (sum(item.value_type.unit_count for item in selections),))
         return self._add_binding(BindingKind.JOIN, selections, output_type)
 
-    def pack_bits(
+    def _pack_bits(
         self,
         value: PortLike,
         word_width: int,
@@ -643,13 +646,13 @@ class Primitive:
             word_width=word_width,
         )
 
-    def view(self, value: PortLike) -> Port:
+    def _view(self, value: PortLike) -> Port:
         """Give an ordered selection its own non-semantic wiring boundary."""
 
         selection = as_selection(value)
         return self._add_binding(BindingKind.VIEW, (selection,), selection.value_type)
 
-    def unpack_bits(self, value: PortLike) -> Port:
+    def _unpack_bits(self, value: PortLike) -> Port:
         """View fixed-width words as consecutive MSB-first bits."""
 
         from claasp.domains import BinaryExtensionField, Bit, Word
@@ -790,7 +793,7 @@ class Primitive:
             for ref in ((unit,) if len(unit) == 2 and isinstance(unit[0], str) else unit)
         )
 
-    def add_composite(
+    def _add_composite(
         self,
         definition,
         bindings: Mapping[str, PortLike],
@@ -878,7 +881,7 @@ class Primitive:
                 object.__setattr__(
                     component, "inputs", tuple(remap(item) for item in component.inputs)
                 )
-                output = self.add_component(component, primitive_round=target_round)
+                output = self._add_component(component, primitive_round=target_round)
                 remapped[local_id] = output.select_all()
                 component_ids.append(component_id)
 
@@ -908,11 +911,11 @@ class Primitive:
             target_round._append_scope(nested)
         return instance
 
-    def set_output(self, output: PortLike | Sequence[PortLike]) -> None:
+    def _set_output(self, output: PortLike | Sequence[PortLike]) -> None:
         """Declare the ordered logical units returned by this primitive."""
 
         if isinstance(output, Sequence) and not isinstance(output, (Port, Selection)):
-            output = self.join(*output)
+            output = self._join(*output)
         output = as_selection(output)
         try:
             actual_port = self._ports[output.source.owner_id]
@@ -1119,3 +1122,193 @@ class Primitive:
             return int_from_bits(value)
         width = value_type.domain.encoded_bit_size
         return value if width is None else int_from_units(value, width)
+
+
+class PrimitiveBuilder:
+    """Author a :class:`Primitive` through an explicitly mutable object.
+
+    The finished primitive returned by :meth:`build` does not expose graph
+    mutation as part of its public API.
+
+    EXAMPLES::
+
+        >>> from claasp import Bit, PrimitiveBuilder, ValueType
+        >>> from claasp.components import Xor
+        >>> bit = ValueType(Bit(), (1,))
+        >>> builder = PrimitiveBuilder("xor", {"left": bit, "right": bit})
+        >>> builder.add_round()
+        Round(number=0)
+        >>> output = builder.add_component(Xor(builder.inputs()))
+        >>> primitive = builder.build(output)
+        >>> primitive.evaluate(0, 1)
+        1
+    """
+
+    def __init__(
+        self,
+        family_name: str,
+        inputs: Mapping[str, ValueType | PrimitiveInput],
+        *,
+        kind: PrimitiveKind | str | None = None,
+        provenance: tuple[tuple[str, str], ...] = (),
+        instance_name: str | None = None,
+        round_count: int | None = None,
+    ) -> None:
+        self._built = False
+        primitive = object.__new__(Primitive)
+        self._primitive = primitive
+        Primitive.__init__(
+            primitive,
+            family_name,
+            inputs,
+            kind=kind,
+            provenance=provenance,
+            instance_name=instance_name,
+            round_count=round_count,
+            _builder=self,
+        )
+
+    @classmethod
+    def _for_primitive(cls, primitive: Primitive) -> "PrimitiveBuilder":
+        builder = object.__new__(cls)
+        builder._primitive = primitive
+        builder._built = False
+        return builder
+
+    def _ensure_open(self) -> None:
+        if self._built:
+            raise RuntimeError("this primitive builder has already been built")
+
+    def input(self, selector: str | int) -> Port:
+        """Return one input port for use in the graph being authored."""
+
+        return self._primitive.input(selector)
+
+    def inputs(self, *selectors: str | int) -> Sequence[Port]:
+        """Return input ports in declaration or requested order."""
+
+        return self._primitive.inputs(*selectors)
+
+    def add_round(self) -> Round:
+        """Append and return the next sequential round."""
+
+        self._ensure_open()
+        return self._primitive._add_round()
+
+    def add_component(
+        self,
+        component: Component,
+        *,
+        primitive_round: Round | None = None,
+    ) -> Port:
+        """Validate and append a component, returning its output port."""
+
+        self._ensure_open()
+        return self._primitive._add_component(component, primitive_round=primitive_round)
+
+    def add_composite(
+        self,
+        definition,
+        bindings: Mapping[str, PortLike],
+        *,
+        scope_id: str | None = None,
+        primitive_round: Round | None = None,
+    ):
+        """Instantiate a reusable definition in the graph being authored."""
+
+        self._ensure_open()
+        return self._primitive._add_composite(
+            definition,
+            bindings,
+            scope_id=scope_id,
+            primitive_round=primitive_round,
+        )
+
+    def join(self, *values: PortLike) -> PortLike:
+        """Join homogeneous values as structural wiring."""
+
+        self._ensure_open()
+        return self._primitive._join(*values)
+
+    def pack_bits(self, value: PortLike, word_width: int, *, output_domain=None) -> Port:
+        """View consecutive MSB-first bits as fixed-width words."""
+
+        self._ensure_open()
+        return self._primitive._pack_bits(value, word_width, output_domain=output_domain)
+
+    def view(self, value: PortLike) -> Port:
+        """Give an ordered selection a structural wiring boundary."""
+
+        self._ensure_open()
+        return self._primitive._view(value)
+
+    def unpack_bits(self, value: PortLike) -> Port:
+        """View fixed-width words as consecutive MSB-first bits."""
+
+        self._ensure_open()
+        return self._primitive._unpack_bits(value)
+
+    def set_round_keys(self, round_keys: Iterable[object]) -> Sequence[object]:
+        """Publish the graph's round keys."""
+
+        self._ensure_open()
+        return self._primitive._publish_round_keys(round_keys)
+
+    def add_round_key(self, round_key: object) -> object:
+        """Publish one round key in authoring order."""
+
+        self._ensure_open()
+        return self._primitive._publish_round_key(round_key)
+
+    def set_round_states(self, round_states: Iterable[object]) -> Sequence[object]:
+        """Publish the graph's round states."""
+
+        self._ensure_open()
+        return self._primitive._publish_round_states(round_states)
+
+    def add_round_state(self, *values: object, **boundaries: object) -> object:
+        """Publish one positional or named round-state observation."""
+
+        self._ensure_open()
+        return self._primitive._publish_round_state(*values, **boundaries)
+
+    def set_key_schedule_states(self, states: Iterable[object]) -> Sequence[object]:
+        """Publish the graph's key-schedule states."""
+
+        self._ensure_open()
+        return self._primitive._publish_key_schedule_states(states)
+
+    def add_key_schedule_state(self, *values: object) -> object:
+        """Publish one key-schedule state in authoring order."""
+
+        self._ensure_open()
+        return self._primitive._publish_key_schedule_state(*values)
+
+    def set_round_operations(self, operations: Iterable[object]) -> Sequence[object]:
+        """Publish the graph's round-operation landmarks in authoring order."""
+
+        self._ensure_open()
+        return self._primitive._publish_round_operations(operations)
+
+    def add_round_operations(self, **operations: object) -> Mapping[str, object]:
+        """Publish named operation landmarks for one round."""
+
+        self._ensure_open()
+        return self._primitive._publish_round_operation(**operations)
+
+    def set_output(self, output: PortLike | Sequence[PortLike]) -> None:
+        """Declare the graph output without completing the builder."""
+
+        self._ensure_open()
+        self._primitive._set_output(output)
+
+    def build(self, output: PortLike | Sequence[PortLike] | None = None) -> Primitive:
+        """Bind an optional output and return the completed primitive."""
+
+        self._ensure_open()
+        if output is not None:
+            self._primitive._set_output(output)
+        if self._primitive.output is None:
+            raise ValueError("a primitive must have an output before it can be built")
+        self._built = True
+        return self._primitive

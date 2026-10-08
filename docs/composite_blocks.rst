@@ -17,33 +17,32 @@ shows the alternative reusable-block style used by ``CustomAES``.
 
 .. doctest::
 
-   >>> from claasp import Primitive
+   >>> from claasp import PrimitiveBuilder
    >>> from claasp.components import Add
    >>> from claasp.composites import AESKeySchedule, AESRound
    >>> def block_aes128():
    ...     schedule_definition = AESKeySchedule(128, 10)
    ...     middle_round = AESRound(mix_columns=True)
    ...     final_round = AESRound(mix_columns=False)
-   ...     primitive = Primitive("aes_from_blocks", {
+   ...     builder = PrimitiveBuilder("aes_from_blocks", {
    ...         "plaintext": middle_round.inputs["state"],
    ...         "key": schedule_definition.inputs["key"],
    ...     })
-   ...     primitive.add_round()
-   ...     key_schedule = primitive.add_composite(
-   ...         schedule_definition, {"key": primitive.input("key")},
+   ...     builder.add_round()
+   ...     key_schedule = builder.add_composite(
+   ...         schedule_definition, {"key": builder.input("key")},
    ...         scope_id="key_schedule")
-   ...     state = primitive.add_component(Add((
-   ...         primitive.input("plaintext"), key_schedule.output[0])))
+   ...     state = builder.add_component(Add((
+   ...         builder.input("plaintext"), key_schedule.output[0])))
    ...     for number in range(1, 11):
-   ...         primitive.add_round()
+   ...         builder.add_round()
    ...         definition = final_round if number == 10 else middle_round
-   ...         block = primitive.add_composite(definition, {
+   ...         block = builder.add_composite(definition, {
    ...             "state": state,
    ...             "round_key": key_schedule.output[number],
    ...         }, scope_id=f"round_{number}")
    ...         state = block.output()
-   ...     primitive.set_output(state)
-   ...     return primitive
+   ...     return builder.build(state)
    >>> built = block_aes128()
    >>> plaintext = 0x00112233445566778899AABBCCDDEEFF
    >>> key = 0x000102030405060708090A0B0C0D0E0F

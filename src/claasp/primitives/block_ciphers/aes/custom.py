@@ -66,15 +66,15 @@ class CustomAES(Primitive):
             round_count=rounds,
         )
 
-        self.add_round()
-        key_schedule = self.add_composite(
+        self._builder.add_round()
+        key_schedule = self._builder.add_composite(
             AESKeySchedule(key_bit_size, rounds, sbox_table=table),
             {"key": self.input("key")},
         )
-        state = self.add_component(Add((self.input("plaintext"), key_schedule.output[0])))
+        state = self._builder.add_component(Add((self.input("plaintext"), key_schedule.output[0])))
         for round_number in range(1, rounds + 1):
-            self.add_round()
-            round_function = self.add_composite(
+            self._builder.add_round()
+            round_function = self._builder.add_composite(
                 AESRound(
                     sbox_table=table,
                     mix_columns=include_mix_columns
@@ -83,4 +83,4 @@ class CustomAES(Primitive):
                 {"state": state, "round_key": key_schedule.output[round_number]},
             )
             state = round_function.output()
-        self.set_output(state)
+        self._builder.set_output(state)

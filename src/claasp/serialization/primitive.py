@@ -946,9 +946,9 @@ def _decode_primitive(value, path):
                 _validate_inputs=False,
             )
         for round_index, group in enumerate(component_groups):
-            primitive.add_round()
+            primitive._builder.add_round()
             for component_index, item in enumerate(group):
-                primitive.add_component(
+                primitive._builder.add_component(
                     _decode_component(
                         item,
                         source_types,
@@ -972,7 +972,7 @@ def _decode_primitive(value, path):
                 )
     if value["output"] is not None:
         try:
-            primitive.set_output(_decode_selection(value["output"], source_types, f"{path}.output"))
+            primitive._builder.set_output(_decode_selection(value["output"], source_types, f"{path}.output"))
         except (TypeError, ValueError) as error:
             raise SerializationError(
                 SerializationFailure.INVALID_REFERENCE, str(error), path=f"{path}.output"

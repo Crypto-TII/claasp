@@ -14,34 +14,35 @@ that need names and ports together.
 
 .. doctest::
 
-   >>> from claasp import Primitive, PrimeField, ValueType
+   >>> from claasp import PrimitiveBuilder, PrimeField, ValueType
    >>> from claasp.components import Add, Permutation
    >>> field_vector = ValueType(PrimeField(17), (3,))
-   >>> primitive = Primitive("small_permutation", {"state": field_vector})
-   >>> state = primitive.input("state")
-   >>> primitive.input(0) is state
+   >>> builder = PrimitiveBuilder("small_permutation", {"state": field_vector})
+   >>> state = builder.input("state")
+   >>> builder.input(0) is state
    True
-   >>> list(primitive.inputs("state")) == [state]
+   >>> list(builder.inputs("state")) == [state]
    True
    >>> state[2, 0].positions
    (2, 0)
-   >>> primitive.add_round()
+   >>> builder.add_round()
    Round(number=0)
-   >>> shuffled = primitive.add_component(Permutation(state, (2, 0, 1)))
+   >>> shuffled = builder.add_component(Permutation(state, (2, 0, 1)))
    >>> shuffled.owner_id
    'permutation_0_0'
-   >>> output = primitive.add_component(Add((shuffled, state)))
+   >>> output = builder.add_component(Add((shuffled, state)))
    >>> output.owner_id
    'add_0_1'
-   >>> primitive.set_output(output)
+   >>> primitive = builder.build(output)
 
 Automatic identifiers combine the component kind, round number, and position,
 so rebuilding the same graph produces the same names.  Normal primitive source
 should omit identifiers and retain semantic ports instead, for example
 round states or round keys. Publish precomputed collections through
-``set_round_states()`` and ``set_round_keys()``, or record them incrementally
-with ``add_round_state()`` and ``add_round_key()``. Named operation landmarks
-similarly use ``add_round_operations()``. Primitive source therefore does not
+``builder.set_round_states()`` and ``builder.set_round_keys()``, or record them
+incrementally with ``builder.add_round_state()`` and ``builder.add_round_key()``.
+Named operation landmarks similarly use ``builder.add_round_operations()``.
+Primitive source therefore does not
 assign a particular container to public attributes. This keeps analysis code
 stable when an implementation or the library's collection representation
 changes. Explicit identifiers remain available for exceptional interchange
@@ -56,8 +57,8 @@ the reusable-block style. Composite outputs are ordered, so a key schedule can
 be read naturally as ``key_schedule.output[round_number]``; named lookup is
 also available for self-documenting boundaries.
 
-Use ``primitive.join(left, right)`` when several homogeneous ports form one
-state for a later operation, or simply ``primitive.set_output((left, right))``
+Use ``builder.join(left, right)`` when several homogeneous ports form one
+state for a later operation, or simply ``builder.build((left, right))``
 at the boundary. This creates an addressable typed binding, not a semantic
 component, so component queries contain only actual operations.
 
@@ -83,7 +84,7 @@ Reusable component catalogue
 ``claasp.components`` is the central public catalogue. Components are
 immutable graph descriptions; evaluators and solver representations remain
 separate execution engines. The single authoring path is
-``Primitive.add_component``, which validates graph ownership and assigns a
+``PrimitiveBuilder.add_component``, which validates graph ownership and assigns a
 deterministic identifier when one is omitted.
 
 The catalogue includes structural operations, conversions, lookup
@@ -94,15 +95,16 @@ arithmetic is distinct from ordinary field arithmetic.
 
 .. doctest::
 
-   >>> from claasp import Primitive, ValueType, Word
+   >>> from claasp import PrimitiveBuilder, ValueType, Word
    >>> from claasp.components import ModularSubtract, Shift
    >>> words = ValueType(Word(8), (1,))
-   >>> arx = Primitive("word_example", {"left": words, "right": words})
-   >>> arx.add_round()
+   >>> builder = PrimitiveBuilder("word_example", {"left": words, "right": words})
+   >>> builder.add_round()
    Round(number=0)
-   >>> difference = arx.add_component(ModularSubtract((arx.input("left"), arx.input("right"))))
-   >>> shifted = arx.add_component(Shift(difference, 1, "right"))
-   >>> arx.set_output(shifted)
+   >>> difference = builder.add_component(
+   ...     ModularSubtract((builder.input("left"), builder.input("right"))))
+   >>> shifted = builder.add_component(Shift(difference, 1, "right"))
+   >>> arx = builder.build(shifted)
    >>> arx.evaluate(3, 5)
    127
 
@@ -114,12 +116,12 @@ unambiguous.
 
    >>> from claasp import Bit
    >>> from claasp.components import FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm
-   >>> lfsr = Primitive("lfsr", {"state": ValueType(Bit(), (4,))})
-   >>> lfsr.add_round()
+   >>> builder = PrimitiveBuilder("lfsr", {"state": ValueType(Bit(), (4,))})
+   >>> builder.add_round()
    Round(number=0)
    >>> spec = FeedbackRegisterSpec(4, (FeedbackTerm((0,)), FeedbackTerm((1,))))
-   >>> next_state = lfsr.add_component(FeedbackRegister(lfsr.input("state"), (spec,)))
-   >>> lfsr.set_output(next_state)
+   >>> next_state = builder.add_component(FeedbackRegister(builder.input("state"), (spec,)))
+   >>> lfsr = builder.build(next_state)
    >>> lfsr.evaluate(0b1011)
    7
 
@@ -135,13 +137,13 @@ unambiguous scalar, batch, diagram, and model semantics.
 
 .. doctest::
 
-   >>> from claasp import Bit, Primitive, ValueType
-   >>> conversion = Primitive("conversion", {"bits": ValueType(Bit(), (16,))})
-   >>> conversion.add_round()
+   >>> from claasp import Bit, PrimitiveBuilder, ValueType
+   >>> builder = PrimitiveBuilder("conversion", {"bits": ValueType(Bit(), (16,))})
+   >>> builder.add_round()
    Round(number=0)
-   >>> words = conversion.pack_bits(conversion.input("bits"), 8)
-   >>> bits = conversion.unpack_bits(words)
-   >>> conversion.set_output(bits)
+   >>> words = builder.pack_bits(builder.input("bits"), 8)
+   >>> bits = builder.unpack_bits(words)
+   >>> conversion = builder.build(bits)
    >>> conversion.evaluate(0x1234)
    4660
 
@@ -165,9 +167,9 @@ outside-scope disposition instead of being silently counted as primitives.
 
 Each module under ``single_component_primitives`` contains the public class it
 advertises. For example, ``single_component_primitives.bitwise_and.BitwiseAnd`` directly
-shows the complete reference sequence: initialize ``Primitive``, call
-``add_round()``, construct the operation, call ``add_component()``, and bind it
-with ``set_output()``. Shared private code is limited to validation and
+shows the complete reference sequence: initialize ``PrimitiveBuilder``, call
+``add_round()``, construct the operation, call ``add_component()``, and finish
+with ``build()``. Shared private code is limited to validation and
 finite-field/matrix helpers, so following an import path always reaches the
 primitive definition rather than a forwarding shim or hidden graph builder.
 

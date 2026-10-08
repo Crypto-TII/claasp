@@ -24,11 +24,11 @@ from claasp.semantics.cryptanalysis import (
 
 def _toy_primitive():
     primitive = Primitive("toy diagram", {"state": ValueType(Bit(), (4,))})
-    primitive.add_round()
-    shuffled = primitive.add_component(Identity(primitive.input("state")[3, 1, 2, 0]))
-    primitive.add_round()
-    copied = primitive.add_component(Identity(shuffled))
-    primitive.set_output(copied)
+    primitive._builder.add_round()
+    shuffled = primitive._builder.add_component(Identity(primitive.input("state")[3, 1, 2, 0]))
+    primitive._builder.add_round()
+    copied = primitive._builder.add_component(Identity(shuffled))
+    primitive._builder.set_output(copied)
     return primitive
 
 

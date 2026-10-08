@@ -262,7 +262,7 @@ class Blink(BitGraphPrimitive):
             primitive_output_bit_size=block_bit_size,
         )
 
-        self.add_round()
+        self._builder.add_round()
 
         round_keys = self._get_round_keys()
         h1, h2, h = self._add_tweak_hashes()
@@ -441,7 +441,7 @@ class Blink(BitGraphPrimitive):
         )
 
         if start_new_round:
-            self.add_round()
+            self._builder.add_round()
 
         return state
 

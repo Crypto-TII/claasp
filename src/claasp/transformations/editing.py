@@ -201,13 +201,13 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
             component = component_by_id[source_id]
             original_round = round_by_component[source_id]
             if original_round != active_round:
-                derived.add_round()
+                derived._builder.add_round()
                 active_round = original_round
             clone = copy(component)
             object.__setattr__(clone, "component_id", None)
             object.__setattr__(clone, "inputs", tuple(remap(item) for item in component.inputs))
-            ports[source_id] = derived.add_component(clone)
-    derived.set_output(remap(primitive.output))
+            ports[source_id] = derived._builder.add_component(clone)
+    derived._builder.set_output(remap(primitive.output))
     _record(
         derived,
         primitive,
@@ -381,7 +381,7 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
             else _linear_permutation(component)
         )
         if mapping is not None:
-            ports[source_id] = derived.view(remap(component.inputs[0])[mapping])
+            ports[source_id] = derived._builder.view(remap(component.inputs[0])[mapping])
             inlined.add(source_id)
             continue
         if isinstance(component, Rotate):
@@ -389,7 +389,7 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
             domain = selection.value_type.domain
             if not isinstance(domain, Word):  # pragma: no cover - component validation owns this
                 raise AssertionError("Rotate has a non-Word input")
-            bits = derived.unpack_bits(selection)
+            bits = derived._builder.unpack_bits(selection)
             width = domain.width
             amount = component.amount
             bit_mapping = []
@@ -401,20 +401,20 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
                     else:
                         source_bit = (output_bit - amount) % width
                     bit_mapping.append(base + source_bit)
-            reordered = derived.view(bits[tuple(bit_mapping)])
-            ports[source_id] = derived.pack_bits(reordered, width)
+            reordered = derived._builder.view(bits[tuple(bit_mapping)])
+            ports[source_id] = derived._builder.pack_bits(reordered, width)
             inlined.add(source_id)
             continue
         original_round = round_by_component[source_id]
         if original_round != active_round:
-            derived_round_by_original[original_round] = derived.add_round()
+            derived_round_by_original[original_round] = derived._builder.add_round()
             active_round = original_round
         clone = copy(component)
         object.__setattr__(clone, "component_id", None)
         object.__setattr__(clone, "inputs", tuple(remap(item) for item in component.inputs))
-        ports[source_id] = derived.add_component(clone)
+        ports[source_id] = derived._builder.add_component(clone)
 
-    derived.set_output(remap(primitive.output))
+    derived._builder.set_output(remap(primitive.output))
     for scope in primitive.scopes:
         if not set(scope.component_ids) <= required or set(scope.component_ids) & inlined:
             continue

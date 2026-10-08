@@ -81,7 +81,7 @@ class XoodooSbox(BitGraphPrimitive):
 
         # round function
         for r in range(0, number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
 
             # round parameter
             round_i = r - number_of_rounds + 1

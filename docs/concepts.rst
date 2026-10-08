@@ -127,13 +127,13 @@ order.
 
 .. doctest::
 
-   >>> from claasp import Primitive
+   >>> from claasp import PrimitiveBuilder
    >>> pair = ValueType(domain=PrimeField(257), shape=(2,))
-   >>> wiring = Primitive("wiring", {"left": pair, "right": pair})
-   >>> wiring.add_round()
+   >>> builder = PrimitiveBuilder("wiring", {"left": pair, "right": pair})
+   >>> builder.add_round()
    Round(number=0)
-   >>> state = wiring.join(wiring.input("left"), wiring.input("right")[1, 0])
-   >>> wiring.set_output(state)
+   >>> state = builder.join(builder.input("left"), builder.input("right")[1, 0])
+   >>> wiring = builder.build(state)
    >>> wiring.evaluate((1, 2), (3, 4))
    (1, 2, 4, 3)
 

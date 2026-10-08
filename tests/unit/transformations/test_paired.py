@@ -103,11 +103,11 @@ def test_nested_source_scopes_remain_nested_in_each_paired_realization():
     copied = block.add_component(Identity(block.input("value"), "copy"))
     block.set_output("output", copied)
     source = Primitive("scoped", {"state": ValueType(Word(4), (1,))})
-    source.add_round()
-    instance = source.add_composite(
+    source._builder.add_round()
+    instance = source._builder.add_composite(
         block.build(), {"value": source.input("state")}, scope_id="block"
     )
-    source.set_output(instance.output())
+    source._builder.set_output(instance.output())
 
     paired = paired_xor_primitive(source)
 
@@ -122,7 +122,7 @@ def test_nested_source_scopes_remain_nested_in_each_paired_realization():
 
 def test_xor_pair_rejects_domains_without_characteristic_two_semantics():
     source = Primitive("prime", {"state": ValueType(PrimeField(7), (1,))})
-    source.set_output(source.input("state"))
+    source._builder.set_output(source.input("state"))
 
     with pytest.raises(TransformationError) as caught:
         paired_xor_primitive(source)

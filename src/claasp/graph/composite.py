@@ -129,10 +129,10 @@ class CompositeDefinition:
                 _validate_inputs=False,
             )
         for components in self.rounds:
-            primitive.add_round()
+            primitive._builder.add_round()
             for component in components:
-                primitive.add_component(copy(component))
-        primitive.set_output(self.output(output))
+                primitive._builder.add_component(copy(component))
+        primitive._builder.set_output(self.output(output))
         return primitive
 
     def evaluate(self, *args: object, output: str = "output", **kwargs: object):
@@ -152,15 +152,15 @@ class CompositeInstance:
 
     EXAMPLES::
 
-        >>> from claasp import Primitive, ValueType, Word
+        >>> from claasp import PrimitiveBuilder, ValueType, Word
         >>> from claasp.composites import ChaChaQuarterRound
         >>> word = ValueType(Word(8), (1,))
-        >>> primitive = Primitive("scoped", {name: word for name in "abcd"})
-        >>> primitive.add_round()
+        >>> builder = PrimitiveBuilder("scoped", {name: word for name in "abcd"})
+        >>> builder.add_round()
         Round(number=0)
-        >>> instance = primitive.add_composite(
+        >>> instance = builder.add_composite(
         ...     ChaChaQuarterRound(word_size=8, rotations=(1, 2, 3, 4)),
-        ...     {name: primitive.input(name) for name in "abcd"},
+        ...     {name: builder.input(name) for name in "abcd"},
         ... )
         >>> (instance.path, len(instance.components), len(instance.outputs))
         ('cha_cha_quarter_round_0_0', 12, 5)
@@ -273,34 +273,34 @@ class CompositeBuilder:
     def add_round(self):
         """Append and return the next sequential composite round."""
 
-        return self._primitive.add_round()
+        return self._primitive._builder.add_round()
 
     def add_component(self, component: Component, *, primitive_round=None) -> Port:
         """Validate and append a semantic leaf component."""
 
-        return self._primitive.add_component(component, primitive_round=primitive_round)
+        return self._primitive._builder.add_component(component, primitive_round=primitive_round)
 
     def add_composite(
         self, definition: CompositeDefinition, bindings: Mapping[str, PortLike], **kwargs
     ):
         """Instantiate a nested reusable definition in this scope."""
 
-        return self._primitive.add_composite(definition, bindings, **kwargs)
+        return self._primitive._builder.add_composite(definition, bindings, **kwargs)
 
     def join(self, *values: PortLike) -> PortLike:
         """Join values through the graph's normalized structural wiring."""
 
-        return self._primitive.join(*values)
+        return self._primitive._builder.join(*values)
 
     def pack_bits(self, value: PortLike, word_width: int, *, output_domain=None) -> Port:
         """Create an explicit MSB-first bit-to-word structural binding."""
 
-        return self._primitive.pack_bits(value, word_width, output_domain=output_domain)
+        return self._primitive._builder.pack_bits(value, word_width, output_domain=output_domain)
 
     def unpack_bits(self, value: PortLike) -> Port:
         """Create an explicit MSB-first word-to-bit structural binding."""
 
-        return self._primitive.unpack_bits(value)
+        return self._primitive._builder.unpack_bits(value)
 
     def set_output(self, name: str, output: PortLike | Sequence[PortLike]) -> None:
         """Bind one unique semantic output name to graph values."""

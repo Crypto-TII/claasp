@@ -7,11 +7,11 @@ from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 
 def test_bit_vector_sbox_maps_one_msb_first_nibble():
     primitive = Primitive("nibble", {"value": ValueType(Bit(), (4,))})
-    primitive.add_round()
-    output = primitive.add_component(
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
         BitVectorSBox(primitive.input("value"), PRESENT_SBOX, component_id="sbox")
     )
-    primitive.set_output(output)
+    primitive._builder.set_output(output)
 
     result = ScalarEvaluator().evaluate(primitive, {"value": bits_from_int(0xA, 4)})
     assert int_from_bits(result.output) == 0xF

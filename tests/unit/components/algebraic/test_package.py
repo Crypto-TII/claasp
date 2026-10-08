@@ -8,13 +8,13 @@ def test_prime_field_algebraic_components():
     field = PrimeField(17)
     vector_type = ValueType(field, (2,))
     primitive = Primitive("field_algebra", {"left": vector_type, "right": vector_type})
-    primitive.add_round()
+    primitive._builder.add_round()
     addition = Add((primitive.input("left"), primitive.input("right")), component_id="add_0_0")
-    addition_output = primitive.add_component(addition)
+    addition_output = primitive._builder.add_component(addition)
     product = Multiply((addition_output, primitive.input("right")), component_id="multiply_0_1")
-    product_output = primitive.add_component(product)
+    product_output = primitive._builder.add_component(product)
     power = Power(product_output, 3, component_id="power_0_2")
-    primitive.add_component(power)
+    primitive._builder.add_component(power)
 
     result = ScalarEvaluator().evaluate(primitive, {"left": (15, 3), "right": (5, 4)})
 
@@ -27,13 +27,13 @@ def test_aes_field_multiplication_and_linear_map():
     aes_field = BinaryExtensionField(8, 0x11B)
     vector_type = ValueType(aes_field, (2,))
     primitive = Primitive("aes_field", {"state": vector_type})
-    primitive.add_round()
+    primitive._builder.add_round()
     linear_map = LinearMap(
         primitive.input("state"),
         ((2, 3), (1, 1)),
         component_id="linear_map_0_0",
     )
-    primitive.add_component(linear_map)
+    primitive._builder.add_component(linear_map)
 
     result = ScalarEvaluator().evaluate(primitive, {"state": (0x57, 0x83)})
 
@@ -55,10 +55,10 @@ def test_binary_affine_map_composes_with_field_inverse_to_form_aes_sbox():
 
     field = BinaryExtensionField(8, 0x11B)
     primitive = Primitive("aes_substitution", {"values": ValueType(field, (256,))})
-    primitive.add_round()
-    inverse = primitive.add_component(Power(primitive.input("values"), 254))
-    affine = primitive.add_component(BinaryAffineMap(inverse, AES_AFFINE_MATRIX, 0x63))
-    primitive.set_output(affine)
+    primitive._builder.add_round()
+    inverse = primitive._builder.add_component(Power(primitive.input("values"), 254))
+    affine = primitive._builder.add_component(BinaryAffineMap(inverse, AES_AFFINE_MATRIX, 0x63))
+    primitive._builder.set_output(affine)
 
     result = ScalarEvaluator().evaluate(primitive, {"values": tuple(range(256))})
     assert result.output == AES_SBOX

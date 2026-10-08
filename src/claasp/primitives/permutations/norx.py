@@ -84,7 +84,7 @@ class Norx(BitGraphPrimitive):
         ]
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             state = self.round_function(state)
 
             inputs_id = []

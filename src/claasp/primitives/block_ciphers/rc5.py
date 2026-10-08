@@ -55,12 +55,12 @@ class RC5(Primitive):
         super().__init__(
             "rc5", {"key": key_type, "plaintext": ValueType(Word(8), (2 * byte_count,))}
         )
-        self.add_round()
+        self._builder.add_round()
 
         def pack_little_endian(byte_selection):
             byte_selection = tuple(reversed(tuple(byte_selection)))
-            joined = self.join(*byte_selection)
-            return self.pack_bits(self.unpack_bits(joined), word_size)
+            joined = self._builder.join(*byte_selection)
+            return self._builder.pack_bits(self._builder.unpack_bits(joined), word_size)
 
         if key_size in (0, 1):
             key_words = [constant(self, word_size, 0)]
@@ -108,7 +108,7 @@ class RC5(Primitive):
             schedule[1],
         )
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             a = add(
                 self,
                 variable_rotate(self, xor(self, a, b), low_bits(self, b, amount_width), left=True),
@@ -119,6 +119,6 @@ class RC5(Primitive):
                 variable_rotate(self, xor(self, b, a), low_bits(self, a, amount_width), left=True),
                 schedule[2 * round_number + 3],
             )
-        self.set_output(
+        self._builder.set_output(
             concatenate(self, byte_swap(self, a, word_size), byte_swap(self, b, word_size))
         )
