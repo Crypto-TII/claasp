@@ -747,8 +747,18 @@ middle rule exactly: only ``(0,1)``, ``(0,2)``, ``(1,0)``, and ``(2,0)`` can
 be selected as contradictions, state 3 never proves impossibility, and the
 default formulation selects exactly one contradictory position. GLPK decodes
 and rechecks the preserved reduced-AES abstract fixture. This does not relabel
-that fixture as a concrete differential proof; whole-graph four-state
-propagation remains the next layer.
+that fixture as a concrete differential proof.
+
+The wordwise deterministic graph slice adds exact four-state graph assembly
+for SAT as a shared Boolean formulation and exposes the recovered CP and MILP
+models as ``WordwiseDeterministicTruncatedCPModel`` and
+``WordwiseDeterministicTruncatedMILPModel``. It retains concrete known values,
+known-value cancellation, abstract nonzero and unknown states, bijective S-box
+activity, direct wiring, and the reviewed dense nonzero-coefficient field-linear
+abstraction. Chuffed and GLPK solve and independently decode the same one-round
+ToyAES fixture in the [ten-run benchmark](audits/data/wordwise_deterministic_graph_benchmark.json).
+Whole-graph wordwise impossible composition can now reuse this propagation;
+unsupported components remain explicit rather than being silently skipped.
 
 The functional component coverage slice extends the shared Boolean lowering
 with direct OR and NOT truth-table clauses plus zero-filling fixed shifts.

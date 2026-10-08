@@ -5,21 +5,24 @@ from __future__ import annotations
 from contextlib import nullcontext
 from dataclasses import dataclass, replace
 from hashlib import sha256
-from itertools import product
+from itertools import combinations, product
 from typing import Any
 
 from claasp.components import (
     Add,
     Constant,
     Identity,
+    LinearMap,
     ModularAdd,
     ModularSubtract,
     Permutation,
     Rotate,
+    SBox,
     Xor,
 )
-from claasp.domains import Word
+from claasp.domains import BinaryExtensionField, Bit, Word
 from claasp.drivers.solvers import SatStatus
+from claasp.graph.binding import BindingKind
 from claasp.primitives import Speck
 from claasp.representations.constraints import (
     ConstraintBackend,
@@ -53,6 +56,9 @@ from claasp.semantics.cryptanalysis import (
     ProbabilisticTruncatedTrail,
     TruncatedBit,
     TruncatedXorDifference,
+    WordwiseDifferenceKind,
+    WordwiseXorDifference,
+    propagate_dense_wordwise_activity,
     truncated_modular_add,
     truncated_modular_subtract,
 )
@@ -909,6 +915,503 @@ class WordDeterministicTruncatedSATModel:
             WordDeterministicTruncatedEnumeration,
             metadata,
             limit,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class WordwiseDeterministicTruncatedCharacteristic:
+    """A decoded four-state wordwise characteristic over a complete graph.
+
+    EXAMPLES::
+
+        >>> zero = WordwiseXorDifference(4, WordwiseDifferenceKind.ZERO)
+        >>> trail = WordwiseDeterministicTruncatedCharacteristic(
+        ...     (("plaintext", (zero,)),), (zero,), (), ()
+        ... )
+        >>> trail.output_differences[0].kind.name
+        'ZERO'
+    """
+
+    input_differences: tuple[tuple[str, tuple[WordwiseXorDifference, ...]], ...]
+    output_differences: tuple[WordwiseXorDifference, ...]
+    component_differences: tuple[tuple[str, tuple[WordwiseXorDifference, ...]], ...]
+    semantic_assignment: tuple[tuple[str, int], ...]
+
+
+class WordwiseDeterministicTruncatedSATModel:
+    """Assemble exact four-state wordwise propagation as portable CNF.
+
+    The model retains concrete nonzero word differences, exact cancellation
+    through field addition/XOR, bijective S-box activity, direct wiring, and
+    the reviewed dense nonzero-coefficient linear-layer abstraction.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToyAES
+        >>> model = WordwiseDeterministicTruncatedSATModel(
+        ...     ToyAES(number_of_rounds=1, word_size=4, state_size=2),
+        ...     zero_difference_inputs=("key",), nonzero_input="plaintext",
+        ... )
+        >>> formula = model.cnf_formula()
+        >>> (formula.variable_count > 0, "wordwise_nonzero_input" in formula.provenance)
+        (True, True)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "WordwiseDeterministicTruncatedSATModel",
+        "wordwise_deterministic_truncated_xor",
+        "four-state word graph with exact known-value XOR and dense-layer abstraction",
+        "The formulation preserves the reviewed legacy abstract domain without caches.",
+    )
+
+    _KINDS = tuple(WordwiseDifferenceKind)
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        fixed_input_differences=None,
+        output_differences=None,
+        zero_difference_inputs=(),
+        nonzero_input=None,
+    ) -> None:
+        self.primitive = primitive
+        if nonzero_input is not None and nonzero_input not in primitive.input_ports:
+            raise ValueError("unknown nonzero input")
+        if any(name not in primitive.input_ports for name in zero_difference_inputs):
+            raise ValueError("unknown zero-difference input")
+        if nonzero_input in zero_difference_inputs:
+            raise ValueError("an input cannot be both zero and nonzero")
+        self.nonzero_input = nonzero_input
+        self.zero_difference_inputs = tuple(zero_difference_inputs)
+        fixed = dict(fixed_input_differences or {})
+        if unknown := set(fixed) - set(primitive.input_ports):
+            raise ValueError(f"unknown fixed input differences: {sorted(unknown)!r}")
+        self.fixed_input_differences = {
+            name: self._coerce(values, primitive.input_ports[name].value_type)
+            for name, values in fixed.items()
+        }
+        self.output_differences = (
+            None
+            if output_differences is None
+            else self._coerce(output_differences, primitive.output.value_type)
+        )
+        self._formula: CNFFormula | None = None
+        self._ports: dict[str, tuple[Any, ...]] = {}
+        self._operands: dict[str, tuple[Any, ...]] = {}
+        self._output: tuple[Any, ...] = ()
+        self._semantic_names: tuple[str, ...] = ()
+
+    @staticmethod
+    def _coerce(values, value_type):
+        values = tuple(values)
+        if len(values) != value_type.unit_count:
+            raise ValueError(f"wordwise boundary must contain {value_type.unit_count} units")
+        width = value_type.domain.encoded_bit_size
+        if any(not isinstance(item, WordwiseXorDifference) for item in values):
+            raise TypeError("wordwise boundaries require WordwiseXorDifference values")
+        if any(item.width != width for item in values):
+            raise ValueError(f"wordwise boundary units must have width {width}")
+        return values
+
+    def cnf_formula(self) -> CNFFormula:
+        """Return the complete four-state graph formula."""
+
+        variables, indices, clauses, provenance = [], {}, [], []
+
+        def allocate(name):
+            if name not in indices:
+                variables.append(name)
+                indices[name] = len(variables)
+            return name
+
+        def add(literals, label):
+            clauses.append(tuple(literals))
+            provenance.append(label)
+
+        def exactly_one(names, label):
+            add((indices[name] for name in names), label)
+            for left, right in combinations(names, 2):
+                add((-indices[left], -indices[right]), label)
+
+        def equivalent(left, right, label):
+            add((-indices[left], indices[right]), label)
+            add((indices[left], -indices[right]), label)
+
+        def word(name, width):
+            states = tuple(allocate(f"{name}_{kind.name.lower()}") for kind in self._KINDS)
+            value = tuple(allocate(f"{name}_value_{bit}") for bit in range(width))
+            exactly_one(states, "wordwise_state_one_hot")
+            known = states[WordwiseDifferenceKind.KNOWN.value]
+            for bit in value:
+                add((indices[known], -indices[bit]), "wordwise_canonical_value")
+            add((-indices[known], *(indices[bit] for bit in value)), "wordwise_known_nonzero")
+            return states, value
+
+        def equal_words(left, right, label):
+            for source, target in zip((*left[0], *left[1]), (*right[0], *right[1])):
+                equivalent(source, target, label)
+
+        def xor_gate(left, right, output, label):
+            a, b, c = indices[left], indices[right], indices[output]
+            add((-a, -b, -c), label)
+            add((-a, b, c), label)
+            add((a, -b, c), label)
+            add((a, b, -c), label)
+
+        def or_gate(inputs, output, label):
+            target = indices[output]
+            for source in inputs:
+                add((-indices[source], target), label)
+            add((-target, *(indices[source] for source in inputs)), label)
+
+        def xor_words(operands, output, prefix):
+            parity = []
+            for bit in range(len(output[1])):
+                accumulator = operands[0][1][bit]
+                for number, operand in enumerate(operands[1:], 1):
+                    target = allocate(f"__{prefix}_parity_{bit}_{number}")
+                    xor_gate(accumulator, operand[1][bit], target, "wordwise_known_xor")
+                    accumulator = target
+                parity.append(accumulator)
+            parity_nonzero = allocate(f"__{prefix}_parity_nonzero")
+            or_gate(parity, parity_nonzero, "wordwise_known_xor_nonzero")
+            for kinds in product(self._KINDS, repeat=len(operands)):
+                antecedent = tuple(
+                    -indices[operand[0][kind.value]] for operand, kind in zip(operands, kinds)
+                )
+                nonzero = sum(kind is WordwiseDifferenceKind.NONZERO for kind in kinds)
+                if WordwiseDifferenceKind.UNKNOWN in kinds or nonzero > 1:
+                    add((*antecedent, indices[output[0][3]]), "wordwise_xor_state")
+                elif nonzero == 1:
+                    add(
+                        (*antecedent, -indices[parity_nonzero], indices[output[0][3]]),
+                        "wordwise_xor_state",
+                    )
+                    add(
+                        (*antecedent, indices[parity_nonzero], indices[output[0][2]]),
+                        "wordwise_xor_state",
+                    )
+                else:
+                    add(
+                        (*antecedent, -indices[parity_nonzero], indices[output[0][1]]),
+                        "wordwise_xor_state",
+                    )
+                    add(
+                        (*antecedent, indices[parity_nonzero], indices[output[0][0]]),
+                        "wordwise_xor_state",
+                    )
+            known = output[0][WordwiseDifferenceKind.KNOWN.value]
+            for source, target in zip(parity, output[1]):
+                add((-indices[known], -indices[source], indices[target]), "wordwise_xor_value")
+                add((-indices[known], indices[source], -indices[target]), "wordwise_xor_value")
+
+        def through_bijection(source, target, label):
+            mapping = (0, 2, 2, 3)
+            for source_kind, target_kind in enumerate(mapping):
+                add(
+                    (-indices[source[0][source_kind]], indices[target[0][target_kind]]),
+                    label,
+                )
+
+        bindings = {item.binding_id: item for item in self.primitive.bindings}
+
+        def resolve(owner, position):
+            binding = bindings.get(owner)
+            if binding is None:
+                return owner, position
+            if binding.kind is BindingKind.JOIN:
+                offset = 0
+                for selection in binding.inputs:
+                    if position < offset + len(selection.positions):
+                        return resolve(
+                            selection.source.owner_id,
+                            selection.positions[position - offset],
+                        )
+                    offset += len(selection.positions)
+            elif binding.kind is BindingKind.VIEW:
+                selection = binding.inputs[0]
+                return resolve(selection.source.owner_id, selection.positions[position])
+            raise NotImplementedError(
+                f"wordwise propagation does not support {binding.kind.value} binding {owner!r}"
+            )
+
+        sources = [(name, port.value_type) for name, port in self.primitive.input_ports.items()]
+        sources += [(item.component_id, item.output_type) for item in self.primitive.components]
+        ports = {
+            name: tuple(
+                word(f"wordwise_{name}_{position}", value_type.domain.encoded_bit_size)
+                for position in range(value_type.unit_count)
+            )
+            for name, value_type in sources
+        }
+
+        def selected(selection):
+            return tuple(
+                ports[owner][source_position]
+                for position in selection.positions
+                for owner, source_position in (resolve(selection.source.owner_id, position),)
+            )
+
+        operands_by_id = {}
+        for component in self.primitive.components:
+            operands = tuple(selected(selection) for selection in component.inputs)
+            operands_by_id[component.component_id] = operands
+            output = ports[component.component_id]
+            if isinstance(component, (Add, Xor)):
+                if isinstance(component, Add) and not isinstance(
+                    component.output_type.domain, (Bit, BinaryExtensionField)
+                ):
+                    raise NotImplementedError("wordwise Add requires characteristic-two fields")
+                if any(len(items) != len(output) for items in operands):
+                    raise NotImplementedError("wordwise XOR operands must align by unit")
+                for position, target in enumerate(output):
+                    xor_words(
+                        tuple(items[position] for items in operands),
+                        target,
+                        f"{component.component_id}_{position}",
+                    )
+            elif isinstance(component, SBox):
+                if sorted(component.table) != list(range(len(component.table))):
+                    raise NotImplementedError("wordwise S-box propagation requires a bijection")
+                for source, target in zip(operands[0], output):
+                    through_bijection(source, target, "wordwise_bijective_sbox")
+            elif isinstance(component, Identity):
+                for source, target in zip(operands[0], output):
+                    equal_words(source, target, "wordwise_wiring")
+            elif isinstance(component, Rotate):
+                for source, target in zip(operands[0], output):
+                    for source_state, target_state in zip(source[0], target[0]):
+                        equivalent(source_state, target_state, "wordwise_rotate_state")
+                    width = len(source[1])
+                    offset = (
+                        component.amount if component.direction == "left" else -component.amount
+                    )
+                    for position, target_bit in enumerate(target[1]):
+                        equivalent(
+                            source[1][(position + offset) % width],
+                            target_bit,
+                            "wordwise_rotate_value",
+                        )
+            elif isinstance(component, Permutation):
+                for target, position in zip(output, component.mapping):
+                    equal_words(operands[0][position], target, "wordwise_permutation")
+            elif isinstance(component, Constant):
+                for target in output:
+                    add((indices[target[0][0]],), "wordwise_zero_constant")
+            elif isinstance(component, LinearMap):
+                if any(coefficient == 0 for row in component.matrix for coefficient in row):
+                    raise NotImplementedError(
+                        "wordwise dense-layer abstraction requires every coefficient nonzero"
+                    )
+                source = operands[0]
+                for kinds in product(self._KINDS, repeat=len(source)):
+                    antecedent = tuple(
+                        -indices[item[0][kind.value]] for item, kind in zip(source, kinds)
+                    )
+                    active = sum(kind is not WordwiseDifferenceKind.ZERO for kind in kinds)
+                    target_kind = (
+                        WordwiseDifferenceKind.UNKNOWN
+                        if WordwiseDifferenceKind.UNKNOWN in kinds or active > 1
+                        else WordwiseDifferenceKind.NONZERO
+                        if active
+                        else WordwiseDifferenceKind.ZERO
+                    )
+                    for target in output:
+                        add(
+                            (*antecedent, indices[target[0][target_kind.value]]),
+                            "wordwise_dense_linear_layer",
+                        )
+            else:
+                raise NotImplementedError(
+                    f"no wordwise deterministic semantics for {type(component).__name__}"
+                )
+
+        output = selected(self.primitive.output)
+
+        def fix(words, differences, label):
+            for encoded, difference in zip(words, differences):
+                add((indices[encoded[0][difference.kind.value]],), label)
+                if difference.kind is WordwiseDifferenceKind.KNOWN:
+                    for bit, name in enumerate(encoded[1]):
+                        value = (difference.value >> (len(encoded[1]) - 1 - bit)) & 1
+                        add(((indices[name] if value else -indices[name]),), label)
+
+        for name in self.zero_difference_inputs:
+            fix(
+                ports[name],
+                tuple(
+                    WordwiseXorDifference(
+                        self.primitive.input_ports[name].value_type.domain.encoded_bit_size,
+                        WordwiseDifferenceKind.ZERO,
+                    )
+                    for _ in ports[name]
+                ),
+                "wordwise_zero_input",
+            )
+        for name, differences in self.fixed_input_differences.items():
+            fix(ports[name], differences, "wordwise_fixed_input")
+        if self.output_differences is not None:
+            fix(output, self.output_differences, "wordwise_fixed_output")
+        if self.nonzero_input is not None:
+            add(
+                (
+                    -indices[item[0][WordwiseDifferenceKind.ZERO.value]]
+                    for item in ports[self.nonzero_input]
+                ),
+                "wordwise_nonzero_input",
+            )
+
+        self._ports, self._operands, self._output = ports, operands_by_id, output
+        self._semantic_names = tuple(
+            name
+            for words in ports.values()
+            for states, value in words
+            for name in (*states, *value)
+        )
+        self._formula = CNFFormula(
+            tuple(variables),
+            tuple(clauses),
+            tuple(provenance),
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._formula
+
+    @staticmethod
+    def _decode_words(words, assignment):
+        decoded = []
+        for states, value_names in words:
+            kind = next(kind for kind in WordwiseDifferenceKind if assignment[states[kind.value]])
+            value = sum(
+                int(bool(assignment[name])) << (len(value_names) - 1 - bit)
+                for bit, name in enumerate(value_names)
+            )
+            decoded.append(
+                WordwiseXorDifference.known(len(value_names), value)
+                if kind is WordwiseDifferenceKind.KNOWN
+                else WordwiseXorDifference(len(value_names), kind)
+            )
+        return tuple(decoded)
+
+    def _evaluate(self, assignment):
+        patterns = {
+            name: self._decode_words(words, assignment) for name, words in self._ports.items()
+        }
+        for component in self.primitive.components:
+            operands = tuple(
+                self._decode_words(words, assignment)
+                for words in self._operands[component.component_id]
+            )
+            if isinstance(component, (Add, Xor)):
+                expected = tuple(WordwiseXorDifference.xor_many(items) for items in zip(*operands))
+            elif isinstance(component, SBox):
+                expected = tuple(item.through_bijection() for item in operands[0])
+            elif isinstance(component, Identity):
+                expected = operands[0]
+            elif isinstance(component, Rotate):
+                expected = tuple(
+                    WordwiseXorDifference.known(
+                        item.width,
+                        (
+                            (
+                                (item.value << component.amount)
+                                | (item.value >> (item.width - component.amount))
+                            )
+                            if component.direction == "left"
+                            else (
+                                (item.value >> component.amount)
+                                | (item.value << (item.width - component.amount))
+                            )
+                        )
+                        & ((1 << item.width) - 1),
+                    )
+                    if item.kind is WordwiseDifferenceKind.KNOWN and component.amount
+                    else item
+                    for item in operands[0]
+                )
+            elif isinstance(component, Permutation):
+                expected = tuple(operands[0][position] for position in component.mapping)
+            elif isinstance(component, Constant):
+                width = component.output_type.domain.encoded_bit_size
+                if width is None:
+                    raise NotImplementedError("wordwise constants require a finite encoded domain")
+                expected = tuple(
+                    WordwiseXorDifference(width, WordwiseDifferenceKind.ZERO)
+                    for _ in range(component.output_type.unit_count)
+                )
+            elif isinstance(component, LinearMap):
+                expected = propagate_dense_wordwise_activity(
+                    operands[0], component.output_type.unit_count
+                )
+            else:
+                return None
+            if patterns[component.component_id] != expected:
+                return None
+        return patterns
+
+    def decode_characteristic(self, assignment):
+        """Decode and independently recheck a complete wordwise witness."""
+
+        if self._formula is None:
+            raise ValueError("build the formula before decoding")
+        projected = {name: int(bool(assignment[name])) for name in self._formula.variables}
+        if not self._formula.is_satisfied(projected):
+            raise ValueError("invalid wordwise deterministic witness")
+        patterns = self._evaluate(projected)
+        if patterns is None:
+            raise ValueError("wordwise witness violates independent graph propagation")
+        trail = WordwiseDeterministicTruncatedCharacteristic(
+            tuple((name, patterns[name]) for name in self.primitive.input_ports),
+            self._decode_words(self._output, projected),
+            tuple(
+                (component.component_id, patterns[component.component_id])
+                for component in self.primitive.components
+            ),
+            tuple((name, projected[name]) for name in self._semantic_names),
+        )
+        if not self.check_characteristic(trail):
+            raise ValueError("wordwise witness violates requested boundaries")
+        return trail
+
+    def check_characteristic(self, trail) -> bool:
+        """Recheck graph propagation and all requested boundaries."""
+
+        if self._formula is None:
+            raise ValueError("build the formula before checking")
+        assignment = dict(trail.semantic_assignment)
+        if set(assignment) != set(self._semantic_names) or any(
+            value not in (0, 1) for value in assignment.values()
+        ):
+            return False
+        patterns = self._evaluate(assignment)
+        if patterns is None:
+            return False
+        inputs = tuple((name, patterns[name]) for name in self.primitive.input_ports)
+        output = self._decode_words(self._output, assignment)
+        components = tuple(
+            (component.component_id, patterns[component.component_id])
+            for component in self.primitive.components
+        )
+        return (
+            trail.input_differences == inputs
+            and trail.output_differences == output
+            and trail.component_differences == components
+            and all(
+                dict(inputs)[name] == value for name, value in self.fixed_input_differences.items()
+            )
+            and (self.output_differences is None or output == self.output_differences)
+            and all(
+                all(item.kind is WordwiseDifferenceKind.ZERO for item in dict(inputs)[name])
+                for name in self.zero_difference_inputs
+            )
+            and (
+                self.nonzero_input is None
+                or any(
+                    item.kind is not WordwiseDifferenceKind.ZERO
+                    for item in dict(inputs)[self.nonzero_input]
+                )
+            )
         )
 
 

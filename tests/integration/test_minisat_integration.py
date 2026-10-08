@@ -5,16 +5,41 @@ import pytest
 from claasp import Bit, Primitive, ValueType
 from claasp.components import Add
 from claasp.drivers.solvers import MinisatSolver, SatStatus
-from claasp.primitives import Present80, Simon, Speck
+from claasp.primitives import Present80, Simon, Speck, ToyAES
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints.sat import (
     BooleanCNFModel,
     ModularAddDifferentialSATModel,
     ModularAddLinearSATModel,
     SBoxXorDifferentialSATModel,
+    WordwiseDeterministicTruncatedSATModel,
 )
+from claasp.semantics.cryptanalysis import WordwiseDifferenceKind, WordwiseXorDifference
 
 pytestmark = pytest.mark.external
+
+
+def test_minisat_solves_complete_four_state_wordwise_graph():
+    zero = WordwiseXorDifference(4, WordwiseDifferenceKind.ZERO)
+    model = WordwiseDeterministicTruncatedSATModel(
+        ToyAES(number_of_rounds=1, word_size=4, state_size=2),
+        fixed_input_differences={
+            "plaintext": (WordwiseXorDifference.known(4, 1), zero, zero, zero)
+        },
+        zero_difference_inputs=("key",),
+    )
+
+    solved = MinisatSolver(timeout_seconds=30).solve(model.cnf_formula())
+    trail = model.decode_characteristic(solved.assignment)
+
+    assert solved.status is SatStatus.SATISFIABLE
+    assert tuple(item.kind for item in trail.output_differences) == (
+        WordwiseDifferenceKind.NONZERO,
+        WordwiseDifferenceKind.ZERO,
+        WordwiseDifferenceKind.ZERO,
+        WordwiseDifferenceKind.ZERO,
+    )
+    assert model.check_characteristic(trail)
 
 
 def test_minisat_solves_and_refutes_named_present_constraints():

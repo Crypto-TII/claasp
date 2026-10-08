@@ -1484,6 +1484,83 @@ class WordDeterministicTruncatedCPModel:
         return self._sat_model.check_characteristic(trail)
 
 
+class WordwiseDeterministicTruncatedCPModel:
+    """Assemble four-state wordwise propagation as native MiniZinc Boolean CP.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToyAES
+        >>> model = WordwiseDeterministicTruncatedCPModel(
+        ...     ToyAES(number_of_rounds=1, word_size=4, state_size=2),
+        ...     zero_difference_inputs=("key",), nonzero_input="plaintext",
+        ... )
+        >>> query = model.cp_model()
+        >>> (len(query.declarations), query.constraint_models[0].model.backend.value)
+        (324, 'cp')
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "WordwiseDeterministicTruncatedCPModel",
+        "wordwise_deterministic_truncated_xor",
+        "MiniZinc translation of the exact four-state word-graph formula",
+        "Known values, abstract activity, wiring, and dense layers retain typed decoding.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        fixed_input_differences=None,
+        output_differences=None,
+        zero_difference_inputs=(),
+        nonzero_input=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import (
+            WordwiseDeterministicTruncatedSATModel,
+        )
+
+        self._sat_model = WordwiseDeterministicTruncatedSATModel(
+            primitive,
+            fixed_input_differences=fixed_input_differences,
+            output_differences=output_differences,
+            zero_difference_inputs=zero_difference_inputs,
+            nonzero_input=nonzero_input,
+        )
+        self.primitive = primitive
+        self._query: MiniZincModel | None = None
+
+    def cp_model(self) -> MiniZincModel:
+        """Return the complete MiniZinc feasibility query."""
+
+        lowered = BooleanMiniZincLowerer().lower(self._sat_model.cnf_formula())
+        self._query = MiniZincModel(
+            lowered.declarations,
+            lowered.constraints,
+            lowered.solve,
+            lowered.includes,
+            lowered.outputs,
+            lowered.provenance,
+            lowered.name_mapping,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_characteristic(self, assignment):
+        """Decode and independently validate a complete MiniZinc witness."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        return self._sat_model.decode_characteristic(assignment)
+
+    def check_characteristic(self, trail) -> bool:
+        """Recheck component propagation, wiring, and boundaries."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before checking")
+        return self._sat_model.check_characteristic(trail)
+
+
 class WordDifferentialCPModel:
     """Assemble exact XOR-differential Word graphs as portable MiniZinc.
 
