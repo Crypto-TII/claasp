@@ -701,6 +701,11 @@ two-round exact DDT relation. Native MiniZinc Boolean activity indicators are
 equivalent to nonzero four-bit S-box inputs; Chuffed proves the same optimum of
 two and the inherited typed decoder independently checks the resulting trail.
 
+The CP second stage adds ``PresentFixedActiveSBoxesCPModel``. It fixes the
+first-stage Boolean activity sum, restores minimization of the exact table
+weights, and keeps the same native DDT constraints. Chuffed reaches weight four
+at activity two, matching the independently checked MILP result.
+
 Benchmark recovered and portable strategies under the same primitive, round
 count, boundary conditions, trail objective, solver and version, solver
 settings, hardware, and timeout. Record at least model-construction time,

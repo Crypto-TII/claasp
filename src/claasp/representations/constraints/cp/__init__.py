@@ -9,6 +9,7 @@ __all__ = [
     "MiniZincModel",
     "ModularAddDeterministicTruncatedCPModel",
     "PresentDifferentialCPModel",
+    "PresentFixedActiveSBoxesCPModel",
     "PresentActiveSBoxesCPModel",
     "PresentLinearCPModel",
     "ProbabilisticTruncatedModularAddCPModel",
@@ -41,6 +42,10 @@ def __getattr__(name: str):
         from claasp.representations.constraints.cp.trails import PresentActiveSBoxesCPModel
 
         return PresentActiveSBoxesCPModel
+    if name == "PresentFixedActiveSBoxesCPModel":
+        from claasp.representations.constraints.cp.trails import PresentFixedActiveSBoxesCPModel
+
+        return PresentFixedActiveSBoxesCPModel
     if name == "PresentLinearCPModel":
         from claasp.representations.constraints.cp.trails import PresentLinearCPModel
 

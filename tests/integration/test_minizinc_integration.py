@@ -12,6 +12,7 @@ from claasp.representations.constraints.cp import (
     ModularAddDeterministicTruncatedCPModel,
     PresentActiveSBoxesCPModel,
     PresentDifferentialCPModel,
+    PresentFixedActiveSBoxesCPModel,
     PresentLinearCPModel,
     ProbabilisticTruncatedModularAddCPModel,
     SBoxBoomerangCPModel,
@@ -66,6 +67,22 @@ def test_minizinc_proves_present_two_round_active_sbox_optimum():
         == 2
     )
     assert len(trail.steps) == 32
+
+
+def test_minizinc_minimizes_weight_at_fixed_present_activity():
+    model = PresentFixedActiveSBoxesCPModel(
+        Present(number_of_rounds=2), active_sboxes=2
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    active = sum(
+        bool(solved.assignment[f"active_{round_number}_{nibble}"])
+        for round_number in range(1, 3)
+        for nibble in range(16)
+    )
+    assert active == 2
+    assert trail.total_weight == 4
 
 
 def test_minizinc_preserves_deterministic_truncated_modular_add_relation():

@@ -233,6 +233,69 @@ class PresentActiveSBoxesCPModel(PresentDifferentialCPModel):
         )
 
 
+class PresentFixedActiveSBoxesCPModel(PresentActiveSBoxesCPModel):
+    """Minimize exact weight after fixing the PRESENT active-S-box count.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Present
+        >>> query = PresentFixedActiveSBoxesCPModel(
+        ...     Present(number_of_rounds=2), active_sboxes=2
+        ... ).cp_model()
+        >>> (len(query.constraints), query.solve.startswith("solve minimize"))
+        (66, True)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "PresentFixedActiveSBoxesCPModel",
+        "xor_differential_fixed_activity",
+        "exact DDT weight optimization at a fixed active-S-box count",
+        "This is the second stage of the recovered active-S-box search.",
+    )
+
+    def __init__(self, primitive, *, active_sboxes: int) -> None:
+        if (
+            not isinstance(active_sboxes, int)
+            or isinstance(active_sboxes, bool)
+            or not 1 <= active_sboxes <= 32
+        ):
+            raise ValueError("active_sboxes must be an integer from 1 through 32")
+        super().__init__(primitive)
+        self.active_sboxes = active_sboxes
+
+    def cp_model(self) -> MiniZincModel:
+        """Return exact weight minimization at the selected activity count."""
+
+        active_model = super().cp_model()
+        active = tuple(
+            f"active_{round_number}_{nibble}"
+            for round_number in range(1, 3)
+            for nibble in range(16)
+        )
+        weights = tuple(
+            f"round_{round_number}_sbox_{nibble}_weight"
+            for round_number in range(1, 3)
+            for nibble in range(16)
+        )
+        constraint = (
+            "constraint sum(["
+            + ",".join(f"bool2int({name})" for name in active)
+            + f"]) = {self.active_sboxes};"
+        )
+        solve = "solve minimize " + " + ".join(weights) + ";"
+        return MiniZincModel(
+            active_model.declarations,
+            active_model.constraints + (constraint,),
+            solve,
+            active_model.includes,
+            active_model.outputs,
+            active_model.provenance,
+            active_model.name_mapping,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+
+
 class PresentLinearCPModel:
     """Native table-constraint model for three-round PRESENT masks.
 
