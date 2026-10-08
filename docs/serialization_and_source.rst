@@ -87,27 +87,16 @@ directories, bounded timeouts, shell-free argument vectors, and allowlisted
 options.  Never execute generated or compiled artifacts from an untrusted
 primitive graph.
 
-Diagrams are different artifacts
---------------------------------
+Primitive visualization is a TODO
+---------------------------------
 
-``primitive.draw("ascii")`` and ``primitive.draw("tikz")`` are human-facing
-views of the backend-neutral diagram IR.  Optional ``"pdf"`` rendering invokes
-LaTeX explicitly. These are low-level wiring diagrams: they show every graph
-component, selected logical position, and dependency, which is useful for
-debugging a graph or following an annotated execution trace or cryptanalytic
-trail. They are not compact illustrations of a primitive specification, and a
-full-size primitive such as AES can consequently produce a very large diagram.
-The ASCII form is returned as a string so it can be saved or processed. At an
-interactive prompt, use ``print(primitive.draw())`` to render its line breaks;
-entering ``primitive.draw()`` alone shows Python's quoted string representation
-with ``\n`` escapes. Start with a reduced-round object when inspecting a large
-graph.
+CLAASP 5 does not currently expose ``primitive.draw()``. The existing diagram
+backend renders the complete low-level component graph, which is useful to
+renderer developers but too detailed to serve as a clear user-facing picture
+of a full primitive. It will remain outside the public ``Primitive`` API until
+there is a compact view with meaningful round structure, readable component
+grouping, and appropriate notebook and terminal presentation.
 
-.. doctest::
-
-   >>> drawing = present.draw()
-   >>> type(drawing), drawing.splitlines()[:2]
-   (<class 'str'>, ['primitive present', 'inputs'])
-
-Diagram text is not canonical graph serialization and cannot be deserialized
-as a primitive.
+The backend-neutral diagram IR and serializers remain available as advanced
+developer interfaces. Their output is not canonical graph serialization and
+cannot be deserialized as a primitive.

@@ -1128,3 +1128,19 @@ whose scope spans multiple implementation modules now use the established
 ``test_<owner>__<topic>.py`` naming convention, making package ownership
 explicit without inventing empty source modules. The four accidental generic
 ``cipher-state`` phrases in user documentation now use ``data-state``.
+
+## User-facing primitive visualization
+
+Status: **TODO — excluded from the CLAASP 5 public API**
+
+The former ``Primitive.draw()`` convenience method exposed a complete
+component-and-wiring dump. That representation remains useful as developer IR
+and renderer test evidence, but it is not a useful default visualization for a
+full primitive and is not worth shipping as a beginner-facing operation.
+
+Reintroduce a primitive visualization method only after its contract provides:
+
+- a compact specification-level overview with recognizable round structure;
+- deliberate grouping of repeated operations and key-schedule work;
+- readable terminal and notebook presentation; and
+- an explicit advanced path to the complete annotated component graph.
