@@ -8,6 +8,7 @@ from claasp.representations.constraints.milp import (
     WordDeterministicDifferentialLinearMILPModel,
     WordDeterministicTruncatedMILPModel,
     WordDifferentialMILPModel,
+    WordImpossibleMILPModel,
     WordLinearMILPModel,
     WordSemiDeterministicDifferentialLinearMILPModel,
 )
@@ -36,9 +37,7 @@ def test_present_active_sbox_model_reuses_exact_feasible_region():
 
 
 def test_present_fixed_activity_model_keeps_weight_objective():
-    model = PresentFixedActiveSBoxesMILPModel(
-        Present(number_of_rounds=2), active_sboxes=2
-    )
+    model = PresentFixedActiveSBoxesMILPModel(Present(number_of_rounds=2), active_sboxes=2)
     formulation = model.milp_model()
     assert (len(formulation.variables), len(formulation.constraints)) == (3296, 290)
     assert formulation.constraints[-1].name == "fixed_active_sboxes"
@@ -76,6 +75,18 @@ def test_portable_deterministic_truncated_milp_preserves_formula_size():
 
 def test_speck_impossible_milp_preserves_complete_split_formula():
     model = SpeckImpossibleMILPModel(Speck(number_of_rounds=3), middle_round=1)
+    formulation = model.milp_model()
+    assert (len(formulation.variables), len(formulation.constraints)) == (1568, 5674)
+    assert formulation.constraint_models[0].model == model.model_provenance
+
+
+def test_generic_word_impossible_milp_preserves_complete_split_formula():
+    model = WordImpossibleMILPModel(
+        Speck(number_of_rounds=3),
+        middle_round=1,
+        active_input="plaintext",
+        zero_difference_inputs=("key",),
+    )
     formulation = model.milp_model()
     assert (len(formulation.variables), len(formulation.constraints)) == (1568, 5674)
     assert formulation.constraint_models[0].model == model.model_provenance

@@ -10,6 +10,7 @@ from claasp.representations.constraints.milp import (
     WordDeterministicDifferentialLinearMILPModel,
     WordDeterministicTruncatedMILPModel,
     WordDifferentialMILPModel,
+    WordImpossibleMILPModel,
     WordLinearMILPModel,
     WordSemiDeterministicDifferentialLinearMILPModel,
 )
@@ -62,6 +63,18 @@ def test_glpk_solves_and_decodes_speck_impossible_split():
     trail = model.decode_trail(solved.assignment)
     assert trail.boundary.is_impossible
     assert trail.boundary.contradictory_positions
+
+
+def test_glpk_solves_generic_word_impossible_split():
+    model = WordImpossibleMILPModel(
+        Speck(number_of_rounds=3),
+        middle_round=1,
+        active_input="plaintext",
+        zero_difference_inputs=("key",),
+    )
+    solved = GLPKSolver(timeout_seconds=30).solve(model.milp_model())
+    assert solved.status is MILPStatus.OPTIMAL
+    assert model.decode_trail(solved.assignment).boundary.is_impossible
 
 
 def test_glpk_solves_and_independently_checks_semi_deterministic_truncated_trail():
