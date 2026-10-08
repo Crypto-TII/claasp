@@ -20,6 +20,7 @@ from claasp.representations.constraints.cp.components import (
     SBoxXorDifferentialCPModel,
 )
 from claasp.representations.constraints.cp.lowering import BooleanMiniZincLowerer
+from claasp.representations.constraints.cp.trails import SpeckProbabilisticTruncatedCPModel
 from claasp.representations.constraints.milp import components as milp_components
 from claasp.representations.constraints.milp.components import (
     ModularAddLinearMILPModel,
@@ -35,7 +36,10 @@ from claasp.representations.constraints.milp.trails import PresentMonomialTrailM
 from claasp.representations.constraints.sat import BooleanCNFModel
 from claasp.representations.constraints.sat import components as sat_components
 from claasp.representations.constraints.sat.components import (
+    ModularAddDifferentialSATModel,
     ModularAddFunctionalSATModel,
+    ModularAddLinearSATModel,
+    ModularAddNWindowSATModel,
     ModularAddSemiDeterministicTruncatedSATModel,
     ProbabilisticTruncatedModularAddSATModel,
     SBoxFunctionalSATModel,
@@ -95,15 +99,19 @@ def test_direct_and_audited_modular_add_models_declare_their_reference_status():
         ConstraintReferenceStatus.NOT_APPLICABLE
     )
     for model in (
+        ModularAddDifferentialSATModel,
         ModularAddDifferentialSMTModel,
+        ModularAddLinearSATModel,
         ModularAddLinearSMTModel,
         ModularAddLinearMILPModel,
+        ModularAddNWindowSATModel,
     ):
         assert model.model_provenance.reference_status is ConstraintReferenceStatus.VERIFIED
     for probabilistic_model in (
         ProbabilisticTruncatedModularAddCPModel,
         ProbabilisticTruncatedModularAddSATModel,
         ModularAddSemiDeterministicTruncatedSATModel,
+        SpeckProbabilisticTruncatedCPModel,
     ):
         assert probabilistic_model.model_provenance.reference_status is (
             ConstraintReferenceStatus.TO_BE_DETERMINED
@@ -111,14 +119,41 @@ def test_direct_and_audited_modular_add_models_declare_their_reference_status():
 
 
 def test_audited_modular_add_models_name_the_verified_primary_source_and_locator():
-    differential = ModularAddDifferentialSMTModel.model_provenance
-    assert differential.reference_identifier == "https://eprint.iacr.org/2001/001"
-    assert differential.source_locator == "section 4, Algorithm 2 and Theorem 1"
+    for model in (ModularAddDifferentialSATModel, ModularAddDifferentialSMTModel):
+        differential = model.model_provenance
+        assert differential.reference_identifier == "https://eprint.iacr.org/2001/001"
+        assert differential.source_locator == "section 4, Algorithm 2 and Theorem 1"
 
-    for model in (ModularAddLinearSMTModel, ModularAddLinearMILPModel):
+    for model in (
+        ModularAddLinearSATModel,
+        ModularAddLinearSMTModel,
+        ModularAddLinearMILPModel,
+    ):
         provenance = model.model_provenance
         assert provenance.reference_identifier == "10.1007/978-3-319-39555-5_26"
         assert provenance.source_locator == "section 3.1, Proposition 1 and equation (1)"
+
+    window = ModularAddNWindowSATModel.model_provenance
+    assert window.reference_identifier == "10.1007/978-3-031-88661-4_1"
+    assert window.source_locator == "section 3.1, Definitions 1 and 2; section 3.2"
+
+
+def test_probabilistic_truncated_cp_composition_declares_and_emits_its_tbd_status():
+    from claasp.semantics import PROBABILISTIC_TRUNCATED_XOR
+    from claasp.semantics.cryptanalysis import PropagationProblem, TruncatedXorDifference
+
+    model = SpeckProbabilisticTruncatedCPModel(
+        PropagationProblem(Speck(number_of_rounds=1), PROBABILISTIC_TRUNCATED_XOR),
+        TruncatedXorDifference.parse("0" * 32),
+        TruncatedXorDifference.parse("?" * 32),
+    )
+
+    assert model.model_provenance.reference_status is (
+        ConstraintReferenceStatus.TO_BE_DETERMINED
+    )
+    assert model.cp_model().constraint_models == (
+        ConstraintModelApplication(model.model_provenance),
+    )
 
 
 def test_audited_boomerang_model_names_the_bct_definition():

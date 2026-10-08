@@ -39,7 +39,8 @@ class ModularAddSemiDeterministicTruncatedSATModel:
         "ModularAddSemiDeterministicTruncatedSATModel",
         "semi_deterministic_truncated_xor",
         "legacy look-ahead windows 0 through 3",
-        "The exact correspondence with a primary-source construction has not been audited.",
+        "Legacy source, documentation, bibliography, tests, and commits introducing the pinned "
+        "templates contain no primary-source attribution or derivation.",
     )
 
     def __init__(

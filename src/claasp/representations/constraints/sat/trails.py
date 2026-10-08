@@ -2099,7 +2099,7 @@ class SpeckProbabilisticTruncatedSATModel:
         "SpeckProbabilisticTruncatedSATModel",
         "probabilistic_truncated_xor",
         "counter-based Speck round composition in ordinary CNF",
-        "The exact correspondence with a primary-source construction has not been audited.",
+        "The composed addition uses the unresolved legacy counter recurrence and scaled costs.",
     )
     _addition_model_type: type[Any] = ProbabilisticTruncatedModularAddSATModel
 
@@ -2360,7 +2360,7 @@ class SpeckSemiDeterministicTruncatedSATModel(SpeckProbabilisticTruncatedSATMode
         "SpeckSemiDeterministicTruncatedSATModel",
         "semi_deterministic_truncated_xor",
         "recovered look-ahead-window Speck round composition in ordinary CNF",
-        "The exact correspondence with a primary-source construction has not been audited.",
+        "The composed additions use pinned legacy templates for which no primary source was found.",
     )
     _addition_model_type = ModularAddSemiDeterministicTruncatedSATModel
 

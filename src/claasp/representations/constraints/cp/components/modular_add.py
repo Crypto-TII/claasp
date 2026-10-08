@@ -184,7 +184,8 @@ class ProbabilisticTruncatedModularAddCPModel:
         "ProbabilisticTruncatedModularAddCPModel",
         "probabilistic_truncated_xor",
         "counter-based partial-addition relation",
-        "The exact correspondence with a primary-source construction has not been audited.",
+        "Legacy source, documentation, bibliography, tests, and recovery history contain no "
+        "attribution or derivation for the counter recurrence and scaled costs.",
     )
 
     def __init__(
