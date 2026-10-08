@@ -209,6 +209,60 @@ class PresentActiveSBoxesMILPModel(PresentDifferentialMILPModel):
         )
 
 
+class PresentFixedActiveSBoxesMILPModel(PresentDifferentialMILPModel):
+    """Minimize exact weight after fixing the PRESENT active-S-box count.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Present
+        >>> model = PresentFixedActiveSBoxesMILPModel(
+        ...     Present(number_of_rounds=2), active_sboxes=2
+        ... ).milp_model()
+        >>> model.constraints[-1].rhs
+        2
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "PresentFixedActiveSBoxesMILPModel",
+        "xor_differential_fixed_activity",
+        "exact DDT weight optimization at a fixed active-S-box count",
+        "This is the second stage of the recovered active-S-box search.",
+    )
+
+    def __init__(self, primitive, *, active_sboxes: int) -> None:
+        if (
+            not isinstance(active_sboxes, int)
+            or isinstance(active_sboxes, bool)
+            or not 1 <= active_sboxes <= 32
+        ):
+            raise ValueError("active_sboxes must be an integer from 1 through 32")
+        super().__init__(primitive)
+        self.active_sboxes = active_sboxes
+
+    def milp_model(self) -> MILPModel:
+        """Return exact weight minimization at the selected activity count."""
+
+        weighted = super().milp_model()
+        activity = {}
+        for variable in weighted.variables:
+            if "_choice_" in variable.name and int(variable.name.rsplit("_", 2)[1]):
+                activity[variable.name] = 1
+        constraint = LinearConstraint(
+            LinearExpression.from_terms(activity),
+            ConstraintSense.EQUAL,
+            self.active_sboxes,
+            "fixed_active_sboxes",
+        )
+        return MILPModel(
+            weighted.variables,
+            weighted.constraints + (constraint,),
+            weighted.objective,
+            weighted.objective_sense,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+
+
 def check_present_milp_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently check a decoded trail using shared semantics and wiring.
 
