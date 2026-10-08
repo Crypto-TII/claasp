@@ -1,0 +1,42 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "results": [
+    {
+      "assignment_valid": true,
+      "backend": "SAT",
+      "repeats": 10,
+      "solver": "MinisatSolver",
+      "solver_seconds_median": 0.000688020999859873
+    },
+    {
+      "assignment_valid": true,
+      "backend": "SMT",
+      "repeats": 10,
+      "solver": "Z3Solver",
+      "solver_seconds_median": 0.005024666999815963
+    },
+    {
+      "assignment_valid": true,
+      "backend": "CP",
+      "repeats": 10,
+      "solver": "MiniZincSolver",
+      "solver_seconds_median": 0.02817439599948557
+    },
+    {
+      "assignment_valid": true,
+      "backend": "MILP",
+      "repeats": 10,
+      "solver": "GLPKSolver",
+      "solver_seconds_median": 0.0006860625003355381
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "clauses": 91,
+    "description": "8-bit three-input OR, NOT, left SHIFT, and right SHIFT graph",
+    "variables": 64
+  }
+}

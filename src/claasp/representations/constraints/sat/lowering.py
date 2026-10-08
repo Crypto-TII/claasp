@@ -8,11 +8,14 @@ from claasp.components import (
     Add,
     BitVectorSBox,
     BitwiseAnd,
+    BitwiseNot,
+    BitwiseOr,
     Constant,
     Identity,
     ModularAdd,
     Permutation,
     Rotate,
+    Shift,
     Xor,
 )
 from claasp.domains import Bit, Word
@@ -80,6 +83,17 @@ class _CNFEncodingContext:
         self.add_clause((-a, -b, y), label)
         self.add_clause((a, -y), label)
         self.add_clause((b, -y), label)
+
+    def or_(self, output, left, right, label):
+        a, b, y = self.indices[left], self.indices[right], self.indices[output]
+        self.add_clause((a, b, -y), label)
+        self.add_clause((-a, y), label)
+        self.add_clause((-b, y), label)
+
+    def not_(self, output, input_, label):
+        x, y = self.indices[input_], self.indices[output]
+        self.add_clause((x, y), label)
+        self.add_clause((-x, -y), label)
 
 
 class _NativeXorEncodingContext(_CNFEncodingContext):
@@ -226,9 +240,9 @@ class BooleanCNFModel:
                 | ModularAddFunctionalSATModel
                 | SBoxFunctionalSATModel
             )
-            if isinstance(component, (Constant, Identity, Permutation, Rotate)):
+            if isinstance(component, (Constant, Identity, Permutation, Rotate, Shift)):
                 encoding = WiringFunctionalSATModel(component)
-            elif isinstance(component, (Add, Xor, BitwiseAnd)):
+            elif isinstance(component, (Add, Xor, BitwiseAnd, BitwiseOr, BitwiseNot)):
                 encoding = (
                     BooleanNativeXorSATModel(component)
                     if self.native_xor
@@ -293,6 +307,8 @@ class BooleanCNFModel:
                 assignment[target] = assignment[operands[0]] ^ assignment[operands[1]]
             elif operation == "and":
                 assignment[target] = assignment[operands[0]] & assignment[operands[1]]
+            elif operation == "or":
+                assignment[target] = assignment[operands[0]] | assignment[operands[1]]
             else:
                 assignment[target] = int(sum(assignment[item] for item in operands) >= 2)
         return {name: assignment[name] for name in formula.variables}

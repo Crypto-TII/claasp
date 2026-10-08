@@ -719,6 +719,14 @@ and rechecks the preserved reduced-AES abstract fixture. This does not relabel
 that fixture as a concrete differential proof; whole-graph four-state
 propagation remains the next layer.
 
+The functional component coverage slice extends the shared Boolean lowering
+with direct OR and NOT truth-table clauses plus zero-filling fixed shifts.
+Because SMT, CP, and MILP derive from the same named CNF relation, one composed
+OR/NOT/left-shift/right-shift graph is solved and validated under MiniSat, Z3,
+Chuffed, and GLPK. Multi-input OR witnesses retain their auxiliary values.
+Modular subtraction/multiplication, variable shifts/rotations, and specialized
+components remain explicit rather than being silently skipped.
+
 The first active-S-box recovery adds ``PresentActiveSBoxesMILPModel``. It keeps
 the exact two-round PRESENT DDT feasible region byte-for-byte identical to the
 weighted trail model and changes only the objective to count selectors with a
