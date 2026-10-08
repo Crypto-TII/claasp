@@ -17,6 +17,8 @@ from claasp.components import (
     Permutation,
     Rotate,
     Shift,
+    VariableRotate,
+    VariableShift,
     Xor,
 )
 from claasp.domains import Bit, Word
@@ -30,6 +32,7 @@ from claasp.representations.constraints.sat.components import (
     ModularSubtractFunctionalSATModel,
     ModularSubtractNativeXorSATModel,
     SBoxFunctionalSATModel,
+    VariableWiringFunctionalSATModel,
     WiringFunctionalSATModel,
 )
 from claasp.representations.constraints.sat.encoding import encode_unit, unit_variable_names
@@ -259,9 +262,12 @@ class BooleanCNFModel:
                 | ModularAddFunctionalSATModel
                 | ModularSubtractFunctionalSATModel
                 | SBoxFunctionalSATModel
+                | VariableWiringFunctionalSATModel
             )
             if isinstance(component, (Constant, Identity, Permutation, Rotate, Shift)):
                 encoding = WiringFunctionalSATModel(component)
+            elif isinstance(component, (VariableRotate, VariableShift)):
+                encoding = VariableWiringFunctionalSATModel(component)
             elif isinstance(component, (Add, Xor, BitwiseAnd, BitwiseOr, BitwiseNot)):
                 encoding = (
                     BooleanNativeXorSATModel(component)
@@ -341,6 +347,19 @@ class BooleanCNFModel:
             elif operation == "borrow2":
                 left, right = (assignment[item] for item in operands)
                 assignment[target] = int(not left and right)
+            elif operation == "mux":
+                selector, direct, alternate = (assignment[item] for item in operands)
+                assignment[target] = alternate if selector else direct
+            elif operation == "mux_zero":
+                selector, direct = (assignment[item] for item in operands)
+                assignment[target] = 0 if selector else direct
+            elif operation.startswith("prefix_mod:"):
+                _, remainder, width = operation.split(":")
+                value = sum(
+                    assignment[item] << (len(operands) - position - 1)
+                    for position, item in enumerate(operands)
+                )
+                assignment[target] = int(value % int(width) == int(remainder))
             else:
                 assignment[target] = int(sum(assignment[item] for item in operands) >= 2)
         return {name: assignment[name] for name in formula.variables}

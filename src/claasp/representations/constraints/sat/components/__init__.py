@@ -32,7 +32,10 @@ from claasp.representations.constraints.sat.components.truncated import (
     ImpossibleBoundarySATModel,
     ProbabilisticTruncatedModularAddSATModel,
 )
-from claasp.representations.constraints.sat.components.wiring import WiringFunctionalSATModel
+from claasp.representations.constraints.sat.components.wiring import (
+    VariableWiringFunctionalSATModel,
+    WiringFunctionalSATModel,
+)
 
 __all__ = [
     "BooleanFunctionalSATModel",
@@ -55,5 +58,6 @@ __all__ = [
     "SBoxXorDifferentialSATModel",
     "SBoxXorLinearSATModel",
     "TruncatedToLinearSATModel",
+    "VariableWiringFunctionalSATModel",
     "WiringFunctionalSATModel",
 ]

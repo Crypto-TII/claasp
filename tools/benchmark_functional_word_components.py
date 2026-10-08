@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark OR, NOT, and SHIFT functional graph lowering across backends."""
+"""Benchmark recovered functional word components across backends."""
 
 import argparse
 import json
@@ -9,7 +9,14 @@ from pathlib import Path
 from statistics import median
 
 from claasp import Primitive, ValueType, Word
-from claasp.components import BitwiseNot, BitwiseOr, ModularSubtract, Shift
+from claasp.components import (
+    BitwiseNot,
+    BitwiseOr,
+    ModularSubtract,
+    Shift,
+    VariableRotate,
+    VariableShift,
+)
 from claasp.drivers.solvers import (
     CPStatus,
     GLPKSolver,
@@ -26,7 +33,13 @@ from claasp.representations.constraints.smt import BooleanSMTModel
 
 def _primitive():
     value_type = ValueType(Word(8), (1,))
-    primitive = Primitive("or_not_shift", {name: value_type for name in ("a", "b", "c")})
+    primitive = Primitive(
+        "functional_word_components",
+        {
+            **{name: value_type for name in ("a", "b", "c")},
+            "amount": ValueType(Word(3), (1,)),
+        },
+    )
     primitive.add_round()
     merged = primitive.add_component(
         BitwiseOr((primitive.input("a"), primitive.input("b"), primitive.input("c")))
@@ -34,9 +47,11 @@ def _primitive():
     complemented = primitive.add_component(BitwiseNot(merged))
     left = primitive.add_component(Shift(complemented, 3, "left"))
     right = primitive.add_component(Shift(left, 2, "right"))
+    rotated = primitive.add_component(VariableRotate(right, primitive.input("amount"), "left"))
+    shifted = primitive.add_component(VariableShift(rotated, primitive.input("amount"), "right"))
     primitive.set_output(
         primitive.add_component(
-            ModularSubtract((right, primitive.input("a"), primitive.input("b")))
+            ModularSubtract((shifted, primitive.input("a"), primitive.input("b")))
         )
     )
     return primitive
@@ -96,7 +111,10 @@ def main():
         "schema_version": 1,
         "environment": {"platform": platform.platform(), "python": sys.version.split()[0]},
         "workload": {
-            "description": "8-bit OR, NOT, fixed shifts, and three-input modular-subtract graph",
+            "description": (
+                "8-bit OR, NOT, fixed and variable shift/rotation, and three-input "
+                "modular-subtract graph"
+            ),
             "variables": len(cnf.variables),
             "clauses": len(cnf.clauses),
         },

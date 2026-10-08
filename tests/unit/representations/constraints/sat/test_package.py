@@ -12,6 +12,8 @@ from claasp.primitives.single_component_primitives import (
     BitwiseOr,
     ModularSubtract,
     Shift,
+    VariableRotate,
+    VariableShift,
 )
 from claasp.representations.constraints.sat import BooleanCNFModel, CNFFormula
 from claasp.representations.constraints.sat.exporters import DimacsExporter
@@ -133,6 +135,28 @@ def test_multi_operand_modular_subtract_witnesses_are_exhaustive_at_three_bits()
         assert formula.is_satisfied(witness)
         changed = dict(witness)
         changed["modular_subtract_0_0_0_0"] ^= 1
+        assert not formula.is_satisfied(changed)
+
+
+@pytest.mark.parametrize(
+    "primitive",
+    (
+        VariableRotate(bit_size=5, amount_bit_size=3, direction="left"),
+        VariableRotate(bit_size=5, amount_bit_size=3, direction="right"),
+        VariableShift(bit_size=5, amount_bit_size=3, direction="left"),
+        VariableShift(bit_size=5, amount_bit_size=3, direction="right"),
+    ),
+)
+def test_variable_shift_and_rotation_witnesses_are_exhaustive(primitive):
+    model = BooleanCNFModel(primitive)
+    formula = model.cnf_formula()
+    for value, amount in product(range(32), range(8)):
+        evaluation = primitive.evaluate_with_trace(value, amount)
+        witness = model.witness(evaluation)
+        assert formula.is_satisfied(witness)
+        changed = dict(witness)
+        output_name = next(name for name in formula.variables if name.startswith("variable_"))
+        changed[output_name] ^= 1
         assert not formula.is_satisfied(changed)
 
 
