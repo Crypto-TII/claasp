@@ -9540,10 +9540,10 @@
       "supersede": 207
     },
     "legacy_records": 581,
-    "v5_artifacts": 441,
+    "v5_artifacts": 442,
     "v5_by_classification": {
       "legacy-lineage": 398,
-      "new-v5": 43
+      "new-v5": 44
     }
   },
   "v5_artifacts": [
@@ -10311,6 +10311,12 @@
         "tests/unit/utils/scip_tpi_test.py"
       ],
       "path": "src/claasp/drivers/solvers/glpk.py"
+    },
+    {
+      "classification": "new-v5",
+      "legacy_predecessors": [],
+      "path": "src/claasp/drivers/solvers/gurobi.py",
+      "rationale": "New bounded typed external-driver boundary separates tools and optional dependencies from core semantics."
     },
     {
       "classification": "new-v5",

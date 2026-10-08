@@ -3,9 +3,9 @@
 This generated M11a comparison is review material; the JSON matrix and closure tool are authoritative.
 
 - Legacy records: 581
-- Shipped v5 artifacts: 441
+- Shipped v5 artifacts: 442
 - Legacy dispositions: inapplicable=34, migrate=332, remove=8, supersede=207
-- Reverse classifications: legacy-lineage=398, new-v5=43
+- Reverse classifications: legacy-lineage=398, new-v5=44
 - Mapping relationships: consolidated=57, direct=152, evidence-only=256, inapplicable=34, removed=8, split=74
 
 Every legacy source module, test module, and package marker appears below with its final disposition and reason. Every shipped v5 module or data artifact appears in the reverse table with its predecessor(s) or a new-v5 rationale.
@@ -698,6 +698,7 @@ Relationship means: **direct** for one reviewed destination, **split** for one l
 | `src/claasp/drivers/solvers/base.py` | new-v5 | new | New bounded typed external-driver boundary separates tools and optional dependencies from core semantics. |
 | `src/claasp/drivers/solvers/cryptominisat.py` | new-v5 | new | New bounded typed external-driver boundary separates tools and optional dependencies from core semantics. |
 | `src/claasp/drivers/solvers/glpk.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/milp/milp_model.py`<br>`claasp/cipher_modules/models/milp/solvers.py`<br>`tests/unit/utils/scip_tpi_test.py` |
+| `src/claasp/drivers/solvers/gurobi.py` | new-v5 | new | New bounded typed external-driver boundary separates tools and optional dependencies from core semantics. |
 | `src/claasp/drivers/solvers/kissat.py` | new-v5 | new | New bounded typed external-driver boundary separates tools and optional dependencies from core semantics. |
 | `src/claasp/drivers/solvers/milp_results.py` | new-v5 | new | New bounded typed external-driver boundary separates tools and optional dependencies from core semantics. |
 | `src/claasp/drivers/solvers/minisat.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/sat_model.py`<br>`claasp/cipher_modules/models/sat/solvers.py` |
@@ -1084,6 +1085,7 @@ New bounded typed external-driver boundary separates tools and optional dependen
 - `src/claasp/drivers/solvers/__init__.py`
 - `src/claasp/drivers/solvers/base.py`
 - `src/claasp/drivers/solvers/cryptominisat.py`
+- `src/claasp/drivers/solvers/gurobi.py`
 - `src/claasp/drivers/solvers/kissat.py`
 - `src/claasp/drivers/solvers/milp_results.py`
 - `src/claasp/drivers/statistical/__init__.py`
