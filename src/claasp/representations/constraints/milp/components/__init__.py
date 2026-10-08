@@ -48,6 +48,11 @@ from claasp.representations.constraints.milp.components.truncated import (
     load_bundled_wordwise_espresso,
     wordwise_pattern,
 )
+from claasp.representations.constraints.milp.components.xor import (
+    XorImpossiblePointMILPModel,
+    XorParityMILPModel,
+    xor_arities_for_binary_matrix,
+)
 
 __all__ = [
     "BitwiseAndDeterministicTruncatedMILPModel",
@@ -80,8 +85,11 @@ __all__ = [
     "WordwiseTruncatedMDSMILPModel",
     "WordwiseXorEspressoMILPModel",
     "WordwiseXorMILPModel",
+    "XorImpossiblePointMILPModel",
+    "XorParityMILPModel",
     "load_bundled_sbox_milp_inequalities",
     "load_bundled_undisturbed_sbox_espresso",
     "load_bundled_wordwise_espresso",
     "wordwise_pattern",
+    "xor_arities_for_binary_matrix",
 ]

@@ -534,6 +534,18 @@ Generation uses the pinned offline Espresso tool and commits deterministic JSON
 rather than restoring mutable pickle caches. Literature correspondence remains
 ``TBD`` pending a separate provenance audit.
 
+The XOR-inequality slice recovers the legacy no-auxiliary formulation as
+``XorImpossiblePointMILPModel``. It generates one excluding inequality for
+every odd extended-parity point in memory, so the old mutable arity and
+matrix-specific pickle caches are unnecessary. ``XorParityMILPModel`` exposes
+the exact integer-quotient equality as the compact portable alternative.
+Exhaustive tests through seven operands and GLPK witnesses validate both. In
+the [eight-input ten-run comparison](audits/data/milp_xor_formulation_benchmark.json),
+the quotient formulation uses one auxiliary but only ten fixed-instance
+constraints, versus 265 for impossible points, and is faster to construct and
+solve. Existing graph lowering therefore keeps its portable default; the
+recovered exponential formulation is opt-in historical functionality.
+
 The deterministic-truncated SMT slice adds
 ``ModularAddDeterministicTruncatedSMTModel`` and
 ``WordDeterministicTruncatedSMTModel``. The immutable SMT formula preserves the
