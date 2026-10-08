@@ -92,5 +92,22 @@ Diagrams are different artifacts
 
 ``primitive.draw("ascii")`` and ``primitive.draw("tikz")`` are human-facing
 views of the backend-neutral diagram IR.  Optional ``"pdf"`` rendering invokes
-LaTeX explicitly.  Diagram text is not canonical graph serialization and
-cannot be deserialized as a primitive.
+LaTeX explicitly. These are low-level wiring diagrams: they show every graph
+component, selected logical position, and dependency, which is useful for
+debugging a graph or following an annotated execution trace or cryptanalytic
+trail. They are not compact illustrations of a primitive specification, and a
+full-size primitive such as AES can consequently produce a very large diagram.
+The ASCII form is returned as a string so it can be saved or processed. At an
+interactive prompt, use ``print(primitive.draw())`` to render its line breaks;
+entering ``primitive.draw()`` alone shows Python's quoted string representation
+with ``\n`` escapes. Start with a reduced-round object when inspecting a large
+graph.
+
+.. doctest::
+
+   >>> drawing = present.draw()
+   >>> type(drawing), drawing.splitlines()[:2]
+   (<class 'str'>, ['primitive present', 'inputs'])
+
+Diagram text is not canonical graph serialization and cannot be deserialized
+as a primitive.

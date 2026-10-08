@@ -54,8 +54,27 @@ such as ``details()``, ``evaluate()``, and ``evaluate_many()`` stay on
 ``aes``; analyses are under ``aes.analysis``; read-only structure is under
 ``aes.graph``; and transformations that produce a changed copy are under
 ``aes.edit``. For example, type ``aes.graph.`` or ``aes.edit.`` and press Tab
-to explore the corresponding second level. Constructor arguments can select
-another standard parameter set or a reduced number of rounds. See
+to explore the corresponding second level. Use ``instances`` to see the
+configurations approved by the primitive's specification and ``parameters``
+to see every constructor option:
+
+.. doctest::
+
+   >>> aes.instances
+   Official instances for AES (3)
+     [0] AES(key_bit_size=128, number_of_rounds=10)
+     [1] AES(key_bit_size=192, number_of_rounds=12)
+     [2] AES(key_bit_size=256, number_of_rounds=14)
+   >>> aes.parameters
+   Customizable parameters for AES (3)
+     key_bit_size: int = 128
+     number_of_rounds: int | None = None
+     realization: str = 'lookup'
+
+``instances`` is catalogue-backed: it does not change when ``aes`` is a
+reduced-round study object. ``parameters`` comes from the class's public Python
+signature and therefore also shows non-standard options. Constructor arguments
+can select another standard parameter set or a reduced number of rounds. See
 :doc:`traditional_primitives` for common block ciphers and
 :doc:`primitive_catalogue` for discovery and the full catalogue.
 
