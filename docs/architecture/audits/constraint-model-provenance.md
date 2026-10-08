@@ -24,13 +24,18 @@ on 126 classes: 21 `VERIFIED`, 78 `N/A`, and 30 `TBD`. Eleven declarations
 were matched to primary sources, while three generic finite-relation or
 forbidden-assignment encodings moved from `TBD` to `N/A`.
 
+After the boomerang/BCT audit, the total is unchanged but the distribution is
+24 `VERIFIED`, 77 `N/A`, and 28 `TBD`. The two modular-add boomerang
+declarations moved from `TBD` to `VERIFIED`, and the Speck composition moved
+from `N/A` to `VERIFIED`.
+
 ## Modular addition, subtraction, and truncated variants
 
 The audit compared the current implementation with legacy CLAASP commit
 `3aacc2758059de85682a9c6d0eda2cd75940e747`, the recovery branches recorded in
 the legacy-backend inventory, their introducing commits, comments,
 documentation, bibliography, and tests. The modular-add boomerang automaton is
-reserved for the boomerang/BCT family audit.
+audited separately below.
 
 | Models | Status | Evidence and correspondence |
 |---|---|---|
@@ -90,3 +95,35 @@ individual ideas or a different backend, but no primary source was found for
 the implemented combination of signed Walsh-count classes, class selectors,
 and absolute-correlation objective. The four declarations therefore remain
 `TBD` rather than inheriting a citation by analogy.
+
+## Boomerang and BCT models
+
+The public boomerang constraint models are CP-only. The audit covered the
+legacy ARX-optimized model and its fixed BCT predicate, the experimental
+`hadipour_boomerang_model` and `adding_boomerang_checker` branches, all four
+recovery commits, their tests, benchmarks, bibliography, and primary sources.
+
+| Models | Status | Evidence and correspondence |
+|---|---|---|
+| `SBoxBoomerangCPModel` | `VERIFIED` | Cid--Huang--Peyrin--Sasaki--Song, *Boomerang Connectivity Table: A New Cryptanalysis Tool*, DOI `10.1007/978-3-319-78375-8_22`, Section 3.1, Equation (4) and Definition 3.1. CLAASP enumerates exactly the inverse-S-box equality in Equation (4), records its solution count, and exposes every nonzero BCT entry through a generic MiniZinc table. |
+| `ModularAddBoomerangCPModel` | `VERIFIED` | Wang--Wang--Sun, *SAT-aided Automatic Search of Boomerang Distinguishers for ARX Ciphers (Long Paper)*, DOI `10.46586/tosc.v2023.i1.152-191`, Section 2.2, Equation (1), Section 3.1, Definition 5 and Algorithm 1, and Section 4.1, Algorithm 3. The four boundaries are the paper's `delta_l`, `delta_r`, `nabla_l`, and `nabla_r`; each row existentially enumerates the two data bits and advances the paired addition/subtraction state, while final-state reachability decides whether the modular-add BCT entry is nonzero. |
+| `ModularAddBoomerangTrailCPModel` | `VERIFIED` | Wang--Wang--Sun, Section 4.3, first automatic-search framework, Steps 1 and 2. CLAASP namespaces exact upper and lower differential models, joins them through a nonzero modular-add BCT entry, minimizes the upper-plus-lower characteristic weights, and computes the switch count independently after solving. |
+| `SpeckBoomerangCPModel` | `VERIFIED` | Wang--Wang--Sun, Section 5.1, first two paragraphs and Figure 4. The graph is split into `E0`, one modular addition `Em`, and `E1`; the full mode links all four switch differences and uses the Section 4.3 objective. |
+| `SBoxBoomerangTrailCPModel` | `N/A` | Direct namespacing and wiring of two bounded PRESENT-2 queries to one selected BCT table. The composed query retains the nested verified switch declaration without attributing the wrapper itself to the BCT paper. |
+
+### Unresolved-search record
+
+Cid et al., Section 6.2, Equation (9), was inspected but covers only the
+fixed-addend `nabla_r = 0` special case, so it is not used for the shipped
+four-difference modular-add model. Kim--Kwon--Song, DOI
+`10.1587/transfun.2019EAP1083`, was also identified as a bitwise predecessor;
+its restricted primary full text could not be inspected. Wang--Wang--Sun gives
+the complete accessible recurrence and automatic-search construction used by
+the VERIFIED declarations. The experimental Hadipour branch's unspecified
+“SAT-AIDED paper” comment was not itself treated as citation evidence.
+
+The selected PRESENT composition joins only one boundary nibble and permits
+probability-one ladder-switch entries; it is not evidence for a complete
+middle S-box layer. A separate correctness PR handles the independently found
+public boomerang-weight formula issue rather than mixing behavior into this
+provenance-only audit.

@@ -15,12 +15,16 @@ from claasp.representations.constraints import (
 )
 from claasp.representations.constraints.cp import components as cp_components
 from claasp.representations.constraints.cp.components import (
+    ModularAddBoomerangCPModel,
     ProbabilisticTruncatedModularAddCPModel,
     SBoxBoomerangCPModel,
     SBoxXorDifferentialCPModel,
 )
 from claasp.representations.constraints.cp.lowering import BooleanMiniZincLowerer
 from claasp.representations.constraints.cp.trails import (
+    ModularAddBoomerangTrailCPModel,
+    SBoxBoomerangTrailCPModel,
+    SpeckBoomerangCPModel,
     SpeckProbabilisticTruncatedCPModel,
     WordwiseDeterministicTruncatedCPModel,
 )
@@ -181,7 +185,24 @@ def test_audited_boomerang_model_names_the_bct_definition():
 
     assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
     assert provenance.reference_identifier == "10.1007/978-3-319-78375-8_22"
-    assert provenance.source_locator == "section 3.1, Definition 3.1"
+    assert provenance.source_locator == "section 3.1, equation (4) and Definition 3.1"
+
+
+def test_audited_modular_add_boomerang_models_name_the_arx_primary_source():
+    for model in (
+        ModularAddBoomerangCPModel,
+        ModularAddBoomerangTrailCPModel,
+        SpeckBoomerangCPModel,
+    ):
+        provenance = model.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+        assert provenance.reference_identifier == "10.46586/tosc.v2023.i1.152-191"
+
+
+def test_direct_sbox_boomerang_composition_is_not_a_literature_claim():
+    assert SBoxBoomerangTrailCPModel.model_provenance.reference_status is (
+        ConstraintReferenceStatus.NOT_APPLICABLE
+    )
 
 
 def test_audited_monomial_models_name_the_monomial_prediction_construction():

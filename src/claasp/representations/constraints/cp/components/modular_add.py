@@ -4,6 +4,7 @@ from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
     _unaudited_model,
+    _verified_model,
 )
 from claasp.representations.constraints.cp.model import MiniZincModel
 from claasp.semantics.cryptanalysis import (
@@ -28,12 +29,14 @@ class ModularAddBoomerangCPModel:
         (7, ('include "table.mzn";',))
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.CP,
         "ModularAddBoomerangCPModel",
         "boomerang",
         "exact carry/borrow-state feasibility automaton for modular addition",
-        "The automaton is verified against exhaustive quartet counting without a literature claim.",
+        "10.46586/tosc.v2023.i1.152-191",
+        "SAT-aided Automatic Search of Boomerang Distinguishers for ARX Ciphers (Long Paper)",
+        "section 2.2, equation (1); section 3.1, Definition 5 and Algorithm 1; section 4.1, Algorithm 3",
     )
 
     def __init__(

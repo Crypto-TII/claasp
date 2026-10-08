@@ -64,6 +64,7 @@ def test_modadd_boomerang_cp_namespaces_and_links_complete_trails():
     assert "constraint switch_delta_left[0] = bool2int(upper_" in query.source()
     assert "constraint switch_nabla_right[0] = bool2int(lower_" in query.source()
     assert query.constraint_models[0].model == ModularAddBoomerangTrailCPModel.model_provenance
+    assert query.constraint_models[1].model == ModularAddBoomerangCPModel.model_provenance
 
 
 def test_sbox_boomerang_cp_namespaces_and_links_complete_present_trails():
@@ -84,6 +85,7 @@ def test_sbox_boomerang_cp_namespaces_and_links_complete_present_trails():
     assert "constraint switch_input_difference = " in query.source()
     assert "constraint switch_output_difference = " in query.source()
     assert query.constraint_models[0].model == model.model_provenance
+    assert query.constraint_models[1].model == SBoxBoomerangCPModel.model_provenance
 
 
 def test_speck_boomerang_cp_automatically_partitions_and_links_all_switch_words():

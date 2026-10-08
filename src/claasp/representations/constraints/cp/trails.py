@@ -2236,12 +2236,14 @@ class ModularAddBoomerangTrailCPModel:
         True
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.CP,
         "ModularAddBoomerangTrailCPModel",
         "boomerang",
         "complete top/switch/bottom MiniZinc composition",
-        "The switch is exact; the search objective preserves the legacy upper-plus-lower cost.",
+        "10.46586/tosc.v2023.i1.152-191",
+        "SAT-aided Automatic Search of Boomerang Distinguishers for ARX Ciphers (Long Paper)",
+        "section 4.3, first automatic-search framework, steps 1 and 2",
     )
 
     def __init__(
@@ -2401,7 +2403,10 @@ class ModularAddBoomerangTrailCPModel:
                 "legacy objective excludes switch weight",
             ),
             name_mapping=upper_mapping + lower_mapping,
-            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+            constraint_models=(
+                ConstraintModelApplication(self.model_provenance),
+                *switch_query.constraint_models,
+            ),
         )
         return self._query
 
@@ -2461,12 +2466,14 @@ class SpeckBoomerangCPModel:
         True
     """
 
-    model_provenance = _direct_model(
+    model_provenance = _verified_model(
         ConstraintBackend.CP,
         "SpeckBoomerangCPModel",
         "boomerang",
         "automatic immutable Speck graph partition around an exact modular-add switch",
-        "All four switch differences are linked to validated graph slices.",
+        "10.46586/tosc.v2023.i1.152-191",
+        "SAT-aided Automatic Search of Boomerang Distinguishers for ARX Ciphers (Long Paper)",
+        "section 5.1, first two paragraphs and Figure 4",
     )
 
     def __init__(
@@ -2712,7 +2719,10 @@ class SBoxBoomerangTrailCPModel:
                 "exact selected S-box boomerang connectivity table",
             ),
             name_mapping=upper_mapping + lower_mapping + switch_mapping,
-            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+            constraint_models=(
+                ConstraintModelApplication(self.model_provenance),
+                *switch_query.constraint_models,
+            ),
         )
         return self._query
 
