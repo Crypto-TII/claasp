@@ -724,8 +724,8 @@ with direct OR and NOT truth-table clauses plus zero-filling fixed shifts.
 Because SMT, CP, and MILP derive from the same named CNF relation, one composed
 OR/NOT/left-shift/right-shift graph is solved and validated under MiniSat, Z3,
 Chuffed, and GLPK. Multi-input OR witnesses retain their auxiliary values.
-Modular subtraction/multiplication, variable shifts/rotations, and specialized
-components remain explicit rather than being silently skipped.
+Modular subtraction/multiplication and variable shifts/rotations remained
+explicit rather than being silently skipped at that checkpoint.
 
 The modular-subtraction follow-up adds explicit
 ``ModularSubtractFunctionalSATModel`` and
@@ -734,6 +734,16 @@ circuit supports every declared operand, not only the binary case; all 512
 three-bit, three-input assignments are checked against scalar execution.
 Native-XOR expansion reproduces ordinary CNF exactly, and the cross-backend
 functional benchmark now includes the subtraction stage.
+
+The variable-wiring follow-up adds
+``VariableWiringFunctionalSATModel`` for exact data-dependent rotations and
+shifts. Rotations use a power-of-two barrel network. Shifts additionally use
+an exact remainder-state network because CLAASP reduces the supplied amount
+modulo the word width, including for non-power-of-two widths. Exhaustive
+five-bit tests cover every value and every three-bit amount in both
+directions; the shared functional benchmark exercises the resulting CNF under
+MiniSat, Z3, Chuffed, and GLPK. Modular multiplication and specialized
+components remain.
 
 The first active-S-box recovery adds ``PresentActiveSBoxesMILPModel``. It keeps
 the exact two-round PRESENT DDT feasible region byte-for-byte identical to the

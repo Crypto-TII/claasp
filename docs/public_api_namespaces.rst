@@ -673,6 +673,12 @@ claasp.representations.constraints.sat.components.truncated
 .. automodule:: claasp.representations.constraints.sat.components.truncated
    :no-index:
 
+claasp.representations.constraints.sat.components.wiring
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.wiring
+   :no-index:
+
 claasp.representations.constraints.sat.exporters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

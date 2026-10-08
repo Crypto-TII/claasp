@@ -21,6 +21,7 @@ from claasp.representations.constraints.sat.components import (
     SBoxXorDifferentialSATModel,
     SBoxXorLinearSATModel,
     TruncatedToLinearSATModel,
+    VariableWiringFunctionalSATModel,
     WiringFunctionalSATModel,
 )
 from claasp.representations.constraints.sat.exporters import CryptoMiniSatDimacsExporter
@@ -91,6 +92,7 @@ __all__ = [
     "SpeckSemiDeterministicTruncatedSATModel",
     "SpeckSemiDeterministicTruncatedTrail",
     "TruncatedToLinearSATModel",
+    "VariableWiringFunctionalSATModel",
     "WiringFunctionalSATModel",
     "WordDeterministicTruncatedCharacteristic",
     "WordDeterministicDifferentialLinearSATModel",
