@@ -5,6 +5,7 @@ from claasp.representations.constraints.cp import (
     PresentActiveSBoxesCPModel,
     PresentFixedActiveSBoxesCPModel,
     SpeckARXWindowDifferentialCPModel,
+    SpeckContinuousHeuristicCPModel,
     SpeckSemiDeterministicTruncatedCPModel,
     WordDeterministicDifferentialLinearCPModel,
     WordDeterministicTruncatedCPModel,
@@ -37,6 +38,16 @@ def test_speck_arx_window_cp_adds_one_pruning_constraint_per_round():
     query = model.cp_model()
     assert (len(query.declarations), len(query.constraints)) == (15, 56)
     assert query.constraint_models[0].model == model.model_provenance
+
+
+def test_speck_continuous_cp_is_explicitly_heuristic_and_fixed_input():
+    left = (-1.0, -1.0, -1.0, 1.0) + (-1.0,) * 12
+    right = (-1.0, 1.0, -1.0, 1.0) + (-1.0,) * 12
+    model = SpeckContinuousHeuristicCPModel(left, right, rounds=2)
+    query = model.cp_model()
+    assert (len(query.declarations), len(query.constraints)) == (10, 160)
+    assert query.solve == "solve satisfy;"
+    assert model.model_provenance.reference_status.value == "TBD"
 
 
 def test_present_active_sboxes_cp_reuses_exact_tables():

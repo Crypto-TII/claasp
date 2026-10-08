@@ -913,6 +913,124 @@ class WordwiseDifferenceCPModel:
         return result
 
 
+class SpeckContinuousHeuristicCPModel:
+    """Evaluate the recovered continuous Speck approximation in MiniZinc.
+
+    This validates one fixed numerical input and deliberately exposes no proof
+    or optimality status.
+
+    EXAMPLES::
+
+        >>> model = SpeckContinuousHeuristicCPModel(
+        ...     (-1.0,) * 16, (-1.0,) * 16, rounds=2
+        ... )
+        >>> query = model.cp_model()
+        >>> (len(query.declarations), len(query.constraints), query.solve)
+        (10, 160, 'solve satisfy;')
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.CP,
+        "SpeckContinuousHeuristicCPModel",
+        "continuous_differential_linear_heuristic",
+        "recovered nonlinear continuous XOR, carry, and modular-add equations",
+        "The numerical formulation is heuristic and cannot establish a cryptanalytic proof.",
+    )
+
+    def __init__(self, left, right, *, rounds: int, tolerance: float = 1e-4) -> None:
+        from claasp.semantics.cryptanalysis import continuous_speck32
+
+        self.left = tuple(float(value) for value in left)
+        self.right = tuple(float(value) for value in right)
+        self.rounds = rounds
+        self.tolerance = tolerance
+        self._expected = continuous_speck32(self.left, self.right, rounds=rounds)
+        if tolerance <= 0:
+            raise ValueError("tolerance must be positive")
+        self._query: MiniZincModel | None = None
+
+    def cp_model(self) -> MiniZincModel:
+        """Return a fixed-input nonlinear MiniZinc feasibility query."""
+
+        declarations = []
+        for boundary in range(self.rounds + 1):
+            declarations.extend(
+                (
+                    f"array[0..15] of var -1.0..1.0: x_{boundary};",
+                    f"array[0..15] of var -1.0..1.0: y_{boundary};",
+                )
+            )
+            if boundary < self.rounds:
+                declarations.extend(
+                    (
+                        f"array[0..15] of var -1.0..1.0: carry_{boundary};",
+                        f"array[0..15] of var -1.0..1.0: add_{boundary};",
+                    )
+                )
+        constraints = [
+            *(f"constraint x_0[{i}] = {value:.17g};" for i, value in enumerate(self.left)),
+            *(f"constraint y_0[{i}] = {value:.17g};" for i, value in enumerate(self.right)),
+        ]
+        for round_number in range(self.rounds):
+            constraints.append(f"constraint carry_{round_number}[15] = -1.0;")
+            for index in reversed(range(16)):
+                rotated_x = (index - 7) % 16
+                constraints.append(
+                    f"constraint abs(add_{round_number}[{index}] - ("
+                    f"x_{round_number}[{rotated_x}] * y_{round_number}[{index}] * "
+                    f"carry_{round_number}[{index}])) <= {self.tolerance:.17g};"
+                )
+                constraints.append(
+                    f"constraint x_{round_number + 1}[{index}] = add_{round_number}[{index}];"
+                )
+                rotated_y = (index + 2) % 16
+                constraints.append(
+                    f"constraint abs(y_{round_number + 1}[{index}] - ("
+                    f"-y_{round_number}[{rotated_y}] * x_{round_number + 1}[{index}])) "
+                    f"<= {self.tolerance:.17g};"
+                )
+                if index:
+                    constraints.append(
+                        f"constraint abs(carry_{round_number}[{index - 1}] - (0.25 * ("
+                        f"x_{round_number}[{rotated_x}] + y_{round_number}[{index}] + "
+                        f"carry_{round_number}[{index}] + x_{round_number}[{rotated_x}] * "
+                        f"y_{round_number}[{index}] * carry_{round_number}[{index}]))) "
+                        f"<= {self.tolerance:.17g};"
+                    )
+        self._query = MiniZincModel(
+            tuple(declarations),
+            tuple(constraints),
+            provenance=(
+                "recovered legacy continuous Speck equations",
+                "heuristic numerical evidence only",
+            ),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_result(self, assignment):
+        """Check MiniZinc values against independent Python propagation."""
+
+        from claasp.semantics.cryptanalysis import ContinuousHeuristicResult
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        values = tuple(float(value) for value in assignment[f"x_{self.rounds}"]) + tuple(
+            float(value) for value in assignment[f"y_{self.rounds}"]
+        )
+        accumulated_tolerance = self.tolerance * self.rounds * 16
+        if any(
+            abs(actual - expected) > accumulated_tolerance
+            for actual, expected in zip(values, self._expected.values)
+        ):
+            raise ValueError("MiniZinc continuous result differs from independent propagation")
+        return ContinuousHeuristicResult(
+            values,
+            accumulated_tolerance,
+            "recovered MiniZinc continuous Speck model; independently rechecked in Python",
+        )
+
+
 class ImpossibleBoundaryCPModel:
     """Prove that forward and backward partial patterns contradict.
 

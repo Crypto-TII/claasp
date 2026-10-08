@@ -19,6 +19,7 @@ from claasp.representations.constraints.cp import (
     SBoxDifferenceCPModel,
     SimonImpossibleCPModel,
     SpeckARXWindowDifferentialCPModel,
+    SpeckContinuousHeuristicCPModel,
     SpeckDifferentialCPModel,
     SpeckImpossibleCPModel,
     SpeckProbabilisticTruncatedCPModel,
@@ -53,6 +54,17 @@ from claasp.semantics.cryptanalysis import (
 )
 
 pytestmark = pytest.mark.external
+
+
+def test_minizinc_continuous_speck_matches_independent_python_heuristic():
+    left = (-1.0, -1.0, -1.0, 1.0) + (-1.0,) * 12
+    right = (-1.0, 1.0, -1.0, 1.0) + (-1.0,) * 12
+    model = SpeckContinuousHeuristicCPModel(left, right, rounds=2)
+    solved = MiniZincSolver(solver="gecode", timeout_seconds=30).solve(model.cp_model())
+    result = model.decode_result(solved.assignment)
+    assert solved.status is CPStatus.SATISFIED
+    assert result.claim_kind == "heuristic"
+    assert result.values[3] == pytest.approx(0.8497372377, abs=result.tolerance)
 
 
 def test_minizinc_proves_present_two_round_active_sbox_optimum():
