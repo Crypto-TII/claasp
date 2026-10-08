@@ -1,6 +1,6 @@
 """Functional SAT encoding for modular addition."""
 
-from claasp.components import ModularAdd
+from claasp.components import ModularAdd, ModularSubtract
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
@@ -114,6 +114,116 @@ class ModularAddNativeXorSATModel(ModularAddFunctionalSATModel):
         "functional",
         "ripple-carry with CryptoMiniSat native XOR records",
         "Sum parity is native XOR; carry majority constraints remain ordinary CNF.",
+    )
+
+
+class ModularSubtractFunctionalSATModel:
+    """Encode exact left-to-right subtraction modulo each word size.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives.single_component_primitives import ModularSubtract
+        >>> from claasp.representations.constraints.sat import BooleanCNFModel
+        >>> primitive = ModularSubtract(4)
+        >>> model = BooleanCNFModel(primitive)
+        >>> model.cnf_formula().is_satisfied(
+        ...     model.witness(primitive.evaluate_with_trace(1, 2)))
+        True
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "ModularSubtractFunctionalSATModel",
+        "functional",
+        "ripple-borrow Boolean clauses",
+        "The clauses are generated directly from full-subtractor truth tables.",
+    )
+
+    def __init__(self, component) -> None:
+        if not isinstance(component, ModularSubtract):
+            raise TypeError("component must be a ModularSubtract")
+        self.component = component
+
+    @staticmethod
+    def _borrow(left, right, borrow):
+        return int((not left and (right or borrow)) or (right and borrow))
+
+    def encode(self, context, outputs, selected) -> None:
+        """Append a sequential ripple-borrow circuit to ``context``."""
+
+        component = self.component
+        label = component.component_id
+        width = component.output_type.domain.width
+        for position, output in enumerate(outputs):
+            accumulator = selected[0][position]
+            for operand_number, operand in enumerate(
+                (group[position] for group in selected[1:]), start=1
+            ):
+                is_last = operand_number == len(selected) - 1
+                target = (
+                    output
+                    if is_last
+                    else tuple(
+                        context.allocate(f"__aux_{label}_{position}_{operand_number}_{bit}")
+                        for bit in range(width)
+                    )
+                )
+                borrow = None
+                for bit in range(width - 1, -1, -1):
+                    if borrow is None:
+                        context.xor(target[bit], accumulator[bit], operand[bit], label)
+                        if not is_last:
+                            context.auxiliary.append(
+                                ("xor", (target[bit], accumulator[bit], operand[bit]))
+                            )
+                    else:
+                        partial = context.allocate(
+                            f"__aux_{label}_{position}_{operand_number}_xor_{bit}"
+                        )
+                        context.xor(partial, accumulator[bit], operand[bit], label)
+                        context.xor(target[bit], partial, borrow, label)
+                        context.auxiliary.append(("xor", (partial, accumulator[bit], operand[bit])))
+                        if not is_last:
+                            context.auxiliary.append(("xor", (target[bit], partial, borrow)))
+                    if bit:
+                        previous_borrow = borrow
+                        borrow = context.allocate(
+                            f"__aux_{label}_{position}_{operand_number}_borrow_{bit}"
+                        )
+                        borrow_inputs = (
+                            accumulator[bit],
+                            operand[bit],
+                            previous_borrow,
+                        )
+                        if previous_borrow is None:
+                            context.relation(
+                                borrow,
+                                borrow_inputs[:2],
+                                lambda left, right: int(not left and right),
+                                label,
+                            )
+                            context.auxiliary.append(("borrow2", (borrow, *borrow_inputs[:2])))
+                        else:
+                            context.relation(borrow, borrow_inputs, self._borrow, label)
+                            context.auxiliary.append(("borrow", (borrow, *borrow_inputs)))
+                accumulator = target
+
+
+class ModularSubtractNativeXorSATModel(ModularSubtractFunctionalSATModel):
+    """Use native parity records inside the functional ripple-borrow circuit.
+
+    EXAMPLES::
+
+        >>> ModularSubtractNativeXorSATModel.model_provenance.encoding_name
+        'ripple-borrow with CryptoMiniSat native XOR records'
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "ModularSubtractNativeXorSATModel",
+        "functional",
+        "ripple-borrow with CryptoMiniSat native XOR records",
+        "Difference parity is native XOR; borrow constraints remain ordinary CNF.",
     )
 
 

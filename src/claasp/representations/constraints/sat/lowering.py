@@ -13,6 +13,7 @@ from claasp.components import (
     Constant,
     Identity,
     ModularAdd,
+    ModularSubtract,
     Permutation,
     Rotate,
     Shift,
@@ -26,6 +27,8 @@ from claasp.representations.constraints.sat.components import (
     BooleanNativeXorSATModel,
     ModularAddFunctionalSATModel,
     ModularAddNativeXorSATModel,
+    ModularSubtractFunctionalSATModel,
+    ModularSubtractNativeXorSATModel,
     SBoxFunctionalSATModel,
     WiringFunctionalSATModel,
 )
@@ -94,6 +97,22 @@ class _CNFEncodingContext:
         x, y = self.indices[input_], self.indices[output]
         self.add_clause((x, y), label)
         self.add_clause((-x, -y), label)
+
+    def relation(self, output, inputs, function, label):
+        names = (*inputs, output)
+        for assignment in range(1 << len(names)):
+            values = tuple(
+                (assignment >> (len(names) - position - 1)) & 1 for position in range(len(names))
+            )
+            if values[-1] == function(*values[:-1]):
+                continue
+            self.add_clause(
+                tuple(
+                    -self.indices[name] if value else self.indices[name]
+                    for name, value in zip(names, values)
+                ),
+                label,
+            )
 
 
 class _NativeXorEncodingContext(_CNFEncodingContext):
@@ -238,6 +257,7 @@ class BooleanCNFModel:
                 WiringFunctionalSATModel
                 | BooleanFunctionalSATModel
                 | ModularAddFunctionalSATModel
+                | ModularSubtractFunctionalSATModel
                 | SBoxFunctionalSATModel
             )
             if isinstance(component, (Constant, Identity, Permutation, Rotate, Shift)):
@@ -253,6 +273,12 @@ class BooleanCNFModel:
                     ModularAddNativeXorSATModel(component)
                     if self.native_xor
                     else ModularAddFunctionalSATModel(component)
+                )
+            elif isinstance(component, ModularSubtract):
+                encoding = (
+                    ModularSubtractNativeXorSATModel(component)
+                    if self.native_xor
+                    else ModularSubtractFunctionalSATModel(component)
                 )
             elif isinstance(component, BitVectorSBox):
                 encoding = SBoxFunctionalSATModel(component)
@@ -309,6 +335,12 @@ class BooleanCNFModel:
                 assignment[target] = assignment[operands[0]] & assignment[operands[1]]
             elif operation == "or":
                 assignment[target] = assignment[operands[0]] | assignment[operands[1]]
+            elif operation == "borrow":
+                left, right, borrow = (assignment[item] for item in operands)
+                assignment[target] = int((not left and (right or borrow)) or (right and borrow))
+            elif operation == "borrow2":
+                left, right = (assignment[item] for item in operands)
+                assignment[target] = int(not left and right)
             else:
                 assignment[target] = int(sum(assignment[item] for item in operands) >= 2)
         return {name: assignment[name] for name in formula.variables}
