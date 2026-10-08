@@ -710,6 +710,15 @@ the switch quartet count; the result reports the search weight separately from
 the exact decoded weight including that switch. Automatic legacy graph
 partitioning and S-box-switch graph assembly remain distinct work.
 
+The wordwise-impossible MILP boundary slice adds
+``WordwiseImpossibleBoundaryMILPModel``. It restores the legacy four-state
+middle rule exactly: only ``(0,1)``, ``(0,2)``, ``(1,0)``, and ``(2,0)`` can
+be selected as contradictions, state 3 never proves impossibility, and the
+default formulation selects exactly one contradictory position. GLPK decodes
+and rechecks the preserved reduced-AES abstract fixture. This does not relabel
+that fixture as a concrete differential proof; whole-graph four-state
+propagation remains the next layer.
+
 The first active-S-box recovery adds ``PresentActiveSBoxesMILPModel``. It keeps
 the exact two-round PRESENT DDT feasible region byte-for-byte identical to the
 weighted trail model and changes only the objective to count selectors with a

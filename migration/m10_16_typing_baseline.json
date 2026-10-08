@@ -16,16 +16,16 @@
     "override": 4,
     "return-value": 4,
     "type-var": 2,
-    "union-attr": 61,
-    "var-annotated": 134
+    "union-attr": 64,
+    "var-annotated": 135
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 711,
+    "src/claasp": 712,
     "tests": 166,
-    "tools": 28
+    "tools": 31
   },
-  "diagnostic_count": 905,
+  "diagnostic_count": 909,
   "diagnostics": [
     {
       "code": "operator",
@@ -3390,6 +3390,13 @@
     {
       "code": "var-annotated",
       "column": 9,
+      "line": 86,
+      "message": "Need type annotation for \"variables\" (hint: \"variables: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/milp/components/truncated.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
       "line": 44,
       "message": "Need type annotation for \"terms\" (hint: \"terms: dict[<type>, <type>] = ...\")",
       "path": "src/claasp/representations/constraints/milp/lowering.py"
@@ -6263,6 +6270,27 @@
       "line": 80,
       "message": "Item \"None\" of \"CubeSuperpolyResult | None\" has no attribute \"anf_terms\"",
       "path": "tools/benchmark_milp_monomial_queries.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 30,
+      "line": 47,
+      "message": "Item \"None\" of \"MILPModel | None\" has no attribute \"variables\"",
+      "path": "tools/benchmark_milp_wordwise_impossible.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 32,
+      "line": 48,
+      "message": "Item \"None\" of \"MILPModel | None\" has no attribute \"constraints\"",
+      "path": "tools/benchmark_milp_wordwise_impossible.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 45,
+      "line": 52,
+      "message": "Item \"None\" of \"WordwiseImpossibleBoundaryResult | None\" has no attribute \"contradictory_positions\"",
+      "path": "tools/benchmark_milp_wordwise_impossible.py"
     },
     {
       "code": "var-annotated",

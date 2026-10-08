@@ -14,7 +14,9 @@ from claasp.representations.constraints.milp import (
     WordLinearMILPModel,
     WordSemiDeterministicDifferentialLinearMILPModel,
     WordwiseBranchNumberActiveSBoxesMILPModel,
+    WordwiseImpossibleBoundaryMILPModel,
 )
+from claasp.semantics.cryptanalysis import legacy_wordwise_impossible_fixture
 
 pytestmark = pytest.mark.external
 
@@ -88,6 +90,17 @@ def test_glpk_solves_generic_word_impossible_split():
     solved = GLPKSolver(timeout_seconds=30).solve(model.milp_model())
     assert solved.status is MILPStatus.OPTIMAL
     assert model.decode_trail(solved.assignment).boundary.is_impossible
+
+
+def test_glpk_selects_one_legacy_wordwise_middle_contradiction():
+    fixture = legacy_wordwise_impossible_fixture()
+    model = WordwiseImpossibleBoundaryMILPModel(fixture.forward_middle, fixture.backward_middle)
+    solved = GLPKSolver(timeout_seconds=30).solve(model.milp_model())
+    assert solved.status is MILPStatus.OPTIMAL
+    boundary = model.decode_boundary(solved.assignment)
+    assert len(boundary.contradictory_positions) == 1
+    position = boundary.contradictory_positions[0]
+    assert (boundary.forward[position], boundary.backward[position]) in model._INCOMPATIBLE
 
 
 def test_glpk_solves_and_independently_checks_semi_deterministic_truncated_trail():
