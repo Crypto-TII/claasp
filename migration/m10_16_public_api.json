@@ -27110,6 +27110,18 @@
       "qualified_name": "claasp.representations.constraints.milp.CubeMonomialFeasibilityMILPModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyQuery",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.CubeSuperpolyQuery"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.milp.CubeSuperpolyResult"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.milp.components.relations.FiniteBinaryRelationMILPModel",
       "defined_in": "claasp.representations.constraints.milp.components.relations",
       "kind": "class",
@@ -28267,6 +28279,53 @@
       "defined_in": "claasp.representations.constraints.milp.queries",
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.milp.queries.CubeMonomialFeasibilityMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyQuery.__init__",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "documented_by": "claasp.representations.constraints.milp.queries.CubeSuperpolyQuery",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyQuery.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyQuery.compute",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyQuery.compute"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult.__init__",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "documented_by": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult.anf_terms",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "documented_by": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult.anf_terms"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult.coefficient",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult.coefficient"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult.symbolic_positions",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "documented_by": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult.symbolic_positions"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult.truth_table",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "documented_by": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.milp.queries.CubeSuperpolyResult.truth_table"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.queries.MonomialDegreeBound.__init__",

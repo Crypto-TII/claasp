@@ -42,6 +42,8 @@ from claasp.representations.constraints.milp.model import (
 )
 from claasp.representations.constraints.milp.queries import (
     CubeMonomialFeasibilityMILPModel,
+    CubeSuperpolyQuery,
+    CubeSuperpolyResult,
     MonomialDegreeBound,
     MonomialDegreeMILPModel,
 )
@@ -73,6 +75,8 @@ __all__ = [
     "BooleanMonomialGraphMILPModel",
     "ConstraintSense",
     "CubeMonomialFeasibilityMILPModel",
+    "CubeSuperpolyQuery",
+    "CubeSuperpolyResult",
     "FiniteBinaryRelationMILPModel",
     "LPExporter",
     "LinearConstraint",

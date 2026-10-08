@@ -13,6 +13,7 @@ from claasp.drivers.solvers import GLPKSolver, MILPStatus
 from claasp.primitives import Simon
 from claasp.representations.constraints.milp import (
     CubeMonomialFeasibilityMILPModel,
+    CubeSuperpolyQuery,
     MonomialDegreeMILPModel,
 )
 
@@ -47,6 +48,21 @@ def main():
         cube_positions=(1, 8),
     )
     cube_status = GLPKSolver(timeout_seconds=30).solve(feasible.milp_model()).status
+    superpoly_times = []
+    superpoly = None
+    for _ in range(args.repeats):
+        started = monotonic()
+        superpoly = CubeSuperpolyQuery(
+            Simon(number_of_rounds=1),
+            output_bit=0,
+            cube_input="plaintext",
+            cube_positions=(1, 8),
+            symbolic_input="key",
+            symbolic_positions=(0, 1, 2, 3),
+        ).compute()
+        superpoly_times.append(monotonic() - started)
+    if superpoly.anf_terms != ((),):
+        raise RuntimeError("unexpected exact Simon cube superpoly")
     assert degree is not None
     payload = {
         "schema_version": 1,
@@ -61,6 +77,8 @@ def main():
             "solver_seconds_median": median(solves),
             "degree_bound": 2,
             "cube_1_8_feasible": cube_status is MILPStatus.OPTIMAL,
+            "cube_1_8_key_0_3_superpoly_anf_terms": [list(term) for term in superpoly.anf_terms],
+            "exact_superpoly_seconds_median": median(superpoly_times),
             "solver_status": MILPStatus.OPTIMAL.value,
             "peak_memory_bytes_median": None,
             "peak_memory_status": "not_reported_by_glpk_driver",
