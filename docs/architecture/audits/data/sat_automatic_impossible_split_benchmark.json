@@ -1,0 +1,17 @@
+{
+  "environment": {
+    "image": "claasp-v5-espresso:test",
+    "platform": "Linux arm64",
+    "python": "3.12.3"
+  },
+  "results": [
+    {"solver": "MiniSat", "seconds_median": 0.021890, "middle_round": 1, "status": "satisfiable"},
+    {"solver": "Kissat", "seconds_median": 0.019370, "middle_round": 1, "status": "satisfiable"},
+    {"solver": "CryptoMiniSat", "seconds_median": 0.020218, "middle_round": 1, "status": "satisfiable"}
+  ],
+  "schema_version": 1,
+  "workload": {
+    "description": "automatic internal-split enumeration for generic Speck32/64-3 impossible search",
+    "repeats": 10
+  }
+}
