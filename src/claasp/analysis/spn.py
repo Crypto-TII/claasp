@@ -120,7 +120,9 @@ def check_spn_trail(primitive: Primitive, trail: Trail) -> bool:
         component = components.get(step.component_id)
         if not isinstance(component, BitVectorSBox):
             return False
-        if not SBoxTransitionSemantics(component.table).check(step.transition):
+        if not SBoxTransitionSemantics(
+            component.table, output_width=component.output_bit_size
+        ).check(step.transition):
             return False
     if len(trail.steps) != 17:
         return False
@@ -222,7 +224,9 @@ def check_spn_linear_trail(primitive: Primitive, trail: Trail) -> bool:
         component = components.get(step.component_id)
         if not isinstance(component, BitVectorSBox):
             return False
-        if not SBoxTransitionSemantics(component.table).check(step.transition):
+        if not SBoxTransitionSemantics(
+            component.table, output_width=component.output_bit_size
+        ).check(step.transition):
             return False
     first, remaining = trail.steps[0], trail.steps[1:]
     nibble = int(first.component_id.rsplit("_", 1)[1])

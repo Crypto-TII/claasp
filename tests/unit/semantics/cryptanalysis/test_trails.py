@@ -35,6 +35,45 @@ def test_present_sbox_exact_signed_linear_transition():
     assert transition.weight == 1.0
 
 
+def test_rectangular_des_sbox_uses_distinct_input_and_output_widths():
+    from claasp.primitives.block_ciphers.des import DES
+
+    table = DES(number_of_rounds=1).sbox[1]
+    semantics = SBoxTransitionSemantics(table, output_width=4)
+    differential = semantics.xor_differential(0x34, 0x2)
+    linear = semantics.xor_linear(0x10, 0xF)
+
+    expected_differential = sum(table[value] ^ table[value ^ 0x34] == 0x2 for value in range(64))
+    expected_walsh = sum(
+        1 if ((value & 0x10).bit_count() + (table[value] & 0xF).bit_count()) % 2 == 0 else -1
+        for value in range(64)
+    )
+    assert len(semantics.difference_distribution_table()) == 64
+    assert len(semantics.difference_distribution_table()[0]) == 16
+    assert len(semantics.walsh_correlation_table()) == 64
+    assert len(semantics.walsh_correlation_table()[0]) == 16
+    assert (differential.input_pattern.width, differential.output_pattern.width) == (6, 4)
+    assert differential.numerator == expected_differential
+    assert (linear.input_pattern.width, linear.output_pattern.width) == (6, 4)
+    assert (linear.numerator, linear.sign) == (
+        abs(expected_walsh),
+        -1 if expected_walsh < 0 else 1,
+    )
+    assert semantics.check(differential)
+    assert semantics.check(linear)
+
+
+def test_rectangular_sbox_truncated_output_has_the_declared_width():
+    from claasp.semantics.cryptanalysis import TruncatedBit, TruncatedXorDifference
+
+    semantics = SBoxTransitionSemantics(tuple(value & 7 for value in range(64)), output_width=3)
+    output = semantics.truncated_xor_differential(
+        TruncatedXorDifference((TruncatedBit.ONE,) + (TruncatedBit.UNKNOWN,) * 5)
+    )
+
+    assert len(output.bits) == 3
+
+
 def test_trail_weight_is_the_sum_of_independently_checkable_steps():
     semantics = SBoxTransitionSemantics(PRESENT_SBOX)
     transition = semantics.xor_differential(0x1, 0x3)

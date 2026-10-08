@@ -1,11 +1,12 @@
 import pytest
 
 from claasp.components import BitVectorSBox
-from claasp.primitives import Present, Speck
+from claasp.primitives import DES, Present, Speck
 from claasp.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp.semantics.cryptanalysis import (
     ComponentSemanticsBinding,
     PropagationProblem,
+    SBoxTransitionSemantics,
 )
 
 
@@ -24,6 +25,40 @@ def test_default_registry_resolves_exact_graph_derived_sbox_semantics():
     assert transition.is_possible
     assert transition.weight == 2
     assert problem.components == (component,)
+
+
+def test_default_registry_preserves_rectangular_des_sbox_widths():
+    primitive = DES(number_of_rounds=1)
+    component = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+    assert component.component_id is not None
+    problem = PropagationProblem(
+        primitive,
+        XOR_DIFFERENTIAL,
+        component_ids=(component.component_id,),
+    )
+
+    transition = problem.provider_for(component).transition((0x34,), 0x2)
+
+    assert (transition.input_pattern.width, transition.output_pattern.width) == (6, 4)
+    assert transition.numerator == sum(
+        component.table[value] ^ component.table[value ^ 0x34] == 0x2 for value in range(64)
+    )
+    assert SBoxTransitionSemantics(component.table, output_width=component.output_bit_size).check(
+        transition
+    )
+    expected_possible = any(
+        component.table[value] ^ component.table[value ^ 0x34] == 0x2 for value in range(64)
+    )
+    assert (
+        primitive.analysis.is_xor_differential_transition_possible(
+            component.component_id, 0x34, 0x2
+        )
+        is expected_possible
+    )
+    with pytest.raises(ValueError, match="output pattern"):
+        primitive.analysis.is_xor_differential_transition_possible(
+            component.component_id, 0x34, 0x10
+        )
 
 
 def test_default_registry_resolves_modular_add_linear_semantics():

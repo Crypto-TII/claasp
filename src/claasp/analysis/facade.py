@@ -437,7 +437,7 @@ class Analysis:
                 "transition feasibility currently supports bit-vector S-boxes"
             )
         return (
-            SBoxTransitionSemantics(component.table)
+            SBoxTransitionSemantics(component.table, output_width=component.output_bit_size)
             .xor_differential(input_difference, output_difference)
             .is_possible
         )
