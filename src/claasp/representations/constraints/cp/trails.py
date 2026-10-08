@@ -574,6 +574,81 @@ class SpeckDifferentialCPModel:
         return trail
 
 
+class SpeckARXWindowDifferentialCPModel(SpeckDifferentialCPModel):
+    """Apply the legacy per-round n-window pruning to exact Speck trails.
+
+    The window constraint is a search heuristic over the exact modular-add
+    feasible region. It is opt-in and never replaces the unpruned model.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> problem = PropagationProblem(
+        ...     Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=45
+        ... )
+        >>> query = SpeckARXWindowDifferentialCPModel(
+        ...     problem, window_sizes=(3, 3, 3)
+        ... ).cp_model()
+        >>> "arx_window_left_0" in query.constraints[-3]
+        True
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "SpeckARXWindowDifferentialCPModel",
+        "xor_differential_window_heuristic",
+        "legacy per-round n-window pruning over exact modular-add constraints",
+        "The heuristic is explicit and does not change the underlying transition semantics.",
+    )
+
+    def __init__(self, problem, *, window_sizes, **options) -> None:
+        super().__init__(problem, **options)
+        if (
+            not isinstance(window_sizes, (tuple, list))
+            or len(window_sizes) != self.round_count
+            or any(
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or not 0 <= value < self.width
+                for value in window_sizes
+            )
+        ):
+            raise ValueError("window_sizes must provide one integer from 0 through 15 per round")
+        self.window_sizes = tuple(window_sizes)
+
+    def cp_model(self) -> MiniZincModel:
+        """Return exact Speck constraints plus opt-in legacy window pruning."""
+
+        exact = super().cp_model()
+        declarations = list(exact.declarations)
+        constraints = list(exact.constraints)
+        for round_number, window in enumerate(self.window_sizes):
+            alpha = _component(
+                self.primitive, f"round_{round_number}_rotate_right", Rotate
+            ).amount
+            left = f"arx_window_left_{round_number}"
+            declarations.append(
+                f"array[0..15] of var bool: {left} = "
+                f"{_array_rotation(f'x_{round_number}', -alpha, self.width)};"
+            )
+            constraints.append(
+                f"constraint forall(i in 0..{self.width - 1 - window})("
+                f"not forall(j in 0..{window})("
+                f"xorall([{left}[i+j], y_{round_number}[i+j], "
+                f"x_{round_number + 1}[i+j]])));"
+            )
+        return MiniZincModel(
+            tuple(declarations),
+            tuple(constraints),
+            exact.solve,
+            exact.includes,
+            exact.outputs,
+            exact.provenance,
+            exact.name_mapping,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+
+
 class SpeckTruncatedCPModel:
     """Compile one fixed deterministic-truncated Speck round propagation.
 
