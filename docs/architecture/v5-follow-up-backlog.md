@@ -696,6 +696,16 @@ DDT weight objective without changing any transition or wiring constraint.
 GLPK proves weight four at two active S-boxes, and independent decoding checks
 both the requested activity and the exact characteristic weight.
 
+The wordwise activity recovery adds
+``WordwiseBranchNumberActiveSBoxesMILPModel``. It uses one binary activity
+variable per typed scalar unit, exact activity propagation through bijective
+S-boxes and structural wiring, and branch-number relaxations for XOR and
+invertible linear maps. Typed decoding validates the complete MILP assignment.
+GLPK reproduces the reviewed four-round ToyAES sequence 1, 5, 9, 25. The API
+deliberately calls these results lower bounds unless the retained relations are
+known to be exact; it does not promote the relaxation to the default exact
+differential model.
+
 The first MILP impossible-differential slice adds ``SpeckImpossibleMILPModel``.
 It translates the reviewed transformed forward/backward deterministic-truncated
 graphs and exact middle incompatibility indicators clause-for-clause. GLPK

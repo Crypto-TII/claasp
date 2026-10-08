@@ -1,9 +1,22 @@
 """Exact weighted trail lowering to the portable MILP representation."""
 
+from dataclasses import dataclass
 from typing import cast
 
-from claasp.components import BitVectorSBox, Permutation
+from claasp.analysis.linear_properties import exact_branch_number, matrix_rank
+from claasp.components import (
+    Add,
+    BitVectorSBox,
+    Constant,
+    Identity,
+    LinearMap,
+    Permutation,
+    Rotate,
+    SBox,
+    Xor,
+)
 from claasp.graph import Primitive
+from claasp.graph.binding import BindingKind
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
@@ -260,6 +273,295 @@ class PresentFixedActiveSBoxesMILPModel(PresentDifferentialMILPModel):
             weighted.objective,
             weighted.objective_sense,
             (ConstraintModelApplication(self.model_provenance),),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class WordwiseActivityResult:
+    """A validated word-activity assignment and its active S-box count.
+
+    EXAMPLES::
+
+        >>> result = WordwiseActivityResult(5, (("state_0", 1),))
+        >>> result.active_sboxes
+        5
+    """
+
+    active_sboxes: int
+    activity_assignment: tuple[tuple[str, int], ...]
+
+
+class WordwiseBranchNumberActiveSBoxesMILPModel:
+    """Minimize active S-box units using wordwise branch-number relations.
+
+    The model keeps one activity bit per typed scalar unit. Bijective S-boxes,
+    permutations, rotations, and identities propagate activity exactly. XOR
+    and invertible linear maps use their reviewed branch-number relaxation.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToyAES
+        >>> model = WordwiseBranchNumberActiveSBoxesMILPModel(
+        ...     ToyAES(number_of_rounds=2),
+        ...     active_input="plaintext", zero_difference_inputs=("key",),
+        ... )
+        >>> formulation = model.milp_model()
+        >>> (formulation.objective_sense.value, len(formulation.objective.terms))
+        ('minimize', 40)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "WordwiseBranchNumberActiveSBoxesMILPModel",
+        "xor_differential_activity_lower_bound",
+        "typed unit activity with exact wiring and branch-number relaxations",
+        "The result is a lower bound unless every retained activity relation is exact.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        active_input: str,
+        zero_difference_inputs: tuple[str, ...] = (),
+    ) -> None:
+        if active_input not in primitive.input_ports:
+            raise ValueError("active_input must name a primitive input")
+        if not isinstance(zero_difference_inputs, tuple) or any(
+            name == active_input or name not in primitive.input_ports
+            for name in zero_difference_inputs
+        ):
+            raise ValueError("zero_difference_inputs must name other primitive inputs")
+        self.primitive = primitive
+        self.active_input = active_input
+        self.zero_difference_inputs = zero_difference_inputs
+        self._model: MILPModel | None = None
+        self._sbox_variables: tuple[str, ...] = ()
+
+    @staticmethod
+    def _name(owner: str, position: int) -> str:
+        return f"activity_{owner}_{position}"
+
+    def milp_model(self) -> MILPModel:
+        """Return the portable wordwise activity optimization model."""
+
+        variables = []
+        constraints = []
+        names = set()
+
+        def binary(name):
+            if name not in names:
+                names.add(name)
+                variables.append(LinearVariable(name, VariableKind.BINARY))
+            return name
+
+        for owner, port in self.primitive.input_ports.items():
+            for position in range(port.value_type.unit_count):
+                binary(self._name(owner, position))
+        for component in self.primitive.components:
+            for position in range(component.output_type.unit_count):
+                binary(self._name(component.component_id, position))
+
+        bindings = {item.binding_id: item for item in self.primitive.bindings}
+
+        def resolve(owner, position):
+            binding = bindings.get(owner)
+            if binding is None:
+                return self._name(owner, position)
+            if binding.kind is BindingKind.JOIN:
+                offset = 0
+                for selection in binding.inputs:
+                    if position < offset + len(selection.positions):
+                        local = position - offset
+                        return resolve(selection.source.owner_id, selection.positions[local])
+                    offset += len(selection.positions)
+            elif binding.kind is BindingKind.VIEW:
+                selection = binding.inputs[0]
+                return resolve(selection.source.owner_id, selection.positions[position])
+            raise NotImplementedError(
+                f"wordwise activity does not support {binding.kind.value} binding {owner!r}"
+            )
+
+        def selected(selection):
+            return tuple(
+                resolve(selection.source.owner_id, position) for position in selection.positions
+            )
+
+        def equality(left, right, label):
+            constraints.append(
+                LinearConstraint(
+                    LinearExpression.from_terms({left: 1, right: -1}),
+                    ConstraintSense.EQUAL,
+                    0,
+                    label,
+                )
+            )
+
+        sbox_variables = []
+        for component in self.primitive.components:
+            output = tuple(
+                self._name(component.component_id, position)
+                for position in range(component.output_type.unit_count)
+            )
+            operands = tuple(selected(item) for item in component.inputs)
+            if isinstance(component, SBox):
+                if sorted(component.table) != list(range(len(component.table))):
+                    raise NotImplementedError("wordwise activity requires bijective S-boxes")
+                for position, (source, target) in enumerate(zip(operands[0], output)):
+                    equality(source, target, f"sbox_{component.component_id}_{position}")
+                    sbox_variables.append(target)
+            elif isinstance(component, Constant):
+                for position, target in enumerate(output):
+                    constraints.append(
+                        LinearConstraint(
+                            LinearExpression.from_terms({target: 1}),
+                            ConstraintSense.EQUAL,
+                            0,
+                            f"constant_zero_difference_{component.component_id}_{position}",
+                        )
+                    )
+            elif isinstance(component, (Identity, Rotate)):
+                for position, (source, target) in enumerate(zip(operands[0], output)):
+                    equality(source, target, f"wiring_{component.component_id}_{position}")
+            elif isinstance(component, Permutation):
+                for output_position, (target, position) in enumerate(
+                    zip(output, component.mapping)
+                ):
+                    equality(
+                        operands[0][position],
+                        target,
+                        f"permutation_{component.component_id}_{output_position}",
+                    )
+            elif isinstance(component, (Add, Xor)):
+                if any(len(items) != len(output) for items in operands):
+                    raise NotImplementedError("wordwise XOR operands must align by unit")
+                for position, target in enumerate(output):
+                    local = tuple(items[position] for items in operands) + (target,)
+                    indicator = binary(f"active_relation_{component.component_id}_{position}")
+                    coefficients = {}
+                    for occurrence, name in enumerate(local):
+                        coefficients[name] = coefficients.get(name, 0) + 1
+                        constraints.append(
+                            LinearConstraint(
+                                LinearExpression.from_terms({name: 1, indicator: -1}),
+                                ConstraintSense.LESS_EQUAL,
+                                0,
+                                f"xor_activation_{component.component_id}_{position}_{occurrence}",
+                            )
+                        )
+                    coefficients[indicator] = -2
+                    constraints.append(
+                        LinearConstraint(
+                            LinearExpression.from_terms(coefficients),
+                            ConstraintSense.GREATER_EQUAL,
+                            0,
+                            f"xor_branch_{component.component_id}_{position}",
+                        )
+                    )
+            elif isinstance(component, LinearMap):
+                source = operands[0]
+                domain = component.inputs[0].value_type.domain
+                if len(source) != len(output) or matrix_rank(component.matrix, domain) != len(
+                    source
+                ):
+                    raise NotImplementedError("wordwise linear maps must be square and invertible")
+                branch_number = exact_branch_number(component.matrix, domain)
+                if branch_number is None:
+                    raise NotImplementedError("exact word branch number exceeds the safe budget")
+                indicator = binary(f"active_relation_{component.component_id}")
+                local = source + output
+                constraints.extend(
+                    LinearConstraint(
+                        LinearExpression.from_terms({name: 1, indicator: -1}),
+                        ConstraintSense.LESS_EQUAL,
+                        0,
+                        f"linear_activation_{component.component_id}_{position}",
+                    )
+                    for position, name in enumerate(local)
+                )
+                constraints.extend(
+                    (
+                        LinearConstraint(
+                            LinearExpression.from_terms(
+                                {**{name: 1 for name in local}, indicator: -branch_number}
+                            ),
+                            ConstraintSense.GREATER_EQUAL,
+                            0,
+                            f"linear_branch_{component.component_id}",
+                        ),
+                        LinearConstraint(
+                            LinearExpression.from_terms(
+                                {**{name: 1 for name in source}, indicator: -1}
+                            ),
+                            ConstraintSense.GREATER_EQUAL,
+                            0,
+                            f"linear_input_{component.component_id}",
+                        ),
+                        LinearConstraint(
+                            LinearExpression.from_terms(
+                                {**{name: 1 for name in output}, indicator: -1}
+                            ),
+                            ConstraintSense.GREATER_EQUAL,
+                            0,
+                            f"linear_output_{component.component_id}",
+                        ),
+                    )
+                )
+            else:
+                raise NotImplementedError(
+                    f"no wordwise activity semantics for {type(component).__name__}"
+                )
+
+        for owner in self.zero_difference_inputs:
+            for position in range(self.primitive.input_ports[owner].value_type.unit_count):
+                constraints.append(
+                    LinearConstraint(
+                        LinearExpression.from_terms({self._name(owner, position): 1}),
+                        ConstraintSense.EQUAL,
+                        0,
+                        f"zero_{owner}_{position}",
+                    )
+                )
+        active_names = tuple(
+            self._name(self.active_input, position)
+            for position in range(
+                self.primitive.input_ports[self.active_input].value_type.unit_count
+            )
+        )
+        constraints.append(
+            LinearConstraint(
+                LinearExpression.from_terms({name: 1 for name in active_names}),
+                ConstraintSense.GREATER_EQUAL,
+                1,
+                "nonzero_active_input",
+            )
+        )
+        if not sbox_variables:
+            raise ValueError("primitive has no supported S-box units")
+        self._sbox_variables = tuple(sbox_variables)
+        self._model = MILPModel(
+            tuple(variables),
+            tuple(constraints),
+            LinearExpression.from_terms({name: 1 for name in sbox_variables}),
+            ObjectiveSense.MINIMIZE,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._model
+
+    def decode_activity(self, assignment) -> WordwiseActivityResult:
+        """Validate a solver assignment and report its active S-box count."""
+
+        if self._model is None:
+            raise ValueError("build the MILP model before decoding")
+        projected = {
+            variable.name: int(round(assignment[variable.name]))
+            for variable in self._model.variables
+        }
+        if not self._model.is_feasible(projected):
+            raise ValueError("invalid wordwise activity assignment")
+        return WordwiseActivityResult(
+            sum(projected[name] for name in self._sbox_variables),
+            tuple(sorted(projected.items())),
         )
 
 
