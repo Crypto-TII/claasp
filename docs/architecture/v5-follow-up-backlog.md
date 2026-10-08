@@ -279,6 +279,12 @@ S-box, linear-layer, and monomial audit discoveries:
   bit-permutation rules given in Section 4.2. Legacy CLAASP's Gurobi monomial
   model builds the same transition relation from products of output-coordinate
   ANFs but does not carry the paper citation.
+- The monomial degree query matches Hu--Sun--Wang--Wang, Section 4.1,
+  Equation (1) and its MILP steps; the fixed-cube feasibility query matches
+  Lemma 1 and Section 5.1. Both are reachability queries: an optimum is an
+  upper bound and a feasible trail can still cancel. The separate exhaustive
+  cube-superpoly oracle uses direct evaluation and a Boolean Möbius transform,
+  so it is not a constraint model and remains outside provenance coverage.
 - The current CP, SMT, and MILP XOR-differential and XOR-linear S-box models
   remain `N/A`: they enumerate their DDT or LAT relation directly and then use
   generic table, forbidden-assignment, or one-hot row selection. Legacy CLAASP

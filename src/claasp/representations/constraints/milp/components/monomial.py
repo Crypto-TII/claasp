@@ -35,7 +35,7 @@ class MonomialTransitionMILPModel:
         "exhaustive monomial-transition row selection",
         "https://eprint.iacr.org/2020/1048",
         "An Algebraic Formulation of the Division Property: Revisiting Degree Evaluations, Cube Attacks, and Key-Independent Sums",
-        "section 3, Definition 1",
+        "section 3, local monomial-transition relation and Definition 1",
     )
 
     def __init__(self, table) -> None:

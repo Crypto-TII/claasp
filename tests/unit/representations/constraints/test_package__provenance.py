@@ -62,6 +62,10 @@ from claasp.representations.constraints.milp.lowering import (
     BooleanMonomialGraphMILPModel,
     cnf_to_milp,
 )
+from claasp.representations.constraints.milp.queries import (
+    CubeMonomialFeasibilityMILPModel,
+    MonomialDegreeMILPModel,
+)
 from claasp.representations.constraints.milp.trails import (
     PresentMonomialTrailMILPModel,
     SpeckSemiDeterministicTruncatedMILPModel,
@@ -290,10 +294,34 @@ def test_audited_monomial_models_name_the_monomial_prediction_construction():
         assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
         assert provenance.reference_identifier == "https://eprint.iacr.org/2020/1048"
         assert provenance.source_locator in {
-            "section 3, Definition 1",
+            "section 3, local monomial-transition relation and Definition 1",
             "section 3, Definition 1; section 4.2",
             "section 4.2, MILP model for the monomial trail of f^(i)",
         }
+
+
+def test_audited_monomial_queries_name_the_published_optimizations_and_graph_model():
+    primitive = Simon(number_of_rounds=1)
+    queries = (
+        MonomialDegreeMILPModel(primitive, output_bit=0, variable_input="plaintext"),
+        CubeMonomialFeasibilityMILPModel(
+            primitive,
+            output_bit=0,
+            variable_input="plaintext",
+            cube_positions=(0,),
+        ),
+    )
+
+    for query in queries:
+        provenance = query.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+        assert provenance.reference_identifier == "https://eprint.iacr.org/2020/1048"
+        applications = query.milp_model().constraint_models
+        assert applications[-1].model is provenance
+        assert any(
+            application.model is BooleanMonomialGraphMILPModel.model_provenance
+            for application in applications
+        )
 
 
 def test_exhaustive_sbox_tables_and_direct_linear_wiring_remain_not_applicable():

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
-    _direct_model,
+    _verified_model,
 )
 from claasp.representations.constraints.milp.lowering import BooleanMonomialGraphMILPModel
 from claasp.representations.constraints.milp.model import (
@@ -212,12 +212,14 @@ class MonomialDegreeMILPModel:
         32
     """
 
-    model_provenance = _direct_model(
+    model_provenance = _verified_model(
         ConstraintBackend.MILP,
         "MonomialDegreeMILPModel",
         "division_property_degree_bound",
         "degree maximization over the verified Boolean monomial graph formulation",
-        "A decoded optimum is a model bound; tightness depends on the underlying monomial rules.",
+        "https://eprint.iacr.org/2020/1048",
+        "An Algebraic Formulation of the Division Property: Revisiting Degree Evaluations, Cube Attacks, and Key-Independent Sums",
+        "section 4.1, Equation (1), Steps 1 and 2, and the MILP approach",
     )
 
     def __init__(self, primitive, *, output_bit, variable_input, variable_positions=None):
@@ -273,12 +275,14 @@ class CubeMonomialFeasibilityMILPModel:
         ()
     """
 
-    model_provenance = _direct_model(
+    model_provenance = _verified_model(
         ConstraintBackend.MILP,
         "CubeMonomialFeasibilityMILPModel",
         "cube_monomial_feasibility",
         "fixed cube over the verified Boolean monomial graph formulation",
-        "Infeasibility excludes the selected cube monomial from the chosen output bit.",
+        "https://eprint.iacr.org/2020/1048",
+        "An Algebraic Formulation of the Division Property: Revisiting Degree Evaluations, Cube Attacks, and Key-Independent Sums",
+        "section 3, Lemma 1; section 5.1, cube-superpoly recovery relation",
     )
 
     def __init__(self, primitive, *, output_bit, variable_input, cube_positions):
