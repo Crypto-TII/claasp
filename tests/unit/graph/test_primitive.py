@@ -1,5 +1,5 @@
 from claasp import InputVisibility, PrimitiveDetails, PrimitiveInputDetails
-from claasp.primitives import AES, Speck
+from claasp.primitives import AES, CustomAES, Speck
 
 
 def test_aes_details_are_structured_and_readable():
@@ -36,4 +36,15 @@ def test_details_identify_reduced_round_variant():
     assert tuple((item.name, item.bit_size) for item in details.inputs) == (
         ("plaintext", 64),
         ("key", 128),
+    )
+
+
+def test_custom_aes_details_use_study_parameters():
+    details = CustomAES(key_bit_size=256, number_of_rounds=5).details()
+
+    assert details.instance == "CustomAES-256"
+    assert details.number_of_rounds == 5
+    assert tuple((item.name, item.bit_size) for item in details.inputs) == (
+        ("plaintext", 128),
+        ("key", 256),
     )

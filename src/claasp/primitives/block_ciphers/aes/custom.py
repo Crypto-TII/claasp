@@ -62,6 +62,8 @@ class CustomAES(Primitive):
             {"plaintext": state_type, "key": ValueType(AES_FIELD, (key_bit_size // 8,))},
             kind=PrimitiveKind.BLOCK_CIPHER,
             provenance=(("derived_from", "AES"), ("modifications", "; ".join(modifications))),
+            instance_name=f"CustomAES-{key_bit_size}",
+            round_count=rounds,
         )
 
         self.add_round()
