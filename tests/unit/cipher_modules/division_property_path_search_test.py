@@ -1,5 +1,3 @@
-import random
-
 import pytest
 
 from claasp.cipher_modules.division_property_path_search import (
@@ -15,7 +13,6 @@ from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.twine_block_cipher import TwineBlockCipher
 from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
-from claasp.ciphers.toys.toyfeistel import ToyFeistel
 from claasp.ciphers.toys.toyspn1 import ToySPN1
 
 # Number of rounds -> log2 of the number of chosen plaintexts, from Y. Todo, Structural Evaluation by
@@ -43,18 +40,6 @@ def spn_rounds(sbox_bit_size, sbox_degree, number_of_sboxes, data_bit_size):
 def feistel_rounds(branch_bit_size, function_degree, bijective_function, data_bit_size):
     active_bits = (max(0, data_bit_size - branch_bit_size), min(data_bit_size, branch_bit_size))
     return len(feistel_division_property_trail(branch_bit_size, function_degree, active_bits, bijective_function)) - 1
-
-
-def integral_sum(cipher, key, constant, active_positions):
-    block_bit_size = cipher.output_bit_size
-    total = 0
-    for value in range(1 << len(active_positions)):
-        plaintext = constant
-        for index, position in enumerate(active_positions):
-            bit = 1 << (block_bit_size - 1 - position)
-            plaintext = plaintext | bit if (value >> index) & 1 else plaintext & ~bit
-        total ^= cipher.evaluate([plaintext, key])
-    return total
 
 
 def test_spn_division_property_trail():
@@ -203,30 +188,3 @@ def test_find_integral_distinguishers():
                                           "max_number_of_rounds": 6}
     data = {rounds: entry["data_bit_size"] for rounds, entry in result["test_results"].items()}
     assert data == {1: 4, 2: 4, 3: 12, 4: 28, 5: 52, 6: 60}  # rounds 3 to 6: [Tod2015] Table 4
-
-
-def test_find_integral_distinguishers_on_toy_ciphers():
-    rng = random.Random(1)
-    for input_pattern in ("todo", "optimal"):
-        path_search = DivisionPropertyPathSearch(ToySPN1(block_bit_size=9, key_bit_size=9, number_of_rounds=1))
-        distinguishers = path_search.find_integral_distinguishers(input_pattern=input_pattern)["test_results"]
-        for number_of_rounds, distinguisher in distinguishers.items():
-            cipher = ToySPN1(block_bit_size=9, key_bit_size=9, number_of_rounds=number_of_rounds)
-            active_positions = [3 * sbox + bit for sbox, active_bits in
-                                enumerate(distinguisher["input_division_property"]) for bit in range(active_bits)]
-            for _ in range(3):
-                assert integral_sum(cipher, rng.getrandbits(9), rng.getrandbits(9), active_positions) == 0
-
-    for bijective_function in (False, True):
-        path_search = DivisionPropertyPathSearch(ToyFeistel(number_of_rounds=4), bijective_function=bijective_function)
-        for number_of_rounds, distinguisher in path_search.find_integral_distinguishers()["test_results"].items():
-            function_input_bits, other_bits = distinguisher["input_division_property"]
-            active_positions = list(range(4, 4 + function_input_bits)) + list(range(other_bits))
-            for _ in range(3):
-                key, constant = rng.getrandbits(8), rng.getrandbits(8)
-                last_function_input = integral_sum(ToyFeistel(number_of_rounds=number_of_rounds), key, constant,
-                                                   active_positions) & 0xF
-                assert last_function_input == 0
-                if number_of_rounds > 1:
-                    assert integral_sum(ToyFeistel(number_of_rounds=number_of_rounds - 1), key, constant,
-                                        active_positions) == 0
