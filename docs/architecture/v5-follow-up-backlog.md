@@ -227,15 +227,18 @@ In particular:
   encoding.
 - Matsui may describe linear cryptanalysis, but that does not make it a
   reference for a particular backend model of S-box linear propagation.
-- Lipmaa--Moriai and Wallén are relevant candidates for modular-addition
-  differential probabilities and linear correlations. They remain `TBD` as
-  constraint-model references until the implemented Boolean or arithmetic
-  constraints are matched to precise results in those papers.
+- Lipmaa--Moriai, Liu--Wang--Rijmen, and Bellini et al. have now been matched
+  to the exact modular-addition constraints recorded in the audit ledger;
+  Wallén was inspected but does not describe the shipped linear recurrence.
 - Straightforward truth-table, forbidden-assignment, selector, or finite-table
   encodings may correctly be `N/A` when no published construction was used.
 
 Prefer several small audit PRs over one repository-wide literature claim.
 Record unresolved cases as `TBD`; never guess.
+
+Completed family slices: modular addition/subtraction and truncated variants;
+S-box and linear-layer MILP alternatives. The signed-LAT inequality variants
+remain `TBD` with an explicit search record.
 
 The family-by-family status ledger and exact unresolved-search records live in
 [`audits/constraint-model-provenance.md`](audits/constraint-model-provenance.md).

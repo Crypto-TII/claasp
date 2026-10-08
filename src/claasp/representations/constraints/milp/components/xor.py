@@ -6,7 +6,6 @@ from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
     _direct_model,
-    _unaudited_model,
 )
 from claasp.representations.constraints.milp.model import (
     ConstraintSense,
@@ -108,12 +107,12 @@ class XorImpossiblePointMILPModel(XorParityMILPModel):
         (4, 12)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.MILP,
         "XorImpossiblePointMILPModel",
         "functional",
         "legacy impossible-point parity inequalities",
-        "Every odd-parity point is excluded directly; no mutable arity cache is required.",
+        "Every odd-parity point is excluded by the generic forbidden-assignment inequality.",
     )
 
     def milp_model(self, *, inputs=None, output=None):
@@ -124,9 +123,7 @@ class XorImpossiblePointMILPModel(XorParityMILPModel):
         for number, point in enumerate(product((0, 1), repeat=len(self.columns))):
             if sum(point) % 2 == 0:
                 continue
-            terms = {
-                name: 1 if value == 0 else -1 for name, value in zip(self.columns, point)
-            }
+            terms = {name: 1 if value == 0 else -1 for name, value in zip(self.columns, point)}
             constraints.append(
                 LinearConstraint(
                     LinearExpression.from_terms(terms),
@@ -157,7 +154,9 @@ def xor_arities_for_binary_matrix(matrix) -> tuple[int, ...]:
         raise ValueError("matrix must be nonempty and rectangular")
     if any(value not in (0, 1) for row in rows for value in row):
         raise ValueError("matrix must be binary")
-    return tuple(sorted({sum(row[column] for row in rows) for column in range(len(rows[0]))} - {0, 1}))
+    return tuple(
+        sorted({sum(row[column] for row in rows) for column in range(len(rows[0]))} - {0, 1})
+    )
 
 
 __all__ = ["XorImpossiblePointMILPModel", "XorParityMILPModel", "xor_arities_for_binary_matrix"]

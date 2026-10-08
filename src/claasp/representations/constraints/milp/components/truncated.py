@@ -9,7 +9,8 @@ from itertools import product
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
-    _unaudited_model,
+    _direct_model,
+    _verified_model,
 )
 from claasp.representations.constraints.milp.components.relations import (
     FiniteBinaryRelationMILPModel,
@@ -131,12 +132,14 @@ class WordwiseXorMILPModel:
         True
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.MILP,
         "WordwiseXorMILPModel",
         "wordwise_deterministic_truncated_xor",
         "portable exhaustive wordwise XOR relation",
-        "The relation directly evaluates the typed four-state wordwise XOR semantics.",
+        "10.13154/tosc.v2020.i3.262-287",
+        "On the Usage of Deterministic (Related-Key) Truncated Differentials and Multidimensional Linear Approximations for SPN Ciphers",
+        "section 2.1, Lemma 2; sections 3.1 and 3.2, Model 3",
     )
 
     def __init__(self, word_width: int, operands: int = 2) -> None:
@@ -207,12 +210,14 @@ class WordwiseXorEspressoMILPModel(WordwiseXorMILPModel):
         (18, 51)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.MILP,
         "WordwiseXorEspressoMILPModel",
         "wordwise_deterministic_truncated_xor",
         "legacy Espresso product-of-sums wordwise XOR formulation",
-        "The legacy relation is recovered exactly; literature correspondence remains unaudited.",
+        "10.13154/tosc.v2020.i3.262-287",
+        "On the Usage of Deterministic (Related-Key) Truncated Differentials and Multidimensional Linear Approximations for SPN Ciphers",
+        "section 2.1, Lemma 2; sections 3.1 and 3.2, Model 3",
     )
 
     def __init__(self, bundle_name="wordwise_4bit_xor2_mds4x4") -> None:
@@ -255,12 +260,14 @@ class WordwiseTruncatedMDSMILPModel:
         (256, 272)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.MILP,
         "WordwiseTruncatedMDSMILPModel",
         "wordwise_deterministic_truncated_xor",
         "portable exhaustive dense-MDS four-state abstraction",
-        "The relation directly evaluates the reviewed dense wordwise activity semantics.",
+        "10.13154/tosc.v2020.i3.262-287",
+        "On the Usage of Deterministic (Related-Key) Truncated Differentials and Multidimensional Linear Approximations for SPN Ciphers",
+        "section 2.1, Lemma 4; section 3.2, Model 5",
     )
 
     def __init__(self, word_width: int, dimensions=(4, 4)) -> None:
@@ -344,12 +351,14 @@ class WordwiseTruncatedMDSEspressoMILPModel(WordwiseTruncatedMDSMILPModel):
         (16, 52)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.MILP,
         "WordwiseTruncatedMDSEspressoMILPModel",
         "wordwise_deterministic_truncated_xor",
         "legacy Espresso product-of-sums truncated-MDS formulation",
-        "The legacy relation is recovered exactly; literature correspondence remains unaudited.",
+        "10.13154/tosc.v2020.i3.262-287",
+        "On the Usage of Deterministic (Related-Key) Truncated Differentials and Multidimensional Linear Approximations for SPN Ciphers",
+        "section 2.1, Lemma 4; section 3.2, Model 5",
     )
 
     def __init__(self, bundle_name="wordwise_4bit_xor2_mds4x4") -> None:
@@ -412,12 +421,12 @@ class WordwiseImpossibleBoundaryMILPModel:
         (26, 'wordwise_contradiction_exists')
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.MILP,
         "WordwiseImpossibleBoundaryMILPModel",
         "wordwise_impossible_xor_differential",
         "legacy four-state middle incompatibility selector",
-        "The local relation is exact; complete graph composition is exposed by the trail model.",
+        "The four conservative incompatibility pairs are encoded by a direct finite selector.",
     )
 
     _INCOMPATIBLE = ((0, 1), (0, 2), (1, 0), (2, 0))

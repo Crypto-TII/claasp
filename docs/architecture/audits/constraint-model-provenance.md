@@ -7,17 +7,22 @@ CLAASP 5. It is separate from the legacy-backend recovery inventory: recovery
 answers whether a strategy is represented, while this ledger answers whether
 the exact shipped constraints correspond to a primary source.
 
-The baseline after PR #630 contained 129 declarations on 126 public model
-classes: 9 `VERIFIED`, 80 `N/A`, and 40 `TBD`. Repository-wide discovery also
+The corrected baseline after PR #630 contained 128 declarations on 125 public
+model classes: 9 `VERIFIED`, 79 `N/A`, and 40 `TBD`. Repository-wide discovery also
 found nine public CP constraint generators without any declaration; the old
 component-only coverage test did not inspect trail, query, or lowering models.
 The family audits will close those gaps before the final coverage gate is made
 repository-wide.
 
-After the modular-addition audit below there are 130 declarations on 127
-classes: 10 `VERIFIED`, 79 `N/A`, and 41 `TBD`. The additional declaration
+After the modular-addition audit below there are 129 declarations on 126
+classes: 10 `VERIFIED`, 78 `N/A`, and 41 `TBD`. The additional declaration
 closes the missing provenance on `SpeckProbabilisticTruncatedCPModel`; the
 status movement is `ModularAddNWindowSATModel` from `N/A` to `VERIFIED`.
+
+After the S-box and linear-layer MILP audit there are still 129 declarations
+on 126 classes: 21 `VERIFIED`, 78 `N/A`, and 30 `TBD`. Eleven declarations
+were matched to primary sources, while three generic finite-relation or
+forbidden-assignment encodings moved from `TBD` to `N/A`.
 
 ## Modular addition, subtraction, and truncated variants
 
@@ -56,3 +61,32 @@ to commit `cbc559de6c919db0fa15d513fb36ab21f04d46f5`. Neither history contains a
 paper, DOI, URL, or derivation. Searches for the exact cost sequence and
 predicate terminology found no primary source matching the implemented
 constraints, so both families remain `TBD`.
+
+## S-box and linear-layer MILP alternatives
+
+This audit covered legacy commit `3aacc275`, the recovery commits for small
+S-box facets, large-S-box Espresso tables, undisturbed bits, wordwise
+relations, and bitwise XOR, plus their comments, tests, bibliography, and
+introducing history. Bundled inequality systems are independently checked
+against every DDT, LAT, or four-state input point when loaded.
+
+| Models | Status | Evidence and correspondence |
+|---|---|---|
+| Differential S-box convex-hull and greedy MILP models | `VERIFIED` | Sun et al., *Towards Finding the Best Characteristics of Some Bit-oriented Block Ciphers and Automatic Enumeration of (Related-key) Differential and Linear Characteristics with Predefined Properties*, <https://eprint.iacr.org/2014/747>, Section 3, Fact 1 and Algorithm 1, and Section 5, Equation (6). The implementation constructs an H-representation for each nonzero DDT-count class and greedily selects the facet excluding the most remaining invalid Boolean points; selectors carry the class weight into the objective. |
+| Differential S-box minimum-facet MILP model | `VERIFIED` | Sasaki--Todo, *New Algorithm for Modeling S-box in MILP Based Differential and Division Trail Search*, DOI `10.1007/978-3-319-69284-5_11`, Section 3. One binary variable selects each candidate facet, each invalid point has a covering constraint, and the objective minimizes selected facets. |
+| Differential S-box Espresso MILP model | `VERIFIED` | Abdelkhalek--Sasaki--Todo--Tolba--Youssef, *MILP Modeling for (Large) S-boxes to Optimize Probability of Differential Characteristics*, DOI `10.13154/tosc.v2017.i4.99-129`, Sections 3.1--3.2 and Section 4.1, Definition 1. CLAASP separates the DDT by nonzero count, stores Espresso-minimized product-of-sums clauses, selects one count class conditionally, and applies its logarithmic weight. |
+| Signed-LAT convex-hull, greedy, minimum, and Espresso MILP models | `TBD` | The legacy code mechanically substitutes signed LAT-count classes. Sun et al. establish linear-mask convex-hull support, Sasaki--Todo establish differential/division facet reduction, and Abdelkhalek et al. state linear applicability, but none of the inspected constructions specifies CLAASP's complete signed-count selectors and absolute-correlation objective. |
+| One-hot DDT/LAT S-box models and both undisturbed-bit S-box models | `N/A` | The relations are enumerated directly from the supplied S-box. The compact undisturbed model merely applies generic Espresso minimization to Boolean projections of that exhaustive finite relation; the cited undisturbed-bit literature supplies the concept, not this encoding. |
+| Wordwise XOR and dense-MDS component models, including their Espresso variants, and the SAT/CP/MILP deterministic wordwise graph models | `VERIFIED` | Sun--Gerault--Wang--Wang, *On the Usage of Deterministic (Related-Key) Truncated Differentials and Multidimensional Linear Approximations for SPN Ciphers*, DOI `10.13154/tosc.v2020.i3.262-287`, Section 2.1, Lemmas 1--4, Section 3.1, and Section 3.2, Models 1--5. The four `Z/N/N*/U` states, value-bearing XOR cases, bijective S-box mapping, and dense-MDS propagation match the published relations; one-hot and Espresso forms encode the same checked rows. |
+| Parity-quotient XOR, impossible-point XOR, and the conservative wordwise impossible boundary | `N/A` | These are direct algebraic, generic forbidden-assignment, or finite selector encodings. The four wordwise contradiction pairs are intentionally weaker than the value-sensitive miss-in-the-middle construction in Sun et al. and are not attributed to it. |
+
+### Unresolved-search record
+
+For the four signed-LAT alternatives, the search inspected legacy generators
+and cached systems, recovery and introducing history, Sun et al. ePrint
+2014/747 including Appendix A, Sasaki--Todo's Section 3, Abdelkhalek et al.
+Sections 3--4, and Sun--Wang's 2023 SAT treatment. These sources support the
+individual ideas or a different backend, but no primary source was found for
+the implemented combination of signed Walsh-count classes, class selectors,
+and absolute-correlation objective. The four declarations therefore remain
+`TBD` rather than inheriting a citation by analogy.

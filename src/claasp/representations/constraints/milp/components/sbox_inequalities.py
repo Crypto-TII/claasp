@@ -14,6 +14,7 @@ from claasp.representations.constraints import (
     ConstraintModelApplication,
     ConstraintModelProvenance,
     _unaudited_model,
+    _verified_model,
 )
 from claasp.representations.constraints.milp.model import (
     ConstraintSense,
@@ -404,12 +405,49 @@ class _SBoxInequalityFormulation:
 
 
 def _provenance(component_model: str, analysis_kind: str, encoding_name: str):
+    if analysis_kind == "xor_differential" and encoding_name in {
+        "legacy small-S-box convex-hull facets",
+        "legacy greedy convex-hull facet reduction",
+    }:
+        return _verified_model(
+            ConstraintBackend.MILP,
+            component_model,
+            analysis_kind,
+            encoding_name,
+            "https://eprint.iacr.org/2014/747",
+            "Towards Finding the Best Characteristics of Some Bit-oriented Block Ciphers and Automatic Enumeration of (Related-key) Differential and Linear Characteristics with Predefined Properties",
+            "section 3, Fact 1 and Algorithm 1; section 5, equation (6)",
+        )
+    if analysis_kind == "xor_differential" and encoding_name == (
+        "legacy minimum-cardinality convex-hull facet cover"
+    ):
+        return _verified_model(
+            ConstraintBackend.MILP,
+            component_model,
+            analysis_kind,
+            encoding_name,
+            "10.1007/978-3-319-69284-5_11",
+            "New Algorithm for Modeling S-box in MILP Based Differential and Division Trail Search",
+            "section 3, proposed inequality-reduction algorithm",
+        )
+    if analysis_kind == "xor_differential" and encoding_name == (
+        "legacy large-S-box Espresso product of sums"
+    ):
+        return _verified_model(
+            ConstraintBackend.MILP,
+            component_model,
+            analysis_kind,
+            encoding_name,
+            "10.13154/tosc.v2017.i4.99-129",
+            "MILP Modeling for (Large) S-boxes to Optimize Probability of Differential Characteristics",
+            "sections 3.1 and 3.2; section 4.1, Definition 1",
+        )
     return _unaudited_model(
         ConstraintBackend.MILP,
         component_model,
         analysis_kind,
         encoding_name,
-        "Recovered from legacy CLAASP commit 3aacc275; exact literature correspondence remains to be audited.",
+        "The legacy generator applies the strategy to signed LAT-count classes, but the searched primary sources do not specify the resulting signed-class selectors and objective.",
     )
 
 

@@ -779,12 +779,14 @@ class WordwiseDeterministicTruncatedMILPModel:
         (324, 1267)
     """
 
-    model_provenance = _direct_model(
+    model_provenance = _verified_model(
         ConstraintBackend.MILP,
         "WordwiseDeterministicTruncatedMILPModel",
         "wordwise_deterministic_truncated_xor",
         "exact MILP translation of the four-state word-graph formula",
-        "Every reviewed Boolean clause is preserved as one portable inequality.",
+        "10.13154/tosc.v2020.i3.262-287",
+        "On the Usage of Deterministic (Related-Key) Truncated Differentials and Multidimensional Linear Approximations for SPN Ciphers",
+        "section 2.1, Lemmas 1--4; section 3.1; section 3.2, Models 1--5",
     )
 
     def __init__(

@@ -30,6 +30,7 @@ from claasp.representations.constraints import (
     ConstraintModelProvenance,
     _direct_model,
     _unaudited_model,
+    _verified_model,
 )
 from claasp.representations.constraints.sat.components import (
     DifferentialToTruncatedSATModel,
@@ -957,12 +958,14 @@ class WordwiseDeterministicTruncatedSATModel:
         (True, True)
     """
 
-    model_provenance = _direct_model(
+    model_provenance = _verified_model(
         ConstraintBackend.SAT,
         "WordwiseDeterministicTruncatedSATModel",
         "wordwise_deterministic_truncated_xor",
         "four-state word graph with exact known-value XOR and dense-layer abstraction",
-        "The formulation preserves the reviewed legacy abstract domain without caches.",
+        "10.13154/tosc.v2020.i3.262-287",
+        "On the Usage of Deterministic (Related-Key) Truncated Differentials and Multidimensional Linear Approximations for SPN Ciphers",
+        "section 2.1, Lemmas 1--4; section 3.1; section 3.2, Models 1--5",
     )
 
     _KINDS = tuple(WordwiseDifferenceKind)
