@@ -23,6 +23,7 @@ analysis guides for your own work.
    :maxdepth: 2
    :caption: Working with primitives
 
+   customizing_aes
    primitive_authoring
    composite_blocks
    transformations
