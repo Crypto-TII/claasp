@@ -80,8 +80,11 @@ SubBytes:
      Realization: algebraic
 
 Five rounds form a reduced prefix for analysis; standard AES-256 uses 14
-rounds. AES currently provides ``lookup`` and ``algebraic`` realizations, not
-a bitsliced realization.
+rounds. The ``lookup`` realization represents SubBytes directly as the
+published 256-entry AES S-box table. The ``algebraic`` realization represents
+the same substitution as inversion in :math:`GF(2^8)` followed by AES's fixed
+affine transformation. Both produce the same AES values, but expose different
+internal operations to analysis backends.
 
 Replace the S-box
 ^^^^^^^^^^^^^^^^^
