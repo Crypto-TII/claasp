@@ -124,6 +124,7 @@ the VERIFIED declarations. The experimental Hadipour branch's unspecified
 
 The selected PRESENT composition joins only one boundary nibble and permits
 probability-one ladder-switch entries; it is not evidence for a complete
-middle S-box layer. A separate correctness PR handles the independently found
-public boomerang-weight formula issue rather than mixing behavior into this
-provenance-only audit.
+middle S-box layer. The follow-up correctness PR repairs the independently
+found public boomerang-weight formula as `2 * upper + switch + 2 * lower`;
+the solver's legacy upper-plus-lower search objective remains explicitly
+separate.

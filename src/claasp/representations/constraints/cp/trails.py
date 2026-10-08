@@ -2186,7 +2186,7 @@ class ModularAddBoomerangTrailResult:
         ...     SimpleNamespace(total_weight=3),
         ... )
         >>> (result.search_weight, result.total_weight)
-        (5, 6)
+        (5, 11)
     """
 
     upper: object
@@ -2201,9 +2201,9 @@ class ModularAddBoomerangTrailResult:
 
     @property
     def total_weight(self):
-        """Return the decoded characteristic weight including the switch."""
+        """Return the boomerang exponent with both trail probabilities squared."""
 
-        return self.search_weight + self.switch.weight
+        return 2 * self.search_weight + self.switch.weight
 
 
 class ModularAddBoomerangTrailCPModel:
@@ -2564,7 +2564,7 @@ class SBoxBoomerangTrailResult:
         ...     SimpleNamespace(total_weight=3), 0,
         ... )
         >>> (result.search_weight, result.total_weight)
-        (5, 6)
+        (5, 11)
     """
 
     upper: object
@@ -2580,9 +2580,9 @@ class SBoxBoomerangTrailResult:
 
     @property
     def total_weight(self):
-        """Return upper, switch, and lower weights together."""
+        """Return the boomerang exponent with both trail probabilities squared."""
 
-        return self.search_weight + self.switch.weight
+        return 2 * self.search_weight + self.switch.weight
 
 
 class SBoxBoomerangTrailCPModel:

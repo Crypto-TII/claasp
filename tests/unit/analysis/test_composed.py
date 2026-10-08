@@ -20,6 +20,8 @@ from claasp.semantics.cryptanalysis import (
     SBoxBoomerangSemantics,
     Trail,
     TrailKind,
+    TrailStep,
+    Transition,
     TruncatedXorDifference,
     XorDifference,
     XorMask,
@@ -32,8 +34,32 @@ def _trail(kind, source, target, width=4):
 
 
 def test_boomerang_composition_checks_typed_boundaries_and_weight():
-    upper = _trail(TrailKind.XOR_DIFFERENTIAL, 1, 2)
-    lower = _trail(TrailKind.XOR_DIFFERENTIAL, 4, 8)
+    upper_transition = Transition(
+        TrailKind.XOR_DIFFERENTIAL,
+        XorDifference(1, 4),
+        XorDifference(2, 4),
+        1,
+        4,
+    )
+    lower_transition = Transition(
+        TrailKind.XOR_DIFFERENTIAL,
+        XorDifference(4, 4),
+        XorDifference(8, 4),
+        1,
+        8,
+    )
+    upper = Trail(
+        TrailKind.XOR_DIFFERENTIAL,
+        upper_transition.input_pattern,
+        upper_transition.output_pattern,
+        (TrailStep("upper", upper_transition),),
+    )
+    lower = Trail(
+        TrailKind.XOR_DIFFERENTIAL,
+        lower_transition.input_pattern,
+        lower_transition.output_pattern,
+        (TrailStep("lower", lower_transition),),
+    )
     switch = BoomerangSwitchBoundary(
         XorDifference(2, 4),
         XorDifference(3, 4),
@@ -42,7 +68,7 @@ def test_boomerang_composition_checks_typed_boundaries_and_weight():
         1.5,
     )
 
-    assert BoomerangTrail(upper, switch, lower).total_weight == 1.5
+    assert BoomerangTrail(upper, switch, lower).total_weight == 11.5
     with pytest.raises(ValueError, match="upper trail"):
         BoomerangTrail(_trail(TrailKind.XOR_DIFFERENTIAL, 1, 3), switch, lower)
 

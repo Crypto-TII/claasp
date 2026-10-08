@@ -1,11 +1,14 @@
 """Complete CP trail assembly."""
 
+from types import SimpleNamespace
+
 from claasp import Primitive, ValueType, Word
 from claasp.components import ModularAdd
 from claasp.primitives import Present, Speck, ToySpeck
 from claasp.representations.constraints.cp import (
     ModularAddBoomerangCPModel,
     ModularAddBoomerangTrailCPModel,
+    ModularAddBoomerangTrailResult,
     PresentActiveSBoxesCPModel,
     PresentDifferentialCPModel,
     PresentFixedActiveSBoxesCPModel,
@@ -13,6 +16,7 @@ from claasp.representations.constraints.cp import (
     PresentProbabilisticKeyScheduleCPModel,
     SBoxBoomerangCPModel,
     SBoxBoomerangTrailCPModel,
+    SBoxBoomerangTrailResult,
     SpeckARXWindowDifferentialCPModel,
     SpeckBoomerangCPModel,
     SpeckContinuousHeuristicCPModel,
@@ -56,6 +60,18 @@ def _boomerang_model():
         ModularAddBoomerangCPModel(4),
         lower_input="left",
     )
+
+
+def test_boomerang_results_separate_search_score_from_squared_trail_probability():
+    upper = SimpleNamespace(total_weight=2)
+    switch = SimpleNamespace(weight=1)
+    lower = SimpleNamespace(total_weight=3)
+
+    modular_add = ModularAddBoomerangTrailResult(upper, switch, lower)
+    sbox = SBoxBoomerangTrailResult(upper, switch, lower, 0)
+
+    assert (modular_add.search_weight, modular_add.total_weight) == (5, 11)
+    assert (sbox.search_weight, sbox.total_weight) == (5, 11)
 
 
 def test_modadd_boomerang_cp_namespaces_and_links_complete_trails():
