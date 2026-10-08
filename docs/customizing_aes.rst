@@ -5,7 +5,8 @@ Use ``AES`` when the graph should remain canonical AES, including a
 reduced-round prefix or a different graph realization. Use ``CustomAES`` when
 the mathematical construction itself changes. Keeping those classes separate
 prevents an experimental result from being mistaken for a standard AES
-result.
+result. Use ``ToyAES`` when the state and its words should be small enough for
+teaching or exhaustive experiments.
 
 Available options
 -----------------
@@ -111,6 +112,46 @@ S-box above, and no MixColumns:
      Realization: default
    >>> combined.provenance[1][1]
    'replaced AES S-box in rounds and key schedule; removed MixColumns'
+
+Use a smaller AES-shaped family
+--------------------------------
+
+``ToyAES`` preserves the recognizable SubBytes, ShiftRows, MixColumns, key
+schedule, and AddRoundKey shape while allowing a smaller square state and
+smaller words. It is useful when a full 128-bit state would make an example or
+exhaustive analysis unnecessarily large.
+
+``word_size`` may be 2, 3, 4, or 8 bits, while ``state_size`` may be 2, 3, or
+4 words along each side of the square state. The plaintext, key, and output
+therefore each contain ``word_size * state_size ** 2`` bits. The round count
+may be between 1 and 16.
+
+For example, this instance has a 2-by-2 state of 4-bit words, for a total of
+16 bits:
+
+.. doctest::
+
+   >>> from claasp.primitives import ToyAES
+   >>> toy = ToyAES(word_size=4, state_size=2, number_of_rounds=3)
+   >>> toy.details()
+   Primitive details
+     Type: block cipher
+     Instance: ToyAES
+     Inputs:
+       key: 16 bits (secret)
+       plaintext: 16 bits (public)
+     Output: 16 bits
+     Rounds: 3
+     Realization: default
+   >>> f"{toy.evaluate(key=0x2B7E, plaintext=0x6BC1):04x}"
+   '761b'
+
+The selected word and state sizes choose matching built-in finite fields,
+S-boxes, ShiftRows mappings, and MixColumns matrices. ``ToyAES`` is an
+AES-shaped experimental family, not a claim that a small instance is standard
+AES or has AES's security properties. Use ``CustomAES`` instead when the state
+should remain 128 bits and only the documented AES-derived options need to
+change.
 
 Deeper structural changes
 -------------------------
