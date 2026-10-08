@@ -14,6 +14,7 @@ from claasp.representations.constraints.cp import (
     SpeckARXWindowDifferentialCPModel,
     SpeckBoomerangCPModel,
     SpeckContinuousHeuristicCPModel,
+    SpeckContinuousMaskOptimizationCPModel,
     SpeckSemiDeterministicTruncatedCPModel,
     WordDeterministicDifferentialLinearCPModel,
     WordDeterministicTruncatedCPModel,
@@ -129,6 +130,15 @@ def test_speck_continuous_cp_is_explicitly_heuristic_and_fixed_input():
     assert (len(query.declarations), len(query.constraints)) == (10, 160)
     assert query.solve == "solve satisfy;"
     assert model.model_provenance.reference_status.value == "TBD"
+
+
+def test_speck_continuous_mask_selection_is_exact_for_fixed_output():
+    left = (-1.0, -1.0, -1.0, 1.0) + (-1.0,) * 12
+    right = (-1.0, 1.0, -1.0, 1.0) + (-1.0,) * 12
+    model = SpeckContinuousMaskOptimizationCPModel(left, right, rounds=2)
+    query = model.cp_model()
+    assert sum(constraint.endswith("= 1;") for constraint in query.constraints[-32:]) == 1
+    assert model.absolute_correlation == max(abs(value) for value in model._expected.values)
 
 
 def test_present_active_sboxes_cp_reuses_exact_tables():

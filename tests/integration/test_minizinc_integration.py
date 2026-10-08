@@ -30,6 +30,7 @@ from claasp.representations.constraints.cp import (
     SpeckARXWindowDifferentialCPModel,
     SpeckBoomerangCPModel,
     SpeckContinuousHeuristicCPModel,
+    SpeckContinuousMaskOptimizationCPModel,
     SpeckDifferentialCPModel,
     SpeckImpossibleCPModel,
     SpeckProbabilisticTruncatedCPModel,
@@ -142,6 +143,17 @@ def test_minizinc_continuous_speck_matches_independent_python_heuristic():
     assert solved.status is CPStatus.SATISFIED
     assert result.claim_kind == "heuristic"
     assert result.values[3] == pytest.approx(0.8497372377, abs=result.tolerance)
+
+
+def test_minizinc_validates_exact_mask_selection_for_fixed_continuous_speck():
+    left = (-1.0, -1.0, -1.0, 1.0) + (-1.0,) * 12
+    right = (-1.0, 1.0, -1.0, 1.0) + (-1.0,) * 12
+    model = SpeckContinuousMaskOptimizationCPModel(left, right, rounds=2)
+    solved = MiniZincSolver(solver="gecode", timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    result = model.decode_optimization(solved.assignment)
+    assert result.selected_positions == model.optimal_positions
+    assert result.claim_kind == "heuristic"
 
 
 @pytest.mark.parametrize(

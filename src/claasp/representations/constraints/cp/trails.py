@@ -1038,6 +1038,97 @@ class SpeckContinuousHeuristicCPModel:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class ContinuousMaskOptimizationResult:
+    """Strongest nonempty output-mask choice for one fixed heuristic trail.
+
+    EXAMPLES::
+
+        >>> result = ContinuousMaskOptimizationResult((3,), 0.75, 0.4150374992788438)
+        >>> result.claim_kind
+        'heuristic'
+    """
+
+    selected_positions: tuple[int, ...]
+    absolute_correlation: float
+    log2_weight: float
+    claim_kind: str = "heuristic"
+
+
+class SpeckContinuousMaskOptimizationCPModel(SpeckContinuousHeuristicCPModel):
+    """Select the strongest nonempty mask for one fixed continuous Speck output.
+
+    The nonlinear trail remains heuristic. For fixed output correlations in
+    ``[0,1]``, the strongest product is attained by one position of maximum
+    absolute correlation, so mask selection is exact and dependency-free.
+
+    EXAMPLES::
+
+        >>> model = SpeckContinuousMaskOptimizationCPModel(
+        ...     (-1.0,) * 16, (-1.0,) * 16, rounds=1
+        ... )
+        >>> model.optimal_positions
+        (0,)
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.CP,
+        "SpeckContinuousMaskOptimizationCPModel",
+        "continuous_differential_linear_heuristic",
+        "fixed-trail exact output-mask selection over recovered continuous equations",
+        "Mask selection is exact for fixed correlations; the correlations themselves remain heuristic.",
+    )
+
+    def __init__(self, left, right, *, rounds: int, tolerance: float = 1e-4) -> None:
+        super().__init__(left, right, rounds=rounds, tolerance=tolerance)
+        magnitudes = tuple(abs(value) for value in self._expected.values)
+        maximum = max(magnitudes)
+        self.optimal_positions = (magnitudes.index(maximum),)
+        self.absolute_correlation = maximum
+
+    def cp_model(self) -> MiniZincModel:
+        """Return the recovered equations with the exact fixed-trail mask."""
+
+        base = super().cp_model()
+        count = len(self._expected.values)
+        selected = self.optimal_positions[0]
+        declarations = (*base.declarations, f"array[0..{count - 1}] of var 0..1: output_mask;")
+        constraints = [*base.constraints]
+        constraints.extend(
+            f"constraint output_mask[{position}] = {int(position == selected)};"
+            for position in range(count)
+        )
+        self._query = MiniZincModel(
+            declarations,
+            tuple(constraints),
+            provenance=(*base.provenance, "exact nonempty mask selection for fixed correlations"),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_optimization(self, assignment):
+        """Decode the mask and independently recompute its heuristic weight."""
+
+        from math import inf, log2
+
+        continuous = self.decode_result(assignment)
+        selected = tuple(
+            position for position, value in enumerate(assignment["output_mask"]) if round(value)
+        )
+        if selected != self.optimal_positions:
+            raise ValueError("continuous output mask is not the exact fixed-trail optimum")
+        correlation = 1.0
+        for position in selected:
+            correlation *= abs(continuous.values[position])
+        if abs(correlation - self.absolute_correlation) > continuous.tolerance:
+            raise ValueError("continuous mask correlation disagrees with independent propagation")
+        return ContinuousMaskOptimizationResult(
+            selected,
+            correlation,
+            -log2(correlation) if correlation else inf,
+        )
+
+
 class ImpossibleBoundaryCPModel:
     """Prove that forward and backward partial patterns contradict.
 
