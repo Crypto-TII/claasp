@@ -26350,6 +26350,12 @@
       "qualified_name": "claasp.representations.constraints.cp.BooleanMiniZincLowerer"
     },
     {
+      "canonical_name": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.cp.ContinuousMaskOptimizationResult"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.cp.components.truncated.HybridImpossibleBoundaryCPModel",
       "defined_in": "claasp.representations.constraints.cp.components.truncated",
       "kind": "class",
@@ -26492,6 +26498,12 @@
       "defined_in": "claasp.representations.constraints.cp.trails",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.cp.SpeckContinuousHeuristicCPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.SpeckContinuousMaskOptimizationCPModel",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.cp.SpeckContinuousMaskOptimizationCPModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.cp.trails.SpeckDifferentialCPModel",
@@ -26949,6 +26961,41 @@
       "qualified_name": "claasp.representations.constraints.cp.model.MiniZincModel.source"
     },
     {
+      "canonical_name": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult.__init__",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "documented_by": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult.absolute_correlation",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "documented_by": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult.absolute_correlation"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult.claim_kind",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "documented_by": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult.claim_kind"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult.log2_weight",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "documented_by": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult.log2_weight"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult.selected_positions",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "documented_by": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult.selected_positions"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.cp.trails.ImpossibleBoundaryCPModel.__init__",
       "defined_in": "claasp.representations.constraints.cp.trails",
       "documented_by": "claasp.representations.constraints.cp.trails.ImpossibleBoundaryCPModel",
@@ -27228,14 +27275,39 @@
     {
       "canonical_name": "claasp.representations.constraints.cp.trails.SpeckContinuousHeuristicCPModel.cp_model",
       "defined_in": "claasp.representations.constraints.cp.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.cp.trails.SpeckContinuousMaskOptimizationCPModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.cp.trails.SpeckContinuousHeuristicCPModel.cp_model"
     },
     {
       "canonical_name": "claasp.representations.constraints.cp.trails.SpeckContinuousHeuristicCPModel.decode_result",
       "defined_in": "claasp.representations.constraints.cp.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.cp.trails.SpeckContinuousMaskOptimizationCPModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.cp.trails.SpeckContinuousHeuristicCPModel.decode_result"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.SpeckContinuousMaskOptimizationCPModel.__init__",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "documented_by": "claasp.representations.constraints.cp.trails.SpeckContinuousMaskOptimizationCPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.cp.trails.SpeckContinuousMaskOptimizationCPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.SpeckContinuousMaskOptimizationCPModel.cp_model",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.trails.SpeckContinuousMaskOptimizationCPModel.cp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.SpeckContinuousMaskOptimizationCPModel.decode_optimization",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.trails.SpeckContinuousMaskOptimizationCPModel.decode_optimization"
     },
     {
       "canonical_name": "claasp.representations.constraints.cp.trails.SpeckDifferentialCPModel.__init__",

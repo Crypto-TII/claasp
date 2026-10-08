@@ -910,10 +910,13 @@ The continuous CP recovery adds ``SpeckContinuousHeuristicCPModel`` for fixed
 numerical inputs. It restores the legacy nonlinear XOR, majority/carry, and
 modular-add propagation in MiniZinc and checks the resulting float vectors
 against the independent Python implementation with an explicit accumulated
-tolerance. The public result remains ``ContinuousHeuristicResult`` with
-``claim_kind='heuristic'``; it cannot report satisfiability or optimality as a
-cryptanalytic proof. Legacy mask optimization and broader component dispatch
-remain separate work.
+tolerance. ``SpeckContinuousMaskOptimizationCPModel`` also restores the
+nonempty output-mask choice for a fixed trail. Since every absolute
+correlation is in ``[0, 1]``, choosing one maximum-magnitude position is the
+exact product optimum; the decoder recomputes that value independently. The
+underlying correlations remain ``claim_kind='heuristic'`` and cannot report a
+cryptanalytic proof. Joint input/trail optimization and broader component
+dispatch remain separate work.
 
 The CP second stage adds ``PresentFixedActiveSBoxesCPModel``. It fixes the
 first-stage Boolean activity sum, restores minimization of the exact table
