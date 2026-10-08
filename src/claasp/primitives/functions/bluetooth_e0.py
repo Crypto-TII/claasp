@@ -88,7 +88,7 @@ class BluetoothE0(BitGraphPrimitive):
         keystream = []
 
         for clock_number in range(self._get_len_of_keystream(keystream_bit_len)):
-            self.add_round()
+            self._builder.add_round()
             keystream = self.e0_keystream(lfsr_state, fsm_id, fsm_pos, clock_number, keystream)
             fsm_id, fsm_pos = self.e0_nonlinear_function(lfsr_state, fsm_id, fsm_pos)
             lfsr_state = self.add_fsr_component(

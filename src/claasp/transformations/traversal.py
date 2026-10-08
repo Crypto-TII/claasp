@@ -55,13 +55,13 @@ class DependencyIndex:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, Primitive, ValueType
+        >>> from claasp import Bit, PrimitiveBuilder, ValueType
         >>> from claasp.components import Identity
-        >>> primitive = Primitive("walk", {"state": ValueType(Bit(), (2,))})
-        >>> primitive.add_round()
+        >>> builder = PrimitiveBuilder("walk", {"state": ValueType(Bit(), (2,))})
+        >>> builder.add_round()
         Round(number=0)
-        >>> copied = primitive.add_component(Identity(primitive.input("state")))
-        >>> primitive.set_output(copied)
+        >>> copied = builder.add_component(Identity(builder.input("state")))
+        >>> primitive = builder.build(copied)
         >>> index = DependencyIndex(primitive)
         >>> index.topological_ids
         ('state', 'identity_0_0')

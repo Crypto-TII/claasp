@@ -74,7 +74,7 @@ class Sparkle(BitGraphPrimitive):
             primitive_output_bit_size=self.state_bit_size,
         )
 
-        self.add_round()
+        self._builder.add_round()
 
         # state initialization
         state = []
@@ -110,7 +110,7 @@ class Sparkle(BitGraphPrimitive):
             else:
                 self.add_round_output_component(inputs_id, inputs_pos, self.state_bit_size)
                 # initial next round element
-                self.add_round()
+                self._builder.add_round()
 
     def alzette(self, state_x, state_y, ci):
         """Build the alzette stage in this primitive's typed operation graph."""

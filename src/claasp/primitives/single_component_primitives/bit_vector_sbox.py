@@ -55,9 +55,9 @@ class BitVectorSBox(Primitive):
             {"input": ValueType(Bit(), (table.input_bit_size,))},
             kind=kind,
         )
-        self.add_round()
-        output = self.add_component(BitVectorSBoxComponent(self.input("input"), table))
-        self.set_output(output)
+        self._builder.add_round()
+        output = self._builder.add_component(BitVectorSBoxComponent(self.input("input"), table))
+        self._builder.set_output(output)
 
 
 __all__ = ["BitVectorSBox"]

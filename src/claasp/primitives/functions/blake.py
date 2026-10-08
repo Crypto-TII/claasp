@@ -247,7 +247,7 @@ class Blake(BitGraphPrimitive):
         ]
 
         for r in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
 
             # STATE TRANSFORMATION
             if (r % 2) == 0:

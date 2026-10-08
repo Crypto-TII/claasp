@@ -85,9 +85,9 @@ def test_high_level_analysis_recovers_an_unknown_input():
     primitive = Primitive(
         "xor", {"plaintext": ValueType(Bit(), (1,)), "key": ValueType(Bit(), (1,))}
     )
-    primitive.add_round()
-    output = primitive.add_component(Add((primitive.input("plaintext"), primitive.input("key"))))
-    primitive.set_output(output)
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(Add((primitive.input("plaintext"), primitive.input("key"))))
+    primitive._builder.set_output(output)
 
     result = primitive.analyze().recover_input(
         "key",

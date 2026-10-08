@@ -57,8 +57,8 @@ def test_cp_toy_speck_bounded_differential_enumeration_preserves_seven():
 def test_cp_identity_sbox_zero_weight_and_empty_positive_weight_range():
     """The identity lookup table is superseded by the typed identity relation."""
     primitive = Primitive("identity", {"plaintext": ValueType(Word(3), (1,))})
-    primitive.add_round()
-    primitive.set_output(primitive.add_component(Identity(primitive.input("plaintext"))))
+    primitive._builder.add_round()
+    primitive._builder.set_output(primitive._builder.add_component(Identity(primitive.input("plaintext"))))
     for weight, count in ((0, 7), (1, 0)):
         result = (
             primitive.analyze()

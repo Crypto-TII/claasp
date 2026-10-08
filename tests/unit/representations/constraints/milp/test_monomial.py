@@ -53,9 +53,9 @@ def test_exact_cube_superpoly_accounts_for_parity_and_key_coefficients():
     primitive = Primitive(
         "and", {"plaintext": ValueType(Word(1), (1,)), "key": ValueType(Word(1), (1,))}
     )
-    primitive.add_round()
-    primitive.set_output(
-        primitive.add_component(BitwiseAnd((primitive.input("plaintext"), primitive.input("key"))))
+    primitive._builder.add_round()
+    primitive._builder.set_output(
+        primitive._builder.add_component(BitwiseAnd((primitive.input("plaintext"), primitive.input("key"))))
     )
     result = CubeSuperpolyQuery(
         primitive,

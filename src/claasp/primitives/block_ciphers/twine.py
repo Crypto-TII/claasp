@@ -123,7 +123,7 @@ class Twine(BitGraphPrimitive):
             subkey_order = [2, 3, 12, 15, 17, 18, 28, 31]
 
         for round_i in range(1, number_of_rounds + 1):
-            self.add_round()
+            self._builder.add_round()
             round_key = self.add_round_key_output_component(
                 [key], [[j for i in subkey_order for j in get_word_bit_indexes(i)]], 32
             ).id

@@ -75,7 +75,7 @@ class _SelectablePrimitive(Primitive):
 
     def __init__(self):
         super().__init__("selectable", {"value": ValueType(Bit(), (1,))})
-        self.set_output(self.input("value"))
+        self._builder.set_output(self.input("value"))
 
 
 _SelectablePrimitive.REALIZATION_BUILDERS = {

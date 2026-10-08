@@ -151,7 +151,7 @@ class Prince(BitGraphPrimitive):
             )
             current_state = round_key_xor.id
             self.add_round_output_component([current_state], [[i for i in range(64)]], 64)
-            self.add_round()
+            self._builder.add_round()
         return current_state
 
     def prince_core(self, xor_initial, number_of_rounds):
@@ -210,7 +210,7 @@ class Prince(BitGraphPrimitive):
 
     def pre_whitening(self):
         """Build the pre whitening stage in this primitive's typed operation graph."""
-        self.add_round()
+        self._builder.add_round()
         return self.add_xor_component(
             [INPUT_PLAINTEXT, INPUT_KEY], [list(range(64)), list(range(64))], 64
         ).id
@@ -238,7 +238,7 @@ class Prince(BitGraphPrimitive):
         for round_idx in range(
             number_of_rounds // 2, (number_of_rounds // 2 - 1) + number_of_rounds // 2
         ):
-            self.add_round()
+            self._builder.add_round()
             round_constant_0 = self.add_constant_component(64, round_constants[round_idx])
             constant_xor_key1 = self.add_xor_component(
                 [round_constant_0.id, INPUT_KEY], [list(range(64)), list(range(64, 128))], 64

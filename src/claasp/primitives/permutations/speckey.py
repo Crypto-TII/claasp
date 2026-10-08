@@ -77,7 +77,7 @@ class Speckey(BitGraphPrimitive):
             state.append(BitState([INPUT_PLAINTEXT], [bit_positions]))
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             state = self.round_function(state)
 
             inputs_id, inputs_pos = get_inputs_parameter(state)

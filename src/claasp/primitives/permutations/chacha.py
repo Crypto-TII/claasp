@@ -58,22 +58,22 @@ class ChaCha(Primitive):
         state = [self.input("state")[index] for index in range(16)]
 
         def quarter_round(a, b, c, d):
-            a = self.add_component(ModularAdd((a, b)))
-            d = self.add_component(Xor((d, a)))
-            d = self.add_component(Rotate(d, rotations[0], "left"))
-            c = self.add_component(ModularAdd((c, d)))
-            b = self.add_component(Xor((b, c)))
-            b = self.add_component(Rotate(b, rotations[1], "left"))
-            a = self.add_component(ModularAdd((a, b)))
-            d = self.add_component(Xor((d, a)))
-            d = self.add_component(Rotate(d, rotations[2], "left"))
-            c = self.add_component(ModularAdd((c, d)))
-            b = self.add_component(Xor((b, c)))
-            b = self.add_component(Rotate(b, rotations[3], "left"))
+            a = self._builder.add_component(ModularAdd((a, b)))
+            d = self._builder.add_component(Xor((d, a)))
+            d = self._builder.add_component(Rotate(d, rotations[0], "left"))
+            c = self._builder.add_component(ModularAdd((c, d)))
+            b = self._builder.add_component(Xor((b, c)))
+            b = self._builder.add_component(Rotate(b, rotations[1], "left"))
+            a = self._builder.add_component(ModularAdd((a, b)))
+            d = self._builder.add_component(Xor((d, a)))
+            d = self._builder.add_component(Rotate(d, rotations[2], "left"))
+            c = self._builder.add_component(ModularAdd((c, d)))
+            b = self._builder.add_component(Xor((b, c)))
+            b = self._builder.add_component(Rotate(b, rotations[3], "left"))
             return a, b, c, d
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             groups = _COLUMNS if round_number % 2 == 0 else _DIAGONALS
             for a, b, c, d in groups:
                 state[a], state[b], state[c], state[d] = quarter_round(
@@ -82,6 +82,6 @@ class ChaCha(Primitive):
                     state[c],
                     state[d],
                 )
-            self.add_round_state(*state)
+            self._builder.add_round_state(*state)
 
-        self.set_output(state)
+        self._builder.set_output(state)

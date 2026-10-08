@@ -194,7 +194,7 @@ class UblockSingleLinearLayer(BitGraphPrimitive):
         state, key_0, key_1, key_2, key_3, round_key = self.round_initialization()
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             # encryption
             state = self.round_function(state, round_key)
             # round output

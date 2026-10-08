@@ -90,7 +90,7 @@ class Bivium(BitGraphPrimitive):
         biv_state = self.bivium_state_initialization(key, iv)
         key_stream = []
         for clock_number in range(self._get_len_of_keystream(keystream_bit_len)):
-            self.add_round()
+            self._builder.add_round()
             key_stream = self.bivium_key_stream(biv_state, clock_number, key_stream)
             biv_state = self.add_fsr_component(
                 [biv_state], [list(range(self.state_bit_size))], self.state_bit_size, NLFSR_DESCR
@@ -120,7 +120,7 @@ class Bivium(BitGraphPrimitive):
 
     def bivium_state_initialization(self, key, iv):
         """Build the bivium state initialization stage in this primitive's typed operation graph."""
-        self.add_round()
+        self._builder.add_round()
         cst0 = self.add_constant_component(13, 0x0).id
         state0_id = [cst0] + key[0] + [cst0] + iv[0]
         state0_pos = [

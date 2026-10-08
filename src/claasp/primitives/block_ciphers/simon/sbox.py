@@ -149,7 +149,7 @@ class SimonSbox(BitGraphPrimitive):
         round_keys = [None] * number_of_rounds
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             self.generate_round_key(round_keys, round_number)
             x, y = self.feistel_function(x, y, round_keys[round_number])
 

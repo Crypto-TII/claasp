@@ -245,7 +245,7 @@ class Midori(BitGraphPrimitive):
         data = [INPUT_PLAINTEXT], [list(range(self.block_bit_size))]
         key_id = INPUT_KEY
 
-        self.add_round()
+        self._builder.add_round()
 
         if self.block_bit_size == 64:
             wk_id = self.add_xor_component([key_id], [list(range(key_bit_size))], 64).id
@@ -267,7 +267,7 @@ class Midori(BitGraphPrimitive):
                 [round_key_id], [list(range(self.block_bit_size))], self.block_bit_size
             )
 
-            self.add_round()
+            self._builder.add_round()
 
         data = self.sub_cell(data)
         data = self.key_add(data, wk_id)

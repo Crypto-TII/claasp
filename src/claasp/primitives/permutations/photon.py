@@ -72,7 +72,7 @@ class Photon(BitGraphPrimitive):
         )
 
         # graph presentation initialization
-        self.add_round()
+        self._builder.add_round()
 
         # state initialization
         state = []
@@ -111,7 +111,7 @@ class Photon(BitGraphPrimitive):
             else:
                 self.add_round_output_component(inputs_id, inputs_pos, self.state_bit_size)
                 # initial next round element
-                self.add_round()
+                self._builder.add_round()
 
     def round_function(self, state, component_rc, components_ic):
         # AddConstant

@@ -94,11 +94,11 @@ class Gost(BitGraphPrimitive):
         )
 
         for r in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
 
             round_key = self.update_key(key, r)
 
-            plaintext = self.add_round_key(plaintext, round_key)
+            plaintext = self._add_round_key(plaintext, round_key)
             plaintext = self.sbox(plaintext)
             plaintext = self.rotate(plaintext)
             plaintext = self.xor(plaintext)
@@ -117,7 +117,7 @@ class Gost(BitGraphPrimitive):
             plaintext.id, plaintext.input_bit_positions, self.block_bit_size
         )
 
-    def add_round_key(self, plaintext: BitState, key: BitState) -> BitState:
+    def _add_round_key(self, plaintext: BitState, key: BitState) -> BitState:
         plaintext_id = self.add_modadd_component(
             [plaintext.id[-1], key.id],
             [plaintext.input_bit_positions[-1]] + key.input_bit_positions,

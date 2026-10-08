@@ -26,11 +26,11 @@ from claasp.primitives.single_component_primitives import (
 
 def _primitive(domain, unit_count, spec, clocks=1):
     primitive = Primitive("feedback_register", {"state": ValueType(domain, (unit_count,))})
-    primitive.add_round()
-    output = primitive.add_component(
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
         FeedbackRegister(primitive.input("state"), (spec,), clocks=clocks)
     )
-    primitive.set_output(output)
+    primitive._builder.set_output(output)
     return primitive
 
 
@@ -95,9 +95,9 @@ def test_inverse_field_word_register_recovers_nonunit_pivot():
     )
     forward = _primitive(field, 2, spec, clocks=2)
     inverse = Primitive("inverse", {"state": ValueType(field, (2,))})
-    inverse.add_round()
-    inverse.set_output(
-        inverse.add_component(
+    inverse._builder.add_round()
+    inverse._builder.set_output(
+        inverse._builder.add_component(
             FeedbackRegister(
                 inverse.input("state"),
                 (spec,),

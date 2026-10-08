@@ -19,9 +19,9 @@ def test_ports_support_whole_input_coercion_indexing_and_slicing():
     assert state[1:3].positions == (1, 2)
     assert state[3, 1][1].positions == (1,)
 
-    primitive.add_round()
-    output = primitive.add_component(Permutation(state, (3, 2, 1, 0)))
-    primitive.set_output(output)
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(Permutation(state, (3, 2, 1, 0)))
+    primitive._builder.set_output(output)
     assert output.owner_id == "permutation_0_0"
     assert ScalarEvaluator().evaluate(primitive, {"state": (1, 2, 3, 4)}).output == (4, 3, 2, 1)
 
@@ -50,7 +50,7 @@ def test_round_observations_do_not_expose_authoring_collections():
     value_type = ValueType(PrimeField(17), (1,))
     primitive = Primitive("observations", {"state": value_type})
     states = [primitive.input("state")]
-    published = primitive.set_round_states(states)
+    published = primitive._builder.set_round_states(states)
     states.append(primitive.input("state"))
 
     assert list(published) == [primitive.input("state")]
@@ -65,16 +65,16 @@ def test_automatic_component_ids_are_deterministic_and_explicit_ids_remain_avail
             "right": ValueType(PrimeField(17), (1,)),
         },
     )
-    primitive.add_round()
-    first = primitive.add_component(Add((primitive.input("left"), primitive.input("right"))))
-    second = primitive.add_component(Add((first, primitive.input("right"))))
-    named = primitive.add_component(
+    primitive._builder.add_round()
+    first = primitive._builder.add_component(Add((primitive.input("left"), primitive.input("right"))))
+    second = primitive._builder.add_component(Add((first, primitive.input("right"))))
+    named = primitive._builder.add_component(
         Add((second, primitive.input("right")), component_id="final_sum")
     )
     assert (first.owner_id, second.owner_id, named.owner_id) == ("add_0_0", "add_0_1", "final_sum")
 
     with pytest.raises(ValueError, match="already exists"):
-        primitive.add_component(Add((first, second), component_id="final_sum"))
+        primitive._builder.add_component(Add((first, second), component_id="final_sum"))
 
 
 def test_reusable_finite_field_integer_and_matrix_helpers():

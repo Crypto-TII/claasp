@@ -37,7 +37,7 @@ class XTEA(Primitive):
         delta = 0x9E3779B9 & ((1 << width) - 1)
         round_sum_value = 0
         for _ in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             round_sum = constant(self, width, round_sum_value)
             nonlinear = add(
                 self,
@@ -63,4 +63,4 @@ class XTEA(Primitive):
             )
             keyed = add(self, round_sum, keys[(round_sum_value >> 11) & 3])
             right = add(self, right, xor(self, nonlinear, keyed))
-        self.set_output(concatenate(self, left, right))
+        self._builder.set_output(concatenate(self, left, right))

@@ -53,9 +53,9 @@ class SBox(Primitive):
         )
         kind = PrimitiveKind.PERMUTATION if table.is_bijective() else PrimitiveKind.FUNCTION
         super().__init__("sbox", {"input": ValueType(domain, (unit_count,))}, kind=kind)
-        self.add_round()
-        output = self.add_component(SBoxComponent(self.input("input"), table))
-        self.set_output(output)
+        self._builder.add_round()
+        output = self._builder.add_component(SBoxComponent(self.input("input"), table))
+        self._builder.set_output(output)
 
 
 __all__ = ["SBox"]

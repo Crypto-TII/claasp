@@ -40,9 +40,9 @@ class ToyFeistel(Primitive):
         left_positions = tuple(range(half))
         right_positions = tuple(range(half, block_bit_size))
         for round_number in range(1, number_of_rounds + 1):
-            self.add_round()
+            self._builder.add_round()
             after_key = xor_bits(self, state[right_positions], key[left_positions])
-            substituted = self.add_component(BitVectorSBox(after_key, tuple(sbox)))
+            substituted = self._builder.add_component(BitVectorSBox(after_key, tuple(sbox)))
             new_right = xor_bits(self, substituted, state[left_positions])
             state = concatenate(self, (state[right_positions], new_right))
 
@@ -51,4 +51,4 @@ class ToyFeistel(Primitive):
             round_constant = constant_bits(self, half, round_number)
             low = xor_bits(self, mixed[right_positions], round_constant)
             key = concatenate(self, (mixed[left_positions], low))
-        self.set_output(concatenate(self, (state[right_positions], state[left_positions])))
+        self._builder.set_output(concatenate(self, (state[right_positions], state[left_positions])))

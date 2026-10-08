@@ -130,7 +130,7 @@ class A51(BitGraphPrimitive):
     ):
         # registers initialization
         """Build the regs initialization stage in this primitive's typed operation graph."""
-        self.add_round()
+        self._builder.add_round()
         constant_0 = []
         for register in REGISTERS:
             self.add_constant_component(register[BIT_LENGTH] - 1, 0)
@@ -187,7 +187,7 @@ class A51(BitGraphPrimitive):
 
     def round_function(self, regs, regs_size, fsr_description):
         """Build the round function stage in this primitive's typed operation graph."""
-        self.add_round()
+        self._builder.add_round()
         self.add_fsr_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
         regs = BitState([self.get_current_component_id()], [list(range(regs_size))])
 

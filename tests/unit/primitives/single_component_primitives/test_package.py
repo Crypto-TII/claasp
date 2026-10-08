@@ -222,9 +222,9 @@ def test_each_wrapper_is_a_documented_one_round_one_component_example():
         assert primitive_class.__module__ == advertised[primitive_class.__name__]
         assert ">>>" in inspect.getdoc(primitive_class)
         source = inspect.getsource(primitive_class)
-        assert "self.add_round()" in source
-        assert "self.add_component(" in source
-        assert "self.set_output(" in source
+        assert "self._builder.add_round()" in source
+        assert "self._builder.add_component(" in source
+        assert "self._builder.set_output(" in source
 
 
 def test_each_wrapper_docstring_covers_its_public_parameters():

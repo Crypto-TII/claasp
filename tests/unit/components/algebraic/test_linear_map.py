@@ -17,9 +17,9 @@ from claasp.components import LinearMap
 
 def _map_primitive(domain, matrix):
     primitive = Primitive("linear_map", {"state": ValueType(domain, (len(matrix[0]),))})
-    primitive.add_round()
-    output = primitive.add_component(LinearMap(primitive.input("state"), matrix))
-    primitive.set_output(output)
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(LinearMap(primitive.input("state"), matrix))
+    primitive._builder.set_output(output)
     return primitive
 
 

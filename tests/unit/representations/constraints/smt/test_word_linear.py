@@ -14,9 +14,9 @@ def _xor_model():
     primitive = Primitive(
         "xor", {"left": ValueType(Word(2), (1,)), "key": ValueType(Word(2), (1,))}
     )
-    primitive.add_round()
-    output = primitive.add_component(Xor((primitive.input("left"), primitive.input("key"))))
-    primitive.set_output(output)
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(Xor((primitive.input("left"), primitive.input("key"))))
+    primitive._builder.set_output(output)
     return WordLinearSMTModel(primitive, maximum_weight=0, nonzero_input="key")
 
 
@@ -93,11 +93,11 @@ def test_bitwise_and_word_composition_recounts_signs_and_weights():
     primitive = Primitive(
         "and", {"left": ValueType(Word(2), (1,)), "right": ValueType(Word(2), (1,))}
     )
-    primitive.add_round()
-    output = primitive.add_component(
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
         BitwiseAnd((primitive.input("left"), primitive.input("right")))
     )
-    primitive.set_output(output)
+    primitive._builder.set_output(output)
     model = WordLinearSMTModel(primitive, maximum_weight=2, nonzero_input="left")
     formula = model.smt_formula()
     trail = model.decode_characteristic(dict.fromkeys(formula.variables, 1))

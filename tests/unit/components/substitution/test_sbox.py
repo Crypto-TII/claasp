@@ -9,11 +9,11 @@ from claasp.primitives.block_ciphers.aes import AES_SBOX
 def test_sbox_maps_each_field_unit_independently():
     value_type = ValueType(BinaryExtensionField(8, 0x11B), (2,))
     primitive = Primitive("sbox", {"state": value_type})
-    primitive.add_round()
-    output = primitive.add_component(
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
         SBox(primitive.input("state"), AES_SBOX, component_id="substitute")
     )
-    primitive.set_output(output)
+    primitive._builder.set_output(output)
 
     assert ScalarEvaluator().evaluate(primitive, {"state": (0x00, 0x53)}).output == (0x63, 0xED)
 

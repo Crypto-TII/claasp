@@ -16,9 +16,9 @@ def test_kissat_solves_named_cnf_and_reports_version():
     primitive = Primitive(
         "xor", {"plaintext": ValueType(Bit(), (1,)), "key": ValueType(Bit(), (1,))}
     )
-    primitive.add_round()
-    primitive.set_output(
-        primitive.add_component(
+    primitive._builder.add_round()
+    primitive._builder.set_output(
+        primitive._builder.add_component(
             Add(
                 (
                     primitive.input("plaintext").select_all(),

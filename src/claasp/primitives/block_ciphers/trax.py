@@ -71,7 +71,7 @@ class TRAX(Primitive):
             return [xs[3], xs[2], xs[0], xs[1]], [ys[3], ys[2], ys[0], ys[1]]
 
         for step_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             subkey = list(key)
             key = update_key(key, step_number)
             if step_number % 2:
@@ -95,4 +95,4 @@ class TRAX(Primitive):
                     xor(self, state_y[branch], key[2 * branch + 1]),
                 )
             )
-        self.set_output(concatenate(self, *output))
+        self._builder.set_output(concatenate(self, *output))

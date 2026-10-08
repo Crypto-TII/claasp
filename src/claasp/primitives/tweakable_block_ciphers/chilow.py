@@ -103,14 +103,14 @@ class Chilow(BitGraphPrimitive):
 
     def chilow_32_tau(self, state: State, tweak: State, key: State, number_of_rounds: int) -> None:
         """Implement all rounds for ChiLow-(32+τ)."""
-        self.add_round()
+        self._builder.add_round()
         state1, state2, tweak = self.whitening_32(state, tweak, key)
 
         ids, bits = State.get_inputs_parameter([state1, state2])
         self.add_round_output_component(ids, bits, self.block_bit_size * 2)
 
         for i in range(0, number_of_rounds - 1):
-            self.add_round()
+            self._builder.add_round()
             # add round constant to the key
             key = self.round_constant(key, i)
 
@@ -147,12 +147,12 @@ class Chilow(BitGraphPrimitive):
 
     def chilow_40(self, state: State, tweak: State, key: State, number_of_rounds: int) -> None:
         """Implement all rounds for ChiLow-40."""
-        self.add_round()
+        self._builder.add_round()
         state, tweak = self.whitening_40(state, tweak, key)
         self.add_round_output_component([state.id], [state.bits], self.block_bit_size)
 
         for i in range(0, number_of_rounds - 1):
-            self.add_round()
+            self._builder.add_round()
 
             # add round constant to the key
             key = self.round_constant(key, i)

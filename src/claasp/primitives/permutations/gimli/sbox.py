@@ -102,7 +102,7 @@ class GimliSbox(BitGraphPrimitive):
 
         # round function
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             states = self.round_function(states, 24 - round_number)
 
             # round output

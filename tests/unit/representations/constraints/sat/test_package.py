@@ -25,11 +25,11 @@ from claasp.representations.execution import ScalarEvaluator
 
 def _xor_primitive(operand_count=2):
     primitive = Primitive("xor", {name: ValueType(Bit(), (1,)) for name in "abc"[:operand_count]})
-    primitive.add_round()
-    output = primitive.add_component(
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
         Add(tuple(primitive.input(name) for name in "abc"[:operand_count]), component_id="sum")
     )
-    primitive.set_output(output)
+    primitive._builder.set_output(output)
     return primitive
 
 
@@ -167,11 +167,11 @@ def test_legacy_three_input_or_relation_retains_the_complete_truth_table():
     from claasp.components import BitVectorSBox
 
     primitive = Primitive("or_lookup", {"x": ValueType(Bit(), (3,))})
-    primitive.add_round()
-    output = primitive.add_component(
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
         BitVectorSBox(primitive.input("x"), (0, 1, 1, 1, 1, 1, 1, 1), component_id="or")
     )
-    primitive.set_output(output)
+    primitive._builder.set_output(output)
     model = BooleanCNFModel(primitive)
     formula = model.cnf_formula()
     for input_value, output_value in product(range(8), repeat=2):
@@ -230,9 +230,9 @@ def test_non_power_of_two_modular_multiply_is_rejected_explicitly():
     primitive = Primitive(
         "modmul_13", {name: ValueType(Word(4), (1,)) for name in ("left", "right")}
     )
-    primitive.add_round()
-    primitive.set_output(
-        primitive.add_component(
+    primitive._builder.add_round()
+    primitive._builder.set_output(
+        primitive._builder.add_component(
             ModularMultiplyComponent(primitive.inputs(), modulus=13, component_id="product")
         )
     )

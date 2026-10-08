@@ -334,7 +334,7 @@ class Skipjack(BitGraphPrimitive):
 
         # 32 rounds
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             counter = round_number + 1
 
             if (1 <= counter <= 8) or (17 <= counter <= 24):

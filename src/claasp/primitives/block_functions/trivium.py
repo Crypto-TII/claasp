@@ -149,9 +149,9 @@ class Trivium(Primitive):
         self.number_of_initialization_clocks = clocks
         self.keystream_bit_size = keystream_bit_size
 
-        self.add_round()
-        zero = self.add_component(Constant(_BIT, (0,), component_id="zero"))[0]
-        one = self.add_component(Constant(_BIT, (1,), component_id="one"))[0]
+        self._builder.add_round()
+        zero = self._builder.add_component(Constant(_BIT, (0,), component_id="zero"))[0]
+        one = self._builder.add_component(Constant(_BIT, (1,), component_id="one"))[0]
         key, iv = self.input("key"), self.input("iv")
         state: list[Port | Selection] = (
             # register A: s1..s80 hold the key, s81..s93 are zero
@@ -169,26 +169,26 @@ class Trivium(Primitive):
 
         keystream = []
         for clock in range(clocks + keystream_bit_size):
-            self.add_round()
+            self._builder.add_round()
             emitting = clock >= clocks
             state, keystream_bit = self._clock(state, emitting)
             if emitting:
                 keystream.append(keystream_bit)
-        self.set_output(keystream if keystream_bit_size else state)
+        self._builder.set_output(keystream if keystream_bit_size else state)
 
     def _clock(self, state, emitting):
         """Apply one Trivium state update and optionally emit a keystream bit."""
 
         keystream_bit = None
         if emitting:
-            keystream_bit = self.add_component(
+            keystream_bit = self._builder.add_component(
                 Xor([state[index - 1] for register in _REGISTERS for index in register[:2]])
             )
         feedback = []
         for tap_a, tap_b, and_left, and_right, feedback_tap in _REGISTERS:
-            product = self.add_component(BitwiseAnd((state[and_left - 1], state[and_right - 1])))
+            product = self._builder.add_component(BitwiseAnd((state[and_left - 1], state[and_right - 1])))
             feedback.append(
-                self.add_component(
+                self._builder.add_component(
                     Xor(
                         (
                             state[tap_a - 1],

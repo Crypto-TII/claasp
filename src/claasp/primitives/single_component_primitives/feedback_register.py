@@ -47,11 +47,11 @@ class FeedbackRegister(Primitive):
             {"input": ValueType(parameters.domain, (parameters.unit_count,))},
             kind=PrimitiveKind.FUNCTION,
         )
-        self.add_round()
-        output = self.add_component(
+        self._builder.add_round()
+        output = self._builder.add_component(
             FeedbackRegisterComponent(self.input("input"), parameters.registers, parameters.clocks)
         )
-        self.set_output(output)
+        self._builder.set_output(output)
 
 
 __all__ = ["FeedbackRegister"]

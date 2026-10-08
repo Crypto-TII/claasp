@@ -43,9 +43,9 @@ class LinearMap(Primitive):
             else PrimitiveKind.FUNCTION
         )
         super().__init__("linear_map", {"input": ValueType(domain, (len(matrix[0]),))}, kind=kind)
-        self.add_round()
-        output = self.add_component(LinearMapComponent(self.input("input"), matrix))
-        self.set_output(output)
+        self._builder.add_round()
+        output = self._builder.add_component(LinearMapComponent(self.input("input"), matrix))
+        self._builder.set_output(output)
 
 
 __all__ = ["LinearMap"]

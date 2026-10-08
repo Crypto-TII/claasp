@@ -59,7 +59,7 @@ class Threefish(Primitive):
                 "tweak": word_type(64, 2),
             },
         )
-        self.add_round()
+        self._builder.add_round()
         state = [select(self.input("plaintext"), index) for index in range(count)]
         key = [select(self.input("key"), index) for index in range(count)]
         parity = constant(self, 64, 0x1BD11BDAA9FC1A22)
@@ -78,7 +78,7 @@ class Threefish(Primitive):
 
         for round_number in range(rounds):
             if round_number:
-                self.add_round()
+                self._builder.add_round()
             if round_number % 4 == 0:
                 state = inject(round_number // 4)
             mixed = []
@@ -101,6 +101,6 @@ class Threefish(Primitive):
             for source, destination in enumerate(PERMUTATIONS[parameter_index]):
                 permuted[destination] = mixed[source]
             state = permuted
-        self.add_round()
+        self._builder.add_round()
         state = inject(rounds // 4)
-        self.set_output(concatenate(self, *state))
+        self._builder.set_output(concatenate(self, *state))

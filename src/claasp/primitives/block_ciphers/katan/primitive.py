@@ -395,7 +395,7 @@ class Katan(BitGraphPrimitive):
         ]
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             while len(key_bits) <= 2 * round_number + 1:
                 key_bits.append(
                     self._xor_bits(

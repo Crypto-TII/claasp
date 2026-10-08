@@ -97,9 +97,9 @@ def test_minizinc_solves_and_decodes_complete_modadd_boomerang_composition():
                 "right": ValueType(Word(4), (1,)),
             },
         )
-        primitive.add_round()
-        primitive.set_output(
-            primitive.add_component(ModularAdd((primitive.input("left"), primitive.input("right"))))
+        primitive._builder.add_round()
+        primitive._builder.set_output(
+            primitive._builder.add_component(ModularAdd((primitive.input("left"), primitive.input("right"))))
         )
         return primitive
 

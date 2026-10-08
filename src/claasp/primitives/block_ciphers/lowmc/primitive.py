@@ -101,11 +101,11 @@ class LowMC(BitGraphPrimitive):
             raise ValueError("unsupported LowMC parameter set: no vetted constant data is packaged")
 
         self.load_constants(number_of_rounds)
-        self.add_round()
+        self._builder.add_round()
 
         # Whitening key
         rk_id = self.update_key_register(INPUT_KEY, 0)
-        plaintext_id = self.add_round_key(INPUT_PLAINTEXT, rk_id)
+        plaintext_id = self._add_round_key(INPUT_PLAINTEXT, rk_id)
 
         for r in range(number_of_rounds):
             # Nonlinear layer
@@ -117,7 +117,7 @@ class LowMC(BitGraphPrimitive):
 
             # Generate round key and add to the state
             rk_id = self.update_key_register(INPUT_KEY, r + 1)
-            round_key = self.add_round_key(round_constant, rk_id)
+            round_key = self._add_round_key(round_constant, rk_id)
 
             plaintext_id = self.add_output_component(number_of_rounds, plaintext_id, r, round_key)
 
@@ -131,7 +131,7 @@ class LowMC(BitGraphPrimitive):
             plaintext_id = self.add_round_output_component(
                 [round_key], [list(range(self.block_bit_size))], self.block_bit_size
             ).id
-            self.add_round()
+            self._builder.add_round()
 
         return plaintext_id
 
@@ -145,7 +145,7 @@ class LowMC(BitGraphPrimitive):
             [plaintext_id, constant_id], [list(range(self.block_bit_size))] * 2, self.block_bit_size
         ).id
 
-    def add_round_key(self, plaintext_id, rk_id):
+    def _add_round_key(self, plaintext_id, rk_id):
         return self.add_xor_component(
             [plaintext_id, rk_id], [list(range(self.block_bit_size))] * 2, self.block_bit_size
         ).id

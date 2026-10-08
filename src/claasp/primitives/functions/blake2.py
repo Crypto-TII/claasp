@@ -216,7 +216,7 @@ class Blake2(BitGraphPrimitive):
         ]
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
 
             # STATE TRANSFORMATION
             state_word_ids, state_word_ranges = self.column_step(

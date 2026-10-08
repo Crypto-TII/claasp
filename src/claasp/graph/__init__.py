@@ -16,7 +16,12 @@ from claasp.graph.metadata import (
     secret_input,
 )
 from claasp.graph.port import Port, PortLike, Selection, as_selection
-from claasp.graph.primitive import Primitive, PrimitiveDetails, PrimitiveInputDetails
+from claasp.graph.primitive import (
+    Primitive,
+    PrimitiveBuilder,
+    PrimitiveDetails,
+    PrimitiveInputDetails,
+)
 from claasp.graph.realization import (
     AmbiguousRealizationError,
     RealizationDescriptor,
@@ -42,6 +47,7 @@ __all__ = [
     "Port",
     "PortLike",
     "Primitive",
+    "PrimitiveBuilder",
     "PrimitiveDetails",
     "PrimitiveInput",
     "PrimitiveInputDetails",

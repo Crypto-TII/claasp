@@ -14,9 +14,9 @@ from claasp.components import Constant, Identity, Permutation
 def test_same_permutation_operates_on_different_domains(domain, values):
     value_type = ValueType(domain, (3,))
     primitive = Primitive("permutation", {"state": value_type})
-    primitive.add_round()
+    primitive._builder.add_round()
     permutation = Permutation(primitive.input("state"), (2, 0, 1), component_id="permutation_0_0")
-    primitive.add_component(permutation)
+    primitive._builder.add_component(permutation)
 
     result = ScalarEvaluator().evaluate(primitive, {"state": values})
 
@@ -28,13 +28,13 @@ def test_selection_identity_and_concatenation_use_logical_units():
     field = PrimeField(257)
     state_type = ValueType(field, (4,))
     primitive = Primitive("selection", {"state": state_type})
-    primitive.add_round()
+    primitive._builder.add_round()
     high = Identity(primitive.input("state")[3, 2], component_id="identity_0_0")
     low = Identity(primitive.input("state")[1, 0], component_id="identity_0_1")
-    high_port = primitive.add_component(high)
-    low_port = primitive.add_component(low)
-    joined = primitive.join(high_port, low_port)
-    primitive.set_output(joined)
+    high_port = primitive._builder.add_component(high)
+    low_port = primitive._builder.add_component(low)
+    joined = primitive._builder.join(high_port, low_port)
+    primitive._builder.set_output(joined)
 
     result = ScalarEvaluator().evaluate(primitive, {"state": (10, 20, 30, 40)})
 
@@ -52,8 +52,8 @@ def test_primitive_output_accepts_multi_source_structural_wiring():
             "right": ValueType(field, (2,)),
         },
     )
-    primitive.add_round()
-    primitive.set_output((primitive.input("left"), primitive.input("right")[1, 0]))
+    primitive._builder.add_round()
+    primitive._builder.set_output((primitive.input("left"), primitive.input("right")[1, 0]))
 
     assert primitive.evaluate((1, 2), (3, 4)) == (1, 2, 4, 3)
     assert primitive.components == ()
@@ -63,23 +63,23 @@ def test_primitive_output_accepts_multi_source_structural_wiring():
 def test_join_keeps_one_source_as_wiring_and_normalizes_multiple_sources():
     field = PrimeField(17)
     primitive = Primitive("wiring", {"state": ValueType(field, (2,))})
-    primitive.add_round()
+    primitive._builder.add_round()
     state = primitive.input("state")
 
-    assert primitive.join(state).source == state
-    joined = primitive.join(state[1], state[0])
+    assert primitive._builder.join(state).source == state
+    joined = primitive._builder.join(state[1], state[0])
     assert joined.owner_id == "__join_0"
     with pytest.raises(ValueError, match="at least one"):
-        primitive.join()
+        primitive._builder.join()
 
 
 def test_structural_binding_resolution_is_not_limited_by_python_recursion_depth():
     primitive = Primitive("deep_wiring", {"state": ValueType(Bit(), (1,))})
-    primitive.add_round()
+    primitive._builder.add_round()
     state = primitive.input("state")
     for _ in range(1_100):
-        state = primitive.view(state)
-    primitive.set_output(state)
+        state = primitive._builder.view(state)
+    primitive._builder.set_output(state)
 
     assert primitive.evaluate(1) == 1
 
@@ -87,9 +87,9 @@ def test_structural_binding_resolution_is_not_limited_by_python_recursion_depth(
 def test_constant_has_no_graph_inputs_and_is_domain_checked():
     field = PrimeField(17)
     primitive = Primitive("constant", {"state": ValueType(field, (1,))})
-    primitive.add_round()
+    primitive._builder.add_round()
     constant = Constant(ValueType(field, (3,)), (1, 2, 16), component_id="constant_0_0")
-    primitive.add_component(constant)
+    primitive._builder.add_component(constant)
 
     result = ScalarEvaluator().evaluate(primitive, {"state": (0,)})
 
@@ -114,8 +114,8 @@ def test_scalar_evaluator_rejects_unsupported_base_component():
 
     value_type = ValueType(Bit(), (1,))
     primitive = Primitive("unsupported", {"state": value_type})
-    primitive.add_round()
-    primitive.add_component(
+    primitive._builder.add_round()
+    primitive._builder.add_component(
         Component("unknown_0_0", (primitive.input("state").select_all(),), value_type)
     )
 

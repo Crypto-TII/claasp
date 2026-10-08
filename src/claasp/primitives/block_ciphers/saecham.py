@@ -79,7 +79,7 @@ class Saecham(BitGraphPrimitive):
 
         round_keys = None
         for rc in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
 
             if rc == 0:
                 round_keys = self._key_schedule()

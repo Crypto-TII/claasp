@@ -365,7 +365,7 @@ class BEA1(BitGraphPrimitive):
         ]
         # fmt: on
 
-        self.add_round()
+        self._builder.add_round()
 
         _zero = self.add_constant_component(self.sbox_bit_size, 0)
         key_state = [
@@ -435,7 +435,7 @@ class BEA1(BitGraphPrimitive):
         primitive_state = INPUT_PLAINTEXT
         for round_number in range(self.nrounds):
             if round_number > 0:
-                self.add_round()
+                self._builder.add_round()
 
             # add key[round_number]
             primitive_state = self.xor_round_key(round_number, key_state, primitive_state)

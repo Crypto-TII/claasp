@@ -94,7 +94,7 @@ class Gaston(BitGraphPrimitive):
             state.append(p)
 
         for round_number in range(12 - number_of_rounds, 12):
-            self.add_round()
+            self._builder.add_round()
             # gaston round function
             state = self.gaston_round_function(state, gaston_rc[round_number])
             # gaston round output

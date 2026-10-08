@@ -126,7 +126,7 @@ class Gift(BitGraphPrimitive):
         # round function
         for r in range(number_of_rounds):
             # initial current round element
-            self.add_round()
+            self._builder.add_round()
 
             # round constant
             ci = (1 << (self.state_word_size - 1)) | (ROUND_CONSTANT[r] & 0x3F)

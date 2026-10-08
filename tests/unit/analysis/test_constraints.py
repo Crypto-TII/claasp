@@ -19,9 +19,9 @@ from claasp.drivers.solvers import SatResult, SatStatus
 
 def _xor_primitive():
     primitive = Primitive("xor", {"left": ValueType(Bit(), (1,)), "key": ValueType(Bit(), (1,))})
-    primitive.add_round()
-    output = primitive.add_component(Add((primitive.input("left"), primitive.input("key"))))
-    primitive.set_output(output)
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(Add((primitive.input("left"), primitive.input("key"))))
+    primitive._builder.set_output(output)
     return primitive
 
 

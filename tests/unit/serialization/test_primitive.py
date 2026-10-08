@@ -21,9 +21,9 @@ def _toy():
     primitive = Primitive(
         "canonical", {"state": ValueType(Bit(), (4,))}, provenance=(("source", "test"),)
     )
-    primitive.add_round()
-    copied = primitive.add_component(Identity(primitive.input("state")[3, 1, 2, 0]))
-    primitive.set_output(copied)
+    primitive._builder.add_round()
+    copied = primitive._builder.add_component(Identity(primitive.input("state")[3, 1, 2, 0]))
+    primitive._builder.set_output(copied)
     return primitive
 
 
@@ -92,9 +92,9 @@ def test_composite_scope_round_trip_preserves_hierarchy_and_named_output():
     primitive = Primitive(
         "composite", {name: value_type for name, value_type in definition.input_types}
     )
-    primitive.add_round()
-    instance = primitive.add_composite(definition, primitive.input_ports, scope_id="quarter")
-    primitive.set_output(instance.output)
+    primitive._builder.add_round()
+    instance = primitive._builder.add_composite(definition, primitive.input_ports, scope_id="quarter")
+    primitive._builder.set_output(instance.output)
     restored = deserialize_primitive(serialize_primitive(primitive))
     assert restored.scope("quarter").definition.name == definition.name
     assert restored.scope("quarter").component_ids == instance.component_ids
@@ -156,9 +156,9 @@ def test_duplicate_sources_invalid_output_and_inconsistent_binding_width_are_rej
         deserialize_primitive(json.dumps(value))
 
     primitive = Primitive("binding", {"state": ValueType(Bit(), (8,))})
-    primitive.add_round()
-    packed = primitive.pack_bits(primitive.input("state"), 4)
-    primitive.set_output(packed)
+    primitive._builder.add_round()
+    packed = primitive._builder.pack_bits(primitive.input("state"), 4)
+    primitive._builder.set_output(packed)
     value = json.loads(serialize_primitive(primitive))
     value["payload"]["bindings"][0]["word_width"] = 3
     with pytest.raises(SerializationError, match="inconsistent_width"):

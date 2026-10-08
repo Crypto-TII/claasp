@@ -23,14 +23,14 @@ def test_c_source_reports_unsupported_field_components_honestly():
     assert result.status is SourceStatus.UNSUPPORTED
     assert result.diagnostic.code == "unsupported_domain"
     primitive = Primitive("feedback", {"state": ValueType(Bit(), (4,))})
-    primitive.add_round()
-    output = primitive.add_component(
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
         FeedbackRegister(
             primitive.input("state"),
             (FeedbackRegisterSpec(4, (FeedbackTerm(0), FeedbackTerm(1))),),
         )
     )
-    primitive.set_output(output)
+    primitive._builder.set_output(output)
     result = compile_source(primitive, target="c")
     assert result.diagnostic.code == "unsupported_component"
     assert result.diagnostic.component_id == "feedback_register_0_0"

@@ -36,7 +36,7 @@ class TEA(Primitive):
         keys = tuple(select(self.input("key"), index) for index in range(4))
         delta = 0x9E3779B9 & ((1 << width) - 1)
         for round_number in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             round_sum = constant(self, width, delta * (round_number + 1))
             mix = xor(
                 self,
@@ -52,4 +52,4 @@ class TEA(Primitive):
                 add(self, shift(self, left, right_shift_amount), keys[3]),
             )
             right = add(self, right, mix)
-        self.set_output(concatenate(self, left, right))
+        self._builder.set_output(concatenate(self, left, right))

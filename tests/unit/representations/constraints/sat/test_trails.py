@@ -34,9 +34,9 @@ def _primitive(component):
     primitive = Primitive(
         "boolean_word", {"left": ValueType(Word(2), (1,)), "key": ValueType(Word(2), (1,))}
     )
-    primitive.add_round()
-    output = primitive.add_component(component((primitive.input("left"), primitive.input("key"))))
-    primitive.set_output(output)
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(component((primitive.input("left"), primitive.input("key"))))
+    primitive._builder.set_output(output)
     return primitive
 
 

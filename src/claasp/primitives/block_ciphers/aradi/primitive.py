@@ -47,7 +47,7 @@ class Aradi(Primitive):
             return xor(self, x, rotated_y, rotate(self, x, -second)), xor(self, x, rotated_y)
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             offset = 4 * (round_number % 2)
             round_key = [split_word(self, key[offset + index], 16) for index in range(4)]
             state = [xor(self, value, round_key[index]) for index, value in enumerate(state)]
@@ -70,4 +70,4 @@ class Aradi(Primitive):
             )
         final_key = [split_word(self, key[index], 16) for index in range(4)]
         state = [xor(self, value, final_key[index]) for index, value in enumerate(state)]
-        self.set_output(concatenate(self, *state))
+        self._builder.set_output(concatenate(self, *state))

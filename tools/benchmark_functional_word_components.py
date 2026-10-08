@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from statistics import median
 
-from claasp import Primitive, ValueType, Word
+from claasp import PrimitiveBuilder, ValueType, Word
 from claasp.components import (
     BitwiseNot,
     BitwiseOr,
@@ -34,29 +34,27 @@ from claasp.representations.constraints.smt import BooleanSMTModel
 
 def _primitive():
     value_type = ValueType(Word(8), (1,))
-    primitive = Primitive(
+    builder = PrimitiveBuilder(
         "functional_word_components",
         {
             **{name: value_type for name in ("a", "b", "c")},
             "amount": ValueType(Word(3), (1,)),
         },
     )
-    primitive.add_round()
-    merged = primitive.add_component(
-        BitwiseOr((primitive.input("a"), primitive.input("b"), primitive.input("c")))
+    builder.add_round()
+    merged = builder.add_component(
+        BitwiseOr((builder.input("a"), builder.input("b"), builder.input("c")))
     )
-    complemented = primitive.add_component(BitwiseNot(merged))
-    left = primitive.add_component(Shift(complemented, 3, "left"))
-    right = primitive.add_component(Shift(left, 2, "right"))
-    rotated = primitive.add_component(VariableRotate(right, primitive.input("amount"), "left"))
-    shifted = primitive.add_component(VariableShift(rotated, primitive.input("amount"), "right"))
-    subtracted = primitive.add_component(
-        ModularSubtract((shifted, primitive.input("a"), primitive.input("b")))
+    complemented = builder.add_component(BitwiseNot(merged))
+    left = builder.add_component(Shift(complemented, 3, "left"))
+    right = builder.add_component(Shift(left, 2, "right"))
+    rotated = builder.add_component(VariableRotate(right, builder.input("amount"), "left"))
+    shifted = builder.add_component(VariableShift(rotated, builder.input("amount"), "right"))
+    subtracted = builder.add_component(
+        ModularSubtract((shifted, builder.input("a"), builder.input("b")))
     )
-    primitive.set_output(
-        primitive.add_component(ModularMultiply((subtracted, primitive.input("c"))))
-    )
-    return primitive
+    output = builder.add_component(ModularMultiply((subtracted, builder.input("c"))))
+    return builder.build(output)
 
 
 def main():

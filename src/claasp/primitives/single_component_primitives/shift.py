@@ -41,8 +41,8 @@ class Shift(Primitive):
             {"input": ValueType(Word(bit_size), (1,))},
             kind=PrimitiveKind.FUNCTION,
         )
-        self.add_round()
-        self.set_output(self.add_component(ShiftComponent(self.input("input"), amount, direction)))
+        self._builder.add_round()
+        self._builder.set_output(self._builder.add_component(ShiftComponent(self.input("input"), amount, direction)))
 
 
 __all__ = ["Shift"]

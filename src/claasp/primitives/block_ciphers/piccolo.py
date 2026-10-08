@@ -113,7 +113,7 @@ class Piccolo(BitGraphPrimitive):
         x2 = BitState([INPUT_PLAINTEXT], [list(range(32, 48))])
         x3 = BitState([INPUT_PLAINTEXT], [list(range(48, 64))])
 
-        self.add_round()
+        self._builder.add_round()
 
         wk, rk = self.schedule_80(r) if self.key_bit_size == 80 else self.schedule_128(r)
 
@@ -122,7 +122,7 @@ class Piccolo(BitGraphPrimitive):
 
         for i in range(r):
             if i > 0:
-                self.add_round()
+                self._builder.add_round()
 
             x1 = self._xor([x1, self._f_function(x0), rk[2 * i]])
             x3 = self._xor([x3, self._f_function(x2), rk[2 * i + 1]])

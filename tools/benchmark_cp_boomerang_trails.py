@@ -10,7 +10,7 @@ from pathlib import Path
 from statistics import median
 from time import monotonic
 
-from claasp import Primitive, ValueType, Word
+from claasp import PrimitiveBuilder, ValueType, Word
 from claasp.components import ModularAdd
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
 from claasp.primitives import Present, Speck
@@ -35,15 +35,15 @@ def _version():
 
 
 def _graph(name):
-    primitive = Primitive(
+    builder = PrimitiveBuilder(
         name,
         {"left": ValueType(Word(4), (1,)), "right": ValueType(Word(4), (1,))},
     )
-    primitive.add_round()
-    primitive.set_output(
-        primitive.add_component(ModularAdd((primitive.input("left"), primitive.input("right"))))
+    builder.add_round()
+    output = builder.add_component(
+        ModularAdd((builder.input("left"), builder.input("right")))
     )
-    return primitive
+    return builder.build(output)
 
 
 def _model():

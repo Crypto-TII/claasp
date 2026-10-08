@@ -43,13 +43,13 @@ def test_composite_block_can_be_instantiated_and_queried_as_a_scope():
     primitive = Primitive(
         "one_quarter_round", {name: ValueType(Word(32), (1,)) for name in ("a", "b", "c", "d")}
     )
-    primitive.add_round()
-    scope = primitive.add_composite(
+    primitive._builder.add_round()
+    scope = primitive._builder.add_composite(
         ChaChaQuarterRound(),
         {name: primitive.input(name) for name in ("a", "b", "c", "d")},
         scope_id="quarter_round",
     )
-    primitive.set_output(scope.output())
+    primitive._builder.set_output(scope.output())
 
     assert scope.as_primitive().family_name == "ChaChaQuarterRound"
     assert len(scope.components) == 12
