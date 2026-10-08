@@ -9,6 +9,8 @@ ARG MSOLVE_VERSION=0.10.1
 ARG MSOLVE_SHA256=ce0743cc33d1dc8484193268d9220e8624ed015e521903b9228b3b38a5981291
 ARG KISSAT_VERSION=4.0.4
 ARG KISSAT_SHA256=bfe93eaa6323b48011e4b1fcf74b3f2e20f9de544767e728009e5b2018296193
+ARG ESPRESSO_VERSION=1.1
+ARG ESPRESSO_SHA256=3e9ad0d7af29b67bc59c9bf014e9ed840af199490f1794b8249b4ab77f44b99e
 ARG DEBIAN_FRONTEND=noninteractive
 
 LABEL org.opencontainers.image.title="CLAASP 5 release environment" \
@@ -67,6 +69,17 @@ RUN set -eux; \
     kissat --version; \
     cd /opt; \
     rm -rf kissat.tar.gz "kissat-rel-${KISSAT_VERSION}"
+
+RUN set -eux; \
+    curl -fsSL \
+        "https://github.com/classabbyamp/espresso-logic/archive/refs/tags/${ESPRESSO_VERSION}.tar.gz" \
+        -o espresso.tar.gz; \
+    echo "${ESPRESSO_SHA256}  espresso.tar.gz" | sha256sum -c -; \
+    tar -xzf espresso.tar.gz; \
+    make -C "espresso-logic-${ESPRESSO_VERSION}/espresso-src" --jobs="$(nproc)"; \
+    install -m 0755 "espresso-logic-${ESPRESSO_VERSION}/bin/espresso" /usr/local/bin/espresso; \
+    espresso -h >/dev/null 2>&1 || test "$?" -eq 1; \
+    rm -rf espresso.tar.gz "espresso-logic-${ESPRESSO_VERSION}"
 
 RUN set -eux; \
     curl -fsSL \

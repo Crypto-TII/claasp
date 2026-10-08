@@ -1,9 +1,15 @@
 """Exact whole-table DDT/LAT counts, signs and fixed patterns."""
 
+from itertools import product
+
 import pytest
 
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
-from claasp.representations.constraints.milp import SBoxTransitionMILPModel
+from claasp.representations.constraints.milp import (
+    SBoxTransitionMILPModel,
+    SBoxUndisturbedBitsEspressoMILPModel,
+    SBoxUndisturbedBitsMILPModel,
+)
 from claasp.semantics.cryptanalysis import SBoxTransitionSemantics, TrailKind
 
 
@@ -64,3 +70,44 @@ def test_eight_bit_baseline_does_not_drop_probability_one_active_transitions(kin
     transition = relation.decode_transition(relation.relation.witness(row))
     assert transition.weight == 0
     assert len(relation.relation.rows) == 256
+
+
+def test_present_undisturbed_espresso_and_one_hot_accept_exactly_the_typed_relation():
+    one_hot = SBoxUndisturbedBitsMILPModel(PRESENT_SBOX)
+    espresso = SBoxUndisturbedBitsEspressoMILPModel(PRESENT_SBOX, "present")
+    compact = espresso.milp_model()
+    expected = set(one_hot.relation.rows)
+    accepted = set()
+    for row in product((0, 1), repeat=16):
+        assignment = dict(zip(espresso.columns, row))
+        if compact.is_feasible(assignment):
+            accepted.add(row)
+    assert accepted == expected
+    assert len(expected) == 81
+
+
+@pytest.mark.parametrize(
+    "model_type,arguments",
+    (
+        (SBoxUndisturbedBitsMILPModel, (PRESENT_SBOX,)),
+        (SBoxUndisturbedBitsEspressoMILPModel, (PRESENT_SBOX, "present")),
+    ),
+)
+def test_present_undisturbed_models_decode_fixed_bits(model_type, arguments):
+    relation = model_type(*arguments)
+    model = relation.milp_model(input_pattern="0001", output_pattern="???1")
+    if isinstance(relation, SBoxUndisturbedBitsEspressoMILPModel):
+        witness = {
+            name: value
+            for name, value in zip(
+                relation.columns,
+                next(row for row in relation.relation.rows if row[:8] == (0, 0, 0, 0, 0, 0, 0, 1)),
+            )
+        }
+    else:
+        row = next(row for row in relation.relation.rows if row[:8] == (0, 0, 0, 0, 0, 0, 0, 1))
+        witness = relation.relation.witness(row)
+    source, output = relation.decode_transition(witness)
+    assert str(source) == "0001"
+    assert str(output) == "???1"
+    assert model.is_feasible(witness)

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "workload": {
+    "description": "PRESENT S-box fixed undisturbed-bit transition 0001 to ???1",
+    "timeout_seconds": 30,
+    "solver": "GLPKSolver"
+  },
+  "results": [
+    {
+      "strategy": "one_hot",
+      "variables": 97,
+      "constraints": 33,
+      "construction_seconds_median": 0.00025720800022099866,
+      "solver_seconds_median": 0.0013134584996805643,
+      "repeats": 10,
+      "assignment_valid": true,
+      "solver_status": "optimal"
+    },
+    {
+      "strategy": "espresso",
+      "variables": 16,
+      "constraints": 95,
+      "construction_seconds_median": 0.00023149999924498843,
+      "solver_seconds_median": 0.0011076040009356802,
+      "repeats": 10,
+      "assignment_valid": true,
+      "solver_status": "optimal"
+    }
+  ]
+}

@@ -509,6 +509,18 @@ committed 32-bit benchmark compares construction and solve time without
 changing a default. Literature provenance remains TBD until the exact legacy
 inequalities are matched to a primary-source construction.
 
+The undisturbed-bit S-box slice adds the portable one-hot
+``SBoxUndisturbedBitsMILPModel`` and the explicitly named recovered
+``SBoxUndisturbedBitsEspressoMILPModel``. The offline generator reconstructs
+the legacy per-output-bit product-of-sums formulation from the complete typed
+ternary relation and commits dependency-free clauses. Exhaustive testing over
+all 65,536 Boolean assignments proves exact equality with the 81 PRESENT
+transitions; GLPK solves and independently decodes both strategies in the
+[ten-run comparison](audits/data/milp_undisturbed_sbox_benchmark.json). The
+canonical Docker recipe now pins Espresso 2.3 for regeneration and checks it
+in the release smoke test. The one-hot formulation remains the default, and
+literature correspondence remains ``TBD`` pending a separate provenance audit.
+
 The deterministic-truncated SMT slice adds
 ``ModularAddDeterministicTruncatedSMTModel`` and
 ``WordDeterministicTruncatedSMTModel``. The immutable SMT formula preserves the

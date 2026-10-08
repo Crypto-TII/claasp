@@ -7,7 +7,7 @@ python -m pip --version | grep 'pip 24.0' >/dev/null
 python -m pip check >/dev/null
 
 for executable in \
-    cc cddexec_gmp cryptominisat5 dieharder glpsol kissat minisat minizinc msolve niststs pdflatex Singular z3
+    cc cddexec_gmp cryptominisat5 dieharder espresso glpsol kissat minisat minizinc msolve niststs pdflatex Singular z3
 do
     command -v "$executable" >/dev/null
 done

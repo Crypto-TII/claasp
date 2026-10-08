@@ -1,5 +1,9 @@
-"""Exact probability-bearing S-box component relations for MILP."""
+"""Exact probability-bearing and truncated S-box component relations for MILP."""
 
+import json
+from functools import cache
+from importlib.resources import files
+from itertools import product
 from math import log2
 from typing import ClassVar
 
@@ -7,6 +11,7 @@ from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
     _direct_model,
+    _unaudited_model,
 )
 from claasp.representations.constraints.milp.components.relations import (
     FiniteBinaryRelationMILPModel,
@@ -17,7 +22,13 @@ from claasp.representations.constraints.milp.model import (
     LinearExpression,
     MILPModel,
 )
-from claasp.semantics.cryptanalysis import SBoxTransitionSemantics, TrailKind
+from claasp.representations.constraints.sat.model import CNFFormula
+from claasp.semantics.cryptanalysis import (
+    SBoxTransitionSemantics,
+    TrailKind,
+    TruncatedBit,
+    TruncatedXorDifference,
+)
 
 
 class SBoxTransitionMILPModel:
@@ -177,3 +188,200 @@ class SBoxXorLinearMILPModel(SBoxTransitionMILPModel):
     def __init__(self, table) -> None:
         super().__init__(table, TrailKind.XOR_LINEAR)
         self.model_provenance = type(self).model_provenance
+
+
+def _truncated_rows(table):
+    semantics = SBoxTransitionSemantics(table)
+    symbols = (TruncatedBit.ZERO, TruncatedBit.ONE, TruncatedBit.UNKNOWN)
+    rows = []
+    for inputs in product(symbols, repeat=semantics.width):
+        source = TruncatedXorDifference(inputs)
+        output = semantics.truncated_xor_differential(source)
+        rows.append(
+            tuple(
+                bit
+                for value in (*source.bits, *output.bits)
+                for bit in (value.encoded >> 1, value.encoded & 1)
+            )
+        )
+    return tuple(rows)
+
+
+class SBoxUndisturbedBitsMILPModel:
+    """Portable one-hot baseline for exact undisturbed-bit propagation.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives.block_ciphers.present import PRESENT_SBOX
+        >>> relation = SBoxUndisturbedBitsMILPModel(PRESENT_SBOX)
+        >>> model = relation.milp_model(input_pattern="0001")
+        >>> (len(model.variables), len(model.constraints))
+        (97, 25)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "SBoxUndisturbedBitsMILPModel",
+        "bitwise_deterministic_truncated_xor",
+        "one-hot exhaustive undisturbed-bit relation",
+        "The relation is derived directly from every compatible concrete S-box derivative.",
+    )
+
+    def __init__(self, table) -> None:
+        self.semantics = SBoxTransitionSemantics(table)
+        self.columns = tuple(
+            f"{side}_{position}_{field}"
+            for side in ("input", "output")
+            for position in range(self.semantics.width)
+            for field in ("unknown", "value")
+        )
+        self.relation = FiniteBinaryRelationMILPModel(self.columns, _truncated_rows(table))
+        self._model: MILPModel | None = None
+
+    def _coerce(self, pattern):
+        if isinstance(pattern, str):
+            pattern = TruncatedXorDifference.parse(pattern)
+        if (
+            not isinstance(pattern, TruncatedXorDifference)
+            or len(pattern.bits) != self.semantics.width
+        ):
+            raise ValueError("truncated pattern must match the S-box width")
+        return pattern
+
+    def _fixed_constraints(self, input_pattern, output_pattern):
+        constraints = []
+        for side, pattern in (("input", input_pattern), ("output", output_pattern)):
+            if pattern is None:
+                continue
+            pattern = self._coerce(pattern)
+            for position, value in enumerate(pattern.bits):
+                for field, bit in zip(("unknown", "value"), divmod(value.encoded, 2)):
+                    constraints.append(
+                        LinearConstraint(
+                            LinearExpression.from_terms({f"{side}_{position}_{field}": 1}),
+                            ConstraintSense.EQUAL,
+                            bit,
+                            f"fixed_{side}_{position}_{field}",
+                        )
+                    )
+        return constraints
+
+    def milp_model(self, *, input_pattern=None, output_pattern=None):
+        """Return the exact one-hot formulation with optional typed boundaries."""
+
+        base = self.relation.milp_model()
+        self._model = MILPModel(
+            base.variables,
+            (*base.constraints, *self._fixed_constraints(input_pattern, output_pattern)),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._model
+
+    def decode_transition(self, assignment):
+        """Decode and independently recompute the strongest output pattern."""
+
+        if self._model is None or not self._model.is_feasible(assignment):
+            raise ValueError("invalid undisturbed-bit S-box witness")
+        patterns = []
+        for side in ("input", "output"):
+            bits = []
+            for position in range(self.semantics.width):
+                encoded = 2 * round(assignment[f"{side}_{position}_unknown"]) + round(
+                    assignment[f"{side}_{position}_value"]
+                )
+                if encoded == 3:
+                    raise ValueError("invalid truncated-bit encoding")
+                bits.append(TruncatedBit.UNKNOWN if encoded == 2 else TruncatedBit(str(encoded)))
+            patterns.append(TruncatedXorDifference(tuple(bits)))
+        if self.semantics.truncated_xor_differential(patterns[0]) != patterns[1]:
+            raise ValueError("undisturbed-bit output disagrees with exact DDT join")
+        return tuple(patterns)
+
+
+@cache
+def load_bundled_undisturbed_sbox_espresso(name: str):
+    """Load and validate one offline-generated Espresso clause bundle.
+
+    EXAMPLES::
+
+        >>> payload = load_bundled_undisturbed_sbox_espresso("present")
+        >>> (payload["name"], len(payload["systems"]))
+        ('present', 8)
+    """
+
+    if not isinstance(name, str) or not name or not name.replace("_", "a").isalnum():
+        raise ValueError("name must contain only letters, digits, and underscores")
+    resource = files("claasp.representations.constraints.milp").joinpath(
+        "data", f"{name}_sbox_undisturbed_inequalities.json"
+    )
+    try:
+        payload = json.loads(resource.read_text(encoding="utf-8"))
+    except FileNotFoundError as error:
+        raise ValueError(f"no bundled undisturbed-bit system named {name!r}") from error
+    if payload.get("schema_version") != 1 or payload.get("name") != name:
+        raise ValueError("unsupported undisturbed-bit bundle")
+    semantics = SBoxTransitionSemantics(tuple(payload["table"]))
+    expected = {(position, bit) for position in range(semantics.width) for bit in range(2)}
+    observed = {(item["output_position"], item["encoding_bit"]) for item in payload["systems"]}
+    if observed != expected:
+        raise ValueError("undisturbed-bit bundle does not cover every output encoding bit")
+    return payload
+
+
+class SBoxUndisturbedBitsEspressoMILPModel(SBoxUndisturbedBitsMILPModel):
+    """Recovered compact Espresso formulation for undisturbed S-box bits.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives.block_ciphers.present import PRESENT_SBOX
+        >>> relation = SBoxUndisturbedBitsEspressoMILPModel(PRESENT_SBOX, "present")
+        >>> model = relation.milp_model(input_pattern="0001")
+        >>> (len(model.variables), len(model.constraints))
+        (16, 87)
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.MILP,
+        "SBoxUndisturbedBitsEspressoMILPModel",
+        "bitwise_deterministic_truncated_xor",
+        "legacy per-output-bit Espresso product-of-sums formulation",
+        "The legacy implementation is recovered exactly; correspondence with its cited paper remains unaudited.",
+    )
+
+    def __init__(self, table, bundle_name: str) -> None:
+        super().__init__(table)
+        self.bundle = load_bundled_undisturbed_sbox_espresso(bundle_name)
+        if tuple(self.bundle["table"]) != self.semantics.table:
+            raise ValueError("Espresso bundle table does not match the supplied S-box")
+
+    def milp_model(self, *, input_pattern=None, output_pattern=None):
+        """Return the compact generated formulation without runtime Espresso."""
+
+        variables = self.columns
+        indices = {name: position for position, name in enumerate(variables, 1)}
+        clauses = []
+        provenance = []
+        input_names = tuple(name for name in variables if name.startswith("input_"))
+        for system in self.bundle["systems"]:
+            target = (
+                f"output_{system['output_position']}_{('unknown', 'value')[system['encoding_bit']]}"
+            )
+            names = (*input_names, target)
+            for pattern in system["clauses"]:
+                clause = tuple(
+                    indices[name] if symbol == "0" else -indices[name]
+                    for name, symbol in zip(names, pattern)
+                    if symbol != "-"
+                )
+                clauses.append(clause)
+                provenance.append("undisturbed_sbox_espresso")
+        formula = CNFFormula(tuple(variables), tuple(clauses), tuple(provenance))
+        from claasp.representations.constraints.milp.lowering import cnf_to_milp
+
+        translated = cnf_to_milp(formula)
+        self._model = MILPModel(
+            translated.variables,
+            (*translated.constraints, *self._fixed_constraints(input_pattern, output_pattern)),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._model
