@@ -168,6 +168,47 @@ class PresentDifferentialMILPModel:
         )
 
 
+class PresentActiveSBoxesMILPModel(PresentDifferentialMILPModel):
+    """Minimize active S-boxes over the exact two-round PRESENT relation.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Present
+        >>> formulation = PresentActiveSBoxesMILPModel(
+        ...     Present(number_of_rounds=2)
+        ... ).milp_model()
+        >>> len(formulation.objective.terms) > 0
+        True
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "PresentActiveSBoxesMILPModel",
+        "xor_differential_activity",
+        "active-input objective over exact DDT transition selectors",
+        "The feasible region is identical to the reviewed exact differential model.",
+    )
+
+    def milp_model(self) -> MILPModel:
+        """Return exact differential feasibility with an activity objective."""
+
+        weighted = super().milp_model()
+        objective = {}
+        for variable in weighted.variables:
+            if "_choice_" not in variable.name:
+                continue
+            source = int(variable.name.rsplit("_", 2)[1])
+            if source:
+                objective[variable.name] = 1
+        return MILPModel(
+            weighted.variables,
+            weighted.constraints,
+            LinearExpression.from_terms(objective),
+            ObjectiveSense.MINIMIZE,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+
+
 def check_present_milp_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently check a decoded trail using shared semantics and wiring.
 

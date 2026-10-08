@@ -41,6 +41,7 @@ from claasp.representations.constraints.milp.model import (
     VariableKind,
 )
 from claasp.representations.constraints.milp.trails import (
+    PresentActiveSBoxesMILPModel,
     PresentDifferentialMILPModel,
     PresentMonomialTrailMILPModel,
     SpeckSemiDeterministicTruncatedMILPModel,
@@ -71,6 +72,7 @@ __all__ = [
     "MonomialTransitionMILPModel",
     "ObjectiveSense",
     "PresentDifferentialMILPModel",
+    "PresentActiveSBoxesMILPModel",
     "PresentMonomialTrailMILPModel",
     "SBoxMILPInequalityGroup",
     "SBoxMILPInequalityStrategy",
