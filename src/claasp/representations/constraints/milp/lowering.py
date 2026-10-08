@@ -5,6 +5,7 @@ from typing import cast
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
+    _direct_model,
     _verified_model,
 )
 from claasp.representations.constraints.sat import BooleanCNFModel, CNFFormula
@@ -77,6 +78,14 @@ class BooleanGraphMILPModel:
         >>> execution.milp_model().is_feasible(execution.witness(values))
         True
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "BooleanGraphMILPModel",
+        "functional",
+        "literal CNF-clause inequality graph lowering",
+        "Each clause becomes its exact sum-of-literals inequality and component provenance is retained.",
+    )
 
     def __init__(self, primitive):
         self.boolean_model = BooleanCNFModel(primitive)

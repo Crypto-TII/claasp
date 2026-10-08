@@ -2,7 +2,11 @@
 
 from dataclasses import dataclass
 
-from claasp.representations.constraints import ConstraintModelApplication
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _direct_model,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -15,6 +19,14 @@ class MiniZincModel:
         >>> (MiniZincModel.__dataclass_params__.frozen, tuple(field.name for field in fields(MiniZincModel)))
         (True, ('declarations', 'constraints', 'solve', 'includes', 'outputs', 'provenance', 'name_mapping', 'constraint_models'))
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "MiniZincModel",
+        "representation_container",
+        "ordered MiniZinc item container",
+        "This immutable serialization container introduces no constraint construction.",
+    )
 
     declarations: tuple[str, ...]
     constraints: tuple[str, ...]

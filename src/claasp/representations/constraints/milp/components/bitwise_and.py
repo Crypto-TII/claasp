@@ -4,7 +4,6 @@ from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
     _direct_model,
-    _unaudited_model,
 )
 from claasp.representations.constraints.milp.model import (
     ConstraintSense,
@@ -252,12 +251,12 @@ class BitwiseAndXorDifferentialMILPModel(_BitwiseAndReducedMILPBase):
         (8, 14, 2)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.MILP,
         "BitwiseAndXorDifferentialMILPModel",
         "xor_differential",
         "legacy greedy reduced AND inequalities",
-        "Primary-source correspondence remains to be audited.",
+        "Direct inequality reduction of the exhaustively checked one-bit DDT rows.",
     )
 
     def __init__(self, width: int) -> None:
@@ -275,12 +274,12 @@ class BitwiseAndXorLinearMILPModel(_BitwiseAndReducedMILPBase):
         (6, 10, 2)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.MILP,
         "BitwiseAndXorLinearMILPModel",
         "xor_linear",
         "legacy greedy reduced AND LAT inequalities",
-        "Primary-source correspondence remains to be audited.",
+        "Direct inequality reduction of the exhaustively checked one-bit LAT rows.",
     )
 
     def __init__(self, width: int) -> None:

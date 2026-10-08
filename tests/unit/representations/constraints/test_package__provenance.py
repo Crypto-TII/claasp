@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import pkgutil
+from collections import Counter
 from typing import cast
 
 import pytest
@@ -13,7 +14,10 @@ from claasp.representations.constraints import (
     ConstraintModelProvenance,
     ConstraintReferenceStatus,
 )
-from claasp.representations.constraints.cp import components as cp_components
+from claasp.representations.constraints import cp as cp_package
+from claasp.representations.constraints import milp as milp_package
+from claasp.representations.constraints import sat as sat_package
+from claasp.representations.constraints import smt as smt_package
 from claasp.representations.constraints.cp.components import (
     HybridImpossibleBoundaryCPModel,
     HybridSBoxCPModel,
@@ -36,7 +40,6 @@ from claasp.representations.constraints.cp.trails import (
     WordSemiDeterministicDifferentialLinearCPModel,
     WordwiseDeterministicTruncatedCPModel,
 )
-from claasp.representations.constraints.milp import components as milp_components
 from claasp.representations.constraints.milp.components import (
     ModularAddLinearMILPModel,
     MonomialTransitionMILPModel,
@@ -73,7 +76,6 @@ from claasp.representations.constraints.milp.trails import (
     WordwiseDeterministicTruncatedMILPModel,
 )
 from claasp.representations.constraints.sat import BooleanCNFModel
-from claasp.representations.constraints.sat import components as sat_components
 from claasp.representations.constraints.sat.components import (
     DifferentialToTruncatedSATModel,
     ModularAddDifferentialSATModel,
@@ -92,7 +94,6 @@ from claasp.representations.constraints.sat.trails import (
     WordSemiDeterministicDifferentialLinearSATModel,
     WordwiseDeterministicTruncatedSATModel,
 )
-from claasp.representations.constraints.smt import components as smt_components
 from claasp.representations.constraints.smt.components import (
     ModularAddDifferentialSMTModel,
     ModularAddLinearSMTModel,
@@ -111,30 +112,46 @@ from claasp.semantics.cryptanalysis import (
     XorDifference,
 )
 
-COMPONENT_PACKAGES = (sat_components, smt_components, milp_components, cp_components)
+BACKEND_PACKAGES = (sat_package, smt_package, milp_package, cp_package)
 
 
-def _component_model_classes():
-    for package in COMPONENT_PACKAGES:
-        for module_info in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
+def _public_constraint_model_classes():
+    seen = set()
+    for package in BACKEND_PACKAGES:
+        for module_info in pkgutil.walk_packages(package.__path__, package.__name__ + "."):
             module = importlib.import_module(module_info.name)
-            yield from (
-                value
-                for _, value in inspect.getmembers(module, inspect.isclass)
-                if value.__module__ == module.__name__ and value.__name__.endswith("Model")
-            )
+            for _, value in inspect.getmembers(module, inspect.isclass):
+                identity = value.__module__, value.__qualname__
+                if (
+                    value.__module__ == module.__name__
+                    and value.__name__.endswith("Model")
+                    and not value.__name__.startswith("_")
+                    and identity not in seen
+                ):
+                    seen.add(identity)
+                    yield value
 
 
-def test_every_component_model_declares_an_explicit_reference_status():
+def test_every_public_constraint_model_declares_an_explicit_reference_status():
     records: list[ConstraintModelProvenance] = []
-    for model in _component_model_classes():
+    models = tuple(_public_constraint_model_classes())
+    for model in models:
         if "model_provenance" in model.__dict__:
             declarations = (model.model_provenance,)
-        else:
+        elif "model_provenance_by_kind" in model.__dict__:
             declarations = tuple(model.model_provenance_by_kind.values())
+        else:
+            declarations = ()
         assert declarations, f"{model.__name__} has no provenance declaration"
         records.extend(declarations)
 
+    assert len(models) == 140
+    assert len(records) == 143
+    assert Counter(record.reference_status for record in records) == {
+        ConstraintReferenceStatus.VERIFIED: 31,
+        ConstraintReferenceStatus.NOT_APPLICABLE: 101,
+        ConstraintReferenceStatus.TO_BE_DETERMINED: 11,
+    }
     assert all(isinstance(record, ConstraintModelProvenance) for record in records)
     assert all(isinstance(record.reference_status, ConstraintReferenceStatus) for record in records)
     assert {record.backend for record in records} == set(ConstraintBackend)

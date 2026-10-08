@@ -25,7 +25,11 @@ from claasp.components import (
 )
 from claasp.domains import Bit, Word
 from claasp.graph import Primitive
-from claasp.representations.constraints import ConstraintModelApplication
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _direct_model,
+)
 from claasp.representations.constraints.sat.components import (
     BooleanFunctionalSATModel,
     BooleanNativeXorSATModel,
@@ -201,6 +205,14 @@ class BooleanCNFModel:
         >>> "modular_add_0_1" in formula.provenance
         True
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "BooleanCNFModel",
+        "functional",
+        "graph composition of declared component CNF encodings",
+        "The compiler only wires and composes the component-level declarations it retains.",
+    )
 
     def __init__(self, primitive: Primitive, *, native_xor: bool = False) -> None:
         if not isinstance(primitive, Primitive):
@@ -401,6 +413,14 @@ class BooleanNativeXorModel(BooleanCNFModel):
         >>> (formula.native_xor_count > 0, formula.clause_count < 403)
         (True, True)
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "BooleanNativeXorModel",
+        "functional",
+        "graph composition with exact native parity records",
+        "Native XOR extraction is an exact mechanical replacement of canonical parity clauses.",
+    )
 
     def __init__(self, primitive: Primitive) -> None:
         super().__init__(primitive, native_xor=True)

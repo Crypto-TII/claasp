@@ -214,7 +214,7 @@ Implementation discoveries:
 
 ## Constraint-model literature audit PRs
 
-Status: **Research; split by backend or component family**
+Status: **Complete; unresolved research remains explicitly `TBD`**
 
 Audit references only after the provenance contract is in place. Do not infer
 a constraint-model citation from a paper that merely introduced the
@@ -237,8 +237,12 @@ Prefer several small audit PRs over one repository-wide literature claim.
 Record unresolved cases as `TBD`; never guess.
 
 Completed family slices: modular addition/subtraction and truncated variants;
-S-box and linear-layer MILP alternatives; boomerang and BCT models. The
-signed-LAT inequality variants remain `TBD` with an explicit search record.
+S-box and linear-layer MILP alternatives; boomerang and BCT models;
+differential-linear, continuous, semi-deterministic, and hybrid models; and
+monomial/division-property models. A repository-wide closure test now covers
+all 140 public four-backend `Model` classes and all 143 declarations. Eleven
+unresolved constructions remain `TBD` with explicit search records; completion
+means complete classification, not invented citations.
 
 The family-by-family status ledger and exact unresolved-search records live in
 [`audits/constraint-model-provenance.md`](audits/constraint-model-provenance.md).
@@ -544,8 +548,9 @@ differential and linear inequalities as
 The new ``BitwiseAndOneHotMILPModel`` supplies an explicit portable baseline.
 Exhaustive one-bit GLPK tests match independent DDT/LAT semantics, and the
 committed 32-bit benchmark compares construction and solve time without
-changing a default. Literature provenance remains TBD until the exact legacy
-inequalities are matched to a primary-source construction.
+changing a default. The final provenance reconciliation classifies the compact
+inequalities as `N/A`: they are directly and exhaustively equivalent reductions
+of the finite DDT/LAT rows, not a claim to implement a published construction.
 
 The undisturbed-bit S-box slice adds the portable one-hot
 ``SBoxUndisturbedBitsMILPModel`` and the explicitly named recovered
