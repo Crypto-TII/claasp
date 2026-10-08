@@ -40,6 +40,11 @@ from claasp.representations.constraints.milp.model import (
     ObjectiveSense,
     VariableKind,
 )
+from claasp.representations.constraints.milp.queries import (
+    CubeMonomialFeasibilityMILPModel,
+    MonomialDegreeBound,
+    MonomialDegreeMILPModel,
+)
 from claasp.representations.constraints.milp.trails import (
     PresentActiveSBoxesMILPModel,
     PresentDifferentialMILPModel,
@@ -67,6 +72,7 @@ __all__ = [
     "BooleanGraphMILPModel",
     "BooleanMonomialGraphMILPModel",
     "ConstraintSense",
+    "CubeMonomialFeasibilityMILPModel",
     "FiniteBinaryRelationMILPModel",
     "LPExporter",
     "LinearConstraint",
@@ -75,6 +81,8 @@ __all__ = [
     "MILPModel",
     "ModularAddLinearMILPModel",
     "MonomialTransitionMILPModel",
+    "MonomialDegreeBound",
+    "MonomialDegreeMILPModel",
     "ObjectiveSense",
     "PresentActiveSBoxesMILPModel",
     "PresentDifferentialMILPModel",

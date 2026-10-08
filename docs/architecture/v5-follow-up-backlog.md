@@ -755,6 +755,13 @@ counting; decoded 16-bit witnesses are independently counted by the scalable
 semantic automaton. This is the local switch needed by the legacy top/bottom
 search, not yet the complete boomerang trail assembler or weight objective.
 
+The first high-level monomial-query recovery adds ``MonomialDegreeMILPModel``
+and ``CubeMonomialFeasibilityMILPModel`` over the verified portable Boolean
+monomial graph. GLPK recovers a degree-two witness for a one-round Simon output
+bit, accepts its selected two-bit cube, and rejects an excluded cube. These
+queries do not pretend to recover parity: superpoly coefficients and tightness
+by solution-pool parity still need an explicit complete-enumeration strategy.
+
 The conditional deterministic-truncated ARX audit found no second formulation
 to port. The legacy
 ``MznDeterministicTruncatedXorDifferentialModelARXOptimized`` at

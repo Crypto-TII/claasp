@@ -27104,6 +27104,12 @@
       "qualified_name": "claasp.representations.constraints.milp.ConstraintSense"
     },
     {
+      "canonical_name": "claasp.representations.constraints.milp.queries.CubeMonomialFeasibilityMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.CubeMonomialFeasibilityMILPModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.milp.components.relations.FiniteBinaryRelationMILPModel",
       "defined_in": "claasp.representations.constraints.milp.components.relations",
       "kind": "class",
@@ -27144,6 +27150,18 @@
       "defined_in": "claasp.representations.constraints.milp.components.modular_add",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.milp.ModularAddLinearMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.MonomialDegreeBound",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.milp.MonomialDegreeBound"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.MonomialDegreeMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.MonomialDegreeMILPModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.components.monomial.MonomialTransitionMILPModel",
@@ -28236,6 +28254,66 @@
       "documented_by": "claasp.representations.constraints.milp.model.VariableKind",
       "kind": "constructor",
       "qualified_name": "claasp.representations.constraints.milp.model.VariableKind.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.CubeMonomialFeasibilityMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "documented_by": "claasp.representations.constraints.milp.queries.CubeMonomialFeasibilityMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.queries.CubeMonomialFeasibilityMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.CubeMonomialFeasibilityMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.queries.CubeMonomialFeasibilityMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.MonomialDegreeBound.__init__",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "documented_by": "claasp.representations.constraints.milp.queries.MonomialDegreeBound",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.queries.MonomialDegreeBound.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.MonomialDegreeBound.active_input_positions",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "documented_by": "claasp.representations.constraints.milp.queries.MonomialDegreeBound",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.milp.queries.MonomialDegreeBound.active_input_positions"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.MonomialDegreeBound.degree",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "documented_by": "claasp.representations.constraints.milp.queries.MonomialDegreeBound",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.milp.queries.MonomialDegreeBound.degree"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.MonomialDegreeBound.output_bit",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "documented_by": "claasp.representations.constraints.milp.queries.MonomialDegreeBound",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.milp.queries.MonomialDegreeBound.output_bit"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.MonomialDegreeMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "documented_by": "claasp.representations.constraints.milp.queries.MonomialDegreeMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.queries.MonomialDegreeMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.MonomialDegreeMILPModel.decode_bound",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.queries.MonomialDegreeMILPModel.decode_bound"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.queries.MonomialDegreeMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.queries",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.queries.MonomialDegreeMILPModel.milp_model"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.sbox",

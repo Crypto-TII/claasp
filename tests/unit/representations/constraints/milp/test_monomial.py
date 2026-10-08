@@ -3,7 +3,11 @@
 import pytest
 
 from claasp.primitives import Simon
-from claasp.representations.constraints.milp import BooleanMonomialGraphMILPModel
+from claasp.representations.constraints.milp import (
+    BooleanMonomialGraphMILPModel,
+    CubeMonomialFeasibilityMILPModel,
+    MonomialDegreeMILPModel,
+)
 
 
 def test_simon_graph_model_has_a_maximum_degree_objective():
@@ -22,6 +26,22 @@ def test_simon_graph_model_can_restrict_degree_to_cube_positions():
         "exclude_variable_1",
         "exclude_variable_31",
     }
+
+
+def test_public_monomial_queries_add_explicit_degree_and_cube_contracts():
+    primitive = Simon(number_of_rounds=1)
+    degree = MonomialDegreeMILPModel(
+        primitive, output_bit=0, variable_input="plaintext"
+    ).milp_model()
+    cube = CubeMonomialFeasibilityMILPModel(
+        primitive,
+        output_bit=0,
+        variable_input="plaintext",
+        cube_positions=(1, 8),
+    ).milp_model()
+    assert degree.objective_sense.value == "maximize"
+    assert cube.objective.terms == ()
+    assert {constraint.name for constraint in cube.constraints} >= {"fix_cube_1", "fix_cube_8"}
 
 
 @pytest.mark.parametrize("positions", ((0, 0), (-1,), (32,)))
