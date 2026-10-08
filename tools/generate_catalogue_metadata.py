@@ -492,7 +492,7 @@ REPRESENTATIONS = (
 ANALYSES = (
     (
         "component_property",
-        "Primitive.analyze().component_property",
+        "Primitive.analysis.component_property",
         "component_property",
         "qualified",
         {"component_properties"},
@@ -503,7 +503,7 @@ ANALYSES = (
     ),
     (
         "avalanche",
-        "Primitive.analyze().avalanche",
+        "Primitive.analysis.avalanche",
         "statistical",
         "empirical",
         {"concrete_execution"},
@@ -514,7 +514,7 @@ ANALYSES = (
     ),
     (
         "enumerate_solutions",
-        "Primitive.analyze().enumerate_solutions",
+        "Primitive.analysis.enumerate_solutions",
         "constraint",
         "exact",
         {"boolean_cnf"},
@@ -525,7 +525,7 @@ ANALYSES = (
     ),
     (
         "enumerate_xor_differential_trails",
-        "Primitive.analyze().enumerate_xor_differential_trails",
+        "Primitive.analysis.enumerate_xor_differential_trails",
         "xor_differential",
         "exact_characteristic",
         {"word_differential_smt"},
@@ -536,7 +536,7 @@ ANALYSES = (
     ),
     (
         "enumerate_xor_linear_trails",
-        "Primitive.analyze().enumerate_xor_linear_trails",
+        "Primitive.analysis.enumerate_xor_linear_trails",
         "xor_linear",
         "exact_characteristic",
         {"word_linear_smt"},
@@ -546,8 +546,19 @@ ANALYSES = (
         None,
     ),
     (
+        "find_trail",
+        "Primitive.analysis.find_trail",
+        "trail",
+        "reviewed_dispatch",
+        {"boolean_cnf"},
+        {"kissat"},
+        set(),
+        {"Present", "Speck"},
+        "kind, backend, and round support are validated explicitly",
+    ),
+    (
         "find_lowest_weight_xor_differential_trail",
-        "Primitive.analyze().find_lowest_weight_xor_differential_trail",
+        'Primitive.analysis.find_trail(kind="xor_differential")',
         "xor_differential",
         "exact",
         {"boolean_cnf"},
@@ -558,7 +569,7 @@ ANALYSES = (
     ),
     (
         "find_lowest_weight_xor_linear_trail",
-        "Primitive.analyze().find_lowest_weight_xor_linear_trail",
+        'Primitive.analysis.find_trail(kind="xor_linear")',
         "xor_linear",
         "exact",
         set(),
@@ -569,7 +580,7 @@ ANALYSES = (
     ),
     (
         "is_xor_differential_transition_possible",
-        "Primitive.analyze().is_xor_differential_transition_possible",
+        "Primitive.analysis.is_xor_differential_transition_possible",
         "component_transition",
         "exact",
         {"sbox_transition_table"},
@@ -580,7 +591,7 @@ ANALYSES = (
     ),
     (
         "recover_input",
-        "Primitive.analyze().recover_input",
+        "Primitive.analysis.recover_input",
         "constraint",
         "exact",
         {"boolean_cnf"},
@@ -591,7 +602,7 @@ ANALYSES = (
     ),
     (
         "solve",
-        "Primitive.analyze().solve",
+        "Primitive.analysis.solve",
         "constraint",
         "exact",
         {"boolean_cnf"},

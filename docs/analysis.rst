@@ -97,6 +97,22 @@ solver-independent checker. For the published PRESENT S-box, for example:
 Linear transitions retain their correlation sign as well as their absolute
 weight. Impossible transitions have zero numerator and infinite weight.
 
+Use ``primitive.analysis.find_trail(kind=...)`` for the common trail kinds.
+The string values ``"xor_differential"`` and ``"xor_linear"`` are also the
+values of ``claasp.analysis.TrailKind``, so editors can offer a typed enum
+without making the beginner-facing call verbose. ``backend="auto"`` preserves
+the established search for each reviewed primitive slice. Advanced callers
+can select ``claasp.analysis.TrailSearchBackend`` and pass ``solver=``
+where the selected solver-backed search supports it. Unsupported combinations
+raise an explicit exception; CLAASP never substitutes a different backend or
+search meaning silently.
+
+``primitive.analyze()`` remains a supported CLAASP 5 compatibility alias for
+``primitive.analysis``. The longer
+``find_lowest_weight_xor_differential_trail()`` and
+``find_lowest_weight_xor_linear_trail()`` methods also retain their existing
+defaults, while new examples use the common typed entry point.
+
 SPN trail search
 ----------------
 
@@ -108,7 +124,7 @@ records structured search metadata and the complete data-state propagation:
 
    >>> from claasp.primitives import Present
    >>> primitive = Present(number_of_rounds=2)
-   >>> result = primitive.analysis.find_lowest_weight_xor_differential_trail()
+   >>> result = primitive.analysis.find_trail(kind="xor_differential")
    >>> (result.trail.total_weight, result.lower_bound, result.is_optimal)
    (4.0, 4.0, True)
    >>> (result.metadata.solver, len(result.component_transitions))
@@ -129,7 +145,7 @@ reproduces the preserved two-round Speck32/64 optimum:
 
    >>> from claasp.primitives import Speck
    >>> primitive = Speck(number_of_rounds=2)
-   >>> result = primitive.analysis.find_lowest_weight_xor_differential_trail()
+   >>> result = primitive.analysis.find_trail(kind="xor_differential")
    >>> (result.trail.total_weight, result.is_optimal)
    (1.0, True)
    >>> len(result.component_transitions)
@@ -178,7 +194,7 @@ weight-4 fixture:
 .. doctest::
 
    >>> from claasp.primitives import Present
-   >>> result = Present(number_of_rounds=3).analysis.find_lowest_weight_xor_linear_trail()
+   >>> result = Present(number_of_rounds=3).analysis.find_trail(kind="xor_linear")
    >>> (result.trail.total_weight, result.is_optimal)
    (4.0, True)
    >>> any(step.transition.sign == -1 for step in result.trail.steps)
@@ -191,7 +207,7 @@ facade call:
 .. doctest::
 
    >>> from claasp.primitives import Speck
-   >>> result = Speck(number_of_rounds=4).analysis.find_lowest_weight_xor_linear_trail()
+   >>> result = Speck(number_of_rounds=4).analysis.find_trail(kind="xor_linear")
    >>> (result.trail.total_weight, result.is_optimal)
    (3.0, True)
    >>> (hex(result.trail.input_pattern.value), hex(result.trail.output_pattern.value))

@@ -16,7 +16,7 @@ probability represented by the model.
 
    >>> from claasp.primitives import Speck
    >>> speck = Speck(number_of_rounds=2)
-   >>> differential = speck.analysis.find_lowest_weight_xor_differential_trail()
+   >>> differential = speck.analysis.find_trail(kind="xor_differential")
    >>> differential.show()  # doctest: +ELLIPSIS
    Trail
    ...
@@ -36,7 +36,7 @@ same:
 .. doctest::
 
    >>> speck = Speck(number_of_rounds=4)
-   >>> linear = speck.analysis.find_lowest_weight_xor_linear_trail()
+   >>> linear = speck.analysis.find_trail(kind="xor_linear")
    >>> linear.show()  # doctest: +ELLIPSIS
    Trail
    ...

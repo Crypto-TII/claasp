@@ -136,6 +136,7 @@ def test_every_public_constraint_model_declares_an_explicit_reference_status():
     records: list[ConstraintModelProvenance] = []
     models = tuple(_public_constraint_model_classes())
     for model in models:
+        declarations: tuple[ConstraintModelProvenance, ...]
         if "model_provenance" in model.__dict__:
             declarations = (model.model_provenance,)
         elif "model_provenance_by_kind" in model.__dict__:
@@ -188,12 +189,12 @@ def test_audited_modular_add_models_name_the_verified_primary_source_and_locator
         assert differential.reference_identifier == "https://eprint.iacr.org/2001/001"
         assert differential.source_locator == "section 4, Algorithm 2 and Theorem 1"
 
-    for model in (
+    for linear_model in (
         ModularAddLinearSATModel,
         ModularAddLinearSMTModel,
         ModularAddLinearMILPModel,
     ):
-        provenance = model.model_provenance
+        provenance = linear_model.model_provenance
         assert provenance.reference_identifier == "10.1007/978-3-319-39555-5_26"
         assert provenance.source_locator == "section 3.1, Proposition 1 and equation (1)"
 
@@ -265,9 +266,7 @@ def test_continuous_equations_are_verified_but_fixed_mask_selection_is_direct():
     assert "Propositions 1--4" in cast(str, continuous.source_locator)
     assert selection.reference_status is ConstraintReferenceStatus.NOT_APPLICABLE
 
-    query = SpeckContinuousMaskOptimizationCPModel(
-        (-1.0,) * 16, (-1.0,) * 16, rounds=1
-    ).cp_model()
+    query = SpeckContinuousMaskOptimizationCPModel((-1.0,) * 16, (-1.0,) * 16, rounds=1).cp_model()
     assert tuple(item.model for item in query.constraint_models) == (continuous, selection)
 
 
@@ -277,9 +276,7 @@ def test_differential_linear_connectors_and_direct_composition_are_not_literatur
         TruncatedToLinearSATModel,
         WordDeterministicDifferentialLinearSATModel,
     ):
-        assert model.model_provenance.reference_status is (
-            ConstraintReferenceStatus.NOT_APPLICABLE
-        )
+        assert model.model_provenance.reference_status is (ConstraintReferenceStatus.NOT_APPLICABLE)
 
 
 def test_semi_deterministic_wrappers_are_direct_while_the_local_relation_stays_tbd():
@@ -294,9 +291,7 @@ def test_semi_deterministic_wrappers_are_direct_while_the_local_relation_stays_t
         WordSemiDeterministicDifferentialLinearCPModel,
         WordSemiDeterministicDifferentialLinearMILPModel,
     ):
-        assert model.model_provenance.reference_status is (
-            ConstraintReferenceStatus.NOT_APPLICABLE
-        )
+        assert model.model_provenance.reference_status is (ConstraintReferenceStatus.NOT_APPLICABLE)
 
 
 def test_audited_monomial_models_name_the_monomial_prediction_construction():
