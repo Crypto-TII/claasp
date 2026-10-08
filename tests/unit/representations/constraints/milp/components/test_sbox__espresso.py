@@ -110,9 +110,8 @@ def test_espresso_models_reject_impossible_transitions(differential, linear):
         linear.witness(1, 0)
 
 
-def test_espresso_provenance_remains_explicitly_unaudited(differential, linear):
-    assert (
-        differential.model_provenance.reference_status is ConstraintReferenceStatus.TO_BE_DETERMINED
-    )
+def test_espresso_provenance_distinguishes_audited_ddt_from_signed_lat(differential, linear):
+    assert differential.model_provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+    assert differential.model_provenance.reference_identifier == "10.13154/tosc.v2017.i4.99-129"
     assert linear.model_provenance.reference_status is ConstraintReferenceStatus.TO_BE_DETERMINED
-    assert "3aacc275" in (differential.model_provenance.rationale or "")
+    assert "signed LAT-count classes" in (linear.model_provenance.rationale or "")

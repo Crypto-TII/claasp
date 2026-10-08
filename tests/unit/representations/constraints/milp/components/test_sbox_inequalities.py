@@ -67,7 +67,12 @@ def test_every_present_transition_matches_exact_semantics(
     relation = model_type(system)
     model = relation.milp_model()
     assert relation.inequality_count == inequality_count
-    assert relation.model_provenance.reference_status is ConstraintReferenceStatus.TO_BE_DETERMINED
+    expected_status = (
+        ConstraintReferenceStatus.VERIFIED
+        if kind is TrailKind.XOR_DIFFERENTIAL
+        else ConstraintReferenceStatus.TO_BE_DETERMINED
+    )
+    assert relation.model_provenance.reference_status is expected_status
     for source in range(16):
         for target in range(16):
             transition = relation._transition(source, target)

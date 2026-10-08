@@ -20,19 +20,40 @@ from claasp.representations.constraints.cp.components import (
     SBoxXorDifferentialCPModel,
 )
 from claasp.representations.constraints.cp.lowering import BooleanMiniZincLowerer
-from claasp.representations.constraints.cp.trails import SpeckProbabilisticTruncatedCPModel
+from claasp.representations.constraints.cp.trails import (
+    SpeckProbabilisticTruncatedCPModel,
+    WordwiseDeterministicTruncatedCPModel,
+)
 from claasp.representations.constraints.milp import components as milp_components
 from claasp.representations.constraints.milp.components import (
     ModularAddLinearMILPModel,
     MonomialTransitionMILPModel,
+    SBoxUndisturbedBitsEspressoMILPModel,
+    SBoxXorDifferentialConvexHullMILPModel,
+    SBoxXorDifferentialEspressoMILPModel,
+    SBoxXorDifferentialGreedyMILPModel,
     SBoxXorDifferentialMILPModel,
+    SBoxXorDifferentialMinimumMILPModel,
+    SBoxXorLinearConvexHullMILPModel,
+    SBoxXorLinearEspressoMILPModel,
+    SBoxXorLinearGreedyMILPModel,
     SBoxXorLinearMILPModel,
+    SBoxXorLinearMinimumMILPModel,
+    WordwiseImpossibleBoundaryMILPModel,
+    WordwiseTruncatedMDSEspressoMILPModel,
+    WordwiseTruncatedMDSMILPModel,
+    WordwiseXorEspressoMILPModel,
+    WordwiseXorMILPModel,
+    XorImpossiblePointMILPModel,
 )
 from claasp.representations.constraints.milp.lowering import (
     BooleanMonomialGraphMILPModel,
     cnf_to_milp,
 )
-from claasp.representations.constraints.milp.trails import PresentMonomialTrailMILPModel
+from claasp.representations.constraints.milp.trails import (
+    PresentMonomialTrailMILPModel,
+    WordwiseDeterministicTruncatedMILPModel,
+)
 from claasp.representations.constraints.sat import BooleanCNFModel
 from claasp.representations.constraints.sat import components as sat_components
 from claasp.representations.constraints.sat.components import (
@@ -45,6 +66,7 @@ from claasp.representations.constraints.sat.components import (
     SBoxFunctionalSATModel,
     WiringFunctionalSATModel,
 )
+from claasp.representations.constraints.sat.trails import WordwiseDeterministicTruncatedSATModel
 from claasp.representations.constraints.smt import components as smt_components
 from claasp.representations.constraints.smt.components import (
     ModularAddDifferentialSMTModel,
@@ -148,9 +170,7 @@ def test_probabilistic_truncated_cp_composition_declares_and_emits_its_tbd_statu
         TruncatedXorDifference.parse("?" * 32),
     )
 
-    assert model.model_provenance.reference_status is (
-        ConstraintReferenceStatus.TO_BE_DETERMINED
-    )
+    assert model.model_provenance.reference_status is (ConstraintReferenceStatus.TO_BE_DETERMINED)
     assert model.cp_model().constraint_models == (
         ConstraintModelApplication(model.model_provenance),
     )
@@ -190,6 +210,61 @@ def test_exhaustive_sbox_tables_and_direct_linear_wiring_remain_not_applicable()
         SBoxXorDifferentialSMTModel,
         SBoxXorLinearSMTModel,
         WiringFunctionalSATModel,
+    ):
+        assert model.model_provenance.reference_status is (ConstraintReferenceStatus.NOT_APPLICABLE)
+
+
+def test_audited_differential_sbox_inequality_strategies_name_primary_sources():
+    for model in (
+        SBoxXorDifferentialConvexHullMILPModel,
+        SBoxXorDifferentialGreedyMILPModel,
+    ):
+        provenance = model.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+        assert provenance.reference_identifier == "https://eprint.iacr.org/2014/747"
+        assert "Algorithm 1" in cast(str, provenance.source_locator)
+
+    minimum = SBoxXorDifferentialMinimumMILPModel.model_provenance
+    assert minimum.reference_identifier == "10.1007/978-3-319-69284-5_11"
+    assert minimum.source_locator == "section 3, proposed inequality-reduction algorithm"
+
+    espresso = SBoxXorDifferentialEspressoMILPModel.model_provenance
+    assert espresso.reference_identifier == "10.13154/tosc.v2017.i4.99-129"
+    assert espresso.source_locator == "sections 3.1 and 3.2; section 4.1, Definition 1"
+
+
+def test_signed_lat_inequality_strategies_retain_a_precise_unresolved_status():
+    for model in (
+        SBoxXorLinearConvexHullMILPModel,
+        SBoxXorLinearGreedyMILPModel,
+        SBoxXorLinearMinimumMILPModel,
+        SBoxXorLinearEspressoMILPModel,
+    ):
+        provenance = model.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.TO_BE_DETERMINED
+        assert "signed LAT-count classes" in cast(str, provenance.rationale)
+
+
+def test_audited_wordwise_models_name_the_four_state_primary_source():
+    for model in (
+        WordwiseXorMILPModel,
+        WordwiseXorEspressoMILPModel,
+        WordwiseTruncatedMDSMILPModel,
+        WordwiseTruncatedMDSEspressoMILPModel,
+        WordwiseDeterministicTruncatedSATModel,
+        WordwiseDeterministicTruncatedMILPModel,
+        WordwiseDeterministicTruncatedCPModel,
+    ):
+        provenance = model.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+        assert provenance.reference_identifier == "10.13154/tosc.v2020.i3.262-287"
+
+
+def test_generic_compressions_and_forbidden_assignments_are_not_literature_claims():
+    for model in (
+        SBoxUndisturbedBitsEspressoMILPModel,
+        XorImpossiblePointMILPModel,
+        WordwiseImpossibleBoundaryMILPModel,
     ):
         assert model.model_provenance.reference_status is (ConstraintReferenceStatus.NOT_APPLICABLE)
 

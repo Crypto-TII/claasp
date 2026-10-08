@@ -11,7 +11,6 @@ from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
     _direct_model,
-    _unaudited_model,
 )
 from claasp.representations.constraints.milp.components.relations import (
     FiniteBinaryRelationMILPModel,
@@ -340,12 +339,12 @@ class SBoxUndisturbedBitsEspressoMILPModel(SBoxUndisturbedBitsMILPModel):
         (16, 87)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.MILP,
         "SBoxUndisturbedBitsEspressoMILPModel",
         "bitwise_deterministic_truncated_xor",
         "legacy per-output-bit Espresso product-of-sums formulation",
-        "The legacy implementation is recovered exactly; correspondence with its cited paper remains unaudited.",
+        "Espresso only compresses Boolean projections of the directly enumerated finite relation.",
     )
 
     def __init__(self, table, bundle_name: str) -> None:

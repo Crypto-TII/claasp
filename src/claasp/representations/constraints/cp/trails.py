@@ -10,6 +10,7 @@ from claasp.representations.constraints import (
     ConstraintModelApplication,
     _direct_model,
     _unaudited_model,
+    _verified_model,
 )
 from claasp.representations.constraints.cp.components import (
     HybridImpossibleBoundaryResult,
@@ -2029,12 +2030,14 @@ class WordwiseDeterministicTruncatedCPModel:
         (324, 'cp')
     """
 
-    model_provenance = _direct_model(
+    model_provenance = _verified_model(
         ConstraintBackend.CP,
         "WordwiseDeterministicTruncatedCPModel",
         "wordwise_deterministic_truncated_xor",
         "MiniZinc translation of the exact four-state word-graph formula",
-        "Known values, abstract activity, wiring, and dense layers retain typed decoding.",
+        "10.13154/tosc.v2020.i3.262-287",
+        "On the Usage of Deterministic (Related-Key) Truncated Differentials and Multidimensional Linear Approximations for SPN Ciphers",
+        "section 2.1, Lemmas 1--4; section 3.1; section 3.2, Models 1--5",
     )
 
     def __init__(
