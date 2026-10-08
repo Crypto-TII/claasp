@@ -3,6 +3,7 @@
 import re
 from collections.abc import Iterable, Mapping, Sequence
 from copy import copy
+from dataclasses import dataclass
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
@@ -28,6 +29,69 @@ from claasp.graph.value_type import ValueType
 
 if TYPE_CHECKING:
     from claasp.analysis import Analysis
+
+
+@dataclass(frozen=True, slots=True)
+class PrimitiveInputDetails:
+    """Beginner-facing description of one primitive input.
+
+    EXAMPLES::
+
+        >>> from claasp import InputVisibility, PrimitiveInputDetails
+        >>> item = PrimitiveInputDetails("key", 128, "key", InputVisibility.SECRET)
+        >>> (item.name, item.bit_size, item.visibility.value)
+        ('key', 128, 'secret')
+    """
+
+    name: str
+    bit_size: int | None
+    role: str
+    visibility: InputVisibility
+
+
+@dataclass(frozen=True, slots=True)
+class PrimitiveDetails:
+    """Structured primitive summary with a readable interactive representation.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import AES
+        >>> details = AES().details()
+        >>> (details.instance, details.number_of_rounds, details.realization)
+        ('AES-128', 10, 'lookup')
+    """
+
+    kind: PrimitiveKind
+    instance: str
+    inputs: tuple[PrimitiveInputDetails, ...]
+    output_bit_size: int | None
+    number_of_rounds: int
+    realization: str
+
+    def __str__(self) -> str:
+        lines = [
+            "Primitive details",
+            f"  Type: {self.kind.value.replace('_', ' ')}",
+            f"  Instance: {self.instance}",
+            "  Inputs:",
+        ]
+        for item in self.inputs:
+            size = "no fixed encoding" if item.bit_size is None else f"{item.bit_size} bits"
+            lines.append(f"    {item.name}: {size} ({item.visibility.value})")
+        output_size = (
+            "no fixed encoding" if self.output_bit_size is None else f"{self.output_bit_size} bits"
+        )
+        lines.extend(
+            (
+                f"  Output: {output_size}",
+                f"  Rounds: {self.number_of_rounds}",
+                f"  Realization: {self.realization}",
+            )
+        )
+        return "\n".join(lines)
+
+    def __repr__(self) -> str:
+        return str(self)
 
 
 class Primitive:
@@ -96,6 +160,8 @@ class Primitive:
         *,
         kind: PrimitiveKind | str | None = None,
         provenance: tuple[tuple[str, str], ...] = (),
+        instance_name: str | None = None,
+        round_count: int | None = None,
     ) -> None:
         if not isinstance(family_name, str):
             raise TypeError("family_name must be a string")
@@ -128,9 +194,17 @@ class Primitive:
             kind = infer_primitive_kind(descriptors)
         elif not isinstance(kind, PrimitiveKind):
             kind = PrimitiveKind(kind)
+        if instance_name is not None and (not isinstance(instance_name, str) or not instance_name):
+            raise ValueError("instance_name must be a non-empty string or None")
+        if round_count is not None and (
+            not isinstance(round_count, int) or isinstance(round_count, bool) or round_count < 0
+        ):
+            raise ValueError("round_count must be a non-negative integer or None")
 
         self._family_name = family_name
         self._kind = kind
+        self._instance_name = instance_name
+        self._round_count = round_count
         self._provenance = tuple(provenance)
         self._transformation_provenance = ()
         self._input_descriptors = descriptors
@@ -269,6 +343,48 @@ class Primitive:
             return self._input_descriptors[name]
         except KeyError as error:
             raise KeyError(f"primitive input {name!r} does not exist") from error
+
+    def details(self) -> PrimitiveDetails:
+        """Return a concise, tab-discoverable description of this instance.
+
+        The result has named fields for programmatic use and renders as a
+        compact summary in Python shells and notebooks.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import AES
+            >>> AES().details()
+            Primitive details
+              Type: block cipher
+              Instance: AES-128
+              Inputs:
+                plaintext: 128 bits (public)
+                key: 128 bits (secret)
+              Output: 128 bits
+              Rounds: 10
+              Realization: lookup
+        """
+
+        inputs = tuple(
+            PrimitiveInputDetails(
+                name,
+                descriptor.value_type.encoded_bit_size,
+                descriptor.role,
+                descriptor.visibility,
+            )
+            for name, descriptor in self._input_descriptors.items()
+        )
+        output = self.output
+        if output is None:
+            raise ValueError("primitive details require an authored output")
+        return PrimitiveDetails(
+            self.kind,
+            self._instance_name or type(self).__name__,
+            inputs,
+            output.value_type.encoded_bit_size,
+            self._round_count if self._round_count is not None else len(self.rounds),
+            self.realization.name,
+        )
 
     def with_input_visibility(self, **overrides: InputVisibility | str) -> "Primitive":
         """Return the same graph with study-specific input visibility metadata."""

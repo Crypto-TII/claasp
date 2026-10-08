@@ -83,6 +83,8 @@ class Speck(Primitive):
                 "key": ValueType(Word(word_size), (key_word_count,)),
             },
             kind=PrimitiveKind.BLOCK_CIPHER,
+            instance_name=f"Speck{block_bit_size}/{key_bit_size}",
+            round_count=rounds,
         )
 
         x, y = self.input("plaintext")[0], self.input("plaintext")[1]

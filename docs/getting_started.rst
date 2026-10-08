@@ -29,23 +29,30 @@ Choose a primitive
 ------------------
 
 Ready-to-use primitives have short imports from ``claasp.primitives``. Start
-with the standard AES-128 configuration and inspect its inputs before
-supplying values:
+with the standard AES-128 configuration. In an interactive Python shell or
+notebook, type ``aes.`` and press Tab to discover its available operations;
+``details()`` gives a compact description of the selected instance:
 
 .. doctest::
 
    >>> from claasp.primitives import AES
    >>> aes = AES()
-   >>> [
-   ...     (name, descriptor.value_type.encoded_bit_size)
-   ...     for name, descriptor in aes.input_descriptors.items()
-   ... ]
-   [('plaintext', 128), ('key', 128)]
+   >>> aes.details()
+   Primitive details
+     Type: block cipher
+     Instance: AES-128
+     Inputs:
+       plaintext: 128 bits (public)
+       key: 128 bits (secret)
+     Output: 128 bits
+     Rounds: 10
+     Realization: lookup
 
 The constructor builds a reusable description of AES; it does not encrypt
 anything yet. Constructor arguments can select another standard parameter set
 or a reduced number of rounds. See :doc:`traditional_primitives` for common
-ciphers and :doc:`primitive_catalogue` for discovery and the full catalogue.
+block ciphers and :doc:`primitive_catalogue` for discovery and the full
+catalogue.
 
 Evaluate AES
 ------------
@@ -75,7 +82,7 @@ primitive. CLAASP can search for the lowest-weight—and therefore most
 probable—trail in its differential model.
 
 This example deliberately uses two-round Speck32/64 so the search finishes
-quickly. It is a reduced-round analysis target, not a secure cipher
+quickly. It is a reduced-round analysis target, not a secure block-cipher
 configuration. The default search uses the optional Kissat SAT solver. On
 macOS or Linux with Homebrew, install it and confirm that it is on ``PATH``:
 
