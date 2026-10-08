@@ -1039,7 +1039,7 @@ class SpeckSemiDeterministicTruncatedMILPModel:
         "SpeckSemiDeterministicTruncatedMILPModel",
         "semi_deterministic_truncated_xor",
         "exact MILP translation of the recovered look-ahead-window Speck model",
-        "The exact correspondence with a primary-source construction has not been audited.",
+        "The translated additions use pinned legacy templates for which no primary source was found.",
     )
 
     def __init__(

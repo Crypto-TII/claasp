@@ -900,6 +900,14 @@ class SpeckProbabilisticTruncatedCPModel:
         'solve minimize scaled_weight;'
     """
 
+    model_provenance = _unaudited_model(
+        ConstraintBackend.CP,
+        "SpeckProbabilisticTruncatedCPModel",
+        "probabilistic_truncated_xor",
+        "counter-based Speck round composition in MiniZinc",
+        "The composed additions use the unresolved legacy counter recurrence and scaled costs.",
+    )
+
     def __init__(
         self,
         problem: PropagationProblem,
@@ -982,6 +990,7 @@ class SpeckProbabilisticTruncatedCPModel:
             tuple(constraints),
             solve="solve minimize scaled_weight;",
             provenance=self.problem.provenance,
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
         )
 
     def decode_trail(self, assignment) -> ProbabilisticTruncatedTrail:
@@ -3048,7 +3057,7 @@ class SpeckSemiDeterministicTruncatedCPModel:
         "SpeckSemiDeterministicTruncatedCPModel",
         "semi_deterministic_truncated_xor",
         "exact MiniZinc translation of the recovered look-ahead-window Speck model",
-        "The exact correspondence with a primary-source construction has not been audited.",
+        "The translated additions use pinned legacy templates for which no primary source was found.",
     )
 
     def __init__(

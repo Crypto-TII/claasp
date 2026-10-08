@@ -299,12 +299,14 @@ class ModularAddNWindowSATModel:
         1
     """
 
-    model_provenance = _direct_model(
+    model_provenance = _verified_model(
         ConstraintBackend.SAT,
         "ModularAddNWindowSATModel",
         "xor_differential",
         "direct carry-difference run bound",
-        "Pure-Python parity and conjunction clauses recover the optional legacy n-window heuristic.",
+        "10.1007/978-3-031-88661-4_1",
+        "The Window Heuristic: Automating Differential Trail Search in ARX Ciphers with Partial Linearization Trade-offs",
+        "section 3.1, Definitions 1 and 2; section 3.2",
     )
 
     def __init__(self, width: int, window_size: int) -> None:

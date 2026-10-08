@@ -237,22 +237,31 @@ In particular:
 Prefer several small audit PRs over one repository-wide literature claim.
 Record unresolved cases as `TBD`; never guess.
 
+The family-by-family status ledger and exact unresolved-search records live in
+[`audits/constraint-model-provenance.md`](audits/constraint-model-provenance.md).
+
 Modular-addition audit discoveries:
 
 - The exact SMT XOR-differential support and unary-weight relation matches
   Lipmaa--Moriai, Section 4, Algorithm 2 and Theorem 1. Legacy CLAASP also
   identifies its equivalent SAT and SMT helpers as the Lipmaa--Moriai
   algorithm.
-- The exact SMT and MILP XOR-linear relations both encode Liu--Wang--Rijmen,
+- The exact SAT and SMT XOR-differential models share that verified relation.
+- The exact SAT, SMT, and MILP XOR-linear relations encode Liu--Wang--Rijmen,
   Section 3.1, Proposition 1 and Equation (1). The backend-specific clauses
   and inequalities are two representations of the same mask recurrence,
   support conditions, and Hamming-weight objective. Legacy CLAASP cites that
   construction for both SAT and SMT and points its Boolean inequality helper
   directly to Equation (1).
-- The probabilistic-truncated CP model remains `TBD`. Legacy CLAASP contains
-  the counter-based predicate and scaled cost table, but no primary-source
-  attribution or derivation was found; a later audit must establish the exact
-  origin before attaching a citation.
+- The optional SAT n-window relation matches Bellini et al., Section 3.1,
+  Definitions 1 and 2, and Section 3.2: its clauses define carry-difference
+  bits, bound consecutive propagation, and identify full windows.
+- The probabilistic-truncated CP and SAT models and their Speck compositions
+  remain `TBD`. Legacy CLAASP contains the counter-based predicate and scaled
+  cost table, but no primary-source attribution or derivation was found.
+- The semi-deterministic look-ahead-window addition and its SAT, MILP, and CP
+  Speck compositions remain `TBD`; the pinned legacy templates and their
+  introducing history contain no primary-source attribution or derivation.
 
 S-box, linear-layer, and monomial audit discoveries:
 
