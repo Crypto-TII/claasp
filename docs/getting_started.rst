@@ -225,9 +225,8 @@ probable—trail in its differential model and proves that no better trail
 exists.
 
 This example deliberately uses three-round Speck32/64 so the search finishes
-quickly. It is a reduced-round analysis target, not a secure block-cipher
-configuration. Select the dependency-free search so the example needs no
-external solver:
+quickly. Select the dependency-free search so the example needs no external
+solver:
 
 .. doctest::
 
