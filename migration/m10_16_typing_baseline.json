@@ -1,8 +1,8 @@
 {
   "counts_by_code": {
-    "arg-type": 170,
+    "arg-type": 169,
     "assignment": 77,
-    "attr-defined": 137,
+    "attr-defined": 139,
     "call-arg": 7,
     "call-overload": 82,
     "dict-item": 28,
@@ -21,11 +21,11 @@
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 720,
+    "src/claasp": 722,
     "tests": 167,
-    "tools": 39
+    "tools": 38
   },
-  "diagnostic_count": 926,
+  "diagnostic_count": 927,
   "diagnostics": [
     {
       "code": "operator",
@@ -3381,6 +3381,20 @@
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
+      "code": "attr-defined",
+      "column": 16,
+      "line": 1807,
+      "message": "\"object\" has no attribute \"total_weight\"",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 37,
+      "line": 1813,
+      "message": "\"object\" has no attribute \"weight\"",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
       "code": "assignment",
       "column": 24,
       "line": 101,
@@ -5105,28 +5119,28 @@
     {
       "code": "arg-type",
       "column": 48,
-      "line": 91,
+      "line": 92,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/integration/test_minizinc_integration.py"
     },
     {
       "code": "index",
       "column": 18,
-      "line": 132,
+      "line": 133,
       "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
       "path": "tests/integration/test_minizinc_integration.py"
     },
     {
       "code": "index",
       "column": 14,
-      "line": 158,
+      "line": 159,
       "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
       "path": "tests/integration/test_minizinc_integration.py"
     },
     {
       "code": "dict-item",
       "column": 10,
-      "line": 358,
+      "line": 359,
       "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection\"",
       "path": "tests/integration/test_minizinc_integration.py"
     },
@@ -5819,7 +5833,7 @@
     {
       "code": "arg-type",
       "column": 44,
-      "line": 35,
+      "line": 38,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/representations/constraints/cp/test_trails.py"
     },
@@ -6288,35 +6302,28 @@
     {
       "code": "arg-type",
       "column": 44,
-      "line": 37,
+      "line": 43,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
-      "path": "tools/benchmark_cp_boomerang_trails.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 29,
-      "line": 71,
-      "message": "Argument 1 to \"solve\" of \"MiniZincSolver\" has incompatible type \"Any | None\"; expected \"MiniZincModel | CNFFormula\"",
       "path": "tools/benchmark_cp_boomerang_trails.py"
     },
     {
       "code": "union-attr",
       "column": 15,
-      "line": 74,
+      "line": 84,
       "message": "Item \"None\" of \"Any | None\" has no attribute \"decode_trail\"",
       "path": "tools/benchmark_cp_boomerang_trails.py"
     },
     {
       "code": "union-attr",
-      "column": 33,
-      "line": 86,
+      "column": 29,
+      "line": 89,
       "message": "Item \"None\" of \"Any | None\" has no attribute \"declarations\"",
       "path": "tools/benchmark_cp_boomerang_trails.py"
     },
     {
       "code": "union-attr",
-      "column": 32,
-      "line": 87,
+      "column": 28,
+      "line": 90,
       "message": "Item \"None\" of \"Any | None\" has no attribute \"constraints\"",
       "path": "tools/benchmark_cp_boomerang_trails.py"
     },

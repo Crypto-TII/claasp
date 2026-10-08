@@ -7,7 +7,10 @@ from claasp.representations.constraints.cp import (
     ModularAddBoomerangCPModel,
     ModularAddBoomerangTrailCPModel,
     PresentActiveSBoxesCPModel,
+    PresentDifferentialCPModel,
     PresentFixedActiveSBoxesCPModel,
+    SBoxBoomerangCPModel,
+    SBoxBoomerangTrailCPModel,
     SpeckARXWindowDifferentialCPModel,
     SpeckContinuousHeuristicCPModel,
     SpeckSemiDeterministicTruncatedCPModel,
@@ -57,6 +60,26 @@ def test_modadd_boomerang_cp_namespaces_and_links_complete_trails():
     assert "constraint switch_delta_left[0] = bool2int(upper_" in query.source()
     assert "constraint switch_nabla_right[0] = bool2int(lower_" in query.source()
     assert query.constraint_models[0].model == ModularAddBoomerangTrailCPModel.model_provenance
+
+
+def test_sbox_boomerang_cp_namespaces_and_links_complete_present_trails():
+    upper = PresentDifferentialCPModel(
+        PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
+    )
+    lower = PresentDifferentialCPModel(
+        PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
+    )
+    sbox = next(
+        component
+        for component in upper.primitive.components
+        if component.component_id == "sbox_1_0"
+    )
+    model = SBoxBoomerangTrailCPModel(upper, lower, SBoxBoomerangCPModel(sbox), nibble=3)
+    query = model.cp_model()
+    assert query.solve == "solve maximize switch_quartet_count;"
+    assert "constraint switch_input_difference = " in query.source()
+    assert "constraint switch_output_difference = " in query.source()
+    assert query.constraint_models[0].model == model.model_provenance
 
 
 def test_generic_word_impossible_cp_preserves_complete_split_formula():

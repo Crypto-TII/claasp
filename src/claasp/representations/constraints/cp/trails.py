@@ -1780,6 +1780,209 @@ class ModularAddBoomerangTrailCPModel:
         return ModularAddBoomerangTrailResult(upper, switch, lower)
 
 
+@dataclass(frozen=True, slots=True)
+class SBoxBoomerangTrailResult:
+    """Two exact PRESENT characteristics joined by one S-box BCT entry.
+
+    EXAMPLES::
+
+        >>> from types import SimpleNamespace
+        >>> result = SBoxBoomerangTrailResult(
+        ...     SimpleNamespace(total_weight=2), SimpleNamespace(weight=1),
+        ...     SimpleNamespace(total_weight=3), 0,
+        ... )
+        >>> (result.search_weight, result.total_weight)
+        (5, 6)
+    """
+
+    upper: object
+    switch: object
+    lower: object
+    nibble: int
+
+    @property
+    def search_weight(self):
+        """Return the bounded upper-plus-lower characteristic weight."""
+
+        return self.upper.total_weight + self.lower.total_weight
+
+    @property
+    def total_weight(self):
+        """Return upper, switch, and lower weights together."""
+
+        return self.search_weight + self.switch.weight
+
+
+class SBoxBoomerangTrailCPModel:
+    """Join two exact PRESENT-2 trails through one exact S-box BCT switch.
+
+    The upper output is the input difference of the next PRESENT S-box layer;
+    the lower input is that S-box's output difference. Both complete
+    characteristics retain their requested weight bounds, while the solver
+    maximizes the exact quartet count of the selected switch.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Present
+        >>> upper = PresentDifferentialCPModel(PropagationProblem(
+        ...     Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8))
+        >>> lower = PresentDifferentialCPModel(PropagationProblem(
+        ...     Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8))
+        >>> sbox = _round_sboxes(upper.primitive, 1)[0]
+        >>> model = SBoxBoomerangTrailCPModel(
+        ...     upper, lower, SBoxBoomerangCPModel(sbox), nibble=0)
+        >>> "switch_quartet_count" in model.cp_model().source()
+        True
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "SBoxBoomerangTrailCPModel",
+        "boomerang",
+        "complete bounded PRESENT trails joined by an exact S-box BCT switch",
+        "The selected BCT entry is exact and decoded independently.",
+    )
+
+    def __init__(self, upper, lower, switch, *, nibble) -> None:
+        if not isinstance(upper, PresentDifferentialCPModel) or not isinstance(
+            lower, PresentDifferentialCPModel
+        ):
+            raise TypeError("upper and lower must be PresentDifferentialCPModel instances")
+        if not isinstance(switch, SBoxBoomerangCPModel):
+            raise TypeError("switch must be an SBoxBoomerangCPModel")
+        if not isinstance(nibble, int) or isinstance(nibble, bool) or not 0 <= nibble < 16:
+            raise ValueError("nibble must be an integer from 0 through 15")
+        upper_sbox = _round_sboxes(upper.primitive, 1)[nibble]
+        lower_sbox = _round_sboxes(lower.primitive, 1)[nibble]
+        if upper_sbox.table != switch.component.table or lower_sbox.table != switch.component.table:
+            raise ValueError("both trail graphs and the switch must use the same S-box table")
+        self.upper = upper
+        self.lower = lower
+        self.switch = switch
+        self.nibble = nibble
+        self._query: MiniZincModel | None = None
+
+    @staticmethod
+    def _rewrite(lines, replacements):
+        pattern = re.compile(r"\b(" + "|".join(map(re.escape, replacements)) + r")\b")
+        return tuple(
+            pattern.sub(lambda match: replacements[match.group(0)], line) for line in lines
+        )
+
+    @classmethod
+    def _namespace(cls, query, prefix):
+        reserved = {"array", "array2d", "bool", "constraint", "int", "of", "sum", "table", "var"}
+        identifiers = {
+            name
+            for name in re.findall(r"\b[A-Za-z_]\w*\b", "\n".join(query.declarations))
+            if name not in reserved
+        }
+        replacements = {name: prefix + name for name in identifiers}
+        scalar_names = tuple(
+            match.group(1)
+            for line in query.declarations
+            if (match := re.search(r":\s*(\w+)\s*;\s*$", line))
+        )
+        mapping = tuple((replacements[name], f"{prefix[:-1]}::{name}") for name in scalar_names)
+        return (
+            cls._rewrite(query.declarations, replacements),
+            cls._rewrite(query.constraints, replacements),
+            replacements,
+            mapping,
+        )
+
+    @staticmethod
+    def _packed_expression(names):
+        width = len(names)
+        return " + ".join(f"{1 << (width - bit - 1)} * {name}" for bit, name in enumerate(names))
+
+    def cp_model(self) -> MiniZincModel:
+        """Return both bounded characteristics and the selected BCT switch."""
+
+        upper_query = self.upper.cp_model()
+        lower_query = self.lower.cp_model()
+        switch_query = self.switch.cp_model()
+        upper_declarations, upper_constraints, upper_names, upper_mapping = self._namespace(
+            upper_query, "upper_"
+        )
+        lower_declarations, lower_constraints, lower_names, lower_mapping = self._namespace(
+            lower_query, "lower_"
+        )
+        switch_names = {
+            name: "switch_" + name
+            for name in ("bct", "input_difference", "output_difference", "quartet_count")
+        }
+        switch_declarations = self._rewrite(switch_query.declarations, switch_names)
+        switch_constraints = self._rewrite(switch_query.constraints, switch_names)
+        final_permutation = _component(self.upper.primitive, "p_layer_2", Permutation)
+        start = 4 * self.nibble
+        upper_bits = tuple(
+            upper_names[f"round_2_sbox_output_{final_permutation.mapping[bit]}"]
+            for bit in range(start, start + 4)
+        )
+        lower_bits = tuple(lower_names[f"plaintext_{bit}"] for bit in range(start, start + 4))
+        links = (
+            f"constraint switch_input_difference = {self._packed_expression(upper_bits)};",
+            f"constraint switch_output_difference = {self._packed_expression(lower_bits)};",
+        )
+        switch_mapping = tuple(
+            (encoded, encoded)
+            for encoded in (
+                "switch_input_difference",
+                "switch_output_difference",
+                "switch_quartet_count",
+            )
+        )
+        self._query = MiniZincModel(
+            upper_declarations + lower_declarations + switch_declarations,
+            upper_constraints + lower_constraints + switch_constraints + links,
+            "solve maximize switch_quartet_count;",
+            tuple(
+                dict.fromkeys(
+                    (*upper_query.includes, *lower_query.includes, *switch_query.includes)
+                )
+            ),
+            provenance=(
+                "exact bounded upper and lower PRESENT differential characteristics",
+                "exact selected S-box boomerang connectivity table",
+            ),
+            name_mapping=upper_mapping + lower_mapping + switch_mapping,
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_trail(self, assignment):
+        """Decode and independently validate both trails and their BCT entry."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        upper_assignment = {
+            name.removeprefix("upper::"): value
+            for name, value in assignment.items()
+            if name.startswith("upper::")
+        }
+        lower_assignment = {
+            name.removeprefix("lower::"): value
+            for name, value in assignment.items()
+            if name.startswith("lower::")
+        }
+        upper = self.upper.decode_trail(upper_assignment)
+        lower = self.lower.decode_trail(lower_assignment)
+        switch = self.switch.decode(
+            {
+                "input_difference": assignment["switch_input_difference"],
+                "output_difference": assignment["switch_output_difference"],
+                "quartet_count": assignment["switch_quartet_count"],
+            }
+        )
+        shift = 64 - 4 * (self.nibble + 1)
+        if (upper.output_pattern.value >> shift) & 0xF != switch.input_difference.value:
+            raise ValueError("upper trail does not enter the selected S-box switch")
+        if (lower.input_pattern.value >> shift) & 0xF != switch.output_difference.value:
+            raise ValueError("lower trail does not leave the selected S-box switch")
+        return SBoxBoomerangTrailResult(upper, switch, lower, self.nibble)
+
+
 class WordLinearCPModel:
     """Assemble exact XOR-linear Word graphs as portable MiniZinc.
 

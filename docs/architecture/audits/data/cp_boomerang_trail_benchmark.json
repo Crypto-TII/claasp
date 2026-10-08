@@ -3,24 +3,47 @@
     "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
     "python": "3.12.3"
   },
-  "result": {
-    "constraints": 128,
-    "construction_seconds_median": 0.000979395500053215,
-    "declarations": 37,
-    "exact_decoded_weight": 0.0,
-    "peak_memory_bytes_median": null,
-    "peak_memory_status": "not_reported_by_minizinc_driver",
-    "repeats": 10,
-    "search_weight": 0.0,
-    "solver": "MiniZincSolver(chuffed)",
-    "solver_seconds_median": 0.03025160400011373,
-    "solver_status": "satisfied",
-    "solver_version": "MiniZinc to FlatZinc converter, version 2.8.2",
-    "trails_valid": true
-  },
   "schema_version": 1,
-  "workload": {
-    "description": "two exact four-bit modular-add trails joined by an exact switch",
-    "timeout_seconds": 30
-  }
+  "workloads": [
+    {
+      "description": "two exact four-bit modular-add trails joined by an exact switch",
+      "name": "modular_add",
+      "result": {
+        "constraints": 128,
+        "construction_seconds_median": 0.0009889995003504737,
+        "declarations": 37,
+        "exact_decoded_weight": 0.0,
+        "peak_memory_bytes_median": null,
+        "peak_memory_status": "not_reported_by_minizinc_driver",
+        "repeats": 10,
+        "search_weight": 0.0,
+        "solver": "MiniZincSolver(chuffed)",
+        "solver_seconds_median": 0.029943666999770358,
+        "solver_status": "satisfied",
+        "solver_version": "MiniZinc to FlatZinc converter, version 2.8.2",
+        "trails_valid": true
+      },
+      "timeout_seconds": 30
+    },
+    {
+      "description": "two exact PRESENT-2 trails joined at one exact S-box BCT switch",
+      "name": "sbox",
+      "result": {
+        "constraints": 71,
+        "construction_seconds_median": 0.08298266649944708,
+        "declarations": 516,
+        "exact_decoded_weight": 15.0,
+        "peak_memory_bytes_median": null,
+        "peak_memory_status": "not_reported_by_minizinc_driver",
+        "repeats": 10,
+        "search_weight": 15.0,
+        "solver": "MiniZincSolver(chuffed)",
+        "solver_seconds_median": 0.04894904200000383,
+        "solver_status": "satisfied",
+        "solver_version": "MiniZinc to FlatZinc converter, version 2.8.2",
+        "trails_valid": true
+      },
+      "timeout_seconds": 30
+    }
+  ]
 }

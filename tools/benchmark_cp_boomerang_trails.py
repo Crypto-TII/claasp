@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark complete modular-add boomerang trail composition under Chuffed."""
+"""Benchmark complete modular-add and S-box boomerang compositions."""
 
 import argparse
 import json
@@ -13,11 +13,17 @@ from time import monotonic
 from claasp import Primitive, ValueType, Word
 from claasp.components import ModularAdd
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
+from claasp.primitives import Present
 from claasp.representations.constraints.cp import (
     ModularAddBoomerangCPModel,
     ModularAddBoomerangTrailCPModel,
+    PresentDifferentialCPModel,
+    SBoxBoomerangCPModel,
+    SBoxBoomerangTrailCPModel,
     WordDifferentialCPModel,
 )
+from claasp.semantics import XOR_DIFFERENTIAL
+from claasp.semantics.cryptanalysis import PropagationProblem
 
 
 def _version():
@@ -53,6 +59,46 @@ def _model():
     )
 
 
+def _sbox_model():
+    upper = PresentDifferentialCPModel(
+        PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
+    )
+    lower = PresentDifferentialCPModel(
+        PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
+    )
+    component = next(item for item in upper.primitive.components if item.component_id == "sbox_1_0")
+    return SBoxBoomerangTrailCPModel(upper, lower, SBoxBoomerangCPModel(component), nibble=0)
+
+
+def _benchmark(model_factory, repeats, solver):
+    builds = []
+    model = query = None
+    for _ in range(repeats):
+        started = monotonic()
+        model = model_factory()
+        query = model.cp_model()
+        builds.append(monotonic() - started)
+    results = [solver.solve(query) for _ in range(repeats)]
+    if any(result.status is not CPStatus.SATISFIED for result in results):
+        raise RuntimeError("Chuffed did not solve the boomerang composition")
+    trails = [model.decode_trail(result.assignment) for result in results]
+    return {
+        "solver": "MiniZincSolver(chuffed)",
+        "solver_version": _version(),
+        "repeats": repeats,
+        "declarations": len(query.declarations),
+        "constraints": len(query.constraints),
+        "construction_seconds_median": median(builds),
+        "solver_seconds_median": median(result.runtime_seconds for result in results),
+        "solver_status": CPStatus.SATISFIED.value,
+        "trails_valid": all(trail.total_weight >= trail.search_weight for trail in trails),
+        "search_weight": trails[0].search_weight,
+        "exact_decoded_weight": trails[0].total_weight,
+        "peak_memory_bytes_median": None,
+        "peak_memory_status": "not_reported_by_minizinc_driver",
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repeats", type=int, default=10)
@@ -60,40 +106,24 @@ def main():
     args = parser.parse_args()
     if args.repeats < 1:
         parser.error("--repeats must be positive")
-    builds = []
-    model = query = None
-    for _ in range(args.repeats):
-        started = monotonic()
-        model = _model()
-        query = model.cp_model()
-        builds.append(monotonic() - started)
     solver = MiniZincSolver("chuffed", timeout_seconds=30)
-    results = [solver.solve(query) for _ in range(args.repeats)]
-    if any(result.status is not CPStatus.SATISFIED for result in results):
-        raise RuntimeError("Chuffed did not solve the boomerang composition")
-    trails = [model.decode_trail(result.assignment) for result in results]
     payload = {
         "schema_version": 1,
         "environment": {"platform": platform.platform(), "python": sys.version.split()[0]},
-        "workload": {
-            "description": "two exact four-bit modular-add trails joined by an exact switch",
-            "timeout_seconds": 30,
-        },
-        "result": {
-            "solver": "MiniZincSolver(chuffed)",
-            "solver_version": _version(),
-            "repeats": args.repeats,
-            "declarations": len(query.declarations),
-            "constraints": len(query.constraints),
-            "construction_seconds_median": median(builds),
-            "solver_seconds_median": median(result.runtime_seconds for result in results),
-            "solver_status": CPStatus.SATISFIED.value,
-            "trails_valid": all(trail.total_weight >= trail.search_weight for trail in trails),
-            "search_weight": trails[0].search_weight,
-            "exact_decoded_weight": trails[0].total_weight,
-            "peak_memory_bytes_median": None,
-            "peak_memory_status": "not_reported_by_minizinc_driver",
-        },
+        "workloads": (
+            {
+                "name": "modular_add",
+                "description": "two exact four-bit modular-add trails joined by an exact switch",
+                "timeout_seconds": 30,
+                "result": _benchmark(_model, args.repeats, solver),
+            },
+            {
+                "name": "sbox",
+                "description": "two exact PRESENT-2 trails joined at one exact S-box BCT switch",
+                "timeout_seconds": 30,
+                "result": _benchmark(_sbox_model, args.repeats, solver),
+            },
+        ),
     }
     rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
     if args.output:
