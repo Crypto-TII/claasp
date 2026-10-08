@@ -381,7 +381,9 @@ def check_present_smt_trail(primitive: Primitive, trail: Trail) -> bool:
         component = components.get(step.component_id)
         if not isinstance(component, BitVectorSBox):
             return False
-        if not SBoxTransitionSemantics(component.table).check(step.transition):
+        if not SBoxTransitionSemantics(
+            component.table, output_width=component.output_bit_size
+        ).check(step.transition):
             return False
     first_output = _join_nibbles(step.transition.output_pattern.value for step in trail.steps[:16])
     expected_second = _permute(
@@ -410,7 +412,9 @@ def check_present_linear_smt_trail(primitive: Primitive, trail: Trail) -> bool:
         component = components.get(step.component_id)
         if not isinstance(component, BitVectorSBox):
             return False
-        if not SBoxTransitionSemantics(component.table).check(step.transition):
+        if not SBoxTransitionSemantics(
+            component.table, output_width=component.output_bit_size
+        ).check(step.transition):
             return False
     state = _join_nibbles(step.transition.input_pattern.value for step in trail.steps[:16])
     if state != trail.input_pattern.value:

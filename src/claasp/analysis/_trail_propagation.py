@@ -153,7 +153,9 @@ def xor_differential_component_transitions(
             if local_transition is None:
                 if source != 0:
                     raise ValueError(f"trail has no S-box transition for {component.component_id}")
-                local_transition = SBoxTransitionSemantics(component.table).xor_differential(0, 0)
+                local_transition = SBoxTransitionSemantics(
+                    component.table, output_width=component.output_bit_size
+                ).xor_differential(0, 0)
             target = local_transition.output_pattern.value
             output = tuple(
                 (target >> position) & 1

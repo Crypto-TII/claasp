@@ -239,7 +239,9 @@ class PropagationProblem:
 
 class _SBoxProvider:
     def __init__(self, component: BitVectorSBox, semantics: SemanticType) -> None:
-        self.transition_semantics = SBoxTransitionSemantics(component.table)
+        self.transition_semantics = SBoxTransitionSemantics(
+            component.table, output_width=component.output_bit_size
+        )
         self.semantic_type = semantics
 
     def transition(self, input_patterns: tuple[int, ...], output_pattern: int) -> Transition:
