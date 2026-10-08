@@ -47,6 +47,7 @@ from claasp.representations.constraints.milp.trails import (
     WordDeterministicTruncatedMILPModel,
     WordDifferentialMILPModel,
     WordLinearMILPModel,
+    WordSemiDeterministicDifferentialLinearMILPModel,
     check_present_milp_trail,
 )
 
@@ -89,6 +90,7 @@ __all__ = [
     "WordDeterministicTruncatedMILPModel",
     "WordDifferentialMILPModel",
     "WordLinearMILPModel",
+    "WordSemiDeterministicDifferentialLinearMILPModel",
     "check_present_milp_trail",
     "cnf_to_milp",
     "load_bundled_sbox_milp_inequalities",

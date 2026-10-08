@@ -8,6 +8,7 @@ from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
     _direct_model,
+    _unaudited_model,
     _verified_model,
 )
 from claasp.representations.constraints.milp.model import (
@@ -442,6 +443,94 @@ class WordDeterministicDifferentialLinearMILPModel:
 
     def decode_trail(self, assignment):
         """Decode and independently validate all three trail sections."""
+
+        if self._model is None:
+            raise ValueError("build the MILP model before decoding")
+        return self._sat_model.decode_trail(
+            {name: int(round(value)) for name, value in assignment.items()}
+        )
+
+
+class WordSemiDeterministicDifferentialLinearMILPModel:
+    """Assemble semi-deterministic differential-linear trails as MILP.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = WordSemiDeterministicDifferentialLinearMILPModel(
+        ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
+        ...     differential_maximum_weight=16,
+        ...     middle_maximum_scaled_weight=None,
+        ...     linear_maximum_weight=16,
+        ... )
+        >>> formulation = model.milp_model()
+        >>> (len(formulation.variables), len(formulation.constraints))
+        (2303, 6599)
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.MILP,
+        "WordSemiDeterministicDifferentialLinearMILPModel",
+        "differential_linear",
+        "exact MILP translation of the recovered semi-deterministic composition",
+        "The middle probability and exact literature correspondence remain unaudited.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        prefix_rounds,
+        middle_rounds,
+        differential_maximum_weight,
+        middle_maximum_scaled_weight,
+        linear_maximum_weight,
+        input_difference=None,
+        output_mask=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import (
+            WordSemiDeterministicDifferentialLinearSATModel,
+        )
+
+        self._sat_model = WordSemiDeterministicDifferentialLinearSATModel(
+            primitive,
+            prefix_rounds=prefix_rounds,
+            middle_rounds=middle_rounds,
+            differential_maximum_weight=differential_maximum_weight,
+            middle_maximum_scaled_weight=middle_maximum_scaled_weight,
+            linear_maximum_weight=linear_maximum_weight,
+            input_difference=input_difference,
+            output_mask=output_mask,
+        )
+        self.primitive = primitive
+        self._model: MILPModel | None = None
+
+    def milp_model(self) -> MILPModel:
+        """Return the exact formulation with the historical outer objective."""
+
+        from claasp.representations.constraints.milp.lowering import cnf_to_milp
+
+        translated = cnf_to_milp(self._sat_model.cnf_formula())
+        coefficients = {}
+        for variable in translated.variables:
+            name = variable.name
+            if name.startswith("differential_weight_"):
+                coefficients[name] = 1
+            elif name.startswith("linear_") and "_weight_" in name and not name.startswith(
+                "linear___"
+            ):
+                coefficients[name] = 2
+        self._model = MILPModel(
+            translated.variables,
+            translated.constraints,
+            LinearExpression.from_terms(coefficients),
+            ObjectiveSense.MINIMIZE,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._model
+
+    def decode_trail(self, assignment):
+        """Decode all sections and retain the middle estimate separately."""
 
         if self._model is None:
             raise ValueError("build the MILP model before decoding")
