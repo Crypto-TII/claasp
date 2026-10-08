@@ -13,7 +13,9 @@ from claasp.components import (
     Constant,
     Identity,
     ModularAdd,
+    ModularMultiply,
     ModularSubtract,
+    Multiply,
     Permutation,
     Rotate,
     Shift,
@@ -29,6 +31,8 @@ from claasp.representations.constraints.sat.components import (
     BooleanNativeXorSATModel,
     ModularAddFunctionalSATModel,
     ModularAddNativeXorSATModel,
+    ModularMultiplyFunctionalSATModel,
+    ModularMultiplyNativeXorSATModel,
     ModularSubtractFunctionalSATModel,
     ModularSubtractNativeXorSATModel,
     SBoxFunctionalSATModel,
@@ -268,7 +272,7 @@ class BooleanCNFModel:
                 encoding = WiringFunctionalSATModel(component)
             elif isinstance(component, (VariableRotate, VariableShift)):
                 encoding = VariableWiringFunctionalSATModel(component)
-            elif isinstance(component, (Add, Xor, BitwiseAnd, BitwiseOr, BitwiseNot)):
+            elif isinstance(component, (Add, Multiply, Xor, BitwiseAnd, BitwiseOr, BitwiseNot)):
                 encoding = (
                     BooleanNativeXorSATModel(component)
                     if self.native_xor
@@ -285,6 +289,12 @@ class BooleanCNFModel:
                     ModularSubtractNativeXorSATModel(component)
                     if self.native_xor
                     else ModularSubtractFunctionalSATModel(component)
+                )
+            elif isinstance(component, ModularMultiply):
+                encoding = (
+                    ModularMultiplyNativeXorSATModel(component)
+                    if self.native_xor
+                    else ModularMultiplyFunctionalSATModel(component)
                 )
             elif isinstance(component, BitVectorSBox):
                 encoding = SBoxFunctionalSATModel(component)
@@ -353,6 +363,8 @@ class BooleanCNFModel:
             elif operation == "mux_zero":
                 selector, direct = (assignment[item] for item in operands)
                 assignment[target] = 0 if selector else direct
+            elif operation == "zero":
+                assignment[target] = 0
             elif operation.startswith("prefix_mod:"):
                 _, remainder, width = operation.split(":")
                 value = sum(

@@ -655,6 +655,12 @@ claasp.representations.constraints.sat.components.modular_add
 .. automodule:: claasp.representations.constraints.sat.components.modular_add
    :no-index:
 
+claasp.representations.constraints.sat.components.modular_multiply
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.modular_multiply
+   :no-index:
+
 claasp.representations.constraints.sat.components.sbox
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

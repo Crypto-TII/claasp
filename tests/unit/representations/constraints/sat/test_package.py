@@ -4,13 +4,16 @@ import pytest
 
 from claasp import bits_from_int
 from claasp.components import Add
-from claasp.domains import Bit
+from claasp.components import ModularMultiply as ModularMultiplyComponent
+from claasp.domains import Bit, Word
 from claasp.graph import Primitive, ValueType
 from claasp.primitives import MiMC, Present80, Simon, Speck
 from claasp.primitives.single_component_primitives import (
     BitwiseNot,
     BitwiseOr,
+    ModularMultiply,
     ModularSubtract,
+    Multiply,
     Shift,
     VariableRotate,
     VariableShift,
@@ -199,15 +202,41 @@ def test_non_boolean_encodable_graph_is_rejected_explicitly():
         BooleanCNFModel(MiMC(17, 3, (1,))).cnf_formula()
 
 
-def test_unsupported_bit_component_is_rejected_explicitly():
-    from claasp.components import Multiply
+def test_bit_multiply_witnesses_are_exhaustive():
+    primitive = Multiply(unit_count=3, number_of_inputs=3)
+    model = BooleanCNFModel(primitive)
+    formula = model.cnf_formula()
+    for operands in product(range(8), repeat=3):
+        evaluation = primitive.evaluate_with_trace(*operands)
+        witness = model.witness(evaluation)
+        assert formula.is_satisfied(witness)
 
-    primitive = Primitive("and", {"x": ValueType(Bit(), (1,)), "y": ValueType(Bit(), (1,))})
-    primitive.add_round()
-    primitive.add_component(
-        Multiply((primitive.input("x"), primitive.input("y")), component_id="product")
+
+def test_modular_multiply_witnesses_are_exhaustive_at_three_bits():
+    primitive = ModularMultiply(word_bit_size=3, number_of_inputs=3)
+    model = BooleanCNFModel(primitive)
+    formula = model.cnf_formula()
+    for operands in product(range(8), repeat=3):
+        evaluation = primitive.evaluate_with_trace(*operands)
+        witness = model.witness(evaluation)
+        assert primitive.evaluate(*operands) == operands[0] * operands[1] * operands[2] % 8
+        assert formula.is_satisfied(witness)
+        changed = dict(witness)
+        changed["modular_multiply_0_0_0_0"] ^= 1
+        assert not formula.is_satisfied(changed)
+
+
+def test_non_power_of_two_modular_multiply_is_rejected_explicitly():
+    primitive = Primitive(
+        "modmul_13", {name: ValueType(Word(4), (1,)) for name in ("left", "right")}
     )
-    with pytest.raises(NotImplementedError, match="Multiply"):
+    primitive.add_round()
+    primitive.set_output(
+        primitive.add_component(
+            ModularMultiplyComponent(primitive.inputs(), modulus=13, component_id="product")
+        )
+    )
+    with pytest.raises(NotImplementedError, match=r"modulus 2\*\*word_width"):
         BooleanCNFModel(primitive).cnf_formula()
 
 
