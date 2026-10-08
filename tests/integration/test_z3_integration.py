@@ -13,6 +13,8 @@ from claasp.representations.constraints.smt import (
     PresentLinearSMTModel,
     SBoxTransitionSMTModel,
     WordDeterministicTruncatedSMTModel,
+    WordDifferentialSMTModel,
+    WordLinearSMTModel,
 )
 from claasp.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -62,6 +64,27 @@ def test_z3_preserves_deterministic_truncated_toy_speck_trail():
     assert (
         Z3Solver(timeout_seconds=10).solve(rejected.smt_formula()).status is SatStatus.UNSATISFIABLE
     )
+
+
+def test_z3_solves_and_independently_checks_word_differential_and_linear_trails():
+    solver = Z3Solver(timeout_seconds=10)
+    differential = WordDifferentialSMTModel(
+        ToySpeck(2), fixed_weight=1, fixed_input_differences={"key": 0}
+    )
+    differential_result = solver.solve(differential.smt_formula())
+    assert differential_result.status is SatStatus.SATISFIABLE
+    differential_trail = differential.decode_characteristic(differential_result.assignment)
+    assert differential_trail.total_weight == 1
+    assert differential.check_characteristic(differential_trail)
+
+    linear = WordLinearSMTModel(
+        ToySpeck(2), maximum_weight=2, nonzero_input="plaintext", fixed_inputs={"key": 0}
+    )
+    linear_result = solver.solve(linear.smt_formula())
+    assert linear_result.status is SatStatus.SATISFIABLE
+    linear_trail = linear.decode_characteristic(linear_result.assignment)
+    assert linear_trail.total_weight <= 2
+    assert linear.check_characteristic(linear_trail)
 
 
 def test_z3_incremental_queries_reject_mutation_and_close_process():

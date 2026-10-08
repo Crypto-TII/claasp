@@ -684,6 +684,14 @@ differential-linear SAT compositions are implemented and benchmarked. Their
 older table rows no longer remain false-positive TODOs; broader component
 coverage and unaudited provenance stay explicitly open.
 
+The SMT differential/linear audit confirms that the generic Word models are
+the source Boolean formulations used by their SAT counterparts: variables,
+assertions/clauses, and provenance labels match exactly. Z3 solves and the
+typed independent checkers validate fixed-weight differential and bounded-
+weight linear ToySpeck-2 trails. This closes parity for the reviewed Word
+subset without duplicating it; legacy component kinds outside that subset
+remain explicit recovery work.
+
 The first active-S-box recovery adds ``PresentActiveSBoxesMILPModel``. It keeps
 the exact two-round PRESENT DDT feasible region byte-for-byte identical to the
 weighted trail model and changes only the objective to count selectors with a
