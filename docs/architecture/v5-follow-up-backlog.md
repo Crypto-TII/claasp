@@ -713,6 +713,15 @@ disabled, its modular-add predicate is the exact relation already used by
 heuristic explicitly without changing the default. Chuffed solves and typed
 decoding rechecks a three-round Speck32/64 fixture with window size three.
 
+The conditional deterministic-truncated ARX audit found no second formulation
+to port. The legacy
+``MznDeterministicTruncatedXorDifferentialModelARXOptimized`` at
+``origin/develop`` (SHA-256
+``c8e612618b636fb5cfc5a8342a7caba97fe266446b2a12df74b1994419d6bc1d``)
+dispatches only ROTATE and SHIFT and reports modular addition and XOR as
+unimplemented. The complete v5 Word/Speck models supersede that incomplete
+wrapper; adding an alias would falsely imply preserved behavior.
+
 Benchmark recovered and portable strategies under the same primitive, round
 count, boundary conditions, trail objective, solver and version, solver
 settings, hardware, and timeout. Record at least model-construction time,
