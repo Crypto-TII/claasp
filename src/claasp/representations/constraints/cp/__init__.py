@@ -9,6 +9,8 @@ __all__ = [
     "ImpossibleBoundaryCPModel",
     "MiniZincModel",
     "ModularAddBoomerangCPModel",
+    "ModularAddBoomerangTrailCPModel",
+    "ModularAddBoomerangTrailResult",
     "ModularAddDeterministicTruncatedCPModel",
     "PresentDifferentialCPModel",
     "PresentFixedActiveSBoxesCPModel",
@@ -66,6 +68,8 @@ def __getattr__(name: str):
     if name in {
         "ImpossibleBoundaryCPModel",
         "ModularAddDeterministicTruncatedCPModel",
+        "ModularAddBoomerangTrailCPModel",
+        "ModularAddBoomerangTrailResult",
         "SBoxDifferenceCPModel",
         "SBoxBoomerangCPModel",
         "ProbabilisticTruncatedModularAddCPModel",

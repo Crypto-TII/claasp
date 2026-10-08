@@ -1,8 +1,8 @@
 {
   "counts_by_code": {
-    "arg-type": 161,
+    "arg-type": 165,
     "assignment": 76,
-    "attr-defined": 130,
+    "attr-defined": 132,
     "call-arg": 7,
     "call-overload": 82,
     "dict-item": 28,
@@ -16,16 +16,16 @@
     "override": 4,
     "return-value": 4,
     "type-var": 2,
-    "union-attr": 56,
-    "var-annotated": 133
+    "union-attr": 61,
+    "var-annotated": 134
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 706,
-    "tests": 164,
-    "tools": 23
+    "src/claasp": 711,
+    "tests": 166,
+    "tools": 28
   },
-  "diagnostic_count": 893,
+  "diagnostic_count": 905,
   "diagnostics": [
     {
       "code": "operator",
@@ -3257,92 +3257,127 @@
     {
       "code": "assignment",
       "column": 25,
-      "line": 135,
+      "line": 142,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[Any, ...], tuple[str, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 29,
-      "line": 136,
+      "line": 143,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 35,
-      "line": 137,
+      "line": 144,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 27,
-      "line": 370,
+      "line": 377,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 25,
-      "line": 375,
+      "line": 382,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[str, ...], tuple[str, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 29,
-      "line": 376,
+      "line": 383,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "index",
       "column": 28,
-      "line": 549,
+      "line": 556,
       "message": "Value of type \"object\" is not indexable",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "operator",
       "column": 16,
-      "line": 560,
+      "line": 567,
       "message": "Unsupported operand types for > (\"float\" and \"None\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 761,
+      "line": 768,
       "message": "Need type annotation for \"constraints\" (hint: \"constraints: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "misc",
       "column": 20,
-      "line": 904,
+      "line": 911,
       "message": "Enum index should be a string (actual index type \"Any | str | None\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 955,
+      "line": 962,
       "message": "Need type annotation for \"declarations\" (hint: \"declarations: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 23,
-      "line": 1228,
+      "line": 1235,
       "message": "Need type annotation for \"constraints\" (hint: \"constraints: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 1328,
+      "line": 1335,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 16,
+      "line": 1590,
+      "message": "\"object\" has no attribute \"total_weight\"",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 37,
+      "line": 1596,
+      "message": "\"object\" has no attribute \"weight\"",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 1708,
+      "message": "Need type annotation for \"links\" (hint: \"links: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 25,
+      "line": 1720,
+      "message": "Item \"None\" of \"Any | None\" has no attribute \"variables\"",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 25,
+      "line": 1725,
+      "message": "Item \"None\" of \"Any | None\" has no attribute \"variables\"",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
@@ -4991,23 +5026,30 @@
       "path": "tests/integration/test_minisat_integration.py"
     },
     {
+      "code": "arg-type",
+      "column": 48,
+      "line": 91,
+      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/integration/test_minizinc_integration.py"
+    },
+    {
       "code": "index",
       "column": 18,
-      "line": 95,
+      "line": 132,
       "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
       "path": "tests/integration/test_minizinc_integration.py"
     },
     {
       "code": "index",
       "column": 14,
-      "line": 121,
+      "line": 158,
       "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
       "path": "tests/integration/test_minizinc_integration.py"
     },
     {
       "code": "dict-item",
       "column": 10,
-      "line": 321,
+      "line": 358,
       "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection\"",
       "path": "tests/integration/test_minizinc_integration.py"
     },
@@ -5700,6 +5742,13 @@
     {
       "code": "arg-type",
       "column": 44,
+      "line": 35,
+      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/unit/representations/constraints/cp/test_trails.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 44,
       "line": 56,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/representations/constraints/milp/test_monomial.py"
@@ -6165,6 +6214,41 @@
       "line": 41,
       "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
       "path": "tools/benchmark_cp_active_sboxes.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 44,
+      "line": 37,
+      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tools/benchmark_cp_boomerang_trails.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 29,
+      "line": 71,
+      "message": "Argument 1 to \"solve\" of \"MiniZincSolver\" has incompatible type \"Any | None\"; expected \"MiniZincModel | CNFFormula\"",
+      "path": "tools/benchmark_cp_boomerang_trails.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 15,
+      "line": 74,
+      "message": "Item \"None\" of \"Any | None\" has no attribute \"decode_trail\"",
+      "path": "tools/benchmark_cp_boomerang_trails.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 33,
+      "line": 86,
+      "message": "Item \"None\" of \"Any | None\" has no attribute \"declarations\"",
+      "path": "tools/benchmark_cp_boomerang_trails.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 32,
+      "line": 87,
+      "message": "Item \"None\" of \"Any | None\" has no attribute \"constraints\"",
+      "path": "tools/benchmark_cp_boomerang_trails.py"
     },
     {
       "code": "union-attr",
