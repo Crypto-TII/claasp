@@ -597,77 +597,77 @@
     {
       "code": "operator",
       "column": 25,
-      "line": 221,
+      "line": 295,
       "message": "\"object\" not callable",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "index",
       "column": 26,
-      "line": 476,
+      "line": 592,
       "message": "Invalid index type \"str | None\" for \"dict[str, Component]\"; expected type \"str\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "index",
       "column": 21,
-      "line": 477,
+      "line": 593,
       "message": "Invalid index type \"str | None\" for \"dict[str, Port]\"; expected type \"str\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "operator",
       "column": 34,
-      "line": 622,
+      "line": 738,
       "message": "Unsupported operand types for + (\"int\" and \"None\")",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "arg-type",
       "column": 54,
-      "line": 623,
+      "line": 739,
       "message": "Argument 3 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "misc",
       "column": 25,
-      "line": 627,
+      "line": 743,
       "message": "Generator has incompatible item type \"int\"; expected \"bool\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "operator",
       "column": 38,
-      "line": 627,
+      "line": 743,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "var-annotated",
       "column": 17,
-      "line": 635,
+      "line": 751,
       "message": "Need type annotation for \"result_units\" (hint: \"result_units: list[<type>] = ...\")",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "operator",
       "column": 39,
-      "line": 639,
+      "line": 755,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "arg-type",
       "column": 46,
-      "line": 640,
+      "line": 756,
       "message": "Argument 1 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "index",
       "column": 26,
-      "line": 766,
+      "line": 882,
       "message": "Invalid index type \"str | None\" for \"dict[str, Selection]\"; expected type \"str\"",
       "path": "src/claasp/graph/primitive.py"
     },
@@ -751,14 +751,14 @@
     {
       "code": "arg-type",
       "column": 40,
-      "line": 157,
+      "line": 159,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, object]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/aes/primitive.py"
     },
     {
       "code": "arg-type",
       "column": 44,
-      "line": 171,
+      "line": 173,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, object]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/aes/primitive.py"
     },
@@ -4383,14 +4383,14 @@
     },
     {
       "code": "operator",
-      "column": 67,
+      "column": 29,
       "line": 245,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/representations/source/c.py"
     },
     {
       "code": "operator",
-      "column": 72,
+      "column": 34,
       "line": 247,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/representations/source/c.py"
@@ -4425,7 +4425,7 @@
     },
     {
       "code": "type-var",
-      "column": 64,
+      "column": 30,
       "line": 206,
       "message": "Value of type variable \"SupportsRichComparisonT\" of \"sorted\" cannot be \"str | None\"",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
@@ -6526,5 +6526,5 @@
     "tools",
     "docs/conf.py"
   ],
-  "version_evidence": "mypy 2.3.1 (compiled: yes)"
+  "version_evidence": "mypy 2.3.1 (compiled: no)"
 }

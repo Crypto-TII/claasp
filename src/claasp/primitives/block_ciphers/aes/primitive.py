@@ -145,6 +145,8 @@ class AES(Primitive):
             {"plaintext": state_type, "key": ValueType(AES_FIELD, (key_bit_size // 8,))},
             kind=PrimitiveKind.BLOCK_CIPHER,
             provenance=(("identity", "AES"), ("specification", "FIPS 197")),
+            instance_name=f"AES-{key_bit_size}",
+            round_count=rounds,
         )
 
         # KEYEXPANSION(key)
