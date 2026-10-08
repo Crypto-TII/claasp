@@ -828,8 +828,9 @@ The boomerang assembly follow-up adds
 ``WordDifferentialCPModel`` formulas, links their exposed switch word to the
 exact carry/borrow automaton, and minimizes the recovered upper-plus-lower
 characteristic cost. Decoding independently checks both trails and recomputes
-the switch quartet count; the result reports the search weight separately from
-the exact decoded weight including that switch. Automatic legacy graph
+the switch quartet count; the result reports the one-pass search weight
+``w_upper + w_lower`` separately from the boomerang probability exponent
+``2 * w_upper + w_switch + 2 * w_lower``. Automatic legacy graph
 partitioning remained distinct work at that checkpoint.
 
 The S-box boomerang assembly follow-up adds
@@ -837,7 +838,9 @@ The S-box boomerang assembly follow-up adds
 differential characteristics, links a selected upper output nibble and lower
 input nibble through the exact PRESENT BCT, and maximizes that switch's quartet
 count. Decoding independently rechecks both DDT trails, the final permutation,
-the selected boundary nibbles, and the BCT count. Chuffed solves ten repeated
+the selected boundary nibbles, and the BCT count. Its decoded weight uses the
+same squared-trail exponent while ``search_weight`` remains the solver's
+one-pass upper-plus-lower score. Chuffed solves ten repeated
 modular-add and S-box compositions in the shared benchmark. Automatic round
 partitioning remained separate at that checkpoint.
 

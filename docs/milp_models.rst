@@ -459,7 +459,7 @@ masks and unary correlation weight:
    >>> addition = ModularAddLinearMILPModel(16)
    >>> arx_model = addition.milp_model(left_mask=0x6081, right_mask=0x40c1, output_mask=0x4081)
    >>> (len(arx_model.variables), len(arx_model.constraints))
-   (79, 124)
+   (79, 128)
 
 GLPK integration restores the four modular-add transitions of the legacy
 four-round Speck32/64 weight-3 characteristic, including weights

@@ -190,7 +190,10 @@ continuous heuristics.
 
 Composed attacks use backend-neutral result contracts before they acquire a CP
 lowering. ``BoomerangTrail`` joins two XOR-differential trails through an
-explicit four-difference ``BoomerangSwitchBoundary``. A
+explicit four-difference ``BoomerangSwitchBoundary``. Its ``total_weight`` is
+the probability exponent ``2 * w_upper + w_switch + 2 * w_lower``; CP search
+results keep the cheaper one-pass objective ``w_upper + w_lower`` separately
+as ``search_weight``. A
 ``DifferentialLinearTrail`` keeps its differential prefix,
 probabilistic-truncated connector, and linear suffix separate and reports the
 legacy exact objective rather than the cheaper search approximation. Solver
