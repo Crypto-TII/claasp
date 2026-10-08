@@ -1,6 +1,7 @@
-from claasp.primitives import Present, ToySpeck
+from claasp.primitives import Present, Speck, ToySpeck
 from claasp.representations.constraints.milp import (
     PresentDifferentialMILPModel,
+    WordDeterministicDifferentialLinearMILPModel,
     WordDeterministicTruncatedMILPModel,
     WordDifferentialMILPModel,
     WordLinearMILPModel,
@@ -42,4 +43,19 @@ def test_portable_deterministic_truncated_milp_preserves_formula_size():
     )
     formulation = model.milp_model()
     assert (len(formulation.variables), len(formulation.constraints)) == (200, 829)
+    assert formulation.constraint_models[0].model == model.model_provenance
+
+
+def test_differential_linear_milp_preserves_formula_size_and_objective():
+    model = WordDeterministicDifferentialLinearMILPModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=1,
+        middle_rounds=1,
+        differential_maximum_weight=16,
+        linear_maximum_weight=16,
+    )
+    formulation = model.milp_model()
+    assert (len(formulation.variables), len(formulation.constraints)) == (2543, 7151)
+    assert len(formulation.objective.terms) == 63
+    assert set(coefficient for _, coefficient in formulation.objective.terms) == {1.0, 2.0}
     assert formulation.constraint_models[0].model == model.model_provenance

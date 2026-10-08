@@ -579,6 +579,14 @@ then decodes and independently rechecks the complete Word graph. GLPK solves
 the reviewed fixed-boundary ToySpeck fixture without Sage or a proprietary
 solver; specialized activity and impossible-search strategies remain separate.
 
+The deterministic-middle MILP composition adds
+``WordDeterministicDifferentialLinearMILPModel``. The complete reviewed Boolean
+composition becomes exact clause inequalities, while its minimization objective
+includes only semantic differential weights with coefficient one and linear
+correlation weights with coefficient two. Counter and complement auxiliaries
+remain feasibility variables. GLPK decodes and independently validates all
+three sections on Speck32/64-3.
+
 The first differential-linear SAT slice recovers the local upper and lower
 boundary clauses as ``DifferentialToTruncatedSATModel`` and
 ``TruncatedToLinearSATModel``. Exhaustive Boolean tests establish the complete
