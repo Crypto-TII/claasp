@@ -1,4 +1,4 @@
-from claasp.primitives import Present, Speck, ToySpeck
+from claasp.primitives import Present, Speck, ToyAES, ToySpeck
 from claasp.representations.constraints.milp import (
     PresentActiveSBoxesMILPModel,
     PresentDifferentialMILPModel,
@@ -11,6 +11,7 @@ from claasp.representations.constraints.milp import (
     WordImpossibleMILPModel,
     WordLinearMILPModel,
     WordSemiDeterministicDifferentialLinearMILPModel,
+    WordwiseBranchNumberActiveSBoxesMILPModel,
 )
 
 
@@ -43,6 +44,18 @@ def test_present_fixed_activity_model_keeps_weight_objective():
     assert formulation.constraints[-1].name == "fixed_active_sboxes"
     assert formulation.constraints[-1].rhs == 2
     assert len(formulation.objective.terms) == 32 * 96
+    assert formulation.constraint_models[0].model == model.model_provenance
+
+
+def test_wordwise_branch_activity_builds_typed_toyaes_relaxation():
+    model = WordwiseBranchNumberActiveSBoxesMILPModel(
+        ToyAES(number_of_rounds=2),
+        active_input="plaintext",
+        zero_difference_inputs=("key",),
+    )
+    formulation = model.milp_model()
+    assert (len(formulation.variables), len(formulation.constraints)) == (292, 469)
+    assert len(formulation.objective.terms) == 40
     assert formulation.constraint_models[0].model == model.model_provenance
 
 

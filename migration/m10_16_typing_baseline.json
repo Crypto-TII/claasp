@@ -17,15 +17,15 @@
     "return-value": 4,
     "type-var": 2,
     "union-attr": 54,
-    "var-annotated": 130
+    "var-annotated": 131
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 704,
+    "src/claasp": 705,
     "tests": 162,
     "tools": 21
   },
-  "diagnostic_count": 887,
+  "diagnostic_count": 888,
   "diagnostics": [
     {
       "code": "operator",
@@ -3390,28 +3390,35 @@
     {
       "code": "assignment",
       "column": 25,
-      "line": 133,
+      "line": 146,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[Any, ...], tuple[Any, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/milp/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 26,
-      "line": 144,
+      "line": 157,
       "message": "Need type annotation for \"component_id\"",
+      "path": "src/claasp/representations/constraints/milp/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 21,
+      "line": 441,
+      "message": "Need type annotation for \"coefficients\" (hint: \"coefficients: dict[<type>, <type>] = ...\")",
       "path": "src/claasp/representations/constraints/milp/trails.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 928,
+      "line": 1230,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "src/claasp/representations/constraints/milp/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 1004,
+      "line": 1306,
       "message": "Need type annotation for \"variables\" (hint: \"variables: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/milp/trails.py"
     },

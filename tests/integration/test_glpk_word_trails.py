@@ -3,7 +3,7 @@
 import pytest
 
 from claasp.drivers.solvers import GLPKSolver, MILPStatus
-from claasp.primitives import Speck, ToySpeck
+from claasp.primitives import Speck, ToyAES, ToySpeck
 from claasp.representations.constraints.milp import (
     SpeckImpossibleMILPModel,
     SpeckSemiDeterministicTruncatedMILPModel,
@@ -13,9 +13,22 @@ from claasp.representations.constraints.milp import (
     WordImpossibleMILPModel,
     WordLinearMILPModel,
     WordSemiDeterministicDifferentialLinearMILPModel,
+    WordwiseBranchNumberActiveSBoxesMILPModel,
 )
 
 pytestmark = pytest.mark.external
+
+
+def test_glpk_recovers_toyaes_wordwise_active_sbox_sequence():
+    for rounds, expected in enumerate((1, 5, 9, 25), start=1):
+        model = WordwiseBranchNumberActiveSBoxesMILPModel(
+            ToyAES(number_of_rounds=rounds),
+            active_input="plaintext",
+            zero_difference_inputs=("key",),
+        )
+        solved = GLPKSolver(timeout_seconds=30).solve(model.milp_model())
+        assert solved.status is MILPStatus.OPTIMAL
+        assert model.decode_activity(solved.assignment).active_sboxes == expected
 
 
 @pytest.mark.parametrize(
