@@ -7,7 +7,12 @@ from claasp.components import Add
 from claasp.domains import Bit
 from claasp.graph import Primitive, ValueType
 from claasp.primitives import MiMC, Present80, Simon, Speck
-from claasp.primitives.single_component_primitives import BitwiseNot, BitwiseOr, Shift
+from claasp.primitives.single_component_primitives import (
+    BitwiseNot,
+    BitwiseOr,
+    ModularSubtract,
+    Shift,
+)
 from claasp.representations.constraints.sat import BooleanCNFModel, CNFFormula
 from claasp.representations.constraints.sat.exporters import DimacsExporter
 from claasp.representations.execution import ScalarEvaluator
@@ -115,6 +120,20 @@ def test_additional_legacy_word_operations_have_exact_functional_witnesses(primi
     changed = dict(witness)
     changed[output_name] ^= 1
     assert not formula.is_satisfied(changed)
+
+
+def test_multi_operand_modular_subtract_witnesses_are_exhaustive_at_three_bits():
+    primitive = ModularSubtract(word_bit_size=3, number_of_inputs=3)
+    model = BooleanCNFModel(primitive)
+    formula = model.cnf_formula()
+    for left, middle, right in product(range(8), repeat=3):
+        evaluation = primitive.evaluate_with_trace(left, middle, right)
+        witness = model.witness(evaluation)
+        assert primitive.evaluate(left, middle, right) == (left - middle - right) % 8
+        assert formula.is_satisfied(witness)
+        changed = dict(witness)
+        changed["modular_subtract_0_0_0_0"] ^= 1
+        assert not formula.is_satisfied(changed)
 
 
 def test_legacy_three_input_or_relation_retains_the_complete_truth_table():

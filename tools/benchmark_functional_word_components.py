@@ -9,7 +9,7 @@ from pathlib import Path
 from statistics import median
 
 from claasp import Primitive, ValueType, Word
-from claasp.components import BitwiseNot, BitwiseOr, Shift
+from claasp.components import BitwiseNot, BitwiseOr, ModularSubtract, Shift
 from claasp.drivers.solvers import (
     CPStatus,
     GLPKSolver,
@@ -33,7 +33,12 @@ def _primitive():
     )
     complemented = primitive.add_component(BitwiseNot(merged))
     left = primitive.add_component(Shift(complemented, 3, "left"))
-    primitive.set_output(primitive.add_component(Shift(left, 2, "right")))
+    right = primitive.add_component(Shift(left, 2, "right"))
+    primitive.set_output(
+        primitive.add_component(
+            ModularSubtract((right, primitive.input("a"), primitive.input("b")))
+        )
+    )
     return primitive
 
 
@@ -91,7 +96,7 @@ def main():
         "schema_version": 1,
         "environment": {"platform": platform.platform(), "python": sys.version.split()[0]},
         "workload": {
-            "description": "8-bit three-input OR, NOT, left SHIFT, and right SHIFT graph",
+            "description": "8-bit OR, NOT, fixed shifts, and three-input modular-subtract graph",
             "variables": len(cnf.variables),
             "clauses": len(cnf.clauses),
         },

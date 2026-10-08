@@ -9,34 +9,34 @@
       "backend": "SAT",
       "repeats": 10,
       "solver": "MinisatSolver",
-      "solver_seconds_median": 0.000688020999859873
+      "solver_seconds_median": 0.0009698335002212843
     },
     {
       "assignment_valid": true,
       "backend": "SMT",
       "repeats": 10,
       "solver": "Z3Solver",
-      "solver_seconds_median": 0.005024666999815963
+      "solver_seconds_median": 0.006038520999936736
     },
     {
       "assignment_valid": true,
       "backend": "CP",
       "repeats": 10,
       "solver": "MiniZincSolver",
-      "solver_seconds_median": 0.02817439599948557
+      "solver_seconds_median": 0.03344250049985931
     },
     {
       "assignment_valid": true,
       "backend": "MILP",
       "repeats": 10,
       "solver": "GLPKSolver",
-      "solver_seconds_median": 0.0006860625003355381
+      "solver_seconds_median": 0.001353228999505518
     }
   ],
   "schema_version": 1,
   "workload": {
-    "clauses": 91,
-    "description": "8-bit three-input OR, NOT, left SHIFT, and right SHIFT graph",
-    "variables": 64
+    "clauses": 315,
+    "description": "8-bit OR, NOT, fixed shifts, and three-input modular-subtract graph",
+    "variables": 108
   }
 }

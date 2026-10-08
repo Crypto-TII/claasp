@@ -727,6 +727,14 @@ Chuffed, and GLPK. Multi-input OR witnesses retain their auxiliary values.
 Modular subtraction/multiplication, variable shifts/rotations, and specialized
 components remain explicit rather than being silently skipped.
 
+The modular-subtraction follow-up adds explicit
+``ModularSubtractFunctionalSATModel`` and
+``ModularSubtractNativeXorSATModel`` strategies. A sequential ripple-borrow
+circuit supports every declared operand, not only the binary case; all 512
+three-bit, three-input assignments are checked against scalar execution.
+Native-XOR expansion reproduces ordinary CNF exactly, and the cross-backend
+functional benchmark now includes the subtraction stage.
+
 The first active-S-box recovery adds ``PresentActiveSBoxesMILPModel``. It keeps
 the exact two-round PRESENT DDT feasible region byte-for-byte identical to the
 weighted trail model and changes only the objective to count selectors with a

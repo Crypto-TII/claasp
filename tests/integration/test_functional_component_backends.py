@@ -3,7 +3,7 @@
 import pytest
 
 from claasp import Primitive, ValueType, Word
-from claasp.components import BitwiseNot, BitwiseOr, Shift
+from claasp.components import BitwiseNot, BitwiseOr, ModularSubtract, Shift
 from claasp.drivers.solvers import (
     CPStatus,
     GLPKSolver,
@@ -29,7 +29,12 @@ def _primitive():
     )
     complemented = primitive.add_component(BitwiseNot(merged))
     left = primitive.add_component(Shift(complemented, 3, "left"))
-    primitive.set_output(primitive.add_component(Shift(left, 2, "right")))
+    right = primitive.add_component(Shift(left, 2, "right"))
+    primitive.set_output(
+        primitive.add_component(
+            ModularSubtract((right, primitive.input("a"), primitive.input("b")))
+        )
+    )
     return primitive
 
 

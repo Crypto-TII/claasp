@@ -6,6 +6,7 @@ import pytest
 
 from claasp.drivers.solvers import MinisatSolver
 from claasp.primitives import Simon, Speck, ToySpeck
+from claasp.primitives.single_component_primitives import ModularSubtract
 from claasp.representations.constraints.sat import (
     BooleanCNFModel,
     BooleanNativeXorModel,
@@ -37,7 +38,14 @@ def test_signed_native_xor_matches_its_independent_cnf_expansion():
         assert formula.is_satisfied(assignment) == expanded.is_satisfied(assignment)
 
 
-@pytest.mark.parametrize("primitive", (Speck(number_of_rounds=1), Simon(number_of_rounds=1)))
+@pytest.mark.parametrize(
+    "primitive",
+    (
+        Speck(number_of_rounds=1),
+        Simon(number_of_rounds=1),
+        ModularSubtract(word_bit_size=4, number_of_inputs=3),
+    ),
+)
 def test_native_xor_graph_lowering_matches_ordinary_cnf(primitive):
     ordinary = BooleanCNFModel(primitive)
     native = BooleanNativeXorModel(primitive)
