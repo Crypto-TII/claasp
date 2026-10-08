@@ -36,6 +36,11 @@ model moved to `VERIFIED`; ten direct connectors, wrappers, or mechanical
 lowerings moved to `N/A`. Nested provenance now keeps the unresolved local
 semi-deterministic modular-add relation visible through every wrapper.
 
+After the monomial-prediction and division-property audit, the total remains
+129 declarations on 126 classes: 31 `VERIFIED`, 85 `N/A`, and 13 `TBD`. The
+degree-bound and fixed-cube queries moved from `N/A` to `VERIFIED` after their
+objectives and boundary conditions were matched to the primary source.
+
 ## Modular addition, subtraction, and truncated variants
 
 The audit compared the current implementation with legacy CLAASP commit
@@ -168,3 +173,31 @@ legacy predicate terminology, and the shared-difference exclusions found no
 matching primary construction. The local semi-deterministic relation and two
 paired-input models therefore remain `TBD` with their unresolved constraint
 semantics stated explicitly.
+
+## Monomial prediction and division-property models
+
+This audit covered current local ANF transitions, graph lowering, reduced
+PRESENT composition, degree and cube queries, their independent tests, legacy
+commit `3aacc275`, and the audited legacy inventory. The legacy Gurobi model
+builds the same ANF transitions and objectives, but carries no literature
+citation; the correspondence below was therefore checked directly against the
+primary source.
+
+| Models | Status | Evidence and correspondence |
+|---|---|---|
+| `MonomialTransitionMILPModel` | `VERIFIED` | Hu--Sun--Wang--Wang, *An Algebraic Formulation of the Division Property: Revisiting Degree Evaluations, Cube Attacks, and Key-Independent Sums*, <https://eprint.iacr.org/2020/1048>, Section 3, the local `x^u -> y^v` relation and Definition 1. CLAASP multiplies the selected coordinate ANFs, retains exactly the input monomials with odd coefficient, and selects one resulting local transition. |
+| `BooleanMonomialGraphMILPModel` | `VERIFIED` | Hu--Sun--Wang--Wang, Section 4.2, “MILP Model for the monomial trail of f^(i).” The implementation uses exactly the listed COPY, AND, and XOR relations and direct renaming for rotations and permutations; arbitrary fan-out and arity are repeated forms of those local rules. |
+| `PresentMonomialTrailMILPModel` | `VERIFIED` | Hu--Sun--Wang--Wang, Section 3, Definition 1, and Section 4.2. The model composes exact S-box ANF transitions into a trail and renames bits through the P-layer. It is deliberately a reduced S-box/P-layer region, not a claim that the paper publishes a complete keyed PRESENT model. |
+| `MonomialDegreeMILPModel` | `VERIFIED` | Hu--Sun--Wang--Wang, Section 4.1, Equation (1), Steps 1--2, and the paragraph introducing the MILP approach. CLAASP fixes a unit output exponent and maximizes the input exponent weight. The decoded optimum remains a reachability upper bound unless parity is established separately. |
+| `CubeMonomialFeasibilityMILPModel` | `VERIFIED` | Hu--Sun--Wang--Wang, Section 3, Lemma 1, and Section 5.1's `x^(u xor w) -> f` recovery relation. CLAASP fixes the complete selected cube exponent and asks the graph relation for feasibility. Infeasibility soundly excludes that term; feasibility does not prove a nonzero coefficient because multiple trails can cancel. |
+| `CubeSuperpolyQuery` | `N/A` (non-constraint query) | This bounded oracle exhaustively evaluates the cube and symbolic subspace and applies the generic Boolean Möbius transform. It emits no constraint model and accounts for cancellation directly, so it is intentionally outside structured constraint-model provenance coverage. |
+
+### Limitation record
+
+The published monomial-prediction MILP establishes reachability, not the parity
+of all trails. Consequently neither a feasible cube query nor a maximum-degree
+witness alone proves that the corresponding ANF coefficient is nonzero. CLAASP
+keeps that distinction explicit: the MILP query results are bounds or exclusion
+tests, while `CubeSuperpolyQuery` computes coefficients by exhaustive finite
+evaluation. Independent tests recompute local S-box transitions from ANF
+products and validate complete returned assignments.
