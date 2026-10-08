@@ -9,6 +9,7 @@ from claasp.representations.constraints.cp import (
     WordDeterministicDifferentialLinearCPModel,
     WordDeterministicTruncatedCPModel,
     WordDifferentialCPModel,
+    WordImpossibleCPModel,
     WordLinearCPModel,
     WordSemiDeterministicDifferentialLinearCPModel,
 )
@@ -16,11 +17,21 @@ from claasp.semantics import XOR_DIFFERENTIAL
 from claasp.semantics.cryptanalysis import PropagationProblem
 
 
+def test_generic_word_impossible_cp_preserves_complete_split_formula():
+    model = WordImpossibleCPModel(
+        Speck(number_of_rounds=3),
+        middle_round=1,
+        active_input="plaintext",
+        zero_difference_inputs=("key",),
+    )
+    query = model.cp_model()
+    assert (len(query.declarations), len(query.constraints)) == (1568, 5674)
+    assert query.constraint_models[0].model == model.model_provenance
+
+
 def test_speck_arx_window_cp_adds_one_pruning_constraint_per_round():
     model = SpeckARXWindowDifferentialCPModel(
-        PropagationProblem(
-            Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=45
-        ),
+        PropagationProblem(Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=45),
         window_sizes=(3, 3, 3),
     )
     query = model.cp_model()
@@ -36,9 +47,7 @@ def test_present_active_sboxes_cp_reuses_exact_tables():
 
 
 def test_present_fixed_activity_cp_restores_weight_objective():
-    model = PresentFixedActiveSBoxesCPModel(
-        Present(number_of_rounds=2), active_sboxes=2
-    )
+    model = PresentFixedActiveSBoxesCPModel(Present(number_of_rounds=2), active_sboxes=2)
     query = model.cp_model()
     assert (len(query.declarations), len(query.constraints)) == (288, 66)
     assert query.constraints[-1].endswith("= 2;")

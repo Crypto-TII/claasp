@@ -18,6 +18,7 @@ from claasp.representations.constraints.sat import (
     WordDeterministicDifferentialLinearSATModel,
     WordDeterministicTruncatedSATModel,
     WordDifferentialSATModel,
+    WordImpossibleSATModel,
     WordLinearSATModel,
     WordSemiDeterministicDifferentialLinearSATModel,
 )
@@ -229,6 +230,18 @@ def test_speck_impossible_sat_composes_transformed_directional_graphs():
         item.model.component_model == "ModularSubtractDeterministicTruncatedSATModel"
         for item in formula.constraint_models
     )
+
+
+def test_generic_word_impossible_sat_matches_reviewed_speck_composition():
+    generic = WordImpossibleSATModel(
+        Speck(number_of_rounds=3),
+        middle_round=1,
+        active_input="plaintext",
+        zero_difference_inputs=("key",),
+    ).cnf_formula()
+    specialized = SpeckImpossibleSATModel(Speck(number_of_rounds=3), middle_round=1).cnf_formula()
+    assert generic.variables == specialized.variables
+    assert generic.clauses == specialized.clauses
 
 
 def test_speck_impossible_sat_validates_supported_slice_and_patterns():

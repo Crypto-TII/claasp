@@ -27,6 +27,7 @@ from claasp.representations.constraints.cp import (
     WordDeterministicDifferentialLinearCPModel,
     WordDeterministicTruncatedCPModel,
     WordDifferentialCPModel,
+    WordImpossibleCPModel,
     WordLinearCPModel,
     WordSemiDeterministicDifferentialLinearCPModel,
     WordwiseDifferenceCPModel,
@@ -72,9 +73,7 @@ def test_minizinc_proves_present_two_round_active_sbox_optimum():
 
 def test_minizinc_solves_opt_in_speck_arx_window_search():
     model = SpeckARXWindowDifferentialCPModel(
-        PropagationProblem(
-            Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=45
-        ),
+        PropagationProblem(Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=45),
         window_sizes=(3, 3, 3),
     )
     solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
@@ -84,9 +83,7 @@ def test_minizinc_solves_opt_in_speck_arx_window_search():
 
 
 def test_minizinc_minimizes_weight_at_fixed_present_activity():
-    model = PresentFixedActiveSBoxesCPModel(
-        Present(number_of_rounds=2), active_sboxes=2
-    )
+    model = PresentFixedActiveSBoxesCPModel(Present(number_of_rounds=2), active_sboxes=2)
     solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
     assert solved.status is CPStatus.SATISFIED
     trail = model.decode_trail(solved.assignment)
@@ -689,6 +686,20 @@ def test_minizinc_preserves_legacy_speck_seven_round_impossible_unsat():
         "legacy MznImpossibleXorDifferentialModel Speck32/64 fixture",
         "7 rounds, split after round 3, zero key difference",
     )
+
+
+def test_minizinc_solves_generic_word_impossible_split():
+    model = WordImpossibleCPModel(
+        Speck(number_of_rounds=3),
+        middle_round=1,
+        active_input="plaintext",
+        zero_difference_inputs=("key",),
+    )
+    solved = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=30).solve(
+        model.cp_model()
+    )
+    assert solved.status is CPStatus.SATISFIED
+    assert model.decode_trail(solved.assignment).boundary.is_impossible
 
 
 def test_minizinc_preserves_legacy_simon_eleven_round_impossible_fixture():

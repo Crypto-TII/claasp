@@ -702,6 +702,15 @@ graphs and exact middle incompatibility indicators clause-for-clause. GLPK
 returns a split-round contradiction whose two directional trails and
 contradictory positions are independently decoded and checked.
 
+The generic impossible-differential follow-up factors that construction into
+``WordImpossibleSATModel``, ``WordImpossibleCPModel``, and
+``WordImpossibleMILPModel``. Callers now select the active input and any other
+inputs whose differences are fixed to zero. The original Speck SAT and MILP
+classes remain compatibility specializations with unchanged defaults. This
+closes generic forward/backward assembly for reversible graphs built from the
+reviewed deterministic-truncated Word component subset; unsupported component
+encodings and legacy automatic-boundary heuristics remain separate work.
+
 The corresponding CP slice adds ``PresentActiveSBoxesCPModel`` over the same
 two-round exact DDT relation. Native MiniZinc Boolean activity indicators are
 equivalent to nonzero four-bit S-box inputs; Chuffed proves the same optimum of

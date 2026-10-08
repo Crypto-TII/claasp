@@ -217,8 +217,7 @@ class PresentActiveSBoxesCPModel(PresentDifferentialCPModel):
             for nibble in range(16):
                 names = inputs[4 * nibble : 4 * nibble + 4]
                 constraints.append(
-                    f"constraint active_{round_number}_{nibble} = "
-                    f"(sum([{','.join(names)}]) > 0);"
+                    f"constraint active_{round_number}_{nibble} = (sum([{','.join(names)}]) > 0);"
                 )
         solve = "solve minimize sum([" + ",".join(f"bool2int({name})" for name in active) + "]);"
         return MiniZincModel(
@@ -607,9 +606,7 @@ class SpeckARXWindowDifferentialCPModel(SpeckDifferentialCPModel):
             not isinstance(window_sizes, (tuple, list))
             or len(window_sizes) != self.round_count
             or any(
-                not isinstance(value, int)
-                or isinstance(value, bool)
-                or not 0 <= value < self.width
+                not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < self.width
                 for value in window_sizes
             )
         ):
@@ -623,9 +620,7 @@ class SpeckARXWindowDifferentialCPModel(SpeckDifferentialCPModel):
         declarations = list(exact.declarations)
         constraints = list(exact.constraints)
         for round_number, window in enumerate(self.window_sizes):
-            alpha = _component(
-                self.primitive, f"round_{round_number}_rotate_right", Rotate
-            ).amount
+            alpha = _component(self.primitive, f"round_{round_number}_rotate_right", Rotate).amount
             left = f"arx_window_left_{round_number}"
             declarations.append(
                 f"array[0..15] of var bool: {left} = "
@@ -1587,6 +1582,76 @@ class WordDeterministicDifferentialLinearCPModel:
 
     def decode_trail(self, assignment):
         """Decode and independently validate all three trail sections."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        return self._sat_model.decode_trail(assignment)
+
+
+class WordImpossibleCPModel:
+    """Search generic reversible Word graphs for a split-round contradiction.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = WordImpossibleCPModel(
+        ...     Speck(number_of_rounds=3), middle_round=1,
+        ...     active_input="plaintext", zero_difference_inputs=("key",),
+        ... )
+        >>> query = model.cp_model()
+        >>> (len(query.declarations), len(query.constraints))
+        (1568, 5674)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "WordImpossibleCPModel",
+        "impossible_xor_differential",
+        "exact MiniZinc translation of generic Word-graph impossible composition",
+        "The CP formulation preserves every reviewed Boolean clause.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        middle_round,
+        *,
+        active_input,
+        zero_difference_inputs=(),
+        input_pattern=None,
+        output_pattern=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import WordImpossibleSATModel
+
+        self._sat_model = WordImpossibleSATModel(
+            primitive,
+            middle_round,
+            active_input=active_input,
+            zero_difference_inputs=zero_difference_inputs,
+            input_pattern=input_pattern,
+            output_pattern=output_pattern,
+        )
+        self.primitive = primitive
+        self._query: MiniZincModel | None = None
+
+    def cp_model(self) -> MiniZincModel:
+        """Return the exact portable MiniZinc query."""
+
+        lowered = BooleanMiniZincLowerer().lower(self._sat_model.cnf_formula())
+        self._query = MiniZincModel(
+            lowered.declarations,
+            lowered.constraints,
+            lowered.solve,
+            lowered.includes,
+            lowered.outputs,
+            lowered.provenance,
+            lowered.name_mapping,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_trail(self, assignment):
+        """Decode and independently validate both directions and contradiction."""
 
         if self._query is None:
             raise ValueError("build the CP model before decoding")

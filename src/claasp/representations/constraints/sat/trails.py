@@ -948,14 +948,14 @@ class WordDeterministicTruncatedNativeXorSATModel(WordDeterministicTruncatedSATM
 
 
 @dataclass(frozen=True, slots=True)
-class SpeckImpossibleSATTrail:
-    """One independently checked impossible-differential SAT witness.
+class WordImpossibleSATTrail:
+    """One independently checked impossible-differential Word-graph witness.
 
     EXAMPLES::
 
         >>> zero = TruncatedXorDifference.parse("00")
         >>> characteristic = WordDeterministicTruncatedCharacteristic((), zero, (), ())
-        >>> trail = SpeckImpossibleSATTrail(
+        >>> trail = WordImpossibleSATTrail(
         ...     characteristic, characteristic,
         ...     ImpossiblePropagationBoundary(
         ...         TruncatedXorDifference.parse("01"),
@@ -973,8 +973,11 @@ class SpeckImpossibleSATTrail:
     semantic_assignment: tuple[tuple[str, int], ...]
 
 
-class SpeckImpossibleSATModel:
-    """Search a zero-key Speck impossible differential across a round split.
+SpeckImpossibleSATTrail = WordImpossibleSATTrail
+
+
+class WordImpossibleSATModel:
+    """Search an impossible differential across a reversible Word-graph split.
 
     The prefix propagates a plaintext difference forward. The suffix is sliced
     from the same primitive, inverted, and propagates an output difference
@@ -984,7 +987,10 @@ class SpeckImpossibleSATModel:
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> model = SpeckImpossibleSATModel(Speck(number_of_rounds=3), middle_round=1)
+        >>> model = WordImpossibleSATModel(
+        ...     Speck(number_of_rounds=3), middle_round=1,
+        ...     active_input="plaintext", zero_difference_inputs=("key",),
+        ... )
         >>> formula = model.cnf_formula()
         >>> (formula.variable_count > 0, "truncated_incompatibility_exists" in formula.provenance)
         (True, True)
@@ -992,9 +998,9 @@ class SpeckImpossibleSATModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.SAT,
-        "SpeckImpossibleSATModel",
+        "WordImpossibleSATModel",
         "impossible_xor_differential",
-        "forward/backward deterministic-truncated graph composition",
+        "generic forward/backward deterministic-truncated Word-graph composition",
         "The whole-graph assembly composes reviewed encodings without a literature claim.",
     )
 
@@ -1003,44 +1009,52 @@ class SpeckImpossibleSATModel:
         primitive,
         middle_round: int,
         *,
+        active_input: str,
+        zero_difference_inputs: tuple[str, ...] = (),
         input_pattern=None,
         output_pattern=None,
     ) -> None:
-        plaintext = primitive.input_ports.get("plaintext")
-        if (
-            primitive.family_name != "speck"
-            or plaintext is None
-            or not isinstance(plaintext.value_type.domain, Word)
-            or plaintext.value_type.domain.width != 16
+        selected = primitive.input_ports.get(active_input)
+        if selected is None or not isinstance(selected.value_type.domain, Word):
+            raise ValueError("active_input must name a Word-domain primitive input")
+        if not isinstance(zero_difference_inputs, tuple) or any(
+            name == active_input or name not in primitive.input_ports
+            for name in zero_difference_inputs
         ):
-            raise NotImplementedError("the reviewed impossible slice supports Speck32/64")
+            raise ValueError("zero_difference_inputs must name other primitive inputs")
         if not isinstance(middle_round, int) or isinstance(middle_round, bool):
             raise TypeError("middle_round must be an integer")
         if not 1 <= middle_round < len(primitive.rounds):
             raise ValueError("middle_round must be inside the primitive")
         self.primitive = primitive
         self.middle_round = middle_round
+        self.active_input = active_input
+        self.zero_difference_inputs = zero_difference_inputs
         prefix = slice_rounds(primitive, 0, middle_round - 1).primitive
         suffix = slice_rounds(primitive, middle_round, len(primitive.rounds) - 1).primitive
         inverse = invert_primitive(
-            suffix, recover_input="state", retained_inputs=("key",)
+            suffix, recover_input="state", retained_inputs=zero_difference_inputs
         ).primitive
-        zero_key = "0" * (
-            primitive.input_ports["key"].value_type.unit_count
-            * primitive.input_ports["key"].value_type.domain.width
-        )
-        forward_patterns = {"key": zero_key}
+        zero_patterns = {
+            name: "0"
+            * (
+                primitive.input_ports[name].value_type.unit_count
+                * primitive.input_ports[name].value_type.domain.width
+            )
+            for name in zero_difference_inputs
+        }
+        forward_patterns = dict(zero_patterns)
         if input_pattern is not None:
-            forward_patterns["plaintext"] = input_pattern
+            forward_patterns[active_input] = input_pattern
         self.forward_model = WordDeterministicTruncatedSATModel(
             prefix,
             fixed_input_patterns=forward_patterns,
-            nonzero_input="plaintext",
+            nonzero_input=active_input,
         )
         self.backward_model = WordDeterministicTruncatedSATModel(
             inverse,
             fixed_input_patterns={
-                "key": zero_key,
+                **zero_patterns,
                 **({"output": output_pattern} if output_pattern is not None else {}),
             },
             nonzero_input="output",
@@ -1114,7 +1128,7 @@ class SpeckImpossibleSATModel:
         )
         return self._formula
 
-    def decode_trail(self, assignment) -> SpeckImpossibleSATTrail:
+    def decode_trail(self, assignment) -> WordImpossibleSATTrail:
         """Decode and independently validate a complete SAT assignment."""
 
         if self._formula is None:
@@ -1138,11 +1152,50 @@ class SpeckImpossibleSATModel:
         expected = ImpossiblePropagationBoundary(forward.output_pattern, backward.output_pattern)
         if boundary != expected or not boundary.is_impossible:
             raise ValueError("decoded directional trails do not form an impossible boundary")
-        return SpeckImpossibleSATTrail(
+        return WordImpossibleSATTrail(
             forward,
             backward,
             boundary,
             tuple((name, int(bool(assignment[name]))) for name in self._formula.variables),
+        )
+
+
+class SpeckImpossibleSATModel(WordImpossibleSATModel):
+    """Search a zero-key Speck32/64 impossible differential across a split.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = SpeckImpossibleSATModel(Speck(number_of_rounds=3), middle_round=1)
+        >>> trail_formula = model.cnf_formula()
+        >>> "truncated_incompatibility_exists" in trail_formula.provenance
+        True
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "SpeckImpossibleSATModel",
+        "impossible_xor_differential",
+        "Speck32/64 specialization of generic Word-graph impossible composition",
+        "The wrapper preserves the reviewed zero-key Speck boundary convention.",
+    )
+
+    def __init__(self, primitive, middle_round: int, *, input_pattern=None, output_pattern=None):
+        plaintext = primitive.input_ports.get("plaintext")
+        if (
+            primitive.family_name != "speck"
+            or plaintext is None
+            or not isinstance(plaintext.value_type.domain, Word)
+            or plaintext.value_type.domain.width != 16
+        ):
+            raise NotImplementedError("the reviewed impossible slice supports Speck32/64")
+        super().__init__(
+            primitive,
+            middle_round,
+            active_input="plaintext",
+            zero_difference_inputs=("key",),
+            input_pattern=input_pattern,
+            output_pattern=output_pattern,
         )
 
 

@@ -462,14 +462,15 @@ class WordDeterministicTruncatedMILPModel:
         return self._sat_model.check_characteristic(trail)
 
 
-class SpeckImpossibleMILPModel:
-    """Search a split-round Speck impossible differential as portable MILP.
+class WordImpossibleMILPModel:
+    """Search a split-round contradiction in a reversible Word graph as MILP.
 
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> model = SpeckImpossibleMILPModel(
-        ...     Speck(number_of_rounds=3), middle_round=1
+        >>> model = WordImpossibleMILPModel(
+        ...     Speck(number_of_rounds=3), middle_round=1,
+        ...     active_input="plaintext", zero_difference_inputs=("key",),
         ... )
         >>> formulation = model.milp_model()
         >>> (len(formulation.variables), len(formulation.constraints))
@@ -478,24 +479,35 @@ class SpeckImpossibleMILPModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.MILP,
-        "SpeckImpossibleMILPModel",
+        "WordImpossibleMILPModel",
         "impossible_xor_differential",
-        "exact MILP translation of forward/backward truncated graph composition",
+        "exact MILP translation of generic forward/backward Word-graph composition",
         "The portable formulation preserves each reviewed Boolean clause as an inequality.",
     )
 
     def __init__(
-        self, primitive, middle_round: int, *, input_pattern=None, output_pattern=None
+        self,
+        primitive,
+        middle_round: int,
+        *,
+        active_input: str,
+        zero_difference_inputs: tuple[str, ...] = (),
+        input_pattern=None,
+        output_pattern=None,
     ) -> None:
-        from claasp.representations.constraints.sat.trails import SpeckImpossibleSATModel
+        from claasp.representations.constraints.sat.trails import WordImpossibleSATModel
 
-        self._sat_model = SpeckImpossibleSATModel(
+        self._sat_model = WordImpossibleSATModel(
             primitive,
             middle_round,
+            active_input=active_input,
+            zero_difference_inputs=zero_difference_inputs,
             input_pattern=input_pattern,
             output_pattern=output_pattern,
         )
         self.primitive = primitive
+        self.active_input = active_input
+        self.zero_difference_inputs = zero_difference_inputs
         self._model: MILPModel | None = None
 
     def milp_model(self) -> MILPModel:
@@ -519,6 +531,42 @@ class SpeckImpossibleMILPModel:
         return self._sat_model.decode_trail(
             {name: int(round(value)) for name, value in assignment.items()}
         )
+
+
+class SpeckImpossibleMILPModel(WordImpossibleMILPModel):
+    """Preserve the reviewed zero-key Speck32/64 impossible search.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = SpeckImpossibleMILPModel(Speck(number_of_rounds=3), middle_round=1)
+        >>> (len(model.milp_model().variables), model.active_input)
+        (1568, 'plaintext')
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "SpeckImpossibleMILPModel",
+        "impossible_xor_differential",
+        "Speck32/64 specialization of generic Word-graph impossible composition",
+        "The wrapper preserves the reviewed zero-key Speck boundary convention.",
+    )
+
+    def __init__(
+        self, primitive, middle_round: int, *, input_pattern=None, output_pattern=None
+    ) -> None:
+        plaintext = primitive.input_ports.get("plaintext")
+        if primitive.family_name != "speck" or plaintext is None:
+            raise NotImplementedError("the reviewed impossible slice supports Speck32/64")
+        super().__init__(
+            primitive,
+            middle_round,
+            active_input="plaintext",
+            zero_difference_inputs=("key",),
+            input_pattern=input_pattern,
+            output_pattern=output_pattern,
+        )
+        self.active_input = "plaintext"
 
 
 class SpeckSemiDeterministicTruncatedMILPModel:
@@ -654,8 +702,10 @@ class WordDeterministicDifferentialLinearMILPModel:
             name = variable.name
             if name.startswith("differential_weight_"):
                 coefficients[name] = 1
-            elif name.startswith("linear_") and "_weight_" in name and not name.startswith(
-                "linear___"
+            elif (
+                name.startswith("linear_")
+                and "_weight_" in name
+                and not name.startswith("linear___")
             ):
                 coefficients[name] = 2
         self._model = MILPModel(
@@ -742,8 +792,10 @@ class WordSemiDeterministicDifferentialLinearMILPModel:
             name = variable.name
             if name.startswith("differential_weight_"):
                 coefficients[name] = 1
-            elif name.startswith("linear_") and "_weight_" in name and not name.startswith(
-                "linear___"
+            elif (
+                name.startswith("linear_")
+                and "_weight_" in name
+                and not name.startswith("linear___")
             ):
                 coefficients[name] = 2
         self._model = MILPModel(

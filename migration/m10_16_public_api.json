@@ -26398,6 +26398,12 @@
       "qualified_name": "claasp.representations.constraints.cp.WordDifferentialCPModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.cp.trails.WordImpossibleCPModel",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.cp.WordImpossibleCPModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.cp.trails.WordLinearCPModel",
       "defined_in": "claasp.representations.constraints.cp.trails",
       "kind": "class",
@@ -26906,6 +26912,25 @@
       "qualified_name": "claasp.representations.constraints.cp.trails.WordDifferentialCPModel.decode_characteristic"
     },
     {
+      "canonical_name": "claasp.representations.constraints.cp.trails.WordImpossibleCPModel.__init__",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "documented_by": "claasp.representations.constraints.cp.trails.WordImpossibleCPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.cp.trails.WordImpossibleCPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.WordImpossibleCPModel.cp_model",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.trails.WordImpossibleCPModel.cp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.WordImpossibleCPModel.decode_trail",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.trails.WordImpossibleCPModel.decode_trail"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.cp.trails.WordLinearCPModel.__init__",
       "defined_in": "claasp.representations.constraints.cp.trails",
       "documented_by": "claasp.representations.constraints.cp.trails.WordLinearCPModel",
@@ -27219,6 +27244,12 @@
       "defined_in": "claasp.representations.constraints.milp.trails",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.milp.WordDifferentialMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.trails.WordImpossibleMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.WordImpossibleMILPModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.trails.WordLinearMILPModel",
@@ -28314,18 +28345,6 @@
       "qualified_name": "claasp.representations.constraints.milp.trails.SpeckImpossibleMILPModel.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.milp.trails.SpeckImpossibleMILPModel.decode_trail",
-      "defined_in": "claasp.representations.constraints.milp.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.trails.SpeckImpossibleMILPModel.decode_trail"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.milp.trails.SpeckImpossibleMILPModel.milp_model",
-      "defined_in": "claasp.representations.constraints.milp.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.milp.trails.SpeckImpossibleMILPModel.milp_model"
-    },
-    {
       "canonical_name": "claasp.representations.constraints.milp.trails.SpeckSemiDeterministicTruncatedMILPModel.__init__",
       "defined_in": "claasp.representations.constraints.milp.trails",
       "documented_by": "claasp.representations.constraints.milp.trails.SpeckSemiDeterministicTruncatedMILPModel",
@@ -28412,6 +28431,31 @@
       "defined_in": "claasp.representations.constraints.milp.trails",
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.milp.trails.WordDifferentialMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.trails.WordImpossibleMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.trails",
+      "documented_by": "claasp.representations.constraints.milp.trails.WordImpossibleMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.trails.WordImpossibleMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.trails.WordImpossibleMILPModel.decode_trail",
+      "defined_in": "claasp.representations.constraints.milp.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.trails.SpeckImpossibleMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.trails.WordImpossibleMILPModel.decode_trail"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.trails.WordImpossibleMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.trails.SpeckImpossibleMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.trails.WordImpossibleMILPModel.milp_model"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.trails.WordLinearMILPModel.__init__",
@@ -29085,7 +29129,7 @@
       "qualified_name": "claasp.representations.constraints.sat.SpeckImpossibleSATModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail",
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail",
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "dataclass",
       "qualified_name": "claasp.representations.constraints.sat.SpeckImpossibleSATTrail"
@@ -29167,6 +29211,18 @@
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.sat.WordDifferentialSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATModel",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.WordImpossibleSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.WordImpossibleSATTrail"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel",
@@ -30243,57 +30299,10 @@
       "qualified_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATModel.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATModel.cnf_formula",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATModel.cnf_formula"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATModel.decode_trail",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATModel.decode_trail"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail",
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail",
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "dataclass",
       "qualified_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail.__init__",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "documented_by": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail.backward",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "documented_by": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail.backward"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail.boundary",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "documented_by": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail.boundary"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail.forward",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "documented_by": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail.forward"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail.semantic_assignment",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "documented_by": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.representations.constraints.sat.trails.SpeckImpossibleSATTrail.semantic_assignment"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.SpeckProbabilisticTruncatedSATModel",
@@ -30661,6 +30670,66 @@
       ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.enumerate_trails"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordImpossibleSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.trails.SpeckImpossibleSATModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATModel.cnf_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATModel.decode_trail",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.sat.trails.SpeckImpossibleSATModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATModel.decode_trail"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail.__init__",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail.backward",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail.backward"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail.boundary",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail.boundary"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail.forward",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail.forward"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail.semantic_assignment",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordImpossibleSATTrail.semantic_assignment"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearNativeXorSATModel",
