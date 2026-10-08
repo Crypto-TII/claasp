@@ -20,7 +20,10 @@ from claasp.graph.primitive import (
     Primitive,
     PrimitiveBuilder,
     PrimitiveDetails,
+    PrimitiveEditor,
+    PrimitiveGraph,
     PrimitiveInputDetails,
+    PublishedValues,
 )
 from claasp.graph.realization import (
     AmbiguousRealizationError,
@@ -49,9 +52,12 @@ __all__ = [
     "Primitive",
     "PrimitiveBuilder",
     "PrimitiveDetails",
+    "PrimitiveEditor",
+    "PrimitiveGraph",
     "PrimitiveInput",
     "PrimitiveInputDetails",
     "PrimitiveKind",
+    "PublishedValues",
     "RealizationDescriptor",
     "RealizationMaturity",
     "RealizationSelectionError",

@@ -33,17 +33,17 @@ PARAMETERS_CONFIGURATION_LIST = (
 
 
 def _validate_parameters(key_bit_size, number_of_rounds, realization):
-    configuration = Primitive.select_configuration(
+    configuration = Primitive._select_configuration(
         PARAMETERS_CONFIGURATION_LIST,
         key_bit_size=key_bit_size,
     )
-    rounds = Primitive.validate_number_of_rounds(
+    rounds = Primitive._validate_number_of_rounds(
         number_of_rounds,
         default=configuration["number_of_rounds"],
         maximum=configuration["number_of_rounds"],
         name=f"AES-{key_bit_size}",
     )
-    descriptors = {item.name: item for item in AES.REALIZATIONS}
+    descriptors = {item.name: item for item in AES._realizations}
     if not isinstance(realization, str) or realization not in descriptors:
         raise ValueError(f"AES realization must be one of {tuple(descriptors)}")
     return configuration, rounds, descriptors[realization]
@@ -81,7 +81,9 @@ def _key_schedule(primitive, key, key_word_count, number_of_rounds, realization)
             temporary = primitive._builder.add_component(Add((temporary, round_constant)))
         elif key_word_count == 8 and word_index % key_word_count == 4:
             temporary = _sub_bytes(primitive, temporary, realization)
-        words.append(primitive._builder.add_component(Add((words[word_index - key_word_count], temporary))))
+        words.append(
+            primitive._builder.add_component(Add((words[word_index - key_word_count], temporary)))
+        )
 
     return [
         key[:16]
@@ -106,7 +108,7 @@ class AES(Primitive):
         '0x69c4e0d86a7b0430d8cdb78070b4c55a'
     """
 
-    REALIZATIONS = (
+    _realizations = (
         RealizationDescriptor(
             "lookup",
             frozenset(("scalar_evaluation", "batch_evaluation", "sbox_semantics")),
@@ -136,8 +138,8 @@ class AES(Primitive):
             number_of_rounds,
             realization,
         )
-        self.Nk = key_bit_size // 32
-        self.Nr = rounds
+        self._nk = key_bit_size // 32
+        self._nr = rounds
         self.realization = descriptor
         state_type = ValueType(AES_FIELD, (16,))
         super().__init__(
@@ -152,12 +154,12 @@ class AES(Primitive):
         # KEYEXPANSION(key)
         self._builder.add_round()
         round_keys = self._builder.set_round_keys(
-            _key_schedule(self, self.input("key"), self.Nk, rounds, descriptor.name),
+            _key_schedule(self, self.graph.input("key"), self._nk, rounds, descriptor.name),
         )
 
         # state <- ADDROUNDKEY(state, round_key[0])
-        state = self._builder.add_component(Add((self.input("plaintext"), round_keys[0])))
-        self.initial_state = state
+        state = self._builder.add_component(Add((self.graph.input("plaintext"), round_keys[0])))
+        self._initial_state = state
 
         # Rounds 1..Nr follow FIPS 197's main algorithm. Reduced studies retain
         # MixColumns because they are prefixes of the standard AES execution.
@@ -189,7 +191,7 @@ class AES128(AES):
     EXAMPLES::
 
         >>> primitive = AES128()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x66e94bd4ef8a2c3b', 127)

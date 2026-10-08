@@ -111,9 +111,10 @@ def test_hybrid_xor_preserves_only_zero_passthrough_and_concrete_parity():
 def test_hybrid_sbox_decoder_accepts_tag_and_exact_branches():
     model = HybridSBoxCPModel(PRESENT_SBOX, output_tag=10)
     model.cp_model(input_pattern=(1, 0, 0, 0))
-    assert model.decode_transition(
-        {"input": (1, 0, 0, 0), "result": (10, 10, 10, 10)}
-    ) == ((1, 0, 0, 0), (10, 10, 10, 10))
+    assert model.decode_transition({"input": (1, 0, 0, 0), "result": (10, 10, 10, 10)}) == (
+        (1, 0, 0, 0),
+        (10, 10, 10, 10),
+    )
     target = tuple(
         bit.encoded
         for bit in model.semantics.truncated_xor_differential(

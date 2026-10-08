@@ -12,8 +12,12 @@ def _logical_primitive(width: int = 4) -> Primitive:
     value_type = ValueType(Word(width), (1,))
     primitive = Primitive("logical", {"left": value_type, "right": value_type})
     primitive._builder.add_round()
-    either = primitive._builder.add_component(BitwiseOr((primitive.input("left"), primitive.input("right"))))
-    both = primitive._builder.add_component(BitwiseAnd((primitive.input("left"), primitive.input("right"))))
+    either = primitive._builder.add_component(
+        BitwiseOr((primitive.graph.input("left"), primitive.graph.input("right")))
+    )
+    both = primitive._builder.add_component(
+        BitwiseAnd((primitive.graph.input("left"), primitive.graph.input("right")))
+    )
     exclusive = primitive._builder.add_component(Xor((either, both)))
     output = primitive._builder.add_component(BitwiseNot(exclusive))
     primitive._builder.set_output(output)

@@ -14,7 +14,7 @@ class CipherFour(Primitive):
     EXAMPLES::
 
         >>> primitive = CipherFour()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x9844', 16)
@@ -42,8 +42,8 @@ class CipherFour(Primitive):
             {"plaintext": bit_type(block_bit_size), "key": bit_type(key_stream_size)},
             provenance=(("reference", "Knudsen and Robshaw, The Block Cipher Companion"),),
         )
-        state = self.input("plaintext")
-        key = self.input("key")
+        state = self.graph.input("plaintext")
+        key = self.graph.input("key")
         for round_number in range(number_of_rounds - 1):
             self._builder.add_round()
             round_key = key[

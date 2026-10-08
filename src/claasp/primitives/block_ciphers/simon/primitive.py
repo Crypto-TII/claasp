@@ -72,7 +72,7 @@ class Simon(Primitive):
                 "key": ValueType(Word(width), (key_words,)),
             },
         )
-        plaintext, key = self.input("plaintext"), self.input("key")
+        plaintext, key = self.graph.input("plaintext"), self.graph.input("key")
         left, right = plaintext[0], plaintext[1]
         round_keys: list[Port | Selection] = [
             key[key_words - index - 1] for index in range(key_words)

@@ -99,7 +99,9 @@ def test_minizinc_solves_and_decodes_complete_modadd_boomerang_composition():
         )
         primitive._builder.add_round()
         primitive._builder.set_output(
-            primitive._builder.add_component(ModularAdd((primitive.input("left"), primitive.input("right"))))
+            primitive._builder.add_component(
+                ModularAdd((primitive.graph.input("left"), primitive.graph.input("right")))
+            )
         )
         return primitive
 
@@ -449,7 +451,7 @@ def test_minizinc_recovers_and_independently_verifies_reduced_speck_key():
     plaintext = 0x6574694C
     ciphertext = primitive.evaluate(plaintext, 0x1918111009080100)
 
-    result = primitive.analyze().recover_input(
+    result = primitive.analysis.recover_input(
         "key",
         known_inputs={"plaintext": plaintext},
         output=ciphertext,
@@ -465,13 +467,13 @@ def test_minizinc_reproduces_legacy_full_speck_missing_bits_result():
     problem = AnalysisProblem(
         primitive,
         (
-            FixedValue(primitive.input("plaintext"), 0x6574694C),
-            FixedValue(primitive.input("key"), 0x1918111009080100),
+            FixedValue(primitive.graph.input("plaintext"), 0x6574694C),
+            FixedValue(primitive.graph.input("key"), 0x1918111009080100),
         ),
-        {"ciphertext": primitive.output},
+        {"ciphertext": primitive.graph.output},
     )
 
-    result = primitive.analyze().solve(
+    result = primitive.analysis.solve(
         problem,
         MiniZincSolver(solver=_test_solver(), timeout_seconds=60),
     )
@@ -580,7 +582,7 @@ def test_minizinc_proves_impossible_and_possible_present_sbox_pairs():
 
 def test_minizinc_preserves_exact_present_boomerang_connectivity_entries():
     primitive = Present(number_of_rounds=1)
-    component = next(item for item in primitive.components if item.component_id == "sbox_1_0")
+    component = next(item for item in primitive.graph.components if item.component_id == "sbox_1_0")
     solver = MiniZincSolver(solver=_test_solver())
 
     impossible = SBoxBoomerangCPModel(component, 1, 1)
@@ -601,7 +603,9 @@ def test_minizinc_solves_and_decodes_present_sbox_boomerang_composition():
     lower = PresentDifferentialCPModel(
         PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
     )
-    component = next(item for item in upper.primitive.components if item.component_id == "sbox_1_0")
+    component = next(
+        item for item in upper.primitive.graph.components if item.component_id == "sbox_1_0"
+    )
     model = SBoxBoomerangTrailCPModel(upper, lower, SBoxBoomerangCPModel(component), nibble=0)
     solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
     assert solved.status is CPStatus.SATISFIED

@@ -69,15 +69,15 @@ class PresentRoundMonomialSemantics:
     def __init__(self, primitive) -> None:
         sboxes = tuple(
             component
-            for component in primitive.components
+            for component in primitive.graph.components
             if isinstance(component, BitVectorSBox) and component.component_id.startswith("sbox_1_")
         )
         permutations = tuple(
             component
-            for component in primitive.components
+            for component in primitive.graph.components
             if isinstance(component, Permutation) and component.component_id == "p_layer_1"
         )
-        if primitive.family_name != "present" or len(primitive.rounds) != 1:
+        if primitive.family_name != "present" or len(primitive.graph.rounds) != 1:
             raise ValueError("primitive must be a one-round typed PRESENT graph")
         if len(sboxes) != 16 or len(permutations) != 1:
             raise ValueError("PRESENT graph does not expose the expected S-box/p-layer structure")
@@ -178,18 +178,18 @@ class PresentMonomialSemantics:
         if primitive.family_name != "present":
             raise ValueError("primitive must be a typed PRESENT graph")
         self.primitive = primitive
-        self.round_count = len(primitive.rounds)
+        self.round_count = len(primitive.graph.rounds)
         self.sbox_table = monomial_transition_table(
             next(
                 component
-                for component in primitive.components
+                for component in primitive.graph.components
                 if component.component_id == "sbox_1_0"
             ).table
         )
         self.permutations = tuple(
             next(
                 component
-                for component in primitive.components
+                for component in primitive.graph.components
                 if component.component_id == f"p_layer_{round_number}"
             )
             for round_number in range(1, self.round_count + 1)
@@ -258,7 +258,7 @@ class PresentMonomialSemantics:
                     return False
                 component = next(
                     item
-                    for item in self.primitive.components
+                    for item in self.primitive.graph.components
                     if item.component_id == step.component_id
                 )
                 if not ComponentMonomialSemantics.is_possible(
@@ -334,7 +334,10 @@ class SolutionPoolMonomialParityResult:
         self.require_complete()
         prefix = f"{input_name}["
         return max(
-            (sum(variable.startswith(prefix) for variable in monomial) for monomial in self.odd_input_monomials),
+            (
+                sum(variable.startswith(prefix) for variable in monomial)
+                for monomial in self.odd_input_monomials
+            ),
             default=0,
         )
 
@@ -365,15 +368,12 @@ def project_optimal_pool_monomial_parity(compilation, pool):
     if not isinstance(pool, GurobiSolutionPoolResult):
         raise TypeError("pool must be a GurobiSolutionPoolResult")
     if pool.status is not MILPStatus.OPTIMAL:
-        return SolutionPoolMonomialParityResult(
-            (), len(pool.assignments), False, pool.status.value
-        )
+        return SolutionPoolMonomialParityResult((), len(pool.assignments), False, pool.status.value)
     input_variables: list[tuple[str, str]] = []
-    for input_name, port in compilation.primitive.input_ports.items():
+    for input_name, port in compilation.primitive.graph.input_ports.items():
         width = compilation._width(port.value_type)
         input_variables.extend(
-            (compilation._wire(input_name, bit), f"{input_name}[{bit}]")
-            for bit in range(width)
+            (compilation._wire(input_name, bit), f"{input_name}[{bit}]") for bit in range(width)
         )
     parity: dict[tuple[str, ...], bool] = {}
     for assignment in pool.assignments:
@@ -449,7 +449,7 @@ def enumerate_optimal_monomial_parity(compilation, solver, max_paths=10000):
         assignment = result.assignment
         mask = 0
         width = compilation._width(
-            compilation.primitive.input_ports[compilation.variable_input].value_type
+            compilation.primitive.graph.input_ports[compilation.variable_input].value_type
         )
         for bit in range(width):
             mask = (mask << 1) | int(

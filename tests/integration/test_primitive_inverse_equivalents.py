@@ -95,13 +95,13 @@ def test_reviewed_equivalent_realizations_recover_source_inputs(primitive_factor
     primitive = primitive_factory()
     inputs = {
         name: value & ((1 << port.value_type.encoded_bit_size) - 1)
-        for value, (name, port) in zip(values, primitive.input_ports.items())
+        for value, (name, port) in zip(values, primitive.graph.input_ports.items())
     }
     recover = next(
-        (name for name in inputs if primitive.input_descriptor(name).role == "plaintext"),
+        (name for name in inputs if primitive.graph.input_descriptor(name).role == "plaintext"),
         next(iter(inputs)),
     )
-    inverse = primitive.inverse(recover).primitive
+    inverse = primitive.edit.inverse(recover).primitive
     inverse_inputs = {"output": primitive.evaluate(inputs)}
     inverse_inputs.update((name, value) for name, value in inputs.items() if name != recover)
 
@@ -128,9 +128,9 @@ def test_reviewed_direct_inverses_recover_inputs(primitive_factory, values):
     primitive = primitive_factory()
     inputs = {
         name: value & ((1 << port.value_type.encoded_bit_size) - 1)
-        for value, (name, port) in zip(values, primitive.input_ports.items())
+        for value, (name, port) in zip(values, primitive.graph.input_ports.items())
     }
-    inverse = primitive.inverse("plaintext").primitive
+    inverse = primitive.edit.inverse("plaintext").primitive
     inverse_inputs = {"output": primitive.evaluate(inputs)}
     inverse_inputs.update((name, value) for name, value in inputs.items() if name != "plaintext")
 

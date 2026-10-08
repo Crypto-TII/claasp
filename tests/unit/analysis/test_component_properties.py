@@ -14,8 +14,8 @@ from claasp.primitives import AES, Present
 
 def test_public_primitive_api_retains_analysis_and_realization_provenance():
     primitive = Present(number_of_rounds=1)
-    sbox = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
-    result = primitive.analyze().component_property(
+    sbox = next(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
+    result = primitive.analysis.component_property(
         sbox,
         ComponentProperty.DIFFERENTIAL_UNIFORMITY,
         PropertyDomain.LOOKUP_TABLE,
@@ -31,13 +31,13 @@ def test_public_primitive_api_retains_analysis_and_realization_provenance():
 
 def test_public_batch_api_keeps_each_request_and_result_typed():
     primitive = Present(number_of_rounds=1)
-    sbox = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+    sbox = next(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
     requests = (
         PropertyRequest(ComponentProperty.NONLINEARITY, PropertyDomain.LOOKUP_TABLE),
         PropertyRequest(ComponentProperty.ALGEBRAIC_DEGREE, PropertyDomain.LOOKUP_TABLE),
     )
 
-    results = primitive.analyze().component_properties(sbox, requests)
+    results = primitive.analysis.component_properties(sbox, requests)
 
     assert tuple(result.value for result in results) == (4, 3)
     assert tuple(result.request for result in results) == requests
@@ -46,8 +46,8 @@ def test_public_batch_api_keeps_each_request_and_result_typed():
 
 def test_public_driver_api_keeps_realization_separate_from_driver_provenance():
     primitive = AES(number_of_rounds=1)
-    linear = next(item for item in primitive.components if isinstance(item, LinearMap))
-    result = primitive.analyze().component_property(
+    linear = next(item for item in primitive.graph.components if isinstance(item, LinearMap))
+    result = primitive.analysis.component_property(
         linear,
         ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
         PropertyDomain.WORD_LINEAR,

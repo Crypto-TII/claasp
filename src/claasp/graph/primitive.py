@@ -94,6 +94,410 @@ class PrimitiveDetails:
         return str(self)
 
 
+class PublishedValues(tuple):
+    """An immutable published graph sequence with a concise representation.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import AES
+        >>> AES(number_of_rounds=1).graph.round_keys
+        Round keys (2)
+          [0] input key: 128 bits
+          [1] derived graph value: 128 bits
+    """
+
+    label: str
+    _primitive: "Primitive"
+
+    def __new__(cls, label: str, values: Iterable[object], primitive: "Primitive"):
+        instance = super().__new__(cls, values)
+        instance.label = label
+        instance._primitive = primitive
+        return instance
+
+    @staticmethod
+    def _bit_size(value: object) -> int | None:
+        value_type = getattr(value, "value_type", None)
+        return None if value_type is None else value_type.encoded_bit_size
+
+    def __repr__(self) -> str:
+        lines = [f"{self.label} ({len(self)})"]
+        for index, value in enumerate(self):
+            bit_size = self._bit_size(value)
+            suffix = "" if bit_size is None else f": {bit_size} bits"
+            if isinstance(value, (Port, Selection)):
+                source = value.owner_id if isinstance(value, Port) else value.source.owner_id
+                description = (
+                    f"input {source}"
+                    if source in self._primitive._input_ports
+                    else "derived graph value"
+                )
+            elif isinstance(value, Mapping):
+                description = ", ".join(value) or "empty observation"
+            else:
+                description = type(value).__name__.replace("_", " ").lower()
+            lines.append(f"  [{index}] {description}{suffix}")
+        return "\n".join(lines)
+
+
+class PrimitiveGraph:
+    """Read-only structural view of a completed primitive graph.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import AES
+        >>> graph = AES(number_of_rounds=2).graph
+        >>> (len(graph.rounds), len(graph.input_ports))
+        (3, 2)
+    """
+
+    def __init__(self, primitive: "Primitive") -> None:
+        self._primitive = primitive
+
+    @property
+    def input_descriptors(self) -> Mapping[str, PrimitiveInput]:
+        """Return typed input roles and default visibility by name."""
+
+        return dict(self._primitive._input_descriptors)
+
+    @property
+    def secret_inputs(self) -> tuple[str, ...]:
+        """Return secret input names in declaration order."""
+
+        return tuple(
+            name for name, item in self._primitive._input_descriptors.items() if item.is_secret
+        )
+
+    @property
+    def input_ports(self) -> Mapping[str, Port]:
+        """Return the graph's name-to-input-port mapping."""
+
+        return dict(self._primitive._input_ports)
+
+    def input(self, selector: str | int) -> Port:
+        """Return one input port by name or zero-based declaration position.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import AES
+            >>> AES().graph.input("key").owner_id
+            'key'
+        """
+
+        return self._primitive._input(selector)
+
+    def input_descriptor(self, name: str) -> PrimitiveInput:
+        """Return the type, role, and visibility declared for one input.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import AES
+            >>> AES().graph.input_descriptor("key").visibility.value
+            'secret'
+        """
+
+        return self._primitive._input_descriptor(name)
+
+    def inputs(self, *selectors: str | int) -> Sequence[Port]:
+        """Return input ports in declaration or explicitly requested order.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import AES
+            >>> tuple(port.owner_id for port in AES().graph.inputs())
+            ('plaintext', 'key')
+        """
+
+        return self._primitive._inputs(*selectors)
+
+    @property
+    def rounds(self) -> tuple[Round, ...]:
+        """Return authored rounds in deterministic order."""
+
+        return tuple(self._primitive._rounds)
+
+    @property
+    def components(self) -> tuple[Component, ...]:
+        """Return semantic components in deterministic graph order."""
+
+        return tuple(self._primitive._components.values())
+
+    @property
+    def bindings(self) -> tuple[ValueBinding, ...]:
+        """Return structural wiring values in construction order."""
+
+        return tuple(self._primitive._bindings.values())
+
+    @property
+    def scopes(self) -> tuple[object, ...]:
+        """Return composite instances in deterministic path order."""
+
+        return tuple(self._primitive._scopes.values())
+
+    @property
+    def output(self) -> Selection | None:
+        """Return the selected graph output."""
+
+        return self._primitive._output
+
+    @property
+    def round_keys(self) -> PublishedValues:
+        """Return published round-key selections with a concise summary."""
+
+        return PublishedValues(
+            "Round keys", getattr(self._primitive, "_published_round_keys", ()), self._primitive
+        )
+
+    @property
+    def round_states(self) -> PublishedValues:
+        """Return published round-state selections with a concise summary."""
+
+        return PublishedValues(
+            "Round states", getattr(self._primitive, "_published_round_states", ()), self._primitive
+        )
+
+    @property
+    def key_schedule_states(self) -> PublishedValues:
+        """Return published key-schedule states with a concise summary."""
+
+        return PublishedValues(
+            "Key-schedule states",
+            getattr(self._primitive, "_published_key_schedule_states", ()),
+            self._primitive,
+        )
+
+    @property
+    def round_operations(self) -> PublishedValues:
+        """Return published named round-operation landmarks."""
+
+        return PublishedValues(
+            "Round operations",
+            getattr(self._primitive, "_published_round_operations", ()),
+            self._primitive,
+        )
+
+    def port(self, owner_id: str) -> Port:
+        """Resolve an input, component, or binding output port by identity.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import AES
+            >>> AES().graph.port("plaintext").owner_id
+            'plaintext'
+        """
+
+        return self._primitive._port(owner_id)
+
+    def component(self, component_id: str) -> Component:
+        """Resolve a semantic component by its deterministic identifier.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import AES
+            >>> graph = AES(number_of_rounds=1).graph
+            >>> graph.component(graph.components[0].component_id) is graph.components[0]
+            True
+        """
+
+        return self._primitive._component(component_id)
+
+    def scope(self, path: str):
+        """Return a composite instance by its deterministic hierarchical path.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import AES
+            >>> callable(AES().graph.scope)
+            True
+        """
+
+        return self._primitive._scope(path)
+
+    def resolve_selection(
+        self, selection: Selection, values: Mapping[str, tuple], cache=None
+    ) -> tuple:
+        """Resolve a selection through structural bindings.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import AES
+            >>> graph = AES().graph
+            >>> graph.resolve_selection(graph.input("plaintext").select_all(), {"plaintext": tuple(range(16))})[:3]
+            (0, 1, 2)
+        """
+
+        return self._primitive._resolve_selection(selection, values, cache)
+
+    def selection_bit_sources(self, selection: Selection) -> tuple[tuple[str, int], ...]:
+        """Flatten a selection to encoded semantic-source bits.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import AES
+            >>> AES().graph.selection_bit_sources(AES().graph.input("plaintext")[:1])[:3]
+            (('plaintext', 0), ('plaintext', 1), ('plaintext', 2))
+        """
+
+        return self._primitive._selection_bit_sources(selection)
+
+
+class PrimitiveEditor:
+    """Copy-producing transformations grouped away from routine primitive use.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> editor = Speck(number_of_rounds=2).edit
+        >>> (callable(editor.reduce_rounds), callable(editor.inverse))
+        (True, True)
+    """
+
+    def __init__(self, primitive: "Primitive") -> None:
+        self._primitive = primitive
+
+    def inverse(self, recover_input: str | int = 0, **options):
+        """Return a validated inverse graph for one primitive input.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> Speck(number_of_rounds=1).edit.inverse().primitive.family_name
+            'speck_inverse'
+        """
+
+        from claasp.transformations import invert_primitive
+
+        return invert_primitive(self._primitive, recover_input, **options)
+
+    def partial_inverse(self, target: PortLike, *, known, **options):
+        """Return a solver-free partial inverse from explicit known wires.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> callable(Speck(number_of_rounds=1).edit.partial_inverse)
+            True
+        """
+
+        from claasp.transformations import partial_inverse
+
+        return partial_inverse(self._primitive, target, known=known, **options)
+
+    def slice(self, outputs=None, **options):
+        """Return a validated dependency slice of the graph.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> source = Speck(number_of_rounds=2)
+            >>> source.edit.slice(source.graph.round_states[0]).primitive.details().number_of_rounds
+            1
+        """
+
+        from claasp.transformations import slice_primitive
+
+        return slice_primitive(self._primitive, outputs, **options)
+
+    def reduce_rounds(self, number_of_rounds: int):
+        """Return the validated prefix ending at a published round state.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> Speck(number_of_rounds=2).edit.reduce_rounds(1).primitive.details().number_of_rounds
+            1
+        """
+
+        from claasp.transformations import reduce_rounds
+
+        return reduce_rounds(self._primitive, number_of_rounds)
+
+    def remove_key_schedule(self, *, keep_round_key_injection: bool = True):
+        """Return a graph without its computed key schedule.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> result = Speck(number_of_rounds=1).edit.remove_key_schedule().primitive
+            >>> tuple(result.graph.input_ports)
+            ('plaintext', 'round_key_0')
+        """
+
+        from claasp.transformations import remove_key_schedule
+
+        return remove_key_schedule(
+            self._primitive,
+            keep_round_key_injection=keep_round_key_injection,
+        )
+
+    def inline_reorderings(self):
+        """Return a graph whose exact reorder operations are bindings.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> result = Speck(number_of_rounds=1).edit.inline_reorderings()
+            >>> result.primitive.transformation_provenance[-1].operation
+            'inline_reorderings'
+        """
+
+        from claasp.transformations import inline_reorderings
+
+        return inline_reorderings(self._primitive)
+
+    def prune(self):
+        """Return the graph's validated output dependency closure.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> result = Speck(number_of_rounds=1).edit.prune()
+            >>> result.primitive.transformation_provenance[-1].operation
+            'prune_orphans'
+        """
+
+        from claasp.transformations import prune_orphans
+
+        return prune_orphans(self._primitive)
+
+    def pair_xor(self, *, shared_inputs=(), **options):
+        """Return two scoped realizations and their XOR observations.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> paired = Speck(number_of_rounds=1).edit.pair_xor(shared_inputs=("key",))
+            >>> tuple(paired.primitive.graph.input_ports)
+            ('left_plaintext', 'right_plaintext', 'key')
+        """
+
+        from claasp.transformations import paired_xor_primitive
+
+        return paired_xor_primitive(self._primitive, shared_inputs=shared_inputs, **options)
+
+    def with_input_visibility(self, **overrides: InputVisibility | str) -> "Primitive":
+        """Return the same graph with study-specific input visibility metadata.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import AES
+            >>> AES().edit.with_input_visibility(key="public").graph.secret_inputs
+            ()
+        """
+
+        primitive = self._primitive
+        unexpected = set(overrides) - set(primitive._input_descriptors)
+        if unexpected:
+            raise KeyError(f"primitive inputs do not exist: {sorted(unexpected)}")
+        derived = copy(primitive)
+        derived._input_descriptors = {
+            name: descriptor.with_visibility(overrides.get(name, descriptor.visibility))
+            for name, descriptor in primitive._input_descriptors.items()
+        }
+        derived._graph = PrimitiveGraph(derived)
+        return derived
+
+
 class Primitive:
     """A validated, executable round-oriented directed acyclic graph.
 
@@ -114,15 +518,15 @@ class Primitive:
         >>> primitive = builder.build(output)
         >>> primitive.evaluate(0b1010, 0b0011)
         9
-        >>> (primitive.family_name, len(primitive.rounds), len(primitive.components))
+        >>> (primitive.family_name, len(primitive.graph.rounds), len(primitive.graph.components))
         ('xor_nibbles', 1, 1)
     """
 
-    REALIZATIONS: tuple[RealizationDescriptor, ...] = ()
-    REALIZATION_BUILDERS: Mapping[str, object] = MappingProxyType({})
+    _realizations: tuple[RealizationDescriptor, ...] = ()
+    _realization_builders: Mapping[str, object] = MappingProxyType({})
 
     @staticmethod
-    def select_configuration(configurations, **parameters):
+    def _select_configuration(configurations, **parameters):
         """Return the unique standard configuration matching ``parameters``."""
 
         matches = [
@@ -136,7 +540,7 @@ class Primitive:
         return matches[0]
 
     @staticmethod
-    def validate_number_of_rounds(value, *, default: int, maximum: int, name: str) -> int:
+    def _validate_number_of_rounds(value, *, default: int, maximum: int, name: str) -> int:
         """Resolve and validate a positive, optionally reduced round count."""
 
         rounds = default if value is None else value
@@ -147,7 +551,7 @@ class Primitive:
         return rounds
 
     @staticmethod
-    def validate_positive_integer(value, *, name: str) -> int:
+    def _validate_positive_integer(value, *, name: str) -> int:
         """Validate a positive integer authoring parameter."""
 
         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
@@ -217,6 +621,7 @@ class Primitive:
         self._bindings: dict[str, ValueBinding] = {}
         self._scopes: dict[str, object] = {}
         self._output: Selection | None = None
+        self._graph = PrimitiveGraph(self)
         self._builder = _builder or PrimitiveBuilder._for_primitive(self)
         if not hasattr(self, "realization"):
             self.realization = self.available_realizations()[0]
@@ -268,7 +673,7 @@ class Primitive:
     def available_realizations(cls) -> tuple[RealizationDescriptor, ...]:
         """Return declared realizations in stable preference order."""
 
-        return tuple(cls.REALIZATIONS) or (cls._default_realization(),)
+        return tuple(cls._realizations) or (cls._default_realization(),)
 
     @classmethod
     def realization_descriptor(cls, name: str) -> RealizationDescriptor:
@@ -287,7 +692,7 @@ class Primitive:
         """Construct an explicitly named graph realization."""
 
         descriptor = cls.realization_descriptor(name)
-        builder = cls.REALIZATION_BUILDERS.get(name)
+        builder = cls._realization_builders.get(name)
         if builder is None:
             if name not in {"default", cls.available_realizations()[0].name}:
                 raise UnsupportedRealizationError(
@@ -328,18 +733,30 @@ class Primitive:
         return self._kind
 
     @property
-    def input_descriptors(self) -> Mapping[str, PrimitiveInput]:
+    def graph(self) -> PrimitiveGraph:
+        """Return the read-only structural view of this primitive."""
+
+        return self._graph
+
+    @property
+    def edit(self) -> PrimitiveEditor:
+        """Return copy-producing graph transformations grouped for discovery."""
+
+        return PrimitiveEditor(self)
+
+    @property
+    def _input_descriptors_view(self) -> Mapping[str, PrimitiveInput]:
         """Typed roles and default visibility for primitive inputs."""
 
         return dict(self._input_descriptors)
 
     @property
-    def secret_inputs(self) -> tuple[str, ...]:
+    def _secret_inputs(self) -> tuple[str, ...]:
         """Return secret input names in declaration order."""
 
         return tuple(name for name, item in self._input_descriptors.items() if item.is_secret)
 
-    def input_descriptor(self, name: str) -> PrimitiveInput:
+    def _input_descriptor(self, name: str) -> PrimitiveInput:
         """Return the typed role and visibility descriptor for one input."""
 
         try:
@@ -377,7 +794,7 @@ class Primitive:
             )
             for name, descriptor in self._input_descriptors.items()
         )
-        output = self.output
+        output = self._output
         if output is None:
             raise ValueError("primitive details require an authored output")
         return PrimitiveDetails(
@@ -385,30 +802,17 @@ class Primitive:
             self._instance_name or type(self).__name__,
             inputs,
             output.value_type.encoded_bit_size,
-            self._round_count if self._round_count is not None else len(self.rounds),
+            self._round_count if self._round_count is not None else len(self._rounds),
             self.realization.name,
         )
 
-    def with_input_visibility(self, **overrides: InputVisibility | str) -> "Primitive":
-        """Return the same graph with study-specific input visibility metadata."""
-
-        unexpected = set(overrides) - set(self._input_descriptors)
-        if unexpected:
-            raise KeyError(f"primitive inputs do not exist: {sorted(unexpected)}")
-        derived = copy(self)
-        derived._input_descriptors = {
-            name: descriptor.with_visibility(overrides.get(name, descriptor.visibility))
-            for name, descriptor in self._input_descriptors.items()
-        }
-        return derived
-
     @property
-    def input_ports(self) -> Mapping[str, Port]:
+    def _input_ports_view(self) -> Mapping[str, Port]:
         """Name-to-port mapping for representations and other graph consumers."""
 
         return dict(self._input_ports)
 
-    def inputs(self, *selectors: str | int) -> Sequence[Port]:
+    def _inputs(self, *selectors: str | int) -> Sequence[Port]:
         """Return input ports in declaration or explicitly requested order.
 
         With no selectors, all inputs are returned in declaration order. Names
@@ -418,10 +822,10 @@ class Primitive:
 
         if not selectors:
             return tuple(self._input_ports.values())
-        return tuple(self.input(selector) for selector in selectors)
+        return tuple(self._input(selector) for selector in selectors)
 
     @property
-    def rounds(self) -> tuple[Round, ...]:
+    def _rounds_view(self) -> tuple[Round, ...]:
         """Return authored rounds as an immutable ordered tuple."""
 
         return tuple(self._rounds)
@@ -429,20 +833,23 @@ class Primitive:
     def _publish_round_keys(self, round_keys: Iterable[object]) -> Sequence[object]:
         """Publish round keys without exposing their storage representation."""
 
-        self.round_keys = tuple(round_keys)
-        return self.round_keys
+        self._published_round_keys = tuple(round_keys)
+        return self._published_round_keys
 
     def _publish_round_key(self, round_key: object) -> object:
         """Publish one round key in authoring order."""
 
-        self.round_keys = (*getattr(self, "round_keys", ()), round_key)
+        self._published_round_keys = (
+            *getattr(self, "_published_round_keys", ()),
+            round_key,
+        )
         return round_key
 
     def _publish_round_states(self, round_states: Iterable[object]) -> Sequence[object]:
         """Publish round states without exposing their storage representation."""
 
-        self.round_states = tuple(round_states)
-        return self.round_states
+        self._published_round_states = tuple(round_states)
+        return self._published_round_states
 
     def _publish_round_state(self, *values: object, **boundaries: object) -> object:
         """Publish one positional or named round-state observation."""
@@ -457,14 +864,17 @@ class Primitive:
             state = tuple(values)
         else:
             raise ValueError("round state must contain at least one value")
-        self.round_states = (*getattr(self, "round_states", ()), state)
+        self._published_round_states = (
+            *getattr(self, "_published_round_states", ()),
+            state,
+        )
         return state
 
     def _publish_key_schedule_states(self, states: Iterable[object]) -> Sequence[object]:
         """Publish key-schedule states without exposing their storage representation."""
 
-        self.key_schedule_states = tuple(states)
-        return self.key_schedule_states
+        self._published_key_schedule_states = tuple(states)
+        return self._published_key_schedule_states
 
     def _publish_key_schedule_state(self, *values: object) -> object:
         """Publish one key-schedule state in authoring order."""
@@ -472,14 +882,17 @@ class Primitive:
         if not values:
             raise ValueError("key-schedule state must contain at least one value")
         state = values[0] if len(values) == 1 else tuple(values)
-        self.key_schedule_states = (*getattr(self, "key_schedule_states", ()), state)
+        self._published_key_schedule_states = (
+            *getattr(self, "_published_key_schedule_states", ()),
+            state,
+        )
         return state
 
     def _publish_round_operations(self, operations: Iterable[object]) -> Sequence[object]:
         """Publish round-operation landmarks without exposing their storage representation."""
 
-        self.round_operations = tuple(operations)
-        return self.round_operations
+        self._published_round_operations = tuple(operations)
+        return self._published_round_operations
 
     def _publish_round_operation(self, **operations: object) -> Mapping[str, object]:
         """Publish named operation landmarks for one round."""
@@ -487,34 +900,37 @@ class Primitive:
         if not operations:
             raise ValueError("round operations must not be empty")
         observation = MappingProxyType(dict(operations))
-        self.round_operations = (*getattr(self, "round_operations", ()), observation)
+        self._published_round_operations = (
+            *getattr(self, "_published_round_operations", ()),
+            observation,
+        )
         return observation
 
     @property
-    def components(self) -> tuple[Component, ...]:
+    def _components_view(self) -> tuple[Component, ...]:
         """Return semantic components in deterministic graph order."""
 
         return tuple(self._components.values())
 
     @property
-    def bindings(self) -> tuple[ValueBinding, ...]:
+    def _bindings_view(self) -> tuple[ValueBinding, ...]:
         """Return structural wiring values in construction order."""
 
         return tuple(self._bindings.values())
 
     @property
-    def scopes(self) -> tuple[object, ...]:
+    def _scopes_view(self) -> tuple[object, ...]:
         """Composite instances in deterministic path order."""
 
         return tuple(self._scopes.values())
 
     @property
-    def output(self) -> Selection | None:
+    def _output_view(self) -> Selection | None:
         """Return the selected graph output, or ``None`` before binding it."""
 
         return self._output
 
-    def input(self, selector: str | int) -> Port:
+    def _input(self, selector: str | int) -> Port:
         """Return one input port by name or zero-based declaration position."""
 
         if isinstance(selector, str):
@@ -528,7 +944,7 @@ class Primitive:
             raise IndexError(f"primitive input position {selector} is out of range")
         return tuple(self._input_ports.values())[selector]
 
-    def port(self, owner_id: str) -> Port:
+    def _port(self, owner_id: str) -> Port:
         """Resolve an input, component, or binding output port by identity."""
 
         try:
@@ -536,7 +952,7 @@ class Primitive:
         except KeyError as error:
             raise KeyError(f"graph source {owner_id!r} does not exist") from error
 
-    def component(self, component_id: str) -> Component:
+    def _component(self, component_id: str) -> Component:
         """Resolve a semantic component by its deterministic identifier."""
 
         try:
@@ -544,7 +960,7 @@ class Primitive:
         except KeyError as error:
             raise KeyError(f"component {component_id!r} does not exist") from error
 
-    def scope(self, path: str):
+    def _scope(self, path: str):
         """Return a composite instance by its deterministic hierarchical path."""
 
         try:
@@ -694,7 +1110,7 @@ class Primitive:
         self._ports[binding_id] = binding.output
         return binding.output
 
-    def resolve_selection(
+    def _resolve_selection(
         self, selection: Selection, values: Mapping[str, tuple], cache=None
     ) -> tuple:
         """Resolve a selection through structural bindings for a representation."""
@@ -770,12 +1186,12 @@ class Primitive:
         source = tuple(values[source_id]) if source_id in values else cache[source_id]
         return tuple(source[position] for position in selection.positions)
 
-    def selection_bit_sources(self, selection: Selection) -> tuple[tuple[str, int], ...]:
+    def _selection_bit_sources(self, selection: Selection) -> tuple[tuple[str, int], ...]:
         """Flatten a selection to the encoded bits of semantic graph sources."""
 
         values = {}
         ports = tuple(self._input_ports.values()) + tuple(
-            component.output for component in self.components
+            component.output for component in self._components.values()
         )
         for port in ports:
             width = port.value_type.domain.encoded_bit_size
@@ -786,7 +1202,7 @@ class Primitive:
                 refs = tuple((port.owner_id, position * width + bit) for bit in range(width))
                 units.append(refs[0] if width == 1 else refs)
             values[port.owner_id] = tuple(units)
-        selected = self.resolve_selection(selection, values)
+        selected = self._resolve_selection(selection, values)
         return tuple(
             ref
             for unit in selected
@@ -825,7 +1241,7 @@ class Primitive:
         normalized: dict[str, Selection] = {}
         for name, value_type in definition.input_types:
             selection = as_selection(bindings[name])
-            actual = self.port(selection.source.owner_id)
+            actual = self._port(selection.source.owner_id)
             if actual != selection.source:
                 raise ValueError(f"binding {name!r} does not match its graph port type")
             if selection.value_type != value_type:
@@ -934,9 +1350,28 @@ class Primitive:
         """
 
         result = self.evaluate_with_trace(*args, **kwargs)
-        if result.output is None or self.output is None:
+        if result.output is None or self._output is None:
             return None
-        return self._encode_boundary(result.output, self.output.value_type)
+        return self._encode_boundary(result.output, self._output.value_type)
+
+    def evaluate_many(
+        self, inputs: Iterable[Mapping[str, object]]
+    ) -> tuple[int | tuple[int, ...] | None, ...]:
+        """Evaluate independent named-input cases in their supplied order.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import AES
+            >>> aes = AES()
+            >>> results = aes.evaluate_many((
+            ...     {"plaintext": 0, "key": 0},
+            ...     {"plaintext": 1, "key": 0},
+            ... ))
+            >>> len(results)
+            2
+        """
+
+        return tuple(self.evaluate(item) for item in inputs)
 
     def evaluate_with_trace(self, *args: object, **kwargs: object):
         """Evaluate like :meth:`evaluate` and retain all intermediate values."""
@@ -957,79 +1392,6 @@ class Primitive:
         from claasp.analysis import Analysis
 
         return Analysis(self)
-
-    def analyze(self) -> "Analysis":
-        """Return :attr:`analysis` as a supported compatibility alias.
-
-        New code should prefer ``primitive.analysis`` for IDE discovery. The
-        method remains supported throughout CLAASP 5 and preserves identical
-        defaults and behavior.
-        """
-
-        return self.analysis
-
-    def inverse(self, recover_input: str | int = 0, **options):
-        """Return a validated inverse graph for one primitive input.
-
-        See :func:`claasp.transformations.invert_primitive` for retained-input options and
-        the typed transformation result.
-        """
-
-        from claasp.transformations import invert_primitive
-
-        return invert_primitive(self, recover_input, **options)
-
-    def partial_inverse(self, target: PortLike, *, known, **options):
-        """Return a solver-free partial inverse from explicit known wires."""
-
-        from claasp.transformations import partial_inverse
-
-        return partial_inverse(self, target, known=known, **options)
-
-    def sliced(self, outputs=None, **options):
-        """Return a validated dependency slice of this graph."""
-
-        from claasp.transformations import slice_primitive
-
-        return slice_primitive(self, outputs, **options)
-
-    def reduced_rounds(self, number_of_rounds: int):
-        """Return the validated prefix ending at a published round state."""
-
-        from claasp.transformations import reduce_rounds
-
-        return reduce_rounds(self, number_of_rounds)
-
-    def without_key_schedule(self, *, keep_round_key_injection: bool = True):
-        """Return a graph without its computed key schedule."""
-
-        from claasp.transformations import remove_key_schedule
-
-        return remove_key_schedule(
-            self,
-            keep_round_key_injection=keep_round_key_injection,
-        )
-
-    def with_inlined_reorderings(self):
-        """Return a graph whose exact reorder operations are bindings."""
-
-        from claasp.transformations import inline_reorderings
-
-        return inline_reorderings(self)
-
-    def pruned(self):
-        """Return this graph's validated output dependency closure."""
-
-        from claasp.transformations import prune_orphans
-
-        return prune_orphans(self)
-
-    def paired_xor(self, *, shared_inputs=(), **options):
-        """Return two scoped realizations and their XOR observations."""
-
-        from claasp.transformations import paired_xor_primitive
-
-        return paired_xor_primitive(self, shared_inputs=shared_inputs, **options)
 
     def diagram(self, annotation=None):
         """Compile this graph and an optional trace or trail to diagram IR."""
@@ -1132,9 +1494,9 @@ class PrimitiveBuilder:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, PrimitiveBuilder, ValueType
+        >>> from claasp import PrimitiveBuilder, ValueType, Word
         >>> from claasp.components import Xor
-        >>> bit = ValueType(Bit(), (1,))
+        >>> bit = ValueType(Word(1), (1,))
         >>> builder = PrimitiveBuilder("xor", {"left": bit, "right": bit})
         >>> builder.add_round()
         Round(number=0)
@@ -1182,12 +1544,12 @@ class PrimitiveBuilder:
     def input(self, selector: str | int) -> Port:
         """Return one input port for use in the graph being authored."""
 
-        return self._primitive.input(selector)
+        return self._primitive._input(selector)
 
     def inputs(self, *selectors: str | int) -> Sequence[Port]:
         """Return input ports in declaration or requested order."""
 
-        return self._primitive.inputs(*selectors)
+        return self._primitive._inputs(*selectors)
 
     def add_round(self) -> Round:
         """Append and return the next sequential round."""
@@ -1308,7 +1670,7 @@ class PrimitiveBuilder:
         self._ensure_open()
         if output is not None:
             self._primitive._set_output(output)
-        if self._primitive.output is None:
+        if self._primitive._output is None:
             raise ValueError("a primitive must have an output before it can be built")
         self._built = True
         return self._primitive

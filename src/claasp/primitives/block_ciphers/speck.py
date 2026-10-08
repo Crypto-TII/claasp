@@ -25,12 +25,12 @@ def _validate_parameters(
     rotation_alpha,
     rotation_beta,
 ):
-    configuration = Primitive.select_configuration(
+    configuration = Primitive._select_configuration(
         PARAMETERS_CONFIGURATION_LIST,
         block_bit_size=block_bit_size,
         key_bit_size=key_bit_size,
     )
-    rounds = Primitive.validate_number_of_rounds(
+    rounds = Primitive._validate_number_of_rounds(
         number_of_rounds,
         default=configuration["number_of_rounds"],
         maximum=configuration["number_of_rounds"],
@@ -87,8 +87,8 @@ class Speck(Primitive):
             round_count=rounds,
         )
 
-        x, y = self.input("plaintext")[0], self.input("plaintext")[1]
-        key = self.input("key")
+        x, y = self.graph.input("plaintext")[0], self.graph.input("plaintext")[1]
+        key = self.graph.input("key")
         schedule = [key[position] for position in range(key_word_count - 2, -1, -1)]
         round_key = key[key_word_count - 1]
 
@@ -103,9 +103,9 @@ class Speck(Primitive):
         for round_number in range(rounds):
             self._builder.add_round()
             self._builder.add_round_key(round_key)
-            start = len(self.rounds[-1].components)
+            start = len(self.graph.rounds[-1].components)
             x, y = round_function(x, y, round_key)
-            operations = self.rounds[-1].components[start:]
+            operations = self.graph.rounds[-1].components[start:]
             self._builder.add_round_operations(
                 rotate_right=operations[0],
                 modular_add=operations[1],

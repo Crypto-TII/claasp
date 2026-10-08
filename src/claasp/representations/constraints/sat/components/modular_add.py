@@ -19,7 +19,7 @@ class ModularAddFunctionalSATModel:
         >>> from claasp.primitives import Speck
         >>> from claasp.representations.constraints.sat import BooleanCNFModel
         >>> primitive = Speck(number_of_rounds=1)
-        >>> component = next(item for item in primitive.components if isinstance(item, ModularAdd))
+        >>> component = next(item for item in primitive.graph.components if isinstance(item, ModularAdd))
         >>> encoding = ModularAddFunctionalSATModel(component)
         >>> formula = BooleanCNFModel(primitive).cnf_formula()
         >>> encoding.component.component_id in formula.provenance

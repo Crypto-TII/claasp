@@ -78,7 +78,9 @@ def _measure(operation, repeats):
 
 def _des_case(repeats):
     primitive = DES(number_of_rounds=2)
-    all_sboxes = tuple(item for item in primitive.components if isinstance(item, BitVectorSBox))
+    all_sboxes = tuple(
+        item for item in primitive.graph.components if isinstance(item, BitVectorSBox)
+    )
     sboxes = all_sboxes[:8]
 
     def run():
@@ -158,7 +160,7 @@ def _speck_case(repeats):
 def _gift_case(repeats):
     bitsliced = Gift.realize("bitsliced", number_of_rounds=1, block_bit_size=64)
     lookup = Gift.realize("sbox", number_of_rounds=1, block_bit_size=64)
-    sbox = next(item for item in lookup.components if isinstance(item, BitVectorSBox))
+    sbox = next(item for item in lookup.graph.components if isinstance(item, BitVectorSBox))
     outcome, runtime, peak = _measure(
         lambda: _best_sbox_transition(sbox.table, sbox.output_bit_size), repeats
     )

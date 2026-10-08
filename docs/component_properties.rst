@@ -19,7 +19,7 @@ identity.
    >>> from claasp.components import BitVectorSBox
    >>> from claasp.primitives import Present
    >>> present = Present(number_of_rounds=1)
-   >>> sbox = next(item for item in present.components if isinstance(item, BitVectorSBox))
+   >>> sbox = next(item for item in present.graph.components if isinstance(item, BitVectorSBox))
    >>> result = present.analysis.component_property(
    ...     sbox, ComponentProperty.DIFFERENTIAL_UNIFORMITY,
    ...     PropertyDomain.LOOKUP_TABLE)

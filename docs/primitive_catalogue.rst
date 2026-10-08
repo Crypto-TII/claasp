@@ -133,9 +133,9 @@ secret by default, while plaintexts, states, tweaks, and nonces are public:
    >>> aes = AES()
    >>> aes.kind is PrimitiveKind.BLOCK_CIPHER
    True
-   >>> aes.secret_inputs
+   >>> aes.graph.secret_inputs
    ('key',)
-   >>> aes.input_descriptor("plaintext").visibility is InputVisibility.PUBLIC
+   >>> aes.graph.input_descriptor("plaintext").visibility is InputVisibility.PUBLIC
    True
 
 Visibility describes a study, not the value or the graph. A known-key study
@@ -143,10 +143,10 @@ can therefore derive new metadata without rebuilding or mutating AES:
 
 .. doctest::
 
-   >>> known_key = aes.with_input_visibility(key="public")
-   >>> known_key.secret_inputs
+   >>> known_key = aes.edit.with_input_visibility(key="public")
+   >>> known_key.graph.secret_inputs
    ()
-   >>> aes.secret_inputs
+   >>> aes.graph.secret_inputs
    ('key',)
 
 Custom authors may use ``public_input`` and ``secret_input`` when conventional
@@ -163,7 +163,7 @@ is still the same 320-bit permutation family:
 
    >>> from claasp.primitives import Ascon
    >>> ascon = Ascon(number_of_rounds=4)
-   >>> len(ascon.rounds)
+   >>> len(ascon.graph.rounds)
    4
    >>> f"{ascon.evaluate(0):080x}"[:16]
    '6e5a585776456145'
@@ -182,7 +182,7 @@ study variants therefore do not depend on a pre-exported graph file:
 
 .. doctest::
 
-   >>> len(Ascon(number_of_rounds=5).rounds)
+   >>> len(Ascon(number_of_rounds=5).graph.rounds)
    5
 
 The implementation is ordinary Python in

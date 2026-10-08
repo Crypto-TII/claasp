@@ -69,7 +69,7 @@ class Poseidon(Primitive):
 
         state_type = ValueType(field, (width,))
         super().__init__("poseidon", {"state": state_type})
-        state = self.input("state")
+        state = self.graph.input("state")
         full_rounds_at_start = full_rounds // 2
 
         for round_number, constants_for_round in enumerate(constants):

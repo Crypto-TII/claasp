@@ -54,7 +54,7 @@ def _values(value, path):
 
 def _validate_value(primitive, source_id, value, path):
     try:
-        value_type = primitive.port(source_id).value_type
+        value_type = primitive.graph.port(source_id).value_type
     except KeyError as error:
         raise SerializationError(
             SerializationFailure.INVALID_REFERENCE,
@@ -142,8 +142,8 @@ def deserialize_execution_trace(data: bytes | str, primitive: Primitive) -> Exec
         )
     entries = []
     seen = set()
-    input_names = set(primitive.input_ports)
-    component_ids = {item.component_id for item in primitive.components}
+    input_names = set(primitive.graph.input_ports)
+    component_ids = {item.component_id for item in primitive.graph.components}
     for index, item in enumerate(_array(payload["entries"], path="$.payload.entries")):
         path = f"$.payload.entries[{index}]"
         _object(item, {"role", "source", "value"}, path=path)
@@ -178,13 +178,13 @@ def deserialize_execution_trace(data: bytes | str, primitive: Primitive) -> Exec
                 )
             _validate_value(primitive, source, value, f"{path}.value")
         else:
-            if source != "primitive_output" or primitive.output is None:
+            if source != "primitive_output" or primitive.graph.output is None:
                 raise SerializationError(
                     SerializationFailure.INVALID_REFERENCE,
                     "invalid primitive output trace source",
                     path=f"{path}.source",
                 )
-            value_type = primitive.output.value_type
+            value_type = primitive.graph.output.value_type
             if len(value) != value_type.unit_count or any(
                 not value_type.domain.contains(unit) for unit in value
             ):
@@ -297,9 +297,9 @@ def serialize_evaluation_result(result: EvaluationResult) -> bytes:
         raise TypeError("serialize_evaluation_result requires an EvaluationResult")
     primitive = result.trace.annotation.primitive
     expected_order = (
-        tuple(primitive.input_ports)
-        + tuple(item.component_id for item in primitive.components)
-        + tuple(item.binding_id for item in primitive.bindings)
+        tuple(primitive.graph.input_ports)
+        + tuple(item.component_id for item in primitive.graph.components)
+        + tuple(item.binding_id for item in primitive.graph.bindings)
     )
     if set(result.values) != set(expected_order):
         raise SerializationError(
@@ -349,9 +349,9 @@ def deserialize_evaluation_result(data: bytes | str, primitive: Primitive) -> Ev
             path="$.payload.primitive_digest",
         )
     expected_order = (
-        tuple(primitive.input_ports)
-        + tuple(item.component_id for item in primitive.components)
-        + tuple(item.binding_id for item in primitive.bindings)
+        tuple(primitive.graph.input_ports)
+        + tuple(item.component_id for item in primitive.graph.components)
+        + tuple(item.binding_id for item in primitive.graph.bindings)
     )
     values = {}
     order = []
@@ -375,7 +375,9 @@ def deserialize_evaluation_result(data: bytes | str, primitive: Primitive) -> Ev
         )
     output = None if payload["output"] is None else _values(payload["output"], "$.payload.output")
     expected_output = (
-        None if primitive.output is None else primitive.resolve_selection(primitive.output, values)
+        None
+        if primitive.graph.output is None
+        else primitive.graph.resolve_selection(primitive.graph.output, values)
     )
     if output != expected_output:
         raise SerializationError(
@@ -386,8 +388,8 @@ def deserialize_evaluation_result(data: bytes | str, primitive: Primitive) -> Ev
     provenance = _decode_provenance(payload["provenance"], primitive, "$.payload.provenance")
     annotation_values = {
         source_id: values[source_id]
-        for source_id in tuple(primitive.input_ports)
-        + tuple(item.component_id for item in primitive.components)
+        for source_id in tuple(primitive.graph.input_ports)
+        + tuple(item.component_id for item in primitive.graph.components)
     }
     trace = ExecutionTrace(
         GraphAnnotation.from_values(

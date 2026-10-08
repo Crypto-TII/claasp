@@ -27,7 +27,9 @@ def _xor_primitive(operand_count=2):
     primitive = Primitive("xor", {name: ValueType(Bit(), (1,)) for name in "abc"[:operand_count]})
     primitive._builder.add_round()
     output = primitive._builder.add_component(
-        Add(tuple(primitive.input(name) for name in "abc"[:operand_count]), component_id="sum")
+        Add(
+            tuple(primitive.graph.input(name) for name in "abc"[:operand_count]), component_id="sum"
+        )
     )
     primitive._builder.set_output(output)
     return primitive
@@ -94,7 +96,7 @@ def test_simon_and_rotation_graph_has_an_independently_checked_cnf_witness():
     witness = model.witness(evaluation)
     assert formula.is_satisfied(witness)
     and_component = next(
-        item for item in primitive.components if type(item).__name__ == "BitwiseAnd"
+        item for item in primitive.graph.components if type(item).__name__ == "BitwiseAnd"
     )
     changed = dict(witness)
     changed[f"{and_component.component_id}_0_0"] ^= 1
@@ -169,7 +171,7 @@ def test_legacy_three_input_or_relation_retains_the_complete_truth_table():
     primitive = Primitive("or_lookup", {"x": ValueType(Bit(), (3,))})
     primitive._builder.add_round()
     output = primitive._builder.add_component(
-        BitVectorSBox(primitive.input("x"), (0, 1, 1, 1, 1, 1, 1, 1), component_id="or")
+        BitVectorSBox(primitive.graph.input("x"), (0, 1, 1, 1, 1, 1, 1, 1), component_id="or")
     )
     primitive._builder.set_output(output)
     model = BooleanCNFModel(primitive)
@@ -233,7 +235,7 @@ def test_non_power_of_two_modular_multiply_is_rejected_explicitly():
     primitive._builder.add_round()
     primitive._builder.set_output(
         primitive._builder.add_component(
-            ModularMultiplyComponent(primitive.inputs(), modulus=13, component_id="product")
+            ModularMultiplyComponent(primitive.graph.inputs(), modulus=13, component_id="product")
         )
     )
     with pytest.raises(NotImplementedError, match=r"modulus 2\*\*word_width"):

@@ -55,15 +55,17 @@ def test_selected_realizations_have_identical_contracts_and_seeded_outputs(
     for graph, descriptor in zip(graphs, descriptors):
         assert graph.realization is descriptor
         assert graph.realization_identity == f"{reference.family_name}:{descriptor.name}"
-        assert tuple(graph.input_descriptors.items()) == tuple(reference.input_descriptors.items())
-        assert graph.output.value_type == reference.output.value_type
+        assert tuple(graph.graph.input_descriptors.items()) == tuple(
+            reference.graph.input_descriptors.items()
+        )
+        assert graph.graph.output.value_type == reference.graph.output.value_type
         assert graph.kind is reference.kind
 
     generator = random.Random(f"M10.9e:{primitive_class.__name__}")
     for _ in range(3):
         inputs = {
             name: generator.getrandbits(item.value_type.encoded_bit_size)
-            for name, item in reference.input_descriptors.items()
+            for name, item in reference.graph.input_descriptors.items()
         }
         assert len({graph.evaluate(**inputs) for graph in graphs}) == 1
 

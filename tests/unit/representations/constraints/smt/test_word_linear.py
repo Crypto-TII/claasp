@@ -15,7 +15,9 @@ def _xor_model():
         "xor", {"left": ValueType(Word(2), (1,)), "key": ValueType(Word(2), (1,))}
     )
     primitive._builder.add_round()
-    output = primitive._builder.add_component(Xor((primitive.input("left"), primitive.input("key"))))
+    output = primitive._builder.add_component(
+        Xor((primitive.graph.input("left"), primitive.graph.input("key")))
+    )
     primitive._builder.set_output(output)
     return WordLinearSMTModel(primitive, maximum_weight=0, nonzero_input="key")
 
@@ -69,7 +71,7 @@ def test_facade_defaults_to_single_key_masks_and_preserves_provenance():
             assert "fixed_external_mask" not in formula.provenance
             return SatResult(SatStatus.UNSATISFIABLE, None, 0, "", "")
 
-    result = model.primitive.analyze().enumerate_xor_linear_trails(
+    result = model.primitive.analysis.enumerate_xor_linear_trails(
         0, nonzero_input="left", solver=Solver()
     )
     assert result.complete
@@ -95,7 +97,7 @@ def test_bitwise_and_word_composition_recounts_signs_and_weights():
     )
     primitive._builder.add_round()
     output = primitive._builder.add_component(
-        BitwiseAnd((primitive.input("left"), primitive.input("right")))
+        BitwiseAnd((primitive.graph.input("left"), primitive.graph.input("right")))
     )
     primitive._builder.set_output(output)
     model = WordLinearSMTModel(primitive, maximum_weight=2, nonzero_input="left")

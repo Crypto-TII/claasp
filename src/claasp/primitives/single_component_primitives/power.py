@@ -25,7 +25,7 @@ class Power(Primitive):
     EXAMPLES::
 
         >>> primitive = Power()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -48,7 +48,7 @@ class Power(Primitive):
         )
         super().__init__("power", {"input": ValueType(domain, (unit_count,))}, kind=kind)
         self._builder.add_round()
-        output = self._builder.add_component(PowerComponent(self.input("input"), exponent))
+        output = self._builder.add_component(PowerComponent(self.graph.input("input"), exponent))
         self._builder.set_output(output)
 
 

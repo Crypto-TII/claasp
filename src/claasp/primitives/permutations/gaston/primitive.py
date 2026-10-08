@@ -70,7 +70,7 @@ class Gaston(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Gaston()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x88b326096bebc635', 320)

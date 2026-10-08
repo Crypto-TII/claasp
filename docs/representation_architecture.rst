@@ -36,7 +36,7 @@ The common immutable container validates input and component identifiers:
    >>> primitive = Present(number_of_rounds=1)
    >>> annotation = GraphAnnotation(primitive, CONCRETE, (
    ...     AnnotationEntry("plaintext", AnnotationRole.INPUT, 0),
-   ...     AnnotationEntry(primitive.components[0].component_id, AnnotationRole.COMPONENT, 1),
+   ...     AnnotationEntry(primitive.graph.components[0].component_id, AnnotationRole.COMPONENT, 1),
    ... ))
    >>> trace = ExecutionTrace(annotation)
    >>> trace.value_of("plaintext")
@@ -55,7 +55,7 @@ its primitive for use by generic consumers:
 
    >>> from claasp.semantics.cryptanalysis import Trail, TrailKind, TrailStep, XorDifference, SBoxTransitionSemantics
    >>> from claasp.primitives.block_ciphers.present import PRESENT_SBOX
-   >>> component = next(item for item in primitive.components if item.component_id == "sbox_1_0")
+   >>> component = next(item for item in primitive.graph.components if item.component_id == "sbox_1_0")
    >>> transition = SBoxTransitionSemantics(PRESENT_SBOX).xor_differential(1, 3)
    >>> trail = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1 << 60, 64), XorDifference(0, 64), (TrailStep(component.component_id, transition),))
    >>> trail.semantics.name
@@ -99,7 +99,7 @@ annotation used by ``ExecutionTrace``:
    ... })
    >>> result.trace.annotation.semantics.name
    'concrete'
-   >>> len(result.trace.annotation.entries) == len(primitive.input_ports) + len(primitive.components) + 1
+   >>> len(result.trace.annotation.entries) == len(primitive.graph.input_ports) + len(primitive.graph.components) + 1
    True
 
 Normal users continue to write ``primitive.evaluate(plaintext, key)``. The

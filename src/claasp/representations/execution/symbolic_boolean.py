@@ -55,7 +55,7 @@ class BooleanSymbolicEvaluator:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a typed graph")
         values = {}
-        for name, port in primitive.input_ports.items():
+        for name, port in primitive.graph.input_ports.items():
             prefix = {"plaintext": "p", "key": "k", "state": "s"}.get(name, name[:1])
             domain = port.value_type.domain
             if isinstance(domain, Bit):
@@ -77,15 +77,15 @@ class BooleanSymbolicEvaluator:
                 )
 
         binding_cache = {}
-        for component in primitive.components:
+        for component in primitive.graph.components:
             inputs = tuple(
-                primitive.resolve_selection(selection, values, binding_cache)
+                primitive.graph.resolve_selection(selection, values, binding_cache)
                 for selection in component.inputs
             )
             values[component.component_id] = self._component(component, inputs)
-        if primitive.output is None:
+        if primitive.graph.output is None:
             return BooleanSymbolicResult((), values)
-        selected = primitive.resolve_selection(primitive.output, values, binding_cache)
+        selected = primitive.graph.resolve_selection(primitive.graph.output, values, binding_cache)
         flattened = tuple(
             polynomial
             for unit in selected

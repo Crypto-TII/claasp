@@ -29,7 +29,7 @@ class Permutation(Primitive):
     EXAMPLES::
 
         >>> primitive = Permutation()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -49,7 +49,7 @@ class Permutation(Primitive):
         self._builder.set_output(
             self._builder.add_component(
                 PermutationComponent(
-                    self.input("input"),
+                    self.graph.input("input"),
                     mapping,
                 )
             )

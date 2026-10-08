@@ -35,7 +35,9 @@ def _primitive(component):
         "boolean_word", {"left": ValueType(Word(2), (1,)), "key": ValueType(Word(2), (1,))}
     )
     primitive._builder.add_round()
-    output = primitive._builder.add_component(component((primitive.input("left"), primitive.input("key"))))
+    output = primitive._builder.add_component(
+        component((primitive.graph.input("left"), primitive.graph.input("key")))
+    )
     primitive._builder.set_output(output)
     return primitive
 
@@ -162,7 +164,7 @@ def test_n_window_strategy_is_opt_in_and_supports_legacy_selectors():
     ).cnf_formula()
     component_windows = {
         component.component_id: 2
-        for component in primitive.components
+        for component in primitive.graph.components
         if isinstance(component, ModularAdd)
     }
     by_component = WordDifferentialSATModel(

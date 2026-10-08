@@ -46,7 +46,7 @@ def test_composite_block_can_be_instantiated_and_queried_as_a_scope():
     primitive._builder.add_round()
     scope = primitive._builder.add_composite(
         ChaChaQuarterRound(),
-        {name: primitive.input(name) for name in ("a", "b", "c", "d")},
+        {name: primitive.graph.input(name) for name in ("a", "b", "c", "d")},
         scope_id="quarter_round",
     )
     primitive._builder.set_output(scope.output())

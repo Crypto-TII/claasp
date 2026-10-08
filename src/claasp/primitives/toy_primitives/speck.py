@@ -11,7 +11,7 @@ class ToySpeck(Primitive):
     EXAMPLES::
 
         >>> primitive = ToySpeck()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x91', 8)
@@ -20,7 +20,7 @@ class ToySpeck(Primitive):
     def __init__(self, number_of_rounds: int = 4) -> None:
         if not isinstance(number_of_rounds, int) or isinstance(number_of_rounds, bool):
             raise ValueError("ToySpeck requires an integer round count")
-        rounds = Primitive.validate_number_of_rounds(
+        rounds = Primitive._validate_number_of_rounds(
             number_of_rounds,
             default=4,
             maximum=4,
@@ -32,8 +32,8 @@ class ToySpeck(Primitive):
             {"plaintext": ValueType(Word(4), (2,)), "key": ValueType(Word(4), (4,))},
             kind=PrimitiveKind.BLOCK_CIPHER,
         )
-        x, y = self.input("plaintext")[0], self.input("plaintext")[1]
-        key = self.input("key")
+        x, y = self.graph.input("plaintext")[0], self.graph.input("plaintext")[1]
+        key = self.graph.input("key")
         schedule = [key[position] for position in (2, 1, 0)]
         round_key = key[3]
 

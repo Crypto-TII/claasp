@@ -72,7 +72,7 @@ class A52(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = A52()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x391e9cc94377de0c', 226)

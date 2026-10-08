@@ -18,7 +18,7 @@ class ComponentMonomialSemantics:
         >>> from claasp.components import Identity
         >>> from claasp.semantics.cryptanalysis import ComponentMonomialSemantics
         >>> graph = Primitive("identity", {"x": ValueType(Bit(), (2,))})
-        >>> component = Identity(graph.input("x"))
+        >>> component = Identity(graph.graph.input("x"))
         >>> ComponentMonomialSemantics.is_possible(component, (0b10,), 0b10)
         True
     """
@@ -33,7 +33,7 @@ class ComponentMonomialSemantics:
             >>> from claasp.components import Identity
             >>> from claasp.semantics.cryptanalysis import ComponentMonomialSemantics
             >>> graph = Primitive("identity", {"x": ValueType(Bit(), (1,))})
-            >>> ComponentMonomialSemantics.is_possible(Identity(graph.input("x")), (1,), 1)
+            >>> ComponentMonomialSemantics.is_possible(Identity(graph.graph.input("x")), (1,), 1)
             True
         """
 

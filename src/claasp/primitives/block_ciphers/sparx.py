@@ -23,7 +23,7 @@ class SPARX(Primitive):
     EXAMPLES::
 
         >>> primitive = SPARX()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x23b4b5ae05d40da7', 62)
@@ -43,8 +43,8 @@ class SPARX(Primitive):
         super().__init__(
             "sparx", {"plaintext": word_type(32, word_count), "key": word_type(32, key_count)}
         )
-        state = [select(self.input("plaintext"), i) for i in range(word_count)]
-        key = [select(self.input("key"), i) for i in range(key_count)]
+        state = [select(self.graph.input("plaintext"), i) for i in range(word_count)]
+        key = [select(self.graph.input("key"), i) for i in range(key_count)]
 
         def halves(value):
             split = split_word(self, value, 16)

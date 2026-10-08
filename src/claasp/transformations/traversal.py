@@ -75,22 +75,22 @@ class DependencyIndex:
         self._primitive = primitive
         round_by_component = {
             component.component_id: primitive_round.number
-            for primitive_round in primitive.rounds
+            for primitive_round in primitive.graph.rounds
             for component in primitive_round.components
         }
         scope_by_component: dict[str, list[str]] = {}
-        for scope in primitive.scopes:
+        for scope in primitive.graph.scopes:
             for component_id in scope.component_ids:
                 scope_by_component.setdefault(component_id, []).append(scope.path)
 
         sources: dict[str, GraphSource] = {}
         dependencies: dict[str, tuple[str, ...]] = {}
         order: list[str] = []
-        for name, port in primitive.input_ports.items():
+        for name, port in primitive.graph.input_ports.items():
             sources[name] = GraphSource(name, GraphSourceKind.INPUT, port.value_type)
             dependencies[name] = ()
             order.append(name)
-        for binding in primitive.bindings:
+        for binding in primitive.graph.bindings:
             source_id = binding.binding_id
             sources[source_id] = GraphSource(
                 source_id,
@@ -102,7 +102,7 @@ class DependencyIndex:
             )
             dependencies[source_id] = self._unique(item.source.owner_id for item in binding.inputs)
             order.append(source_id)
-        for component in primitive.components:
+        for component in primitive.graph.components:
             source_id = component.component_id
             sources[source_id] = GraphSource(
                 source_id,

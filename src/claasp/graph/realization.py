@@ -113,6 +113,25 @@ class RealizationDescriptor:
 
         return _names(requirements, "capability requirements") <= self.capabilities
 
+    def __str__(self) -> str:
+        def readable(values: Iterable[str]) -> str:
+            return ", ".join(value.replace("_", " ") for value in sorted(values)) or "none"
+
+        provenance = "; ".join(self.provenance) or "not specified"
+        return "\n".join(
+            (
+                f"Realization: {self.name}",
+                f"  Description: {self.description}",
+                f"  Maturity: {self.maturity.value.replace('_', ' ')}",
+                f"  Capabilities: {readable(self.capabilities)}",
+                f"  Graph structure: {readable(self.structure)}",
+                f"  Provenance: {provenance}",
+            )
+        )
+
+    def __repr__(self) -> str:
+        return str(self)
+
 
 def select_realization(
     descriptors: Iterable[RealizationDescriptor],
@@ -187,9 +206,9 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
         raise TypeError("realization contract normalization requires Primitive graphs")
     if reference.kind != candidate.kind:
         raise ValueError("equivalent realizations must have the same primitive kind")
-    if set(reference.input_descriptors) != set(candidate.input_descriptors):
+    if set(reference.graph.input_descriptors) != set(candidate.graph.input_descriptors):
         raise ValueError("equivalent realizations must have the same named inputs")
-    if reference.output is None or candidate.output is None:
+    if reference.graph.output is None or candidate.graph.output is None:
         raise ValueError("equivalent realizations require declared outputs")
 
     def encoded_size(value_type):
@@ -197,30 +216,32 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
             raise ValueError("realization boundary normalization requires fixed-width types")
         return value_type.encoded_bit_size
 
-    for name, expected in reference.input_descriptors.items():
-        actual = candidate.input_descriptor(name)
+    for name, expected in reference.graph.input_descriptors.items():
+        actual = candidate.graph.input_descriptor(name)
         if encoded_size(expected.value_type) != encoded_size(actual.value_type):
             raise ValueError(f"realization input {name!r} has a different encoded width")
         if expected.role != actual.role or expected.visibility != actual.visibility:
             raise ValueError(
                 f"realization input {name!r} has different role or visibility metadata"
             )
-    if encoded_size(reference.output.value_type) != encoded_size(candidate.output.value_type):
+    if encoded_size(reference.graph.output.value_type) != encoded_size(
+        candidate.graph.output.value_type
+    ):
         raise ValueError("equivalent realizations have different output widths")
 
-    exact_inputs = tuple(reference.input_descriptors.items()) == tuple(
-        candidate.input_descriptors.items()
+    exact_inputs = tuple(reference.graph.input_descriptors.items()) == tuple(
+        candidate.graph.input_descriptors.items()
     )
-    if exact_inputs and reference.output.value_type == candidate.output.value_type:
+    if exact_inputs and reference.graph.output.value_type == candidate.graph.output.value_type:
         candidate._family_name = reference.family_name
         candidate.realization = descriptor
         return candidate
-    if candidate.scopes:
+    if candidate.graph.scopes:
         raise ValueError("boundary normalization of hierarchical realizations is not supported")
 
     normalized = Primitive(
         reference.family_name,
-        reference.input_descriptors,
+        reference.graph.input_descriptors,
         kind=reference.kind,
         provenance=reference.provenance + candidate.provenance,
     )
@@ -254,8 +275,8 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
             raise ValueError("realization boundary conversion produced the wrong typed shape")
         return converted
 
-    candidate_rounds = candidate.rounds or ((),)
-    pending_bindings = list(candidate.bindings)
+    candidate_rounds = candidate.graph.rounds or ((),)
+    pending_bindings = list(candidate.graph.bindings)
 
     def drain_bindings():
         from claasp.graph.binding import BindingKind
@@ -292,9 +313,11 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
     for round_index, candidate_round in enumerate(candidate_rounds):
         normalized._builder.add_round()
         if round_index == 0:
-            for name, port in candidate.input_ports.items():
+            for name, port in candidate.graph.input_ports.items():
                 remapped[name] = as_selection(
-                    convert(normalized.input(name), port.value_type, f"__realization_input_{name}")
+                    convert(
+                        normalized.graph.input(name), port.value_type, f"__realization_input_{name}"
+                    )
                 )
             drain_bindings()
         for component in getattr(candidate_round, "components", ()):
@@ -305,13 +328,17 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
                 "inputs",
                 tuple(remapped[item.source.owner_id][item.positions] for item in component.inputs),
             )
-            remapped[component.component_id] = normalized._builder.add_component(cloned).select_all()
+            remapped[component.component_id] = normalized._builder.add_component(
+                cloned
+            ).select_all()
     drain_bindings()
     if pending_bindings:
         raise ValueError("realization contains unresolved structural bindings")
 
-    candidate_output = remapped[candidate.output.source.owner_id][candidate.output.positions]
+    candidate_output = remapped[candidate.graph.output.source.owner_id][
+        candidate.graph.output.positions
+    ]
     normalized._builder.set_output(
-        convert(candidate_output, reference.output.value_type, "__realization_output")
+        convert(candidate_output, reference.graph.output.value_type, "__realization_output")
     )
     return normalized

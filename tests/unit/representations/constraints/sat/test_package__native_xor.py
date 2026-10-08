@@ -59,7 +59,7 @@ def test_native_xor_graph_lowering_matches_ordinary_cnf(primitive):
 
     inputs = {
         name: tuple(0 for _ in range(port.value_type.unit_count))
-        for name, port in primitive.input_ports.items()
+        for name, port in primitive.graph.input_ports.items()
     }
     evaluation = ScalarEvaluator().evaluate(primitive, inputs)
     assert native_formula.is_satisfied(native.witness(evaluation))

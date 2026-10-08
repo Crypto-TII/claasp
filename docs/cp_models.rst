@@ -209,7 +209,7 @@ its decoder recomputes the selected entry independently.
    >>> from claasp.primitives import Present
    >>> from claasp.semantics.cryptanalysis import SBoxBoomerangSemantics
    >>> primitive = Present(number_of_rounds=1)
-   >>> sbox = next(item for item in primitive.components if item.component_id == "sbox_1_0")
+   >>> sbox = next(item for item in primitive.graph.components if item.component_id == "sbox_1_0")
    >>> bct = SBoxBoomerangSemantics(sbox.table)
    >>> bct.connectivity(1, 1).is_possible
    False

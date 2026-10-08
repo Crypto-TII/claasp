@@ -49,13 +49,9 @@ def test_wordwise_boundary_rejects_invalid_patterns(patterns):
         (WordwiseTruncatedMDSMILPModel, WordwiseTruncatedMDSEspressoMILPModel),
     ),
 )
-def test_wordwise_espresso_relations_accept_exactly_the_portable_rows(
-    portable_type, espresso_type
-):
+def test_wordwise_espresso_relations_accept_exactly_the_portable_rows(portable_type, espresso_type):
     portable = (
-        portable_type(4)
-        if portable_type is WordwiseXorMILPModel
-        else portable_type(4, (4, 4))
+        portable_type(4) if portable_type is WordwiseXorMILPModel else portable_type(4, (4, 4))
     )
     espresso = espresso_type()
     compact = espresso.milp_model()
@@ -74,7 +70,9 @@ def test_wordwise_xor_decodes_known_cancellation(model_type):
     known = WordwiseXorDifference.known(4, 5)
     zero = WordwiseXorDifference(4, WordwiseDifferenceKind.ZERO)
     model = relation.milp_model(inputs=(known, known), output=zero)
-    row = next(row for row in relation.rows if row[:6] == (0, 1, 0, 1, 0, 1) and row[6:12] == row[:6])
+    row = next(
+        row for row in relation.rows if row[:6] == (0, 1, 0, 1, 0, 1) and row[6:12] == row[:6]
+    )
     witness = (
         relation.relation.witness(row)
         if model_type is WordwiseXorMILPModel
@@ -89,12 +87,16 @@ def test_wordwise_xor_decodes_known_cancellation(model_type):
     "model_type", (WordwiseTruncatedMDSMILPModel, WordwiseTruncatedMDSEspressoMILPModel)
 )
 def test_wordwise_mds_decodes_single_active_input(model_type):
-    relation = model_type(4, (4, 4)) if model_type is WordwiseTruncatedMDSMILPModel else model_type()
+    relation = (
+        model_type(4, (4, 4)) if model_type is WordwiseTruncatedMDSMILPModel else model_type()
+    )
     zero = WordwiseXorDifference(4, WordwiseDifferenceKind.ZERO)
     nonzero = WordwiseXorDifference(4, WordwiseDifferenceKind.NONZERO)
     inputs, outputs = (nonzero, zero, zero, zero), (nonzero,) * 4
     model = relation.milp_model(inputs=inputs, outputs=outputs)
-    row = next(row for row in relation.rows if row == (1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0))
+    row = next(
+        row for row in relation.rows if row == (1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0)
+    )
     witness = (
         relation.relation.witness(row)
         if model_type is WordwiseTruncatedMDSMILPModel

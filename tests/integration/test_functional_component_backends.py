@@ -25,14 +25,16 @@ def _primitive():
     primitive = Primitive("or_not_shift", {name: value_type for name in ("a", "b", "c")})
     primitive._builder.add_round()
     merged = primitive._builder.add_component(
-        BitwiseOr((primitive.input("a"), primitive.input("b"), primitive.input("c")))
+        BitwiseOr(
+            (primitive.graph.input("a"), primitive.graph.input("b"), primitive.graph.input("c"))
+        )
     )
     complemented = primitive._builder.add_component(BitwiseNot(merged))
     left = primitive._builder.add_component(Shift(complemented, 3, "left"))
     right = primitive._builder.add_component(Shift(left, 2, "right"))
     primitive._builder.set_output(
         primitive._builder.add_component(
-            ModularSubtract((right, primitive.input("a"), primitive.input("b")))
+            ModularSubtract((right, primitive.graph.input("a"), primitive.graph.input("b")))
         )
     )
     return primitive

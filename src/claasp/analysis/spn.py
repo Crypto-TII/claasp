@@ -35,7 +35,7 @@ def find_two_round_spn_xor_differential(primitive: Primitive) -> TrailSearchResu
     first_permutation = _component(primitive, "p_layer_1", Permutation)
     second_permutation = _component(primitive, "p_layer_2", Permutation)
     semantics = SBoxTransitionSemantics(first_sboxes[0].table)
-    width = primitive.input("plaintext").value_type.unit_count
+    width = primitive.graph.input("plaintext").value_type.unit_count
     nibble_count = width // semantics.width
     transitions = {
         difference: tuple(
@@ -115,7 +115,7 @@ def find_two_round_spn_xor_differential(primitive: Primitive) -> TrailSearchResu
 def check_spn_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently recompute transitions and SPN wiring in ``trail``."""
 
-    components = {component.component_id: component for component in primitive.components}
+    components = {component.component_id: component for component in primitive.graph.components}
     for step in trail.steps:
         component = components.get(step.component_id)
         if not isinstance(component, BitVectorSBox):
@@ -219,7 +219,7 @@ def check_spn_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     _validate_present_linear_slice(primitive)
     if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != 33:
         return False
-    components = {component.component_id: component for component in primitive.components}
+    components = {component.component_id: component for component in primitive.graph.components}
     for step in trail.steps:
         component = components.get(step.component_id)
         if not isinstance(component, BitVectorSBox):
@@ -251,11 +251,11 @@ def check_spn_linear_trail(primitive: Primitive, trail: Trail) -> bool:
 
 
 def _validate_present_slice(primitive: Primitive) -> None:
-    plaintext = primitive.input_ports.get("plaintext")
-    key = primitive.input_ports.get("key")
+    plaintext = primitive.graph.input_ports.get("plaintext")
+    key = primitive.graph.input_ports.get("key")
     if (
         primitive.family_name != "present"
-        or len(primitive.rounds) != 2
+        or len(primitive.graph.rounds) != 2
         or plaintext is None
         or key is None
         or not isinstance(plaintext.value_type.domain, Bit)
@@ -267,10 +267,10 @@ def _validate_present_slice(primitive: Primitive) -> None:
 
 
 def _validate_present_linear_slice(primitive: Primitive) -> None:
-    plaintext = primitive.input_ports.get("plaintext")
+    plaintext = primitive.graph.input_ports.get("plaintext")
     if (
         primitive.family_name != "present"
-        or len(primitive.rounds) != 3
+        or len(primitive.graph.rounds) != 3
         or plaintext is None
         or not isinstance(plaintext.value_type.domain, Bit)
         or plaintext.value_type.unit_count != 64
@@ -284,7 +284,7 @@ def _round_sboxes(primitive: Primitive, round_number: int) -> tuple[BitVectorSBo
     prefix = f"sbox_{round_number}_"
     result = tuple(
         component
-        for component in primitive.components
+        for component in primitive.graph.components
         if isinstance(component, BitVectorSBox) and component.component_id.startswith(prefix)
     )
     if len(result) != 16:
@@ -294,7 +294,7 @@ def _round_sboxes(primitive: Primitive, round_number: int) -> tuple[BitVectorSBo
 
 def _component(primitive: Primitive, component_id: str, expected_type):
     component = next(
-        (item for item in primitive.components if item.component_id == component_id), None
+        (item for item in primitive.graph.components if item.component_id == component_id), None
     )
     if not isinstance(component, expected_type):
         raise ValueError(f"primitive is missing {component_id!r} {expected_type.__name__}")

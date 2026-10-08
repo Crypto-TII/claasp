@@ -34,7 +34,7 @@ class BinaryAffineMap(Primitive):
     EXAMPLES::
 
         >>> primitive = BinaryAffineMap()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -54,7 +54,9 @@ class BinaryAffineMap(Primitive):
         )
         super().__init__("binary_affine_map", {"input": ValueType(field, (unit_count,))}, kind=kind)
         self._builder.add_round()
-        output = self._builder.add_component(BinaryAffineMapComponent(self.input("input"), matrix, offset))
+        output = self._builder.add_component(
+            BinaryAffineMapComponent(self.graph.input("input"), matrix, offset)
+        )
         self._builder.set_output(output)
 
 

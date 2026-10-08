@@ -40,9 +40,7 @@ def _graph(name):
         {"left": ValueType(Word(4), (1,)), "right": ValueType(Word(4), (1,))},
     )
     builder.add_round()
-    output = builder.add_component(
-        ModularAdd((builder.input("left"), builder.input("right")))
-    )
+    output = builder.add_component(ModularAdd((builder.input("left"), builder.input("right"))))
     return builder.build(output)
 
 
@@ -67,7 +65,9 @@ def _sbox_model():
     lower = PresentDifferentialCPModel(
         PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
     )
-    component = next(item for item in upper.primitive.components if item.component_id == "sbox_1_0")
+    component = next(
+        item for item in upper.primitive.graph.components if item.component_id == "sbox_1_0"
+    )
     return SBoxBoomerangTrailCPModel(upper, lower, SBoxBoomerangCPModel(component), nibble=0)
 
 

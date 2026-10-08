@@ -24,7 +24,7 @@ class LEA(Primitive):
     EXAMPLES::
 
         >>> primitive = LEA()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x5b4b51fd73ec9ed9', 127)
@@ -46,8 +46,8 @@ class LEA(Primitive):
         super().__init__(
             "lea", {"plaintext": word_type(32, 4), "key": word_type(32, key_word_count)}
         )
-        state = [select(self.input("plaintext"), index) for index in range(4)]
-        key = [select(self.input("key"), index) for index in range(key_word_count)]
+        state = [select(self.graph.input("plaintext"), index) for index in range(4)]
+        key = [select(self.graph.input("key"), index) for index in range(key_word_count)]
         self._builder.add_round()
         if reorder_input_and_output:
             state = [byte_swap(self, value, 32) for value in state]

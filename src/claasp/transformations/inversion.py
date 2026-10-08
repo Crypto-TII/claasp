@@ -56,7 +56,7 @@ def _atoms(selection: Selection) -> tuple[Atom, ...]:
 
 def _validate_boundary(primitive: Primitive, selection: Selection) -> None:
     try:
-        source = primitive.port(selection.source.owner_id)
+        source = primitive.graph.port(selection.source.owner_id)
     except KeyError as error:
         raise TransformationError(
             TransformationFailureReason.DISCONNECTED_DEPENDENCY,
@@ -101,12 +101,12 @@ def _normalize_known(primitive: Primitive, known):
         occupied.update(piece_atoms)
         exact_input = (
             len(pieces) == 1
-            and pieces[0].source.owner_id in primitive.input_ports
+            and pieces[0].source.owner_id in primitive.graph.input_ports
             and pieces[0].positions == tuple(range(pieces[0].source.value_type.unit_count))
             and name == pieces[0].source.owner_id
         )
         descriptors[name] = (
-            primitive.input_descriptor(name)
+            primitive.graph.input_descriptor(name)
             if exact_input
             else PrimitiveInput(ValueType(domain, (len(piece_atoms),)), role=name)
         )
@@ -217,7 +217,7 @@ def _propagate_binding(binding, derived, equivalents, *, changed_atoms=None):
 
 def _propagate_bindings(primitive, derived, equivalents):
     changed = False
-    for binding in primitive.bindings:
+    for binding in primitive.graph.bindings:
         changed |= _propagate_binding(binding, derived, equivalents)
     return changed
 
@@ -264,8 +264,8 @@ def _recover_xor_region(
             if coefficients:
                 raw_equations.append(frozenset(coefficients))
 
-        for binding in primitive.bindings:
-            output = primitive.port(binding.binding_id).select_all()
+        for binding in primitive.graph.bindings:
+            output = primitive.graph.port(binding.binding_id).select_all()
             output_bits = virtual_bits(output)
             input_bits = tuple(
                 bit for selection in binding.inputs for bit in virtual_bits(selection)
@@ -275,7 +275,7 @@ def _recover_xor_region(
                     add_equation(output_bit, input_bit)
 
         for component in components:
-            output = primitive.port(component.component_id).select_all()
+            output = primitive.graph.port(component.component_id).select_all()
             output_bits = virtual_bits(output)
             input_bits = tuple(virtual_bits(item) for item in component.inputs)
             if type(component) is Xor or (
@@ -423,18 +423,20 @@ def _recover_xor_region(
     for atom, expressions in solved_units.items():
         if atom in equivalents:
             continue
-        port = primitive.port(atom[0])
+        port = primitive.graph.port(atom[0])
         domain_width = width(port.value_type.domain)
         if domain_width is None or set(expressions) != set(range(domain_width)):
             continue
         bits = []
         for bit in range(domain_width):
             selections = tuple(
-                derived.port(source_id)[position]
+                derived.graph.port(source_id)[position]
                 for source_id, position in sorted(expressions[bit])
             )
             bits.append(
-                selections[0] if len(selections) == 1 else derived._builder.add_component(Add(selections))
+                selections[0]
+                if len(selections) == 1
+                else derived._builder.add_component(Add(selections))
             )
         if isinstance(port.value_type.domain, Bit):
             value = bits[0]
@@ -474,7 +476,7 @@ def partial_inverse(
         >>> _ = builder.add_round()
         >>> mixed = builder.add_component(Xor(builder.inputs()))
         >>> graph = builder.build(mixed)
-        >>> recovered = partial_inverse(graph, graph.input("left"), known={"output": graph.output, "right": graph.input("right")}).primitive
+        >>> recovered = partial_inverse(graph, graph.graph.input("left"), known={"output": graph.graph.output, "right": graph.graph.input("right")}).primitive
         >>> recovered.evaluate(0x9, 0x3)
         10
     """
@@ -498,10 +500,10 @@ def partial_inverse(
     bit_cache = {}
     region_cache = {}
     for name, atoms in boundaries.items():
-        _assign(equivalents, atoms, derived.input(name))
+        _assign(equivalents, atoms, derived.graph.input(name))
 
-    components = tuple(primitive.components)
-    bindings_to_process = tuple(primitive.bindings)
+    components = tuple(primitive.graph.components)
+    bindings_to_process = tuple(primitive.graph.bindings)
     relevant_sources = set(DependencyIndex(primitive).descendants(target_selection.source.owner_id))
     produced = set()
     stalled_errors = {}
@@ -712,17 +714,17 @@ def invert_primitive(
 
     if not isinstance(primitive, Primitive):
         raise TypeError("invert_primitive requires a Primitive")
-    if primitive.output is None:
+    if primitive.graph.output is None:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "primitive has no declared output",
         )
-    if not primitive.input_ports:
+    if not primitive.graph.input_ports:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "primitive has no input to recover",
         )
-    source_recovered = primitive.input(recover_input)
+    source_recovered = primitive.graph.input(recover_input)
     if source_recovered.owner_id == "plaintext" and retained_inputs is None:
         direct, direct_contract = direct_inversion_equivalent(primitive, output_name)
         if direct is not None:
@@ -743,7 +745,7 @@ def invert_primitive(
                         "retained",
                         ",".join(
                             port.owner_id
-                            for port in primitive.inputs()
+                            for port in primitive.graph.inputs()
                             if port.owner_id != source_recovered.owner_id
                         ),
                     ),
@@ -758,10 +760,10 @@ def invert_primitive(
             return TransformationResult(
                 direct,
                 (
-                    (primitive.output.source.owner_id, output_name),
+                    (primitive.graph.output.source.owner_id, output_name),
                     *(
                         (port.owner_id, port.owner_id)
-                        for port in primitive.inputs()
+                        for port in primitive.graph.inputs()
                         if port.owner_id != source_recovered.owner_id
                     ),
                 ),
@@ -769,12 +771,13 @@ def invert_primitive(
     working, equivalent_contract = inversion_equivalent(primitive)
     if working is None:
         working = primitive
-    recovered = working.input(source_recovered.owner_id)
+    recovered = working.graph.input(source_recovered.owner_id)
     retained = (
-        tuple(port for port in working.inputs() if port.owner_id != recovered.owner_id)
+        tuple(port for port in working.graph.inputs() if port.owner_id != recovered.owner_id)
         if retained_inputs is None
         else tuple(
-            working.input(primitive.input(selector).owner_id) for selector in retained_inputs
+            working.graph.input(primitive.graph.input(selector).owner_id)
+            for selector in retained_inputs
         )
     )
     if any(port.owner_id == recovered.owner_id for port in retained):
@@ -788,7 +791,7 @@ def invert_primitive(
             TransformationFailureReason.MULTIPLE_PREDECESSORS,
             "retained primitive inputs must be unique",
         )
-    known = {output_name: working.output}
+    known = {output_name: working.graph.output}
     known.update((port.owner_id, port) for port in retained)
     result = partial_inverse(
         working,
@@ -799,8 +802,9 @@ def invert_primitive(
     )
     derived = result.primitive
     complete = (
-        set(port.owner_id for port in retained) == set(working.input_ports) - {recovered.owner_id}
-        and working.output.value_type == recovered.value_type
+        set(port.owner_id for port in retained)
+        == set(working.graph.input_ports) - {recovered.owner_id}
+        and working.graph.output.value_type == recovered.value_type
     )
     if complete and primitive.kind in (
         PrimitiveKind.BLOCK_CIPHER,

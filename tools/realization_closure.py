@@ -26,14 +26,14 @@ def check() -> tuple[int, int]:
             graphs = tuple(primitive_class.realize(name) for name in names)
             reference = graphs[0]
             contract = (
-                tuple(reference.input_descriptors.items()),
-                reference.output.value_type,
+                tuple(reference.graph.input_descriptors.items()),
+                reference.graph.output.value_type,
                 reference.kind,
             )
             assert all(
                 (
-                    tuple(graph.input_descriptors.items()),
-                    graph.output.value_type,
+                    tuple(graph.graph.input_descriptors.items()),
+                    graph.graph.output.value_type,
                     graph.kind,
                 )
                 == contract

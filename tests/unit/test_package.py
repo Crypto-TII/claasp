@@ -14,7 +14,7 @@ from claasp.utils import (
 
 def test_ports_support_whole_input_coercion_indexing_and_slicing():
     primitive = Primitive("authoring", {"state": ValueType(PrimeField(17), (4,))})
-    state = primitive.input("state")
+    state = primitive.graph.input("state")
     assert state[3, 1].positions == (3, 1)
     assert state[1:3].positions == (1, 2)
     assert state[3, 1][1].positions == (1,)
@@ -30,31 +30,40 @@ def test_inputs_support_named_and_positional_authoring_without_exposing_storage(
     value_type = ValueType(PrimeField(17), (1,))
     primitive = Primitive("inputs", {"left": value_type, "right": value_type})
 
-    assert primitive.input("left") is primitive.input(0)
-    assert primitive.input("right") is primitive.input(1)
-    assert list(primitive.inputs()) == [primitive.input("left"), primitive.input("right")]
-    assert list(primitive.inputs("right", 0)) == [primitive.input("right"), primitive.input("left")]
-    assert primitive.input_ports == {"left": primitive.input(0), "right": primitive.input(1)}
+    assert primitive.graph.input("left") is primitive.graph.input(0)
+    assert primitive.graph.input("right") is primitive.graph.input(1)
+    assert list(primitive.graph.inputs()) == [
+        primitive.graph.input("left"),
+        primitive.graph.input("right"),
+    ]
+    assert list(primitive.graph.inputs("right", 0)) == [
+        primitive.graph.input("right"),
+        primitive.graph.input("left"),
+    ]
+    assert primitive.graph.input_ports == {
+        "left": primitive.graph.input(0),
+        "right": primitive.graph.input(1),
+    }
 
     with pytest.raises(KeyError, match="does not exist"):
-        primitive.input("missing")
+        primitive.graph.input("missing")
     with pytest.raises(IndexError, match="out of range"):
-        primitive.input(-1)
+        primitive.graph.input(-1)
     with pytest.raises(IndexError, match="out of range"):
-        primitive.input(2)
+        primitive.graph.input(2)
     with pytest.raises(TypeError, match="name or integer position"):
-        primitive.input(True)
+        primitive.graph.input(True)
 
 
 def test_round_observations_do_not_expose_authoring_collections():
     value_type = ValueType(PrimeField(17), (1,))
     primitive = Primitive("observations", {"state": value_type})
-    states = [primitive.input("state")]
+    states = [primitive.graph.input("state")]
     published = primitive._builder.set_round_states(states)
-    states.append(primitive.input("state"))
+    states.append(primitive.graph.input("state"))
 
-    assert list(published) == [primitive.input("state")]
-    assert primitive.round_states is published
+    assert list(published) == [primitive.graph.input("state")]
+    assert tuple(primitive.graph.round_states) == tuple(published)
 
 
 def test_automatic_component_ids_are_deterministic_and_explicit_ids_remain_available():
@@ -66,10 +75,12 @@ def test_automatic_component_ids_are_deterministic_and_explicit_ids_remain_avail
         },
     )
     primitive._builder.add_round()
-    first = primitive._builder.add_component(Add((primitive.input("left"), primitive.input("right"))))
-    second = primitive._builder.add_component(Add((first, primitive.input("right"))))
+    first = primitive._builder.add_component(
+        Add((primitive.graph.input("left"), primitive.graph.input("right")))
+    )
+    second = primitive._builder.add_component(Add((first, primitive.graph.input("right"))))
     named = primitive._builder.add_component(
-        Add((second, primitive.input("right")), component_id="final_sum")
+        Add((second, primitive.graph.input("right")), component_id="final_sum")
     )
     assert (first.owner_id, second.owner_id, named.owner_id) == ("add_0_0", "add_0_1", "final_sum")
 
@@ -100,7 +111,7 @@ def test_primitive_evaluate_accepts_packed_positional_keyword_and_mapping_inputs
     assert primitive.evaluate(plaintext=plaintext, key=key) == positional
     assert primitive.evaluate({"plaintext": plaintext, "key": key}) == positional
     trace = primitive.evaluate_with_trace(plaintext, key)
-    sub_bytes = primitive.round_states[0]["sub_bytes"]
+    sub_bytes = primitive.graph.round_states[0]["sub_bytes"]
     assert trace.value_of(sub_bytes.owner_id)
     assert positional == int.from_bytes(bytes(trace.output), "big")
 

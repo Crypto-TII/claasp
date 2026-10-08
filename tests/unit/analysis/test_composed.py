@@ -94,7 +94,7 @@ def test_differential_linear_composition_uses_exact_legacy_formula():
 
 def test_present_boomerang_connectivity_is_counted_exhaustively():
     primitive = Present(number_of_rounds=1)
-    component = next(item for item in primitive.components if item.component_id == "sbox_1_0")
+    component = next(item for item in primitive.graph.components if item.component_id == "sbox_1_0")
     semantics = SBoxBoomerangSemantics(component.table)
 
     possible = semantics.connectivity(1, 2)

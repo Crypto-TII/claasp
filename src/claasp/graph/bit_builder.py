@@ -338,15 +338,15 @@ class BitGraphPrimitive(Primitive):
 
     @property
     def current_round_number(self):
-        return len(self.rounds) - 1 if self.rounds else None
+        return len(self.graph.rounds) - 1 if self.graph.rounds else None
 
     @property
     def current_round_number_of_components(self):
-        return len(self.rounds[-1].components) if self.rounds else 0
+        return len(self.graph.rounds[-1].components) if self.graph.rounds else 0
 
     @property
     def number_of_rounds(self):
-        return len(self.rounds)
+        return len(self.graph.rounds)
 
     def _add_round(self):
         result = super()._add_round()
@@ -363,13 +363,13 @@ class BitGraphPrimitive(Primitive):
         return self._construction_rounds[-1][-1].id
 
     def _component_id(self, prefix: str) -> str:
-        if not self.rounds:
+        if not self.graph.rounds:
             raise ValueError("add a round before adding components")
         return f"{prefix}_{self.current_round_number}_{self.current_round_number_of_components}"
 
     def _selection(self, ids, positions) -> Selection:
         selections = tuple(
-            self.port(source_id)[tuple(selected)]
+            self.graph.port(source_id)[tuple(selected)]
             for source_id, selected in zip(ids, positions)
             if selected
         )
@@ -694,7 +694,8 @@ class BitGraphPrimitive(Primitive):
                     else:
                         packed = tuple(self._builder.pack_bits(value, 1) for value in selected)
                         term = self._builder.unpack_bits(
-                            self._builder.add_component(BitwiseAnd(
+                            self._builder.add_component(
+                                BitwiseAnd(
                                     packed,
                                     component_id=f"{base_id}_and_{clock}_{start}_{term_index}",
                                 ),
@@ -706,7 +707,8 @@ class BitGraphPrimitive(Primitive):
                 else:
                     packed = tuple(self._builder.pack_bits(value, 1) for value in feedback_terms)
                     feedback_bit = self._builder.unpack_bits(
-                        self._builder.add_component(Xor(packed, component_id=f"{base_id}_feedback_{clock}_{start}")
+                        self._builder.add_component(
+                            Xor(packed, component_id=f"{base_id}_feedback_{clock}_{start}")
                         )
                     )
                 if clock_terms and clock_terms[0]:

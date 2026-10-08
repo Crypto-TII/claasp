@@ -46,7 +46,7 @@ lowering and can be queried from either the primitive or their parent scope.
    >>> graph = graph_builder.build(block.output())
    >>> graph.evaluate(3)
    12
-   >>> graph.scope("block/second").component_ids
+   >>> graph.graph.scope("block/second").component_ids
    ('block/second/add_0_0',)
 
 Representation boundary
@@ -78,8 +78,8 @@ One-source joins are elided.
 Round and primitive scopes
 --------------------------
 
-``primitive.scopes`` lists all retained instances in construction order;
-``primitive.scope(path)`` selects one. ``round.scopes`` lists the instances
+``primitive.graph.scopes`` lists all retained instances in construction order;
+``primitive.graph.scope(path)`` selects one. ``round.scopes`` lists the instances
 lowered in that round, including nested paths. A scope provides its bound
 ``inputs``, named ``outputs``, actual parent-graph ``components``, definition
 ``provenance``, and nested lookup. A primitive's separate ``provenance`` records

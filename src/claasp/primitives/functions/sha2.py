@@ -54,7 +54,7 @@ class SHA2(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = SHA2()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xda5698be17b9b469', 256)

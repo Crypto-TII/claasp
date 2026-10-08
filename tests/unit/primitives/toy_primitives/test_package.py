@@ -147,6 +147,6 @@ def test_reduced_and_custom_toy_parameters():
 def test_toy_aes_publishes_each_round_state_for_validated_slicing():
     primitive = ToyAES(number_of_rounds=3, word_size=4, state_size=2)
 
-    assert len(primitive.round_states) == 3
-    assert primitive.output is not None
-    assert primitive.round_states[-1] == primitive.output.source
+    assert len(primitive.graph.round_states) == 3
+    assert primitive.graph.output is not None
+    assert primitive.graph.round_states[-1] == primitive.graph.output.source

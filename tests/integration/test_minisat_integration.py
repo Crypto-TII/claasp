@@ -86,10 +86,12 @@ def test_high_level_analysis_recovers_an_unknown_input():
         "xor", {"plaintext": ValueType(Bit(), (1,)), "key": ValueType(Bit(), (1,))}
     )
     primitive._builder.add_round()
-    output = primitive._builder.add_component(Add((primitive.input("plaintext"), primitive.input("key"))))
+    output = primitive._builder.add_component(
+        Add((primitive.graph.input("plaintext"), primitive.graph.input("key")))
+    )
     primitive._builder.set_output(output)
 
-    result = primitive.analyze().recover_input(
+    result = primitive.analysis.recover_input(
         "key",
         known_inputs={"plaintext": 1},
         output=0,
@@ -107,7 +109,7 @@ def test_word_level_sat_recovers_a_reduced_speck_key():
     plaintext = 0x6574694C
     expected = primitive.evaluate(plaintext, 0x1918111009080100)
 
-    result = primitive.analyze().recover_input(
+    result = primitive.analysis.recover_input(
         "key",
         known_inputs={"plaintext": plaintext},
         output=expected,
@@ -123,7 +125,7 @@ def test_and_word_graph_recovers_a_simon_plaintext():
     primitive = Simon(number_of_rounds=3)
     plaintext, key = 0x65656877, 0x1918111009080100
     ciphertext = primitive.evaluate(plaintext, key)
-    result = primitive.analyze().recover_input(
+    result = primitive.analysis.recover_input(
         "plaintext",
         known_inputs={"key": key},
         output=ciphertext,

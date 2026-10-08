@@ -19,8 +19,8 @@ key is retained:
    >>> source = Speck(number_of_rounds=2)
    >>> plaintext, key = 0x6574694c, 0x1918111009080100
    >>> ciphertext = source.evaluate(plaintext, key)
-   >>> inverse = source.inverse().primitive
-   >>> tuple(inverse.input_ports)
+   >>> inverse = source.edit.inverse().primitive
+   >>> tuple(inverse.graph.input_ports)
    ('output', 'key')
    >>> inverse.evaluate(ciphertext, key) == plaintext
    True
@@ -63,8 +63,8 @@ recovered from an XOR output:
    >>> graph = builder.build(mixed)
    >>> recovery = partial_inverse(
    ...     graph,
-   ...     graph.input("left"),
-   ...     known={"output": graph.output, "right": graph.input("right")},
+   ...     graph.graph.input("left"),
+   ...     known={"output": graph.graph.output, "right": graph.graph.input("right")},
    ... ).primitive
    >>> recovery.evaluate(0xA5, 0x3C)
    153
@@ -75,16 +75,16 @@ wires are reused directly, without solver calls or identity placeholders.
 Slicing and reducing rounds
 ---------------------------
 
-``sliced`` keeps the dependency closure needed by an explicit output. Published
+``edit.slice()`` keeps the dependency closure needed by an explicit output. Published
 round states provide stable specification-level boundaries:
 
 .. doctest::
 
    >>> source = Speck(number_of_rounds=3)
-   >>> first_round = source.sliced(source.round_states[0]).primitive
+   >>> first_round = source.edit.slice(source.graph.round_states[0]).primitive
    >>> first_round.evaluate(plaintext, key) == Speck(number_of_rounds=1).evaluate(plaintext, key)
    True
-   >>> two_rounds = source.reduced_rounds(2).primitive
+   >>> two_rounds = source.edit.reduce_rounds(2).primitive
    >>> two_rounds.evaluate(plaintext, key) == Speck(number_of_rounds=2).evaluate(plaintext, key)
    True
 
@@ -106,11 +106,11 @@ models round keys independently:
    >>> from claasp.graph import as_selection
    >>> cache = {}
    >>> round_keys = tuple(
-   ...     source.resolve_selection(as_selection(selection), trace.values, cache)
-   ...     for selection in source.round_keys
+   ...     source.graph.resolve_selection(as_selection(selection), trace.values, cache)
+   ...     for selection in source.graph.round_keys
    ... )
-   >>> external = source.without_key_schedule().primitive
-   >>> tuple(external.input_ports)
+   >>> external = source.edit.remove_key_schedule().primitive
+   >>> tuple(external.graph.input_ports)
    ('plaintext', 'round_key_0', 'round_key_1')
    >>> external.evaluate(
    ...     plaintext=plaintext,
@@ -131,7 +131,7 @@ output differences. Shared inputs express a single-key experiment:
 
 .. doctest::
 
-   >>> paired = source.paired_xor(shared_inputs=("key",))
+   >>> paired = source.edit.pair_xor(shared_inputs=("key",))
    >>> left, right = 0x6574694c, 0x6574694d
    >>> paired.primitive.evaluate(left, right, key) == (
    ...     source.evaluate(left, key) ^ source.evaluate(right, key)

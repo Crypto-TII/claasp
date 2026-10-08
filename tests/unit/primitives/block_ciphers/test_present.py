@@ -25,7 +25,7 @@ def test_present80_matches_designers_test_vectors(plaintext, key, ciphertext):
         {"plaintext": bits_from_int(plaintext, 64), "key": bits_from_int(key, 80)},
     )
     assert int_from_bits(result.output) == ciphertext
-    assert len(primitive.rounds) == 31
+    assert len(primitive.graph.rounds) == 31
 
 
 def test_present80_batch_backends_match_scalar_reference():

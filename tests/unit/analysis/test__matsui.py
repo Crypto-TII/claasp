@@ -108,7 +108,7 @@ def test_partial_carry_search_honors_fixed_round_inputs():
 
 def test_des_two_round_weight_two_witness_propagates_through_the_full_graph():
     primitive = DES(number_of_rounds=2)
-    sboxes = tuple(item for item in primitive.components if isinstance(item, BitVectorSBox))
+    sboxes = tuple(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
     active_sbox = sboxes[13]
     assert active_sbox.component_id is not None
     transition = SBoxTransitionSemantics(

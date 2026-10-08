@@ -8,7 +8,7 @@ from claasp.primitives import Present, Speck
 def test_two_round_present_finds_exact_optimum_and_checks_every_step():
     primitive = Present(number_of_rounds=2)
 
-    result = primitive.analyze().find_lowest_weight_xor_differential_trail()
+    result = primitive.analysis.find_lowest_weight_xor_differential_trail()
 
     assert result.trail.total_weight == 4.0
     assert result.lower_bound == 4.0
@@ -51,19 +51,19 @@ def test_find_trail_rejects_unsupported_advanced_combinations_explicitly():
 def test_analyze_remains_a_supported_compatibility_alias():
     primitive = Present(number_of_rounds=2)
 
-    assert primitive.analyze().primitive is primitive
+    assert primitive.analysis.primitive is primitive
     assert primitive.analysis.primitive is primitive
 
 
 def test_spn_search_rejects_unreviewed_graphs_explicitly():
     with pytest.raises(NotImplementedError, match="two-round Speck32/64"):
-        Speck(number_of_rounds=3).analyze().find_lowest_weight_xor_differential_trail()
+        Speck(number_of_rounds=3).analysis.find_lowest_weight_xor_differential_trail()
 
 
 def test_three_round_present_reproduces_preserved_linear_weight_and_signs():
     primitive = Present(number_of_rounds=3)
 
-    result = primitive.analyze().find_lowest_weight_xor_linear_trail()
+    result = primitive.analysis.find_lowest_weight_xor_linear_trail()
 
     assert result.trail.total_weight == 4.0
     assert result.is_optimal

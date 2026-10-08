@@ -15,7 +15,7 @@ class MiMC(Primitive):
         >>> from claasp.primitives import MiMC
         >>> from claasp.primitives import MiMC
         >>> primitive = MiMC(17, 3, (1, 2, 4))
-        >>> len(primitive.rounds)
+        >>> len(primitive.graph.rounds)
         3
         >>> primitive.evaluate(5)
         5
@@ -31,7 +31,7 @@ class MiMC(Primitive):
             raise ValueError("MiMC requires at least one round constant")
 
         super().__init__("mimc", {"state": scalar_type})
-        state = self.input("state")
+        state = self.graph.input("state")
         for round_number, round_constant in enumerate(constants):
             self._builder.add_round()
             constant = Constant(

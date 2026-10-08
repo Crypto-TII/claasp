@@ -106,7 +106,7 @@ def test_z3_recovers_and_independently_verifies_reduced_speck_key():
     plaintext = 0x6574694C
     ciphertext = primitive.evaluate(plaintext, 0x1918111009080100)
 
-    result = primitive.analyze().recover_input(
+    result = primitive.analysis.recover_input(
         "key",
         known_inputs={"plaintext": plaintext},
         output=ciphertext,
@@ -122,13 +122,13 @@ def test_z3_reproduces_legacy_full_speck_missing_bits_result():
     problem = AnalysisProblem(
         primitive,
         (
-            FixedValue(primitive.input("plaintext"), 0x6574694C),
-            FixedValue(primitive.input("key"), 0x1918111009080100),
+            FixedValue(primitive.graph.input("plaintext"), 0x6574694C),
+            FixedValue(primitive.graph.input("key"), 0x1918111009080100),
         ),
-        {"ciphertext": primitive.output},
+        {"ciphertext": primitive.graph.output},
     )
 
-    result = primitive.analyze().solve(problem, Z3Solver(timeout_seconds=30))
+    result = primitive.analysis.solve(problem, Z3Solver(timeout_seconds=30))
 
     assert result.is_satisfiable
     assert result.value("ciphertext") == 0xA86842F2

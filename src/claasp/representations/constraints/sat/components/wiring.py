@@ -22,7 +22,7 @@ class WiringFunctionalSATModel:
         >>> from claasp.primitives import Present80
         >>> from claasp.representations.constraints.sat import BooleanCNFModel
         >>> primitive = Present80(number_of_rounds=1)
-        >>> component = next(item for item in primitive.components if isinstance(item, Permutation))
+        >>> component = next(item for item in primitive.graph.components if isinstance(item, Permutation))
         >>> encoding = WiringFunctionalSATModel(component)
         >>> formula = BooleanCNFModel(primitive).cnf_formula()
         >>> encoding.component.component_id in formula.provenance

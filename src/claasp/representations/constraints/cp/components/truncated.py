@@ -179,7 +179,10 @@ class HybridImpossibleBoundaryCPModel:
             f"array[0..{max(group_count - 1, 0)}] of var HybridDomain: forward_group_tag;",
             f"array[0..{max(group_count - 1, 0)}] of var HybridDomain: backward_group_tag;",
         )
-        constraints = [*self._pattern_constraints("forward", forward), *self._pattern_constraints("backward", backward)]
+        constraints = [
+            *self._pattern_constraints("forward", forward),
+            *self._pattern_constraints("backward", backward),
+        ]
         constraints.extend(
             f"constraint contradiction[{position}] <-> (forward[{position}] + backward[{position}] = 1);"
             for position in range(self.width)
@@ -316,8 +319,7 @@ class HybridXorCPModel:
         if self._query is None:
             raise ValueError("build the CP model before decoding")
         left, right, output = (
-            tuple(int(value) for value in assignment[name])
-            for name in ("left", "right", "result")
+            tuple(int(value) for value in assignment[name]) for name in ("left", "right", "result")
         )
         if tuple(self.propagate(a, b) for a, b in zip(left, right)) != output:
             raise ValueError("hybrid XOR output disagrees with recovered semantics")
@@ -419,9 +421,7 @@ class HybridSBoxCPModel:
                 ),
             ]
         )
-        unknown = " /\\ ".join(
-            f"{result_name}[{bit}] = 2" for bit in range(self.semantics.width)
-        )
+        unknown = " /\\ ".join(f"{result_name}[{bit}] = 2" for bit in range(self.semantics.width))
         exact = " \\/ ".join(
             "("
             + " /\\ ".join(

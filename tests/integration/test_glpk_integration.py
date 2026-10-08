@@ -72,7 +72,9 @@ def test_glpk_solves_wordwise_xor_strategies(model_type):
     "model_type", (WordwiseTruncatedMDSMILPModel, WordwiseTruncatedMDSEspressoMILPModel)
 )
 def test_glpk_solves_wordwise_mds_strategies(model_type):
-    relation = model_type(4, (4, 4)) if model_type is WordwiseTruncatedMDSMILPModel else model_type()
+    relation = (
+        model_type(4, (4, 4)) if model_type is WordwiseTruncatedMDSMILPModel else model_type()
+    )
     zero = WordwiseXorDifference(4, WordwiseDifferenceKind.ZERO)
     nonzero = WordwiseXorDifference(4, WordwiseDifferenceKind.NONZERO)
     inputs, outputs = (nonzero, zero, zero, zero), (nonzero,) * 4
@@ -129,17 +131,17 @@ def test_glpk_reports_an_infeasible_model_without_a_witness():
 
 def test_glpk_preserves_complete_speck_execution_not_legacy_partial_model():
     primitive = Speck(number_of_rounds=22)
-    output = primitive.output
+    output = primitive.graph.output
     assert output is not None
     problem = AnalysisProblem(
         primitive,
         (
-            FixedValue(primitive.input("plaintext"), 0x6574694C),
-            FixedValue(primitive.input("key"), 0x1918111009080100),
+            FixedValue(primitive.graph.input("plaintext"), 0x6574694C),
+            FixedValue(primitive.graph.input("key"), 0x1918111009080100),
         ),
         {"ciphertext": output},
     )
-    result = primitive.analyze().solve(problem, GLPKSolver(timeout_seconds=10))
+    result = primitive.analysis.solve(problem, GLPKSolver(timeout_seconds=10))
     assert result.is_satisfiable
     assert result.value("ciphertext") == 0xA86842F2
     assert primitive.evaluate(0x6574694C, 0x1918111009080100) == result.value("ciphertext")

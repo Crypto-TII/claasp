@@ -44,8 +44,8 @@ def resolved_selection_variable_names(
     if width is None:
         raise ValueError("Boolean encoding requires a canonically encoded selection domain")
     names = []
-    for owner_id, flat_bit in primitive.selection_bit_sources(selection):
-        value_type = primitive.port(owner_id).value_type
+    for owner_id, flat_bit in primitive.graph.selection_bit_sources(selection):
+        value_type = primitive.graph.port(owner_id).value_type
         source_width = value_type.domain.encoded_bit_size
         if source_width is None:  # pragma: no cover - guarded by selection_bit_sources
             raise ValueError("Boolean encoding requires canonically encoded source domains")

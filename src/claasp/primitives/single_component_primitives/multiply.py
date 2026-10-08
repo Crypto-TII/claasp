@@ -31,7 +31,7 @@ class Multiply(Primitive):
     EXAMPLES::
 
         >>> primitive = Multiply()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -44,7 +44,7 @@ class Multiply(Primitive):
             kind=PrimitiveKind.FUNCTION,
         )
         self._builder.add_round()
-        output = self._builder.add_component(MultiplyComponent(self.inputs()))
+        output = self._builder.add_component(MultiplyComponent(self.graph.inputs()))
         self._builder.set_output(output)
 
 

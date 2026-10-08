@@ -569,7 +569,7 @@ def _encode_definition(definition):
 
 
 def _encode_scope(scope, primitive):
-    round_number = next(group.number for group in primitive.rounds if scope in group.scopes)
+    round_number = next(group.number for group in primitive.graph.rounds if scope in group.scopes)
     return {
         "component_ids": list(scope.component_ids),
         "definition": _encode_definition(scope.definition),
@@ -598,7 +598,7 @@ def _encode_binding(binding):
 
 def _encode_primitive(primitive):
     return {
-        "bindings": [_encode_binding(item) for item in primitive.bindings],
+        "bindings": [_encode_binding(item) for item in primitive.graph.bindings],
         "family_name": primitive.family_name,
         "inputs": [
             {
@@ -607,10 +607,12 @@ def _encode_primitive(primitive):
                 "type": _encode_type(descriptor.value_type),
                 "visibility": descriptor.visibility.value,
             }
-            for name, descriptor in primitive.input_descriptors.items()
+            for name, descriptor in primitive.graph.input_descriptors.items()
         ],
         "kind": primitive.kind.value,
-        "output": None if primitive.output is None else _encode_selection(primitive.output),
+        "output": None
+        if primitive.graph.output is None
+        else _encode_selection(primitive.graph.output),
         "provenance": [list(item) for item in primitive.provenance],
         "realization": _encode_realization(primitive.realization),
         "rounds": [
@@ -618,9 +620,9 @@ def _encode_primitive(primitive):
                 "components": [_encode_component(item) for item in group.components],
                 "number": group.number,
             }
-            for group in primitive.rounds
+            for group in primitive.graph.rounds
         ],
-        "scopes": [_encode_scope(item, primitive) for item in primitive.scopes],
+        "scopes": [_encode_scope(item, primitive) for item in primitive.graph.scopes],
         "transformations": [
             {
                 "operation": item.operation,
@@ -754,8 +756,8 @@ def _validate_binding(identifier, kind, inputs, output_type, word_width, path):
 
 
 def _validate_dependency_order(primitive, path):
-    bindings = {item.binding_id: item for item in primitive.bindings}
-    available = set(primitive.input_ports)
+    bindings = {item.binding_id: item for item in primitive.graph.bindings}
+    available = set(primitive.graph.input_ports)
 
     def resolvable(source_id, stack):
         if source_id in available:
@@ -773,7 +775,7 @@ def _validate_dependency_order(primitive, path):
             resolvable(selected.source.owner_id, stack | {source_id}) for selected in binding.inputs
         )
 
-    for component in primitive.components:
+    for component in primitive.graph.components:
         if not all(resolvable(selected.source.owner_id, set()) for selected in component.inputs):
             raise SerializationError(
                 SerializationFailure.INVALID_REFERENCE,
@@ -781,13 +783,15 @@ def _validate_dependency_order(primitive, path):
                 path=path,
             )
         available.add(component.component_id)
-    if primitive.output is not None and not resolvable(primitive.output.source.owner_id, set()):
+    if primitive.graph.output is not None and not resolvable(
+        primitive.graph.output.source.owner_id, set()
+    ):
         raise SerializationError(
             SerializationFailure.INVALID_REFERENCE,
             "primitive output is not reachable",
             path=path,
         )
-    for binding in primitive.bindings:
+    for binding in primitive.graph.bindings:
         if not resolvable(binding.binding_id, set()):
             raise SerializationError(
                 SerializationFailure.INVALID_REFERENCE,
@@ -961,9 +965,9 @@ def _decode_primitive(value, path):
         raise SerializationError(
             SerializationFailure.INVALID_REFERENCE, str(error), path=path
         ) from error
-    for binding in primitive.bindings:
+    for binding in primitive.graph.bindings:
         for selected in binding.inputs:
-            actual = primitive.port(selected.source.owner_id)
+            actual = primitive.graph.port(selected.source.owner_id)
             if actual != selected.source:
                 raise SerializationError(
                     SerializationFailure.TYPE_MISMATCH,
@@ -972,7 +976,9 @@ def _decode_primitive(value, path):
                 )
     if value["output"] is not None:
         try:
-            primitive._builder.set_output(_decode_selection(value["output"], source_types, f"{path}.output"))
+            primitive._builder.set_output(
+                _decode_selection(value["output"], source_types, f"{path}.output")
+            )
         except (TypeError, ValueError) as error:
             raise SerializationError(
                 SerializationFailure.INVALID_REFERENCE, str(error), path=f"{path}.output"
@@ -1012,7 +1018,7 @@ def _decode_primitive(value, path):
                 path=scope_path,
             )
         round_number = _integer(item["round"], path=f"{scope_path}.round", minimum=0)
-        if round_number >= len(primitive.rounds):
+        if round_number >= len(primitive.graph.rounds):
             raise SerializationError(
                 SerializationFailure.INVALID_REFERENCE,
                 "scope round is outside the graph",

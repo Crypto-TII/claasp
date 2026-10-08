@@ -6,6 +6,11 @@ For a block cipher, each batch item contains one plaintext and one key. Batch
 evaluation is useful for test vectors, experiments, and datasets; it does not
 connect one item's output to the next item.
 
+For routine packed-integer inputs, prefer the beginner-facing
+``primitive.evaluate_many()`` shown in :doc:`getting_started`. This page
+describes the lower-level execution representation used when callers already
+have logical-unit tuples or want to choose a batch traversal strategy.
+
 Two evaluators implement the same public contract:
 
 * ``BatchEvaluator`` evaluates the complete graph once for item 0, then once

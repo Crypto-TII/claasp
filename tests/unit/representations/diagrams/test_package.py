@@ -25,7 +25,9 @@ from claasp.semantics.cryptanalysis import (
 def _toy_primitive():
     primitive = Primitive("toy diagram", {"state": ValueType(Bit(), (4,))})
     primitive._builder.add_round()
-    shuffled = primitive._builder.add_component(Identity(primitive.input("state")[3, 1, 2, 0]))
+    shuffled = primitive._builder.add_component(
+        Identity(primitive.graph.input("state")[3, 1, 2, 0])
+    )
     primitive._builder.add_round()
     copied = primitive._builder.add_component(Identity(shuffled))
     primitive._builder.set_output(copied)
@@ -74,7 +76,7 @@ def test_execution_trace_can_annotate_every_diagram_layer():
 
 def test_cryptanalytic_trail_is_accepted_without_renderer_specific_adaptation():
     primitive = Present(number_of_rounds=1)
-    component = next(item for item in primitive.components if item.component_id == "sbox_1_0")
+    component = next(item for item in primitive.graph.components if item.component_id == "sbox_1_0")
     transition = SBoxTransitionSemantics(PRESENT_SBOX).xor_differential(1, 3)
     trail = Trail(
         TrailKind.XOR_DIFFERENTIAL,
@@ -93,7 +95,7 @@ def test_cryptanalytic_trail_is_accepted_without_renderer_specific_adaptation():
 def test_ascii_routes_multiple_inputs_in_declared_order():
     primitive = Present(number_of_rounds=1)
     component = next(
-        item for item in primitive.components if item.component_id == "add_round_key_1"
+        item for item in primitive.graph.components if item.component_id == "add_round_key_1"
     )
 
     ascii_art = primitive.draw("ascii")

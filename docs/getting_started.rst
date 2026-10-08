@@ -49,10 +49,15 @@ notebook, type ``aes.`` and press Tab to discover its available operations;
      Realization: lookup
 
 The constructor builds a reusable description of AES; it does not encrypt
-anything yet. Constructor arguments can select another standard parameter set
-or a reduced number of rounds. See :doc:`traditional_primitives` for common
-block ciphers and :doc:`primitive_catalogue` for discovery and the full
-catalogue.
+anything yet. Tab completion keeps the main object short: routine operations
+such as ``details()``, ``evaluate()``, and ``evaluate_many()`` stay on
+``aes``; analyses are under ``aes.analysis``; read-only structure is under
+``aes.graph``; and transformations that produce a changed copy are under
+``aes.edit``. For example, type ``aes.graph.`` or ``aes.edit.`` and press Tab
+to explore the corresponding second level. Constructor arguments can select
+another standard parameter set or a reduced number of rounds. See
+:doc:`traditional_primitives` for common block ciphers and
+:doc:`primitive_catalogue` for discovery and the full catalogue.
 
 Change the parameters
 ^^^^^^^^^^^^^^^^^^^^^
@@ -85,6 +90,34 @@ published 256-entry AES S-box table. The ``algebraic`` realization represents
 the same substitution as inversion in :math:`GF(2^8)` followed by AES's fixed
 affine transformation. Both produce the same AES values, but expose different
 internal operations to analysis backends.
+
+Values intended for interactive inspection have compact representations. For
+example, ``aes.realization`` explains the selected graph without exposing the
+underlying metadata record:
+
+.. doctest::
+
+   >>> aes.realization
+   Realization: lookup
+     Description: AES S-boxes represented by their complete lookup table
+     Maturity: stable
+     Capabilities: batch evaluation, sbox semantics, scalar evaluation
+     Graph structure: lookup sbox, matrix linear layer
+     Provenance: FIPS 197 substitution table
+
+Published structural values live under ``graph`` and summarize each entry
+instead of printing every nested port and selection:
+
+.. doctest::
+
+   >>> AES(number_of_rounds=2).graph.round_keys
+   Round keys (3)
+     [0] input key: 128 bits
+     [1] derived graph value: 128 bits
+     [2] derived graph value: 128 bits
+
+The sequence remains ordinary Python data: index or iterate over it when an
+analysis needs the underlying graph selections.
 
 Replace the S-box
 ^^^^^^^^^^^^^^^^^
@@ -137,7 +170,35 @@ Supply one value for each named input and evaluate a standard test vector:
 easy to compare with a published vector. Other traditional block ciphers use
 the same packed-integer convention. Named arguments make the input order
 explicit; positional arguments are also accepted in the order reported by
-``aes.inputs()``.
+``aes.graph.inputs()``.
+
+Evaluate several independent inputs with ``evaluate_many()``. To encrypt two
+plaintexts with one key, repeat that key in the two named input cases:
+
+.. doctest::
+
+   >>> plaintexts = (plaintext, 0)
+   >>> shared_key_outputs = aes.evaluate_many([
+   ...     {"plaintext": value, "key": key}
+   ...     for value in plaintexts
+   ... ])
+   >>> [f"{value:032x}" for value in shared_key_outputs]
+   ['69c4e0d86a7b0430d8cdb78070b4c55a', 'c6a13b37878f5b826f4f8162a1c8d879']
+
+For one different key per plaintext, pair the two sequences explicitly:
+
+.. doctest::
+
+   >>> keys = (key, 0)
+   >>> separate_key_outputs = aes.evaluate_many([
+   ...     {"plaintext": value, "key": item_key}
+   ...     for value, item_key in zip(plaintexts, keys)
+   ... ])
+   >>> [f"{value:032x}" for value in separate_key_outputs]
+   ['69c4e0d86a7b0430d8cdb78070b4c55a', '66e94bd4ef8a2c3b884cfa59ca342b2e']
+
+Each mapping is one independent evaluation. The list order is preserved in
+the returned tuple.
 
 Find a differential trail
 -------------------------

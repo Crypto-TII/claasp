@@ -45,7 +45,7 @@ class Speckey(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Speckey()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)

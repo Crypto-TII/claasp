@@ -86,31 +86,32 @@ def xor_differential_component_transitions(
     reported propagation.
     """
 
-    expected_inputs = set(primitive.input_ports)
+    expected_inputs = set(primitive.graph.input_ports)
     if set(input_differences) != expected_inputs:
         raise ValueError("input_differences must define every primitive input")
     values = {
         name: _decode(input_differences[name], port.value_type)
-        for name, port in primitive.input_ports.items()
+        for name, port in primitive.graph.input_ports.items()
     }
-    dependencies = {name: frozenset((name,)) for name in primitive.input_ports}
+    dependencies = {name: frozenset((name,)) for name in primitive.graph.input_ports}
     weighted = {step.component_id: step.transition for step in trail.steps}
     round_numbers = {
         component.component_id: primitive_round.number
-        for primitive_round in primitive.rounds
+        for primitive_round in primitive.graph.rounds
         for component in primitive_round.components
     }
     include_key_schedule = input_differences.get("key", 0) != 0
     result = []
 
-    for component in primitive.components:
+    for component in primitive.graph.components:
         operands = tuple(
-            tuple(primitive.resolve_selection(selection, values)) for selection in component.inputs
+            tuple(primitive.graph.resolve_selection(selection, values))
+            for selection in component.inputs
         )
         source_ids = {
             owner_id
             for selection in component.inputs
-            for owner_id, _ in primitive.selection_bit_sources(selection)
+            for owner_id, _ in primitive.graph.selection_bit_sources(selection)
         }
         component_dependencies = frozenset(
             name for source_id in source_ids for name in dependencies[source_id]
@@ -186,10 +187,10 @@ def xor_differential_component_transitions(
             )
         )
 
-    if primitive.output is None:
+    if primitive.graph.output is None:
         raise ValueError("trail primitive must declare an output")
-    output = tuple(primitive.resolve_selection(primitive.output, values))
-    output_width = primitive.output.value_type.domain.encoded_bit_size
+    output = tuple(primitive.graph.resolve_selection(primitive.graph.output, values))
+    output_width = primitive.graph.output.value_type.domain.encoded_bit_size
     if output_width is None:
         raise TypeError("trail display requires a canonically encoded output domain")
     if (

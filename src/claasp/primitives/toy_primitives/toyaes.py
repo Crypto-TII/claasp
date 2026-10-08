@@ -48,7 +48,7 @@ class ToyAES(Primitive):
     EXAMPLES::
 
         >>> primitive = ToyAES()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x66e94bd4ef8a2c3b', 127)
@@ -75,8 +75,10 @@ class ToyAES(Primitive):
         )
 
         self._builder.add_round()
-        state = self._builder.add_component(Add((self.input("key"), self.input("plaintext"))))
-        round_key = self.input("key").select_all()
+        state = self._builder.add_component(
+            Add((self.graph.input("key"), self.graph.input("plaintext")))
+        )
+        round_key = self.graph.input("key").select_all()
         shift_mapping = tuple(
             ((column + row) % state_size) * state_size + row
             for column in range(state_size)

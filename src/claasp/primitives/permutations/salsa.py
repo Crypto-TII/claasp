@@ -28,7 +28,7 @@ class Salsa(Primitive):
     EXAMPLES::
 
         >>> primitive = Salsa()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -54,7 +54,7 @@ class Salsa(Primitive):
             raise ValueError("rotations must contain four integers in range(word_size)")
 
         super().__init__("salsa", {"state": ValueType(Word(word_size), (16,))})
-        state: list[Port | Selection] = [self.input("state")[index] for index in range(16)]
+        state: list[Port | Selection] = [self.graph.input("state")[index] for index in range(16)]
         for round_number in range(number_of_rounds):
             self._builder.add_round()
             groups = _COLUMNS if round_number % 2 == 0 else _ROWS
@@ -96,4 +96,6 @@ class Salsa(Primitive):
         rotated = self._builder.add_component(
             Rotate(added, rotation, "left", component_id=f"{prefix}_rotate")
         )
-        return self._builder.add_component(Xor((destination, rotated), component_id=f"{prefix}_xor"))
+        return self._builder.add_component(
+            Xor((destination, rotated), component_id=f"{prefix}_xor")
+        )

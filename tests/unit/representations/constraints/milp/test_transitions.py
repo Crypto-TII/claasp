@@ -47,7 +47,6 @@ def test_modular_add_linear_milp_matches_every_two_bit_mask_transition():
         assert bool(assignments) == transition.is_possible
         if transition.is_possible:
             encoded_weights = {
-                assignment["weight_0"] + assignment["weight_1"]
-                for assignment in assignments
+                assignment["weight_0"] + assignment["weight_1"] for assignment in assignments
             }
             assert encoded_weights == {transition.weight}

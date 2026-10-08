@@ -56,11 +56,11 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
     diagnostic = _applicability(primitive)
     if diagnostic is not None:
         return SourceCompilationResult(SourceStatus.UNSUPPORTED, diagnostic=diagnostic)
-    names = {name: f"in{index}" for index, name in enumerate(primitive.input_ports)}
+    names = {name: f"in{index}" for index, name in enumerate(primitive.graph.input_ports)}
     names.update(
-        {item.component_id: f"v{index}" for index, item in enumerate(primitive.components)}
+        {item.component_id: f"v{index}" for index, item in enumerate(primitive.graph.components)}
     )
-    bindings = {item.binding_id: item for item in primitive.bindings}
+    bindings = {item.binding_id: item for item in primitive.graph.bindings}
 
     def selection_expressions(selection):
         return tuple(
@@ -163,9 +163,9 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
         "}",
         "",
         "int main(int argc, char **argv) {",
-        f'  if (argc != {len(primitive.input_ports) + 1}) {{ fputs("invalid input count\\n", stderr); return 2; }}',
+        f'  if (argc != {len(primitive.graph.input_ports) + 1}) {{ fputs("invalid input count\\n", stderr); return 2; }}',
     ]
-    for index, (name, port) in enumerate(primitive.input_ports.items()):
+    for index, (name, port) in enumerate(primitive.graph.input_ports.items()):
         width = port.value_type.domain.encoded_bit_size
         count = port.value_type.unit_count
         lines.extend(
@@ -174,7 +174,7 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
                 f'  if (!read_hex_units(argv[{index + 1}], {names[name]}, {count}, {width})) {{ fputs("invalid hex input\\n", stderr); return 2; }}',
             )
         )
-    for component in primitive.components:
+    for component in primitive.graph.components:
         output = names[component.component_id]
         count = component.output_type.unit_count
         width = component.output_type.domain.encoded_bit_size
@@ -298,10 +298,10 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
             _assign(lines, output, tuple(f"{table_name}[{item}]" for item in operands[0]))
         else:  # pragma: no cover - guarded by applicability
             raise AssertionError(type(component).__name__)
-    output_expressions = selection_expressions(primitive.output)
+    output_expressions = selection_expressions(primitive.graph.output)
     lines.append(f"  uint64_t result[{len(output_expressions)}];")
     _assign(lines, "result", output_expressions)
-    output_width = primitive.output.value_type.domain.encoded_bit_size
+    output_width = primitive.graph.output.value_type.domain.encoded_bit_size
     lines.extend(
         (
             f"  print_hex_units(result, {len(output_expressions)}, {output_width});",
@@ -333,11 +333,11 @@ def _mask(width):
 
 
 def _applicability(primitive):
-    if primitive.output is None:
+    if primitive.graph.output is None:
         return SourceDiagnostic(
             "missing_output", "C generation requires a declared primitive output"
         )
-    for source_id, port in primitive.input_ports.items():
+    for source_id, port in primitive.graph.input_ports.items():
         domain = port.value_type.domain
         if not isinstance(domain, (Bit, Word)) or domain.encoded_bit_size > 64:
             return SourceDiagnostic(
@@ -365,7 +365,7 @@ def _applicability(primitive):
         BitVectorSBox,
         SBox,
     )
-    for component in primitive.components:
+    for component in primitive.graph.components:
         domain = component.output_type.domain
         if not isinstance(domain, (Bit, Word)) or domain.encoded_bit_size > 64:
             return SourceDiagnostic(

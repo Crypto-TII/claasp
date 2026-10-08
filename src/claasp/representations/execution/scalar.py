@@ -132,7 +132,7 @@ class ScalarExecutionDriver:
 
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
-        expected_names = set(primitive.input_ports)
+        expected_names = set(primitive.graph.input_ports)
         actual_names = set(inputs)
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
@@ -142,15 +142,15 @@ class ScalarExecutionDriver:
             )
 
         values: dict[str, RuntimeValue] = {}
-        for name, port in primitive.input_ports.items():
+        for name, port in primitive.graph.input_ports.items():
             value = tuple(inputs[name])
             self._validate_value(name, value, port.value_type.unit_count, port.value_type.domain)
             values[name] = value
 
         binding_cache = {}
-        for component in primitive.components:
+        for component in primitive.graph.components:
             selected_inputs = tuple(
-                primitive.resolve_selection(item, values, binding_cache)
+                primitive.graph.resolve_selection(item, values, binding_cache)
                 for item in component.inputs
             )
             try:
@@ -169,10 +169,12 @@ class ScalarExecutionDriver:
             values[component.component_id] = output
 
         output = None
-        if primitive.output is not None:
-            output = primitive.resolve_selection(primitive.output, values, binding_cache)
-        for binding in primitive.bindings:
-            primitive.resolve_selection(binding.output.select_all(), values, binding_cache)
+        if primitive.graph.output is not None:
+            output = primitive.graph.resolve_selection(
+                primitive.graph.output, values, binding_cache
+            )
+        for binding in primitive.graph.bindings:
+            primitive.graph.resolve_selection(binding.output.select_all(), values, binding_cache)
         annotation = GraphAnnotation.from_values(primitive, CONCRETE, values, output=output)
         return EvaluationResult(
             dict(values) | dict(binding_cache),

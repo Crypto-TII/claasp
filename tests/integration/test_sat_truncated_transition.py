@@ -56,9 +56,7 @@ def test_differential_linear_boundary_connectors_preserve_legacy_relations(solve
     assert str(middle) == "?"
     assert mask == XorMask(0, 1)
 
-    rejected_lower = TruncatedToLinearSATModel(
-        1, truncated_pattern="?", mask=XorMask(1, 1)
-    )
+    rejected_lower = TruncatedToLinearSATModel(1, truncated_pattern="?", mask=XorMask(1, 1))
     assert (
         solver_type(timeout_seconds=10).solve(rejected_lower.cnf_formula()).status
         is SatStatus.UNSATISFIABLE

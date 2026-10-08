@@ -34,7 +34,7 @@ def test_every_function_family_has_scalar_batch_parity(record):
     assert primitive.evaluate(*vector["inputs"]) == vector["output"]
     decoded = {
         name: (primitive._decode_boundary(value, port.value_type),)
-        for (name, port), value in zip(primitive.input_ports.items(), vector["inputs"])
+        for (name, port), value in zip(primitive.graph.input_ports.items(), vector["inputs"])
     }
     output = BatchEvaluator().evaluate(primitive, decoded).outputs[0]
-    assert primitive._encode_boundary(output, primitive.output.value_type) == vector["output"]
+    assert primitive._encode_boundary(output, primitive.graph.output.value_type) == vector["output"]

@@ -189,7 +189,9 @@ class CompositeInstance:
     def components(self) -> tuple[Component, ...]:
         """Return the instantiated leaf components in graph order."""
 
-        return tuple(self._primitive.component(component_id) for component_id in self.component_ids)
+        return tuple(
+            self._primitive.graph.component(component_id) for component_id in self.component_ids
+        )
 
     @property
     def output(self) -> CompositeOutputs:
@@ -200,7 +202,7 @@ class CompositeInstance:
     def scope(self, relative_path: str) -> CompositeInstance:
         """Resolve a nested scope relative to this instance."""
 
-        return self._primitive.scope(f"{self.path}/{relative_path}")
+        return self._primitive.graph.scope(f"{self.path}/{relative_path}")
 
     def as_primitive(self, output: str = "output"):
         """Project this scope's reusable definition to a standalone graph."""
@@ -258,17 +260,17 @@ class CompositeBuilder:
     def input_ports(self) -> Mapping[str, Port]:
         """Return named authoring input ports."""
 
-        return self._primitive.input_ports
+        return self._primitive.graph.input_ports
 
     def inputs(self, *selectors: str | int) -> Sequence[Port]:
         """Return selected input ports in the requested order."""
 
-        return self._primitive.inputs(*selectors)
+        return self._primitive.graph.inputs(*selectors)
 
     def input(self, selector: str | int) -> Port:
         """Resolve one input port by name or position."""
 
-        return self._primitive.input(selector)
+        return self._primitive.graph.input(selector)
 
     def add_round(self):
         """Append and return the next sequential composite round."""
@@ -312,7 +314,7 @@ class CompositeBuilder:
         if isinstance(output, Sequence) and not isinstance(output, (Port, Selection)):
             output = self.join(*output)
         selection = as_selection(output)
-        actual = self._primitive.port(selection.source.owner_id)
+        actual = self._primitive.graph.port(selection.source.owner_id)
         if actual != selection.source:
             raise ValueError("output source does not match its graph port type")
         self._outputs[name] = selection
@@ -330,15 +332,16 @@ class CompositeBuilder:
                 instance.output_bindings,
                 instance.component_ids,
             )
-            for instance in self._primitive.scopes
+            for instance in self._primitive.graph.scopes
         )
         return CompositeDefinition(
             name=self.name,
             input_types=tuple((name, port.value_type) for name, port in self.input_ports.items()),
             rounds=tuple(
-                tuple(primitive_round.components) for primitive_round in self._primitive.rounds
+                tuple(primitive_round.components)
+                for primitive_round in self._primitive.graph.rounds
             ),
-            bindings=self._primitive.bindings,
+            bindings=self._primitive.graph.bindings,
             outputs=tuple(self._outputs.items()),
             provenance=tuple(sorted((provenance or {}).items())),
             nested_scopes=templates,

@@ -11,7 +11,7 @@ class Aradi(Primitive):
     EXAMPLES::
 
         >>> primitive = Aradi()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xd06c8ab75d191521', 128)
@@ -19,8 +19,8 @@ class Aradi(Primitive):
 
     def __init__(self, number_of_rounds=16):
         super().__init__("aradi", {"plaintext": word_type(16, 8), "key": word_type(32, 8)})
-        state = [self.input("plaintext")[2 * index : 2 * index + 2] for index in range(4)]
-        key = [select(self.input("key"), 7 - index) for index in range(8)]
+        state = [self.graph.input("plaintext")[2 * index : 2 * index + 2] for index in range(4)]
+        key = [select(self.graph.input("key"), 7 - index) for index in range(8)]
         a_values, b_values, c_values = (11, 10, 9, 8), (8, 9, 4, 9), (14, 11, 14, 7)
 
         def linear(value, round_number):

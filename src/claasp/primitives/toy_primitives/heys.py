@@ -14,7 +14,7 @@ class Heys(Primitive):
     EXAMPLES::
 
         >>> primitive = Heys()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xe0bb', 16)
@@ -34,8 +34,8 @@ class Heys(Primitive):
                 ("reference", "Heys, A Tutorial on Linear and Differential Cryptanalysis"),
             ),
         )
-        state = self.input("plaintext")
-        key = self.input("key")
+        state = self.graph.input("plaintext")
+        key = self.graph.input("key")
         for round_number in range(number_of_rounds):
             self._builder.add_round()
             round_key = key[

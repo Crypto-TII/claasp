@@ -47,7 +47,7 @@ def find_two_round_speck_xor_differential(
     if not hasattr(selected_solver, "solve"):
         raise TypeError("solver must provide a solve(formula) method")
 
-    fixed_inputs = {"key": 0} if "key" in primitive.input_ports else {}
+    fixed_inputs = {"key": 0} if "key" in primitive.graph.input_ports else {}
     feasible_model = WordDifferentialSMTModel(
         primitive,
         nonzero_input="plaintext",
@@ -404,7 +404,7 @@ def _cnf(formula) -> CNFFormula:
 def _trail_from_sat_characteristic(primitive, characteristic) -> Trail:
     state_additions = {
         _state_round_components(primitive, round_number)[0].component_id
-        for round_number in range(len(primitive.rounds))
+        for round_number in range(len(primitive.graph.rounds))
     }
     steps = tuple(
         TrailStep(step.component_id.removesuffix("[0]"), step.transition)
@@ -412,7 +412,7 @@ def _trail_from_sat_characteristic(primitive, characteristic) -> Trail:
         if step.component_id.removesuffix("[0]") in state_additions
     )
     plaintext = dict(characteristic.input_differences)["plaintext"]
-    width = primitive.input_ports["plaintext"].value_type.encoded_bit_size
+    width = primitive.graph.input_ports["plaintext"].value_type.encoded_bit_size
     return Trail(
         TrailKind.XOR_DIFFERENTIAL,
         XorDifference(plaintext, width),
@@ -424,7 +424,7 @@ def _trail_from_sat_characteristic(primitive, characteristic) -> Trail:
 def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently check modular-add correlations and backward mask wiring."""
 
-    plaintext = primitive.input_ports.get("plaintext")
+    plaintext = primitive.graph.input_ports.get("plaintext")
     if (
         primitive.family_name != "speck"
         or plaintext is None
@@ -432,13 +432,13 @@ def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     ):
         return False
     width = plaintext.value_type.domain.width
-    if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != len(primitive.rounds):
+    if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != len(primitive.graph.rounds):
         return False
     if trail.input_pattern.width != 2 * width or trail.output_pattern.width != 2 * width:
         return False
     expected_ids = tuple(
         _state_round_components(primitive, round_number)[0].component_id
-        for round_number in range(len(primitive.rounds))
+        for round_number in range(len(primitive.graph.rounds))
     )
     if tuple(step.component_id for step in trail.steps) != expected_ids:
         return False
@@ -468,10 +468,10 @@ def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
 
 
 def _validate_speck_slice(primitive: Primitive) -> int:
-    plaintext = primitive.input_ports.get("plaintext")
+    plaintext = primitive.graph.input_ports.get("plaintext")
     if (
         primitive.family_name != "speck"
-        or len(primitive.rounds) != 2
+        or len(primitive.graph.rounds) != 2
         or plaintext is None
         or not isinstance(plaintext.value_type.domain, Word)
         or plaintext.value_type.domain.width != 16
@@ -483,10 +483,10 @@ def _validate_speck_slice(primitive: Primitive) -> int:
 
 
 def _validate_speck_linear_slice(primitive: Primitive) -> int:
-    plaintext = primitive.input_ports.get("plaintext")
+    plaintext = primitive.graph.input_ports.get("plaintext")
     if (
         primitive.family_name != "speck"
-        or len(primitive.rounds) != 4
+        or len(primitive.graph.rounds) != 4
         or plaintext is None
         or not isinstance(plaintext.value_type.domain, Word)
         or plaintext.value_type.domain.width != 16
@@ -500,7 +500,7 @@ def _validate_speck_linear_slice(primitive: Primitive) -> int:
 def _state_round_components(primitive: Primitive, round_number: int):
     """Return the state addition and rotations by graph structure, not ids."""
 
-    components = primitive.rounds[round_number].components
+    components = primitive.graph.rounds[round_number].components
     addition = next((item for item in components if isinstance(item, ModularAdd)), None)
     rotations = tuple(item for item in components if isinstance(item, Rotate))[:2]
     if addition is None or len(rotations) != 2:

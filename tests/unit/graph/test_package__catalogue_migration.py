@@ -21,13 +21,13 @@ def test_rectangular_sbox_evaluation_and_cnf_use_all_output_bits():
     primitive._builder.add_round()
     output = primitive._builder.add_component(
         BitVectorSBox(
-            primitive.input("input"),
+            primitive.graph.input("input"),
             (0x00, 0x55, 0xAA, 0xFF),
             output_bit_size=8,
         )
     )
     primitive._builder.set_output(output)
-    sbox = primitive.components[0]
+    sbox = primitive.graph.components[0]
     assert ScalarEvaluator().evaluate(primitive, {"input": (1, 0)}).output == (
         1,
         0,
