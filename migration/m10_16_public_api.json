@@ -26302,6 +26302,12 @@
       "qualified_name": "claasp.representations.constraints.cp.PresentDifferentialCPModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.cp.trails.PresentFixedActiveSBoxesCPModel",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.cp.PresentFixedActiveSBoxesCPModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.cp.trails.PresentLinearCPModel",
       "defined_in": "claasp.representations.constraints.cp.trails",
       "kind": "class",
@@ -26632,6 +26638,9 @@
     {
       "canonical_name": "claasp.representations.constraints.cp.trails.PresentActiveSBoxesCPModel.cp_model",
       "defined_in": "claasp.representations.constraints.cp.trails",
+      "inherited_by": [
+        "claasp.representations.constraints.cp.trails.PresentFixedActiveSBoxesCPModel"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.cp.trails.PresentActiveSBoxesCPModel.cp_model"
     },
@@ -26646,7 +26655,8 @@
       "canonical_name": "claasp.representations.constraints.cp.trails.PresentDifferentialCPModel.cp_model",
       "defined_in": "claasp.representations.constraints.cp.trails",
       "inherited_by": [
-        "claasp.representations.constraints.cp.trails.PresentActiveSBoxesCPModel"
+        "claasp.representations.constraints.cp.trails.PresentActiveSBoxesCPModel",
+        "claasp.representations.constraints.cp.trails.PresentFixedActiveSBoxesCPModel"
       ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.cp.trails.PresentDifferentialCPModel.cp_model"
@@ -26655,10 +26665,24 @@
       "canonical_name": "claasp.representations.constraints.cp.trails.PresentDifferentialCPModel.decode_trail",
       "defined_in": "claasp.representations.constraints.cp.trails",
       "inherited_by": [
-        "claasp.representations.constraints.cp.trails.PresentActiveSBoxesCPModel"
+        "claasp.representations.constraints.cp.trails.PresentActiveSBoxesCPModel",
+        "claasp.representations.constraints.cp.trails.PresentFixedActiveSBoxesCPModel"
       ],
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.cp.trails.PresentDifferentialCPModel.decode_trail"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.PresentFixedActiveSBoxesCPModel.__init__",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "documented_by": "claasp.representations.constraints.cp.trails.PresentFixedActiveSBoxesCPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.cp.trails.PresentFixedActiveSBoxesCPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.trails.PresentFixedActiveSBoxesCPModel.cp_model",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.trails.PresentFixedActiveSBoxesCPModel.cp_model"
     },
     {
       "canonical_name": "claasp.representations.constraints.cp.trails.PresentLinearCPModel.__init__",

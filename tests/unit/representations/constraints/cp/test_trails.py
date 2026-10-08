@@ -3,6 +3,7 @@
 from claasp.primitives import Present, Speck, ToySpeck
 from claasp.representations.constraints.cp import (
     PresentActiveSBoxesCPModel,
+    PresentFixedActiveSBoxesCPModel,
     SpeckSemiDeterministicTruncatedCPModel,
     WordDeterministicDifferentialLinearCPModel,
     WordDeterministicTruncatedCPModel,
@@ -17,6 +18,17 @@ def test_present_active_sboxes_cp_reuses_exact_tables():
     assert (len(query.declarations), len(query.constraints)) == (288, 65)
     assert query.solve.startswith("solve minimize")
     assert query.constraint_models[0].model == PresentActiveSBoxesCPModel.model_provenance
+
+
+def test_present_fixed_activity_cp_restores_weight_objective():
+    model = PresentFixedActiveSBoxesCPModel(
+        Present(number_of_rounds=2), active_sboxes=2
+    )
+    query = model.cp_model()
+    assert (len(query.declarations), len(query.constraints)) == (288, 66)
+    assert query.constraints[-1].endswith("= 2;")
+    assert query.solve.startswith("solve minimize round_1_sbox_0_weight")
+    assert query.constraint_models[0].model == model.model_provenance
 
 
 def test_semi_deterministic_truncated_cp_assembles_complete_speck_graph():
