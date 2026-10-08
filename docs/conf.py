@@ -58,6 +58,7 @@ else:
             "getting_started.rst",
             "quick_analysis_scripts.rst",
             "traditional_primitives.rst",
+            "customizing_aes.rst",
             "composite_blocks.rst",
             "batch_evaluation.rst",
             "displaying_results.rst",

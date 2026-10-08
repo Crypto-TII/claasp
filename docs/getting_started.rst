@@ -115,9 +115,9 @@ swapped, and the replacement is used in both SubBytes and the key schedule:
      Rounds: 5
      Realization: default
 
-``CustomAES`` also accepts ``include_mix_columns=False`` for studies that
-remove MixColumns. See :doc:`composite_blocks` for the reusable AES blocks and
-the provenance recorded for experimental modifications.
+See :doc:`customizing_aes` for every ``CustomAES`` option, examples that
+combine changes, validation rules, and the boundary between a constructor
+option and a deeper structural modification.
 
 Evaluate AES
 ------------
