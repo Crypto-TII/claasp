@@ -54,6 +54,68 @@ or a reduced number of rounds. See :doc:`traditional_primitives` for common
 block ciphers and :doc:`primitive_catalogue` for discovery and the full
 catalogue.
 
+Change the parameters
+^^^^^^^^^^^^^^^^^^^^^
+
+Pass constructor arguments by name so the choices remain readable. This
+builds a five-round AES-256 study instance with the algebraic realization of
+SubBytes:
+
+.. doctest::
+
+   >>> aes256 = AES(
+   ...     key_bit_size=256,
+   ...     number_of_rounds=5,
+   ...     realization="algebraic",
+   ... )
+   >>> aes256.details()
+   Primitive details
+     Type: block cipher
+     Instance: AES-256
+     Inputs:
+       plaintext: 128 bits (public)
+       key: 256 bits (secret)
+     Output: 128 bits
+     Rounds: 5
+     Realization: algebraic
+
+Five rounds form a reduced prefix for analysis; standard AES-256 uses 14
+rounds. AES currently provides ``lookup`` and ``algebraic`` realizations, not
+a bitsliced realization.
+
+Replace the S-box
+^^^^^^^^^^^^^^^^^
+
+Use ``CustomAES`` for an experimental change so results cannot be confused
+with canonical AES. Here the first two entries of a copy of the AES S-box are
+swapped, and the replacement is used in both SubBytes and the key schedule:
+
+.. doctest::
+
+   >>> from claasp.primitives import CustomAES
+   >>> from claasp.primitives.block_ciphers.aes import AES_SBOX
+   >>> custom_sbox = list(AES_SBOX)
+   >>> custom_sbox[0], custom_sbox[1] = custom_sbox[1], custom_sbox[0]
+   >>> custom = CustomAES(
+   ...     sbox_table=custom_sbox,
+   ...     key_bit_size=256,
+   ...     number_of_rounds=5,
+   ... )
+   >>> custom.details()
+   Primitive details
+     Type: block cipher
+     Instance: CustomAES-256
+     Inputs:
+       plaintext: 128 bits (public)
+       key: 256 bits (secret)
+     Output: 128 bits
+     Rounds: 5
+     Realization: default
+
+``CustomAES`` also accepts ``include_mix_columns=False`` for studies that
+remove MixColumns. See :doc:`composite_blocks` for the reusable AES blocks and
+the provenance recorded for experimental modifications.
+
 Evaluate AES
 ------------
 
