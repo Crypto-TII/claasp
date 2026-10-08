@@ -3,9 +3,9 @@
 This generated M11a comparison is review material; the JSON matrix and closure tool are authoritative.
 
 - Legacy records: 581
-- Shipped v5 artifacts: 448
+- Shipped v5 artifacts: 449
 - Legacy dispositions: inapplicable=34, migrate=332, remove=8, supersede=207
-- Reverse classifications: legacy-lineage=404, new-v5=44
+- Reverse classifications: legacy-lineage=405, new-v5=44
 - Mapping relationships: consolidated=57, direct=152, evidence-only=256, inapplicable=34, removed=8, split=74
 
 Every legacy source module, test module, and package marker appears below with its final disposition and reason. Every shipped v5 module or data artifact appears in the reverse table with its predecessor(s) or a new-v5 rationale.
@@ -604,6 +604,7 @@ Relationship means: **direct** for one reviewed destination, **split** for one l
 |---|---|---|---|
 | `src/claasp/__init__.py` | new-v5 | new | New v5 package boundary, provenance, encoding, or public export authority has no single legacy predecessor. |
 | `src/claasp/analysis/__init__.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py`<br>`claasp/cipher_modules/models/utils.py`<br>`claasp/utils/utils.py` |
+| `src/claasp/analysis/_matsui.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py`<br>`claasp/cipher_modules/models/utils.py`<br>`claasp/utils/utils.py` |
 | `src/claasp/analysis/_trail_propagation.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py`<br>`claasp/cipher_modules/models/utils.py`<br>`claasp/utils/utils.py` |
 | `src/claasp/analysis/algebraic.py` | legacy-lineage | consolidated | `claasp/cipher_modules/algebraic_tests.py`<br>`claasp/cipher_modules/models/milp/milp_models/Gurobi/monomial_prediction.py`<br>`claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py`<br>`claasp/cipher_modules/models/utils.py`<br>`claasp/utils/utils.py` |
 | `src/claasp/analysis/arx.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py`<br>`claasp/cipher_modules/models/utils.py`<br>`claasp/utils/utils.py` |

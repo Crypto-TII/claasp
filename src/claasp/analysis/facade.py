@@ -24,9 +24,8 @@ class TrailSearchBackend(str, Enum):
 
     ``AUTO`` preserves the established per-primitive defaults. ``SAT`` selects
     the supported solver-backed optimizer, while ``DEPENDENCY_FREE`` selects
-    only reviewed in-process paths. It is deliberately unavailable for Speck
-    XOR-differential search until a genuine branch-and-bound implementation
-    exists.
+    only reviewed in-process paths, including the exact two-round Speck
+    Matsui branch-and-bound search.
 
     EXAMPLES::
 
@@ -277,10 +276,11 @@ class Analysis:
             if solver is not None:
                 raise TypeError("dependency-free trail search does not accept a solver")
             if self.primitive.family_name == "speck":
-                raise NotImplementedError(
-                    "dependency-free Speck XOR-differential search requires a genuine "
-                    "branch-and-bound implementation"
+                from claasp.analysis.arx import (
+                    _find_two_round_speck_xor_differential_matsui,
                 )
+
+                return _find_two_round_speck_xor_differential_matsui(self.primitive)
             from claasp.analysis.spn import find_two_round_spn_xor_differential
 
             return find_two_round_spn_xor_differential(self.primitive)

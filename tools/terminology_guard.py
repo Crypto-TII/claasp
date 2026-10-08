@@ -63,6 +63,10 @@ ALLOWED_PHRASES = (
     "stream cipher",
     "stream-cipher",
     "stream_cipher",
+    # Established construction-family names retained in exact publication
+    # titles and structured provenance records.
+    "ARX ciphers",
+    "SPN ciphers",
 )
 
 _ALLOWED_PATTERN = re.compile(

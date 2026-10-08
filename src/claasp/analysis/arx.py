@@ -1,7 +1,14 @@
 """Reviewed ARX differential trail search."""
 
+from dataclasses import dataclass
+from fractions import Fraction
 from time import perf_counter
 
+from claasp.analysis._matsui import (
+    MatsuiEdge,
+    matsui_branch_and_bound,
+    modular_add_differences_above,
+)
 from claasp.analysis._trail_propagation import xor_differential_component_transitions
 from claasp.components import ModularAdd, Rotate
 from claasp.domains import Word
@@ -129,7 +136,7 @@ def find_two_round_speck_xor_differential(
 def _find_two_round_speck_xor_differential_bounded(
     primitive: Primitive,
 ) -> TrailSearchResult:
-    """Return the dependency-free two-round regression witness."""
+    """Return a dependency-free incumbent witness, without an optimality proof."""
 
     started = perf_counter()
     width = _validate_speck_slice(primitive)
@@ -172,6 +179,132 @@ def _find_two_round_speck_xor_differential_bounded(
     if best is None:
         raise RuntimeError("no nonzero Speck trail was found")
     return _bounded_differential_result(primitive, best, known_lower_bound, started)
+
+
+@dataclass(frozen=True, slots=True)
+class _SpeckMatsuiRound:
+    input_state: tuple[int, int]
+    output_state: tuple[int, int]
+    step: TrailStep
+
+
+def _find_two_round_speck_xor_differential_matsui(primitive: Primitive) -> TrailSearchResult:
+    """Prove the exact Speck32/64 two-round optimum without a solver.
+
+    The search follows Matsui's round recursion and uses the monotone partial
+    xdp+ bound of Biryukov--Velichkov--Le Corre inside each modular addition.
+    A sparse search supplies only the initial feasible incumbent. Optimality
+    follows from exhaustive low-bit-first exploration of every transition
+    that could improve it, with exact rational probability comparisons.
+    """
+
+    started = perf_counter()
+    width = _validate_speck_slice(primitive)
+    semantics = ModularAddTransitionSemantics(width)
+    seed = _find_two_round_speck_xor_differential_bounded(primitive).trail
+    if not check_speck_trail(primitive, seed):
+        raise RuntimeError("the Matsui incumbent failed independent validation")
+    seed_rounds = _speck_round_records(primitive, seed)
+    incumbent_probability = _trail_probability(seed)
+
+    def successors(round_index, state, strict_minimum):
+        addition, alpha_component, beta_component = _state_round_components(primitive, round_index)
+        alpha, beta = alpha_component.amount, beta_component.amount
+        if round_index == 0:
+            candidates = modular_add_differences_above(width, strict_minimum)
+        else:
+            left, right = state
+            candidates = modular_add_differences_above(
+                width,
+                strict_minimum,
+                left=_rotate_right(left, alpha, width),
+                right=right,
+            )
+        for candidate in candidates:
+            if round_index == 0:
+                input_state = (_rotate_left(candidate.left, alpha, width), candidate.right)
+                if input_state == (0, 0):
+                    continue
+            else:
+                input_state = state
+            next_left = candidate.output
+            next_right = _rotate_left(input_state[1], beta, width) ^ next_left
+            transition = semantics.xor_differential(
+                candidate.left, candidate.right, candidate.output
+            )
+            if Fraction(transition.numerator, transition.denominator) != candidate.probability:
+                raise RuntimeError("partial xdp+ search disagrees with exact transition semantics")
+            output_state = (next_left, next_right)
+            yield MatsuiEdge(
+                output_state,
+                candidate.probability,
+                _SpeckMatsuiRound(
+                    input_state,
+                    output_state,
+                    TrailStep(addition.component_id, transition),
+                ),
+            )
+
+    outcome = matsui_branch_and_bound(
+        rounds=2,
+        initial_state=(0, 0),
+        incumbent_probability=incumbent_probability,
+        incumbent_payload=seed_rounds,
+        # Probability one is a safe bound for every unsearched suffix.
+        suffix_probability_bounds=(Fraction(1), Fraction(1), Fraction(1)),
+        successors=successors,
+    )
+    records = outcome.payload
+    mask = (1 << width) - 1
+    trail = Trail(
+        TrailKind.XOR_DIFFERENTIAL,
+        XorDifference((records[0].input_state[0] << width) | records[0].input_state[1], 2 * width),
+        XorDifference(
+            (records[-1].output_state[0] << width) | records[-1].output_state[1],
+            2 * width,
+        ),
+        tuple(record.step for record in records),
+    )
+    if trail.output_pattern.value & ~((mask << width) | mask):
+        raise RuntimeError("Matsui search produced an out-of-range state")
+    if _trail_probability(trail) != outcome.probability or not check_speck_trail(primitive, trail):
+        raise RuntimeError("Matsui search produced an invalid Speck trail")
+    statistics = outcome.statistics
+    metadata = TrailSearchMetadata(
+        "exact Matsui branch-and-bound with monotone partial xdp+ bounds "
+        f"({statistics.visited_nodes} round nodes; nested partial-carry pruning)",
+        runtime_seconds=perf_counter() - started,
+    )
+    components = xor_differential_component_transitions(
+        primitive,
+        trail,
+        input_differences={"plaintext": trail.input_pattern.value, "key": 0},
+    )
+    return TrailSearchResult(trail, trail.total_weight, metadata, components)
+
+
+def _speck_round_records(primitive: Primitive, trail: Trail) -> tuple[_SpeckMatsuiRound, ...]:
+    width = trail.input_pattern.width // 2
+    mask = (1 << width) - 1
+    state = (trail.input_pattern.value >> width, trail.input_pattern.value & mask)
+    records = []
+    for round_index, step in enumerate(trail.steps):
+        _, _, beta_component = _state_round_components(primitive, round_index)
+        next_state = (
+            step.transition.output_pattern.value,
+            _rotate_left(state[1], beta_component.amount, width)
+            ^ step.transition.output_pattern.value,
+        )
+        records.append(_SpeckMatsuiRound(state, next_state, step))
+        state = next_state
+    return tuple(records)
+
+
+def _trail_probability(trail: Trail) -> Fraction:
+    probability = Fraction(1)
+    for step in trail.steps:
+        probability *= Fraction(step.transition.numerator, step.transition.denominator)
+    return probability
 
 
 def check_speck_trail(primitive: Primitive, trail: Trail) -> bool:
