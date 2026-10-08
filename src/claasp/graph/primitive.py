@@ -1472,24 +1472,36 @@ class Primitive:
             return None
         return self._encode_boundary(result.output, self._output.value_type)
 
-    def evaluate_many(
-        self, inputs: Iterable[Mapping[str, object]]
-    ) -> tuple[int | tuple[int, ...] | None, ...]:
-        """Evaluate independent named-input cases in their supplied order.
+    def evaluate_many(self, **inputs: object) -> tuple[int | tuple[int, ...] | None, ...]:
+        """Evaluate named inputs, broadcasting scalar values across list inputs.
+
+        A list supplies one value per evaluation. A scalar packed integer or a
+        tuple of logical units is reused for every evaluation. All list inputs
+        must have the same length.
 
         EXAMPLES::
 
             >>> from claasp.primitives import AES
             >>> aes = AES()
-            >>> results = aes.evaluate_many((
-            ...     {"plaintext": 0, "key": 0},
-            ...     {"plaintext": 1, "key": 0},
-            ... ))
+            >>> results = aes.evaluate_many(plaintext=[0, 1], key=0)
             >>> len(results)
             2
         """
 
-        return tuple(self.evaluate(item) for item in inputs)
+        supplied = self._bind_inputs((), inputs)
+        lengths = {len(value) for value in supplied.values() if isinstance(value, list)}
+        if len(lengths) > 1:
+            raise ValueError("all list inputs must have the same length")
+        batch_size = lengths.pop() if lengths else 1
+        return tuple(
+            self.evaluate(
+                {
+                    name: value[index] if isinstance(value, list) else value
+                    for name, value in supplied.items()
+                }
+            )
+            for index in range(batch_size)
+        )
 
     def evaluate_with_trace(self, *args: object, **kwargs: object):
         """Evaluate like :meth:`evaluate` and retain all intermediate values."""

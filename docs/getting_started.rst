@@ -135,8 +135,9 @@ instead of printing every nested port and selection:
      [1] derived graph value: 128 bits
      [2] derived graph value: 128 bits
 
-The sequence remains ordinary Python data: index or iterate over it when an
-analysis needs the underlying graph selections.
+This is a summary of the keys published by the graph. Most users only need the
+count and bit sizes shown here; advanced tooling can access individual entries
+by index.
 
 Replace the S-box
 ^^^^^^^^^^^^^^^^^
@@ -191,33 +192,30 @@ the same packed-integer convention. Named arguments make the input order
 explicit; positional arguments are also accepted in the order reported by
 ``aes.graph.inputs()``.
 
-Evaluate several independent inputs with ``evaluate_many()``. To encrypt two
-plaintexts with one key, repeat that key in the two named input cases:
+Evaluate several independent inputs with ``evaluate_many()``. Supply changing
+values as lists; a single value is automatically reused for every evaluation.
+For two plaintexts with one shared key:
 
 .. doctest::
 
-   >>> plaintexts = (plaintext, 0)
-   >>> shared_key_outputs = aes.evaluate_many([
-   ...     {"plaintext": value, "key": key}
-   ...     for value in plaintexts
-   ... ])
+   >>> plaintexts = [0x0, 0x1]
+   >>> key = 0x0
+   >>> shared_key_outputs = aes.evaluate_many(plaintext=plaintexts, key=key)
    >>> [f"{value:032x}" for value in shared_key_outputs]
-   ['69c4e0d86a7b0430d8cdb78070b4c55a', 'c6a13b37878f5b826f4f8162a1c8d879']
+   ['66e94bd4ef8a2c3b884cfa59ca342b2e', '58e2fccefa7e3061367f1d57a4e7455a']
 
-For one different key per plaintext, pair the two sequences explicitly:
+For one different key per plaintext, supply a key list of the same length:
 
 .. doctest::
 
-   >>> keys = (key, 0)
-   >>> separate_key_outputs = aes.evaluate_many([
-   ...     {"plaintext": value, "key": item_key}
-   ...     for value, item_key in zip(plaintexts, keys)
-   ... ])
+   >>> keys = [0x0, 0x1]
+   >>> separate_key_outputs = aes.evaluate_many(plaintext=plaintexts, key=keys)
    >>> [f"{value:032x}" for value in separate_key_outputs]
-   ['69c4e0d86a7b0430d8cdb78070b4c55a', '66e94bd4ef8a2c3b884cfa59ca342b2e']
+   ['66e94bd4ef8a2c3b884cfa59ca342b2e', 'a17e9f69e4f25a8b8620b4af78eefd6f']
 
-Each mapping is one independent evaluation. The list order is preserved in
-the returned tuple.
+The list order is preserved in the returned tuple. If several inputs are
+lists, their lengths must match. Use tuples—not lists—for a single input
+written as logical units rather than as a packed integer.
 
 Find a differential trail
 -------------------------
