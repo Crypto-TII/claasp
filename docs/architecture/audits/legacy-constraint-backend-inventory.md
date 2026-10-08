@@ -79,7 +79,7 @@ representation layer.
 |---|---|---|---|
 | `SatModel` | CNF container, solver selection, parsing, weight constraints | `CNFFormula`, exporters, and explicit SAT drivers | Covered; do not port wrapper |
 | `SatCipherModel` | Functional execution | Exact `BooleanCNFModel` for the supported Boolean graph subset | Partial; recover component coverage, not mutable dispatch |
-| `CmsSatCipherModel` | Functional execution using native XOR clauses | Portable CNF only | Recover as an optional XOR-aware encoding/export strategy |
+| `CmsSatCipherModel` | Functional execution using native XOR clauses | `BooleanNativeXorSATModel` plus extended-DIMACS export | Recovered for the reviewed Boolean graph subset and benchmarked against ordinary CNF |
 | `SatXorDifferentialModel` | Exact weighted XOR-differential search and n-window heuristic | `WordDifferentialSATModel` plus opt-in `NWindowSATStrategy` | Generic assembly and dependency-free uniform/per-round/per-component n-window strategy recovered |
 | `CmsSatXorDifferentialModel` | XOR-differential search with native XOR clauses | `WordDifferentialNativeXorSATModel` | Recovered for the typed Word graph subset and benchmarked against ordinary CNF |
 | `SatXorLinearModel` | Exact weighted XOR-linear search | `WordLinearSATModel` | Recovered for the typed Word graph subset; continue component coverage separately |
@@ -87,10 +87,10 @@ representation layer.
 | `SatBitwiseDeterministicTruncatedXorDifferentialModel` | Bitwise deterministic truncated search | Recovered local `ModularAddDeterministicTruncatedSATModel` and whole-graph `WordDeterministicTruncatedSATModel` | ARX/structural Word subset recovered; continue remaining components |
 | `CmsSatDeterministicTruncatedXorDifferentialModel` | Deterministic truncated search; legacy wrapper reused ordinary SAT unchanged | `WordDeterministicTruncatedNativeXorSATModel` recovers a verified native-parity alternative while retaining ordinary CNF | Recovered and benchmarked against ordinary CNF |
 | `SatTruncatedXorDifferentialModel` | Truncated-model base and fixed-value handling | Shared semantic types | Covered as semantics; do not port the base wrapper |
-| `SatSemiDeterministicTruncatedXorDifferentialModel` | Semi-deterministic truncated search | Semantic fixtures only | Recover |
-| `SatProbabilisticXorTruncatedDifferentialModel` | Probabilistic truncated search | CP modular-add/Speck slice only | Recover |
+| `SatSemiDeterministicTruncatedXorDifferentialModel` | Semi-deterministic truncated search | `ModularAddSemiDeterministicTruncatedSATModel` and `SpeckSemiDeterministicTruncatedSATModel` | Recovered for reviewed windows and Speck32/64 slices; literature correspondence remains unaudited |
+| `SatProbabilisticXorTruncatedDifferentialModel` | Probabilistic truncated search | `ProbabilisticTruncatedModularAddSATModel` and `SpeckProbabilisticTruncatedSATModel` | Recovered for reviewed modular-add and Speck32/64 slices |
 | `SatBitwiseImpossibleXorDifferentialModel` | Bitwise impossible differential | Recovered local `ImpossibleBoundarySATModel` plus reviewed CP boundary models | Continue with generic split-round search |
-| `SatDifferentialLinearModel` | Differential-linear SAT search | Typed semantics and analysis, no backend model | Recover |
+| `SatDifferentialLinearModel` | Differential-linear SAT search | Deterministic- and semi-deterministic-middle whole-graph SAT models with typed decoding | Recovered for reviewed Speck round slices; continue component coverage |
 | `SharedDifferencePairedInputDifferentialModel` | Two differential characteristics with a shared input difference and modular-add output exclusions | `SharedDifferencePairedWordDifferentialSATModel` with typed paired result | Recovered and benchmarked; literature interpretation remains TBD |
 | `SharedDifferencePairedInputDifferentialLinearModel` | Paired-input differential-linear search | `SharedDifferencePairedWordDifferentialLinearSATModel` with typed paired prefix and linear suffix | Recovered and benchmarked; interpretation and boundary provenance remain TBD |
 

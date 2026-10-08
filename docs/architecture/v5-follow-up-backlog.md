@@ -678,6 +678,12 @@ an explicit public name, and add compatibility imports only where an existing
 public import requires them. Restore or reconstruct focused fixtures and test
 behavioral parity independently of performance.
 
+The recovery ledger was reconciled after the cross-backend slices: native-XOR
+functional SAT, probabilistic and semi-deterministic truncated SAT, and both
+differential-linear SAT compositions are implemented and benchmarked. Their
+older table rows no longer remain false-positive TODOs; broader component
+coverage and unaudited provenance stay explicitly open.
+
 Benchmark recovered and portable strategies under the same primitive, round
 count, boundary conditions, trail objective, solver and version, solver
 settings, hardware, and timeout. Record at least model-construction time,
