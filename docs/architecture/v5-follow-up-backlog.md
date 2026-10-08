@@ -549,7 +549,9 @@ default, maps all portable domains, bounds, senses, and objectives, and
 independently rechecks returned assignments and objective values. Translation
 is covered with an API-compatible test double because the canonical image has
 no Gurobi installation or license. Legacy monomial-specific searches remain a
-separate recovery target above this solver boundary.
+separate recovery target above this solver boundary. The later solution-pool
+slice recovers bounded optimal enumeration while keeping monomial-specific
+parity interpretation above the driver.
 
 The portable CP differential-linear slice adds
 ``WordDeterministicDifferentialLinearCPModel``. Exact MiniZinc translation
@@ -698,8 +700,17 @@ values, and applies the Boolean Möbius transform to report the superpoly ANF
 and individual key-monomial coefficients. This is deliberately separate from
 MILP reachability: feasibility cannot detect even cancellation. The explicit
 dimension guard makes the exponential cost visible; the optional Gurobi
-driver remains available for a future scalable solution-pool strategy and is
-not selected by default.
+driver remains non-default.
+
+The optional Gurobi follow-up adds validated optimal-solution-pool
+enumeration. ``solve_optimal_pool`` requests systematic search, a bounded pool,
+and zero optimality gap; every returned assignment and objective is rechecked
+against the portable ``MILPModel``. The result distinguishes a complete pool
+from one that filled its configured capacity. Translation and pool decoding
+are exercised with an API-compatible test double because the canonical image
+has neither ``gurobipy`` nor a license. Reconstructing monomial parity from
+those assignments remains a distinct scientific step: reachability solutions
+cannot be XORed blindly when several internal paths project to one monomial.
 
 The boomerang assembly follow-up adds
 ``ModularAddBoomerangTrailCPModel``. It namespaces complete top and bottom

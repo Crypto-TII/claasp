@@ -163,6 +163,12 @@ claasp.drivers.solvers
 .. automodule:: claasp.drivers.solvers
    :no-index:
 
+claasp.drivers.solvers.gurobi
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.drivers.solvers.gurobi
+   :no-index:
+
 claasp.drivers.source
 ~~~~~~~~~~~~~~~~~~~~~
 

@@ -35,6 +35,12 @@ def test_gurobi_driver_validates_configuration_and_model_type():
         GurobiSolver(timeout_seconds=0)
     with pytest.raises(TypeError, match="MILPModel"):
         GurobiSolver().solve(object())
+    with pytest.raises(TypeError, match="MILPModel"):
+        GurobiSolver().solve_optimal_pool(object())
+    with pytest.raises(ValueError, match="positive integer"):
+        GurobiSolver().solve_optimal_pool(
+            MILPModel((LinearVariable("x", VariableKind.BINARY),), ()), maximum_solutions=0
+        )
 
 
 def test_gurobi_driver_translates_and_rechecks_with_a_test_double(monkeypatch):
@@ -57,6 +63,7 @@ def test_gurobi_driver_translates_and_rechecks_with_a_test_double(monkeypatch):
 
     class Variable:
         X = 1.0
+        Xn = 1.0
 
     class NativeModel:
         def __init__(self, _name):
@@ -107,3 +114,7 @@ def test_gurobi_driver_translates_and_rechecks_with_a_test_double(monkeypatch):
     solved = GurobiSolver(timeout_seconds=3).solve(model)
     assert solved.assignment == {"x": 1.0}
     assert solved.objective_value == 1.0
+    pool = GurobiSolver(timeout_seconds=3).solve_optimal_pool(model, maximum_solutions=2)
+    assert pool.assignments == ({"x": 1.0},)
+    assert pool.objective_value == 1.0
+    assert pool.is_exhaustive
