@@ -9,6 +9,7 @@ from claasp.components import ModularAdd
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
 from claasp.primitives import AES, Present, Simon, Speck, ToyAES, ToySpeck
 from claasp.representations.constraints.cp import (
+    HybridImpossibleBoundaryCPModel,
     ImpossibleBoundaryCPModel,
     MiniZincModel,
     ModularAddBoomerangCPModel,
@@ -138,6 +139,36 @@ def test_minizinc_continuous_speck_matches_independent_python_heuristic():
     assert solved.status is CPStatus.SATISFIED
     assert result.claim_kind == "heuristic"
     assert result.values[3] == pytest.approx(0.8497372377, abs=result.tolerance)
+
+
+@pytest.mark.parametrize(
+    "forward,backward,expected_bitwise,expected_groups",
+    (
+        ((0, 2, 2, 2), (1, 2, 2, 2), (0,), ()),
+        ((10, 10, 10, 10), (0, 0, 0, 0), (), (0,)),
+    ),
+)
+def test_minizinc_solves_reviewed_hybrid_impossible_boundaries(
+    forward, backward, expected_bitwise, expected_groups
+):
+    model = HybridImpossibleBoundaryCPModel(4, ((0, 1, 2, 3),))
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(
+        model.cp_model(forward=forward, backward=backward)
+    )
+    assert solved.status is CPStatus.SATISFIED
+    result = model.decode_boundary(solved.assignment)
+    assert (result.bitwise_positions, result.tagged_groups) == (
+        expected_bitwise,
+        expected_groups,
+    )
+
+
+def test_minizinc_rejects_compatible_hybrid_boundary():
+    model = HybridImpossibleBoundaryCPModel(4, ((0, 1, 2, 3),))
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(
+        model.cp_model(forward=(10, 10, 10, 10), backward=(10, 10, 10, 10))
+    )
+    assert solved.status is CPStatus.UNSATISFIABLE
 
 
 def test_minizinc_proves_present_two_round_active_sbox_optimum():

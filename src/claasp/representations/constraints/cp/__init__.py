@@ -1,11 +1,17 @@
 """Public constraint-programming model representations."""
 
-from claasp.representations.constraints.cp.components import ModularAddBoomerangCPModel
+from claasp.representations.constraints.cp.components import (
+    HybridImpossibleBoundaryCPModel,
+    HybridImpossibleBoundaryResult,
+    ModularAddBoomerangCPModel,
+)
 from claasp.representations.constraints.cp.lowering import BooleanMiniZincLowerer
 from claasp.representations.constraints.cp.model import MiniZincModel
 
 __all__ = [
     "BooleanMiniZincLowerer",
+    "HybridImpossibleBoundaryCPModel",
+    "HybridImpossibleBoundaryResult",
     "ImpossibleBoundaryCPModel",
     "MiniZincModel",
     "ModularAddBoomerangCPModel",

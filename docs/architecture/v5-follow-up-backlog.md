@@ -546,6 +546,17 @@ constraints, versus 265 for impossible points, and is faster to construct and
 solve. Existing graph lowering therefore keeps its portable default; the
 recovered exponential formulation is opt-in historical functionality.
 
+The hybrid-impossible soundness slice isolates and recovers the legacy middle
+rule as ``HybridImpossibleBoundaryCPModel``. A contradiction is either a
+known-zero/known-one bit mismatch or a reviewed nonlinear group whose bits
+share one positive component tag on one side and are all zero on the other.
+The decoder recomputes both cases without trusting solver indicators. Chuffed
+accepts both contradiction families and rejects equal active tags in the
+[ten-run boundary benchmark](audits/data/cp_hybrid_impossible_boundary_benchmark.json).
+This PR deliberately does not call the boundary a complete hybrid search:
+tagged propagation through whole forward/backward graphs and the legacy
+probabilistic key-schedule mode remain separate recovery work.
+
 The deterministic-truncated SMT slice adds
 ``ModularAddDeterministicTruncatedSMTModel`` and
 ``WordDeterministicTruncatedSMTModel``. The immutable SMT formula preserves the
