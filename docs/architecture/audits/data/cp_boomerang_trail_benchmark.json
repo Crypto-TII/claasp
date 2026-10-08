@@ -10,7 +10,7 @@
       "name": "modular_add",
       "result": {
         "constraints": 128,
-        "construction_seconds_median": 0.0009889995003504737,
+        "construction_seconds_median": 0.0010416044997327845,
         "declarations": 37,
         "exact_decoded_weight": 0.0,
         "peak_memory_bytes_median": null,
@@ -18,7 +18,7 @@
         "repeats": 10,
         "search_weight": 0.0,
         "solver": "MiniZincSolver(chuffed)",
-        "solver_seconds_median": 0.029943666999770358,
+        "solver_seconds_median": 0.03274135400033629,
         "solver_status": "satisfied",
         "solver_version": "MiniZinc to FlatZinc converter, version 2.8.2",
         "trails_valid": true
@@ -30,7 +30,7 @@
       "name": "sbox",
       "result": {
         "constraints": 71,
-        "construction_seconds_median": 0.08298266649944708,
+        "construction_seconds_median": 0.08659693700019488,
         "declarations": 516,
         "exact_decoded_weight": 15.0,
         "peak_memory_bytes_median": null,
@@ -38,7 +38,27 @@
         "repeats": 10,
         "search_weight": 15.0,
         "solver": "MiniZincSolver(chuffed)",
-        "solver_seconds_median": 0.04894904200000383,
+        "solver_seconds_median": 0.047054708000359824,
+        "solver_status": "satisfied",
+        "solver_version": "MiniZinc to FlatZinc converter, version 2.8.2",
+        "trails_valid": true
+      },
+      "timeout_seconds": 30
+    },
+    {
+      "description": "Speck-3 automatically partitioned around its round-1 add",
+      "name": "speck_automatic_partition",
+      "result": {
+        "constraints": 3985,
+        "construction_seconds_median": 0.05175902049995784,
+        "declarations": 1575,
+        "exact_decoded_weight": 0.4608411888919686,
+        "peak_memory_bytes_median": null,
+        "peak_memory_status": "not_reported_by_minizinc_driver",
+        "repeats": 10,
+        "search_weight": 0.0,
+        "solver": "MiniZincSolver(chuffed)",
+        "solver_seconds_median": 0.08568766649977988,
         "solver_status": "satisfied",
         "solver_version": "MiniZinc to FlatZinc converter, version 2.8.2",
         "trails_valid": true

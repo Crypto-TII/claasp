@@ -12,6 +12,7 @@ from claasp.representations.constraints.cp import (
     SBoxBoomerangCPModel,
     SBoxBoomerangTrailCPModel,
     SpeckARXWindowDifferentialCPModel,
+    SpeckBoomerangCPModel,
     SpeckContinuousHeuristicCPModel,
     SpeckSemiDeterministicTruncatedCPModel,
     WordDeterministicDifferentialLinearCPModel,
@@ -80,6 +81,22 @@ def test_sbox_boomerang_cp_namespaces_and_links_complete_present_trails():
     assert "constraint switch_input_difference = " in query.source()
     assert "constraint switch_output_difference = " in query.source()
     assert query.constraint_models[0].model == model.model_provenance
+
+
+def test_speck_boomerang_cp_automatically_partitions_and_links_all_switch_words():
+    model = SpeckBoomerangCPModel(
+        Speck(number_of_rounds=3),
+        switch_round=1,
+        upper_maximum_weight=20,
+        lower_maximum_weight=20,
+    )
+    query = model.cp_model()
+    source = query.source()
+    assert model.upper_graph.output.value_type.unit_count == 2
+    assert tuple(model.lower_graph.input_ports) == ("switch_output", "switch_right", "key")
+    assert "constraint switch_delta_right[0]" in source
+    assert "constraint switch_nabla_output[0]" in source
+    assert query.constraint_models[-1].model == model.model_provenance
 
 
 def test_generic_word_impossible_cp_preserves_complete_split_formula():

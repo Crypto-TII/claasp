@@ -24,6 +24,7 @@ from claasp.representations.constraints.cp import (
     SBoxDifferenceCPModel,
     SimonImpossibleCPModel,
     SpeckARXWindowDifferentialCPModel,
+    SpeckBoomerangCPModel,
     SpeckContinuousHeuristicCPModel,
     SpeckDifferentialCPModel,
     SpeckImpossibleCPModel,
@@ -109,6 +110,20 @@ def test_minizinc_solves_and_decodes_complete_modadd_boomerang_composition():
     trail = model.decode_trail(solved.assignment)
     assert trail.upper.output_difference == trail.switch.delta_left.value
     assert dict(trail.lower.input_differences)["left"] == trail.switch.nabla_right.value
+    assert trail.total_weight >= trail.search_weight
+
+
+def test_minizinc_solves_automatically_partitioned_speck_boomerang_composition():
+    model = SpeckBoomerangCPModel(
+        Speck(number_of_rounds=3),
+        switch_round=1,
+        upper_maximum_weight=20,
+        lower_maximum_weight=20,
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.switch.is_possible
     assert trail.total_weight >= trail.search_weight
 
 
