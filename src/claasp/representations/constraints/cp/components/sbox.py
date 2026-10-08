@@ -126,7 +126,7 @@ class SBoxBoomerangCPModel:
         "exhaustive BCT table constraint",
         "10.1007/978-3-319-78375-8_22",
         "Boomerang Connectivity Table: A New Cryptanalysis Tool",
-        "section 3.1, Definition 3.1",
+        "section 3.1, equation (4) and Definition 3.1",
     )
 
     def __init__(

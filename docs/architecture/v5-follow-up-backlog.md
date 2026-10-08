@@ -237,8 +237,8 @@ Prefer several small audit PRs over one repository-wide literature claim.
 Record unresolved cases as `TBD`; never guess.
 
 Completed family slices: modular addition/subtraction and truncated variants;
-S-box and linear-layer MILP alternatives. The signed-LAT inequality variants
-remain `TBD` with an explicit search record.
+S-box and linear-layer MILP alternatives; boomerang and BCT models. The
+signed-LAT inequality variants remain `TBD` with an explicit search record.
 
 The family-by-family status ledger and exact unresolved-search records live in
 [`audits/constraint-model-provenance.md`](audits/constraint-model-provenance.md).
