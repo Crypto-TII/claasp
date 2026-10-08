@@ -5,7 +5,11 @@ from dataclasses import dataclass
 from enum import Enum
 from math import isfinite
 
-from claasp.representations.constraints import ConstraintModelApplication
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _direct_model,
+)
 
 
 class VariableKind(str, Enum):
@@ -159,6 +163,14 @@ class MILPModel:
         >>> (MILPModel.__dataclass_params__.frozen, tuple(field.name for field in fields(MILPModel)))
         (True, ('variables', 'constraints', 'objective', 'objective_sense', 'constraint_models'))
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "MILPModel",
+        "representation_container",
+        "immutable mixed-integer linear model container",
+        "This solver-independent data container introduces no constraint construction.",
+    )
 
     variables: tuple[LinearVariable, ...]
     constraints: tuple[LinearConstraint, ...]

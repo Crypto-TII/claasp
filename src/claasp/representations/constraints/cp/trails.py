@@ -84,6 +84,14 @@ class PresentDifferentialCPModel:
         (('include "table.mzn";',), True)
     """
 
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "PresentDifferentialCPModel",
+        "xor_differential",
+        "exact DDT-row tables with direct PRESENT permutation wiring",
+        "The S-box relation is enumerated from the supplied table and the P-layer is direct wiring.",
+    )
+
     def __init__(self, problem: PropagationProblem) -> None:
         if not isinstance(problem, PropagationProblem):
             raise TypeError("problem must be a PropagationProblem")
@@ -153,6 +161,7 @@ class PresentDifferentialCPModel:
             tuple(constraints),
             includes=('include "table.mzn";',),
             provenance=self.problem.provenance,
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
         )
 
     def decode_trail(self, assignment) -> Trail:
@@ -483,6 +492,14 @@ class PresentLinearCPModel:
         (('include "table.mzn";',), True)
     """
 
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "PresentLinearCPModel",
+        "xor_linear",
+        "exact signed-LAT-row tables with direct PRESENT permutation wiring",
+        "The S-box relation is enumerated from the supplied table and the P-layer is direct wiring.",
+    )
+
     def __init__(self, problem: PropagationProblem) -> None:
         if not isinstance(problem, PropagationProblem):
             raise TypeError("problem must be a PropagationProblem")
@@ -554,6 +571,7 @@ class PresentLinearCPModel:
             tuple(constraints),
             includes=('include "table.mzn";',),
             provenance=self.problem.provenance,
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
         )
 
     def decode_trail(self, assignment) -> Trail:
@@ -600,6 +618,14 @@ class SpeckDifferentialCPModel:
         >>> model.cp_model().constraints[-1].endswith("<= 6;")
         True
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "SpeckDifferentialCPModel",
+        "xor_differential",
+        "exact finite modular-add relation with direct Speck round wiring",
+        "The model composes the exhaustively checked carry-difference relation without a new construction.",
+    )
 
     def __init__(
         self,
@@ -697,7 +723,10 @@ class SpeckDifferentialCPModel:
             f"constraint sum([{', '.join(weight_terms)}]) <= {self.problem.maximum_weight};"
         )
         return MiniZincModel(
-            tuple(declarations), tuple(constraints), provenance=self.problem.provenance
+            tuple(declarations),
+            tuple(constraints),
+            provenance=self.problem.provenance,
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
         )
 
     def decode_trail(self, assignment) -> Trail:
@@ -835,6 +864,14 @@ class SpeckTruncatedCPModel:
         '????100000000000????100000000011'
     """
 
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "SpeckTruncatedCPModel",
+        "deterministic_truncated_xor",
+        "fixed direct encoding of shared deterministic Speck propagation",
+        "The model fixes the independently computed three-valued round input and output.",
+    )
+
     def __init__(
         self, problem: PropagationProblem, input_difference: TruncatedXorDifference
     ) -> None:
@@ -864,7 +901,10 @@ class SpeckTruncatedCPModel:
                 declarations.append(f"var 0..2: {name};")
                 constraints.append(f"constraint {name} = {bit.encoded};")
         return MiniZincModel(
-            tuple(declarations), tuple(constraints), provenance=self.problem.provenance
+            tuple(declarations),
+            tuple(constraints),
+            provenance=self.problem.provenance,
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
         )
 
     def decode_output(self, assignment) -> TruncatedXorDifference:
@@ -1045,6 +1085,14 @@ class WordwiseDifferenceCPModel:
         'enum WordDifferenceState = {ZERO, KNOWN, NONZERO, UNKNOWN};'
     """
 
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "WordwiseDifferenceCPModel",
+        "wordwise_difference",
+        "direct typed boundary-value encoding",
+        "The enum and value variables encode caller-supplied semantic states literally.",
+    )
+
     def __init__(self, words: tuple[WordwiseXorDifference, ...]) -> None:
         if not words or any(not isinstance(word, WordwiseXorDifference) for word in words):
             raise ValueError("words must contain wordwise XOR differences")
@@ -1076,6 +1124,7 @@ class WordwiseDifferenceCPModel:
             declarations,
             tuple(constraints),
             provenance=("typed wordwise XOR-difference states",),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
         )
 
     def decode(self, assignment) -> tuple[WordwiseXorDifference, ...]:
@@ -1593,6 +1642,14 @@ class ImpossibleBoundaryCPModel:
         'constraint exists(i in 0..4)(contradiction[i]);'
     """
 
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "ImpossibleBoundaryCPModel",
+        "impossible_differential",
+        "direct fixed-bit contradiction predicate",
+        "The boundary existentially selects an opposite pair of known bits.",
+    )
+
     def __init__(self, boundary: ImpossiblePropagationBoundary) -> None:
         if not isinstance(boundary, ImpossiblePropagationBoundary):
             raise TypeError("boundary must be an ImpossiblePropagationBoundary")
@@ -1622,6 +1679,7 @@ class ImpossibleBoundaryCPModel:
             declarations,
             tuple(constraints),
             provenance=("forward/backward impossible propagation boundary",),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
         )
 
     def decode_boundary(self, assignment) -> ImpossiblePropagationBoundary:
@@ -1656,6 +1714,14 @@ class SpeckImpossibleCPModel:
         >>> model.cp_model().provenance[-1]
         '7 rounds, split after round 3, zero key difference'
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "SpeckImpossibleCPModel",
+        "impossible_differential",
+        "direct forward/backward deterministic-truncated Speck composition",
+        "The wrapper composes finite propagation rules and an explicit middle contradiction.",
+    )
 
     def __init__(self, primitive, middle_round: int) -> None:
         plaintext = primitive.input_ports.get("plaintext")
@@ -1739,6 +1805,7 @@ class SpeckImpossibleCPModel:
                 "legacy MznImpossibleXorDifferentialModel Speck32/64 fixture",
                 "7 rounds, split after round 3, zero key difference",
             ),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
         )
 
 
@@ -1757,6 +1824,14 @@ class SimonImpossibleCPModel:
         >>> model.cp_model().provenance[-1]
         'legacy Simon32/64 11-round fully-automatic impossible fixture'
     """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "SimonImpossibleCPModel",
+        "impossible_differential",
+        "direct forward/backward deterministic-truncated Simon composition",
+        "The wrapper composes finite propagation rules and an explicit middle contradiction.",
+    )
 
     def __init__(self, primitive, input_pattern, output_pattern, middle_round: int) -> None:
         if primitive.family_name != "simon" or len(input_pattern.bits) != 32:
@@ -1825,6 +1900,7 @@ class SimonImpossibleCPModel:
             tuple(declarations),
             tuple(constraints),
             provenance=("legacy Simon32/64 11-round fully-automatic impossible fixture",),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
         )
 
     def decode_boundary(self, assignment) -> ImpossiblePropagationBoundary:

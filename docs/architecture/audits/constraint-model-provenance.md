@@ -41,6 +41,13 @@ After the monomial-prediction and division-property audit, the total remains
 degree-bound and fixed-cube queries moved from `N/A` to `VERIFIED` after their
 objectives and boundary conditions were matched to the primary source.
 
+The final repository-wide reconciliation covers 143 declarations on all 140
+public SAT, SMT, MILP, and CP classes whose names end in `Model`: 31
+`VERIFIED`, 101 `N/A`, and 11 `TBD`. It closes eight missing CP generators,
+four graph compilers, and two representation containers. The two reduced
+bitwise-AND inequalities moved from `TBD` to `N/A` after exhaustive equivalence
+to their direct finite relations was confirmed.
+
 ## Modular addition, subtraction, and truncated variants
 
 The audit compared the current implementation with legacy CLAASP commit
@@ -201,3 +208,37 @@ keeps that distinction explicit: the MILP query results are bounds or exclusion
 tests, while `CubeSuperpolyQuery` computes coefficients by exhaustive finite
 evaluation. Independent tests recompute local S-box transitions from ANF
 products and validate complete returned assignments.
+
+## Final repository-wide coverage reconciliation
+
+The closure test recursively imports the SAT, SMT, MILP, and CP representation
+packages and discovers every public class ending in `Model`. It uses no class
+name allowlist: each discovered class must own either one
+`model_provenance` declaration or a nonempty `model_provenance_by_kind`
+mapping. The test pins the 140-class, 143-declaration inventory and its status
+distribution, so a newly public model cannot silently escape classification.
+
+| Newly closed surface | Status | Rationale |
+|---|---|---|
+| `PresentDifferentialCPModel`, `PresentLinearCPModel` | `N/A` | Direct DDT or signed-LAT row enumeration plus literal PRESENT permutation wiring. |
+| `SpeckDifferentialCPModel`, `SpeckTruncatedCPModel` | `N/A` | Direct composition or fixing of independently checked finite modular-add and three-valued round relations. |
+| `ImpossibleBoundaryCPModel`, `SpeckImpossibleCPModel`, `SimonImpossibleCPModel` | `N/A` | Direct forward/backward propagation and explicit known-bit contradiction predicates; no published encoding is claimed. |
+| `WordwiseDifferenceCPModel` | `N/A` | Literal enum-and-value encoding of caller-supplied typed states. |
+| `BooleanCNFModel`, `BooleanNativeXorModel`, `BooleanSMTModel`, `BooleanGraphMILPModel` | `N/A` | Provenance-transparent graph compilers. They compose declared component encodings or translate clauses exactly and retain the originating declarations. |
+| `MiniZincModel`, `MILPModel` | `N/A` | Immutable representation containers; they introduce no mathematical constraints. |
+| `BitwiseAndXorDifferentialMILPModel`, `BitwiseAndXorLinearMILPModel` | `N/A` | Direct compact inequalities exhaustively equivalent to all one-bit DDT or LAT rows and their one-hot baselines. No primary-source construction is needed. |
+
+`BooleanMiniZincLowerer`, `SMTFormula.from_cnf`, and `cnf_to_milp` are
+provenance-transparent translation operations rather than public `Model`
+classes; tests require them to preserve the input declarations exactly.
+`CubeSuperpolyQuery` is an exhaustive evaluation oracle, and the polynomial
+representation package is an algebraic-system API outside the four-backend
+`ConstraintModelProvenance` contract. Neither is silently counted as a
+constraint model.
+
+The 11 remaining `TBD` declarations are deliberate research records: four
+signed-LAT inequality strategies, the local semi-deterministic modular-add
+relation, the SAT and CP counter-based probabilistic-truncated relation and
+their two Speck compositions, and two shared-difference paired-input SAT
+models. Their searched sources and unresolved correspondence are recorded in
+the family sections above.
