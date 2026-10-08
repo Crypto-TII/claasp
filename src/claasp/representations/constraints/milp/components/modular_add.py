@@ -80,7 +80,7 @@ class ModularAddLinearMILPModel:
         weight = tuple(binary(f"weight_{bit}") for bit in range(self.width))
         constraints.append(_equal({weight[0]: 1}, 0))
         parity = binary("parity_1")
-        _parity(constraints, variables, (weight[1], output[0], left[0], right[0]), parity, 1)
+        _parity(constraints, variables, (weight[1], output[0], left[0], right[0]), parity, 2)
         for bit in range(2, self.width):
             parity = binary(f"parity_{bit}")
             _parity(
@@ -90,7 +90,7 @@ class ModularAddLinearMILPModel:
                 parity,
                 2,
             )
-        for bit in range(1, self.width):
+        for bit in range(self.width):
             for operand in (left, right):
                 constraints.append(_greater({weight[bit]: 1, output[bit]: -1, operand[bit]: 1}, 0))
                 constraints.append(_greater({weight[bit]: 1, output[bit]: 1, operand[bit]: -1}, 0))
