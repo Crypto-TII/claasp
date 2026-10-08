@@ -1,6 +1,6 @@
 {
   "counts_by_code": {
-    "arg-type": 169,
+    "arg-type": 168,
     "assignment": 75,
     "attr-defined": 138,
     "call-arg": 7,
@@ -21,10 +21,10 @@
   "counts_by_scope": {
     "docs/conf.py": 0,
     "src/claasp": 711,
-    "tests": 159,
+    "tests": 158,
     "tools": 38
   },
-  "diagnostic_count": 908,
+  "diagnostic_count": 907,
   "diagnostics": [
     {
       "code": "operator",
@@ -3823,7 +3823,7 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 28,
+      "line": 30,
       "message": "Need type annotation for \"incoming\" (hint: \"incoming: dict[<type>, <type>] = ...\")",
       "path": "src/claasp/representations/diagrams/ascii.py"
     },
@@ -3858,7 +3858,7 @@
     {
       "code": "assignment",
       "column": 36,
-      "line": 59,
+      "line": 61,
       "message": "Incompatible types in assignment (expression has type \"tuple[int, float]\", target has type \"tuple[int, int]\")",
       "path": "src/claasp/representations/diagrams/tikz.py"
     },
@@ -5751,13 +5751,6 @@
       "line": 100,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/representations/constraints/smt/test_word_linear.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 20,
-      "line": 85,
-      "message": "Argument 1 to \"TrailStep\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "tests/unit/representations/diagrams/test_package.py"
     },
     {
       "code": "arg-type",

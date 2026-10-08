@@ -1523,44 +1523,6 @@ class Primitive:
 
         return Analysis(self)
 
-    def diagram(self, annotation=None):
-        """Compile this graph and an optional trace or trail to diagram IR."""
-
-        from claasp.annotations import GraphAnnotation
-        from claasp.representations.diagrams import DiagramCompiler
-
-        if (
-            annotation is not None
-            and not isinstance(annotation, GraphAnnotation)
-            and hasattr(annotation, "annotate")
-        ):
-            annotation = annotation.annotate(self)
-        return DiagramCompiler().compile(self, annotation)
-
-    def draw(self, format: str = "ascii", annotation=None):  # noqa: A002 - public format API
-        """Render the primitive's low-level component graph.
-
-        This is a wiring diagram for inspecting component dependencies,
-        selections, traces, or trails. It is not a compact, high-level overview,
-        so large primitives can produce very long output. PDF rendering requires
-        the optional ``pdflatex`` command;
-        ASCII and TikZ generation have no third-party dependencies.
-        """
-
-        from claasp.representations.diagrams import ASCIIArtSerializer, TikZSerializer
-
-        diagram = self.diagram(annotation)
-        if format == "ascii":
-            return ASCIIArtSerializer().serialize(diagram)
-        tikz = TikZSerializer().serialize(diagram)
-        if format == "tikz":
-            return tikz
-        if format == "pdf":
-            from claasp.drivers.renderers import LaTeXDriver
-
-            return LaTeXDriver().render(tikz).pdf
-        raise ValueError("diagram format must be 'ascii', 'tikz', or 'pdf'")
-
     def _bind_inputs(
         self, args: tuple[object, ...], kwargs: Mapping[str, object]
     ) -> Mapping[str, object]:
