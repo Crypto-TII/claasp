@@ -1,3 +1,5 @@
+import pytest
+
 from claasp.composites import AESKeySchedule, AESRound
 from claasp.domains import BinaryExtensionField
 from claasp.primitives import AES, AES128, CustomAES
@@ -89,15 +91,11 @@ def test_custom_aes_records_changes_and_supports_sbox_and_layer_studies():
 
 def test_aes_evaluate_many_accepts_shared_or_independent_keys():
     aes = AES()
-    plaintexts = (0x00112233445566778899AABBCCDDEEFF, 0)
-    keys = (0x000102030405060708090A0B0C0D0E0F, 0)
+    plaintexts = [0x00112233445566778899AABBCCDDEEFF, 0]
+    keys = [0x000102030405060708090A0B0C0D0E0F, 0]
 
-    shared_key = aes.evaluate_many(
-        {"plaintext": plaintext, "key": keys[0]} for plaintext in plaintexts
-    )
-    independent_keys = aes.evaluate_many(
-        {"plaintext": plaintext, "key": key} for plaintext, key in zip(plaintexts, keys)
-    )
+    shared_key = aes.evaluate_many(plaintext=plaintexts, key=keys[0])
+    independent_keys = aes.evaluate_many(plaintext=plaintexts, key=keys)
 
     assert shared_key == (
         0x69C4E0D86A7B0430D8CDB78070B4C55A,
@@ -107,3 +105,12 @@ def test_aes_evaluate_many_accepts_shared_or_independent_keys():
         0x69C4E0D86A7B0430D8CDB78070B4C55A,
         0x66E94BD4EF8A2C3B884CFA59CA342B2E,
     )
+
+
+def test_aes_evaluate_many_validates_named_batch_inputs():
+    aes = AES()
+
+    with pytest.raises(ValueError, match="same length"):
+        aes.evaluate_many(plaintext=[0, 1], key=[0])
+    with pytest.raises(ValueError, match="missing=.*key"):
+        aes.evaluate_many(plaintext=[0, 1])
