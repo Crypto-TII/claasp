@@ -16,7 +16,7 @@ available, and the primitive component responsible for each transition:
 .. doctest::
 
    >>> from claasp.primitives import Speck
-   >>> result = Speck(number_of_rounds=2).analysis.find_lowest_weight_xor_differential_trail()
+   >>> result = Speck(number_of_rounds=2).analysis.find_trail(kind="xor_differential")
    >>> result.show()  # doctest: +ELLIPSIS
    Trail
    ...

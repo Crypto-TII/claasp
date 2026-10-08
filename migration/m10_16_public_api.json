@@ -751,6 +751,12 @@
       "qualified_name": "claasp.analysis.TrailKind"
     },
     {
+      "canonical_name": "claasp.analysis.facade.TrailSearchBackend",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "enum",
+      "qualified_name": "claasp.analysis.TrailSearchBackend"
+    },
+    {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult",
       "defined_in": "claasp.semantics.cryptanalysis.trails",
       "kind": "dataclass",
@@ -2181,6 +2187,12 @@
       "qualified_name": "claasp.analysis.facade.Analysis.find_lowest_weight_xor_linear_trail"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.find_trail",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.find_trail"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.is_xor_differential_transition_possible",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -2272,6 +2284,34 @@
       "documented_by": "claasp.analysis.facade.AnalysisResult",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.facade.AnalysisResult.values"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.TrailSearchBackend.AUTO",
+      "defined_in": "claasp.analysis.facade",
+      "documented_by": "claasp.analysis.facade.TrailSearchBackend",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.facade.TrailSearchBackend.AUTO"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.TrailSearchBackend.DEPENDENCY_FREE",
+      "defined_in": "claasp.analysis.facade",
+      "documented_by": "claasp.analysis.facade.TrailSearchBackend",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.facade.TrailSearchBackend.DEPENDENCY_FREE"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.TrailSearchBackend.SAT",
+      "defined_in": "claasp.analysis.facade",
+      "documented_by": "claasp.analysis.facade.TrailSearchBackend",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.facade.TrailSearchBackend.SAT"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.TrailSearchBackend.__init__",
+      "defined_in": "claasp.analysis.facade",
+      "documented_by": "claasp.analysis.facade.TrailSearchBackend",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.facade.TrailSearchBackend.__init__"
     },
     {
       "canonical_name": "claasp.analysis.datasets.generate_avalanche_dataset",

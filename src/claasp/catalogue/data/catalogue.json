@@ -5,7 +5,7 @@
         "component_bounded",
         "component_minizinc"
       ],
-      "entry_point": "Primitive.analyze().component_property",
+      "entry_point": "Primitive.analysis.component_property",
       "evidence": "qualified",
       "kind": "component_property",
       "name": "component_property",
@@ -20,7 +20,7 @@
       "drivers": [
         "python_scalar"
       ],
-      "entry_point": "Primitive.analyze().avalanche",
+      "entry_point": "Primitive.analysis.avalanche",
       "evidence": "empirical",
       "kind": "statistical",
       "name": "avalanche",
@@ -40,7 +40,7 @@
         "minizinc",
         "z3"
       ],
-      "entry_point": "Primitive.analyze().enumerate_solutions",
+      "entry_point": "Primitive.analysis.enumerate_solutions",
       "evidence": "exact",
       "kind": "constraint",
       "name": "enumerate_solutions",
@@ -55,7 +55,7 @@
       "drivers": [
         "z3"
       ],
-      "entry_point": "Primitive.analyze().enumerate_xor_differential_trails",
+      "entry_point": "Primitive.analysis.enumerate_xor_differential_trails",
       "evidence": "exact_characteristic",
       "kind": "xor_differential",
       "name": "enumerate_xor_differential_trails",
@@ -70,7 +70,7 @@
       "drivers": [
         "z3"
       ],
-      "entry_point": "Primitive.analyze().enumerate_xor_linear_trails",
+      "entry_point": "Primitive.analysis.enumerate_xor_linear_trails",
       "evidence": "exact_characteristic",
       "kind": "xor_linear",
       "name": "enumerate_xor_linear_trails",
@@ -85,7 +85,25 @@
       "drivers": [
         "kissat"
       ],
-      "entry_point": "Primitive.analyze().find_lowest_weight_xor_differential_trail",
+      "entry_point": "Primitive.analysis.find_trail",
+      "evidence": "reviewed_dispatch",
+      "kind": "trail",
+      "name": "find_trail",
+      "primitives": [
+        "Present",
+        "Speck"
+      ],
+      "representations": [
+        "boolean_cnf"
+      ],
+      "required_components": [],
+      "restriction": "kind, backend, and round support are validated explicitly"
+    },
+    {
+      "drivers": [
+        "kissat"
+      ],
+      "entry_point": "Primitive.analysis.find_trail(kind=\"xor_differential\")",
       "evidence": "exact",
       "kind": "xor_differential",
       "name": "find_lowest_weight_xor_differential_trail",
@@ -101,7 +119,7 @@
     },
     {
       "drivers": [],
-      "entry_point": "Primitive.analyze().find_lowest_weight_xor_linear_trail",
+      "entry_point": "Primitive.analysis.find_trail(kind=\"xor_linear\")",
       "evidence": "exact",
       "kind": "xor_linear",
       "name": "find_lowest_weight_xor_linear_trail",
@@ -115,7 +133,7 @@
     },
     {
       "drivers": [],
-      "entry_point": "Primitive.analyze().is_xor_differential_transition_possible",
+      "entry_point": "Primitive.analysis.is_xor_differential_transition_possible",
       "evidence": "exact",
       "kind": "component_transition",
       "name": "is_xor_differential_transition_possible",
@@ -137,7 +155,7 @@
         "minizinc",
         "z3"
       ],
-      "entry_point": "Primitive.analyze().recover_input",
+      "entry_point": "Primitive.analysis.recover_input",
       "evidence": "exact",
       "kind": "constraint",
       "name": "recover_input",
@@ -157,7 +175,7 @@
         "minizinc",
         "z3"
       ],
-      "entry_point": "Primitive.analyze().solve",
+      "entry_point": "Primitive.analysis.solve",
       "evidence": "exact",
       "kind": "constraint",
       "name": "solve",

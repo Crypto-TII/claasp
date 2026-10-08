@@ -45,7 +45,7 @@ probable—trail. CLAASP uses Kissat by default for this search:
 
    >>> from claasp.primitives import Speck
    >>> speck = Speck(number_of_rounds=2)
-   >>> trail = speck.analysis.find_lowest_weight_xor_differential_trail()
+   >>> trail = speck.analysis.find_trail(kind="xor_differential")
 
 Display the result:
 

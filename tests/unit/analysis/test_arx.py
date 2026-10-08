@@ -33,7 +33,7 @@ def test_modular_add_transition_counts_are_exact():
 def test_two_round_speck_finds_exact_optimum_and_checks_wiring():
     primitive = Speck(number_of_rounds=2)
 
-    result = primitive.analysis.find_lowest_weight_xor_differential_trail()
+    result = primitive.analysis.find_trail(kind="xor_differential")
 
     assert result.trail.total_weight == 1.0
     assert result.lower_bound == 1.0
@@ -131,3 +131,8 @@ def test_four_round_speck_returns_verified_linear_optimum():
         "fixed-trail verification with exact modular-addition correlations"
     )
     assert check_speck_linear_trail(primitive, result.trail)
+
+
+def test_dependency_free_speck_search_is_not_aliased_to_sparse_enumeration():
+    with pytest.raises(NotImplementedError, match="genuine branch-and-bound"):
+        Speck(number_of_rounds=2).analysis.find_trail("xor_differential", backend="dependency_free")

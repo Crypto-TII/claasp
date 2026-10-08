@@ -4,6 +4,7 @@ import re
 from collections.abc import Iterable, Mapping, Sequence
 from copy import copy
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 
 from claasp.graph.binding import BindingKind, ValueBinding
 from claasp.graph.component import Component
@@ -24,6 +25,9 @@ from claasp.graph.realization import (
 )
 from claasp.graph.round import Round
 from claasp.graph.value_type import ValueType
+
+if TYPE_CHECKING:
+    from claasp.analysis import Analysis
 
 
 class Primitive:
@@ -828,15 +832,20 @@ class Primitive:
         return ScalarExecutionDriver().evaluate(self, decoded)
 
     @property
-    def analysis(self):
+    def analysis(self) -> "Analysis":
         """Return the high-level analysis capabilities for this primitive."""
 
         from claasp.analysis import Analysis
 
         return Analysis(self)
 
-    def analyze(self):
-        """Return the high-level analysis capabilities for this primitive."""
+    def analyze(self) -> "Analysis":
+        """Return :attr:`analysis` as a supported compatibility alias.
+
+        New code should prefer ``primitive.analysis`` for IDE discovery. The
+        method remains supported throughout CLAASP 5 and preserves identical
+        defaults and behavior.
+        """
 
         return self.analysis
 

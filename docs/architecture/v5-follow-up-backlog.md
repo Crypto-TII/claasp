@@ -74,24 +74,28 @@ Status: **Complete; delivered with the documentation and first-use work**
 
 ## Analysis API ergonomics PR
 
-Status: **Next PR**
+Status: **Complete**
 
-Introduce a stable analysis namespace without placing an unbounded collection
-of analysis methods directly on every primitive. The proposed user-facing form
-is:
+The stable analysis namespace avoids placing an unbounded collection of
+analysis methods directly on every primitive. The user-facing form is:
 
 ```python
 trail = speck.analysis.find_trail(kind="xor_differential")
 ```
 
-Design questions to settle in this PR:
+Resolved contract:
 
-- typed arguments or dedicated convenience methods for common trail kinds;
-- discoverability and IDE completion;
-- solver/backend selection without exposing backend internals to beginners;
-- consistent return types for differential, linear, impossible, and other
-  trail searches;
-- compatibility policy for the current `analyze()` facade.
+- `TrailKind` and `TrailSearchBackend` provide typed completion while the
+  common call accepts their concise string values.
+- `Analysis.find_trail()` is one bounded namespace method and returns
+  `TrailSearchResult` for every supported kind.
+- `backend="auto"` preserves established behavior; explicit backend and solver
+  selection is available only for combinations the reviewed search supports.
+- `Primitive.analyze()` and both longer trail convenience methods remain
+  supported CLAASP 5 compatibility aliases with unchanged defaults.
+- Dependency-free Speck differential search remains unavailable here rather
+  than relabeling bounded sparse enumeration; the genuine Matsui research item
+  below owns that capability.
 
 ## Dependency-free Matsui search PR
 
