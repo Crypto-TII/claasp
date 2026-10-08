@@ -4,104 +4,136 @@ Getting started
 Installation
 ------------
 
-Install the package from the repository root:
+CLAASP requires Python 3.11 or later. From the repository root, create a
+virtual environment and install the package:
 
 .. code-block:: console
 
+   python -m venv .venv
+   source .venv/bin/activate
    python -m pip install -e .
 
-The evaluation and avalanche examples need no external program. The
-differential-trail example uses Kissat. On macOS or Linux with Homebrew,
-install it with ``brew install kissat``. Other systems can build Kissat from
-its official source distribution.
+On Windows PowerShell, activate the environment with
+``.venv\Scripts\Activate.ps1`` instead. Confirm that Python imports the
+installed package:
 
-Evaluate AES
-------------
+.. code-block:: console
 
-Create AES, supply a plaintext and key, and evaluate a standard test vector:
+   python -c "import claasp; print('CLAASP import OK')"
+
+Evaluation and avalanche experiments need no external program. The trail
+search later on this page also needs the optional Kissat executable; its
+installation is described where it is first used.
+
+Choose a primitive
+------------------
+
+Ready-to-use primitives have short imports from ``claasp.primitives``. Start
+with the standard AES-128 configuration and inspect its inputs before
+supplying values:
 
 .. doctest::
 
    >>> from claasp.primitives import AES
    >>> aes = AES()
+   >>> [
+   ...     (name, descriptor.value_type.encoded_bit_size)
+   ...     for name, descriptor in aes.input_descriptors.items()
+   ... ]
+   [('plaintext', 128), ('key', 128)]
+
+The constructor builds a reusable description of AES; it does not encrypt
+anything yet. Constructor arguments can select another standard parameter set
+or a reduced number of rounds. See :doc:`traditional_primitives` for common
+ciphers and :doc:`primitive_catalogue` for discovery and the full catalogue.
+
+Evaluate AES
+------------
+
+Supply one value for each named input and evaluate a standard test vector:
+
+.. doctest::
+
    >>> plaintext = 0x00112233445566778899AABBCCDDEEFF
    >>> key = 0x000102030405060708090A0B0C0D0E0F
    >>> ciphertext = aes.evaluate(plaintext=plaintext, key=key)
    >>> f"{ciphertext:032x}"
    '69c4e0d86a7b0430d8cdb78070b4c55a'
 
-AES accepts a 128-bit ``plaintext`` and a 128-bit ``key`` and returns the
-128-bit ciphertext. Other traditional block ciphers use the same packed
-integer convention.
+``evaluate`` returns the encoded output as a Python integer. Formatting it to
+32 hexadecimal digits preserves leading zeroes and makes the 128-bit result
+easy to compare with a published vector. Other traditional block ciphers use
+the same packed-integer convention. Named arguments make the input order
+explicit; positional arguments are also accepted in the order reported by
+``aes.inputs()``.
 
 Find a differential trail
 -------------------------
 
 A differential trail follows an XOR difference through each round of a
 primitive. CLAASP can search for the lowest-weight—and therefore most
-probable—trail. CLAASP uses Kissat by default for this search:
+probable—trail in its differential model.
+
+This example deliberately uses two-round Speck32/64 so the search finishes
+quickly. It is a reduced-round analysis target, not a secure cipher
+configuration. The default search uses the optional Kissat SAT solver. On
+macOS or Linux with Homebrew, install it and confirm that it is on ``PATH``:
+
+.. code-block:: console
+
+   brew install kissat
+   kissat --version
+
+On other systems, build Kissat from its official source distribution. Then
+run the search:
 
 .. doctest::
 
    >>> from claasp.primitives import Speck
    >>> speck = Speck(number_of_rounds=2)
-   >>> trail = speck.analysis.find_trail(kind="xor_differential")
+   >>> result = speck.analysis.find_trail(kind="xor_differential")
 
-Display the result:
+``result`` is a ``TrailSearchResult``: it contains the mathematical trail and
+the evidence for the search claim. Inspect the stable fields directly:
 
-.. code-block:: python
+.. doctest::
 
-   trail.show()
+   >>> result.trail.kind.value
+   'xor_differential'
+   >>> (result.trail.total_weight, result.lower_bound, result.is_optimal)
+   (1.0, 1.0, True)
+   >>> (result.metadata.solver, len(result.component_transitions))
+   ('Kissat', 10)
 
-A representative run produces the following report. Solver runtime and peak
-memory depend on the machine:
+Read those values as follows:
 
-.. code-block:: text
+* ``total_weight`` is :math:`-\log_2(p)` for this one trail. Weight 1
+  therefore represents trail probability :math:`p=2^{-1}` in the model.
+* ``lower_bound`` is the proved minimum. Because it equals the trail weight,
+  ``is_optimal`` is true: no lower-weight trail exists for this instance.
+* ``component_transitions`` contains the ten checked rotations, modular
+  additions, and XOR operations on the two-round data path.
+* ``metadata`` records how the search was performed. Runtime and peak memory,
+  when available, depend on the machine.
 
+For an interactive, human-readable report, use:
+
+.. doctest::
+
+   >>> result.show()  # doctest: +ELLIPSIS
    Trail
+   ...
 
-   Trail summary
+The report's input and output are XOR differences, not plaintext and
+ciphertext values. Its exact-ratio column gives each local transition
+probability; the weights add while those probabilities multiply. The default
+search fixes the key difference to zero, so the all-zero key-schedule
+propagation is omitted. Another supported solver may return different input
+and output differences with the same optimal weight.
 
-   Field          |                                                                Value
-   ---------------+---------------------------------------------------------------------
-   kind           |                                                     xor_differential
-   input          |                                                           0x00408000
-   output         |                                                           0x0002000a
-   total weight   |                                                                    1
-   lower bound    |                                                                    1
-   optimality     |                                                       proved optimal
-   search method  | SAT optimization by binary search over the differential-weight bound
-   solver         |                                                               Kissat
-   solver version |                                                                4.0.4
-   runtime        |                                                     0.203444 seconds
-   peak memory    |                                                        4337664 bytes
-
-   Component transitions
-
-   Round | Component        | Input      | Output | Exact ratio | Sign | Weight | Component ID
-   ------+------------------+------------+--------+-------------+------+--------+----------------
-       0 | rotate right 7   | 0x0040     | 0x8000 |         1/1 |    1 |      0 | rotate_0_0
-       0 | modular addition | 0x80008000 | 0x0000 |         1/1 |    1 |      0 | modular_add_0_1
-       0 | XOR              | 0x00000000 | 0x0000 |         1/1 |    1 |      0 | xor_0_2
-       0 | rotate left 2    | 0x8000     | 0x0002 |         1/1 |    1 |      0 | rotate_0_3
-       0 | XOR              | 0x00020000 | 0x0002 |         1/1 |    1 |      0 | xor_0_4
-       1 | rotate right 7   | 0x0000     | 0x0000 |         1/1 |    1 |      0 | rotate_1_0
-       1 | modular addition | 0x00000002 | 0x0002 |         1/2 |    1 |      1 | modular_add_1_1
-       1 | XOR              | 0x00020000 | 0x0002 |         1/1 |    1 |      0 | xor_1_2
-       1 | rotate left 2    | 0x0002     | 0x0008 |         1/1 |    1 |      0 | rotate_1_3
-       1 | XOR              | 0x00080002 | 0x000a |         1/1 |    1 |      0 | xor_1_4
-
-The displayed report contains the input and output differences, total weight,
-proof bound, search metadata, and every data-state transition. Here the
-weight is 1, corresponding to trail probability :math:`2^{-1}` in the
-differential model. The matching lower bound confirms that no lower-weight
-trail exists for this instance. This is a single-key search, so the all-zero
-key-schedule propagation is omitted.
-
-CLAASP first asks Kissat for a feasible trail, then uses binary search over
-the maximum weight. An unsatisfiable bound immediately below weight 1 proves
-that the displayed trail is optimal. Another SAT solver may return a different
-trail with the same optimal weight.
+See :doc:`analysis` when you need constraints or explicit backend and solver
+selection. See :doc:`displaying_results` for Markdown, CSV, and structured
+report output.
 
 Measure avalanche behavior
 --------------------------
