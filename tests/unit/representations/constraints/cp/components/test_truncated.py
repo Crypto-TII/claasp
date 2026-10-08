@@ -2,13 +2,19 @@
 
 import pytest
 
+from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.cp import (
     HybridImpossibleBoundaryCPModel,
+    HybridSBoxCPModel,
+    HybridXorCPModel,
     ModularAddBoomerangCPModel,
     ModularAddDeterministicTruncatedCPModel,
 )
-from claasp.semantics.cryptanalysis import ModularAddBoomerangSemantics
+from claasp.semantics.cryptanalysis import (
+    ModularAddBoomerangSemantics,
+    TruncatedXorDifference,
+)
 
 
 def test_modadd_boomerang_automaton_feasibility_matches_exhaustive_oracle():
@@ -84,3 +90,35 @@ def test_hybrid_boundary_rejects_unverified_assignment():
     model.cp_model(forward=(10, 10), backward=(10, 10))
     with pytest.raises(ValueError, match="no independently verified"):
         model.decode_boundary({"forward": (10, 10), "backward": (10, 10)})
+
+
+def test_hybrid_xor_preserves_only_zero_passthrough_and_concrete_parity():
+    domain = (0, 1, 2, 10, 20)
+    for left in domain:
+        for right in domain:
+            expected = (
+                (left + right) % 2
+                if left < 2 and right < 2
+                else left
+                if right == 0
+                else right
+                if left == 0
+                else 2
+            )
+            assert HybridXorCPModel.propagate(left, right) == expected
+
+
+def test_hybrid_sbox_decoder_accepts_tag_and_exact_branches():
+    model = HybridSBoxCPModel(PRESENT_SBOX, output_tag=10)
+    model.cp_model(input_pattern=(1, 0, 0, 0))
+    assert model.decode_transition(
+        {"input": (1, 0, 0, 0), "result": (10, 10, 10, 10)}
+    ) == ((1, 0, 0, 0), (10, 10, 10, 10))
+    target = tuple(
+        bit.encoded
+        for bit in model.semantics.truncated_xor_differential(
+            TruncatedXorDifference.parse("1000")
+        ).bits
+    )
+    if target != (2, 2, 2, 2):
+        assert model.decode_transition({"input": (1, 0, 0, 0), "result": target})[1] == target

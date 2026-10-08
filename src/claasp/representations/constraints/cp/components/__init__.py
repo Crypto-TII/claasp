@@ -12,12 +12,16 @@ from claasp.representations.constraints.cp.components.sbox import (
 from claasp.representations.constraints.cp.components.truncated import (
     HybridImpossibleBoundaryCPModel,
     HybridImpossibleBoundaryResult,
+    HybridSBoxCPModel,
+    HybridXorCPModel,
     ModularAddDeterministicTruncatedCPModel,
 )
 
 __all__ = [
     "HybridImpossibleBoundaryCPModel",
     "HybridImpossibleBoundaryResult",
+    "HybridSBoxCPModel",
+    "HybridXorCPModel",
     "ModularAddDeterministicTruncatedCPModel",
     "ModularAddBoomerangCPModel",
     "ProbabilisticTruncatedModularAddCPModel",

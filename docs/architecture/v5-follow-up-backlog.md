@@ -557,6 +557,17 @@ This PR deliberately does not call the boundary a complete hybrid search:
 tagged propagation through whole forward/backward graphs and the legacy
 probabilistic key-schedule mode remain separate recovery work.
 
+The following hybrid-component slice adds ``HybridXorCPModel`` and
+``HybridSBoxCPModel``. The XOR rule preserves a nonlinear tag only through a
+zero operand; concrete bits use parity and every other abstract collision
+becomes unknown. The S-box rule preserves the legacy alternatives: zero maps
+to zero, a known-active input may use either exact nontrivial undisturbed bits
+or the component's fresh tag, a uniform incoming tag is retagged, and mixed
+abstract inputs become unknown. Chuffed solves all representative branches in
+the [ten-run component benchmark](audits/data/cp_hybrid_tagged_components_benchmark.json),
+and decoders re-evaluate them independently. Complete structural graph
+assembly and probabilistic key-schedule composition remain separate.
+
 The deterministic-truncated SMT slice adds
 ``ModularAddDeterministicTruncatedSMTModel`` and
 ``WordDeterministicTruncatedSMTModel``. The immutable SMT formula preserves the
