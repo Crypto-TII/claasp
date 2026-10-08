@@ -19,6 +19,7 @@ __all__ = [
     "CryptoMiniSatSolver",
     "GLPKSolver",
     "GurobiSolver",
+    "GurobiSolutionPoolResult",
     "KissatSolver",
     "MILPResult",
     "MILPStatus",
@@ -41,8 +42,10 @@ def __getattr__(name: str):
         from claasp.drivers.solvers.glpk import GLPKSolver
 
         return GLPKSolver
-    if name == "GurobiSolver":
-        from claasp.drivers.solvers.gurobi import GurobiSolver
+    if name in ("GurobiSolutionPoolResult", "GurobiSolver"):
+        from claasp.drivers.solvers.gurobi import GurobiSolutionPoolResult, GurobiSolver
 
-        return GurobiSolver
+        return {"GurobiSolutionPoolResult": GurobiSolutionPoolResult, "GurobiSolver": GurobiSolver}[
+            name
+        ]
     raise AttributeError(name)
