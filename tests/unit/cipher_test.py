@@ -602,13 +602,13 @@ def test_find_impossible_property_related_key_without_key_raises():
 def test_impossible_differential_search_on_keyless_permutation():
     # single-key (the default) on a keyless cipher must not try to fix a key difference at all
     keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
-    impossible_differentials = keccak.impossible_differential_search("sat", "kissat")
+    impossible_differentials = keccak.impossible_differential_search("sat", "KISSAT_EXT")
     assert isinstance(impossible_differentials, list)
 
 
 def test_zero_correlation_linear_search_on_keyless_permutation():
     keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
-    zero_correlation_linear_approximations = keccak.zero_correlation_linear_search("sat", "kissat")
+    zero_correlation_linear_approximations = keccak.zero_correlation_linear_search("sat", "KISSAT_EXT")
     assert isinstance(zero_correlation_linear_approximations, list)
 
 
