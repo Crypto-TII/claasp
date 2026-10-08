@@ -29,6 +29,13 @@ After the boomerang/BCT audit, the total is unchanged but the distribution is
 declarations moved from `TBD` to `VERIFIED`, and the Speck composition moved
 from `N/A` to `VERIFIED`.
 
+After the differential-linear, continuous, semi-deterministic, and hybrid
+audit, the total remains 129 declarations on 126 classes: 29 `VERIFIED`, 87
+`N/A`, and 13 `TBD`. Four hybrid declarations and the continuous-equation
+model moved to `VERIFIED`; ten direct connectors, wrappers, or mechanical
+lowerings moved to `N/A`. Nested provenance now keeps the unresolved local
+semi-deterministic modular-add relation visible through every wrapper.
+
 ## Modular addition, subtraction, and truncated variants
 
 The audit compared the current implementation with legacy CLAASP commit
@@ -128,3 +135,36 @@ middle S-box layer. The follow-up correctness PR repairs the independently
 found public boomerang-weight formula as `2 * upper + switch + 2 * lower`;
 the solver's legacy upper-plus-lower search objective remains explicitly
 separate.
+
+## Differential-linear, continuous, semi-deterministic, and hybrid models
+
+This family audit covered legacy commit `3aacc275`, the SAT corrective and
+paired-input branches, the MiniZinc cleanup branch, all relevant recovery
+commits and benchmarks, current tests, bibliography, comments, and introducing
+history. Published constraints were compared with the code relation by
+relation; a paper defining differential-linear or impossible cryptanalysis was
+not treated as evidence for a particular connector.
+
+| Models | Status | Evidence and correspondence |
+|---|---|---|
+| `SpeckContinuousHeuristicCPModel` | `VERIFIED` | Bellini--Gérault--Grados--Makarim--Peyrin, *Fully Automated Differential-Linear Attacks Against ARX Ciphers*, DOI `10.1007/978-3-031-30872-7_10`, Section 2.3, Propositions 1--4, and Section 3, Equations (3)--(5). CLAASP uses the published `-xy` XOR correlation, `1/4(x+y+z+xyz)` majority recurrence, rotations, carry seed, modular-add product, and Speck32/64 wiring. The declaration verifies the equations, not the independence assumptions: results remain explicitly heuristic and never proof-shaped. |
+| `SpeckContinuousMaskOptimizationCPModel` | `N/A` | For one fixed vector of magnitudes in `[0,1]`, every nonempty product is at most each selected factor, so the strongest product is one maximum-magnitude position. This direct argmax wrapper retains the nested VERIFIED continuous-equation declaration and is not represented as the paper's global MIQCP search. |
+| `HybridImpossibleBoundaryCPModel`, `HybridXorCPModel`, `HybridSBoxCPModel`, `PresentHybridImpossibleCPModel` | `VERIFIED` | Bellini--De Piccoli--Gérault--Huynh--Pelizzola--Visconti, *Impossible Differentials Automation: Model Generation and New Techniques*, DOI `10.1007/978-3-032-10536-3_6`, Section 4.2, “Data representation,” “Extended modeling of a bijective S-box,” “Extended modeling of the XOR,” and “Objective function.” CLAASP's unique nonlinear tags, DDT-derived undisturbed alternative, tag-through-zero XOR rule, bit contradiction, and nonzero-tag-versus-zero group contradiction implement those definitions. Multiples of ten are only collision-free concrete tag identifiers; the whole PRESENT model composes the generic construction over exact P-layer wiring. |
+| `DifferentialToTruncatedSATModel`, `TruncatedToLinearSATModel`, and deterministic-middle SAT, CP, and MILP differential-linear compositions | `N/A` | The upper connector is direct equality between an exact bit and a canonical non-unknown ternary bit. The lower connector directly forbids an active mask at an unknown middle bit. The whole models only slice, namespace, wire, and mechanically lower independently declared relations. |
+| Semi-deterministic Speck and differential-linear SAT, CP, and MILP wrappers | `N/A` | Their own constraints are direct Speck wiring, namespacing, boundary relations, or literal backend lowering. Each formula now retains the nested `TBD` declaration for the local look-ahead-window modular-add relation instead of assigning the wrapper the unresolved status. |
+| `ModularAddSemiDeterministicTruncatedSATModel` | `TBD` | The four pinned window templates and three-bit cost code remain unattributed and underived. This is the single unresolved construction shared by the direct wrappers above. |
+| `SharedDifferencePairedWordDifferentialSATModel`, `SharedDifferencePairedWordDifferentialLinearSATModel` | `TBD` | Legacy describes a high-order intent but implements two shared-input-difference trails, modular-add output mutual exclusion, and, for the linear suffix, an active-mask-to-two-zero-differences boundary. No inspected source establishes those exact exclusions or the boundary; the models are not exact four-copy evaluation. |
+
+### Unresolved-search record
+
+The discrete audit inspected legacy branches `af85330e`, `b055080a`, and
+`34d010b7`; recovery commits for deterministic and semi-deterministic
+differential-linear assembly; and the introducing paired-input commits
+`5dd99c2f` and `5d8214f0`. Bellini et al.'s continuous paper was inspected and
+rejected for the discrete connectors and look-ahead templates: its Equations
+(3)--(5) cover real-valued continuous propagation, not those Boolean
+relations. Exact searches for the cost sequence `100, 41, 19, 9, 4, 0`, the
+legacy predicate terminology, and the shared-difference exclusions found no
+matching primary construction. The local semi-deterministic relation and two
+paired-input models therefore remain `TBD` with their unresolved constraint
+semantics stated explicitly.

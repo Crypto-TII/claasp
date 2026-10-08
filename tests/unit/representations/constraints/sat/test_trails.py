@@ -307,6 +307,11 @@ def test_speck_semi_deterministic_sat_reuses_graph_assembly_compactly():
     assert formula.clause_count < portable.clause_count
     assert len(model._round_models) == 2
     assert any(item.model == model.model_provenance for item in formula.constraint_models)
+    assert any(
+        item.model.component_model == "ModularAddSemiDeterministicTruncatedSATModel"
+        and item.model.reference_status.value == "TBD"
+        for item in formula.constraint_models
+    )
 
 
 def test_deterministic_differential_linear_sat_assembles_three_round_slices():
@@ -374,6 +379,11 @@ def test_semi_deterministic_differential_linear_sat_assembles_recovered_middle()
     assert "semi_deterministic_weight_code" in formula.provenance
     assert formula.provenance.count("differential_to_truncated_exact") == 96
     assert formula.provenance.count("truncated_to_linear_compatibility") == 32
+    assert any(
+        item.model.component_model == "ModularAddSemiDeterministicTruncatedSATModel"
+        and item.model.reference_status.value == "TBD"
+        for item in formula.constraint_models
+    )
 
 
 def test_semi_deterministic_differential_linear_sat_validates_configuration():

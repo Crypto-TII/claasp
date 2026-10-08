@@ -2358,12 +2358,12 @@ class SpeckSemiDeterministicTruncatedSATModel(SpeckProbabilisticTruncatedSATMode
         True
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.SAT,
         "SpeckSemiDeterministicTruncatedSATModel",
         "semi_deterministic_truncated_xor",
         "recovered look-ahead-window Speck round composition in ordinary CNF",
-        "The composed additions use pinned legacy templates for which no primary source was found.",
+        "Direct Speck wiring; nested modular-add applications retain the unresolved source status.",
     )
     _addition_model_type = ModularAddSemiDeterministicTruncatedSATModel
 
@@ -3197,12 +3197,12 @@ class WordSemiDeterministicDifferentialLinearSATModel:
         (True, True)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.SAT,
         "WordSemiDeterministicDifferentialLinearSATModel",
         "differential_linear",
         "round-sliced differential, semi-deterministic-truncated, and linear composition",
-        "Recovered from legacy CLAASP; the middle probability and exact literature correspondence remain unaudited.",
+        "Direct namespacing and wiring; the nested middle relation retains the unresolved source status.",
     )
 
     def __init__(
@@ -3474,12 +3474,12 @@ class WordDeterministicDifferentialLinearSATModel:
         (True, True)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.SAT,
         "WordDeterministicDifferentialLinearSATModel",
         "differential_linear",
         "round-sliced differential, deterministic-truncated, and linear composition",
-        "Recovered from CLAASP's SAT composition; exact primary-source correspondence remains unaudited.",
+        "Direct namespacing and wiring of independently declared component and trail relations.",
     )
 
     def __init__(

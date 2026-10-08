@@ -15,6 +15,9 @@ from claasp.representations.constraints import (
 )
 from claasp.representations.constraints.cp import components as cp_components
 from claasp.representations.constraints.cp.components import (
+    HybridImpossibleBoundaryCPModel,
+    HybridSBoxCPModel,
+    HybridXorCPModel,
     ModularAddBoomerangCPModel,
     ProbabilisticTruncatedModularAddCPModel,
     SBoxBoomerangCPModel,
@@ -23,9 +26,14 @@ from claasp.representations.constraints.cp.components import (
 from claasp.representations.constraints.cp.lowering import BooleanMiniZincLowerer
 from claasp.representations.constraints.cp.trails import (
     ModularAddBoomerangTrailCPModel,
+    PresentHybridImpossibleCPModel,
     SBoxBoomerangTrailCPModel,
     SpeckBoomerangCPModel,
+    SpeckContinuousHeuristicCPModel,
+    SpeckContinuousMaskOptimizationCPModel,
     SpeckProbabilisticTruncatedCPModel,
+    SpeckSemiDeterministicTruncatedCPModel,
+    WordSemiDeterministicDifferentialLinearCPModel,
     WordwiseDeterministicTruncatedCPModel,
 )
 from claasp.representations.constraints.milp import components as milp_components
@@ -56,11 +64,14 @@ from claasp.representations.constraints.milp.lowering import (
 )
 from claasp.representations.constraints.milp.trails import (
     PresentMonomialTrailMILPModel,
+    SpeckSemiDeterministicTruncatedMILPModel,
+    WordSemiDeterministicDifferentialLinearMILPModel,
     WordwiseDeterministicTruncatedMILPModel,
 )
 from claasp.representations.constraints.sat import BooleanCNFModel
 from claasp.representations.constraints.sat import components as sat_components
 from claasp.representations.constraints.sat.components import (
+    DifferentialToTruncatedSATModel,
     ModularAddDifferentialSATModel,
     ModularAddFunctionalSATModel,
     ModularAddLinearSATModel,
@@ -68,9 +79,15 @@ from claasp.representations.constraints.sat.components import (
     ModularAddSemiDeterministicTruncatedSATModel,
     ProbabilisticTruncatedModularAddSATModel,
     SBoxFunctionalSATModel,
+    TruncatedToLinearSATModel,
     WiringFunctionalSATModel,
 )
-from claasp.representations.constraints.sat.trails import WordwiseDeterministicTruncatedSATModel
+from claasp.representations.constraints.sat.trails import (
+    SpeckSemiDeterministicTruncatedSATModel,
+    WordDeterministicDifferentialLinearSATModel,
+    WordSemiDeterministicDifferentialLinearSATModel,
+    WordwiseDeterministicTruncatedSATModel,
+)
 from claasp.representations.constraints.smt import components as smt_components
 from claasp.representations.constraints.smt.components import (
     ModularAddDifferentialSMTModel,
@@ -203,6 +220,62 @@ def test_direct_sbox_boomerang_composition_is_not_a_literature_claim():
     assert SBoxBoomerangTrailCPModel.model_provenance.reference_status is (
         ConstraintReferenceStatus.NOT_APPLICABLE
     )
+
+
+def test_audited_hybrid_models_name_the_published_tagged_construction():
+    for model in (
+        HybridImpossibleBoundaryCPModel,
+        HybridXorCPModel,
+        HybridSBoxCPModel,
+        PresentHybridImpossibleCPModel,
+    ):
+        provenance = model.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+        assert provenance.reference_identifier == "10.1007/978-3-032-10536-3_6"
+        assert "section 4.2" in cast(str, provenance.source_locator)
+
+
+def test_continuous_equations_are_verified_but_fixed_mask_selection_is_direct():
+    continuous = SpeckContinuousHeuristicCPModel.model_provenance
+    selection = SpeckContinuousMaskOptimizationCPModel.model_provenance
+
+    assert continuous.reference_status is ConstraintReferenceStatus.VERIFIED
+    assert continuous.reference_identifier == "10.1007/978-3-031-30872-7_10"
+    assert "Propositions 1--4" in cast(str, continuous.source_locator)
+    assert selection.reference_status is ConstraintReferenceStatus.NOT_APPLICABLE
+
+    query = SpeckContinuousMaskOptimizationCPModel(
+        (-1.0,) * 16, (-1.0,) * 16, rounds=1
+    ).cp_model()
+    assert tuple(item.model for item in query.constraint_models) == (continuous, selection)
+
+
+def test_differential_linear_connectors_and_direct_composition_are_not_literature_claims():
+    for model in (
+        DifferentialToTruncatedSATModel,
+        TruncatedToLinearSATModel,
+        WordDeterministicDifferentialLinearSATModel,
+    ):
+        assert model.model_provenance.reference_status is (
+            ConstraintReferenceStatus.NOT_APPLICABLE
+        )
+
+
+def test_semi_deterministic_wrappers_are_direct_while_the_local_relation_stays_tbd():
+    assert ModularAddSemiDeterministicTruncatedSATModel.model_provenance.reference_status is (
+        ConstraintReferenceStatus.TO_BE_DETERMINED
+    )
+    for model in (
+        SpeckSemiDeterministicTruncatedSATModel,
+        SpeckSemiDeterministicTruncatedCPModel,
+        SpeckSemiDeterministicTruncatedMILPModel,
+        WordSemiDeterministicDifferentialLinearSATModel,
+        WordSemiDeterministicDifferentialLinearCPModel,
+        WordSemiDeterministicDifferentialLinearMILPModel,
+    ):
+        assert model.model_provenance.reference_status is (
+            ConstraintReferenceStatus.NOT_APPLICABLE
+        )
 
 
 def test_audited_monomial_models_name_the_monomial_prediction_construction():

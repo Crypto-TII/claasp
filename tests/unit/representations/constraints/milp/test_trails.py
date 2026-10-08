@@ -114,7 +114,12 @@ def test_semi_deterministic_truncated_milp_preserves_formula_size_and_objective(
     formulation = model.milp_model()
     assert (len(formulation.variables), len(formulation.constraints)) == (672, 3483)
     assert len(formulation.objective.terms) == 160
-    assert formulation.constraint_models[0].model == model.model_provenance
+    assert formulation.constraint_models[-1].model == model.model_provenance
+    assert any(
+        item.model.component_model == "ModularAddSemiDeterministicTruncatedSATModel"
+        and item.model.reference_status.value == "TBD"
+        for item in formulation.constraint_models
+    )
 
 
 def test_differential_linear_milp_preserves_formula_size_and_objective():
@@ -145,4 +150,9 @@ def test_semi_differential_linear_milp_preserves_formula_size_and_objective():
     assert (len(formulation.variables), len(formulation.constraints)) == (2303, 6599)
     assert len(formulation.objective.terms) == 63
     assert set(coefficient for _, coefficient in formulation.objective.terms) == {1.0, 2.0}
-    assert formulation.constraint_models[0].model == model.model_provenance
+    assert formulation.constraint_models[-1].model == model.model_provenance
+    assert any(
+        item.model.component_model == "ModularAddSemiDeterministicTruncatedSATModel"
+        and item.model.reference_status.value == "TBD"
+        for item in formulation.constraint_models
+    )
