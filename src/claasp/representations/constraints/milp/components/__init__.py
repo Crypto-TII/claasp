@@ -41,6 +41,11 @@ from claasp.representations.constraints.milp.components.sbox_inequalities import
 from claasp.representations.constraints.milp.components.truncated import (
     WordwiseImpossibleBoundaryMILPModel,
     WordwiseImpossibleBoundaryResult,
+    WordwiseTruncatedMDSEspressoMILPModel,
+    WordwiseTruncatedMDSMILPModel,
+    WordwiseXorEspressoMILPModel,
+    WordwiseXorMILPModel,
+    load_bundled_wordwise_espresso,
     wordwise_pattern,
 )
 
@@ -71,7 +76,12 @@ __all__ = [
     "SBoxXorLinearMILPModel",
     "WordwiseImpossibleBoundaryMILPModel",
     "WordwiseImpossibleBoundaryResult",
+    "WordwiseTruncatedMDSEspressoMILPModel",
+    "WordwiseTruncatedMDSMILPModel",
+    "WordwiseXorEspressoMILPModel",
+    "WordwiseXorMILPModel",
     "load_bundled_sbox_milp_inequalities",
     "load_bundled_undisturbed_sbox_espresso",
+    "load_bundled_wordwise_espresso",
     "wordwise_pattern",
 ]

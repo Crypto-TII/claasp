@@ -13,6 +13,7 @@ pytestmark = pytest.mark.external
 ROOT = Path(__file__).resolve().parents[2]
 GENERATOR = ROOT / "tools" / "generate_sbox_milp_inequalities.py"
 UNDISTURBED_GENERATOR = ROOT / "tools" / "generate_undisturbed_sbox_milp_inequalities.py"
+WORDWISE_GENERATOR = ROOT / "tools" / "generate_wordwise_milp_inequalities.py"
 BUNDLE = (
     ROOT
     / "src"
@@ -33,6 +34,16 @@ UNDISTURBED_BUNDLE = (
     / "milp"
     / "data"
     / "present_sbox_undisturbed_inequalities.json"
+)
+WORDWISE_BUNDLE = (
+    ROOT
+    / "src"
+    / "claasp"
+    / "representations"
+    / "constraints"
+    / "milp"
+    / "data"
+    / "wordwise_4bit_xor2_mds4x4_inequalities.json"
 )
 
 
@@ -90,4 +101,15 @@ def test_espresso_generator_reproduces_present_undisturbed_bundle(tmp_path):
 
     assert json.loads(generated.read_text(encoding="utf-8")) == json.loads(
         UNDISTURBED_BUNDLE.read_text(encoding="utf-8")
+    )
+
+
+def test_espresso_generator_reproduces_wordwise_bundle(tmp_path):
+    assert shutil.which("espresso") is not None, "the external toolchain must install Espresso"
+    generated = tmp_path / "wordwise.json"
+    subprocess.run(
+        [sys.executable, str(WORDWISE_GENERATOR), "--output", str(generated)], check=True
+    )
+    assert json.loads(generated.read_text(encoding="utf-8")) == json.loads(
+        WORDWISE_BUNDLE.read_text(encoding="utf-8")
     )

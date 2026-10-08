@@ -27,8 +27,13 @@ from claasp.representations.constraints.milp.components import (
     SBoxXorLinearMinimumMILPModel,
     WordwiseImpossibleBoundaryMILPModel,
     WordwiseImpossibleBoundaryResult,
+    WordwiseTruncatedMDSEspressoMILPModel,
+    WordwiseTruncatedMDSMILPModel,
+    WordwiseXorEspressoMILPModel,
+    WordwiseXorMILPModel,
     load_bundled_sbox_milp_inequalities,
     load_bundled_undisturbed_sbox_espresso,
+    load_bundled_wordwise_espresso,
     wordwise_pattern,
 )
 from claasp.representations.constraints.milp.exporter import LPExporter
@@ -131,9 +136,14 @@ __all__ = [
     "WordwiseImpossibleMILPModel",
     "WordwiseImpossibleBoundaryMILPModel",
     "WordwiseImpossibleBoundaryResult",
+    "WordwiseTruncatedMDSEspressoMILPModel",
+    "WordwiseTruncatedMDSMILPModel",
+    "WordwiseXorEspressoMILPModel",
+    "WordwiseXorMILPModel",
     "check_present_milp_trail",
     "cnf_to_milp",
     "load_bundled_sbox_milp_inequalities",
     "load_bundled_undisturbed_sbox_espresso",
+    "load_bundled_wordwise_espresso",
     "wordwise_pattern",
 ]
