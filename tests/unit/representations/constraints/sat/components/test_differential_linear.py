@@ -67,11 +67,11 @@ def test_boundary_models_decode_typed_values():
     assert mask == XorMask(1, 2)
 
 
-def test_boundary_models_record_unaudited_recovery_provenance():
+def test_boundary_models_record_direct_relation_provenance():
     for model in (DifferentialToTruncatedSATModel(1), TruncatedToLinearSATModel(1)):
         application = model.cnf_formula().constraint_models[0]
         assert application.model.analysis_kind == "differential_linear"
-        assert application.model.reference_status is ConstraintReferenceStatus.TO_BE_DETERMINED
+        assert application.model.reference_status is ConstraintReferenceStatus.NOT_APPLICABLE
 
 
 @pytest.mark.parametrize(

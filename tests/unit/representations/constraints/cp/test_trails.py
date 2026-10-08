@@ -149,7 +149,7 @@ def test_speck_continuous_cp_is_explicitly_heuristic_and_fixed_input():
     query = model.cp_model()
     assert (len(query.declarations), len(query.constraints)) == (10, 160)
     assert query.solve == "solve satisfy;"
-    assert model.model_provenance.reference_status.value == "TBD"
+    assert model.model_provenance.reference_status.value == "VERIFIED"
 
 
 def test_speck_continuous_mask_selection_is_exact_for_fixed_output():
@@ -203,7 +203,12 @@ def test_semi_deterministic_truncated_cp_assembles_complete_speck_graph():
     )
     query = model.cp_model()
     assert (len(query.declarations), len(query.constraints)) == (672, 3483)
-    assert query.constraint_models[0].model == model.model_provenance
+    assert query.constraint_models[-1].model == model.model_provenance
+    assert any(
+        item.model.component_model == "ModularAddSemiDeterministicTruncatedSATModel"
+        and item.model.reference_status.value == "TBD"
+        for item in query.constraint_models
+    )
 
 
 def test_semi_deterministic_differential_linear_cp_assembles_complete_composition():
@@ -217,7 +222,12 @@ def test_semi_deterministic_differential_linear_cp_assembles_complete_compositio
     )
     query = model.cp_model()
     assert (len(query.declarations), len(query.constraints)) == (2303, 6599)
-    assert query.constraint_models[0].model == model.model_provenance
+    assert query.constraint_models[-1].model == model.model_provenance
+    assert any(
+        item.model.component_model == "ModularAddSemiDeterministicTruncatedSATModel"
+        and item.model.reference_status.value == "TBD"
+        for item in query.constraint_models
+    )
 
 
 def test_differential_linear_cp_assembles_complete_composition():

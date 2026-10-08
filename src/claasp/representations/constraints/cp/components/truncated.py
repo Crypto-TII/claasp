@@ -7,7 +7,7 @@ from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
     _direct_model,
-    _unaudited_model,
+    _verified_model,
 )
 from claasp.representations.constraints.cp.lowering import BooleanMiniZincLowerer
 from claasp.representations.constraints.cp.model import MiniZincModel
@@ -129,12 +129,14 @@ class HybridImpossibleBoundaryCPModel:
         (6, 'constraint exists(i in 0..4)(contradiction[i]);')
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.CP,
         "HybridImpossibleBoundaryCPModel",
         "hybrid_impossible_xor_differential",
         "legacy bitwise-or-tagged-nonlinear middle incompatibility",
-        "Only the reviewed local boundary rule is recovered; complete graph propagation remains separate.",
+        "10.1007/978-3-032-10536-3_6",
+        "Impossible Differentials Automation: Model Generation and New Techniques",
+        "section 4.2, Objective function, items 1 and 2",
     )
 
     def __init__(self, width: int, nonlinear_groups, *, maximum_tag: int = 800) -> None:
@@ -247,12 +249,14 @@ class HybridXorCPModel:
         'solve satisfy;'
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.CP,
         "HybridXorCPModel",
         "hybrid_impossible_xor_differential",
         "legacy tagged deterministic-truncated XOR propagation",
-        "Zero preserves a nonlinear tag; other abstract combinations become unknown.",
+        "10.1007/978-3-032-10536-3_6",
+        "Impossible Differentials Automation: Model Generation and New Techniques",
+        "section 4.2, Extended modeling of the XOR",
     )
 
     def __init__(self, width: int, *, maximum_tag: int = 800) -> None:
@@ -331,12 +335,14 @@ class HybridSBoxCPModel:
         True
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.CP,
         "HybridSBoxCPModel",
         "hybrid_impossible_xor_differential",
         "legacy tagged S-box abstraction with exact undisturbed-bit alternative",
-        "Active inputs may emit one component tag or an exact nontrivial ternary propagation.",
+        "10.1007/978-3-032-10536-3_6",
+        "Impossible Differentials Automation: Model Generation and New Techniques",
+        "section 4.2, Data representation and Extended modeling of a bijective S-box",
     )
 
     def __init__(self, table, *, output_tag: int, maximum_tag: int = 800) -> None:

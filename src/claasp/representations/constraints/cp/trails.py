@@ -1112,12 +1112,14 @@ class SpeckContinuousHeuristicCPModel:
         (10, 160, 'solve satisfy;')
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.CP,
         "SpeckContinuousHeuristicCPModel",
         "continuous_differential_linear_heuristic",
         "recovered nonlinear continuous XOR, carry, and modular-add equations",
-        "The numerical formulation is heuristic and cannot establish a cryptanalytic proof.",
+        "10.1007/978-3-031-30872-7_10",
+        "Fully Automated Differential-Linear Attacks Against ARX Ciphers",
+        "section 2.3, Propositions 1--4; section 3, equations (3)--(5)",
     )
 
     def __init__(self, left, right, *, rounds: int, tolerance: float = 1e-4) -> None:
@@ -1187,7 +1189,9 @@ class SpeckContinuousHeuristicCPModel:
                 "recovered legacy continuous Speck equations",
                 "heuristic numerical evidence only",
             ),
-            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+            constraint_models=(
+                ConstraintModelApplication(SpeckContinuousHeuristicCPModel.model_provenance),
+            ),
         )
         return self._query
 
@@ -1247,12 +1251,12 @@ class SpeckContinuousMaskOptimizationCPModel(SpeckContinuousHeuristicCPModel):
         (0,)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.CP,
         "SpeckContinuousMaskOptimizationCPModel",
         "continuous_differential_linear_heuristic",
         "fixed-trail exact output-mask selection over recovered continuous equations",
-        "Mask selection is exact for fixed correlations; the correlations themselves remain heuristic.",
+        "For fixed magnitudes in [0, 1], the strongest nonempty product is one maximum-magnitude position.",
     )
 
     def __init__(self, left, right, *, rounds: int, tolerance: float = 1e-4) -> None:
@@ -1278,7 +1282,10 @@ class SpeckContinuousMaskOptimizationCPModel(SpeckContinuousHeuristicCPModel):
             declarations,
             tuple(constraints),
             provenance=(*base.provenance, "exact nonempty mask selection for fixed correlations"),
-            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+            constraint_models=(
+                *base.constraint_models,
+                ConstraintModelApplication(self.model_provenance),
+            ),
         )
         return self._query
 
@@ -1323,12 +1330,14 @@ class PresentHybridImpossibleCPModel:
         ('solve satisfy;', 32)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _verified_model(
         ConstraintBackend.CP,
         "PresentHybridImpossibleCPModel",
         "hybrid_impossible_xor_differential",
         "whole-graph PRESENT tagged forward/backward propagation and middle incompatibility",
-        "This recovers the deterministic zero-key-difference SPN path; probabilistic key schedules remain separate.",
+        "10.1007/978-3-032-10536-3_6",
+        "Impossible Differentials Automation: Model Generation and New Techniques",
+        "section 4.2, Model description and Objective function",
     )
 
     def __init__(self, primitive, *, middle_round: int) -> None:
@@ -3065,12 +3074,12 @@ class SpeckSemiDeterministicTruncatedCPModel:
         (672, 3483)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.CP,
         "SpeckSemiDeterministicTruncatedCPModel",
         "semi_deterministic_truncated_xor",
         "exact MiniZinc translation of the recovered look-ahead-window Speck model",
-        "The translated additions use pinned legacy templates for which no primary source was found.",
+        "Mechanical MiniZinc lowering; the nested modular-add declaration retains the unresolved source status.",
     )
 
     def __init__(
@@ -3101,7 +3110,7 @@ class SpeckSemiDeterministicTruncatedCPModel:
             lowered.outputs,
             lowered.provenance,
             lowered.name_mapping,
-            (ConstraintModelApplication(self.model_provenance),),
+            (*lowered.constraint_models, ConstraintModelApplication(self.model_provenance)),
         )
         return self._query
 
@@ -3130,12 +3139,12 @@ class WordSemiDeterministicDifferentialLinearCPModel:
         (2303, 6599)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.CP,
         "WordSemiDeterministicDifferentialLinearCPModel",
         "differential_linear",
         "exact MiniZinc translation of the recovered semi-deterministic composition",
-        "The middle probability and exact literature correspondence remain unaudited.",
+        "Mechanical MiniZinc lowering; the nested middle relation retains the unresolved source status.",
     )
 
     def __init__(
@@ -3179,7 +3188,7 @@ class WordSemiDeterministicDifferentialLinearCPModel:
             lowered.outputs,
             lowered.provenance,
             lowered.name_mapping,
-            (ConstraintModelApplication(self.model_provenance),),
+            (*lowered.constraint_models, ConstraintModelApplication(self.model_provenance)),
         )
         return self._query
 

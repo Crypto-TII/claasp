@@ -289,13 +289,23 @@ S-box, linear-layer, and monomial audit discoveries:
   layer remain `N/A` where they are direct wiring. The monomial-prediction
   lowering is separately verified because its COPY and bit-permutation
   propagation rules are part of the audited monomial-trail construction.
-- CLAASP 5 currently exposes a typed differential-linear trail container but no
-  backend differential-linear constraint model to which a model reference can
-  be attached. Legacy CLAASP associates its continuous MiniZinc operations with
-  Bellini--Gérault--Grados--Makarim--Peyrin, including an explicit pointer to
-  Equation (5). Treat that implementation as a candidate for the legacy
-  backend recovery program below rather than as evidence of an incomplete v5
-  migration, and do not cite the representation-only trail type.
+- The completed recovery now exposes discrete SAT, CP, and MILP
+  differential-linear models and fixed-input continuous CP models. The
+  continuous equations match Bellini--Gérault--Grados--Makarim--Peyrin,
+  Section 2.3, Propositions 1--4, and Section 3, Equations (3)--(5); their
+  implementation remains explicitly heuristic because the source's
+  independence assumptions do not establish proof status.
+- The hybrid tagged CP components and complete PRESENT composition match
+  Bellini et al., *Impossible Differentials Automation: Model Generation and
+  New Techniques*, Section 4.2. The paper explicitly publishes the nonlinear
+  component identifiers, tagged S-box and XOR rules, and both middle
+  incompatibilities.
+- Direct differential-to-truncated and truncated-to-linear connectors, their
+  composition wrappers, and backend translations are `N/A`. Semi-deterministic
+  wrappers are likewise direct, but now retain the nested `TBD` declaration for
+  the unattributed look-ahead modular-add templates. The two paired-input SAT
+  constructions remain `TBD` because no source was found for their exact
+  modular-add exclusions and mask boundary.
 
 ## Legacy constraint-backend recovery and benchmarking program
 

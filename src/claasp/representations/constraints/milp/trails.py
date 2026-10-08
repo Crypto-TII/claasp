@@ -21,7 +21,6 @@ from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
     _direct_model,
-    _unaudited_model,
     _verified_model,
 )
 from claasp.representations.constraints.milp.model import (
@@ -1036,12 +1035,12 @@ class SpeckSemiDeterministicTruncatedMILPModel:
         (672, 3483)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.MILP,
         "SpeckSemiDeterministicTruncatedMILPModel",
         "semi_deterministic_truncated_xor",
         "exact MILP translation of the recovered look-ahead-window Speck model",
-        "The translated additions use pinned legacy templates for which no primary source was found.",
+        "Mechanical MILP lowering; the nested modular-add declaration retains the unresolved source status.",
     )
 
     def __init__(
@@ -1078,7 +1077,7 @@ class SpeckSemiDeterministicTruncatedMILPModel:
             translated.constraints,
             LinearExpression.from_terms(coefficients),
             ObjectiveSense.MINIMIZE,
-            (ConstraintModelApplication(self.model_provenance),),
+            (*translated.constraint_models, ConstraintModelApplication(self.model_provenance)),
         )
         return self._model
 
@@ -1195,12 +1194,12 @@ class WordSemiDeterministicDifferentialLinearMILPModel:
         (2303, 6599)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.MILP,
         "WordSemiDeterministicDifferentialLinearMILPModel",
         "differential_linear",
         "exact MILP translation of the recovered semi-deterministic composition",
-        "The middle probability and exact literature correspondence remain unaudited.",
+        "Mechanical MILP lowering; the nested middle relation retains the unresolved source status.",
     )
 
     def __init__(
@@ -1254,7 +1253,7 @@ class WordSemiDeterministicDifferentialLinearMILPModel:
             translated.constraints,
             LinearExpression.from_terms(coefficients),
             ObjectiveSense.MINIMIZE,
-            (ConstraintModelApplication(self.model_provenance),),
+            (*translated.constraint_models, ConstraintModelApplication(self.model_provenance)),
         )
         return self._model
 

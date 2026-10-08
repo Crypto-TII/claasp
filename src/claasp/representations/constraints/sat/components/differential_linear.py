@@ -3,7 +3,7 @@
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
-    _unaudited_model,
+    _direct_model,
 )
 from claasp.representations.constraints.sat.model import CNFFormula
 from claasp.semantics.cryptanalysis import (
@@ -77,12 +77,12 @@ class DifferentialToTruncatedSATModel:
         (2, '10')
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.SAT,
         "DifferentialToTruncatedSATModel",
         "differential_linear",
         "legacy exact-difference to truncated-boundary clauses",
-        "Recovered from CLAASP's SAT connector; its primary-source correspondence has not been audited.",
+        "Direct per-bit equality between an exact difference and a canonical non-unknown ternary value.",
     )
 
     def __init__(self, width: int, *, difference=None, truncated_pattern=None) -> None:
@@ -193,12 +193,12 @@ class TruncatedToLinearSATModel:
         ('?0', 0)
     """
 
-    model_provenance = _unaudited_model(
+    model_provenance = _direct_model(
         ConstraintBackend.SAT,
         "TruncatedToLinearSATModel",
         "differential_linear",
         "legacy truncated-boundary to XOR-linear clauses",
-        "Recovered from CLAASP's SAT connector; its primary-source correspondence has not been audited.",
+        "Direct per-bit compatibility relation forbidding an active mask at an unknown middle bit.",
     )
 
     def __init__(self, width: int, *, truncated_pattern=None, mask=None) -> None:
