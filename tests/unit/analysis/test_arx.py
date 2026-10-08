@@ -87,6 +87,19 @@ def test_two_round_speck_finds_exact_optimum_and_checks_wiring():
     assert "Graph locations are evidence references" not in rendered
 
 
+@pytest.mark.external
+def test_three_round_speck_sat_search_finds_exact_optimum():
+    primitive = Speck(number_of_rounds=3)
+
+    result = primitive.analysis.find_optimal_trail(kind="xor_differential")
+
+    assert result.trail.total_weight == result.lower_bound == 3
+    assert result.is_optimal
+    assert len(result.component_transitions) == 15
+    assert len(result.round_transitions) == 3
+    assert check_speck_trail(primitive, result.trail)
+
+
 def test_modular_add_linear_correlation_retains_exact_sign():
     transition = ModularAddLinearSemantics(16).xor_linear(0x0800, 0x0800, 0x0C00)
 
@@ -156,5 +169,26 @@ def test_dependency_free_speck_search_uses_exact_matsui_branch_and_bound():
     assert [(item.numerator, item.denominator) for item in result.round_transitions] == [
         (1, 1),
         (1, 2),
+    ]
+    assert check_speck_trail(primitive, result.trail)
+
+
+def test_three_round_dependency_free_speck_search_proves_exact_optimum():
+    primitive = Speck(number_of_rounds=3)
+
+    result = primitive.analysis.find_optimal_trail("xor_differential", backend="dependency_free")
+
+    assert result.trail.total_weight == result.lower_bound == 3
+    assert result.is_optimal
+    assert len(result.component_transitions) == 15
+    assert [item.output_pattern.value for item in result.round_transitions] == [
+        0x80008000,
+        0x81008102,
+        0x8000840A,
+    ]
+    assert [(item.numerator, item.denominator) for item in result.round_transitions] == [
+        (1, 1),
+        (1, 2),
+        (1, 4),
     ]
     assert check_speck_trail(primitive, result.trail)

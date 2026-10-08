@@ -213,9 +213,9 @@ class Analysis:
         """Find a lowest-weight trail, using Kissat by default for ARX."""
 
         if self.primitive.family_name == "speck":
-            from claasp.analysis.arx import find_two_round_speck_xor_differential
+            from claasp.analysis.arx import find_speck_xor_differential
 
-            return find_two_round_speck_xor_differential(self.primitive, solver=solver)
+            return find_speck_xor_differential(self.primitive, solver=solver)
         if solver is not None:
             raise TypeError("the selected differential search does not accept a solver")
         from claasp.analysis.spn import find_two_round_spn_xor_differential
@@ -232,7 +232,7 @@ class Analysis:
         """Find a proved lowest-weight trail through the analysis namespace.
 
         The default ``backend="auto"`` preserves existing search semantics:
-        two-round Speck XOR-differential search uses Kissat, reviewed PRESENT
+        Speck XOR-differential search uses Kissat, reviewed PRESENT
         differential search is dependency-free, and the current linear slices
         use their independently checked in-process paths. Advanced callers
         may select ``"sat"`` or ``"dependency_free"`` explicitly. A custom
@@ -271,17 +271,17 @@ class Analysis:
             if selected_backend is TrailSearchBackend.SAT:
                 if self.primitive.family_name != "speck":
                     raise NotImplementedError(
-                        "SAT optimization currently supports the reviewed two-round Speck slice"
+                        "SAT optimization currently supports the reviewed Speck32/64 slice"
                     )
                 return self.find_lowest_weight_xor_differential_trail(solver=solver)
             if solver is not None:
                 raise TypeError("dependency-free trail search does not accept a solver")
             if self.primitive.family_name == "speck":
                 from claasp.analysis.arx import (
-                    _find_two_round_speck_xor_differential_matsui,
+                    _find_speck_xor_differential_matsui,
                 )
 
-                return _find_two_round_speck_xor_differential_matsui(self.primitive)
+                return _find_speck_xor_differential_matsui(self.primitive)
             from claasp.analysis.spn import find_two_round_spn_xor_differential
 
             return find_two_round_spn_xor_differential(self.primitive)

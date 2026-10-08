@@ -29,11 +29,11 @@ from claasp.semantics.cryptanalysis import (
 )
 
 
-def find_two_round_speck_xor_differential(
+def find_speck_xor_differential(
     primitive: Primitive,
     solver: object | None = None,
 ) -> TrailSearchResult:
-    """Find the exact Speck32/64 two-round optimum with SAT.
+    """Find the exact Speck32/64 two- or three-round optimum with SAT.
 
     Kissat is the default. The search first obtains a feasible trail, then
     uses binary search over the maximum trail weight. An unsatisfiable bound
@@ -141,7 +141,7 @@ def find_two_round_speck_xor_differential(
     )
 
 
-def _find_two_round_speck_xor_differential_bounded(
+def _find_speck_xor_differential_bounded(
     primitive: Primitive,
 ) -> TrailSearchResult:
     """Return a dependency-free incumbent witness, without an optimality proof."""
@@ -149,41 +149,40 @@ def _find_two_round_speck_xor_differential_bounded(
     started = perf_counter()
     width = _validate_speck_slice(primitive)
     semantics = ModularAddTransitionSemantics(width)
-    _, alpha_component, beta_component = _state_round_components(primitive, 0)
-    alpha, beta = alpha_component.amount, beta_component.amount
     known_lower_bound = 1.0
 
     best = None
-    # A weight-one optimum has a sparse representative. Search single-bit
-    # state differences deterministically and stop once the preserved lower
-    # bound is met.
+    # Sparse inputs provide a deterministic incumbent for the exact search.
+    # Taking the most probable transition at each round is sufficient here:
+    # this helper supplies a witness, while Matsui search proves optimality.
     candidates = tuple((1 << bit, 0) for bit in range(width)) + tuple(
         (0, 1 << bit) for bit in range(width)
     )
     for left, right in candidates:
-        rotated_left = _rotate_right(left, alpha, width)
-        for first in semantics.possible_transitions(rotated_left, right):
-            if first.weight > known_lower_bound:
-                break
-            new_left = first.output_pattern.value
-            new_right = _rotate_left(right, beta, width) ^ new_left
-            second_left = _rotate_right(new_left, alpha, width)
-            second = semantics.possible_transitions(second_left, new_right)[0]
-            final_left = second.output_pattern.value
-            final_right = _rotate_left(new_right, beta, width) ^ final_left
-            trail = Trail(
-                TrailKind.XOR_DIFFERENTIAL,
-                XorDifference((left << width) | right, 2 * width),
-                XorDifference((final_left << width) | final_right, 2 * width),
-                (
-                    TrailStep(_state_round_components(primitive, 0)[0].component_id, first),
-                    TrailStep(_state_round_components(primitive, 1)[0].component_id, second),
-                ),
+        state = (left, right)
+        steps = []
+        for round_index in range(len(primitive.graph.rounds)):
+            addition, alpha_component, beta_component = _state_round_components(
+                primitive, round_index
             )
-            if best is None or trail.total_weight < best.total_weight:
-                best = trail
-            if trail.total_weight == known_lower_bound:
-                return _bounded_differential_result(primitive, trail, known_lower_bound, started)
+            rotated_left = _rotate_right(state[0], alpha_component.amount, width)
+            transition = semantics.possible_transitions(rotated_left, state[1])[0]
+            steps.append(TrailStep(addition.component_id, transition))
+            next_left = transition.output_pattern.value
+            state = (
+                next_left,
+                _rotate_left(state[1], beta_component.amount, width) ^ next_left,
+            )
+        trail = Trail(
+            TrailKind.XOR_DIFFERENTIAL,
+            XorDifference((left << width) | right, 2 * width),
+            XorDifference((state[0] << width) | state[1], 2 * width),
+            tuple(steps),
+        )
+        if best is None or trail.total_weight < best.total_weight:
+            best = trail
+        if trail.total_weight == known_lower_bound:
+            return _bounded_differential_result(primitive, trail, known_lower_bound, started)
     if best is None:
         raise RuntimeError("no nonzero Speck trail was found")
     return _bounded_differential_result(primitive, best, known_lower_bound, started)
@@ -196,8 +195,8 @@ class _SpeckMatsuiRound:
     step: TrailStep
 
 
-def _find_two_round_speck_xor_differential_matsui(primitive: Primitive) -> TrailSearchResult:
-    """Prove the exact Speck32/64 two-round optimum without a solver.
+def _find_speck_xor_differential_matsui(primitive: Primitive) -> TrailSearchResult:
+    """Prove the exact Speck32/64 two- or three-round optimum without a solver.
 
     The search follows Matsui's round recursion and uses the monotone partial
     xdp+ bound of Biryukov--Velichkov--Le Corre inside each modular addition.
@@ -209,7 +208,7 @@ def _find_two_round_speck_xor_differential_matsui(primitive: Primitive) -> Trail
     started = perf_counter()
     width = _validate_speck_slice(primitive)
     semantics = ModularAddTransitionSemantics(width)
-    seed = _find_two_round_speck_xor_differential_bounded(primitive).trail
+    seed = _find_speck_xor_differential_bounded(primitive).trail
     if not check_speck_trail(primitive, seed):
         raise RuntimeError("the Matsui incumbent failed independent validation")
     seed_rounds = _speck_round_records(primitive, seed)
@@ -253,13 +252,14 @@ def _find_two_round_speck_xor_differential_matsui(primitive: Primitive) -> Trail
                 ),
             )
 
+    number_of_rounds = len(primitive.graph.rounds)
     outcome = matsui_branch_and_bound(
-        rounds=2,
+        rounds=number_of_rounds,
         initial_state=(0, 0),
         incumbent_probability=incumbent_probability,
         incumbent_payload=seed_rounds,
         # Probability one is a safe bound for every unsearched suffix.
-        suffix_probability_bounds=(Fraction(1), Fraction(1), Fraction(1)),
+        suffix_probability_bounds=(Fraction(1),) * (number_of_rounds + 1),
         successors=successors,
     )
     records = outcome.payload
@@ -322,28 +322,26 @@ def _trail_probability(trail: Trail) -> Fraction:
 
 
 def check_speck_trail(primitive: Primitive, trail: Trail) -> bool:
-    """Independently check both additions and deterministic ARX wiring."""
+    """Independently check every addition and the deterministic ARX wiring."""
 
     width = _validate_speck_slice(primitive)
-    if trail.kind is not TrailKind.XOR_DIFFERENTIAL or len(trail.steps) != 2:
+    if trail.kind is not TrailKind.XOR_DIFFERENTIAL or len(trail.steps) != len(
+        primitive.graph.rounds
+    ):
         return False
     semantics = ModularAddTransitionSemantics(width)
     if any(not semantics.check(step.transition) for step in trail.steps):
         return False
-    _, alpha_component, beta_component = _state_round_components(primitive, 0)
-    alpha, beta = alpha_component.amount, beta_component.amount
     mask = (1 << width) - 1
     left, right = trail.input_pattern.value >> width, trail.input_pattern.value & mask
-    first, second = (step.transition for step in trail.steps)
-    if first.input_pattern.value != (_rotate_right(left, alpha, width) << width) | right:
-        return False
-    new_left = first.output_pattern.value
-    new_right = _rotate_left(right, beta, width) ^ new_left
-    if second.input_pattern.value != (_rotate_right(new_left, alpha, width) << width) | new_right:
-        return False
-    final_left = second.output_pattern.value
-    final_right = _rotate_left(new_right, beta, width) ^ final_left
-    return trail.output_pattern.value == (final_left << width) | final_right
+    for round_index, step in enumerate(trail.steps):
+        _, alpha_component, beta_component = _state_round_components(primitive, round_index)
+        expected_input = (_rotate_right(left, alpha_component.amount, width) << width) | right
+        if step.transition.input_pattern.value != expected_input:
+            return False
+        left = step.transition.output_pattern.value
+        right = _rotate_left(right, beta_component.amount, width) ^ left
+    return trail.output_pattern.value == (left << width) | right
 
 
 def find_four_round_speck_xor_linear(primitive: Primitive) -> TrailSearchResult:
@@ -502,13 +500,13 @@ def _validate_speck_slice(primitive: Primitive) -> int:
     plaintext = primitive.graph.input_ports.get("plaintext")
     if (
         primitive.family_name != "speck"
-        or len(primitive.graph.rounds) != 2
+        or len(primitive.graph.rounds) not in {2, 3}
         or plaintext is None
         or not isinstance(plaintext.value_type.domain, Word)
         or plaintext.value_type.domain.width != 16
     ):
         raise NotImplementedError(
-            "the reviewed ARX search slice currently supports two-round Speck32/64"
+            "the reviewed ARX search slice currently supports two- or three-round Speck32/64"
         )
     return 16
 

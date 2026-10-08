@@ -224,7 +224,7 @@ primitive. CLAASP searches for the lowest-weight—and therefore most
 probable—trail in its differential model and proves that no better trail
 exists.
 
-This example deliberately uses two-round Speck32/64 so the search finishes
+This example deliberately uses three-round Speck32/64 so the search finishes
 quickly. It is a reduced-round analysis target, not a secure block-cipher
 configuration. Select the dependency-free search so the example needs no
 external solver:
@@ -232,7 +232,7 @@ external solver:
 .. doctest::
 
    >>> from claasp.primitives import Speck
-   >>> speck = Speck(number_of_rounds=2)
+   >>> speck = Speck(number_of_rounds=3)
    >>> result = speck.analysis.find_optimal_trail(
    ...     kind="xor_differential", backend="dependency_free"
    ... )
@@ -245,18 +245,18 @@ the evidence for the search claim. Inspect the stable fields directly:
    >>> result.trail.kind.value
    'xor_differential'
    >>> (result.trail.total_weight, result.lower_bound, result.is_optimal)
-   (1.0, 1.0, True)
+   (3.0, 3.0, True)
    >>> (result.metadata.solver, len(result.component_transitions))
-   (None, 10)
+   (None, 15)
 
 Read those values as follows:
 
-* ``total_weight`` is :math:`-\log_2(p)` for this one trail. Weight 1
-  therefore represents trail probability :math:`p=2^{-1}` in the model.
+* ``total_weight`` is :math:`-\log_2(p)` for this one trail. Weight 3
+  therefore represents trail probability :math:`p=2^{-3}=1/8` in the model.
 * ``lower_bound`` is the proved minimum. Because it equals the trail weight,
   ``is_optimal`` is true: no lower-weight trail exists for this instance.
-* ``component_transitions`` contains the ten checked rotations, modular
-  additions, and XOR operations on the two-round data path.
+* ``component_transitions`` contains the fifteen checked rotations, modular
+  additions, and XOR operations on the three-round data path.
 * ``metadata`` records how the search was performed. A ``None`` solver means
   that this search ran inside Python rather than calling an external program.
 
@@ -264,9 +264,21 @@ For an interactive, human-readable report, use:
 
 .. doctest::
 
-   >>> result.show()  # doctest: +ELLIPSIS
+   >>> result.show()
    Trail
-   ...
+   <BLANKLINE>
+   Round trail
+   <BLANKLINE>
+   Round | Difference | Relative probability | Cumulative probability
+   ------+------------+----------------------+-----------------------
+   input | 0x00400000 |                  1/1 |                    1/1
+       1 | 0x80008000 |                  1/1 |                    1/1
+       2 | 0x81008102 |                  1/2 |                    1/2
+       3 | 0x8000840a |                  1/4 |                    1/8
+   <BLANKLINE>
+   Proved optimal.
+   <BLANKLINE>
+   Total weight: 3.
 
 The report's values are XOR differences, not plaintext and ciphertext values.
 For each round it shows that round's probability and the cumulative
@@ -295,7 +307,7 @@ reproducible:
    >>> avalanche.input_bit_count, avalanche.output_bit_count
    (32, 32)
    >>> round(sum(avalanche.mean_changed_output_bits) / 32, 2)
-   9.47
+   11.75
 
 Eight samples keep this introductory example quick. Use more samples before
 drawing conclusions about a primitive; an avalanche result is experimental

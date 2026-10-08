@@ -55,9 +55,9 @@ def test_analyze_remains_a_supported_compatibility_alias():
     assert primitive.analysis.primitive is primitive
 
 
-def test_spn_search_rejects_unreviewed_graphs_explicitly():
-    with pytest.raises(NotImplementedError, match="two-round Speck32/64"):
-        Speck(number_of_rounds=3).analysis.find_lowest_weight_xor_differential_trail()
+def test_speck_search_rejects_unreviewed_round_counts_explicitly():
+    with pytest.raises(NotImplementedError, match="two- or three-round Speck32/64"):
+        Speck(number_of_rounds=4).analysis.find_lowest_weight_xor_differential_trail()
 
 
 def test_three_round_present_reproduces_preserved_linear_weight_and_signs():
