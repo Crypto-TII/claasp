@@ -7,10 +7,160 @@ from claasp.representations.constraints import (
 )
 from claasp.representations.constraints.cp.model import MiniZincModel
 from claasp.semantics.cryptanalysis import (
+    ModularAddBoomerangAutomaton,
     ProbabilisticTruncatedModularAddTransition,
     TruncatedXorDifference,
     check_probabilistic_truncated_modular_add,
 )
+
+
+class ModularAddBoomerangCPModel:
+    """Exact feasibility automaton for one modular-add boomerang switch.
+
+    EXAMPLES::
+
+        >>> model = ModularAddBoomerangCPModel(
+        ...     4, delta_left=1, delta_right=0,
+        ...     nabla_output=1, nabla_right=0,
+        ... )
+        >>> query = model.cp_model()
+        >>> (len(query.declarations), query.includes)
+        (7, ('include "table.mzn";',))
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.CP,
+        "ModularAddBoomerangCPModel",
+        "boomerang",
+        "exact carry/borrow-state feasibility automaton for modular addition",
+        "The automaton is verified against exhaustive quartet counting without a literature claim.",
+    )
+
+    def __init__(
+        self,
+        width: int,
+        *,
+        delta_left=None,
+        delta_right=None,
+        nabla_output=None,
+        nabla_right=None,
+    ) -> None:
+        if not isinstance(width, int) or isinstance(width, bool) or not 1 <= width <= 64:
+            raise ValueError("width must be an integer from 1 through 64")
+        self.width = width
+        self.boundaries = (delta_left, delta_right, nabla_output, nabla_right)
+        for name, value in zip(
+            ("delta_left", "delta_right", "nabla_output", "nabla_right"),
+            self.boundaries,
+        ):
+            if value is not None and (
+                not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < 1 << width
+            ):
+                raise ValueError(f"{name} must fit the word width")
+        self._query: MiniZincModel | None = None
+
+    @staticmethod
+    def _transition_rows():
+        rows = set()
+        for state in range(16):
+            carry = (state >> 3) & 1
+            paired_carry = (state >> 2) & 1
+            borrow = (state >> 1) & 1
+            paired_borrow = state & 1
+            for delta_left in (0, 1):
+                for delta_right in (0, 1):
+                    for nabla_output in (0, 1):
+                        for nabla_right in (0, 1):
+                            for left in (0, 1):
+                                for right in (0, 1):
+                                    top = left + right + carry
+                                    paired_top = (
+                                        (left ^ delta_left) + (right ^ delta_right) + paired_carry
+                                    )
+                                    lower = (
+                                        ((top & 1) ^ nabla_output) - (right ^ nabla_right) - borrow
+                                    )
+                                    paired_lower = (
+                                        ((paired_top & 1) ^ nabla_output)
+                                        - ((right ^ delta_right) ^ nabla_right)
+                                        - paired_borrow
+                                    )
+                                    if ((lower & 1) ^ (paired_lower & 1)) != delta_left:
+                                        continue
+                                    following = (
+                                        ((top >> 1) << 3)
+                                        | ((paired_top >> 1) << 2)
+                                        | (int(lower < 0) << 1)
+                                        | int(paired_lower < 0)
+                                    )
+                                    rows.add(
+                                        (
+                                            delta_left,
+                                            delta_right,
+                                            nabla_output,
+                                            nabla_right,
+                                            state,
+                                            following,
+                                        )
+                                    )
+        return tuple(sorted(rows))
+
+    def cp_model(self) -> MiniZincModel:
+        """Return an exact switch-feasibility query with optional boundaries."""
+
+        rows = self._transition_rows()
+        flattened = ", ".join(str(value) for row in rows for value in row)
+        last = self.width - 1
+        declarations = (
+            f"array[0..{last}] of var 0..1: delta_left;",
+            f"array[0..{last}] of var 0..1: delta_right;",
+            f"array[0..{last}] of var 0..1: nabla_output;",
+            f"array[0..{last}] of var 0..1: nabla_right;",
+            f"array[0..{self.width}] of var 0..15: state;",
+            f"array[0..{len(rows) - 1}, 1..6] of int: transitions = "
+            f"array2d(0..{len(rows) - 1}, 1..6, [{flattened}]);",
+            "var bool: switch_possible;",
+        )
+        constraints = ["constraint state[0] = 0;", "constraint switch_possible;"]
+        constraints.extend(
+            "constraint table([delta_left[{0}], delta_right[{0}], nabla_output[{0}], "
+            "nabla_right[{0}], state[{0}], state[{1}]], transitions);".format(bit, bit + 1)
+            for bit in range(self.width)
+        )
+        for array, value in zip(
+            ("delta_left", "delta_right", "nabla_output", "nabla_right"),
+            self.boundaries,
+        ):
+            if value is not None:
+                constraints.extend(
+                    f"constraint {array}[{bit}] = {(value >> bit) & 1};"
+                    for bit in range(self.width)
+                )
+        self._query = MiniZincModel(
+            declarations,
+            tuple(constraints),
+            includes=('include "table.mzn";',),
+            provenance=("exact modular-add boomerang feasibility automaton",),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_connectivity(self, assignment):
+        """Decode fixed or selected differences and independently count quartets."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+
+        def integer(name):
+            return sum(int(value) << bit for bit, value in enumerate(assignment[name]))
+
+        values = tuple(
+            integer(name) for name in ("delta_left", "delta_right", "nabla_output", "nabla_right")
+        )
+        connectivity = ModularAddBoomerangAutomaton(self.width).connectivity(*values)
+        if not connectivity.is_possible:
+            raise ValueError("MiniZinc returned an impossible modular-add switch")
+        return connectivity
 
 
 class ProbabilisticTruncatedModularAddCPModel:

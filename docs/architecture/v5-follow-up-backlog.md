@@ -747,6 +747,14 @@ disabled, its modular-add predicate is the exact relation already used by
 heuristic explicitly without changing the default. Chuffed solves and typed
 decoding rechecks a three-round Speck32/64 fixture with window size three.
 
+The first ARX-boomerang recovery adds ``ModularAddBoomerangCPModel``. Its
+six-column per-bit table is generated from the exact sixteen-state
+carry/borrow automaton rather than copied as an opaque legacy table. Exhaustive
+three-bit testing checks all 4,096 switch tuples against direct quartet
+counting; decoded 16-bit witnesses are independently counted by the scalable
+semantic automaton. This is the local switch needed by the legacy top/bottom
+search, not yet the complete boomerang trail assembler or weight objective.
+
 The conditional deterministic-truncated ARX audit found no second formulation
 to port. The legacy
 ``MznDeterministicTruncatedXorDifferentialModelARXOptimized`` at

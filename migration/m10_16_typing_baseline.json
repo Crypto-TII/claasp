@@ -17,15 +17,15 @@
     "return-value": 4,
     "type-var": 2,
     "union-attr": 54,
-    "var-annotated": 132
+    "var-annotated": 133
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
     "src/claasp": 706,
-    "tests": 162,
+    "tests": 163,
     "tools": 21
   },
-  "diagnostic_count": 889,
+  "diagnostic_count": 890,
   "diagnostics": [
     {
       "code": "operator",
@@ -4993,21 +4993,21 @@
     {
       "code": "index",
       "column": 18,
-      "line": 77,
+      "line": 95,
       "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
       "path": "tests/integration/test_minizinc_integration.py"
     },
     {
       "code": "index",
       "column": 14,
-      "line": 103,
+      "line": 121,
       "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
       "path": "tests/integration/test_minizinc_integration.py"
     },
     {
       "code": "dict-item",
       "column": 10,
-      "line": 303,
+      "line": 321,
       "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection\"",
       "path": "tests/integration/test_minizinc_integration.py"
     },
@@ -5689,6 +5689,13 @@
       "line": 240,
       "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
       "path": "tests/unit/primitives/test_package__legacy_parity.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 5,
+      "line": 14,
+      "message": "Need type annotation for \"transitions\" (hint: \"transitions: dict[<type>, <type>] = ...\")",
+      "path": "tests/unit/representations/constraints/cp/components/test_truncated.py"
     },
     {
       "code": "arg-type",
