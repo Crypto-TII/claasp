@@ -690,6 +690,11 @@ weighted trail model and changes only the objective to count selectors with a
 nonzero input difference. GLPK proves the optimum of two active S-boxes, and
 the decoded trail passes the independent shared-semantics checker.
 
+The corresponding CP slice adds ``PresentActiveSBoxesCPModel`` over the same
+two-round exact DDT relation. Native MiniZinc Boolean activity indicators are
+equivalent to nonzero four-bit S-box inputs; Chuffed proves the same optimum of
+two and the inherited typed decoder independently checks the resulting trail.
+
 Benchmark recovered and portable strategies under the same primitive, round
 count, boundary conditions, trail objective, solver and version, solver
 settings, hardware, and timeout. Record at least model-construction time,
