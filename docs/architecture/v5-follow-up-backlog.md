@@ -726,6 +726,15 @@ two-round exact DDT relation. Native MiniZinc Boolean activity indicators are
 equivalent to nonzero four-bit S-box inputs; Chuffed proves the same optimum of
 two and the inherited typed decoder independently checks the resulting trail.
 
+The continuous CP recovery adds ``SpeckContinuousHeuristicCPModel`` for fixed
+numerical inputs. It restores the legacy nonlinear XOR, majority/carry, and
+modular-add propagation in MiniZinc and checks the resulting float vectors
+against the independent Python implementation with an explicit accumulated
+tolerance. The public result remains ``ContinuousHeuristicResult`` with
+``claim_kind='heuristic'``; it cannot report satisfiability or optimality as a
+cryptanalytic proof. Legacy mask optimization and broader component dispatch
+remain separate work.
+
 The CP second stage adds ``PresentFixedActiveSBoxesCPModel``. It fixes the
 first-stage Boolean activity sum, restores minimization of the exact table
 weights, and keeps the same native DDT constraints. Chuffed reaches weight four
