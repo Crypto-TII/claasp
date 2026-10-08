@@ -23,11 +23,11 @@ def test_two_round_present_finds_exact_optimum_and_checks_every_step():
     assert not any(item.component_id.startswith("key_") for item in result.component_transitions)
 
 
-def test_find_trail_accepts_typed_and_string_kinds_with_explicit_backend_selection():
-    differential = Present(number_of_rounds=2).analysis.find_trail(
+def test_find_optimal_trail_accepts_typed_and_string_kinds_with_explicit_backend_selection():
+    differential = Present(number_of_rounds=2).analysis.find_optimal_trail(
         "xor_differential", backend=TrailSearchBackend.DEPENDENCY_FREE
     )
-    linear = Present(number_of_rounds=3).analysis.find_trail(TrailKind.XOR_LINEAR)
+    linear = Present(number_of_rounds=3).analysis.find_optimal_trail(TrailKind.XOR_LINEAR)
 
     assert differential.trail.kind is TrailKind.XOR_DIFFERENTIAL
     assert differential.trail.total_weight == 4
@@ -35,17 +35,17 @@ def test_find_trail_accepts_typed_and_string_kinds_with_explicit_backend_selecti
     assert linear.trail.total_weight == 4
 
 
-def test_find_trail_rejects_unsupported_advanced_combinations_explicitly():
+def test_find_optimal_trail_rejects_unsupported_advanced_combinations_explicitly():
     analysis = Present(number_of_rounds=2).analysis
 
     with pytest.raises(ValueError, match="unsupported trail kind"):
-        analysis.find_trail("boomerang")
+        analysis.find_optimal_trail("boomerang")
     with pytest.raises(ValueError, match="unsupported trail-search backend"):
-        analysis.find_trail("xor_differential", backend="gurobi")
+        analysis.find_optimal_trail("xor_differential", backend="gurobi")
     with pytest.raises(NotImplementedError, match="SAT optimization"):
-        analysis.find_trail("xor_differential", backend="sat")
+        analysis.find_optimal_trail("xor_differential", backend="sat")
     with pytest.raises(TypeError, match="does not accept a solver"):
-        analysis.find_trail("xor_differential", backend="dependency_free", solver=object())
+        analysis.find_optimal_trail("xor_differential", backend="dependency_free", solver=object())
 
 
 def test_analyze_remains_a_supported_compatibility_alias():

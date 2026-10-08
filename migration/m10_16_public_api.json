@@ -787,6 +787,12 @@
       "qualified_name": "claasp.analysis.TrailKind"
     },
     {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.TrailRoundTransition"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.TrailSearchBackend",
       "defined_in": "claasp.analysis.facade",
       "kind": "enum",
@@ -2223,10 +2229,10 @@
       "qualified_name": "claasp.analysis.facade.Analysis.find_lowest_weight_xor_linear_trail"
     },
     {
-      "canonical_name": "claasp.analysis.facade.Analysis.find_trail",
+      "canonical_name": "claasp.analysis.facade.Analysis.find_optimal_trail",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
-      "qualified_name": "claasp.analysis.facade.Analysis.find_trail"
+      "qualified_name": "claasp.analysis.facade.Analysis.find_optimal_trail"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.is_xor_differential_transition_possible",
@@ -28006,6 +28012,12 @@
       "qualified_name": "claasp.semantics.TrailKind"
     },
     {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.TrailRoundTransition"
+    },
+    {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata",
       "defined_in": "claasp.semantics.cryptanalysis.trails",
       "kind": "dataclass",
@@ -28301,6 +28313,12 @@
       "defined_in": "claasp.semantics.cryptanalysis.trails",
       "kind": "enum",
       "qualified_name": "claasp.semantics.cryptanalysis.TrailKind"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.TrailRoundTransition"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata",
@@ -29321,6 +29339,54 @@
       "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailKind.semantics"
     },
     {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.denominator",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.denominator"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.numerator",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.numerator"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.output_pattern",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.output_pattern"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.round_number",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.round_number"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.sign",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.sign"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.weight",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "kind": "property",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.weight"
+    },
+    {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata.__init__",
       "defined_in": "claasp.semantics.cryptanalysis.trails",
       "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata",
@@ -29408,6 +29474,13 @@
       "defined_in": "claasp.semantics.cryptanalysis.trails",
       "kind": "property",
       "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.provenance"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.round_transitions",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.round_transitions"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.show",

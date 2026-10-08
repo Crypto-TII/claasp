@@ -9,7 +9,7 @@ from claasp.analysis._matsui import (
     matsui_branch_and_bound,
     modular_add_differences_above,
 )
-from claasp.analysis._trail_propagation import xor_differential_component_transitions
+from claasp.analysis._trail_propagation import xor_differential_propagation
 from claasp.components import ModularAdd, Rotate
 from claasp.domains import Word
 from claasp.drivers.solvers import KissatSolver, SatStatus
@@ -20,6 +20,7 @@ from claasp.semantics.cryptanalysis import (
     ModularAddTransitionSemantics,
     Trail,
     TrailKind,
+    TrailRoundTransition,
     TrailSearchMetadata,
     TrailSearchResult,
     TrailStep,
@@ -113,7 +114,7 @@ def find_two_round_speck_xor_differential(
         runtime_seconds=runtime,
         peak_memory_bytes=peak_memory,
     )
-    components = xor_differential_component_transitions(
+    propagation = xor_differential_propagation(
         primitive,
         trail,
         input_differences=dict(best.input_differences),
@@ -130,7 +131,14 @@ def find_two_round_speck_xor_differential(
     if not best_model.check_characteristic(best):
         raise RuntimeError("SAT solver returned an invalid differential characteristic")
     constraint_models = best_model.smt_formula().constraint_models
-    return TrailSearchResult(trail, float(lower_bound), metadata, components, constraint_models)
+    return TrailSearchResult(
+        trail,
+        float(lower_bound),
+        metadata,
+        propagation.components,
+        constraint_models,
+        propagation.rounds,
+    )
 
 
 def _find_two_round_speck_xor_differential_bounded(
@@ -275,12 +283,18 @@ def _find_two_round_speck_xor_differential_matsui(primitive: Primitive) -> Trail
         f"({statistics.visited_nodes} round nodes; nested partial-carry pruning)",
         runtime_seconds=perf_counter() - started,
     )
-    components = xor_differential_component_transitions(
+    propagation = xor_differential_propagation(
         primitive,
         trail,
         input_differences={"plaintext": trail.input_pattern.value, "key": 0},
     )
-    return TrailSearchResult(trail, trail.total_weight, metadata, components)
+    return TrailSearchResult(
+        trail,
+        trail.total_weight,
+        metadata,
+        propagation.components,
+        round_transitions=propagation.rounds,
+    )
 
 
 def _speck_round_records(primitive: Primitive, trail: Trail) -> tuple[_SpeckMatsuiRound, ...]:
@@ -369,6 +383,16 @@ def find_four_round_speck_xor_linear(primitive: Primitive) -> TrailSearchResult:
         XorMask((boundary_masks[-1][0] << width) | boundary_masks[-1][1], 2 * width),
         tuple(steps),
     )
+    round_transitions = tuple(
+        TrailRoundTransition(
+            round_number,
+            XorMask((output[0] << width) | output[1], 2 * width),
+            step.transition.numerator,
+            step.transition.denominator,
+            step.transition.sign,
+        )
+        for round_number, (output, step) in enumerate(zip(boundary_masks[1:], steps))
+    )
     return TrailSearchResult(
         trail,
         3.0,
@@ -376,6 +400,7 @@ def find_four_round_speck_xor_linear(primitive: Primitive) -> TrailSearchResult:
             "fixed-trail verification with exact modular-addition correlations",
             runtime_seconds=perf_counter() - started,
         ),
+        round_transitions=round_transitions,
     )
 
 
@@ -384,12 +409,18 @@ def _bounded_differential_result(primitive, trail, lower_bound, started):
         "bounded enumeration over single-bit inputs and exact modular-addition transitions",
         runtime_seconds=perf_counter() - started,
     )
-    components = xor_differential_component_transitions(
+    propagation = xor_differential_propagation(
         primitive,
         trail,
         input_differences={"plaintext": trail.input_pattern.value, "key": 0},
     )
-    return TrailSearchResult(trail, lower_bound, metadata, components)
+    return TrailSearchResult(
+        trail,
+        lower_bound,
+        metadata,
+        propagation.components,
+        round_transitions=propagation.rounds,
+    )
 
 
 def _cnf(formula) -> CNFFormula:

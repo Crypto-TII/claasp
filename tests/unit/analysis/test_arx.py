@@ -33,7 +33,7 @@ def test_modular_add_transition_counts_are_exact():
 def test_two_round_speck_finds_exact_optimum_and_checks_wiring():
     primitive = Speck(number_of_rounds=2)
 
-    result = primitive.analysis.find_trail(kind="xor_differential")
+    result = primitive.analysis.find_optimal_trail(kind="xor_differential")
 
     assert result.trail.total_weight == 1.0
     assert result.lower_bound == 1.0
@@ -70,8 +70,15 @@ def test_two_round_speck_finds_exact_optimum_and_checks_wiring():
     rendered = output.getvalue()
     assert f"0x{result.trail.input_pattern.value:08x}" in rendered
     assert f"0x{result.trail.output_pattern.value:08x}" in rendered
-    assert "total weight" in rendered
-    assert "proved optimal" in rendered
+    assert "Round trail" in rendered
+    assert "Relative probability" in rendered
+    assert "Cumulative probability" in rendered
+    assert "Kissat" not in rendered
+    assert "rotate_0_0" not in rendered
+
+    output = StringIO()
+    result.show(details=True, file=output)
+    rendered = output.getvalue()
     assert "solver" in rendered and "Kissat" in rendered
     assert "runtime" in rendered and "peak memory" in rendered
     assert "rotate_0_0" in rendered
@@ -136,10 +143,18 @@ def test_four_round_speck_returns_verified_linear_optimum():
 def test_dependency_free_speck_search_uses_exact_matsui_branch_and_bound():
     primitive = Speck(number_of_rounds=2)
 
-    result = primitive.analysis.find_trail("xor_differential", backend="dependency_free")
+    result = primitive.analysis.find_optimal_trail("xor_differential", backend="dependency_free")
 
     assert result.trail.total_weight == result.lower_bound == 1
     assert result.is_optimal
     assert "Matsui branch-and-bound" in result.metadata.technique
     assert result.metadata.solver is None
+    assert [item.output_pattern.value for item in result.round_transitions] == [
+        0x80008000,
+        result.trail.output_pattern.value,
+    ]
+    assert [(item.numerator, item.denominator) for item in result.round_transitions] == [
+        (1, 1),
+        (1, 2),
+    ]
     assert check_speck_trail(primitive, result.trail)

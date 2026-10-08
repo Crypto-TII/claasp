@@ -1,5 +1,8 @@
-"""Build complete component propagation for user-facing trail results."""
+"""Build round and component propagation for user-facing trail results."""
 
+from collections.abc import Mapping
+from dataclasses import dataclass
+from fractions import Fraction
 from functools import reduce
 
 from claasp.components import (
@@ -12,12 +15,22 @@ from claasp.components import (
     Rotate,
     Xor,
 )
+from claasp.graph import as_selection
 from claasp.semantics.cryptanalysis import (
     SBoxTransitionSemantics,
     Trail,
     TrailComponentTransition,
+    TrailRoundTransition,
     XorDifference,
 )
+
+
+@dataclass(frozen=True, slots=True)
+class XorDifferentialPropagation:
+    """Round boundaries and detailed components for one checked trail."""
+
+    rounds: tuple[TrailRoundTransition, ...]
+    components: tuple[TrailComponentTransition, ...]
 
 
 def _decode(value: int, value_type) -> tuple[int, ...]:
@@ -85,6 +98,19 @@ def xor_differential_component_transitions(
     search. A nonzero key difference retains the key schedule as part of the
     reported propagation.
     """
+
+    return xor_differential_propagation(
+        primitive, trail, input_differences=input_differences
+    ).components
+
+
+def xor_differential_propagation(
+    primitive,
+    trail: Trail,
+    *,
+    input_differences: dict[str, int],
+) -> XorDifferentialPropagation:
+    """Propagate a trail to specification-level rounds and graph components."""
 
     expected_inputs = set(primitive.graph.input_ports)
     if set(input_differences) != expected_inputs:
@@ -198,4 +224,62 @@ def xor_differential_component_transitions(
         or len(output) * output_width != trail.output_pattern.width
     ):
         raise ValueError("component propagation does not reach the trail output pattern")
-    return tuple(result)
+    components = tuple(result)
+    published_states = tuple(primitive.graph.round_states)
+    included = {component.component_id for component in components}
+    round_transitions = []
+    cumulative = Fraction(1)
+    for primitive_round in primitive.graph.rounds:
+        round_number = primitive_round.number
+        if round_number < len(published_states):
+            state = _resolve_published_state(published_states[round_number], primitive, values)
+        else:
+            candidates = [
+                component
+                for component in primitive_round.components
+                if component.component_id in included
+                and component.output_type.encoded_bit_size == trail.output_pattern.width
+            ]
+            if not candidates:
+                raise ValueError(f"round {round_number} has no published trail boundary")
+            component = candidates[-1]
+            state = values[component.component_id]
+        state_width = trail.output_pattern.width // len(state)
+        ratio = Fraction(1)
+        sign = 1
+        for step in trail.steps:
+            if round_numbers[step.component_id] == round_number:
+                ratio *= Fraction(step.transition.numerator, step.transition.denominator)
+                sign *= step.transition.sign
+        cumulative *= ratio
+        round_transitions.append(
+            TrailRoundTransition(
+                round_number,
+                XorDifference(_pack(tuple(state), state_width), trail.output_pattern.width),
+                ratio.numerator,
+                ratio.denominator,
+                sign,
+            )
+        )
+    if cumulative != Fraction(
+        reduce(lambda left, step: left * step.transition.numerator, trail.steps, 1),
+        reduce(lambda left, step: left * step.transition.denominator, trail.steps, 1),
+    ):
+        raise RuntimeError("round probabilities do not reproduce the trail probability")
+    return XorDifferentialPropagation(tuple(round_transitions), components)
+
+
+def _resolve_published_state(value, primitive, values) -> tuple[int, ...]:
+    if isinstance(value, Mapping):
+        return tuple(
+            unit
+            for selection in value.values()
+            for unit in _resolve_published_state(selection, primitive, values)
+        )
+    if isinstance(value, (tuple, list)):
+        return tuple(
+            unit
+            for selection in value
+            for unit in _resolve_published_state(selection, primitive, values)
+        )
+    return tuple(primitive.graph.resolve_selection(as_selection(value), values))

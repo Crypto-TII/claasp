@@ -5,8 +5,8 @@ These small, copyable examples answer common questions about a primitive.
 Most use only CLAASP's Python implementation; trail search uses Kissat. The
 linked guides explain the full result types and other optional backends.
 
-Find an XOR differential trail
-------------------------------
+Find an optimal XOR differential trail
+---------------------------------------
 
 An XOR differential trail records how an input difference propagates through
 the rounds. Its weight is :math:`-\log_2(p)`, where :math:`p` is the trail
@@ -16,19 +16,21 @@ probability represented by the model.
 
    >>> from claasp.primitives import Speck
    >>> speck = Speck(number_of_rounds=2)
-   >>> differential = speck.analysis.find_trail(kind="xor_differential")
+   >>> differential = speck.analysis.find_optimal_trail(kind="xor_differential")
    >>> differential.show()  # doctest: +ELLIPSIS
    Trail
    ...
 
-The report shows the input and output differences, total weight 1, and a
-matching lower bound of 1. The matching bound means this is a proved optimum,
-not merely the best trail encountered so far. Kissat may choose any one of
-several trails having that optimal weight. See :doc:`analysis` for constraints,
-enumeration, and solver-backed searches.
+The report shows one difference per round, each round's probability, and the
+cumulative probability. Its total weight is 1 and the matching lower bound is
+1, so this is a proved optimum rather than merely the best trail encountered
+so far. Use ``differential.show(details=True)`` to inspect every component and
+the search metadata. Kissat may choose any one of several trails having that
+optimal weight. See :doc:`analysis` for constraints, enumeration, and
+solver-backed searches.
 
-Find an XOR linear trail
-------------------------
+Find an optimal XOR linear trail
+---------------------------------
 
 A linear trail follows masks rather than differences. The interface is the
 same:
@@ -36,7 +38,7 @@ same:
 .. doctest::
 
    >>> speck = Speck(number_of_rounds=4)
-   >>> linear = speck.analysis.find_trail(kind="xor_linear")
+   >>> linear = speck.analysis.find_optimal_trail(kind="xor_linear")
    >>> linear.show()  # doctest: +ELLIPSIS
    Trail
    ...

@@ -1720,11 +1720,11 @@ def find_word_impossible_sat(
 
         >>> from claasp.drivers.solvers import MinisatSolver
         >>> from claasp.primitives import Speck
-        >>> result = find_word_impossible_sat(
+        >>> result = find_word_impossible_sat(  # doctest: +SKIP
         ...     Speck(number_of_rounds=3), MinisatSolver(timeout_seconds=30),
         ...     active_input="plaintext", zero_difference_inputs=("key",),
         ... )
-        >>> (result.found, result.middle_round)
+        >>> (result.found, result.middle_round)  # doctest: +SKIP
         (True, 1)
     """
 

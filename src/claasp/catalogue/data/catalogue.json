@@ -85,10 +85,10 @@
       "drivers": [
         "kissat"
       ],
-      "entry_point": "Primitive.analysis.find_trail",
+      "entry_point": "Primitive.analysis.find_optimal_trail",
       "evidence": "reviewed_dispatch",
       "kind": "trail",
-      "name": "find_trail",
+      "name": "find_optimal_trail",
       "primitives": [
         "Present",
         "Speck"
@@ -103,7 +103,7 @@
       "drivers": [
         "kissat"
       ],
-      "entry_point": "Primitive.analysis.find_trail(kind=\"xor_differential\")",
+      "entry_point": "Primitive.analysis.find_optimal_trail(kind=\"xor_differential\")",
       "evidence": "exact",
       "kind": "xor_differential",
       "name": "find_lowest_weight_xor_differential_trail",
@@ -119,7 +119,7 @@
     },
     {
       "drivers": [],
-      "entry_point": "Primitive.analysis.find_trail(kind=\"xor_linear\")",
+      "entry_point": "Primitive.analysis.find_optimal_trail(kind=\"xor_linear\")",
       "evidence": "exact",
       "kind": "xor_linear",
       "name": "find_lowest_weight_xor_linear_trail",

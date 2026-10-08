@@ -202,6 +202,48 @@ class TrailComponentTransition:
 
 
 @dataclass(frozen=True, slots=True)
+class TrailRoundTransition:
+    """One round boundary and its exact relative probability or correlation.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import TrailRoundTransition, XorDifference
+        >>> round_1 = TrailRoundTransition(0, XorDifference(0x80, 8), 1, 2)
+        >>> (round_1.round_number, round_1.weight)
+        (0, 1.0)
+    """
+
+    round_number: int
+    output_pattern: BitPattern
+    numerator: int
+    denominator: int
+    sign: int = 1
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.round_number, int) or isinstance(self.round_number, bool):
+            raise TypeError("round_number must be an integer")
+        if self.round_number < 0:
+            raise ValueError("round_number must be nonnegative")
+        if (
+            not isinstance(self.numerator, int)
+            or isinstance(self.numerator, bool)
+            or not isinstance(self.denominator, int)
+            or isinstance(self.denominator, bool)
+            or not 0 <= self.numerator <= self.denominator
+            or self.denominator == 0
+        ):
+            raise ValueError("round ratio must satisfy 0 <= numerator <= denominator")
+        if self.sign not in (-1, 1):
+            raise ValueError("round sign must be -1 or 1")
+
+    @property
+    def weight(self) -> float:
+        """Return the negative base-two logarithm of the absolute ratio."""
+
+        return inf if not self.numerator else -log2(self.numerator / self.denominator)
+
+
+@dataclass(frozen=True, slots=True)
 class TrailSearchMetadata:
     """Structured information about how a trail search was performed.
 
@@ -325,6 +367,7 @@ class TrailSearchResult:
     metadata: TrailSearchMetadata
     component_transitions: tuple[TrailComponentTransition, ...] = ()
     constraint_models: tuple[ConstraintModelApplication, ...] = ()
+    round_transitions: tuple[TrailRoundTransition, ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.metadata, TrailSearchMetadata):
@@ -344,6 +387,12 @@ class TrailSearchResult:
                 and not isinstance(component.input_pattern, expected)
             ):
                 raise TypeError("component propagation patterns must match the trail kind")
+        if any(not isinstance(item.output_pattern, expected) for item in self.round_transitions):
+            raise TypeError("round propagation patterns must match the trail kind")
+        if tuple(item.round_number for item in self.round_transitions) != tuple(
+            range(len(self.round_transitions))
+        ):
+            raise ValueError("round transitions must be ordered and numbered from zero")
 
     @property
     def provenance(self) -> str:
@@ -356,8 +405,8 @@ class TrailSearchResult:
         """Return whether the trail meets the claimed lower bound."""
         return self.trail.total_weight == self.lower_bound
 
-    def show(self, *, format: str = "terminal", file=None) -> None:  # noqa: A002
-        """Display the trail summary and its ordered transitions.
+    def show(self, *, details: bool = False, format: str = "terminal", file=None) -> None:  # noqa: A002
+        """Display round differences, or the full component evidence on request.
 
         Presentation is imported only when this convenience method is called;
         producing and checking the typed result remain independent of a
@@ -383,7 +432,7 @@ class TrailSearchResult:
         from claasp.presentation import render_section, trail_section
 
         destination = sys.stdout if file is None else file
-        destination.write(render_section(trail_section(self), format=format))
+        destination.write(render_section(trail_section(self, details=details), format=format))
 
 
 class SBoxTransitionSemantics:

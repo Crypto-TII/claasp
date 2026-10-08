@@ -146,8 +146,8 @@ def _property_evidence(result: ComponentPropertyResult) -> PresentationEvidence:
     return PresentationEvidence(classification, complete=result.complete, bound_direction=direction)
 
 
-def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
-    """Present a trail summary and ordered transition evidence.
+def trail_section(result: Trail | TrailSearchResult, *, details: bool = False) -> ReportSection:
+    """Present round boundaries by default, or complete component evidence.
 
     EXAMPLES::
 
@@ -157,6 +157,9 @@ def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
         ...     print("required arguments rejected")
         required arguments rejected
     """
+
+    if not details:
+        return _trail_overview_section(result)
 
     trail = result.trail if isinstance(result, TrailSearchResult) else result
     constraint_models = result.constraint_models if isinstance(result, TrailSearchResult) else ()
@@ -309,6 +312,75 @@ def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
     return ReportSection(
         "Trail", tables=(summary, steps), citations=tuple(citation_values.values())
     )
+
+
+def _trail_overview_section(result: Trail | TrailSearchResult) -> ReportSection:
+    trail = result.trail if isinstance(result, TrailSearchResult) else result
+    is_differential = trail.kind.value == "xor_differential"
+    quantity = "probability" if is_differential else "correlation"
+    pattern = "Difference" if is_differential else "Mask"
+    rows = [
+        TableRow(
+            (
+                _text("input"),
+                _text(_bit_pattern(trail.input_pattern)),
+                _text("1/1"),
+                _text("1/1"),
+            )
+        )
+    ]
+    cumulative = Fraction(1)
+    cumulative_sign = 1
+    round_transitions = result.round_transitions if isinstance(result, TrailSearchResult) else ()
+    if round_transitions:
+        for transition in round_transitions:
+            relative = Fraction(transition.numerator, transition.denominator)
+            cumulative *= relative
+            cumulative_sign *= transition.sign
+            relative_text = _ratio(relative.numerator, relative.denominator)
+            cumulative_text = _ratio(cumulative.numerator, cumulative.denominator)
+            if not is_differential and transition.sign < 0:
+                relative_text = "-" + relative_text
+            if not is_differential and cumulative_sign < 0:
+                cumulative_text = "-" + cumulative_text
+            rows.append(
+                TableRow(
+                    (
+                        _integer(transition.round_number + 1),
+                        _text(_bit_pattern(transition.output_pattern)),
+                        _text(relative_text),
+                        _text(cumulative_text),
+                    )
+                )
+            )
+    else:
+        for step in trail.steps:
+            cumulative *= Fraction(step.transition.numerator, step.transition.denominator)
+        rows.append(
+            TableRow(
+                (
+                    _text("output"),
+                    _text(_bit_pattern(trail.output_pattern)),
+                    _text(_ratio(cumulative.numerator, cumulative.denominator)),
+                    _text(_ratio(cumulative.numerator, cumulative.denominator)),
+                )
+            )
+        )
+    notes = [f"Total weight: {trail.total_weight:g}."]
+    if isinstance(result, TrailSearchResult):
+        notes.insert(0, "Proved optimal." if result.is_optimal else "Optimality not proved.")
+    table = Table(
+        (
+            TableColumn("round", "Round", Alignment.RIGHT),
+            TableColumn("pattern", pattern),
+            TableColumn("relative", f"Relative {quantity}", Alignment.RIGHT),
+            TableColumn("cumulative", f"Cumulative {quantity}", Alignment.RIGHT),
+        ),
+        tuple(rows),
+        "Round trail",
+        tuple(notes),
+    )
+    return ReportSection("Trail", tables=(table,))
 
 
 def trace_section(trace: ExecutionTrace) -> ReportSection:

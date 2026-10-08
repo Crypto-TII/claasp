@@ -125,7 +125,9 @@ def _des_case(repeats):
 def _present_case(repeats):
     primitive = Present(number_of_rounds=2)
     result, runtime, peak = _measure(
-        lambda: primitive.analysis.find_trail("xor_differential", backend="dependency_free"),
+        lambda: primitive.analysis.find_optimal_trail(
+            "xor_differential", backend="dependency_free"
+        ),
         repeats,
     )
     return {
@@ -142,7 +144,9 @@ def _present_case(repeats):
 def _speck_case(repeats):
     primitive = Speck(number_of_rounds=2)
     result, runtime, peak = _measure(
-        lambda: primitive.analysis.find_trail("xor_differential", backend="dependency_free"),
+        lambda: primitive.analysis.find_optimal_trail(
+            "xor_differential", backend="dependency_free"
+        ),
         repeats,
     )
     return {

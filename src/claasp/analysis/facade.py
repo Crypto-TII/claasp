@@ -222,14 +222,14 @@ class Analysis:
 
         return find_two_round_spn_xor_differential(self.primitive)
 
-    def find_trail(
+    def find_optimal_trail(
         self,
         kind: TrailKind | str,
         *,
         backend: TrailSearchBackend | str = TrailSearchBackend.AUTO,
         solver: object | None = None,
     ) -> TrailSearchResult:
-        """Find a checked trail through the stable analysis namespace.
+        """Find a proved lowest-weight trail through the analysis namespace.
 
         The default ``backend="auto"`` preserves existing search semantics:
         two-round Speck XOR-differential search uses Kissat, reviewed PRESENT
@@ -242,7 +242,7 @@ class Analysis:
 
             >>> from claasp.analysis import TrailKind
             >>> from claasp.primitives import Present
-            >>> result = Present(number_of_rounds=2).analysis.find_trail(
+            >>> result = Present(number_of_rounds=2).analysis.find_optimal_trail(
             ...     kind="xor_differential")
             >>> result.trail.kind is TrailKind.XOR_DIFFERENTIAL
             True

@@ -36,7 +36,9 @@ def test_kissat_solves_named_cnf_and_reports_version():
 def test_kissat_is_the_default_speck_trail_solver():
     primitive = Speck(number_of_rounds=2)
     result = primitive.analysis.find_lowest_weight_xor_differential_trail()
-    dependency_free = primitive.analysis.find_trail("xor_differential", backend="dependency_free")
+    dependency_free = primitive.analysis.find_optimal_trail(
+        "xor_differential", backend="dependency_free"
+    )
     assert result.is_optimal
     assert result.trail.total_weight == 1
     assert result.metadata.solver == "Kissat"

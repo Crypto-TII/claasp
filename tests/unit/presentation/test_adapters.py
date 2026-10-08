@@ -78,7 +78,8 @@ def test_trail_adapter_preserves_weight_order_and_component():
             fixed_trail(),
             2.0,
             TrailSearchMetadata("fixed PRESENT evidence", "z3", "4.14"),
-        )
+        ),
+        details=True,
     )
     summary, steps = section.tables
     assert summary.rows[3].cells[1].text == "2"
@@ -103,7 +104,7 @@ def test_trail_adapter_reduces_exact_ratios():
         XorDifference(0, 1),
         (TrailStep("identity_0", transition),),
     )
-    steps = trail_section(trail).tables[1]
+    steps = trail_section(trail, details=True).tables[1]
     assert steps.rows[0].cells[4].text == "1/1"
 
 

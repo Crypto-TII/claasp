@@ -47,7 +47,16 @@ WORDWISE_BUNDLE = (
 )
 
 
-def test_cddlib_glpk_generator_reproduces_present_bundle(tmp_path):
+def _satisfies(inequalities, point):
+    return all(
+        inequality[0]
+        + sum(coefficient * value for coefficient, value in zip(inequality[1:], point, strict=True))
+        >= 0
+        for inequality in inequalities
+    )
+
+
+def test_cddlib_glpk_generator_reproduces_present_facets_and_minimum_sizes(tmp_path):
     assert shutil.which("cddexec_gmp") is not None, (
         "the external test job must install libcdd-tools"
     )
@@ -68,7 +77,36 @@ def test_cddlib_glpk_generator_reproduces_present_bundle(tmp_path):
     )
 
     payload = json.loads(generated.read_text(encoding="utf-8"))
-    assert payload == json.loads(BUNDLE.read_text(encoding="utf-8"))
+    expected = json.loads(BUNDLE.read_text(encoding="utf-8"))
+    assert {key: value for key, value in payload.items() if key != "systems"} == {
+        key: value for key, value in expected.items() if key != "systems"
+    }
+    for generated_system, expected_system in zip(
+        payload["systems"], expected["systems"], strict=True
+    ):
+        assert generated_system["kind"] == expected_system["kind"]
+        for generated_group, expected_group in zip(
+            generated_system["groups"], expected_system["groups"], strict=True
+        ):
+            assert generated_group["transition_count"] == expected_group["transition_count"]
+            assert generated_group["point_count"] == expected_group["point_count"]
+            generated_inequalities = generated_group["inequalities"]
+            expected_inequalities = expected_group["inequalities"]
+            assert generated_inequalities["convex_hull"] == expected_inequalities["convex_hull"]
+            assert generated_inequalities["greedy"] == expected_inequalities["greedy"]
+            assert len(generated_inequalities["minimum"]) == len(expected_inequalities["minimum"])
+            assert all(
+                inequality in generated_inequalities["convex_hull"]
+                for inequality in generated_inequalities["minimum"]
+            )
+            points = (
+                tuple((value >> bit) & 1 for bit in reversed(range(8))) for value in range(1 << 8)
+            )
+            assert all(
+                _satisfies(generated_inequalities["minimum"], point)
+                == _satisfies(generated_inequalities["convex_hull"], point)
+                for point in points
+            )
     counts = {
         system["kind"]: {
             strategy: sum(len(group["inequalities"][strategy]) for group in system["groups"])

@@ -1,9 +1,10 @@
 """Exact small-round SPN trail search over typed primitive graphs."""
 
+from fractions import Fraction
 from math import inf
 from time import perf_counter
 
-from claasp.analysis._trail_propagation import xor_differential_component_transitions
+from claasp.analysis._trail_propagation import xor_differential_propagation
 from claasp.components import BitVectorSBox, Permutation
 from claasp.domains import Bit
 from claasp.graph import Primitive
@@ -11,6 +12,7 @@ from claasp.semantics.cryptanalysis import (
     SBoxTransitionSemantics,
     Trail,
     TrailKind,
+    TrailRoundTransition,
     TrailSearchMetadata,
     TrailSearchResult,
     TrailStep,
@@ -104,12 +106,18 @@ def find_two_round_spn_xor_differential(primitive: Primitive) -> TrailSearchResu
         "single-active-nibble enumeration with exact S-box DDT transitions",
         runtime_seconds=perf_counter() - started,
     )
-    components = xor_differential_component_transitions(
+    propagation = xor_differential_propagation(
         primitive,
         trail,
         input_differences={"plaintext": trail.input_pattern.value, "key": 0},
     )
-    return TrailSearchResult(trail, lower_bound, metadata, components)
+    return TrailSearchResult(
+        trail,
+        lower_bound,
+        metadata,
+        propagation.components,
+        round_transitions=propagation.rounds,
+    )
 
 
 def check_spn_trail(primitive: Primitive, trail: Trail) -> bool:
@@ -174,8 +182,11 @@ def find_three_round_spn_xor_linear(primitive: Primitive) -> TrailSearchResult:
                 shift = 4 * (15 - active_nibble)
                 state = _permute(first.output_pattern.value << shift, 64, permutations[0].mapping)
                 steps = [TrailStep(layers[0][active_nibble].component_id, first)]
+                round_data = [(state, Fraction(first.numerator, first.denominator), first.sign)]
                 for round_index in (1, 2):
                     output = 0
+                    round_ratio = Fraction(1)
+                    round_sign = 1
                     for nibble in range(16):
                         shift = 4 * (15 - nibble)
                         mask = (state >> shift) & 0xF
@@ -186,8 +197,11 @@ def find_three_round_spn_xor_linear(primitive: Primitive) -> TrailSearchResult:
                         steps.append(
                             TrailStep(layers[round_index][nibble].component_id, transition)
                         )
+                        round_ratio *= Fraction(transition.numerator, transition.denominator)
+                        round_sign *= transition.sign
                         output |= transition.output_pattern.value << shift
                     state = _permute(output, 64, permutations[round_index].mapping)
+                    round_data.append((state, round_ratio, round_sign))
                 trail = Trail(
                     TrailKind.XOR_LINEAR,
                     XorMask(input_mask << (4 * (15 - active_nibble)), 64),
@@ -200,7 +214,7 @@ def find_three_round_spn_xor_linear(primitive: Primitive) -> TrailSearchResult:
                     trail.output_pattern.value,
                 )
                 if best is None or ordering < best[0]:
-                    best = (ordering, trail)
+                    best = (ordering, trail, tuple(round_data))
     if best is None:
         raise RuntimeError("no nonzero PRESENT linear trail was found")
     return TrailSearchResult(
@@ -209,6 +223,16 @@ def find_three_round_spn_xor_linear(primitive: Primitive) -> TrailSearchResult:
         TrailSearchMetadata(
             "single-active-nibble enumeration with exact S-box LAT transitions",
             runtime_seconds=perf_counter() - started,
+        ),
+        round_transitions=tuple(
+            TrailRoundTransition(
+                round_number,
+                XorMask(state, 64),
+                ratio.numerator,
+                ratio.denominator,
+                sign,
+            )
+            for round_number, (state, ratio, sign) in enumerate(best[2])
         ),
     )
 

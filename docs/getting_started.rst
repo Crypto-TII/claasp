@@ -217,12 +217,13 @@ The list order is preserved in the returned tuple. If several inputs are
 lists, their lengths must match. Use tuples—not lists—for a single input
 written as logical units rather than as a packed integer.
 
-Find a differential trail
--------------------------
+Find an optimal differential trail
+----------------------------------
 
 A differential trail follows an XOR difference through each round of a
-primitive. CLAASP can search for the lowest-weight—and therefore most
-probable—trail in its differential model.
+primitive. CLAASP searches for the lowest-weight—and therefore most
+probable—trail in its differential model and proves that no better trail
+exists.
 
 This example deliberately uses two-round Speck32/64 so the search finishes
 quickly. It is a reduced-round analysis target, not a secure block-cipher
@@ -241,7 +242,7 @@ run the search:
 
    >>> from claasp.primitives import Speck
    >>> speck = Speck(number_of_rounds=2)
-   >>> result = speck.analysis.find_trail(kind="xor_differential")
+   >>> result = speck.analysis.find_optimal_trail(kind="xor_differential")
 
 ``result`` is a ``TrailSearchResult``: it contains the mathematical trail and
 the evidence for the search claim. Inspect the stable fields directly:
@@ -274,12 +275,13 @@ For an interactive, human-readable report, use:
    Trail
    ...
 
-The report's input and output are XOR differences, not plaintext and
-ciphertext values. Its exact-ratio column gives each local transition
-probability; the weights add while those probabilities multiply. The default
-search fixes the key difference to zero, so the all-zero key-schedule
-propagation is omitted. Another supported solver may return different input
-and output differences with the same optimal weight.
+The report's values are XOR differences, not plaintext and ciphertext values.
+For each round it shows that round's probability and the cumulative
+probability so far. Use ``result.show(details=True)`` only when you need every
+intermediate component, the solver metadata, and the full proof evidence. The
+default search fixes the key difference to zero, so the all-zero key schedule
+does not affect the displayed trail. Another supported solver may return
+different input and output differences with the same optimal weight.
 
 See :doc:`analysis` when you need constraints or explicit backend and solver
 selection. See :doc:`displaying_results` for Markdown, CSV, and structured
@@ -309,6 +311,6 @@ evidence, not a proof.
 More quick analyses
 -------------------
 
-See :doc:`quick_analysis_scripts` for short examples that find a linear trail,
+See :doc:`quick_analysis_scripts` for short examples that find an optimal linear trail,
 generate data for a neural distinguisher, inspect AES round values, and repeat
 the analyses above with explanations of their results.

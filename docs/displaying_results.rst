@@ -9,21 +9,25 @@ citations, realization identity, and execution metadata separate.
 Trail and trace summaries
 -------------------------
 
-A trail report shows its kind, input and output patterns, total weight, proof
-bound, optimality, search method, solver, runtime, memory measurement when
-available, and the primitive component responsible for each transition:
+By default, a trail report shows only the input and each round difference,
+together with the relative and cumulative probability:
 
 .. doctest::
 
    >>> from claasp.primitives import Speck
-   >>> result = Speck(number_of_rounds=2).analysis.find_trail(kind="xor_differential")
+   >>> result = Speck(number_of_rounds=2).analysis.find_optimal_trail(
+   ...     kind="xor_differential"
+   ... )
    >>> result.show()  # doctest: +ELLIPSIS
    Trail
    ...
 
-``show()`` is the convenient interactive form. The explicit presentation API
-below provides immutable report data and selectable output formats for tools
-and exports.
+Use ``result.show(details=True)`` when debugging a model or inspecting every
+intermediate component. The detailed report also includes the proof bound,
+search method, solver, runtime, memory measurement when available, and the
+primitive component responsible for each transition. The explicit
+presentation API below provides immutable report data and selectable output
+formats for tools and exports.
 
 The default searches use a zero key difference. Their reports include every
 data-state component but omit the resulting all-zero key schedule. A
@@ -46,7 +50,7 @@ related-key result must retain its key-schedule propagation as well.
    ...     (TrailStep("sbox_0_0", transition),),
    ... )
    >>> metadata = TrailSearchMetadata("fixed PRESENT evidence")
-   >>> section = trail_section(TrailSearchResult(trail, 2.0, metadata))
+   >>> section = trail_section(TrailSearchResult(trail, 2.0, metadata), details=True)
    >>> "total weight" in render_section(section, format="terminal")
    True
    >>> section.tables[1].rows[0].cells[-1].text

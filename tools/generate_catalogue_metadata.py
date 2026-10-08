@@ -546,8 +546,8 @@ ANALYSES = (
         None,
     ),
     (
-        "find_trail",
-        "Primitive.analysis.find_trail",
+        "find_optimal_trail",
+        "Primitive.analysis.find_optimal_trail",
         "trail",
         "reviewed_dispatch",
         {"boolean_cnf"},
@@ -558,7 +558,7 @@ ANALYSES = (
     ),
     (
         "find_lowest_weight_xor_differential_trail",
-        'Primitive.analysis.find_trail(kind="xor_differential")',
+        'Primitive.analysis.find_optimal_trail(kind="xor_differential")',
         "xor_differential",
         "exact",
         {"boolean_cnf"},
@@ -569,7 +569,7 @@ ANALYSES = (
     ),
     (
         "find_lowest_weight_xor_linear_trail",
-        'Primitive.analysis.find_trail(kind="xor_linear")',
+        'Primitive.analysis.find_optimal_trail(kind="xor_linear")',
         "xor_linear",
         "exact",
         set(),

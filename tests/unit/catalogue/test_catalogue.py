@@ -137,7 +137,7 @@ def test_representation_driver_queries_are_bidirectional():
 def test_analysis_queries_apply_representation_requirements_conservatively():
     speck = {item.name: item for item in catalogue.analyses(primitive="Speck")}
     assert "avalanche" in speck
-    assert "find_trail" in speck
+    assert "find_optimal_trail" in speck
     assert "enumerate_xor_differential_trails" in speck
     assert speck["find_lowest_weight_xor_differential_trail"].restriction
     aes = {item.name for item in catalogue.analyses(primitive="AES")}

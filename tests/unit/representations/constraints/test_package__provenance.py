@@ -510,7 +510,7 @@ def test_trail_report_maps_references_and_deduplicates_verified_citations():
         ),
     )
 
-    section = trail_section(result)
+    section = trail_section(result, details=True)
 
     assert section.tables[1].columns[-1].heading == "Constraint model reference"
     assert all("section 3, equation 7" in row.cells[-1].text for row in section.tables[1].rows)
