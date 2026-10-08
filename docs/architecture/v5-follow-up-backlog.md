@@ -521,6 +521,19 @@ canonical Docker recipe now pins Espresso 2.3 for regeneration and checks it
 in the release smoke test. The one-hot formulation remains the default, and
 literature correspondence remains ``TBD`` pending a separate provenance audit.
 
+The wordwise-Espresso slice recovers both legacy generated relations as
+explicit alternatives: ``WordwiseXorEspressoMILPModel`` for four-bit,
+two-input XOR and ``WordwiseTruncatedMDSEspressoMILPModel`` for the four-by-four
+dense-MDS abstraction. Portable exhaustive-row counterparts remain available
+and are not replaced as defaults. Exhaustive Boolean-assignment tests prove
+that the 51- and 52-clause generated systems accept exactly the respective 324
+and 256 typed rows; GLPK solves and independently decodes fixed transitions for
+all four formulations. The [ten-run comparison](audits/data/milp_wordwise_espresso_benchmark.json)
+records substantially smaller generated formulations for this reviewed size.
+Generation uses the pinned offline Espresso tool and commits deterministic JSON
+rather than restoring mutable pickle caches. Literature correspondence remains
+``TBD`` pending a separate provenance audit.
+
 The deterministic-truncated SMT slice adds
 ``ModularAddDeterministicTruncatedSMTModel`` and
 ``WordDeterministicTruncatedSMTModel``. The immutable SMT formula preserves the

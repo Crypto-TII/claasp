@@ -27706,6 +27706,30 @@
       "qualified_name": "claasp.representations.constraints.milp.WordwiseImpossibleMILPModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSEspressoMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.WordwiseTruncatedMDSEspressoMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.WordwiseTruncatedMDSMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorEspressoMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.WordwiseXorEspressoMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.WordwiseXorMILPModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.milp.trails.check_present_milp_trail",
       "defined_in": "claasp.representations.constraints.milp.trails",
       "kind": "function",
@@ -27880,6 +27904,30 @@
       "qualified_name": "claasp.representations.constraints.milp.components.WordwiseImpossibleBoundaryResult"
     },
     {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSEspressoMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.WordwiseTruncatedMDSEspressoMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.WordwiseTruncatedMDSMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorEspressoMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.WordwiseXorEspressoMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.WordwiseXorMILPModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and",
       "defined_in": "claasp.representations.constraints.milp.components.bitwise_and",
       "kind": "module",
@@ -28005,6 +28053,12 @@
       "defined_in": "claasp.representations.constraints.milp.components.sbox",
       "kind": "function",
       "qualified_name": "claasp.representations.constraints.milp.components.load_bundled_undisturbed_sbox_espresso"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.load_bundled_wordwise_espresso",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "kind": "function",
+      "qualified_name": "claasp.representations.constraints.milp.components.load_bundled_wordwise_espresso"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.components.modular_add.ModularAddLinearMILPModel.__init__",
@@ -28442,6 +28496,82 @@
       "qualified_name": "claasp.representations.constraints.milp.components.truncated.WordwiseImpossibleBoundaryResult.forward"
     },
     {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSEspressoMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "documented_by": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSEspressoMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSEspressoMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSEspressoMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSEspressoMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "documented_by": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSMILPModel.decode_transition",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSEspressoMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSMILPModel.decode_transition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSEspressoMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.truncated.WordwiseTruncatedMDSMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorEspressoMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "documented_by": "claasp.representations.constraints.milp.components.truncated.WordwiseXorEspressoMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorEspressoMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorEspressoMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorEspressoMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "documented_by": "claasp.representations.constraints.milp.components.truncated.WordwiseXorMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorMILPModel.decode_transition",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.components.truncated.WordwiseXorEspressoMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorMILPModel.decode_transition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.components.truncated.WordwiseXorEspressoMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.truncated.WordwiseXorMILPModel.milp_model"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.milp.components.truncated.wordwise_pattern",
       "defined_in": "claasp.representations.constraints.milp.components.truncated",
       "kind": "function",
@@ -28471,6 +28601,12 @@
       "defined_in": "claasp.representations.constraints.milp.components.sbox",
       "kind": "function",
       "qualified_name": "claasp.representations.constraints.milp.load_bundled_undisturbed_sbox_espresso"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.truncated.load_bundled_wordwise_espresso",
+      "defined_in": "claasp.representations.constraints.milp.components.truncated",
+      "kind": "function",
+      "qualified_name": "claasp.representations.constraints.milp.load_bundled_wordwise_espresso"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.lowering.BooleanGraphMILPModel.__init__",

@@ -25,9 +25,13 @@ from claasp.representations.constraints.milp import (
     SBoxXorLinearGreedyMILPModel,
     SBoxXorLinearMinimumMILPModel,
     VariableKind,
+    WordwiseTruncatedMDSEspressoMILPModel,
+    WordwiseTruncatedMDSMILPModel,
+    WordwiseXorEspressoMILPModel,
+    WordwiseXorMILPModel,
     load_bundled_sbox_milp_inequalities,
 )
-from claasp.semantics.cryptanalysis import TrailKind
+from claasp.semantics.cryptanalysis import TrailKind, WordwiseDifferenceKind, WordwiseXorDifference
 
 pytestmark = pytest.mark.external
 
@@ -48,6 +52,33 @@ def test_glpk_solves_undisturbed_sbox_strategies(model_type, arguments):
     assert solved.status is MILPStatus.OPTIMAL
     source, output = relation.decode_transition(solved.assignment)
     assert (str(source), str(output)) == ("0001", "???1")
+
+
+@pytest.mark.parametrize("model_type", (WordwiseXorMILPModel, WordwiseXorEspressoMILPModel))
+def test_glpk_solves_wordwise_xor_strategies(model_type):
+    relation = model_type(4) if model_type is WordwiseXorMILPModel else model_type()
+    known = WordwiseXorDifference.known(4, 5)
+    zero = WordwiseXorDifference(4, WordwiseDifferenceKind.ZERO)
+    solved = GLPKSolver(timeout_seconds=10).solve(
+        relation.milp_model(inputs=(known, known), output=zero)
+    )
+    assert solved.status is MILPStatus.OPTIMAL
+    assert relation.decode_transition(solved.assignment) == ((known, known), zero)
+
+
+@pytest.mark.parametrize(
+    "model_type", (WordwiseTruncatedMDSMILPModel, WordwiseTruncatedMDSEspressoMILPModel)
+)
+def test_glpk_solves_wordwise_mds_strategies(model_type):
+    relation = model_type(4, (4, 4)) if model_type is WordwiseTruncatedMDSMILPModel else model_type()
+    zero = WordwiseXorDifference(4, WordwiseDifferenceKind.ZERO)
+    nonzero = WordwiseXorDifference(4, WordwiseDifferenceKind.NONZERO)
+    inputs, outputs = (nonzero, zero, zero, zero), (nonzero,) * 4
+    solved = GLPKSolver(timeout_seconds=10).solve(
+        relation.milp_model(inputs=inputs, outputs=outputs)
+    )
+    assert solved.status is MILPStatus.OPTIMAL
+    assert relation.decode_transition(solved.assignment) == (inputs, outputs)
 
 
 def test_glpk_optimizes_and_returns_an_independently_checked_witness():
