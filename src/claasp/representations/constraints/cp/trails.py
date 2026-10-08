@@ -46,6 +46,7 @@ from claasp.semantics.cryptanalysis import (
     ProbabilisticTruncatedModularAddTransition,
     ProbabilisticTruncatedTrail,
     PropagationProblem,
+    SBoxTransitionSemantics,
     Trail,
     TrailKind,
     TrailStep,
@@ -303,6 +304,167 @@ class PresentFixedActiveSBoxesCPModel(PresentActiveSBoxesCPModel):
             active_model.provenance,
             active_model.name_mapping,
             (ConstraintModelApplication(self.model_provenance),),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class PresentKeyScheduleDifferentialTrail:
+    """Exact XOR-differential trail through a PRESENT-80 key schedule.
+
+    EXAMPLES::
+
+        >>> trail = PresentKeyScheduleDifferentialTrail(1, (1, 2), (2,), 2)
+        >>> trail.total_weight
+        2
+    """
+
+    input_difference: int
+    round_key_differences: tuple[int, ...]
+    sbox_weights: tuple[int, ...]
+    total_weight: int
+
+
+class PresentProbabilisticKeyScheduleCPModel:
+    """Recover exact probabilistic propagation in the PRESENT-80 key schedule.
+
+    The legacy hybrid model treated key-schedule S-boxes probabilistically
+    while keeping tagged data propagation separate. This model exposes that
+    exact DDT-weighted subproblem directly and leaves no Sage dependency.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Present
+        >>> query = PresentProbabilisticKeyScheduleCPModel(
+        ...     Present(number_of_rounds=2), input_difference=1 << 18
+        ... ).cp_model()
+        >>> (query.includes, query.solve.startswith("solve minimize"))
+        (('include "table.mzn";',), True)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "PresentProbabilisticKeyScheduleCPModel",
+        "xor_differential_key_schedule",
+        "exact DDT-weighted PRESENT-80 key-schedule propagation",
+        "This isolates the probabilistic key-schedule submodel used by legacy hybrid search.",
+    )
+
+    def __init__(self, primitive, *, input_difference=None, maximum_weight=None) -> None:
+        key = primitive.input_ports.get("key")
+        if primitive.family_name != "present" or key is None or key.value_type.unit_count != 80:
+            raise NotImplementedError("the reviewed key-schedule model supports PRESENT-80")
+        if input_difference is not None and (
+            not isinstance(input_difference, int)
+            or isinstance(input_difference, bool)
+            or not 0 <= input_difference < 1 << 80
+        ):
+            raise ValueError("input_difference must fit the 80-bit key")
+        if maximum_weight is not None and (
+            not isinstance(maximum_weight, int)
+            or isinstance(maximum_weight, bool)
+            or maximum_weight < 0
+        ):
+            raise ValueError("maximum_weight must be a nonnegative integer")
+        self.primitive = primitive
+        self.rounds = len(primitive.rounds)
+        self.input_difference = input_difference
+        self.maximum_weight = maximum_weight
+        self._query: MiniZincModel | None = None
+
+    def cp_model(self) -> MiniZincModel:
+        """Return exact key rotations, S-box DDT rows, and weight objective."""
+
+        from math import log2
+
+        semantics = SBoxTransitionSemantics(_round_sboxes(self.primitive, 1)[0].table)
+        rows = []
+        for source in range(16):
+            for target in range(16):
+                transition = semantics.xor_differential(source, target)
+                if transition.is_possible:
+                    rows.append(
+                        (*_bits(source, 4), *_bits(target, 4), int(log2(16 / transition.numerator)))
+                    )
+        flattened = ",".join(str(value) for row in rows for value in row)
+        declarations = [
+            "array[0..79] of var 0..1: key_0;",
+            f"array[0..{len(rows) - 1}, 1..9] of int: key_sbox_ddt = "
+            f"array2d(0..{len(rows) - 1}, 1..9, [{flattened}]);",
+        ]
+        constraints = []
+        if self.input_difference is None:
+            constraints.append("constraint sum(key_0) >= 1;")
+        else:
+            constraints.extend(
+                f"constraint key_0[{position}] = {bit};"
+                for position, bit in enumerate(_bits(self.input_difference, 80))
+            )
+        mapping = tuple((position + 61) % 80 for position in range(80))
+        weights = []
+        for round_number in range(1, self.rounds + 1):
+            declarations.extend(
+                (
+                    f"array[0..79] of var 0..1: key_{round_number};",
+                    f"var 0..4: key_sbox_{round_number}_weight;",
+                )
+            )
+            weights.append(f"key_sbox_{round_number}_weight")
+            variables = [
+                *(f"key_{round_number - 1}[{mapping[position]}]" for position in range(4)),
+                *(f"key_{round_number}[{position}]" for position in range(4)),
+                weights[-1],
+            ]
+            constraints.append(f"constraint table([{','.join(variables)}], key_sbox_ddt);")
+            constraints.extend(
+                f"constraint key_{round_number}[{position}] = "
+                f"key_{round_number - 1}[{mapping[position]}];"
+                for position in range(4, 80)
+            )
+        if self.maximum_weight is not None:
+            constraints.append(
+                f"constraint {' + '.join(weights)} <= {self.maximum_weight};"
+            )
+        self._query = MiniZincModel(
+            tuple(declarations),
+            tuple(constraints),
+            "solve minimize " + " + ".join(weights) + ";",
+            includes=('include "table.mzn";',),
+            provenance=("recovered exact PRESENT-80 differential key schedule",),
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._query
+
+    def decode_trail(self, assignment) -> PresentKeyScheduleDifferentialTrail:
+        """Decode and independently verify every key-schedule transition."""
+
+        if self._query is None:
+            raise ValueError("build the CP model before decoding")
+        semantics = SBoxTransitionSemantics(_round_sboxes(self.primitive, 1)[0].table)
+        mapping = tuple((position + 61) % 80 for position in range(80))
+        states = tuple(
+            tuple(int(value) for value in assignment[f"key_{round_number}"])
+            for round_number in range(self.rounds + 1)
+        )
+        weights = []
+        for round_number in range(1, self.rounds + 1):
+            previous, current = states[round_number - 1], states[round_number]
+            source = _integer(previous[mapping[position]] for position in range(4))
+            target = _integer(current[position] for position in range(4))
+            transition = semantics.xor_differential(source, target)
+            weight = int(round(float(transition.weight)))
+            if not transition.is_possible or weight != int(
+                assignment[f"key_sbox_{round_number}_weight"]
+            ):
+                raise ValueError("invalid PRESENT key-schedule S-box transition")
+            if any(current[position] != previous[mapping[position]] for position in range(4, 80)):
+                raise ValueError("invalid PRESENT key-schedule permutation wiring")
+            weights.append(weight)
+        input_difference = _integer(states[0])
+        if self.input_difference is not None and input_difference != self.input_difference:
+            raise ValueError("PRESENT key-schedule input difference changed")
+        round_keys = tuple(_integer(state[:64]) for state in states)
+        return PresentKeyScheduleDifferentialTrail(
+            input_difference, round_keys, tuple(weights), sum(weights)
         )
 
 

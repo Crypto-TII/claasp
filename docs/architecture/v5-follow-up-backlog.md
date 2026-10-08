@@ -565,8 +565,8 @@ to zero, a known-active input may use either exact nontrivial undisturbed bits
 or the component's fresh tag, a uniform incoming tag is retagged, and mixed
 abstract inputs become unknown. Chuffed solves all representative branches in
 the [ten-run component benchmark](audits/data/cp_hybrid_tagged_components_benchmark.json),
-and decoders re-evaluate them independently. Complete structural graph
-assembly and probabilistic key-schedule composition remain separate.
+and decoders re-evaluate them independently. Structural graph assembly and
+the probabilistic key-schedule submodel are recovered in the following slices.
 
 The whole-graph hybrid slice adds ``PresentHybridImpossibleCPModel`` for the
 reviewed deterministic SPN path. It assembles forward and inverse S-box
@@ -575,9 +575,18 @@ each component, and applies the audited bitwise-or-tagged middle rule to both
 forward- and inverse-component groups. The decoder independently rechecks
 every S-box transition, permutation edge, and selected contradiction. Chuffed
 solves the two-round fixture in the [ten-run benchmark](audits/data/cp_hybrid_present_graph_benchmark.json).
-This closes deterministic zero-key-difference structural assembly without
-pretending to recover the legacy probabilistic key-schedule mode, which
-remains separate work.
+This closes deterministic zero-key-difference structural assembly; the exact
+probabilistic key-schedule submodel follows separately.
+
+The probabilistic-key-schedule slice adds
+``PresentProbabilisticKeyScheduleCPModel`` for PRESENT-80. It restores exact
+DDT-weighted propagation through every key-schedule S-box, exact rotation and
+counter-XOR difference wiring, a weight objective, and independent decoding.
+The [two-round Chuffed benchmark](audits/data/cp_present_probabilistic_key_schedule_benchmark.json)
+uses a nonzero transition of weight two. This preserves the distinct legacy
+probabilistic submodel without coupling it prematurely to the tagged data path;
+joint state/key-schedule search is recorded as extension work rather than a
+missing standalone encoding.
 
 The deterministic-truncated SMT slice adds
 ``ModularAddDeterministicTruncatedSMTModel`` and
