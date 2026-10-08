@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "workload": {
+    "description": "two-round 4-bit-field ToyAES split after round one with nonzero plaintext and zero key differences",
+    "timeout_seconds": 30
+  },
+  "results": [
+    {
+      "backend": "Chuffed",
+      "variables": 736,
+      "constraints": 3009,
+      "construction_seconds_median": 0.004075083499628818,
+      "solver_seconds_median": 0.0570071045003715,
+      "repeats": 10,
+      "assignment_valid": true,
+      "solver_status": "satisfied"
+    },
+    {
+      "backend": "GLPK",
+      "variables": 736,
+      "constraints": 3009,
+      "construction_seconds_median": 0.00851939600033802,
+      "solver_seconds_median": 0.024653145499542006,
+      "repeats": 10,
+      "assignment_valid": true,
+      "solver_status": "optimal"
+    }
+  ]
+}

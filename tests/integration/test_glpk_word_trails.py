@@ -16,6 +16,7 @@ from claasp.representations.constraints.milp import (
     WordwiseBranchNumberActiveSBoxesMILPModel,
     WordwiseDeterministicTruncatedMILPModel,
     WordwiseImpossibleBoundaryMILPModel,
+    WordwiseImpossibleMILPModel,
 )
 from claasp.semantics.cryptanalysis import (
     WordwiseDifferenceKind,
@@ -129,6 +130,25 @@ def test_glpk_selects_one_legacy_wordwise_middle_contradiction():
     assert len(boundary.contradictory_positions) == 1
     position = boundary.contradictory_positions[0]
     assert (boundary.forward[position], boundary.backward[position]) in model._INCOMPATIBLE
+
+
+def test_glpk_solves_complete_wordwise_impossible_graphs():
+    model = WordwiseImpossibleMILPModel(
+        ToyAES(number_of_rounds=2, word_size=4, state_size=2),
+        middle_round=1,
+        active_input="plaintext",
+        zero_difference_inputs=("key",),
+    )
+    solved = GLPKSolver(timeout_seconds=30).solve(model.milp_model())
+    trail = model.decode_trail(solved.assignment)
+
+    assert solved.status is MILPStatus.OPTIMAL
+    assert len(trail.middle.contradictory_positions) == 1
+    position = trail.middle.contradictory_positions[0]
+    assert (
+        trail.middle.forward_states[position],
+        trail.middle.backward_states[position],
+    ) in model._sat_model._INCOMPATIBLE
 
 
 def test_glpk_solves_and_independently_checks_semi_deterministic_truncated_trail():

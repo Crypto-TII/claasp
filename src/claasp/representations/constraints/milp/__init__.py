@@ -66,6 +66,7 @@ from claasp.representations.constraints.milp.trails import (
     WordwiseActivityResult,
     WordwiseBranchNumberActiveSBoxesMILPModel,
     WordwiseDeterministicTruncatedMILPModel,
+    WordwiseImpossibleMILPModel,
     check_present_milp_trail,
 )
 
@@ -122,6 +123,7 @@ __all__ = [
     "WordwiseActivityResult",
     "WordwiseBranchNumberActiveSBoxesMILPModel",
     "WordwiseDeterministicTruncatedMILPModel",
+    "WordwiseImpossibleMILPModel",
     "WordwiseImpossibleBoundaryMILPModel",
     "WordwiseImpossibleBoundaryResult",
     "check_present_milp_trail",

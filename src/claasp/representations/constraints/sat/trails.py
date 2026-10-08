@@ -1663,6 +1663,230 @@ class WordImpossibleSATModel:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class WordwiseImpossibleMiddle:
+    """The selected contradictory word positions at a four-state boundary.
+
+    EXAMPLES::
+
+        >>> middle = WordwiseImpossibleMiddle((2, 0), (0, 0), (0,))
+        >>> middle.contradictory_positions
+        (0,)
+    """
+
+    forward_states: tuple[int, ...]
+    backward_states: tuple[int, ...]
+    contradictory_positions: tuple[int, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class WordwiseImpossibleSATTrail:
+    """Two independently checked wordwise graphs joined by a contradiction.
+
+    EXAMPLES::
+
+        >>> WordwiseImpossibleMiddle((0,), (2,), (0,)).contradictory_positions
+        (0,)
+    """
+
+    forward: WordwiseDeterministicTruncatedCharacteristic
+    backward: WordwiseDeterministicTruncatedCharacteristic
+    middle: WordwiseImpossibleMiddle
+    semantic_assignment: tuple[tuple[str, int], ...]
+
+
+class WordwiseImpossibleSATModel:
+    """Compose four-state forward/backward graphs at an impossible middle.
+
+    Exactly one selector chooses one of the legacy incompatible state pairs
+    ``(0,1)``, ``(0,2)``, ``(1,0)``, or ``(2,0)``. State 3 remains unknown
+    and never proves a contradiction.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToyAES
+        >>> model = WordwiseImpossibleSATModel(
+        ...     ToyAES(number_of_rounds=2, word_size=4, state_size=2), 1,
+        ...     active_input="plaintext", zero_difference_inputs=("key",),
+        ... )
+        >>> "wordwise_contradiction_exists" in model.cnf_formula().provenance
+        True
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "WordwiseImpossibleSATModel",
+        "wordwise_impossible_xor_differential",
+        "forward/backward four-state graph composition with legacy incompatibility pairs",
+        "The assembly composes recovered abstract relations without claiming a concrete differential proof.",
+    )
+    _INCOMPATIBLE = ((0, 1), (0, 2), (1, 0), (2, 0))
+
+    def __init__(
+        self,
+        primitive,
+        middle_round: int,
+        *,
+        active_input: str,
+        zero_difference_inputs: tuple[str, ...] = (),
+        input_differences=None,
+        output_differences=None,
+    ) -> None:
+        if active_input not in primitive.input_ports:
+            raise ValueError("active_input must name a primitive input")
+        if not isinstance(zero_difference_inputs, tuple) or any(
+            name == active_input or name not in primitive.input_ports
+            for name in zero_difference_inputs
+        ):
+            raise ValueError("zero_difference_inputs must name other primitive inputs")
+        if not isinstance(middle_round, int) or isinstance(middle_round, bool):
+            raise TypeError("middle_round must be an integer")
+        if not 1 <= middle_round < len(primitive.rounds):
+            raise ValueError("middle_round must be inside the primitive")
+        self.primitive = primitive
+        self.middle_round = middle_round
+        self.active_input = active_input
+        self.zero_difference_inputs = zero_difference_inputs
+        prefix = slice_rounds(primitive, 0, middle_round - 1).primitive
+        suffix = slice_rounds(primitive, middle_round, len(primitive.rounds) - 1).primitive
+        inverse = invert_primitive(
+            suffix, recover_input="state", retained_inputs=zero_difference_inputs
+        ).primitive
+
+        def zeros(port):
+            width = port.value_type.domain.encoded_bit_size
+            if width is None:
+                raise NotImplementedError("wordwise impossible search requires finite domains")
+            return tuple(
+                WordwiseXorDifference(width, WordwiseDifferenceKind.ZERO)
+                for _ in range(port.value_type.unit_count)
+            )
+
+        forward_fixed = {
+            name: zeros(primitive.input_ports[name]) for name in zero_difference_inputs
+        }
+        if input_differences is not None:
+            forward_fixed[active_input] = input_differences
+        backward_fixed = {name: zeros(inverse.input_ports[name]) for name in zero_difference_inputs}
+        if output_differences is not None:
+            backward_fixed["output"] = output_differences
+        self.forward_model = WordwiseDeterministicTruncatedSATModel(
+            prefix,
+            fixed_input_differences=forward_fixed,
+            nonzero_input=active_input,
+        )
+        self.backward_model = WordwiseDeterministicTruncatedSATModel(
+            inverse,
+            fixed_input_differences=backward_fixed,
+            nonzero_input="output",
+        )
+        self._formula: CNFFormula | None = None
+        self._forward_map: dict[str, str] = {}
+        self._backward_map: dict[str, str] = {}
+        self._selectors: tuple[tuple[str, int, int, int], ...] = ()
+
+    def cnf_formula(self) -> CNFFormula:
+        """Return both directional graphs and one middle contradiction."""
+
+        forward = self.forward_model.cnf_formula()
+        backward = self.backward_model.cnf_formula()
+        if len(self.forward_model._output) != len(self.backward_model._output):
+            raise ValueError("forward and backward wordwise boundaries must align")
+        variables: list[str] = []
+        clauses: list[tuple[int, ...]] = []
+        provenance: list[str] = []
+        indices: dict[str, int] = {}
+
+        def allocate(name):
+            if name not in indices:
+                variables.append(name)
+                indices[name] = len(variables)
+            return name
+
+        def append_formula(formula, prefix):
+            mapping = {name: allocate(prefix + name) for name in formula.variables}
+            local = {
+                position: indices[mapping[name]]
+                for position, name in enumerate(formula.variables, 1)
+            }
+            clauses.extend(
+                tuple(local[abs(literal)] * (1 if literal > 0 else -1) for literal in clause)
+                for clause in formula.clauses
+            )
+            provenance.extend(formula.provenance)
+            return mapping
+
+        self._forward_map = append_formula(forward, "forward__")
+        self._backward_map = append_formula(backward, "backward__")
+        selectors = []
+        for position, (forward_word, backward_word) in enumerate(
+            zip(self.forward_model._output, self.backward_model._output)
+        ):
+            for forward_state, backward_state in self._INCOMPATIBLE:
+                name = allocate(f"middle_pair_{position}_{forward_state}_{backward_state}")
+                selectors.append((name, position, forward_state, backward_state))
+                forward_name = self._forward_map[forward_word[0][forward_state]]
+                backward_name = self._backward_map[backward_word[0][backward_state]]
+                clauses.extend(
+                    (
+                        (-indices[name], indices[forward_name]),
+                        (-indices[name], indices[backward_name]),
+                    )
+                )
+                provenance.extend(("wordwise_incompatible_pair",) * 2)
+        clauses.append(tuple(indices[name] for name, *_ in selectors))
+        provenance.append("wordwise_contradiction_exists")
+        for left, right in combinations((name for name, *_ in selectors), 2):
+            clauses.append((-indices[left], -indices[right]))
+            provenance.append("wordwise_single_contradiction")
+        self._selectors = tuple(selectors)
+        self._formula = CNFFormula(
+            tuple(variables),
+            tuple(clauses),
+            tuple(provenance),
+            forward.constraint_models
+            + backward.constraint_models
+            + (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._formula
+
+    def decode_trail(self, assignment) -> WordwiseImpossibleSATTrail:
+        """Decode both directions and independently verify the selected pair."""
+
+        if self._formula is None:
+            raise ValueError("build the formula before decoding")
+        if not self._formula.is_satisfied(assignment):
+            raise ValueError("invalid wordwise impossible witness")
+        forward = self.forward_model.decode_characteristic(
+            {name: assignment[mapped] for name, mapped in self._forward_map.items()}
+        )
+        backward = self.backward_model.decode_characteristic(
+            {name: assignment[mapped] for name, mapped in self._backward_map.items()}
+        )
+        forward_states = tuple(item.kind.value for item in forward.output_differences)
+        backward_states = tuple(item.kind.value for item in backward.output_differences)
+        selected = tuple(
+            (position, forward_state, backward_state)
+            for name, position, forward_state, backward_state in self._selectors
+            if assignment[name]
+        )
+        if len(selected) != 1:
+            raise ValueError("wordwise impossible witness must select one contradiction")
+        position, forward_state, backward_state = selected[0]
+        if (
+            forward_states[position] != forward_state
+            or backward_states[position] != backward_state
+            or (forward_state, backward_state) not in self._INCOMPATIBLE
+        ):
+            raise ValueError("selected wordwise middle pair is not contradictory")
+        return WordwiseImpossibleSATTrail(
+            forward,
+            backward,
+            WordwiseImpossibleMiddle(forward_states, backward_states, (position,)),
+            tuple((name, int(bool(assignment[name]))) for name in self._formula.variables),
+        )
+
+
 class SpeckImpossibleSATModel(WordImpossibleSATModel):
     """Search a zero-key Speck32/64 impossible differential across a split.
 

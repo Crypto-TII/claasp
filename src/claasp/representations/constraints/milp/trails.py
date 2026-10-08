@@ -911,6 +911,77 @@ class WordImpossibleMILPModel:
         )
 
 
+class WordwiseImpossibleMILPModel:
+    """Search a split-round four-state wordwise contradiction as MILP.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import ToyAES
+        >>> model = WordwiseImpossibleMILPModel(
+        ...     ToyAES(number_of_rounds=2, word_size=4, state_size=2), 1,
+        ...     active_input="plaintext", zero_difference_inputs=("key",),
+        ... )
+        >>> formulation = model.milp_model()
+        >>> (len(formulation.variables), len(formulation.constraints))
+        (736, 3009)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.MILP,
+        "WordwiseImpossibleMILPModel",
+        "wordwise_impossible_xor_differential",
+        "exact MILP translation of composed four-state forward/backward graphs",
+        "The selected abstract incompatibility is decoded independently.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        middle_round: int,
+        *,
+        active_input: str,
+        zero_difference_inputs: tuple[str, ...] = (),
+        input_differences=None,
+        output_differences=None,
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import (
+            WordwiseImpossibleSATModel,
+        )
+
+        self._sat_model = WordwiseImpossibleSATModel(
+            primitive,
+            middle_round,
+            active_input=active_input,
+            zero_difference_inputs=zero_difference_inputs,
+            input_differences=input_differences,
+            output_differences=output_differences,
+        )
+        self.primitive = primitive
+        self._model: MILPModel | None = None
+
+    def milp_model(self) -> MILPModel:
+        """Return the complete portable MILP feasibility formulation."""
+
+        from claasp.representations.constraints.milp.lowering import cnf_to_milp
+
+        translated = cnf_to_milp(self._sat_model.cnf_formula())
+        self._model = MILPModel(
+            translated.variables,
+            translated.constraints,
+            constraint_models=(ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._model
+
+    def decode_trail(self, assignment):
+        """Decode both directions and independently verify the contradiction."""
+
+        if self._model is None:
+            raise ValueError("build the MILP model before decoding")
+        return self._sat_model.decode_trail(
+            {name: int(round(value)) for name, value in assignment.items()}
+        )
+
+
 class SpeckImpossibleMILPModel(WordImpossibleMILPModel):
     """Preserve the reviewed zero-key Speck32/64 impossible search.
 
