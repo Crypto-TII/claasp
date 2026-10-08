@@ -10,6 +10,7 @@ from claasp.representations.constraints.cp import (
     ImpossibleBoundaryCPModel,
     MiniZincModel,
     ModularAddDeterministicTruncatedCPModel,
+    PresentActiveSBoxesCPModel,
     PresentDifferentialCPModel,
     PresentLinearCPModel,
     ProbabilisticTruncatedModularAddCPModel,
@@ -49,6 +50,22 @@ from claasp.semantics.cryptanalysis import (
 )
 
 pytestmark = pytest.mark.external
+
+
+def test_minizinc_proves_present_two_round_active_sbox_optimum():
+    model = PresentActiveSBoxesCPModel(Present(number_of_rounds=2))
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert (
+        sum(
+            bool(solved.assignment[f"active_{round_number}_{nibble}"])
+            for round_number in range(1, 3)
+            for nibble in range(16)
+        )
+        == 2
+    )
+    assert len(trail.steps) == 32
 
 
 def test_minizinc_preserves_deterministic_truncated_modular_add_relation():

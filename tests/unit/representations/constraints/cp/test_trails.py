@@ -1,7 +1,8 @@
 """Complete CP trail assembly."""
 
-from claasp.primitives import Speck, ToySpeck
+from claasp.primitives import Present, Speck, ToySpeck
 from claasp.representations.constraints.cp import (
+    PresentActiveSBoxesCPModel,
     SpeckSemiDeterministicTruncatedCPModel,
     WordDeterministicDifferentialLinearCPModel,
     WordDeterministicTruncatedCPModel,
@@ -9,6 +10,13 @@ from claasp.representations.constraints.cp import (
     WordLinearCPModel,
     WordSemiDeterministicDifferentialLinearCPModel,
 )
+
+
+def test_present_active_sboxes_cp_reuses_exact_tables():
+    query = PresentActiveSBoxesCPModel(Present(number_of_rounds=2)).cp_model()
+    assert (len(query.declarations), len(query.constraints)) == (288, 65)
+    assert query.solve.startswith("solve minimize")
+    assert query.constraint_models[0].model == PresentActiveSBoxesCPModel.model_provenance
 
 
 def test_semi_deterministic_truncated_cp_assembles_complete_speck_graph():

@@ -8,7 +8,7 @@
     "dict-item": 28,
     "has-type": 22,
     "import-untyped": 1,
-    "index": 72,
+    "index": 74,
     "list-item": 4,
     "misc": 28,
     "no-redef": 1,
@@ -22,10 +22,10 @@
   "counts_by_scope": {
     "docs/conf.py": 0,
     "src/claasp": 704,
-    "tests": 160,
-    "tools": 20
+    "tests": 161,
+    "tools": 21
   },
-  "diagnostic_count": 884,
+  "diagnostic_count": 886,
   "diagnostics": [
     {
       "code": "operator",
@@ -3278,63 +3278,63 @@
     {
       "code": "assignment",
       "column": 27,
-      "line": 242,
+      "line": 308,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 25,
-      "line": 247,
+      "line": 313,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[str, ...], tuple[str, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 29,
-      "line": 248,
+      "line": 314,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "index",
       "column": 28,
-      "line": 421,
+      "line": 487,
       "message": "Value of type \"object\" is not indexable",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "operator",
       "column": 16,
-      "line": 432,
+      "line": 498,
       "message": "Unsupported operand types for > (\"float\" and \"None\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 562,
+      "line": 628,
       "message": "Need type annotation for \"constraints\" (hint: \"constraints: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "misc",
       "column": 20,
-      "line": 705,
+      "line": 771,
       "message": "Enum index should be a string (actual index type \"Any | str | None\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 23,
-      "line": 911,
+      "line": 977,
       "message": "Need type annotation for \"constraints\" (hint: \"constraints: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 1011,
+      "line": 1077,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
@@ -4977,9 +4977,16 @@
       "path": "tests/integration/test_minisat_integration.py"
     },
     {
+      "code": "index",
+      "column": 18,
+      "line": 62,
+      "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
+      "path": "tests/integration/test_minizinc_integration.py"
+    },
+    {
       "code": "dict-item",
       "column": 10,
-      "line": 246,
+      "line": 263,
       "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection\"",
       "path": "tests/integration/test_minizinc_integration.py"
     },
@@ -6116,6 +6123,13 @@
       "line": 32,
       "message": "Cannot infer type of lambda",
       "path": "tools/benchmark_batch.py"
+    },
+    {
+      "code": "index",
+      "column": 18,
+      "line": 41,
+      "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
+      "path": "tools/benchmark_cp_active_sboxes.py"
     },
     {
       "code": "var-annotated",

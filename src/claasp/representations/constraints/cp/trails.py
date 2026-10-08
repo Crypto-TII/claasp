@@ -167,6 +167,72 @@ class PresentDifferentialCPModel:
         return trail
 
 
+class PresentActiveSBoxesCPModel(PresentDifferentialCPModel):
+    """Minimize active S-boxes over the exact two-round PRESENT relation.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Present
+        >>> query = PresentActiveSBoxesCPModel(
+        ...     Present(number_of_rounds=2)
+        ... ).cp_model()
+        >>> (len(query.declarations), query.solve.startswith("solve minimize"))
+        (288, True)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "PresentActiveSBoxesCPModel",
+        "xor_differential_activity",
+        "active-input objective over exact DDT table constraints",
+        "The feasible region is identical to the reviewed exact differential model.",
+    )
+
+    def __init__(self, primitive) -> None:
+        problem = (
+            primitive
+            if isinstance(primitive, PropagationProblem)
+            else PropagationProblem(primitive, XOR_DIFFERENTIAL, maximum_weight=128)
+        )
+        super().__init__(problem)
+
+    def cp_model(self) -> MiniZincModel:
+        """Return exact differential tables with an activity objective."""
+
+        weighted = super().cp_model()
+        first_output = tuple(f"round_1_sbox_output_{bit}" for bit in range(64))
+        permutation = _component(self.primitive, "p_layer_1", Permutation)
+        round_inputs = (
+            tuple(f"plaintext_{bit}" for bit in range(64)),
+            tuple(first_output[position] for position in permutation.mapping),
+        )
+        active = tuple(
+            f"active_{round_number}_{nibble}"
+            for round_number in range(1, 3)
+            for nibble in range(16)
+        )
+        declarations = weighted.declarations + tuple(f"var bool: {name};" for name in active)
+        constraints = list(weighted.constraints[:-1])
+        for round_number, inputs in enumerate(round_inputs, 1):
+            for nibble in range(16):
+                names = inputs[4 * nibble : 4 * nibble + 4]
+                constraints.append(
+                    f"constraint active_{round_number}_{nibble} = "
+                    f"(sum([{','.join(names)}]) > 0);"
+                )
+        solve = "solve minimize sum([" + ",".join(f"bool2int({name})" for name in active) + "]);"
+        return MiniZincModel(
+            declarations,
+            tuple(constraints),
+            solve,
+            weighted.includes,
+            weighted.outputs,
+            weighted.provenance,
+            weighted.name_mapping,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+
+
 class PresentLinearCPModel:
     """Native table-constraint model for three-round PRESENT masks.
 
