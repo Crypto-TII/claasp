@@ -93,13 +93,14 @@ Resolved contract:
   selection is available only for combinations the reviewed search supports.
 - `Primitive.analyze()` and both longer trail convenience methods remain
   supported CLAASP 5 compatibility aliases with unchanged defaults.
-- Dependency-free Speck differential search remains unavailable here rather
-  than relabeling bounded sparse enumeration; the genuine Matsui research item
-  below owns that capability.
+- The API PR did not relabel bounded sparse enumeration as dependency-free
+  search; the subsequently completed Matsui item below now owns that
+  capability.
 
 ## Dependency-free Matsui search PR
 
-Status: **Research**
+Status: **Complete for the reviewed Speck32/64 two-round slice; extension
+limits recorded**
 
 Implement a genuine Matsui-style branch-and-bound trail search as the
 dependency-free alternative. Do not describe bounded sparse enumeration as a
@@ -115,6 +116,13 @@ Requirements:
   bitsliced design;
 - record performance and scope limitations rather than implying universal
   efficiency.
+
+Delivered by the exact rational branch-and-bound engine and the explicit
+Speck adapter. `backend="auto"` retains Kissat, while
+`backend="dependency_free"` selects the reviewed implementation. The complete
+algorithm, primary-source correspondence, validation, representative benchmark
+matrix, and deliberately unsupported extensions are recorded in
+`audits/matsui-branch-and-bound.md`.
 
 ## Constraint-model organization PR
 

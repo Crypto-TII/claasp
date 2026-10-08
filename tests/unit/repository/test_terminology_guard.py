@@ -66,6 +66,7 @@ def test_guard_allows_the_real_block_cipher_taxonomy_and_ciphertext(tmp_path):
     (scan_root / "fine.py").write_text(
         '"""Keyed block-cipher graphs, e.g. block_ciphers and tweakable_block_ciphers.\n'
         "Evaluation returns plaintext/ciphertext pairs; ChaCha was a stream cipher mode.\n"
+        "Exact paper titles may name ARX ciphers or SPN ciphers.\n"
         '"""\n'
     )
 

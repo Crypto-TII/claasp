@@ -554,7 +554,7 @@ ANALYSES = (
         {"kissat"},
         set(),
         {"Present", "Speck"},
-        "kind, backend, and round support are validated explicitly",
+        "auto uses Kissat for Speck; reviewed dependency-free Present and Speck slices are explicit",
     ),
     (
         "find_lowest_weight_xor_differential_trail",

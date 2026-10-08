@@ -113,6 +113,21 @@ search meaning silently.
 ``find_lowest_weight_xor_linear_trail()`` methods also retain their existing
 defaults, while new examples use the common typed entry point.
 
+For two-round Speck32/64 XOR-differential search, the explicit
+``backend="dependency_free"`` selection runs an exact Matsui-style
+branch-and-bound search. It uses rational transition probabilities and a
+monotone partial-carry bound, and independently checks the returned weight-one
+trail. The default ``backend="auto"`` continues to select Kissat; choosing the
+dependency-free implementation never changes the default solver policy.
+
+.. doctest::
+
+   >>> from claasp.primitives import Speck
+   >>> result = Speck(number_of_rounds=2).analysis.find_trail(
+   ...     kind="xor_differential", backend="dependency_free")
+   >>> (result.trail.total_weight, result.is_optimal, result.metadata.solver)
+   (1.0, True, None)
+
 SPN trail search
 ----------------
 
