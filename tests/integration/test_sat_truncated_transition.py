@@ -22,6 +22,7 @@ from claasp.representations.constraints.sat import (
     TruncatedToLinearSATModel,
     WordDeterministicTruncatedNativeXorSATModel,
     WordDeterministicTruncatedSATModel,
+    find_word_impossible_sat,
 )
 from claasp.semantics.cryptanalysis import XorDifference, XorMask
 from claasp.transformations import invert_primitive
@@ -228,6 +229,19 @@ def test_speck_impossible_sat_rejects_zero_external_differences():
     )
     result = MinisatSolver(timeout_seconds=30).solve(model.cnf_formula())
     assert result.status is SatStatus.UNSATISFIABLE
+
+
+@pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
+def test_automatic_impossible_sat_search_decodes_first_satisfiable_split(solver_type):
+    result = find_word_impossible_sat(
+        Speck(number_of_rounds=3),
+        solver_type(timeout_seconds=30),
+        active_input="plaintext",
+        zero_difference_inputs=("key",),
+    )
+    assert result.middle_round == 1
+    assert result.attempted_rounds == (1,)
+    assert result.trail is not None and result.trail.boundary.is_impossible
 
 
 @pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))

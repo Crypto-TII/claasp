@@ -21,6 +21,7 @@ from claasp.representations.constraints.sat import (
     WordImpossibleSATModel,
     WordLinearSATModel,
     WordSemiDeterministicDifferentialLinearSATModel,
+    find_word_impossible_sat,
 )
 from claasp.representations.constraints.smt import (
     WordDifferentialSMTModel,
@@ -252,6 +253,17 @@ def test_speck_impossible_sat_validates_supported_slice_and_patterns():
         SpeckImpossibleSATModel(primitive, middle_round=True)
     with pytest.raises(ValueError, match="contain 32 bits"):
         SpeckImpossibleSATModel(primitive, middle_round=1, input_pattern="0")
+
+
+def test_automatic_impossible_search_validates_explicit_split_order():
+    with pytest.raises(ValueError, match="unique internal"):
+        find_word_impossible_sat(
+            Speck(number_of_rounds=3),
+            object(),
+            active_input="plaintext",
+            zero_difference_inputs=("key",),
+            split_order=(1, 1),
+        )
 
 
 def test_speck_probabilistic_sat_assembles_local_round_relations():

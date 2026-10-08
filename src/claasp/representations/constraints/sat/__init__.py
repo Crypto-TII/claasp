@@ -30,6 +30,7 @@ from claasp.representations.constraints.sat.exporters import CryptoMiniSatDimacs
 from claasp.representations.constraints.sat.lowering import BooleanCNFModel, BooleanNativeXorModel
 from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
 from claasp.representations.constraints.sat.trails import (
+    AutomaticWordImpossibleSATResult,
     NWindowSATStrategy,
     SemiDeterministicModularAddTransition,
     SharedDifferencePairedDifferentialLinearSATTrail,
@@ -60,9 +61,11 @@ from claasp.representations.constraints.sat.trails import (
     WordwiseImpossibleMiddle,
     WordwiseImpossibleSATModel,
     WordwiseImpossibleSATTrail,
+    find_word_impossible_sat,
 )
 
 __all__ = [
+    "AutomaticWordImpossibleSATResult",
     "BooleanCNFModel",
     "BooleanNativeXorModel",
     "BooleanFunctionalSATModel",
@@ -122,4 +125,5 @@ __all__ = [
     "WordwiseImpossibleMiddle",
     "WordwiseImpossibleSATModel",
     "WordwiseImpossibleSATTrail",
+    "find_word_impossible_sat",
 ]

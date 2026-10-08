@@ -921,7 +921,17 @@ inputs whose differences are fixed to zero. The original Speck SAT and MILP
 classes remain compatibility specializations with unchanged defaults. This
 closes generic forward/backward assembly for reversible graphs built from the
 reviewed deterministic-truncated Word component subset; unsupported component
-encodings and legacy automatic-boundary heuristics remain separate work.
+encodings remain separate work.
+
+The automatic-boundary follow-up adds ``find_word_impossible_sat``. It tries
+each internal round split in an explicit deterministic order, stops on the
+first independently decoded contradiction, and distinguishes complete UNSAT
+exhaustion from timeout or unknown solver termination. The returned split can
+also parameterize the equivalent CP or MILP graph formulation. MiniSat,
+Kissat, and CryptoMiniSat select and decode the same Speck32/64-3 split in the
+[ten-run comparison](audits/data/sat_automatic_impossible_split_benchmark.json).
+This restores split selection for the reviewed Word component subset;
+unsupported component encodings remain explicit.
 
 The corresponding CP slice adds ``PresentActiveSBoxesCPModel`` over the same
 two-round exact DDT relation. Native MiniZinc Boolean activity indicators are

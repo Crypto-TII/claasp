@@ -1479,6 +1479,29 @@ class WordImpossibleSATTrail:
 SpeckImpossibleSATTrail = WordImpossibleSATTrail
 
 
+@dataclass(frozen=True, slots=True)
+class AutomaticWordImpossibleSATResult:
+    """Outcome of deterministic split-round enumeration.
+
+    EXAMPLES::
+
+        >>> result = AutomaticWordImpossibleSATResult(None, None, (1, 2), "exhausted_unsat")
+        >>> result.found
+        False
+    """
+
+    middle_round: int | None
+    trail: WordImpossibleSATTrail | None
+    attempted_rounds: tuple[int, ...]
+    termination: str
+
+    @property
+    def found(self) -> bool:
+        """Return whether an independently decodable contradiction was found."""
+
+        return self.trail is not None
+
+
 class WordImpossibleSATModel:
     """Search an impossible differential across a reversible Word-graph split.
 
@@ -1661,6 +1684,70 @@ class WordImpossibleSATModel:
             boundary,
             tuple((name, int(bool(assignment[name]))) for name in self._formula.variables),
         )
+
+
+def find_word_impossible_sat(
+    primitive,
+    solver,
+    *,
+    active_input: str,
+    zero_difference_inputs: tuple[str, ...] = (),
+    input_pattern=None,
+    output_pattern=None,
+    split_order=None,
+) -> AutomaticWordImpossibleSATResult:
+    """Enumerate internal round splits and return the first decoded witness.
+
+    The order is explicit and deterministic; by default shorter forward
+    prefixes are attempted first. A solver timeout or unknown result stops the
+    search rather than being misreported as exhaustion.
+
+    EXAMPLES::
+
+        >>> from claasp.drivers.solvers import MinisatSolver
+        >>> from claasp.primitives import Speck
+        >>> result = find_word_impossible_sat(
+        ...     Speck(number_of_rounds=3), MinisatSolver(timeout_seconds=30),
+        ...     active_input="plaintext", zero_difference_inputs=("key",),
+        ... )
+        >>> (result.found, result.middle_round)
+        (True, 1)
+    """
+
+    from claasp.drivers.solvers import SatStatus
+
+    available = tuple(range(1, len(primitive.rounds)))
+    rounds = available if split_order is None else tuple(split_order)
+    if len(rounds) != len(set(rounds)) or any(round_number not in available for round_number in rounds):
+        raise ValueError("split_order must contain unique internal round numbers")
+    attempted = []
+    for middle_round in rounds:
+        attempted.append(middle_round)
+        model = WordImpossibleSATModel(
+            primitive,
+            middle_round,
+            active_input=active_input,
+            zero_difference_inputs=zero_difference_inputs,
+            input_pattern=input_pattern,
+            output_pattern=output_pattern,
+        )
+        solved = solver.solve(model.cnf_formula())
+        if solved.status is SatStatus.SATISFIABLE:
+            if solved.assignment is None:
+                raise RuntimeError("SAT solver omitted the satisfying assignment")
+            return AutomaticWordImpossibleSATResult(
+                middle_round,
+                model.decode_trail(solved.assignment),
+                tuple(attempted),
+                "satisfiable",
+            )
+        if solved.status is not SatStatus.UNSATISFIABLE:
+            return AutomaticWordImpossibleSATResult(
+                None, None, tuple(attempted), solved.status.value
+            )
+    return AutomaticWordImpossibleSATResult(
+        None, None, tuple(attempted), "exhausted_unsat"
+    )
 
 
 @dataclass(frozen=True, slots=True)
