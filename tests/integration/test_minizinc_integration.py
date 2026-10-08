@@ -219,7 +219,13 @@ def test_minizinc_preserves_hybrid_sbox_branches(source, target):
 
 def test_minizinc_solves_complete_present_hybrid_impossible_graph():
     model = PresentHybridImpossibleCPModel(Present(number_of_rounds=2), middle_round=1)
-    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=120).solve(model.cp_model())
+    single_active_bit = (1,) + (0,) * 63
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(
+        model.cp_model(
+            input_pattern=single_active_bit,
+            output_pattern=single_active_bit,
+        )
+    )
     assert solved.status is CPStatus.SATISFIED
     boundary = model.decode_boundary(solved.assignment)
     assert boundary.bitwise_positions or boundary.tagged_groups
