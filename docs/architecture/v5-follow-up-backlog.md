@@ -287,7 +287,17 @@ S-box, linear-layer, and monomial audit discoveries:
 
 ## Legacy constraint-backend recovery and benchmarking program
 
-Status: **S-box and bitwise-AND MILP strategies plus SAT/CMS recovery slices implemented; next: remaining CP, MILP, boomerang, and monomial strategies**
+Status: **Complete for the audited established legacy constraint strategies**
+
+The recovery series closed after the backend inventory, focused formulation
+ports, open-solver benchmarks, optional Gurobi boundary, hybrid/continuous CP
+qualification, monomial pool projection, and automatic impossible-split work.
+Every public class in the audited ``origin/develop`` snapshot now maps to an
+implemented strategy, a documented supersession, or an evidence-backed
+do-not-port decision. New component families, new heuristic optimizers, and
+joint orchestration between independently recovered submodels are ordinary
+extension work, not an indefinite legacy-recovery queue. Provenance and exact
+paper-to-encoding claims remain owned by the separate literature audit.
 
 The repository-wide inventory is recorded in
 [`audits/legacy-constraint-backend-inventory.md`](audits/legacy-constraint-backend-inventory.md).
@@ -421,8 +431,9 @@ while the local recovered addition retains its legacy internal representation.
 Decoded trails are independently propagated with typed semantics; MiniSat,
 Kissat, and CryptoMiniSat agree on accepted and rejected ToySpeck-2 boundaries.
 The committed ten-run benchmark uses an identical fixed propagation for all
-three solvers and makes no general performance claim. Impossible and
-semi-/probabilistic truncated SAT variants remain next.
+three solvers and makes no general performance claim. At that checkpoint,
+impossible and semi-/probabilistic truncated SAT variants followed in later
+slices below.
 
 The first impossible-SAT slice recovers the legacy six-clause per-bit
 incompatibility indicator from ``utils.incompatibility`` at commit
@@ -432,8 +443,7 @@ indicator is true exactly for two known opposite trits, including both legacy
 encodings of an unknown value bit. Solver fixtures reproduce the typed
 ``ImpossiblePropagationBoundary`` contradiction positions under MiniSat,
 Kissat, and CryptoMiniSat and reject a compatible boundary. Whole-graph
-forward/backward assembly and a comparable benchmark remain separate next
-steps.
+forward/backward assembly and its benchmark followed in later slices below.
 
 The modular-subtraction prerequisite for backward ARX graphs is recovered as
 ``ModularSubtractDeterministicTruncatedSATModel``. Legacy CLAASP deliberately
@@ -553,9 +563,9 @@ share one positive component tag on one side and are all zero on the other.
 The decoder recomputes both cases without trusting solver indicators. Chuffed
 accepts both contradiction families and rejects equal active tags in the
 [ten-run boundary benchmark](audits/data/cp_hybrid_impossible_boundary_benchmark.json).
-This PR deliberately does not call the boundary a complete hybrid search:
-tagged propagation through whole forward/backward graphs and the legacy
-probabilistic key-schedule mode remain separate recovery work.
+At that checkpoint this local boundary was not called a complete hybrid
+search; tagged graph propagation and the probabilistic key-schedule submodel
+were recovered in the later slices below.
 
 The following hybrid-component slice adds ``HybridXorCPModel`` and
 ``HybridSBoxCPModel``. The XOR rule preserves a nonlinear tag only through a
@@ -627,9 +637,8 @@ It imports ``gurobipy`` only when queried or used, never changes the GLPK
 default, maps all portable domains, bounds, senses, and objectives, and
 independently rechecks returned assignments and objective values. Translation
 is covered with an API-compatible test double because the canonical image has
-no Gurobi installation or license. Legacy monomial-specific searches remain a
-separate recovery target above this solver boundary. The later solution-pool
-slice recovers bounded optimal enumeration while keeping monomial-specific
+no Gurobi installation or license. The later solution-pool and projection
+slices recover bounded optimal enumeration while keeping monomial-specific
 parity interpretation above the driver.
 
 The portable CP differential-linear slice adds
@@ -637,7 +646,7 @@ The portable CP differential-linear slice adds
 preserves the reviewed differential, deterministic-truncated, connector, and
 linear clauses; decoded Chuffed witnesses are independently rechecked by the
 typed composition. The continuous legacy search remains explicitly heuristic
-and outside this proof-producing model.
+and is recovered separately from this proof-producing model.
 
 The matching semi-deterministic CP slice adds
 ``WordSemiDeterministicDifferentialLinearCPModel``. It preserves the recovered
@@ -658,15 +667,15 @@ indicator-based AND abstraction as
 ``BitwiseAndDeterministicTruncatedOneHotMILPModel`` as an explicit portable
 baseline. All nine pairs of one-bit ternary inputs pass GLPK and independent
 typed decoding. The committed 32-bit comparison records formulation size,
-construction, and solve time; remaining truncated MILP components and generic
-graph assembly stay separate recovery slices.
+construction, and solve time; graph assembly followed in a later slice.
 
 The portable graph-level MILP slice adds
 ``WordDeterministicTruncatedMILPModel``. It translates the same exhaustively
 checked ternary clauses used by the SAT model into exact linear inequalities,
 then decodes and independently rechecks the complete Word graph. GLPK solves
 the reviewed fixed-boundary ToySpeck fixture without Sage or a proprietary
-solver; specialized activity and impossible-search strategies remain separate.
+solver; specialized activity and impossible-search strategies followed in
+their dedicated slices.
 
 The deterministic-middle MILP composition adds
 ``WordDeterministicDifferentialLinearMILPModel``. The complete reviewed Boolean
@@ -703,7 +712,7 @@ the corrective branch at ``af85330e`` has SHA-256
 ``ed77f50a89bfc502598f847fddd1ee8ece92e63c3ce059def2c401e8b0fdca8b``.
 The later develop model incorporates the relevant corrections plus additional
 fixes, so the branch is archaeological evidence rather than the sole oracle.
-Whole-graph differential/truncated/linear composition remains a separate
+Whole-graph differential/truncated/linear composition follows in the next
 recovery slice.
 
 The following whole-graph slice adds
@@ -717,7 +726,7 @@ probability to the middle. MiniSat, Kissat, and CryptoMiniSat solve and decode
 the same Speck32/64-3 fixture. The committed ten-run benchmark uses one
 identical 2,543-variable, 7,151-clause formula under all three solvers and
 makes no longer-round performance claim. Paired-input variants and the
-semi-deterministic middle remain separate recovery work.
+semi-deterministic middle were recovered in the following slices.
 
 The shared-difference paired-input slice adds
 ``SharedDifferencePairedWordDifferentialSATModel`` and a typed paired result.
@@ -762,16 +771,16 @@ behavioral parity independently of performance.
 The recovery ledger was reconciled after the cross-backend slices: native-XOR
 functional SAT, probabilistic and semi-deterministic truncated SAT, and both
 differential-linear SAT compositions are implemented and benchmarked. Their
-older table rows no longer remain false-positive TODOs; broader component
-coverage and unaudited provenance stay explicitly open.
+older table rows no longer remain false-positive TODOs; new component families
+are extensions, while unaudited provenance stays explicitly open.
 
 The SMT differential/linear audit confirms that the generic Word models are
 the source Boolean formulations used by their SAT counterparts: variables,
 assertions/clauses, and provenance labels match exactly. Z3 solves and the
 typed independent checkers validate fixed-weight differential and bounded-
 weight linear ToySpeck-2 trails. This closes parity for the reviewed Word
-subset without duplicating it; legacy component kinds outside that subset
-remain explicit recovery work.
+subset without duplicating it; additional component kinds follow the ordinary
+extension process.
 
 The monomial parity follow-up adds ``CubeSuperpolyQuery`` as an exact bounded
 oracle. It evaluates the selected cube and symbolic-key subspace, XORs the cube
@@ -856,8 +865,8 @@ standard validated slicing and inversion transformations can build the two
 halves. Chuffed and GLPK solve the same two-round fixture in the
 [ten-run benchmark](audits/data/wordwise_impossible_graph_benchmark.json).
 This remains an abstract incompatibility witness, not a relabeled concrete
-differential proof. Unsupported components remain explicit rather than being
-silently skipped.
+differential proof. Additional components are rejected explicitly and follow
+the ordinary extension process rather than being silently skipped.
 
 The functional component coverage slice extends the shared Boolean lowering
 with direct OR and NOT truth-table clauses plus zero-filling fixed shifts.
@@ -929,8 +938,8 @@ The generic impossible-differential follow-up factors that construction into
 inputs whose differences are fixed to zero. The original Speck SAT and MILP
 classes remain compatibility specializations with unchanged defaults. This
 closes generic forward/backward assembly for reversible graphs built from the
-reviewed deterministic-truncated Word component subset; unsupported component
-encodings remain separate work.
+reviewed deterministic-truncated Word component subset; additional component
+encodings are extension work.
 
 The automatic-boundary follow-up adds ``find_word_impossible_sat``. It tries
 each internal round split in an explicit deterministic order, stops on the
@@ -940,7 +949,7 @@ also parameterize the equivalent CP or MILP graph formulation. MiniSat,
 Kissat, and CryptoMiniSat select and decode the same Speck32/64-3 split in the
 [ten-run comparison](audits/data/sat_automatic_impossible_split_benchmark.json).
 This restores split selection for the reviewed Word component subset;
-unsupported component encodings remain explicit.
+additional component encodings follow the extension process.
 
 The corresponding CP slice adds ``PresentActiveSBoxesCPModel`` over the same
 two-round exact DDT relation. Native MiniZinc Boolean activity indicators are
@@ -956,8 +965,9 @@ nonempty output-mask choice for a fixed trail. Since every absolute
 correlation is in ``[0, 1]``, choosing one maximum-magnitude position is the
 exact product optimum; the decoder recomputes that value independently. The
 underlying correlations remain ``claim_kind='heuristic'`` and cannot report a
-cryptanalytic proof. Joint input/trail optimization and broader component
-dispatch remain separate work.
+cryptanalytic proof. Joint input/trail optimization and broader dispatch need
+a new heuristic-search contract and are extension work, not a missing exact
+legacy encoding.
 
 The CP second stage adds ``PresentFixedActiveSBoxesCPModel``. It fixes the
 first-stage Boolean activity sum, restores minimization of the exact table
