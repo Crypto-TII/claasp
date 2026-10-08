@@ -4,6 +4,7 @@ from claasp.primitives import Present, Speck, ToySpeck
 from claasp.representations.constraints.cp import (
     PresentActiveSBoxesCPModel,
     PresentFixedActiveSBoxesCPModel,
+    SpeckARXWindowDifferentialCPModel,
     SpeckSemiDeterministicTruncatedCPModel,
     WordDeterministicDifferentialLinearCPModel,
     WordDeterministicTruncatedCPModel,
@@ -11,6 +12,20 @@ from claasp.representations.constraints.cp import (
     WordLinearCPModel,
     WordSemiDeterministicDifferentialLinearCPModel,
 )
+from claasp.semantics import XOR_DIFFERENTIAL
+from claasp.semantics.cryptanalysis import PropagationProblem
+
+
+def test_speck_arx_window_cp_adds_one_pruning_constraint_per_round():
+    model = SpeckARXWindowDifferentialCPModel(
+        PropagationProblem(
+            Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=45
+        ),
+        window_sizes=(3, 3, 3),
+    )
+    query = model.cp_model()
+    assert (len(query.declarations), len(query.constraints)) == (15, 56)
+    assert query.constraint_models[0].model == model.model_provenance
 
 
 def test_present_active_sboxes_cp_reuses_exact_tables():

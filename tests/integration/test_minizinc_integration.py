@@ -18,6 +18,7 @@ from claasp.representations.constraints.cp import (
     SBoxBoomerangCPModel,
     SBoxDifferenceCPModel,
     SimonImpossibleCPModel,
+    SpeckARXWindowDifferentialCPModel,
     SpeckDifferentialCPModel,
     SpeckImpossibleCPModel,
     SpeckProbabilisticTruncatedCPModel,
@@ -67,6 +68,19 @@ def test_minizinc_proves_present_two_round_active_sbox_optimum():
         == 2
     )
     assert len(trail.steps) == 32
+
+
+def test_minizinc_solves_opt_in_speck_arx_window_search():
+    model = SpeckARXWindowDifferentialCPModel(
+        PropagationProblem(
+            Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=45
+        ),
+        window_sizes=(3, 3, 3),
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.total_weight <= 45
 
 
 def test_minizinc_minimizes_weight_at_fixed_present_activity():

@@ -18,6 +18,7 @@ __all__ = [
     "SBoxXorDifferentialCPModel",
     "SimonImpossibleCPModel",
     "SpeckDifferentialCPModel",
+    "SpeckARXWindowDifferentialCPModel",
     "SpeckImpossibleCPModel",
     "SpeckProbabilisticTruncatedCPModel",
     "SpeckSemiDeterministicTruncatedCPModel",
@@ -54,6 +55,10 @@ def __getattr__(name: str):
         from claasp.representations.constraints.cp.trails import SpeckDifferentialCPModel
 
         return SpeckDifferentialCPModel
+    if name == "SpeckARXWindowDifferentialCPModel":
+        from claasp.representations.constraints.cp.trails import SpeckARXWindowDifferentialCPModel
+
+        return SpeckARXWindowDifferentialCPModel
     if name in {
         "ImpossibleBoundaryCPModel",
         "ModularAddDeterministicTruncatedCPModel",

@@ -706,6 +706,13 @@ first-stage Boolean activity sum, restores minimization of the exact table
 weights, and keeps the same native DDT constraints. Chuffed reaches weight four
 at activity two, matching the independently checked MILP result.
 
+The ARX-optimized differential audit establishes that the legacy model's
+distinct behavior is its optional per-round n-window pruning; with the switch
+disabled, its modular-add predicate is the exact relation already used by
+``SpeckDifferentialCPModel``. ``SpeckARXWindowDifferentialCPModel`` restores the
+heuristic explicitly without changing the default. Chuffed solves and typed
+decoding rechecks a three-round Speck32/64 fixture with window size three.
+
 Benchmark recovered and portable strategies under the same primitive, round
 count, boundary conditions, trail objective, solver and version, solver
 settings, hardware, and timeout. Record at least model-construction time,
