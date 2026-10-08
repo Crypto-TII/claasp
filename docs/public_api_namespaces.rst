@@ -613,6 +613,12 @@ claasp.representations.constraints.milp.components.sbox_inequalities
 .. automodule:: claasp.representations.constraints.milp.components.sbox_inequalities
    :no-index:
 
+claasp.representations.constraints.milp.components.xor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.milp.components.xor
+   :no-index:
+
 claasp.representations.constraints.milp.sbox
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

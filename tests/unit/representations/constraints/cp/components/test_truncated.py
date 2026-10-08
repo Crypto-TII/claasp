@@ -4,6 +4,7 @@ import pytest
 
 from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.cp import (
+    HybridImpossibleBoundaryCPModel,
     ModularAddBoomerangCPModel,
     ModularAddDeterministicTruncatedCPModel,
 )
@@ -62,3 +63,24 @@ def test_deterministic_truncated_cp_validates_boundaries():
         ModularAddDeterministicTruncatedCPModel(4).cp_model(left_pattern="0")
     with pytest.raises(ValueError, match="build"):
         ModularAddDeterministicTruncatedCPModel(2).decode_transition({})
+
+
+def test_hybrid_boundary_keeps_bitwise_and_tagged_incompatibilities_distinct():
+    model = HybridImpossibleBoundaryCPModel(4, ((0, 1, 2, 3),))
+    query = model.cp_model(forward=(10, 10, 10, 10), backward=(0, 0, 0, 0))
+    assert "forward_group_tag[0] > 2" in query.constraints[-2]
+    result = model.decode_boundary(
+        {
+            "forward": (10, 10, 10, 10),
+            "backward": (0, 0, 0, 0),
+            "contradiction": (False, False, False, False, True),
+        }
+    )
+    assert result.bitwise_positions == () and result.tagged_groups == (0,)
+
+
+def test_hybrid_boundary_rejects_unverified_assignment():
+    model = HybridImpossibleBoundaryCPModel(2, ((0, 1),))
+    model.cp_model(forward=(10, 10), backward=(10, 10))
+    with pytest.raises(ValueError, match="no independently verified"):
+        model.decode_boundary({"forward": (10, 10), "backward": (10, 10)})
