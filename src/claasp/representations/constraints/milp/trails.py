@@ -367,6 +367,78 @@ class WordDeterministicTruncatedMILPModel:
         return self._sat_model.check_characteristic(trail)
 
 
+class SpeckSemiDeterministicTruncatedMILPModel:
+    """Assemble recovered look-ahead-window Speck trails as MILP.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = SpeckSemiDeterministicTruncatedMILPModel(
+        ...     Speck(number_of_rounds=2),
+        ...     "00000000011111001110000000000000",
+        ...     "???????????????1???????????????1",
+        ... )
+        >>> formulation = model.milp_model()
+        >>> (len(formulation.variables), len(formulation.constraints))
+        (672, 3483)
+    """
+
+    model_provenance = _unaudited_model(
+        ConstraintBackend.MILP,
+        "SpeckSemiDeterministicTruncatedMILPModel",
+        "semi_deterministic_truncated_xor",
+        "exact MILP translation of the recovered look-ahead-window Speck model",
+        "The exact correspondence with a primary-source construction has not been audited.",
+    )
+
+    def __init__(
+        self, primitive, input_pattern, output_pattern, *, maximum_scaled_weight=None
+    ) -> None:
+        from claasp.representations.constraints.sat.trails import (
+            SpeckSemiDeterministicTruncatedSATModel,
+        )
+
+        self._sat_model = SpeckSemiDeterministicTruncatedSATModel(
+            primitive,
+            input_pattern,
+            output_pattern,
+            maximum_scaled_weight=maximum_scaled_weight,
+        )
+        self.primitive = primitive
+        self._model: MILPModel | None = None
+
+    def milp_model(self) -> MILPModel:
+        """Return the exact formulation minimizing recovered scaled weight."""
+
+        from claasp.representations.constraints.milp.lowering import cnf_to_milp
+
+        translated = cnf_to_milp(self._sat_model.cnf_formula())
+        coefficients = {}
+        for variable in translated.variables:
+            if "__weight_" not in variable.name:
+                continue
+            selector = variable.name.split("__weight_", 1)[1].split("_")
+            if len(selector) == 2 and all(part.isdigit() for part in selector):
+                coefficients[variable.name] = int(selector[1])
+        self._model = MILPModel(
+            translated.variables,
+            translated.constraints,
+            LinearExpression.from_terms(coefficients),
+            ObjectiveSense.MINIMIZE,
+            (ConstraintModelApplication(self.model_provenance),),
+        )
+        return self._model
+
+    def decode_trail(self, assignment):
+        """Decode and independently validate the complete Speck trail."""
+
+        if self._model is None:
+            raise ValueError("build the MILP model before decoding")
+        return self._sat_model.decode_trail(
+            {name: int(round(value)) for name, value in assignment.items()}
+        )
+
+
 class WordDeterministicDifferentialLinearMILPModel:
     """Assemble deterministic-middle differential-linear trails as MILP.
 

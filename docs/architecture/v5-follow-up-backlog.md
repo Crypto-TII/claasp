@@ -594,6 +594,12 @@ unaudited estimate from the historical outer objective. The decoded result
 continues to expose ``middle_weight`` separately, and GLPK independently
 validates the differential, middle, and linear sections.
 
+The standalone MILP slice adds ``SpeckSemiDeterministicTruncatedMILPModel``.
+It assigns recovered fixed-point costs only to the six explicit per-bit choice
+selectors—never to the local three-bit weight code—and minimizes their sum.
+GLPK solves the fixed two-round Speck boundary, after which typed decoding
+rechecks every look-ahead-window transition and the complete round wiring.
+
 The first differential-linear SAT slice recovers the local upper and lower
 boundary clauses as ``DifferentialToTruncatedSATModel`` and
 ``TruncatedToLinearSATModel``. Exhaustive Boolean tests establish the complete
