@@ -29,6 +29,8 @@ from claasp.representations.constraints.milp import (
     WordwiseTruncatedMDSMILPModel,
     WordwiseXorEspressoMILPModel,
     WordwiseXorMILPModel,
+    XorImpossiblePointMILPModel,
+    XorParityMILPModel,
     load_bundled_sbox_milp_inequalities,
 )
 from claasp.semantics.cryptanalysis import TrailKind, WordwiseDifferenceKind, WordwiseXorDifference
@@ -79,6 +81,19 @@ def test_glpk_solves_wordwise_mds_strategies(model_type):
     )
     assert solved.status is MILPStatus.OPTIMAL
     assert relation.decode_transition(solved.assignment) == (inputs, outputs)
+
+
+@pytest.mark.parametrize("model_type", (XorParityMILPModel, XorImpossiblePointMILPModel))
+def test_glpk_solves_local_xor_strategies(model_type):
+    relation = model_type(8)
+    solved = GLPKSolver(timeout_seconds=10).solve(
+        relation.milp_model(inputs=(1, 0, 1, 1, 0, 1, 0, 1), output=1)
+    )
+    assert solved.status is MILPStatus.OPTIMAL
+    assert relation.decode_transition(solved.assignment) == (
+        (1, 0, 1, 1, 0, 1, 0, 1),
+        1,
+    )
 
 
 def test_glpk_optimizes_and_returns_an_independently_checked_witness():

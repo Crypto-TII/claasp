@@ -27730,6 +27730,18 @@
       "qualified_name": "claasp.representations.constraints.milp.WordwiseXorMILPModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.XorImpossiblePointMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.XorImpossiblePointMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.XorParityMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.XorParityMILPModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.milp.trails.check_present_milp_trail",
       "defined_in": "claasp.representations.constraints.milp.trails",
       "kind": "function",
@@ -27926,6 +27938,18 @@
       "defined_in": "claasp.representations.constraints.milp.components.truncated",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.milp.components.WordwiseXorMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.XorImpossiblePointMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.XorImpossiblePointMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.XorParityMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.XorParityMILPModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.components.bitwise_and",
@@ -28576,6 +28600,74 @@
       "defined_in": "claasp.representations.constraints.milp.components.truncated",
       "kind": "function",
       "qualified_name": "claasp.representations.constraints.milp.components.wordwise_pattern"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.milp.components.xor"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.XorImpossiblePointMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.xor.XorImpossiblePointMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.XorImpossiblePointMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "documented_by": "claasp.representations.constraints.milp.components.xor.XorImpossiblePointMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.xor.XorImpossiblePointMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.XorImpossiblePointMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.xor.XorImpossiblePointMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.XorParityMILPModel",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.milp.components.xor.XorParityMILPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.XorParityMILPModel.__init__",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "documented_by": "claasp.representations.constraints.milp.components.xor.XorParityMILPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.milp.components.xor.XorParityMILPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.XorParityMILPModel.decode_transition",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.components.xor.XorImpossiblePointMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.xor.XorParityMILPModel.decode_transition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.XorParityMILPModel.milp_model",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "inherited_by": [
+        "claasp.representations.constraints.milp.components.xor.XorImpossiblePointMILPModel"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.milp.components.xor.XorParityMILPModel.milp_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.xor_arities_for_binary_matrix",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "kind": "function",
+      "qualified_name": "claasp.representations.constraints.milp.components.xor.xor_arities_for_binary_matrix"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.xor_arities_for_binary_matrix",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "kind": "function",
+      "qualified_name": "claasp.representations.constraints.milp.components.xor_arities_for_binary_matrix"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp.exporter.LPExporter.__init__",
@@ -29402,6 +29494,12 @@
       "defined_in": "claasp.representations.constraints.milp.components.truncated",
       "kind": "function",
       "qualified_name": "claasp.representations.constraints.milp.wordwise_pattern"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.milp.components.xor.xor_arities_for_binary_matrix",
+      "defined_in": "claasp.representations.constraints.milp.components.xor",
+      "kind": "function",
+      "qualified_name": "claasp.representations.constraints.milp.xor_arities_for_binary_matrix"
     },
     {
       "canonical_name": "claasp.representations.constraints.polynomial",
