@@ -10,6 +10,7 @@ from claasp.representations.constraints.cp import (
     PresentDifferentialCPModel,
     PresentFixedActiveSBoxesCPModel,
     PresentHybridImpossibleCPModel,
+    PresentProbabilisticKeyScheduleCPModel,
     SBoxBoomerangCPModel,
     SBoxBoomerangTrailCPModel,
     SpeckARXWindowDifferentialCPModel,
@@ -147,6 +148,16 @@ def test_present_hybrid_impossible_cp_assembles_both_graph_directions():
     query = model.cp_model()
     assert len(model._forward_models) == len(model._backward_models) == 16
     assert len(model.nonlinear_groups) == 32
+    assert query.constraint_models[0].model == model.model_provenance
+
+
+def test_present_probabilistic_key_schedule_uses_exact_ddt_weights():
+    model = PresentProbabilisticKeyScheduleCPModel(
+        Present(number_of_rounds=2), input_difference=1 << 18
+    )
+    query = model.cp_model()
+    assert (len(query.declarations), len(query.constraints)) == (6, 234)
+    assert query.solve == "solve minimize key_sbox_1_weight + key_sbox_2_weight;"
     assert query.constraint_models[0].model == model.model_provenance
 
 
