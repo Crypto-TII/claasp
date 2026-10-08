@@ -1634,25 +1634,49 @@ class ModularAddBoomerangTrailCPModel:
         "The switch is exact; the search objective preserves the legacy upper-plus-lower cost.",
     )
 
-    def __init__(self, upper, lower, switch, *, lower_input) -> None:
+    def __init__(
+        self,
+        upper,
+        lower,
+        switch,
+        *,
+        lower_input=None,
+        lower_output_input=None,
+        lower_right_input=None,
+    ) -> None:
         if not isinstance(upper, WordDifferentialCPModel) or not isinstance(
             lower, WordDifferentialCPModel
         ):
             raise TypeError("upper and lower must be WordDifferentialCPModel instances")
         if not isinstance(switch, ModularAddBoomerangCPModel):
             raise TypeError("switch must be a ModularAddBoomerangCPModel")
-        if lower_input not in lower.primitive.input_ports:
+        full_switch = lower_output_input is not None or lower_right_input is not None
+        if full_switch == (lower_input is not None):
+            raise ValueError("choose lower_input or both lower_output_input and lower_right_input")
+        if full_switch and (
+            lower_output_input not in lower.primitive.input_ports
+            or lower_right_input not in lower.primitive.input_ports
+        ):
+            raise ValueError("full switch inputs must name bottom-graph inputs")
+        if not full_switch and lower_input not in lower.primitive.input_ports:
             raise ValueError("lower_input must name a bottom-graph input")
         upper_size = upper.primitive.output.value_type.encoded_bit_size
-        lower_size = lower.primitive.input_ports[lower_input].value_type.encoded_bit_size
-        if upper_size != switch.width:
-            raise ValueError("top output must contain exactly one switch word")
-        if lower_size != switch.width:
-            raise ValueError("selected bottom input must contain exactly one switch word")
+        expected_upper_size = 2 * switch.width if full_switch else switch.width
+        if upper_size != expected_upper_size:
+            raise ValueError(f"top output must contain exactly {expected_upper_size} bits")
+        lower_names = (lower_output_input, lower_right_input) if full_switch else (lower_input,)
+        if any(
+            lower.primitive.input_ports[name].value_type.encoded_bit_size != switch.width
+            for name in lower_names
+        ):
+            raise ValueError("each selected bottom input must contain exactly one switch word")
         self.upper = upper
         self.lower = lower
         self.switch = switch
         self.lower_input = lower_input
+        self.lower_output_input = lower_output_input
+        self.lower_right_input = lower_right_input
+        self.full_switch = full_switch
         self._query: MiniZincModel | None = None
 
     @staticmethod
@@ -1704,17 +1728,38 @@ class ModularAddBoomerangTrailCPModel:
         switch_declarations = self._rewrite(switch_query.declarations, switch_names)
         switch_constraints = self._rewrite(switch_query.constraints, switch_names)
         upper_output = self.upper._sat_model._shared._output
-        lower_input = self.lower._sat_model._shared._ports[self.lower_input]
+        lower_inputs = (
+            (
+                self.lower._sat_model._shared._ports[self.lower_output_input],
+                self.lower._sat_model._shared._ports[self.lower_right_input],
+            )
+            if self.full_switch
+            else (self.lower._sat_model._shared._ports[self.lower_input],)
+        )
         links = []
         for bit in range(self.switch.width):
-            links.extend(
-                (
-                    f"constraint switch_delta_left[{bit}] = bool2int("
-                    f"{upper_names[upper_output[self.switch.width - bit - 1]]});",
-                    f"constraint switch_nabla_right[{bit}] = bool2int("
-                    f"{lower_names[lower_input[self.switch.width - bit - 1]]});",
-                )
+            links.append(
+                f"constraint switch_delta_left[{bit}] = bool2int("
+                f"{upper_names[upper_output[self.switch.width - bit - 1]]});"
             )
+            if self.full_switch:
+                links.extend(
+                    (
+                        f"constraint switch_delta_right[{bit}] = bool2int("
+                        f"{upper_names[upper_output[2 * self.switch.width - bit - 1]]});",
+                        f"constraint switch_nabla_output[{bit}] = bool2int("
+                        f"{lower_names[lower_inputs[0][self.switch.width - bit - 1]]});",
+                        f"constraint switch_nabla_right[{bit}] = bool2int("
+                        f"{lower_names[lower_inputs[1][self.switch.width - bit - 1]]});",
+                    )
+                )
+            else:
+                links.append(
+                    f"constraint switch_nabla_right[{bit}] = bool2int("
+                    f"{lower_names[lower_inputs[0][self.switch.width - bit - 1]]});"
+                )
+        if self.full_switch:
+            links.append("constraint sum(switch_nabla_output) + sum(switch_nabla_right) >= 1;")
         upper_weights = tuple(
             upper_names[name]
             for name in self.upper._sat_model._shared._formula.variables
@@ -1773,11 +1818,121 @@ class ModularAddBoomerangTrailCPModel:
         upper = self.upper.decode_characteristic(upper_assignment)
         lower = self.lower.decode_characteristic(lower_assignment)
         switch = self.switch.decode_connectivity(switch_assignment)
-        if upper.output_difference != switch.delta_left.value:
-            raise ValueError("top trail does not meet the modular-add switch")
-        if dict(lower.input_differences)[self.lower_input] != switch.nabla_right.value:
-            raise ValueError("bottom trail does not leave the modular-add switch")
+        if self.full_switch:
+            mask = (1 << self.switch.width) - 1
+            if upper.output_difference >> self.switch.width != switch.delta_left.value:
+                raise ValueError("top trail left operand does not meet the modular-add switch")
+            if upper.output_difference & mask != switch.delta_right.value:
+                raise ValueError("top trail right operand does not meet the modular-add switch")
+            lower_inputs = dict(lower.input_differences)
+            if lower_inputs[self.lower_output_input] != switch.nabla_output.value:
+                raise ValueError("bottom trail output branch does not meet the switch")
+            if lower_inputs[self.lower_right_input] != switch.nabla_right.value:
+                raise ValueError("bottom trail right branch does not meet the switch")
+        else:
+            if upper.output_difference != switch.delta_left.value:
+                raise ValueError("top trail does not meet the modular-add switch")
+            if dict(lower.input_differences)[self.lower_input] != switch.nabla_right.value:
+                raise ValueError("bottom trail does not leave the modular-add switch")
         return ModularAddBoomerangTrailResult(upper, switch, lower)
+
+
+class SpeckBoomerangCPModel:
+    """Automatically partition Speck around one modular-add boomerang switch.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> model = SpeckBoomerangCPModel(
+        ...     Speck(number_of_rounds=3), switch_round=1,
+        ...     upper_maximum_weight=20, lower_maximum_weight=20,
+        ... )
+        >>> "switch_delta_right" in model.cp_model().source()
+        True
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.CP,
+        "SpeckBoomerangCPModel",
+        "boomerang",
+        "automatic immutable Speck graph partition around an exact modular-add switch",
+        "All four switch differences are linked to validated graph slices.",
+    )
+
+    def __init__(
+        self,
+        primitive,
+        *,
+        switch_round,
+        upper_maximum_weight,
+        lower_maximum_weight,
+    ) -> None:
+        from claasp.transformations import slice_primitive
+
+        if primitive.family_name != "speck":
+            raise NotImplementedError("automatic boomerang partitioning currently supports Speck")
+        if (
+            not isinstance(switch_round, int)
+            or isinstance(switch_round, bool)
+            or not 0 <= switch_round < len(primitive.rounds)
+        ):
+            raise ValueError("switch_round must select a Speck round")
+        component = primitive.round_operations[switch_round]["modular_add"]
+        upper_graph = slice_primitive(
+            primitive,
+            component.inputs,
+            family_name=f"{primitive.family_name}_boomerang_upper_{switch_round}",
+        ).primitive
+        lower_graph = slice_primitive(
+            primitive,
+            primitive.output,
+            inputs={"switch_output": component.output, "switch_right": component.inputs[1]},
+            family_name=f"{primitive.family_name}_boomerang_lower_{switch_round}",
+        ).primitive
+        upper_fixed = {"key": 0} if "key" in upper_graph.input_ports else {}
+        lower_fixed = {"key": 0} if "key" in lower_graph.input_ports else {}
+        upper = WordDifferentialCPModel(
+            upper_graph,
+            maximum_weight=upper_maximum_weight,
+            nonzero_input="plaintext",
+            fixed_input_differences=upper_fixed,
+        )
+        lower = WordDifferentialCPModel(
+            lower_graph,
+            maximum_weight=lower_maximum_weight,
+            fixed_input_differences=lower_fixed,
+        )
+        self.primitive = primitive
+        self.switch_round = switch_round
+        self.upper_graph = upper_graph
+        self.lower_graph = lower_graph
+        self._composition = ModularAddBoomerangTrailCPModel(
+            upper,
+            lower,
+            ModularAddBoomerangCPModel(component.output_type.domain.width),
+            lower_output_input="switch_output",
+            lower_right_input="switch_right",
+        )
+
+    def cp_model(self) -> MiniZincModel:
+        """Return the automatically partitioned complete composition."""
+
+        query = self._composition.cp_model()
+        return MiniZincModel(
+            query.declarations,
+            query.constraints,
+            query.solve,
+            query.includes,
+            query.outputs,
+            query.provenance + (f"automatic Speck switch round {self.switch_round}",),
+            query.name_mapping,
+            query.constraint_models + (ConstraintModelApplication(self.model_provenance),),
+        )
+
+    def decode_trail(self, assignment):
+        """Decode the automatically partitioned upper, switch, and lower trail."""
+
+        return self._composition.decode_trail(assignment)
 
 
 @dataclass(frozen=True, slots=True)

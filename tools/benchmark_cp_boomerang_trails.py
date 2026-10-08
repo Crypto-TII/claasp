@@ -13,13 +13,14 @@ from time import monotonic
 from claasp import Primitive, ValueType, Word
 from claasp.components import ModularAdd
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
-from claasp.primitives import Present
+from claasp.primitives import Present, Speck
 from claasp.representations.constraints.cp import (
     ModularAddBoomerangCPModel,
     ModularAddBoomerangTrailCPModel,
     PresentDifferentialCPModel,
     SBoxBoomerangCPModel,
     SBoxBoomerangTrailCPModel,
+    SpeckBoomerangCPModel,
     WordDifferentialCPModel,
 )
 from claasp.semantics import XOR_DIFFERENTIAL
@@ -68,6 +69,15 @@ def _sbox_model():
     )
     component = next(item for item in upper.primitive.components if item.component_id == "sbox_1_0")
     return SBoxBoomerangTrailCPModel(upper, lower, SBoxBoomerangCPModel(component), nibble=0)
+
+
+def _speck_model():
+    return SpeckBoomerangCPModel(
+        Speck(number_of_rounds=3),
+        switch_round=1,
+        upper_maximum_weight=20,
+        lower_maximum_weight=20,
+    )
 
 
 def _benchmark(model_factory, repeats, solver):
@@ -122,6 +132,12 @@ def main():
                 "description": "two exact PRESENT-2 trails joined at one exact S-box BCT switch",
                 "timeout_seconds": 30,
                 "result": _benchmark(_sbox_model, args.repeats, solver),
+            },
+            {
+                "name": "speck_automatic_partition",
+                "description": "Speck-3 automatically partitioned around its round-1 add",
+                "timeout_seconds": 30,
+                "result": _benchmark(_speck_model, args.repeats, solver),
             },
         ),
     }

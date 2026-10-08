@@ -728,7 +728,18 @@ input nibble through the exact PRESENT BCT, and maximizes that switch's quartet
 count. Decoding independently rechecks both DDT trails, the final permutation,
 the selected boundary nibbles, and the BCT count. Chuffed solves ten repeated
 modular-add and S-box compositions in the shared benchmark. Automatic round
-partitioning remains separate; callers choose the switch boundary explicitly.
+partitioning remained separate at that checkpoint.
+
+The automatic ARX partition follow-up adds ``SpeckBoomerangCPModel``. Given a
+Speck graph and switch-round index, it uses immutable dependency slicing to
+derive the complete upper graph ending at both modular-add operands and the
+complete lower graph beginning at the addition output and retained right
+operand. The composition now links all four switch differences—``delta_left``,
+``delta_right``, ``nabla_output``, and ``nabla_right``—and rejects the trivial
+lower boundary. Chuffed solves and independently decodes the resulting
+Speck-3 composition in focused tests and the ten-run benchmark. Arbitrary
+automatic partition policies beyond the explicit Speck round switch remain
+out of scope.
 
 The wordwise-impossible MILP boundary slice adds
 ``WordwiseImpossibleBoundaryMILPModel``. It restores the legacy four-state
