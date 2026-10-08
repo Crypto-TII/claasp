@@ -834,6 +834,12 @@ class Primitive:
 
         return Analysis(self)
 
+    @property
+    def analysis(self):
+        """Return the discoverable high-level analysis namespace."""
+
+        return self.analyze()
+
     def inverse(self, recover_input: str | int = 0, **options):
         """Return a validated inverse graph for one primitive input.
 

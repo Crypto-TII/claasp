@@ -43,11 +43,14 @@
       "disposition": "superseded",
       "evidence": [
         "src/claasp/representations/constraints/smt/word_differential.py",
+        "src/claasp/representations/constraints/sat/trails.py",
+        "src/claasp/analysis/trail_search.py",
+        "docs/architecture/audits/data/trail-search-capability-matrix.json",
         "src/claasp/representations/constraints/smt/speck.py",
         "tests/unit/representations/constraints/smt/test_word_differential.py",
         "tests/unit/representations/constraints/smt/test_speck.py"
       ],
-      "rationale": "v5 replaced the mutable SAT search helpers with typed immutable formula builders and explicit mutually exclusive maximum_weight/fixed_weight contracts. Deterministic bounds, invalid requests, exact weights, masks, and witness validation already have direct evidence.",
+      "rationale": "v5 supersedes the mutable SAT helper architecture, not every legacy catalogue claim. Typed exact Word models now feed a public capability-dispatched SAT optimizer with binary-search minimization, an immediate-lower-bound UNSAT proof, decoded-witness validation, and a machine-tested catalogue matrix. Unsupported S-box, finite-field, variable-shift, multiplication, and other component/domain cases remain explicit semantic gaps.",
       "subject": "Refactor weight-bounded SAT trail search (#525)"
     }
   ],

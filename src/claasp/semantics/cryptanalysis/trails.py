@@ -220,6 +220,70 @@ class Trail:
 
 
 @dataclass(frozen=True, slots=True)
+class TrailSearchMetadata:
+    """Structured solver and optimization metadata for an exact search.
+
+    EXAMPLES::
+
+        >>> TrailSearchMetadata("binary search", solver="MiniSat").solver
+        'MiniSat'
+    """
+
+    technique: str
+    solver: str | None = None
+    solver_version: str | None = None
+    runtime_seconds: float | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class TrailComponentTransition:
+    """One decoded graph component retained as displayable evidence.
+
+    EXAMPLES::
+
+        >>> item = TrailComponentTransition(0, "x", "XOR", None, XorDifference(0, 1))
+        >>> item.weight
+        0.0
+    """
+
+    round_number: int
+    component_id: str
+    component: str
+    input_pattern: BitPattern | None
+    output_pattern: BitPattern
+    local_transition: Transition | None = None
+
+    @property
+    def weight(self) -> float:
+        """Return the local probabilistic weight, or zero for wiring."""
+
+        return 0.0 if self.local_transition is None else self.local_transition.weight
+
+
+@dataclass(frozen=True, slots=True)
+class TrailRoundTransition:
+    """Decoded round boundary and the product of local round transitions.
+
+    EXAMPLES::
+
+        >>> TrailRoundTransition(0, XorDifference(1, 1), 1, 2).weight
+        1.0
+    """
+
+    round_number: int
+    output_pattern: BitPattern
+    numerator: int
+    denominator: int
+    sign: int = 1
+
+    @property
+    def weight(self) -> float:
+        """Return the exact round weight."""
+
+        return inf if not self.numerator else -log2(self.numerator / self.denominator)
+
+
+@dataclass(frozen=True, slots=True)
 class TrailSearchResult:
     """A trail together with its optimization claim and provenance.
 
@@ -235,12 +299,51 @@ class TrailSearchResult:
 
     trail: Trail
     lower_bound: float
-    provenance: str
+    metadata: str | TrailSearchMetadata
+    component_transitions: tuple[TrailComponentTransition, ...] = ()
+    constraint_models: tuple[object, ...] = ()
+    round_transitions: tuple[TrailRoundTransition, ...] = ()
+
+    @property
+    def provenance(self) -> str:
+        """Return a concise provenance description for compatibility."""
+
+        if isinstance(self.metadata, TrailSearchMetadata):
+            return self.metadata.technique
+        return self.metadata
 
     @property
     def is_optimal(self) -> bool:
         """Return whether the trail meets the claimed lower bound."""
         return self.trail.total_weight == self.lower_bound
+
+    def show(self, *, details: bool = False, format: str = "terminal", file=None) -> None:  # noqa: A002
+        """Render a compact round summary and optional component evidence."""
+
+        import sys
+
+        if format not in ("terminal", "markdown"):
+            raise ValueError("trail format must be 'terminal' or 'markdown'")
+        destination = sys.stdout if file is None else file
+        destination.write(
+            f"{self.trail.kind.value} trail: weight {self.trail.total_weight:g}, "
+            f"proved lower bound {self.lower_bound:g}\n"
+        )
+        for round_transition in self.round_transitions:
+            destination.write(
+                f"round {round_transition.round_number + 1}: "
+                f"0x{round_transition.output_pattern.value:x} "
+                f"weight {round_transition.weight:g}\n"
+            )
+        if details:
+            for component_transition in self.component_transitions:
+                destination.write(
+                    f"round {component_transition.round_number + 1} "
+                    f"{component_transition.component_id} "
+                    f"({component_transition.component}): "
+                    f"0x{component_transition.output_pattern.value:x} "
+                    f"weight {component_transition.weight:g}\n"
+                )
 
 
 class SBoxTransitionSemantics:
@@ -545,3 +648,49 @@ class ModularAddLinearSemantics:
         left = transition.input_pattern.value >> self.width
         right = transition.input_pattern.value & self.mask
         return transition == self.xor_linear(left, right, transition.output_pattern.value)
+
+
+class ModularSubtractLinearSemantics(ModularAddLinearSemantics):
+    """Exact signed correlations for two-input subtraction modulo ``2^width``.
+
+    EXAMPLES::
+
+        >>> ModularSubtractLinearSemantics(2).xor_linear(1, 1, 1).is_possible
+        True
+    """
+
+    def xor_linear(self, left_mask: int, right_mask: int, output_mask: int) -> Transition:
+        """Compute the correlation with a two-state borrow automaton.
+
+        EXAMPLES::
+
+            >>> ModularSubtractLinearSemantics(2).xor_linear(0, 0, 0).weight
+            -0.0
+        """
+
+        for value in (left_mask, right_mask, output_mask):
+            if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= self.mask:
+                raise ValueError(f"masks must be integers in range({self.mask + 1})")
+        borrows = {0: 1}
+        for bit in range(self.width):
+            next_borrows: dict[int, int] = defaultdict(int)
+            for borrow, walsh in borrows.items():
+                for left in (0, 1):
+                    for right in (0, 1):
+                        total = left - right - borrow
+                        parity = (
+                            (((left_mask >> bit) & 1) & left)
+                            ^ (((right_mask >> bit) & 1) & right)
+                            ^ (((output_mask >> bit) & 1) & (total & 1))
+                        )
+                        next_borrows[int(total < 0)] += -walsh if parity else walsh
+            borrows = {borrow: value for borrow, value in next_borrows.items() if value}
+        walsh = sum(borrows.values())
+        return Transition(
+            TrailKind.XOR_LINEAR,
+            XorMask((left_mask << self.width) | right_mask, 2 * self.width),
+            XorMask(output_mask, self.width),
+            abs(walsh),
+            1 << (2 * self.width),
+            -1 if walsh < 0 else 1,
+        )

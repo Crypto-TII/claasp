@@ -116,6 +116,35 @@ The search reads the S-box and permutation semantics from the typed graph.
 Every returned transition and the wiring between both substitution layers are
 recomputed by an independent checker in the regression suite.
 
+Generic exact trail search
+--------------------------
+
+``primitive.analysis.find_optimal_trail()`` defaults to XOR-differential
+search.  The facade inspects domains and components and uses the generic exact
+SAT optimizer for supported Word graphs; it never sends an unrelated graph to
+a PRESENT- or Speck-specific validator.  String and typed kinds are accepted:
+
+.. code-block:: python
+
+   from claasp.primitives import Simon
+
+   differential = Simon(number_of_rounds=3).analysis.find_optimal_trail()
+   linear = Simon(number_of_rounds=3).analysis.find_optimal_trail(kind="xor_linear")
+   assert differential.trail.total_weight == 4
+   assert linear.trail.total_weight == 2
+
+``backend="auto"`` retains deliberately optimized dependency-free PRESENT
+and Speck slices and otherwise selects generic SAT when the graph is supported.
+``backend="sat"`` accepts a custom solver.  ``backend="dependency_free"``
+raises a capability error when no specialized implementation exists.
+
+The default input policy activates ``plaintext`` for a keyed block cipher,
+the sole input of a permutation or function, and fixes key/tweak differences
+or masks according to single-key/single-tweak semantics.  Use
+``nonzero_input``, ``fixed_input_differences``, ``fixed_input_masks``, and
+``fixed_inputs`` to override that policy.  Ambiguous multi-input functions
+require an explicit active input.
+
 ARX trail search
 ----------------
 

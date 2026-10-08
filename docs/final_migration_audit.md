@@ -3,9 +3,9 @@
 This generated M11a comparison is review material; the JSON matrix and closure tool are authoritative.
 
 - Legacy records: 581
-- Shipped v5 artifacts: 408
+- Shipped v5 artifacts: 410
 - Legacy dispositions: inapplicable=34, migrate=332, remove=8, supersede=207
-- Reverse classifications: legacy-lineage=367, new-v5=41
+- Reverse classifications: legacy-lineage=369, new-v5=41
 - Mapping relationships: consolidated=57, direct=152, evidence-only=256, inapplicable=34, removed=8, split=74
 
 Every legacy source module, test module, and package marker appears below with its final disposition and reason. Every shipped v5 module or data artifact appears in the reverse table with its predecessor(s) or a new-v5 rationale.
@@ -626,6 +626,7 @@ Relationship means: **direct** for one reviewed destination, **split** for one l
 | `src/claasp/analysis/statistical_datasets.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py`<br>`claasp/cipher_modules/models/utils.py`<br>`claasp/cipher_modules/statistical_tests/dataset_generator.py`<br>`claasp/utils/utils.py` |
 | `src/claasp/analysis/statistical_results.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py`<br>`claasp/cipher_modules/models/utils.py`<br>`claasp/cipher_modules/statistical_tests/dieharder_statistical_tests.py`<br>`claasp/cipher_modules/statistical_tests/nist_statistical_tests.py`<br>`claasp/utils/utils.py` |
 | `src/claasp/analysis/targets.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py`<br>`claasp/cipher_modules/models/utils.py`<br>`claasp/utils/utils.py` |
+| `src/claasp/analysis/trail_search.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py`<br>`claasp/cipher_modules/models/utils.py`<br>`claasp/utils/utils.py` |
 | `src/claasp/analysis/truncated.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py`<br>`claasp/cipher_modules/models/utils.py`<br>`claasp/utils/utils.py` |
 | `src/claasp/annotations/__init__.py` | new-v5 | new | New immutable graph-annotation and execution-trace architecture has no single legacy file predecessor. |
 | `src/claasp/annotations/base.py` | new-v5 | new | New immutable graph-annotation and execution-trace architecture has no single legacy file predecessor. |
@@ -955,6 +956,7 @@ Relationship means: **direct** for one reviewed destination, **split** for one l
 | `src/claasp/representations/constraints/sat/exporters/__init__.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py`<br>`claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py`<br>`claasp/cipher_modules/models/sat/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/sat/exporters/dimacs.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py`<br>`claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py`<br>`claasp/cipher_modules/models/sat/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/sat/lowering.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/milp/utils/generate_inequalities_for_xor_with_n_input_bits.py`<br>`claasp/cipher_modules/models/sat/cms_models/cms_cipher_model.py`<br>`claasp/cipher_modules/models/sat/sat_models/sat_cipher_model.py`<br>`claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py`<br>`claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py`<br>`claasp/cipher_modules/models/sat/utils/utils.py`<br>`claasp/component.py` |
+| `src/claasp/representations/constraints/sat/trails.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py`<br>`claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py`<br>`claasp/cipher_modules/models/sat/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/smt/__init__.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/smt/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/smt/exporter.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/smt/utils/utils.py`<br>`claasp/component.py` |
 | `src/claasp/representations/constraints/smt/formula.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/smt/smt_model.py`<br>`claasp/cipher_modules/models/smt/utils/utils.py`<br>`claasp/component.py` |

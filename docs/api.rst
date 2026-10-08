@@ -25,8 +25,15 @@ Graph transformations
 Semantics and annotations
 -------------------------
 
+.. autoclass:: claasp.semantics.cryptanalysis.trails.TrailSearchMetadata
+
+.. autoclass:: claasp.semantics.cryptanalysis.trails.TrailComponentTransition
+
+.. autoclass:: claasp.semantics.cryptanalysis.trails.TrailRoundTransition
+
 .. automodule:: claasp.semantics
    :members:
+   :exclude-members: TrailComponentTransition,TrailRoundTransition,TrailSearchMetadata
 
 .. automodule:: claasp.annotations
    :members:
@@ -78,7 +85,7 @@ Analysis
 
 .. automodule:: claasp.analysis
    :members:
-   :exclude-members: BitPattern,ModularAddLinearSemantics,ModularAddTransitionSemantics,SBoxTransitionSemantics,Trail,TrailKind,TrailSearchResult,TrailStep,Transition,TruncatedBit,TruncatedXorDifference,XorDifference,XorMask,propagate_two_word_speck_round,truncated_modular_add
+   :exclude-members: BitPattern,ModularAddLinearSemantics,ModularAddTransitionSemantics,SBoxTransitionSemantics,Trail,TrailComponentTransition,TrailKind,TrailRoundTransition,TrailSearchMetadata,TrailSearchResult,TrailStep,Transition,TruncatedBit,TruncatedXorDifference,XorDifference,XorMask,propagate_two_word_speck_round,truncated_modular_add
 
 .. automodule:: claasp.drivers.analysis
    :members:

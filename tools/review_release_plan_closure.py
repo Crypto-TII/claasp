@@ -95,8 +95,8 @@ def validate_plan(plan: dict[str, Any], destination: dict[str, Any]) -> list[str
             "supersede": 207,
         },
         "legacy_records": 581,
-        "v5_artifacts": 408,
-        "v5_by_classification": {"legacy-lineage": 367, "new-v5": 41},
+        "v5_artifacts": 410,
+        "v5_by_classification": {"legacy-lineage": 369, "new-v5": 41},
     }:
         errors.append("review matrix counts are stale")
     return errors

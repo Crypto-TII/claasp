@@ -1,5 +1,3 @@
-import pytest
-
 from claasp.analysis.spn import check_spn_linear_trail, check_spn_trail
 from claasp.primitives import Present, Speck
 
@@ -17,9 +15,11 @@ def test_two_round_present_reproduces_legacy_optimum_and_checks_every_step():
     assert "legacy CLAASP" in result.provenance
 
 
-def test_spn_search_rejects_unreviewed_graphs_explicitly():
-    with pytest.raises(NotImplementedError, match="two-round Speck32/64"):
-        Speck(number_of_rounds=3).analyze().find_lowest_weight_xor_differential_trail()
+def test_non_present_word_graph_is_not_dispatched_to_the_spn_validator():
+    from claasp.analysis.trail_search import require_word_sat_capability
+    from claasp.semantics.cryptanalysis import TrailKind
+
+    require_word_sat_capability(Speck(number_of_rounds=3), TrailKind.XOR_DIFFERENTIAL)
 
 
 def test_three_round_present_reproduces_preserved_linear_weight_and_signs():

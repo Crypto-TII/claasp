@@ -745,6 +745,12 @@
       "qualified_name": "claasp.analysis.TrailKind"
     },
     {
+      "canonical_name": "claasp.analysis.facade.TrailSearchBackend",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "enum",
+      "qualified_name": "claasp.analysis.TrailSearchBackend"
+    },
+    {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult",
       "defined_in": "claasp.semantics.cryptanalysis.trails",
       "kind": "dataclass",
@@ -2175,6 +2181,12 @@
       "qualified_name": "claasp.analysis.facade.Analysis.find_lowest_weight_xor_linear_trail"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.find_optimal_trail",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.find_optimal_trail"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.is_xor_differential_transition_possible",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -2266,6 +2278,34 @@
       "documented_by": "claasp.analysis.facade.AnalysisResult",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.facade.AnalysisResult.values"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.TrailSearchBackend.AUTO",
+      "defined_in": "claasp.analysis.facade",
+      "documented_by": "claasp.analysis.facade.TrailSearchBackend",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.facade.TrailSearchBackend.AUTO"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.TrailSearchBackend.DEPENDENCY_FREE",
+      "defined_in": "claasp.analysis.facade",
+      "documented_by": "claasp.analysis.facade.TrailSearchBackend",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.facade.TrailSearchBackend.DEPENDENCY_FREE"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.TrailSearchBackend.SAT",
+      "defined_in": "claasp.analysis.facade",
+      "documented_by": "claasp.analysis.facade.TrailSearchBackend",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.facade.TrailSearchBackend.SAT"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.TrailSearchBackend.__init__",
+      "defined_in": "claasp.analysis.facade",
+      "documented_by": "claasp.analysis.facade.TrailSearchBackend",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.facade.TrailSearchBackend.__init__"
     },
     {
       "canonical_name": "claasp.analysis.datasets.generate_avalanche_dataset",
@@ -3632,6 +3672,37 @@
       "documented_by": "claasp.analysis.targets.AttackTarget",
       "kind": "constructor",
       "qualified_name": "claasp.analysis.targets.AttackTarget.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.trail_search",
+      "defined_in": "claasp.analysis.trail_search",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.trail_search"
+    },
+    {
+      "canonical_name": "claasp.analysis.trail_search.TrailSearchCapabilityError",
+      "defined_in": "claasp.analysis.trail_search",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.trail_search.TrailSearchCapabilityError"
+    },
+    {
+      "canonical_name": "claasp.analysis.trail_search.TrailSearchCapabilityError.__init__",
+      "defined_in": "claasp.analysis.trail_search",
+      "documented_by": "claasp.analysis.trail_search.TrailSearchCapabilityError",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.trail_search.TrailSearchCapabilityError.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.trail_search.optimize_word_characteristic",
+      "defined_in": "claasp.analysis.trail_search",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.trail_search.optimize_word_characteristic"
+    },
+    {
+      "canonical_name": "claasp.analysis.trail_search.require_word_sat_capability",
+      "defined_in": "claasp.analysis.trail_search",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.trail_search.require_word_sat_capability"
     },
     {
       "canonical_name": "claasp.analysis.truncated",
@@ -9660,6 +9731,168 @@
       ],
       "kind": "method",
       "qualified_name": "claasp.graph.primitive.Primitive.add_round_state"
+    },
+    {
+      "canonical_name": "claasp.graph.primitive.Primitive.analysis",
+      "defined_in": "claasp.graph.primitive",
+      "inherited_by": [
+        "claasp.primitives.block_ciphers.aes.custom.CustomAES",
+        "claasp.primitives.block_ciphers.aes.primitive.AES",
+        "claasp.primitives.block_ciphers.aes.primitive.AES128",
+        "claasp.primitives.block_ciphers.aradi.primitive.Aradi",
+        "claasp.primitives.block_ciphers.aradi.sbox.AradiSBox",
+        "claasp.primitives.block_ciphers.aradi.sbox_compact_linear_map.AradiSBoxCompactLinearMap",
+        "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
+        "claasp.primitives.block_ciphers.ballet.Ballet",
+        "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.cast.Cast",
+        "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
+        "claasp.primitives.block_ciphers.des.primitive.DES",
+        "claasp.primitives.block_ciphers.gift.primitive.Gift",
+        "claasp.primitives.block_ciphers.gift.sbox.GiftSbox",
+        "claasp.primitives.block_ciphers.gost.Gost",
+        "claasp.primitives.block_ciphers.hight.HIGHT",
+        "claasp.primitives.block_ciphers.idea.IDEA",
+        "claasp.primitives.block_ciphers.kalyna.Kalyna",
+        "claasp.primitives.block_ciphers.kasumi.Kasumi",
+        "claasp.primitives.block_ciphers.katan.fsr.KatanFSR",
+        "claasp.primitives.block_ciphers.katan.primitive.Katan",
+        "claasp.primitives.block_ciphers.ktantan.fsr.KtantanFSR",
+        "claasp.primitives.block_ciphers.ktantan.primitive.Ktantan",
+        "claasp.primitives.block_ciphers.lblock.LBlock",
+        "claasp.primitives.block_ciphers.lea.LEA",
+        "claasp.primitives.block_ciphers.led.Led",
+        "claasp.primitives.block_ciphers.lowmc.primitive.LowMC",
+        "claasp.primitives.block_ciphers.midori.Midori",
+        "claasp.primitives.block_ciphers.msx.MSX",
+        "claasp.primitives.block_ciphers.piccolo.Piccolo",
+        "claasp.primitives.block_ciphers.present.Present",
+        "claasp.primitives.block_ciphers.present.Present80",
+        "claasp.primitives.block_ciphers.prince.Prince",
+        "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
+        "claasp.primitives.block_ciphers.raiden.Raiden",
+        "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rectangle.Rectangle",
+        "claasp.primitives.block_ciphers.rijndael.Rijndael",
+        "claasp.primitives.block_ciphers.saecham.Saecham",
+        "claasp.primitives.block_ciphers.serpent.Serpent",
+        "claasp.primitives.block_ciphers.simeck.primitive.Simeck",
+        "claasp.primitives.block_ciphers.simeck.sbox.SimeckSbox",
+        "claasp.primitives.block_ciphers.simon.primitive.Simon",
+        "claasp.primitives.block_ciphers.simon.sbox.SimonSbox",
+        "claasp.primitives.block_ciphers.skinny.Skinny",
+        "claasp.primitives.block_ciphers.skipjack.Skipjack",
+        "claasp.primitives.block_ciphers.sm4.SM4",
+        "claasp.primitives.block_ciphers.sparx.SPARX",
+        "claasp.primitives.block_ciphers.speck.Speck",
+        "claasp.primitives.block_ciphers.speedy.Speedy",
+        "claasp.primitives.block_ciphers.splight.Splight",
+        "claasp.primitives.block_ciphers.subterranean.Subterranean",
+        "claasp.primitives.block_ciphers.tea.TEA",
+        "claasp.primitives.block_ciphers.threefish.Threefish",
+        "claasp.primitives.block_ciphers.tinyjambu.fsr_word.TinyJambuFSRWordBased",
+        "claasp.primitives.block_ciphers.tinyjambu.primitive.TinyJambu",
+        "claasp.primitives.block_ciphers.tinyjambu.word.TinyJambuWordBased",
+        "claasp.primitives.block_ciphers.trax.TRAX",
+        "claasp.primitives.block_ciphers.twine.Twine",
+        "claasp.primitives.block_ciphers.twofish.Twofish",
+        "claasp.primitives.block_ciphers.ublock.primitive.Ublock",
+        "claasp.primitives.block_ciphers.ublock.single_linear_layer.UblockSingleLinearLayer",
+        "claasp.primitives.block_ciphers.uknit.UKNIT",
+        "claasp.primitives.block_ciphers.warp.Warp",
+        "claasp.primitives.block_ciphers.xtea.XTEA",
+        "claasp.primitives.block_functions.a5_1.A51",
+        "claasp.primitives.block_functions.a5_2.A52",
+        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.chacha.ChaChaKeystreamBlock",
+        "claasp.primitives.block_functions.siphash.SiphashMAC",
+        "claasp.primitives.block_functions.snow3g.Snow3G",
+        "claasp.primitives.block_functions.trivium.Trivium",
+        "claasp.primitives.block_functions.zuc.Zuc",
+        "claasp.primitives.functions.blake.Blake",
+        "claasp.primitives.functions.blake2.Blake2",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
+        "claasp.primitives.functions.md5.MD5",
+        "claasp.primitives.functions.sha1.SHA1",
+        "claasp.primitives.functions.sha2.SHA2",
+        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.permutations.ascon.primitive.Ascon",
+        "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
+        "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
+        "claasp.primitives.permutations.chacha.ChaCha",
+        "claasp.primitives.permutations.chaskeypi.ChaskeyPi",
+        "claasp.primitives.permutations.forro.Forro",
+        "claasp.primitives.permutations.gaston.primitive.Gaston",
+        "claasp.primitives.permutations.gaston.sbox.GastonSbox",
+        "claasp.primitives.permutations.gaston.sbox_theta.GastonSboxTheta",
+        "claasp.primitives.permutations.gimli.primitive.Gimli",
+        "claasp.primitives.permutations.gimli.sbox.GimliSbox",
+        "claasp.primitives.permutations.grain_core.GrainCore",
+        "claasp.primitives.permutations.keccak.invertible.KeccakInvertible",
+        "claasp.primitives.permutations.keccak.primitive.Keccak",
+        "claasp.primitives.permutations.keccak.sbox.KeccakSbox",
+        "claasp.primitives.permutations.knot.Knot",
+        "claasp.primitives.permutations.mimc.MiMC",
+        "claasp.primitives.permutations.norx.Norx",
+        "claasp.primitives.permutations.photon.Photon",
+        "claasp.primitives.permutations.poseidon.primitive.Poseidon",
+        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.sparkle.Sparkle",
+        "claasp.primitives.permutations.speckey.Speckey",
+        "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
+        "claasp.primitives.permutations.spongent_pi.precomputation.SpongentPiPrecomputation",
+        "claasp.primitives.permutations.spongent_pi.primitive.SpongentPi",
+        "claasp.primitives.permutations.xoodoo.invertible.XoodooInvertible",
+        "claasp.primitives.permutations.xoodoo.primitive.Xoodoo",
+        "claasp.primitives.permutations.xoodoo.sbox.XoodooSbox",
+        "claasp.primitives.single_component_primitives.add.Add",
+        "claasp.primitives.single_component_primitives.binary_affine_map.BinaryAffineMap",
+        "claasp.primitives.single_component_primitives.bit_vector_sbox.BitVectorSBox",
+        "claasp.primitives.single_component_primitives.bitwise_and.BitwiseAnd",
+        "claasp.primitives.single_component_primitives.bitwise_not.BitwiseNot",
+        "claasp.primitives.single_component_primitives.bitwise_or.BitwiseOr",
+        "claasp.primitives.single_component_primitives.constant.Constant",
+        "claasp.primitives.single_component_primitives.feedback_register.FeedbackRegister",
+        "claasp.primitives.single_component_primitives.idea_multiply.IDEAMultiply",
+        "claasp.primitives.single_component_primitives.identity.Identity",
+        "claasp.primitives.single_component_primitives.linear_map.LinearMap",
+        "claasp.primitives.single_component_primitives.modular_add.ModularAdd",
+        "claasp.primitives.single_component_primitives.modular_multiply.ModularMultiply",
+        "claasp.primitives.single_component_primitives.modular_subtract.ModularSubtract",
+        "claasp.primitives.single_component_primitives.multiply.Multiply",
+        "claasp.primitives.single_component_primitives.permutation.Permutation",
+        "claasp.primitives.single_component_primitives.power.Power",
+        "claasp.primitives.single_component_primitives.rotate.Rotate",
+        "claasp.primitives.single_component_primitives.sbox.SBox",
+        "claasp.primitives.single_component_primitives.shift.Shift",
+        "claasp.primitives.single_component_primitives.variable_rotate.VariableRotate",
+        "claasp.primitives.single_component_primitives.variable_shift.VariableShift",
+        "claasp.primitives.single_component_primitives.xor.Xor",
+        "claasp.primitives.toy_primitives.cipherfour.CipherFour",
+        "claasp.primitives.toy_primitives.fancy.Fancy",
+        "claasp.primitives.toy_primitives.heys.Heys",
+        "claasp.primitives.toy_primitives.speck.ToySpeck",
+        "claasp.primitives.toy_primitives.toyaes.ToyAES",
+        "claasp.primitives.toy_primitives.toyfeistel.ToyFeistel",
+        "claasp.primitives.toy_primitives.toyspn1.ToySPN1",
+        "claasp.primitives.toy_primitives.toyspn2.ToySPN2",
+        "claasp.primitives.tweakable_block_ciphers.bipbip.BipBip",
+        "claasp.primitives.tweakable_block_ciphers.blink.Blink",
+        "claasp.primitives.tweakable_block_ciphers.chilow.Chilow",
+        "claasp.primitives.tweakable_block_ciphers.mantis.Mantis",
+        "claasp.primitives.tweakable_block_ciphers.qarmav2.mixcolumn.QARMAv2MixColumn",
+        "claasp.primitives.tweakable_block_ciphers.qarmav2.primitive.QARMAv2",
+        "claasp.primitives.tweakable_block_ciphers.scarf.SCARF",
+        "claasp.transformations._inverse_realizations.AradiCompactWord",
+        "claasp.transformations._inverse_realizations.GimliTriangular",
+        "claasp.transformations._inverse_realizations.KeccakSboxTheta",
+        "claasp.transformations._inverse_realizations.NorxTriangular",
+        "claasp.transformations._inverse_realizations.QARMAv2Compact",
+        "claasp.transformations._inverse_realizations.XoodooSboxTheta"
+      ],
+      "kind": "property",
+      "qualified_name": "claasp.graph.primitive.Primitive.analysis"
     },
     {
       "canonical_name": "claasp.graph.primitive.Primitive.analyze",
@@ -25826,6 +26059,128 @@
       "qualified_name": "claasp.representations.compile_source"
     },
     {
+      "canonical_name": "claasp.representations.constraints",
+      "defined_in": "claasp.representations.constraints",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintBackend",
+      "defined_in": "claasp.representations.constraints",
+      "kind": "enum",
+      "qualified_name": "claasp.representations.constraints.ConstraintBackend"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintBackend.CP",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintBackend",
+      "kind": "enum_member",
+      "qualified_name": "claasp.representations.constraints.ConstraintBackend.CP"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintBackend.MILP",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintBackend",
+      "kind": "enum_member",
+      "qualified_name": "claasp.representations.constraints.ConstraintBackend.MILP"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintBackend.SAT",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintBackend",
+      "kind": "enum_member",
+      "qualified_name": "claasp.representations.constraints.ConstraintBackend.SAT"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintBackend.SMT",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintBackend",
+      "kind": "enum_member",
+      "qualified_name": "claasp.representations.constraints.ConstraintBackend.SMT"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintBackend.__init__",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintBackend",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.ConstraintBackend.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintModelApplication",
+      "defined_in": "claasp.representations.constraints",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.ConstraintModelApplication"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintModelApplication.__init__",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintModelApplication",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.ConstraintModelApplication.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintModelApplication.component_ids",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintModelApplication",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.ConstraintModelApplication.component_ids"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintModelApplication.model",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintModelApplication",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.ConstraintModelApplication.model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintModelProvenance",
+      "defined_in": "claasp.representations.constraints",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.ConstraintModelProvenance"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintModelProvenance.__init__",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintModelProvenance",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.ConstraintModelProvenance.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintModelProvenance.analysis_kind",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintModelProvenance",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.ConstraintModelProvenance.analysis_kind"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintModelProvenance.backend",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintModelProvenance",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.ConstraintModelProvenance.backend"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintModelProvenance.component_model",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintModelProvenance",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.ConstraintModelProvenance.component_model"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintModelProvenance.encoding_name",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintModelProvenance",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.ConstraintModelProvenance.encoding_name"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.ConstraintModelProvenance.rationale",
+      "defined_in": "claasp.representations.constraints",
+      "documented_by": "claasp.representations.constraints.ConstraintModelProvenance",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.ConstraintModelProvenance.rationale"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.cp",
       "defined_in": "claasp.representations.constraints.cp",
       "kind": "module",
@@ -26205,6 +26560,12 @@
       "defined_in": "claasp.representations.constraints.cp.trails",
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.cp.trails.WordwiseDifferenceCPModel.decode"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.direct_model",
+      "defined_in": "claasp.representations.constraints",
+      "kind": "function",
+      "qualified_name": "claasp.representations.constraints.direct_model"
     },
     {
       "canonical_name": "claasp.representations.constraints.milp",
@@ -27172,6 +27533,18 @@
       "qualified_name": "claasp.representations.constraints.sat.CNFFormula"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.WordDifferentialSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.WordLinearSATModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.cnf.CNFFormula.__init__",
       "defined_in": "claasp.representations.constraints.sat.cnf",
       "documented_by": "claasp.representations.constraints.sat.cnf.CNFFormula",
@@ -27266,6 +27639,74 @@
       "defined_in": "claasp.representations.constraints.sat.lowering",
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.sat.lowering.BooleanCNFModel.witness"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.sat.trails"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.check_characteristic",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.check_characteristic"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.cnf_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.decode_characteristic",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.decode_characteristic"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "documented_by": "claasp.representations.constraints.sat.trails.WordLinearSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.check_characteristic",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.check_characteristic"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.cnf_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.decode_characteristic",
+      "defined_in": "claasp.representations.constraints.sat.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.decode_characteristic"
     },
     {
       "canonical_name": "claasp.representations.constraints.smt",
@@ -28757,6 +29198,12 @@
       "qualified_name": "claasp.semantics.cryptanalysis.BitwiseAndSemantics"
     },
     {
+      "canonical_name": "claasp.semantics.cryptanalysis.bitwise.BitwiseOrSemantics",
+      "defined_in": "claasp.semantics.cryptanalysis.bitwise",
+      "kind": "class",
+      "qualified_name": "claasp.semantics.cryptanalysis.BitwiseOrSemantics"
+    },
+    {
       "canonical_name": "claasp.semantics.cryptanalysis.composed.BoomerangConnectivity",
       "defined_in": "claasp.semantics.cryptanalysis.composed",
       "kind": "dataclass",
@@ -28841,6 +29288,12 @@
       "qualified_name": "claasp.semantics.cryptanalysis.ModularAddTransitionSemantics"
     },
     {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.ModularSubtractLinearSemantics",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "kind": "class",
+      "qualified_name": "claasp.semantics.cryptanalysis.ModularSubtractLinearSemantics"
+    },
+    {
       "canonical_name": "claasp.semantics.cryptanalysis.truncated.ProbabilisticTruncatedModularAddTransition",
       "defined_in": "claasp.semantics.cryptanalysis.truncated",
       "kind": "dataclass",
@@ -28883,10 +29336,28 @@
       "qualified_name": "claasp.semantics.cryptanalysis.Trail"
     },
     {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.TrailComponentTransition"
+    },
+    {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailKind",
       "defined_in": "claasp.semantics.cryptanalysis.trails",
       "kind": "enum",
       "qualified_name": "claasp.semantics.cryptanalysis.TrailKind"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.TrailRoundTransition"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.TrailSearchMetadata"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult",
@@ -29067,20 +29538,42 @@
     {
       "canonical_name": "claasp.semantics.cryptanalysis.bitwise.BitwiseAndSemantics.check",
       "defined_in": "claasp.semantics.cryptanalysis.bitwise",
+      "inherited_by": [
+        "claasp.semantics.cryptanalysis.bitwise.BitwiseOrSemantics"
+      ],
       "kind": "method",
       "qualified_name": "claasp.semantics.cryptanalysis.bitwise.BitwiseAndSemantics.check"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.bitwise.BitwiseAndSemantics.xor_differential",
       "defined_in": "claasp.semantics.cryptanalysis.bitwise",
+      "inherited_by": [
+        "claasp.semantics.cryptanalysis.bitwise.BitwiseOrSemantics"
+      ],
       "kind": "method",
       "qualified_name": "claasp.semantics.cryptanalysis.bitwise.BitwiseAndSemantics.xor_differential"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.bitwise.BitwiseAndSemantics.xor_linear",
       "defined_in": "claasp.semantics.cryptanalysis.bitwise",
+      "inherited_by": [
+        "claasp.semantics.cryptanalysis.bitwise.BitwiseOrSemantics"
+      ],
       "kind": "method",
       "qualified_name": "claasp.semantics.cryptanalysis.bitwise.BitwiseAndSemantics.xor_linear"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bitwise.BitwiseOrSemantics.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.bitwise",
+      "documented_by": "claasp.semantics.cryptanalysis.bitwise.BitwiseOrSemantics",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.bitwise.BitwiseOrSemantics.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bitwise.BitwiseOrSemantics.xor_linear",
+      "defined_in": "claasp.semantics.cryptanalysis.bitwise",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.bitwise.BitwiseOrSemantics.xor_linear"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.activity.branch_number_activity_table",
@@ -29688,12 +30181,18 @@
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.ModularAddLinearSemantics.check",
       "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "inherited_by": [
+        "claasp.semantics.cryptanalysis.trails.ModularSubtractLinearSemantics"
+      ],
       "kind": "method",
       "qualified_name": "claasp.semantics.cryptanalysis.trails.ModularAddLinearSemantics.check"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.ModularAddLinearSemantics.xor_linear",
       "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "inherited_by": [
+        "claasp.semantics.cryptanalysis.trails.ModularSubtractLinearSemantics"
+      ],
       "kind": "method",
       "qualified_name": "claasp.semantics.cryptanalysis.trails.ModularAddLinearSemantics.xor_linear"
     },
@@ -29721,6 +30220,19 @@
       "defined_in": "claasp.semantics.cryptanalysis.trails",
       "kind": "method",
       "qualified_name": "claasp.semantics.cryptanalysis.trails.ModularAddTransitionSemantics.xor_differential"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.ModularSubtractLinearSemantics.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.ModularSubtractLinearSemantics",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.ModularSubtractLinearSemantics.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.ModularSubtractLinearSemantics.xor_linear",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.ModularSubtractLinearSemantics.xor_linear"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.SBoxTransitionSemantics.__init__",
@@ -29819,6 +30331,61 @@
       "qualified_name": "claasp.semantics.cryptanalysis.trails.Trail.total_weight"
     },
     {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.component",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.component"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.component_id",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.component_id"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.input_pattern",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.input_pattern"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.local_transition",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.local_transition"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.output_pattern",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.output_pattern"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.round_number",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.round_number"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.weight",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "kind": "property",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailComponentTransition.weight"
+    },
+    {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailKind.XOR_DIFFERENTIAL",
       "defined_in": "claasp.semantics.cryptanalysis.trails",
       "documented_by": "claasp.semantics.cryptanalysis.trails.TrailKind",
@@ -29846,11 +30413,108 @@
       "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailKind.semantics"
     },
     {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.denominator",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.denominator"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.numerator",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.numerator"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.output_pattern",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.output_pattern"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.round_number",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.round_number"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.sign",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.sign"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.weight",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "kind": "property",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailRoundTransition.weight"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata.runtime_seconds",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata.runtime_seconds"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata.solver",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata.solver"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata.solver_version",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata.solver_version"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata.technique",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchMetadata.technique"
+    },
+    {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.__init__",
       "defined_in": "claasp.semantics.cryptanalysis.trails",
       "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchResult",
       "kind": "constructor",
       "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.component_transitions",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.component_transitions"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.constraint_models",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.constraint_models"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.is_optimal",
@@ -29866,11 +30530,30 @@
       "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.lower_bound"
     },
     {
-      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.provenance",
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.metadata",
       "defined_in": "claasp.semantics.cryptanalysis.trails",
       "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchResult",
       "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.metadata"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.provenance",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "kind": "property",
       "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.provenance"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.round_transitions",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.round_transitions"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.show",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.show"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.trail",

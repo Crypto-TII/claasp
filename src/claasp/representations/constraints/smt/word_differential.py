@@ -5,7 +5,19 @@ from dataclasses import dataclass
 from fractions import Fraction
 from hashlib import sha256
 
-from claasp.components import BitwiseAnd, Constant, Identity, ModularAdd, Rotate, Xor
+from claasp.components import (
+    BitwiseAnd,
+    BitwiseNot,
+    BitwiseOr,
+    Constant,
+    Identity,
+    ModularAdd,
+    ModularSubtract,
+    Permutation,
+    Rotate,
+    Shift,
+    Xor,
+)
 from claasp.domains import Word
 from claasp.drivers.solvers import SatStatus
 from claasp.representations.constraints.smt.formula import SMTFormula
@@ -16,6 +28,7 @@ from claasp.representations.constraints.smt.transitions import (
 )
 from claasp.semantics.cryptanalysis import (
     BitwiseAndSemantics,
+    BitwiseOrSemantics,
     ModularAddTransitionSemantics,
     TrailStep,
 )
@@ -164,7 +177,7 @@ class WordDifferentialSMTModel:
             operands_by_id[component.component_id] = operands
             output = ports[component.component_id]
             width = component.output_type.domain.width
-            if isinstance(component, ModularAdd):
+            if isinstance(component, (ModularAdd, ModularSubtract)):
                 if len(operands) != 2:
                     raise NotImplementedError("differential modular addition requires two operands")
                 for unit in range(component.output_type.unit_count):
@@ -183,15 +196,15 @@ class WordDifferentialSMTModel:
                     }
                     for clause, label in zip(local.assertions, local.provenance):
                         add((mapping[abs(lit)] * (1 if lit > 0 else -1) for lit in clause), label)
-            elif isinstance(component, BitwiseAnd):
+            elif isinstance(component, (BitwiseAnd, BitwiseOr)):
                 for bit, target in enumerate(output):
                     left, right = (indices[operand[bit]] for operand in operands)
                     weight = indices[allocate(f"weight_{component.component_id}_{bit}")]
                     weights.append(variables[weight - 1])
-                    add((left, right, -indices[target]), "and_differential_support")
-                    add((-left, weight), "and_differential_weight")
-                    add((-right, weight), "and_differential_weight")
-                    add((left, right, -weight), "and_differential_weight")
+                    add((left, right, -indices[target]), "bitwise_differential_support")
+                    add((-left, weight), "bitwise_differential_weight")
+                    add((-right, weight), "bitwise_differential_weight")
+                    add((left, right, -weight), "bitwise_differential_weight")
             elif isinstance(component, Xor):
                 for bit, target in enumerate(output):
                     _xor_equivalence(
@@ -200,7 +213,7 @@ class WordDifferentialSMTModel:
                         clauses,
                         provenance,
                     )
-            elif isinstance(component, Identity):
+            elif isinstance(component, (Identity, BitwiseNot)):
                 for source, target in zip(
                     (name for operand in operands for name in operand), output
                 ):
@@ -213,6 +226,34 @@ class WordDifferentialSMTModel:
                             (
                                 operands[0][unit * width + bit],
                                 output[unit * width + (bit + amount) % width],
+                            ),
+                            indices,
+                            clauses,
+                            provenance,
+                        )
+            elif isinstance(component, Shift):
+                amount = min(component.amount, width)
+                for unit in range(component.output_type.unit_count):
+                    base = unit * width
+                    for bit in range(width):
+                        source = bit - amount if component.direction == "right" else bit + amount
+                        target = output[base + bit]
+                        if 0 <= source < width:
+                            _xor_equivalence(
+                                (operands[0][base + source], target),
+                                indices,
+                                clauses,
+                                provenance,
+                            )
+                        else:
+                            add((-indices[target],), "zero_fill_shift_difference")
+            elif isinstance(component, Permutation):
+                for target_unit, source_unit in enumerate(component.mapping):
+                    for bit in range(width):
+                        _xor_equivalence(
+                            (
+                                operands[0][source_unit * width + bit],
+                                output[target_unit * width + bit],
                             ),
                             indices,
                             clauses,
@@ -282,11 +323,15 @@ class WordDifferentialSMTModel:
 
             output = units(self._ports[component.component_id])
             operands = tuple(units(names) for names in self._operands[component.component_id])
-            if isinstance(component, (ModularAdd, BitwiseAnd)):
+            if isinstance(component, (ModularAdd, ModularSubtract, BitwiseAnd, BitwiseOr)):
                 semantics = (
                     ModularAddTransitionSemantics(width)
-                    if isinstance(component, ModularAdd)
-                    else BitwiseAndSemantics(width)
+                    if isinstance(component, (ModularAdd, ModularSubtract))
+                    else (
+                        BitwiseOrSemantics(width)
+                        if isinstance(component, BitwiseOr)
+                        else BitwiseAndSemantics(width)
+                    )
                 )
                 for unit, target in enumerate(output):
                     transition = semantics.xor_differential(
@@ -294,7 +339,7 @@ class WordDifferentialSMTModel:
                     )
                     if not transition.is_possible:
                         return None
-                    if isinstance(component, ModularAdd):
+                    if isinstance(component, (ModularAdd, ModularSubtract)):
                         for bit in range(width - 1):
                             lower = width - 2 - bit
                             triple = tuple(
@@ -327,6 +372,17 @@ class WordDifferentialSMTModel:
                         ((value >> amount) | (value << (width - amount))) & ((1 << width) - 1)
                         for value in operands[0]
                     )
+                elif isinstance(component, Shift):
+                    amount = min(component.amount, width)
+                    mask = (1 << width) - 1
+                    expected = tuple(
+                        (value >> amount)
+                        if component.direction == "right"
+                        else (value << amount) & mask
+                        for value in operands[0]
+                    )
+                elif isinstance(component, Permutation):
+                    expected = tuple(operands[0][position] for position in component.mapping)
                 elif isinstance(component, Constant):
                     expected = (0,) * len(output)
                 else:

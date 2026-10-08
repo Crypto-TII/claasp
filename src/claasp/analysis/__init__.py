@@ -47,7 +47,7 @@ from claasp.analysis.datasets import (
     generate_avalanche_dataset,
     generate_random_dataset,
 )
-from claasp.analysis.facade import Analysis, AnalysisResult
+from claasp.analysis.facade import Analysis, AnalysisResult, TrailSearchBackend
 from claasp.analysis.legacy_evidence import (
     LegacyBoundedDifferentialCluster,
     ublock_three_round_legacy_cluster,
@@ -131,6 +131,7 @@ __all__ = [
     "Analysis",
     "AnalysisProblem",
     "AnalysisResult",
+    "TrailSearchBackend",
     "AttackTarget",
     "AvalancheDataset",
     "AvalancheResult",

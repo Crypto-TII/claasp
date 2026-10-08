@@ -1,0 +1,1223 @@
+{
+  "meaning": {
+    "intentionally_out_of_scope": "the graph domain lacks exact Word XOR semantics",
+    "supported_and_tested": "reduced/default graph and exact CNF construction passed",
+    "unsupported": "a precise component or construction gap remains"
+  },
+  "rows": [
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "A51",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "A52",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "AES",
+      "reason": "input 'plaintext' domain BinaryExtensionField",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Add",
+      "reason": "input 'input_0' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Aradi",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "AradiSBox",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "AradiSBoxCompactLinearMap",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Ascon",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "AsconSboxSigma",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "AsconSboxSigmaNoMatrix",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "BEA1",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Baksheesh",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Ballet",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "BinaryAffineMap",
+      "reason": "input 'input' domain BinaryExtensionField",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "BipBip",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "BitVectorSBox",
+      "reason": "input 'input' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "BitwiseAnd",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": "default",
+      "primitive": "BitwiseNot",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": "default",
+      "primitive": "BitwiseOr",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": "default or number_of_rounds=1",
+      "primitive": "Bivium",
+      "reason": "reduced graph construction: ValueError: clock count must be positive",
+      "xor_differential": "unsupported",
+      "xor_linear": "unsupported"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Blake",
+      "reason": "input 'input_message' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Blake2",
+      "reason": "input 'input_message' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Blink",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "BluetoothE0",
+      "reason": "input 'input_state' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "CHAM",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Cast",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ChaCha",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ChaChaKeystreamBlock",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ChaskeyPi",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Chilow",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default or number_of_rounds=1",
+      "primitive": "CipherFour",
+      "reason": "reduced graph construction: ValueError: position 64 is outside source 'key' with 32 logical units",
+      "xor_differential": "unsupported",
+      "xor_linear": "unsupported"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Constant",
+      "reason": "output domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "DES",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "DESExactKeyLength",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Fancy",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "FeedbackRegister",
+      "reason": "input 'input' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Forro",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Gaston",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "GastonSbox",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "GastonSboxTheta",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Gift",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "GiftSbox",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Gimli",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "GimliSbox",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Gost",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "GrainCore",
+      "reason": "input 'input_state' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "HIGHT",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Heys",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "IDEA",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "IDEAMultiply",
+      "reason": "component 'i_d_e_a_multiply_0_0' (IDEAMultiply)",
+      "xor_differential": "unsupported",
+      "xor_linear": "unsupported"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Identity",
+      "reason": "input 'input' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default or number_of_rounds=1",
+      "primitive": "Kalyna",
+      "reason": "reduced graph construction: KeyError: 1",
+      "xor_differential": "unsupported",
+      "xor_linear": "unsupported"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Kasumi",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Katan",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "KatanFSR",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Keccak",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "KeccakInvertible",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "KeccakSbox",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Knot",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Ktantan",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "KtantanFSR",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "LBlock",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "LEA",
+      "reason": "component 'permutation_0_0' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default or number_of_rounds=1",
+      "primitive": "Led",
+      "reason": "reduced graph construction: AssertionError: Number of rounds must be a multiple of 4.",
+      "xor_differential": "unsupported",
+      "xor_linear": "unsupported"
+    },
+    {
+      "configuration": "default",
+      "primitive": "LinearMap",
+      "reason": "input 'input' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default or number_of_rounds=1",
+      "primitive": "LowMC",
+      "reason": "reduced graph construction: ValueError: No available number of sboxes for the given parameters.",
+      "xor_differential": "unsupported",
+      "xor_linear": "unsupported"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "MD5",
+      "reason": "input 'input_message' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "MSX",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Mantis",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Midori",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "ModularAdd",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": "default",
+      "primitive": "ModularMultiply",
+      "reason": "component 'modular_multiply_0_0' (ModularMultiply)",
+      "xor_differential": "unsupported",
+      "xor_linear": "unsupported"
+    },
+    {
+      "configuration": "default",
+      "primitive": "ModularSubtract",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Multiply",
+      "reason": "input 'input_0' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Norx",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Permutation",
+      "reason": "input 'input' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Photon",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Piccolo",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Power",
+      "reason": "input 'input' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Present",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Prince",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "PrinceV2",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "QARMAv2",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "QARMAv2MixColumn",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "RC5",
+      "reason": "component 'modular_add_0_5' (ModularAdd) arity 3",
+      "xor_differential": "unsupported",
+      "xor_linear": "unsupported"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Raiden",
+      "reason": "component 'variable_shift_0_1' (VariableShift)",
+      "xor_differential": "unsupported",
+      "xor_linear": "unsupported"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Rectangle",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Rijndael",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Rotate",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": "default",
+      "primitive": "SBox",
+      "reason": "component 's_box_0_0' (SBox)",
+      "xor_differential": "unsupported",
+      "xor_linear": "unsupported"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SCARF",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SHA1",
+      "reason": "input 'input_message' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SHA2",
+      "reason": "input 'input_message' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SM4",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SPARX",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Saecham",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Salsa",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Serpent",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Shift",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Simeck",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SimeckSbox",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Simon",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SimonSbox",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "SiphashMAC",
+      "reason": "input 'input_message' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Skinny",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Skipjack",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_initialization_clocks": 1
+      },
+      "primitive": "Snow3G",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Sparkle",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Speck",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Speckey",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Speedy",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Splight",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SpongentPi",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SpongentPiFSR",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SpongentPiPrecomputation",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Subterranean",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "TEA",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Threefish",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "TinyJambu",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "TinyJambuFSRWordBased",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "TinyJambuWordBased",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ToyAES",
+      "reason": "input 'key' domain BinaryExtensionField",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ToyFeistel",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ToySPN1",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ToySPN2",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Trax",
+      "reason": "component 'modular_add_0_1' (ModularAdd) arity 3",
+      "xor_differential": "unsupported",
+      "xor_linear": "unsupported"
+    },
+    {
+      "configuration": {
+        "keystream_bit_size": 1,
+        "number_of_initialization_clocks": 1
+      },
+      "primitive": "Trivium",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Twine",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Twofish",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "UKNIT",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Ublock",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "UblockSingleLinearLayer",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "VariableRotate",
+      "reason": "component 'variable_rotate_0_0' (VariableRotate)",
+      "xor_differential": "unsupported",
+      "xor_linear": "unsupported"
+    },
+    {
+      "configuration": "default",
+      "primitive": "VariableShift",
+      "reason": "component 'variable_shift_0_0' (VariableShift)",
+      "xor_differential": "unsupported",
+      "xor_linear": "unsupported"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Warp",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Whirlpool",
+      "reason": "input 'input_message' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "XTEA",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Xoodoo",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "XoodooInvertible",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "XoodooSbox",
+      "reason": "input 'plaintext' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Xor",
+      "reason": null,
+      "xor_differential": "supported_and_tested",
+      "xor_linear": "supported_and_tested"
+    },
+    {
+      "configuration": {
+        "number_of_initialization_clocks": 1
+      },
+      "primitive": "Zuc",
+      "reason": "input 'key' domain Bit",
+      "xor_differential": "intentionally_out_of_scope",
+      "xor_linear": "intentionally_out_of_scope"
+    }
+  ],
+  "schema": 1
+}

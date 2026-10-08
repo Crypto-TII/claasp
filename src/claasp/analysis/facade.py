@@ -2,6 +2,7 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from enum import Enum
 from hashlib import sha256
 
 from claasp.analysis.boolean import lower_boolean_problem
@@ -15,6 +16,21 @@ from claasp.representations.constraints.sat.encoding import (
     decode_unit,
     resolved_selection_variable_names,
 )
+from claasp.semantics.cryptanalysis import TrailKind
+
+
+class TrailSearchBackend(str, Enum):
+    """Public exact trail-search backend selection.
+
+    EXAMPLES::
+
+        >>> TrailSearchBackend.SAT.value
+        'sat'
+    """
+
+    AUTO = "auto"
+    SAT = "sat"
+    DEPENDENCY_FREE = "dependency_free"
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,16 +204,101 @@ class Analysis:
         )
         return self.solve(problem, solver)
 
-    def find_lowest_weight_xor_differential_trail(self):
-        """Find the lowest-weight trail supported by the reviewed graph slice."""
+    def find_lowest_weight_xor_differential_trail(
+        self,
+        *,
+        solver=None,
+        nonzero_input=None,
+        fixed_input_differences=None,
+    ):
+        """Find an exact minimum-weight XOR-differential characteristic."""
 
+        return self.find_optimal_trail(
+            solver=solver,
+            nonzero_input=nonzero_input,
+            fixed_input_differences=fixed_input_differences,
+        )
+
+    def find_optimal_trail(
+        self,
+        kind: TrailKind | str = TrailKind.XOR_DIFFERENTIAL,
+        *,
+        backend: TrailSearchBackend | str = TrailSearchBackend.AUTO,
+        solver=None,
+        nonzero_input=None,
+        fixed_input_differences=None,
+        fixed_input_masks=None,
+        fixed_inputs=None,
+    ):
+        """Find a proved optimum using graph capabilities, not a family fallback."""
+
+        try:
+            selected_kind = kind if isinstance(kind, TrailKind) else TrailKind(kind)
+        except (TypeError, ValueError) as error:
+            supported = ", ".join(item.value for item in TrailKind)
+            raise ValueError(
+                f"unsupported trail kind {kind!r}; choose one of {supported}"
+            ) from error
+        try:
+            selected_backend = (
+                backend if isinstance(backend, TrailSearchBackend) else TrailSearchBackend(backend)
+            )
+        except (TypeError, ValueError) as error:
+            supported = ", ".join(item.value for item in TrailSearchBackend)
+            raise ValueError(
+                f"unsupported trail-search backend {backend!r}; choose one of {supported}"
+            ) from error
+
+        specialized = self._dependency_free_trail_search(selected_kind)
+        if selected_backend is TrailSearchBackend.DEPENDENCY_FREE:
+            if solver is not None:
+                raise TypeError("dependency-free trail search cannot consume a custom solver")
+            if specialized is None:
+                raise NotImplementedError(
+                    f"primitive {self.primitive.family_name!r}, analysis {selected_kind.value!r}, "
+                    "backend 'dependency_free': no specialized exact implementation exists"
+                )
+            return specialized()
+        if (
+            selected_backend is TrailSearchBackend.AUTO
+            and solver is None
+            and specialized is not None
+        ):
+            return specialized()
+
+        from claasp.analysis.trail_search import optimize_word_characteristic
+
+        return optimize_word_characteristic(
+            self.primitive,
+            selected_kind,
+            solver=solver,
+            nonzero_input=nonzero_input,
+            fixed_input_differences=fixed_input_differences,
+            fixed_input_masks=fixed_input_masks,
+            fixed_inputs=fixed_inputs,
+        )
+
+    def _dependency_free_trail_search(self, kind):
+        rounds = len(self.primitive.rounds)
+        if self.primitive.family_name == "present":
+            if kind is TrailKind.XOR_DIFFERENTIAL and rounds == 2:
+                from claasp.analysis.spn import find_two_round_spn_xor_differential
+
+                return lambda: find_two_round_spn_xor_differential(self.primitive)
+            if kind is TrailKind.XOR_LINEAR and rounds == 3:
+                from claasp.analysis.spn import find_three_round_spn_xor_linear
+
+                return lambda: find_three_round_spn_xor_linear(self.primitive)
         if self.primitive.family_name == "speck":
-            from claasp.analysis.arx import find_two_round_speck_xor_differential
+            if kind is TrailKind.XOR_DIFFERENTIAL and rounds == 2:
+                from claasp.analysis.arx import find_two_round_speck_xor_differential
 
-            return find_two_round_speck_xor_differential(self.primitive)
-        from claasp.analysis.spn import find_two_round_spn_xor_differential
+                return lambda: find_two_round_speck_xor_differential(self.primitive)
+            if kind is TrailKind.XOR_LINEAR and rounds == 4:
+                from claasp.analysis.arx import find_four_round_speck_xor_linear
 
-        return find_two_round_spn_xor_differential(self.primitive)
+                return lambda: find_four_round_speck_xor_linear(self.primitive)
+        return None
 
     def avalanche(
         self,
@@ -356,7 +457,7 @@ class Analysis:
         *,
         fixed_weight=None,
         solver=None,
-        nonzero_input="plaintext",
+        nonzero_input=None,
         fixed_input_differences=None,
         output_difference=None,
         limit=1000,
@@ -366,19 +467,17 @@ class Analysis:
         The default is single-key (key difference zero). Select a nonzero
         key input to include related-key propagation instead.
         """
+        from claasp.analysis.trail_search import resolve_input_policy
         from claasp.drivers.solvers import Z3Solver
         from claasp.representations.constraints.smt import WordDifferentialSMTModel
 
-        if fixed_input_differences is None:
-            fixed_input_differences = (
-                {"key": 0} if "key" in self.primitive.input_ports and nonzero_input != "key" else {}
-            )
+        policy = resolve_input_policy(self.primitive, nonzero_input, fixed_input_differences)
         model = WordDifferentialSMTModel(
             self.primitive,
             maximum_weight=maximum_weight,
             fixed_weight=fixed_weight,
-            nonzero_input=nonzero_input,
-            fixed_input_differences=fixed_input_differences,
+            nonzero_input=policy.nonzero_input,
+            fixed_input_differences=policy.fixed_patterns,
             output_difference=output_difference,
         )
         return model.enumerate_trails(Z3Solver() if solver is None else solver, limit=limit)
@@ -388,7 +487,7 @@ class Analysis:
         maximum_weight,
         *,
         solver=None,
-        nonzero_input="plaintext",
+        nonzero_input=None,
         fixed_input_masks=None,
         fixed_inputs=None,
         limit=1000,
@@ -399,32 +498,49 @@ class Analysis:
         Requesting ``nonzero_input="key"`` instead includes key-schedule masks.
         Solver execution is optional and separate from graph realization.
         """
+        from claasp.analysis.trail_search import resolve_input_policy
         from claasp.drivers.solvers import Z3Solver
         from claasp.representations.constraints.smt import WordLinearSMTModel
 
+        policy = resolve_input_policy(
+            self.primitive,
+            nonzero_input,
+            fixed_input_masks,
+            add_key_tweak_defaults=False,
+        )
         if fixed_inputs is None and fixed_input_masks is None:
-            fixed_inputs = (
-                {"key": 0} if "key" in self.primitive.input_ports and nonzero_input != "key" else {}
-            )
+            fixed_inputs = {
+                name: 0
+                for name in self.primitive.input_ports
+                if name != policy.nonzero_input
+                and ("key" in name.lower() or "tweak" in name.lower())
+            }
         model = WordLinearSMTModel(
             self.primitive,
             maximum_weight=maximum_weight,
-            nonzero_input=nonzero_input,
-            fixed_input_masks=fixed_input_masks,
+            nonzero_input=policy.nonzero_input,
+            fixed_input_masks=policy.fixed_patterns,
             fixed_inputs=fixed_inputs,
         )
         return model.enumerate_trails(Z3Solver() if solver is None else solver, limit=limit)
 
-    def find_lowest_weight_xor_linear_trail(self):
-        """Find the lowest-weight linear trail supported by the reviewed slice."""
+    def find_lowest_weight_xor_linear_trail(
+        self,
+        *,
+        solver=None,
+        nonzero_input=None,
+        fixed_input_masks=None,
+        fixed_inputs=None,
+    ):
+        """Find an exact minimum-weight XOR-linear characteristic."""
 
-        if self.primitive.family_name == "speck":
-            from claasp.analysis.arx import find_four_round_speck_xor_linear
-
-            return find_four_round_speck_xor_linear(self.primitive)
-        from claasp.analysis.spn import find_three_round_spn_xor_linear
-
-        return find_three_round_spn_xor_linear(self.primitive)
+        return self.find_optimal_trail(
+            TrailKind.XOR_LINEAR,
+            solver=solver,
+            nonzero_input=nonzero_input,
+            fixed_input_masks=fixed_input_masks,
+            fixed_inputs=fixed_inputs,
+        )
 
     def _project(self, selection: Selection, assignment: Mapping[str, int]) -> tuple[int, ...]:
         return tuple(

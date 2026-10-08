@@ -9540,9 +9540,9 @@
       "supersede": 207
     },
     "legacy_records": 581,
-    "v5_artifacts": 408,
+    "v5_artifacts": 410,
     "v5_by_classification": {
-      "legacy-lineage": 367,
+      "legacy-lineage": 369,
       "new-v5": 41
     }
   },
@@ -9777,6 +9777,15 @@
         "claasp/utils/utils.py"
       ],
       "path": "src/claasp/analysis/targets.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py",
+        "claasp/cipher_modules/models/utils.py",
+        "claasp/utils/utils.py"
+      ],
+      "path": "src/claasp/analysis/trail_search.py"
     },
     {
       "classification": "legacy-lineage",
@@ -12381,6 +12390,16 @@
         "claasp/component.py"
       ],
       "path": "src/claasp/representations/constraints/sat/lowering.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py",
+        "claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py",
+        "claasp/cipher_modules/models/sat/utils/utils.py",
+        "claasp/component.py"
+      ],
+      "path": "src/claasp/representations/constraints/sat/trails.py"
     },
     {
       "classification": "legacy-lineage",
