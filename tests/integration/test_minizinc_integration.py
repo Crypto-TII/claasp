@@ -20,6 +20,7 @@ from claasp.representations.constraints.cp import (
     PresentLinearCPModel,
     ProbabilisticTruncatedModularAddCPModel,
     SBoxBoomerangCPModel,
+    SBoxBoomerangTrailCPModel,
     SBoxDifferenceCPModel,
     SimonImpossibleCPModel,
     SpeckARXWindowDifferentialCPModel,
@@ -479,6 +480,22 @@ def test_minizinc_preserves_exact_present_boomerang_connectivity_entries():
     assert solved.status is CPStatus.SATISFIED
     assert entry.count == 4
     assert entry.weight == 2
+
+
+def test_minizinc_solves_and_decodes_present_sbox_boomerang_composition():
+    upper = PresentDifferentialCPModel(
+        PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
+    )
+    lower = PresentDifferentialCPModel(
+        PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
+    )
+    component = next(item for item in upper.primitive.components if item.component_id == "sbox_1_0")
+    model = SBoxBoomerangTrailCPModel(upper, lower, SBoxBoomerangCPModel(component), nibble=0)
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.switch.is_possible
+    assert trail.total_weight >= trail.search_weight
 
 
 @pytest.mark.emulation_sensitive

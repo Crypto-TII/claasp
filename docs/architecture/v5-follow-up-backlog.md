@@ -719,7 +719,16 @@ exact carry/borrow automaton, and minimizes the recovered upper-plus-lower
 characteristic cost. Decoding independently checks both trails and recomputes
 the switch quartet count; the result reports the search weight separately from
 the exact decoded weight including that switch. Automatic legacy graph
-partitioning and S-box-switch graph assembly remain distinct work.
+partitioning remained distinct work at that checkpoint.
+
+The S-box boomerang assembly follow-up adds
+``SBoxBoomerangTrailCPModel``. It namespaces two complete bounded PRESENT-2
+differential characteristics, links a selected upper output nibble and lower
+input nibble through the exact PRESENT BCT, and maximizes that switch's quartet
+count. Decoding independently rechecks both DDT trails, the final permutation,
+the selected boundary nibbles, and the BCT count. Chuffed solves ten repeated
+modular-add and S-box compositions in the shared benchmark. Automatic round
+partitioning remains separate; callers choose the switch boundary explicitly.
 
 The wordwise-impossible MILP boundary slice adds
 ``WordwiseImpossibleBoundaryMILPModel``. It restores the legacy four-state
