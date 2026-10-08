@@ -543,6 +543,14 @@ the committed ten-run benchmark characterizes this portable baseline. It does
 not replace recovered component-specific convex hulls or the still-optional
 Gurobi capability.
 
+The optional solver slice adds ``GurobiSolver`` for every portable ``MILPModel``.
+It imports ``gurobipy`` only when queried or used, never changes the GLPK
+default, maps all portable domains, bounds, senses, and objectives, and
+independently rechecks returned assignments and objective values. Translation
+is covered with an API-compatible test double because the canonical image has
+no Gurobi installation or license. Legacy monomial-specific searches remain a
+separate recovery target above this solver boundary.
+
 The portable CP differential-linear slice adds
 ``WordDeterministicDifferentialLinearCPModel``. Exact MiniZinc translation
 preserves the reviewed differential, deterministic-truncated, connector, and

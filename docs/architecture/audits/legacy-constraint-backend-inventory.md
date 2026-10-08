@@ -71,7 +71,7 @@ representation layer.
 | `MilpWordwiseDeterministicTruncatedXorDifferentialModel` | Wordwise deterministic truncated search | Finite-relation infrastructure and shared semantics | Partial; recover generic assembly |
 | `MilpBitwiseImpossibleXorDifferentialModel` | Bitwise impossible differential | Reviewed CP boundary models only | Recover |
 | `MilpWordwiseImpossibleXorDifferentialModel` | Wordwise impossible differential | Shared semantics only | Recover |
-| `MilpMonomialPredictionModel` | Gurobi monomial prediction, division-property bounds, degree, superpoly, and key-coefficient searches | Portable local transition, PRESENT trail, and Boolean graph monomial models | Partial; preserve the additional searches as optional strategies and benchmark them against the portable MILP path |
+| `MilpMonomialPredictionModel` | Gurobi monomial prediction, division-property bounds, degree, superpoly, and key-coefficient searches | Portable monomial models plus optional non-default `GurobiSolver` | Partial; preserve the additional searches as optional strategies and benchmark them against the portable MILP path |
 
 ### SAT and CryptoMiniSat
 
