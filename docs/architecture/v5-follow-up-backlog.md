@@ -692,6 +692,15 @@ weight linear ToySpeck-2 trails. This closes parity for the reviewed Word
 subset without duplicating it; legacy component kinds outside that subset
 remain explicit recovery work.
 
+The monomial parity follow-up adds ``CubeSuperpolyQuery`` as an exact bounded
+oracle. It evaluates the selected cube and symbolic-key subspace, XORs the cube
+values, and applies the Boolean Möbius transform to report the superpoly ANF
+and individual key-monomial coefficients. This is deliberately separate from
+MILP reachability: feasibility cannot detect even cancellation. The explicit
+dimension guard makes the exponential cost visible; the optional Gurobi
+driver remains available for a future scalable solution-pool strategy and is
+not selected by default.
+
 The first active-S-box recovery adds ``PresentActiveSBoxesMILPModel``. It keeps
 the exact two-round PRESENT DDT feasible region byte-for-byte identical to the
 weighted trail model and changes only the objective to count selectors with a
