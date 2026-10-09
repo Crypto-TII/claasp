@@ -5,7 +5,7 @@ import pytest
 from claasp import Bit, Primitive, ValueType
 from claasp.components import Add
 from claasp.drivers.solvers import MinisatSolver, SatStatus
-from claasp.primitives import Present80, Simon, Speck
+from claasp.primitives import BitVectorSBox, Present80, Simon, Speck
 from claasp.representations.constraints.sat import BooleanCNFModel
 
 pytestmark = pytest.mark.external
@@ -81,3 +81,10 @@ def test_and_word_graph_recovers_a_simon_plaintext():
     assert result.is_satisfiable
     assert result.value("plaintext") == plaintext
     assert primitive.evaluate(result.value("plaintext"), key) == ciphertext
+
+
+def test_minisat_public_trail_search_accepts_a_bit_graph():
+    result = BitVectorSBox(2).analysis.find_optimal_trail(backend="sat")
+
+    assert result.is_optimal
+    assert result.trail.total_weight == result.lower_bound == 0

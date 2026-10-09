@@ -5,7 +5,7 @@ import pytest
 
 from claasp.analysis import AnalysisProblem, FixedValue
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
-from claasp.primitives import AES, Present, Simon, Speck
+from claasp.primitives import AES, BitVectorSBox, Present, Simon, Speck
 from claasp.representations.constraints.cp import (
     ImpossibleBoundaryCPModel,
     MiniZincModel,
@@ -103,6 +103,17 @@ def test_minizinc_reports_unsatisfiable_models():
 
     assert result.status is CPStatus.UNSATISFIABLE
     assert result.values is None
+
+
+def test_minizinc_public_trail_search_accepts_a_bit_graph():
+    result = BitVectorSBox(2).analysis.find_optimal_trail(
+        backend="cp",
+        solver=MiniZincSolver(solver=_test_solver(), timeout_seconds=30),
+    )
+
+    assert result.is_optimal
+    assert result.trail.total_weight == result.lower_bound == 0
+    assert "CP" in result.metadata.technique
 
 
 def test_minizinc_recovers_and_independently_verifies_reduced_speck_key():

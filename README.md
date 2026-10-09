@@ -26,7 +26,11 @@ The current candidate is awaiting manual review and AO analysis validation.
 Reviewers should start with the
 [successor review/release plan](docs/architecture/v5-review-and-release-plan.md),
 the [short v5 change summary](docs/architecture/v5-main-changes.md), and the
-[complete legacy-to-v5 and v5-to-legacy mapping](docs/final_migration_audit.md).
+[complete legacy-to-v5 and v5-to-legacy disposition mapping](docs/final_migration_audit.md).
+That mapping records where legacy code was migrated, replaced, removed, or
+declared inapplicable; it is not by itself a claim that every legacy public API
+has executable parity. Capability-specific audit pages and tests are the
+authority for executable parity.
 
 The legacy v4 implementation and its Sage-based environment are retained in
 the `v4-maintenance` branch, not in the CLAASP 5 release tree.

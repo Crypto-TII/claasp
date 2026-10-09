@@ -21,7 +21,13 @@ def test_trail_search_capability_matrix_is_complete_and_current():
     )
     assert {row["primitive"] for row in committed["rows"]} == set(ALL_EXPORTS)
     assert all(
-        row[kind] in {"supported_and_tested", "unsupported", "intentionally_out_of_scope"}
+        row[kind] in {"supported_and_tested", "unsupported"}
+        for row in committed["rows"]
+        for kind in ("xor_differential", "xor_linear")
+    )
+    assert all(
+        (row[f"{kind}_reason"] is None) == (row[kind] == "supported_and_tested")
+        and (row[f"{kind}_limitation"] is None) == (row[kind] == "supported_and_tested")
         for row in committed["rows"]
         for kind in ("xor_differential", "xor_linear")
     )

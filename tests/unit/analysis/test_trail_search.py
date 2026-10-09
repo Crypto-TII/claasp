@@ -8,6 +8,7 @@ from claasp.primitives import (
     AES,
     CHAM,
     SPARX,
+    Ascon,
     ChaCha,
     Present,
     Salsa,
@@ -15,6 +16,7 @@ from claasp.primitives import (
     Simon,
     Speck,
     Threefish,
+    VariableShift,
 )
 from claasp.representations.constraints.sat import WordDifferentialSATModel, WordLinearSATModel
 from claasp.semantics.cryptanalysis import TrailKind
@@ -44,16 +46,25 @@ def test_confirmed_word_catalogue_graphs_construct_for_both_kinds(primitive, kin
     assert model.cnf_formula().variable_count
 
 
-def test_unsupported_error_names_actual_primitive_kind_backend_and_domain():
+def test_bit_and_binary_field_graphs_construct_exact_differential_models():
+    for primitive in (Ascon(number_of_rounds=1), AES(number_of_rounds=1)):
+        require_word_sat_capability(primitive, TrailKind.XOR_DIFFERENTIAL)
+        assert WordDifferentialSATModel(primitive).cnf_formula().variable_count
+
+
+def test_unsupported_error_names_actual_primitive_kind_backend_and_component():
     with pytest.raises(NotImplementedError) as error:
-        AES(number_of_rounds=1).analysis.find_optimal_trail(backend="sat")
+        VariableShift().analysis.find_optimal_trail(backend="sat")
     message = str(error.value)
-    assert "aes" in message
+    assert "variable_shift" in message
     assert "xor_differential" in message
     assert "backend 'sat'" in message
-    assert "BinaryExtensionField" in message
+    assert "VariableShift" in message
     assert "present" not in message.lower()
     assert "speck" not in message.lower()
+
+    with pytest.raises(NotImplementedError, match="backend 'smt'.*VariableShift"):
+        VariableShift().analysis.find_optimal_trail(kind="xor_linear", backend="smt")
 
 
 def test_dependency_free_never_falls_back_to_an_unrelated_validator():
@@ -62,7 +73,14 @@ def test_dependency_free_never_falls_back_to_an_unrelated_validator():
 
 
 def test_public_enums_and_default_kind_are_exposed():
-    assert TrailSearchBackend.SAT.value == "sat"
+    assert {item.value for item in TrailSearchBackend} == {
+        "auto",
+        "sat",
+        "smt",
+        "milp",
+        "cp",
+        "dependency_free",
+    }
     assert (
         Present(number_of_rounds=2).analysis.find_optimal_trail().trail.kind
         is TrailKind.XOR_DIFFERENTIAL

@@ -1254,7 +1254,7 @@
       "responsibility": "mzn xor differential model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_differential.py"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; docs/architecture/audits/data/trail-search-capability-matrix.json"
     },
     {
       "acceptance_criterion": "Generic word-graph composition, explicit bounds/enumeration and independent transition decoding retain all fixed Speck optimum/count fixtures.",
@@ -1353,7 +1353,7 @@
       "responsibility": "mzn xor linear model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_linear.py"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; docs/architecture/audits/data/trail-search-capability-matrix.json"
     },
     {
       "acceptance_criterion": "Optional MiniZinc driver accepts an explicit solver id and executable without requiring a Python MiniZinc or Sage package.",
@@ -1655,11 +1655,11 @@
       "public_entry_points": [
         "MilpXorDifferentialModel"
       ],
-      "rationale": "Sage probability variables and solver modes are replaced by portable MILP for S-box graphs and generic word-SMT composition for ARX graphs, sharing one semantic contract.",
+      "rationale": "Sage probability variables and solver modes are replaced by a capability-checked exact graph optimizer and exact Boolean-to-MILP translation. Non-integral legacy rounded S-box objectives remain explicitly outside the exact contract.",
       "responsibility": "milp xor differential model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_differential.py"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; docs/architecture/audits/data/trail-search-capability-matrix.json"
     },
     {
       "acceptance_criterion": "Branch-number and exact DDT reasoning derive reduced AES active-S-box minima and distinguish necessary activity bounds from concrete trails.",
@@ -1704,11 +1704,11 @@
       "public_entry_points": [
         "MilpXorLinearModel"
       ],
-      "rationale": "Sage variables, solver/license branches and probability-array conventions are replaced by portable representation/driver boundaries and exact Walsh decoders.",
+      "rationale": "Sage variables and solver/license branches are replaced by portable representation/driver boundaries and exact Walsh decoders. Decimal-rounded legacy MILP weights are not relabelled exact.",
       "responsibility": "milp xor linear model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_linear.py"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; docs/architecture/audits/data/trail-search-capability-matrix.json"
     },
     {
       "acceptance_criterion": "GLPK command driver provides a Sage-independent open MILP baseline; the portable representation and driver protocol do not depend on a proprietary optimizer.",
@@ -2479,7 +2479,7 @@
       "responsibility": "sat xor differential model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_differential.py"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_differential.py; docs/architecture/audits/data/trail-search-capability-matrix.json"
     },
     {
       "acceptance_criterion": "Signed Walsh semantics and graph composition preserve complete counts, optima, feasible weights and fixed masks.",
@@ -2502,7 +2502,7 @@
       "responsibility": "sat xor linear model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_linear.py"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_linear.py; docs/architecture/audits/data/trail-search-capability-matrix.json"
     },
     {
       "acceptance_criterion": "MiniSat and CLI Z3 provide optional open Boolean solving with named assignments and independently verified witnesses.",
@@ -2805,7 +2805,7 @@
       "responsibility": "smt xor differential model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/representations/constraints/smt/trails.py"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/smt/word_differential.py; docs/architecture/audits/data/trail-search-capability-matrix.json"
     },
     {
       "acceptance_criterion": "Backend-neutral SMT representations consume shared semantics, preserve provenance, and execute through the explicit Z3 driver.",
@@ -2828,7 +2828,7 @@
       "responsibility": "smt xor linear model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/representations/constraints/smt/trails.py"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/smt/word_linear.py; docs/architecture/audits/data/trail-search-capability-matrix.json"
     },
     {
       "acceptance_criterion": "Backend-neutral SMT representations consume shared semantics, preserve provenance, and execute through the explicit Z3 driver.",

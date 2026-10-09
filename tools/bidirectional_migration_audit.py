@@ -192,7 +192,7 @@ def render_summary(matrix: dict[str, Any]) -> str:
     lines = [
         "# Final bidirectional migration audit",
         "",
-        "This generated M11a comparison is review material; the JSON matrix and closure tool are authoritative.",
+        "This generated M11a comparison is a disposition map, not a blanket executable-parity claim; the JSON matrix and closure tool are authoritative for mapping completeness, while capability-specific executable audits and tests establish behavioral parity.",
         "",
         f"- Legacy records: {summary['legacy_records']}",
         f"- Shipped v5 artifacts: {summary['v5_artifacts']}",

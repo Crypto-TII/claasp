@@ -46,6 +46,22 @@ def test_linear_smt_relation_projects_exact_weight_and_sign():
     assert transition.sign == -1
 
 
+def test_rectangular_sbox_smt_uses_the_output_width():
+    table = (0, 1, 3, 2, 1, 0, 2, 3)
+    model = SBoxTransitionSMTModel(table, TrailKind.XOR_DIFFERENTIAL)
+    formula = model.smt_formula(input_pattern=1, output_pattern=1)
+    transition = model.decode_transition(next(_solutions(formula)))
+
+    assert formula.variables == (
+        "input_0",
+        "input_1",
+        "input_2",
+        "output_0",
+        "output_1",
+    )
+    assert (transition.input_pattern.width, transition.output_pattern.width) == (3, 2)
+
+
 def test_modular_add_linear_smt_matches_every_four_bit_mask_triple():
     model = ModularAddLinearSMTModel(4)
     formula = model.smt_formula()

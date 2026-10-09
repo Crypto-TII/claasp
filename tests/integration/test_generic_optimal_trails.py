@@ -5,7 +5,7 @@ from io import StringIO
 import pytest
 
 from claasp.drivers.solvers import MinisatSolver
-from claasp.primitives import CHAM, ChaCha, Present, Simeck, Simon, Speck
+from claasp.primitives import AES, CHAM, Ascon, ChaCha, Present, Simeck, Simon, Speck
 from claasp.primitives.single_component_primitives import (
     BitwiseNot,
     BitwiseOr,
@@ -41,15 +41,23 @@ def test_three_round_andrx_optima_and_reporting(primitive_type):
 
 def test_typed_kind_custom_solver_and_input_policy_overrides():
     primitive = Simon(number_of_rounds=3)
-    result = primitive.analysis.find_optimal_trail(
+    linear = primitive.analysis.find_optimal_trail(
         TrailKind.XOR_LINEAR,
         backend="sat",
         solver=MinisatSolver(),
         nonzero_input="plaintext",
         fixed_inputs={"key": 0},
     )
-    assert result.trail.total_weight == 2
-    assert result.metadata.solver == "MinisatSolver"
+    differential = primitive.analysis.find_optimal_trail(
+        TrailKind.XOR_DIFFERENTIAL,
+        backend="sat",
+        solver=MinisatSolver(),
+        nonzero_input="plaintext",
+        fixed_input_differences={"key": 0},
+    )
+    assert linear.trail.total_weight == 2
+    assert differential.trail.total_weight == 4
+    assert linear.metadata.solver == differential.metadata.solver == "MinisatSolver"
 
 
 def test_other_modadd_family_and_state_input_permutation():
@@ -57,6 +65,19 @@ def test_other_modadd_family_and_state_input_permutation():
     chacha = ChaCha(number_of_rounds=1).analysis.find_optimal_trail(backend="sat")
     assert cham.is_optimal and chacha.is_optimal
     assert chacha.trail.input_pattern.width == 512
+
+
+def test_bit_and_binary_field_catalogue_regressions():
+    ascon_differential = Ascon(number_of_rounds=1).analysis.find_optimal_trail(backend="sat")
+    ascon_linear = Ascon(number_of_rounds=1).analysis.find_optimal_trail(
+        kind="xor_linear", backend="sat"
+    )
+    aes = AES(number_of_rounds=1).analysis.find_optimal_trail(backend="sat")
+
+    assert ascon_differential.trail.total_weight == 2
+    assert ascon_linear.trail.total_weight == 1
+    assert aes.trail.total_weight == aes.lower_bound == 6
+    assert all(result.is_optimal for result in (ascon_differential, ascon_linear, aes))
 
 
 def test_specialized_results_remain_available():

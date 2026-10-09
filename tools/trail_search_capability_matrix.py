@@ -7,46 +7,69 @@ import inspect
 import json
 from pathlib import Path
 
-from claasp.analysis.trail_search import TrailSearchCapabilityError, require_word_sat_capability
+from claasp.analysis.trail_search import (
+    TrailSearchCapabilityError,
+    _require_exact_trail_capability,
+)
 from claasp.primitives._catalogue_exports import ALL_EXPORTS, load_export
 from claasp.representations.constraints.sat import WordDifferentialSATModel, WordLinearSATModel
 from claasp.semantics.cryptanalysis import TrailKind
 
 OUTPUT = Path("docs/architecture/audits/data/trail-search-capability-matrix.json")
 
+_CONFIGURATION_OVERRIDES = {
+    # These constructors reject an arbitrary one-round request.  Use their
+    # smallest vetted/default graph instead of recording a false constructor gap.
+    "Bivium": {},
+    "CipherFour": {},
+    "Kalyna": {},
+    "Led": {"number_of_rounds": 4},
+    "LowMC": {},
+}
+
 
 def _primitive(name):
     primitive_type = load_export(name)
     parameters = inspect.signature(primitive_type).parameters
-    options = {"number_of_rounds": 1} if "number_of_rounds" in parameters else {}
-    if "number_of_initialization_clocks" in parameters:
+    options = dict(_CONFIGURATION_OVERRIDES.get(name, {}))
+    if name not in _CONFIGURATION_OVERRIDES and "number_of_rounds" in parameters:
+        options["number_of_rounds"] = 1
+    if name not in _CONFIGURATION_OVERRIDES and "number_of_initialization_clocks" in parameters:
         options["number_of_initialization_clocks"] = 1
-    if "keystream_bit_size" in parameters:
+    if name not in _CONFIGURATION_OVERRIDES and "keystream_bit_size" in parameters:
         options["keystream_bit_size"] = 1
     return primitive_type(**options), options
 
 
-def _classification(reason):
-    if " domain " in reason:
-        return "intentionally_out_of_scope"
-    return "unsupported"
-
-
 def generate():
-    """Construct every public graph and both exact models where supported."""
+    """Construct every public graph and audit both exact model contracts.
+
+    Full CNF materialization is deliberately covered by component and integration
+    tests rather than repeated for every large default catalogue graph here.
+    """
 
     rows = []
     for name in sorted(ALL_EXPORTS):
+        attempted_configuration = _CONFIGURATION_OVERRIDES.get(
+            name, "default or number_of_rounds=1"
+        )
         try:
             primitive, options = _primitive(name)
         except Exception as error:  # catalogue constructors have heterogeneous restrictions
             rows.append(
                 {
                     "primitive": name,
-                    "configuration": "default or number_of_rounds=1",
+                    "configuration": attempted_configuration or "default",
                     "xor_differential": "unsupported",
+                    "xor_differential_limitation": "graph_construction",
+                    "xor_differential_reason": (
+                        f"reduced graph construction: {type(error).__name__}: {error}"
+                    ),
                     "xor_linear": "unsupported",
-                    "reason": f"reduced graph construction: {type(error).__name__}: {error}",
+                    "xor_linear_limitation": "graph_construction",
+                    "xor_linear_reason": (
+                        f"reduced graph construction: {type(error).__name__}: {error}"
+                    ),
                 }
             )
             continue
@@ -54,31 +77,38 @@ def generate():
             "primitive": name,
             "configuration": options or "default",
         }
-        reasons = []
         for kind, model_type in (
             (TrailKind.XOR_DIFFERENTIAL, WordDifferentialSATModel),
             (TrailKind.XOR_LINEAR, WordLinearSATModel),
         ):
             try:
-                require_word_sat_capability(primitive, kind)
+                _require_exact_trail_capability(primitive, kind, backend="sat")
                 model_options = {"maximum_weight": None} if kind is TrailKind.XOR_LINEAR else {}
-                model_type(primitive, **model_options).cnf_formula()
+                model_type(primitive, **model_options)
                 row[kind.value] = "supported_and_tested"
+                row[f"{kind.value}_limitation"] = None
+                row[f"{kind.value}_reason"] = None
             except TrailSearchCapabilityError as error:
                 reason = str(error).split("first unsupported feature is ", 1)[-1]
-                row[kind.value] = _classification(reason)
-                reasons.append(reason)
+                row[kind.value] = "unsupported"
+                row[f"{kind.value}_limitation"] = "exact_semantics"
+                row[f"{kind.value}_reason"] = reason
             except Exception as error:
                 row[kind.value] = "unsupported"
-                reasons.append(f"model construction: {type(error).__name__}: {error}")
-        row["reason"] = None if not reasons else reasons[0]
+                row[f"{kind.value}_limitation"] = "exact_semantics"
+                row[f"{kind.value}_reason"] = f"model construction: {type(error).__name__}: {error}"
         rows.append(row)
     return {
-        "schema": 1,
+        "schema": 3,
         "meaning": {
-            "supported_and_tested": "reduced/default graph and exact CNF construction passed",
-            "unsupported": "a precise component or construction gap remains",
-            "intentionally_out_of_scope": "the graph domain lacks exact Word XOR semantics",
+            "supported_and_tested": (
+                "the reduced/default graph passed the exact component/domain contract; "
+                "the encodings are covered by focused construction and solver tests"
+            ),
+            "unsupported": (
+                "the graph cannot enter the exact optimizer for the recorded component, "
+                "weight-domain, output, or constructor reason"
+            ),
         },
         "rows": rows,
     }

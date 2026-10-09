@@ -358,20 +358,37 @@ class SBoxTransitionSemantics:
         (4, 4, True)
     """
 
-    def __init__(self, table: tuple[int, ...] | list[int]) -> None:
+    def __init__(
+        self,
+        table: tuple[int, ...] | list[int],
+        output_width: int | None = None,
+    ) -> None:
         self.table = tuple(table)
         size = len(self.table)
         if size < 2 or size & (size - 1):
             raise ValueError("S-box table size must be a power of two")
         self.width = size.bit_length() - 1
-        if any(not isinstance(value, int) or not 0 <= value < size for value in self.table):
-            raise ValueError("S-box values must fit the table width")
+        if any(not isinstance(value, int) or value < 0 for value in self.table):
+            raise ValueError("S-box values must be nonnegative integers")
+        inferred_output_width = max(1, max(self.table).bit_length())
+        if output_width is None:
+            output_width = inferred_output_width
+        if (
+            not isinstance(output_width, int)
+            or isinstance(output_width, bool)
+            or output_width < inferred_output_width
+        ):
+            raise ValueError("S-box output width must fit every table value")
+        self.output_width = output_width
+        self.output_size = 1 << self.output_width
 
     def difference_distribution_table(self):
         """Return the complete exact integer DDT in quadratic time."""
+        if len(self.table) * self.output_size > 1 << 20:
+            raise NotImplementedError("dense DDT materialization is limited to 1048576 table cells")
         rows = []
         for alpha in range(len(self.table)):
-            row = [0] * len(self.table)
+            row = [0] * self.output_size
             for value, output in enumerate(self.table):
                 row[output ^ self.table[value ^ alpha]] += 1
             rows.append(tuple(row))
@@ -379,9 +396,13 @@ class SBoxTransitionSemantics:
 
     def walsh_correlation_table(self):
         """Return full signed Walsh coefficients, not half-Walsh LAT counts."""
+        if len(self.table) * self.output_size > 1 << 20:
+            raise NotImplementedError(
+                "dense Walsh-table materialization is limited to 1048576 table cells"
+            )
         size = len(self.table)
-        rows = [[0] * size for _ in range(size)]
-        for beta in range(size):
+        rows = [[0] * self.output_size for _ in range(size)]
+        for beta in range(self.output_size):
             values = [1 if (output & beta).bit_count() % 2 == 0 else -1 for output in self.table]
             stride = 1
             while stride < size:
@@ -400,8 +421,8 @@ class SBoxTransitionSemantics:
     def xor_differential(self, input_difference: int, output_difference: int) -> Transition:
         """Return the exact differential transition counted over all inputs."""
 
-        self._validate_pattern(input_difference)
-        self._validate_pattern(output_difference)
+        self._validate_pattern(input_difference, self.width, "input")
+        self._validate_pattern(output_difference, self.output_width, "output")
         count = sum(
             self.table[value] ^ self.table[value ^ input_difference] == output_difference
             for value in range(len(self.table))
@@ -409,7 +430,7 @@ class SBoxTransitionSemantics:
         return Transition(
             TrailKind.XOR_DIFFERENTIAL,
             XorDifference(input_difference, self.width),
-            XorDifference(output_difference, self.width),
+            XorDifference(output_difference, self.output_width),
             count,
             len(self.table),
         )
@@ -417,8 +438,8 @@ class SBoxTransitionSemantics:
     def xor_linear(self, input_mask: int, output_mask: int) -> Transition:
         """Return the exact signed Walsh-correlation transition."""
 
-        self._validate_pattern(input_mask)
-        self._validate_pattern(output_mask)
+        self._validate_pattern(input_mask, self.width, "input")
+        self._validate_pattern(output_mask, self.output_width, "output")
         walsh = sum(
             1
             if ((value & input_mask).bit_count() + (self.table[value] & output_mask).bit_count())
@@ -430,7 +451,7 @@ class SBoxTransitionSemantics:
         return Transition(
             TrailKind.XOR_LINEAR,
             XorMask(input_mask, self.width),
-            XorMask(output_mask, self.width),
+            XorMask(output_mask, self.output_width),
             abs(walsh),
             len(self.table),
             -1 if walsh < 0 else 1,
@@ -446,7 +467,7 @@ class SBoxTransitionSemantics:
 
         if not isinstance(difference, TruncatedXorDifference) or len(difference.bits) != self.width:
             raise ValueError("truncated difference must match the S-box width")
-        outputs = set()
+        outputs: set[int] = set()
         for alpha in range(len(self.table)):
             if any(
                 bit is not TruncatedBit.UNKNOWN
@@ -456,8 +477,8 @@ class SBoxTransitionSemantics:
                 continue
             outputs.update(self.table[x] ^ self.table[x ^ alpha] for x in range(len(self.table)))
         joined = []
-        for position in range(self.width):
-            values = {(output >> (self.width - 1 - position)) & 1 for output in outputs}
+        for position in range(self.output_width):
+            values = {(output >> (self.output_width - 1 - position)) & 1 for output in outputs}
             joined.append(
                 TruncatedBit.UNKNOWN
                 if len(values) > 1
@@ -480,13 +501,9 @@ class SBoxTransitionSemantics:
             )
         return transition == expected
 
-    def _validate_pattern(self, value: int) -> None:
-        if (
-            not isinstance(value, int)
-            or isinstance(value, bool)
-            or not 0 <= value < len(self.table)
-        ):
-            raise ValueError(f"pattern must be an integer in range({len(self.table)})")
+    def _validate_pattern(self, value: int, width: int, label: str) -> None:
+        if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < 1 << width:
+            raise ValueError(f"{label} pattern must be an integer in range({1 << width})")
 
 
 class ModularAddTransitionSemantics:
@@ -517,7 +534,7 @@ class ModularAddTransitionSemantics:
                 raise ValueError(f"differences must be integers in range({self.mask + 1})")
         carries = {(0, 0): 1}
         for bit in range(self.width):
-            next_carries = defaultdict(int)
+            next_carries: defaultdict[tuple[int, int], int] = defaultdict(int)
             expected = (output_difference >> bit) & 1
             left_delta = (left_difference >> bit) & 1
             right_delta = (right_difference >> bit) & 1
@@ -547,7 +564,7 @@ class ModularAddTransitionSemantics:
                 raise ValueError(f"differences must be integers in range({self.mask + 1})")
         states = {(0, 0, 0): 1}
         for bit in range(self.width):
-            next_states = defaultdict(int)
+            next_states: defaultdict[tuple[int, int, int], int] = defaultdict(int)
             left_delta = (left_difference >> bit) & 1
             right_delta = (right_difference >> bit) & 1
             for (carry, paired_carry, output), count in states.items():
@@ -564,7 +581,7 @@ class ModularAddTransitionSemantics:
                             )
                         ] += count
             states = next_states
-        counts = defaultdict(int)
+        counts: defaultdict[int, int] = defaultdict(int)
         for (_, _, output), count in states.items():
             counts[output] += count
         return tuple(
@@ -620,7 +637,7 @@ class ModularAddLinearSemantics:
                 raise ValueError(f"masks must be integers in range({self.mask + 1})")
         carries = {0: 1}
         for bit in range(self.width):
-            next_carries = defaultdict(int)
+            next_carries: defaultdict[int, int] = defaultdict(int)
             for carry, walsh in carries.items():
                 for left in (0, 1):
                     for right in (0, 1):

@@ -805,6 +805,7 @@
     },
     {
       "destinations": [
+        "src/claasp/analysis/trail_search.py",
         "src/claasp/representations/constraints/cp/trails.py",
         "src/claasp/representations/constraints/smt/word_differential.py"
       ],
@@ -871,6 +872,7 @@
     },
     {
       "destinations": [
+        "src/claasp/analysis/trail_search.py",
         "src/claasp/representations/constraints/cp/trails.py",
         "src/claasp/representations/constraints/smt/word_linear.py"
       ],
@@ -1062,6 +1064,7 @@
     },
     {
       "destinations": [
+        "src/claasp/analysis/trail_search.py",
         "src/claasp/representations/constraints/milp/trails.py",
         "src/claasp/representations/constraints/smt/word_differential.py"
       ],
@@ -1072,7 +1075,7 @@
       "public_entry_points": [
         "MilpXorDifferentialModel"
       ],
-      "rationale": "Sage probability variables and solver modes are replaced by portable MILP for S-box graphs and generic word-SMT composition for ARX graphs, sharing one semantic contract.",
+      "rationale": "Sage probability variables and solver modes are replaced by a capability-checked exact graph optimizer and exact Boolean-to-MILP translation. Non-integral legacy rounded S-box objectives remain explicitly outside the exact contract.",
       "responsibility": "milp xor differential model",
       "status": "superseded-in-m10.8d"
     },
@@ -1093,6 +1096,7 @@
     },
     {
       "destinations": [
+        "src/claasp/analysis/trail_search.py",
         "src/claasp/representations/constraints/milp/trails.py",
         "src/claasp/representations/constraints/smt/word_linear.py"
       ],
@@ -1103,7 +1107,7 @@
       "public_entry_points": [
         "MilpXorLinearModel"
       ],
-      "rationale": "Sage variables, solver/license branches and probability-array conventions are replaced by portable representation/driver boundaries and exact Walsh decoders.",
+      "rationale": "Sage variables and solver/license branches are replaced by portable representation/driver boundaries and exact Walsh decoders. Decimal-rounded legacy MILP weights are not relabelled exact.",
       "responsibility": "milp xor linear model",
       "status": "superseded-in-m10.8d"
     },
@@ -1613,6 +1617,7 @@
     },
     {
       "destinations": [
+        "src/claasp/analysis/trail_search.py",
         "src/claasp/representations/constraints/sat",
         "src/claasp/representations/constraints/smt/word_differential.py"
       ],
@@ -1629,6 +1634,7 @@
     },
     {
       "destinations": [
+        "src/claasp/analysis/trail_search.py",
         "src/claasp/representations/constraints/sat",
         "src/claasp/representations/constraints/smt/word_linear.py"
       ],
@@ -1838,7 +1844,8 @@
     },
     {
       "destinations": [
-        "src/claasp/representations/constraints/smt/trails.py"
+        "src/claasp/analysis/trail_search.py",
+        "src/claasp/representations/constraints/smt/word_differential.py"
       ],
       "disposition": "supersede",
       "kind": "source",
@@ -1853,7 +1860,8 @@
     },
     {
       "destinations": [
-        "src/claasp/representations/constraints/smt/trails.py"
+        "src/claasp/analysis/trail_search.py",
+        "src/claasp/representations/constraints/smt/word_linear.py"
       ],
       "disposition": "supersede",
       "kind": "source",
@@ -9540,9 +9548,9 @@
       "supersede": 207
     },
     "legacy_records": 581,
-    "v5_artifacts": 410,
+    "v5_artifacts": 411,
     "v5_by_classification": {
-      "legacy-lineage": 369,
+      "legacy-lineage": 370,
       "new-v5": 41
     }
   },
@@ -9781,7 +9789,15 @@
     {
       "classification": "legacy-lineage",
       "legacy_predecessors": [
+        "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model.py",
+        "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model.py",
+        "claasp/cipher_modules/models/milp/milp_models/milp_xor_differential_model.py",
+        "claasp/cipher_modules/models/milp/milp_models/milp_xor_linear_model.py",
+        "claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py",
+        "claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py",
         "claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py",
+        "claasp/cipher_modules/models/smt/smt_models/smt_xor_differential_model.py",
+        "claasp/cipher_modules/models/smt/smt_models/smt_xor_linear_model.py",
         "claasp/cipher_modules/models/utils.py",
         "claasp/utils/utils.py"
       ],
@@ -12415,6 +12431,14 @@
         "claasp/cipher_modules/models/smt/utils/utils.py",
         "claasp/component.py"
       ],
+      "path": "src/claasp/representations/constraints/smt/_sbox_encoding.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/cipher_modules/models/smt/utils/utils.py",
+        "claasp/component.py"
+      ],
       "path": "src/claasp/representations/constraints/smt/exporter.py"
     },
     {
@@ -12447,8 +12471,6 @@
     {
       "classification": "legacy-lineage",
       "legacy_predecessors": [
-        "claasp/cipher_modules/models/smt/smt_models/smt_xor_differential_model.py",
-        "claasp/cipher_modules/models/smt/smt_models/smt_xor_linear_model.py",
         "claasp/cipher_modules/models/smt/utils/utils.py",
         "claasp/component.py"
       ],
@@ -12470,6 +12492,7 @@
         "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_arx_optimized.py",
         "claasp/cipher_modules/models/milp/milp_models/milp_xor_differential_model.py",
         "claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py",
+        "claasp/cipher_modules/models/smt/smt_models/smt_xor_differential_model.py",
         "claasp/cipher_modules/models/smt/utils/utils.py",
         "claasp/component.py"
       ],
@@ -12481,6 +12504,7 @@
         "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model.py",
         "claasp/cipher_modules/models/milp/milp_models/milp_xor_linear_model.py",
         "claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py",
+        "claasp/cipher_modules/models/smt/smt_models/smt_xor_linear_model.py",
         "claasp/cipher_modules/models/smt/utils/utils.py",
         "claasp/component.py"
       ],

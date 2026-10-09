@@ -1,27 +1,41 @@
-"""Capability-based exact optimization of weighted Word characteristics."""
+"""Capability-based exact optimization of weighted graph characteristics."""
 
 from dataclasses import dataclass
 from fractions import Fraction
 from time import perf_counter
 
 from claasp.components import (
+    Add,
+    BinaryAffineMap,
+    BitVectorSBox,
     BitwiseAnd,
     BitwiseNot,
     BitwiseOr,
     Constant,
     Identity,
+    LinearMap,
     ModularAdd,
     ModularSubtract,
     Permutation,
     Rotate,
+    SBox,
     Shift,
     Xor,
 )
-from claasp.domains import Word
+from claasp.domains import BinaryExtensionField, Bit, Word
 from claasp.drivers.solvers import MinisatSolver, SatStatus
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    direct_model,
+)
 from claasp.representations.constraints.sat import (
     WordDifferentialSATModel,
     WordLinearSATModel,
+)
+from claasp.representations.constraints.smt._sbox_encoding import (
+    _NonIntegralTransitionWeightError,
+    _require_integral_sbox_weights,
 )
 from claasp.semantics.cryptanalysis import (
     Trail,
@@ -53,7 +67,10 @@ class InputPolicy:
     fixed_patterns: dict[str, int]
 
 
-_WORD_COMPONENTS = (
+_EXACT_COMPONENTS = (
+    Add,
+    BinaryAffineMap,
+    BitVectorSBox,
     ModularAdd,
     ModularSubtract,
     BitwiseAnd,
@@ -61,51 +78,107 @@ _WORD_COMPONENTS = (
     BitwiseNot,
     Xor,
     Identity,
+    LinearMap,
     Rotate,
     Shift,
+    SBox,
     Permutation,
     Constant,
 )
 
 
-def require_word_sat_capability(primitive, kind: TrailKind) -> None:
+def _require_exact_trail_capability(primitive, kind: TrailKind, *, backend="sat") -> None:
     """Reject the first unsupported domain/component with actionable context.
 
     EXAMPLES::
 
         >>> from claasp.primitives import Simon
-        >>> require_word_sat_capability(Simon(number_of_rounds=1), TrailKind.XOR_DIFFERENTIAL)
+        >>> _require_exact_trail_capability(Simon(number_of_rounds=1), TrailKind.XOR_DIFFERENTIAL)
     """
 
     for name, port in primitive.input_ports.items():
-        if not isinstance(port.value_type.domain, Word):
+        if not isinstance(port.value_type.domain, (Bit, Word, BinaryExtensionField)):
             raise _capability_error(
-                primitive, kind, f"input {name!r} domain {type(port.value_type.domain).__name__}"
+                primitive,
+                kind,
+                f"input {name!r} domain {type(port.value_type.domain).__name__}",
+                backend,
             )
     if primitive.output is None:
-        raise _capability_error(primitive, kind, "missing primitive output")
-    if not isinstance(primitive.output.value_type.domain, Word):
+        raise _capability_error(primitive, kind, "missing primitive output", backend)
+    if not isinstance(primitive.output.value_type.domain, (Bit, Word, BinaryExtensionField)):
         raise _capability_error(
-            primitive, kind, f"output domain {type(primitive.output.value_type.domain).__name__}"
+            primitive,
+            kind,
+            f"output domain {type(primitive.output.value_type.domain).__name__}",
+            backend,
         )
     for component in primitive.components:
-        if not isinstance(component.output_type.domain, Word):
+        if not isinstance(component.output_type.domain, (Bit, Word, BinaryExtensionField)):
             reason = f"component {component.component_id!r} domain {type(component.output_type.domain).__name__}"
-            raise _capability_error(primitive, kind, reason)
-        if not isinstance(component, _WORD_COMPONENTS):
+            raise _capability_error(primitive, kind, reason, backend)
+        if not isinstance(component, _EXACT_COMPONENTS):
             reason = f"component {component.component_id!r} ({type(component).__name__})"
-            raise _capability_error(primitive, kind, reason)
+            raise _capability_error(primitive, kind, reason, backend)
+        if isinstance(component, (BitVectorSBox, SBox)):
+            try:
+                output_width = (
+                    component.output_type.unit_count
+                    if isinstance(component, BitVectorSBox)
+                    else component.output_type.domain.encoded_bit_size
+                )
+                _require_integral_sbox_weights(component.table, kind, output_width)
+            except (_NonIntegralTransitionWeightError, NotImplementedError) as error:
+                raise _capability_error(
+                    primitive,
+                    kind,
+                    f"component {component.component_id!r} ({type(component).__name__}): {error}",
+                    backend,
+                ) from error
+        if isinstance(component, Add) and not isinstance(
+            component.output_type.domain, (Bit, BinaryExtensionField)
+        ):
+            raise _capability_error(
+                primitive,
+                kind,
+                f"component {component.component_id!r} Add domain "
+                f"{type(component.output_type.domain).__name__}",
+                backend,
+            )
+        if isinstance(component, LinearMap) and not isinstance(
+            component.output_type.domain, (Bit, BinaryExtensionField)
+        ):
+            raise _capability_error(
+                primitive,
+                kind,
+                f"component {component.component_id!r} LinearMap domain "
+                f"{type(component.output_type.domain).__name__}",
+                backend,
+            )
         if (
             isinstance(component, (ModularAdd, ModularSubtract, BitwiseAnd, BitwiseOr))
             and len(component.inputs) != 2
         ):
             reason = f"component {component.component_id!r} ({type(component).__name__}) arity {len(component.inputs)}"
-            raise _capability_error(primitive, kind, reason)
+            raise _capability_error(primitive, kind, reason, backend)
 
 
-def _capability_error(primitive, kind, reason):
+def require_word_sat_capability(primitive, kind: TrailKind) -> None:
+    """Compatibility name for the domain-generic exact SAT capability check.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Simon
+        >>> from claasp.semantics.cryptanalysis import TrailKind
+        >>> require_word_sat_capability(Simon(number_of_rounds=1), TrailKind.XOR_DIFFERENTIAL)
+    """
+
+    _require_exact_trail_capability(primitive, kind, backend="sat")
+
+
+def _capability_error(primitive, kind, reason, backend="sat"):
     return TrailSearchCapabilityError(
-        f"primitive {primitive.family_name!r}, analysis {kind.value!r}, backend 'sat': "
+        f"primitive {primitive.family_name!r}, analysis {kind.value!r}, backend {backend!r}: "
         f"first unsupported feature is {reason}"
     )
 
@@ -150,6 +223,7 @@ def optimize_word_characteristic(
     primitive,
     kind: TrailKind,
     *,
+    backend="sat",
     solver=None,
     nonzero_input=None,
     fixed_input_differences=None,
@@ -167,7 +241,7 @@ def optimize_word_characteristic(
         configuration required
     """
 
-    require_word_sat_capability(primitive, kind)
+    _require_exact_trail_capability(primitive, kind, backend=backend)
     fixed = fixed_input_differences if kind is TrailKind.XOR_DIFFERENTIAL else fixed_input_masks
     policy = resolve_input_policy(
         primitive,
@@ -180,7 +254,7 @@ def optimize_word_characteristic(
         for name in primitive.input_ports:
             if name != policy.nonzero_input and ("key" in name.lower() or "tweak" in name.lower()):
                 resolved_fixed_inputs.setdefault(name, 0)
-    selected_solver = MinisatSolver() if solver is None else solver
+    selected_solver = _solver_for_backend(backend) if solver is None else solver
     if not callable(getattr(selected_solver, "solve", None)):
         raise TypeError("solver must provide a solve(formula) method")
     started = perf_counter()
@@ -212,7 +286,7 @@ def optimize_word_characteristic(
         return model, formula, result
 
     best_model, best_formula, feasible = solve(None)
-    if feasible.status is not SatStatus.SATISFIABLE:
+    if _status(feasible) is not SatStatus.SATISFIABLE:
         raise RuntimeError(
             f"no nonzero {kind.value} characteristic exists for {primitive.family_name!r}"
         )
@@ -223,9 +297,9 @@ def optimize_word_characteristic(
     while lower < upper:
         candidate = (lower + upper) // 2
         model, formula, solved = solve(candidate)
-        if solved.status is SatStatus.UNSATISFIABLE:
+        if _status(solved) is SatStatus.UNSATISFIABLE:
             lower = candidate + 1
-        elif solved.status is SatStatus.SATISFIABLE:
+        elif _status(solved) is SatStatus.SATISFIABLE:
             characteristic = model.decode_characteristic(solved.assignment)
             if not model.check_characteristic(characteristic):
                 raise RuntimeError("decoded SAT characteristic failed independent validation")
@@ -235,20 +309,22 @@ def optimize_word_characteristic(
             raise RuntimeError("SAT solver did not complete exact trail optimization")
     if int(best.total_weight) != upper:
         best_model, best_formula, solved = solve(upper)
-        if solved.status is not SatStatus.SATISFIABLE:
+        if _status(solved) is not SatStatus.SATISFIABLE:
             raise RuntimeError("SAT optimum could not be reconstructed")
         best = best_model.decode_characteristic(solved.assignment)
     if upper > 0:
         _, _, proof = solve(upper - 1)
-        if proof.status is not SatStatus.UNSATISFIABLE:
+        if _status(proof) is not SatStatus.UNSATISFIABLE:
             raise RuntimeError(f"bound {upper - 1} was not proved UNSAT")
     if not best_model.check_characteristic(best):
         raise RuntimeError("optimal SAT characteristic failed independent validation")
     trail = _trail(primitive, kind, policy.nonzero_input, best)
     components, rounds = _evidence(primitive, kind, best_model._shared, best)
     version = getattr(selected_solver, "version", None)
+    technique_backend = "sat" if backend == "auto" else backend
     metadata = TrailSearchMetadata(
-        "exact SAT optimization by binary search; immediate lower bound proved UNSAT",
+        f"exact {technique_backend.upper()} optimization by binary search; "
+        "immediate lower bound proved UNSAT",
         type(selected_solver).__name__,
         version() if callable(version) else None,
         max(runtime, perf_counter() - started),
@@ -258,8 +334,63 @@ def optimize_word_characteristic(
         float(upper),
         metadata,
         components,
-        best_model.constraint_models,
+        _constraint_models(primitive, best_model.constraint_models, backend, kind),
         rounds,
+    )
+
+
+def _solver_for_backend(backend):
+    if backend in ("auto", "sat"):
+        return MinisatSolver()
+    if backend == "smt":
+        from claasp.drivers.solvers import Z3Solver
+
+        return Z3Solver()
+    if backend == "milp":
+        from claasp.drivers.solvers import GLPKSolver
+
+        return GLPKSolver()
+    if backend == "cp":
+        from claasp.drivers.solvers import MiniZincSolver
+
+        return MiniZincSolver()
+    raise ValueError(f"unsupported exact trail backend {backend!r}")
+
+
+def _status(result):
+    status = getattr(result, "status", None)
+    if status is SatStatus.SATISFIABLE or getattr(result, "is_satisfiable", False):
+        return SatStatus.SATISFIABLE
+    if status is SatStatus.UNSATISFIABLE or getattr(status, "value", None) in {
+        "unsatisfiable",
+        "infeasible",
+    }:
+        return SatStatus.UNSATISFIABLE
+    return None
+
+
+def _constraint_models(primitive, sat_models, backend, kind):
+    if backend in ("auto", "sat"):
+        return sat_models
+    selected = ConstraintBackend(backend)
+    translated = direct_model(
+        selected,
+        f"ExactEncodedGraph{kind.value.title().replace('_', '')}{backend.upper()}Adapter",
+        kind.value,
+        "exact translation of the shared Boolean characteristic relation",
+        "The backend consumes a semantics-checked CNF relation through an exact "
+        f"Boolean-to-{backend.upper()} translation.",
+    )
+    return (
+        *sat_models,
+        ConstraintModelApplication(
+            translated,
+            tuple(
+                component.component_id
+                for component in primitive.components
+                if component.component_id is not None
+            ),
+        ),
     )
 
 

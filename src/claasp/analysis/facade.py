@@ -30,6 +30,9 @@ class TrailSearchBackend(str, Enum):
 
     AUTO = "auto"
     SAT = "sat"
+    SMT = "smt"
+    MILP = "milp"
+    CP = "cp"
     DEPENDENCY_FREE = "dependency_free"
 
 
@@ -271,6 +274,7 @@ class Analysis:
         return optimize_word_characteristic(
             self.primitive,
             selected_kind,
+            backend=selected_backend.value,
             solver=solver,
             nonzero_input=nonzero_input,
             fixed_input_differences=fixed_input_differences,
