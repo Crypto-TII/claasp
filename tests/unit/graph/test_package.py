@@ -17,13 +17,12 @@ from claasp.components import Identity, Xor
 def test_concise_builder_interface_reads_like_pseudocode():
     builder = PrimitiveBuilder(
         "one_time_pad",
-        message=BitWord(128),
-        key=BitWord(128),
         instance_name="OneTimePad-128",
     )
-    message, key = builder.inputs()
+    message, key = builder.set_inputs(message=BitWord(128), key=BitWord(128))
     builder.add_round()
-    builder.add(Xor(message, key))
+    ciphertext = builder.add(Xor(message, key))
+    builder.set_output(ciphertext)
     primitive = builder.build()
 
     assert primitive.kind.value == "block_cipher"
@@ -36,11 +35,28 @@ def test_builder_rejects_mixed_input_declaration_styles():
         PrimitiveBuilder("mixed", {"left": BitWord(1)}, right=BitWord(1))
 
 
-def test_builder_without_a_component_or_explicit_output_cannot_be_built():
-    builder = PrimitiveBuilder("empty", value=BitWord(1))
+def test_builder_can_publish_an_input_as_its_output():
+    builder = PrimitiveBuilder("identity_input")
+    (message,) = builder.set_inputs(message=BitWord(8))
+    builder.set_output(message)
 
-    with pytest.raises(ValueError, match="add a component"):
+    assert builder.build().evaluate(message=0xA5) == 0xA5
+
+
+def test_builder_without_an_explicit_output_cannot_be_built():
+    builder = PrimitiveBuilder("empty")
+    builder.set_inputs(value=BitWord(1))
+
+    with pytest.raises(ValueError, match="call set_output"):
         builder.build()
+
+
+def test_builder_inputs_must_be_declared_once_before_graph_construction():
+    builder = PrimitiveBuilder("late")
+    builder.add_round()
+
+    with pytest.raises(RuntimeError, match="before graph construction"):
+        builder.set_inputs(value=BitWord(1))
 
 
 def test_logical_selection_is_independent_of_encoded_bit_size():

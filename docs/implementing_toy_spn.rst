@@ -21,14 +21,11 @@ the S-boxes in parallel, and permute the bits.
    >>> from claasp import BitWord, PrimitiveBuilder
    >>> from claasp.components import BitVectorSBox, Permutation, Xor
    >>> def ToySPN():
-   ...     graph = PrimitiveBuilder(
-   ...         "toy_spn",
+   ...     graph = PrimitiveBuilder("toy_spn", instance_name="ToySPN-16")
+   ...     state, key = graph.set_inputs(
    ...         plaintext=BitWord(16),
    ...         key=BitWord(16),
-   ...         instance_name="ToySPN-16",
    ...     )
-   ...     state = graph.input("plaintext")
-   ...     key = graph.input("key")
    ...
    ...     for _ in range(2):
    ...         graph.add_round()
@@ -39,6 +36,7 @@ the S-boxes in parallel, and permute the bits.
    ...         ]
    ...         state = graph.add(Permutation(graph.join(*nibbles), P_LAYER))
    ...
+   ...     graph.set_output(state)
    ...     return graph.build()
 
 ``BitWord(16)`` declares a packed 16-bit boundary. Inside the graph, indexing

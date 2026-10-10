@@ -33,6 +33,34 @@ if TYPE_CHECKING:
     from claasp.catalogue import ParameterSetRecord
 
 
+def _normalize_primitive_inputs(
+    inputs: Mapping[str, ValueType | PrimitiveInput],
+) -> tuple[dict[str, PrimitiveInput], dict[str, Port]]:
+    """Validate input declarations and create their descriptors and ports."""
+
+    descriptors: dict[str, PrimitiveInput] = {}
+    ports: dict[str, Port] = {}
+    for name, supplied in inputs.items():
+        if not isinstance(name, str):
+            raise TypeError("input names must be strings")
+        if not name:
+            raise ValueError("input names must not be empty")
+        if isinstance(supplied, PrimitiveInput):
+            descriptor = supplied
+        elif isinstance(supplied, ValueType):
+            visibility = (
+                InputVisibility.SECRET
+                if name in {"key", "secret", "secret_key"}
+                else InputVisibility.PUBLIC
+            )
+            descriptor = PrimitiveInput(supplied, role=name, visibility=visibility)
+        else:
+            raise TypeError(f"input {name!r} must have a ValueType or PrimitiveInput")
+        descriptors[name] = descriptor
+        ports[name] = Port(name, descriptor.value_type)
+    return descriptors, ports
+
+
 class _OfficialInstances(tuple):
     """Immutable official constructor configurations with a readable display."""
 
@@ -582,7 +610,8 @@ class Primitive:
         >>> builder = PrimitiveBuilder("xor_nibbles", {"left": nibble, "right": nibble})
         >>> builder.add_round()
         Round(number=0)
-        >>> _ = builder.add_component(Xor(builder.inputs()))
+        >>> output = builder.add_component(Xor(builder.inputs()))
+        >>> builder.set_output(output)
         >>> primitive = builder.build()
         >>> primitive.evaluate(0b1010, 0b0011)
         9
@@ -643,26 +672,7 @@ class Primitive:
             raise ValueError("family_name must not be empty")
         if not isinstance(inputs, Mapping):
             raise TypeError("inputs must be a mapping from names to ValueType objects")
-        ports: dict[str, Port] = {}
-        descriptors: dict[str, PrimitiveInput] = {}
-        for name, supplied in inputs.items():
-            if not isinstance(name, str):
-                raise TypeError("input names must be strings")
-            if not name:
-                raise ValueError("input names must not be empty")
-            if isinstance(supplied, PrimitiveInput):
-                descriptor = supplied
-            elif isinstance(supplied, ValueType):
-                visibility = (
-                    InputVisibility.SECRET
-                    if name in {"key", "secret", "secret_key"}
-                    else InputVisibility.PUBLIC
-                )
-                descriptor = PrimitiveInput(supplied, role=name, visibility=visibility)
-            else:
-                raise TypeError(f"input {name!r} must have a ValueType or PrimitiveInput")
-            descriptors[name] = descriptor
-            ports[name] = Port(name, descriptor.value_type)
+        descriptors, ports = _normalize_primitive_inputs(inputs)
 
         if kind is None:
             kind = infer_primitive_kind(descriptors)
@@ -1595,7 +1605,8 @@ class PrimitiveBuilder:
         >>> builder = PrimitiveBuilder("xor", {"left": bit, "right": bit})
         >>> builder.add_round()
         Round(number=0)
-        >>> _ = builder.add_component(Xor(builder.inputs()))
+        >>> output = builder.add_component(Xor(builder.inputs()))
+        >>> builder.set_output(output)
         >>> primitive = builder.build()
         >>> primitive.evaluate(0, 1)
         1
@@ -1616,7 +1627,8 @@ class PrimitiveBuilder:
             raise TypeError("pass primitive inputs either as a mapping or as named arguments")
         inputs = named_inputs if inputs is None else inputs
         self._built = False
-        self._last_component_output: Port | None = None
+        self._inputs_declared = bool(inputs)
+        self._infer_kind_from_inputs = kind is None
         primitive = object.__new__(Primitive)
         self._primitive = primitive
         Primitive.__init__(
@@ -1635,7 +1647,8 @@ class PrimitiveBuilder:
         builder = object.__new__(cls)
         builder._primitive = primitive
         builder._built = False
-        builder._last_component_output = None
+        builder._inputs_declared = bool(primitive._input_ports)
+        builder._infer_kind_from_inputs = False
         return builder
 
     def _ensure_open(self) -> None:
@@ -1646,6 +1659,35 @@ class PrimitiveBuilder:
         """Return one input port for use in the graph being authored."""
 
         return self._primitive._input(selector)
+
+    def set_inputs(
+        self,
+        inputs: Mapping[str, ValueType | PrimitiveInput] | None = None,
+        **named_inputs: ValueType | PrimitiveInput,
+    ) -> Sequence[Port]:
+        """Declare the named inputs before graph construction and return their ports."""
+
+        self._ensure_open()
+        if inputs is not None and named_inputs:
+            raise TypeError("pass primitive inputs either as a mapping or as named arguments")
+        declarations = named_inputs if inputs is None else inputs
+        if not isinstance(declarations, Mapping):
+            raise TypeError("inputs must be a mapping from names to ValueType objects")
+        if not declarations:
+            raise ValueError("set_inputs() requires at least one named input")
+        if self._inputs_declared:
+            raise RuntimeError("primitive inputs have already been declared")
+        primitive = self._primitive
+        if primitive._rounds or primitive._components or primitive._bindings or primitive._scopes:
+            raise RuntimeError("primitive inputs must be declared before graph construction begins")
+        descriptors, ports = _normalize_primitive_inputs(declarations)
+        primitive._input_descriptors = descriptors
+        primitive._input_ports = ports
+        primitive._ports = dict(ports)
+        if self._infer_kind_from_inputs:
+            primitive._kind = infer_primitive_kind(descriptors)
+        self._inputs_declared = True
+        return tuple(ports.values())
 
     def inputs(self, *selectors: str | int) -> Sequence[Port]:
         """Return input ports in declaration or requested order."""
@@ -1667,9 +1709,7 @@ class PrimitiveBuilder:
         """Validate and append a component, returning its output port."""
 
         self._ensure_open()
-        output = self._primitive._add_component(component, primitive_round=primitive_round)
-        self._last_component_output = output
-        return output
+        return self._primitive._add_component(component, primitive_round=primitive_round)
 
     def add(
         self,
@@ -1778,17 +1818,14 @@ class PrimitiveBuilder:
         self._primitive._set_output(output)
 
     def build(self, output: PortLike | Sequence[PortLike] | None = None) -> Primitive:
-        """Return the completed primitive, defaulting to the last component output."""
+        """Return the completed primitive after an output has been declared."""
 
         self._ensure_open()
         if output is not None:
             self._primitive._set_output(output)
-        elif self._primitive._output is None and self._last_component_output is not None:
-            self._primitive._set_output(self._last_component_output)
         if self._primitive._output is None:
             raise ValueError(
-                "a primitive must have an output; add a component, pass an output to build(), "
-                "or call set_output()"
+                "a primitive must have an output; pass an output to build() or call set_output()"
             )
         self._built = True
         return self._primitive
