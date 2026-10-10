@@ -11,24 +11,37 @@ analysis guides for your own work.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Getting started
+   :caption: Introduction
 
+   about_claasp
+   whats_new_v5
    getting_started
-   quick_analysis_scripts
    concepts
-   traditional_primitives
-   primitive_catalogue
 
 .. toctree::
    :maxdepth: 2
-   :caption: Working with primitives
+   :caption: Basic use
+
+   traditional_primitives
+   primitive_catalogue
+   evaluating_primitives
+   quick_analysis_scripts
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Advanced primitive manipulation
 
    customizing_aes
-   implementing_toy_spn
+   parameters
    primitive_authoring
    composite_blocks
    transformations
    batch_evaluation
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Advanced primitive analysis
+
    analysis
    component_properties
    displaying_results
@@ -37,8 +50,6 @@ analysis guides for your own work.
    neural_distinguishers
 
 .. toctree::
-   :maxdepth: 2
-   :caption: CLAASP 5 and AO primitives
+   :hidden:
 
-   whats_new_v5
-   parameters
+   implementing_toy_spn

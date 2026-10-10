@@ -1,5 +1,5 @@
-Neural distinguisher experiments
-================================
+Neural distinguisher
+====================
 
 CLAASP defines neural datasets and experiment requests independently of a
 machine-learning framework. Generating data therefore requires neither NumPy

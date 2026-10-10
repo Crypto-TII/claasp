@@ -11,32 +11,48 @@ systems and solvers are optional backends.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Start here
+   :caption: Introduction
 
+   about_claasp
+   whats_new_v5
    getting_started
-   quick_analysis_scripts
-   implementing_toy_spn
-   primitive_authoring
-   analysis
+   concepts
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Basic use
+
    traditional_primitives
    primitive_catalogue
+   evaluating_primitives
+   quick_analysis_scripts
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Advanced primitive manipulation
+
+   customizing_aes
+   parameters
+   primitive_authoring
+   composite_blocks
+   transformations
    batch_evaluation
 
 .. toctree::
    :maxdepth: 2
-   :caption: CLAASP 5 and AO primitives
+   :caption: Advanced primitive analysis
 
-   whats_new_v5
-   concepts
-   parameters
+   analysis
+   component_properties
+   displaying_results
+   serialization_and_source
+   statistical_testing
+   neural_distinguishers
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Advanced modeling
+   :hidden:
 
-   polynomial_models
-   boolean_models
-   smt_models
+   implementing_toy_spn
 
 .. toctree::
    :maxdepth: 2

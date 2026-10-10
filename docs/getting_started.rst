@@ -65,7 +65,7 @@ at ordinary binary primitive boundaries:
    >>> f"{ciphertext:032x}"
    '69c4e0d86a7b0430d8cdb78070b4c55a'
 
-:doc:`Want to know more about evaluating primitives? <batch_evaluation>`
+:doc:`Want to know more about evaluating primitives? <evaluating_primitives>`
 That guide covers several plaintexts with shared or separate keys, logical-unit
 inputs, non-binary field values, and the lower-level batch evaluators.
 
@@ -156,10 +156,9 @@ different message and key size:
    '0x12cb'
 
 ``set_inputs()`` names the external values and returns the ports used inside
-the graph. ``set_round_output()`` publishes a round boundary for inspection,
-while ``set_output()`` selects the value returned by the complete primitive.
-Finally, ``build()`` validates the graph and turns the mutable builder into the
-finished primitive.
+the graph. ``set_output()`` selects the value returned by the complete
+primitive. Finally, ``build()`` validates the graph and turns the mutable
+builder into the finished primitive.
 
 ``BitWord(128)`` means one packed 128-bit string. ``Word(128)`` has a different
 purpose: it declares one arithmetic word for operations such as rotation and

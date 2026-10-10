@@ -75,5 +75,5 @@ Build the primitive, inspect it, and evaluate one input:
    'f616'
 
 The completed object is immutable. Continue with :doc:`primitive_authoring`
-for published round states and round keys, reusable composite blocks, field and
+for published round outputs and round keys, reusable composite blocks, field and
 word domains, explicit provenance, validation, and full primitive classes.

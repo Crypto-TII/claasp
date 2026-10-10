@@ -1,46 +1,29 @@
-What is new in CLAASP 5
+What's new in CLAASP v5
 =======================
 
-CLAASP 5 generalizes the graph's logical unit. A wire may carry bits,
-fixed-width words, binary-extension-field elements, or prime-field elements.
-This supports traditional and arithmetization-oriented primitives without
-forcing both into an implicit bit representation.
+CLAASP v5 broadens the kinds of primitives that can be represented while
+making the main Python interface easier to discover and use.
+
+Values are now described by their mathematical domain and shape. A connection
+in a primitive graph may carry bits, fixed-width words, binary-field elements,
+or prime-field elements. Traditional and arithmetization-oriented primitives
+therefore use the same graph model without being forced into an artificial bit
+representation.
 
 The implementation is independent of SageMath. Scalar and batch evaluation,
-graph construction, Boolean and polynomial intermediate representations, and
-exporters run on ordinary CPython. External algebra systems and solvers are
+graph construction, intermediate representations, serialization, and source
+generation belong to separate layers. External algebra systems and solvers are
 optional integrations.
 
-Native field example
---------------------
+The public interface also distinguishes a primitive description from its
+realization, execution strategy, and analysis backend. This makes supported
+choices visible, keeps experiments reproducible, and allows the same primitive
+to be used in different workflows.
 
-.. doctest::
+CLAASP v5 is a new major version with a deliberately revised API. Code written
+for earlier releases may need to be adapted rather than relying on legacy
+names or compatibility aliases.
 
-   >>> from claasp.primitives import MiMC
-   >>> MiMC(17, 3, (1, 2, 4)).evaluate(5)
-   5
-
-Poseidon retains a vector of field elements rather than packing it into an
-artificial integer:
-
-.. doctest::
-
-   >>> from claasp.primitives import Poseidon
-   >>> poseidon = Poseidon(
-   ...     17, 3, 2, 1,
-   ...     ((1, 2), (3, 4), (5, 6)),
-   ...     ((1, 1), (1, 2)),
-   ... )
-   >>> poseidon.evaluate((0, 1))
-   (4, 15)
-
-Package and architecture
-------------------------
-
-CLAASP 5 ships as the ``claasp`` distribution and import package. Primitive
-descriptions, evaluation, mathematical models, exporters, and solver processes
-are separate layers.
-
-See :doc:`concepts` for typed-unit details and :doc:`parameters` for verified
-AO parameter catalogues. Boolean and polynomial representations are described
-in the advanced modeling guides.
+The following pages introduce these ideas gradually. See :doc:`concepts` for
+the common vocabulary and :doc:`parameters` for arithmetization-oriented
+primitives and verified parameter sets.

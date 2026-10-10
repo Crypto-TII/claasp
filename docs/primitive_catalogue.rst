@@ -1,5 +1,5 @@
-Primitive catalogue
-===================
+Primitives catalogue
+====================
 
 The public catalogue describes the fixed-length primitives supported by
 CLAASP. Classes are available from ``claasp.primitives`` for
