@@ -14,7 +14,7 @@ class ToyFeistel(Primitive):
     EXAMPLES::
 
         >>> primitive = ToyFeistel()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xa6', 8)
@@ -35,14 +35,14 @@ class ToyFeistel(Primitive):
         super().__init__(
             "toyfeistel", {"plaintext": bit_type(block_bit_size), "key": bit_type(key_bit_size)}
         )
-        state = self.input("plaintext").select_all()
-        key = self.input("key").select_all()
+        state = self.graph.input("plaintext").select_all()
+        key = self.graph.input("key").select_all()
         left_positions = tuple(range(half))
         right_positions = tuple(range(half, block_bit_size))
         for round_number in range(1, number_of_rounds + 1):
-            self.add_round()
+            self._builder.add_round()
             after_key = xor_bits(self, state[right_positions], key[left_positions])
-            substituted = self.add_component(BitVectorSBox(after_key, tuple(sbox)))
+            substituted = self._builder.add_component(BitVectorSBox(after_key, tuple(sbox)))
             new_right = xor_bits(self, substituted, state[left_positions])
             state = concatenate(self, (state[right_positions], new_right))
 
@@ -51,4 +51,4 @@ class ToyFeistel(Primitive):
             round_constant = constant_bits(self, half, round_number)
             low = xor_bits(self, mixed[right_positions], round_constant)
             key = concatenate(self, (mixed[left_positions], low))
-        self.set_output(concatenate(self, (state[right_positions], state[left_positions])))
+        self._builder.set_output(concatenate(self, (state[right_positions], state[left_positions])))

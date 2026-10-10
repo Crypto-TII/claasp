@@ -1,0 +1,517 @@
+import importlib
+import inspect
+import pkgutil
+from collections import Counter
+from typing import cast
+
+import pytest
+
+from claasp.presentation import trail_section
+from claasp.primitives import Simon, Speck, ToySpeck
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    ConstraintModelProvenance,
+    ConstraintReferenceStatus,
+)
+from claasp.representations.constraints import cp as cp_package
+from claasp.representations.constraints import milp as milp_package
+from claasp.representations.constraints import sat as sat_package
+from claasp.representations.constraints import smt as smt_package
+from claasp.representations.constraints.cp.components import (
+    HybridImpossibleBoundaryCPModel,
+    HybridSBoxCPModel,
+    HybridXorCPModel,
+    ModularAddBoomerangCPModel,
+    ProbabilisticTruncatedModularAddCPModel,
+    SBoxBoomerangCPModel,
+    SBoxXorDifferentialCPModel,
+)
+from claasp.representations.constraints.cp.lowering import BooleanMiniZincLowerer
+from claasp.representations.constraints.cp.trails import (
+    ModularAddBoomerangTrailCPModel,
+    PresentHybridImpossibleCPModel,
+    SBoxBoomerangTrailCPModel,
+    SpeckBoomerangCPModel,
+    SpeckContinuousHeuristicCPModel,
+    SpeckContinuousMaskOptimizationCPModel,
+    SpeckProbabilisticTruncatedCPModel,
+    SpeckSemiDeterministicTruncatedCPModel,
+    WordSemiDeterministicDifferentialLinearCPModel,
+    WordwiseDeterministicTruncatedCPModel,
+)
+from claasp.representations.constraints.milp.components import (
+    ModularAddLinearMILPModel,
+    MonomialTransitionMILPModel,
+    SBoxUndisturbedBitsEspressoMILPModel,
+    SBoxXorDifferentialConvexHullMILPModel,
+    SBoxXorDifferentialEspressoMILPModel,
+    SBoxXorDifferentialGreedyMILPModel,
+    SBoxXorDifferentialMILPModel,
+    SBoxXorDifferentialMinimumMILPModel,
+    SBoxXorLinearConvexHullMILPModel,
+    SBoxXorLinearEspressoMILPModel,
+    SBoxXorLinearGreedyMILPModel,
+    SBoxXorLinearMILPModel,
+    SBoxXorLinearMinimumMILPModel,
+    WordwiseImpossibleBoundaryMILPModel,
+    WordwiseTruncatedMDSEspressoMILPModel,
+    WordwiseTruncatedMDSMILPModel,
+    WordwiseXorEspressoMILPModel,
+    WordwiseXorMILPModel,
+    XorImpossiblePointMILPModel,
+)
+from claasp.representations.constraints.milp.lowering import (
+    BooleanMonomialGraphMILPModel,
+    cnf_to_milp,
+)
+from claasp.representations.constraints.milp.queries import (
+    CubeMonomialFeasibilityMILPModel,
+    MonomialDegreeMILPModel,
+)
+from claasp.representations.constraints.milp.trails import (
+    PresentMonomialTrailMILPModel,
+    SpeckSemiDeterministicTruncatedMILPModel,
+    WordSemiDeterministicDifferentialLinearMILPModel,
+    WordwiseDeterministicTruncatedMILPModel,
+)
+from claasp.representations.constraints.sat import BooleanCNFModel
+from claasp.representations.constraints.sat.components import (
+    DifferentialToTruncatedSATModel,
+    ModularAddDifferentialSATModel,
+    ModularAddFunctionalSATModel,
+    ModularAddLinearSATModel,
+    ModularAddNWindowSATModel,
+    ModularAddSemiDeterministicTruncatedSATModel,
+    ProbabilisticTruncatedModularAddSATModel,
+    SBoxFunctionalSATModel,
+    TruncatedToLinearSATModel,
+    WiringFunctionalSATModel,
+)
+from claasp.representations.constraints.sat.trails import (
+    SpeckSemiDeterministicTruncatedSATModel,
+    WordDeterministicDifferentialLinearSATModel,
+    WordSemiDeterministicDifferentialLinearSATModel,
+    WordwiseDeterministicTruncatedSATModel,
+)
+from claasp.representations.constraints.smt.components import (
+    ModularAddDifferentialSMTModel,
+    ModularAddLinearSMTModel,
+    SBoxXorDifferentialSMTModel,
+    SBoxXorLinearSMTModel,
+)
+from claasp.representations.constraints.smt.model import SMTFormula
+from claasp.representations.constraints.smt.trails import WordDifferentialSMTModel
+from claasp.semantics.cryptanalysis import (
+    Trail,
+    TrailKind,
+    TrailSearchMetadata,
+    TrailSearchResult,
+    TrailStep,
+    Transition,
+    XorDifference,
+)
+
+BACKEND_PACKAGES = (sat_package, smt_package, milp_package, cp_package)
+
+
+def _public_constraint_model_classes():
+    seen = set()
+    for package in BACKEND_PACKAGES:
+        for module_info in pkgutil.walk_packages(package.__path__, package.__name__ + "."):
+            module = importlib.import_module(module_info.name)
+            for _, value in inspect.getmembers(module, inspect.isclass):
+                identity = value.__module__, value.__qualname__
+                if (
+                    value.__module__ == module.__name__
+                    and value.__name__.endswith("Model")
+                    and not value.__name__.startswith("_")
+                    and identity not in seen
+                ):
+                    seen.add(identity)
+                    yield value
+
+
+def test_every_public_constraint_model_declares_an_explicit_reference_status():
+    records: list[ConstraintModelProvenance] = []
+    models = tuple(_public_constraint_model_classes())
+    for model in models:
+        declarations: tuple[ConstraintModelProvenance, ...]
+        if "model_provenance" in model.__dict__:
+            declarations = (model.model_provenance,)
+        elif "model_provenance_by_kind" in model.__dict__:
+            declarations = tuple(model.model_provenance_by_kind.values())
+        else:
+            declarations = ()
+        assert declarations, f"{model.__name__} has no provenance declaration"
+        records.extend(declarations)
+
+    assert len(models) == 142
+    assert len(records) == 145
+    assert Counter(record.reference_status for record in records) == {
+        ConstraintReferenceStatus.VERIFIED: 31,
+        ConstraintReferenceStatus.NOT_APPLICABLE: 103,
+        ConstraintReferenceStatus.TO_BE_DETERMINED: 11,
+    }
+    assert all(isinstance(record, ConstraintModelProvenance) for record in records)
+    assert all(isinstance(record.reference_status, ConstraintReferenceStatus) for record in records)
+    assert {record.backend for record in records} == set(ConstraintBackend)
+    assert ConstraintReferenceStatus.VERIFIED in {record.reference_status for record in records}
+
+
+def test_direct_and_audited_modular_add_models_declare_their_reference_status():
+    assert SBoxFunctionalSATModel.model_provenance.reference_status is (
+        ConstraintReferenceStatus.NOT_APPLICABLE
+    )
+    for model in (
+        ModularAddDifferentialSATModel,
+        ModularAddDifferentialSMTModel,
+        ModularAddLinearSATModel,
+        ModularAddLinearSMTModel,
+        ModularAddLinearMILPModel,
+        ModularAddNWindowSATModel,
+    ):
+        assert model.model_provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+    for probabilistic_model in (
+        ProbabilisticTruncatedModularAddCPModel,
+        ProbabilisticTruncatedModularAddSATModel,
+        ModularAddSemiDeterministicTruncatedSATModel,
+        SpeckProbabilisticTruncatedCPModel,
+    ):
+        assert probabilistic_model.model_provenance.reference_status is (
+            ConstraintReferenceStatus.TO_BE_DETERMINED
+        )
+
+
+def test_audited_modular_add_models_name_the_verified_primary_source_and_locator():
+    for model in (ModularAddDifferentialSATModel, ModularAddDifferentialSMTModel):
+        differential = model.model_provenance
+        assert differential.reference_identifier == "https://eprint.iacr.org/2001/001"
+        assert differential.source_locator == "section 4, Algorithm 2 and Theorem 1"
+
+    for linear_model in (
+        ModularAddLinearSATModel,
+        ModularAddLinearSMTModel,
+        ModularAddLinearMILPModel,
+    ):
+        provenance = linear_model.model_provenance
+        assert provenance.reference_identifier == "10.1007/978-3-319-39555-5_26"
+        assert provenance.source_locator == "section 3.1, Proposition 1 and equation (1)"
+
+    window = ModularAddNWindowSATModel.model_provenance
+    assert window.reference_identifier == "10.1007/978-3-031-88661-4_1"
+    assert window.source_locator == "section 3.1, Definitions 1 and 2; section 3.2"
+
+
+def test_probabilistic_truncated_cp_composition_declares_and_emits_its_tbd_status():
+    from claasp.semantics import PROBABILISTIC_TRUNCATED_XOR
+    from claasp.semantics.cryptanalysis import PropagationProblem, TruncatedXorDifference
+
+    model = SpeckProbabilisticTruncatedCPModel(
+        PropagationProblem(Speck(number_of_rounds=1), PROBABILISTIC_TRUNCATED_XOR),
+        TruncatedXorDifference.parse("0" * 32),
+        TruncatedXorDifference.parse("?" * 32),
+    )
+
+    assert model.model_provenance.reference_status is (ConstraintReferenceStatus.TO_BE_DETERMINED)
+    assert model.cp_model().constraint_models == (
+        ConstraintModelApplication(model.model_provenance),
+    )
+
+
+def test_audited_boomerang_model_names_the_bct_definition():
+    provenance = SBoxBoomerangCPModel.model_provenance
+
+    assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+    assert provenance.reference_identifier == "10.1007/978-3-319-78375-8_22"
+    assert provenance.source_locator == "section 3.1, equation (4) and Definition 3.1"
+
+
+def test_audited_modular_add_boomerang_models_name_the_arx_primary_source():
+    for model in (
+        ModularAddBoomerangCPModel,
+        ModularAddBoomerangTrailCPModel,
+        SpeckBoomerangCPModel,
+    ):
+        provenance = model.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+        assert provenance.reference_identifier == "10.46586/tosc.v2023.i1.152-191"
+
+
+def test_direct_sbox_boomerang_composition_is_not_a_literature_claim():
+    assert SBoxBoomerangTrailCPModel.model_provenance.reference_status is (
+        ConstraintReferenceStatus.NOT_APPLICABLE
+    )
+
+
+def test_audited_hybrid_models_name_the_published_tagged_construction():
+    for model in (
+        HybridImpossibleBoundaryCPModel,
+        HybridXorCPModel,
+        HybridSBoxCPModel,
+        PresentHybridImpossibleCPModel,
+    ):
+        provenance = model.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+        assert provenance.reference_identifier == "10.1007/978-3-032-10536-3_6"
+        assert "section 4.2" in cast(str, provenance.source_locator)
+
+
+def test_continuous_equations_are_verified_but_fixed_mask_selection_is_direct():
+    continuous = SpeckContinuousHeuristicCPModel.model_provenance
+    selection = SpeckContinuousMaskOptimizationCPModel.model_provenance
+
+    assert continuous.reference_status is ConstraintReferenceStatus.VERIFIED
+    assert continuous.reference_identifier == "10.1007/978-3-031-30872-7_10"
+    assert "Propositions 1--4" in cast(str, continuous.source_locator)
+    assert selection.reference_status is ConstraintReferenceStatus.NOT_APPLICABLE
+
+    query = SpeckContinuousMaskOptimizationCPModel((-1.0,) * 16, (-1.0,) * 16, rounds=1).cp_model()
+    assert tuple(item.model for item in query.constraint_models) == (continuous, selection)
+
+
+def test_differential_linear_connectors_and_direct_composition_are_not_literature_claims():
+    for model in (
+        DifferentialToTruncatedSATModel,
+        TruncatedToLinearSATModel,
+        WordDeterministicDifferentialLinearSATModel,
+    ):
+        assert model.model_provenance.reference_status is (ConstraintReferenceStatus.NOT_APPLICABLE)
+
+
+def test_semi_deterministic_wrappers_are_direct_while_the_local_relation_stays_tbd():
+    assert ModularAddSemiDeterministicTruncatedSATModel.model_provenance.reference_status is (
+        ConstraintReferenceStatus.TO_BE_DETERMINED
+    )
+    for model in (
+        SpeckSemiDeterministicTruncatedSATModel,
+        SpeckSemiDeterministicTruncatedCPModel,
+        SpeckSemiDeterministicTruncatedMILPModel,
+        WordSemiDeterministicDifferentialLinearSATModel,
+        WordSemiDeterministicDifferentialLinearCPModel,
+        WordSemiDeterministicDifferentialLinearMILPModel,
+    ):
+        assert model.model_provenance.reference_status is (ConstraintReferenceStatus.NOT_APPLICABLE)
+
+
+def test_audited_monomial_models_name_the_monomial_prediction_construction():
+    models = (
+        MonomialTransitionMILPModel,
+        BooleanMonomialGraphMILPModel,
+        PresentMonomialTrailMILPModel,
+    )
+
+    for model in models:
+        provenance = model.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+        assert provenance.reference_identifier == "https://eprint.iacr.org/2020/1048"
+        assert provenance.source_locator in {
+            "section 3, local monomial-transition relation and Definition 1",
+            "section 3, Definition 1; section 4.2",
+            "section 4.2, MILP model for the monomial trail of f^(i)",
+        }
+
+
+def test_audited_monomial_queries_name_the_published_optimizations_and_graph_model():
+    primitive = Simon(number_of_rounds=1)
+    queries = (
+        MonomialDegreeMILPModel(primitive, output_bit=0, variable_input="plaintext"),
+        CubeMonomialFeasibilityMILPModel(
+            primitive,
+            output_bit=0,
+            variable_input="plaintext",
+            cube_positions=(0,),
+        ),
+    )
+
+    for query in queries:
+        provenance = query.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+        assert provenance.reference_identifier == "https://eprint.iacr.org/2020/1048"
+        applications = query.milp_model().constraint_models
+        assert applications[-1].model is provenance
+        assert any(
+            application.model is BooleanMonomialGraphMILPModel.model_provenance
+            for application in applications
+        )
+
+
+def test_exhaustive_sbox_tables_and_direct_linear_wiring_remain_not_applicable():
+    for model in (
+        SBoxXorDifferentialCPModel,
+        SBoxXorDifferentialMILPModel,
+        SBoxXorLinearMILPModel,
+        SBoxXorDifferentialSMTModel,
+        SBoxXorLinearSMTModel,
+        WiringFunctionalSATModel,
+    ):
+        assert model.model_provenance.reference_status is (ConstraintReferenceStatus.NOT_APPLICABLE)
+
+
+def test_audited_differential_sbox_inequality_strategies_name_primary_sources():
+    for model in (
+        SBoxXorDifferentialConvexHullMILPModel,
+        SBoxXorDifferentialGreedyMILPModel,
+    ):
+        provenance = model.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+        assert provenance.reference_identifier == "https://eprint.iacr.org/2014/747"
+        assert "Algorithm 1" in cast(str, provenance.source_locator)
+
+    minimum = SBoxXorDifferentialMinimumMILPModel.model_provenance
+    assert minimum.reference_identifier == "10.1007/978-3-319-69284-5_11"
+    assert minimum.source_locator == "section 3, proposed inequality-reduction algorithm"
+
+    espresso = SBoxXorDifferentialEspressoMILPModel.model_provenance
+    assert espresso.reference_identifier == "10.13154/tosc.v2017.i4.99-129"
+    assert espresso.source_locator == "sections 3.1 and 3.2; section 4.1, Definition 1"
+
+
+def test_signed_lat_inequality_strategies_retain_a_precise_unresolved_status():
+    for model in (
+        SBoxXorLinearConvexHullMILPModel,
+        SBoxXorLinearGreedyMILPModel,
+        SBoxXorLinearMinimumMILPModel,
+        SBoxXorLinearEspressoMILPModel,
+    ):
+        provenance = model.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.TO_BE_DETERMINED
+        assert "signed LAT-count classes" in cast(str, provenance.rationale)
+
+
+def test_audited_wordwise_models_name_the_four_state_primary_source():
+    for model in (
+        WordwiseXorMILPModel,
+        WordwiseXorEspressoMILPModel,
+        WordwiseTruncatedMDSMILPModel,
+        WordwiseTruncatedMDSEspressoMILPModel,
+        WordwiseDeterministicTruncatedSATModel,
+        WordwiseDeterministicTruncatedMILPModel,
+        WordwiseDeterministicTruncatedCPModel,
+    ):
+        provenance = model.model_provenance
+        assert provenance.reference_status is ConstraintReferenceStatus.VERIFIED
+        assert provenance.reference_identifier == "10.13154/tosc.v2020.i3.262-287"
+
+
+def test_generic_compressions_and_forbidden_assignments_are_not_literature_claims():
+    for model in (
+        SBoxUndisturbedBitsEspressoMILPModel,
+        XorImpossiblePointMILPModel,
+        WordwiseImpossibleBoundaryMILPModel,
+    ):
+        assert model.model_provenance.reference_status is (ConstraintReferenceStatus.NOT_APPLICABLE)
+
+
+def test_monomial_graph_lowering_propagates_its_verified_model_declaration():
+    primitive = Simon(number_of_rounds=1)
+    model = BooleanMonomialGraphMILPModel(primitive, 0, "plaintext").milp_model()
+
+    assert model.constraint_models == (
+        ConstraintModelApplication(
+            BooleanMonomialGraphMILPModel.model_provenance,
+            tuple(cast(str, component.component_id) for component in primitive.graph.components),
+        ),
+    )
+
+
+def test_verified_reference_requires_a_stable_identifier_and_precise_locator():
+    with pytest.raises(ValueError, match="identifier, title, and locator"):
+        ConstraintModelProvenance(
+            ConstraintBackend.SAT,
+            "ExampleModel",
+            "functional",
+            "example",
+            ConstraintReferenceStatus.VERIFIED,
+        )
+    with pytest.raises(ValueError, match="URL or DOI"):
+        ConstraintModelProvenance(
+            ConstraintBackend.SAT,
+            "ExampleModel",
+            "functional",
+            "example",
+            ConstraintReferenceStatus.VERIFIED,
+            "citation-key",
+            "Primary source",
+            "section 3",
+        )
+
+
+def test_lowering_propagates_component_model_and_component_ids():
+    formula = BooleanCNFModel(Speck(number_of_rounds=1)).cnf_formula()
+
+    assert formula.constraint_models
+    assert all(application.component_ids for application in formula.constraint_models)
+    assert any(
+        application.model is ModularAddFunctionalSATModel.model_provenance
+        for application in formula.constraint_models
+    )
+    assert SMTFormula.from_cnf(formula).constraint_models == formula.constraint_models
+    assert cnf_to_milp(formula).constraint_models == formula.constraint_models
+    assert BooleanMiniZincLowerer().lower(formula).constraint_models == formula.constraint_models
+
+
+def test_complete_trail_lowering_retains_the_modular_add_model_declaration():
+    formula = WordDifferentialSMTModel(
+        ToySpeck(), maximum_weight=2, nonzero_input="plaintext"
+    ).smt_formula()
+
+    modular_add = next(
+        application
+        for application in formula.constraint_models
+        if application.model is ModularAddDifferentialSMTModel.model_provenance
+    )
+    assert modular_add.component_ids
+    assert modular_add.model.reference_status is ConstraintReferenceStatus.VERIFIED
+    assert modular_add.model.reference_identifier == "https://eprint.iacr.org/2001/001"
+
+
+def test_trail_report_maps_references_and_deduplicates_verified_citations():
+    provenance = ConstraintModelProvenance(
+        ConstraintBackend.SMT,
+        "ExampleDifferentialSMTModel",
+        "xor_differential",
+        "example clauses",
+        ConstraintReferenceStatus.VERIFIED,
+        "https://example.test/primary-source",
+        "Primary source",
+        "section 3, equation 7",
+    )
+    second_model = ConstraintModelProvenance(
+        ConstraintBackend.MILP,
+        "ExampleDifferentialMILPModel",
+        "xor_differential",
+        "example inequalities",
+        ConstraintReferenceStatus.VERIFIED,
+        "https://example.test/primary-source",
+        "Primary source",
+        "section 3, equation 7",
+    )
+    transition = Transition(
+        TrailKind.XOR_DIFFERENTIAL,
+        XorDifference(1, 1),
+        XorDifference(1, 1),
+        1,
+        2,
+    )
+    trail = Trail(
+        TrailKind.XOR_DIFFERENTIAL,
+        XorDifference(1, 1),
+        XorDifference(1, 1),
+        (TrailStep("sbox_0", transition), TrailStep("sbox_1", transition)),
+    )
+    result = TrailSearchResult(
+        trail,
+        2.0,
+        TrailSearchMetadata("fixture"),
+        constraint_models=(
+            ConstraintModelApplication(provenance, ("sbox_0",)),
+            ConstraintModelApplication(second_model, ("sbox_1",)),
+        ),
+    )
+
+    section = trail_section(result, details=True)
+
+    assert section.tables[1].columns[-1].heading == "Constraint model reference"
+    assert all("section 3, equation 7" in row.cells[-1].text for row in section.tables[1].rows)
+    assert len(section.citations) == 1

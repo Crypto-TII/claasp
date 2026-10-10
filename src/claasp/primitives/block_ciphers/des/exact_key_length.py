@@ -35,7 +35,7 @@ class DESExactKeyLength(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = DESExactKeyLength()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x8ca64de9c1b123a7', 64)
@@ -310,7 +310,7 @@ class DESExactKeyLength(BitGraphPrimitive):
 
         # Rounds definition :
         # Round 0 different from others since it starts with FirstAddRoundKey
-        self.add_round()
+        self._builder.add_round()
 
         state = self.add_permutation_component(
             [INPUT_PLAINTEXT],
@@ -454,4 +454,4 @@ class DESExactKeyLength(BitGraphPrimitive):
                 self.add_round_output_component(
                     [state.id], [list(range(self.primitive_block_size))], self.primitive_block_size
                 )
-                self.add_round()
+                self._builder.add_round()

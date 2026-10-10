@@ -1,23 +1,60 @@
 """Public constraint-programming model representations."""
 
+from claasp.representations.constraints.cp.components import (
+    HybridImpossibleBoundaryCPModel,
+    HybridImpossibleBoundaryResult,
+    HybridSBoxCPModel,
+    HybridXorCPModel,
+    ModularAddBoomerangCPModel,
+)
 from claasp.representations.constraints.cp.lowering import BooleanMiniZincLowerer
 from claasp.representations.constraints.cp.model import MiniZincModel
 
 __all__ = [
     "BooleanMiniZincLowerer",
+    "HybridImpossibleBoundaryCPModel",
+    "HybridImpossibleBoundaryResult",
+    "HybridSBoxCPModel",
+    "HybridXorCPModel",
     "ImpossibleBoundaryCPModel",
     "MiniZincModel",
+    "ModularAddBoomerangCPModel",
+    "ModularAddBoomerangTrailCPModel",
+    "ModularAddBoomerangTrailResult",
+    "ModularAddDeterministicTruncatedCPModel",
     "PresentDifferentialCPModel",
+    "PresentFixedActiveSBoxesCPModel",
+    "PresentActiveSBoxesCPModel",
     "PresentLinearCPModel",
+    "PresentKeyScheduleDifferentialTrail",
+    "PresentProbabilisticKeyScheduleCPModel",
+    "PresentHybridImpossibleCPModel",
     "ProbabilisticTruncatedModularAddCPModel",
     "SBoxBoomerangCPModel",
+    "SBoxBoomerangTrailCPModel",
+    "SBoxBoomerangTrailResult",
     "SBoxDifferenceCPModel",
+    "SBoxXorDifferentialCPModel",
     "SimonImpossibleCPModel",
+    "SpeckBoomerangCPModel",
     "SpeckDifferentialCPModel",
+    "SpeckARXWindowDifferentialCPModel",
+    "SpeckContinuousHeuristicCPModel",
+    "SpeckContinuousMaskOptimizationCPModel",
+    "ContinuousMaskOptimizationResult",
     "SpeckImpossibleCPModel",
     "SpeckProbabilisticTruncatedCPModel",
+    "SpeckSemiDeterministicTruncatedCPModel",
     "SpeckTruncatedCPModel",
     "WordwiseDifferenceCPModel",
+    "WordwiseDeterministicTruncatedCPModel",
+    "WordwiseImpossibleCPModel",
+    "WordDeterministicTruncatedCPModel",
+    "WordDeterministicDifferentialLinearCPModel",
+    "WordDifferentialCPModel",
+    "WordLinearCPModel",
+    "WordImpossibleCPModel",
+    "WordSemiDeterministicDifferentialLinearCPModel",
 ]
 
 
@@ -28,6 +65,14 @@ def __getattr__(name: str):
         from claasp.representations.constraints.cp.trails import PresentDifferentialCPModel
 
         return PresentDifferentialCPModel
+    if name == "PresentActiveSBoxesCPModel":
+        from claasp.representations.constraints.cp.trails import PresentActiveSBoxesCPModel
+
+        return PresentActiveSBoxesCPModel
+    if name == "PresentFixedActiveSBoxesCPModel":
+        from claasp.representations.constraints.cp.trails import PresentFixedActiveSBoxesCPModel
+
+        return PresentFixedActiveSBoxesCPModel
     if name == "PresentLinearCPModel":
         from claasp.representations.constraints.cp.trails import PresentLinearCPModel
 
@@ -36,18 +81,49 @@ def __getattr__(name: str):
         from claasp.representations.constraints.cp.trails import SpeckDifferentialCPModel
 
         return SpeckDifferentialCPModel
+    if name == "SpeckARXWindowDifferentialCPModel":
+        from claasp.representations.constraints.cp.trails import SpeckARXWindowDifferentialCPModel
+
+        return SpeckARXWindowDifferentialCPModel
     if name in {
         "ImpossibleBoundaryCPModel",
+        "ModularAddDeterministicTruncatedCPModel",
+        "ModularAddBoomerangTrailCPModel",
+        "ModularAddBoomerangTrailResult",
         "SBoxDifferenceCPModel",
         "SBoxBoomerangCPModel",
+        "SBoxBoomerangTrailCPModel",
+        "SBoxBoomerangTrailResult",
         "ProbabilisticTruncatedModularAddCPModel",
+        "PresentHybridImpossibleCPModel",
+        "PresentKeyScheduleDifferentialTrail",
+        "PresentProbabilisticKeyScheduleCPModel",
         "SimonImpossibleCPModel",
+        "SpeckBoomerangCPModel",
         "SpeckImpossibleCPModel",
+        "SpeckContinuousHeuristicCPModel",
+        "SpeckContinuousMaskOptimizationCPModel",
+        "ContinuousMaskOptimizationResult",
         "SpeckProbabilisticTruncatedCPModel",
+        "SpeckSemiDeterministicTruncatedCPModel",
         "SpeckTruncatedCPModel",
         "WordwiseDifferenceCPModel",
+        "WordwiseDeterministicTruncatedCPModel",
+        "WordwiseImpossibleCPModel",
+        "WordDeterministicTruncatedCPModel",
+        "WordDeterministicDifferentialLinearCPModel",
+        "WordDifferentialCPModel",
+        "WordLinearCPModel",
+        "WordImpossibleCPModel",
+        "WordSemiDeterministicDifferentialLinearCPModel",
     }:
         from claasp.representations.constraints.cp import trails
 
         return getattr(trails, name)
+    if name == "SBoxXorDifferentialCPModel":
+        from claasp.representations.constraints.cp.components import (
+            SBoxXorDifferentialCPModel,
+        )
+
+        return SBoxXorDifferentialCPModel
     raise AttributeError(name)

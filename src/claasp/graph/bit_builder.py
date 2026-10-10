@@ -4,7 +4,7 @@ This module is intentionally an authoring facade, not a second graph model.
 Every operation immediately creates an ordinary immutable v5 component and
 returns only a small reference used while the Python constructor is running.
 Evaluators and representations therefore consume the same typed DAG as graphs
-written with :meth:`Primitive.add_component` directly.
+written with :meth:`PrimitiveBuilder.add_component` directly.
 """
 
 from __future__ import annotations
@@ -39,6 +39,7 @@ from claasp.components import (
 )
 from claasp.domains import BinaryExtensionField, Bit
 from claasp.encoding import bits_from_int
+from claasp.graph.array_type import ArrayType
 from claasp.graph.metadata import (
     LEGACY_KIND_NAMES,
     InputVisibility,
@@ -47,7 +48,6 @@ from claasp.graph.metadata import (
 )
 from claasp.graph.port import PortLike, Selection, as_selection
 from claasp.graph.primitive import Primitive
-from claasp.graph.value_type import ValueType
 from claasp.utils.integers import coerce_exact_int as coerce_exact_int
 
 # Stable boundary-role and taxonomy values used by primitive source modules.
@@ -84,8 +84,8 @@ class BitComponent:
     input_bit_positions: list[list[int]]
 
 
-def _bit_type(width: int) -> ValueType:
-    return ValueType(Bit(), (width,))
+def _bit_type(width: int) -> ArrayType:
+    return ArrayType(Bit(), (width,))
 
 
 def simplify_inputs(inputs_id, inputs_pos):
@@ -338,18 +338,18 @@ class BitGraphPrimitive(Primitive):
 
     @property
     def current_round_number(self):
-        return len(self.rounds) - 1 if self.rounds else None
+        return len(self.graph.rounds) - 1 if self.graph.rounds else None
 
     @property
     def current_round_number_of_components(self):
-        return len(self.rounds[-1].components) if self.rounds else 0
+        return len(self.graph.rounds[-1].components) if self.graph.rounds else 0
 
     @property
     def number_of_rounds(self):
-        return len(self.rounds)
+        return len(self.graph.rounds)
 
-    def add_round(self):
-        result = super().add_round()
+    def _add_round(self):
+        result = super()._add_round()
         self._construction_rounds.append([])
         return result
 
@@ -363,13 +363,13 @@ class BitGraphPrimitive(Primitive):
         return self._construction_rounds[-1][-1].id
 
     def _component_id(self, prefix: str) -> str:
-        if not self.rounds:
+        if not self.graph.rounds:
             raise ValueError("add a round before adding components")
         return f"{prefix}_{self.current_round_number}_{self.current_round_number_of_components}"
 
     def _selection(self, ids, positions) -> Selection:
         selections = tuple(
-            self.port(source_id)[tuple(selected)]
+            self.graph.port(source_id)[tuple(selected)]
             for source_id, selected in zip(ids, positions)
             if selected
         )
@@ -377,7 +377,7 @@ class BitGraphPrimitive(Primitive):
             raise ValueError("component input must select at least one bit")
         if len(selections) == 1:
             return selections[0]
-        return self.join(*selections).select_all()
+        return self._builder.join(*selections).select_all()
 
     def _record(self, port: PortLike, input_positions=None) -> BitComponent:
         selection = as_selection(port)
@@ -391,7 +391,7 @@ class BitGraphPrimitive(Primitive):
         return state
 
     def _add(self, component, input_positions=None) -> BitComponent:
-        return self._record(super().add_component(component), input_positions)
+        return self._record(self._builder.add_component(component), input_positions)
 
     def _add_word_operation(self, ids, positions, width, operation, parameter=None, modulus=None):
         source = self._selection(ids, positions)
@@ -415,48 +415,48 @@ class BitGraphPrimitive(Primitive):
         if operation in {"ROTATE_BY_VARIABLE_AMOUNT", "SHIFT_BY_VARIABLE_AMOUNT"}:
             operands = (source[:width], source[width:])
         else:
-            count = 1 if unary else source.value_type.unit_count // width
+            count = 1 if unary else source.array_type.unit_count // width
             operands = tuple(source[index * width : (index + 1) * width] for index in range(count))
         if operation in {"ROTATE_BY_VARIABLE_AMOUNT", "SHIFT_BY_VARIABLE_AMOUNT"}:
-            words = (self.pack_bits(operands[0], width),)
+            words = (self._builder.pack_bits(operands[0], width),)
         else:
-            words = tuple(self.pack_bits(value, width) for value in operands)
+            words = tuple(self._builder.pack_bits(value, width) for value in operands)
         if operation in {"XOR", "AND", "OR"} and len(words) == 1:
             return self._record(operands[0], positions)
         elif operation == "XOR":
-            output = super().add_component(Xor(words, component_id=component_id))
+            output = self._builder.add_component(Xor(words, component_id=component_id))
         elif operation == "AND":
-            output = super().add_component(BitwiseAnd(words, component_id=component_id))
+            output = self._builder.add_component(BitwiseAnd(words, component_id=component_id))
         elif operation == "OR":
-            output = super().add_component(BitwiseOr(words, component_id=component_id))
+            output = self._builder.add_component(BitwiseOr(words, component_id=component_id))
         elif operation == "NOT":
-            output = super().add_component(BitwiseNot(words[0], component_id=component_id))
+            output = self._builder.add_component(BitwiseNot(words[0], component_id=component_id))
         elif operation == "MODADD":
-            output = super().add_component(
+            output = self._builder.add_component(
                 ModularAdd(words, modulus=modulus, component_id=component_id)
             )
         elif operation == "MODSUB":
-            output = super().add_component(ModularSubtract(words, component_id=component_id))
+            output = self._builder.add_component(ModularSubtract(words, component_id=component_id))
         elif operation == "MODMUL":
-            output = super().add_component(ModularMultiply(words, component_id=component_id))
+            output = self._builder.add_component(ModularMultiply(words, component_id=component_id))
         elif operation == "IDEA":
-            output = super().add_component(IDEAMultiply(words, component_id=component_id))
+            output = self._builder.add_component(IDEAMultiply(words, component_id=component_id))
         elif operation in {"ROTATE", "SHIFT"}:
             cls = Rotate if operation == "ROTATE" else Shift
             direction = "right" if parameter >= 0 else "left"
-            output = super().add_component(
+            output = self._builder.add_component(
                 cls(words[0], abs(parameter), direction, component_id=component_id)
             )
         else:
             cls = VariableRotate if operation == "ROTATE_BY_VARIABLE_AMOUNT" else VariableShift
-            amount = self.pack_bits(operands[1], operands[1].value_type.unit_count)
+            amount = self._builder.pack_bits(operands[1], operands[1].array_type.unit_count)
             direction = "right" if parameter >= 0 else "left"
-            output = super().add_component(
+            output = self._builder.add_component(
                 cls(words[0], amount, direction, component_id=component_id)
             )
-        if isinstance(output.value_type.domain, Bit):
+        if isinstance(output.array_type.domain, Bit):
             return self._record(output, positions)
-        return self._record(self.unpack_bits(output), positions)
+        return self._record(self._builder.unpack_bits(output), positions)
 
     def add_xor_component(self, ids, positions, output_bit_size):
         return self._add_word_operation(ids, positions, output_bit_size, "XOR")
@@ -658,7 +658,7 @@ class BitGraphPrimitive(Primitive):
             field = BinaryExtensionField(
                 bits_inside_word, {8: 0x11D, 16: 0x1002D, 32: 0x100008299}[bits_inside_word]
             )
-            source = self.pack_bits(source, bits_inside_word, output_domain=field)
+            source = self._builder.pack_bits(source, bits_inside_word, output_domain=field)
             terms = lambda values: tuple(
                 FeedbackTerm(tuple(term[1]), int(term[0])) for term in values
             )
@@ -671,12 +671,12 @@ class BitGraphPrimitive(Primitive):
             for length, feedback, *rest in registers
         )
         register_size = sum(register[0] for register in registers)
-        if bits_inside_word != 1 or source.value_type.unit_count == register_size:
-            output = super().add_component(
+        if bits_inside_word != 1 or source.array_type.unit_count == register_size:
+            output = self._builder.add_component(
                 FeedbackRegister(source, specifications, clocks=clocks, component_id=base_id)
             )
             if bits_inside_word != 1:
-                output = self.unpack_bits(output)
+                output = self._builder.unpack_bits(output)
             return self._record(output, positions)
 
         # Some source descriptions feed key/control bits into nonlinear
@@ -692,10 +692,9 @@ class BitGraphPrimitive(Primitive):
                     if len(selected) == 1:
                         term = selected[0]
                     else:
-                        packed = tuple(self.pack_bits(value, 1) for value in selected)
-                        term = self.unpack_bits(
-                            Primitive.add_component(
-                                self,
+                        packed = tuple(self._builder.pack_bits(value, 1) for value in selected)
+                        term = self._builder.unpack_bits(
+                            self._builder.add_component(
                                 BitwiseAnd(
                                     packed,
                                     component_id=f"{base_id}_and_{clock}_{start}_{term_index}",
@@ -706,10 +705,10 @@ class BitGraphPrimitive(Primitive):
                 if len(feedback_terms) == 1:
                     feedback_bit = feedback_terms[0]
                 else:
-                    packed = tuple(self.pack_bits(value, 1) for value in feedback_terms)
-                    feedback_bit = self.unpack_bits(
-                        Primitive.add_component(
-                            self, Xor(packed, component_id=f"{base_id}_feedback_{clock}_{start}")
+                    packed = tuple(self._builder.pack_bits(value, 1) for value in feedback_terms)
+                    feedback_bit = self._builder.unpack_bits(
+                        self._builder.add_component(
+                            Xor(packed, component_id=f"{base_id}_feedback_{clock}_{start}")
                         )
                     )
                 if clock_terms and clock_terms[0]:
@@ -718,18 +717,18 @@ class BitGraphPrimitive(Primitive):
                 outputs.append(feedback_bit)
                 start += length
             outputs.append(state[register_size:])
-            state = self.join(*outputs)
+            state = self._builder.join(*outputs)
         output = state[:register_size]
         return self._record(output, positions)
 
     def _output_component(self, ids, positions, output_bit_size, prefix, final=False):
         source = self._selection(ids, positions)
-        if source.value_type.unit_count != output_bit_size:
+        if source.array_type.unit_count != output_bit_size:
             raise ValueError("output selection size does not match output_bit_size")
-        output = self.view(source)
+        output = self._builder.view(source)
         state = self._record(output)
         if final:
-            self.set_output(output)
+            self._builder.set_output(output)
         return state
 
     def add_primitive_output_component(self, ids, positions, output_bit_size):

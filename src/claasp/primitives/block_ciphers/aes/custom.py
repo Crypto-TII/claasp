@@ -4,7 +4,7 @@ from collections.abc import Iterable
 
 from claasp.components import Add
 from claasp.composites.aes import AES_FIELD, AES_SBOX, AESKeySchedule, AESRound
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 
 class CustomAES(Primitive):
@@ -17,7 +17,7 @@ class CustomAES(Primitive):
     EXAMPLES::
 
         >>> primitive = CustomAES()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x66e94bd4ef8a2c3b', 127)
@@ -31,7 +31,7 @@ class CustomAES(Primitive):
         key_bit_size: int = 128,
         number_of_rounds: int | None = None,
     ) -> None:
-        configuration = Primitive.select_configuration(
+        configuration = Primitive._select_configuration(
             (
                 {"key_bit_size": 128, "number_of_rounds": 10},
                 {"key_bit_size": 192, "number_of_rounds": 12},
@@ -39,7 +39,7 @@ class CustomAES(Primitive):
             ),
             key_bit_size=key_bit_size,
         )
-        rounds = Primitive.validate_number_of_rounds(
+        rounds = Primitive._validate_number_of_rounds(
             number_of_rounds,
             default=configuration["number_of_rounds"],
             maximum=configuration["number_of_rounds"],
@@ -56,23 +56,27 @@ class CustomAES(Primitive):
         if not modifications:
             modifications.append("explicit AES-derived block composition")
 
-        state_type = ValueType(AES_FIELD, (16,))
+        state_type = ArrayType(AES_FIELD, (16,))
         super().__init__(
             "custom_aes",
-            {"plaintext": state_type, "key": ValueType(AES_FIELD, (key_bit_size // 8,))},
+            {"plaintext": state_type, "key": ArrayType(AES_FIELD, (key_bit_size // 8,))},
             kind=PrimitiveKind.BLOCK_CIPHER,
             provenance=(("derived_from", "AES"), ("modifications", "; ".join(modifications))),
+            instance_name=f"CustomAES-{key_bit_size}",
+            round_count=rounds,
         )
 
-        self.add_round()
-        key_schedule = self.add_composite(
+        self._builder.add_round()
+        key_schedule = self._builder.add_composite(
             AESKeySchedule(key_bit_size, rounds, sbox_table=table),
-            {"key": self.input("key")},
+            {"key": self.graph.input("key")},
         )
-        state = self.add_component(Add((self.input("plaintext"), key_schedule.output[0])))
+        state = self._builder.add_component(
+            Add((self.graph.input("plaintext"), key_schedule.output[0]))
+        )
         for round_number in range(1, rounds + 1):
-            self.add_round()
-            round_function = self.add_composite(
+            self._builder.add_round()
+            round_function = self._builder.add_composite(
                 AESRound(
                     sbox_table=table,
                     mix_columns=include_mix_columns
@@ -81,4 +85,4 @@ class CustomAES(Primitive):
                 {"state": state, "round_key": key_schedule.output[round_number]},
             )
             state = round_function.output()
-        self.set_output(state)
+        self._builder.set_output(state)

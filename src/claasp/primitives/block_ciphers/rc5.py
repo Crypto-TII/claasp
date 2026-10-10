@@ -4,7 +4,7 @@ from decimal import Decimal, localcontext
 from math import ceil, log10
 
 from claasp.domains import Bit, Word
-from claasp.graph import Primitive, ValueType
+from claasp.graph import ArrayType, Primitive
 
 from ._word_graph import (
     add,
@@ -35,7 +35,7 @@ class RC5(Primitive):
     EXAMPLES::
 
         >>> primitive = RC5()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xd9dd7e74', 32)
@@ -49,23 +49,23 @@ class RC5(Primitive):
         if key_size not in (0, 1) and key_size % 8:
             raise ValueError("this typed RC5 graph requires a byte-aligned nonempty key")
         key_type = (
-            ValueType(Bit(), (1,)) if key_size in (0, 1) else ValueType(Word(8), (key_size // 8,))
+            ArrayType(Bit(), (1,)) if key_size in (0, 1) else ArrayType(Word(8), (key_size // 8,))
         )
         byte_count = word_size // 8
         super().__init__(
-            "rc5", {"key": key_type, "plaintext": ValueType(Word(8), (2 * byte_count,))}
+            "rc5", {"key": key_type, "plaintext": ArrayType(Word(8), (2 * byte_count,))}
         )
-        self.add_round()
+        self._builder.add_round()
 
         def pack_little_endian(byte_selection):
             byte_selection = tuple(reversed(tuple(byte_selection)))
-            joined = self.join(*byte_selection)
-            return self.pack_bits(self.unpack_bits(joined), word_size)
+            joined = self._builder.join(*byte_selection)
+            return self._builder.pack_bits(self._builder.unpack_bits(joined), word_size)
 
         if key_size in (0, 1):
             key_words = [constant(self, word_size, 0)]
         else:
-            key_bytes = self.input("key")
+            key_bytes = self.graph.input("key")
             key_words = []
             count = max(1, ceil((key_size // 8) / byte_count))
             for index in range(count):
@@ -96,7 +96,7 @@ class RC5(Primitive):
             i = (i + 1) % len(schedule)
             j = (j + 1) % len(key_words)
 
-        plain_bytes = self.input("plaintext")
+        plain_bytes = self.graph.input("plaintext")
         a = add(
             self,
             pack_little_endian([select(plain_bytes, i) for i in range(byte_count)]),
@@ -108,7 +108,7 @@ class RC5(Primitive):
             schedule[1],
         )
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             a = add(
                 self,
                 variable_rotate(self, xor(self, a, b), low_bits(self, b, amount_width), left=True),
@@ -119,6 +119,6 @@ class RC5(Primitive):
                 variable_rotate(self, xor(self, b, a), low_bits(self, a, amount_width), left=True),
                 schedule[2 * round_number + 3],
             )
-        self.set_output(
+        self._builder.set_output(
             concatenate(self, byte_swap(self, a, word_size), byte_swap(self, b, word_size))
         )

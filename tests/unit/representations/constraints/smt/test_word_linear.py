@@ -4,19 +4,22 @@ from dataclasses import replace
 
 import pytest
 
-from claasp import Primitive, ValueType, Word
+from claasp import ArrayType, Primitive
 from claasp.components import BitwiseAnd, Xor
+from claasp.domains import Word
 from claasp.drivers.solvers import SatResult, SatStatus
 from claasp.representations.constraints.smt import WordLinearSMTModel
 
 
 def _xor_model():
     primitive = Primitive(
-        "xor", {"left": ValueType(Word(2), (1,)), "key": ValueType(Word(2), (1,))}
+        "xor", {"left": ArrayType(Word(2), (1,)), "key": ArrayType(Word(2), (1,))}
     )
-    primitive.add_round()
-    output = primitive.add_component(Xor((primitive.input("left"), primitive.input("key"))))
-    primitive.set_output(output)
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
+        Xor((primitive.graph.input("left"), primitive.graph.input("key")))
+    )
+    primitive._builder.set_output(output)
     return WordLinearSMTModel(primitive, maximum_weight=0, nonzero_input="key")
 
 
@@ -69,7 +72,7 @@ def test_facade_defaults_to_single_key_masks_and_preserves_provenance():
             assert "fixed_external_mask" not in formula.provenance
             return SatResult(SatStatus.UNSATISFIABLE, None, 0, "", "")
 
-    result = model.primitive.analyze().enumerate_xor_linear_trails(
+    result = model.primitive.analysis.enumerate_xor_linear_trails(
         0, nonzero_input="left", solver=Solver()
     )
     assert result.complete
@@ -91,13 +94,13 @@ def test_concrete_fixed_keys_are_constants_not_zero_masks():
 
 def test_bitwise_and_word_composition_recounts_signs_and_weights():
     primitive = Primitive(
-        "and", {"left": ValueType(Word(2), (1,)), "right": ValueType(Word(2), (1,))}
+        "and", {"left": ArrayType(Word(2), (1,)), "right": ArrayType(Word(2), (1,))}
     )
-    primitive.add_round()
-    output = primitive.add_component(
-        BitwiseAnd((primitive.input("left"), primitive.input("right")))
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
+        BitwiseAnd((primitive.graph.input("left"), primitive.graph.input("right")))
     )
-    primitive.set_output(output)
+    primitive._builder.set_output(output)
     model = WordLinearSMTModel(primitive, maximum_weight=2, nonzero_input="left")
     formula = model.smt_formula()
     trail = model.decode_characteristic(dict.fromkeys(formula.variables, 1))

@@ -15,7 +15,7 @@ class Simeck(Primitive):
     EXAMPLES::
 
         >>> primitive = Simeck()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x589290e7', 31)
@@ -33,8 +33,11 @@ class Simeck(Primitive):
         )
         width = block_bit_size // 2
         super().__init__("simeck", {"plaintext": word_type(width, 2), "key": word_type(width, 4)})
-        left, right = select(self.input("plaintext"), 0), select(self.input("plaintext"), 1)
-        keys = [select(self.input("key"), index) for index in range(4)]
+        left, right = (
+            select(self.graph.input("plaintext"), 0),
+            select(self.graph.input("plaintext"), 1),
+        )
+        keys = [select(self.graph.input("key"), index) for index in range(4)]
         z_value = Z[Z_INDEX[width]]
         c_value = (1 << width) - 4
 
@@ -47,7 +50,7 @@ class Simeck(Primitive):
             return xor(self, y, nonlinear, round_key), x
 
         for round_number in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             left, right = feistel(left, right, keys[3])
             if round_number != rounds - 1:
                 new_key, keys[3] = feistel(
@@ -56,4 +59,4 @@ class Simeck(Primitive):
                     constant(self, width, c_value ^ ((z_value >> round_number) & 1)),
                 )
                 keys = [new_key, keys[0], keys[1], keys[3]]
-        self.set_output(concatenate(self, left, right))
+        self._builder.set_output(concatenate(self, left, right))

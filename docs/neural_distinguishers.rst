@@ -1,5 +1,5 @@
-Neural distinguisher experiments
-================================
+Neural distinguisher
+====================
 
 CLAASP defines neural datasets and experiment requests independently of a
 machine-learning framework. Generating data therefore requires neither NumPy
@@ -65,20 +65,15 @@ do not cover every sample exactly once.
 Round and component projections
 --------------------------------
 
-Legacy CLAASP could train a distinguisher not only on a primitive's final
-output but also on an intermediate round's state, a round key, or an
-arbitrary component -- matching component ids against substrings such as
-``round_output``, ``round_key_output``, and the final output id in
-``claasp.cipher_modules.neural_network_tests``. The v5 replacements,
-``component_output_dataset`` and ``xor_differential_component_dataset``,
-cover the same ground without a description-string match: they read the
-requested component's value directly out of the primitive's typed
+``component_output_dataset`` and ``xor_differential_component_dataset`` can
+train or evaluate a distinguisher on an intermediate round state, a round
+key, or an arbitrary component instead of only the primitive's final output.
+They read the requested component's value directly from the primitive's typed
 ``ExecutionTrace`` (see ``claasp.annotations``), produced by
 ``Primitive.evaluate_with_trace``. ``round_component_ids`` selects every
 component CLAASP added while building one round, so passing it as
-``component_ids`` projects that round's full state -- covering the legacy
-``round_output``/``round_key_output`` cases -- while a single id targets one
-exact wire:
+``component_ids`` projects that round's full state, while a single id targets
+one exact wire:
 
 .. doctest::
 
@@ -86,7 +81,7 @@ exact wire:
    >>> reduced = Speck(number_of_rounds=2)
    >>> round_component_ids(reduced, 0)[:3]
    ('rotate_0_0', 'modular_add_0_1', 'xor_0_2')
-   >>> right_word = reduced.round_states[0][1].owner_id
+   >>> right_word = reduced.graph.round_outputs[0][1].owner_id
    >>> projected = component_output_dataset(
    ...     reduced, "plaintext", right_word, samples=4, seed=5
    ... )
@@ -107,12 +102,9 @@ Optional ML training drivers
 ``NeuralTrainingDriver`` implementations live under
 ``claasp.drivers.neural`` and are never imported by
 ``claasp``'s core. The bundled ``SklearnMLPDriver`` trains a small
-``sklearn.neural_network.MLPClassifier``. The separate
-``TensorFlowDistinguisherDriver`` restores the legacy Gohr residual network
-and DBitNet architectures and retains a compatible model between staged-round
-training calls. Install it with ``pip install 'claasp[ml-tensorflow]'``.
-Framework imports remain lazy, so constructing either driver never requires
-its optional extra -- only building or training a model does. The
+``sklearn.neural_network.MLPClassifier``. The optional ``ml`` extra (installed
+with ``pip install 'claasp[ml]'``) uses scikit-learn; an equivalent TensorFlow,
+Keras, or PyTorch driver can implement the same protocol. The
 scikit-learn import happens inside ``train``, so constructing a
 ``SklearnMLPDriver`` never requires the extra -- only calling ``train`` does::
 

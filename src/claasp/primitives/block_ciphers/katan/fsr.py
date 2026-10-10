@@ -87,7 +87,7 @@ class KatanFSR(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = KatanFSR()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -173,7 +173,7 @@ class KatanFSR(BitGraphPrimitive):
         fsr = None
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
 
             # Expand key schedule: need key_bits[2r] and key_bits[2r+1]
             while len(key_bits) <= 2 * round_number + 1:

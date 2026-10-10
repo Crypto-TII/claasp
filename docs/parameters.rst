@@ -1,10 +1,15 @@
-Verified parameter catalogues
-=============================
+AO primitives
+=============
+
+Arithmetization-oriented (AO) primitives operate directly on field elements
+and are commonly designed for proof systems. Their graphs use the same typed
+values and components as other CLAASP primitives while preserving the field
+structure visible in the design.
 
 Generic permutation classes accept caller-supplied parameters and only claim
 structural correctness. Each primitive package owns its concrete parameter
 sets, source revision, license, schema version, and reference vectors.
-``claasp.parameters`` is only a convenience re-export.
+``claasp.parameters`` is a convenience re-export of those verified sets.
 
 BN254 width-3 Poseidon
 ----------------------

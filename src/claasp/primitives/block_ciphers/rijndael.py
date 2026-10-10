@@ -80,7 +80,7 @@ class Rijndael(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Rijndael()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x66e94bd4ef8a2c3b', 127)
@@ -390,7 +390,7 @@ class Rijndael(BitGraphPrimitive):
         state = BitState([INPUT_PLAINTEXT], [list(range(self.block_bit_size))])
 
         for round_index in range(self.rounds_count):
-            self.add_round()
+            self._builder.add_round()
 
             if round_index == 0:
                 self._expand_key_schedule()

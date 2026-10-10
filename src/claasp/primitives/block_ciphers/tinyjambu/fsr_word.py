@@ -43,7 +43,7 @@ class TinyJambuFSRWordBased(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = TinyJambuFSRWordBased()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xc07a21053c7ca049', 128)
@@ -72,7 +72,7 @@ class TinyJambuFSRWordBased(BitGraphPrimitive):
         for round_number in range(number_of_words_in_round):
             # round function
             # initial current round element
-            self.add_round()
+            self._builder.add_round()
 
             self.add_constant_component(WORD_SIZE, 0xFFFFFFFF)
             not_constant = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])

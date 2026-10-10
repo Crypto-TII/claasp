@@ -2,7 +2,7 @@
 
 from claasp.components import Identity as IdentityComponent
 from claasp.domains import Bit
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 from ._base import positive
 
@@ -20,7 +20,7 @@ class Identity(Primitive):
     EXAMPLES::
 
         >>> primitive = Identity()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -30,11 +30,13 @@ class Identity(Primitive):
         bit_size = positive(bit_size, "bit_size")
         super().__init__(
             "identity",
-            {"input": ValueType(Bit(), (bit_size,))},
+            {"input": ArrayType(Bit(), (bit_size,))},
             kind=PrimitiveKind.PERMUTATION,
         )
-        self.add_round()
-        self.set_output(self.add_component(IdentityComponent(self.input("input"))))
+        self._builder.add_round()
+        self._builder.set_output(
+            self._builder.add_component(IdentityComponent(self.graph.input("input")))
+        )
 
 
 __all__ = ["Identity"]

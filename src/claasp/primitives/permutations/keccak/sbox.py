@@ -87,7 +87,7 @@ class KeccakSbox(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = KeccakSbox()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xf1258f7940e1dde7', 1600)
@@ -120,7 +120,7 @@ class KeccakSbox(BitGraphPrimitive):
 
         # round function
         for round_number in range(0, number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
 
             # round parameter
             ci = self.get_ci(round_number + round_offset)

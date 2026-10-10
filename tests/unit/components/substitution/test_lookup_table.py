@@ -2,7 +2,7 @@ import pytest
 
 from claasp.components import BitVectorSBox, LookupTable, SBox
 from claasp.domains import Bit, Word
-from claasp.graph import Port, ValueType
+from claasp.graph import ArrayType, Port
 
 
 def test_lookup_table_owns_width_validation_and_bijectivity():
@@ -40,8 +40,8 @@ def test_lookup_table_rejects_invalid_widths_shapes_and_values(
 
 def test_substitution_components_accept_validated_lookup_tables():
     bit_lookup = LookupTable([3, 2, 1, 0], 2)
-    bit_component = BitVectorSBox(Port("bits", ValueType(Bit(), (2,))), bit_lookup)
-    word_component = SBox(Port("words", ValueType(Word(2), (2,))), bit_lookup)
+    bit_component = BitVectorSBox(Port("bits", ArrayType(Bit(), (2,))), bit_lookup)
+    word_component = SBox(Port("words", ArrayType(Word(2), (2,))), bit_lookup)
 
     assert bit_component.table == bit_lookup.values
     assert word_component.table == bit_lookup.values
@@ -51,6 +51,6 @@ def test_component_rejects_a_lookup_table_with_the_wrong_width():
     lookup = LookupTable.identity(3)
 
     with pytest.raises(ValueError, match="input width must match"):
-        BitVectorSBox(Port("bits", ValueType(Bit(), (2,))), lookup)
+        BitVectorSBox(Port("bits", ArrayType(Bit(), (2,))), lookup)
     with pytest.raises(ValueError, match="widths must match"):
-        SBox(Port("words", ValueType(Word(2), (1,))), lookup)
+        SBox(Port("words", ArrayType(Word(2), (1,))), lookup)

@@ -43,7 +43,7 @@ class MSX(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = MSX()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x915559f800c453f7', 64)
@@ -433,7 +433,7 @@ class MSX(BitGraphPrimitive):
             return grp
 
         for i in range(self.n_rounds):
-            self.add_round()
+            self._builder.add_round()
             if i == 0:
                 key_state = self._key_schedule_initialization_64()
                 rk_buffer.extend(key_state)
@@ -485,7 +485,7 @@ class MSX(BitGraphPrimitive):
         call_counter = 0
         W0 = W1 = W2 = W3 = None
         for i in range(self.n_rounds):
-            self.add_round()
+            self._builder.add_round()
             if i == 0:
                 key_state = self._key_schedule_initialization_128()
                 rk_buffer.extend(key_state)

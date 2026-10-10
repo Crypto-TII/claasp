@@ -142,7 +142,7 @@ class HIGHT(Primitive):
     EXAMPLES::
 
         >>> primitive = HIGHT()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x56a0f08c3c5ecb3c', 63)
@@ -162,8 +162,8 @@ class HIGHT(Primitive):
         if not 1 <= rounds <= 32:
             raise ValueError("HIGHT number_of_rounds must be between 1 and 32")
         super().__init__("hight", {"plaintext": word_type(8, 8), "key": word_type(8, 16)})
-        state = [select(self.input("plaintext"), index) for index in range(8)]
-        master = [select(self.input("key"), index) for index in range(16)]
+        state = [select(self.graph.input("plaintext"), index) for index in range(8)]
+        master = [select(self.graph.input("key"), index) for index in range(16)]
         reversed_key = list(reversed(master))
         whitening = [
             reversed_key[index + 12] if index < 4 else reversed_key[index - 4] for index in range(8)
@@ -214,7 +214,7 @@ class HIGHT(Primitive):
             )
 
         for round_number in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             if round_number == 0 and transformations_flag:
                 state = initial(state)
             entries = temporary[4 * round_number : 4 * round_number + 4]
@@ -236,4 +236,4 @@ class HIGHT(Primitive):
             ]
             if round_number == rounds - 1 and transformations_flag:
                 state = final(state)
-        self.set_output(concatenate(self, *state))
+        self._builder.set_output(concatenate(self, *state))

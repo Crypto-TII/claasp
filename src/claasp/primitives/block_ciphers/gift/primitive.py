@@ -85,7 +85,7 @@ class Gift(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Gift()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xcd0bd738388ad3f6', 128)
@@ -126,7 +126,7 @@ class Gift(BitGraphPrimitive):
         # round function
         for r in range(number_of_rounds):
             # initial current round element
-            self.add_round()
+            self._builder.add_round()
 
             # round constant
             ci = (1 << (self.state_word_size - 1)) | (ROUND_CONSTANT[r] & 0x3F)

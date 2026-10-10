@@ -3,7 +3,7 @@
 from dataclasses import dataclass, replace
 from enum import Enum
 
-from claasp.graph.value_type import ValueType
+from claasp.graph.array_type import ArrayType
 
 
 class PrimitiveKind(str, Enum):
@@ -41,21 +41,22 @@ class PrimitiveInput:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, ValueType
-        >>> descriptor = PrimitiveInput(ValueType(Bit(), (8,)), "key", InputVisibility.SECRET)
+        >>> from claasp import ArrayType
+        >>> from claasp.domains import Bit
+        >>> descriptor = PrimitiveInput(ArrayType(Bit(), (8,)), "key", InputVisibility.SECRET)
         >>> (descriptor.role, descriptor.is_secret)
         ('key', True)
         >>> descriptor.with_visibility("public").is_secret
         False
     """
 
-    value_type: ValueType
+    array_type: ArrayType
     role: str = "data"
     visibility: InputVisibility = InputVisibility.PUBLIC
 
     def __post_init__(self) -> None:
-        if not isinstance(self.value_type, ValueType):
-            raise TypeError("value_type must be a ValueType")
+        if not isinstance(self.array_type, ArrayType):
+            raise TypeError("array_type must be an ArrayType")
         if not isinstance(self.role, str) or not self.role:
             raise ValueError("input role must be a non-empty string")
         if not isinstance(self.visibility, InputVisibility):
@@ -73,30 +74,32 @@ class PrimitiveInput:
         return replace(self, visibility=InputVisibility(visibility))
 
 
-def public_input(value_type: ValueType, *, role: str = "data") -> PrimitiveInput:
+def public_input(array_type: ArrayType, *, role: str = "data") -> PrimitiveInput:
     """Describe a public primitive input.
 
     EXAMPLES::
 
-        >>> from claasp import Bit, ValueType
-        >>> public_input(ValueType(Bit(), (1,))).visibility.value
+        >>> from claasp import ArrayType
+        >>> from claasp.domains import Bit
+        >>> public_input(ArrayType(Bit(), (1,))).visibility.value
         'public'
     """
 
-    return PrimitiveInput(value_type, role, InputVisibility.PUBLIC)
+    return PrimitiveInput(array_type, role, InputVisibility.PUBLIC)
 
 
-def secret_input(value_type: ValueType, *, role: str = "key") -> PrimitiveInput:
+def secret_input(array_type: ArrayType, *, role: str = "key") -> PrimitiveInput:
     """Describe a secret primitive input.
 
     EXAMPLES::
 
-        >>> from claasp import Bit, ValueType
-        >>> secret_input(ValueType(Bit(), (1,))).is_secret
+        >>> from claasp import ArrayType
+        >>> from claasp.domains import Bit
+        >>> secret_input(ArrayType(Bit(), (1,))).is_secret
         True
     """
 
-    return PrimitiveInput(value_type, role, InputVisibility.SECRET)
+    return PrimitiveInput(array_type, role, InputVisibility.SECRET)
 
 
 def infer_primitive_kind(input_descriptors: dict[str, PrimitiveInput]) -> PrimitiveKind:
@@ -106,7 +109,7 @@ def infer_primitive_kind(input_descriptors: dict[str, PrimitiveInput]) -> Primit
     if any(item.is_secret for item in input_descriptors.values()):
         if names & {"tweak", "input_tweak"}:
             return PrimitiveKind.TWEAKABLE_BLOCK_CIPHER
-        if "plaintext" in names:
+        if names & {"plaintext", "message"}:
             return PrimitiveKind.BLOCK_CIPHER
         return PrimitiveKind.BLOCK_FUNCTION
     if names == {"state"} or names == {"input_state"}:

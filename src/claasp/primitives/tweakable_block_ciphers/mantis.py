@@ -57,7 +57,7 @@ class Mantis(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Mantis()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xd4bebab887d3bdb6', 64)
@@ -75,7 +75,7 @@ class Mantis(BitGraphPrimitive):
             primitive_inputs_bit_size=[self.block_bit_size, self.key_bit_size, self.tweak_bit_size],
             primitive_output_bit_size=self.block_bit_size,
         )
-        self.add_round()
+        self._builder.add_round()
         current_state = self.add_pre_whitening()
         current_state, current_tweak = self.add_forward_rounds(current_state, number_of_rounds)
         current_state = self.add_middle_layer(current_state)
@@ -242,7 +242,7 @@ class Mantis(BitGraphPrimitive):
             current_state = self.apply_mixcolumns(current_state)
 
             self.add_round_output_component([current_state], [list(range(64))], 64)
-            self.add_round()
+            self._builder.add_round()
 
         return current_state, current_tweak
 
@@ -274,7 +274,7 @@ class Mantis(BitGraphPrimitive):
             self.add_round_output_component([current_state], [list(range(64))], 64)
 
             if round_idx != 0:
-                self.add_round()
+                self._builder.add_round()
 
         return current_state, current_tweak
 

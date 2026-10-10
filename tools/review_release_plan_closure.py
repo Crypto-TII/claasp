@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -87,17 +88,19 @@ def validate_plan(plan: dict[str, Any], destination: dict[str, Any]) -> list[str
             if not (ROOT / relative).is_file():
                 errors.append(f"required review material is missing: {relative}")
     matrix = json.loads(MATRIX.read_text(encoding="utf-8"))
-    if matrix.get("summary") != {
-        "legacy_by_disposition": {
-            "inapplicable": 34,
-            "migrate": 332,
-            "remove": 8,
-            "supersede": 207,
-        },
-        "legacy_records": 581,
-        "v5_artifacts": 416,
-        "v5_by_classification": {"legacy-lineage": 377, "new-v5": 39},
-    }:
+    legacy = matrix.get("legacy_records", [])
+    artifacts = matrix.get("v5_artifacts", [])
+    expected_summary = {
+        "legacy_by_disposition": dict(
+            sorted(Counter(row["disposition"] for row in legacy).items())
+        ),
+        "legacy_records": len(legacy),
+        "v5_artifacts": len(artifacts),
+        "v5_by_classification": dict(
+            sorted(Counter(row["classification"] for row in artifacts).items())
+        ),
+    }
+    if matrix.get("summary") != expected_summary:
         errors.append("review matrix counts are stale")
     return errors
 

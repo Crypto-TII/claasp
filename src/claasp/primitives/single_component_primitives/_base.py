@@ -1,7 +1,7 @@
 """Small authoring helpers shared by one-component primitive examples."""
 
 from claasp.domains import Bit, Word
-from claasp.graph import ValueType
+from claasp.graph import ArrayType
 
 
 def positive(value: int, name: str) -> int:
@@ -18,8 +18,8 @@ def word_inputs(word_bit_size: int, number_of_inputs: int):
         or number_of_inputs < 2
     ):
         raise ValueError("number_of_inputs must be at least 2")
-    value_type = ValueType(Word(word_bit_size), (1,))
-    return {f"input_{index}": value_type for index in range(number_of_inputs)}
+    array_type = ArrayType(Word(word_bit_size), (1,))
+    return {f"input_{index}": array_type for index in range(number_of_inputs)}
 
 
 def algebraic_inputs(domain, unit_count: int, number_of_inputs: int):
@@ -31,5 +31,5 @@ def algebraic_inputs(domain, unit_count: int, number_of_inputs: int):
         or number_of_inputs < 2
     ):
         raise ValueError("number_of_inputs must be at least 2")
-    value_type = ValueType(domain, (unit_count,))
-    return {f"input_{index}": value_type for index in range(number_of_inputs)}
+    array_type = ArrayType(domain, (unit_count,))
+    return {f"input_{index}": array_type for index in range(number_of_inputs)}

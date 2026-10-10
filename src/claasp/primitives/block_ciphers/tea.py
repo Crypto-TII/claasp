@@ -11,7 +11,7 @@ class TEA(Primitive):
     EXAMPLES::
 
         >>> primitive = TEA()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x41ea3a0a94baa940', 63)
@@ -32,11 +32,14 @@ class TEA(Primitive):
         if not isinstance(rounds, int) or isinstance(rounds, bool) or rounds <= 0:
             raise ValueError("number_of_rounds must be a positive integer")
         super().__init__("tea", {"plaintext": word_type(width, 2), "key": word_type(width, 4)})
-        left, right = select(self.input("plaintext"), 0), select(self.input("plaintext"), 1)
-        keys = tuple(select(self.input("key"), index) for index in range(4))
+        left, right = (
+            select(self.graph.input("plaintext"), 0),
+            select(self.graph.input("plaintext"), 1),
+        )
+        keys = tuple(select(self.graph.input("key"), index) for index in range(4))
         delta = 0x9E3779B9 & ((1 << width) - 1)
         for round_number in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             round_sum = constant(self, width, delta * (round_number + 1))
             mix = xor(
                 self,
@@ -52,4 +55,4 @@ class TEA(Primitive):
                 add(self, shift(self, left, right_shift_amount), keys[3]),
             )
             right = add(self, right, mix)
-        self.set_output(concatenate(self, left, right))
+        self._builder.set_output(concatenate(self, left, right))

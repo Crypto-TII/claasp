@@ -106,7 +106,7 @@ class Zuc(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Zuc()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x27bede74018082da', 62)
@@ -140,7 +140,7 @@ class Zuc(BitGraphPrimitive):
         self.clocking_lfsr()
         key_st = []
         for clock_number in range(len_keystream_word):
-            self.add_round()
+            self._builder.add_round()
             w = self.zuc_nonlinear_F()
             key_st = self.key_stream(w, clock_number, key_st)
             self.clocking_lfsr()
@@ -151,7 +151,7 @@ class Zuc(BitGraphPrimitive):
 
     def state_initialization(self, key, iv):
         """Build the state initialization stage in this primitive's typed operation graph."""
-        self.add_round()
+        self._builder.add_round()
         self.key_loading_to_lfsr(key, iv)
         for i in range(2):
             self.add_constant_component(WORD_SIZE, 0)

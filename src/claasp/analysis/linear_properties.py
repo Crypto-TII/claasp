@@ -210,7 +210,7 @@ def apply_matrix(matrix, vector, domain):
 
     EXAMPLES::
 
-        >>> from claasp import Bit
+        >>> from claasp.domains import Bit
         >>> from claasp.analysis.linear_properties import apply_matrix
         >>> apply_matrix(((1, 1), (1, 0)), (1, 0), Bit())
         (1, 1)
@@ -235,7 +235,7 @@ def multiply_matrices(left, right, domain):
 
     EXAMPLES::
 
-        >>> from claasp import Bit
+        >>> from claasp.domains import Bit
         >>> from claasp.analysis.linear_properties import multiply_matrices
         >>> multiply_matrices(((1, 1),), ((1,), (1,)), Bit())
         ((0,),)

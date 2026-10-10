@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from fractions import Fraction
 from hashlib import sha256
 
-from claasp.analysis.linear_properties import expand_binary_field_matrix
 from claasp.components import (
     Add,
     BinaryAffineMap,
@@ -26,6 +25,7 @@ from claasp.components import (
 )
 from claasp.domains import BinaryExtensionField, Bit, Word
 from claasp.drivers.solvers import SatStatus
+from claasp.representations.constraints import ConstraintBackend, _direct_model
 from claasp.representations.constraints.smt._sbox_encoding import _add_sbox_relation
 from claasp.representations.constraints.smt.formula import SMTFormula
 from claasp.representations.constraints.smt.trails import _at_most
@@ -104,6 +104,14 @@ class WordDifferentialSMTModel:
         required configuration rejected
     """
 
+    model_provenance = _direct_model(
+        ConstraintBackend.SMT,
+        "WordDifferentialSMTModel",
+        "xor_differential",
+        "direct word-graph difference composition",
+        "Component relations are derived directly from graph wiring and truth tables.",
+    )
+
     def __init__(
         self,
         primitive,
@@ -121,7 +129,7 @@ class WordDifferentialSMTModel:
                 not isinstance(weight, int) or isinstance(weight, bool) or weight < 0
             ):
                 raise ValueError("weights must be nonnegative integers")
-        if nonzero_input is not None and nonzero_input not in primitive.input_ports:
+        if nonzero_input is not None and nonzero_input not in primitive.graph.input_ports:
             raise ValueError("unknown nonzero input")
         self.primitive, self.maximum_weight, self.fixed_weight = (
             primitive,
@@ -132,24 +140,24 @@ class WordDifferentialSMTModel:
         self.fixed_input_differences = dict(fixed_input_differences or {})
         self.output_difference = output_difference
         for name, value in self.fixed_input_differences.items():
-            if name not in primitive.input_ports:
+            if name not in primitive.graph.input_ports:
                 raise ValueError("unknown fixed input difference")
-            self._validate(value, primitive.input_ports[name].value_type)
+            self._validate(value, primitive.graph.input_ports[name].array_type)
         if output_difference is not None:
-            self._validate(output_difference, primitive.output.value_type)
+            self._validate(output_difference, primitive.graph.output.array_type)
         self._formula = None
 
     @staticmethod
-    def _validate(value, value_type):
-        if not isinstance(value_type.domain, (Bit, Word, BinaryExtensionField)):
+    def _validate(value, array_type):
+        if not isinstance(array_type.domain, (Bit, Word, BinaryExtensionField)):
             raise NotImplementedError(
                 "differential lowering requires Bit, Word, or BinaryExtensionField domains"
             )
-        width = value_type.domain.encoded_bit_size
+        width = array_type.domain.encoded_bit_size
         if (
             not isinstance(value, int)
             or isinstance(value, bool)
-            or not 0 <= value < 1 << (value_type.unit_count * width)
+            or not 0 <= value < 1 << (array_type.unit_count * width)
         ):
             raise ValueError("differences must fit their word type")
 
@@ -168,24 +176,28 @@ class WordDifferentialSMTModel:
             clauses.append(tuple(literals))
             provenance.append(label)
 
-        sources = [(name, port.value_type) for name, port in self.primitive.input_ports.items()]
-        sources += [(item.component_id, item.output_type) for item in self.primitive.components]
+        sources = [
+            (name, port.array_type) for name, port in self.primitive.graph.input_ports.items()
+        ]
+        sources += [
+            (item.component_id, item.output_type) for item in self.primitive.graph.components
+        ]
         ports = {}
-        for name, value_type in sources:
-            self._validate(0, value_type)
+        for name, array_type in sources:
+            self._validate(0, array_type)
             ports[name] = tuple(
                 allocate(f"difference_{name}_{bit}")
-                for bit in range(value_type.unit_count * value_type.domain.encoded_bit_size)
+                for bit in range(array_type.unit_count * array_type.domain.encoded_bit_size)
             )
 
         def selected(selection):
             return tuple(
                 ports[owner_id][bit]
-                for owner_id, bit in self.primitive.selection_bit_sources(selection)
+                for owner_id, bit in self.primitive.graph.selection_bit_sources(selection)
             )
 
         weights, operands_by_id = [], {}
-        for component in self.primitive.components:
+        for component in self.primitive.graph.components:
             operands = tuple(selected(selection) for selection in component.inputs)
             operands_by_id[component.component_id] = operands
             output = ports[component.component_id]
@@ -304,6 +316,8 @@ class WordDifferentialSMTModel:
                             )
                         )
             elif isinstance(component, (LinearMap, BinaryAffineMap)):
+                from claasp.analysis.linear_properties import expand_binary_field_matrix
+
                 matrix = (
                     expand_binary_field_matrix(component.matrix, component.output_type.domain)
                     if isinstance(component, LinearMap)
@@ -345,7 +359,7 @@ class WordDifferentialSMTModel:
                 raise NotImplementedError(
                     f"no word differential semantics for {type(component).__name__}"
                 )
-        output = selected(self.primitive.output)
+        output = selected(self.primitive.graph.output)
         if self.nonzero_input is not None:
             add(
                 (indices[name] for name in ports[self.nonzero_input]), "nonzero_external_difference"
@@ -392,7 +406,7 @@ class WordDifferentialSMTModel:
 
     def _steps_and_wiring(self, values):
         steps = []
-        for component in self.primitive.components:
+        for component in self.primitive.graph.components:
             width = component.output_type.domain.encoded_bit_size
 
             def units(names, width=width):
@@ -536,7 +550,7 @@ class WordDifferentialSMTModel:
         result = WordDifferentialCharacteristic(
             tuple(
                 (name, _packed(self._ports[name], assignment))
-                for name in self.primitive.input_ports
+                for name in self.primitive.graph.input_ports
             ),
             _packed(self._output, assignment),
             self._steps_and_wiring(assignment),
@@ -560,7 +574,7 @@ class WordDifferentialSMTModel:
             return False
         steps = self._steps_and_wiring(values)
         inputs = tuple(
-            (name, _packed(self._ports[name], values)) for name in self.primitive.input_ports
+            (name, _packed(self._ports[name], values)) for name in self.primitive.graph.input_ports
         )
         output = _packed(self._output, values)
         return (
@@ -603,10 +617,10 @@ class WordDifferentialSMTModel:
                 sha256(
                     repr(
                         (
-                            self.primitive.input_ports,
-                            self.primitive.bindings,
-                            tuple(self.primitive.components),
-                            self.primitive.output,
+                            self.primitive.graph.input_ports,
+                            self.primitive.graph.bindings,
+                            tuple(self.primitive.graph.components),
+                            self.primitive.graph.output,
                         )
                     ).encode()
                 ).hexdigest(),

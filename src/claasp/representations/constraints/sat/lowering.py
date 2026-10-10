@@ -1,23 +1,189 @@
 """Lower typed bit graphs to the Boolean CNF representation."""
 
+from collections import defaultdict
 from collections.abc import Mapping
+from typing import cast
 
 from claasp.components import (
     Add,
     BitVectorSBox,
     BitwiseAnd,
+    BitwiseNot,
+    BitwiseOr,
     Constant,
     Identity,
     ModularAdd,
+    ModularMultiply,
+    ModularSubtract,
+    Multiply,
     Permutation,
     Rotate,
+    Shift,
+    VariableRotate,
+    VariableShift,
     Xor,
 )
 from claasp.domains import Bit, Word
 from claasp.graph import Primitive
-from claasp.representations.constraints.sat.cnf import CNFFormula
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _direct_model,
+)
+from claasp.representations.constraints.sat.components import (
+    BooleanFunctionalSATModel,
+    BooleanNativeXorSATModel,
+    ModularAddFunctionalSATModel,
+    ModularAddNativeXorSATModel,
+    ModularMultiplyFunctionalSATModel,
+    ModularMultiplyNativeXorSATModel,
+    ModularSubtractFunctionalSATModel,
+    ModularSubtractNativeXorSATModel,
+    SBoxFunctionalSATModel,
+    VariableWiringFunctionalSATModel,
+    WiringFunctionalSATModel,
+)
 from claasp.representations.constraints.sat.encoding import encode_unit, unit_variable_names
+from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
 from claasp.representations.execution import EvaluationResult
+
+
+class _CNFEncodingContext:
+    def __init__(self, variables) -> None:
+        self.variables = variables
+        self.indices = {name: index + 1 for index, name in enumerate(variables)}
+        self.clauses = []
+        self.provenance = []
+        self.auxiliary = []
+        self.constraint_models = []
+
+    def allocate(self, name):
+        self.indices[name] = len(self.variables) + 1
+        self.variables.append(name)
+        return name
+
+    def add_clause(self, literals, label):
+        self.clauses.append(literals)
+        self.provenance.append(label)
+
+    def equal(self, output, input_, label):
+        x, y = self.indices[input_], self.indices[output]
+        self.add_clause((-x, y), label)
+        self.add_clause((x, -y), label)
+
+    def xor(self, output, left, right, label):
+        a, b, y = self.indices[left], self.indices[right], self.indices[output]
+        self.add_clause((-a, -b, -y), label)
+        self.add_clause((a, b, -y), label)
+        self.add_clause((a, -b, y), label)
+        self.add_clause((-a, b, y), label)
+
+    def majority(self, output, left, right, carry, label):
+        a, b, c, y = (
+            self.indices[left],
+            self.indices[right],
+            self.indices[carry],
+            self.indices[output],
+        )
+        self.add_clause((-a, -b, y), label)
+        self.add_clause((-a, -c, y), label)
+        self.add_clause((-b, -c, y), label)
+        self.add_clause((a, b, -y), label)
+        self.add_clause((a, c, -y), label)
+        self.add_clause((b, c, -y), label)
+
+    def and_(self, output, left, right, label):
+        a, b, y = self.indices[left], self.indices[right], self.indices[output]
+        self.add_clause((-a, -b, y), label)
+        self.add_clause((a, -y), label)
+        self.add_clause((b, -y), label)
+
+    def or_(self, output, left, right, label):
+        a, b, y = self.indices[left], self.indices[right], self.indices[output]
+        self.add_clause((a, b, -y), label)
+        self.add_clause((-a, y), label)
+        self.add_clause((-b, y), label)
+
+    def not_(self, output, input_, label):
+        x, y = self.indices[input_], self.indices[output]
+        self.add_clause((x, y), label)
+        self.add_clause((-x, -y), label)
+
+    def relation(self, output, inputs, function, label):
+        names = (*inputs, output)
+        for assignment in range(1 << len(names)):
+            values = tuple(
+                (assignment >> (len(names) - position - 1)) & 1 for position in range(len(names))
+            )
+            if values[-1] == function(*values[:-1]):
+                continue
+            self.add_clause(
+                tuple(
+                    -self.indices[name] if value else self.indices[name]
+                    for name, value in zip(names, values)
+                ),
+                label,
+            )
+
+
+class _NativeXorEncodingContext(_CNFEncodingContext):
+    def __init__(self, variables) -> None:
+        super().__init__(variables)
+        self.xor_clauses: list[tuple[int, ...]] = []
+        self.xor_provenance: list[str] = []
+
+    def xor(self, output, left, right, label):
+        self.xor_clauses.append((-self.indices[output], self.indices[left], self.indices[right]))
+        self.xor_provenance.append(label)
+
+
+def _native_xor_formula(formula: CNFFormula) -> NativeXorCNFFormula:
+    """Replace only complete canonical parity-CNF groups with native XOR records."""
+
+    grouped = defaultdict(list)
+    for position, clause in enumerate(formula.clauses):
+        support = tuple(sorted(abs(literal) for literal in clause))
+        if len(support) >= 2 and len(set(support)) == len(support):
+            grouped[support].append(position)
+
+    removed = set()
+    xor_clauses = []
+    xor_provenance = []
+    for support, positions in grouped.items():
+        forbidden_even: set[frozenset[int]] = set()
+        forbidden_odd: set[frozenset[int]] = set()
+        for assignment in range(1 << len(support)):
+            values = tuple(
+                (assignment >> (len(support) - 1 - bit)) & 1 for bit in range(len(support))
+            )
+            expected_clause = frozenset(
+                -index if value else index for index, value in zip(support, values)
+            )
+            (forbidden_odd if sum(values) % 2 else forbidden_even).add(expected_clause)
+        actual = {frozenset(formula.clauses[position]) for position in positions}
+        if len(actual) != len(positions):
+            continue
+        if actual == forbidden_even:
+            native = support
+        elif actual == forbidden_odd:
+            native = (-support[0], *support[1:])
+        else:
+            continue
+        removed.update(positions)
+        xor_clauses.append(native)
+        labels = tuple(dict.fromkeys(formula.provenance[position] for position in positions))
+        xor_provenance.append("native_xor:" + "+".join(labels))
+
+    return NativeXorCNFFormula(
+        formula.variables,
+        tuple(clause for position, clause in enumerate(formula.clauses) if position not in removed),
+        tuple(
+            label for position, label in enumerate(formula.provenance) if position not in removed
+        ),
+        formula.constraint_models,
+        tuple(xor_clauses),
+        tuple(xor_provenance),
+    )
 
 
 class BooleanCNFModel:
@@ -31,235 +197,145 @@ class BooleanCNFModel:
 
     EXAMPLES::
 
-        >>> try:
-        ...     BooleanCNFModel()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
+        >>> from claasp.primitives import Speck
+        >>> primitive = Speck(number_of_rounds=1)
+        >>> formula = BooleanCNFModel(primitive).cnf_formula()
+        >>> (len(formula.variables), len(formula.clauses))
+        (206, 403)
+        >>> "modular_add_0_1" in formula.provenance
+        True
     """
 
-    def __init__(self, primitive: Primitive) -> None:
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "BooleanCNFModel",
+        "functional",
+        "graph composition of declared component CNF encodings",
+        "The compiler only wires and composes the component-level declarations it retains.",
+    )
+
+    def __init__(self, primitive: Primitive, *, native_xor: bool = False) -> None:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
         self.primitive = primitive
+        self.native_xor = native_xor
         self._auxiliary_definitions: tuple[tuple[str, tuple[str, ...]], ...] = ()
-        self._formula: CNFFormula | None = None
+        self._formula: CNFFormula | NativeXorCNFFormula | None = None
 
     @staticmethod
     def _name(source_id: str, position: int) -> str:
         return f"{source_id}_{position}"
 
-    def cnf_formula(self) -> CNFFormula:
+    def cnf_formula(self) -> CNFFormula | NativeXorCNFFormula:
         """Return the deterministic CNF representation, compiling it once."""
 
         if self._formula is not None:
             return self._formula
-        sources = list(self.primitive.input_ports.values()) + [
-            component.output for component in self.primitive.components
+        sources = list(self.primitive.graph.input_ports.values()) + [
+            component.output for component in self.primitive.graph.components
         ]
         for port in sources:
-            if not isinstance(port.value_type.domain, (Bit, Word)):
+            if not isinstance(port.array_type.domain, (Bit, Word)):
                 raise ValueError(
                     f"Boolean CNF requires the Bit or Word domain; {port.owner_id!r} uses "
-                    f"{type(port.value_type.domain).__name__}"
+                    f"{type(port.array_type.domain).__name__}"
                 )
-        domains = {type(port.value_type.domain) for port in sources}
+        domains = {type(port.array_type.domain) for port in sources}
         if len(domains) != 1:
             raise ValueError("Boolean CNF requires a homogeneous Bit or Word graph")
 
         variables = [
             name
             for port in sources
-            for position in range(port.value_type.unit_count)
-            for name in unit_variable_names(port.owner_id, port.value_type, position)
+            for position in range(port.array_type.unit_count)
+            for name in unit_variable_names(port.owner_id, port.array_type, position)
         ]
-        indices = {name: index + 1 for index, name in enumerate(variables)}
-        clauses: list[tuple[int, ...]] = []
-        provenance: list[str] = []
-        auxiliary: list[tuple[str, tuple[str, ...]]] = []
+        context = (
+            _NativeXorEncodingContext(variables)
+            if self.native_xor
+            else _CNFEncodingContext(variables)
+        )
 
-        def allocate(name: str) -> str:
-            indices[name] = len(variables) + 1
-            variables.append(name)
-            return name
-
-        def add_clause(literals: tuple[int, ...], label: str) -> None:
-            clauses.append(literals)
-            provenance.append(label)
-
-        def equal(output: str, input_: str, label: str) -> None:
-            x, y = indices[input_], indices[output]
-            add_clause((-x, y), label)
-            add_clause((x, -y), label)
-
-        def xor(output: str, left: str, right: str, label: str) -> None:
-            a, b, y = indices[left], indices[right], indices[output]
-            add_clause((-a, -b, -y), label)
-            add_clause((a, b, -y), label)
-            add_clause((a, -b, y), label)
-            add_clause((-a, b, y), label)
-
-        def majority(output: str, left: str, right: str, carry: str, label: str) -> None:
-            a, b, c, y = indices[left], indices[right], indices[carry], indices[output]
-            add_clause((-a, -b, y), label)
-            add_clause((-a, -c, y), label)
-            add_clause((-b, -c, y), label)
-            add_clause((a, b, -y), label)
-            add_clause((a, c, -y), label)
-            add_clause((b, c, -y), label)
-
-        def and_(output: str, left: str, right: str, label: str) -> None:
-            a, b, y = indices[left], indices[right], indices[output]
-            add_clause((-a, -b, y), label)
-            add_clause((a, -y), label)
-            add_clause((b, -y), label)
-
-        for component in self.primitive.components:
-            label = component.component_id
+        for component in self.primitive.graph.components:
+            label = cast(str, component.component_id)
             outputs = [
                 unit_variable_names(label, component.output_type, i)
                 for i in range(component.output_type.unit_count)
             ]
             selected = []
             for item in component.inputs:
-                width = item.value_type.domain.encoded_bit_size
+                width = item.array_type.domain.encoded_bit_size
                 names = [
                     self._bit_name(owner_id, bit)
-                    for owner_id, bit in self.primitive.selection_bit_sources(item)
+                    for owner_id, bit in self.primitive.graph.selection_bit_sources(item)
                 ]
                 selected.append(
                     [tuple(names[start : start + width]) for start in range(0, len(names), width)]
                 )
-            if isinstance(component, Constant):
-                for output, value in zip(outputs, component.values):
-                    for bit_name, bit in zip(output, encode_unit(value, component.output_type)):
-                        add_clause(((indices[bit_name] if bit else -indices[bit_name]),), label)
-            elif isinstance(component, Identity):
-                for output, input_ in zip(outputs, selected[0]):
-                    for output_bit, input_bit in zip(output, input_):
-                        equal(output_bit, input_bit, label)
-            elif isinstance(component, Permutation):
-                for output, position in zip(outputs, component.mapping):
-                    for output_bit, input_bit in zip(output, selected[0][position]):
-                        equal(output_bit, input_bit, label)
-            elif isinstance(component, Add):
-                for position, output in enumerate(outputs):
-                    operands = [group[position][0] for group in selected]
-                    accumulator = operands[0]
-                    for operand_number, operand in enumerate(operands[1:], start=1):
-                        is_last = operand_number == len(operands) - 1
-                        target = (
-                            output[0] if is_last else f"__aux_{label}_{position}_{operand_number}"
-                        )
-                        if not is_last:
-                            allocate(target)
-                            auxiliary.append(("xor", (target, accumulator, operand)))
-                        xor(target, accumulator, operand, label)
-                        accumulator = target
-            elif isinstance(component, Xor):
-                for position, output in enumerate(outputs):
-                    for bit, target_output in enumerate(output):
-                        operands = [group[position][bit] for group in selected]
-                        accumulator = operands[0]
-                        for operand_number, operand in enumerate(operands[1:], start=1):
-                            is_last = operand_number == len(operands) - 1
-                            target = (
-                                target_output
-                                if is_last
-                                else allocate(f"__aux_{label}_{position}_{bit}_{operand_number}")
-                            )
-                            if not is_last:
-                                auxiliary.append(("xor", (target, accumulator, operand)))
-                            xor(target, accumulator, operand, label)
-                            accumulator = target
-            elif isinstance(component, BitwiseAnd):
-                for position, output in enumerate(outputs):
-                    for bit, target in enumerate(output):
-                        and_(target, selected[0][position][bit], selected[1][position][bit], label)
-            elif isinstance(component, Rotate):
-                width = component.output_type.domain.width
-                offset = component.amount if component.direction == "left" else -component.amount
-                for output, input_ in zip(outputs, selected[0]):
-                    for bit, output_bit in enumerate(output):
-                        equal(output_bit, input_[(bit + offset) % width], label)
+            encoding: (
+                WiringFunctionalSATModel
+                | BooleanFunctionalSATModel
+                | ModularAddFunctionalSATModel
+                | ModularSubtractFunctionalSATModel
+                | SBoxFunctionalSATModel
+                | VariableWiringFunctionalSATModel
+            )
+            if isinstance(component, (Constant, Identity, Permutation, Rotate, Shift)):
+                encoding = WiringFunctionalSATModel(component)
+            elif isinstance(component, (VariableRotate, VariableShift)):
+                encoding = VariableWiringFunctionalSATModel(component)
+            elif isinstance(component, (Add, Multiply, Xor, BitwiseAnd, BitwiseOr, BitwiseNot)):
+                encoding = (
+                    BooleanNativeXorSATModel(component)
+                    if self.native_xor
+                    else BooleanFunctionalSATModel(component)
+                )
             elif isinstance(component, ModularAdd):
-                width = component.output_type.domain.width
-                for position, output in enumerate(outputs):
-                    accumulator = selected[0][position]
-                    for operand_number, operand in enumerate(
-                        (group[position] for group in selected[1:]), start=1
-                    ):
-                        is_last = operand_number == len(selected) - 1
-                        target = (
-                            output
-                            if is_last
-                            else tuple(
-                                allocate(f"__aux_{label}_{position}_{operand_number}_{bit}")
-                                for bit in range(width)
-                            )
-                        )
-                        carry = None
-                        for bit in range(width - 1, -1, -1):
-                            if carry is None:
-                                xor(target[bit], accumulator[bit], operand[bit], label)
-                                if not is_last:
-                                    auxiliary.append(
-                                        ("xor", (target[bit], accumulator[bit], operand[bit]))
-                                    )
-                            else:
-                                partial = allocate(
-                                    f"__aux_{label}_{position}_{operand_number}_xor_{bit}"
-                                )
-                                xor(partial, accumulator[bit], operand[bit], label)
-                                xor(target[bit], partial, carry, label)
-                                auxiliary.append(("xor", (partial, accumulator[bit], operand[bit])))
-                                if not is_last:
-                                    auxiliary.append(("xor", (target[bit], partial, carry)))
-                            if bit:
-                                next_carry = allocate(
-                                    f"__aux_{label}_{position}_{operand_number}_carry_{bit}"
-                                )
-                                if carry is None:
-                                    and_(next_carry, accumulator[bit], operand[bit], label)
-                                    auxiliary.append(
-                                        ("and", (next_carry, accumulator[bit], operand[bit]))
-                                    )
-                                else:
-                                    majority(
-                                        next_carry, accumulator[bit], operand[bit], carry, label
-                                    )
-                                    auxiliary.append(
-                                        (
-                                            "majority",
-                                            (next_carry, accumulator[bit], operand[bit], carry),
-                                        )
-                                    )
-                                carry = next_carry
-                        accumulator = target
+                encoding = (
+                    ModularAddNativeXorSATModel(component)
+                    if self.native_xor
+                    else ModularAddFunctionalSATModel(component)
+                )
+            elif isinstance(component, ModularSubtract):
+                encoding = (
+                    ModularSubtractNativeXorSATModel(component)
+                    if self.native_xor
+                    else ModularSubtractFunctionalSATModel(component)
+                )
+            elif isinstance(component, ModularMultiply):
+                encoding = (
+                    ModularMultiplyNativeXorSATModel(component)
+                    if self.native_xor
+                    else ModularMultiplyFunctionalSATModel(component)
+                )
             elif isinstance(component, BitVectorSBox):
-                inputs = [group[0] for group in selected[0]]
-                outputs = [group[0] for group in outputs]
-                input_width = len(inputs)
-                output_width = len(outputs)
-                for input_value, output_value in enumerate(component.table):
-                    antecedent = tuple(
-                        -indices[name]
-                        if (input_value >> (input_width - 1 - i)) & 1
-                        else indices[name]
-                        for i, name in enumerate(inputs)
-                    )
-                    for i, output in enumerate(outputs):
-                        expected = (output_value >> (output_width - 1 - i)) & 1
-                        literal = indices[output] if expected else -indices[output]
-                        add_clause(antecedent + (literal,), label)
+                encoding = SBoxFunctionalSATModel(component)
             else:
                 raise NotImplementedError(
                     f"BooleanCNFModel does not support {type(component).__name__} "
                     f"component {label!r}"
                 )
+            encoding.encode(context, outputs, selected)
+            context.constraint_models.append(
+                ConstraintModelApplication(encoding.model_provenance, (label,))
+            )
 
-        self._auxiliary_definitions = tuple(auxiliary)
-        self._formula = CNFFormula(tuple(variables), tuple(clauses), tuple(provenance))
+        self._auxiliary_definitions = tuple(context.auxiliary)
+        arguments = (
+            tuple(context.variables),
+            tuple(context.clauses),
+            tuple(context.provenance),
+            tuple(context.constraint_models),
+        )
+        self._formula = (
+            NativeXorCNFFormula(
+                *arguments,
+                tuple(context.xor_clauses),
+                tuple(context.xor_provenance),
+            )
+            if isinstance(context, _NativeXorEncodingContext)
+            else CNFFormula(*arguments)
+        )
         return self._formula
 
     def witness(self, evaluation: EvaluationResult) -> Mapping[str, int]:
@@ -271,8 +347,10 @@ class BooleanCNFModel:
         assignment = {
             name: bit
             for source_id, values in evaluation.values.items()
-            if source_id in self.primitive.input_ports
-            or any(component.component_id == source_id for component in self.primitive.components)
+            if source_id in self.primitive.graph.input_ports
+            or any(
+                component.component_id == source_id for component in self.primitive.graph.components
+            )
             for position, value in enumerate(values)
             for name, bit in zip(
                 unit_variable_names(source_id, self._port_type(source_id), position),
@@ -285,20 +363,74 @@ class BooleanCNFModel:
                 assignment[target] = assignment[operands[0]] ^ assignment[operands[1]]
             elif operation == "and":
                 assignment[target] = assignment[operands[0]] & assignment[operands[1]]
+            elif operation == "or":
+                assignment[target] = assignment[operands[0]] | assignment[operands[1]]
+            elif operation == "borrow":
+                left, right, borrow = (assignment[item] for item in operands)
+                assignment[target] = int((not left and (right or borrow)) or (right and borrow))
+            elif operation == "borrow2":
+                left, right = (assignment[item] for item in operands)
+                assignment[target] = int(not left and right)
+            elif operation == "mux":
+                selector, direct, alternate = (assignment[item] for item in operands)
+                assignment[target] = alternate if selector else direct
+            elif operation == "mux_zero":
+                selector, direct = (assignment[item] for item in operands)
+                assignment[target] = 0 if selector else direct
+            elif operation == "zero":
+                assignment[target] = 0
+            elif operation.startswith("prefix_mod:"):
+                _, remainder, width = operation.split(":")
+                value = sum(
+                    assignment[item] << (len(operands) - position - 1)
+                    for position, item in enumerate(operands)
+                )
+                assignment[target] = int(value % int(width) == int(remainder))
             else:
                 assignment[target] = int(sum(assignment[item] for item in operands) >= 2)
         return {name: assignment[name] for name in formula.variables}
 
     def _port_type(self, owner_id: str):
-        for port in list(self.primitive.input_ports.values()) + [
-            item.output for item in self.primitive.components
+        for port in list(self.primitive.graph.input_ports.values()) + [
+            item.output for item in self.primitive.graph.components
         ]:
             if port.owner_id == owner_id:
-                return port.value_type
+                return port.array_type
         raise KeyError(owner_id)
 
     def _bit_name(self, owner_id: str, flat_bit: int) -> str:
-        value_type = self._port_type(owner_id)
-        width = value_type.domain.encoded_bit_size
+        array_type = self._port_type(owner_id)
+        width = array_type.domain.encoded_bit_size
         position, local_bit = divmod(flat_bit, width)
-        return unit_variable_names(owner_id, value_type, position)[local_bit]
+        return unit_variable_names(owner_id, array_type, position)[local_bit]
+
+
+class BooleanNativeXorModel(BooleanCNFModel):
+    """Compile a Boolean graph using native parity constraints where possible.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> formula = BooleanNativeXorModel(Speck(number_of_rounds=1)).cnf_formula()
+        >>> (formula.native_xor_count > 0, formula.clause_count < 403)
+        (True, True)
+    """
+
+    model_provenance = _direct_model(
+        ConstraintBackend.SAT,
+        "BooleanNativeXorModel",
+        "functional",
+        "graph composition with exact native parity records",
+        "Native XOR extraction is an exact mechanical replacement of canonical parity clauses.",
+    )
+
+    def __init__(self, primitive: Primitive) -> None:
+        super().__init__(primitive, native_xor=True)
+
+    def cnf_formula(self) -> NativeXorCNFFormula:
+        """Return CNF plus native XOR constraints."""
+
+        formula = super().cnf_formula()
+        if not isinstance(formula, NativeXorCNFFormula):  # pragma: no cover - constructor invariant
+            raise RuntimeError("native XOR lowering returned an ordinary CNF formula")
+        return formula

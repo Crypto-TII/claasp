@@ -37,7 +37,7 @@ class Twofish(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Twofish()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x9f589f5cf6122c32', 128)
@@ -125,7 +125,7 @@ class Twofish(BitGraphPrimitive):
         # fmt: on
         # Rounds definition :
         # Round 0 different from others since it starts with input whitening
-        self.add_round()
+        self._builder.add_round()
 
         if self.key_padding_length != 0:
             key_padding = self.add_constant_component(self.key_padding_length, 0)
@@ -332,7 +332,7 @@ class Twofish(BitGraphPrimitive):
                     [list(range(32)) for _ in range(4)],
                     self.primitive_block_size,
                 )
-                self.add_round()
+                self._builder.add_round()
 
     def h_function(self, X, L, L_bits):
         """Build the h function stage in this primitive's typed operation graph."""

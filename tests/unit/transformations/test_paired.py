@@ -1,17 +1,16 @@
 import pytest
 
 from claasp import (
+    ArrayType,
     CompositeBuilder,
     PairedTransformationResult,
-    PrimeField,
     Primitive,
     TransformationError,
     TransformationFailureReason,
-    ValueType,
-    Word,
     paired_xor_primitive,
 )
 from claasp.components import Identity
+from claasp.domains import PrimeField, Word
 from claasp.graph import as_selection
 from claasp.primitives import Present, Speck
 from claasp.representations.constraints.sat import BooleanCNFModel
@@ -23,7 +22,7 @@ RELATED_KEY = 0x1918111009080101
 
 
 def _value(primitive, evaluation, selection):
-    return primitive.resolve_selection(selection, evaluation.values, {})
+    return primitive.graph.resolve_selection(selection, evaluation.values, {})
 
 
 def _observation_value(primitive, evaluation, observation):
@@ -31,7 +30,9 @@ def _observation_value(primitive, evaluation, observation):
     return tuple(
         unit
         for selection in selections
-        for unit in primitive.resolve_selection(as_selection(selection), evaluation.values, {})
+        for unit in primitive.graph.resolve_selection(
+            as_selection(selection), evaluation.values, {}
+        )
     )
 
 
@@ -59,7 +60,7 @@ def test_single_key_pair_matches_fixed_output_and_all_published_differences():
                 _observation_value(source, right_trace, observation),
             )
         )
-        for observation in source.round_states
+        for observation in source.graph.round_outputs
     )
     assert all(
         _value(paired, evaluation, difference) == (0,) for difference in result.key_differences
@@ -68,10 +69,10 @@ def test_single_key_pair_matches_fixed_output_and_all_published_differences():
 
 def test_related_key_pair_has_independent_inputs_and_fixed_output_difference():
     source = Speck(number_of_rounds=4)
-    result = source.paired_xor()
+    result = source.edit.pair_xor()
     paired = result.primitive
 
-    assert tuple(paired.input_ports) == (
+    assert tuple(paired.graph.input_ports) == (
         "left_plaintext",
         "right_plaintext",
         "left_key",
@@ -92,26 +93,28 @@ def test_pair_uses_composite_scopes_and_no_identity_wiring_placeholders():
 
     assert result.left_scope.path == "left"
     assert result.right_scope.path == "right"
-    assert tuple(scope.path for scope in result.primitive.scopes) == ("left", "right")
-    assert not any(isinstance(component, Identity) for component in result.primitive.components)
+    assert tuple(scope.path for scope in result.primitive.graph.scopes) == ("left", "right")
+    assert not any(
+        isinstance(component, Identity) for component in result.primitive.graph.components
+    )
     assert result.primitive.evaluate(0, 1, 0) == source.evaluate(0, 0) ^ source.evaluate(1, 0)
 
 
 def test_nested_source_scopes_remain_nested_in_each_paired_realization():
-    block = CompositeBuilder("copy", {"value": ValueType(Word(4), (1,))})
+    block = CompositeBuilder("copy", {"value": ArrayType(Word(4), (1,))})
     block.add_round()
     copied = block.add_component(Identity(block.input("value"), "copy"))
     block.set_output("output", copied)
-    source = Primitive("scoped", {"state": ValueType(Word(4), (1,))})
-    source.add_round()
-    instance = source.add_composite(
-        block.build(), {"value": source.input("state")}, scope_id="block"
+    source = Primitive("scoped", {"state": ArrayType(Word(4), (1,))})
+    source._builder.add_round()
+    instance = source._builder.add_composite(
+        block.build(), {"value": source.graph.input("state")}, scope_id="block"
     )
-    source.set_output(instance.output())
+    source._builder.set_output(instance.output())
 
     paired = paired_xor_primitive(source)
 
-    assert tuple(scope.path for scope in paired.primitive.scopes) == (
+    assert tuple(scope.path for scope in paired.primitive.graph.scopes) == (
         "left",
         "left/block",
         "right",
@@ -121,8 +124,8 @@ def test_nested_source_scopes_remain_nested_in_each_paired_realization():
 
 
 def test_xor_pair_rejects_domains_without_characteristic_two_semantics():
-    source = Primitive("prime", {"state": ValueType(PrimeField(7), (1,))})
-    source.set_output(source.input("state"))
+    source = Primitive("prime", {"state": ArrayType(PrimeField(7), (1,))})
+    source._builder.set_output(source.graph.input("state"))
 
     with pytest.raises(TransformationError) as caught:
         paired_xor_primitive(source)

@@ -2,32 +2,32 @@ from pathlib import Path
 
 from claasp.components import BitVectorSBox
 from claasp.domains import Bit
-from claasp.graph import Port, Primitive, ValueType
+from claasp.graph import ArrayType, Port, Primitive
 from claasp.representations.constraints.sat import BooleanCNFModel
 from claasp.representations.execution import ScalarEvaluator
 
 
 def test_rectangular_bit_vector_sbox_has_distinct_input_and_output_widths():
     component = BitVectorSBox(
-        Port("input", ValueType(Bit(), (2,))),
+        Port("input", ArrayType(Bit(), (2,))),
         (0x00, 0x55, 0xAA, 0xFF),
         output_bit_size=8,
     )
-    assert component.output_type == ValueType(Bit(), (8,))
+    assert component.output_type == ArrayType(Bit(), (8,))
 
 
 def test_rectangular_sbox_evaluation_and_cnf_use_all_output_bits():
-    primitive = Primitive("rectangular_sbox", {"input": ValueType(Bit(), (2,))})
-    primitive.add_round()
-    output = primitive.add_component(
+    primitive = Primitive("rectangular_sbox", {"input": ArrayType(Bit(), (2,))})
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
         BitVectorSBox(
-            primitive.input("input"),
+            primitive.graph.input("input"),
             (0x00, 0x55, 0xAA, 0xFF),
             output_bit_size=8,
         )
     )
-    primitive.set_output(output)
-    sbox = primitive.components[0]
+    primitive._builder.set_output(output)
+    sbox = primitive.graph.components[0]
     assert ScalarEvaluator().evaluate(primitive, {"input": (1, 0)}).output == (
         1,
         0,

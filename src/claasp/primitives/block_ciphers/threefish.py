@@ -28,7 +28,7 @@ class Threefish(Primitive):
     EXAMPLES::
 
         >>> primitive = Threefish()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x94eeea8b1f2ada84', 256)
@@ -59,14 +59,14 @@ class Threefish(Primitive):
                 "tweak": word_type(64, 2),
             },
         )
-        self.add_round()
-        state = [select(self.input("plaintext"), index) for index in range(count)]
-        key = [select(self.input("key"), index) for index in range(count)]
+        self._builder.add_round()
+        state = [select(self.graph.input("plaintext"), index) for index in range(count)]
+        key = [select(self.graph.input("key"), index) for index in range(count)]
         parity = constant(self, 64, 0x1BD11BDAA9FC1A22)
         for value in key:
             parity = xor(self, parity, value)
         key.append(parity)
-        tweak = [select(self.input("tweak"), 0), select(self.input("tweak"), 1)]
+        tweak = [select(self.graph.input("tweak"), 0), select(self.graph.input("tweak"), 1)]
         tweak.append(xor(self, *tweak))
 
         def inject(subkey_index):
@@ -78,7 +78,7 @@ class Threefish(Primitive):
 
         for round_number in range(rounds):
             if round_number:
-                self.add_round()
+                self._builder.add_round()
             if round_number % 4 == 0:
                 state = inject(round_number // 4)
             mixed = []
@@ -101,6 +101,6 @@ class Threefish(Primitive):
             for source, destination in enumerate(PERMUTATIONS[parameter_index]):
                 permuted[destination] = mixed[source]
             state = permuted
-        self.add_round()
+        self._builder.add_round()
         state = inject(rounds // 4)
-        self.set_output(concatenate(self, *state))
+        self._builder.set_output(concatenate(self, *state))

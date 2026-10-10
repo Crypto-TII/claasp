@@ -24,7 +24,7 @@ class LEA(Primitive):
     EXAMPLES::
 
         >>> primitive = LEA()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x5b4b51fd73ec9ed9', 127)
@@ -46,15 +46,15 @@ class LEA(Primitive):
         super().__init__(
             "lea", {"plaintext": word_type(32, 4), "key": word_type(32, key_word_count)}
         )
-        state = [select(self.input("plaintext"), index) for index in range(4)]
-        key = [select(self.input("key"), index) for index in range(key_word_count)]
-        self.add_round()
+        state = [select(self.graph.input("plaintext"), index) for index in range(4)]
+        key = [select(self.graph.input("key"), index) for index in range(key_word_count)]
+        self._builder.add_round()
         if reorder_input_and_output:
             state = [byte_swap(self, value, 32) for value in state]
             key = [byte_swap(self, value, 32) for value in key]
         for round_number in range(rounds):
             if round_number:
-                self.add_round()
+                self._builder.add_round()
             delta = DELTA[round_number % key_word_count]
             if key_bit_size in (128, 192):
                 operations = 4 if key_bit_size == 128 else 6
@@ -107,4 +107,4 @@ class LEA(Primitive):
             ]
         if reorder_input_and_output:
             state = [byte_swap(self, value, 32) for value in state]
-        self.set_output(concatenate(self, *state))
+        self._builder.set_output(concatenate(self, *state))

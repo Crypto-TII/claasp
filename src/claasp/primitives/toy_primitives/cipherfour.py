@@ -14,7 +14,7 @@ class CipherFour(Primitive):
     EXAMPLES::
 
         >>> primitive = CipherFour()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x9844', 16)
@@ -42,10 +42,10 @@ class CipherFour(Primitive):
             {"plaintext": bit_type(block_bit_size), "key": bit_type(key_stream_size)},
             provenance=(("reference", "Knudsen and Robshaw, The Block Cipher Companion"),),
         )
-        state = self.input("plaintext")
-        key = self.input("key")
+        state = self.graph.input("plaintext")
+        key = self.graph.input("key")
         for round_number in range(number_of_rounds - 1):
-            self.add_round()
+            self._builder.add_round()
             round_key = key[
                 tuple(range(round_number * block_bit_size, (round_number + 1) * block_bit_size))
             ]
@@ -54,10 +54,10 @@ class CipherFour(Primitive):
             state = permute_bits(
                 self, state, permutation, component_id=f"round_{round_number}_permutation"
             )
-        self.add_round()
+        self._builder.add_round()
         # These two fixed offsets are part of the historical CipherFour fixture,
         # including its reduced/extended-round parameter behavior.
         state = xor_bits(self, state, key[tuple(range(4 * block_bit_size, 5 * block_bit_size))])
         state = sbox_layer(self, state, table, component_id_prefix="final_sbox")
         state = xor_bits(self, state, key[tuple(range(5 * block_bit_size, 6 * block_bit_size))])
-        self.set_output(state)
+        self._builder.set_output(state)

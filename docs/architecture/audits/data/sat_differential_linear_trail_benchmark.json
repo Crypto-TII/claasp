@@ -1,0 +1,58 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "results": [
+    {
+      "assignment_valid": true,
+      "clauses": 7151,
+      "construction_seconds_median": 0.012867562500105123,
+      "literals": 23144,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_sat_drivers",
+      "repeats": 10,
+      "solver": "MinisatSolver",
+      "solver_seconds_median": 0.00259314550066847,
+      "solver_status": "satisfiable",
+      "trail_valid": true,
+      "variables": 2543
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 7151,
+      "construction_seconds_median": 0.013642228999742656,
+      "literals": 23144,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_sat_drivers",
+      "repeats": 10,
+      "solver": "KissatSolver",
+      "solver_seconds_median": 0.0011495214998831216,
+      "solver_status": "satisfiable",
+      "trail_valid": true,
+      "variables": 2543
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 7151,
+      "construction_seconds_median": 0.012731395999708184,
+      "literals": 23144,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_sat_drivers",
+      "repeats": 10,
+      "solver": "CryptoMiniSatSolver",
+      "solver_seconds_median": 0.002013208500102337,
+      "solver_status": "satisfiable",
+      "trail_valid": true,
+      "variables": 2543
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "comparison": "identical formula, restrictions, solver settings, and host",
+    "description": "Speck32/64-3 with one differential, middle, and linear round",
+    "differential_maximum_weight": 16,
+    "linear_maximum_weight": 16,
+    "timeout_seconds": 30
+  }
+}

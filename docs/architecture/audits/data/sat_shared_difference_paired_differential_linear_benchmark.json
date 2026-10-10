@@ -1,0 +1,40 @@
+{
+  "environment": {
+    "platform": "macOS-26.3-x86_64-i386-64bit-Mach-O",
+    "python": "3.13.3"
+  },
+  "results": [
+    {
+      "assignment_valid": true,
+      "clauses": 29492,
+      "construction_seconds_median": 0.04792139551136643,
+      "literals": 77847,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_sat_drivers",
+      "repeats": 10,
+      "solver": "MinisatSolver",
+      "solver_seconds_median": 0.05577170802280307,
+      "solver_status": "satisfiable",
+      "variables": 13608
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 29492,
+      "construction_seconds_median": 0.047127291560173035,
+      "literals": 77847,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_sat_drivers",
+      "repeats": 10,
+      "solver": "KissatSolver",
+      "solver_seconds_median": 0.09085116698406637,
+      "solver_status": "satisfiable",
+      "variables": 13608
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "comparison": "identical formula, restrictions, settings, and host",
+    "description": "Speck32/64-3 paired-input differential-linear trail at fixed weight 8",
+    "timeout_seconds": 30
+  }
+}

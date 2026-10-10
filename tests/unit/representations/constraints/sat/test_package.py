@@ -4,21 +4,34 @@ import pytest
 
 from claasp import bits_from_int
 from claasp.components import Add
-from claasp.domains import Bit
-from claasp.graph import Primitive, ValueType
+from claasp.components import ModularMultiply as ModularMultiplyComponent
+from claasp.domains import Bit, Word
+from claasp.graph import ArrayType, Primitive
 from claasp.primitives import MiMC, Present80, Simon, Speck
+from claasp.primitives.single_component_primitives import (
+    BitwiseNot,
+    BitwiseOr,
+    ModularMultiply,
+    ModularSubtract,
+    Multiply,
+    Shift,
+    VariableRotate,
+    VariableShift,
+)
 from claasp.representations.constraints.sat import BooleanCNFModel, CNFFormula
 from claasp.representations.constraints.sat.exporters import DimacsExporter
 from claasp.representations.execution import ScalarEvaluator
 
 
 def _xor_primitive(operand_count=2):
-    primitive = Primitive("xor", {name: ValueType(Bit(), (1,)) for name in "abc"[:operand_count]})
-    primitive.add_round()
-    output = primitive.add_component(
-        Add(tuple(primitive.input(name) for name in "abc"[:operand_count]), component_id="sum")
+    primitive = Primitive("xor", {name: ArrayType(Bit(), (1,)) for name in "abc"[:operand_count]})
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
+        Add(
+            tuple(primitive.graph.input(name) for name in "abc"[:operand_count]), component_id="sum"
+        )
     )
-    primitive.set_output(output)
+    primitive._builder.set_output(output)
     return primitive
 
 
@@ -83,22 +96,84 @@ def test_simon_and_rotation_graph_has_an_independently_checked_cnf_witness():
     witness = model.witness(evaluation)
     assert formula.is_satisfied(witness)
     and_component = next(
-        item for item in primitive.components if type(item).__name__ == "BitwiseAnd"
+        item for item in primitive.graph.components if type(item).__name__ == "BitwiseAnd"
     )
     changed = dict(witness)
     changed[f"{and_component.component_id}_0_0"] ^= 1
     assert not formula.is_satisfied(changed)
 
 
+@pytest.mark.parametrize(
+    ("primitive", "inputs"),
+    (
+        (BitwiseOr(8, 3), (0x81, 0x24, 0x18)),
+        (BitwiseNot(8), (0xA5,)),
+        (Shift(8, 3, "left"), (0xA5,)),
+        (Shift(8, 3, "right"), (0xA5,)),
+        (Shift(8, 12, "left"), (0xA5,)),
+    ),
+)
+def test_additional_legacy_word_operations_have_exact_functional_witnesses(primitive, inputs):
+    evaluation = primitive.evaluate_with_trace(*inputs)
+    model = BooleanCNFModel(primitive)
+    formula = model.cnf_formula()
+    witness = model.witness(evaluation)
+    assert formula.is_satisfied(witness)
+    output_name = next(
+        name
+        for name in formula.variables
+        if name.startswith("bitwise_") or name.startswith("shift_")
+    )
+    changed = dict(witness)
+    changed[output_name] ^= 1
+    assert not formula.is_satisfied(changed)
+
+
+def test_multi_operand_modular_subtract_witnesses_are_exhaustive_at_three_bits():
+    primitive = ModularSubtract(word_bit_size=3, number_of_inputs=3)
+    model = BooleanCNFModel(primitive)
+    formula = model.cnf_formula()
+    for left, middle, right in product(range(8), repeat=3):
+        evaluation = primitive.evaluate_with_trace(left, middle, right)
+        witness = model.witness(evaluation)
+        assert primitive.evaluate(left, middle, right) == (left - middle - right) % 8
+        assert formula.is_satisfied(witness)
+        changed = dict(witness)
+        changed["modular_subtract_0_0_0_0"] ^= 1
+        assert not formula.is_satisfied(changed)
+
+
+@pytest.mark.parametrize(
+    "primitive",
+    (
+        VariableRotate(bit_size=5, amount_bit_size=3, direction="left"),
+        VariableRotate(bit_size=5, amount_bit_size=3, direction="right"),
+        VariableShift(bit_size=5, amount_bit_size=3, direction="left"),
+        VariableShift(bit_size=5, amount_bit_size=3, direction="right"),
+    ),
+)
+def test_variable_shift_and_rotation_witnesses_are_exhaustive(primitive):
+    model = BooleanCNFModel(primitive)
+    formula = model.cnf_formula()
+    for value, amount in product(range(32), range(8)):
+        evaluation = primitive.evaluate_with_trace(value, amount)
+        witness = model.witness(evaluation)
+        assert formula.is_satisfied(witness)
+        changed = dict(witness)
+        output_name = next(name for name in formula.variables if name.startswith("variable_"))
+        changed[output_name] ^= 1
+        assert not formula.is_satisfied(changed)
+
+
 def test_legacy_three_input_or_relation_retains_the_complete_truth_table():
     from claasp.components import BitVectorSBox
 
-    primitive = Primitive("or_lookup", {"x": ValueType(Bit(), (3,))})
-    primitive.add_round()
-    output = primitive.add_component(
-        BitVectorSBox(primitive.input("x"), (0, 1, 1, 1, 1, 1, 1, 1), component_id="or")
+    primitive = Primitive("or_lookup", {"x": ArrayType(Bit(), (3,))})
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
+        BitVectorSBox(primitive.graph.input("x"), (0, 1, 1, 1, 1, 1, 1, 1), component_id="or")
     )
-    primitive.set_output(output)
+    primitive._builder.set_output(output)
     model = BooleanCNFModel(primitive)
     formula = model.cnf_formula()
     for input_value, output_value in product(range(8), repeat=2):
@@ -129,15 +204,41 @@ def test_non_boolean_encodable_graph_is_rejected_explicitly():
         BooleanCNFModel(MiMC(17, 3, (1,))).cnf_formula()
 
 
-def test_unsupported_bit_component_is_rejected_explicitly():
-    from claasp.components import Multiply
+def test_bit_multiply_witnesses_are_exhaustive():
+    primitive = Multiply(unit_count=3, number_of_inputs=3)
+    model = BooleanCNFModel(primitive)
+    formula = model.cnf_formula()
+    for operands in product(range(8), repeat=3):
+        evaluation = primitive.evaluate_with_trace(*operands)
+        witness = model.witness(evaluation)
+        assert formula.is_satisfied(witness)
 
-    primitive = Primitive("and", {"x": ValueType(Bit(), (1,)), "y": ValueType(Bit(), (1,))})
-    primitive.add_round()
-    primitive.add_component(
-        Multiply((primitive.input("x"), primitive.input("y")), component_id="product")
+
+def test_modular_multiply_witnesses_are_exhaustive_at_three_bits():
+    primitive = ModularMultiply(word_bit_size=3, number_of_inputs=3)
+    model = BooleanCNFModel(primitive)
+    formula = model.cnf_formula()
+    for operands in product(range(8), repeat=3):
+        evaluation = primitive.evaluate_with_trace(*operands)
+        witness = model.witness(evaluation)
+        assert primitive.evaluate(*operands) == operands[0] * operands[1] * operands[2] % 8
+        assert formula.is_satisfied(witness)
+        changed = dict(witness)
+        changed["modular_multiply_0_0_0_0"] ^= 1
+        assert not formula.is_satisfied(changed)
+
+
+def test_non_power_of_two_modular_multiply_is_rejected_explicitly():
+    primitive = Primitive(
+        "modmul_13", {name: ArrayType(Word(4), (1,)) for name in ("left", "right")}
     )
-    with pytest.raises(NotImplementedError, match="Multiply"):
+    primitive._builder.add_round()
+    primitive._builder.set_output(
+        primitive._builder.add_component(
+            ModularMultiplyComponent(primitive.graph.inputs(), modulus=13, component_id="product")
+        )
+    )
+    with pytest.raises(NotImplementedError, match=r"modulus 2\*\*word_width"):
         BooleanCNFModel(primitive).cnf_formula()
 
 

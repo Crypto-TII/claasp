@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from math import inf, log2
 
+from claasp.representations.constraints import ConstraintModelApplication
 from claasp.semantics.base import XOR_DIFFERENTIAL, XOR_LINEAR
 
 
@@ -157,6 +158,133 @@ class TrailStep:
 
 
 @dataclass(frozen=True, slots=True)
+class TrailComponentTransition:
+    """One component-level propagation retained for displaying a full trail.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import (
+        ...     TrailComponentTransition, XorDifference)
+        >>> component = TrailComponentTransition(
+        ...     0, "rotate_0", "rotate right 7",
+        ...     XorDifference(0x40, 16), XorDifference(0x80, 16))
+        >>> (component.component, component.weight)
+        ('rotate right 7', 0.0)
+    """
+
+    round_number: int
+    component_id: str
+    component: str
+    input_pattern: BitPattern | None
+    output_pattern: BitPattern
+    local_transition: Transition | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.round_number, int) or isinstance(self.round_number, bool):
+            raise TypeError("round_number must be an integer")
+        if self.round_number < 0:
+            raise ValueError("round_number must be nonnegative")
+        if not self.component_id:
+            raise ValueError("component_id must not be empty")
+        if not self.component:
+            raise ValueError("component must not be empty")
+        if self.local_transition is not None and (
+            self.input_pattern != self.local_transition.input_pattern
+            or self.output_pattern != self.local_transition.output_pattern
+        ):
+            raise ValueError("local transition patterns must match the component propagation")
+
+    @property
+    def weight(self) -> float:
+        """Return zero for deterministic wiring and the exact local weight otherwise."""
+
+        return 0.0 if self.local_transition is None else self.local_transition.weight
+
+
+@dataclass(frozen=True, slots=True)
+class TrailRoundTransition:
+    """One round boundary and its exact relative probability or correlation.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import TrailRoundTransition, XorDifference
+        >>> round_1 = TrailRoundTransition(0, XorDifference(0x80, 8), 1, 2)
+        >>> (round_1.round_number, round_1.weight)
+        (0, 1.0)
+    """
+
+    round_number: int
+    output_pattern: BitPattern
+    numerator: int
+    denominator: int
+    sign: int = 1
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.round_number, int) or isinstance(self.round_number, bool):
+            raise TypeError("round_number must be an integer")
+        if self.round_number < 0:
+            raise ValueError("round_number must be nonnegative")
+        if (
+            not isinstance(self.numerator, int)
+            or isinstance(self.numerator, bool)
+            or not isinstance(self.denominator, int)
+            or isinstance(self.denominator, bool)
+            or not 0 <= self.numerator <= self.denominator
+            or self.denominator == 0
+        ):
+            raise ValueError("round ratio must satisfy 0 <= numerator <= denominator")
+        if self.sign not in (-1, 1):
+            raise ValueError("round sign must be -1 or 1")
+
+    @property
+    def weight(self) -> float:
+        """Return the negative base-two logarithm of the absolute ratio."""
+
+        return inf if not self.numerator else -log2(self.numerator / self.denominator)
+
+
+@dataclass(frozen=True, slots=True)
+class TrailSearchMetadata:
+    """Structured information about how a trail search was performed.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import TrailSearchMetadata
+        >>> metadata = TrailSearchMetadata(
+        ...     "exact enumeration", runtime_seconds=0.25)
+        >>> (metadata.solver, metadata.runtime_seconds, metadata.peak_memory_bytes)
+        (None, 0.25, None)
+    """
+
+    technique: str
+    solver: str | None = None
+    solver_version: str | None = None
+    runtime_seconds: float | None = None
+    peak_memory_bytes: int | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.technique, str) or not self.technique:
+            raise ValueError("trail-search technique must not be empty")
+        for name, value in (("solver", self.solver), ("solver_version", self.solver_version)):
+            if value is not None and (not isinstance(value, str) or not value):
+                raise ValueError(f"{name} must be a nonempty string or None")
+        if self.solver is None and self.solver_version is not None:
+            raise ValueError("solver_version requires a solver")
+        if self.runtime_seconds is not None and (
+            isinstance(self.runtime_seconds, bool)
+            or not isinstance(self.runtime_seconds, (int, float))
+            or self.runtime_seconds < 0
+        ):
+            raise ValueError("runtime_seconds must be nonnegative or None")
+        if self.peak_memory_bytes is not None and (
+            isinstance(self.peak_memory_bytes, bool)
+            or not isinstance(self.peak_memory_bytes, int)
+            or self.peak_memory_bytes < 0
+        ):
+            raise ValueError("peak_memory_bytes must be nonnegative or None")
+
+
+@dataclass(frozen=True, slots=True)
 class Trail:
     """A checked sequence of component transitions.
 
@@ -220,97 +348,57 @@ class Trail:
 
 
 @dataclass(frozen=True, slots=True)
-class TrailSearchMetadata:
-    """Structured solver and optimization metadata for an exact search.
-
-    EXAMPLES::
-
-        >>> TrailSearchMetadata("binary search", solver="MiniSat").solver
-        'MiniSat'
-    """
-
-    technique: str
-    solver: str | None = None
-    solver_version: str | None = None
-    runtime_seconds: float | None = None
-
-
-@dataclass(frozen=True, slots=True)
-class TrailComponentTransition:
-    """One decoded graph component retained as displayable evidence.
-
-    EXAMPLES::
-
-        >>> item = TrailComponentTransition(0, "x", "XOR", None, XorDifference(0, 1))
-        >>> item.weight
-        0.0
-    """
-
-    round_number: int
-    component_id: str
-    component: str
-    input_pattern: BitPattern | None
-    output_pattern: BitPattern
-    local_transition: Transition | None = None
-
-    @property
-    def weight(self) -> float:
-        """Return the local probabilistic weight, or zero for wiring."""
-
-        return 0.0 if self.local_transition is None else self.local_transition.weight
-
-
-@dataclass(frozen=True, slots=True)
-class TrailRoundTransition:
-    """Decoded round boundary and the product of local round transitions.
-
-    EXAMPLES::
-
-        >>> TrailRoundTransition(0, XorDifference(1, 1), 1, 2).weight
-        1.0
-    """
-
-    round_number: int
-    output_pattern: BitPattern
-    numerator: int
-    denominator: int
-    sign: int = 1
-
-    @property
-    def weight(self) -> float:
-        """Return the exact round weight."""
-
-        return inf if not self.numerator else -log2(self.numerator / self.denominator)
-
-
-@dataclass(frozen=True, slots=True)
 class TrailSearchResult:
-    """A trail together with its optimization claim and provenance.
+    """A trail together with its optimization claim and search metadata.
 
     EXAMPLES::
 
         >>> from claasp.semantics.cryptanalysis import (Trail, TrailKind,
-        ...     TrailSearchResult, XorDifference)
+        ...     TrailSearchMetadata, TrailSearchResult, XorDifference)
         >>> trail = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(0, 1),
         ...     XorDifference(0, 1), ())
-        >>> TrailSearchResult(trail, 0.0, "exhaustive").is_optimal
+        >>> metadata = TrailSearchMetadata("exhaustive enumeration")
+        >>> TrailSearchResult(trail, 0.0, metadata).is_optimal
         True
     """
 
     trail: Trail
     lower_bound: float
-    metadata: str | TrailSearchMetadata
+    metadata: TrailSearchMetadata
     component_transitions: tuple[TrailComponentTransition, ...] = ()
-    constraint_models: tuple[object, ...] = ()
+    constraint_models: tuple[ConstraintModelApplication, ...] = ()
     round_transitions: tuple[TrailRoundTransition, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.metadata, TrailSearchMetadata):
+            raise TypeError("metadata must be TrailSearchMetadata")
+        if any(not isinstance(item, ConstraintModelApplication) for item in self.constraint_models):
+            raise TypeError("constraint_models must contain ConstraintModelApplication values")
+        assignments = {}
+        for application in self.constraint_models:
+            for component_id in application.component_ids:
+                previous = assignments.setdefault(component_id, application.model)
+                if previous != application.model:
+                    raise ValueError("a component cannot use conflicting constraint models")
+        expected = XorDifference if self.trail.kind is TrailKind.XOR_DIFFERENTIAL else XorMask
+        for component in self.component_transitions:
+            if not isinstance(component.output_pattern, expected) or (
+                component.input_pattern is not None
+                and not isinstance(component.input_pattern, expected)
+            ):
+                raise TypeError("component propagation patterns must match the trail kind")
+        if any(not isinstance(item.output_pattern, expected) for item in self.round_transitions):
+            raise TypeError("round propagation patterns must match the trail kind")
+        if tuple(item.round_number for item in self.round_transitions) != tuple(
+            range(len(self.round_transitions))
+        ):
+            raise ValueError("round transitions must be ordered and numbered from zero")
 
     @property
     def provenance(self) -> str:
-        """Return a concise provenance description for compatibility."""
+        """Return the search technique as a concise provenance description."""
 
-        if isinstance(self.metadata, TrailSearchMetadata):
-            return self.metadata.technique
-        return self.metadata
+        return self.metadata.technique
 
     @property
     def is_optimal(self) -> bool:
@@ -318,32 +406,33 @@ class TrailSearchResult:
         return self.trail.total_weight == self.lower_bound
 
     def show(self, *, details: bool = False, format: str = "terminal", file=None) -> None:  # noqa: A002
-        """Render a compact round summary and optional component evidence."""
+        """Display round differences, or the full component evidence on request.
+
+        Presentation is imported only when this convenience method is called;
+        producing and checking the typed result remain independent of a
+        renderer. ``format`` may be ``"terminal"`` or ``"markdown"``.
+
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> from claasp.semantics.cryptanalysis import (
+            ...     Trail, TrailKind, TrailSearchMetadata, TrailSearchResult,
+            ...     XorDifference)
+            >>> trail = Trail(TrailKind.XOR_DIFFERENTIAL,
+            ...     XorDifference(1, 4), XorDifference(2, 4), ())
+            >>> output = StringIO()
+            >>> metadata = TrailSearchMetadata("example")
+            >>> TrailSearchResult(trail, 0.0, metadata).show(file=output)
+            >>> "0x1" in output.getvalue()
+            True
+        """
 
         import sys
 
-        if format not in ("terminal", "markdown"):
-            raise ValueError("trail format must be 'terminal' or 'markdown'")
+        from claasp.presentation import render_section, trail_section
+
         destination = sys.stdout if file is None else file
-        destination.write(
-            f"{self.trail.kind.value} trail: weight {self.trail.total_weight:g}, "
-            f"proved lower bound {self.lower_bound:g}\n"
-        )
-        for round_transition in self.round_transitions:
-            destination.write(
-                f"round {round_transition.round_number + 1}: "
-                f"0x{round_transition.output_pattern.value:x} "
-                f"weight {round_transition.weight:g}\n"
-            )
-        if details:
-            for component_transition in self.component_transitions:
-                destination.write(
-                    f"round {component_transition.round_number + 1} "
-                    f"{component_transition.component_id} "
-                    f"({component_transition.component}): "
-                    f"0x{component_transition.output_pattern.value:x} "
-                    f"weight {component_transition.weight:g}\n"
-                )
+        destination.write(render_section(trail_section(self, details=details), format=format))
 
 
 class SBoxTransitionSemantics:
@@ -367,9 +456,7 @@ class SBoxTransitionSemantics:
         size = len(self.table)
         if size < 2 or size & (size - 1):
             raise ValueError("S-box table size must be a power of two")
-        self.width = size.bit_length() - 1
-        if any(not isinstance(value, int) or value < 0 for value in self.table):
-            raise ValueError("S-box values must be nonnegative integers")
+        self.input_width = size.bit_length() - 1
         inferred_output_width = max(1, max(self.table).bit_length())
         if output_width is None:
             output_width = inferred_output_width
@@ -378,9 +465,18 @@ class SBoxTransitionSemantics:
             or isinstance(output_width, bool)
             or output_width < inferred_output_width
         ):
-            raise ValueError("S-box output width must fit every table value")
+            raise ValueError("S-box output width must contain every table value")
         self.output_width = output_width
-        self.output_size = 1 << self.output_width
+        self.output_size = 1 << output_width
+        # ``width`` remains the square-S-box input-width compatibility name.
+        self.width = self.input_width
+        if any(
+            not isinstance(value, int)
+            or isinstance(value, bool)
+            or not 0 <= value < 1 << self.output_width
+            for value in self.table
+        ):
+            raise ValueError("S-box values must fit the output width")
 
     def difference_distribution_table(self):
         """Return the complete exact integer DDT in quadratic time."""
@@ -388,7 +484,7 @@ class SBoxTransitionSemantics:
             raise NotImplementedError("dense DDT materialization is limited to 1048576 table cells")
         rows = []
         for alpha in range(len(self.table)):
-            row = [0] * self.output_size
+            row = [0] * (1 << self.output_width)
             for value, output in enumerate(self.table):
                 row[output ^ self.table[value ^ alpha]] += 1
             rows.append(tuple(row))
@@ -401,8 +497,8 @@ class SBoxTransitionSemantics:
                 "dense Walsh-table materialization is limited to 1048576 table cells"
             )
         size = len(self.table)
-        rows = [[0] * self.output_size for _ in range(size)]
-        for beta in range(self.output_size):
+        rows = [[0] * (1 << self.output_width) for _ in range(size)]
+        for beta in range(1 << self.output_width):
             values = [1 if (output & beta).bit_count() % 2 == 0 else -1 for output in self.table]
             stride = 1
             while stride < size:
@@ -421,15 +517,15 @@ class SBoxTransitionSemantics:
     def xor_differential(self, input_difference: int, output_difference: int) -> Transition:
         """Return the exact differential transition counted over all inputs."""
 
-        self._validate_pattern(input_difference, self.width, "input")
-        self._validate_pattern(output_difference, self.output_width, "output")
+        self._validate_input_pattern(input_difference)
+        self._validate_output_pattern(output_difference)
         count = sum(
             self.table[value] ^ self.table[value ^ input_difference] == output_difference
             for value in range(len(self.table))
         )
         return Transition(
             TrailKind.XOR_DIFFERENTIAL,
-            XorDifference(input_difference, self.width),
+            XorDifference(input_difference, self.input_width),
             XorDifference(output_difference, self.output_width),
             count,
             len(self.table),
@@ -438,8 +534,8 @@ class SBoxTransitionSemantics:
     def xor_linear(self, input_mask: int, output_mask: int) -> Transition:
         """Return the exact signed Walsh-correlation transition."""
 
-        self._validate_pattern(input_mask, self.width, "input")
-        self._validate_pattern(output_mask, self.output_width, "output")
+        self._validate_input_pattern(input_mask)
+        self._validate_output_pattern(output_mask)
         walsh = sum(
             1
             if ((value & input_mask).bit_count() + (self.table[value] & output_mask).bit_count())
@@ -450,7 +546,7 @@ class SBoxTransitionSemantics:
         )
         return Transition(
             TrailKind.XOR_LINEAR,
-            XorMask(input_mask, self.width),
+            XorMask(input_mask, self.input_width),
             XorMask(output_mask, self.output_width),
             abs(walsh),
             len(self.table),
@@ -465,13 +561,16 @@ class SBoxTransitionSemantics:
         """
         from .truncated import TruncatedBit, TruncatedXorDifference
 
-        if not isinstance(difference, TruncatedXorDifference) or len(difference.bits) != self.width:
+        if (
+            not isinstance(difference, TruncatedXorDifference)
+            or len(difference.bits) != self.input_width
+        ):
             raise ValueError("truncated difference must match the S-box width")
         outputs: set[int] = set()
         for alpha in range(len(self.table)):
             if any(
                 bit is not TruncatedBit.UNKNOWN
-                and bit.encoded != ((alpha >> (self.width - 1 - position)) & 1)
+                and bit.encoded != ((alpha >> (self.input_width - 1 - position)) & 1)
                 for position, bit in enumerate(difference.bits)
             ):
                 continue
@@ -501,9 +600,25 @@ class SBoxTransitionSemantics:
             )
         return transition == expected
 
-    def _validate_pattern(self, value: int, width: int, label: str) -> None:
-        if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < 1 << width:
-            raise ValueError(f"{label} pattern must be an integer in range({1 << width})")
+    def _validate_input_pattern(self, value: int) -> None:
+        if (
+            not isinstance(value, int)
+            or isinstance(value, bool)
+            or not 0 <= value < len(self.table)
+        ):
+            raise ValueError(f"input pattern must be an integer in range({len(self.table)})")
+
+    def _validate_output_pattern(self, value: int) -> None:
+        output_size = 1 << self.output_width
+        if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < output_size:
+            raise ValueError(f"output pattern must be an integer in range({output_size})")
+
+    def _validate_pattern(self, value: int) -> None:
+        """Validate a pattern for compatibility with square-only encoders."""
+
+        if self.input_width != self.output_width:
+            raise ValueError("rectangular S-boxes require an explicit input or output validator")
+        self._validate_input_pattern(value)
 
 
 class ModularAddTransitionSemantics:

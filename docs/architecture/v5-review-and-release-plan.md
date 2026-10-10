@@ -49,7 +49,7 @@ claim that the current files have already been relicensed.
 
 - Keep the exhaustive machine matrix at
   `migration/m11a_bidirectional_migration.json` authoritative.
-- Generate `docs/final_migration_audit.md` with every legacy source/test record,
+- Generate `docs/architecture/audits/final_migration_audit.md` with every legacy source/test record,
   its disposition, destination(s), relationship (direct, split,
   consolidated, removed, or inapplicable), and reason.
 - Include the reverse list of every shipped v5 artifact, its predecessor(s),
@@ -196,3 +196,11 @@ review confirmation. No merge is scheduled. The bit-vector work is registered
 for a dedicated session after that review. AO requirements may be drafted in
 parallel with review, but production AO APIs should wait until their design
 probes and the relevant reviewed core contracts are accepted.
+
+## Deferred analysis API refinement
+
+A separate PR should evaluate a shorter, generic trail-search entry point such
+as `primitive.analysis.find_trail(kind="xor_differential")`. That design must
+define the supported trail kinds, objectives, applicability diagnostics, and
+return contract before replacing or supplementing the precise trail-search
+method names.

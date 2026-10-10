@@ -3,27 +3,27 @@ import json
 import pytest
 
 from claasp import (
-    Bit,
+    ArrayType,
     Primitive,
     SerializationError,
     SerializationFailure,
-    ValueType,
     deserialize_primitive,
     primitive_digest,
     serialize_primitive,
 )
 from claasp.components import Identity
+from claasp.domains import Bit
 from claasp.primitives import AES, Present, Speck
 from claasp.primitives.block_ciphers.katan import Katan
 
 
 def _toy():
     primitive = Primitive(
-        "canonical", {"state": ValueType(Bit(), (4,))}, provenance=(("source", "test"),)
+        "canonical", {"state": ArrayType(Bit(), (4,))}, provenance=(("source", "test"),)
     )
-    primitive.add_round()
-    copied = primitive.add_component(Identity(primitive.input("state")[3, 1, 2, 0]))
-    primitive.set_output(copied)
+    primitive._builder.add_round()
+    copied = primitive._builder.add_component(Identity(primitive.graph.input("state")[3, 1, 2, 0]))
+    primitive._builder.set_output(copied)
     return primitive
 
 
@@ -56,15 +56,15 @@ def test_round_trip_preserves_evaluation_metadata_topology_and_bindings(primitiv
     assert restored.evaluate(*inputs) == primitive.evaluate(*inputs)
     assert restored.family_name == primitive.family_name
     assert restored.kind == primitive.kind
-    assert restored.input_descriptors == primitive.input_descriptors
+    assert restored.graph.input_descriptors == primitive.graph.input_descriptors
     assert restored.provenance == primitive.provenance
     assert restored.realization == primitive.realization
-    assert tuple(type(item) for item in restored.components) == tuple(
-        type(item) for item in primitive.components
+    assert tuple(type(item) for item in restored.graph.components) == tuple(
+        type(item) for item in primitive.graph.components
     )
-    assert restored.bindings == primitive.bindings
-    assert tuple(group.number for group in restored.rounds) == tuple(
-        group.number for group in primitive.rounds
+    assert restored.graph.bindings == primitive.graph.bindings
+    assert tuple(group.number for group in restored.graph.rounds) == tuple(
+        group.number for group in primitive.graph.rounds
     )
 
 
@@ -90,14 +90,16 @@ def test_composite_scope_round_trip_preserves_hierarchy_and_named_output():
 
     definition = ChaChaQuarterRound(word_size=32)
     primitive = Primitive(
-        "composite", {name: value_type for name, value_type in definition.input_types}
+        "composite", {name: array_type for name, array_type in definition.input_types}
     )
-    primitive.add_round()
-    instance = primitive.add_composite(definition, primitive.input_ports, scope_id="quarter")
-    primitive.set_output(instance.output)
+    primitive._builder.add_round()
+    instance = primitive._builder.add_composite(
+        definition, primitive.graph.input_ports, scope_id="quarter"
+    )
+    primitive._builder.set_output(instance.output)
     restored = deserialize_primitive(serialize_primitive(primitive))
-    assert restored.scope("quarter").definition.name == definition.name
-    assert restored.scope("quarter").component_ids == instance.component_ids
+    assert restored.graph.scope("quarter").definition.name == definition.name
+    assert restored.graph.scope("quarter").component_ids == instance.component_ids
     assert restored.evaluate(1, 2, 3, 4) == primitive.evaluate(1, 2, 3, 4)
 
 
@@ -155,10 +157,10 @@ def test_duplicate_sources_invalid_output_and_inconsistent_binding_width_are_rej
     with pytest.raises(SerializationError, match="invalid_reference"):
         deserialize_primitive(json.dumps(value))
 
-    primitive = Primitive("binding", {"state": ValueType(Bit(), (8,))})
-    primitive.add_round()
-    packed = primitive.pack_bits(primitive.input("state"), 4)
-    primitive.set_output(packed)
+    primitive = Primitive("binding", {"state": ArrayType(Bit(), (8,))})
+    primitive._builder.add_round()
+    packed = primitive._builder.pack_bits(primitive.graph.input("state"), 4)
+    primitive._builder.set_output(packed)
     value = json.loads(serialize_primitive(primitive))
     value["payload"]["bindings"][0]["word_width"] = 3
     with pytest.raises(SerializationError, match="inconsistent_width"):

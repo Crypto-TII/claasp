@@ -40,7 +40,7 @@ class Splight(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Splight()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xdfddfbb4d8804c', 56)
@@ -72,7 +72,7 @@ class Splight(BitGraphPrimitive):
         ]
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             keys = self.key_schedule(keys, round_number)
             self.add_round_key_output_component(
                 keys[0].id, keys[0].input_bit_positions, self.half_size

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from claasp.graph.value_type import ValueType
+from claasp.graph.array_type import ArrayType
 
 
 @dataclass(frozen=True, slots=True)
@@ -13,24 +13,25 @@ class Port:
 
     EXAMPLES::
 
-        >>> from claasp import Port, PrimeField, ValueType
-        >>> state = Port("state", ValueType(PrimeField(17), (3,)))
+        >>> from claasp import Port, ArrayType
+        >>> from claasp.domains import PrimeField
+        >>> state = Port("state", ArrayType(PrimeField(17), (3,)))
         >>> state.select(2, 0).positions
         (2, 0)
-        >>> state.select_all().value_type.unit_count
+        >>> state.select_all().array_type.unit_count
         3
     """
 
     owner_id: str
-    value_type: ValueType
+    array_type: ArrayType
 
     def __post_init__(self) -> None:
         if not isinstance(self.owner_id, str):
             raise TypeError("owner_id must be a string")
         if not self.owner_id:
             raise ValueError("owner_id must not be empty")
-        if not isinstance(self.value_type, ValueType):
-            raise TypeError("value_type must be a ValueType")
+        if not isinstance(self.array_type, ArrayType):
+            raise TypeError("array_type must be an ArrayType")
 
     def select(self, *positions: int) -> "Selection":
         """Select logical scalar positions from this port."""
@@ -40,7 +41,7 @@ class Port:
     def select_all(self) -> "Selection":
         """Select every logical scalar position in order."""
 
-        return Selection(self, tuple(range(self.value_type.unit_count)))
+        return Selection(self, tuple(range(self.array_type.unit_count)))
 
     def __getitem__(self, positions: int | slice | tuple[int, ...]) -> "Selection":
         """Select units with ordinary indexing syntax."""
@@ -48,7 +49,7 @@ class Port:
         if isinstance(positions, tuple):
             return self.select(*positions)
         if isinstance(positions, slice):
-            return self.select(*range(self.value_type.unit_count)[positions])
+            return self.select(*range(self.array_type.unit_count)[positions])
         return self.select(positions)
 
 
@@ -58,9 +59,10 @@ class Selection:
 
     EXAMPLES::
 
-        >>> from claasp import Port, PrimeField, ValueType
-        >>> selection = Selection(Port("state", ValueType(PrimeField(17), (3,))), (2, 0))
-        >>> (selection.positions, selection.value_type.shape)
+        >>> from claasp import Port, ArrayType
+        >>> from claasp.domains import PrimeField
+        >>> selection = Selection(Port("state", ArrayType(PrimeField(17), (3,))), (2, 0))
+        >>> (selection.positions, selection.array_type.shape)
         ((2, 0), (2,))
     """
 
@@ -75,7 +77,7 @@ class Selection:
         if not self.positions:
             raise ValueError("a selection must contain at least one position")
 
-        size = self.source.value_type.unit_count
+        size = self.source.array_type.unit_count
         for position in self.positions:
             if not isinstance(position, int) or isinstance(position, bool):
                 raise TypeError("selection positions must be integers")
@@ -86,10 +88,10 @@ class Selection:
                 )
 
     @property
-    def value_type(self) -> ValueType:
+    def array_type(self) -> ArrayType:
         """Type produced by this flattened logical-unit selection."""
 
-        return ValueType(self.source.value_type.domain, (len(self.positions),))
+        return ArrayType(self.source.array_type.domain, (len(self.positions),))
 
     def __getitem__(self, positions: int | slice | tuple[int, ...]) -> "Selection":
         """Select positions relative to this selection."""
@@ -110,8 +112,9 @@ def as_selection(value: PortLike) -> Selection:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, Port, ValueType
-        >>> as_selection(Port("state", ValueType(Bit(), (2,)))).positions
+        >>> from claasp import Port, ArrayType
+        >>> from claasp.domains import Bit
+        >>> as_selection(Port("state", ArrayType(Bit(), (2,)))).positions
         (0, 1)
     """
 

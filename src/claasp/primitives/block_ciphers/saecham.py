@@ -54,7 +54,7 @@ class Saecham(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Saecham()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x86e8c489f5905be9', 64)
@@ -79,7 +79,7 @@ class Saecham(BitGraphPrimitive):
 
         round_keys = None
         for rc in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
 
             if rc == 0:
                 round_keys = self._key_schedule()

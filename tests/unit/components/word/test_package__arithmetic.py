@@ -4,7 +4,7 @@ from itertools import product
 
 import pytest
 
-from claasp import Primitive, ScalarEvaluator, TransposedBatchEvaluator, ValueType, Word
+from claasp import ArrayType, Primitive, ScalarEvaluator, TransposedBatchEvaluator
 from claasp.components import (
     IDEAMultiply,
     ModularAdd,
@@ -15,16 +15,17 @@ from claasp.components import (
     VariableRotate,
     VariableShift,
 )
+from claasp.domains import Word
 
 
 def _binary_primitive(component_type, width=3, **kwargs):
-    value_type = ValueType(Word(width), (1,))
-    primitive = Primitive(component_type.__name__, {"left": value_type, "right": value_type})
-    primitive.add_round()
-    output = primitive.add_component(
-        component_type((primitive.input("left"), primitive.input("right")), **kwargs)
+    array_type = ArrayType(Word(width), (1,))
+    primitive = Primitive(component_type.__name__, {"left": array_type, "right": array_type})
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
+        component_type((primitive.graph.input("left"), primitive.graph.input("right")), **kwargs)
     )
-    primitive.set_output(output)
+    primitive._builder.set_output(output)
     return primitive
 
 
@@ -61,18 +62,20 @@ def test_idea_multiplication_matches_zero_encoded_field_arithmetic():
 
 
 def _motion_primitive(component_type, direction, *, variable=False):
-    values = ValueType(Word(8), (2,))
+    values = ArrayType(Word(8), (2,))
     inputs = {"values": values}
     if variable:
-        inputs["amount"] = ValueType(Word(4), (1,))
+        inputs["amount"] = ArrayType(Word(4), (1,))
     primitive = Primitive(component_type.__name__, inputs)
-    primitive.add_round()
+    primitive._builder.add_round()
     if variable:
-        component = component_type(primitive.input("values"), primitive.input("amount"), direction)
+        component = component_type(
+            primitive.graph.input("values"), primitive.graph.input("amount"), direction
+        )
     else:
-        component = component_type(primitive.input("values"), 3, direction)
-    output = primitive.add_component(component)
-    primitive.set_output(output)
+        component = component_type(primitive.graph.input("values"), 3, direction)
+    output = primitive._builder.add_component(component)
+    primitive._builder.set_output(output)
     return primitive
 
 
@@ -98,13 +101,17 @@ def test_fixed_and_variable_word_motion(component_type, variable, direction, exp
 
 
 def test_shift_saturates_while_rotation_reduces_amount_modulo_width():
-    value_type = ValueType(Word(8), (1,))
-    shifted = Primitive("shift", {"value": value_type})
-    shifted.add_round()
-    shifted.set_output(shifted.add_component(Shift(shifted.input("value"), 11, "left")))
-    rotated = Primitive("rotate", {"value": value_type})
-    rotated.add_round()
-    rotated.set_output(rotated.add_component(Rotate(rotated.input("value"), 11, "left")))
+    array_type = ArrayType(Word(8), (1,))
+    shifted = Primitive("shift", {"value": array_type})
+    shifted._builder.add_round()
+    shifted._builder.set_output(
+        shifted._builder.add_component(Shift(shifted.graph.input("value"), 11, "left"))
+    )
+    rotated = Primitive("rotate", {"value": array_type})
+    rotated._builder.add_round()
+    rotated._builder.set_output(
+        rotated._builder.add_component(Rotate(rotated.graph.input("value"), 11, "left"))
+    )
     assert ScalarEvaluator().evaluate(shifted, {"value": (0x32,)}).output == (0,)
     assert ScalarEvaluator().evaluate(rotated, {"value": (0x32,)}).output == (0x91,)
 
@@ -120,10 +127,12 @@ def test_new_word_operations_have_transposed_batch_parity():
 
 
 def test_variable_amount_and_modulus_validation_are_explicit():
-    value_type = ValueType(Word(8), (1,))
-    amounts = ValueType(Word(4), (2,))
-    primitive = Primitive("validation", {"value": value_type, "amount": amounts})
+    array_type = ArrayType(Word(8), (1,))
+    amounts = ArrayType(Word(4), (2,))
+    primitive = Primitive("validation", {"value": array_type, "amount": amounts})
     with pytest.raises(ValueError, match="exactly one word"):
-        VariableRotate(primitive.input("value"), primitive.input("amount"), "left")
+        VariableRotate(primitive.graph.input("value"), primitive.graph.input("amount"), "left")
     with pytest.raises(ValueError, match="2..256"):
-        ModularMultiply((primitive.input("value"), primitive.input("value")), modulus=257)
+        ModularMultiply(
+            (primitive.graph.input("value"), primitive.graph.input("value")), modulus=257
+        )

@@ -67,7 +67,7 @@ class GimliSbox(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = GimliSbox()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x6467d8c407dcf83b', 383)
@@ -102,7 +102,7 @@ class GimliSbox(BitGraphPrimitive):
 
         # round function
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             states = self.round_function(states, 24 - round_number)
 
             # round output

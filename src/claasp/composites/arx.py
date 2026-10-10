@@ -2,7 +2,7 @@
 
 from claasp.components import ModularAdd, Rotate, Xor
 from claasp.domains import Word
-from claasp.graph import CompositeBuilder, CompositeDefinition, ValueType
+from claasp.graph import ArrayType, CompositeBuilder, CompositeDefinition
 
 
 def ChaChaQuarterRound(
@@ -28,9 +28,9 @@ def ChaChaQuarterRound(
     ):
         raise ValueError("rotations must contain four integers in range(word_size)")
 
-    value_type = ValueType(Word(word_size), (1,))
+    array_type = ArrayType(Word(word_size), (1,))
     builder = CompositeBuilder(
-        "ChaChaQuarterRound", {name: value_type for name in ("a", "b", "c", "d")}
+        "ChaChaQuarterRound", {name: array_type for name in ("a", "b", "c", "d")}
     )
     builder.add_round()
     a, b, c, d = (builder.input(name) for name in ("a", "b", "c", "d"))

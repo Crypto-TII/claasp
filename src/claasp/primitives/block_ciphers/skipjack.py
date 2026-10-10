@@ -309,7 +309,7 @@ class Skipjack(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Skipjack()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xaaae8ede6764143d', 64)
@@ -334,7 +334,7 @@ class Skipjack(BitGraphPrimitive):
 
         # 32 rounds
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             counter = round_number + 1
 
             if (1 <= counter <= 8) or (17 <= counter <= 24):

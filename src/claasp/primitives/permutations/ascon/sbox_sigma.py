@@ -46,7 +46,7 @@ class AsconSboxSigma(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = AsconSboxSigma()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x78ea7ae5cfebb108', 319)
@@ -73,7 +73,7 @@ class AsconSboxSigma(BitGraphPrimitive):
         # round function
         for r in range(12 - number_of_rounds, 12):
             # initial current round element
-            self.add_round()
+            self._builder.add_round()
 
             # round parameter
             ci = 0xF0 - r * 0x10 + r * 0x1

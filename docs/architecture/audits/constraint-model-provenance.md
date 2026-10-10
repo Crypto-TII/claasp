@@ -1,0 +1,244 @@
+# Constraint-model provenance audit
+
+## Scope and inventory
+
+This ledger audits the structured `ConstraintModelProvenance` declarations in
+CLAASP 5. It is separate from the legacy-backend recovery inventory: recovery
+answers whether a strategy is represented, while this ledger answers whether
+the exact shipped constraints correspond to a primary source.
+
+The corrected baseline after PR #630 contained 128 declarations on 125 public
+model classes: 9 `VERIFIED`, 79 `N/A`, and 40 `TBD`. Repository-wide discovery also
+found nine public CP constraint generators without any declaration; the old
+component-only coverage test did not inspect trail, query, or lowering models.
+The family audits will close those gaps before the final coverage gate is made
+repository-wide.
+
+After the modular-addition audit below there are 129 declarations on 126
+classes: 10 `VERIFIED`, 78 `N/A`, and 41 `TBD`. The additional declaration
+closes the missing provenance on `SpeckProbabilisticTruncatedCPModel`; the
+status movement is `ModularAddNWindowSATModel` from `N/A` to `VERIFIED`.
+
+After the S-box and linear-layer MILP audit there are still 129 declarations
+on 126 classes: 21 `VERIFIED`, 78 `N/A`, and 30 `TBD`. Eleven declarations
+were matched to primary sources, while three generic finite-relation or
+forbidden-assignment encodings moved from `TBD` to `N/A`.
+
+After the boomerang/BCT audit, the total is unchanged but the distribution is
+24 `VERIFIED`, 77 `N/A`, and 28 `TBD`. The two modular-add boomerang
+declarations moved from `TBD` to `VERIFIED`, and the Speck composition moved
+from `N/A` to `VERIFIED`.
+
+After the differential-linear, continuous, semi-deterministic, and hybrid
+audit, the total remains 129 declarations on 126 classes: 29 `VERIFIED`, 87
+`N/A`, and 13 `TBD`. Four hybrid declarations and the continuous-equation
+model moved to `VERIFIED`; ten direct connectors, wrappers, or mechanical
+lowerings moved to `N/A`. Nested provenance now keeps the unresolved local
+semi-deterministic modular-add relation visible through every wrapper.
+
+After the monomial-prediction and division-property audit, the total remains
+129 declarations on 126 classes: 31 `VERIFIED`, 85 `N/A`, and 13 `TBD`. The
+degree-bound and fixed-cube queries moved from `N/A` to `VERIFIED` after their
+objectives and boundary conditions were matched to the primary source.
+
+The final repository-wide reconciliation covers 143 declarations on all 140
+public SAT, SMT, MILP, and CP classes whose names end in `Model`: 31
+`VERIFIED`, 101 `N/A`, and 11 `TBD`. It closes eight missing CP generators,
+four graph compilers, and two representation containers. The two reduced
+bitwise-AND inequalities moved from `TBD` to `N/A` after exhaustive equivalence
+to their direct finite relations was confirmed.
+
+## Modular addition, subtraction, and truncated variants
+
+The audit compared the current implementation with legacy CLAASP commit
+`3aacc2758059de85682a9c6d0eda2cd75940e747`, the recovery branches recorded in
+the legacy-backend inventory, their introducing commits, comments,
+documentation, bibliography, and tests. The modular-add boomerang automaton is
+audited separately below.
+
+| Models | Status | Evidence and correspondence |
+|---|---|---|
+| `ModularAddDifferentialSATModel`, `ModularAddDifferentialSMTModel` | `VERIFIED` | Lipmaa--Moriai, *Efficient Algorithms for Computing Differential Properties of Addition*, <https://eprint.iacr.org/2001/001>, Section 4, Algorithm 2 and Theorem 1. The LSB parity, adjacent-bit support condition, and unary not-all-equal weight encode the paper's exact support and probability exponent. Legacy helpers explicitly name the Lipmaa--Moriai construction. |
+| `ModularAddLinearSATModel`, `ModularAddLinearSMTModel`, `ModularAddLinearMILPModel` | `VERIFIED` | Liu--Wang--Rijmen, *Automatic Search of Linear Trails in ARX with Applications to SPECK and Chaskey*, DOI `10.1007/978-3-319-39555-5_26`, Section 3.1, Proposition 1 and Equation (1). The mask recurrence, two support inequalities, and unary objective are direct SAT, SMT, and MILP forms of that result. PR #630 repaired the MILP bit-zero support and first parity quotient before this status was retained. |
+| `ModularAddNWindowSATModel` | `VERIFIED` | Bellini--Gérault--Grados--Peyrin, *The Window Heuristic: Automating Differential Trail Search in ARX Ciphers with Partial Linearization Trade-offs*, DOI `10.1007/978-3-031-88661-4_1`, Section 3.1, Definitions 1 and 2, and Section 3.2. The parity clauses define the carry-difference bits, the run clauses prohibit `window_size + 1` consecutive active carries, and the conjunction indicators identify the paper's full windows. |
+| Functional and native-XOR modular add/subtract SAT models | `N/A` | Direct ripple-carry or ripple-borrow circuits generated from full-adder or full-subtractor truth functions; native XOR changes only the parity record. |
+| Deterministic-truncated add SAT plus CP/SMT translations, and deterministic-truncated subtract SAT | `N/A` | Recovered finite paired-carry or paired-borrow Boolean relations with exhaustive semantic parity; CP and SMT preserve those clauses literally. No published construction is needed for the direct relation. |
+| `SpeckARXWindowDifferentialCPModel` | `N/A` | Direct graph composition of the exact transition model with an explicit per-round window bound; it introduces no different constraint construction. |
+| Counter-based probabilistic-truncated modular add in CP and SAT, plus the Speck CP and SAT compositions | `TBD` | The legacy counter/zero-run recurrence and costs `100, 41, 19, 9, 4, 0` have no attribution or derivation in the searched legacy sources. Biryukov et al., ePrint 2021/1194, Sections 3--4 and 6, was inspected and rejected: its dependency-conditioned truncation rules do not implement CLAASP's general ternary carry-choice cost relation. |
+| Look-ahead semi-deterministic modular add SAT and the Speck SAT, MILP, and CP compositions | `TBD` | The pinned window 0--3 templates and three-bit cost code have no primary-source attribution or derivation in legacy source, documentation, bibliography, tests, or introducing history. |
+
+Wallén's modular-add linear analysis (DOI
+`10.1007/978-3-540-39887-5_20`) was inspected but is not attached to the current
+linear models. The implementation uses Liu--Wang--Rijmen's explicit Equation
+(1), rather than Wallén's recursive carry-correlation construction.
+
+### Unresolved-search record
+
+For the two `TBD` constructions, the search covered the primary legacy
+snapshot, `origin/recover/sat-probabilistic-truncated`,
+`origin/recover/sat-probabilistic-trails`,
+`origin/recover/sat-semi-deterministic-trails`,
+`origin/recover/cp-semi-differential-linear`, and the corresponding current
+tests and benchmark records. The CP counter relation entered in commit
+`7a3cb5475f4103425251173bd814c3217bcef8bc`; the SAT look-ahead templates trace
+to commit `cbc559de6c919db0fa15d513fb36ab21f04d46f5`. Neither history contains a
+paper, DOI, URL, or derivation. Searches for the exact cost sequence and
+predicate terminology found no primary source matching the implemented
+constraints, so both families remain `TBD`.
+
+## S-box and linear-layer MILP alternatives
+
+This audit covered legacy commit `3aacc275`, the recovery commits for small
+S-box facets, large-S-box Espresso tables, undisturbed bits, wordwise
+relations, and bitwise XOR, plus their comments, tests, bibliography, and
+introducing history. Bundled inequality systems are independently checked
+against every DDT, LAT, or four-state input point when loaded.
+
+| Models | Status | Evidence and correspondence |
+|---|---|---|
+| Differential S-box convex-hull and greedy MILP models | `VERIFIED` | Sun et al., *Towards Finding the Best Characteristics of Some Bit-oriented Block Ciphers and Automatic Enumeration of (Related-key) Differential and Linear Characteristics with Predefined Properties*, <https://eprint.iacr.org/2014/747>, Section 3, Fact 1 and Algorithm 1, and Section 5, Equation (6). The implementation constructs an H-representation for each nonzero DDT-count class and greedily selects the facet excluding the most remaining invalid Boolean points; selectors carry the class weight into the objective. |
+| Differential S-box minimum-facet MILP model | `VERIFIED` | Sasaki--Todo, *New Algorithm for Modeling S-box in MILP Based Differential and Division Trail Search*, DOI `10.1007/978-3-319-69284-5_11`, Section 3. One binary variable selects each candidate facet, each invalid point has a covering constraint, and the objective minimizes selected facets. |
+| Differential S-box Espresso MILP model | `VERIFIED` | Abdelkhalek--Sasaki--Todo--Tolba--Youssef, *MILP Modeling for (Large) S-boxes to Optimize Probability of Differential Characteristics*, DOI `10.13154/tosc.v2017.i4.99-129`, Sections 3.1--3.2 and Section 4.1, Definition 1. CLAASP separates the DDT by nonzero count, stores Espresso-minimized product-of-sums clauses, selects one count class conditionally, and applies its logarithmic weight. |
+| Signed-LAT convex-hull, greedy, minimum, and Espresso MILP models | `TBD` | The legacy code mechanically substitutes signed LAT-count classes. Sun et al. establish linear-mask convex-hull support, Sasaki--Todo establish differential/division facet reduction, and Abdelkhalek et al. state linear applicability, but none of the inspected constructions specifies CLAASP's complete signed-count selectors and absolute-correlation objective. |
+| One-hot DDT/LAT S-box models and both undisturbed-bit S-box models | `N/A` | The relations are enumerated directly from the supplied S-box. The compact undisturbed model merely applies generic Espresso minimization to Boolean projections of that exhaustive finite relation; the cited undisturbed-bit literature supplies the concept, not this encoding. |
+| Wordwise XOR and dense-MDS component models, including their Espresso variants, and the SAT/CP/MILP deterministic wordwise graph models | `VERIFIED` | Sun--Gerault--Wang--Wang, *On the Usage of Deterministic (Related-Key) Truncated Differentials and Multidimensional Linear Approximations for SPN Ciphers*, DOI `10.13154/tosc.v2020.i3.262-287`, Section 2.1, Lemmas 1--4, Section 3.1, and Section 3.2, Models 1--5. The four `Z/N/N*/U` states, value-bearing XOR cases, bijective S-box mapping, and dense-MDS propagation match the published relations; one-hot and Espresso forms encode the same checked rows. |
+| Parity-quotient XOR, impossible-point XOR, and the conservative wordwise impossible boundary | `N/A` | These are direct algebraic, generic forbidden-assignment, or finite selector encodings. The four wordwise contradiction pairs are intentionally weaker than the value-sensitive miss-in-the-middle construction in Sun et al. and are not attributed to it. |
+
+### Unresolved-search record
+
+For the four signed-LAT alternatives, the search inspected legacy generators
+and cached systems, recovery and introducing history, Sun et al. ePrint
+2014/747 including Appendix A, Sasaki--Todo's Section 3, Abdelkhalek et al.
+Sections 3--4, and Sun--Wang's 2023 SAT treatment. These sources support the
+individual ideas or a different backend, but no primary source was found for
+the implemented combination of signed Walsh-count classes, class selectors,
+and absolute-correlation objective. The four declarations therefore remain
+`TBD` rather than inheriting a citation by analogy.
+
+## Boomerang and BCT models
+
+The public boomerang constraint models are CP-only. The audit covered the
+legacy ARX-optimized model and its fixed BCT predicate, the experimental
+`hadipour_boomerang_model` and `adding_boomerang_checker` branches, all four
+recovery commits, their tests, benchmarks, bibliography, and primary sources.
+
+| Models | Status | Evidence and correspondence |
+|---|---|---|
+| `SBoxBoomerangCPModel` | `VERIFIED` | Cid--Huang--Peyrin--Sasaki--Song, *Boomerang Connectivity Table: A New Cryptanalysis Tool*, DOI `10.1007/978-3-319-78375-8_22`, Section 3.1, Equation (4) and Definition 3.1. CLAASP enumerates exactly the inverse-S-box equality in Equation (4), records its solution count, and exposes every nonzero BCT entry through a generic MiniZinc table. |
+| `ModularAddBoomerangCPModel` | `VERIFIED` | Wang--Wang--Sun, *SAT-aided Automatic Search of Boomerang Distinguishers for ARX Ciphers (Long Paper)*, DOI `10.46586/tosc.v2023.i1.152-191`, Section 2.2, Equation (1), Section 3.1, Definition 5 and Algorithm 1, and Section 4.1, Algorithm 3. The four boundaries are the paper's `delta_l`, `delta_r`, `nabla_l`, and `nabla_r`; each row existentially enumerates the two data bits and advances the paired addition/subtraction state, while final-state reachability decides whether the modular-add BCT entry is nonzero. |
+| `ModularAddBoomerangTrailCPModel` | `VERIFIED` | Wang--Wang--Sun, Section 4.3, first automatic-search framework, Steps 1 and 2. CLAASP namespaces exact upper and lower differential models, joins them through a nonzero modular-add BCT entry, minimizes the upper-plus-lower characteristic weights, and computes the switch count independently after solving. |
+| `SpeckBoomerangCPModel` | `VERIFIED` | Wang--Wang--Sun, Section 5.1, first two paragraphs and Figure 4. The graph is split into `E0`, one modular addition `Em`, and `E1`; the full mode links all four switch differences and uses the Section 4.3 objective. |
+| `SBoxBoomerangTrailCPModel` | `N/A` | Direct namespacing and wiring of two bounded PRESENT-2 queries to one selected BCT table. The composed query retains the nested verified switch declaration without attributing the wrapper itself to the BCT paper. |
+
+### Unresolved-search record
+
+Cid et al., Section 6.2, Equation (9), was inspected but covers only the
+fixed-addend `nabla_r = 0` special case, so it is not used for the shipped
+four-difference modular-add model. Kim--Kwon--Song, DOI
+`10.1587/transfun.2019EAP1083`, was also identified as a bitwise predecessor;
+its restricted primary full text could not be inspected. Wang--Wang--Sun gives
+the complete accessible recurrence and automatic-search construction used by
+the VERIFIED declarations. The experimental Hadipour branch's unspecified
+“SAT-AIDED paper” comment was not itself treated as citation evidence.
+
+The selected PRESENT composition joins only one boundary nibble and permits
+probability-one ladder-switch entries; it is not evidence for a complete
+middle S-box layer. The follow-up correctness PR repairs the independently
+found public boomerang-weight formula as `2 * upper + switch + 2 * lower`;
+the solver's legacy upper-plus-lower search objective remains explicitly
+separate.
+
+## Differential-linear, continuous, semi-deterministic, and hybrid models
+
+This family audit covered legacy commit `3aacc275`, the SAT corrective and
+paired-input branches, the MiniZinc cleanup branch, all relevant recovery
+commits and benchmarks, current tests, bibliography, comments, and introducing
+history. Published constraints were compared with the code relation by
+relation; a paper defining differential-linear or impossible cryptanalysis was
+not treated as evidence for a particular connector.
+
+| Models | Status | Evidence and correspondence |
+|---|---|---|
+| `SpeckContinuousHeuristicCPModel` | `VERIFIED` | Bellini--Gérault--Grados--Makarim--Peyrin, *Fully Automated Differential-Linear Attacks Against ARX Ciphers*, DOI `10.1007/978-3-031-30872-7_10`, Section 2.3, Propositions 1--4, and Section 3, Equations (3)--(5). CLAASP uses the published `-xy` XOR correlation, `1/4(x+y+z+xyz)` majority recurrence, rotations, carry seed, modular-add product, and Speck32/64 wiring. The declaration verifies the equations, not the independence assumptions: results remain explicitly heuristic and never proof-shaped. |
+| `SpeckContinuousMaskOptimizationCPModel` | `N/A` | For one fixed vector of magnitudes in `[0,1]`, every nonempty product is at most each selected factor, so the strongest product is one maximum-magnitude position. This direct argmax wrapper retains the nested VERIFIED continuous-equation declaration and is not represented as the paper's global MIQCP search. |
+| `HybridImpossibleBoundaryCPModel`, `HybridXorCPModel`, `HybridSBoxCPModel`, `PresentHybridImpossibleCPModel` | `VERIFIED` | Bellini--De Piccoli--Gérault--Huynh--Pelizzola--Visconti, *Impossible Differentials Automation: Model Generation and New Techniques*, DOI `10.1007/978-3-032-10536-3_6`, Section 4.2, “Data representation,” “Extended modeling of a bijective S-box,” “Extended modeling of the XOR,” and “Objective function.” CLAASP's unique nonlinear tags, DDT-derived undisturbed alternative, tag-through-zero XOR rule, bit contradiction, and nonzero-tag-versus-zero group contradiction implement those definitions. Multiples of ten are only collision-free concrete tag identifiers; the whole PRESENT model composes the generic construction over exact P-layer wiring. |
+| `DifferentialToTruncatedSATModel`, `TruncatedToLinearSATModel`, and deterministic-middle SAT, CP, and MILP differential-linear compositions | `N/A` | The upper connector is direct equality between an exact bit and a canonical non-unknown ternary bit. The lower connector directly forbids an active mask at an unknown middle bit. The whole models only slice, namespace, wire, and mechanically lower independently declared relations. |
+| Semi-deterministic Speck and differential-linear SAT, CP, and MILP wrappers | `N/A` | Their own constraints are direct Speck wiring, namespacing, boundary relations, or literal backend lowering. Each formula now retains the nested `TBD` declaration for the local look-ahead-window modular-add relation instead of assigning the wrapper the unresolved status. |
+| `ModularAddSemiDeterministicTruncatedSATModel` | `TBD` | The four pinned window templates and three-bit cost code remain unattributed and underived. This is the single unresolved construction shared by the direct wrappers above. |
+| `SharedDifferencePairedWordDifferentialSATModel`, `SharedDifferencePairedWordDifferentialLinearSATModel` | `TBD` | Legacy describes a high-order intent but implements two shared-input-difference trails, modular-add output mutual exclusion, and, for the linear suffix, an active-mask-to-two-zero-differences boundary. No inspected source establishes those exact exclusions or the boundary; the models are not exact four-copy evaluation. |
+
+### Unresolved-search record
+
+The discrete audit inspected legacy branches `af85330e`, `b055080a`, and
+`34d010b7`; recovery commits for deterministic and semi-deterministic
+differential-linear assembly; and the introducing paired-input commits
+`5dd99c2f` and `5d8214f0`. Bellini et al.'s continuous paper was inspected and
+rejected for the discrete connectors and look-ahead templates: its Equations
+(3)--(5) cover real-valued continuous propagation, not those Boolean
+relations. Exact searches for the cost sequence `100, 41, 19, 9, 4, 0`, the
+legacy predicate terminology, and the shared-difference exclusions found no
+matching primary construction. The local semi-deterministic relation and two
+paired-input models therefore remain `TBD` with their unresolved constraint
+semantics stated explicitly.
+
+## Monomial prediction and division-property models
+
+This audit covered current local ANF transitions, graph lowering, reduced
+PRESENT composition, degree and cube queries, their independent tests, legacy
+commit `3aacc275`, and the audited legacy inventory. The legacy Gurobi model
+builds the same ANF transitions and objectives, but carries no literature
+citation; the correspondence below was therefore checked directly against the
+primary source.
+
+| Models | Status | Evidence and correspondence |
+|---|---|---|
+| `MonomialTransitionMILPModel` | `VERIFIED` | Hu--Sun--Wang--Wang, *An Algebraic Formulation of the Division Property: Revisiting Degree Evaluations, Cube Attacks, and Key-Independent Sums*, <https://eprint.iacr.org/2020/1048>, Section 3, the local `x^u -> y^v` relation and Definition 1. CLAASP multiplies the selected coordinate ANFs, retains exactly the input monomials with odd coefficient, and selects one resulting local transition. |
+| `BooleanMonomialGraphMILPModel` | `VERIFIED` | Hu--Sun--Wang--Wang, Section 4.2, “MILP Model for the monomial trail of f^(i).” The implementation uses exactly the listed COPY, AND, and XOR relations and direct renaming for rotations and permutations; arbitrary fan-out and arity are repeated forms of those local rules. |
+| `PresentMonomialTrailMILPModel` | `VERIFIED` | Hu--Sun--Wang--Wang, Section 3, Definition 1, and Section 4.2. The model composes exact S-box ANF transitions into a trail and renames bits through the P-layer. It is deliberately a reduced S-box/P-layer region, not a claim that the paper publishes a complete keyed PRESENT model. |
+| `MonomialDegreeMILPModel` | `VERIFIED` | Hu--Sun--Wang--Wang, Section 4.1, Equation (1), Steps 1--2, and the paragraph introducing the MILP approach. CLAASP fixes a unit output exponent and maximizes the input exponent weight. The decoded optimum remains a reachability upper bound unless parity is established separately. |
+| `CubeMonomialFeasibilityMILPModel` | `VERIFIED` | Hu--Sun--Wang--Wang, Section 3, Lemma 1, and Section 5.1's `x^(u xor w) -> f` recovery relation. CLAASP fixes the complete selected cube exponent and asks the graph relation for feasibility. Infeasibility soundly excludes that term; feasibility does not prove a nonzero coefficient because multiple trails can cancel. |
+| `CubeSuperpolyQuery` | `N/A` (non-constraint query) | This bounded oracle exhaustively evaluates the cube and symbolic subspace and applies the generic Boolean Möbius transform. It emits no constraint model and accounts for cancellation directly, so it is intentionally outside structured constraint-model provenance coverage. |
+
+### Limitation record
+
+The published monomial-prediction MILP establishes reachability, not the parity
+of all trails. Consequently neither a feasible cube query nor a maximum-degree
+witness alone proves that the corresponding ANF coefficient is nonzero. CLAASP
+keeps that distinction explicit: the MILP query results are bounds or exclusion
+tests, while `CubeSuperpolyQuery` computes coefficients by exhaustive finite
+evaluation. Independent tests recompute local S-box transitions from ANF
+products and validate complete returned assignments.
+
+## Final repository-wide coverage reconciliation
+
+The closure test recursively imports the SAT, SMT, MILP, and CP representation
+packages and discovers every public class ending in `Model`. It uses no class
+name allowlist: each discovered class must own either one
+`model_provenance` declaration or a nonempty `model_provenance_by_kind`
+mapping. The test pins the 140-class, 143-declaration inventory and its status
+distribution, so a newly public model cannot silently escape classification.
+
+| Newly closed surface | Status | Rationale |
+|---|---|---|
+| `PresentDifferentialCPModel`, `PresentLinearCPModel` | `N/A` | Direct DDT or signed-LAT row enumeration plus literal PRESENT permutation wiring. |
+| `SpeckDifferentialCPModel`, `SpeckTruncatedCPModel` | `N/A` | Direct composition or fixing of independently checked finite modular-add and three-valued round relations. |
+| `ImpossibleBoundaryCPModel`, `SpeckImpossibleCPModel`, `SimonImpossibleCPModel` | `N/A` | Direct forward/backward propagation and explicit known-bit contradiction predicates; no published encoding is claimed. |
+| `WordwiseDifferenceCPModel` | `N/A` | Literal enum-and-value encoding of caller-supplied typed states. |
+| `BooleanCNFModel`, `BooleanNativeXorModel`, `BooleanSMTModel`, `BooleanGraphMILPModel` | `N/A` | Provenance-transparent graph compilers. They compose declared component encodings or translate clauses exactly and retain the originating declarations. |
+| `MiniZincModel`, `MILPModel` | `N/A` | Immutable representation containers; they introduce no mathematical constraints. |
+| `BitwiseAndXorDifferentialMILPModel`, `BitwiseAndXorLinearMILPModel` | `N/A` | Direct compact inequalities exhaustively equivalent to all one-bit DDT or LAT rows and their one-hot baselines. No primary-source construction is needed. |
+
+`BooleanMiniZincLowerer`, `SMTFormula.from_cnf`, and `cnf_to_milp` are
+provenance-transparent translation operations rather than public `Model`
+classes; tests require them to preserve the input declarations exactly.
+`CubeSuperpolyQuery` is an exhaustive evaluation oracle, and the polynomial
+representation package is an algebraic-system API outside the four-backend
+`ConstraintModelProvenance` contract. Neither is silently counted as a
+constraint model.
+
+The 11 remaining `TBD` declarations are deliberate research records: four
+signed-LAT inequality strategies, the local semi-deterministic modular-add
+relation, the SAT and CP counter-based probabilistic-truncated relation and
+their two Speck compositions, and two shared-difference paired-input SAT
+models. Their searched sources and unresolved correspondence are recorded in
+the family sections above.

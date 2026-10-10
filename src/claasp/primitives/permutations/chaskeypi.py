@@ -42,7 +42,7 @@ class ChaskeyPi(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = ChaskeyPi()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -89,7 +89,7 @@ class ChaskeyPi(BitGraphPrimitive):
             state.append(BitState([INPUT_PLAINTEXT], [bit_positions]))
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             state = self.round_function(state)
 
             inputs_id, inputs_pos = get_inputs_parameter(state)

@@ -1295,7 +1295,7 @@ class UKNIT(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = UKNIT()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x34af0b3c687e424', 58)
@@ -1315,7 +1315,7 @@ class UKNIT(BitGraphPrimitive):
 
         self.nrounds = min(len(ROUND_D_CYCLES), number_of_rounds)
 
-        self.add_round()
+        self._builder.add_round()
 
         key_schedule_matrix = transpose_matrix(matrix_from_bit_function(apply_key_schedule_matrix))
         lfsr_matrix = transpose_matrix(matrix_from_bit_function(apply_lfsr))
@@ -1355,7 +1355,7 @@ class UKNIT(BitGraphPrimitive):
         state = INPUT_PLAINTEXT
 
         for round_number in range(self.nrounds):
-            self.add_round()
+            self._builder.add_round()
 
             round_key_id, round_key_positions = round_keys[round_number]
 

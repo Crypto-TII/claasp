@@ -36,7 +36,7 @@ def register_realizations(canonical, entries):
     names = tuple(descriptor.name for descriptor, _ in frozen)
     if len(names) != len(set(names)):
         raise ValueError(f"duplicate realization names for {canonical.__name__}")
-    canonical.REALIZATIONS = tuple(descriptor for descriptor, _ in frozen)
-    canonical.REALIZATION_BUILDERS = MappingProxyType(
+    canonical._realizations = tuple(descriptor for descriptor, _ in frozen)
+    canonical._realization_builders = MappingProxyType(
         {descriptor.name: builder for descriptor, builder in frozen}
     )

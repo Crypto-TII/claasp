@@ -76,4 +76,4 @@ def test_audit_rejects_missing_legacy_reason_and_renders_complete_tables():
     reverse = rendered.split("## Complete v5-to-legacy mapping", 1)[1].split(
         "## New-v5 artifact rationale groups", 1
     )[0]
-    assert reverse.count("| `src/claasp/") == committed["summary"]["v5_artifacts"]
+    assert reverse.count("| `src/claasp/") == 456

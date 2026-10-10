@@ -1,0 +1,31 @@
+{
+  "environment": {
+    "image": "claasp-v5-espresso:test",
+    "platform": "Linux arm64",
+    "python": "3.12.3"
+  },
+  "results": [
+    {
+      "construction_seconds_median": 0.000111,
+      "constraints": 160,
+      "declarations": 10,
+      "model": "SpeckContinuousHeuristicCPModel",
+      "solver_seconds_median": 0.060734,
+      "status": "satisfied"
+    },
+    {
+      "construction_seconds_median": 0.000125,
+      "constraints": 192,
+      "declarations": 11,
+      "model": "SpeckContinuousMaskOptimizationCPModel",
+      "solver_seconds_median": 0.058962,
+      "status": "satisfied"
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "description": "fixed-input two-round continuous Speck32 heuristic with exact nonempty output-mask selection",
+    "repeats": 10,
+    "solver": "MiniZinc/Gecode"
+  }
+}

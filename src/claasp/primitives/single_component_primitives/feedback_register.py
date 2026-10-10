@@ -6,7 +6,7 @@ from claasp.components import (
 from claasp.components import (
     FeedbackRegisterParameters,
 )
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 
 class FeedbackRegister(Primitive):
@@ -30,7 +30,7 @@ class FeedbackRegister(Primitive):
     EXAMPLES::
 
         >>> primitive = FeedbackRegister()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -44,14 +44,16 @@ class FeedbackRegister(Primitive):
             raise TypeError("parameters must be FeedbackRegisterParameters")
         super().__init__(
             "feedback_register",
-            {"input": ValueType(parameters.domain, (parameters.unit_count,))},
+            {"input": ArrayType(parameters.domain, (parameters.unit_count,))},
             kind=PrimitiveKind.FUNCTION,
         )
-        self.add_round()
-        output = self.add_component(
-            FeedbackRegisterComponent(self.input("input"), parameters.registers, parameters.clocks)
+        self._builder.add_round()
+        output = self._builder.add_component(
+            FeedbackRegisterComponent(
+                self.graph.input("input"), parameters.registers, parameters.clocks
+            )
         )
-        self.set_output(output)
+        self._builder.set_output(output)
 
 
 __all__ = ["FeedbackRegister"]

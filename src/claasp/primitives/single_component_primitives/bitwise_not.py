@@ -2,7 +2,7 @@
 
 from claasp.components import BitwiseNot as BitwiseNotComponent
 from claasp.domains import Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 from ._base import positive
 
@@ -22,7 +22,7 @@ class BitwiseNot(Primitive):
     EXAMPLES::
 
         >>> primitive = BitwiseNot()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xf', 4)
@@ -30,10 +30,12 @@ class BitwiseNot(Primitive):
 
     def __init__(self, bit_size: int = 4) -> None:
         bit_size = positive(bit_size, "bit_size")
-        value_type = ValueType(Word(bit_size), (1,))
-        super().__init__("not", {"input": value_type}, kind=PrimitiveKind.PERMUTATION)
-        self.add_round()
-        self.set_output(self.add_component(BitwiseNotComponent(self.input("input"))))
+        array_type = ArrayType(Word(bit_size), (1,))
+        super().__init__("not", {"input": array_type}, kind=PrimitiveKind.PERMUTATION)
+        self._builder.add_round()
+        self._builder.set_output(
+            self._builder.add_component(BitwiseNotComponent(self.graph.input("input")))
+        )
 
 
 __all__ = ["BitwiseNot"]

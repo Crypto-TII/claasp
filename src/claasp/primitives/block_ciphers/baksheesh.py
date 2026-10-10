@@ -38,7 +38,7 @@ class Baksheesh(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Baksheesh()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xc002be5e64c78a72', 128)
@@ -61,7 +61,7 @@ class Baksheesh(BitGraphPrimitive):
         key = ([INPUT_KEY], [list(range(key_bit_size))])
 
         # 1) Whitening
-        self.add_round()
+        self._builder.add_round()
         xor = self.add_xor_component(state[0] + key[0], state[1] + key[1], block_bit_size)
         state = ([xor.id], [list(range(block_bit_size))])
 
@@ -74,7 +74,7 @@ class Baksheesh(BitGraphPrimitive):
             xor = self.add_xor_component(state[0] + key[0], state[1] + key[1], block_bit_size)
             state = ([xor.id], [list(range(block_bit_size))])
             self.add_round_output_component(state[0], state[1], block_bit_size)
-            self.add_round()
+            self._builder.add_round()
 
         # Last round
         state = self.apply_sbox_layer(state)

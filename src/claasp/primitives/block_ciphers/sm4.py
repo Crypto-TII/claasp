@@ -26,7 +26,7 @@ class SM4(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = SM4()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x9f1f7bff6f551138', 128)
@@ -270,7 +270,7 @@ class SM4(BitGraphPrimitive):
                     }
                 )
                 if i < self.NROUNDS - 1:
-                    self.add_round()
+                    self._builder.add_round()
 
             C0 = X[self.NROUNDS + 3]
             C1 = X[self.NROUNDS + 2]
@@ -278,7 +278,7 @@ class SM4(BitGraphPrimitive):
             C3 = X[self.NROUNDS]
             return C0, C1, C2, C3
 
-        self.add_round()
+        self._builder.add_round()
         C0, C1, C2, C3 = encrypt_block(self, INPUT_PLAINTEXT, INPUT_KEY, word_bits)
         self.add_primitive_output_component(
             [C0["id"], C1["id"], C2["id"], C3["id"]],

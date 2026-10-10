@@ -12,7 +12,7 @@ class Power(Component):
 
     EXAMPLES::
 
-        >>> from claasp import PrimeField
+        >>> from claasp.domains import PrimeField
         >>> from claasp.primitives.single_component_primitives import Power as PowerPrimitive
         >>> PowerPrimitive(3, domain=PrimeField(17)).evaluate(5)
         6
@@ -30,6 +30,6 @@ class Power(Component):
             raise ValueError("exponent must be positive")
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
-        object.__setattr__(self, "output_type", component_input.value_type)
+        object.__setattr__(self, "output_type", component_input.array_type)
         object.__setattr__(self, "exponent", exponent)
         Component.__post_init__(self)

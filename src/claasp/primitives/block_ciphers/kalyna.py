@@ -26,7 +26,7 @@ class Kalyna(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Kalyna()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x1cd25b63bebfba48', 125)
@@ -152,7 +152,7 @@ class Kalyna(BitGraphPrimitive):
             8,
         ]
 
-        self.add_round()
+        self._builder.add_round()
         S0 = self.add_constant_component(
             self.PRIMITIVE_BLOCK_SIZE, 0x00000000000000000000000000000005
         )
@@ -505,7 +505,7 @@ class Kalyna(BitGraphPrimitive):
         k0_first = even_round_keys[0]["first_half"]
         k0_second = even_round_keys[0]["second_half"]
 
-        # self.add_round()
+        # self._builder.add_round()
         first_half = self.add_modadd_component(
             [k0_first.id, INPUT_PLAINTEXT],
             [
@@ -524,7 +524,7 @@ class Kalyna(BitGraphPrimitive):
             self.PRIMITIVE_BLOCK_SIZE // 2,
         )
         for k in range(1, self.NROUNDS):
-            self.add_round()
+            self._builder.add_round()
             sboxes_components = []
             for i in range(self.PRIMITIVE_BLOCK_SIZE // 16):
                 sboxes_components.append(
@@ -609,7 +609,7 @@ class Kalyna(BitGraphPrimitive):
                 self.PRIMITIVE_BLOCK_SIZE,
             )
 
-        self.add_round()
+        self._builder.add_round()
         sboxes_components = []
         for i in range(self.PRIMITIVE_BLOCK_SIZE // 16):
             sboxes_components.append(

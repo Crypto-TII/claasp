@@ -9,7 +9,7 @@ from claasp.primitives import Present
 
 def test_equal_sboxes_group_by_semantics_not_component_id_or_source():
     primitive = Present(number_of_rounds=2)
-    sboxes = tuple(item for item in primitive.components if isinstance(item, BitVectorSBox))
+    sboxes = tuple(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
     groups = semantic_component_groups(primitive, PropertyDomain.LOOKUP_TABLE)
     sbox_groups = tuple(
         group for group in groups if isinstance(group.representative, BitVectorSBox)
@@ -24,7 +24,9 @@ def test_equal_sboxes_group_by_semantics_not_component_id_or_source():
 
 def test_analysis_domain_is_part_of_semantic_group_identity():
     component = next(
-        item for item in Present(number_of_rounds=1).components if isinstance(item, BitVectorSBox)
+        item
+        for item in Present(number_of_rounds=1).graph.components
+        if isinstance(item, BitVectorSBox)
     )
     lookup = semantic_component_key(component, PropertyDomain.LOOKUP_TABLE)
     boolean = semantic_component_key(component, PropertyDomain.BOOLEAN)
@@ -35,12 +37,12 @@ def test_analysis_domain_is_part_of_semantic_group_identity():
 
 def test_structural_bindings_are_not_discovered_as_components():
     primitive = Present(number_of_rounds=1)
-    assert primitive.bindings
+    assert primitive.graph.bindings
     groups = semantic_component_groups(primitive, PropertyDomain.BOOLEAN)
 
-    assert sum(group.count for group in groups) == len(primitive.components)
-    assert sum(group.count for group in groups) != len(primitive.components) + len(
-        primitive.bindings
+    assert sum(group.count for group in groups) == len(primitive.graph.components)
+    assert sum(group.count for group in groups) != len(primitive.graph.components) + len(
+        primitive.graph.bindings
     )
     assert all(occurrence.graph_location for group in groups for occurrence in group.occurrences)
 

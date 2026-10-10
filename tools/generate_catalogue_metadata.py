@@ -82,6 +82,20 @@ DRIVERS = (
         "claasp.drivers.solvers.minizinc:MiniZincSolver",
     ),
     (
+        "kissat",
+        "solver",
+        "executable",
+        "kissat",
+        "claasp.drivers.solvers.kissat:KissatSolver",
+    ),
+    (
+        "cryptominisat",
+        "solver",
+        "executable",
+        "cryptominisat5",
+        "claasp.drivers.solvers.cryptominisat:CryptoMiniSatSolver",
+    ),
+    (
         "minisat",
         "solver",
         "executable",
@@ -299,7 +313,7 @@ REPRESENTATIONS = (
         "claasp.representations.constraints.sat:BooleanCNFModel",
         BOOLEAN_CNF_COMPONENTS,
         {"Bit", "Word"},
-        {"minizinc", "minisat", "z3", "glpk"},
+        {"minizinc", "kissat", "cryptominisat", "minisat", "z3", "glpk"},
         "generic_graph",
     ),
     (
@@ -501,7 +515,7 @@ REPRESENTATIONS = (
 ANALYSES = (
     (
         "component_property",
-        "Primitive.analyze().component_property",
+        "Primitive.analysis.component_property",
         "component_property",
         "qualified",
         {"component_properties"},
@@ -512,7 +526,7 @@ ANALYSES = (
     ),
     (
         "avalanche",
-        "Primitive.analyze().avalanche",
+        "Primitive.analysis.avalanche",
         "statistical",
         "empirical",
         {"concrete_execution"},
@@ -523,18 +537,18 @@ ANALYSES = (
     ),
     (
         "enumerate_solutions",
-        "Primitive.analyze().enumerate_solutions",
+        "Primitive.analysis.enumerate_solutions",
         "constraint",
         "exact",
         {"boolean_cnf"},
-        {"minizinc", "minisat", "z3", "glpk"},
+        {"minizinc", "kissat", "cryptominisat", "minisat", "z3", "glpk"},
         set(),
         set(),
         None,
     ),
     (
         "enumerate_xor_differential_trails",
-        "Primitive.analyze().enumerate_xor_differential_trails",
+        "Primitive.analysis.enumerate_xor_differential_trails",
         "xor_differential",
         "exact_characteristic",
         {"word_differential_smt"},
@@ -545,7 +559,7 @@ ANALYSES = (
     ),
     (
         "enumerate_xor_linear_trails",
-        "Primitive.analyze().enumerate_xor_linear_trails",
+        "Primitive.analysis.enumerate_xor_linear_trails",
         "xor_linear",
         "exact_characteristic",
         {"word_linear_smt"},
@@ -563,22 +577,22 @@ ANALYSES = (
         {"minisat"},
         set(),
         set(),
-        "capability-based Word graph support; specialized dependency-free PRESENT/Speck slices",
+        "capability-based graph support; specialized dependency-free PRESENT/Speck slices",
     ),
     (
         "find_lowest_weight_xor_differential_trail",
-        "Primitive.analyze().find_lowest_weight_xor_differential_trail",
+        'Primitive.analysis.find_optimal_trail(kind="xor_differential")',
         "xor_differential",
         "exact",
         {"word_differential_sat"},
         {"minisat"},
         set(),
         set(),
-        "capability-based Word graph support plus specialized PRESENT/Speck slices",
+        "capability-based graph support plus specialized PRESENT/Speck slices",
     ),
     (
         "find_lowest_weight_xor_linear_trail",
-        "Primitive.analyze().find_lowest_weight_xor_linear_trail",
+        'Primitive.analysis.find_optimal_trail(kind="xor_linear")',
         "xor_linear",
         "exact",
         {"word_linear_sat"},
@@ -589,7 +603,7 @@ ANALYSES = (
     ),
     (
         "is_xor_differential_transition_possible",
-        "Primitive.analyze().is_xor_differential_transition_possible",
+        "Primitive.analysis.is_xor_differential_transition_possible",
         "component_transition",
         "exact",
         {"sbox_transition_table"},
@@ -600,22 +614,22 @@ ANALYSES = (
     ),
     (
         "recover_input",
-        "Primitive.analyze().recover_input",
+        "Primitive.analysis.recover_input",
         "constraint",
         "exact",
         {"boolean_cnf"},
-        {"minizinc", "minisat", "z3", "glpk"},
+        {"minizinc", "kissat", "cryptominisat", "minisat", "z3", "glpk"},
         set(),
         set(),
         None,
     ),
     (
         "solve",
-        "Primitive.analyze().solve",
+        "Primitive.analysis.solve",
         "constraint",
         "exact",
         {"boolean_cnf"},
-        {"minizinc", "minisat", "z3", "glpk"},
+        {"minizinc", "kissat", "cryptominisat", "minisat", "z3", "glpk"},
         set(),
         set(),
         None,
@@ -720,16 +734,20 @@ def build_catalogue() -> dict:
                 else {
                     "official_name": name,
                     "input_roles": [
-                        descriptor.role for descriptor in primitive.input_descriptors.values()
+                        descriptor.role for descriptor in primitive.graph.input_descriptors.values()
                     ],
                     "bijectivity_obligation": fallback_obligation,
                     "classification_basis": fallback_basis,
                 }
             )
-            component_names = {type(component).__name__ for component in primitive.components}
+            component_names = {type(component).__name__ for component in primitive.graph.components}
             domain_names = {
-                type(port.value_type.domain).__name__ for port in primitive.input_ports.values()
-            } | {type(component.output_type.domain).__name__ for component in primitive.components}
+                type(port.array_type.domain).__name__
+                for port in primitive.graph.input_ports.values()
+            } | {
+                type(component.output_type.domain).__name__
+                for component in primitive.graph.components
+            }
             labels = []
             if name in EQUIVALENT_EXPORTS:
                 labels.append("equivalent_realization")
@@ -759,7 +777,7 @@ def build_catalogue() -> dict:
                             "role": descriptor.role,
                             "visibility": descriptor.visibility.value,
                         }
-                        for input_name, descriptor in primitive.input_descriptors.items()
+                        for input_name, descriptor in primitive.graph.input_descriptors.items()
                     ],
                     "bijectivity_obligation": classification["bijectivity_obligation"],
                     "components": sorted(component_names),

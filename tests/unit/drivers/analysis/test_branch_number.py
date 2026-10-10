@@ -11,7 +11,7 @@ from claasp.drivers.analysis import (
     BoundedBranchNumberDriver,
     MiniZincBranchNumberDriver,
 )
-from claasp.graph import Port, ValueType
+from claasp.graph import ArrayType, Port
 
 ASYMMETRIC = (
     (0, 0, 0, 1),
@@ -22,7 +22,7 @@ ASYMMETRIC = (
 
 
 def _component():
-    return LinearMap(Port("x", ValueType(Bit(), (4,))), ASYMMETRIC)
+    return LinearMap(Port("x", ArrayType(Bit(), (4,))), ASYMMETRIC)
 
 
 def _request(kind=ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER):
@@ -48,7 +48,7 @@ def test_bounded_driver_becomes_exact_on_complete_support_coverage():
 
 def test_bounded_driver_can_prove_exactness_at_mathematical_lower_bound():
     identity = LinearMap(
-        Port("x", ValueType(Bit(), (4,))),
+        Port("x", ArrayType(Bit(), (4,))),
         ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1)),
     )
     result = BoundedBranchNumberDriver(1).analyze(identity, _request())

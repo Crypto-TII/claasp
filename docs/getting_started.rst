@@ -1,66 +1,169 @@
 Getting started
 ===============
 
-Installation
-------------
+Install CLAASP
+--------------
 
-Install the development package from the repository root:
+CLAASP requires Python 3.11 or later. From the repository root, create a
+virtual environment and install the package:
 
 .. code-block:: console
 
+   python -m venv .venv
+   source .venv/bin/activate
    python -m pip install -e .
 
-No SageMath or solver is needed to construct and evaluate primitives.
+On Windows PowerShell, activate the environment with
+``.venv\Scripts\Activate.ps1``. Confirm that the installation works with:
 
-Evaluate AES
-------------
+.. code-block:: console
 
-Inputs and outputs of traditional block ciphers are ordinary packed integers.
-The primitive knows its block, key, unit sizes, and byte ordering.
+   python -c "import claasp; print('CLAASP import OK')"
+
+Choose a primitive
+------------------
+
+Ready-to-use primitives have short imports from ``claasp.primitives``.
+``details()`` summarizes the selected configuration:
 
 .. doctest::
 
    >>> from claasp.primitives import AES
    >>> aes = AES()
+   >>> aes.details()
+   Primitive details
+     Type: block cipher
+     Instance: AES-128
+     Inputs:
+       plaintext: 128 bits (public)
+       key: 128 bits (secret)
+     Output: 128 bits
+     Rounds: 10
+     Realization: lookup
+
+In an interactive Python shell or notebook, type ``aes.`` and press Tab.
+Routine operations stay on ``aes``; analysis, read-only structure, and
+copy-producing transformations are grouped under ``aes.analysis``,
+``aes.graph``, and ``aes.edit``.
+
+:doc:`Want to know more about choosing and customizing primitives? <traditional_primitives>`
+That guide shows official instances, constructor parameters, realizations,
+reduced-round configurations, and links to S-box replacement and other AES
+customizations.
+
+Evaluate a primitive
+--------------------
+
+Supply one value for each named input. CLAASP accepts packed Python integers
+at ordinary binary primitive boundaries:
+
+.. doctest::
+
    >>> plaintext = 0x00112233445566778899AABBCCDDEEFF
    >>> key = 0x000102030405060708090A0B0C0D0E0F
-   >>> ciphertext = aes.evaluate(plaintext, key)
+   >>> ciphertext = aes.evaluate(plaintext=plaintext, key=key)
    >>> f"{ciphertext:032x}"
    '69c4e0d86a7b0430d8cdb78070b4c55a'
 
-Keyword and mapping forms are equivalent when explicit names are clearer:
+:doc:`Want to know more about evaluating primitives? <evaluating_primitives>`
+That guide covers several plaintexts with shared or separate keys, logical-unit
+inputs, non-binary field values, and the lower-level batch evaluators.
+
+Find an optimal differential trail
+----------------------------------
+
+An XOR-differential trail follows an input difference through each round.
+This reduced-round Speck example finds the lowest-weight trail and proves that
+no better trail exists:
 
 .. doctest::
 
-   >>> aes.evaluate(plaintext=plaintext, key=key) == ciphertext
-   True
-   >>> aes.evaluate({"plaintext": plaintext, "key": key}) == ciphertext
-   True
+   >>> from claasp.primitives import Speck
+   >>> speck = Speck(number_of_rounds=3)
+   >>> result = speck.analysis.find_optimal_trail()
+   >>> (result.trail.total_weight, result.is_optimal)
+   (3.0, True)
 
-Inspect an execution
---------------------
+:doc:`Want to know more about searching for trails? <analysis>`
+That guide explains trail kinds, input constraints, backend and solver
+selection, result fields, probabilities, and supported primitive structures.
 
-Ordinary evaluation returns only the result. Ask for a trace when debugging a
-primitive or inspecting round values:
+Display the trail
+-----------------
+
+``show()`` prints only the round boundaries and their relative and cumulative
+probabilities by default:
 
 .. doctest::
 
-   >>> one_round = AES(number_of_rounds=1)
-   >>> trace = one_round.evaluate_with_trace(plaintext, key)
-   >>> sub_bytes = one_round.round_states[0]["sub_bytes"]
-   >>> bytes(trace.trace.value_of(sub_bytes.owner_id)).hex()
-   '63cab7040953d051cd60e0e7ba70e18c'
-   >>> len(one_round.components) > 0
-   True
+   >>> result.show()
+   Trail
+   <BLANKLINE>
+   Round trail
+   <BLANKLINE>
+   Round | Difference | Relative probability | Cumulative probability
+   ------+------------+----------------------+-----------------------
+   input | 0x00400000 |                  1/1 |                    1/1
+       1 | 0x80008000 |                  1/1 |                    1/1
+       2 | 0x81008102 |                  1/2 |                    1/2
+       3 | 0x8000840a |                  1/4 |                    1/8
+   <BLANKLINE>
+   Proved optimal.
+   <BLANKLINE>
+   Total weight: 3.
 
-Next steps
-----------
+:doc:`Want to know more about displaying a trail? <displaying_results>`
+That guide covers ``show(details=True)``, structured report data, and terminal,
+Markdown, and CSV output.
 
-- :doc:`primitive_authoring` shows concise components, indexing, automatic
-  identifiers, and reusable mathematics.
-- :doc:`analysis` introduces constraints, projections, key recovery, and
-  optional solver backends.
-- :doc:`traditional_primitives` covers AES, PRESENT, and Speck block-cipher
-  variants.
-- :doc:`whats_new_v5` explains typed units and native support for
-  arithmetization-oriented primitives.
+Implement your own primitive
+----------------------------
+
+Primitive source follows the order of the pseudocode. This function builds a
+fixed-size one-time pad with one XOR component. Change ``bit_size`` to build a
+different message and key size:
+
+.. doctest::
+
+   >>> from claasp import BitWord, PrimitiveBuilder
+   >>> from claasp.components import Xor
+   >>> def OneTimePad(bit_size=128):
+   ...     graph = PrimitiveBuilder(
+   ...         "one_time_pad",
+   ...         kind="block_cipher",
+   ...         instance_name=f"OneTimePad-{bit_size}",
+   ...     )
+   ...     message, key = graph.set_inputs(
+   ...         message=BitWord(bit_size),
+   ...         key=BitWord(bit_size),
+   ...     )
+   ...     graph.add_round()
+   ...     ciphertext = graph.add(Xor(message, key))
+   ...     graph.set_output(ciphertext)
+   ...     return graph.build()
+   >>> one_time_pad = OneTimePad()
+   >>> one_time_pad.details()
+   Primitive details
+     Type: block cipher
+     Instance: OneTimePad-128
+     Inputs:
+       message: 128 bits (public)
+       key: 128 bits (secret)
+     Output: 128 bits
+     Rounds: 1
+     Realization: default
+   >>> hex(one_time_pad.evaluate(message=0x1234, key=0x00FF))
+   '0x12cb'
+
+``set_inputs()`` names the external values and returns the ports used inside
+the graph. ``set_output()`` selects the value returned by the complete
+primitive. Finally, ``build()`` validates the graph and turns the mutable
+builder into the finished primitive.
+
+``BitWord(128)`` means one packed 128-bit string. ``Word(128)`` has a different
+purpose: it declares one arithmetic word for operations such as rotation and
+addition modulo :math:`2^{128}`.
+
+:doc:`Want to know more about implementing your own primitives? <implementing_toy_spn>`
+That guide builds a complete two-round ToySPN and explains inputs, rounds,
+components, intermediate values, and the final output.

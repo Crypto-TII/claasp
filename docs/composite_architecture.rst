@@ -10,7 +10,7 @@ in a parent graph.
 Lowering and identity
 ---------------------
 
-``Primitive.add_composite`` validates every binding and copies the definition's
+``PrimitiveBuilder.add_composite`` validates every binding and copies the definition's
 leaf nodes into the current round.  Leaf identifiers are deterministically
 prefixed, for example ``round_1/sub_bytes/sbox_0``.  The primitive's component
 sequence therefore remains the canonical DAG consumed by evaluators, models,
@@ -22,9 +22,10 @@ lowering and can be queried from either the primitive or their parent scope.
 
 .. doctest::
 
-   >>> from claasp import CompositeBuilder, PrimeField, Primitive, ValueType
+   >>> from claasp import CompositeBuilder, PrimitiveBuilder, ArrayType
    >>> from claasp.components import Add
-   >>> scalar = ValueType(PrimeField(17), (1,))
+   >>> from claasp.domains import PrimeField
+   >>> scalar = ArrayType(PrimeField(17), (1,))
    >>> child_builder = CompositeBuilder("Double", {"x": scalar})
    >>> child_builder.add_round()
    Round(number=0)
@@ -38,14 +39,15 @@ lowering and can be queried from either the primitive or their parent scope.
    >>> second = parent_builder.add_composite(child, {"x": first.output()}, scope_id="second")
    >>> parent_builder.set_output("output", second.output())
    >>> parent = parent_builder.build()
-   >>> graph = Primitive("use_block", {"value": scalar})
-   >>> graph.add_round()
+   >>> graph_builder = PrimitiveBuilder("use_block", {"value": scalar})
+   >>> graph_builder.add_round()
    Round(number=0)
-   >>> block = graph.add_composite(parent, {"x": graph.input("value")}, scope_id="block")
-   >>> graph.set_output(block.output())
+   >>> block = graph_builder.add_composite(
+   ...     parent, {"x": graph_builder.input("value")}, scope_id="block")
+   >>> graph = graph_builder.build(block.output())
    >>> graph.evaluate(3)
    12
-   >>> graph.scope("block/second").component_ids
+   >>> graph.graph.scope("block/second").component_ids
    ('block/second/add_0_0',)
 
 Representation boundary
@@ -65,7 +67,7 @@ Structural joins
 Legacy CLAASP removed its public concatenate operation because component input
 links already described an ordered concatenation. V5 selections deliberately
 have one typed source, which makes ownership and modelling boundaries
-unambiguous. ``Primitive.join`` and ``CompositeBuilder.join`` restore the
+unambiguous. ``PrimitiveBuilder.join`` and ``CompositeBuilder.join`` restore the
 authoring convenience without presenting concatenation as a basic operation.
 Passing several values to ``set_output`` uses the same path.
 
@@ -77,8 +79,8 @@ One-source joins are elided.
 Round and primitive scopes
 --------------------------
 
-``primitive.scopes`` lists all retained instances in construction order;
-``primitive.scope(path)`` selects one. ``round.scopes`` lists the instances
+``primitive.graph.scopes`` lists all retained instances in construction order;
+``primitive.graph.scope(path)`` selects one. ``round.scopes`` lists the instances
 lowered in that round, including nested paths. A scope provides its bound
 ``inputs``, named ``outputs``, actual parent-graph ``components``, definition
 ``provenance``, and nested lookup. A primitive's separate ``provenance`` records

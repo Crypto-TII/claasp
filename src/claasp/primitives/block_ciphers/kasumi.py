@@ -85,7 +85,7 @@ class Kasumi(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Kasumi()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xf54cfbf75f3b5699', 64)
@@ -109,7 +109,7 @@ class Kasumi(BitGraphPrimitive):
 
         key = [INPUT_KEY], [list(range(self.key_bit_size))]
         for round_number in range(self._get_number_of_rounds(number_of_rounds)):
-            self.add_round()
+            self._builder.add_round()
             if round_number == 0:
                 key_derived = self.derived_key(key)
             sub_key = self.round_key(key, key_derived, round_number + 1)

@@ -19,8 +19,8 @@ identity.
    >>> from claasp.components import BitVectorSBox
    >>> from claasp.primitives import Present
    >>> present = Present(number_of_rounds=1)
-   >>> sbox = next(item for item in present.components if isinstance(item, BitVectorSBox))
-   >>> result = present.analyze().component_property(
+   >>> sbox = next(item for item in present.graph.components if isinstance(item, BitVectorSBox))
+   >>> result = present.analysis.component_property(
    ...     sbox, ComponentProperty.DIFFERENTIAL_UNIFORMITY,
    ...     PropertyDomain.LOOKUP_TABLE)
    >>> result.value, result.claim.value, result.complete
@@ -53,8 +53,8 @@ its explicit polynomial modulus.
    >>> from claasp.analysis import analyze_component_property
    >>> from claasp.components import LinearMap
    >>> from claasp.domains import Bit
-   >>> from claasp.graph import Port, ValueType
-   >>> binary = LinearMap(Port("x", ValueType(Bit(), (2,))), ((1, 0), (1, 1)))
+   >>> from claasp.graph import Port, ArrayType
+   >>> binary = LinearMap(Port("x", ArrayType(Bit(), (2,))), ((1, 0), (1, 1)))
    >>> rank = analyze_component_property(binary, PropertyRequest(
    ...     ComponentProperty.RANK, PropertyDomain.BIT_LINEAR))
    >>> rank.value, rank.claim.value
@@ -65,7 +65,7 @@ AES MixColumns uses a four-word matrix over its published byte field.
 .. doctest::
 
    >>> from claasp.composites.aes import AES_FIELD
-   >>> mix = LinearMap(Port("column", ValueType(AES_FIELD, (4,))),
+   >>> mix = LinearMap(Port("column", ArrayType(AES_FIELD, (4,))),
    ...     ((2, 3, 1, 1), (1, 2, 3, 1), (1, 1, 2, 3), (3, 1, 1, 2)))
    >>> mds = analyze_component_property(mix, PropertyRequest(
    ...     ComponentProperty.MDS, PropertyDomain.WORD_LINEAR))

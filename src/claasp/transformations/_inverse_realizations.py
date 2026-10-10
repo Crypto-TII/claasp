@@ -2,7 +2,7 @@
 
 from claasp.components import Add, Constant, LinearMap, Multiply, Permutation
 from claasp.domains import Bit
-from claasp.graph import Primitive, PrimitiveInput, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveInput, PrimitiveKind
 from claasp.graph.bit_builder import (
     BitState,
     calculate_inputs,
@@ -53,7 +53,7 @@ class AradiCompactWord(AradiSBoxCompactLinearMap):
 
         >>> from claasp.transformations._inverse_realizations import AradiCompactWord
         >>> graph = AradiCompactWord(number_of_rounds=1)
-        >>> (graph.family_name, len(graph.rounds), graph.output.value_type.encoded_bit_size)
+        >>> (graph.family_name, len(graph.graph.rounds), graph.graph.output.array_type.encoded_bit_size)
         ('aradi', 1, 128)
     """
 
@@ -75,10 +75,10 @@ class AradiCompactWord(AradiSBoxCompactLinearMap):
         self.B = [8, 9, 4, 9]
         self.C = [14, 11, 14, 7]
         self.linear_layers = create_linear_layers(self.A, self.B, self.C)
-        state = self.unpack_bits(self.input("plaintext")).owner_id
-        key = self.unpack_bits(self.input("key")).owner_id
+        state = self._builder.unpack_bits(self.graph.input("plaintext")).owner_id
+        key = self._builder.unpack_bits(self.graph.input("key")).owner_id
         for round_i in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             round_key = self.get_round_key_id(key, round_i)
             state = self.round_function(state, round_key, round_i)
             key = self.update_key(key, round_i)
@@ -91,8 +91,8 @@ class AradiCompactWord(AradiSBoxCompactLinearMap):
             ).id
             for start in range(0, 128, 32)
         ]
-        bits = self.join(*(self.port(output) for output in outputs))
-        self.set_output(self.pack_bits(bits, 16))
+        bits = self._builder.join(*(self.graph.port(output) for output in outputs))
+        self._builder.set_output(self._builder.pack_bits(bits, 16))
 
 
 class KeccakSboxTheta(KeccakSbox):
@@ -102,7 +102,7 @@ class KeccakSboxTheta(KeccakSbox):
 
         >>> from claasp.transformations._inverse_realizations import KeccakSboxTheta
         >>> graph = KeccakSboxTheta(number_of_rounds=1, word_size=8)
-        >>> (len(graph.rounds), any(type(item).__name__ == "LinearMap" for item in graph.components))
+        >>> (len(graph.graph.rounds), any(type(item).__name__ == "LinearMap" for item in graph.graph.components))
         (1, True)
     """
 
@@ -143,7 +143,7 @@ class XoodooSboxTheta(XoodooSbox):
 
         >>> from claasp.transformations._inverse_realizations import XoodooSboxTheta
         >>> graph = XoodooSboxTheta(number_of_rounds=1)
-        >>> (len(graph.rounds), any(type(item).__name__ == "LinearMap" for item in graph.components))
+        >>> (len(graph.graph.rounds), any(type(item).__name__ == "LinearMap" for item in graph.graph.components))
         (1, True)
     """
 
@@ -179,7 +179,7 @@ class QARMAv2Compact(QARMAv2):
 
         >>> from claasp.transformations._inverse_realizations import QARMAv2Compact
         >>> graph = QARMAv2Compact(number_of_rounds=1)
-        >>> (len(graph.rounds), graph.realization.name)
+        >>> (len(graph.graph.rounds), graph.realization.name)
         (3, 'permutation_linear_layer')
     """
 
@@ -194,9 +194,10 @@ class QARMAv2Compact(QARMAv2):
             ),
             input_pos,
         )
-        port = self.port(component_id)
+        port = self.graph.port(component_id)
         return [
-            self.view(port[tuple(range(word * 4, (word + 1) * 4))]).owner_id for word in range(4)
+            self._builder.view(port[tuple(range(word * 4, (word + 1) * 4))]).owner_id
+            for word in range(4)
         ]
 
 
@@ -207,7 +208,7 @@ class NorxTriangular(Norx):
 
         >>> from claasp.transformations._inverse_realizations import NorxTriangular
         >>> graph = NorxTriangular(number_of_rounds=1, word_size=32)
-        >>> (len(graph.rounds), graph.word_bit_size)
+        >>> (len(graph.graph.rounds), graph.word_bit_size)
         (1, 32)
     """
 
@@ -248,18 +249,18 @@ class GimliTriangular(Gimli):
 
         >>> from claasp.transformations._inverse_realizations import GimliTriangular
         >>> graph = GimliTriangular(number_of_rounds=1, word_size=8)
-        >>> (len(graph.rounds), graph.word_bit_size)
+        >>> (len(graph.graph.rounds), graph.word_bit_size)
         (1, 8)
     """
 
     def _source_bit(self, state, position):
-        return self.port(state.id[0])[state.input_bit_positions[0][position]]
+        return self.graph.port(state.id[0])[state.input_bit_positions[0][position]]
 
     def _sum_bits(self, *values):
-        return values[0] if len(values) == 1 else self.add_component(Add(values))
+        return values[0] if len(values) == 1 else self._builder.add_component(Add(values))
 
     def _product_bits(self, left, right):
-        return self.add_component(Multiply((left, right)))
+        return self._builder.add_component(Multiply((left, right)))
 
     def _or_bits(self, left, right):
         return self._sum_bits(left, right, self._product_bits(left, right))
@@ -319,7 +320,7 @@ class GimliTriangular(Gimli):
                 output_bits[0][bit] = self._sum_bits(*x_inputs)
 
             for row in range(N_ROWS):
-                joined = self.view(self.join(*output_bits[row]))
+                joined = self._builder.view(self._builder.join(*output_bits[row]))
                 result[row][column] = BitState(
                     [joined.owner_id],
                     [list(range(self.word_bit_size))],
@@ -334,57 +335,59 @@ def subterranean_inverse(source, output_name="output"):
 
         >>> from claasp.primitives import Subterranean
         >>> from claasp.transformations._inverse_realizations import subterranean_inverse
-        >>> tuple(subterranean_inverse(Subterranean()).input_ports)
+        >>> tuple(subterranean_inverse(Subterranean()).graph.input_ports)
         ('output', 'key')
     """
 
-    size = source.output.value_type.unit_count
+    size = source.graph.output.array_type.unit_count
     derived = Primitive(
         f"{source.family_name}_inverse",
         {
-            output_name: PrimitiveInput(source.output.value_type, role=output_name),
-            "key": source.input_descriptor("key"),
+            output_name: PrimitiveInput(source.graph.output.array_type, role=output_name),
+            "key": source.graph.input_descriptor("key"),
         },
         kind=source.kind,
         provenance=source.provenance,
     )
-    derived.add_round()
-    state = derived.input(output_name).select_all()
-    key = derived.input("key").select_all()
+    derived._builder.add_round()
+    state = derived.graph.input(output_name).select_all()
+    key = derived.graph.input("key").select_all()
     forward_matrix = tuple(
         tuple(int(column in (row, (row + 3) % size, (row + 8) % size)) for column in range(size))
         for row in range(size)
     )
     inverse_matrix = _inverse_matrix(forward_matrix, Bit())
     permutations = [
-        component for component in source.components if isinstance(component, Permutation)
+        component for component in source.graph.components if isinstance(component, Permutation)
     ]
-    if len(permutations) != len(source.rounds):
+    if len(permutations) != len(source.graph.rounds):
         raise ValueError("Subterranean inverse requires one terminal permutation per round")
-    one = derived.add_component(Constant(ValueType(Bit(), (1,)), (1,)))
-    ones = derived.add_component(Constant(ValueType(Bit(), (size,)), (1,) * size))
+    one = derived._builder.add_component(Constant(ArrayType(Bit(), (1,)), (1,)))
+    ones = derived._builder.add_component(Constant(ArrayType(Bit(), (size,)), (1,) * size))
 
     for permutation in reversed(permutations):
         inverse_mapping = [0] * size
         for output_position, input_position in enumerate(permutation.mapping):
             inverse_mapping[input_position] = output_position
-        state = derived.add_component(Permutation(state, inverse_mapping))
-        keyed_tail = derived.add_component(Add((state[tuple(range(1, size))], key)))
-        state = derived.join(state[0], keyed_tail)
-        state = derived.add_component(LinearMap(state, inverse_matrix))
-        state = derived.join(
-            derived.add_component(Add((state[0], one))), state[tuple(range(1, size))]
+        state = derived._builder.add_component(Permutation(state, inverse_mapping))
+        keyed_tail = derived._builder.add_component(Add((state[tuple(range(1, size))], key)))
+        state = derived._builder.join(state[0], keyed_tail)
+        state = derived._builder.add_component(LinearMap(state, inverse_matrix))
+        state = derived._builder.join(
+            derived._builder.add_component(Add((state[0], one))), state[tuple(range(1, size))]
         )
-        chi_output = derived.add_component(Add((state, ones)))
+        chi_output = derived._builder.add_component(Add((state, ones)))
         fixed = tuple(chi_output[index] for index in range(size))
         recovered = list(fixed)
         for step in range(3 * (size - 1) // 2):
             index = ((size - 2) * step) % size
-            negated = derived.add_component(Add((fixed[(index + 1) % size], one)))
-            product = derived.add_component(Multiply((recovered[(index + 2) % size], negated)))
-            recovered[index] = derived.add_component(Add((fixed[index], product)))
-        state = derived.join(*recovered)
-    derived.set_output(state)
+            negated = derived._builder.add_component(Add((fixed[(index + 1) % size], one)))
+            product = derived._builder.add_component(
+                Multiply((recovered[(index + 2) % size], negated))
+            )
+            recovered[index] = derived._builder.add_component(Add((fixed[index], product)))
+        state = derived._builder.join(*recovered)
+    derived._builder.set_output(state)
     return derived
 
 
@@ -398,11 +401,17 @@ def _chichi_inverse_bits(derived, output_bits, zero, one):
 
     def negate(bit):
         if bit not in negated:
-            negated[bit] = derived.add_component(Add((bit, one)))
+            negated[bit] = derived._builder.add_component(Add((bit, one)))
         return negated[bit]
 
     def add(*bits):
-        return zero if not bits else bits[0] if len(bits) == 1 else derived.add_component(Add(bits))
+        return (
+            zero
+            if not bits
+            else bits[0]
+            if len(bits) == 1
+            else derived._builder.add_component(Add(bits))
+        )
 
     def multiply(*bits):
         return (
@@ -410,7 +419,7 @@ def _chichi_inverse_bits(derived, output_bits, zero, one):
             if not bits
             else bits[0]
             if len(bits) == 1
-            else derived.add_component(Multiply(bits))
+            else derived._builder.add_component(Multiply(bits))
         )
 
     def product(indices, *, complement=False):
@@ -531,39 +540,39 @@ def chilow_inverse(source, output_name="output"):
 
         >>> from claasp.primitives import Chilow
         >>> from claasp.transformations._inverse_realizations import chilow_inverse
-        >>> tuple(chilow_inverse(Chilow()).input_ports)
+        >>> tuple(chilow_inverse(Chilow()).graph.input_ports)
         ('output', 'input_tweak', 'key')
     """
 
-    if len(source.rounds) != 1 or source.output.value_type.unit_count != 40:
+    if len(source.graph.rounds) != 1 or source.graph.output.array_type.unit_count != 40:
         raise ValueError("direct ChiLow inverse currently requires the catalogue ChiLow-40 graph")
     derived = Primitive(
         f"{source.family_name}_inverse",
         {
-            output_name: PrimitiveInput(source.output.value_type, role=output_name),
-            "input_tweak": source.input_descriptor("input_tweak"),
-            "key": source.input_descriptor("key"),
+            output_name: PrimitiveInput(source.graph.output.array_type, role=output_name),
+            "input_tweak": source.graph.input_descriptor("input_tweak"),
+            "key": source.graph.input_descriptor("key"),
         },
         kind=source.kind,
         provenance=source.provenance,
     )
-    derived.add_round()
-    zero = derived.add_component(Constant(ValueType(Bit(), (1,)), (0,)))
-    one = derived.add_component(Constant(ValueType(Bit(), (1,)), (1,)))
+    derived._builder.add_round()
+    zero = derived._builder.add_component(Constant(ArrayType(Bit(), (1,)), (0,)))
+    one = derived._builder.add_component(Constant(ArrayType(Bit(), (1,)), (1,)))
 
     def abstract_bits(port):
-        return [port[index] for index in range(port.value_type.unit_count - 1, -1, -1)]
+        return [port[index] for index in range(port.array_type.unit_count - 1, -1, -1)]
 
     def add(left, right):
-        return derived.add_component(Add((left, right)))
+        return derived._builder.add_component(Add((left, right)))
 
-    output = abstract_bits(derived.input(output_name).select_all())
-    tweak = abstract_bits(derived.input("input_tweak").select_all())
-    key = abstract_bits(derived.input("key").select_all())
+    output = abstract_bits(derived.graph.input(output_name).select_all())
+    tweak = abstract_bits(derived.graph.input("input_tweak").select_all())
+    key = abstract_bits(derived.graph.input("key").select_all())
     whitened_tweak = [add(tweak[index], key[index]) for index in range(64)]
     alpha, offsets = 3, (1, 26, 50)
     final_tweak = [
-        derived.add_component(
+        derived._builder.add_component(
             Add(tuple(whitened_tweak[(alpha * index + offset) % 64] for offset in offsets))
         )
         for index in range(64)
@@ -571,7 +580,7 @@ def chilow_inverse(source, output_name="output"):
     chichi_output = [add(output[index], final_tweak[index]) for index in range(40)]
     whitened_plaintext = _chichi_inverse_bits(derived, chichi_output, zero, one)
     plaintext = [add(whitened_plaintext[index], key[64 + index]) for index in range(40)]
-    derived.set_output(derived.join(*reversed(plaintext)))
+    derived._builder.set_output(derived._builder.join(*reversed(plaintext)))
     return derived
 
 

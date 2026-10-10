@@ -88,7 +88,7 @@ class Knot(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Knot()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xbc44b75eeea81b95', 256)
@@ -134,7 +134,7 @@ class Knot(BitGraphPrimitive):
 
         round_constant = 1
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             state = self.round_function(state, round_constant)
             round_constant = lfsr_next_state(round_constant, self.lfsr_degree)
 

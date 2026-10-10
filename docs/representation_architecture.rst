@@ -36,7 +36,7 @@ The common immutable container validates input and component identifiers:
    >>> primitive = Present(number_of_rounds=1)
    >>> annotation = GraphAnnotation(primitive, CONCRETE, (
    ...     AnnotationEntry("plaintext", AnnotationRole.INPUT, 0),
-   ...     AnnotationEntry(primitive.components[0].component_id, AnnotationRole.COMPONENT, 1),
+   ...     AnnotationEntry(primitive.graph.components[0].component_id, AnnotationRole.COMPONENT, 1),
    ... ))
    >>> trace = ExecutionTrace(annotation)
    >>> trace.value_of("plaintext")
@@ -55,7 +55,7 @@ its primitive for use by generic consumers:
 
    >>> from claasp.semantics.cryptanalysis import Trail, TrailKind, TrailStep, XorDifference, SBoxTransitionSemantics
    >>> from claasp.primitives.block_ciphers.present import PRESENT_SBOX
-   >>> component = next(item for item in primitive.components if item.component_id == "sbox_1_0")
+   >>> component = next(item for item in primitive.graph.components if item.component_id == "sbox_1_0")
    >>> transition = SBoxTransitionSemantics(PRESENT_SBOX).xor_differential(1, 3)
    >>> trail = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1 << 60, 64), XorDifference(0, 64), (TrailStep(component.component_id, transition),))
    >>> trail.semantics.name
@@ -99,7 +99,7 @@ annotation used by ``ExecutionTrace``:
    ... })
    >>> result.trace.annotation.semantics.name
    'concrete'
-   >>> len(result.trace.annotation.entries) == len(primitive.input_ports) + len(primitive.components) + 1
+   >>> len(result.trace.annotation.entries) == len(primitive.graph.input_ports) + len(primitive.graph.components) + 1
    True
 
 Normal users continue to write ``primitive.evaluate(plaintext, key)``. The
@@ -134,6 +134,36 @@ cryptanalytic semantics.
 MILP follows this boundary as well. Its immutable linear model, LP exporter,
 and trail lowerings live in ``representations.constraints.milp``; GLPK process
 execution and portable MILP result decoding live in ``drivers.solvers``.
+
+Constraint-model provenance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Every backend-specific component encoding declares structured provenance.
+``VERIFIED`` means that its exact constraints have been checked against a
+primary source and records a URL or DOI plus a precise locator. Direct or
+exhaustively generated encodings use ``N/A``. Encodings awaiting a separate
+literature audit use ``TBD``; that status must not be replaced by a citation
+to a paper that only introduces the surrounding cryptanalytic technique.
+
+The declaration follows the constraints through backend lowering. Applications
+also record which graph components used that encoding:
+
+.. doctest::
+
+   >>> from claasp.primitives import Speck
+   >>> from claasp.representations.constraints.sat import BooleanCNFModel
+   >>> formula = BooleanCNFModel(Speck(number_of_rounds=1)).cnf_formula()
+   >>> additions = [item for item in formula.constraint_models
+   ...              if item.model.component_model == "ModularAddFunctionalSATModel"]
+   >>> additions[0].model.reference_status.value
+   'N/A'
+   >>> additions[0].component_ids
+   ('modular_add_0_1',)
+
+Trail searches retain these applications in ``TrailSearchResult``. Presentation
+adapters render the model-emitted compact reference beside each modeled
+component and deduplicate any ``VERIFIED`` records into the report bibliography.
+Neither the trail semantics nor the presentation layer guesses a source.
 
 Sparse polynomial systems and their Singular/msolve serializers live in
 ``representations.constraints.polynomial``. The optional executable processes

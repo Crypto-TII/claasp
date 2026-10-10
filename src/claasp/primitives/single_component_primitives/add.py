@@ -16,7 +16,7 @@ class Add(Primitive):
 
     Select another domain explicitly when needed:
 
-    >>> from claasp import PrimeField
+    >>> from claasp.domains import PrimeField
     >>> Add(domain=PrimeField(17)).evaluate(5, 14)
     2
 
@@ -31,7 +31,7 @@ class Add(Primitive):
     EXAMPLES::
 
         >>> primitive = Add()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -43,9 +43,9 @@ class Add(Primitive):
             algebraic_inputs(domain, unit_count, number_of_inputs),
             kind=PrimitiveKind.FUNCTION,
         )
-        self.add_round()
-        output = self.add_component(AddComponent(self.inputs()))
-        self.set_output(output)
+        self._builder.add_round()
+        output = self._builder.add_component(AddComponent(self.graph.inputs()))
+        self._builder.set_output(output)
 
 
 __all__ = ["Add"]

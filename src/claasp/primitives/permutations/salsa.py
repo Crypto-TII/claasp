@@ -2,7 +2,7 @@
 
 from claasp.components import ModularAdd, Rotate, Xor
 from claasp.domains import Word
-from claasp.graph import Port, Primitive, Selection, ValueType
+from claasp.graph import ArrayType, Port, Primitive, Selection
 
 _COLUMNS = ((0, 4, 8, 12), (5, 9, 13, 1), (10, 14, 2, 6), (15, 3, 7, 11))
 _ROWS = ((0, 1, 2, 3), (5, 6, 7, 4), (10, 11, 8, 9), (15, 12, 13, 14))
@@ -28,7 +28,7 @@ class Salsa(Primitive):
     EXAMPLES::
 
         >>> primitive = Salsa()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -53,10 +53,10 @@ class Salsa(Primitive):
         ):
             raise ValueError("rotations must contain four integers in range(word_size)")
 
-        super().__init__("salsa", {"state": ValueType(Word(word_size), (16,))})
-        state: list[Port | Selection] = [self.input("state")[index] for index in range(16)]
+        super().__init__("salsa", {"state": ArrayType(Word(word_size), (16,))})
+        state: list[Port | Selection] = [self.graph.input("state")[index] for index in range(16)]
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             groups = _COLUMNS if round_number % 2 == 0 else _ROWS
             for quarter_number, (a, b, c, d) in enumerate(groups):
                 state[a], state[b], state[c], state[d] = self._quarter_round(
@@ -67,7 +67,7 @@ class Salsa(Primitive):
                     rotations,
                     f"round_{round_number}_quarter_{quarter_number}",
                 )
-        self.set_output(state)
+        self._builder.set_output(state)
 
     def _quarter_round(
         self,
@@ -92,8 +92,10 @@ class Salsa(Primitive):
         rotation: int,
         prefix: str,
     ) -> Port:
-        added = self.add_component(ModularAdd((left, right), component_id=f"{prefix}_add"))
-        rotated = self.add_component(
+        added = self._builder.add_component(ModularAdd((left, right), component_id=f"{prefix}_add"))
+        rotated = self._builder.add_component(
             Rotate(added, rotation, "left", component_id=f"{prefix}_rotate")
         )
-        return self.add_component(Xor((destination, rotated), component_id=f"{prefix}_xor"))
+        return self._builder.add_component(
+            Xor((destination, rotated), component_id=f"{prefix}_xor")
+        )

@@ -39,7 +39,7 @@ class Cast(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Cast()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x13c502b354d53871', 61)
@@ -64,7 +64,7 @@ class Cast(BitGraphPrimitive):
             primitive_output_bit_size=64,
         )
 
-        self.add_round()
+        self._builder.add_round()
 
         # fmt: off
         s1 = [
@@ -360,7 +360,7 @@ class Cast(BitGraphPrimitive):
 
         # Round Function
         for round_num in range(1, self.nrounds + 1):
-            self.add_round()
+            self._builder.add_round()
 
             current_km_id = self.km[round_num - 1]
             current_kr_id = self.kr[round_num - 1]

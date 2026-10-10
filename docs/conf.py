@@ -55,8 +55,12 @@ else:
     exclude_patterns.extend(
         [
             "user_guide.rst",
+            "about_claasp.rst",
             "getting_started.rst",
+            "evaluating_primitives.rst",
+            "quick_analysis_scripts.rst",
             "traditional_primitives.rst",
+            "customizing_aes.rst",
             "composite_blocks.rst",
             "batch_evaluation.rst",
             "displaying_results.rst",

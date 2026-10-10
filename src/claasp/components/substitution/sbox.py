@@ -18,7 +18,7 @@ class SBox(Component):
 
     EXAMPLES::
 
-        >>> from claasp import Word
+        >>> from claasp.domains import Word
         >>> from claasp.primitives.single_component_primitives import SBox
         >>> SBox([3, 2, 1, 0], Word(2), unit_count=2).evaluate(0b0001)
         14
@@ -33,7 +33,7 @@ class SBox(Component):
         component_id: str | None = None,
     ) -> None:
         component_input = as_selection(component_input)
-        domain = component_input.value_type.domain
+        domain = component_input.array_type.domain
         if not isinstance(domain, (Bit, Word, BinaryExtensionField)):
             raise ValueError("S-box requires a densely encoded finite domain")
         if isinstance(table, LookupTable):
@@ -47,6 +47,6 @@ class SBox(Component):
             lookup_table = LookupTable(table, domain.encoded_bit_size, domain.encoded_bit_size)
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
-        object.__setattr__(self, "output_type", component_input.value_type)
+        object.__setattr__(self, "output_type", component_input.array_type)
         object.__setattr__(self, "table", lookup_table.values)
         Component.__post_init__(self)

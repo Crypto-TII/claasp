@@ -56,7 +56,7 @@ class Xoodoo(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Xoodoo()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xc8b510a4a6a04d27', 384)
@@ -77,7 +77,7 @@ class Xoodoo(BitGraphPrimitive):
 
         # round function
         for r in range(0, number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
 
             # round parameter
             round_i = r - number_of_rounds + 1

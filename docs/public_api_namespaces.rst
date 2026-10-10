@@ -169,6 +169,12 @@ claasp.drivers.solvers
 .. automodule:: claasp.drivers.solvers
    :no-index:
 
+claasp.drivers.solvers.gurobi
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.drivers.solvers.gurobi
+   :no-index:
+
 claasp.drivers.source
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -577,10 +583,52 @@ claasp.representations.constraints.cp
 .. automodule:: claasp.representations.constraints.cp
    :no-index:
 
+claasp.representations.constraints.cp.components
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.cp.components
+   :no-index:
+
+claasp.representations.constraints.cp.components.truncated
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.cp.components.truncated
+   :no-index:
+
 claasp.representations.constraints.milp
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.representations.constraints.milp
+   :no-index:
+
+claasp.representations.constraints.milp.components
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.milp.components
+   :no-index:
+
+claasp.representations.constraints.milp.components.bitwise_and
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.milp.components.bitwise_and
+   :no-index:
+
+claasp.representations.constraints.milp.components.sbox_inequalities
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.milp.components.sbox_inequalities
+   :no-index:
+
+claasp.representations.constraints.milp.components.xor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.milp.components.xor
+   :no-index:
+
+claasp.representations.constraints.milp.sbox
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.milp.sbox
    :no-index:
 
 claasp.representations.constraints.polynomial
@@ -601,10 +649,70 @@ claasp.representations.constraints.sat
 .. automodule:: claasp.representations.constraints.sat
    :no-index:
 
+claasp.representations.constraints.sat.components
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components
+   :no-index:
+
+claasp.representations.constraints.sat.components.boolean
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.boolean
+   :no-index:
+
+claasp.representations.constraints.sat.components.differential_linear
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.differential_linear
+   :no-index:
+
+claasp.representations.constraints.sat.components.modular_add
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.modular_add
+   :no-index:
+
+claasp.representations.constraints.sat.components.modular_multiply
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.modular_multiply
+   :no-index:
+
+claasp.representations.constraints.sat.components.sbox
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.sbox
+   :no-index:
+
+claasp.representations.constraints.sat.components.semi_deterministic
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.semi_deterministic
+   :no-index:
+
+claasp.representations.constraints.sat.components.truncated
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.truncated
+   :no-index:
+
+claasp.representations.constraints.sat.components.wiring
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.wiring
+   :no-index:
+
 claasp.representations.constraints.sat.exporters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.representations.constraints.sat.exporters
+   :no-index:
+
+claasp.representations.constraints.sat.model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.model
    :no-index:
 
 claasp.representations.constraints.sat.trails
@@ -617,6 +725,24 @@ claasp.representations.constraints.smt
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.representations.constraints.smt
+   :no-index:
+
+claasp.representations.constraints.smt.components
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.smt.components
+   :no-index:
+
+claasp.representations.constraints.smt.components.truncated
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.smt.components.truncated
+   :no-index:
+
+claasp.representations.constraints.smt.model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.smt.model
    :no-index:
 
 claasp.representations.diagrams

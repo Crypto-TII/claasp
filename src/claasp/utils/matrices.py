@@ -61,7 +61,7 @@ def matrix_is_invertible(
 
     EXAMPLES::
 
-        >>> from claasp import Bit
+        >>> from claasp.domains import Bit
         >>> from claasp.utils import matrix_is_invertible
         >>> matrix_is_invertible(((1, 1), (1, 0)), Bit())
         True

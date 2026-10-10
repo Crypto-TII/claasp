@@ -2,13 +2,65 @@ import shutil
 
 import pytest
 
-from claasp import Bit, Primitive, ValueType
+from claasp import ArrayType, Primitive
 from claasp.components import Add
+from claasp.domains import Bit
 from claasp.drivers.solvers import MinisatSolver, SatStatus
-from claasp.primitives import BitVectorSBox, Present80, Simon, Speck
-from claasp.representations.constraints.sat import BooleanCNFModel
+from claasp.primitives import Present80, Simon, Speck, ToyAES
+from claasp.primitives.block_ciphers.present import PRESENT_SBOX
+from claasp.representations.constraints.sat import (
+    BooleanCNFModel,
+    ModularAddDifferentialSATModel,
+    ModularAddLinearSATModel,
+    SBoxXorDifferentialSATModel,
+    WordwiseDeterministicTruncatedSATModel,
+    WordwiseImpossibleSATModel,
+)
+from claasp.semantics.cryptanalysis import WordwiseDifferenceKind, WordwiseXorDifference
 
 pytestmark = pytest.mark.external
+
+
+def test_minisat_solves_complete_four_state_wordwise_graph():
+    zero = WordwiseXorDifference(4, WordwiseDifferenceKind.ZERO)
+    model = WordwiseDeterministicTruncatedSATModel(
+        ToyAES(number_of_rounds=1, word_size=4, state_size=2),
+        fixed_input_differences={
+            "plaintext": (WordwiseXorDifference.known(4, 1), zero, zero, zero)
+        },
+        zero_difference_inputs=("key",),
+    )
+
+    solved = MinisatSolver(timeout_seconds=30).solve(model.cnf_formula())
+    trail = model.decode_characteristic(solved.assignment)
+
+    assert solved.status is SatStatus.SATISFIABLE
+    assert tuple(item.kind for item in trail.output_differences) == (
+        WordwiseDifferenceKind.NONZERO,
+        WordwiseDifferenceKind.ZERO,
+        WordwiseDifferenceKind.ZERO,
+        WordwiseDifferenceKind.ZERO,
+    )
+    assert model.check_characteristic(trail)
+
+
+def test_minisat_solves_complete_wordwise_impossible_graphs():
+    model = WordwiseImpossibleSATModel(
+        ToyAES(number_of_rounds=2, word_size=4, state_size=2),
+        middle_round=1,
+        active_input="plaintext",
+        zero_difference_inputs=("key",),
+    )
+    solved = MinisatSolver(timeout_seconds=30).solve(model.cnf_formula())
+    trail = model.decode_trail(solved.assignment)
+
+    assert solved.status is SatStatus.SATISFIABLE
+    assert len(trail.middle.contradictory_positions) == 1
+    position = trail.middle.contradictory_positions[0]
+    assert (
+        trail.middle.forward_states[position],
+        trail.middle.backward_states[position],
+    ) in model._INCOMPATIBLE
 
 
 def test_minisat_solves_and_refutes_named_present_constraints():
@@ -32,13 +84,15 @@ def test_minisat_solves_and_refutes_named_present_constraints():
 
 def test_high_level_analysis_recovers_an_unknown_input():
     primitive = Primitive(
-        "xor", {"plaintext": ValueType(Bit(), (1,)), "key": ValueType(Bit(), (1,))}
+        "xor", {"plaintext": ArrayType(Bit(), (1,)), "key": ArrayType(Bit(), (1,))}
     )
-    primitive.add_round()
-    output = primitive.add_component(Add((primitive.input("plaintext"), primitive.input("key"))))
-    primitive.set_output(output)
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
+        Add((primitive.graph.input("plaintext"), primitive.graph.input("key")))
+    )
+    primitive._builder.set_output(output)
 
-    result = primitive.analyze().recover_input(
+    result = primitive.analysis.recover_input(
         "key",
         known_inputs={"plaintext": 1},
         output=0,
@@ -56,7 +110,7 @@ def test_word_level_sat_recovers_a_reduced_speck_key():
     plaintext = 0x6574694C
     expected = primitive.evaluate(plaintext, 0x1918111009080100)
 
-    result = primitive.analyze().recover_input(
+    result = primitive.analysis.recover_input(
         "key",
         known_inputs={"plaintext": plaintext},
         output=expected,
@@ -72,7 +126,7 @@ def test_and_word_graph_recovers_a_simon_plaintext():
     primitive = Simon(number_of_rounds=3)
     plaintext, key = 0x65656877, 0x1918111009080100
     ciphertext = primitive.evaluate(plaintext, key)
-    result = primitive.analyze().recover_input(
+    result = primitive.analysis.recover_input(
         "plaintext",
         known_inputs={"key": key},
         output=ciphertext,
@@ -83,8 +137,40 @@ def test_and_word_graph_recovers_a_simon_plaintext():
     assert primitive.evaluate(result.value("plaintext"), key) == ciphertext
 
 
-def test_minisat_public_trail_search_accepts_a_bit_graph():
-    result = BitVectorSBox(2).analysis.find_optimal_trail(backend="sat")
+def test_minisat_solves_and_refutes_sbox_differential_transitions():
+    relation = SBoxXorDifferentialSATModel(PRESENT_SBOX)
+    result = MinisatSolver(timeout_seconds=10).solve(
+        relation.cnf_formula(input_pattern=1, output_pattern=3)
+    )
+    assert result.status is SatStatus.SATISFIABLE
+    assert relation.decode_transition(result.assignment).weight == 2
 
-    assert result.is_optimal
-    assert result.trail.total_weight == result.lower_bound == 0
+    impossible = MinisatSolver(timeout_seconds=10).solve(
+        relation.cnf_formula(input_pattern=1, output_pattern=1)
+    )
+    assert impossible.status is SatStatus.UNSATISFIABLE
+
+
+@pytest.mark.parametrize(
+    "relation,masks,weight,sign",
+    (
+        (ModularAddDifferentialSATModel(4), (1, 1, 2), 2, 1),
+        (ModularAddLinearSATModel(4), (2, 2, 2), 1, 1),
+    ),
+)
+def test_minisat_solves_modular_add_transition_models(relation, masks, weight, sign):
+    names = (
+        ("left_mask", "right_mask", "output_mask")
+        if isinstance(relation, ModularAddLinearSATModel)
+        else ()
+    )
+    formula = relation.cnf_formula(**dict(zip(names, masks))) if names else relation.cnf_formula()
+    assumptions = {
+        f"{prefix}_{bit}": (value >> (relation.width - 1 - bit)) & 1
+        for prefix, value in zip(("left", "right", "output"), masks)
+        for bit in range(relation.width)
+    }
+    result = MinisatSolver(timeout_seconds=10).solve(formula, assumptions)
+    assert result.status is SatStatus.SATISFIABLE
+    transition = relation.decode_transition(result.assignment)
+    assert (transition.weight, transition.sign) == (weight, sign)

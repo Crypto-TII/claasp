@@ -3,7 +3,31 @@ MILP models
 
 CLAASP's linear-model core is independent of SageMath and Python solver
 packages. Variables, affine expressions, constraints, domains, and objectives
-are explicit immutable values:
+are explicit immutable values.
+
+Generic weighted Word trails
+----------------------------
+
+``WordDifferentialMILPModel`` and ``WordLinearMILPModel`` translate the exact
+reviewed Boolean Word-graph relations to portable binary inequalities and add
+the corresponding trail-weight objective.
+
+.. doctest::
+
+   >>> from claasp.primitives import ToySpeck
+   >>> from claasp.representations.constraints.milp import WordDifferentialMILPModel
+   >>> model = WordDifferentialMILPModel(
+   ...     ToySpeck(2), fixed_weight=1,
+   ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
+   ... )
+   >>> formulation = model.milp_model()
+   >>> (len(formulation.variables), len(formulation.constraints), len(formulation.objective.terms))
+   (187, 501, 9)
+
+The portable clause-to-inequality formulation remains distinct from recovered
+component-specific convex-hull strategies and from optional Gurobi searches.
+
+The core model objects can also be assembled directly:
 
 .. doctest::
 
@@ -99,7 +123,7 @@ modular additions as the legacy partial execution builder did.
    True
 
 ``GLPKSolver`` also accepts CNF at the shared analysis facade, so
-``primitive.analyze().recover_input(..., solver=GLPKSolver())`` needs no
+``primitive.analysis.recover_input(..., solver=GLPKSolver())`` needs no
 solver-specific model assembly. The dedicated integration test reproduces
 the full Speck-22 legacy output ``A86842F2``. Solver undefined outcomes are
 ``MILPStatus.UNKNOWN``, never an infeasibility proof; Boolean projection
@@ -109,8 +133,9 @@ v5 API contracts. Other optimizers remain optional third-party drivers.
 Finite component relations
 --------------------------
 
-Exact finite relations provide a dependency-free baseline in place of Sage
-convex hulls, Espresso minimization, and global pickled inequality caches.
+Exact finite relations provide the dependency-free baseline alongside recovered
+convex-hull strategies. They do not require Sage, Espresso, or global pickled
+inequality caches at runtime.
 ``FiniteBinaryRelationMILPModel`` selects one supported row and equates every
 semantic column to that row. Row selectors are auxiliary variables: this
 is not a minimum-facet or minimum-inequality claim.
@@ -137,6 +162,283 @@ probability-one transitions. MILP logarithmic objective coefficients are
 floating approximations; decoding retains exact counts and signs and checks
 the objective against them.
 
+Bitwise-AND inequality strategies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``BitwiseAndOneHotMILPModel`` is the portable exhaustive-row baseline.
+``BitwiseAndXorDifferentialMILPModel`` and
+``BitwiseAndXorLinearMILPModel`` recover the compact legacy inequalities while
+keeping strategy selection explicit:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.milp import (
+   ...     BitwiseAndOneHotMILPModel,
+   ...     BitwiseAndXorDifferentialMILPModel,
+   ... )
+   >>> portable = BitwiseAndOneHotMILPModel(2, TrailKind.XOR_DIFFERENTIAL)
+   >>> recovered = BitwiseAndXorDifferentialMILPModel(2)
+   >>> portable_model = portable.milp_model(left_pattern=1, right_pattern=0, output_pattern=1)
+   >>> recovered_model = recovered.milp_model(left_pattern=1, right_pattern=0, output_pattern=1)
+   >>> (len(portable_model.variables), len(recovered_model.variables))
+   (22, 8)
+
+The recovered differential relation uses four inequalities per output bit;
+the linear relation uses two. Exhaustive one-bit GLPK tests compare both models
+with ``BitwiseAndSemantics``, including impossible transitions, probability
+weights, and signed linear transitions. Decoding independently rechecks the
+result instead of trusting solver feasibility alone.
+
+The ten-run ARM64 benchmark in
+``architecture/audits/data/milp_bitwise_and_benchmark.json`` fixes the same
+supported 32-bit transition for both strategies. The recovered differential
+model uses 128 variables and 224 constraints versus 352 and 256 for one-hot;
+the recovered linear model uses 96 and 160 versus 256 and 224. Median GLPK
+solve times were 0.707 versus 1.352 milliseconds for differential and 0.602
+versus 0.935 milliseconds for linear. This small fixed workload preserves the
+legacy strategy as a practical alternative; it does not establish a universal
+default.
+
+The deterministic-truncated variants model the conservative rule separately:
+AND outputs a known zero only when both input differences are known zero, and
+outputs unknown otherwise. ``BitwiseAndDeterministicTruncatedOneHotMILPModel``
+is the exhaustive portable baseline;
+``BitwiseAndDeterministicTruncatedMILPModel`` recovers the legacy binary
+indicator formulation:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.milp import (
+   ...     BitwiseAndDeterministicTruncatedMILPModel,
+   ... )
+   >>> truncated_and = BitwiseAndDeterministicTruncatedMILPModel(2)
+   >>> truncated_model = truncated_and.milp_model(
+   ...     left_pattern="0?", right_pattern="00", output_pattern="0?"
+   ... )
+   >>> (len(truncated_model.variables), len(truncated_model.constraints))
+   (8, 12)
+
+All nine one-bit ternary input pairs are checked through GLPK and independently
+decoded as ``TruncatedXorDifference`` values. The ten-run ARM64 benchmark in
+``architecture/audits/data/milp_truncated_and_benchmark.json`` fixes the same
+32-bit transition for both strategies. The recovered model uses 128 variables
+and 192 constraints versus 384 and 224 for one-hot; median GLPK solve times
+were 0.737 and 1.399 milliseconds respectively. This workload does not select
+a repository-wide default.
+
+Small-S-box inequality strategies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The legacy full convex hull, greedy facet reduction, and minimum-cardinality
+facet cover are available as explicitly named alternatives for four-bit
+S-boxes. The portable one-hot ``SBoxTransitionMILPModel`` remains the default.
+For example, load the generated PRESENT differential inequalities and select
+the minimum-cardinality formulation explicitly:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.milp import (
+   ...     SBoxMILPInequalityStrategy,
+   ...     SBoxXorDifferentialMinimumMILPModel,
+   ...     load_bundled_sbox_milp_inequalities,
+   ... )
+   >>> system = load_bundled_sbox_milp_inequalities(
+   ...     "present", TrailKind.XOR_DIFFERENTIAL,
+   ...     SBoxMILPInequalityStrategy.MINIMUM,
+   ... )
+   >>> relation = SBoxXorDifferentialMinimumMILPModel(system)
+   >>> model = relation.milp_model(input_pattern=1, output_pattern=3)
+   >>> transition = relation.decode_transition(relation.witness(1, 3))
+   >>> (transition.numerator, transition.denominator, transition.weight)
+   (4, 16, 2.0)
+   >>> (len(model.variables), relation.inequality_count)
+   (11, 25)
+
+The committed JSON bundle recovers the algorithm from legacy CLAASP commit
+``3aacc275``. The generator uses the exact-GMP ``cddexec_gmp`` program from
+cddlib 0.94m for convex-hull conversion and GLPK 5.0 for minimum-cardinality
+facet cover. Both are pinned generation tools in the canonical image. Loading
+and constructing the resulting v5 models needs no generator dependency; GLPK
+remains available separately as an optional runtime solver. Regenerate the data
+with ordinary Python and verify that the resulting file is unchanged::
+
+   python tools/generate_sbox_milp_inequalities.py \
+       --name present --table 12,5,6,11,9,0,10,13,3,14,15,8,4,7,1,2 \
+       --output src/claasp/representations/constraints/milp/data/present_sbox_milp_inequalities.json
+
+GLPK may select a different member of a tied optimum when its version or model
+ordering changes. The pinned toolchain makes the committed choice reproducible;
+exhaustive tests independently verify the exact relation and the established
+minimum cardinalities.
+
+The reproducible GLPK benchmark in
+``architecture/audits/data/sbox_milp_strategy_benchmark.json`` used ten runs
+of one optimized PRESENT S-box transition in the canonical ARM64 Docker
+image. Times below are medians in milliseconds; memory is the maximum reported
+by GLPK. This deliberately small workload establishes a controlled comparison,
+not a universal winner.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Semantics
+     - Strategy
+     - Variables
+     - Constraints
+     - Build ms
+     - Solve ms
+     - KiB
+   * - Differential
+     - one-hot
+     - 105
+     - 13
+     - 0.331
+     - 0.777
+     - 110
+   * - Differential
+     - full hull
+     - 11
+     - 512
+     - 1.488
+     - 1.874
+     - 566
+   * - Differential
+     - greedy
+     - 11
+     - 44
+     - 0.138
+     - 0.692
+     - 88
+   * - Differential
+     - minimum
+     - 11
+     - 39
+     - 0.122
+     - 0.703
+     - 83
+   * - Linear
+     - one-hot
+     - 141
+     - 13
+     - 0.477
+     - 0.921
+     - 141
+   * - Linear
+     - full hull
+     - 13
+     - 1,071
+     - 3.242
+     - 3.695
+     - 1,201
+   * - Linear
+     - greedy
+     - 13
+     - 61
+     - 0.190
+     - 0.753
+     - 111
+   * - Linear
+     - minimum
+     - 13
+     - 53
+     - 0.162
+     - 0.705
+     - 106
+
+The reduced formulations use far fewer variables than one-hot and far fewer
+constraints than the full hull, while solver times are close on this tiny
+case. Complete trail searches require separate benchmarks before any
+default-selection decision.
+
+Large-S-box Espresso strategy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Eight-bit S-boxes can explicitly select the recovered Espresso
+product-of-sums formulation. The committed AES bundle is validated against all
+65,536 input/output pairs when first loaded, then cached as immutable data.
+Espresso is needed only to regenerate the bundle:
+
+.. doctest::
+
+   >>> from claasp.representations.constraints.milp import SBoxXorDifferentialEspressoMILPModel
+   >>> aes_system = load_bundled_sbox_milp_inequalities(
+   ...     "aes", TrailKind.XOR_DIFFERENTIAL,
+   ...     SBoxMILPInequalityStrategy.ESPRESSO,
+   ... )
+   >>> aes_relation = SBoxXorDifferentialEspressoMILPModel(aes_system)
+   >>> aes_model = aes_relation.milp_model(input_pattern=1, output_pattern=31)
+   >>> aes_transition = aes_relation.decode_transition(aes_relation.witness(1, 31))
+   >>> (aes_transition.numerator, aes_transition.denominator, aes_transition.weight)
+   (4, 256, 6.0)
+   >>> (len(aes_model.variables), aes_relation.inequality_count)
+   (19, 8661)
+
+The legacy ``-okiss`` parser expected header lines not emitted by the Espresso
+2.3 executable in the CLAASP Docker image. The recovery therefore parses
+standard ``espresso -epos`` output and rejects empty output instead of copying
+the silent empty-constraint behavior. The generated clauses are independently
+checked as bit-set relations before a model is exposed.
+
+Regenerate the committed AES data with::
+
+   PYTHONPATH=src python tools/generate_large_sbox_milp_inequalities.py \
+       --name aes --builtin aes \
+       --output src/claasp/representations/constraints/milp/data/aes_sbox_milp_inequalities.json
+
+The five-run canonical-Docker benchmark is recorded in
+``architecture/audits/data/aes_sbox_milp_strategy_benchmark.json``. Construction
+medians below use the immutable bundle cache; ``Cold ms`` includes the first
+exhaustive bundle validation. Memory is the maximum reported by GLPK.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Semantics
+     - Strategy
+     - Variables
+     - Constraints
+     - Cold ms
+     - Build ms
+     - Solve ms
+     - MiB
+   * - Differential
+     - one-hot
+     - 32,402
+     - 25
+     - 223.5
+     - 226.4
+     - 316.7
+     - 40.8
+   * - Differential
+     - Espresso
+     - 19
+     - 8,687
+     - 1,739.1
+     - 82.2
+     - 94.2
+     - 15.6
+   * - Linear
+     - one-hot
+     - 60,962
+     - 25
+     - 437.9
+     - 488.9
+     - 670.7
+     - 76.7
+   * - Linear
+     - Espresso
+     - 33
+     - 38,498
+     - 5,693.7
+     - 382.1
+     - 300.5
+     - 56.7
+
+On this single-S-box workload Espresso trades many constraints for dramatically
+fewer binary variables, smaller LP exports, lower GLPK memory, and lower solve
+times after the one-time validation. One workload is not sufficient to change
+the portable one-hot default.
+
 ``WordwiseXorDifference.xor_many`` preserves known-term cancellation, including
 recovery of a lone nonzero term. ``propagate_dense_wordwise_activity`` retains
 the legacy 256-row model-5 abstraction only for a field-linear layer whose
@@ -157,7 +459,7 @@ masks and unary correlation weight:
    >>> addition = ModularAddLinearMILPModel(16)
    >>> arx_model = addition.milp_model(left_mask=0x6081, right_mask=0x40c1, output_mask=0x4081)
    >>> (len(arx_model.variables), len(arx_model.constraints))
-   (79, 124)
+   (79, 128)
 
 GLPK integration restores the four modular-add transitions of the legacy
 four-round Speck32/64 weight-3 characteristic, including weights

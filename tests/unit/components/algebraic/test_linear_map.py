@@ -4,22 +4,16 @@ from itertools import product
 
 import pytest
 
-from claasp import (
-    BinaryExtensionField,
-    Bit,
-    Primitive,
-    ScalarEvaluator,
-    TransposedBatchEvaluator,
-    ValueType,
-)
+from claasp import ArrayType, Primitive, ScalarEvaluator, TransposedBatchEvaluator
 from claasp.components import LinearMap
+from claasp.domains import BinaryExtensionField, Bit
 
 
 def _map_primitive(domain, matrix):
-    primitive = Primitive("linear_map", {"state": ValueType(domain, (len(matrix[0]),))})
-    primitive.add_round()
-    output = primitive.add_component(LinearMap(primitive.input("state"), matrix))
-    primitive.set_output(output)
+    primitive = Primitive("linear_map", {"state": ArrayType(domain, (len(matrix[0]),))})
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(LinearMap(primitive.graph.input("state"), matrix))
+    primitive._builder.set_output(output)
     return primitive
 
 
@@ -73,8 +67,8 @@ def test_aes_mix_columns_published_column_and_batch_parity():
 
 
 def test_linear_map_rejects_bad_shapes_and_noncanonical_coefficients():
-    primitive = Primitive("invalid", {"state": ValueType(Bit(), (2,))})
+    primitive = Primitive("invalid", {"state": ArrayType(Bit(), (2,))})
     with pytest.raises(ValueError, match="2 coefficients"):
-        LinearMap(primitive.input("state"), ((1,),))
+        LinearMap(primitive.graph.input("state"), ((1,),))
     with pytest.raises(ValueError, match="canonical element"):
-        LinearMap(primitive.input("state"), ((1, 2),))
+        LinearMap(primitive.graph.input("state"), ((1, 2),))

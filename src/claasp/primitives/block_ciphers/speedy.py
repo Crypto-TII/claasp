@@ -97,7 +97,7 @@ class Speedy(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Speedy()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x30c30c30c30c30c3', 190)
@@ -142,7 +142,7 @@ class Speedy(BitGraphPrimitive):
         key = BitState(INPUT_KEY, [list(range(key_bit_size))])
 
         for round_number in range(number_of_rounds - 1):
-            self.add_round()
+            self._builder.add_round()
 
             # the comments describe the point of view of the state
             # state is a whole of 6*l bits
@@ -212,7 +212,7 @@ class Speedy(BitGraphPrimitive):
             self.add_round_key_output_component([key.id], [list(range(6 * self.l))], 6 * self.l)
             self.add_round_output_component([block.id], [list(range(6 * self.l))], 6 * self.l)
 
-        self.add_round()
+        self._builder.add_round()
 
         # state is a whole of 6*l bits
         block = self.add_xor_component(

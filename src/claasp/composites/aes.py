@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from claasp.components import Add, BinaryAffineMap, Constant, LinearMap, Permutation, Power
 from claasp.composites.substitution import ParallelSBoxLayer
 from claasp.domains import BinaryExtensionField
-from claasp.graph import CompositeBuilder, CompositeDefinition, ValueType, as_selection
+from claasp.graph import ArrayType, CompositeBuilder, CompositeDefinition, as_selection
 from claasp.utils import binary_field_power, repeat_block_diagonal, rotate_left
 
 AES_FIELD = BinaryExtensionField(8, 0x11B)
@@ -70,7 +70,7 @@ def AESSubstitutionLayer(
         raise ValueError("the algebraic realization is defined only for the canonical AES S-box")
 
     builder = CompositeBuilder(
-        "AESSubstitutionLayer", {"state": ValueType(AES_FIELD, (unit_count,))}
+        "AESSubstitutionLayer", {"state": ArrayType(AES_FIELD, (unit_count,))}
     )
     builder.add_round()
     inverse = builder.add_component(Power(builder.input("state"), 254, component_id="inverse"))
@@ -111,9 +111,9 @@ def AESKeySchedule(
         raise ValueError(f"AES-{key_bit_size} requires between 1 and {standard_rounds} rounds")
     table = tuple(sbox_table)
     word_count = key_bit_size // 32
-    word_type = ValueType(AES_FIELD, (4,))
+    word_type = ArrayType(AES_FIELD, (4,))
     builder = CompositeBuilder(
-        "AESKeySchedule", {"key": ValueType(AES_FIELD, (key_bit_size // 8,))}
+        "AESKeySchedule", {"key": ArrayType(AES_FIELD, (key_bit_size // 8,))}
     )
     builder.add_round()
     words = [builder.input("key")[4 * index : 4 * index + 4] for index in range(word_count)]
@@ -190,7 +190,7 @@ def AESRound(
 
     if not isinstance(mix_columns, bool):
         raise TypeError("mix_columns must be a bool")
-    state_type = ValueType(AES_FIELD, (16,))
+    state_type = ArrayType(AES_FIELD, (16,))
     builder = CompositeBuilder("AESRound", {"state": state_type, "round_key": state_type})
     builder.add_round()
     substitution = builder.add_composite(

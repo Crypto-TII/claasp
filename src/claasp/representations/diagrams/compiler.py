@@ -61,13 +61,13 @@ class DiagramCompiler:
                 None,
                 values.get((AnnotationRole.INPUT, name)),
             )
-            for name in primitive.input_ports
+            for name in primitive.graph.input_ports
         ]
         edges = []
 
         def routed_edges(selected, destination_id, input_index):
             if selected.source.owner_id not in {
-                binding.binding_id for binding in primitive.bindings
+                binding.binding_id for binding in primitive.graph.bindings
             }:
                 return (
                     DiagramEdge(
@@ -78,7 +78,7 @@ class DiagramCompiler:
                     ),
                 )
             grouped = []
-            for owner_id, bit in primitive.selection_bit_sources(selected):
+            for owner_id, bit in primitive.graph.selection_bit_sources(selected):
                 if grouped and grouped[-1][0] == owner_id:
                     grouped[-1][1].append(bit)
                 else:
@@ -89,7 +89,7 @@ class DiagramCompiler:
             )
 
         rounds = []
-        for primitive_round in primitive.rounds:
+        for primitive_round in primitive.graph.rounds:
             round_ids = []
             for component in primitive_round.components:
                 component_id = component.component_id
@@ -106,7 +106,7 @@ class DiagramCompiler:
                 for input_index, selected in enumerate(component.inputs):
                     edges.extend(routed_edges(selected, component_id, input_index))
             rounds.append(DiagramRound(primitive_round.number, tuple(round_ids)))
-        if primitive.output is not None:
+        if primitive.graph.output is not None:
             nodes.append(
                 DiagramNode(
                     self.OUTPUT_ID,
@@ -116,7 +116,7 @@ class DiagramCompiler:
                     values.get((AnnotationRole.OUTPUT, "primitive_output")),
                 )
             )
-            edges.extend(routed_edges(primitive.output, self.OUTPUT_ID, 0))
+            edges.extend(routed_edges(primitive.graph.output, self.OUTPUT_ID, 0))
         return PrimitiveDiagram(primitive.family_name, tuple(nodes), tuple(edges), tuple(rounds))
 
 

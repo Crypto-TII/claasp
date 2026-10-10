@@ -23,7 +23,7 @@ class SPARX(Primitive):
     EXAMPLES::
 
         >>> primitive = SPARX()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x23b4b5ae05d40da7', 62)
@@ -43,8 +43,8 @@ class SPARX(Primitive):
         super().__init__(
             "sparx", {"plaintext": word_type(32, word_count), "key": word_type(32, key_count)}
         )
-        state = [select(self.input("plaintext"), i) for i in range(word_count)]
-        key = [select(self.input("key"), i) for i in range(key_count)]
+        state = [select(self.graph.input("plaintext"), i) for i in range(word_count)]
+        key = [select(self.graph.input("key"), i) for i in range(key_count)]
 
         def halves(value):
             split = split_word(self, value, 16)
@@ -104,7 +104,7 @@ class SPARX(Primitive):
             return [xor(self, values[2], new_x), xor(self, values[3], new_y), x, y]
 
         for round_number in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             updated = []
             for index, value in enumerate(state):
                 for arx_round in range(arx_rounds):
@@ -113,4 +113,4 @@ class SPARX(Primitive):
                 key = key_update(key, round_number * word_count + index + 1)
             state = diffusion(updated)
         state = [xor(self, value, key[index]) for index, value in enumerate(state)]
-        self.set_output(concatenate(self, *state))
+        self._builder.set_output(concatenate(self, *state))

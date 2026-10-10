@@ -567,16 +567,16 @@ def propagate_two_word_speck_round(
         True
     """
 
-    plaintext = primitive.input_ports.get("plaintext")
+    plaintext = primitive.graph.input_ports.get("plaintext")
     if primitive.family_name != "speck" or plaintext is None:
         raise ValueError("primitive must be Speck")
-    width = plaintext.value_type.domain.width
+    width = plaintext.array_type.domain.width
     if len(difference.bits) != 2 * width:
         raise ValueError("difference width must match the Speck block")
     if (
         not isinstance(round_number, int)
         or isinstance(round_number, bool)
-        or not 0 <= round_number < len(primitive.rounds)
+        or not 0 <= round_number < len(primitive.graph.rounds)
     ):
         raise ValueError("round_number is outside the primitive")
     alpha = _speck_rotation(primitive, round_number, "right").amount
@@ -605,13 +605,13 @@ def propagate_two_word_speck_inverse_round(
         True
     """
 
-    plaintext = primitive.input_ports.get("plaintext")
+    plaintext = primitive.graph.input_ports.get("plaintext")
     if primitive.family_name != "speck" or plaintext is None:
         raise ValueError("primitive must be Speck")
-    width = plaintext.value_type.domain.width
+    width = plaintext.array_type.domain.width
     if len(difference.bits) != 2 * width:
         raise ValueError("difference width must match the Speck block")
-    if not 0 <= round_number < len(primitive.rounds):
+    if not 0 <= round_number < len(primitive.graph.rounds):
         raise ValueError("round_number is outside the primitive")
     alpha = _speck_rotation(primitive, round_number, "right").amount
     beta = _speck_rotation(primitive, round_number, "left").amount
@@ -706,11 +706,11 @@ def propagate_single_active_aes_byte(
         True
     """
 
-    if primitive.family_name != "aes" or len(primitive.rounds) < 2:
+    if primitive.family_name != "aes" or len(primitive.graph.rounds) < 2:
         raise ValueError("primitive must contain at least one AES round")
     if not isinstance(byte_index, int) or isinstance(byte_index, bool) or not 0 <= byte_index < 16:
         raise ValueError("byte_index must be in range(16)")
-    boundaries = primitive.round_states[0]
+    boundaries = primitive.graph.intermediate_outputs[0]
     shifted = _named_component(
         primitive,
         boundaries["shift_rows"].owner_id,
@@ -743,12 +743,14 @@ def propagate_single_active_aes_byte(
 
 def _rotation(primitive: Primitive, component_id: str) -> Rotate:
     component = next(
-        (item for item in primitive.components if item.component_id == component_id), None
+        (item for item in primitive.graph.components if item.component_id == component_id), None
     )
     if component is None and primitive.family_name == "speck":
         parts = component_id.split("_")
         if len(parts) == 4 and parts[0] == "round" and parts[1].isdigit():
-            component = primitive.round_operations[int(parts[1])].get(f"rotate_{parts[3]}")
+            component = primitive.graph._intermediate_components[int(parts[1])].get(
+                f"rotate_{parts[3]}"
+            )
     if not isinstance(component, Rotate):
         raise ValueError(f"primitive is missing rotation {component_id!r}")
     return component
@@ -756,7 +758,7 @@ def _rotation(primitive: Primitive, component_id: str) -> Rotate:
 
 def _speck_rotation(primitive: Primitive, round_number: int, direction: str) -> Rotate:
     try:
-        component = primitive.round_operations[round_number][f"rotate_{direction}"]
+        component = primitive.graph._intermediate_components[round_number][f"rotate_{direction}"]
     except (AttributeError, IndexError, KeyError) as error:
         raise ValueError(f"primitive lacks Speck round {round_number} metadata") from error
     if not isinstance(component, Rotate):
@@ -766,7 +768,7 @@ def _speck_rotation(primitive: Primitive, round_number: int, direction: str) -> 
 
 def _named_component(primitive: Primitive, component_id: str, expected_type):
     component = next(
-        (item for item in primitive.components if item.component_id == component_id), None
+        (item for item in primitive.graph.components if item.component_id == component_id), None
     )
     if not isinstance(component, expected_type):
         raise ValueError(f"primitive is missing {component_id!r}")

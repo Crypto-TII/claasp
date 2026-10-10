@@ -48,7 +48,7 @@ class MD5(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = MD5()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xac1d1f03d08ea56e', 128)
@@ -106,7 +106,7 @@ class MD5(BitGraphPrimitive):
             BitState(INPUT_MESSAGE, [list(range(14 * self.word_size, 15 * self.word_size))]),
         ]
 
-        self.add_round()
+        self._builder.add_round()
 
         A = self.add_constant_component(self.word_size, 0x67452301)
         B = self.add_constant_component(self.word_size, 0xEFCDAB89)
@@ -122,7 +122,7 @@ class MD5(BitGraphPrimitive):
 
         for i in range(1, number_of_rounds):
             self.add_round_output_component_in_md5(A, B, C, D)
-            self.add_round()
+            self._builder.add_round()
             index = i // 16
             A, B, C, D = self.md5_step(
                 A, B, C, D, k[index](i), s[index][i % 4], i, aux[index], X, T

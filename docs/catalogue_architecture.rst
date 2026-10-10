@@ -27,7 +27,7 @@ Primitive and input metadata
 ``Primitive.kind`` is a ``PrimitiveKind`` value describing the mathematical
 interface: function, permutation, block function, block primitive, or tweakable
 block primitive. It does not select an evaluator. ``PrimitiveInput`` keeps a
-boundary's ``ValueType``, semantic role, and ``InputVisibility`` together.
+boundary's ``ArrayType``, semantic role, and ``InputVisibility`` together.
 Conventional ``key`` inputs default to secret; other inputs default to public.
 Source can be explicit with ``public_input`` and ``secret_input``.
 

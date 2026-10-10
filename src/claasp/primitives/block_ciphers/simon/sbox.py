@@ -102,7 +102,7 @@ class SimonSbox(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = SimonSbox()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x5ae828ec', 31)
@@ -149,7 +149,7 @@ class SimonSbox(BitGraphPrimitive):
         round_keys = [None] * number_of_rounds
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             self.generate_round_key(round_keys, round_number)
             x, y = self.feistel_function(x, y, round_keys[round_number])
 

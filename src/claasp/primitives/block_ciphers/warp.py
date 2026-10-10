@@ -167,7 +167,7 @@ class Warp(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Warp()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x3b91ccb836ac49c7', 126)
@@ -201,7 +201,7 @@ class Warp(BitGraphPrimitive):
         key_0_1 = (key_0, key_1)
 
         for r in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             state = self._round_function(state, key_0_1, r)
 
             inputs_id, inputs_pos = get_inputs_parameter(state)

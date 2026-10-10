@@ -35,14 +35,14 @@ state, key unit ``m`` is loaded at ``s(80 - m)`` and IV unit ``m`` at
 
 from claasp.components import BitwiseAnd, Constant, Xor
 from claasp.domains import Word
-from claasp.graph import Port, Primitive, Selection, ValueType
+from claasp.graph import ArrayType, Port, Primitive, Selection
 
 KEY_BIT_SIZE = 80
 IV_BIT_SIZE = 80
 STATE_BIT_SIZE = 288
 STANDARD_INITIALIZATION_CLOCKS = 4 * 288
 
-_BIT = ValueType(Word(1), (1,))
+_BIT = ArrayType(Word(1), (1,))
 #: ``(tap_a, tap_b, and_left, and_right, feedback_tap)`` for ``t1``, ``t2`` and
 #: ``t3``, using the specification's one-based state indices.
 _REGISTERS = (
@@ -111,14 +111,14 @@ class Trivium(Primitive):
     A reduced instance exposes the same graph with fewer clocks:
 
         >>> reduced = Trivium(number_of_initialization_clocks=13, keystream_bit_size=1)
-        >>> len(reduced.rounds), reduced.evaluate(key=1 << 79, iv=0)
+        >>> len(reduced.graph.rounds), reduced.evaluate(key=1 << 79, iv=0)
         (15, 1)
 
 
     EXAMPLES::
 
         >>> primitive = Trivium()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xdf07fd641a9aa0d8', 64)
@@ -142,17 +142,17 @@ class Trivium(Primitive):
         super().__init__(
             "trivium",
             {
-                "key": ValueType(Word(1), (KEY_BIT_SIZE,)),
-                "iv": ValueType(Word(1), (IV_BIT_SIZE,)),
+                "key": ArrayType(Word(1), (KEY_BIT_SIZE,)),
+                "iv": ArrayType(Word(1), (IV_BIT_SIZE,)),
             },
         )
         self.number_of_initialization_clocks = clocks
         self.keystream_bit_size = keystream_bit_size
 
-        self.add_round()
-        zero = self.add_component(Constant(_BIT, (0,), component_id="zero"))[0]
-        one = self.add_component(Constant(_BIT, (1,), component_id="one"))[0]
-        key, iv = self.input("key"), self.input("iv")
+        self._builder.add_round()
+        zero = self._builder.add_component(Constant(_BIT, (0,), component_id="zero"))[0]
+        one = self._builder.add_component(Constant(_BIT, (1,), component_id="one"))[0]
+        key, iv = self.graph.input("key"), self.graph.input("iv")
         state: list[Port | Selection] = (
             # register A: s1..s80 hold the key, s81..s93 are zero
             [key[KEY_BIT_SIZE - 1 - index] for index in range(KEY_BIT_SIZE)]
@@ -169,26 +169,28 @@ class Trivium(Primitive):
 
         keystream = []
         for clock in range(clocks + keystream_bit_size):
-            self.add_round()
+            self._builder.add_round()
             emitting = clock >= clocks
             state, keystream_bit = self._clock(state, emitting)
             if emitting:
                 keystream.append(keystream_bit)
-        self.set_output(keystream if keystream_bit_size else state)
+        self._builder.set_output(keystream if keystream_bit_size else state)
 
     def _clock(self, state, emitting):
         """Apply one Trivium state update and optionally emit a keystream bit."""
 
         keystream_bit = None
         if emitting:
-            keystream_bit = self.add_component(
+            keystream_bit = self._builder.add_component(
                 Xor([state[index - 1] for register in _REGISTERS for index in register[:2]])
             )
         feedback = []
         for tap_a, tap_b, and_left, and_right, feedback_tap in _REGISTERS:
-            product = self.add_component(BitwiseAnd((state[and_left - 1], state[and_right - 1])))
+            product = self._builder.add_component(
+                BitwiseAnd((state[and_left - 1], state[and_right - 1]))
+            )
             feedback.append(
-                self.add_component(
+                self._builder.add_component(
                     Xor(
                         (
                             state[tap_a - 1],

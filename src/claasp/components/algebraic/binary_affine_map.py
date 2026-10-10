@@ -29,7 +29,7 @@ class BinaryAffineMap(Component):
         component_id: str | None = None,
     ) -> None:
         component_input = as_selection(component_input)
-        domain = component_input.value_type.domain
+        domain = component_input.array_type.domain
         if not isinstance(domain, BinaryExtensionField):
             raise ValueError("binary affine maps require a binary-extension-field domain")
         frozen = tuple(tuple(row) for row in matrix)
@@ -40,7 +40,7 @@ class BinaryAffineMap(Component):
         domain.validate(offset)
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
-        object.__setattr__(self, "output_type", component_input.value_type)
+        object.__setattr__(self, "output_type", component_input.array_type)
         object.__setattr__(self, "matrix", frozen)
         object.__setattr__(self, "offset", offset)
         Component.__post_init__(self)

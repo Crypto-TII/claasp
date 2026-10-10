@@ -3,23 +3,51 @@ import subprocess
 
 import pytest
 
+from claasp import ArrayType, Primitive
 from claasp.analysis import AnalysisProblem, FixedValue
+from claasp.components import ModularAdd
+from claasp.domains import Word
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
-from claasp.primitives import AES, BitVectorSBox, Present, Simon, Speck
+from claasp.primitives import AES, BitVectorSBox, Present, Simon, Speck, ToyAES, ToySpeck
+from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints.cp import (
+    HybridImpossibleBoundaryCPModel,
+    HybridSBoxCPModel,
+    HybridXorCPModel,
     ImpossibleBoundaryCPModel,
     MiniZincModel,
+    ModularAddBoomerangCPModel,
+    ModularAddBoomerangTrailCPModel,
+    ModularAddDeterministicTruncatedCPModel,
+    PresentActiveSBoxesCPModel,
     PresentDifferentialCPModel,
+    PresentFixedActiveSBoxesCPModel,
+    PresentHybridImpossibleCPModel,
     PresentLinearCPModel,
+    PresentProbabilisticKeyScheduleCPModel,
     ProbabilisticTruncatedModularAddCPModel,
     SBoxBoomerangCPModel,
+    SBoxBoomerangTrailCPModel,
     SBoxDifferenceCPModel,
     SimonImpossibleCPModel,
+    SpeckARXWindowDifferentialCPModel,
+    SpeckBoomerangCPModel,
+    SpeckContinuousHeuristicCPModel,
+    SpeckContinuousMaskOptimizationCPModel,
     SpeckDifferentialCPModel,
     SpeckImpossibleCPModel,
     SpeckProbabilisticTruncatedCPModel,
+    SpeckSemiDeterministicTruncatedCPModel,
     SpeckTruncatedCPModel,
+    WordDeterministicDifferentialLinearCPModel,
+    WordDeterministicTruncatedCPModel,
+    WordDifferentialCPModel,
+    WordImpossibleCPModel,
+    WordLinearCPModel,
+    WordSemiDeterministicDifferentialLinearCPModel,
+    WordwiseDeterministicTruncatedCPModel,
     WordwiseDifferenceCPModel,
+    WordwiseImpossibleCPModel,
 )
 from claasp.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -42,6 +70,326 @@ from claasp.semantics.cryptanalysis import (
 )
 
 pytestmark = pytest.mark.external
+
+
+def test_minizinc_modadd_boomerang_automaton_accepts_exactly_possible_switches():
+    possible = ModularAddBoomerangCPModel(
+        4, delta_left=1, delta_right=0, nabla_output=1, nabla_right=0
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(possible.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    assert possible.decode_connectivity(solved.assignment).count == 128
+
+    impossible = ModularAddBoomerangCPModel(
+        2, delta_left=0, delta_right=1, nabla_output=0, nabla_right=1
+    )
+    rejected = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(
+        impossible.cp_model()
+    )
+    assert rejected.status is CPStatus.UNSATISFIABLE
+
+
+def test_minizinc_solves_and_decodes_complete_modadd_boomerang_composition():
+    def graph(name):
+        primitive = Primitive(
+            name,
+            {
+                "left": ArrayType(Word(4), (1,)),
+                "right": ArrayType(Word(4), (1,)),
+            },
+        )
+        primitive._builder.add_round()
+        primitive._builder.set_output(
+            primitive._builder.add_component(
+                ModularAdd((primitive.graph.input("left"), primitive.graph.input("right")))
+            )
+        )
+        return primitive
+
+    options = {
+        "maximum_weight": 3,
+        "nonzero_input": "left",
+        "fixed_input_differences": {"right": 0},
+    }
+    model = ModularAddBoomerangTrailCPModel(
+        WordDifferentialCPModel(graph("upper"), **options),
+        WordDifferentialCPModel(graph("lower"), **options),
+        ModularAddBoomerangCPModel(4),
+        lower_input="left",
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.upper.output_difference == trail.switch.delta_left.value
+    assert dict(trail.lower.input_differences)["left"] == trail.switch.nabla_right.value
+    assert trail.total_weight >= trail.search_weight
+
+
+def test_minizinc_solves_automatically_partitioned_speck_boomerang_composition():
+    model = SpeckBoomerangCPModel(
+        Speck(number_of_rounds=3),
+        switch_round=1,
+        upper_maximum_weight=20,
+        lower_maximum_weight=20,
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.switch.is_possible
+    assert trail.total_weight >= trail.search_weight
+
+
+def test_minizinc_continuous_speck_matches_independent_python_heuristic():
+    left = (-1.0, -1.0, -1.0, 1.0) + (-1.0,) * 12
+    right = (-1.0, 1.0, -1.0, 1.0) + (-1.0,) * 12
+    model = SpeckContinuousHeuristicCPModel(left, right, rounds=2)
+    solved = MiniZincSolver(solver="gecode", timeout_seconds=30).solve(model.cp_model())
+    result = model.decode_result(solved.assignment)
+    assert solved.status is CPStatus.SATISFIED
+    assert result.claim_kind == "heuristic"
+    assert result.values[3] == pytest.approx(0.8497372377, abs=result.tolerance)
+
+
+def test_minizinc_validates_exact_mask_selection_for_fixed_continuous_speck():
+    left = (-1.0, -1.0, -1.0, 1.0) + (-1.0,) * 12
+    right = (-1.0, 1.0, -1.0, 1.0) + (-1.0,) * 12
+    model = SpeckContinuousMaskOptimizationCPModel(left, right, rounds=2)
+    solved = MiniZincSolver(solver="gecode", timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    result = model.decode_optimization(solved.assignment)
+    assert result.selected_positions == model.optimal_positions
+    assert result.claim_kind == "heuristic"
+
+
+@pytest.mark.parametrize(
+    "forward,backward,expected_bitwise,expected_groups",
+    (
+        ((0, 2, 2, 2), (1, 2, 2, 2), (0,), ()),
+        ((10, 10, 10, 10), (0, 0, 0, 0), (), (0,)),
+    ),
+)
+def test_minizinc_solves_reviewed_hybrid_impossible_boundaries(
+    forward, backward, expected_bitwise, expected_groups
+):
+    model = HybridImpossibleBoundaryCPModel(4, ((0, 1, 2, 3),))
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(
+        model.cp_model(forward=forward, backward=backward)
+    )
+    assert solved.status is CPStatus.SATISFIED
+    result = model.decode_boundary(solved.assignment)
+    assert (result.bitwise_positions, result.tagged_groups) == (
+        expected_bitwise,
+        expected_groups,
+    )
+
+
+def test_minizinc_rejects_compatible_hybrid_boundary():
+    model = HybridImpossibleBoundaryCPModel(4, ((0, 1, 2, 3),))
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(
+        model.cp_model(forward=(10, 10, 10, 10), backward=(10, 10, 10, 10))
+    )
+    assert solved.status is CPStatus.UNSATISFIABLE
+
+
+def test_minizinc_preserves_hybrid_tag_through_zero_xor():
+    model = HybridXorCPModel(2)
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(
+        model.cp_model(left=(10, 0), right=(0, 1), output=(10, 1))
+    )
+    assert solved.status is CPStatus.SATISFIED
+    assert model.decode_transition(solved.assignment) == ((10, 0), (0, 1), (10, 1))
+
+
+@pytest.mark.parametrize(
+    "source,target",
+    (
+        ((0, 0, 0, 0), (0, 0, 0, 0)),
+        ((1, 0, 0, 0), (20, 20, 20, 20)),
+        ((10, 10, 10, 10), (20, 20, 20, 20)),
+        ((10, 0, 10, 0), (2, 2, 2, 2)),
+    ),
+)
+def test_minizinc_preserves_hybrid_sbox_branches(source, target):
+    model = HybridSBoxCPModel(PRESENT_SBOX, output_tag=20)
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(
+        model.cp_model(input_pattern=source, output_pattern=target)
+    )
+    assert solved.status is CPStatus.SATISFIED
+    assert model.decode_transition(solved.assignment) == (source, target)
+
+
+def test_minizinc_solves_complete_present_hybrid_impossible_graph():
+    model = PresentHybridImpossibleCPModel(Present(number_of_rounds=2), middle_round=1)
+    single_active_bit = (1,) + (0,) * 63
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(
+        model.cp_model(
+            input_pattern=single_active_bit,
+            output_pattern=single_active_bit,
+        )
+    )
+    assert solved.status is CPStatus.SATISFIED
+    boundary = model.decode_boundary(solved.assignment)
+    assert boundary.bitwise_positions or boundary.tagged_groups
+
+
+def test_minizinc_solves_exact_present_probabilistic_key_schedule():
+    model = PresentProbabilisticKeyScheduleCPModel(
+        Present(number_of_rounds=2), input_difference=1 << 18
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.input_difference == 1 << 18
+    assert trail.total_weight == 2
+    assert trail.total_weight == sum(trail.sbox_weights)
+
+
+def test_minizinc_proves_present_two_round_active_sbox_optimum():
+    model = PresentActiveSBoxesCPModel(Present(number_of_rounds=2))
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert (
+        sum(
+            bool(solved.assignment[f"active_{round_number}_{nibble}"])
+            for round_number in range(1, 3)
+            for nibble in range(16)
+        )
+        == 2
+    )
+    assert len(trail.steps) == 32
+
+
+def test_minizinc_solves_opt_in_speck_arx_window_search():
+    model = SpeckARXWindowDifferentialCPModel(
+        PropagationProblem(Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=45),
+        window_sizes=(3, 3, 3),
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.total_weight <= 45
+
+
+def test_minizinc_minimizes_weight_at_fixed_present_activity():
+    model = PresentFixedActiveSBoxesCPModel(Present(number_of_rounds=2), active_sboxes=2)
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    active = sum(
+        bool(solved.assignment[f"active_{round_number}_{nibble}"])
+        for round_number in range(1, 3)
+        for nibble in range(16)
+    )
+    assert active == 2
+    assert trail.total_weight == 4
+
+
+def test_minizinc_preserves_deterministic_truncated_modular_add_relation():
+    solver = MiniZincSolver(solver=_test_solver())
+    accepted_model = ModularAddDeterministicTruncatedCPModel(4)
+    accepted = solver.solve(
+        accepted_model.cp_model(left_pattern="0001", right_pattern="0001", output_pattern="???0")
+    )
+    assert accepted.status is CPStatus.SATISFIED
+    assert tuple(map(str, accepted_model.decode_transition(accepted.assignment))) == (
+        "0001",
+        "0001",
+        "???0",
+    )
+
+    rejected_model = ModularAddDeterministicTruncatedCPModel(4)
+    rejected = solver.solve(
+        rejected_model.cp_model(left_pattern="0001", right_pattern="0001", output_pattern="0000")
+    )
+    assert rejected.status is CPStatus.UNSATISFIABLE
+
+
+def test_minizinc_preserves_generic_deterministic_truncated_toy_speck_trail():
+    solver = MiniZincSolver(solver=_test_solver())
+    fixed = {"plaintext": "00000001", "key": "0" * 16}
+    model = WordDeterministicTruncatedCPModel(
+        ToySpeck(2), fixed_input_patterns=fixed, output_pattern="???0????"
+    )
+    solved = solver.solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_characteristic(solved.assignment)
+    assert str(trail.output_pattern) == "???0????"
+    assert model.check_characteristic(trail)
+
+    rejected = WordDeterministicTruncatedCPModel(
+        ToySpeck(2), fixed_input_patterns=fixed, output_pattern="00000000"
+    )
+    assert solver.solve(rejected.cp_model()).status is CPStatus.UNSATISFIABLE
+
+
+@pytest.mark.parametrize(
+    "model",
+    (
+        WordDifferentialCPModel(
+            ToySpeck(2),
+            fixed_weight=1,
+            fixed_input_differences={"key": 0},
+            nonzero_input="plaintext",
+        ),
+        WordLinearCPModel(
+            ToySpeck(3),
+            maximum_weight=1,
+            fixed_inputs={"key": 0},
+            nonzero_input="plaintext",
+        ),
+    ),
+)
+def test_minizinc_preserves_generic_weighted_word_trails(model):
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_characteristic(solved.assignment)
+    assert 0 <= trail.total_weight <= 1
+    assert model.check_characteristic(trail)
+
+
+def test_minizinc_preserves_deterministic_differential_linear_composition():
+    model = WordDeterministicDifferentialLinearCPModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=1,
+        middle_rounds=1,
+        differential_maximum_weight=16,
+        linear_maximum_weight=16,
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.linear.output_mask != 0
+
+
+def test_minizinc_preserves_semi_deterministic_differential_linear_composition():
+    model = WordSemiDeterministicDifferentialLinearCPModel(
+        Speck(number_of_rounds=3),
+        prefix_rounds=1,
+        middle_rounds=1,
+        differential_maximum_weight=16,
+        middle_maximum_scaled_weight=None,
+        linear_maximum_weight=16,
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.linear.output_mask != 0
+    assert trail.middle_weight >= 0
+
+
+def test_minizinc_preserves_semi_deterministic_truncated_speck_trail():
+    output_pattern = "???????????????1???????????????1"
+    model = SpeckSemiDeterministicTruncatedCPModel(
+        Speck(number_of_rounds=2),
+        "00000000011111001110000000000000",
+        output_pattern,
+    )
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert str(trail.output_pattern) == output_pattern
+    assert len(trail.transitions) == 2
 
 
 def _test_solver(*, require_chuffed=False):
@@ -121,7 +469,7 @@ def test_minizinc_recovers_and_independently_verifies_reduced_speck_key():
     plaintext = 0x6574694C
     ciphertext = primitive.evaluate(plaintext, 0x1918111009080100)
 
-    result = primitive.analyze().recover_input(
+    result = primitive.analysis.recover_input(
         "key",
         known_inputs={"plaintext": plaintext},
         output=ciphertext,
@@ -137,13 +485,13 @@ def test_minizinc_reproduces_legacy_full_speck_missing_bits_result():
     problem = AnalysisProblem(
         primitive,
         (
-            FixedValue(primitive.input("plaintext"), 0x6574694C),
-            FixedValue(primitive.input("key"), 0x1918111009080100),
+            FixedValue(primitive.graph.input("plaintext"), 0x6574694C),
+            FixedValue(primitive.graph.input("key"), 0x1918111009080100),
         ),
-        {"ciphertext": primitive.output},
+        {"ciphertext": primitive.graph.output},
     )
 
-    result = primitive.analyze().solve(
+    result = primitive.analysis.solve(
         problem,
         MiniZincSolver(solver=_test_solver(), timeout_seconds=60),
     )
@@ -252,7 +600,7 @@ def test_minizinc_proves_impossible_and_possible_present_sbox_pairs():
 
 def test_minizinc_preserves_exact_present_boomerang_connectivity_entries():
     primitive = Present(number_of_rounds=1)
-    component = next(item for item in primitive.components if item.component_id == "sbox_1_0")
+    component = next(item for item in primitive.graph.components if item.component_id == "sbox_1_0")
     solver = MiniZincSolver(solver=_test_solver())
 
     impossible = SBoxBoomerangCPModel(component, 1, 1)
@@ -264,6 +612,24 @@ def test_minizinc_preserves_exact_present_boomerang_connectivity_entries():
     assert solved.status is CPStatus.SATISFIED
     assert entry.count == 4
     assert entry.weight == 2
+
+
+def test_minizinc_solves_and_decodes_present_sbox_boomerang_composition():
+    upper = PresentDifferentialCPModel(
+        PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
+    )
+    lower = PresentDifferentialCPModel(
+        PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
+    )
+    component = next(
+        item for item in upper.primitive.graph.components if item.component_id == "sbox_1_0"
+    )
+    model = SBoxBoomerangTrailCPModel(upper, lower, SBoxBoomerangCPModel(component), nibble=0)
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    assert solved.status is CPStatus.SATISFIED
+    trail = model.decode_trail(solved.assignment)
+    assert trail.switch.is_possible
+    assert trail.total_weight >= trail.search_weight
 
 
 @pytest.mark.emulation_sensitive
@@ -498,6 +864,29 @@ def test_minizinc_projects_wordwise_aes_single_byte_diffusion_fixture():
     assert all(word.kind is WordwiseDifferenceKind.ZERO for word in decoded[4:])
 
 
+def test_minizinc_solves_complete_four_state_wordwise_graph():
+    zero = WordwiseXorDifference(4, WordwiseDifferenceKind.ZERO)
+    model = WordwiseDeterministicTruncatedCPModel(
+        ToyAES(number_of_rounds=1, word_size=4, state_size=2),
+        fixed_input_differences={
+            "plaintext": (WordwiseXorDifference.known(4, 1), zero, zero, zero)
+        },
+        zero_difference_inputs=("key",),
+    )
+
+    solved = MiniZincSolver(solver=_test_solver(), timeout_seconds=30).solve(model.cp_model())
+    trail = model.decode_characteristic(solved.assignment)
+
+    assert solved.status is CPStatus.SATISFIED
+    assert tuple(item.kind for item in trail.output_differences) == (
+        WordwiseDifferenceKind.NONZERO,
+        WordwiseDifferenceKind.ZERO,
+        WordwiseDifferenceKind.ZERO,
+        WordwiseDifferenceKind.ZERO,
+    )
+    assert model.check_characteristic(trail)
+
+
 def test_minizinc_proves_and_decodes_an_impossible_middle_boundary():
     model = ImpossibleBoundaryCPModel(
         ImpossiblePropagationBoundary(
@@ -538,6 +927,41 @@ def test_minizinc_preserves_legacy_speck_seven_round_impossible_unsat():
         "legacy MznImpossibleXorDifferentialModel Speck32/64 fixture",
         "7 rounds, split after round 3, zero key difference",
     )
+
+
+def test_minizinc_solves_generic_word_impossible_split():
+    model = WordImpossibleCPModel(
+        Speck(number_of_rounds=3),
+        middle_round=1,
+        active_input="plaintext",
+        zero_difference_inputs=("key",),
+    )
+    solved = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=30).solve(
+        model.cp_model()
+    )
+    assert solved.status is CPStatus.SATISFIED
+    assert model.decode_trail(solved.assignment).boundary.is_impossible
+
+
+def test_minizinc_solves_complete_wordwise_impossible_graphs():
+    model = WordwiseImpossibleCPModel(
+        ToyAES(number_of_rounds=2, word_size=4, state_size=2),
+        middle_round=1,
+        active_input="plaintext",
+        zero_difference_inputs=("key",),
+    )
+    solved = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=30).solve(
+        model.cp_model()
+    )
+    trail = model.decode_trail(solved.assignment)
+
+    assert solved.status is CPStatus.SATISFIED
+    assert len(trail.middle.contradictory_positions) == 1
+    position = trail.middle.contradictory_positions[0]
+    assert (
+        trail.middle.forward_states[position],
+        trail.middle.backward_states[position],
+    ) in model._sat_model._INCOMPATIBLE
 
 
 def test_minizinc_preserves_legacy_simon_eleven_round_impossible_fixture():

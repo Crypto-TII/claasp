@@ -1,8 +1,8 @@
-Primitive catalogue
-===================
+Primitives catalogue
+====================
 
-The public catalogue contains every fixed-length primitive tracked by the v5
-migration inventory. Classes are available from ``claasp.primitives`` for
+The public catalogue describes the fixed-length primitives supported by
+CLAASP. Classes are available from ``claasp.primitives`` for
 ordinary use and from semantic category modules when the distinction matters:
 
 * ``block_ciphers`` and ``tweakable_block_ciphers`` are keyed permutations;
@@ -88,7 +88,7 @@ than being inferred from package names. Queries work in either direction:
    >>> [item.name for item in catalogue.components(representation="boolean_cnf")]
    ['Add', 'BitVectorSBox', 'BitwiseAnd', 'Constant', 'Identity', 'ModularAdd', 'Permutation', 'Rotate', 'Xor']
    >>> [item.name for item in catalogue.drivers(representation="boolean_cnf")]
-   ['minizinc', 'minisat', 'z3', 'glpk']
+   ['minizinc', 'kissat', 'cryptominisat', 'minisat', 'z3', 'glpk']
    >>> "enumerate_xor_differential_trails" in {
    ...     item.name for item in catalogue.analyses(primitive="Speck")}
    True
@@ -96,11 +96,11 @@ than being inferred from package names. Queries work in either direction:
    ...     item.name for item in catalogue.analyses(primitive="AES")}
    True
 
-These declarations are conservative. For example, AES is not advertised for
-the generic Boolean-CNF analysis merely because a CNF module exists: its graph
-contains component semantics that the current CNF lowering does not implement.
-Records for reduced-round reviewed analyses carry their parameter restriction
-explicitly.
+These declarations are conservative. For example, a reduced one-round AES
+graph has an exact generic SAT trail regression, but the catalogue does not
+advertise that analysis for the whole AES family until the supported parameter
+range is declared. When an analysis supports only particular primitive
+parameters, its catalogue record states that restriction explicitly.
 
 Formatting these records as terminal tables, Markdown, CSV, JSON, or dataframes
 belongs to the report/presentation layer rather than catalogue semantics.
@@ -112,7 +112,7 @@ whole-bit-vector lookup from a lookup applied independently to typed units:
 
 .. doctest::
 
-   >>> from claasp import Word
+   >>> from claasp.domains import Word
    >>> from claasp.primitives.single_component_primitives import BitVectorSBox, SBox
    >>> BitVectorSBox(2, [3, 2, 1, 0]).evaluate(1)
    2
@@ -133,9 +133,9 @@ secret by default, while plaintexts, states, tweaks, and nonces are public:
    >>> aes = AES()
    >>> aes.kind is PrimitiveKind.BLOCK_CIPHER
    True
-   >>> aes.secret_inputs
+   >>> aes.graph.secret_inputs
    ('key',)
-   >>> aes.input_descriptor("plaintext").visibility is InputVisibility.PUBLIC
+   >>> aes.graph.input_descriptor("plaintext").visibility is InputVisibility.PUBLIC
    True
 
 Visibility describes a study, not the value or the graph. A known-key study
@@ -143,10 +143,10 @@ can therefore derive new metadata without rebuilding or mutating AES:
 
 .. doctest::
 
-   >>> known_key = aes.with_input_visibility(key="public")
-   >>> known_key.secret_inputs
+   >>> known_key = aes.edit.with_input_visibility(key="public")
+   >>> known_key.graph.secret_inputs
    ()
-   >>> aes.secret_inputs
+   >>> aes.graph.secret_inputs
    ('key',)
 
 Custom authors may use ``public_input`` and ``secret_input`` when conventional
@@ -163,7 +163,7 @@ is still the same 320-bit permutation family:
 
    >>> from claasp.primitives import Ascon
    >>> ascon = Ascon(number_of_rounds=4)
-   >>> len(ascon.rounds)
+   >>> len(ascon.graph.rounds)
    4
    >>> f"{ascon.evaluate(0):080x}"[:16]
    '6e5a585776456145'
@@ -182,7 +182,7 @@ study variants therefore do not depend on a pre-exported graph file:
 
 .. doctest::
 
-   >>> len(Ascon(number_of_rounds=5).rounds)
+   >>> len(Ascon(number_of_rounds=5).graph.rounds)
    5
 
 The implementation is ordinary Python in
@@ -214,6 +214,6 @@ realizations without changing the canonical import path. For example,
 and feedback-register realizations. AES uses a package for reusable blocks and
 multiple realizations, LowMC for vetted constant files, and Poseidon for its
 typed parameter catalogue and licensed data. Simon, Simeck, and Gimli S-box
-forms are labelled legacy-regression realizations, not descriptions of their
-canonical specifications. There are no runtime frozen-graph indexes or
+forms are explicitly labelled alternate realizations, not descriptions of
+their canonical specifications. There are no runtime frozen-graph indexes or
 compressed graph specifications.

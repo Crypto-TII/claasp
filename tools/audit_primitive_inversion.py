@@ -25,35 +25,35 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_REPORT = ROOT / "docs" / "primitive_inversion_audit.md"
+DEFAULT_REPORT = ROOT / "docs" / "architecture" / "audits" / "primitive_inversion_audit.md"
 
 
 class _InversionTimeout(Exception):
     pass
 
 
-def _encoded_value(value_type, seed: bytes):
+def _encoded_value(array_type, seed: bytes):
     from claasp.domains import PrimeField
 
     integer = int.from_bytes(hashlib.sha256(seed).digest(), "big")
-    if isinstance(value_type.domain, PrimeField):
+    if isinstance(array_type.domain, PrimeField):
         values = tuple(
-            (integer >> (index * 17)) % value_type.domain.modulus
-            for index in range(value_type.unit_count)
+            (integer >> (index * 17)) % array_type.domain.modulus
+            for index in range(array_type.unit_count)
         )
         return values[0] if len(values) == 1 else values
-    width = value_type.encoded_bit_size
+    width = array_type.encoded_bit_size
     if width is None:
-        return tuple(integer >> (index * 8) & 0xFF for index in range(value_type.unit_count))
+        return tuple(integer >> (index * 8) & 0xFF for index in range(array_type.unit_count))
     return integer & ((1 << width) - 1)
 
 
 def _round_trip(primitive, inverse, recover_input: str, sample_number: int) -> bool:
     values = {
         name: _encoded_value(
-            port.value_type, f"{primitive.family_name}:{name}:{sample_number}".encode()
+            port.array_type, f"{primitive.family_name}:{name}:{sample_number}".encode()
         )
-        for name, port in primitive.input_ports.items()
+        for name, port in primitive.graph.input_ports.items()
     }
     output = primitive.evaluate(values)
     inverse_values = {"output": output}
@@ -81,7 +81,7 @@ def _attempt_inversion(
         for _ in range(repetitions):
             signal.setitimer(signal.ITIMER_REAL, timeout)
             attempt_started = time.perf_counter_ns()
-            inverse = primitive.inverse(recover_input).primitive
+            inverse = primitive.edit.inverse(recover_input).primitive
             timings.append((time.perf_counter_ns() - attempt_started) / 1_000_000)
             signal.setitimer(signal.ITIMER_REAL, 0)
     except _InversionTimeout:
@@ -141,8 +141,8 @@ def _attempt_inversion(
         "semantic_samples": 2,
         "inversion_ms": statistics.median(timings),
         "timing_repetitions": len(timings),
-        "inverse_components": len(inverse.components),
-        "inverse_bindings": len(inverse.bindings),
+        "inverse_components": len(inverse.graph.components),
+        "inverse_bindings": len(inverse.graph.bindings),
     }
 
 
@@ -160,13 +160,15 @@ def _one_round_instance(primitive_class, parameters: dict, graph_rounds: int):
 
 def _recover_input(primitive, bijectivity_obligation: bool) -> str:
     if not bijectivity_obligation:
-        return next(iter(primitive.input_ports))
+        return next(iter(primitive.graph.input_ports))
     preferred_roles = ("plaintext", "state", "input_state", "input")
-    by_role = {primitive.input_descriptor(name).role: name for name in primitive.input_ports}
+    by_role = {
+        primitive.graph.input_descriptor(name).role: name for name in primitive.graph.input_ports
+    }
     for role in preferred_roles:
         if role in by_role:
             return by_role[role]
-    return next(iter(primitive.input_ports))
+    return next(iter(primitive.graph.input_ports))
 
 
 def _worker(primitive_index: int, parameter_index: int, timeout: float, repetitions: int) -> dict:
@@ -195,11 +197,11 @@ def _worker(primitive_index: int, parameter_index: int, timeout: float, repetiti
         return result
 
     result.update(
-        graph_rounds=len(primitive.rounds),
-        components=len(primitive.components),
-        bindings=len(primitive.bindings),
+        graph_rounds=len(primitive.graph.rounds),
+        components=len(primitive.graph.components),
+        bindings=len(primitive.graph.bindings),
     )
-    if not primitive.input_ports:
+    if not primitive.graph.input_ports:
         result.update(
             status="not-applicable",
             diagnostic="primitive has no input to recover",
@@ -214,7 +216,7 @@ def _worker(primitive_index: int, parameter_index: int, timeout: float, repetiti
         one_round, one_round_basis = _one_round_instance(
             primitive_class,
             dict(parameter_set.values),
-            len(primitive.rounds),
+            len(primitive.graph.rounds),
         )
     except Exception as error:
         result.update(
@@ -234,7 +236,7 @@ def _worker(primitive_index: int, parameter_index: int, timeout: float, repetiti
                 repetitions,
             )
             result.update((f"one_round_{name}", value) for name, value in one_round_result.items())
-            result["one_round_graph_rounds"] = len(one_round.rounds)
+            result["one_round_graph_rounds"] = len(one_round.graph.rounds)
 
     full_result = _attempt_inversion(
         primitive,
@@ -244,7 +246,9 @@ def _worker(primitive_index: int, parameter_index: int, timeout: float, repetiti
     )
     result.update(full_result)
     if "inversion_ms" in result:
-        result["normalized_ms_per_graph_round"] = result["inversion_ms"] / len(primitive.rounds)
+        result["normalized_ms_per_graph_round"] = result["inversion_ms"] / len(
+            primitive.graph.rounds
+        )
     return result
 
 

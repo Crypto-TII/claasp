@@ -5,10 +5,10 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
+from claasp.graph.array_type import ArrayType
 from claasp.graph.binding import ValueBinding
 from claasp.graph.component import Component
 from claasp.graph.port import Port, PortLike, Selection, as_selection
-from claasp.graph.value_type import ValueType
 
 
 class CompositeOutputs(Sequence[Selection]):
@@ -16,9 +16,10 @@ class CompositeOutputs(Sequence[Selection]):
 
     EXAMPLES::
 
-        >>> from claasp import Bit, ValueType
+        >>> from claasp import ArrayType
+        >>> from claasp.domains import Bit
         >>> from claasp.components import Identity
-        >>> builder = CompositeBuilder("identity", {"state": ValueType(Bit(), (1,))})
+        >>> builder = CompositeBuilder("identity", {"state": ArrayType(Bit(), (1,))})
         >>> builder.add_round()
         Round(number=0)
         >>> builder.set_output("copy", builder.add_component(Identity(builder.input("state"))))
@@ -74,7 +75,7 @@ class CompositeDefinition:
     """
 
     name: str
-    input_types: tuple[tuple[str, ValueType], ...]
+    input_types: tuple[tuple[str, ArrayType], ...]
     rounds: tuple[tuple[Component, ...], ...]
     bindings: tuple[ValueBinding, ...]
     outputs: tuple[tuple[str, Selection], ...]
@@ -90,12 +91,12 @@ class CompositeDefinition:
             raise ValueError("composite input names must be non-empty and unique")
         if not output_names or len(set(output_names)) != len(output_names):
             raise ValueError("composite output names must be non-empty and unique")
-        if any(not isinstance(value_type, ValueType) for _, value_type in self.input_types):
-            raise TypeError("composite inputs must have ValueType objects")
+        if any(not isinstance(array_type, ArrayType) for _, array_type in self.input_types):
+            raise TypeError("composite inputs must have ArrayType objects")
 
     @property
-    def inputs(self) -> Mapping[str, ValueType]:
-        """Return input value types keyed by semantic name."""
+    def inputs(self) -> Mapping[str, ArrayType]:
+        """Return input array types keyed by semantic name."""
 
         return dict(self.input_types)
 
@@ -129,10 +130,10 @@ class CompositeDefinition:
                 _validate_inputs=False,
             )
         for components in self.rounds:
-            primitive.add_round()
+            primitive._builder.add_round()
             for component in components:
-                primitive.add_component(copy(component))
-        primitive.set_output(self.output(output))
+                primitive._builder.add_component(copy(component))
+        primitive._builder.set_output(self.output(output))
         return primitive
 
     def evaluate(self, *args: object, output: str = "output", **kwargs: object):
@@ -143,7 +144,7 @@ class CompositeDefinition:
     def analyze(self, output: str = "output"):
         """Return the ordinary analysis facade for one named output."""
 
-        return self.as_primitive(output).analyze()
+        return self.as_primitive(output).analysis
 
 
 @dataclass(frozen=True, slots=True)
@@ -152,15 +153,16 @@ class CompositeInstance:
 
     EXAMPLES::
 
-        >>> from claasp import Primitive, ValueType, Word
+        >>> from claasp import PrimitiveBuilder, ArrayType
+        >>> from claasp.domains import Word
         >>> from claasp.composites import ChaChaQuarterRound
-        >>> word = ValueType(Word(8), (1,))
-        >>> primitive = Primitive("scoped", {name: word for name in "abcd"})
-        >>> primitive.add_round()
+        >>> word = ArrayType(Word(8), (1,))
+        >>> builder = PrimitiveBuilder("scoped", {name: word for name in "abcd"})
+        >>> builder.add_round()
         Round(number=0)
-        >>> instance = primitive.add_composite(
+        >>> instance = builder.add_composite(
         ...     ChaChaQuarterRound(word_size=8, rotations=(1, 2, 3, 4)),
-        ...     {name: primitive.input(name) for name in "abcd"},
+        ...     {name: builder.input(name) for name in "abcd"},
         ... )
         >>> (instance.path, len(instance.components), len(instance.outputs))
         ('cha_cha_quarter_round_0_0', 12, 5)
@@ -189,7 +191,9 @@ class CompositeInstance:
     def components(self) -> tuple[Component, ...]:
         """Return the instantiated leaf components in graph order."""
 
-        return tuple(self._primitive.component(component_id) for component_id in self.component_ids)
+        return tuple(
+            self._primitive.graph.component(component_id) for component_id in self.component_ids
+        )
 
     @property
     def output(self) -> CompositeOutputs:
@@ -200,7 +204,7 @@ class CompositeInstance:
     def scope(self, relative_path: str) -> CompositeInstance:
         """Resolve a nested scope relative to this instance."""
 
-        return self._primitive.scope(f"{self.path}/{relative_path}")
+        return self._primitive.graph.scope(f"{self.path}/{relative_path}")
 
     def as_primitive(self, output: str = "output"):
         """Project this scope's reusable definition to a standalone graph."""
@@ -230,9 +234,10 @@ class CompositeBuilder:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, ValueType
+        >>> from claasp import ArrayType
+        >>> from claasp.domains import Bit
         >>> from claasp.components import Identity
-        >>> builder = CompositeBuilder("identity", {"state": ValueType(Bit(), (4,))})
+        >>> builder = CompositeBuilder("identity", {"state": ArrayType(Bit(), (4,))})
         >>> builder.add_round()
         Round(number=0)
         >>> copy = builder.add_component(Identity(builder.input("state")))
@@ -242,7 +247,7 @@ class CompositeBuilder:
         (10, (('source', 'example'),))
     """
 
-    def __init__(self, name: str, inputs: Mapping[str, ValueType]) -> None:
+    def __init__(self, name: str, inputs: Mapping[str, ArrayType]) -> None:
         from claasp.graph.primitive import Primitive
 
         self._primitive = Primitive(name, inputs)
@@ -258,49 +263,49 @@ class CompositeBuilder:
     def input_ports(self) -> Mapping[str, Port]:
         """Return named authoring input ports."""
 
-        return self._primitive.input_ports
+        return self._primitive.graph.input_ports
 
     def inputs(self, *selectors: str | int) -> Sequence[Port]:
         """Return selected input ports in the requested order."""
 
-        return self._primitive.inputs(*selectors)
+        return self._primitive.graph.inputs(*selectors)
 
     def input(self, selector: str | int) -> Port:
         """Resolve one input port by name or position."""
 
-        return self._primitive.input(selector)
+        return self._primitive.graph.input(selector)
 
     def add_round(self):
         """Append and return the next sequential composite round."""
 
-        return self._primitive.add_round()
+        return self._primitive._builder.add_round()
 
     def add_component(self, component: Component, *, primitive_round=None) -> Port:
         """Validate and append a semantic leaf component."""
 
-        return self._primitive.add_component(component, primitive_round=primitive_round)
+        return self._primitive._builder.add_component(component, primitive_round=primitive_round)
 
     def add_composite(
         self, definition: CompositeDefinition, bindings: Mapping[str, PortLike], **kwargs
     ):
         """Instantiate a nested reusable definition in this scope."""
 
-        return self._primitive.add_composite(definition, bindings, **kwargs)
+        return self._primitive._builder.add_composite(definition, bindings, **kwargs)
 
     def join(self, *values: PortLike) -> PortLike:
         """Join values through the graph's normalized structural wiring."""
 
-        return self._primitive.join(*values)
+        return self._primitive._builder.join(*values)
 
     def pack_bits(self, value: PortLike, word_width: int, *, output_domain=None) -> Port:
         """Create an explicit MSB-first bit-to-word structural binding."""
 
-        return self._primitive.pack_bits(value, word_width, output_domain=output_domain)
+        return self._primitive._builder.pack_bits(value, word_width, output_domain=output_domain)
 
     def unpack_bits(self, value: PortLike) -> Port:
         """Create an explicit MSB-first word-to-bit structural binding."""
 
-        return self._primitive.unpack_bits(value)
+        return self._primitive._builder.unpack_bits(value)
 
     def set_output(self, name: str, output: PortLike | Sequence[PortLike]) -> None:
         """Bind one unique semantic output name to graph values."""
@@ -312,7 +317,7 @@ class CompositeBuilder:
         if isinstance(output, Sequence) and not isinstance(output, (Port, Selection)):
             output = self.join(*output)
         selection = as_selection(output)
-        actual = self._primitive.port(selection.source.owner_id)
+        actual = self._primitive.graph.port(selection.source.owner_id)
         if actual != selection.source:
             raise ValueError("output source does not match its graph port type")
         self._outputs[name] = selection
@@ -330,15 +335,16 @@ class CompositeBuilder:
                 instance.output_bindings,
                 instance.component_ids,
             )
-            for instance in self._primitive.scopes
+            for instance in self._primitive.graph.scopes
         )
         return CompositeDefinition(
             name=self.name,
-            input_types=tuple((name, port.value_type) for name, port in self.input_ports.items()),
+            input_types=tuple((name, port.array_type) for name, port in self.input_ports.items()),
             rounds=tuple(
-                tuple(primitive_round.components) for primitive_round in self._primitive.rounds
+                tuple(primitive_round.components)
+                for primitive_round in self._primitive.graph.rounds
             ),
-            bindings=self._primitive.bindings,
+            bindings=self._primitive.graph.bindings,
             outputs=tuple(self._outputs.items()),
             provenance=tuple(sorted((provenance or {}).items())),
             nested_scopes=templates,

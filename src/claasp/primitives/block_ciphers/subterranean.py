@@ -43,7 +43,7 @@ class Subterranean(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Subterranean()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xfffffffffffffffe', 256)
@@ -71,7 +71,7 @@ class Subterranean(BitGraphPrimitive):
         rounds = number_of_rounds
 
         for r in range(rounds):
-            self.add_round()
+            self._builder.add_round()
 
             state = self._step_1(state) if version == Version.V1 else self._chi(state)
             state = self._step_2(state)

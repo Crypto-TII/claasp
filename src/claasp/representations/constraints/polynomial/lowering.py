@@ -46,8 +46,8 @@ class PrimeFieldPolynomialModel:
     ) -> None:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
-        domains = {port.value_type.domain for port in primitive.input_ports.values()}
-        domains.update(component.output_type.domain for component in primitive.components)
+        domains = {port.array_type.domain for port in primitive.graph.input_ports.values()}
+        domains.update(component.output_type.domain for component in primitive.graph.components)
         if len(domains) != 1 or not isinstance(next(iter(domains)), PrimeField):
             raise ValueError("PrimeFieldPolynomialModel requires one homogeneous prime field")
         self._primitive = primitive
@@ -74,22 +74,22 @@ class PrimeFieldPolynomialModel:
         values = {
             port.owner_id: tuple(
                 self._variable(port.owner_id, position)
-                for position in range(port.value_type.unit_count)
+                for position in range(port.array_type.unit_count)
             )
-            for port in tuple(self._primitive.input_ports.values())
-            + tuple(component.output for component in self._primitive.components)
+            for port in tuple(self._primitive.graph.input_ports.values())
+            + tuple(component.output for component in self._primitive.graph.components)
         }
-        return self._primitive.resolve_selection(selection, values)
+        return self._primitive.graph.resolve_selection(selection, values)
 
     def polynomial_system(self) -> PolynomialSystem:
         """Compute the polynomial system for this public typed contract."""
 
         variables = []
-        for name, port in self._primitive.input_ports.items():
+        for name, port in self._primitive.graph.input_ports.items():
             variables.extend(
-                self.variable_name(name, position) for position in range(port.value_type.unit_count)
+                self.variable_name(name, position) for position in range(port.array_type.unit_count)
             )
-        for component in self._primitive.components:
+        for component in self._primitive.graph.components:
             variables.extend(
                 self.variable_name(component.component_id, position)
                 for position in range(component.output_type.unit_count)
@@ -100,7 +100,7 @@ class PrimeFieldPolynomialModel:
         self._auxiliary_powers = {}
         equations = []
         provenance = []
-        for component in self._primitive.components:
+        for component in self._primitive.graph.components:
             lowered, lowered_provenance = self._lower_component(component)
             equations.extend(lowered)
             provenance.extend(lowered_provenance)

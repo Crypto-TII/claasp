@@ -88,7 +88,7 @@ class Ublock(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Ublock()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x144f09912b6b7bd2', 125)
@@ -116,7 +116,7 @@ class Ublock(BitGraphPrimitive):
         state_left, state_right, key_0, key_1, key_2, key_3, round_key = self.round_initialization()
 
         for round_number in range(self.r):
-            self.add_round()
+            self._builder.add_round()
 
             # encryption
             state_left, state_right = self.round_function(state_left, state_right, round_key)

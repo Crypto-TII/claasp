@@ -35,7 +35,7 @@ class PrimitiveInverseEquivalent:
 
 
 def _round_count(primitive: Primitive) -> int:
-    return len(primitive.rounds)
+    return len(primitive.graph.rounds)
 
 
 def _aradi(primitive):
@@ -83,8 +83,8 @@ def _qarmav2(primitive):
     return QARMAv2Compact(
         number_of_rounds=primitive.nrounds,
         number_of_layers=primitive.number_of_layers,
-        key_bit_size=primitive.input("key").value_type.encoded_bit_size,
-        tweak_bit_size=primitive.input("input_tweak").value_type.encoded_bit_size,
+        key_bit_size=primitive.graph.input("key").array_type.encoded_bit_size,
+        tweak_bit_size=primitive.graph.input("input_tweak").array_type.encoded_bit_size,
     )
 
 
@@ -111,7 +111,7 @@ def _tinyjambu_fsr(primitive):
     from claasp.primitives.block_ciphers.tinyjambu import TinyJambuWordBased
 
     return TinyJambuWordBased(
-        key_bit_size=primitive.input("key").value_type.encoded_bit_size,
+        key_bit_size=primitive.graph.input("key").array_type.encoded_bit_size,
         number_of_rounds=_round_count(primitive) * 32,
     )
 
@@ -260,17 +260,17 @@ def inversion_equivalent(primitive: Primitive):
     replacement = contract.factory(primitive)
     if _qualified_type(replacement) != contract.replacement_type:
         raise AssertionError("inverse-equivalent factory returned the wrong primitive type")
-    if primitive.input_descriptors != replacement.input_descriptors:
+    if primitive.graph.input_descriptors != replacement.graph.input_descriptors:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "inverse-equivalent graph has a different input contract",
         )
-    if primitive.output is None or replacement.output is None:
+    if primitive.graph.output is None or replacement.graph.output is None:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "inverse-equivalent graph requires declared outputs",
         )
-    if primitive.output.value_type != replacement.output.value_type:
+    if primitive.graph.output.array_type != replacement.graph.output.array_type:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "inverse-equivalent graph has a different output contract",
@@ -293,12 +293,12 @@ def direct_inversion_equivalent(primitive: Primitive, output_name: str):
     if contract is None:
         return None, None
     if contract[0].endswith("chilow_inverse"):
-        if tuple(primitive.input_ports) != ("plaintext", "input_tweak", "key"):
+        if tuple(primitive.graph.input_ports) != ("plaintext", "input_tweak", "key"):
             return None, None
         from claasp.transformations._inverse_realizations import chilow_inverse
 
         return chilow_inverse(primitive, output_name), contract
-    if tuple(primitive.input_ports) == ("plaintext", "key"):
+    if tuple(primitive.graph.input_ports) == ("plaintext", "key"):
         from claasp.transformations._inverse_realizations import subterranean_inverse
 
         return subterranean_inverse(primitive, output_name), contract

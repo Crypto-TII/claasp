@@ -46,7 +46,7 @@ class AradiSBox(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = AradiSBox()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xd06c8ab75d191521', 128)
@@ -72,7 +72,7 @@ class AradiSBox(BitGraphPrimitive):
         key = INPUT_KEY
 
         for round_i in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             round_key = self.get_round_key_id(key, round_i)
             state = self.round_function(state, round_key, round_i)
             key = self.update_key(key, round_i)

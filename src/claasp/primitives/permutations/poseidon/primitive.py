@@ -5,7 +5,7 @@ from math import gcd
 
 from claasp.components import Add, Constant, LinearMap, Power
 from claasp.domains import PrimeField
-from claasp.graph import Port, Primitive, ValueType
+from claasp.graph import ArrayType, Port, Primitive
 from claasp.utils import normalize_matrix
 
 
@@ -67,21 +67,21 @@ class Poseidon(Primitive):
         if any(len(row) != width for row in constants):
             raise ValueError(f"every round-constant row must contain {width} elements")
 
-        state_type = ValueType(field, (width,))
+        state_type = ArrayType(field, (width,))
         super().__init__("poseidon", {"state": state_type})
-        state = self.input("state")
+        state = self.graph.input("state")
         full_rounds_at_start = full_rounds // 2
 
         for round_number, constants_for_round in enumerate(constants):
-            self.add_round()
+            self._builder.add_round()
             constant = Constant(
                 state_type,
                 constants_for_round,
                 component_id=f"constant_{round_number}_0",
             )
-            constant_output = self.add_component(constant)
+            constant_output = self._builder.add_component(constant)
             addition = Add((state, constant_output), component_id=f"add_{round_number}_1")
-            state = self.add_component(addition)
+            state = self._builder.add_component(addition)
 
             is_full_round = (
                 round_number < full_rounds_at_start
@@ -94,9 +94,9 @@ class Poseidon(Primitive):
                 matrix,
                 component_id=f"linear_map_{round_number}_4",
             )
-            state = self.add_component(linear_map)
+            state = self._builder.add_component(linear_map)
 
-        self.set_output(state)
+        self._builder.set_output(state)
 
     @staticmethod
     def _validate_round_counts(full_rounds: int, partial_rounds: int) -> None:
@@ -117,10 +117,10 @@ class Poseidon(Primitive):
     ) -> Port:
         if is_full_round:
             power = Power(state, exponent, component_id=f"power_{round_number}_2")
-            return self.add_component(power)
+            return self._builder.add_component(power)
 
         first = Power(state[0], exponent, component_id=f"power_{round_number}_2")
-        first_output = self.add_component(first)
-        if state.value_type.unit_count == 1:
+        first_output = self._builder.add_component(first)
+        if state.array_type.unit_count == 1:
             return first_output
-        return self.join(first_output, state[1:])
+        return self._builder.join(first_output, state[1:])

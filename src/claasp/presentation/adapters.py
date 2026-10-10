@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from fractions import Fraction
 from math import isinf
 
 from claasp.analysis.avalanche import AvalancheResult
@@ -29,6 +30,7 @@ from claasp.catalogue.records import (
 )
 from claasp.presentation.contracts import (
     Applicability,
+    Citation,
     DiagnosticCode,
     EvidenceClass,
     PresentationDiagnostic,
@@ -43,7 +45,8 @@ from claasp.presentation.model import (
     TableColumn,
     TableRow,
 )
-from claasp.semantics.cryptanalysis import Trail, TrailSearchResult
+from claasp.representations.constraints import ConstraintReferenceStatus
+from claasp.semantics.cryptanalysis import BitPattern, Trail, TrailSearchResult
 from claasp.semantics.cryptanalysis.continuous import ContinuousHeuristicResult
 
 
@@ -107,6 +110,17 @@ def _canonical(value: object) -> str:
     raise TypeError(f"unsupported presentation value {type(value).__name__}")
 
 
+def _bit_pattern(pattern: BitPattern) -> str:
+    width = pattern.width
+    digits = (width + 3) // 4
+    return f"0x{pattern.value:0{digits}x}"
+
+
+def _ratio(numerator: int, denominator: int) -> str:
+    reduced = Fraction(numerator, denominator)
+    return f"{reduced.numerator}/{reduced.denominator}"
+
+
 def _property_evidence(result: ComponentPropertyResult) -> PresentationEvidence:
     mapping = {
         PropertyClaim.EXACT: (EvidenceClass.EXACT, None),
@@ -132,8 +146,8 @@ def _property_evidence(result: ComponentPropertyResult) -> PresentationEvidence:
     return PresentationEvidence(classification, complete=result.complete, bound_direction=direction)
 
 
-def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
-    """Present a trail summary and ordered transition evidence.
+def trail_section(result: Trail | TrailSearchResult, *, details: bool = False) -> ReportSection:
+    """Present round boundaries by default, or complete component evidence.
 
     EXAMPLES::
 
@@ -144,18 +158,21 @@ def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
         required arguments rejected
     """
 
+    if not details:
+        return _trail_overview_section(result)
+
     trail = result.trail if isinstance(result, TrailSearchResult) else result
+    constraint_models = result.constraint_models if isinstance(result, TrailSearchResult) else ()
+    references = {
+        component_id: application.model.compact_reference
+        for application in constraint_models
+        for component_id in application.component_ids
+    }
+    show_references = bool(constraint_models)
     summary_rows = [
         TableRow((_text("kind"), _text(trail.kind.value))),
-        TableRow(
-            (_text("input"), _text(f"0x{trail.input_pattern.value:x}/{trail.input_pattern.width}"))
-        ),
-        TableRow(
-            (
-                _text("output"),
-                _text(f"0x{trail.output_pattern.value:x}/{trail.output_pattern.width}"),
-            )
-        ),
+        TableRow((_text("input"), _text(_bit_pattern(trail.input_pattern)))),
+        TableRow((_text("output"), _text(_bit_pattern(trail.output_pattern)))),
         TableRow((_text("total weight"), _number(trail.total_weight, ValueKind.WEIGHT))),
     ]
     if isinstance(result, TrailSearchResult):
@@ -169,48 +186,201 @@ def trail_section(result: Trail | TrailSearchResult) -> ReportSection:
                 TableRow(
                     (_text("lower bound"), _number(result.lower_bound, ValueKind.WEIGHT, evidence))
                 ),
-                TableRow((_text("solver/method provenance"), _text(result.provenance))),
+                TableRow(
+                    (
+                        _text("optimality"),
+                        _text("proved optimal" if result.is_optimal else "not proved"),
+                    )
+                ),
+                TableRow((_text("search method"), _text(result.metadata.technique))),
+                TableRow((_text("solver"), _text(result.metadata.solver or "not used"))),
+                TableRow(
+                    (
+                        _text("runtime"),
+                        _text(
+                            "not reported"
+                            if result.metadata.runtime_seconds is None
+                            else f"{result.metadata.runtime_seconds:.6f} seconds"
+                        ),
+                    )
+                ),
+                TableRow(
+                    (
+                        _text("peak memory"),
+                        _text(
+                            "not reported"
+                            if result.metadata.peak_memory_bytes is None
+                            else f"{result.metadata.peak_memory_bytes} bytes"
+                        ),
+                    )
+                ),
             )
         )
+        if result.metadata.solver_version is not None:
+            summary_rows.insert(
+                -2,
+                TableRow((_text("solver version"), _text(result.metadata.solver_version))),
+            )
     summary = Table(
         (TableColumn("field", "Field"), TableColumn("value", "Value", Alignment.RIGHT)),
         tuple(summary_rows),
         "Trail summary",
     )
+    if isinstance(result, TrailSearchResult) and result.component_transitions:
+        transition_rows = tuple(
+            TableRow(
+                (
+                    _integer(component.round_number),
+                    _text(component.component),
+                    _text(
+                        "—"
+                        if component.input_pattern is None
+                        else _bit_pattern(component.input_pattern)
+                    ),
+                    _text(_bit_pattern(component.output_pattern)),
+                    _text(
+                        "1/1"
+                        if component.local_transition is None
+                        else _ratio(
+                            component.local_transition.numerator,
+                            component.local_transition.denominator,
+                        )
+                    ),
+                    _integer(
+                        1 if component.local_transition is None else component.local_transition.sign
+                    ),
+                    _number(component.weight, ValueKind.WEIGHT),
+                    _text(component.component_id),
+                    *(
+                        (_text(references.get(component.component_id, "not recorded")),)
+                        if show_references
+                        else ()
+                    ),
+                )
+            )
+            for component in result.component_transitions
+        )
+    else:
+        transition_rows = tuple(
+            TableRow(
+                (
+                    _text("—"),
+                    _text(step.transition.kind.value),
+                    _text(_bit_pattern(step.transition.input_pattern)),
+                    _text(_bit_pattern(step.transition.output_pattern)),
+                    _text(_ratio(step.transition.numerator, step.transition.denominator)),
+                    _integer(step.transition.sign),
+                    _number(step.transition.weight, ValueKind.WEIGHT),
+                    _text(step.component_id),
+                    *(
+                        (_text(references.get(step.component_id, "not recorded")),)
+                        if show_references
+                        else ()
+                    ),
+                )
+            )
+            for step in trail.steps
+        )
     steps = Table(
         (
-            TableColumn("step", "Step", Alignment.RIGHT),
-            TableColumn("kind", "Kind"),
+            TableColumn("round", "Round", Alignment.RIGHT),
+            TableColumn("component", "Component"),
             TableColumn("input", "Input"),
             TableColumn("output", "Output"),
             TableColumn("ratio", "Exact ratio", Alignment.RIGHT),
             TableColumn("sign", "Sign", Alignment.RIGHT),
             TableColumn("weight", "Weight", Alignment.RIGHT),
-            TableColumn("reference", "Graph location (evidence)"),
+            TableColumn("component_id", "Component ID"),
+        )
+        + (
+            (TableColumn("constraint_reference", "Constraint model reference"),)
+            if show_references
+            else ()
         ),
-        tuple(
-            TableRow(
-                (
-                    _integer(index),
-                    _text(step.transition.kind.value),
-                    _text(
-                        f"0x{step.transition.input_pattern.value:x}/{step.transition.input_pattern.width}"
-                    ),
-                    _text(
-                        f"0x{step.transition.output_pattern.value:x}/{step.transition.output_pattern.width}"
-                    ),
-                    _text(f"{step.transition.numerator}/{step.transition.denominator}"),
-                    _integer(step.transition.sign),
-                    _number(step.transition.weight, ValueKind.WEIGHT),
-                    _text(step.component_id),
+        transition_rows,
+        "Component transitions",
+    )
+    citation_values = {
+        (model.reference_identifier, model.reference_title, model.source_locator): Citation(
+            model.reference_identifier, model.reference_title, model.source_locator
+        )
+        for model in dict.fromkeys(application.model for application in constraint_models)
+        if model.reference_status is ConstraintReferenceStatus.VERIFIED
+        and model.reference_identifier is not None
+        and model.reference_title is not None
+    }
+    return ReportSection(
+        "Trail", tables=(summary, steps), citations=tuple(citation_values.values())
+    )
+
+
+def _trail_overview_section(result: Trail | TrailSearchResult) -> ReportSection:
+    trail = result.trail if isinstance(result, TrailSearchResult) else result
+    is_differential = trail.kind.value == "xor_differential"
+    quantity = "probability" if is_differential else "correlation"
+    pattern = "Difference" if is_differential else "Mask"
+    rows = [
+        TableRow(
+            (
+                _text("input"),
+                _text(_bit_pattern(trail.input_pattern)),
+                _text("1/1"),
+                _text("1/1"),
+            )
+        )
+    ]
+    cumulative = Fraction(1)
+    cumulative_sign = 1
+    round_transitions = result.round_transitions if isinstance(result, TrailSearchResult) else ()
+    if round_transitions:
+        for transition in round_transitions:
+            relative = Fraction(transition.numerator, transition.denominator)
+            cumulative *= relative
+            cumulative_sign *= transition.sign
+            relative_text = _ratio(relative.numerator, relative.denominator)
+            cumulative_text = _ratio(cumulative.numerator, cumulative.denominator)
+            if not is_differential and transition.sign < 0:
+                relative_text = "-" + relative_text
+            if not is_differential and cumulative_sign < 0:
+                cumulative_text = "-" + cumulative_text
+            rows.append(
+                TableRow(
+                    (
+                        _integer(transition.round_number + 1),
+                        _text(_bit_pattern(transition.output_pattern)),
+                        _text(relative_text),
+                        _text(cumulative_text),
+                    )
                 )
             )
-            for index, step in enumerate(trail.steps, 1)
+    else:
+        for step in trail.steps:
+            cumulative *= Fraction(step.transition.numerator, step.transition.denominator)
+        rows.append(
+            TableRow(
+                (
+                    _text("output"),
+                    _text(_bit_pattern(trail.output_pattern)),
+                    _text(_ratio(cumulative.numerator, cumulative.denominator)),
+                    _text(_ratio(cumulative.numerator, cumulative.denominator)),
+                )
+            )
+        )
+    notes = [f"Total weight: {trail.total_weight:g}."]
+    if isinstance(result, TrailSearchResult):
+        notes.insert(0, "Proved optimal." if result.is_optimal else "Optimality not proved.")
+    table = Table(
+        (
+            TableColumn("round", "Round", Alignment.RIGHT),
+            TableColumn("pattern", pattern),
+            TableColumn("relative", f"Relative {quantity}", Alignment.RIGHT),
+            TableColumn("cumulative", f"Cumulative {quantity}", Alignment.RIGHT),
         ),
-        "Ordered transition evidence",
-        ("Graph locations are evidence references, not semantic report identity.",),
+        tuple(rows),
+        "Round trail",
+        tuple(notes),
     )
-    return ReportSection("Trail", tables=(summary, steps))
+    return ReportSection("Trail", tables=(table,))
 
 
 def trace_section(trace: ExecutionTrace) -> ReportSection:
@@ -241,7 +411,7 @@ def trace_section(trace: ExecutionTrace) -> ReportSection:
             TableColumn("order", "Order", Alignment.RIGHT),
             TableColumn("role", "Role"),
             TableColumn("value", "Value"),
-            TableColumn("reference", "Graph location (evidence)"),
+            TableColumn("component", "Component"),
         ),
         rows,
         "Concrete trace",

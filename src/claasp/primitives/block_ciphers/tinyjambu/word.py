@@ -41,7 +41,7 @@ class TinyJambuWordBased(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = TinyJambuWordBased()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xc07a21053c7ca049', 128)
@@ -70,7 +70,7 @@ class TinyJambuWordBased(BitGraphPrimitive):
         for round_number in range(number_of_words_in_round):
             # round function
             # initial current round element
-            self.add_round()
+            self._builder.add_round()
 
             # round function
             state = self.round_function(state, key, round_number)

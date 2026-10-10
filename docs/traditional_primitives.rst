@@ -12,7 +12,7 @@ every operation to gates.
 
 .. doctest::
 
-   >>> from claasp import Word
+   >>> from claasp.domains import Word
    >>> Word(32).encoded_bit_size
    32
    >>> Word(32).contains(0xffffffff)
@@ -51,9 +51,8 @@ part of the graph, and packed integers remain the ordinary user interface.
    >>> f"{simon.evaluate(0x65656877, 0x1918111009080100):08x}"
    'c69be9bb'
 
-All ten standard block/key configurations are supported. The migrated tests
-retain the fixed Simon32/64, Simon48/72, Simon48/96, and Simon128/256 vectors
-from the legacy CLAASP suite.
+All ten standard block/key configurations are supported and checked against
+fixed Simon32/64, Simon48/72, Simon48/96, and Simon128/256 test vectors.
 
 AES
 ---
@@ -70,86 +69,65 @@ elements of :math:`GF(2^8)` in the polynomial basis defined by
    >>> f"{AES().evaluate(plaintext, key):032x}"
    '69c4e0d86a7b0430d8cdb78070b4c55a'
 
+Choosing an AES configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``instances`` lists the configurations approved by the AES specification,
+while ``parameters`` lists every constructor option, including options useful
+for reduced-round studies:
+
+.. doctest::
+
+   >>> aes = AES()
+   >>> aes.instances
+   Official instances for AES (3)
+     [0] AES(key_bit_size=128, number_of_rounds=10)
+     [1] AES(key_bit_size=192, number_of_rounds=12)
+     [2] AES(key_bit_size=256, number_of_rounds=14)
+   >>> aes.parameters
+   Customizable parameters for AES (3)
+     key_bit_size: int = 128
+     number_of_rounds: int | None = None
+     realization: str = 'lookup'
+
+Pass parameters by name. This example chooses a 256-bit key, keeps only five
+rounds, and represents SubBytes algebraically:
+
+.. doctest::
+
+   >>> aes256 = AES(
+   ...     key_bit_size=256,
+   ...     number_of_rounds=5,
+   ...     realization="algebraic",
+   ... )
+   >>> aes256.details()
+   Primitive details
+     Type: block cipher
+     Instance: AES-256
+     Inputs:
+       plaintext: 128 bits (public)
+       key: 256 bits (secret)
+     Output: 128 bits
+     Rounds: 5
+     Realization: algebraic
+
+The ``lookup`` realization stores the published 256-entry AES substitution
+table. The ``algebraic`` realization expresses the same substitution as field
+inversion followed by the AES affine transformation. They produce the same
+output values but expose different graph components to analysis backends.
+
+Use :doc:`customizing_aes` to replace the S-box, omit MixColumns, change other
+AES building blocks, or use Toy AES with a smaller state or word size.
+
 The graph supports AES-128, AES-192, and AES-256 key expansion. SubBytes uses a reusable typed
 ``SBox`` lookup, ShiftRows is a domain-neutral ``Permutation``, MixColumns is
 a ``LinearMap`` over the byte field, and AddRoundKey is field addition.
 ``number_of_rounds`` constructs a prefix of the standard primitive; MixColumns
 is omitted only in standard round 10.
 
-AES is also the first primitive with interchangeable graph realizations. The
-default ``lookup`` realization exposes each SubBytes operation as an ``SBox``;
-the ``algebraic`` realization exposes field inversion and the binary affine
-map as separate reusable components. They have the same parameters and
-external input/output contract:
-
-.. doctest::
-
-   >>> lookup = AES(realization="lookup")
-   >>> algebraic = AES(realization="algebraic")
-   >>> lookup.evaluate(plaintext, key) == algebraic.evaluate(plaintext, key)
-   True
-   >>> [item.name for item in AES.available_realizations()]
-   ['lookup', 'algebraic']
-
-Users may request a realization explicitly. An analysis compiler can instead
-select deterministically from declared capabilities:
-
-.. doctest::
-
-   >>> AES.for_capabilities({"sbox_semantics"}).realization.name
-   'lookup'
-   >>> AES.for_capabilities({"algebraic_semantics"}).realization.name
-   'algebraic'
-
-Automatic selection is part of reproducibility: results must retain the
-chosen realization, and an unsupported requirement raises an error rather
-than silently changing the analysis.
-
-Selecting realizations in other families
------------------------------------------
-
-The same small API applies to every audited family. A realization name
-chooses a graph explicitly, while a task states capabilities rather than
-guessing from component identifiers:
-
-.. doctest::
-
-   >>> from claasp.primitives import Gift, Katan
-   >>> gift = Gift.realize("sbox", number_of_rounds=2)
-   >>> gift.realization_identity
-   'gift:sbox'
-   >>> Katan.for_capabilities(
-   ...     {"feedback_register_semantics"}, number_of_rounds=2
-   ... ).realization.name
-   'feedback_register'
-
-The canonical class keeps one external contract across its realizations.
-For example, the word-oriented Simon boundary is unchanged when the explicit
-legacy-regression S-box graph is requested:
-
-.. doctest::
-
-   >>> from claasp.primitives import Simon
-   >>> word_graph = Simon.realize("word", number_of_rounds=2)
-   >>> sbox_graph = Simon.realize("legacy_sbox", number_of_rounds=2)
-   >>> word_graph.input("plaintext").value_type == sbox_graph.input("plaintext").value_type
-   True
-   >>> word_graph.evaluate(0x65656877, 0x1918111009080100) == sbox_graph.evaluate(0x65656877, 0x1918111009080100)
-   True
-
-Preferred capability selection is deterministic. A caller that requires a
-single match can instead request the ``unique`` policy; ambiguity and an
-unsupported capability are errors rather than implicit fallbacks.
-
-Result provenance keeps graph and engine identities separate:
-
-.. doctest::
-
-   >>> result = gift.evaluate_with_trace(plaintext=0, key=0)
-   >>> (result.realization.name, result.execution_engine.name)
-   ('sbox', 'python_scalar')
-   >>> result.trace.annotation.realization_identity
-   'gift:sbox'
+AES provides ``lookup`` and ``algebraic`` graph realizations of SubBytes.
+They share the same public inputs and output; :doc:`concepts` explains when
+and how to select a realization.
 
 PRESENT
 -------
@@ -185,17 +163,14 @@ diagonals.
    '81000000ad0000005600000046000000'
 
 The implementation is a typed word graph built only from modular addition,
-XOR, rotation, and concatenation. The migrated tests retain the full
-ChaCha20 permutation vector, two reduced toy vectors, and scalar/batch parity.
-The legacy API counted alternating half-rounds; v5 intentionally uses the
-standard round convention.
+XOR, rotation, and concatenation. The round count uses the standard convention
+and fixed tests cover the ChaCha20 permutation plus reduced toy instances.
 
 Salsa
 -----
 
 ``Salsa`` is likewise the fixed-length unkeyed word permutation. Column and
-row rounds alternate, and the public count uses standard full rounds instead
-of the legacy implementation's internal half-round counter.
+row rounds alternate, and the public count uses standard full rounds.
 
 .. doctest::
 
@@ -204,9 +179,8 @@ of the legacy implementation's internal half-round counter.
    >>> f"{output:0128x}"[:32]
    '8186a22d0040a2848247921006929051'
 
-The retained sparse and dense legacy vectors and batch evaluation all use the
-same typed modular-addition, rotation, XOR, and concatenation components as
-other ARX primitives.
+Sparse and dense test vectors and batch evaluation use the same typed modular
+addition, rotation, XOR, and concatenation components as other ARX primitives.
 
 Trivium
 -------
@@ -239,7 +213,7 @@ Setting ``keystream_bit_size=0`` returns the complete 288-bit state instead,
 which is the natural boundary for state-recovery and division-property work.
 The graph is built only from the reusable ``Constant``, ``Xor``, and
 ``BitwiseAnd`` components; joins and the three shift registers are graph wiring
-rather than private operations. Tests retain five
-published eSTREAM 80/80 vectors, the legacy CLAASP all-zero 256-bit keystream,
-scalar/batch parity, and reduced instances checked against an independently
-written transcription of the specification pseudocode.
+rather than private operations. Tests cover five published eSTREAM 80/80
+vectors, an all-zero 256-bit keystream, scalar/batch parity, and reduced
+instances checked against an independent transcription of the specification
+pseudocode.

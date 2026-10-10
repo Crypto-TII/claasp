@@ -9,7 +9,7 @@ from claasp.components import (
     LookupTable,
 )
 from claasp.domains import Bit
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 
 class BitVectorSBox(Primitive):
@@ -32,7 +32,7 @@ class BitVectorSBox(Primitive):
     EXAMPLES::
 
         >>> primitive = BitVectorSBox()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -52,12 +52,14 @@ class BitVectorSBox(Primitive):
         kind = PrimitiveKind.PERMUTATION if table.is_bijective() else PrimitiveKind.FUNCTION
         super().__init__(
             "bit_vector_sbox",
-            {"input": ValueType(Bit(), (table.input_bit_size,))},
+            {"input": ArrayType(Bit(), (table.input_bit_size,))},
             kind=kind,
         )
-        self.add_round()
-        output = self.add_component(BitVectorSBoxComponent(self.input("input"), table))
-        self.set_output(output)
+        self._builder.add_round()
+        output = self._builder.add_component(
+            BitVectorSBoxComponent(self.graph.input("input"), table)
+        )
+        self._builder.set_output(output)
 
 
 __all__ = ["BitVectorSBox"]

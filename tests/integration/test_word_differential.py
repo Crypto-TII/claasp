@@ -4,8 +4,9 @@ from math import log2
 
 import pytest
 
-from claasp import Primitive, ValueType, Word
+from claasp import ArrayType, Primitive
 from claasp.components import Identity
+from claasp.domains import Word
 from claasp.drivers.solvers import SatStatus, Z3Solver
 from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints.smt.word_differential import WordDifferentialSMTModel
@@ -42,8 +43,7 @@ def test_cp_toy_speck_four_round_weight_one_is_unsat():
 def test_cp_toy_speck_bounded_differential_enumeration_preserves_seven():
     result = (
         ToySpeck(2)
-        .analyze()
-        .enumerate_xor_differential_trails(
+        .analysis.enumerate_xor_differential_trails(
             1,
             solver=Z3Solver(timeout_seconds=10),
             limit=10,
@@ -56,19 +56,17 @@ def test_cp_toy_speck_bounded_differential_enumeration_preserves_seven():
 
 def test_cp_identity_sbox_zero_weight_and_empty_positive_weight_range():
     """The identity lookup table is superseded by the typed identity relation."""
-    primitive = Primitive("identity", {"plaintext": ValueType(Word(3), (1,))})
-    primitive.add_round()
-    primitive.set_output(primitive.add_component(Identity(primitive.input("plaintext"))))
+    primitive = Primitive("identity", {"plaintext": ArrayType(Word(3), (1,))})
+    primitive._builder.add_round()
+    primitive._builder.set_output(
+        primitive._builder.add_component(Identity(primitive.graph.input("plaintext")))
+    )
     for weight, count in ((0, 7), (1, 0)):
-        result = (
-            primitive.analyze()
-            .enumerate_xor_differential_trails(
-                fixed_weight=weight,
-                solver=Z3Solver(timeout_seconds=10),
-                limit=10,
-            )
-            .require_complete()
-        )
+        result = primitive.analysis.enumerate_xor_differential_trails(
+            fixed_weight=weight,
+            solver=Z3Solver(timeout_seconds=10),
+            limit=10,
+        ).require_complete()
         assert len(result.trails) == count
         assert all(trail.total_weight == 0 for trail in result.trails)
 

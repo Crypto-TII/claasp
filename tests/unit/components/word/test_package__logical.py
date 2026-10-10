@@ -2,21 +2,26 @@
 
 from itertools import product
 
-from claasp import Primitive, ScalarEvaluator, TransposedBatchEvaluator, ValueType, Word
+from claasp import ArrayType, Primitive, ScalarEvaluator, TransposedBatchEvaluator
 from claasp.components import BitwiseAnd, BitwiseNot, BitwiseOr, Xor
+from claasp.domains import Word
 from claasp.representations.constraints.polynomial import BooleanMonomial
 from claasp.representations.execution import BooleanDegreeEvaluator, BooleanSymbolicEvaluator
 
 
 def _logical_primitive(width: int = 4) -> Primitive:
-    value_type = ValueType(Word(width), (1,))
-    primitive = Primitive("logical", {"left": value_type, "right": value_type})
-    primitive.add_round()
-    either = primitive.add_component(BitwiseOr((primitive.input("left"), primitive.input("right"))))
-    both = primitive.add_component(BitwiseAnd((primitive.input("left"), primitive.input("right"))))
-    exclusive = primitive.add_component(Xor((either, both)))
-    output = primitive.add_component(BitwiseNot(exclusive))
-    primitive.set_output(output)
+    array_type = ArrayType(Word(width), (1,))
+    primitive = Primitive("logical", {"left": array_type, "right": array_type})
+    primitive._builder.add_round()
+    either = primitive._builder.add_component(
+        BitwiseOr((primitive.graph.input("left"), primitive.graph.input("right")))
+    )
+    both = primitive._builder.add_component(
+        BitwiseAnd((primitive.graph.input("left"), primitive.graph.input("right")))
+    )
+    exclusive = primitive._builder.add_component(Xor((either, both)))
+    output = primitive._builder.add_component(BitwiseNot(exclusive))
+    primitive._builder.set_output(output)
     return primitive
 
 

@@ -2,7 +2,7 @@
 
 from claasp.components import BinaryAffineMap as BinaryAffineMapComponent
 from claasp.domains import BinaryExtensionField, Bit
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 from claasp.utils import (
     first_irreducible_polynomial,
     identity_matrix,
@@ -34,7 +34,7 @@ class BinaryAffineMap(Primitive):
     EXAMPLES::
 
         >>> primitive = BinaryAffineMap()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -52,10 +52,12 @@ class BinaryAffineMap(Primitive):
             if matrix_is_invertible(matrix, Bit())
             else PrimitiveKind.FUNCTION
         )
-        super().__init__("binary_affine_map", {"input": ValueType(field, (unit_count,))}, kind=kind)
-        self.add_round()
-        output = self.add_component(BinaryAffineMapComponent(self.input("input"), matrix, offset))
-        self.set_output(output)
+        super().__init__("binary_affine_map", {"input": ArrayType(field, (unit_count,))}, kind=kind)
+        self._builder.add_round()
+        output = self._builder.add_component(
+            BinaryAffineMapComponent(self.graph.input("input"), matrix, offset)
+        )
+        self._builder.set_output(output)
 
 
 __all__ = ["BinaryAffineMap"]

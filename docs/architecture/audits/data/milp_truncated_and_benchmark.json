@@ -1,0 +1,44 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "results": [
+    {
+      "assignment_valid": true,
+      "constraints": 224,
+      "construction_seconds_median": 0.0007525624998834246,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_glpk_driver",
+      "repeats": 10,
+      "solver": "GLPKSolver",
+      "solver_seconds_median": 0.0013994999999340507,
+      "solver_status": "optimal",
+      "solver_version": "GLPSOL--GLPK LP/MIP Solver 5.0",
+      "strategy": "portable_one_hot",
+      "transition_valid": true,
+      "variables": 384
+    },
+    {
+      "assignment_valid": true,
+      "constraints": 192,
+      "construction_seconds_median": 0.0003166040000905923,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_glpk_driver",
+      "repeats": 10,
+      "solver": "GLPKSolver",
+      "solver_seconds_median": 0.0007368120000137424,
+      "solver_status": "optimal",
+      "solver_version": "GLPSOL--GLPK LP/MIP Solver 5.0",
+      "strategy": "recovered_indicator",
+      "transition_valid": true,
+      "variables": 128
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "comparison": "same relation, patterns, solver, settings, and host",
+    "description": "fixed 32-bit conservative deterministic-truncated AND",
+    "timeout_seconds": 30
+  }
+}

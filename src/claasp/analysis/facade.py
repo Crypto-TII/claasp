@@ -8,7 +8,7 @@ from hashlib import sha256
 from claasp.analysis.boolean import lower_boolean_problem
 from claasp.analysis.constraints import FixedValue
 from claasp.analysis.problem import AnalysisProblem
-from claasp.drivers.solvers import MinisatSolver, SatStatus
+from claasp.drivers.solvers import KissatSolver, SatStatus
 from claasp.graph import Primitive, Selection
 from claasp.provenance import DriverIdentity, DriverKind, ResultProvenance
 from claasp.representations.constraints.sat.cnf import CNFFormula
@@ -16,11 +16,16 @@ from claasp.representations.constraints.sat.encoding import (
     decode_unit,
     resolved_selection_variable_names,
 )
-from claasp.semantics.cryptanalysis import TrailKind
+from claasp.semantics.cryptanalysis import TrailKind, TrailSearchResult
 
 
 class TrailSearchBackend(str, Enum):
-    """Public exact trail-search backend selection.
+    """High-level trail-search implementation selected by advanced callers.
+
+    ``AUTO`` preserves the established per-primitive defaults. ``SAT`` selects
+    the supported solver-backed optimizer, while ``DEPENDENCY_FREE`` selects
+    only reviewed in-process paths, including the exact two-round Speck
+    Matsui branch-and-bound search.
 
     EXAMPLES::
 
@@ -76,11 +81,10 @@ class Analysis:
 
     EXAMPLES::
 
-        >>> try:
-        ...     Analysis()
-        ... except TypeError:
-        ...     print("required configuration rejected")
-        required configuration rejected
+        >>> from claasp.primitives import Present
+        >>> analysis = Analysis(Present(number_of_rounds=2))
+        >>> analysis.primitive.family_name
+        'present'
     """
 
     def __init__(self, primitive: Primitive) -> None:
@@ -92,7 +96,7 @@ class Analysis:
         if problem.primitive is not self.primitive:
             raise ValueError("analysis problem belongs to a different primitive")
         formula = lower_boolean_problem(problem)
-        selected_solver = MinisatSolver() if solver is None else solver
+        selected_solver = KissatSolver() if solver is None else solver
         if not hasattr(selected_solver, "solve"):
             raise TypeError("solver must provide a solve(formula) method")
         solved = selected_solver.solve(formula)
@@ -118,7 +122,7 @@ class Analysis:
         if not problem.projections:
             raise ValueError("solution enumeration requires at least one projection")
         formula = lower_boolean_problem(problem)
-        selected_solver = MinisatSolver() if solver is None else solver
+        selected_solver = KissatSolver() if solver is None else solver
         if not hasattr(selected_solver, "solve"):
             raise TypeError("solver must provide a solve(formula) method")
         results = []
@@ -151,7 +155,7 @@ class Analysis:
         if solved.is_satisfiable:
             for name, selection in problem.projections.items():
                 units = self._project(selection, solved.assignment)
-                projected[name] = self.primitive._encode_boundary(units, selection.value_type)
+                projected[name] = self.primitive._encode_boundary(units, selection.array_type)
         if getattr(solved.status, "value", None) == "unknown":
             raise RuntimeError("solver returned unknown; no analysis result can be projected")
         status = SatStatus.SATISFIABLE if solved.is_satisfiable else SatStatus.UNSATISFIABLE
@@ -187,23 +191,24 @@ class Analysis:
     ) -> AnalysisResult:
         """Recover one unknown input from known inputs and primitive output."""
 
-        if input_name not in self.primitive.input_ports:
+        if input_name not in self.primitive.graph.input_ports:
             raise ValueError(f"unknown primitive input {input_name!r}")
         if input_name in known_inputs:
             raise ValueError("the recovered input must not also be fixed")
-        expected_known = set(self.primitive.input_ports) - {input_name}
+        expected_known = set(self.primitive.graph.input_ports) - {input_name}
         if set(known_inputs) != expected_known:
             raise ValueError(f"known_inputs must contain exactly {sorted(expected_known)!r}")
-        if self.primitive.output is None:
+        if self.primitive.graph.output is None:
             raise ValueError("primitive has no declared output")
         constraints = [
-            FixedValue(self.primitive.input(name), value) for name, value in known_inputs.items()
+            FixedValue(self.primitive.graph.input(name), value)
+            for name, value in known_inputs.items()
         ]
-        constraints.append(FixedValue(self.primitive.output, output))
+        constraints.append(FixedValue(self.primitive.graph.output, output))
         problem = AnalysisProblem(
             self.primitive,
             constraints,
-            {input_name: self.primitive.input(input_name)},
+            {input_name: self.primitive.graph.input(input_name)},
         )
         return self.solve(problem, solver)
 
@@ -213,7 +218,7 @@ class Analysis:
         solver=None,
         nonzero_input=None,
         fixed_input_differences=None,
-    ):
+    ) -> TrailSearchResult:
         """Find an exact minimum-weight XOR-differential characteristic."""
 
         return self.find_optimal_trail(
@@ -227,12 +232,12 @@ class Analysis:
         kind: TrailKind | str = TrailKind.XOR_DIFFERENTIAL,
         *,
         backend: TrailSearchBackend | str = TrailSearchBackend.AUTO,
-        solver=None,
+        solver: object | None = None,
         nonzero_input=None,
         fixed_input_differences=None,
         fixed_input_masks=None,
         fixed_inputs=None,
-    ):
+    ) -> TrailSearchResult:
         """Find a proved optimum using graph capabilities, not a family fallback."""
 
         try:
@@ -283,7 +288,7 @@ class Analysis:
         )
 
     def _dependency_free_trail_search(self, kind):
-        rounds = len(self.primitive.rounds)
+        rounds = len(self.primitive.graph.rounds)
         if self.primitive.family_name == "present":
             if kind is TrailKind.XOR_DIFFERENTIAL and rounds == 2:
                 from claasp.analysis.spn import find_two_round_spn_xor_differential
@@ -294,10 +299,10 @@ class Analysis:
 
                 return lambda: find_three_round_spn_xor_linear(self.primitive)
         if self.primitive.family_name == "speck":
-            if kind is TrailKind.XOR_DIFFERENTIAL and rounds == 2:
-                from claasp.analysis.arx import find_two_round_speck_xor_differential
+            if kind is TrailKind.XOR_DIFFERENTIAL and rounds in (2, 3):
+                from claasp.analysis.arx import _find_speck_xor_differential_matsui
 
-                return lambda: find_two_round_speck_xor_differential(self.primitive)
+                return lambda: _find_speck_xor_differential_matsui(self.primitive)
             if kind is TrailKind.XOR_LINEAR and rounds == 4:
                 from claasp.analysis.arx import find_four_round_speck_xor_linear
 
@@ -459,7 +464,7 @@ class Analysis:
 
             >>> from claasp.analysis import PropertyDomain
             >>> from claasp.primitives import Present
-            >>> groups = Present(number_of_rounds=1).analyze().component_groups(PropertyDomain.LOOKUP_TABLE)
+            >>> groups = Present(number_of_rounds=1).analysis.component_groups(PropertyDomain.LOOKUP_TABLE)
             >>> max(group.count for group in groups)
             17
         """
@@ -480,8 +485,8 @@ class Analysis:
             >>> from claasp.components import BitVectorSBox
             >>> from claasp.primitives import Present
             >>> primitive = Present(number_of_rounds=1)
-            >>> sbox = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
-            >>> result = primitive.analyze().component_property(
+            >>> sbox = next(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
+            >>> result = primitive.analysis.component_property(
             ...     sbox, ComponentProperty.DIFFERENTIAL_UNIFORMITY,
             ...     PropertyDomain.LOOKUP_TABLE)
             >>> result.value, result.claim.value
@@ -549,12 +554,12 @@ class Analysis:
         from claasp.graph import Component
 
         if isinstance(component, Component):
-            if not any(item is component for item in self.primitive.components):
+            if not any(item is component for item in self.primitive.graph.components):
                 raise ValueError("component does not belong to this primitive graph")
             return component
         if isinstance(component, str):
             matches = tuple(
-                item for item in self.primitive.components if item.component_id == component
+                item for item in self.primitive.graph.components if item.component_id == component
             )
             if len(matches) != 1:
                 raise KeyError(f"primitive component {component!r} does not exist")
@@ -570,7 +575,7 @@ class Analysis:
         from claasp.semantics.cryptanalysis import SBoxTransitionSemantics
 
         component = next(
-            (item for item in self.primitive.components if item.component_id == component_id),
+            (item for item in self.primitive.graph.components if item.component_id == component_id),
             None,
         )
         if not isinstance(component, BitVectorSBox):
@@ -578,7 +583,7 @@ class Analysis:
                 "transition feasibility currently supports bit-vector S-boxes"
             )
         return (
-            SBoxTransitionSemantics(component.table)
+            SBoxTransitionSemantics(component.table, output_width=component.output_bit_size)
             .xor_differential(input_difference, output_difference)
             .is_possible
         )
@@ -603,7 +608,17 @@ class Analysis:
         from claasp.drivers.solvers import Z3Solver
         from claasp.representations.constraints.smt import WordDifferentialSMTModel
 
-        policy = resolve_input_policy(self.primitive, nonzero_input, fixed_input_differences)
+        if fixed_input_differences is None:
+            fixed_input_differences = (
+                {"key": 0}
+                if "key" in self.primitive.graph.input_ports and nonzero_input != "key"
+                else {}
+            )
+        policy = resolve_input_policy(
+            self.primitive,
+            nonzero_input,
+            fixed_input_differences,
+        )
         model = WordDifferentialSMTModel(
             self.primitive,
             maximum_weight=maximum_weight,
@@ -641,12 +656,11 @@ class Analysis:
             add_key_tweak_defaults=False,
         )
         if fixed_inputs is None and fixed_input_masks is None:
-            fixed_inputs = {
-                name: 0
-                for name in self.primitive.input_ports
-                if name != policy.nonzero_input
-                and ("key" in name.lower() or "tweak" in name.lower())
-            }
+            fixed_inputs = (
+                {"key": 0}
+                if "key" in self.primitive.graph.input_ports and nonzero_input != "key"
+                else {}
+            )
         model = WordLinearSMTModel(
             self.primitive,
             maximum_weight=maximum_weight,
@@ -663,7 +677,7 @@ class Analysis:
         nonzero_input=None,
         fixed_input_masks=None,
         fixed_inputs=None,
-    ):
+    ) -> TrailSearchResult:
         """Find an exact minimum-weight XOR-linear characteristic."""
 
         return self.find_optimal_trail(

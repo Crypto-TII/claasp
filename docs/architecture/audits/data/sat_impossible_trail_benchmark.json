@@ -1,0 +1,58 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "results": [
+    {
+      "assignment_valid": true,
+      "clauses": 5674,
+      "construction_seconds_median": 0.010955062999999932,
+      "literals": 23828,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported",
+      "repeats": 10,
+      "solver": "MinisatSolver",
+      "solver_seconds_median": 0.0028542710000003524,
+      "solver_status": "satisfiable",
+      "solver_version": "1:2.2.1-8build1",
+      "trail_valid": true,
+      "variables": 1568
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 5674,
+      "construction_seconds_median": 0.010708396000000064,
+      "literals": 23828,
+      "peak_memory_bytes_median": 33050624.0,
+      "peak_memory_status": "measured",
+      "repeats": 10,
+      "solver": "KissatSolver",
+      "solver_seconds_median": 0.001142083500000446,
+      "solver_status": "satisfiable",
+      "solver_version": "4.0.4",
+      "trail_valid": true,
+      "variables": 1568
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 5674,
+      "construction_seconds_median": 0.01070029150000007,
+      "literals": 23828,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported",
+      "repeats": 10,
+      "solver": "CryptoMiniSatSolver",
+      "solver_seconds_median": 0.002103582999999354,
+      "solver_status": "satisfiable",
+      "solver_version": "CryptoMiniSat version 5.11.15",
+      "trail_valid": true,
+      "variables": 1568
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "description": "Speck32/64-3 impossible search split after round 1 with zero key difference",
+    "timeout_seconds": 30
+  }
+}

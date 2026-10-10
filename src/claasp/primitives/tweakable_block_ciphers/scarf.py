@@ -47,7 +47,7 @@ class SCARF(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = SCARF()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -66,14 +66,14 @@ class SCARF(BitGraphPrimitive):
             primitive_output_bit_size=self.block_bit_size,
         )
 
-        plaintext = self.input(INPUT_PLAINTEXT)
-        left = self.view(plaintext[tuple(range(5))])
-        right = self.view(plaintext[tuple(range(5, 10))])
+        plaintext = self.graph.input(INPUT_PLAINTEXT)
+        left = self._builder.view(plaintext[tuple(range(5))])
+        right = self._builder.view(plaintext[tuple(range(5, 10))])
         data = BitState([left.owner_id, right.owner_id], [list(range(5))] * 2)
         key = [INPUT_KEY], [list(range(self.key_bit_size))]
         tweak = [INPUT_TWEAK], [list(range(self.tweak_bit_size))]
 
-        self.add_round()
+        self._builder.add_round()
         constant = self.add_constant_component(1, 0)
         L = self.tweakey_schedule(tweak, key, constant)
         Ti = [L[0], L[0], L[1], L[1], L[2], L[2], L[3], L[3]]
@@ -89,7 +89,7 @@ class SCARF(BitGraphPrimitive):
             )
             data = BitState([F_component_xored.id, sbox_component.id], [[0, 1, 2, 3, 4]] * 2)
             self.add_round_output_component(data.id, data.input_bit_positions, self.block_bit_size)
-            self.add_round()
+            self._builder.add_round()
 
         # Last round is different:
         F_component = self.F_function(data, Ti[7], 7)

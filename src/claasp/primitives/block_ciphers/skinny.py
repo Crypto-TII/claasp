@@ -112,7 +112,7 @@ class Skinny(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Skinny()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xe377bd614cccaed7', 64)
@@ -145,7 +145,7 @@ class Skinny(BitGraphPrimitive):
         state = self.state_initialization()
         key = self.key_initialization()
 
-        self.add_round()
+        self._builder.add_round()
         self.add_constant_component(self.cell_size, ROUND_CONSTANT_2)
         rc2 = BitState([self.get_current_component_id()], [list(range(self.cell_size))])
 
@@ -158,7 +158,7 @@ class Skinny(BitGraphPrimitive):
                 [key_state for key_array in key for key_state in key_array]
             )
             self.add_round_key_output_component(inputs_id, inputs_pos, key_bit_size)
-            self.add_round()
+            self._builder.add_round()
         state = self.round_function(state, key, number_of_rounds - 1, rc2)
         inputs_id, inputs_pos = get_inputs_parameter(state)
         self.add_primitive_output_component(inputs_id, inputs_pos, block_bit_size)

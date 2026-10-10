@@ -94,11 +94,11 @@ def test_aes_realizations_preserve_all_vectors_and_each_other(key_size, key_hex,
         expected = int(ciphertext_hex, 16)
         assert lookup.evaluate(plaintext, key) == expected
         assert algebraic.evaluate(plaintext, key) == expected
-    assert any(isinstance(component, SBox) for component in lookup.components)
-    assert not any(isinstance(component, Power) for component in lookup.components)
-    assert any(isinstance(component, Power) for component in algebraic.components)
-    assert any(isinstance(component, BinaryAffineMap) for component in algebraic.components)
-    assert not any(isinstance(component, SBox) for component in algebraic.components)
+    assert any(isinstance(component, SBox) for component in lookup.graph.components)
+    assert not any(isinstance(component, Power) for component in lookup.graph.components)
+    assert any(isinstance(component, Power) for component in algebraic.graph.components)
+    assert any(isinstance(component, BinaryAffineMap) for component in algebraic.graph.components)
+    assert not any(isinstance(component, SBox) for component in algebraic.graph.components)
 
 
 def test_aes_capability_selection_is_explicit_and_deterministic():
@@ -137,14 +137,14 @@ def test_aes_preserves_legacy_configuration_semantics(key_size, rounds, nk):
     primitive = AES(key_size)
     assert primitive.family_name == "aes"
     # The v5 graph represents initial AddRoundKey as an explicit round zero.
-    assert len(primitive.rounds) == rounds + 1
-    assert primitive.Nk == nk
-    assert primitive.Nr == rounds
-    assert primitive.input("key").value_type.encoded_bit_size == key_size
-    assert primitive.output.value_type.encoded_bit_size == 128
-    assert primitive.input("plaintext").value_type.domain == BinaryExtensionField(8, 0x11B)
-    assert isinstance(primitive.component(primitive.initial_state.owner_id), Add)
-    assert len(primitive.round_keys) == rounds + 1
+    assert len(primitive.graph.rounds) == rounds + 1
+    assert key_size // 32 == nk
+    assert primitive.details().number_of_rounds == rounds
+    assert primitive.graph.input("key").array_type.encoded_bit_size == key_size
+    assert primitive.graph.output.array_type.encoded_bit_size == 128
+    assert primitive.graph.input("plaintext").array_type.domain == BinaryExtensionField(8, 0x11B)
+    assert isinstance(primitive.graph.component(primitive._initial_state.owner_id), Add)
+    assert len(primitive.graph.round_keys) == rounds + 1
 
 
 def test_aes_rejects_legacy_invalid_key_size():
@@ -177,16 +177,16 @@ def test_present_preserves_legacy_variants_and_exact_vectors(key_size, plaintext
     assert int_from_bits(scalar.output) == ciphertext
     assert batch.outputs == (scalar.output,)
     assert primitive.family_name == "present"
-    assert len(primitive.rounds) == 31
-    assert primitive.input("key").value_type.domain == Bit()
-    assert primitive.input("key").value_type.encoded_bit_size == key_size
-    assert isinstance(primitive.rounds[0].components[0], Add)
+    assert len(primitive.graph.rounds) == 31
+    assert primitive.graph.input("key").array_type.domain == Bit()
+    assert primitive.graph.input("key").array_type.encoded_bit_size == key_size
+    assert isinstance(primitive.graph.rounds[0].components[0], Add)
 
 
 def test_present_preserves_reduced_round_configuration():
     primitive = Present(number_of_rounds=4)
-    assert len(primitive.rounds) == 4
-    assert primitive.rounds[3].components[0].component_id == "add_round_key_4"
+    assert len(primitive.graph.rounds) == 4
+    assert primitive.graph.rounds[3].components[0].component_id == "add_round_key_4"
 
 
 @pytest.mark.parametrize(
@@ -235,16 +235,16 @@ def test_speck_preserves_legacy_variants_and_exact_vectors(
     assert (scalar.output[0] << word_size) | scalar.output[1] == ciphertext
     assert batch.outputs == (scalar.output,)
     assert primitive.family_name == "speck"
-    assert primitive.input("plaintext").value_type.domain == Word(word_size)
-    assert primitive.input("key").value_type.encoded_bit_size == key_size
-    assert primitive.output.value_type.encoded_bit_size == block_size
-    assert isinstance(primitive.rounds[0].components[0], Rotate)
+    assert primitive.graph.input("plaintext").array_type.domain == Word(word_size)
+    assert primitive.graph.input("key").array_type.encoded_bit_size == key_size
+    assert primitive.graph.output.array_type.encoded_bit_size == block_size
+    assert isinstance(primitive.graph.rounds[0].components[0], Rotate)
 
 
 def test_speck_preserves_legacy_defaults_and_reduced_rounds():
     default = Speck()
     reduced = Speck(number_of_rounds=4)
-    assert len(default.rounds) == 22
-    assert default.input("plaintext").value_type.encoded_bit_size == 32
-    assert default.input("key").value_type.encoded_bit_size == 64
-    assert len(reduced.rounds) == 4
+    assert len(default.graph.rounds) == 22
+    assert default.graph.input("plaintext").array_type.encoded_bit_size == 32
+    assert default.graph.input("key").array_type.encoded_bit_size == 64
+    assert len(reduced.graph.rounds) == 4

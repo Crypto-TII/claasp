@@ -11,7 +11,7 @@ class Raiden(Primitive):
     EXAMPLES::
 
         >>> primitive = Raiden()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -32,10 +32,10 @@ class Raiden(Primitive):
         if not isinstance(rounds, int) or isinstance(rounds, bool) or rounds <= 0:
             raise ValueError("number_of_rounds must be a positive integer")
         super().__init__("raiden", {"plaintext": word_type(width, 2), "key": word_type(width, 4)})
-        block = [select(self.input("plaintext"), index) for index in range(2)]
-        key = [select(self.input("key"), index) for index in range(4)]
+        block = [select(self.graph.input("plaintext"), index) for index in range(2)]
+        key = [select(self.graph.input("key"), index) for index in range(4)]
         for round_number in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             key_sum = add(self, key[2], key[3])
             shifted = variable_shift(self, key[0], key[2], left=True)
             subkey = add(self, key[0], key[1], xor(self, key_sum, shifted))
@@ -49,4 +49,4 @@ class Raiden(Primitive):
                 block[index] = add(
                     self, block[index], xor(self, shift(self, summed, -left_shift_amount), mixed)
                 )
-        self.set_output(concatenate(self, *block))
+        self._builder.set_output(concatenate(self, *block))

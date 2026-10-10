@@ -2,7 +2,7 @@
 
 from claasp.components import VariableShift as VariableShiftComponent
 from claasp.domains import Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 from ._base import positive
 
@@ -24,7 +24,7 @@ class VariableShift(Primitive):
     EXAMPLES::
 
         >>> primitive = VariableShift()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -41,17 +41,17 @@ class VariableShift(Primitive):
         super().__init__(
             "variable_shift",
             {
-                "input": ValueType(Word(bit_size), (1,)),
-                "amount": ValueType(Word(amount_bit_size), (1,)),
+                "input": ArrayType(Word(bit_size), (1,)),
+                "amount": ArrayType(Word(amount_bit_size), (1,)),
             },
             kind=PrimitiveKind.FUNCTION,
         )
-        self.add_round()
-        self.set_output(
-            self.add_component(
+        self._builder.add_round()
+        self._builder.set_output(
+            self._builder.add_component(
                 VariableShiftComponent(
-                    self.input("input"),
-                    self.input("amount"),
+                    self.graph.input("input"),
+                    self.graph.input("amount"),
                     direction,
                 )
             )

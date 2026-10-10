@@ -16,7 +16,7 @@ class Multiply(Primitive):
 
     Select another domain explicitly when needed:
 
-    >>> from claasp import PrimeField
+    >>> from claasp.domains import PrimeField
     >>> Multiply(domain=PrimeField(17)).evaluate(5, 7)
     1
 
@@ -31,7 +31,7 @@ class Multiply(Primitive):
     EXAMPLES::
 
         >>> primitive = Multiply()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -43,9 +43,9 @@ class Multiply(Primitive):
             algebraic_inputs(domain, unit_count, number_of_inputs),
             kind=PrimitiveKind.FUNCTION,
         )
-        self.add_round()
-        output = self.add_component(MultiplyComponent(self.inputs()))
-        self.set_output(output)
+        self._builder.add_round()
+        output = self._builder.add_component(MultiplyComponent(self.graph.inputs()))
+        self._builder.set_output(output)
 
 
 __all__ = ["Multiply"]

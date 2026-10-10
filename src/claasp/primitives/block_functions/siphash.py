@@ -55,7 +55,7 @@ class SiphashMAC(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = SiphashMAC()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x97f21481e1333322', 64)
@@ -87,7 +87,7 @@ class SiphashMAC(BitGraphPrimitive):
             primitive_output_bit_size=self.digest_bit_size,
         )
 
-        self.add_round()
+        self._builder.add_round()
 
         k0 = self._little_endian_64_from_input(INPUT_KEY, 0)
         k1 = self._little_endian_64_from_input(INPUT_KEY, 8)
@@ -136,7 +136,7 @@ class SiphashMAC(BitGraphPrimitive):
 
     def _apply_sip_rounds(self, v0, v1, v2, v3, number_of_rounds):
         for _ in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             v0, v1, v2, v3 = self._sip_round(v0, v1, v2, v3)
 
         return v0, v1, v2, v3

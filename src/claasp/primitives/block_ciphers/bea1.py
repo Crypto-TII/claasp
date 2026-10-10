@@ -33,7 +33,7 @@ class BEA1(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = BEA1()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x69edaac0b3f0471b', 79)
@@ -365,7 +365,7 @@ class BEA1(BitGraphPrimitive):
         ]
         # fmt: on
 
-        self.add_round()
+        self._builder.add_round()
 
         _zero = self.add_constant_component(self.sbox_bit_size, 0)
         key_state = [
@@ -435,7 +435,7 @@ class BEA1(BitGraphPrimitive):
         primitive_state = INPUT_PLAINTEXT
         for round_number in range(self.nrounds):
             if round_number > 0:
-                self.add_round()
+                self._builder.add_round()
 
             # add key[round_number]
             primitive_state = self.xor_round_key(round_number, key_state, primitive_state)

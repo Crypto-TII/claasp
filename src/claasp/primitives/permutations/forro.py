@@ -54,7 +54,7 @@ class Forro(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Forro()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -98,7 +98,7 @@ class Forro(BitGraphPrimitive):
             self.state_of_components = state_of_components
 
         for round_index in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             self._round_function(round_index)
             add_intermediate_output_component_latin_dances_permutations(
                 self, round_index, number_of_rounds

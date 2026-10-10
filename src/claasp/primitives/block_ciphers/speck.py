@@ -2,7 +2,7 @@
 
 from claasp.components import Constant, ModularAdd, Rotate, Xor
 from claasp.domains import Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 PARAMETERS_CONFIGURATION_LIST = (
     {"block_bit_size": 32, "key_bit_size": 64, "number_of_rounds": 22},
@@ -25,12 +25,12 @@ def _validate_parameters(
     rotation_alpha,
     rotation_beta,
 ):
-    configuration = Primitive.select_configuration(
+    configuration = Primitive._select_configuration(
         PARAMETERS_CONFIGURATION_LIST,
         block_bit_size=block_bit_size,
         key_bit_size=key_bit_size,
     )
-    rounds = Primitive.validate_number_of_rounds(
+    rounds = Primitive._validate_number_of_rounds(
         number_of_rounds,
         default=configuration["number_of_rounds"],
         maximum=configuration["number_of_rounds"],
@@ -75,50 +75,50 @@ class Speck(Primitive):
             rotation_alpha,
             rotation_beta,
         )
-        word_type = ValueType(Word(word_size), (1,))
+        word_type = ArrayType(Word(word_size), (1,))
         super().__init__(
             "speck",
             {
-                "plaintext": ValueType(Word(word_size), (2,)),
-                "key": ValueType(Word(word_size), (key_word_count,)),
+                "plaintext": ArrayType(Word(word_size), (2,)),
+                "key": ArrayType(Word(word_size), (key_word_count,)),
             },
             kind=PrimitiveKind.BLOCK_CIPHER,
+            instance_name=f"Speck{block_bit_size}/{key_bit_size}",
+            round_count=rounds,
         )
 
-        x, y = self.input("plaintext")[0], self.input("plaintext")[1]
-        key = self.input("key")
+        x, y = self.graph.input("plaintext")[0], self.graph.input("plaintext")[1]
+        key = self.graph.input("key")
         schedule = [key[position] for position in range(key_word_count - 2, -1, -1)]
         round_key = key[key_word_count - 1]
 
         def round_function(x, y, key):
-            x = self.add_component(Rotate(x, alpha, "right"))
-            x = self.add_component(ModularAdd((x, y)))
-            x = self.add_component(Xor((x, key)))
-            y = self.add_component(Rotate(y, beta, "left"))
-            y = self.add_component(Xor((y, x)))
+            x = self._builder.add_component(Rotate(x, alpha, "right"))
+            x = self._builder.add_component(ModularAdd((x, y)))
+            x = self._builder.add_component(Xor((x, key)))
+            y = self._builder.add_component(Rotate(y, beta, "left"))
+            y = self._builder.add_component(Xor((y, x)))
             return x, y
 
         for round_number in range(rounds):
-            self.add_round()
-            self.add_round_key(round_key)
-            start = len(self.rounds[-1].components)
+            self._builder.add_round()
+            self._builder.add_round_key(round_key)
+            start = len(self.graph.rounds[-1].components)
             x, y = round_function(x, y, round_key)
-            operations = self.rounds[-1].components[start:]
-            self.add_round_operations(
-                rotate_right=operations[0],
-                modular_add=operations[1],
-                rotate_left=operations[3],
-            )
-            self.add_round_state(x, y)
+            operations = self.graph.rounds[-1].components[start:]
+            self._builder.set_intermediate_output(operations[0].output, name="rotate_right")
+            self._builder.set_intermediate_output(operations[1].output, name="modular_add")
+            self._builder.set_intermediate_output(operations[3].output, name="rotate_left")
+            self._builder.set_round_output(x, y)
 
             if round_number + 1 < rounds:
                 index = round_number % len(schedule)
-                constant = self.add_component(Constant(word_type, (round_number,)))
+                constant = self._builder.add_component(Constant(word_type, (round_number,)))
                 schedule[index], round_key = round_function(
                     schedule[index],
                     round_key,
                     constant,
                 )
-                self.add_key_schedule_state(schedule[index], round_key)
+                self._builder.add_key_schedule_state(schedule[index], round_key)
 
-        self.set_output((x, y))
+        self._builder.set_output((x, y))

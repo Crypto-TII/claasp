@@ -43,7 +43,7 @@ class BipBip(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = BipBip()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x7eab9b', 23)
@@ -217,7 +217,7 @@ class BipBip(BitGraphPrimitive):
             9,
         ]
 
-        self.add_round()
+        self._builder.add_round()
 
         round_keys = self.tweak_key_schedule()
 
@@ -225,21 +225,21 @@ class BipBip(BitGraphPrimitive):
 
         state = None
         for i in range(rnd, rnd - self.sh2, -1):
-            self.add_round()
+            self._builder.add_round()
             state = self.shell_round(
                 INPUT_PLAINTEXT if state is None else state.id, round_keys[i].id
             )
         rnd -= self.sh2
 
         for i in range(rnd, rnd - self.cr, -1):
-            self.add_round()
+            self._builder.add_round()
             state = self.core_round(
                 INPUT_PLAINTEXT if state is None else state.id, round_keys[i].id
             )
         rnd -= self.cr
 
         for i in range(rnd, rnd - self.sh1, -1):
-            self.add_round()
+            self._builder.add_round()
             state = self.shell_round(
                 INPUT_PLAINTEXT if state is None else state.id, round_keys[i].id
             )

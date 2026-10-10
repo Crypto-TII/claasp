@@ -50,7 +50,7 @@ class Led(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Led()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x39c2401003a0c798', 62)
@@ -87,8 +87,8 @@ class Led(BitGraphPrimitive):
         round_number = 0
         key_index = 0
 
-        self.add_round()
-        state = self.add_round_key(state, key[key_index])
+        self._builder.add_round()
+        state = self._add_round_key(state, key[key_index])
         for step_number in range(self.number_of_steps):
             for _ in range(4):
                 state = self.add_constants(state, round_number)
@@ -96,13 +96,13 @@ class Led(BitGraphPrimitive):
                 state = self.shift_rows(state)
                 state = self.mix_columns(state)
                 round_number += 1
-            state = self.add_round_key(state, key[key_index])
+            state = self._add_round_key(state, key[key_index])
             key_index = (key_index + 1) % 2
             if step_number != self.number_of_steps - 1:
                 self.add_round_output_component(
                     state.id, state.input_bit_positions, self.block_bit_size
                 )
-                self.add_round()
+                self._builder.add_round()
             else:
                 self.add_primitive_output_component(
                     state.id, state.input_bit_positions, self.block_bit_size
@@ -186,7 +186,7 @@ class Led(BitGraphPrimitive):
 
         return BitState(new_state, new_positions)
 
-    def add_round_key(self, state, key):
+    def _add_round_key(self, state, key):
         xor_id = self.add_xor_component(
             [*state.id, *key.id],
             [*state.input_bit_positions, *key.input_bit_positions],

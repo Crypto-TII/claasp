@@ -1,7 +1,10 @@
 """Exact small-round SPN trail search over typed primitive graphs."""
 
+from fractions import Fraction
 from math import inf
+from time import perf_counter
 
+from claasp.analysis._trail_propagation import xor_differential_propagation
 from claasp.components import BitVectorSBox, Permutation
 from claasp.domains import Bit
 from claasp.graph import Primitive
@@ -9,6 +12,8 @@ from claasp.semantics.cryptanalysis import (
     SBoxTransitionSemantics,
     Trail,
     TrailKind,
+    TrailRoundTransition,
+    TrailSearchMetadata,
     TrailSearchResult,
     TrailStep,
     XorDifference,
@@ -25,13 +30,14 @@ def find_two_round_spn_xor_differential(primitive: Primitive) -> TrailSearchResu
     nonzero-transition lower bound for both substitution layers.
     """
 
+    started = perf_counter()
     _validate_present_slice(primitive)
     first_sboxes = _round_sboxes(primitive, 1)
     second_sboxes = _round_sboxes(primitive, 2)
     first_permutation = _component(primitive, "p_layer_1", Permutation)
     second_permutation = _component(primitive, "p_layer_2", Permutation)
     semantics = SBoxTransitionSemantics(first_sboxes[0].table)
-    width = primitive.input("plaintext").value_type.unit_count
+    width = primitive.graph.input("plaintext").array_type.unit_count
     nibble_count = width // semantics.width
     transitions = {
         difference: tuple(
@@ -95,22 +101,36 @@ def find_two_round_spn_xor_differential(primitive: Primitive) -> TrailSearchResu
         step.transition.input_pattern.value != 0 for step in best[1].steps[1:]
     )
     lower_bound = minimum_nonzero_weight * (1 + active_second_layer)
+    trail = best[1]
+    metadata = TrailSearchMetadata(
+        "single-active-nibble enumeration with exact S-box DDT transitions",
+        runtime_seconds=perf_counter() - started,
+    )
+    propagation = xor_differential_propagation(
+        primitive,
+        trail,
+        input_differences={"plaintext": trail.input_pattern.value, "key": 0},
+    )
     return TrailSearchResult(
-        best[1],
+        trail,
         lower_bound,
-        "legacy CLAASP MilpXorDifferentialModel PRESENT-2 regression",
+        metadata,
+        propagation.components,
+        round_transitions=propagation.rounds,
     )
 
 
 def check_spn_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently recompute transitions and SPN wiring in ``trail``."""
 
-    components = {component.component_id: component for component in primitive.components}
+    components = {component.component_id: component for component in primitive.graph.components}
     for step in trail.steps:
         component = components.get(step.component_id)
         if not isinstance(component, BitVectorSBox):
             return False
-        if not SBoxTransitionSemantics(component.table).check(step.transition):
+        if not SBoxTransitionSemantics(
+            component.table, output_width=component.output_bit_size
+        ).check(step.transition):
             return False
     if len(trail.steps) != 17:
         return False
@@ -139,6 +159,7 @@ def check_spn_trail(primitive: Primitive, trail: Trail) -> bool:
 def find_three_round_spn_xor_linear(primitive: Primitive) -> TrailSearchResult:
     """Reproduce the preserved three-round PRESENT linear weight bound."""
 
+    started = perf_counter()
     _validate_present_linear_slice(primitive)
     layers = tuple(_round_sboxes(primitive, round_number) for round_number in range(1, 4))
     permutations = tuple(
@@ -161,8 +182,11 @@ def find_three_round_spn_xor_linear(primitive: Primitive) -> TrailSearchResult:
                 shift = 4 * (15 - active_nibble)
                 state = _permute(first.output_pattern.value << shift, 64, permutations[0].mapping)
                 steps = [TrailStep(layers[0][active_nibble].component_id, first)]
+                round_data = [(state, Fraction(first.numerator, first.denominator), first.sign)]
                 for round_index in (1, 2):
                     output = 0
+                    round_ratio = Fraction(1)
+                    round_sign = 1
                     for nibble in range(16):
                         shift = 4 * (15 - nibble)
                         mask = (state >> shift) & 0xF
@@ -173,8 +197,11 @@ def find_three_round_spn_xor_linear(primitive: Primitive) -> TrailSearchResult:
                         steps.append(
                             TrailStep(layers[round_index][nibble].component_id, transition)
                         )
+                        round_ratio *= Fraction(transition.numerator, transition.denominator)
+                        round_sign *= transition.sign
                         output |= transition.output_pattern.value << shift
                     state = _permute(output, 64, permutations[round_index].mapping)
+                    round_data.append((state, round_ratio, round_sign))
                 trail = Trail(
                     TrailKind.XOR_LINEAR,
                     XorMask(input_mask << (4 * (15 - active_nibble)), 64),
@@ -187,13 +214,26 @@ def find_three_round_spn_xor_linear(primitive: Primitive) -> TrailSearchResult:
                     trail.output_pattern.value,
                 )
                 if best is None or ordering < best[0]:
-                    best = (ordering, trail)
+                    best = (ordering, trail, tuple(round_data))
     if best is None:
         raise RuntimeError("no nonzero PRESENT linear trail was found")
     return TrailSearchResult(
         best[1],
         4.0,
-        "legacy CLAASP disabled PRESENT-3 MilpXorLinearModel weight-4 fixture",
+        TrailSearchMetadata(
+            "single-active-nibble enumeration with exact S-box LAT transitions",
+            runtime_seconds=perf_counter() - started,
+        ),
+        round_transitions=tuple(
+            TrailRoundTransition(
+                round_number,
+                XorMask(state, 64),
+                ratio.numerator,
+                ratio.denominator,
+                sign,
+            )
+            for round_number, (state, ratio, sign) in enumerate(best[2])
+        ),
     )
 
 
@@ -203,12 +243,14 @@ def check_spn_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     _validate_present_linear_slice(primitive)
     if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != 33:
         return False
-    components = {component.component_id: component for component in primitive.components}
+    components = {component.component_id: component for component in primitive.graph.components}
     for step in trail.steps:
         component = components.get(step.component_id)
         if not isinstance(component, BitVectorSBox):
             return False
-        if not SBoxTransitionSemantics(component.table).check(step.transition):
+        if not SBoxTransitionSemantics(
+            component.table, output_width=component.output_bit_size
+        ).check(step.transition):
             return False
     first, remaining = trail.steps[0], trail.steps[1:]
     nibble = int(first.component_id.rsplit("_", 1)[1])
@@ -233,15 +275,15 @@ def check_spn_linear_trail(primitive: Primitive, trail: Trail) -> bool:
 
 
 def _validate_present_slice(primitive: Primitive) -> None:
-    plaintext = primitive.input_ports.get("plaintext")
-    key = primitive.input_ports.get("key")
+    plaintext = primitive.graph.input_ports.get("plaintext")
+    key = primitive.graph.input_ports.get("key")
     if (
         primitive.family_name != "present"
-        or len(primitive.rounds) != 2
+        or len(primitive.graph.rounds) != 2
         or plaintext is None
         or key is None
-        or not isinstance(plaintext.value_type.domain, Bit)
-        or plaintext.value_type.unit_count != 64
+        or not isinstance(plaintext.array_type.domain, Bit)
+        or plaintext.array_type.unit_count != 64
     ):
         raise NotImplementedError(
             "the reviewed SPN search slice currently supports two-round PRESENT"
@@ -249,13 +291,13 @@ def _validate_present_slice(primitive: Primitive) -> None:
 
 
 def _validate_present_linear_slice(primitive: Primitive) -> None:
-    plaintext = primitive.input_ports.get("plaintext")
+    plaintext = primitive.graph.input_ports.get("plaintext")
     if (
         primitive.family_name != "present"
-        or len(primitive.rounds) != 3
+        or len(primitive.graph.rounds) != 3
         or plaintext is None
-        or not isinstance(plaintext.value_type.domain, Bit)
-        or plaintext.value_type.unit_count != 64
+        or not isinstance(plaintext.array_type.domain, Bit)
+        or plaintext.array_type.unit_count != 64
     ):
         raise NotImplementedError(
             "the reviewed linear SPN search slice currently supports three-round PRESENT"
@@ -266,7 +308,7 @@ def _round_sboxes(primitive: Primitive, round_number: int) -> tuple[BitVectorSBo
     prefix = f"sbox_{round_number}_"
     result = tuple(
         component
-        for component in primitive.components
+        for component in primitive.graph.components
         if isinstance(component, BitVectorSBox) and component.component_id.startswith(prefix)
     )
     if len(result) != 16:
@@ -276,7 +318,7 @@ def _round_sboxes(primitive: Primitive, round_number: int) -> tuple[BitVectorSBo
 
 def _component(primitive: Primitive, component_id: str, expected_type):
     component = next(
-        (item for item in primitive.components if item.component_id == component_id), None
+        (item for item in primitive.graph.components if item.component_id == component_id), None
     )
     if not isinstance(component, expected_type):
         raise ValueError(f"primitive is missing {component_id!r} {expected_type.__name__}")

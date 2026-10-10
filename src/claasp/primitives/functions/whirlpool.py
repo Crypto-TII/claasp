@@ -39,7 +39,7 @@ class Whirlpool(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Whirlpool()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xfb49073c4d7e581a', 512)
@@ -106,7 +106,7 @@ class Whirlpool(BitGraphPrimitive):
             primitive_output_bit_size=self.primitive_block_size,
         )
 
-        self.add_round()
+        self._builder.add_round()
 
         round_key = self.add_constant_component(
             self.primitive_block_size, 0x00
@@ -163,7 +163,7 @@ class Whirlpool(BitGraphPrimitive):
                 INTERMEDIATE_OUTPUT,
             )
             if round_number != number_of_rounds - 1:
-                self.add_round()
+                self._builder.add_round()
 
         output = self.add_xor_component(
             [INPUT_MESSAGE, add_round_key.id],

@@ -4,13 +4,17 @@ import pytest
 
 from claasp.analysis import AnalysisProblem, FixedValue, TrailKind
 from claasp.drivers.solvers import SatStatus, Z3Solver
-from claasp.primitives import BitVectorSBox, Present, Speck
+from claasp.primitives import BitVectorSBox, Present, Speck, ToySpeck
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints.smt import (
+    ModularAddDeterministicTruncatedSMTModel,
     ModularAddLinearSMTModel,
     PresentDifferentialSMTModel,
     PresentLinearSMTModel,
     SBoxTransitionSMTModel,
+    WordDeterministicTruncatedSMTModel,
+    WordDifferentialSMTModel,
+    WordLinearSMTModel,
 )
 from claasp.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -18,6 +22,69 @@ from claasp.representations.constraints.smt.trails import (
 )
 
 pytestmark = pytest.mark.external
+
+
+def test_z3_preserves_deterministic_truncated_modular_add_relation():
+    solver = Z3Solver(timeout_seconds=10)
+    accepted_model = ModularAddDeterministicTruncatedSMTModel(4)
+    accepted = solver.solve(
+        accepted_model.smt_formula(left_pattern="0001", right_pattern="0001", output_pattern="???0")
+    )
+    assert accepted.status is SatStatus.SATISFIABLE
+    assert tuple(map(str, accepted_model.decode_transition(accepted.assignment))) == (
+        "0001",
+        "0001",
+        "???0",
+    )
+
+    rejected_model = ModularAddDeterministicTruncatedSMTModel(4)
+    rejected = solver.solve(
+        rejected_model.smt_formula(left_pattern="0001", right_pattern="0001", output_pattern="0000")
+    )
+    assert rejected.status is SatStatus.UNSATISFIABLE
+
+
+def test_z3_preserves_deterministic_truncated_toy_speck_trail():
+    options = {
+        "fixed_input_patterns": {"plaintext": "00000001", "key": "0" * 16},
+        "output_pattern": "???0????",
+    }
+    model = WordDeterministicTruncatedSMTModel(ToySpeck(2), **options)
+    solved = Z3Solver(timeout_seconds=10).solve(model.smt_formula())
+    assert solved.status is SatStatus.SATISFIABLE
+    trail = model.decode_characteristic(solved.assignment)
+    assert str(trail.output_pattern) == "???0????"
+    assert model.check_characteristic(trail)
+
+    rejected = WordDeterministicTruncatedSMTModel(
+        ToySpeck(2),
+        fixed_input_patterns=options["fixed_input_patterns"],
+        output_pattern="00000000",
+    )
+    assert (
+        Z3Solver(timeout_seconds=10).solve(rejected.smt_formula()).status is SatStatus.UNSATISFIABLE
+    )
+
+
+def test_z3_solves_and_independently_checks_word_differential_and_linear_trails():
+    solver = Z3Solver(timeout_seconds=10)
+    differential = WordDifferentialSMTModel(
+        ToySpeck(2), fixed_weight=1, fixed_input_differences={"key": 0}
+    )
+    differential_result = solver.solve(differential.smt_formula())
+    assert differential_result.status is SatStatus.SATISFIABLE
+    differential_trail = differential.decode_characteristic(differential_result.assignment)
+    assert differential_trail.total_weight == 1
+    assert differential.check_characteristic(differential_trail)
+
+    linear = WordLinearSMTModel(
+        ToySpeck(2), maximum_weight=2, nonzero_input="plaintext", fixed_inputs={"key": 0}
+    )
+    linear_result = solver.solve(linear.smt_formula())
+    assert linear_result.status is SatStatus.SATISFIABLE
+    linear_trail = linear.decode_characteristic(linear_result.assignment)
+    assert linear_trail.total_weight <= 2
+    assert linear.check_characteristic(linear_trail)
 
 
 def test_z3_incremental_queries_reject_mutation_and_close_process():
@@ -39,7 +106,7 @@ def test_z3_recovers_and_independently_verifies_reduced_speck_key():
     plaintext = 0x6574694C
     ciphertext = primitive.evaluate(plaintext, 0x1918111009080100)
 
-    result = primitive.analyze().recover_input(
+    result = primitive.analysis.recover_input(
         "key",
         known_inputs={"plaintext": plaintext},
         output=ciphertext,
@@ -55,13 +122,13 @@ def test_z3_reproduces_legacy_full_speck_missing_bits_result():
     problem = AnalysisProblem(
         primitive,
         (
-            FixedValue(primitive.input("plaintext"), 0x6574694C),
-            FixedValue(primitive.input("key"), 0x1918111009080100),
+            FixedValue(primitive.graph.input("plaintext"), 0x6574694C),
+            FixedValue(primitive.graph.input("key"), 0x1918111009080100),
         ),
-        {"ciphertext": primitive.output},
+        {"ciphertext": primitive.graph.output},
     )
 
-    result = primitive.analyze().solve(problem, Z3Solver(timeout_seconds=30))
+    result = primitive.analysis.solve(problem, Z3Solver(timeout_seconds=30))
 
     assert result.is_satisfiable
     assert result.value("ciphertext") == 0xA86842F2

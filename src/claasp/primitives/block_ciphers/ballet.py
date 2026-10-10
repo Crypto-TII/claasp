@@ -57,7 +57,7 @@ class Ballet(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Ballet()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x47f9d1bc25716f4e', 127)
@@ -85,7 +85,7 @@ class Ballet(BitGraphPrimitive):
         state_0, state_1, state_2, state_3, key_0, key_1, t_0, t_1 = self.round_initialization()
 
         for round_number in range(self.r):
-            self.add_round()
+            self._builder.add_round()
 
             if round_number == self.r - 1:
                 # encryption

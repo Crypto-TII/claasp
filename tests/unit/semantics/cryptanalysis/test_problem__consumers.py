@@ -12,7 +12,7 @@ from claasp.semantics.cryptanalysis import (
 
 def test_smt_milp_and_cp_composition_consume_the_same_component_override():
     primitive = Present(number_of_rounds=2)
-    component = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+    component = next(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
     base = PropagationProblem(primitive, XOR_DIFFERENTIAL).registry
     calls = {"smt": 0, "milp": 0, "cp": 0}
 

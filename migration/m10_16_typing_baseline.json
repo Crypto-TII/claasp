@@ -1,31 +1,29 @@
 {
   "counts_by_code": {
-    "arg-type": 173,
-    "assignment": 76,
-    "attr-defined": 130,
+    "arg-type": 190,
+    "assignment": 75,
+    "attr-defined": 141,
     "call-arg": 7,
-    "call-overload": 81,
-    "dict-item": 29,
+    "call-overload": 82,
+    "dict-item": 28,
     "has-type": 22,
-    "import-untyped": 1,
-    "index": 72,
+    "index": 63,
     "list-item": 4,
     "misc": 29,
     "no-redef": 1,
     "operator": 79,
-    "override": 4,
     "return-value": 4,
     "type-var": 2,
-    "union-attr": 54,
-    "var-annotated": 113
+    "union-attr": 69,
+    "var-annotated": 135
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 700,
-    "tests": 161,
-    "tools": 20
+    "src/claasp": 730,
+    "tests": 164,
+    "tools": 37
   },
-  "diagnostic_count": 881,
+  "diagnostic_count": 931,
   "diagnostics": [
     {
       "code": "operator",
@@ -93,21 +91,21 @@
     {
       "code": "operator",
       "column": 20,
-      "line": 84,
+      "line": 86,
       "message": "Unsupported operand types for >> (\"None\" and \"int\")",
       "path": "src/claasp/analysis/cube.py"
     },
     {
       "code": "operator",
       "column": 20,
-      "line": 84,
+      "line": 86,
       "message": "Unsupported operand types for >> (\"tuple[int, ...]\" and \"int\")",
       "path": "src/claasp/analysis/cube.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 124,
+      "line": 128,
       "message": "Need type annotation for \"results\" (hint: \"results: list[<type>] = ...\")",
       "path": "src/claasp/analysis/facade.py"
     },
@@ -135,7 +133,7 @@
     {
       "code": "var-annotated",
       "column": 5,
-      "line": 333,
+      "line": 427,
       "message": "Need type annotation for \"parity\" (hint: \"parity: dict[<type>, <type>] = ...\")",
       "path": "src/claasp/analysis/monomial.py"
     },
@@ -156,35 +154,35 @@
     {
       "code": "arg-type",
       "column": 51,
-      "line": 68,
+      "line": 74,
       "message": "Argument 1 to \"TrailStep\" has incompatible type \"str | None\"; expected \"str\"",
       "path": "src/claasp/analysis/spn.py"
     },
     {
       "code": "arg-type",
       "column": 31,
-      "line": 75,
+      "line": 81,
       "message": "Argument 1 to \"TrailStep\" has incompatible type \"str | None\"; expected \"str\"",
       "path": "src/claasp/analysis/spn.py"
     },
     {
       "code": "arg-type",
       "column": 36,
-      "line": 163,
+      "line": 184,
       "message": "Argument 1 to \"TrailStep\" has incompatible type \"str | None\"; expected \"str\"",
       "path": "src/claasp/analysis/spn.py"
     },
     {
       "code": "arg-type",
       "column": 39,
-      "line": 174,
+      "line": 198,
       "message": "Argument 1 to \"TrailStep\" has incompatible type \"str | None\"; expected \"str\"",
       "path": "src/claasp/analysis/spn.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 270,
+      "line": 312,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "src/claasp/analysis/spn.py"
     },
@@ -215,6 +213,13 @@
       "line": 212,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/composites/aes.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 43,
+      "line": 39,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/composites/arx.py"
     },
     {
       "code": "arg-type",
@@ -261,7 +266,7 @@
     {
       "code": "call-overload",
       "column": 25,
-      "line": 190,
+      "line": 191,
       "message": "No overload variant of \"sum\" matches argument type \"object\"",
       "path": "src/claasp/drivers/analysis/branch_number.py"
     },
@@ -283,7 +288,7 @@
       "code": "union-attr",
       "column": 57,
       "line": 328,
-      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
+      "message": "Item \"None\" of \"Selection | None\" has no attribute \"array_type\"",
       "path": "src/claasp/drivers/native.py"
     },
     {
@@ -442,14 +447,14 @@
     },
     {
       "code": "arg-type",
-      "column": 48,
+      "column": 54,
       "line": 427,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port]\"; expected \"Iterable[Selection]\"",
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port]\"; expected \"Port | Selection\"",
       "path": "src/claasp/graph/bit_builder.py"
     },
     {
       "code": "arg-type",
-      "column": 55,
+      "column": 61,
       "line": 429,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/graph/bit_builder.py"
@@ -506,259 +511,266 @@
     {
       "code": "arg-type",
       "column": 37,
-      "line": 700,
+      "line": 699,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port, ...]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/graph/bit_builder.py"
     },
     {
       "code": "assignment",
       "column": 36,
-      "line": 710,
+      "line": 709,
       "message": "Incompatible types in assignment (expression has type \"Port\", variable has type \"Selection\")",
       "path": "src/claasp/graph/bit_builder.py"
     },
     {
       "code": "arg-type",
-      "column": 39,
-      "line": 712,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, ...]\"; expected \"Iterable[Selection]\"",
+      "column": 33,
+      "line": 711,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, ...]\"; expected \"Port | Selection\"",
       "path": "src/claasp/graph/bit_builder.py"
     },
     {
       "code": "assignment",
       "column": 21,
-      "line": 721,
+      "line": 720,
       "message": "Incompatible types in assignment (expression has type \"Port | Selection\", variable has type \"Selection\")",
       "path": "src/claasp/graph/bit_builder.py"
     },
     {
       "code": "assignment",
       "column": 18,
-      "line": 722,
+      "line": 721,
       "message": "Incompatible types in assignment (expression has type \"Selection\", variable has type \"Port\")",
       "path": "src/claasp/graph/bit_builder.py"
     },
     {
       "code": "attr-defined",
-      "column": 22,
-      "line": 192,
-      "message": "\"object\" has no attribute \"component\"",
+      "column": 13,
+      "line": 195,
+      "message": "\"object\" has no attribute \"graph\"",
       "path": "src/claasp/graph/composite.py"
     },
     {
       "code": "attr-defined",
       "column": 16,
-      "line": 203,
-      "message": "\"object\" has no attribute \"scope\"",
+      "line": 207,
+      "message": "\"object\" has no attribute \"graph\"",
       "path": "src/claasp/graph/composite.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 327,
+      "line": 332,
       "message": "\"object\" has no attribute \"path\"",
       "path": "src/claasp/graph/composite.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 328,
+      "line": 333,
       "message": "\"object\" has no attribute \"definition\"",
       "path": "src/claasp/graph/composite.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 329,
+      "line": 334,
       "message": "\"object\" has no attribute \"input_bindings\"",
       "path": "src/claasp/graph/composite.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 330,
+      "line": 335,
       "message": "\"object\" has no attribute \"output_bindings\"",
       "path": "src/claasp/graph/composite.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 331,
+      "line": 336,
       "message": "\"object\" has no attribute \"component_ids\"",
       "path": "src/claasp/graph/composite.py"
     },
     {
       "code": "misc",
       "column": 30,
-      "line": 101,
+      "line": 103,
       "message": "Generator has incompatible item type \"int | tuple[int, ...]\"; expected \"int\"",
       "path": "src/claasp/graph/port.py"
     },
     {
       "code": "operator",
       "column": 25,
-      "line": 217,
+      "line": 803,
       "message": "\"object\" not callable",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "index",
       "column": 26,
-      "line": 472,
+      "line": 1166,
       "message": "Invalid index type \"str | None\" for \"dict[str, Component]\"; expected type \"str\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "index",
       "column": 21,
-      "line": 473,
+      "line": 1167,
       "message": "Invalid index type \"str | None\" for \"dict[str, Port]\"; expected type \"str\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "operator",
       "column": 34,
-      "line": 618,
+      "line": 1312,
       "message": "Unsupported operand types for + (\"int\" and \"None\")",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "arg-type",
       "column": 54,
-      "line": 619,
+      "line": 1313,
       "message": "Argument 3 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "misc",
       "column": 25,
-      "line": 623,
+      "line": 1317,
       "message": "Generator has incompatible item type \"int\"; expected \"bool\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "operator",
       "column": 38,
-      "line": 623,
+      "line": 1317,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "var-annotated",
       "column": 17,
-      "line": 631,
+      "line": 1325,
       "message": "Need type annotation for \"result_units\" (hint: \"result_units: list[<type>] = ...\")",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "operator",
       "column": 39,
-      "line": 635,
+      "line": 1329,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "arg-type",
       "column": 46,
-      "line": 636,
+      "line": 1330,
       "message": "Argument 1 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "index",
       "column": 26,
-      "line": 762,
+      "line": 1456,
       "message": "Invalid index type \"str | None\" for \"dict[str, Selection]\"; expected type \"str\"",
       "path": "src/claasp/graph/primitive.py"
     },
     {
       "code": "var-annotated",
       "column": 5,
-      "line": 228,
+      "line": 249,
       "message": "Need type annotation for \"remapped\" (hint: \"remapped: dict[<type>, <type>] = ...\")",
       "path": "src/claasp/graph/realization.py"
     },
     {
       "code": "arg-type",
       "column": 25,
-      "line": 279,
-      "message": "Argument 2 to \"pack_bits\" of \"Primitive\" has incompatible type \"int | None\"; expected \"int\"",
+      "line": 300,
+      "message": "Argument 2 to \"pack_bits\" of \"PrimitiveBuilder\" has incompatible type \"int | None\"; expected \"int\"",
       "path": "src/claasp/graph/realization.py"
     },
     {
       "code": "assignment",
       "column": 17,
-      "line": 388,
+      "line": 558,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, str, str, str]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "assignment",
       "column": 17,
-      "line": 454,
+      "line": 624,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, str, str, str]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 660,
+      "line": 830,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"AvalancheResult\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 660,
+      "line": 830,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"ContinuousHeuristicResult\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 660,
+      "line": 830,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"DieharderReport | StatisticalTestRun[DieharderReport]\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 660,
+      "line": 830,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"ExecutionTrace\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 660,
+      "line": 830,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"NISTFinalReport | StatisticalTestRun[NISTFinalReport]\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 660,
+      "line": 830,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"Trail | TrailSearchResult\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
-      "column": 40,
-      "line": 72,
+      "column": 49,
+      "line": 59,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, ...]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/primitives/block_ciphers/_word_graph.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 17,
+      "line": 75,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Any]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/aes/custom.py"
     },
     {
       "code": "arg-type",
-      "column": 40,
-      "line": 157,
+      "column": 49,
+      "line": 161,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, object]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/aes/primitive.py"
     },
     {
       "code": "arg-type",
-      "column": 44,
-      "line": 171,
+      "column": 53,
+      "line": 175,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, object]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/aes/primitive.py"
     },
@@ -798,13 +810,6 @@
       "path": "src/claasp/primitives/block_ciphers/gift/sbox.py"
     },
     {
-      "code": "override",
-      "column": 5,
-      "line": 120,
-      "message": "Signature of \"add_round_key\" incompatible with supertype \"claasp.graph.primitive.Primitive\"",
-      "path": "src/claasp/primitives/block_ciphers/gost.py"
-    },
-    {
       "code": "arg-type",
       "column": 29,
       "line": 191,
@@ -831,13 +836,6 @@
       "line": 44,
       "message": "Incompatible types in assignment (expression has type \"Port\", variable has type \"Selection\")",
       "path": "src/claasp/primitives/block_ciphers/idea.py"
-    },
-    {
-      "code": "assignment",
-      "column": 27,
-      "line": 41,
-      "message": "Incompatible types in assignment (expression has type \"dict[Never, Never]\", variable has type \"tuple[object, ...]\")",
-      "path": "src/claasp/primitives/block_ciphers/kalyna.py"
     },
     {
       "code": "index",
@@ -1365,20 +1363,6 @@
       "path": "src/claasp/primitives/block_ciphers/led.py"
     },
     {
-      "code": "override",
-      "column": 5,
-      "line": 189,
-      "message": "Signature of \"add_round_key\" incompatible with supertype \"claasp.graph.primitive.Primitive\"",
-      "path": "src/claasp/primitives/block_ciphers/led.py"
-    },
-    {
-      "code": "override",
-      "column": 5,
-      "line": 148,
-      "message": "Signature of \"add_round_key\" incompatible with supertype \"claasp.graph.primitive.Primitive\"",
-      "path": "src/claasp/primitives/block_ciphers/lowmc/primitive.py"
-    },
-    {
       "code": "call-arg",
       "column": 48,
       "line": 295,
@@ -1527,31 +1511,24 @@
     },
     {
       "code": "arg-type",
-      "column": 40,
-      "line": 75,
+      "column": 17,
+      "line": 76,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Selection]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/present.py"
     },
     {
       "code": "arg-type",
       "column": 17,
-      "line": 113,
+      "line": 115,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Selection, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/present.py"
     },
     {
       "code": "return-value",
       "column": 16,
-      "line": 117,
+      "line": 119,
       "message": "Incompatible return value type (got \"Port | Selection\", expected \"Port\")",
       "path": "src/claasp/primitives/block_ciphers/present.py"
-    },
-    {
-      "code": "override",
-      "column": 5,
-      "line": 112,
-      "message": "Signature of \"add_round_key\" incompatible with supertype \"claasp.graph.primitive.Primitive\"",
-      "path": "src/claasp/primitives/block_ciphers/rectangle.py"
     },
     {
       "code": "call-arg",
@@ -1590,37 +1567,37 @@
     },
     {
       "code": "arg-type",
-      "column": 56,
+      "column": 65,
       "line": 87,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Any]\"; expected \"Iterable[Selection]\"",
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Any]\"; expected \"Port | Selection\"",
       "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
     },
     {
       "code": "arg-type",
       "column": 29,
       "line": 95,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Any, Port, Port]\"; expected \"Iterable[Selection]\"",
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Any, Port, Port]\"; expected \"Port | Selection\"",
       "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
     },
     {
       "code": "arg-type",
-      "column": 51,
+      "column": 60,
       "line": 106,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
     },
     {
       "code": "arg-type",
-      "column": 43,
+      "column": 52,
       "line": 108,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Port | Selection\"",
       "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
     },
     {
       "code": "arg-type",
       "column": 17,
       "line": 110,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Port, Any]\"; expected \"Iterable[Selection]\"",
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Port, Any]\"; expected \"Port | Selection\"",
       "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
     },
     {
@@ -1631,11 +1608,18 @@
       "path": "src/claasp/primitives/block_ciphers/skinny.py"
     },
     {
-      "code": "assignment",
-      "column": 27,
-      "line": 43,
-      "message": "Incompatible types in assignment (expression has type \"dict[Never, Never]\", variable has type \"tuple[object, ...]\")",
-      "path": "src/claasp/primitives/block_ciphers/sm4.py"
+      "code": "arg-type",
+      "column": 49,
+      "line": 98,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/primitives/block_ciphers/speck.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 49,
+      "line": 100,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/primitives/block_ciphers/speck.py"
     },
     {
       "code": "arg-type",
@@ -1940,9 +1924,16 @@
     },
     {
       "code": "arg-type",
-      "column": 43,
-      "line": 106,
+      "column": 28,
+      "line": 109,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "src/claasp/primitives/block_functions/chacha.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 49,
+      "line": 124,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"Port | Selection\"",
       "path": "src/claasp/primitives/block_functions/chacha.py"
     },
     {
@@ -2185,9 +2176,16 @@
     },
     {
       "code": "arg-type",
+      "column": 21,
+      "line": 185,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"list[Any]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/primitives/block_functions/trivium.py"
+    },
+    {
+      "code": "arg-type",
       "column": 25,
-      "line": 193,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any, Port, Any]\"; expected \"Iterable[Selection]\"",
+      "line": 195,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any, Port, Any]\"; expected \"Port | Selection\"",
       "path": "src/claasp/primitives/block_functions/trivium.py"
     },
     {
@@ -2364,6 +2362,34 @@
       "line": 158,
       "message": "Argument 1 to \"BitState\" has incompatible type \"str\"; expected \"list[str]\"",
       "path": "src/claasp/primitives/functions/sha2.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 49,
+      "line": 62,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/primitives/permutations/chacha.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 49,
+      "line": 65,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/primitives/permutations/chacha.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 49,
+      "line": 68,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/primitives/permutations/chacha.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 49,
+      "line": 71,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/primitives/permutations/chacha.py"
     },
     {
       "code": "call-overload",
@@ -2997,16 +3023,16 @@
     },
     {
       "code": "arg-type",
-      "column": 47,
+      "column": 56,
       "line": 95,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port | Selection, Port | Selection]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/permutations/salsa.py"
     },
     {
       "code": "arg-type",
-      "column": 39,
-      "line": 99,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port | Selection, Port]\"; expected \"Iterable[Selection]\"",
+      "column": 17,
+      "line": 100,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port | Selection, Port]\"; expected \"Port | Selection\"",
       "path": "src/claasp/primitives/permutations/salsa.py"
     },
     {
@@ -3081,38 +3107,45 @@
     },
     {
       "code": "arg-type",
-      "column": 50,
+      "column": 59,
       "line": 47,
       "message": "Argument 1 to \"Add\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/single_component_primitives/add.py"
     },
     {
       "code": "arg-type",
-      "column": 57,
+      "column": 66,
       "line": 39,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/single_component_primitives/bitwise_and.py"
     },
     {
       "code": "arg-type",
-      "column": 57,
+      "column": 66,
       "line": 39,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/single_component_primitives/modular_add.py"
     },
     {
       "code": "arg-type",
-      "column": 55,
+      "column": 64,
       "line": 47,
       "message": "Argument 1 to \"Multiply\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/single_component_primitives/multiply.py"
     },
     {
       "code": "arg-type",
-      "column": 50,
+      "column": 59,
       "line": 37,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
+      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Port | Selection\"",
       "path": "src/claasp/primitives/single_component_primitives/xor.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 51,
+      "line": 39,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, ...]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/primitives/toy_primitives/_bit_graph.py"
     },
     {
       "code": "assignment",
@@ -3123,43 +3156,57 @@
     },
     {
       "code": "arg-type",
-      "column": 40,
-      "line": 78,
+      "column": 49,
+      "line": 43,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/primitives/toy_primitives/speck.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 49,
+      "line": 45,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/primitives/toy_primitives/speck.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 17,
+      "line": 79,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
     },
     {
       "code": "assignment",
       "column": 23,
-      "line": 115,
+      "line": 117,
       "message": "Incompatible types in assignment (expression has type \"list[Port]\", variable has type \"tuple[Port, ...]\")",
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
     },
     {
       "code": "arg-type",
-      "column": 47,
-      "line": 115,
+      "column": 56,
+      "line": 117,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port, Selection]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 117,
+      "line": 119,
       "message": "\"tuple[Port, ...]\" has no attribute \"append\"",
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
     },
     {
       "code": "arg-type",
-      "column": 55,
-      "line": 117,
+      "column": 64,
+      "line": 119,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Selection]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
     },
     {
       "code": "arg-type",
-      "column": 44,
-      "line": 119,
+      "column": 53,
+      "line": 121,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Any]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
     },
@@ -3257,156 +3304,233 @@
     {
       "code": "assignment",
       "column": 25,
-      "line": 106,
+      "line": 156,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[Any, ...], tuple[str, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 29,
-      "line": 107,
+      "line": 157,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 35,
-      "line": 108,
+      "line": 158,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 27,
-      "line": 211,
+      "line": 561,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 25,
-      "line": 216,
+      "line": 566,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[str, ...], tuple[str, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "assignment",
       "column": 29,
-      "line": 217,
+      "line": 567,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
-      "code": "index",
-      "column": 28,
-      "line": 386,
-      "message": "Value of type \"object\" is not indexable",
+      "code": "arg-type",
+      "column": 36,
+      "line": 757,
+      "message": "Argument 1 to \"TrailStep\" has incompatible type \"str | None\"; expected \"str\"",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "operator",
       "column": 16,
-      "line": 397,
+      "line": 767,
       "message": "Unsupported operand types for > (\"float\" and \"None\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 598,
+      "line": 987,
       "message": "Need type annotation for \"constraints\" (hint: \"constraints: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "misc",
       "column": 20,
-      "line": 738,
+      "line": 1140,
       "message": "Enum index should be a string (actual index type \"Any | str | None\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "var-annotated",
+      "column": 9,
+      "line": 1193,
+      "message": "Need type annotation for \"declarations\" (hint: \"declarations: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "var-annotated",
       "column": 23,
-      "line": 956,
+      "line": 1863,
       "message": "Need type annotation for \"constraints\" (hint: \"constraints: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 1197,
+      "line": 1964,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 35,
-      "message": "Need type annotation for \"terms\" (hint: \"terms: dict[<type>, <type>] = ...\")",
-      "path": "src/claasp/representations/constraints/milp/boolean.py"
+      "code": "attr-defined",
+      "column": 16,
+      "line": 2298,
+      "message": "\"object\" has no attribute \"total_weight\"",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 41,
+      "line": 2304,
+      "message": "\"object\" has no attribute \"weight\"",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "misc",
+      "column": 40,
+      "line": 2464,
+      "message": "Tuple index out of range",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 25,
+      "line": 2476,
+      "message": "Item \"None\" of \"Any | None\" has no attribute \"variables\"",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 25,
+      "line": 2481,
+      "message": "Item \"None\" of \"Any | None\" has no attribute \"variables\"",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 16,
+      "line": 2678,
+      "message": "\"object\" has no attribute \"total_weight\"",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 41,
+      "line": 2684,
+      "message": "\"object\" has no attribute \"weight\"",
+      "path": "src/claasp/representations/constraints/cp/trails.py"
+    },
+    {
+      "code": "assignment",
+      "column": 24,
+      "line": 101,
+      "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, ...], tuple[Any, ...], tuple[Any, ...]]\", variable has type \"tuple[()]\")",
+      "path": "src/claasp/representations/constraints/milp/components/modular_add.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 91,
+      "line": 468,
+      "message": "Need type annotation for \"variables\" (hint: \"variables: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/milp/components/truncated.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 45,
+      "message": "Need type annotation for \"terms\" (hint: \"terms: dict[<type>, <type>] = ...\")",
+      "path": "src/claasp/representations/constraints/milp/lowering.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 193,
       "message": "Need type annotation for \"uses\" (hint: \"uses: dict[<type>, <type>] = ...\")",
-      "path": "src/claasp/representations/constraints/milp/monomial.py"
+      "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "assignment",
       "column": 21,
-      "line": 134,
+      "line": 236,
       "message": "Incompatible types in assignment (expression has type \"tuple[Any, ...]\", variable has type \"list[Any]\")",
-      "path": "src/claasp/representations/constraints/milp/monomial.py"
+      "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "arg-type",
       "column": 44,
-      "line": 163,
+      "line": 265,
       "message": "Argument 1 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
-      "path": "src/claasp/representations/constraints/milp/monomial.py"
+      "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "operator",
       "column": 31,
-      "line": 164,
+      "line": 266,
       "message": "Unsupported operand types for * (\"int\" and \"None\")",
-      "path": "src/claasp/representations/constraints/milp/monomial.py"
+      "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "operator",
       "column": 47,
-      "line": 165,
+      "line": 267,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
-      "path": "src/claasp/representations/constraints/milp/monomial.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 415,
-      "message": "Need type annotation for \"variables\" (hint: \"variables: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/milp/monomial.py"
+      "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "assignment",
       "column": 25,
-      "line": 115,
+      "line": 145,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[Any, ...], tuple[Any, ...]], ...]\", variable has type \"tuple[()]\")",
+      "path": "src/claasp/representations/constraints/milp/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 26,
+      "line": 156,
+      "message": "Need type annotation for \"component_id\"",
+      "path": "src/claasp/representations/constraints/milp/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 21,
+      "line": 442,
+      "message": "Need type annotation for \"coefficients\" (hint: \"coefficients: dict[<type>, <type>] = ...\")",
       "path": "src/claasp/representations/constraints/milp/trails.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 187,
+      "line": 1380,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "src/claasp/representations/constraints/milp/trails.py"
     },
     {
-      "code": "assignment",
-      "column": 24,
-      "line": 84,
-      "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, ...], tuple[Any, ...], tuple[Any, ...]]\", variable has type \"tuple[()]\")",
-      "path": "src/claasp/representations/constraints/milp/transitions.py"
+      "code": "var-annotated",
+      "column": 9,
+      "line": 1456,
+      "message": "Need type annotation for \"variables\" (hint: \"variables: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/milp/trails.py"
     },
     {
       "code": "arg-type",
@@ -3507,226 +3631,296 @@
       "path": "src/claasp/representations/constraints/polynomial/lowering.py"
     },
     {
+      "code": "attr-defined",
+      "column": 17,
+      "line": 47,
+      "message": "\"Domain\" has no attribute \"width\"",
+      "path": "src/claasp/representations/constraints/sat/components/modular_add.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 17,
+      "line": 156,
+      "message": "\"Domain\" has no attribute \"width\"",
+      "path": "src/claasp/representations/constraints/sat/components/modular_add.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 25,
+      "line": 189,
+      "message": "Need type annotation for \"previous_borrow\"",
+      "path": "src/claasp/representations/constraints/sat/components/modular_add.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 17,
+      "line": 32,
+      "message": "\"Domain\" has no attribute \"width\"",
+      "path": "src/claasp/representations/constraints/sat/components/modular_multiply.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 17,
+      "line": 116,
+      "message": "\"Domain\" has no attribute \"width\"",
+      "path": "src/claasp/representations/constraints/sat/components/modular_multiply.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 21,
+      "line": 65,
+      "message": "\"Domain\" has no attribute \"width\"",
+      "path": "src/claasp/representations/constraints/sat/components/wiring.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 21,
+      "line": 71,
+      "message": "\"Domain\" has no attribute \"width\"",
+      "path": "src/claasp/representations/constraints/sat/components/wiring.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 17,
+      "line": 114,
+      "message": "\"Domain\" has no attribute \"width\"",
+      "path": "src/claasp/representations/constraints/sat/components/wiring.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 51,
+      "line": 196,
+      "message": "Argument 1 to \"enumerate\" has incompatible type \"tuple[Any, ...] | None\"; expected \"Iterable[Any]\"",
+      "path": "src/claasp/representations/constraints/sat/components/wiring.py"
+    },
+    {
       "code": "var-annotated",
       "column": 9,
-      "line": 22,
+      "line": 23,
       "message": "Need type annotation for \"lines\" (hint: \"lines: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/sat/exporters/dimacs.py"
     },
     {
-      "code": "arg-type",
-      "column": 37,
-      "line": 120,
-      "message": "Argument 1 to \"unit_variable_names\" has incompatible type \"str | None\"; expected \"str\"",
+      "code": "var-annotated",
+      "column": 9,
+      "line": 55,
+      "message": "Need type annotation for \"clauses\" (hint: \"clauses: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/sat/lowering.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 56,
+      "message": "Need type annotation for \"provenance\" (hint: \"provenance: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/sat/lowering.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 57,
+      "message": "Need type annotation for \"auxiliary\" (hint: \"auxiliary: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/sat/lowering.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 58,
+      "message": "Need type annotation for \"constraint_models\" (hint: \"constraint_models: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "operator",
       "column": 42,
-      "line": 131,
+      "line": 273,
       "message": "Unsupported operand types for + (\"int\" and \"None\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "arg-type",
       "column": 92,
-      "line": 131,
+      "line": 273,
       "message": "Argument 3 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 91,
-      "line": 136,
-      "message": "Argument 2 to \"add_clause\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 54,
-      "line": 140,
-      "message": "Argument 3 to \"equal\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 54,
-      "line": 144,
-      "message": "Argument 3 to \"equal\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 59,
-      "line": 157,
-      "message": "Argument 4 to \"xor\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 63,
-      "line": 173,
-      "message": "Argument 4 to \"xor\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 94,
-      "line": 178,
-      "message": "Argument 4 to \"and_\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 25,
-      "line": 180,
-      "message": "\"Domain\" has no attribute \"width\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 75,
-      "line": 184,
-      "message": "Argument 3 to \"equal\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 25,
-      "line": 186,
-      "message": "\"Domain\" has no attribute \"width\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "assignment",
-      "column": 35,
-      "line": 188,
-      "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"str\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "assignment",
       "column": 21,
-      "line": 189,
-      "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"str\")",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "assignment",
-      "column": 29,
-      "line": 194,
-      "message": "Incompatible types in assignment (expression has type \"tuple[str, ...]\", variable has type \"str\")",
+      "line": 307,
+      "message": "Incompatible types in assignment (expression has type \"ModularMultiplyFunctionalSATModel\", variable has type \"WiringFunctionalSATModel | BooleanFunctionalSATModel | ModularAddFunctionalSATModel | ModularSubtractFunctionalSATModel | SBoxFunctionalSATModel | VariableWiringFunctionalSATModel\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "arg-type",
-      "column": 82,
-      "line": 204,
-      "message": "Argument 4 to \"xor\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
+      "column": 32,
+      "line": 162,
+      "message": "Argument 1 to \"extend\" of \"list\" has incompatible type \"tuple[tuple[int, int, int], tuple[int, int, int]]\"; expected \"Iterable[tuple[int]]\"",
+      "path": "src/claasp/representations/constraints/smt/components/modular_add.py"
     },
     {
-      "code": "arg-type",
-      "column": 78,
-      "line": 213,
-      "message": "Argument 4 to \"xor\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 66,
-      "line": 214,
-      "message": "Argument 4 to \"xor\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 86,
-      "line": 223,
-      "message": "Argument 4 to \"and_\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 92,
-      "line": 229,
-      "message": "Argument 5 to \"majority\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "misc",
-      "column": 28,
-      "line": 241,
-      "message": "List comprehension has incompatible type List[str]; expected List[tuple[str, ...]]",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "index",
-      "column": 43,
-      "line": 253,
-      "message": "Invalid index type \"tuple[str, ...]\" for \"dict[str, int]\"; expected type \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 61,
-      "line": 254,
-      "message": "Argument 2 to \"add_clause\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "assignment",
-      "column": 24,
-      "line": 144,
-      "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, ...], ...]\", variable has type \"tuple[()]\")",
-      "path": "src/claasp/representations/constraints/smt/speck.py"
+      "code": "var-annotated",
+      "column": 15,
+      "line": 50,
+      "message": "Need type annotation for \"grouped\"",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 83,
+      "line": 142,
       "message": "Need type annotation for \"weight_names\" (hint: \"weight_names: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "assignment",
       "column": 36,
-      "line": 128,
+      "line": 187,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[Any, ...], tuple[Any, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
+      "column": 26,
+      "line": 197,
+      "message": "Need type annotation for \"component_id\"",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "var-annotated",
       "column": 9,
-      "line": 218,
+      "line": 297,
       "message": "Need type annotation for \"weight_names\" (hint: \"weight_names: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "assignment",
       "column": 36,
-      "line": 257,
+      "line": 336,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[Any, ...], tuple[Any, ...]], ...]\", variable has type \"tuple[()]\")",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 26,
+      "line": 346,
+      "message": "Need type annotation for \"component_id\"",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 374,
+      "line": 469,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
+      "code": "assignment",
+      "column": 24,
+      "line": 641,
+      "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, ...], ...]\", variable has type \"tuple[()]\")",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 21,
+      "line": 858,
+      "message": "Need type annotation for \"consumers\"",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 25,
+      "line": 859,
+      "message": "Need type annotation for \"weights\" (hint: \"weights: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "assignment",
+      "column": 45,
+      "line": 878,
+      "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, ...], ...]\", target has type \"tuple[()]\")",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "assignment",
+      "column": 21,
+      "line": 910,
+      "message": "Incompatible types in assignment (expression has type \"tuple[Any, ...]\", variable has type \"int\")",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "index",
+      "column": 56,
+      "line": 911,
+      "message": "Value of type \"int\" is not indexable",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
       "code": "arg-type",
-      "column": 32,
-      "line": 215,
-      "message": "Argument 1 to \"extend\" of \"list\" has incompatible type \"tuple[tuple[int, int, int], tuple[int, int, int]]\"; expected \"Iterable[tuple[int]]\"",
-      "path": "src/claasp/representations/constraints/smt/transitions.py"
+      "column": 36,
+      "line": 914,
+      "message": "Argument 1 to \"append\" of \"list\" has incompatible type \"tuple[str | None, int, Any, None]\"; expected \"tuple[str | None, int, Any, str]\"",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "assignment",
+      "column": 17,
+      "line": 916,
+      "message": "Incompatible types in assignment (expression has type \"tuple[Any, ...]\", variable has type \"int\")",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 43,
+      "line": 917,
+      "message": "No overload variant of \"zip\" matches argument types \"int\", \"tuple[Any, ...]\"",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 24,
+      "line": 1082,
+      "message": "Need type annotation for \"names\"",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 13,
+      "line": 1086,
+      "message": "Need type annotation for \"edge_names\"",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 28,
+      "line": 1202,
+      "message": "Need type annotation for \"trails\" (hint: \"trails: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 17,
+      "line": 1202,
+      "message": "Need type annotation for \"blocks\" (hint: \"blocks: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 1743,
+      "message": "Need type annotation for \"trails\" (hint: \"trails: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 17,
+      "line": 1743,
+      "message": "Need type annotation for \"blocks\" (hint: \"blocks: list[<type>] = ...\")",
+      "path": "src/claasp/representations/constraints/smt/trails.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 30,
       "message": "Need type annotation for \"incoming\" (hint: \"incoming: dict[<type>, <type>] = ...\")",
       "path": "src/claasp/representations/diagrams/ascii.py"
     },
@@ -3761,7 +3955,7 @@
     {
       "code": "assignment",
       "column": 36,
-      "line": 59,
+      "line": 61,
       "message": "Incompatible types in assignment (expression has type \"tuple[int, float]\", target has type \"tuple[int, int]\")",
       "path": "src/claasp/representations/diagrams/tikz.py"
     },
@@ -4111,70 +4305,70 @@
     {
       "code": "attr-defined",
       "column": 13,
-      "line": 189,
+      "line": 191,
       "message": "\"object\" has no attribute \"validate\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 26,
-      "line": 297,
+      "line": 299,
       "message": "\"Domain\" has no attribute \"width\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 22,
-      "line": 305,
+      "line": 307,
       "message": "\"Domain\" has no attribute \"width\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 29,
-      "line": 324,
+      "line": 326,
       "message": "\"Domain\" has no attribute \"width\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 22,
-      "line": 365,
+      "line": 367,
       "message": "\"Domain\" has no attribute \"width\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 370,
+      "line": 372,
       "message": "\"Domain\" has no attribute \"width\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 24,
-      "line": 397,
+      "line": 399,
       "message": "\"Domain\" has no attribute \"width\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 404,
+      "line": 406,
       "message": "\"Domain\" has no attribute \"width\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 411,
+      "line": 413,
       "message": "\"Domain\" has no attribute \"width\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 530,
+      "line": 532,
       "message": "\"Domain\" has no attribute \"degree\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
@@ -4266,7 +4460,7 @@
       "code": "union-attr",
       "column": 20,
       "line": 304,
-      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
+      "message": "Item \"None\" of \"Selection | None\" has no attribute \"array_type\"",
       "path": "src/claasp/representations/source/c.py"
     },
     {
@@ -4286,51 +4480,58 @@
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 259,
+      "line": 261,
       "message": "\"Domain\" has no attribute \"width\"",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
     },
     {
       "code": "union-attr",
       "column": 13,
-      "line": 270,
+      "line": 272,
       "message": "Item \"ModularAddLinearSemantics\" of \"ModularAddTransitionSemantics | ModularAddLinearSemantics\" has no attribute \"xor_differential\"",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
     },
     {
       "code": "union-attr",
       "column": 18,
-      "line": 272,
+      "line": 274,
       "message": "Item \"ModularAddTransitionSemantics\" of \"ModularAddTransitionSemantics | ModularAddLinearSemantics\" has no attribute \"xor_linear\"",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
     },
     {
       "code": "assignment",
       "column": 37,
-      "line": 280,
+      "line": 282,
       "message": "Incompatible types in assignment (expression has type \"BitwiseAndSemantics\", variable has type \"ModularAddTransitionSemantics | ModularAddLinearSemantics\")",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
     },
     {
       "code": "misc",
       "column": 17,
-      "line": 304,
+      "line": 306,
       "message": "Cannot infer type of lambda",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
     },
     {
       "code": "misc",
       "column": 17,
-      "line": 311,
+      "line": 313,
       "message": "Cannot infer type of lambda",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
     },
     {
       "code": "misc",
       "column": 17,
-      "line": 318,
+      "line": 320,
       "message": "Cannot infer type of lambda",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 377,
+      "message": "Need type annotation for \"assignments\" (hint: \"assignments: dict[<type>, <type>] = ...\")",
+      "path": "src/claasp/semantics/cryptanalysis/trails.py"
     },
     {
       "code": "operator",
@@ -4368,31 +4569,17 @@
       "path": "src/claasp/semantics/cryptanalysis/truncated.py"
     },
     {
-      "code": "index",
+      "code": "attr-defined",
       "column": 9,
       "line": 716,
-      "message": "Value of type \"object\" is not indexable",
-      "path": "src/claasp/semantics/cryptanalysis/truncated.py"
-    },
-    {
-      "code": "index",
-      "column": 9,
-      "line": 721,
-      "message": "Value of type \"object\" is not indexable",
+      "message": "\"object\" has no attribute \"owner_id\"",
       "path": "src/claasp/semantics/cryptanalysis/truncated.py"
     },
     {
       "code": "attr-defined",
-      "column": 25,
-      "line": 751,
-      "message": "\"object\" has no attribute \"get\"",
-      "path": "src/claasp/semantics/cryptanalysis/truncated.py"
-    },
-    {
-      "code": "index",
-      "column": 21,
-      "line": 759,
-      "message": "Value of type \"object\" is not indexable",
+      "column": 9,
+      "line": 721,
+      "message": "\"object\" has no attribute \"owner_id\"",
       "path": "src/claasp/semantics/cryptanalysis/truncated.py"
     },
     {
@@ -4405,112 +4592,119 @@
     {
       "code": "arg-type",
       "column": 13,
-      "line": 396,
+      "line": 398,
       "message": "Argument 3 to \"from_values\" of \"GraphAnnotation\" has incompatible type \"dict[str | None, Any]\"; expected \"Mapping[str, object]\"",
       "path": "src/claasp/serialization/execution.py"
     },
     {
+      "code": "arg-type",
+      "column": 28,
+      "line": 454,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, ...]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/serialization/primitive.py"
+    },
+    {
       "code": "assignment",
       "column": 44,
-      "line": 999,
+      "line": 1005,
       "message": "Incompatible types in assignment (expression has type \"tuple[TransformationRecord, ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/serialization/primitive.py"
     },
     {
       "code": "call-overload",
       "column": 17,
-      "line": 278,
+      "line": 279,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"BitState\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "arg-type",
-      "column": 47,
-      "line": 322,
-      "message": "Argument 1 to \"join\" of \"Primitive\" has incompatible type \"*list[None]\"; expected \"Port | Selection\"",
+      "column": 65,
+      "line": 323,
+      "message": "Argument 1 to \"join\" of \"PrimitiveBuilder\" has incompatible type \"*list[None]\"; expected \"Port | Selection\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "call-overload",
       "column": 17,
-      "line": 323,
+      "line": 324,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"BitState\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "assignment",
       "column": 17,
-      "line": 371,
+      "line": 372,
       "message": "Incompatible types in assignment (expression has type \"Port\", variable has type \"Selection\")",
-      "path": "src/claasp/transformations/_inverse_realizations.py"
-    },
-    {
-      "code": "assignment",
-      "column": 17,
-      "line": 373,
-      "message": "Incompatible types in assignment (expression has type \"Port | Selection\", variable has type \"Selection\")",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "assignment",
       "column": 17,
       "line": 374,
-      "message": "Incompatible types in assignment (expression has type \"Port\", variable has type \"Selection\")",
+      "message": "Incompatible types in assignment (expression has type \"Port | Selection\", variable has type \"Selection\")",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "assignment",
       "column": 17,
       "line": 375,
+      "message": "Incompatible types in assignment (expression has type \"Port\", variable has type \"Selection\")",
+      "path": "src/claasp/transformations/_inverse_realizations.py"
+    },
+    {
+      "code": "assignment",
+      "column": 17,
+      "line": 376,
       "message": "Incompatible types in assignment (expression has type \"Port | Selection\", variable has type \"Selection\")",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "arg-type",
-      "column": 39,
-      "line": 376,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Selection, Port]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/transformations/_inverse_realizations.py"
-    },
-    {
-      "code": "arg-type",
       "column": 48,
-      "line": 378,
+      "line": 377,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Selection, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "arg-type",
-      "column": 49,
-      "line": 383,
+      "column": 57,
+      "line": 379,
+      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Selection, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "src/claasp/transformations/_inverse_realizations.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 58,
+      "line": 384,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Any, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "arg-type",
-      "column": 54,
-      "line": 384,
+      "column": 26,
+      "line": 386,
       "message": "Argument 1 to \"Multiply\" has incompatible type \"tuple[Any, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "call-overload",
       "column": 13,
-      "line": 385,
+      "line": 388,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"Any\", \"Port\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "arg-type",
-      "column": 58,
-      "line": 385,
+      "column": 67,
+      "line": 388,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Any, Port]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
       "code": "assignment",
       "column": 17,
-      "line": 386,
+      "line": 389,
       "message": "Incompatible types in assignment (expression has type \"Port | Selection\", variable has type \"Selection\")",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
@@ -4524,65 +4718,72 @@
     {
       "code": "assignment",
       "column": 47,
-      "line": 277,
+      "line": 281,
       "message": "Incompatible types in assignment (expression has type \"Selection\", target has type \"Port\")",
       "path": "src/claasp/transformations/editing.py"
     },
     {
       "code": "attr-defined",
       "column": 20,
-      "line": 419,
+      "line": 425,
       "message": "\"object\" has no attribute \"component_ids\"",
       "path": "src/claasp/transformations/editing.py"
     },
     {
       "code": "attr-defined",
       "column": 13,
-      "line": 422,
+      "line": 428,
       "message": "\"object\" has no attribute \"path\"",
       "path": "src/claasp/transformations/editing.py"
     },
     {
       "code": "attr-defined",
       "column": 13,
-      "line": 423,
+      "line": 429,
       "message": "\"object\" has no attribute \"definition\"",
       "path": "src/claasp/transformations/editing.py"
     },
     {
       "code": "attr-defined",
       "column": 59,
-      "line": 424,
+      "line": 430,
       "message": "\"object\" has no attribute \"input_bindings\"",
       "path": "src/claasp/transformations/editing.py"
     },
     {
       "code": "attr-defined",
       "column": 59,
-      "line": 425,
+      "line": 431,
       "message": "\"object\" has no attribute \"output_bindings\"",
       "path": "src/claasp/transformations/editing.py"
     },
     {
       "code": "attr-defined",
       "column": 68,
-      "line": 426,
+      "line": 432,
       "message": "\"object\" has no attribute \"component_ids\"",
       "path": "src/claasp/transformations/editing.py"
     },
     {
       "code": "attr-defined",
       "column": 25,
-      "line": 429,
+      "line": 435,
       "message": "\"object\" has no attribute \"path\"",
       "path": "src/claasp/transformations/editing.py"
     },
     {
       "code": "attr-defined",
       "column": 45,
-      "line": 430,
+      "line": 436,
       "message": "\"object\" has no attribute \"component_ids\"",
       "path": "src/claasp/transformations/editing.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 16,
+      "line": 416,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, ...]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/transformations/inverse_rules.py"
     },
     {
       "code": "var-annotated",
@@ -4706,42 +4907,42 @@
     {
       "code": "var-annotated",
       "column": 5,
-      "line": 498,
+      "line": 501,
       "message": "Need type annotation for \"bit_cache\" (hint: \"bit_cache: dict[<type>, <type>] = ...\")",
       "path": "src/claasp/transformations/inversion.py"
     },
     {
       "code": "var-annotated",
       "column": 5,
-      "line": 499,
+      "line": 502,
       "message": "Need type annotation for \"region_cache\" (hint: \"region_cache: dict[<type>, <type>] = ...\")",
       "path": "src/claasp/transformations/inversion.py"
     },
     {
       "code": "var-annotated",
       "column": 5,
-      "line": 507,
+      "line": 510,
       "message": "Need type annotation for \"stalled_errors\" (hint: \"stalled_errors: dict[<type>, <type>] = ...\")",
       "path": "src/claasp/transformations/inversion.py"
     },
     {
       "code": "arg-type",
       "column": 18,
-      "line": 525,
+      "line": 528,
       "message": "Argument 1 to <tuple> has incompatible type \"*Generator[tuple[str | None, int], None, None]\"; expected \"tuple[str, int]\"",
       "path": "src/claasp/transformations/inversion.py"
     },
     {
       "code": "arg-type",
       "column": 34,
-      "line": 590,
+      "line": 593,
       "message": "Argument 2 to \"_assign\" has incompatible type \"tuple[tuple[str | None, int], ...]\"; expected \"tuple[tuple[str, int], ...]\"",
       "path": "src/claasp/transformations/inversion.py"
     },
     {
       "code": "arg-type",
       "column": 50,
-      "line": 623,
+      "line": 626,
       "message": "Argument 3 to \"_assembled\" has incompatible type \"tuple[tuple[str | None, int], ...]\"; expected \"tuple[tuple[str, int], ...]\"",
       "path": "src/claasp/transformations/inversion.py"
     },
@@ -4788,6 +4989,13 @@
       "path": "src/claasp/transformations/paired.py"
     },
     {
+      "code": "arg-type",
+      "column": 20,
+      "line": 101,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Selection, Selection]\"; expected \"Port | Selection\"",
+      "path": "src/claasp/transformations/paired.py"
+    },
+    {
       "code": "var-annotated",
       "column": 5,
       "line": 107,
@@ -4804,84 +5012,84 @@
     {
       "code": "attr-defined",
       "column": 20,
-      "line": 285,
+      "line": 287,
       "message": "\"object\" has no attribute \"component_ids\"",
       "path": "src/claasp/transformations/slicing.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 289,
+      "line": 291,
       "message": "\"object\" has no attribute \"path\"",
       "path": "src/claasp/transformations/slicing.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 290,
+      "line": 292,
       "message": "\"object\" has no attribute \"definition\"",
       "path": "src/claasp/transformations/slicing.py"
     },
     {
       "code": "attr-defined",
       "column": 63,
-      "line": 291,
+      "line": 293,
       "message": "\"object\" has no attribute \"input_bindings\"",
       "path": "src/claasp/transformations/slicing.py"
     },
     {
       "code": "attr-defined",
       "column": 63,
-      "line": 292,
+      "line": 294,
       "message": "\"object\" has no attribute \"output_bindings\"",
       "path": "src/claasp/transformations/slicing.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 293,
+      "line": 295,
       "message": "\"object\" has no attribute \"component_ids\"",
       "path": "src/claasp/transformations/slicing.py"
     },
     {
       "code": "attr-defined",
       "column": 25,
-      "line": 298,
+      "line": 300,
       "message": "\"object\" has no attribute \"path\"",
       "path": "src/claasp/transformations/slicing.py"
     },
     {
       "code": "attr-defined",
       "column": 45,
-      "line": 299,
+      "line": 301,
       "message": "\"object\" has no attribute \"component_ids\"",
       "path": "src/claasp/transformations/slicing.py"
     },
     {
       "code": "attr-defined",
       "column": 33,
-      "line": 83,
+      "line": 85,
       "message": "\"object\" has no attribute \"component_ids\"",
       "path": "src/claasp/transformations/traversal.py"
     },
     {
       "code": "attr-defined",
       "column": 72,
-      "line": 84,
+      "line": 86,
       "message": "\"object\" has no attribute \"path\"",
       "path": "src/claasp/transformations/traversal.py"
     },
     {
       "code": "assignment",
       "column": 25,
-      "line": 106,
+      "line": 108,
       "message": "Incompatible types in assignment (expression has type \"str | None\", variable has type \"str\")",
       "path": "src/claasp/transformations/traversal.py"
     },
     {
       "code": "var-annotated",
       "column": 22,
-      "line": 132,
+      "line": 134,
       "message": "Need type annotation for \"successors\"",
       "path": "src/claasp/transformations/traversal.py"
     },
@@ -4935,30 +5143,58 @@
       "path": "tests/integration/test_algebra_drivers.py"
     },
     {
-      "code": "dict-item",
-      "column": 10,
-      "line": 62,
-      "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection\"",
-      "path": "tests/integration/test_glpk_integration.py"
+      "code": "arg-type",
+      "column": 29,
+      "line": 50,
+      "message": "Argument 1 to \"is_satisfied\" of \"CNFFormula\" has incompatible type \"Mapping[str, int] | None\"; expected \"Mapping[str, int | bool]\"",
+      "path": "tests/integration/test_functional_component_backends.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 29,
+      "line": 60,
+      "message": "Argument 1 to \"is_satisfied\" of \"CNFFormula\" has incompatible type \"Mapping[str, int] | None\"; expected \"Mapping[str, int | bool]\"",
+      "path": "tests/integration/test_functional_component_backends.py"
     },
     {
       "code": "arg-type",
       "column": 33,
-      "line": 25,
+      "line": 77,
       "message": "Argument 1 to \"is_satisfied\" of \"CNFFormula\" has incompatible type \"Mapping[str, int] | None\"; expected \"Mapping[str, int | bool]\"",
       "path": "tests/integration/test_minisat_integration.py"
     },
     {
       "code": "arg-type",
-      "column": 42,
-      "line": 38,
+      "column": 13,
+      "line": 91,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/integration/test_minisat_integration.py"
     },
     {
+      "code": "arg-type",
+      "column": 28,
+      "line": 104,
+      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/integration/test_minizinc_integration.py"
+    },
+    {
+      "code": "index",
+      "column": 18,
+      "line": 254,
+      "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
+      "path": "tests/integration/test_minizinc_integration.py"
+    },
+    {
+      "code": "index",
+      "column": 14,
+      "line": 280,
+      "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
+      "path": "tests/integration/test_minizinc_integration.py"
+    },
+    {
       "code": "dict-item",
       "column": 10,
-      "line": 143,
+      "line": 491,
       "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection\"",
       "path": "tests/integration/test_minizinc_integration.py"
     },
@@ -5007,7 +5243,7 @@
     {
       "code": "dict-item",
       "column": 10,
-      "line": 61,
+      "line": 128,
       "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection\"",
       "path": "tests/integration/test_z3_integration.py"
     },
@@ -5024,6 +5260,13 @@
       "line": 95,
       "message": "Value of type \"tuple[BooleanPolynomial, ...] | None\" is not indexable",
       "path": "tests/unit/analysis/test_algebraic__trivium.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 15,
+      "line": 36,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"Port | Selection\"",
+      "path": "tests/unit/analysis/test_component_properties__boolean_feedback.py"
     },
     {
       "code": "index",
@@ -5084,21 +5327,21 @@
     {
       "code": "union-attr",
       "column": 12,
-      "line": 83,
+      "line": 85,
       "message": "Item \"None\" of \"PropertyDiagnostic | None\" has no attribute \"code\"",
       "path": "tests/unit/analysis/test_component_properties__lookup.py"
     },
     {
       "code": "attr-defined",
       "column": 40,
-      "line": 72,
+      "line": 98,
       "message": "\"Component\" has no attribute \"table\"",
       "path": "tests/unit/analysis/test_composed.py"
     },
     {
       "code": "arg-type",
-      "column": 42,
-      "line": 23,
+      "column": 13,
+      "line": 25,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/analysis/test_constraints.py"
     },
@@ -5110,156 +5353,128 @@
       "path": "tests/unit/analysis/test_neural.py"
     },
     {
-      "code": "index",
-      "column": 12,
-      "line": 23,
-      "message": "Value of type \"object\" is not indexable",
-      "path": "tests/unit/analysis/test_neural__projections.py"
-    },
-    {
-      "code": "index",
-      "column": 12,
-      "line": 24,
-      "message": "Value of type \"object\" is not indexable",
-      "path": "tests/unit/analysis/test_neural__projections.py"
-    },
-    {
       "code": "arg-type",
-      "column": 73,
-      "line": 25,
-      "message": "Argument 1 to \"selection_bit_sources\" of \"Primitive\" has incompatible type \"Selection | None\"; expected \"Selection\"",
-      "path": "tests/unit/analysis/test_neural__projections.py"
-    },
-    {
-      "code": "index",
-      "column": 20,
-      "line": 46,
-      "message": "Value of type \"object\" is not indexable",
+      "column": 75,
+      "line": 30,
+      "message": "Argument 1 to \"selection_bit_sources\" of \"PrimitiveGraph\" has incompatible type \"Selection | None\"; expected \"Selection\"",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "operator",
       "column": 37,
-      "line": 56,
+      "line": 60,
       "message": "Unsupported left operand type for + (\"None\")",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "operator",
       "column": 37,
-      "line": 56,
+      "line": 60,
       "message": "Unsupported operand types for + (\"None\" and \"int\")",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "operator",
       "column": 37,
-      "line": 56,
+      "line": 60,
       "message": "Unsupported operand types for + (\"int\" and \"None\")",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "arg-type",
       "column": 24,
-      "line": 65,
+      "line": 69,
       "message": "Argument 1 to \"getrandbits\" of \"Random\" has incompatible type \"int | None\"; expected \"int\"",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "arg-type",
       "column": 36,
-      "line": 66,
+      "line": 70,
       "message": "Argument 1 to \"getrandbits\" of \"Random\" has incompatible type \"int | None\"; expected \"int\"",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "arg-type",
       "column": 43,
-      "line": 71,
+      "line": 75,
       "message": "Argument 1 to \"getrandbits\" of \"Random\" has incompatible type \"int | None\"; expected \"int\"",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "arg-type",
       "column": 74,
-      "line": 78,
+      "line": 82,
       "message": "Argument 2 to \"bits_from_int\" has incompatible type \"int | None\"; expected \"int\"",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "arg-type",
       "column": 28,
-      "line": 81,
+      "line": 85,
       "message": "Argument 1 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "misc",
       "column": 9,
-      "line": 93,
+      "line": 97,
       "message": "Generator has incompatible item type \"int | None\"; expected \"bool\"",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "operator",
       "column": 37,
-      "line": 96,
+      "line": 100,
       "message": "Unsupported operand types for + (\"None\" and \"int\")",
-      "path": "tests/unit/analysis/test_neural__projections.py"
-    },
-    {
-      "code": "index",
-      "column": 20,
-      "line": 103,
-      "message": "Value of type \"object\" is not indexable",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "operator",
       "column": 37,
-      "line": 114,
+      "line": 118,
       "message": "Unsupported operand types for * (\"int\" and \"None\")",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "arg-type",
       "column": 46,
-      "line": 120,
+      "line": 124,
       "message": "Argument 1 to \"getrandbits\" of \"Random\" has incompatible type \"int | None\"; expected \"int\"",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "arg-type",
       "column": 40,
-      "line": 121,
+      "line": 125,
       "message": "Argument 1 to \"getrandbits\" of \"Random\" has incompatible type \"int | None\"; expected \"int\"",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "arg-type",
       "column": 83,
-      "line": 131,
+      "line": 135,
       "message": "Argument 2 to \"bits_from_int\" has incompatible type \"int | None\"; expected \"int\"",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "arg-type",
       "column": 85,
-      "line": 132,
+      "line": 136,
       "message": "Argument 2 to \"bits_from_int\" has incompatible type \"int | None\"; expected \"int\"",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "arg-type",
       "column": 32,
-      "line": 136,
+      "line": 140,
       "message": "Argument 1 to \"getrandbits\" of \"Random\" has incompatible type \"int | None\"; expected \"int\"",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
     {
       "code": "arg-type",
       "column": 32,
-      "line": 137,
+      "line": 141,
       "message": "Argument 1 to \"getrandbits\" of \"Random\" has incompatible type \"int | None\"; expected \"int\"",
       "path": "tests/unit/analysis/test_neural__projections.py"
     },
@@ -5273,113 +5488,113 @@
     {
       "code": "index",
       "column": 9,
-      "line": 169,
+      "line": 172,
       "message": "Unsupported target for indexed assignment (\"Mapping[str, object]\")",
       "path": "tests/unit/catalogue/test_catalogue.py"
     },
     {
       "code": "operator",
       "column": 12,
-      "line": 212,
+      "line": 215,
       "message": "Unsupported right operand type for in (\"str | None\")",
       "path": "tests/unit/catalogue/test_catalogue.py"
     },
     {
       "code": "arg-type",
-      "column": 20,
-      "line": 12,
+      "column": 9,
+      "line": 14,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/components/algebraic/test_package.py"
     },
     {
       "code": "arg-type",
-      "column": 24,
-      "line": 14,
+      "column": 9,
+      "line": 18,
       "message": "Argument 1 to \"Multiply\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/components/algebraic/test_package.py"
     },
     {
       "code": "arg-type",
       "column": 13,
-      "line": 50,
+      "line": 55,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/components/algebraic/test_package.py"
     },
     {
       "code": "index",
       "column": 24,
-      "line": 57,
+      "line": 58,
       "message": "Value of type \"tuple[int, ...] | None\" is not indexable",
       "path": "tests/unit/components/permutation/test_layers.py"
     },
     {
       "code": "index",
       "column": 24,
-      "line": 63,
+      "line": 64,
       "message": "Value of type \"tuple[int, ...] | None\" is not indexable",
       "path": "tests/unit/components/permutation/test_layers.py"
     },
     {
       "code": "union-attr",
       "column": 12,
-      "line": 69,
+      "line": 74,
       "message": "Item \"Port\" of \"Port | Selection\" has no attribute \"source\"",
       "path": "tests/unit/components/structural/test_package.py"
     },
     {
       "code": "union-attr",
       "column": 12,
-      "line": 71,
+      "line": 76,
       "message": "Item \"Selection\" of \"Port | Selection\" has no attribute \"owner_id\"",
       "path": "tests/unit/components/structural/test_package.py"
     },
     {
       "code": "arg-type",
       "column": 26,
-      "line": 17,
+      "line": 18,
       "message": "Argument 1 to \"int_from_bits\" has incompatible type \"tuple[int, ...] | None\"; expected \"tuple[int, ...]\"",
       "path": "tests/unit/components/substitution/test_bit_vector_sbox.py"
     },
     {
       "code": "arg-type",
-      "column": 20,
-      "line": 12,
+      "column": 13,
+      "line": 14,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/components/word/test_package.py"
     },
     {
       "code": "arg-type",
-      "column": 42,
-      "line": 15,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "column": 13,
+      "line": 19,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Port | Selection\"",
       "path": "tests/unit/components/word/test_package.py"
     },
     {
       "code": "arg-type",
       "column": 20,
-      "line": 31,
+      "line": 36,
       "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/components/word/test_package.py"
     },
     {
       "code": "assignment",
       "column": 28,
-      "line": 96,
+      "line": 99,
       "message": "Incompatible types in assignment (expression has type \"tuple[int]\", target has type \"tuple[int, int]\")",
       "path": "tests/unit/components/word/test_package__arithmetic.py"
     },
     {
       "code": "arg-type",
-      "column": 47,
-      "line": 16,
+      "column": 20,
+      "line": 20,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/components/word/test_package__logical.py"
     },
     {
       "code": "arg-type",
-      "column": 45,
-      "line": 17,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "column": 54,
+      "line": 22,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Port | Selection\"",
       "path": "tests/unit/components/word/test_package__logical.py"
     },
     {
@@ -5420,49 +5635,56 @@
     {
       "code": "attr-defined",
       "column": 12,
-      "line": 48,
+      "line": 47,
       "message": "\"Component\" has no attribute \"mapping\"",
       "path": "tests/unit/graph/test_component__inverse_semantics.py"
     },
     {
       "code": "attr-defined",
       "column": 12,
-      "line": 49,
+      "line": 48,
       "message": "\"Component\" has no attribute \"direction\"",
       "path": "tests/unit/graph/test_component__inverse_semantics.py"
     },
     {
       "code": "union-attr",
       "column": 50,
-      "line": 89,
-      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
+      "line": 88,
+      "message": "Item \"None\" of \"Selection | None\" has no attribute \"array_type\"",
       "path": "tests/unit/graph/test_component__inverse_semantics.py"
     },
     {
       "code": "arg-type",
       "column": 15,
-      "line": 301,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
+      "line": 306,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Port | Selection\"",
+      "path": "tests/unit/graph/test_component__inverse_semantics.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 38,
+      "line": 306,
+      "message": "Argument 2 to \"Xor\" has incompatible type \"str\"; expected \"Port | Selection\"",
       "path": "tests/unit/graph/test_component__inverse_semantics.py"
     },
     {
       "code": "arg-type",
       "column": 30,
-      "line": 303,
+      "line": 308,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/graph/test_component__inverse_semantics.py"
     },
     {
       "code": "arg-type",
       "column": 41,
-      "line": 12,
+      "line": 13,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/graph/test_composite.py"
     },
     {
       "code": "arg-type",
       "column": 40,
-      "line": 13,
+      "line": 14,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/graph/test_composite.py"
     },
@@ -5476,21 +5698,21 @@
     {
       "code": "union-attr",
       "column": 12,
-      "line": 116,
+      "line": 140,
       "message": "Item \"None\" of \"PresentationEvidence | None\" has no attribute \"classification\"",
       "path": "tests/unit/presentation/test_adapters.py"
     },
     {
       "code": "union-attr",
       "column": 12,
-      "line": 143,
+      "line": 167,
       "message": "Item \"None\" of \"PresentationDiagnostic | None\" has no attribute \"code\"",
       "path": "tests/unit/presentation/test_adapters.py"
     },
     {
       "code": "union-attr",
       "column": 12,
-      "line": 182,
+      "line": 206,
       "message": "Item \"None\" of \"PresentationDiagnostic | None\" has no attribute \"code\"",
       "path": "tests/unit/presentation/test_adapters.py"
     },
@@ -5509,30 +5731,9 @@
       "path": "tests/unit/presentation/test_exports.py"
     },
     {
-      "code": "index",
-      "column": 24,
-      "line": 35,
-      "message": "Value of type \"object\" is not indexable",
-      "path": "tests/unit/primitives/block_ciphers/aes/test_package.py"
-    },
-    {
-      "code": "index",
-      "column": 24,
-      "line": 36,
-      "message": "Value of type \"object\" is not indexable",
-      "path": "tests/unit/primitives/block_ciphers/aes/test_package.py"
-    },
-    {
-      "code": "index",
-      "column": 24,
-      "line": 37,
-      "message": "Value of type \"object\" is not indexable",
-      "path": "tests/unit/primitives/block_ciphers/aes/test_package.py"
-    },
-    {
       "code": "arg-type",
       "column": 18,
-      "line": 39,
+      "line": 41,
       "message": "Argument 1 to \"bytes\" has incompatible type \"tuple[int, ...] | None\"; expected \"Iterable[SupportsIndex] | SupportsIndex | SupportsBytes | Buffer\"",
       "path": "tests/unit/primitives/block_ciphers/aes/test_package.py"
     },
@@ -5547,7 +5748,7 @@
       "code": "union-attr",
       "column": 12,
       "line": 123,
-      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
+      "message": "Item \"None\" of \"Selection | None\" has no attribute \"array_type\"",
       "path": "tests/unit/primitives/block_functions/test_trivium.py"
     },
     {
@@ -5561,34 +5762,34 @@
       "code": "union-attr",
       "column": 12,
       "line": 151,
-      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
+      "message": "Item \"None\" of \"Selection | None\" has no attribute \"array_type\"",
       "path": "tests/unit/primitives/block_functions/test_trivium.py"
     },
     {
       "code": "union-attr",
       "column": 13,
-      "line": 81,
+      "line": 85,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "tests/unit/primitives/permutations/poseidon/test_package.py"
     },
     {
       "code": "operator",
       "column": 16,
-      "line": 223,
+      "line": 224,
       "message": "Unsupported right operand type for in (\"str | None\")",
       "path": "tests/unit/primitives/single_component_primitives/test_package.py"
     },
     {
       "code": "operator",
       "column": 20,
-      "line": 234,
+      "line": 235,
       "message": "Unsupported right operand type for in (\"str | None\")",
       "path": "tests/unit/primitives/single_component_primitives/test_package.py"
     },
     {
       "code": "var-annotated",
       "column": 17,
-      "line": 71,
+      "line": 73,
       "message": "Need type annotation for \"FIXTURE_CASES\"",
       "path": "tests/unit/primitives/test__realizations.py"
     },
@@ -5610,7 +5811,7 @@
       "code": "union-attr",
       "column": 12,
       "line": 144,
-      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
+      "message": "Item \"None\" of \"Selection | None\" has no attribute \"array_type\"",
       "path": "tests/unit/primitives/test_package__legacy_parity.py"
     },
     {
@@ -5638,8 +5839,29 @@
       "code": "union-attr",
       "column": 12,
       "line": 240,
-      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
+      "message": "Item \"None\" of \"Selection | None\" has no attribute \"array_type\"",
       "path": "tests/unit/primitives/test_package__legacy_parity.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 5,
+      "line": 21,
+      "message": "Need type annotation for \"transitions\" (hint: \"transitions: dict[<type>, <type>] = ...\")",
+      "path": "tests/unit/representations/constraints/cp/components/test_truncated.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 24,
+      "line": 48,
+      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/unit/representations/constraints/cp/test_trails.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 24,
+      "line": 60,
+      "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tests/unit/representations/constraints/milp/test_monomial.py"
     },
     {
       "code": "arg-type",
@@ -5651,350 +5873,357 @@
     {
       "code": "misc",
       "column": 19,
-      "line": 19,
+      "line": 31,
       "message": "Generator has incompatible item type \"Port\"; expected \"Selection\"",
       "path": "tests/unit/representations/constraints/sat/test_package.py"
     },
     {
       "code": "arg-type",
-      "column": 18,
-      "line": 138,
-      "message": "Argument 1 to \"Multiply\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/representations/constraints/sat/test_package.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 54,
-      "line": 13,
+      "column": 17,
+      "line": 16,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/representations/constraints/smt/test_package.py"
     },
     {
       "code": "arg-type",
-      "column": 42,
-      "line": 18,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "column": 13,
+      "line": 20,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Port | Selection\"",
       "path": "tests/unit/representations/constraints/smt/test_word_linear.py"
     },
     {
       "code": "arg-type",
       "column": 20,
-      "line": 98,
+      "line": 101,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/representations/constraints/smt/test_word_linear.py"
     },
     {
       "code": "arg-type",
-      "column": 20,
-      "line": 83,
-      "message": "Argument 1 to \"TrailStep\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "tests/unit/representations/diagrams/test_package.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 29,
-      "line": 33,
+      "column": 17,
+      "line": 34,
       "message": "Argument 1 to \"AnnotationEntry\" has incompatible type \"str | None\"; expected \"str\"",
       "path": "tests/unit/representations/test_package.py"
     },
     {
       "code": "misc",
       "column": 9,
-      "line": 42,
+      "line": 44,
       "message": "Property \"annotation\" defined in \"ExecutionTrace\" is read-only",
       "path": "tests/unit/representations/test_package.py"
     },
     {
       "code": "union-attr",
       "column": 12,
-      "line": 98,
+      "line": 100,
       "message": "Item \"None\" of \"ResultProvenance | None\" has no attribute \"realization\"",
       "path": "tests/unit/representations/test_package.py"
     },
     {
       "code": "union-attr",
       "column": 12,
-      "line": 99,
+      "line": 101,
       "message": "Item \"None\" of \"ResultProvenance | None\" has no attribute \"driver\"",
       "path": "tests/unit/representations/test_package.py"
     },
     {
       "code": "arg-type",
       "column": 20,
-      "line": 110,
+      "line": 112,
       "message": "Argument 1 to \"TrailStep\" has incompatible type \"str | None\"; expected \"str\"",
       "path": "tests/unit/representations/test_package.py"
     },
     {
       "code": "arg-type",
       "column": 23,
-      "line": 18,
+      "line": 19,
       "message": "Argument \"component_ids\" to \"PropagationProblem\" has incompatible type \"tuple[str | None]\"; expected \"Iterable[str] | None\"",
       "path": "tests/unit/semantics/cryptanalysis/test_problem.py"
     },
     {
       "code": "operator",
-      "column": 63,
-      "line": 31,
+      "column": 56,
+      "line": 67,
       "message": "Unsupported right operand type for in (\"str | None\")",
       "path": "tests/unit/semantics/cryptanalysis/test_problem.py"
     },
     {
       "code": "arg-type",
       "column": 71,
-      "line": 32,
+      "line": 69,
       "message": "Argument \"component_ids\" to \"PropagationProblem\" has incompatible type \"tuple[str | None]\"; expected \"Iterable[str] | None\"",
       "path": "tests/unit/semantics/cryptanalysis/test_problem.py"
     },
     {
       "code": "arg-type",
-      "column": 41,
-      "line": 69,
+      "column": 13,
+      "line": 86,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/test_package.py"
     },
     {
       "code": "arg-type",
-      "column": 42,
-      "line": 70,
+      "column": 51,
+      "line": 88,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/test_package.py"
     },
     {
       "code": "arg-type",
       "column": 13,
-      "line": 72,
+      "line": 90,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/test_package.py"
     },
     {
       "code": "arg-type",
-      "column": 37,
-      "line": 77,
+      "column": 46,
+      "line": 95,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/test_package.py"
     },
     {
-      "code": "index",
-      "column": 17,
-      "line": 103,
-      "message": "Value of type \"object\" is not indexable",
+      "code": "attr-defined",
+      "column": 27,
+      "line": 122,
+      "message": "\"object\" has no attribute \"owner_id\"",
       "path": "tests/unit/test_package.py"
     },
     {
       "code": "var-annotated",
       "column": 5,
-      "line": 20,
+      "line": 19,
       "message": "Need type annotation for \"cache\" (hint: \"cache: dict[<type>, <type>] = ...\")",
       "path": "tests/unit/transformations/test_editing.py"
     },
     {
       "code": "attr-defined",
       "column": 12,
-      "line": 46,
+      "line": 50,
       "message": "\"object\" has no attribute \"operation\"",
       "path": "tests/unit/transformations/test_editing.py"
     },
     {
       "code": "arg-type",
-      "column": 38,
-      "line": 71,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
+      "column": 13,
+      "line": 76,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Port | Selection\"",
       "path": "tests/unit/transformations/test_editing.py"
     },
     {
       "code": "attr-defined",
       "column": 12,
-      "line": 79,
+      "line": 85,
       "message": "\"object\" has no attribute \"operation\"",
       "path": "tests/unit/transformations/test_editing.py"
     },
     {
       "code": "arg-type",
-      "column": 37,
-      "line": 130,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/transformations/test_inversion.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 38,
+      "column": 46,
       "line": 131,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Port | Selection\"",
+      "path": "tests/unit/transformations/test_inversion.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 47,
+      "line": 132,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Port | Selection\"",
       "path": "tests/unit/transformations/test_inversion.py"
     },
     {
       "code": "dict-item",
       "column": 16,
-      "line": 137,
+      "line": 138,
       "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection | Sequence[Port | Selection]\"",
       "path": "tests/unit/transformations/test_inversion.py"
     },
     {
       "code": "arg-type",
-      "column": 37,
-      "line": 151,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/transformations/test_inversion.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 39,
+      "column": 46,
       "line": 152,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[Port]\"; expected \"Port | Selection\"",
+      "path": "tests/unit/transformations/test_inversion.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 48,
+      "line": 153,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Port, Port]\"; expected \"Port | Selection\"",
       "path": "tests/unit/transformations/test_inversion.py"
     },
     {
       "code": "dict-item",
       "column": 16,
-      "line": 158,
+      "line": 159,
       "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection | Sequence[Port | Selection]\"",
+      "path": "tests/unit/transformations/test_inversion.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 42,
+      "line": 174,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Selection, Selection]\"; expected \"Port | Selection\"",
+      "path": "tests/unit/transformations/test_inversion.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 42,
+      "line": 175,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Selection, Selection]\"; expected \"Port | Selection\"",
+      "path": "tests/unit/transformations/test_inversion.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 42,
+      "line": 176,
+      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Selection, Selection, Selection]\"; expected \"Port | Selection\"",
       "path": "tests/unit/transformations/test_inversion.py"
     },
     {
       "code": "dict-item",
       "column": 20,
-      "line": 223,
+      "line": 229,
       "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection | Sequence[Port | Selection]\"",
       "path": "tests/unit/transformations/test_inversion.py"
     },
     {
       "code": "operator",
       "column": 49,
-      "line": 48,
+      "line": 49,
       "message": "Unsupported left operand type for ^ (\"None\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 49,
-      "line": 48,
+      "line": 49,
       "message": "Unsupported left operand type for ^ (\"tuple[int, ...]\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 49,
-      "line": 48,
+      "line": 49,
       "message": "Unsupported operand types for ^ (\"None\" and \"int\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 49,
-      "line": 48,
+      "line": 49,
       "message": "Unsupported operand types for ^ (\"int\" and \"None\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 49,
-      "line": 48,
+      "line": 49,
       "message": "Unsupported operand types for ^ (\"int\" and \"tuple[int, ...]\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 49,
-      "line": 48,
+      "line": 49,
       "message": "Unsupported operand types for ^ (\"tuple[int, ...]\" and \"int\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 9,
-      "line": 82,
+      "line": 83,
       "message": "Unsupported left operand type for ^ (\"None\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 9,
-      "line": 82,
+      "line": 83,
       "message": "Unsupported left operand type for ^ (\"tuple[int, ...]\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 9,
-      "line": 82,
+      "line": 83,
       "message": "Unsupported operand types for ^ (\"None\" and \"int\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 9,
-      "line": 82,
+      "line": 83,
       "message": "Unsupported operand types for ^ (\"int\" and \"None\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 9,
-      "line": 82,
+      "line": 83,
       "message": "Unsupported operand types for ^ (\"int\" and \"tuple[int, ...]\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 9,
-      "line": 82,
+      "line": 83,
       "message": "Unsupported operand types for ^ (\"tuple[int, ...]\" and \"int\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "attr-defined",
       "column": 18,
-      "line": 95,
+      "line": 96,
       "message": "\"object\" has no attribute \"path\"",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 50,
-      "line": 97,
+      "line": 100,
       "message": "Unsupported left operand type for ^ (\"None\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 50,
-      "line": 97,
+      "line": 100,
       "message": "Unsupported left operand type for ^ (\"tuple[int, ...]\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 50,
-      "line": 97,
+      "line": 100,
       "message": "Unsupported operand types for ^ (\"None\" and \"int\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 50,
-      "line": 97,
+      "line": 100,
       "message": "Unsupported operand types for ^ (\"int\" and \"None\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 50,
-      "line": 97,
+      "line": 100,
       "message": "Unsupported operand types for ^ (\"int\" and \"tuple[int, ...]\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "operator",
       "column": 50,
-      "line": 97,
+      "line": 100,
       "message": "Unsupported operand types for ^ (\"tuple[int, ...]\" and \"int\")",
       "path": "tests/unit/transformations/test_paired.py"
     },
     {
       "code": "attr-defined",
       "column": 18,
-      "line": 114,
+      "line": 117,
       "message": "\"object\" has no attribute \"path\"",
       "path": "tests/unit/transformations/test_paired.py"
     },
@@ -6009,7 +6238,7 @@
       "code": "union-attr",
       "column": 68,
       "line": 40,
-      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
+      "message": "Item \"None\" of \"Selection | None\" has no attribute \"array_type\"",
       "path": "tests/unit/transformations/test_slicing.py"
     },
     {
@@ -6023,7 +6252,7 @@
       "code": "union-attr",
       "column": 9,
       "line": 58,
-      "message": "Item \"None\" of \"Selection | None\" has no attribute \"value_type\"",
+      "message": "Item \"None\" of \"Selection | None\" has no attribute \"array_type\"",
       "path": "tests/unit/transformations/test_slicing.py"
     },
     {
@@ -6042,8 +6271,8 @@
     },
     {
       "code": "arg-type",
-      "column": 41,
-      "line": 21,
+      "column": 50,
+      "line": 23,
       "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/transformations/test_traversal.py"
     },
@@ -6065,62 +6294,181 @@
       "code": "union-attr",
       "column": 35,
       "line": 144,
-      "message": "Item \"None\" of \"Any | None\" has no attribute \"components\"",
+      "message": "Item \"None\" of \"Any | None\" has no attribute \"graph\"",
       "path": "tools/audit_primitive_inversion.py"
     },
     {
       "code": "union-attr",
       "column": 33,
       "line": 145,
-      "message": "Item \"None\" of \"Any | None\" has no attribute \"bindings\"",
+      "message": "Item \"None\" of \"Any | None\" has no attribute \"graph\"",
       "path": "tools/audit_primitive_inversion.py"
     },
     {
       "code": "operator",
       "column": 51,
-      "line": 247,
+      "line": 249,
       "message": "Unsupported operand types for / (\"object\" and \"int\")",
       "path": "tools/audit_primitive_inversion.py"
     },
     {
-      "code": "import-untyped",
-      "column": 1,
-      "line": 6,
-      "message": "Skipping analyzing \"claasp.evaluators\": module is installed, but missing library stubs or py.typed marker",
-      "path": "tools/benchmark_batch.py"
-    },
-    {
       "code": "misc",
       "column": 21,
-      "line": 32,
+      "line": 31,
       "message": "Cannot infer type of lambda",
       "path": "tools/benchmark_batch.py"
     },
     {
+      "code": "index",
+      "column": 18,
+      "line": 41,
+      "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
+      "path": "tools/benchmark_cp_active_sboxes.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 47,
+      "line": 44,
+      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[Port, Port]\"; expected \"Iterable[Selection]\"",
+      "path": "tools/benchmark_cp_boomerang_trails.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 15,
+      "line": 95,
+      "message": "Item \"None\" of \"Any | None\" has no attribute \"decode_trail\"",
+      "path": "tools/benchmark_cp_boomerang_trails.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 29,
+      "line": 100,
+      "message": "Item \"None\" of \"Any | None\" has no attribute \"declarations\"",
+      "path": "tools/benchmark_cp_boomerang_trails.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 28,
+      "line": 101,
+      "message": "Item \"None\" of \"Any | None\" has no attribute \"constraints\"",
+      "path": "tools/benchmark_cp_boomerang_trails.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 33,
+      "line": 93,
+      "message": "Argument 1 to \"solve\" of \"MiniZincSolver\" has incompatible type \"CNFFormula | SMTFormula | MiniZincModel | Any\"; expected \"MiniZincModel | CNFFormula\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 33,
+      "line": 93,
+      "message": "Argument 1 to \"solve\" of \"MinisatSolver\" has incompatible type \"CNFFormula | SMTFormula | MiniZincModel | Any\"; expected \"CNFFormula\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 14,
+      "line": 95,
+      "message": "Item \"CPResult\" of \"SatResult | Any | CPResult\" has no attribute \"is_feasible\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 14,
+      "line": 95,
+      "message": "Item \"SatResult\" of \"SatResult | Any | CPResult\" has no attribute \"is_feasible\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 37,
+      "line": 95,
+      "message": "Item \"CNFFormula\" of \"CNFFormula | SMTFormula | MiniZincModel | Any\" has no attribute \"is_feasible\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 37,
+      "line": 95,
+      "message": "Item \"MiniZincModel\" of \"CNFFormula | SMTFormula | MiniZincModel | Any\" has no attribute \"is_feasible\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 37,
+      "line": 95,
+      "message": "Item \"SMTFormula\" of \"CNFFormula | SMTFormula | MiniZincModel | Any\" has no attribute \"is_feasible\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 65,
+      "line": 97,
+      "message": "Argument 1 to \"is_satisfied\" of \"CNFFormula\" has incompatible type \"Mapping[str, int] | Any | None\"; expected \"Mapping[str, int | bool]\"",
+      "path": "tools/benchmark_functional_word_components.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 8,
+      "line": 64,
+      "message": "Item \"None\" of \"CubeSuperpolyResult | None\" has no attribute \"anf_terms\"",
+      "path": "tools/benchmark_milp_monomial_queries.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 77,
+      "line": 80,
+      "message": "Item \"None\" of \"CubeSuperpolyResult | None\" has no attribute \"anf_terms\"",
+      "path": "tools/benchmark_milp_monomial_queries.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 30,
+      "line": 47,
+      "message": "Item \"None\" of \"MILPModel | None\" has no attribute \"variables\"",
+      "path": "tools/benchmark_milp_wordwise_impossible.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 32,
+      "line": 48,
+      "message": "Item \"None\" of \"MILPModel | None\" has no attribute \"constraints\"",
+      "path": "tools/benchmark_milp_wordwise_impossible.py"
+    },
+    {
+      "code": "union-attr",
+      "column": 45,
+      "line": 52,
+      "message": "Item \"None\" of \"WordwiseImpossibleBoundaryResult | None\" has no attribute \"contradictory_positions\"",
+      "path": "tools/benchmark_milp_wordwise_impossible.py"
+    },
+    {
       "code": "var-annotated",
       "column": 19,
-      "line": 295,
+      "line": 309,
       "message": "Need type annotation for \"REPRESENTATIONS\"",
       "path": "tools/generate_catalogue_metadata.py"
     },
     {
       "code": "var-annotated",
       "column": 12,
-      "line": 501,
+      "line": 515,
       "message": "Need type annotation for \"ANALYSES\"",
       "path": "tools/generate_catalogue_metadata.py"
     },
     {
       "code": "var-annotated",
       "column": 5,
-      "line": 695,
+      "line": 709,
       "message": "Need type annotation for \"test_evidence\" (hint: \"test_evidence: dict[<type>, <type>] = ...\")",
       "path": "tools/generate_catalogue_metadata.py"
     },
     {
       "code": "arg-type",
       "column": 41,
-      "line": 755,
+      "line": 773,
       "message": "Argument 1 to \"list\" has incompatible type \"Any | object\"; expected \"Iterable[Any]\"",
       "path": "tools/generate_catalogue_metadata.py"
     },

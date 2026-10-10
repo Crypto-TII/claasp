@@ -89,18 +89,20 @@ class AvalancheDataset:
 def packed_bit_width(primitive: Primitive, input_name: str | None = None) -> int:
     """Return an encoded boundary width, rejecting non-binary encodings."""
 
-    value_type = primitive.output.value_type if input_name is None and primitive.output else None
+    array_type = (
+        primitive.graph.output.array_type if input_name is None and primitive.graph.output else None
+    )
     if input_name is not None:
         try:
-            value_type = primitive.input_ports[input_name].value_type
+            array_type = primitive.graph.input_ports[input_name].array_type
         except KeyError as error:
             raise KeyError(f"primitive input {input_name!r} does not exist") from error
-    if value_type is None:
+    if array_type is None:
         raise ValueError("primitive has no output")
-    unit_width = value_type.domain.encoded_bit_size
+    unit_width = array_type.domain.encoded_bit_size
     if unit_width is None:
         raise TypeError("dataset generation requires a fixed-width binary encoding")
-    return unit_width * value_type.unit_count
+    return unit_width * array_type.unit_count
 
 
 def generate_random_dataset(
@@ -133,11 +135,11 @@ def generate_random_dataset(
     if not isinstance(seed, int) or isinstance(seed, bool):
         raise TypeError("seed must be an integer")
     fixed = dict(fixed_inputs or {})
-    unexpected = set(fixed) - set(primitive.input_ports)
+    unexpected = set(fixed) - set(primitive.graph.input_ports)
     if unexpected:
         raise ValueError(f"unknown fixed inputs: {sorted(unexpected)}")
 
-    widths = {name: packed_bit_width(primitive, name) for name in primitive.input_ports}
+    widths = {name: packed_bit_width(primitive, name) for name in primitive.graph.input_ports}
     random = Random(seed)
     samples = []
     for _ in range(number_of_samples):

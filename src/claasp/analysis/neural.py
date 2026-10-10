@@ -32,7 +32,7 @@ def _component_ids(component_ids: str | Sequence[str]) -> tuple[str, ...]:
 def _projection_width(primitive: Primitive, component_ids: tuple[str, ...]) -> int:
     total = 0
     for component_id in component_ids:
-        width = primitive.port(component_id).value_type.encoded_bit_size
+        width = primitive.graph.port(component_id).array_type.encoded_bit_size
         if width is None:
             raise ValueError(f"{component_id!r} is not canonically bit-encoded")
         total += width
@@ -49,7 +49,7 @@ def _trace_bits(primitive: Primitive, source_id: str, value: tuple[int, ...]) ->
     this module uses for primitive inputs and outputs.
     """
 
-    scalar_width = primitive.port(source_id).value_type.domain.encoded_bit_size
+    scalar_width = primitive.graph.port(source_id).array_type.domain.encoded_bit_size
     if scalar_width is None:
         raise ValueError(f"{source_id!r} is not canonically bit-encoded")
     bits: list[int] = []
@@ -70,7 +70,7 @@ def _projection_bits(
 
 def _widths(primitive: Primitive) -> dict[str, int]:
     widths = {
-        name: port.value_type.encoded_bit_size for name, port in primitive.input_ports.items()
+        name: port.array_type.encoded_bit_size for name, port in primitive.graph.input_ports.items()
     }
     if any(width is None for width in widths.values()):
         raise ValueError("neural datasets require canonically bit-encoded inputs")
@@ -78,9 +78,9 @@ def _widths(primitive: Primitive) -> dict[str, int]:
 
 
 def _output_width(primitive: Primitive) -> int:
-    if primitive.output is None:
+    if primitive.graph.output is None:
         raise ValueError("the primitive must declare an output")
-    width = primitive.output.value_type.encoded_bit_size
+    width = primitive.graph.output.array_type.encoded_bit_size
     if width is None:
         raise ValueError("neural datasets require a canonically bit-encoded output")
     return width
@@ -319,7 +319,7 @@ def round_component_ids(primitive: Primitive, round_number: int) -> tuple[str, .
         required arguments rejected
     """
 
-    rounds = primitive.rounds
+    rounds = primitive.graph.rounds
     if not isinstance(round_number, int) or isinstance(round_number, bool):
         raise TypeError("round_number must be an integer")
     if not 0 <= round_number < len(rounds):

@@ -354,7 +354,7 @@ class Katan(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Katan()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -395,7 +395,7 @@ class Katan(BitGraphPrimitive):
         ]
 
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             while len(key_bits) <= 2 * round_number + 1:
                 key_bits.append(
                     self._xor_bits(

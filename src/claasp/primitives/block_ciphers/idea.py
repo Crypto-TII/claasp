@@ -2,7 +2,7 @@
 
 from claasp.components import Permutation
 from claasp.domains import Bit
-from claasp.graph import Primitive, ValueType
+from claasp.graph import ArrayType, Primitive
 
 from ._word_graph import add, concatenate, idea_multiply, select, word_type, xor
 
@@ -13,7 +13,7 @@ class IDEA(Primitive):
     EXAMPLES::
 
         >>> primitive = IDEA()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x1000100000000', 49)
@@ -26,11 +26,11 @@ class IDEA(Primitive):
             "idea",
             {
                 "plaintext": word_type(16, 4),
-                "key": ValueType(Bit(), (128,)),
+                "key": ArrayType(Bit(), (128,)),
             },
         )
-        self.add_round()
-        key_state = self.input("key").select_all()
+        self._builder.add_round()
+        key_state = self.graph.input("key").select_all()
         subkeys = []
         needed = 6 * number_of_rounds + 4
         while len(subkeys) < needed:
@@ -38,13 +38,13 @@ class IDEA(Primitive):
                 if len(subkeys) == needed:
                     break
                 bits = key_state[tuple(range(16 * index, 16 * (index + 1)))]
-                subkeys.append(self.pack_bits(bits, 16))
+                subkeys.append(self._builder.pack_bits(bits, 16))
             if len(subkeys) < needed:
                 mapping = tuple((index + 25) % 128 for index in range(128))
-                key_state = self.add_component(Permutation(key_state, mapping))
-        state = [select(self.input("plaintext"), index) for index in range(4)]
+                key_state = self._builder.add_component(Permutation(key_state, mapping))
+        state = [select(self.graph.input("plaintext"), index) for index in range(4)]
         for round_number in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
             k1, k2, k3, k4, k5, k6 = subkeys[6 * round_number : 6 * (round_number + 1)]
             y1 = idea_multiply(self, state[0], k1)
             y2 = add(self, state[1], k2)
@@ -60,7 +60,7 @@ class IDEA(Primitive):
                 if round_number == number_of_rounds - 1
                 else [out1, out3, out2, out4]
             )
-        self.add_round()
+        self._builder.add_round()
         final = subkeys[6 * number_of_rounds :]
         state = [
             idea_multiply(self, state[0], final[0]),
@@ -68,4 +68,4 @@ class IDEA(Primitive):
             add(self, state[2], final[2]),
             idea_multiply(self, state[3], final[3]),
         ]
-        self.set_output(concatenate(self, *state))
+        self._builder.set_output(concatenate(self, *state))

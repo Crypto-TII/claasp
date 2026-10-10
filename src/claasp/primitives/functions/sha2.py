@@ -54,7 +54,7 @@ class SHA2(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = SHA2()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xda5698be17b9b469', 256)
@@ -159,7 +159,7 @@ class SHA2(BitGraphPrimitive):
             for t in range(16)
         ]
 
-        self.add_round()
+        self._builder.add_round()
 
         Kt = self.add_constant_component(self.word_size, K[key_for_K_dict][0])
 
@@ -180,14 +180,14 @@ class SHA2(BitGraphPrimitive):
 
         for t in range(1, min(16, number_of_rounds)):
             self.add_round_output_component_sha2(a, b, c, d, e, f, g, h)
-            self.add_round()
+            self._builder.add_round()
             Kt = self.add_constant_component(self.word_size, K[key_for_K_dict][t])
             T1_MODADD_d, T1_MODADD_T2 = self.round_function(a, b, c, d, e, f, g, h, Kt, W[t])
             h, g, f, e, d, c, b, a = g, f, e, T1_MODADD_d, c, b, a, T1_MODADD_T2
 
         for t in range(16, min(max_rounds, number_of_rounds)):
             self.add_round_output_component_sha2(a, b, c, d, e, f, g, h)
-            self.add_round()
+            self._builder.add_round()
             W.append(self.schedule(W, t))
             Kt = self.add_constant_component(self.word_size, K[key_for_K_dict][t])
             T1_MODADD_d, T1_MODADD_T2 = self.round_function(a, b, c, d, e, f, g, h, Kt, W[t])
@@ -195,7 +195,7 @@ class SHA2(BitGraphPrimitive):
 
         if number_of_rounds == max_rounds:
             self.add_round_output_component_sha2(a, b, c, d, e, f, g, h)
-            self.add_round()
+            self._builder.add_round()
             a = self.add_modadd_component_sha2(a, initial_state[0])
             b = self.add_modadd_component_sha2(b, initial_state[1])
             c = self.add_modadd_component_sha2(c, initial_state[2])

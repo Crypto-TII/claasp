@@ -189,7 +189,7 @@ class Blake(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Blake()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xd01e1d41851fe548', 512)
@@ -247,7 +247,7 @@ class Blake(BitGraphPrimitive):
         ]
 
         for r in range(number_of_rounds):
-            self.add_round()
+            self._builder.add_round()
 
             # STATE TRANSFORMATION
             if (r % 2) == 0:

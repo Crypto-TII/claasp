@@ -2,7 +2,7 @@
 
 from claasp.components import Shift as ShiftComponent
 from claasp.domains import Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 from ._base import positive
 
@@ -23,7 +23,7 @@ class Shift(Primitive):
     EXAMPLES::
 
         >>> primitive = Shift()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -38,11 +38,15 @@ class Shift(Primitive):
         bit_size = positive(bit_size, "bit_size")
         super().__init__(
             "shift",
-            {"input": ValueType(Word(bit_size), (1,))},
+            {"input": ArrayType(Word(bit_size), (1,))},
             kind=PrimitiveKind.FUNCTION,
         )
-        self.add_round()
-        self.set_output(self.add_component(ShiftComponent(self.input("input"), amount, direction)))
+        self._builder.add_round()
+        self._builder.set_output(
+            self._builder.add_component(
+                ShiftComponent(self.graph.input("input"), amount, direction)
+            )
+        )
 
 
 __all__ = ["Shift"]

@@ -17,7 +17,7 @@ class Multiply(Component):
 
     EXAMPLES::
 
-        >>> from claasp import PrimeField
+        >>> from claasp.domains import PrimeField
         >>> from claasp.primitives.single_component_primitives import Multiply as MultiplyPrimitive
         >>> MultiplyPrimitive(domain=PrimeField(17)).evaluate(5, 7)
         1

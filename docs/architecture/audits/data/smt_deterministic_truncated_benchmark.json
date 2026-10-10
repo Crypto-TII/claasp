@@ -1,0 +1,26 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "result": {
+    "assertions": 829,
+    "assignment_valid": true,
+    "construction_seconds_median": 0.0014144794999992882,
+    "peak_memory_bytes_median": null,
+    "peak_memory_status": "not_reported_by_z3_driver",
+    "repeats": 10,
+    "solver": "Z3Solver",
+    "solver_seconds_median": 0.008518729499883193,
+    "solver_status": "satisfiable",
+    "solver_version": "Z3 version 4.8.12 - 64 bit",
+    "trail_valid": true,
+    "variables": 200
+  },
+  "schema_version": 1,
+  "workload": {
+    "description": "fixed ToySpeck-2 deterministic-truncated trail",
+    "sat_comparison": "docs/architecture/audits/data/sat_truncated_trail_benchmark.json",
+    "timeout_seconds": 30
+  }
+}

@@ -7,6 +7,10 @@ ARG CHUFFED_SHA256=39426a580690759ecf77ec5704caf5f2e21d41ff0aa09028827f5156bf5cb
 ARG NIST_STS_SHA256=0238d2f1d26e120e3cc748ed2d4c674cdc636de37fc4027c76cc2a394fff9157
 ARG MSOLVE_VERSION=0.10.1
 ARG MSOLVE_SHA256=ce0743cc33d1dc8484193268d9220e8624ed015e521903b9228b3b38a5981291
+ARG KISSAT_VERSION=4.0.4
+ARG KISSAT_SHA256=bfe93eaa6323b48011e4b1fcf74b3f2e20f9de544767e728009e5b2018296193
+ARG ESPRESSO_VERSION=1.1
+ARG ESPRESSO_SHA256=3e9ad0d7af29b67bc59c9bf014e9ed840af199490f1794b8249b4ab77f44b99e
 ARG DEBIAN_FRONTEND=noninteractive
 
 LABEL org.opencontainers.image.title="CLAASP 5 release environment" \
@@ -26,6 +30,7 @@ RUN apt-get -q update \
         automake=1:1.16.5-1.3ubuntu1 \
         ca-certificates=20260601~24.04.1 \
         cmake=3.28.3-1build7 \
+        cryptominisat=5.11.15+dfsg1-1.1build1 \
         curl=8.5.0-2ubuntu10.15 \
         dieharder=3.31.1.4-1.1build1 \
         git=1:2.43.0-1ubuntu7.3 \
@@ -33,6 +38,7 @@ RUN apt-get -q update \
         minisat=1:2.2.1-8build1 \
         minizinc=2.8.2+dfsg1-1build2 \
         libflint-dev=3.0.1-3.1build1 \
+        libcdd-tools=094m-1.1build1 \
         libgmp-dev=2:6.3.0+dfsg-2ubuntu6.1 \
         libtool=2.4.7-7build1 \
         python3=3.12.3-0ubuntu2.1 \
@@ -49,6 +55,31 @@ RUN sed -i 's/\r$//' /usr/local/bin/minizinc \
     && chmod 0755 /usr/local/bin/minizinc
 
 WORKDIR /opt
+
+RUN set -eux; \
+    curl -fsSL \
+        "https://github.com/arminbiere/kissat/archive/refs/tags/rel-${KISSAT_VERSION}.tar.gz" \
+        -o kissat.tar.gz; \
+    echo "${KISSAT_SHA256}  kissat.tar.gz" | sha256sum -c -; \
+    tar -xzf kissat.tar.gz; \
+    cd "kissat-rel-${KISSAT_VERSION}"; \
+    ./configure; \
+    make --jobs="$(nproc)"; \
+    install -m 0755 build/kissat /usr/local/bin/kissat; \
+    kissat --version; \
+    cd /opt; \
+    rm -rf kissat.tar.gz "kissat-rel-${KISSAT_VERSION}"
+
+RUN set -eux; \
+    curl -fsSL \
+        "https://github.com/classabbyamp/espresso-logic/archive/refs/tags/${ESPRESSO_VERSION}.tar.gz" \
+        -o espresso.tar.gz; \
+    echo "${ESPRESSO_SHA256}  espresso.tar.gz" | sha256sum -c -; \
+    tar -xzf espresso.tar.gz; \
+    make -C "espresso-logic-${ESPRESSO_VERSION}/espresso-src" --jobs="$(nproc)"; \
+    install -m 0755 "espresso-logic-${ESPRESSO_VERSION}/bin/espresso" /usr/local/bin/espresso; \
+    espresso -h >/dev/null 2>&1 || test "$?" -eq 1; \
+    rm -rf espresso.tar.gz "espresso-logic-${ESPRESSO_VERSION}"
 
 RUN set -eux; \
     curl -fsSL \

@@ -8,14 +8,14 @@ from claasp.components import BitVectorSBox, LinearMap, LookupTable, SBox
 from claasp.composites.aes import AES_FIELD
 from claasp.domains import Bit, Word
 from claasp.drivers.analysis import BoundedBranchNumberDriver
-from claasp.graph import Port, ValueType
+from claasp.graph import ArrayType, Port
 from claasp.primitives import AES, Present
 
 
 def test_public_primitive_api_retains_analysis_and_realization_provenance():
     primitive = Present(number_of_rounds=1)
-    sbox = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
-    result = primitive.analyze().component_property(
+    sbox = next(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
+    result = primitive.analysis.component_property(
         sbox,
         ComponentProperty.DIFFERENTIAL_UNIFORMITY,
         PropertyDomain.LOOKUP_TABLE,
@@ -31,13 +31,13 @@ def test_public_primitive_api_retains_analysis_and_realization_provenance():
 
 def test_public_batch_api_keeps_each_request_and_result_typed():
     primitive = Present(number_of_rounds=1)
-    sbox = next(item for item in primitive.components if isinstance(item, BitVectorSBox))
+    sbox = next(item for item in primitive.graph.components if isinstance(item, BitVectorSBox))
     requests = (
         PropertyRequest(ComponentProperty.NONLINEARITY, PropertyDomain.LOOKUP_TABLE),
         PropertyRequest(ComponentProperty.ALGEBRAIC_DEGREE, PropertyDomain.LOOKUP_TABLE),
     )
 
-    results = primitive.analyze().component_properties(sbox, requests)
+    results = primitive.analysis.component_properties(sbox, requests)
 
     assert tuple(result.value for result in results) == (4, 3)
     assert tuple(result.request for result in results) == requests
@@ -46,8 +46,8 @@ def test_public_batch_api_keeps_each_request_and_result_typed():
 
 def test_public_driver_api_keeps_realization_separate_from_driver_provenance():
     primitive = AES(number_of_rounds=1)
-    linear = next(item for item in primitive.components if isinstance(item, LinearMap))
-    result = primitive.analyze().component_property(
+    linear = next(item for item in primitive.graph.components if isinstance(item, LinearMap))
+    result = primitive.analysis.component_property(
         linear,
         ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
         PropertyDomain.WORD_LINEAR,
@@ -60,9 +60,9 @@ def test_public_driver_api_keeps_realization_separate_from_driver_provenance():
 
 
 def test_binary_and_field_linear_examples_have_fixed_evidence():
-    binary = LinearMap(Port("bits", ValueType(Bit(), (2,))), ((1, 0), (1, 1)))
+    binary = LinearMap(Port("bits", ArrayType(Bit(), (2,))), ((1, 0), (1, 1)))
     mix_column = LinearMap(
-        Port("column", ValueType(AES_FIELD, (4,))),
+        Port("column", ArrayType(AES_FIELD, (4,))),
         ((2, 3, 1, 1), (1, 2, 3, 1), (1, 1, 2, 3), (3, 1, 1, 2)),
     )
     from claasp.analysis import analyze_component_property
@@ -80,7 +80,7 @@ def test_binary_and_field_linear_examples_have_fixed_evidence():
 
 def test_unit_sbox_analysis_uses_one_unit_width_not_the_whole_vector():
     sbox = SBox(
-        Port("words", ValueType(Word(2), (3,))),
+        Port("words", ArrayType(Word(2), (3,))),
         (0, 1, 3, 2),
     )
     from claasp.analysis import analyze_component_property

@@ -83,7 +83,7 @@ class SimeckSbox(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = SimeckSbox()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x589290e7', 31)
@@ -128,7 +128,7 @@ class SimeckSbox(BitGraphPrimitive):
             )
 
         for round_number in range(number_of_rounds - 1):
-            self.add_round()
+            self._builder.add_round()
             left, right = self.feistel_function(left, right, keys_buffer[3])
             self.add_round_output_component(
                 [left[0], right[0]], [left[1], right[1]], self.block_bit_size
@@ -137,7 +137,7 @@ class SimeckSbox(BitGraphPrimitive):
             self.add_round_key_output_component(
                 [keys_buffer[3][0]], [keys_buffer[3][1]], self.word_size
             )
-        self.add_round()
+        self._builder.add_round()
         left, right = self.feistel_function(left, right, keys_buffer[3])
         self.add_primitive_output_component(
             [left[0], right[0]], [left[1], right[1]], self.block_bit_size

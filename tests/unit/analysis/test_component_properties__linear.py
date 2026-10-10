@@ -8,7 +8,7 @@ from claasp.analysis.component_properties import (
 from claasp.components import BinaryAffineMap, LinearMap, Permutation
 from claasp.composites.aes import AES_FIELD
 from claasp.domains import BinaryExtensionField, Bit
-from claasp.graph import Port, ValueType
+from claasp.graph import ArrayType, Port
 from claasp.primitives.toy_primitives.toyaes import MIX_COLUMN_MATRICES
 
 
@@ -20,7 +20,7 @@ def _analyze(component, property_, domain=PropertyDomain.BIT_LINEAR, **options):
 
 
 def test_identity_and_permutation_linear_properties_are_exact():
-    port = Port("x", ValueType(Bit(), (4,)))
+    port = Port("x", ArrayType(Bit(), (4,)))
     identity = LinearMap(port, ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1)))
     permutation = Permutation(port, (1, 2, 3, 0))
 
@@ -35,7 +35,7 @@ def test_identity_and_permutation_linear_properties_are_exact():
 
 def test_aes_mixcolumn_word_branch_number_and_mds_status():
     matrix = ((2, 3, 1, 1), (1, 2, 3, 1), (1, 1, 2, 3), (3, 1, 1, 2))
-    component = LinearMap(Port("column", ValueType(AES_FIELD, (4,))), matrix)
+    component = LinearMap(Port("column", ArrayType(AES_FIELD, (4,))), matrix)
 
     assert _analyze(component, ComponentProperty.RANK, PropertyDomain.WORD_LINEAR).value == 4
     assert _analyze(component, ComponentProperty.MDS, PropertyDomain.WORD_LINEAR).value is True
@@ -56,7 +56,7 @@ def test_aes_mixcolumn_word_branch_number_and_mds_status():
 def test_toyaes_gf4_non_mds_matrix_has_exact_branch_three():
     field = BinaryExtensionField(2, 0x7)
     matrix = MIX_COLUMN_MATRICES[(2, 4)]
-    component = LinearMap(Port("column", ValueType(field, (4,))), matrix)
+    component = LinearMap(Port("column", ArrayType(field, (4,))), matrix)
 
     assert _analyze(component, ComponentProperty.MDS, PropertyDomain.WORD_LINEAR).value is False
     assert (
@@ -74,7 +74,7 @@ def test_asymmetric_matrix_applies_linear_transpose_rule():
         (1, 0, 1, 0),
         (1, 1, 1, 1),
     )
-    component = LinearMap(Port("x", ValueType(Bit(), (4,))), matrix)
+    component = LinearMap(Port("x", ArrayType(Bit(), (4,))), matrix)
 
     assert _analyze(component, ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER).value == 3
     assert _analyze(component, ComponentProperty.LINEAR_BRANCH_NUMBER).value == 2
@@ -82,8 +82,8 @@ def test_asymmetric_matrix_applies_linear_transpose_rule():
 
 def test_binary_affine_order_includes_offset_not_only_linear_matrix():
     identity = tuple(tuple(int(row == column) for column in range(8)) for row in range(8))
-    component = BinaryAffineMap(Port("x", ValueType(AES_FIELD, (1,))), identity, 0x63)
-    linear_only = BinaryAffineMap(Port("x", ValueType(AES_FIELD, (1,))), identity, 0)
+    component = BinaryAffineMap(Port("x", ArrayType(AES_FIELD, (1,))), identity, 0x63)
+    linear_only = BinaryAffineMap(Port("x", ArrayType(AES_FIELD, (1,))), identity, 0)
 
     assert _analyze(component, ComponentProperty.ORDER).value == 2
     assert _analyze(linear_only, ComponentProperty.ORDER).value == 1
@@ -91,7 +91,7 @@ def test_binary_affine_order_includes_offset_not_only_linear_matrix():
 
 def test_large_exact_bit_branch_request_reports_budget_exhaustion():
     matrix = ((2, 3, 1, 1), (1, 2, 3, 1), (1, 1, 2, 3), (3, 1, 1, 2))
-    component = LinearMap(Port("column", ValueType(AES_FIELD, (4,))), matrix)
+    component = LinearMap(Port("column", ArrayType(AES_FIELD, (4,))), matrix)
     result = _analyze(
         component,
         ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,

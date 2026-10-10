@@ -1,0 +1,98 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "results": [
+    {
+      "assignment_valid": true,
+      "clauses": 1374,
+      "construction_seconds_median": 0.0027542085003915417,
+      "literals": 4072,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_sat_drivers",
+      "repeats": 10,
+      "solver": "MinisatSolver",
+      "solver_seconds_median": 0.0011661459998322243,
+      "solver_status": "satisfiable",
+      "strategy": "shared_input_without_output_exclusion",
+      "variables": 536
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 1374,
+      "construction_seconds_median": 0.0027189375000489235,
+      "literals": 4072,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_sat_drivers",
+      "repeats": 10,
+      "solver": "KissatSolver",
+      "solver_seconds_median": 0.0005881044999114238,
+      "solver_status": "satisfiable",
+      "strategy": "shared_input_without_output_exclusion",
+      "variables": 536
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 1374,
+      "construction_seconds_median": 0.0028634790000978683,
+      "literals": 4072,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_sat_drivers",
+      "repeats": 10,
+      "solver": "CryptoMiniSatSolver",
+      "solver_seconds_median": 0.0012341039996499603,
+      "solver_status": "satisfiable",
+      "strategy": "shared_input_without_output_exclusion",
+      "variables": 536
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 1386,
+      "construction_seconds_median": 0.002416083499610977,
+      "literals": 4096,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_sat_drivers",
+      "repeats": 10,
+      "solver": "MinisatSolver",
+      "solver_seconds_median": 0.0011084790003224043,
+      "solver_status": "satisfiable",
+      "strategy": "legacy_modadd_output_exclusion",
+      "variables": 536
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 1386,
+      "construction_seconds_median": 0.0024019590000534663,
+      "literals": 4096,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_sat_drivers",
+      "repeats": 10,
+      "solver": "KissatSolver",
+      "solver_seconds_median": 0.0032919795003181207,
+      "solver_status": "satisfiable",
+      "strategy": "legacy_modadd_output_exclusion",
+      "variables": 536
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 1386,
+      "construction_seconds_median": 0.0023696244998063776,
+      "literals": 4096,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported_by_sat_drivers",
+      "repeats": 10,
+      "solver": "CryptoMiniSatSolver",
+      "solver_seconds_median": 0.0010183539998251945,
+      "solver_status": "satisfiable",
+      "strategy": "legacy_modadd_output_exclusion",
+      "variables": 536
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "comparison": "same shared input, weight, solvers, settings, and host",
+    "description": "ToySpeck-2 paired characteristics at fixed total weight 5",
+    "timeout_seconds": 30
+  }
+}

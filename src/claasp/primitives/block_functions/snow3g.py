@@ -87,7 +87,7 @@ class Snow3G(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Snow3G()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xc764a037b12fc857', 64)
@@ -125,7 +125,7 @@ class Snow3G(BitGraphPrimitive):
         self.clock_lfsr(const_0)
         keystream = []
         for clock_number in range(keystream_word_size):
-            self.add_round()
+            self._builder.add_round()
             F = self.clock_fsm(const_0)
             keystream = self.snow3g_key_stream(F, keystream, clock_number)
             self.clock_lfsr(const_0)
@@ -138,7 +138,7 @@ class Snow3G(BitGraphPrimitive):
 
     def snow3g_state_initialization(self, key, iv):
         """Build the snow3g state initialization stage in this primitive's typed operation graph."""
-        self.add_round()
+        self._builder.add_round()
         self.add_constant_component(WORD_SIZE, 0)
         const_0 = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
@@ -146,7 +146,7 @@ class Snow3G(BitGraphPrimitive):
         for _ in range(self.number_of_initialization_clocks):
             F = self.clock_fsm(const_0)
             self.clock_lfsr_initialization_mode(F, const_0)
-            self.add_round()
+            self._builder.add_round()
 
         return const_0
 

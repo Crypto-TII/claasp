@@ -57,13 +57,13 @@ class BooleanDegreeEvaluator:
     def evaluate(self, primitive: Primitive, variable_input: str) -> BooleanDegreeResult:
         """Compute the evaluate for this public typed contract."""
 
-        if variable_input not in primitive.input_ports:
+        if variable_input not in primitive.graph.input_ports:
             raise ValueError(f"unknown variable input: {variable_input}")
-        capacity = primitive.input_ports[variable_input].value_type.encoded_bit_size
+        capacity = primitive.graph.input_ports[variable_input].array_type.encoded_bit_size
         assert capacity is not None
         values: dict[str, tuple[DegreeUnit, ...]] = {}
-        for name, port in primitive.input_ports.items():
-            domain = port.value_type.domain
+        for name, port in primitive.graph.input_ports.items():
+            domain = port.array_type.domain
             width = domain.width if isinstance(domain, Word) else 1
             bits = iter(range(capacity)) if name == variable_input else None
 
@@ -75,19 +75,19 @@ class BooleanDegreeEvaluator:
                 )
 
             if isinstance(domain, Bit):
-                values[name] = tuple(degree_bit() for _ in range(port.value_type.unit_count))
+                values[name] = tuple(degree_bit() for _ in range(port.array_type.unit_count))
             elif isinstance(domain, Word):
                 values[name] = tuple(
                     tuple(degree_bit() for _ in range(width))
-                    for _ in range(port.value_type.unit_count)
+                    for _ in range(port.array_type.unit_count)
                 )
             else:
                 raise NotImplementedError("Boolean degree evaluation supports Bit and Word domains")
 
         binding_cache = {}
-        for component in primitive.components:
+        for component in primitive.graph.components:
             operands = tuple(
-                primitive.resolve_selection(selection, values, binding_cache)
+                primitive.graph.resolve_selection(selection, values, binding_cache)
                 for selection in component.inputs
             )
             if isinstance(component, Constant):
@@ -133,9 +133,9 @@ class BooleanDegreeEvaluator:
                 f"Boolean degree evaluator does not support {type(component).__name__}"
             )
 
-        if primitive.output is None:
+        if primitive.graph.output is None:
             return BooleanDegreeResult((), variable_input)
-        selected = primitive.resolve_selection(primitive.output, values, binding_cache)
+        selected = primitive.graph.resolve_selection(primitive.graph.output, values, binding_cache)
         flattened = tuple(
             degree.value
             for unit in selected

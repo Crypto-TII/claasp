@@ -56,7 +56,7 @@ class Rectangle(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Rectangle()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x874e8b1e3542d96', 60)
@@ -87,16 +87,16 @@ class Rectangle(BitGraphPrimitive):
         key = [INPUT_KEY], [list(range(self.key_bit_size))]
 
         for r in range(n):
-            self.add_round()
+            self._builder.add_round()
 
-            data = self.add_round_key(data, key)
+            data = self._add_round_key(data, key)
             sbox_outputs = self.sub_column(data)
             data = self.shift_row(sbox_outputs)
 
             key = self.update_key_register(key, r)
 
             if r == n - 1:
-                data = self.add_round_key(data, key)
+                data = self._add_round_key(data, key)
 
             self.add_round_key_output_component(key[0], key[1], self.key_bit_size)
             self.add_round_output_component(data[0], data[1], self.block_bit_size)
@@ -109,7 +109,7 @@ class Rectangle(BitGraphPrimitive):
         end = (self.number_of_key_rows - i) * self.key_row_bit_size
         return list(range(end - number_of_bits, end))
 
-    def add_round_key(self, data, key):
+    def _add_round_key(self, data, key):
         round_key_positions = [p for i in reversed(range(4)) for p in self.key_row_positions(i, 16)]
         key_id_list, key_bit_positions = extract_inputs(*key, round_key_positions)
         new_data_id = self.add_xor_component(

@@ -3,8 +3,8 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
+from claasp.graph.array_type import ArrayType
 from claasp.graph.component import Component
-from claasp.graph.value_type import ValueType
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -21,7 +21,7 @@ class Constant(Component):
     values: tuple[int, ...]
 
     def __init__(
-        self, output_type: ValueType, values: Iterable[int], component_id: str | None = None
+        self, output_type: ArrayType, values: Iterable[int], component_id: str | None = None
     ) -> None:
         frozen_values = tuple(values)
         object.__setattr__(self, "component_id", component_id)

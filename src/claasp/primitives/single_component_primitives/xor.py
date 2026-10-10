@@ -20,7 +20,7 @@ class Xor(Primitive):
     EXAMPLES::
 
         >>> primitive = Xor()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -32,10 +32,10 @@ class Xor(Primitive):
             word_inputs(word_bit_size, number_of_inputs),
             kind=PrimitiveKind.FUNCTION,
         )
-        self.add_round()
-        operands = self.inputs()
-        output = self.add_component(XorComponent(operands))
-        self.set_output(output)
+        self._builder.add_round()
+        operands = self.graph.inputs()
+        output = self._builder.add_component(XorComponent(operands))
+        self._builder.set_output(output)
 
 
 __all__ = ["Xor"]

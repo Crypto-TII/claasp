@@ -1,15 +1,15 @@
 import pytest
 
 from claasp import (
-    Bit,
+    ArrayType,
     InputVisibility,
     Primitive,
     PrimitiveInput,
     PrimitiveKind,
-    ValueType,
     public_input,
     secret_input,
 )
+from claasp.domains import Bit
 from claasp.primitives import AES, Ascon
 from claasp.primitives.block_ciphers.katan import Katan
 from claasp.primitives.block_functions.siphash import SiphashMAC
@@ -19,31 +19,31 @@ from claasp.primitives.tweakable_block_ciphers.qarmav2 import QARMAv2
 def test_input_descriptors_mark_keys_secret_without_changing_ports():
     aes = AES()
     assert aes.kind is PrimitiveKind.BLOCK_CIPHER
-    assert aes.secret_inputs == ("key",)
-    assert aes.input_descriptor("plaintext").visibility is InputVisibility.PUBLIC
-    assert aes.input_descriptor("key").role == "key"
-    assert aes.input_descriptor("key").value_type == aes.input("key").value_type
+    assert aes.graph.secret_inputs == ("key",)
+    assert aes.graph.input_descriptor("plaintext").visibility is InputVisibility.PUBLIC
+    assert aes.graph.input_descriptor("key").role == "key"
+    assert aes.graph.input_descriptor("key").array_type == aes.graph.input("key").array_type
 
 
 def test_study_can_override_visibility_without_mutating_the_graph():
     aes = AES()
-    public_key_study = aes.with_input_visibility(key="public")
-    assert aes.input_descriptor("key").is_secret
-    assert not public_key_study.input_descriptor("key").is_secret
-    assert public_key_study.components == aes.components
-    assert public_key_study.rounds == aes.rounds
+    public_key_study = aes.edit.with_input_visibility(key="public")
+    assert aes.graph.input_descriptor("key").is_secret
+    assert not public_key_study.graph.input_descriptor("key").is_secret
+    assert public_key_study.graph.components == aes.graph.components
+    assert public_key_study.graph.rounds == aes.graph.rounds
     with pytest.raises(KeyError, match="do not exist"):
-        aes.with_input_visibility(password="secret")
+        aes.edit.with_input_visibility(password="secret")
 
 
 def test_explicit_descriptors_and_kinds_are_public_authoring_api():
-    bit = ValueType(Bit(), (1,))
+    bit = ArrayType(Bit(), (1,))
     primitive = Primitive(
         "keyed_bit_function",
         {"message": public_input(bit, role="message"), "mask": secret_input(bit, role="key")},
         kind=PrimitiveKind.BLOCK_FUNCTION,
     )
-    assert primitive.input_descriptors == {
+    assert primitive.graph.input_descriptors == {
         "message": PrimitiveInput(bit, "message", InputVisibility.PUBLIC),
         "mask": PrimitiveInput(bit, "key", InputVisibility.SECRET),
     }

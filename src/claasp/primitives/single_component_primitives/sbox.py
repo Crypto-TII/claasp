@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from claasp.components import LookupTable
 from claasp.components import SBox as SBoxComponent
 from claasp.domains import Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 from ._base import positive
 
@@ -32,7 +32,7 @@ class SBox(Primitive):
     EXAMPLES::
 
         >>> primitive = SBox()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -52,10 +52,10 @@ class SBox(Primitive):
             else LookupTable(lookup_table, domain.encoded_bit_size)
         )
         kind = PrimitiveKind.PERMUTATION if table.is_bijective() else PrimitiveKind.FUNCTION
-        super().__init__("sbox", {"input": ValueType(domain, (unit_count,))}, kind=kind)
-        self.add_round()
-        output = self.add_component(SBoxComponent(self.input("input"), table))
-        self.set_output(output)
+        super().__init__("sbox", {"input": ArrayType(domain, (unit_count,))}, kind=kind)
+        self._builder.add_round()
+        output = self._builder.add_component(SBoxComponent(self.graph.input("input"), table))
+        self._builder.set_output(output)
 
 
 __all__ = ["SBox"]

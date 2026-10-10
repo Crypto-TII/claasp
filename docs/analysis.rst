@@ -7,24 +7,25 @@ results therefore remain meaningful when the solver changes.
 
 .. doctest::
 
-   >>> from claasp import Bit, Primitive, ValueType
+   >>> from claasp import PrimitiveBuilder, ArrayType
    >>> from claasp.analysis import AnalysisProblem, FixedValue
    >>> from claasp.components import Add
-   >>> primitive = Primitive("xor", {
-   ...     "plaintext": ValueType(Bit(), (1,)),
-   ...     "key": ValueType(Bit(), (1,)),
+   >>> from claasp.domains import Bit
+   >>> builder = PrimitiveBuilder("xor", {
+   ...     "plaintext": ArrayType(Bit(), (1,)),
+   ...     "key": ArrayType(Bit(), (1,)),
    ... })
-   >>> primitive.add_round()
+   >>> builder.add_round()
    Round(number=0)
-   >>> output = primitive.add_component(Add((primitive.input("plaintext"), primitive.input("key"))))
-   >>> primitive.set_output(output)
+   >>> output = builder.add_component(Add((builder.input("plaintext"), builder.input("key"))))
+   >>> primitive = builder.build(output)
    >>> problem = AnalysisProblem(
    ...     primitive,
    ...     constraints=(
-   ...         FixedValue(primitive.input("plaintext"), 1),
-   ...         FixedValue(primitive.output, 0),
+   ...         FixedValue(primitive.graph.input("plaintext"), 1),
+   ...         FixedValue(primitive.graph.output, 0),
    ...     ),
-   ...     projections={"key": primitive.input("key")},
+   ...     projections={"key": primitive.graph.input("key")},
    ... )
    >>> [type(item).__name__ for item in problem.constraints]
    ['FixedValue', 'FixedValue']
@@ -34,7 +35,7 @@ workflow is deliberately shorter:
 
 .. code-block:: python
 
-   result = primitive.analyze().recover_input(
+   result = primitive.analysis.recover_input(
        "key",
        known_inputs={"plaintext": 1},
        output=0,
@@ -63,7 +64,7 @@ a one-round Speck32/64 plaintext/ciphertext pair:
    primitive = Speck(number_of_rounds=1)
    plaintext = 0x6574694C
    ciphertext = primitive.evaluate(plaintext, 0x1918111009080100)
-   result = primitive.analyze().recover_input(
+   result = primitive.analysis.recover_input(
        "key",
        known_inputs={"plaintext": plaintext},
        output=ciphertext,
@@ -97,20 +98,53 @@ solver-independent checker. For the published PRESENT S-box, for example:
 Linear transitions retain their correlation sign as well as their absolute
 weight. Impossible transitions have zero numerator and infinite weight.
 
+Use ``primitive.analysis.find_optimal_trail(kind=...)`` for the common trail
+kinds. The string values ``"xor_differential"`` and ``"xor_linear"`` are also
+the values of ``claasp.analysis.TrailKind``, so editors can offer a typed enum
+without making the beginner-facing call verbose. ``backend="auto"`` chooses
+the default exact search available for that primitive and trail kind. Advanced
+callers can select ``claasp.analysis.TrailSearchBackend`` and pass ``solver=``
+where the selected solver-backed search supports it. Unsupported combinations
+raise an explicit exception; CLAASP never substitutes a different backend or
+search meaning silently.
+
+The more explicit ``find_lowest_weight_xor_differential_trail()`` and
+``find_lowest_weight_xor_linear_trail()`` methods are also available when code
+benefits from naming the trail kind directly in the method call.
+
+For two-round Speck32/64 XOR-differential search, the explicit
+``backend="dependency_free"`` selection runs an exact Matsui-style
+branch-and-bound search. It uses rational transition probabilities and a
+monotone partial-carry bound, and independently checks the returned weight-one
+trail. The default ``backend="auto"`` selects this dependency-free
+implementation, so the search requires no external solver.
+
+.. doctest::
+
+   >>> from claasp.primitives import Speck
+   >>> result = Speck(number_of_rounds=2).analysis.find_optimal_trail(
+   ...     kind="xor_differential", backend="dependency_free")
+   >>> (result.trail.total_weight, result.is_optimal, result.metadata.solver)
+   (1.0, True, None)
+
 SPN trail search
 ----------------
 
-The first reviewed graph-level search slice reproduces the legacy two-round
-PRESENT XOR-differential optimum. The result distinguishes a proven optimum
-from a mere feasible trail and records its provenance:
+The graph-level search finds the two-round PRESENT XOR-differential optimum.
+The result distinguishes a proven optimum from a mere feasible trail and
+records structured search metadata and the complete data-state propagation:
 
 .. doctest::
 
    >>> from claasp.primitives import Present
    >>> primitive = Present(number_of_rounds=2)
-   >>> result = primitive.analyze().find_lowest_weight_xor_differential_trail()
+   >>> result = primitive.analysis.find_optimal_trail(
+   ...     kind="xor_differential", backend="dependency_free"
+   ... )
    >>> (result.trail.total_weight, result.lower_bound, result.is_optimal)
    (4.0, 4.0, True)
+   >>> (result.metadata.solver, len(result.component_transitions))
+   (None, 37)
 
 The search reads the S-box and permutation semantics from the typed graph.
 Every returned transition and the wiring between both substitution layers are
@@ -133,7 +167,19 @@ a PRESENT- or Speck-specific validator.  String and typed kinds are accepted:
    assert differential.trail.total_weight == 4
    assert linear.trail.total_weight == 2
 
-``backend="auto"`` retains deliberately optimized dependency-free PRESENT
+The result separates the trail from the evidence used to prove it:
+
+* ``result.trail.total_weight`` is :math:`-\log_2` of the trail probability
+  (or absolute correlation for a linear trail).
+* ``result.lower_bound`` is the best proved lower bound. When it equals the
+  trail weight, ``result.is_optimal`` is true.
+* ``result.round_transitions`` contains the values and probabilities shown by
+  the default report; ``result.component_transitions`` contains the individual
+  graph operations used by the detailed report.
+* ``result.metadata`` records the search method, solver, version, runtime, and
+  memory measurement when available.
+
+``backend="auto"`` selects deliberately optimized dependency-free PRESENT
 and Speck slices and otherwise selects generic SAT when the graph is supported.
 ``backend="sat"`` accepts a custom solver.  ``backend="dependency_free"``
 raises a capability error when no specialized implementation exists.
@@ -149,21 +195,30 @@ ARX trail search
 ----------------
 
 Modular-add transitions are counted exactly with a paired-carry automaton;
-they are not approximated by random sampling. The graph-facing API also
-reproduces the preserved two-round Speck32/64 optimum:
+they are not approximated by random sampling. The graph-facing API finds the
+two-round Speck32/64 optimum:
 
 .. doctest::
 
    >>> from claasp.primitives import Speck
    >>> primitive = Speck(number_of_rounds=2)
-   >>> result = primitive.analyze().find_lowest_weight_xor_differential_trail()
+   >>> result = primitive.analysis.find_optimal_trail(
+   ...     kind="xor_differential", backend="dependency_free"
+   ... )
    >>> (result.trail.total_weight, result.is_optimal)
    (1.0, True)
-   >>> hex(result.trail.input_pattern.value)
-   '0x400000'
+   >>> len(result.component_transitions)
+   10
 
-The regression checker independently recomputes both modular-add
-probabilities and the rotations/XOR wiring through both Speck rounds.
+The ten reported transitions cover every rotation, modular addition, and XOR
+on the two-round data-state path. The default search fixes the key difference
+to zero, so its all-zero key schedule is omitted. An independent checker
+recomputes both modular-add probabilities and the rotations/XOR wiring.
+The explicit dependency-free method uses exact Matsui branch-and-bound and is
+also the automatic choice for this reviewed Speck configuration. Selecting
+``backend="sat"`` uses MiniSat and binary search over the maximum permitted
+weight. Either backend may return a different representative when several
+trails have the same minimum weight.
 
 Truncated and impossible differences
 ------------------------------------
@@ -187,10 +242,10 @@ the graph facade:
 
    >>> from claasp.primitives import Present
    >>> primitive = Present(number_of_rounds=1)
-   >>> primitive.analyze().is_xor_differential_transition_possible("sbox_1_0", 1, 1)
+   >>> primitive.analysis.is_xor_differential_transition_possible("sbox_1_0", 1, 1)
    False
 
-The public facade also exposes the migrated multi-round workflows. Sound
+The public facade also exposes multi-round workflows. Sound
 deterministic propagation is dependency-free for the supported Speck and
 Simon graphs; probabilistic-truncated Speck optimization, impossible middle
 boundaries, and exact S-box boomerang transitions use the CP driver and decode
@@ -209,7 +264,7 @@ rule; it is never redirected to a different primitive family's model.
 Continuous diffusion
 --------------------
 
-``Analysis.continuous_evaluate`` propagates the legacy MUR2020 continuous
+``Analysis.continuous_evaluate`` propagates MUR2020 continuous
 correlations through the typed graph. The dependency-free implementation
 covers constants, structural wiring, XOR, AND, OR, NOT, modular add/subtract,
 fixed and data-dependent shifts/rotations, S-boxes, binary linear maps, and
@@ -221,33 +276,31 @@ Linear trail search
 -------------------
 
 Linear search uses the same graph facade and retains each LAT correlation
-sign. The initial SPN slice restores the preserved three-round PRESENT
-weight-4 fixture:
+sign. For three-round PRESENT, the minimum trail weight is 4:
 
 .. doctest::
 
    >>> from claasp.primitives import Present
-   >>> result = Present(number_of_rounds=3).analyze().find_lowest_weight_xor_linear_trail()
+   >>> result = Present(number_of_rounds=3).analysis.find_optimal_trail(kind="xor_linear")
    >>> (result.trail.total_weight, result.is_optimal)
    (4.0, True)
    >>> any(step.transition.sign == -1 for step in result.trail.steps)
    True
 
-ARX linear masks use an exact signed carry automaton as well. The restored
-four-round Speck32/64 reference characteristic is exposed by the identical
-facade call:
+ARX linear masks use an exact signed carry automaton as well. The same facade
+call finds a minimum-weight characteristic for four-round Speck32/64:
 
 .. doctest::
 
    >>> from claasp.primitives import Speck
-   >>> result = Speck(number_of_rounds=4).analyze().find_lowest_weight_xor_linear_trail()
+   >>> result = Speck(number_of_rounds=4).analysis.find_optimal_trail(kind="xor_linear")
    >>> (result.trail.total_weight, result.is_optimal)
    (3.0, True)
    >>> (hex(result.trail.input_pattern.value), hex(result.trail.output_pattern.value))
    ('0x40b010c1', '0x2c102010')
 
 Word-graph characteristics can also be enumerated with
-``primitive.analyze().enumerate_xor_linear_trails(maximum_weight, solver=solver)``.
+``primitive.analysis.enumerate_xor_linear_trails(maximum_weight, solver=solver)``.
 The default fixes the key value to zero and folds its dependent subgraph;
 ``nonzero_input="key"`` includes key-schedule masks instead. Results retain graph/realization identities, solver
 version, signed component correlations, and proof-completeness metadata.
@@ -264,7 +317,7 @@ are not a sum over trails or a whole-primitive linear-hull claim.
    '0xe2'
 
 Word-graph differential enumeration is available through
-``primitive.analyze().enumerate_xor_differential_trails(maximum_weight,
+``primitive.analysis.enumerate_xor_differential_trails(maximum_weight,
 solver=...)``. The default fixes key difference zero; choose
 ``nonzero_input="key"`` for related-key propagation. Supply ``fixed_weight``
 instead of a maximum for an exact-weight search. Always call

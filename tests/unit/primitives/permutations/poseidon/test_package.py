@@ -49,8 +49,12 @@ def test_toy_poseidon_matches_direct_round_function():
         constants,
         matrix,
     )
-    assert len(primitive.rounds) == 3
-    assert [len(primitive_round.components) for primitive_round in primitive.rounds] == [4, 4, 4]
+    assert len(primitive.graph.rounds) == 3
+    assert [len(primitive_round.components) for primitive_round in primitive.graph.rounds] == [
+        4,
+        4,
+        4,
+    ]
 
 
 def test_poseidon_validates_structural_parameters():
@@ -78,5 +82,6 @@ def test_poseidon_width_one_partial_round_needs_no_concatenation():
 
     assert result.output is not None
     assert all(
-        not component.component_id.startswith("concatenate") for component in primitive.components
+        not component.component_id.startswith("concatenate")
+        for component in primitive.graph.components
     )

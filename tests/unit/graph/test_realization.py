@@ -8,11 +8,11 @@ import pytest
 from claasp.domains import Bit
 from claasp.graph import (
     AmbiguousRealizationError,
+    ArrayType,
     Primitive,
     RealizationDescriptor,
     RealizationMaturity,
     UnsupportedRealizationError,
-    ValueType,
 )
 
 ROOT = next(
@@ -53,7 +53,7 @@ def test_realization_audit_has_unique_names_and_explicit_exclusions():
 
 
 class _SelectablePrimitive(Primitive):
-    REALIZATIONS = (
+    _realizations = (
         RealizationDescriptor(
             "reference",
             frozenset(("evaluate", "shared")),
@@ -74,11 +74,11 @@ class _SelectablePrimitive(Primitive):
     )
 
     def __init__(self):
-        super().__init__("selectable", {"value": ValueType(Bit(), (1,))})
-        self.set_output(self.input("value"))
+        super().__init__("selectable", {"value": ArrayType(Bit(), (1,))})
+        self._builder.set_output(self.graph.input("value"))
 
 
-_SelectablePrimitive.REALIZATION_BUILDERS = {
+_SelectablePrimitive._realization_builders = {
     "reference": _SelectablePrimitive,
     "specialized": _SelectablePrimitive,
 }
@@ -95,12 +95,24 @@ def test_generic_explicit_and_capability_selection_are_deterministic():
 
 
 def test_realization_metadata_and_default_identity_are_stable():
-    primitive = Primitive("plain", {"value": ValueType(Bit(), (1,))})
+    primitive = Primitive("plain", {"value": ArrayType(Bit(), (1,))})
     assert primitive.realization_identity == "plain:default"
     descriptor = _SelectablePrimitive.available_realizations()[1]
     assert descriptor.structure == frozenset(("sbox",))
     assert descriptor.maturity is RealizationMaturity.EXPERIMENTAL
     assert descriptor.provenance == ("unit fixture",)
+
+
+def test_realization_representation_is_readable_in_an_interactive_shell():
+    descriptor = _SelectablePrimitive.available_realizations()[1]
+    assert repr(descriptor) == (
+        "Realization: specialized\n"
+        "  Description: analysis graph\n"
+        "  Maturity: experimental\n"
+        "  Capabilities: analyze, shared\n"
+        "  Graph structure: sbox\n"
+        "  Provenance: unit fixture"
+    )
 
 
 def test_realization_closure_gate_passes():
