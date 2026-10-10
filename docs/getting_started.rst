@@ -139,7 +139,6 @@ different message and key size:
    ...     )
    ...     graph.add_round()
    ...     ciphertext = graph.add(Xor(message, key))
-   ...     graph.set_round_output(ciphertext)
    ...     graph.set_output(ciphertext)
    ...     return graph.build()
    >>> one_time_pad = OneTimePad()
