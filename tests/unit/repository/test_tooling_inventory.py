@@ -97,6 +97,27 @@ def test_batch_and_serialization_imports_do_not_load_numpy():
     assert completed.stdout == "False\n"
 
 
+def test_documented_batch_benchmark_command_runs():
+    import subprocess
+    import sys
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(NEXT_ROOT / "tools/benchmark_batch.py"),
+            "--batch-size",
+            "1",
+            "--number",
+            "1",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert "BatchExecutionDriver:" in completed.stdout
+    assert "TransposedBatchExecutionDriver:" in completed.stdout
+
+
 def test_tooling_closure_gate_passes():
     import subprocess
     import sys
