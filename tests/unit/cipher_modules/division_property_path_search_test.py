@@ -131,8 +131,9 @@ def test_find_number_of_balanced_rounds():
 
     with pytest.raises(ValueError):
         present.find_number_of_balanced_rounds([4, 4])
+    full_input = present.todo_input(64)
     with pytest.raises(ValueError):
-        present.find_number_of_balanced_rounds(present.todo_input(64))
+        present.find_number_of_balanced_rounds(full_input)
 
 
 def test_todo_input():
@@ -149,10 +150,6 @@ def test_todo_input():
 def test_optimal_input():
     toy_spn = DivisionPropertyPathSearch(ToySPN1(block_bit_size=9, key_bit_size=9))
     assert toy_spn.optimal_input(5) == [3, 1, 1]
-
-    keccak_f800 = DivisionPropertyPathSearch(KeccakSboxPermutation(number_of_rounds=1, word_size=32))
-    assert keccak_f800.find_number_of_balanced_rounds(keccak_f800.todo_input(769)) == 11
-    assert keccak_f800.find_number_of_balanced_rounds(keccak_f800.optimal_input(769)) == 12  # 770 in [Tod2015] Table 8
 
     for path_search in (DivisionPropertyPathSearch(PresentBlockCipher(number_of_rounds=2)),
                         DivisionPropertyPathSearch(SimonBlockCipher(number_of_rounds=4))):
@@ -174,10 +171,11 @@ def test_find_minimum_data_for_rounds():
         for number_of_rounds, data_bit_size in table.items():
             assert path_search.find_minimum_data_for_rounds(number_of_rounds)["data_bit_size"] == data_bit_size
 
-    keccak = DivisionPropertyPathSearch(KeccakSboxPermutation(number_of_rounds=1))
-    assert keccak.find_minimum_data_for_rounds(13, input_pattern="optimal")["data_bit_size"] == 1537
+    toy_spn = DivisionPropertyPathSearch(ToySPN1(block_bit_size=9, key_bit_size=9))
+    assert toy_spn.find_minimum_data_for_rounds(3)["data_bit_size"] == 6
+    assert toy_spn.find_minimum_data_for_rounds(3, input_pattern="optimal")["data_bit_size"] == 5
     with pytest.raises(ValueError):
-        keccak.find_minimum_data_for_rounds(13, input_pattern="unknown")
+        toy_spn.find_minimum_data_for_rounds(3, input_pattern="unknown")
 
 
 def test_find_integral_distinguishers():

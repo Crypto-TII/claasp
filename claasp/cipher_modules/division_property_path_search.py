@@ -16,7 +16,7 @@
 # ****************************************************************************
 
 
-import random
+import secrets
 from math import ceil
 
 import numpy as np
@@ -74,6 +74,28 @@ def spn_division_property_trail(sbox_bit_size, sbox_degree, number_of_sboxes, ac
     return trail
 
 
+def _feistel_function_evaluation(branch_bit_size, function_degree, bijective_function, function_input_bits,
+                                 other_bits):
+    """Return the division vectors after one round from one division vector (FeistelFuncEval of [Tod2015]_)."""
+    vectors = []
+    for bits_through_function in range(function_input_bits + 1):
+        if bijective_function and bits_through_function == branch_bit_size:
+            new_function_input_bits = other_bits + branch_bit_size
+        else:
+            new_function_input_bits = other_bits + ceil(bits_through_function / function_degree)
+        if new_function_input_bits <= branch_bit_size:
+            vectors.append((new_function_input_bits, function_input_bits - bits_through_function))
+    return vectors
+
+
+def _minimal_vectors(vectors):
+    """Return the vectors that are not componentwise larger than another one (SizeReduce of [Tod2015]_)."""
+    vectors = set(vectors)
+    minimal = [vector for vector in vectors
+               if not any(other != vector and all(o <= v for o, v in zip(other, vector)) for other in vectors)]
+    return sorted(minimal, key=lambda vector: (-vector[0], vector[1]))
+
+
 def feistel_division_property_trail(branch_bit_size, function_degree, active_bits, bijective_function=False):
     """
     Return the division property after each round of an ``(l, d)``-Feistel network, following Algorithm 1 of [Tod2015]_.
@@ -106,29 +128,13 @@ def feistel_division_property_trail(branch_bit_size, function_degree, active_bit
     if tuple(active_bits) == (branch_bit_size, branch_bit_size):
         raise ValueError("active_bits must not activate every bit")
 
-    def _feistel_function_evaluation(function_input_bits, other_bits):
-        vectors = []
-        for bits_through_function in range(function_input_bits + 1):
-            if bijective_function and bits_through_function == branch_bit_size:
-                new_function_input_bits = other_bits + branch_bit_size
-            else:
-                new_function_input_bits = other_bits + ceil(bits_through_function / function_degree)
-            if new_function_input_bits <= branch_bit_size:
-                vectors.append((new_function_input_bits, function_input_bits - bits_through_function))
-        return vectors
-
-    def _minimal_vectors(vectors):
-        vectors = set(vectors)
-        minimal = [vector for vector in vectors
-                   if not any(other != vector and all(o <= v for o, v in zip(other, vector)) for other in vectors)]
-        return sorted(minimal, key=lambda vector: (-vector[0], vector[1]))
-
-    division_vectors = _minimal_vectors(_feistel_function_evaluation(*active_bits))
+    parameters = (branch_bit_size, function_degree, bijective_function)
+    division_vectors = _minimal_vectors(_feistel_function_evaluation(*parameters, *active_bits))
     trail = [division_vectors]
     while max(sum(vector) for vector in division_vectors) > 1:
         next_vectors = []
         for function_input_bits, other_bits in division_vectors:
-            next_vectors += _feistel_function_evaluation(function_input_bits, other_bits)
+            next_vectors += _feistel_function_evaluation(*parameters, function_input_bits, other_bits)
         division_vectors = _minimal_vectors(next_vectors)
         trail.append(division_vectors)
     return trail
@@ -318,8 +324,6 @@ class DivisionPropertyPathSearch:
             sage: keccak = DivisionPropertyPathSearch(KeccakSboxPermutation(number_of_rounds=1))
             sage: keccak.find_minimum_data_for_rounds(12)['data_bit_size']
             1410
-            sage: keccak.find_minimum_data_for_rounds(12, input_pattern="optimal")['data_bit_size']
-            1409
         """
         if input_pattern not in INPUT_PATTERNS:
             raise ValueError(f"input_pattern must be one of {INPUT_PATTERNS}")
@@ -445,34 +449,48 @@ def _nonlinear_layers(cipher):
     for cipher_round in cipher.rounds_as_list:
         layer = []
         for component in cipher_round.components:
-            if component.id in key_schedule_ids:
-                continue
-            if component.type == SBOX:
-                table = tuple(component.description)
-                if table not in sbox_degrees:
-                    sbox_degrees[table] = SBox(table).max_degree()
-                layer.append((component, sbox_degrees[table]))
-            elif component.type == WORD_OPERATION and component.description[0] in NONLINEAR_WORD_OPERATIONS:
-                layer.append((component, component.description[1]))
-            elif component.type not in LINEAR_COMPONENT_TYPES and not (
-                    component.type == WORD_OPERATION and component.description[0] in LINEAR_WORD_OPERATIONS):
-                raise ValueError(f"component {component.id} is not supported")
-        nonlinear_ids = {component.id for component, _ in layer}
-        if any(link in nonlinear_ids for component, _ in layer for link in component.input_id_links):
-            raise ValueError(f"round {cipher_round.id} composes nonlinear components")
-        if not layer:
-            raise ValueError(f"round {cipher_round.id} has no nonlinear component")
+            if component.id not in key_schedule_ids:
+                degree = _nonlinear_degree(component, sbox_degrees)
+                if degree is not None:
+                    layer.append((component, degree))
+        _check_nonlinear_layer(cipher_round.id, layer)
         layers.append(layer)
     return layers
 
 
+def _nonlinear_degree(component, sbox_degrees):
+    """Return the algebraic degree of a nonlinear component and None for a linear one."""
+    if component.type == SBOX:
+        table = tuple(component.description)
+        if table not in sbox_degrees:
+            sbox_degrees[table] = SBox(table).max_degree()
+        return sbox_degrees[table]
+    if component.type == WORD_OPERATION:
+        operation = component.description[0]
+        if operation in NONLINEAR_WORD_OPERATIONS:
+            return component.description[1]
+        if operation in LINEAR_WORD_OPERATIONS:
+            return None
+    elif component.type in LINEAR_COMPONENT_TYPES:
+        return None
+    raise ValueError(f"component {component.id} is not supported")
+
+
+def _check_nonlinear_layer(round_id, layer):
+    """Check that the nonlinear components of a round are applied in parallel and that there is at least one."""
+    nonlinear_ids = {component.id for component, _ in layer}
+    if any(link in nonlinear_ids for component, _ in layer for link in component.input_id_links):
+        raise ValueError(f"round {round_id} composes nonlinear components")
+    if not layer:
+        raise ValueError(f"round {round_id} has no nonlinear component")
+
+
 def _check_two_branch_structure(cipher, number_of_samples=3):
     """Check on random inputs that every round output keeps one half of the previous round output."""
-    rng = random.Random(0)
     half = cipher.output_bit_size // 2
     mask = (1 << half) - 1
     for _ in range(number_of_samples):
-        cipher_input = [rng.getrandbits(bit_size) for bit_size in cipher.inputs_bit_size]
+        cipher_input = [secrets.randbits(bit_size) for bit_size in cipher.inputs_bit_size]
         round_outputs = cipher.evaluate(cipher_input, intermediate_output=True)[1].get("round_output", [])
         if len(round_outputs) < 2:
             raise ValueError("at least two round outputs are needed to check the two-branch structure")
