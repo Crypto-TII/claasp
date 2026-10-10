@@ -54,6 +54,29 @@ encoded, but they do not have the same algebra. A word supports operations
 such as integer addition modulo :math:`2^8` and rotation. A field element
 supports polynomial-basis field arithmetic.
 
+The difference is visible when the same two 8-bit encodings are added in
+three domains:
+
+.. doctest::
+
+   >>> from claasp.primitives.single_component_primitives import Add, ModularAdd
+   >>> word_addition = ModularAdd(word_bit_size=8)
+   >>> prime_field_addition = Add(domain=PrimeField(251))
+   >>> binary_field_addition = Add(domain=BinaryExtensionField(8, 0x11B))
+   >>> hex(word_addition.evaluate(0xF0, 0x30))
+   '0x20'
+   >>> hex(prime_field_addition.evaluate(0xF0, 0x30))
+   '0x25'
+   >>> hex(binary_field_addition.evaluate(0xF0, 0x30))
+   '0xc0'
+
+All three domains have an 8-bit encoding, but they reduce the sum differently.
+The word result is :math:`240 + 48 \bmod 256`; the prime-field result is
+:math:`240 + 48 \bmod 251`; and addition in :math:`GF(2^8)` adds polynomial
+coefficients modulo two, which is bitwise XOR. The polynomial ``0x11B`` defines
+the binary extension field; it affects multiplication, while field addition
+remains XOR.
+
 Value types
 -----------
 
