@@ -708,6 +708,11 @@
 
         **T**
 
+.. [Tod2015]
+        Todo Y. : *Structural Evaluation by Generalized Integral Property* :
+        In Advances in Cryptology – EUROCRYPT 2015, LNCS 9056, pp. 287–314.
+        Springer Berlin Heidelberg, 2015 : https://eprint.iacr.org/2015/090
+
 .. [TW2012]
         Thomae E., Wolf C. : *Solving underdetermined systems of multivariate
         quadratic equations revisited* : In Public Key Cryptography – PKC 2012,
