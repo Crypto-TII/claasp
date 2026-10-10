@@ -97,20 +97,19 @@ solver-independent checker. For the published PRESENT S-box, for example:
 Linear transitions retain their correlation sign as well as their absolute
 weight. Impossible transitions have zero numerator and infinite weight.
 
-Use ``primitive.analysis.find_optimal_trail(kind=...)`` for the common trail kinds.
-The string values ``"xor_differential"`` and ``"xor_linear"`` are also the
-values of ``claasp.analysis.TrailKind``, so editors can offer a typed enum
-without making the beginner-facing call verbose. ``backend="auto"`` preserves
-the established search for each reviewed primitive slice. Advanced callers
-can select ``claasp.analysis.TrailSearchBackend`` and pass ``solver=``
+Use ``primitive.analysis.find_optimal_trail(kind=...)`` for the common trail
+kinds. The string values ``"xor_differential"`` and ``"xor_linear"`` are also
+the values of ``claasp.analysis.TrailKind``, so editors can offer a typed enum
+without making the beginner-facing call verbose. ``backend="auto"`` chooses
+the default exact search available for that primitive and trail kind. Advanced
+callers can select ``claasp.analysis.TrailSearchBackend`` and pass ``solver=``
 where the selected solver-backed search supports it. Unsupported combinations
 raise an explicit exception; CLAASP never substitutes a different backend or
 search meaning silently.
 
-The longer
-``find_lowest_weight_xor_differential_trail()`` and
-``find_lowest_weight_xor_linear_trail()`` methods also retain their existing
-defaults, while new examples use the common typed entry point.
+The more explicit ``find_lowest_weight_xor_differential_trail()`` and
+``find_lowest_weight_xor_linear_trail()`` methods are also available when code
+benefits from naming the trail kind directly in the method call.
 
 For two-round Speck32/64 XOR-differential search, the explicit
 ``backend="dependency_free"`` selection runs an exact Matsui-style
@@ -154,8 +153,8 @@ ARX trail search
 ----------------
 
 Modular-add transitions are counted exactly with a paired-carry automaton;
-they are not approximated by random sampling. The graph-facing API also
-reproduces the preserved two-round Speck32/64 optimum:
+they are not approximated by random sampling. The graph-facing API finds the
+two-round Speck32/64 optimum:
 
 .. doctest::
 
@@ -207,8 +206,7 @@ Linear trail search
 -------------------
 
 Linear search uses the same graph facade and retains each LAT correlation
-sign. The initial SPN slice restores the preserved three-round PRESENT
-weight-4 fixture:
+sign. For three-round PRESENT, the minimum trail weight is 4:
 
 .. doctest::
 
@@ -219,9 +217,8 @@ weight-4 fixture:
    >>> any(step.transition.sign == -1 for step in result.trail.steps)
    True
 
-ARX linear masks use an exact signed carry automaton as well. The restored
-four-round Speck32/64 reference characteristic is exposed by the identical
-facade call:
+ARX linear masks use an exact signed carry automaton as well. The same facade
+call finds a minimum-weight characteristic for four-round Speck32/64:
 
 .. doctest::
 

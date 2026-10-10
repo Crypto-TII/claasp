@@ -99,8 +99,8 @@ than being inferred from package names. Queries work in either direction:
 These declarations are conservative. For example, AES is not advertised for
 the generic Boolean-CNF analysis merely because a CNF module exists: its graph
 contains component semantics that the current CNF lowering does not implement.
-Records for reduced-round reviewed analyses carry their parameter restriction
-explicitly.
+When an analysis supports only particular primitive parameters, its catalogue
+record states that restriction explicitly.
 
 Formatting these records as terminal tables, Markdown, CSV, JSON, or dataframes
 belongs to the report/presentation layer rather than catalogue semantics.
