@@ -174,7 +174,9 @@ class AES(Primitive):
                 boundaries["mix_columns"] = state
             state = self._builder.add_component(Add((state, round_keys[round_number])))
             boundaries["add_round_key"] = state
-            self._builder.add_round_state(**boundaries)
+            for name, output in boundaries.items():
+                self._builder.set_intermediate_output(output, name=name)
+            self._builder.set_round_output(state)
 
         self._builder.set_output(state)
 

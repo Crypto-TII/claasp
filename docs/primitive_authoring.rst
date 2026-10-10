@@ -37,11 +37,11 @@ that need names and ports together.
 
 Automatic identifiers combine the component kind, round number, and position,
 so rebuilding the same graph produces the same names.  Normal primitive source
-should omit identifiers and retain semantic ports instead, for example
-round states or round keys. Publish precomputed collections through
-``builder.set_round_states()`` and ``builder.set_round_keys()``, or record them
-incrementally with ``builder.add_round_state()`` and ``builder.add_round_key()``.
-Named operation landmarks similarly use ``builder.add_round_operations()``.
+should omit identifiers and retain semantic ports instead. Mark a value for
+inspection with ``builder.set_intermediate_output(value, name=...)`` and mark
+the current round boundary with ``builder.set_round_output(value)``. The latter
+is shorthand for an intermediate output named ``round_output``. Round keys use
+``builder.set_round_keys()`` or incremental ``builder.add_round_key()`` calls.
 Primitive source therefore does not
 assign a particular container to public attributes. This keeps analysis code
 stable when an implementation or the library's collection representation

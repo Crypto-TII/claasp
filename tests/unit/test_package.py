@@ -55,15 +55,14 @@ def test_inputs_support_named_and_positional_authoring_without_exposing_storage(
         primitive.graph.input(True)
 
 
-def test_round_observations_do_not_expose_authoring_collections():
+def test_round_outputs_are_published_as_intermediate_outputs():
     value_type = ValueType(PrimeField(17), (1,))
     primitive = Primitive("observations", {"state": value_type})
-    states = [primitive.graph.input("state")]
-    published = primitive._builder.set_round_states(states)
-    states.append(primitive.graph.input("state"))
+    primitive._builder.add_round()
+    published = primitive._builder.set_round_output(primitive.graph.input("state"))
 
-    assert list(published) == [primitive.graph.input("state")]
-    assert tuple(primitive.graph.round_states) == tuple(published)
+    assert primitive.graph.round_outputs == (published,)
+    assert primitive.graph.intermediate_outputs[0]["round_output"] == published
 
 
 def test_automatic_component_ids_are_deterministic_and_explicit_ids_remain_available():
@@ -111,7 +110,7 @@ def test_primitive_evaluate_accepts_packed_positional_keyword_and_mapping_inputs
     assert primitive.evaluate(plaintext=plaintext, key=key) == positional
     assert primitive.evaluate({"plaintext": plaintext, "key": key}) == positional
     trace = primitive.evaluate_with_trace(plaintext, key)
-    sub_bytes = primitive.graph.round_states[0]["sub_bytes"]
+    sub_bytes = primitive.graph.intermediate_outputs[0]["sub_bytes"]
     assert trace.value_of(sub_bytes.owner_id)
     assert positional == int.from_bytes(bytes(trace.output), "big")
 

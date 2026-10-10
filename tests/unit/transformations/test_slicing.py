@@ -31,9 +31,9 @@ def _selected_value(primitive, result, values):
 def test_dependency_slice_matches_independent_round_state_evaluation():
     primitive = Speck(number_of_rounds=3)
     trace = primitive.evaluate_with_trace(PLAINTEXT, KEY)
-    expected = _selected_value(primitive, primitive.graph.round_states[1], trace.values)
+    expected = _selected_value(primitive, primitive.graph.round_outputs[1], trace.values)
 
-    result = slice_primitive(primitive, primitive.graph.round_states[1])
+    result = slice_primitive(primitive, primitive.graph.round_outputs[1])
     derived = result.primitive
 
     assert (
@@ -49,8 +49,8 @@ def test_dependency_slice_matches_independent_round_state_evaluation():
 def test_middle_round_slice_retains_key_schedule_and_accepts_state_boundary():
     primitive = Speck(number_of_rounds=3)
     trace = primitive.evaluate_with_trace(PLAINTEXT, KEY)
-    start = _selected_value(primitive, primitive.graph.round_states[0], trace.values)
-    expected = _selected_value(primitive, primitive.graph.round_states[2], trace.values)
+    start = _selected_value(primitive, primitive.graph.round_outputs[0], trace.values)
+    expected = _selected_value(primitive, primitive.graph.round_outputs[2], trace.values)
 
     derived = slice_rounds(primitive, 1, 2).primitive
     actual = derived._decode_boundary(

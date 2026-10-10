@@ -98,7 +98,7 @@ class SpeckHybridDifferentialProblem:
         left, right = divmod(prefix.input_pattern.value, 1 << 16)
         semantics = ModularAddTransitionSemantics(16)
         for r, step in enumerate(prefix.steps):
-            operations = self.primitive.graph.round_operations[r]
+            operations = self.primitive.graph._intermediate_components[r]
             alpha = operations["rotate_right"].amount
             beta = operations["rotate_left"].amount
             rotated_left = ((left >> alpha) | (left << (16 - alpha))) & 0xFFFF

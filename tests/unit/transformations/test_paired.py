@@ -61,7 +61,7 @@ def test_single_key_pair_matches_fixed_output_and_all_published_differences():
                 _observation_value(source, right_trace, observation),
             )
         )
-        for observation in source.graph.round_states
+        for observation in source.graph.round_outputs
     )
     assert all(
         _value(paired, evaluation, difference) == (0,) for difference in result.key_differences

@@ -345,12 +345,15 @@ class PrimitiveGraph:
         )
 
     @property
-    def round_states(self) -> PublishedValues:
-        """Return published round-state selections with a concise summary."""
+    def round_outputs(self) -> PublishedValues:
+        """Return the explicitly published output of each cryptographic round."""
 
-        return PublishedValues(
-            "Round states", getattr(self._primitive, "_published_round_states", ()), self._primitive
+        values = tuple(
+            outputs["round_output"]
+            for outputs in self.intermediate_outputs
+            if "round_output" in outputs
         )
+        return PublishedValues("Round outputs", values, self._primitive)
 
     @property
     def key_schedule_states(self) -> PublishedValues:
@@ -363,14 +366,32 @@ class PrimitiveGraph:
         )
 
     @property
-    def round_operations(self) -> PublishedValues:
-        """Return published named round-operation landmarks."""
+    def intermediate_outputs(self) -> tuple[Mapping[str, object], ...]:
+        """Return named inspectable outputs for each round that publishes them."""
 
-        return PublishedValues(
-            "Round operations",
-            getattr(self._primitive, "_published_round_operations", ()),
-            self._primitive,
+        published = getattr(self._primitive, "_published_intermediate_outputs", {})
+        return tuple(
+            MappingProxyType(dict(published[primitive_round.number]))
+            for primitive_round in self._primitive._rounds
+            if primitive_round.number in published
         )
+
+    @property
+    def _intermediate_components(self) -> tuple[Mapping[str, Component], ...]:
+        """Resolve published intermediate outputs to their producing components."""
+
+        result = []
+        for outputs in self.intermediate_outputs:
+            components = {}
+            for name, value in outputs.items():
+                if name == "round_output" or not isinstance(value, (Port, Selection)):
+                    continue
+                owner_id = value.owner_id if isinstance(value, Port) else value.source.owner_id
+                component = self._primitive._components.get(owner_id)
+                if component is not None:
+                    components[name] = component
+            result.append(MappingProxyType(components))
+        return tuple(result)
 
     def port(self, owner_id: str) -> Port:
         """Resolve an input, component, or binding output port by identity.
@@ -486,7 +507,7 @@ class PrimitiveEditor:
 
             >>> from claasp.primitives import Speck
             >>> source = Speck(number_of_rounds=2)
-            >>> source.edit.slice(source.graph.round_states[0]).primitive.details().number_of_rounds
+            >>> source.edit.slice(source.graph.round_outputs[0]).primitive.details().number_of_rounds
             1
         """
 
@@ -973,30 +994,53 @@ class Primitive:
         )
         return round_key
 
-    def _publish_round_states(self, round_states: Iterable[object]) -> Sequence[object]:
-        """Publish round states without exposing their storage representation."""
+    def _normalize_published_output(
+        self, output: PortLike | Sequence[PortLike]
+    ) -> PortLike | tuple[PortLike, ...]:
+        """Validate an inspectable output without changing the primitive output."""
 
-        self._published_round_states = tuple(round_states)
-        return self._published_round_states
-
-    def _publish_round_state(self, *values: object, **boundaries: object) -> object:
-        """Publish one positional or named round-state observation."""
-
-        if values and boundaries:
-            raise ValueError("round state must be positional or named, not both")
-        if boundaries:
-            state: object = MappingProxyType(dict(boundaries))
-        elif len(values) == 1:
-            state = values[0]
-        elif values:
-            state = tuple(values)
-        else:
-            raise ValueError("round state must contain at least one value")
-        self._published_round_states = (
-            *getattr(self, "_published_round_states", ()),
-            state,
+        values = (
+            tuple(output)
+            if isinstance(output, Sequence) and not isinstance(output, (Port, Selection))
+            else (output,)
         )
-        return state
+        for value in values:
+            selection = as_selection(value)
+            try:
+                actual_port = self._ports[selection.source.owner_id]
+            except KeyError as error:
+                raise ValueError(
+                    "published output source is not available in this graph"
+                ) from error
+            if selection.source != actual_port:
+                raise ValueError("published output source does not match its graph port type")
+        return values[0] if len(values) == 1 else values
+
+    def _set_intermediate_output(
+        self,
+        output: PortLike | Sequence[PortLike],
+        *,
+        name: str,
+    ) -> object:
+        """Publish one named output in the current graph round."""
+
+        if not isinstance(name, str) or not name:
+            raise ValueError("intermediate output name must be a non-empty string")
+        if not self._rounds:
+            raise RuntimeError("an intermediate output requires a current round")
+        round_number = self._rounds[-1].number
+        published = getattr(self, "_published_intermediate_outputs", None)
+        if published is None:
+            published = {}
+            self._published_intermediate_outputs = published
+        outputs = published.setdefault(round_number, {})
+        if name in outputs:
+            raise ValueError(
+                f"intermediate output {name!r} is already set for round {round_number}"
+            )
+        normalized = self._normalize_published_output(output)
+        outputs[name] = normalized
+        return normalized
 
     def _publish_key_schedule_states(self, states: Iterable[object]) -> Sequence[object]:
         """Publish key-schedule states without exposing their storage representation."""
@@ -1015,24 +1059,6 @@ class Primitive:
             state,
         )
         return state
-
-    def _publish_round_operations(self, operations: Iterable[object]) -> Sequence[object]:
-        """Publish round-operation landmarks without exposing their storage representation."""
-
-        self._published_round_operations = tuple(operations)
-        return self._published_round_operations
-
-    def _publish_round_operation(self, **operations: object) -> Mapping[str, object]:
-        """Publish named operation landmarks for one round."""
-
-        if not operations:
-            raise ValueError("round operations must not be empty")
-        observation = MappingProxyType(dict(operations))
-        self._published_round_operations = (
-            *getattr(self, "_published_round_operations", ()),
-            observation,
-        )
-        return observation
 
     @property
     def _components_view(self) -> tuple[Component, ...]:
@@ -1775,17 +1801,25 @@ class PrimitiveBuilder:
         self._ensure_open()
         return self._primitive._publish_round_key(round_key)
 
-    def set_round_states(self, round_states: Iterable[object]) -> Sequence[object]:
-        """Publish the graph's round states."""
+    def set_intermediate_output(
+        self,
+        output: PortLike | Sequence[PortLike],
+        *,
+        name: str,
+    ) -> object:
+        """Publish one named inspectable output in the current round."""
 
         self._ensure_open()
-        return self._primitive._publish_round_states(round_states)
+        return self._primitive._set_intermediate_output(output, name=name)
 
-    def add_round_state(self, *values: object, **boundaries: object) -> object:
-        """Publish one positional or named round-state observation."""
+    def set_round_output(self, *outputs: PortLike) -> object:
+        """Publish the current round output as an intermediate named ``round_output``."""
 
         self._ensure_open()
-        return self._primitive._publish_round_state(*values, **boundaries)
+        if not outputs:
+            raise ValueError("round output must contain at least one value")
+        output: PortLike | Sequence[PortLike] = outputs[0] if len(outputs) == 1 else outputs
+        return self.set_intermediate_output(output, name="round_output")
 
     def set_key_schedule_states(self, states: Iterable[object]) -> Sequence[object]:
         """Publish the graph's key-schedule states."""
@@ -1798,18 +1832,6 @@ class PrimitiveBuilder:
 
         self._ensure_open()
         return self._primitive._publish_key_schedule_state(*values)
-
-    def set_round_operations(self, operations: Iterable[object]) -> Sequence[object]:
-        """Publish the graph's round-operation landmarks in authoring order."""
-
-        self._ensure_open()
-        return self._primitive._publish_round_operations(operations)
-
-    def add_round_operations(self, **operations: object) -> Mapping[str, object]:
-        """Publish named operation landmarks for one round."""
-
-        self._ensure_open()
-        return self._primitive._publish_round_operation(**operations)
 
     def set_output(self, output: PortLike | Sequence[PortLike]) -> None:
         """Declare the graph output without completing the builder."""

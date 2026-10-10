@@ -106,12 +106,10 @@ class Speck(Primitive):
             start = len(self.graph.rounds[-1].components)
             x, y = round_function(x, y, round_key)
             operations = self.graph.rounds[-1].components[start:]
-            self._builder.add_round_operations(
-                rotate_right=operations[0],
-                modular_add=operations[1],
-                rotate_left=operations[3],
-            )
-            self._builder.add_round_state(x, y)
+            self._builder.set_intermediate_output(operations[0].output, name="rotate_right")
+            self._builder.set_intermediate_output(operations[1].output, name="modular_add")
+            self._builder.set_intermediate_output(operations[3].output, name="rotate_left")
+            self._builder.set_round_output(x, y)
 
             if round_number + 1 < rounds:
                 index = round_number % len(schedule)

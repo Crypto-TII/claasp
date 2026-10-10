@@ -21,7 +21,11 @@ the S-boxes in parallel, and permute the bits.
    >>> from claasp import BitWord, PrimitiveBuilder
    >>> from claasp.components import BitVectorSBox, Permutation, Xor
    >>> def ToySPN():
-   ...     graph = PrimitiveBuilder("toy_spn", instance_name="ToySPN-16")
+   ...     graph = PrimitiveBuilder(
+   ...         "toy_spn",
+   ...         kind="block_cipher",
+   ...         instance_name="ToySPN-16",
+   ...     )
    ...     state, key = graph.set_inputs(
    ...         plaintext=BitWord(16),
    ...         key=BitWord(16),
@@ -34,7 +38,10 @@ the S-boxes in parallel, and permute the bits.
    ...             graph.add(BitVectorSBox(state[start:start + 4], SBOX))
    ...             for start in range(0, 16, 4)
    ...         ]
-   ...         state = graph.add(Permutation(graph.join(*nibbles), P_LAYER))
+   ...         after_sboxes = graph.join(*nibbles)
+   ...         graph.set_intermediate_output(after_sboxes, name="sbox_layer")
+   ...         state = graph.add(Permutation(after_sboxes, P_LAYER))
+   ...         graph.set_round_output(state)
    ...
    ...     graph.set_output(state)
    ...     return graph.build()
@@ -43,6 +50,11 @@ the S-boxes in parallel, and permute the bits.
 selects individual bits, so ``state[start:start + 4]`` connects one nibble to
 one S-box. ``graph.join()`` places the four S-box outputs back into one state;
 it is structural wiring rather than an extra cryptographic operation.
+
+``set_intermediate_output()`` gives an inspectable value a stable name without
+adding a component. ``set_round_output(state)`` is exactly the shorter spelling
+of ``set_intermediate_output(state, name="round_output")``. The final
+``set_output(state)`` separately declares what evaluation returns.
 
 Build the primitive, inspect it, and evaluate one input:
 

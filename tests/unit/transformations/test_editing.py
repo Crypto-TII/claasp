@@ -132,5 +132,5 @@ def test_public_round_reduction_method_uses_published_round_boundaries():
     primitive = Speck(number_of_rounds=3)
     reduced = primitive.edit.reduce_rounds(2).primitive
     assert reduced.evaluate(PLAINTEXT, KEY) == primitive.edit.slice(
-        primitive.graph.round_states[1]
+        primitive.graph.round_outputs[1]
     ).primitive.evaluate(PLAINTEXT, KEY)

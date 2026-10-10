@@ -17,17 +17,32 @@ from claasp.components import Identity, Xor
 def test_concise_builder_interface_reads_like_pseudocode():
     builder = PrimitiveBuilder(
         "one_time_pad",
+        kind="block_cipher",
         instance_name="OneTimePad-128",
     )
     message, key = builder.set_inputs(message=BitWord(128), key=BitWord(128))
     builder.add_round()
     ciphertext = builder.add(Xor(message, key))
+    published = builder.set_round_output(ciphertext)
     builder.set_output(ciphertext)
     primitive = builder.build()
 
     assert primitive.kind.value == "block_cipher"
     assert primitive.evaluate(message=1, key=3) == 2
     assert primitive.details().instance == "OneTimePad-128"
+    assert primitive.graph.intermediate_outputs[0]["round_output"] == published
+    assert primitive.graph.round_outputs == (published,)
+
+
+def test_set_round_output_is_the_named_intermediate_output_shorthand():
+    builder = PrimitiveBuilder("identity_round", state=BitWord(8))
+    builder.add_round()
+    state = builder.input("state")
+    published = builder.set_intermediate_output(state, name="round_output")
+    builder.set_output(state)
+    primitive = builder.build()
+
+    assert primitive.graph.round_outputs == (published,)
 
 
 def test_builder_rejects_mixed_input_declaration_styles():

@@ -81,7 +81,7 @@ round states provide stable specification-level boundaries:
 .. doctest::
 
    >>> source = Speck(number_of_rounds=3)
-   >>> first_round = source.edit.slice(source.graph.round_states[0]).primitive
+   >>> first_round = source.edit.slice(source.graph.round_outputs[0]).primitive
    >>> first_round.evaluate(plaintext, key) == Speck(number_of_rounds=1).evaluate(plaintext, key)
    True
    >>> two_rounds = source.edit.reduce_rounds(2).primitive

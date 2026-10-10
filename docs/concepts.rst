@@ -23,7 +23,7 @@ Constructing a primitive builds this description; it does not evaluate it:
    'plaintext'
    >>> aes.graph.input("key").owner_id
    'key'
-   >>> len(aes.graph.round_states)
+   >>> len(aes.graph.round_outputs)
    2
    >>> len(aes.graph.components) > 0
    True

@@ -32,11 +32,11 @@ def test_aes128_matches_fips_first_round_intermediate_values():
         source = result.value_of(selection.source.owner_id)
         return tuple(source[position] for position in selection.positions)
 
-    round_state = primitive.graph.round_states[0]
+    intermediates = primitive.graph.intermediate_outputs[0]
     assert bytes(value(primitive._initial_state)).hex() == "00102030405060708090a0b0c0d0e0f0"
-    assert bytes(value(round_state["sub_bytes"])).hex() == "63cab7040953d051cd60e0e7ba70e18c"
-    assert bytes(value(round_state["shift_rows"])).hex() == "6353e08c0960e104cd70b751bacad0e7"
-    assert bytes(value(round_state["mix_columns"])).hex() == "5f72641557f5bc92f7be3b291db9f91a"
+    assert bytes(value(intermediates["sub_bytes"])).hex() == "63cab7040953d051cd60e0e7ba70e18c"
+    assert bytes(value(intermediates["shift_rows"])).hex() == "6353e08c0960e104cd70b751bacad0e7"
+    assert bytes(value(intermediates["mix_columns"])).hex() == "5f72641557f5bc92f7be3b291db9f91a"
     assert bytes(value(primitive.graph.round_keys[1])).hex() == "d6aa74fdd2af72fadaa678f1d6ab76fe"
     assert bytes(result.output).hex() == "89d810e8855ace682d1843d8cb128fe4"
 

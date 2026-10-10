@@ -210,7 +210,7 @@ def paired_xor_primitive(
             )
         return tuple(result)
 
-    round_differences = differences(primitive.graph.round_states)
+    round_differences = differences(primitive.graph.round_outputs)
     key_differences = differences(primitive.graph.round_keys)
     output_difference = paired._builder.add_component(
         _difference_component(

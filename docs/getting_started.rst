@@ -128,13 +128,18 @@ different message and key size:
    >>> from claasp import BitWord, PrimitiveBuilder
    >>> from claasp.components import Xor
    >>> def OneTimePad(bit_size=128):
-   ...     graph = PrimitiveBuilder("one_time_pad", instance_name=f"OneTimePad-{bit_size}")
+   ...     graph = PrimitiveBuilder(
+   ...         "one_time_pad",
+   ...         kind="block_cipher",
+   ...         instance_name=f"OneTimePad-{bit_size}",
+   ...     )
    ...     message, key = graph.set_inputs(
    ...         message=BitWord(bit_size),
    ...         key=BitWord(bit_size),
    ...     )
    ...     graph.add_round()
    ...     ciphertext = graph.add(Xor(message, key))
+   ...     graph.set_round_output(ciphertext)
    ...     graph.set_output(ciphertext)
    ...     return graph.build()
    >>> one_time_pad = OneTimePad()
@@ -152,9 +157,10 @@ different message and key size:
    '0x12cb'
 
 ``set_inputs()`` names the external values and returns the ports used inside
-the graph. ``set_output()`` explicitly selects the value returned by the
-primitive. Finally, ``build()`` validates the graph and turns the mutable
-builder into the finished primitive.
+the graph. ``set_round_output()`` publishes a round boundary for inspection,
+while ``set_output()`` selects the value returned by the complete primitive.
+Finally, ``build()`` validates the graph and turns the mutable builder into the
+finished primitive.
 
 ``BitWord(128)`` means one packed 128-bit string. ``Word(128)`` has a different
 purpose: it declares one arithmetic word for operations such as rotation and

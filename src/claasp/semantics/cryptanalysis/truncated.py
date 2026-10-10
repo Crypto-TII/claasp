@@ -710,7 +710,7 @@ def propagate_single_active_aes_byte(
         raise ValueError("primitive must contain at least one AES round")
     if not isinstance(byte_index, int) or isinstance(byte_index, bool) or not 0 <= byte_index < 16:
         raise ValueError("byte_index must be in range(16)")
-    boundaries = primitive.graph.round_states[0]
+    boundaries = primitive.graph.intermediate_outputs[0]
     shifted = _named_component(
         primitive,
         boundaries["shift_rows"].owner_id,
@@ -748,7 +748,9 @@ def _rotation(primitive: Primitive, component_id: str) -> Rotate:
     if component is None and primitive.family_name == "speck":
         parts = component_id.split("_")
         if len(parts) == 4 and parts[0] == "round" and parts[1].isdigit():
-            component = primitive.graph.round_operations[int(parts[1])].get(f"rotate_{parts[3]}")
+            component = primitive.graph._intermediate_components[int(parts[1])].get(
+                f"rotate_{parts[3]}"
+            )
     if not isinstance(component, Rotate):
         raise ValueError(f"primitive is missing rotation {component_id!r}")
     return component
@@ -756,7 +758,7 @@ def _rotation(primitive: Primitive, component_id: str) -> Rotate:
 
 def _speck_rotation(primitive: Primitive, round_number: int, direction: str) -> Rotate:
     try:
-        component = primitive.graph.round_operations[round_number][f"rotate_{direction}"]
+        component = primitive.graph._intermediate_components[round_number][f"rotate_{direction}"]
     except (AttributeError, IndexError, KeyError) as error:
         raise ValueError(f"primitive lacks Speck round {round_number} metadata") from error
     if not isinstance(component, Rotate):

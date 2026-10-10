@@ -12404,18 +12404,6 @@
       "qualified_name": "claasp.graph.primitive.PrimitiveBuilder.add_round_key"
     },
     {
-      "canonical_name": "claasp.graph.primitive.PrimitiveBuilder.add_round_operations",
-      "defined_in": "claasp.graph.primitive",
-      "kind": "method",
-      "qualified_name": "claasp.graph.primitive.PrimitiveBuilder.add_round_operations"
-    },
-    {
-      "canonical_name": "claasp.graph.primitive.PrimitiveBuilder.add_round_state",
-      "defined_in": "claasp.graph.primitive",
-      "kind": "method",
-      "qualified_name": "claasp.graph.primitive.PrimitiveBuilder.add_round_state"
-    },
-    {
       "canonical_name": "claasp.graph.primitive.PrimitiveBuilder.build",
       "defined_in": "claasp.graph.primitive",
       "kind": "method",
@@ -12452,6 +12440,12 @@
       "qualified_name": "claasp.graph.primitive.PrimitiveBuilder.set_inputs"
     },
     {
+      "canonical_name": "claasp.graph.primitive.PrimitiveBuilder.set_intermediate_output",
+      "defined_in": "claasp.graph.primitive",
+      "kind": "method",
+      "qualified_name": "claasp.graph.primitive.PrimitiveBuilder.set_intermediate_output"
+    },
+    {
       "canonical_name": "claasp.graph.primitive.PrimitiveBuilder.set_key_schedule_states",
       "defined_in": "claasp.graph.primitive",
       "kind": "method",
@@ -12470,16 +12464,10 @@
       "qualified_name": "claasp.graph.primitive.PrimitiveBuilder.set_round_keys"
     },
     {
-      "canonical_name": "claasp.graph.primitive.PrimitiveBuilder.set_round_operations",
+      "canonical_name": "claasp.graph.primitive.PrimitiveBuilder.set_round_output",
       "defined_in": "claasp.graph.primitive",
       "kind": "method",
-      "qualified_name": "claasp.graph.primitive.PrimitiveBuilder.set_round_operations"
-    },
-    {
-      "canonical_name": "claasp.graph.primitive.PrimitiveBuilder.set_round_states",
-      "defined_in": "claasp.graph.primitive",
-      "kind": "method",
-      "qualified_name": "claasp.graph.primitive.PrimitiveBuilder.set_round_states"
+      "qualified_name": "claasp.graph.primitive.PrimitiveBuilder.set_round_output"
     },
     {
       "canonical_name": "claasp.graph.primitive.PrimitiveBuilder.unpack_bits",
@@ -12659,6 +12647,12 @@
       "qualified_name": "claasp.graph.primitive.PrimitiveGraph.inputs"
     },
     {
+      "canonical_name": "claasp.graph.primitive.PrimitiveGraph.intermediate_outputs",
+      "defined_in": "claasp.graph.primitive",
+      "kind": "property",
+      "qualified_name": "claasp.graph.primitive.PrimitiveGraph.intermediate_outputs"
+    },
+    {
       "canonical_name": "claasp.graph.primitive.PrimitiveGraph.key_schedule_states",
       "defined_in": "claasp.graph.primitive",
       "kind": "property",
@@ -12689,16 +12683,10 @@
       "qualified_name": "claasp.graph.primitive.PrimitiveGraph.round_keys"
     },
     {
-      "canonical_name": "claasp.graph.primitive.PrimitiveGraph.round_operations",
+      "canonical_name": "claasp.graph.primitive.PrimitiveGraph.round_outputs",
       "defined_in": "claasp.graph.primitive",
       "kind": "property",
-      "qualified_name": "claasp.graph.primitive.PrimitiveGraph.round_operations"
-    },
-    {
-      "canonical_name": "claasp.graph.primitive.PrimitiveGraph.round_states",
-      "defined_in": "claasp.graph.primitive",
-      "kind": "property",
-      "qualified_name": "claasp.graph.primitive.PrimitiveGraph.round_states"
+      "qualified_name": "claasp.graph.primitive.PrimitiveGraph.round_outputs"
     },
     {
       "canonical_name": "claasp.graph.primitive.PrimitiveGraph.rounds",

@@ -81,7 +81,7 @@ one exact wire:
    >>> reduced = Speck(number_of_rounds=2)
    >>> round_component_ids(reduced, 0)[:3]
    ('rotate_0_0', 'modular_add_0_1', 'xor_0_2')
-   >>> right_word = reduced.graph.round_states[0][1].owner_id
+   >>> right_word = reduced.graph.round_outputs[0][1].owner_id
    >>> projected = component_output_dataset(
    ...     reduced, "plaintext", right_word, samples=4, seed=5
    ... )

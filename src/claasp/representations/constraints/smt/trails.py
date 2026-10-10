@@ -663,7 +663,9 @@ class SpeckLinearSMTModel:
             projected = {
                 name: assignment[f"round_{r}_{name}"] for name in local.smt_formula().variables
             }
-            component_id = self.primitive.graph.round_operations[r]["modular_add"].component_id
+            component_id = self.primitive.graph._intermediate_components[r][
+                "modular_add"
+            ].component_id
             steps.append(TrailStep(component_id, local.decode_transition(projected)))
 
         def packed(names):
@@ -690,7 +692,9 @@ class SpeckLinearSMTModel:
         return trail
 
     def _rotation(self, round_number, direction):
-        component = self.primitive.graph.round_operations[round_number][f"rotate_{direction}"]
+        component = self.primitive.graph._intermediate_components[round_number][
+            f"rotate_{direction}"
+        ]
         if not isinstance(component, Rotate):
             raise ValueError(f"Speck round {round_number} is missing its {direction} rotation")
         return component.amount

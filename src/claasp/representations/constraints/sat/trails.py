@@ -2224,7 +2224,7 @@ class SpeckProbabilisticTruncatedSATModel:
         applications: list[ConstraintModelApplication] = []
         weighted_costs: list[str] = []
         for round_number in range(len(self.primitive.graph.rounds)):
-            operations = self.primitive.graph.round_operations[round_number]
+            operations = self.primitive.graph._intermediate_components[round_number]
             alpha = operations["rotate_right"].amount
             beta = operations["rotate_left"].amount
             local_model = self._addition_model_type(self.width)
@@ -2326,7 +2326,7 @@ class SpeckProbabilisticTruncatedSATModel:
             local_assignment = {name: assignment[mapped] for name, mapped in mapping.items()}
             transitions.append(local_model.decode_transition(local_assignment))
         for round_number, transition in enumerate(transitions):
-            operations = self.primitive.graph.round_operations[round_number]
+            operations = self.primitive.graph._intermediate_components[round_number]
             expected_left = (
                 input_pattern.bits[: self.width]
                 if round_number == 0
@@ -2426,7 +2426,7 @@ class SpeckSemiDeterministicTruncatedSATModel(SpeckProbabilisticTruncatedSATMode
                 SemiDeterministicModularAddTransition(left, right, output, scaled_weight)
             )
         for round_number, transition in enumerate(transitions):
-            operations = self.primitive.graph.round_operations[round_number]
+            operations = self.primitive.graph._intermediate_components[round_number]
             expected_left = (
                 input_pattern.bits[: self.width]
                 if round_number == 0

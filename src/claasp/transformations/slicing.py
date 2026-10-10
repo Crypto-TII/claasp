@@ -49,8 +49,8 @@ def split_dependencies(
 
         >>> from claasp.primitives import Speck
         >>> primitive = Speck(number_of_rounds=2)
-        >>> first = primitive.graph.round_states[0][0].owner_id
-        >>> second = primitive.graph.round_states[1][0].owner_id
+        >>> first = primitive.graph.round_outputs[0][0].owner_id
+        >>> second = primitive.graph.round_outputs[1][0].owner_id
         >>> split = split_dependencies(primitive, top_outputs=first, bottom_inputs=second)
         >>> first in split.top and second in split.bottom
         True
@@ -170,7 +170,7 @@ def slice_primitive(
 
         >>> from claasp.primitives import Speck
         >>> primitive = Speck(number_of_rounds=2)
-        >>> result = slice_primitive(primitive, primitive.graph.round_states[0])
+        >>> result = slice_primitive(primitive, primitive.graph.round_outputs[0])
         >>> hex(result.primitive.evaluate(0x6574694c, 0x1918111009080100))
         '0x5316f627'
         >>> len(result.primitive.graph.components) < len(primitive.graph.components)
@@ -318,7 +318,7 @@ def slice_primitive(
 
 
 def _round_observation(primitive: Primitive, round_number: int):
-    states = tuple(primitive.graph.round_states)
+    states = tuple(primitive.graph.round_outputs)
     if round_number < 0 or round_number >= len(states):
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,

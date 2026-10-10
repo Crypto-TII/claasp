@@ -82,6 +82,6 @@ class ChaCha(Primitive):
                     state[c],
                     state[d],
                 )
-            self._builder.add_round_state(*state)
+            self._builder.set_round_output(*state)
 
         self._builder.set_output(state)

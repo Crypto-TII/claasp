@@ -751,7 +751,7 @@ class SpeckDifferentialCPModel:
             next_right = _rotate_left_integer(right, beta, self.width) ^ output
             if next_right != _boolean_word(assignment[f"y_{round_number + 1}"]):
                 raise ValueError("MiniZinc returned invalid Speck round wiring")
-            component_id = self.primitive.graph.round_operations[round_number][
+            component_id = self.primitive.graph._intermediate_components[round_number][
                 "modular_add"
             ].component_id
             steps.append(TrailStep(component_id, transition))
@@ -1976,7 +1976,7 @@ def _component(primitive, component_id, expected_type):
         parts = component_id.split("_")
         if len(parts) >= 4 and parts[0] == "round" and parts[1].isdigit():
             operation = "_".join(parts[2:])
-            component = primitive.graph.round_operations[int(parts[1])].get(operation)
+            component = primitive.graph._intermediate_components[int(parts[1])].get(operation)
     if not isinstance(component, expected_type):
         raise ValueError(f"primitive is missing {component_id!r}")
     return component
@@ -2592,7 +2592,7 @@ class SpeckBoomerangCPModel:
             or not 0 <= switch_round < len(primitive.graph.rounds)
         ):
             raise ValueError("switch_round must select a Speck round")
-        component = primitive.graph.round_operations[switch_round]["modular_add"]
+        component = primitive.graph._intermediate_components[switch_round]["modular_add"]
         upper_graph = slice_primitive(
             primitive,
             component.inputs,

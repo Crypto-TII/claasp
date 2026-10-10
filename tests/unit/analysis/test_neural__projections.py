@@ -24,7 +24,7 @@ def test_round_component_ids_matches_the_primitive_graph_round_structure():
         component.component_id for component in primitive.graph.rounds[1].components
     )
     # Semantic references stay stable even when automatic identifiers change.
-    assert primitive.graph.round_states[0][1].owner_id in round_0
+    assert primitive.graph.round_outputs[0][1].owner_id in round_0
     assert primitive.graph.key_schedule_states[0][1].owner_id in round_0
     assert {
         owner_id for owner_id, _ in primitive.graph.selection_bit_sources(primitive.graph.output)
@@ -47,7 +47,7 @@ def test_component_output_dataset_matches_direct_trace_inspection_of_round_state
     """
 
     primitive = Speck(number_of_rounds=2)
-    component_id = primitive.graph.round_states[0][1].owner_id
+    component_id = primitive.graph.round_outputs[0][1].owner_id
     seed = 5
     samples = 16
     dataset = component_output_dataset(

@@ -225,7 +225,7 @@ def xor_differential_propagation(
     ):
         raise ValueError("component propagation does not reach the trail output pattern")
     components = tuple(result)
-    published_states = tuple(primitive.graph.round_states)
+    published_states = tuple(primitive.graph.round_outputs)
     included = {component.component_id for component in components}
     round_transitions = []
     cumulative = Fraction(1)
