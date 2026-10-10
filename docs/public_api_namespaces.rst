@@ -25,6 +25,12 @@ claasp.analysis.linear_properties
 .. automodule:: claasp.analysis.linear_properties
    :no-index:
 
+claasp.analysis.trail_search
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.trail_search
+   :no-index:
+
 claasp.analysis.truncated
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 

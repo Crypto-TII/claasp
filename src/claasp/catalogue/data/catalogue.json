@@ -107,15 +107,15 @@
       "evidence": "exact",
       "kind": "xor_differential",
       "name": "find_lowest_weight_xor_differential_trail",
-      "primitives": [
-        "Present",
-        "Speck"
+      "primitives": [],
+      "representations": [
+        "word_differential_sat"
       ],
       "representations": [
         "boolean_cnf"
       ],
       "required_components": [],
-      "restriction": "reviewed reduced-round slice only"
+      "restriction": "capability-based Word graph support plus specialized PRESENT/Speck slices"
     },
     {
       "drivers": [],
@@ -123,13 +123,12 @@
       "evidence": "exact",
       "kind": "xor_linear",
       "name": "find_lowest_weight_xor_linear_trail",
-      "primitives": [
-        "Present",
-        "Speck"
+      "primitives": [],
+      "representations": [
+        "word_linear_sat"
       ],
-      "representations": [],
       "required_components": [],
-      "restriction": "reviewed reduced-round slice only"
+      "restriction": "capability-based Word graph support plus specialized PRESENT/Speck slices"
     },
     {
       "drivers": [],
@@ -395,7 +394,9 @@
       "kind": "solver",
       "name": "minisat",
       "representations": [
-        "boolean_cnf"
+        "boolean_cnf",
+        "word_differential_sat",
+        "word_linear_sat"
       ],
       "target": "minisat"
     },
@@ -12367,10 +12368,65 @@
     {
       "components": [
         "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
         "Constant",
         "Identity",
         "ModularAdd",
+        "ModularSubtract",
+        "Permutation",
         "Rotate",
+        "Shift",
+        "Xor"
+      ],
+      "domains": [
+        "Word"
+      ],
+      "drivers": [
+        "minisat"
+      ],
+      "implementation": "claasp.representations.constraints.sat:WordDifferentialSATModel",
+      "kind": "constraint",
+      "name": "word_differential_sat",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Constant",
+        "Identity",
+        "ModularAdd",
+        "ModularSubtract",
+        "Permutation",
+        "Rotate",
+        "Shift",
+        "Xor"
+      ],
+      "domains": [
+        "Word"
+      ],
+      "drivers": [
+        "minisat"
+      ],
+      "implementation": "claasp.representations.constraints.sat:WordLinearSATModel",
+      "kind": "constraint",
+      "name": "word_linear_sat",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Constant",
+        "Identity",
+        "ModularAdd",
+        "ModularSubtract",
+        "Permutation",
+        "Rotate",
+        "Shift",
         "Xor"
       ],
       "domains": [
@@ -12387,10 +12443,15 @@
     {
       "components": [
         "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
         "Constant",
         "Identity",
         "ModularAdd",
+        "ModularSubtract",
+        "Permutation",
         "Rotate",
+        "Shift",
         "Xor"
       ],
       "domains": [

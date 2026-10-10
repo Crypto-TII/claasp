@@ -65,3 +65,35 @@ class BitwiseAndSemantics:
             else self.xor_differential(left, right, transition.output_pattern.value)
         )
         return transition == expected
+
+
+class BitwiseOrSemantics(BitwiseAndSemantics):
+    """Exact OR transitions derived from AND by Boolean complementation.
+
+    EXAMPLES::
+
+        >>> BitwiseOrSemantics(1).xor_differential(1, 0, 1).is_possible
+        True
+    """
+
+    def xor_linear(self, left, right, output):
+        """Return the exact signed XOR-linear transition for two OR inputs.
+
+        EXAMPLES::
+
+            >>> BitwiseOrSemantics(1).xor_linear(1, 1, 1).sign
+            1
+        """
+
+        transition = super().xor_linear(left, right, output)
+        sign = transition.sign
+        if (left ^ right ^ output).bit_count() % 2:
+            sign *= -1
+        return Transition(
+            transition.kind,
+            transition.input_pattern,
+            transition.output_pattern,
+            transition.numerator,
+            transition.denominator,
+            sign,
+        )

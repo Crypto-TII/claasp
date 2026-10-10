@@ -122,3 +122,14 @@ evidence, never an exact cross-platform fixture: the dedicated
 ``neural-ml-execution`` CI job trains this same reduced-round Speck32/64
 differential distinguisher and only asserts that the final accuracy clears a
 documented threshold, not a specific value.
+
+Automated difference search and staged training
+-----------------------------------------------
+
+``primitive.analysis.find_good_neural_input_difference`` provides the seeded
+evolutionary input-difference search formerly exposed by AutoND.
+``train_staged_neural_distinguisher`` trains successive reduced-round graphs
+until validation accuracy falls below the configured statistical threshold,
+and ``run_autond`` composes both phases. Dataset generation, candidate ranking,
+round limits, and seeds are explicit; a real TensorFlow CI job constructs both
+legacy architectures and performs a bounded training run.

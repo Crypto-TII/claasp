@@ -25,8 +25,15 @@ Graph transformations
 Semantics and annotations
 -------------------------
 
+.. autoclass:: claasp.semantics.cryptanalysis.trails.TrailSearchMetadata
+
+.. autoclass:: claasp.semantics.cryptanalysis.trails.TrailComponentTransition
+
+.. autoclass:: claasp.semantics.cryptanalysis.trails.TrailRoundTransition
+
 .. automodule:: claasp.semantics
    :members:
+   :exclude-members: TrailComponentTransition,TrailRoundTransition,TrailSearchMetadata
 
 .. automodule:: claasp.annotations
    :members:

@@ -197,3 +197,11 @@ def test_z3_restores_speck_linear_modular_add_reference_transitions():
     assert [transition.weight for transition in transitions] == [2.0, 0.0, 0.0, 1.0]
     assert [transition.sign for transition in transitions] == [1, 1, 1, -1]
     assert sum(transition.weight for transition in transitions) == 3.0
+
+
+def test_z3_public_trail_search_accepts_a_bit_graph():
+    result = BitVectorSBox(2).analysis.find_optimal_trail(backend="smt")
+
+    assert result.is_optimal
+    assert result.trail.total_weight == result.lower_bound == 0
+    assert "SMT" in result.metadata.technique

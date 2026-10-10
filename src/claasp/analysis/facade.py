@@ -212,6 +212,64 @@ class Analysis:
     def find_lowest_weight_xor_differential_trail(self, *, solver=None) -> TrailSearchResult:
         """Find a lowest-weight trail, using Kissat by default for ARX."""
 
+        try:
+            selected_kind = kind if isinstance(kind, TrailKind) else TrailKind(kind)
+        except (TypeError, ValueError) as error:
+            supported = ", ".join(item.value for item in TrailKind)
+            raise ValueError(
+                f"unsupported trail kind {kind!r}; choose one of {supported}"
+            ) from error
+        try:
+            selected_backend = (
+                backend if isinstance(backend, TrailSearchBackend) else TrailSearchBackend(backend)
+            )
+        except (TypeError, ValueError) as error:
+            supported = ", ".join(item.value for item in TrailSearchBackend)
+            raise ValueError(
+                f"unsupported trail-search backend {backend!r}; choose one of {supported}"
+            ) from error
+
+        specialized = self._dependency_free_trail_search(selected_kind)
+        if selected_backend is TrailSearchBackend.DEPENDENCY_FREE:
+            if solver is not None:
+                raise TypeError("dependency-free trail search cannot consume a custom solver")
+            if specialized is None:
+                raise NotImplementedError(
+                    f"primitive {self.primitive.family_name!r}, analysis {selected_kind.value!r}, "
+                    "backend 'dependency_free': no specialized exact implementation exists"
+                )
+            return specialized()
+        if (
+            selected_backend is TrailSearchBackend.AUTO
+            and solver is None
+            and specialized is not None
+        ):
+            return specialized()
+
+        from claasp.analysis.trail_search import optimize_word_characteristic
+
+        return optimize_word_characteristic(
+            self.primitive,
+            selected_kind,
+            backend=selected_backend.value,
+            solver=solver,
+            nonzero_input=nonzero_input,
+            fixed_input_differences=fixed_input_differences,
+            fixed_input_masks=fixed_input_masks,
+            fixed_inputs=fixed_inputs,
+        )
+
+    def _dependency_free_trail_search(self, kind):
+        rounds = len(self.primitive.rounds)
+        if self.primitive.family_name == "present":
+            if kind is TrailKind.XOR_DIFFERENTIAL and rounds == 2:
+                from claasp.analysis.spn import find_two_round_spn_xor_differential
+
+                return lambda: find_two_round_spn_xor_differential(self.primitive)
+            if kind is TrailKind.XOR_LINEAR and rounds == 3:
+                from claasp.analysis.spn import find_three_round_spn_xor_linear
+
+                return lambda: find_three_round_spn_xor_linear(self.primitive)
         if self.primitive.family_name == "speck":
             from claasp.analysis.arx import find_speck_xor_differential
 
@@ -220,7 +278,8 @@ class Analysis:
             raise TypeError("the selected differential search does not accept a solver")
         from claasp.analysis.spn import find_two_round_spn_xor_differential
 
-        return find_two_round_spn_xor_differential(self.primitive)
+                return lambda: find_four_round_speck_xor_linear(self.primitive)
+        return None
 
     def find_optimal_trail(
         self,
@@ -311,6 +370,134 @@ class Analysis:
             seed=seed,
             fixed_inputs=fixed_inputs,
         )
+
+    def run_statistical_tests(
+        self,
+        driver,
+        kind,
+        input_name,
+        *,
+        number_of_samples,
+        blocks_per_sample=None,
+        ratio=1.0,
+        seed=0,
+        fixed_inputs=None,
+        round_start=1,
+        round_end=None,
+        driver_options=None,
+    ):
+        """Run a NIST/Dieharder-style dataset campaign over round boundaries."""
+
+        from claasp.analysis.statistical import run_statistical_campaign
+
+        return run_statistical_campaign(
+            self.primitive,
+            driver,
+            kind,
+            input_name,
+            number_of_samples=number_of_samples,
+            blocks_per_sample=blocks_per_sample,
+            ratio=ratio,
+            seed=seed,
+            fixed_inputs=fixed_inputs,
+            round_start=round_start,
+            round_end=round_end,
+            driver_options=driver_options,
+        )
+
+    def find_good_neural_input_difference(self, **options):
+        """Run the deterministic AutoND-style evolutionary difference search."""
+
+        from claasp.analysis.neural_workflows import find_good_input_difference
+
+        return find_good_input_difference(self.primitive, **options)
+
+    def train_staged_neural_distinguisher(
+        self,
+        driver,
+        input_differences,
+        *,
+        starting_round,
+        samples,
+        experiment,
+        maximum_round=None,
+        significance_samples=None,
+    ):
+        """Train successive reduced-round neural distinguishers."""
+
+        from claasp.analysis.neural_workflows import train_staged_neural_distinguisher
+
+        return train_staged_neural_distinguisher(
+            self.primitive,
+            driver,
+            input_differences,
+            starting_round=starting_round,
+            samples=samples,
+            experiment=experiment,
+            maximum_round=maximum_round,
+            significance_samples=significance_samples,
+        )
+
+    def run_autond(self, driver, experiment, **options):
+        """Optimize an input difference and run staged neural training."""
+
+        from claasp.analysis.neural_workflows import run_autond
+
+        return run_autond(self.primitive, driver, experiment, **options)
+
+    def continuous_evaluate(self, inputs, *, tolerance=1e-4):
+        """Propagate continuous-diffusion correlations through the typed graph."""
+
+        from claasp.representations.execution.continuous import ContinuousExecutionDriver
+
+        return ContinuousExecutionDriver().evaluate(self.primitive, inputs, tolerance=tolerance)
+
+    def propagate_truncated_xor_difference(self, input_pattern):
+        """Propagate a sound three-valued XOR difference over all rounds."""
+
+        from claasp.analysis.advanced_trails import propagate_truncated_xor_difference
+
+        return propagate_truncated_xor_difference(self.primitive, input_pattern)
+
+    def find_probabilistic_truncated_xor_differential(
+        self, input_pattern, output_pattern, *, solver=None
+    ):
+        """Optimize a supported counter-based truncated characteristic."""
+
+        from claasp.analysis.advanced_trails import (
+            find_probabilistic_truncated_xor_differential,
+        )
+
+        return find_probabilistic_truncated_xor_differential(
+            self.primitive, input_pattern, output_pattern, solver=solver
+        )
+
+    def find_impossible_xor_differential(
+        self,
+        middle_round,
+        *,
+        input_pattern=None,
+        output_pattern=None,
+        solver=None,
+    ):
+        """Find a supported impossible XOR-differential middle boundary."""
+
+        from claasp.analysis.advanced_trails import find_impossible_xor_differential
+
+        return find_impossible_xor_differential(
+            self.primitive,
+            middle_round,
+            input_pattern=input_pattern,
+            output_pattern=output_pattern,
+            solver=solver,
+        )
+
+    def find_sbox_boomerang_transition(self, component, **options):
+        """Optimize or check an exact S-box boomerang-connectivity entry."""
+
+        from claasp.analysis.advanced_trails import find_sbox_boomerang_transition
+
+        return find_sbox_boomerang_transition(self.primitive, component, **options)
 
     def component_groups(self, domain):
         """Return immutable semantic groups, never structural bindings.
@@ -449,7 +636,7 @@ class Analysis:
         *,
         fixed_weight=None,
         solver=None,
-        nonzero_input="plaintext",
+        nonzero_input=None,
         fixed_input_differences=None,
         output_difference=None,
         limit=1000,
@@ -459,6 +646,7 @@ class Analysis:
         The default is single-key (key difference zero). Select a nonzero
         key input to include related-key propagation instead.
         """
+        from claasp.analysis.trail_search import resolve_input_policy
         from claasp.drivers.solvers import Z3Solver
         from claasp.representations.constraints.smt import WordDifferentialSMTModel
 
@@ -472,8 +660,8 @@ class Analysis:
             self.primitive,
             maximum_weight=maximum_weight,
             fixed_weight=fixed_weight,
-            nonzero_input=nonzero_input,
-            fixed_input_differences=fixed_input_differences,
+            nonzero_input=policy.nonzero_input,
+            fixed_input_differences=policy.fixed_patterns,
             output_difference=output_difference,
         )
         return model.enumerate_trails(Z3Solver() if solver is None else solver, limit=limit)
@@ -483,7 +671,7 @@ class Analysis:
         maximum_weight,
         *,
         solver=None,
-        nonzero_input="plaintext",
+        nonzero_input=None,
         fixed_input_masks=None,
         fixed_inputs=None,
         limit=1000,
@@ -494,9 +682,16 @@ class Analysis:
         Requesting ``nonzero_input="key"`` instead includes key-schedule masks.
         Solver execution is optional and separate from graph realization.
         """
+        from claasp.analysis.trail_search import resolve_input_policy
         from claasp.drivers.solvers import Z3Solver
         from claasp.representations.constraints.smt import WordLinearSMTModel
 
+        policy = resolve_input_policy(
+            self.primitive,
+            nonzero_input,
+            fixed_input_masks,
+            add_key_tweak_defaults=False,
+        )
         if fixed_inputs is None and fixed_input_masks is None:
             fixed_inputs = (
                 {"key": 0}
@@ -506,8 +701,8 @@ class Analysis:
         model = WordLinearSMTModel(
             self.primitive,
             maximum_weight=maximum_weight,
-            nonzero_input=nonzero_input,
-            fixed_input_masks=fixed_input_masks,
+            nonzero_input=policy.nonzero_input,
+            fixed_input_masks=policy.fixed_patterns,
             fixed_inputs=fixed_inputs,
         )
         return model.enumerate_trails(Z3Solver() if solver is None else solver, limit=limit)
@@ -521,7 +716,13 @@ class Analysis:
             return find_four_round_speck_xor_linear(self.primitive)
         from claasp.analysis.spn import find_three_round_spn_xor_linear
 
-        return find_three_round_spn_xor_linear(self.primitive)
+        return self.find_optimal_trail(
+            TrailKind.XOR_LINEAR,
+            solver=solver,
+            nonzero_input=nonzero_input,
+            fixed_input_masks=fixed_input_masks,
+            fixed_inputs=fixed_inputs,
+        )
 
     def _project(self, selection: Selection, assignment: Mapping[str, int]) -> tuple[int, ...]:
         return tuple(

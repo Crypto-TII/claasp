@@ -1803,6 +1803,24 @@ class SpeckImpossibleCPModel:
             constraint_models=(ConstraintModelApplication(self.model_provenance),),
         )
 
+    def decode_boundary(self, assignment) -> ImpossiblePropagationBoundary:
+        """Decode and independently confirm the selected middle contradiction."""
+
+        middle = self.middle_round
+        decoded = ImpossiblePropagationBoundary(
+            TruncatedXorDifference(
+                _decode_truncated(assignment[f"forward_x_{middle}"]).bits
+                + _decode_truncated(assignment[f"forward_y_{middle}"]).bits
+            ),
+            TruncatedXorDifference(
+                _decode_truncated(assignment[f"backward_x_{middle}"]).bits
+                + _decode_truncated(assignment[f"backward_y_{middle}"]).bits
+            ),
+        )
+        if not decoded.is_impossible:
+            raise ValueError("MiniZinc returned a compatible Speck middle boundary")
+        return decoded
+
 
 class SimonImpossibleCPModel:
     """Compose the legacy fully-automatic Simon impossible fixture.

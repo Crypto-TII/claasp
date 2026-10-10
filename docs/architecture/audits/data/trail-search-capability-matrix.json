@@ -1,0 +1,1650 @@
+{
+  "meaning": {
+    "supported_and_tested": "the reduced/default graph passed the exact component/domain contract; the encodings are covered by focused construction and solver tests",
+    "unsupported": "the graph cannot enter the exact optimizer for the recorded component, weight-domain, output, or constructor reason"
+  },
+  "rows": [
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "A51",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'fsr_0_4' (FeedbackRegister)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'fsr_0_4' (FeedbackRegister)"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "A52",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'fsr_0_5' (FeedbackRegister)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'fsr_0_5' (FeedbackRegister)"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "AES",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 's_box_0_0' (SBox): xor_linear lookup transition count 24/256 has a non-integral exact weight"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Add",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Aradi",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "AradiSBox",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "AradiSBoxCompactLinearMap",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Ascon",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "AsconSboxSigma",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "AsconSboxSigmaNoMatrix",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "BEA1",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'sbox_0_26' (BitVectorSBox): xor_differential lookup transition count 6/1024 has a non-integral exact weight",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_26' (BitVectorSBox): xor_linear lookup transition count 20/1024 has a non-integral exact weight"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Baksheesh",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Ballet",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "BinaryAffineMap",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "BipBip",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "BitVectorSBox",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "BitwiseAnd",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "BitwiseNot",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "BitwiseOr",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "Bivium",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'fsr_0_1' (FeedbackRegister)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'fsr_0_1' (FeedbackRegister)"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Blake",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Blake2",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'modadd_0_0' (ModularAdd) arity 3",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'modadd_0_0' (ModularAdd) arity 3"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Blink",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "BluetoothE0",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'and_0_8' (BitwiseAnd) arity 4",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'and_0_8' (BitwiseAnd) arity 4"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "CHAM",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Cast",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'var_rot_1_3' (VariableRotate)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_0' (BitVectorSBox): dense Walsh-table materialization is limited to 1048576 table cells"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ChaCha",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ChaChaKeystreamBlock",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ChaskeyPi",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Chilow",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "CipherFour",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "Constant",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "DES",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'sbox_0_8' (BitVectorSBox): xor_differential lookup transition count 6/64 has a non-integral exact weight",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_8' (BitVectorSBox): xor_linear lookup transition count 12/64 has a non-integral exact weight"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "DESExactKeyLength",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'sbox_0_8' (BitVectorSBox): xor_differential lookup transition count 6/64 has a non-integral exact weight",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_8' (BitVectorSBox): xor_linear lookup transition count 12/64 has a non-integral exact weight"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Fancy",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "FeedbackRegister",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'feedback_register_0_0' (FeedbackRegister)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'feedback_register_0_0' (FeedbackRegister)"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Forro",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Gaston",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "GastonSbox",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "GastonSboxTheta",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Gift",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "GiftSbox",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'sbox_0_0' (BitVectorSBox): xor_differential lookup transition count 6/16 has a non-integral exact weight",
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Gimli",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "GimliSbox",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Gost",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "GrainCore",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'fsr_0_0' (FeedbackRegister)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'fsr_0_0' (FeedbackRegister)"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "HIGHT",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Heys",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'round_0_sbox_0' (BitVectorSBox): xor_differential lookup transition count 6/16 has a non-integral exact weight",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'round_0_sbox_0' (BitVectorSBox): xor_linear lookup transition count 12/16 has a non-integral exact weight"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "IDEA",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'i_d_e_a_multiply_1_0' (IDEAMultiply)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'i_d_e_a_multiply_1_0' (IDEAMultiply)"
+    },
+    {
+      "configuration": "default",
+      "primitive": "IDEAMultiply",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'i_d_e_a_multiply_0_0' (IDEAMultiply)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'i_d_e_a_multiply_0_0' (IDEAMultiply)"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Identity",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "Kalyna",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'sbox_0_3' (BitVectorSBox): xor_differential lookup transition count 6/256 has a non-integral exact weight",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_3' (BitVectorSBox): xor_linear lookup transition count 12/256 has a non-integral exact weight"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Kasumi",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Katan",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "KatanFSR",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Keccak",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "KeccakInvertible",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "KeccakSbox",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Knot",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Ktantan",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "KtantanFSR",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "LBlock",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "LEA",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 4
+      },
+      "primitive": "Led",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "LinearMap",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "LowMC",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "MD5",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "MSX",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'modmul_0_30' (ModularMultiply)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'modmul_0_30' (ModularMultiply)"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Mantis",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Midori",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "ModularAdd",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "ModularMultiply",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'modular_multiply_0_0' (ModularMultiply)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'modular_multiply_0_0' (ModularMultiply)"
+    },
+    {
+      "configuration": "default",
+      "primitive": "ModularSubtract",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "Multiply",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'multiply_0_0' (Multiply)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'multiply_0_0' (Multiply)"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Norx",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "Permutation",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Photon",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Piccolo",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "Power",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'power_0_0' (Power)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'power_0_0' (Power)"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Present",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Prince",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "PrinceV2",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "QARMAv2",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "QARMAv2MixColumn",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "RC5",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'modular_add_0_5' (ModularAdd) arity 3",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'modular_add_0_5' (ModularAdd) arity 3"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Raiden",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'variable_shift_0_1' (VariableShift)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'variable_shift_0_1' (VariableShift)"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Rectangle",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Rijndael",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_1' (BitVectorSBox): xor_linear lookup transition count 24/256 has a non-integral exact weight"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Rotate",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "SBox",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SCARF",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_2' (BitVectorSBox): xor_linear lookup transition count 12/32 has a non-integral exact weight"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SHA1",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'modadd_0_11' (ModularAdd) arity 5",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'modadd_0_11' (ModularAdd) arity 5"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SHA2",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'modadd_0_21' (ModularAdd) arity 5",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'modadd_0_21' (ModularAdd) arity 5"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SM4",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_12' (BitVectorSBox): xor_linear lookup transition count 28/256 has a non-integral exact weight"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SPARX",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Saecham",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Salsa",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Serpent",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "Shift",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Simeck",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SimeckSbox",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Simon",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SimonSbox",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "SiphashMAC",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Skinny",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Skipjack",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'sbox_0_1' (BitVectorSBox): xor_differential lookup transition count 6/256 has a non-integral exact weight",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_1' (BitVectorSBox): xor_linear lookup transition count 28/256 has a non-integral exact weight"
+    },
+    {
+      "configuration": {
+        "number_of_initialization_clocks": 1
+      },
+      "primitive": "Snow3G",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'sbox_0_16' (BitVectorSBox): xor_differential lookup transition count 6/256 has a non-integral exact weight",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_16' (BitVectorSBox): xor_linear lookup transition count 48/256 has a non-integral exact weight"
+    },
+    {
+      "configuration": "default",
+      "primitive": "Sparkle",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Speck",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Speckey",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Speedy",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'sbox_0_1' (BitVectorSBox): xor_differential lookup transition count 6/64 has a non-integral exact weight",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_1' (BitVectorSBox): xor_linear lookup transition count 20/64 has a non-integral exact weight"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Splight",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SpongentPi",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SpongentPiFSR",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SpongentPiPrecomputation",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Subterranean",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "TEA",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Threefish",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "TinyJambu",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "TinyJambuFSRWordBased",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "missing primitive output",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "missing primitive output"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "TinyJambuWordBased",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "missing primitive output",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "missing primitive output"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ToyAES",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 's_box_0_1' (SBox): xor_linear lookup transition count 24/256 has a non-integral exact weight"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ToyFeistel",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ToySPN1",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "ToySPN2",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Trax",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'modular_add_0_1' (ModularAdd) arity 3",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'modular_add_0_1' (ModularAdd) arity 3"
+    },
+    {
+      "configuration": {
+        "keystream_bit_size": 1,
+        "number_of_initialization_clocks": 1
+      },
+      "primitive": "Trivium",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Twine",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Twofish",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'sbox_0_5' (BitVectorSBox): xor_differential lookup transition count 6/256 has a non-integral exact weight",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_5' (BitVectorSBox): xor_linear lookup transition count 24/256 has a non-integral exact weight"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "UKNIT",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Ublock",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "UblockSingleLinearLayer",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "VariableRotate",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'variable_rotate_0_0' (VariableRotate)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'variable_rotate_0_0' (VariableRotate)"
+    },
+    {
+      "configuration": "default",
+      "primitive": "VariableShift",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'variable_shift_0_0' (VariableShift)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'variable_shift_0_0' (VariableShift)"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Warp",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Whirlpool",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'sbox_0_2' (BitVectorSBox): xor_differential lookup transition count 6/256 has a non-integral exact weight",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_2' (BitVectorSBox): xor_linear lookup transition count 40/256 has a non-integral exact weight"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "XTEA",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Xoodoo",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "XoodooInvertible",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "XoodooSbox",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": "default",
+      "primitive": "Xor",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_initialization_clocks": 1
+      },
+      "primitive": "Zuc",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'sbox_0_27' (BitVectorSBox): xor_differential lookup transition count 6/256 has a non-integral exact weight",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_27' (BitVectorSBox): xor_linear lookup transition count 48/256 has a non-integral exact weight"
+    }
+  ],
+  "schema": 3
+}

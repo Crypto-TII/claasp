@@ -2,7 +2,7 @@ import pytest
 
 from claasp.analysis import AnalysisProblem, FixedValue
 from claasp.drivers.solvers import GLPKSolver, MILPStatus
-from claasp.primitives import Simon, Speck
+from claasp.primitives import BitVectorSBox, Simon, Speck
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints.milp import (
     BooleanMonomialGraphMILPModel,

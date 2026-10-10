@@ -38,9 +38,9 @@ drivers and parsers.
 Streaming dataset families
 --------------------------
 
-The correlation, CBC, low-density, and high-density families are lazy and
-re-iterable. They expose immutable records or fixed-width big-endian byte
-blocks without materializing the complete experiment:
+The avalanche, random, correlation, CBC, low-density, and high-density
+families are lazy and re-iterable. They expose immutable records or fixed-width
+big-endian byte blocks without materializing the complete experiment:
 
 .. doctest::
 

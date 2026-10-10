@@ -61,6 +61,27 @@ def test_complete_tables_match_independent_transition_counts():
             assert walsh[alpha][beta] == transition.sign * transition.numerator
 
 
+def test_rectangular_sbox_relation_uses_distinct_boundary_widths():
+    table = (0, 1, 3, 2, 1, 0, 2, 3)
+    relation = SBoxTransitionMILPModel(table, TrailKind.XOR_DIFFERENTIAL)
+    transition = next(
+        relation.semantics.xor_differential(source, target)
+        for source in range(8)
+        for target in range(4)
+        if relation.semantics.xor_differential(source, target).is_possible
+    )
+    model = relation.milp_model(
+        input_pattern=transition.input_pattern.value,
+        output_pattern=transition.output_pattern.value,
+    )
+    row = tuple((transition.input_pattern.value >> bit) & 1 for bit in reversed(range(3))) + tuple(
+        (transition.output_pattern.value >> bit) & 1 for bit in reversed(range(2))
+    )
+
+    assert len(model.variables) == len(relation.relation.rows) + 5
+    assert relation.decode_transition(relation.relation.witness(row)) == transition
+
+
 @pytest.mark.parametrize("kind", [TrailKind.XOR_DIFFERENTIAL, TrailKind.XOR_LINEAR])
 def test_eight_bit_baseline_does_not_drop_probability_one_active_transitions(kind):
     # An affine bijection has nonzero deterministic differences/correlations.

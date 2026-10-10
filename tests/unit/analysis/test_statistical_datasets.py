@@ -3,10 +3,12 @@ from io import BytesIO
 import pytest
 
 from claasp.analysis.statistical_datasets import (
+    avalanche_statistical_dataset,
     cbc_dataset,
     correlation_dataset,
     high_density_dataset,
     low_density_dataset,
+    random_statistical_dataset,
 )
 from claasp.primitives import Speck
 
@@ -104,3 +106,19 @@ def test_density_weight_two_sampling_and_validation(speck):
         cbc_dataset(speck, "key", 1, 1)
     with pytest.raises(ValueError, match="selected or unknown"):
         correlation_dataset(speck, "plaintext", 1, 1, fixed_inputs={"plaintext": 0})
+
+
+def test_avalanche_and_random_families_are_canonical_statistical_streams(speck):
+    avalanche = avalanche_statistical_dataset(
+        speck, "plaintext", 2, seed=13, fixed_inputs={"key": 0}
+    )
+    random = random_statistical_dataset(speck, "plaintext", 2, 3, seed=13, fixed_inputs={"key": 0})
+
+    assert avalanche.kind == "avalanche"
+    assert avalanche.block_count == 32
+    assert len(tuple(avalanche)) == 64
+    assert tuple(avalanche) == tuple(avalanche)
+    assert random.kind == "random"
+    assert random.block_count == 3
+    assert len(tuple(random)) == 6
+    assert random.digest() == random.digest()

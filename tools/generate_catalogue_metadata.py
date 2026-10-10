@@ -272,10 +272,15 @@ PRIME_FIELD_POLYNOMIAL_COMPONENTS = frozenset(
 WORD_TRAIL_COMPONENTS = frozenset(
     {
         "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
         "Constant",
         "Identity",
         "ModularAdd",
+        "ModularSubtract",
+        "Permutation",
         "Rotate",
+        "Shift",
         "Xor",
     }
 )
@@ -438,6 +443,24 @@ REPRESENTATIONS = (
         "generic_graph",
     ),
     (
+        "word_differential_sat",
+        "constraint",
+        "claasp.representations.constraints.sat:WordDifferentialSATModel",
+        WORD_TRAIL_COMPONENTS,
+        {"Word"},
+        {"minisat"},
+        "generic_graph",
+    ),
+    (
+        "word_linear_sat",
+        "constraint",
+        "claasp.representations.constraints.sat:WordLinearSATModel",
+        WORD_TRAIL_COMPONENTS,
+        {"Word"},
+        {"minisat"},
+        "generic_graph",
+    ),
+    (
         "word_differential_smt",
         "constraint",
         "claasp.representations.constraints.smt:WordDifferentialSMTModel",
@@ -572,11 +595,11 @@ ANALYSES = (
         'Primitive.analysis.find_optimal_trail(kind="xor_linear")',
         "xor_linear",
         "exact",
+        {"word_linear_sat"},
+        {"minisat"},
         set(),
         set(),
-        set(),
-        {"Present", "Speck"},
-        "reviewed reduced-round slice only",
+        "capability-based Word graph support plus specialized PRESENT/Speck slices",
     ),
     (
         "is_xor_differential_transition_possible",
