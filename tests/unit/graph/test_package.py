@@ -23,8 +23,8 @@ def test_concise_builder_interface_reads_like_pseudocode():
     )
     message, key = builder.inputs()
     builder.add_round()
-    ciphertext = builder.add(Xor(message, key))
-    primitive = builder.build(ciphertext)
+    builder.add(Xor(message, key))
+    primitive = builder.build()
 
     assert primitive.kind.value == "block_cipher"
     assert primitive.evaluate(message=1, key=3) == 2
@@ -34,6 +34,13 @@ def test_concise_builder_interface_reads_like_pseudocode():
 def test_builder_rejects_mixed_input_declaration_styles():
     with pytest.raises(TypeError, match="either as a mapping or as named arguments"):
         PrimitiveBuilder("mixed", {"left": BitWord(1)}, right=BitWord(1))
+
+
+def test_builder_without_a_component_or_explicit_output_cannot_be_built():
+    builder = PrimitiveBuilder("empty", value=BitWord(1))
+
+    with pytest.raises(ValueError, match="add a component"):
+        builder.build()
 
 
 def test_logical_selection_is_independent_of_encoded_bit_size():

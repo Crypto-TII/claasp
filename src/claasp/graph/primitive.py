@@ -582,8 +582,8 @@ class Primitive:
         >>> builder = PrimitiveBuilder("xor_nibbles", {"left": nibble, "right": nibble})
         >>> builder.add_round()
         Round(number=0)
-        >>> output = builder.add_component(Xor(builder.inputs()))
-        >>> primitive = builder.build(output)
+        >>> _ = builder.add_component(Xor(builder.inputs()))
+        >>> primitive = builder.build()
         >>> primitive.evaluate(0b1010, 0b0011)
         9
         >>> (primitive.family_name, len(primitive.graph.rounds), len(primitive.graph.components))
@@ -1595,8 +1595,8 @@ class PrimitiveBuilder:
         >>> builder = PrimitiveBuilder("xor", {"left": bit, "right": bit})
         >>> builder.add_round()
         Round(number=0)
-        >>> output = builder.add_component(Xor(builder.inputs()))
-        >>> primitive = builder.build(output)
+        >>> _ = builder.add_component(Xor(builder.inputs()))
+        >>> primitive = builder.build()
         >>> primitive.evaluate(0, 1)
         1
     """
@@ -1616,6 +1616,7 @@ class PrimitiveBuilder:
             raise TypeError("pass primitive inputs either as a mapping or as named arguments")
         inputs = named_inputs if inputs is None else inputs
         self._built = False
+        self._last_component_output: Port | None = None
         primitive = object.__new__(Primitive)
         self._primitive = primitive
         Primitive.__init__(
@@ -1634,6 +1635,7 @@ class PrimitiveBuilder:
         builder = object.__new__(cls)
         builder._primitive = primitive
         builder._built = False
+        builder._last_component_output = None
         return builder
 
     def _ensure_open(self) -> None:
@@ -1665,7 +1667,9 @@ class PrimitiveBuilder:
         """Validate and append a component, returning its output port."""
 
         self._ensure_open()
-        return self._primitive._add_component(component, primitive_round=primitive_round)
+        output = self._primitive._add_component(component, primitive_round=primitive_round)
+        self._last_component_output = output
+        return output
 
     def add(
         self,
@@ -1774,12 +1778,17 @@ class PrimitiveBuilder:
         self._primitive._set_output(output)
 
     def build(self, output: PortLike | Sequence[PortLike] | None = None) -> Primitive:
-        """Bind an optional output and return the completed primitive."""
+        """Return the completed primitive, defaulting to the last component output."""
 
         self._ensure_open()
         if output is not None:
             self._primitive._set_output(output)
+        elif self._primitive._output is None and self._last_component_output is not None:
+            self._primitive._set_output(self._last_component_output)
         if self._primitive._output is None:
-            raise ValueError("a primitive must have an output before it can be built")
+            raise ValueError(
+                "a primitive must have an output; add a component, pass an output to build(), "
+                "or call set_output()"
+            )
         self._built = True
         return self._primitive

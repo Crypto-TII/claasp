@@ -39,7 +39,7 @@ the S-boxes in parallel, and permute the bits.
    ...         ]
    ...         state = graph.add(Permutation(graph.join(*nibbles), P_LAYER))
    ...
-   ...     return graph.build(state)
+   ...     return graph.build()
 
 ``BitWord(16)`` declares a packed 16-bit boundary. Inside the graph, indexing
 selects individual bits, so ``state[start:start + 4]`` connects one nibble to

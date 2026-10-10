@@ -136,8 +136,8 @@ different message and key size:
    ...     )
    ...     message, key = graph.inputs()
    ...     graph.add_round()
-   ...     ciphertext = graph.add(Xor(message, key))
-   ...     return graph.build(ciphertext)
+   ...     graph.add(Xor(message, key))
+   ...     return graph.build()
    >>> one_time_pad = OneTimePad()
    >>> one_time_pad.details()
    Primitive details
@@ -149,6 +149,12 @@ different message and key size:
      Output: 128 bits
      Rounds: 1
      Realization: default
+   >>> hex(one_time_pad.evaluate(message=0x1234, key=0x00FF))
+   '0x12cb'
+
+``build()`` validates the graph and turns the mutable builder into the finished
+primitive. When no output is passed explicitly, the last component added to
+the graph becomes the output.
 
 ``BitWord(128)`` means one packed 128-bit string. ``Word(128)`` has a different
 purpose: it declares one arithmetic word for operations such as rotation and
