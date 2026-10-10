@@ -116,6 +116,35 @@ The search reads the S-box and permutation semantics from the typed graph.
 Every returned transition and the wiring between both substitution layers are
 recomputed by an independent checker in the regression suite.
 
+Generic exact trail search
+--------------------------
+
+``primitive.analysis.find_optimal_trail()`` defaults to XOR-differential
+search.  The facade inspects domains and components and uses the generic exact
+SAT optimizer for supported Word graphs; it never sends an unrelated graph to
+a PRESENT- or Speck-specific validator.  String and typed kinds are accepted:
+
+.. code-block:: python
+
+   from claasp.primitives import Simon
+
+   differential = Simon(number_of_rounds=3).analysis.find_optimal_trail()
+   linear = Simon(number_of_rounds=3).analysis.find_optimal_trail(kind="xor_linear")
+   assert differential.trail.total_weight == 4
+   assert linear.trail.total_weight == 2
+
+``backend="auto"`` retains deliberately optimized dependency-free PRESENT
+and Speck slices and otherwise selects generic SAT when the graph is supported.
+``backend="sat"`` accepts a custom solver.  ``backend="dependency_free"``
+raises a capability error when no specialized implementation exists.
+
+The default input policy activates ``plaintext`` for a keyed block cipher,
+the sole input of a permutation or function, and fixes key/tweak differences
+or masks according to single-key/single-tweak semantics.  Use
+``nonzero_input``, ``fixed_input_differences``, ``fixed_input_masks``, and
+``fixed_inputs`` to override that policy.  Ambiguous multi-input functions
+require an explicit active input.
+
 ARX trail search
 ----------------
 
@@ -160,6 +189,33 @@ the graph facade:
    >>> primitive = Present(number_of_rounds=1)
    >>> primitive.analyze().is_xor_differential_transition_possible("sbox_1_0", 1, 1)
    False
+
+The public facade also exposes the migrated multi-round workflows. Sound
+deterministic propagation is dependency-free for the supported Speck and
+Simon graphs; probabilistic-truncated Speck optimization, impossible middle
+boundaries, and exact S-box boomerang transitions use the CP driver and decode
+through independent semantic checkers::
+
+   boundaries = Speck(number_of_rounds=3).analysis \
+       .propagate_truncated_xor_difference(
+           "00000000011000000000000000000000"
+       )
+   assert len(boundaries.boundaries) == 4
+
+These are capability-checked operations. An unsupported graph raises an error
+that names the primitive, analysis kind, backend, and first missing semantic
+rule; it is never redirected to a different primitive family's model.
+
+Continuous diffusion
+--------------------
+
+``Analysis.continuous_evaluate`` propagates the legacy MUR2020 continuous
+correlations through the typed graph. The dependency-free implementation
+covers constants, structural wiring, XOR, AND, OR, NOT, modular add/subtract,
+fixed and data-dependent shifts/rotations, S-boxes, binary linear maps, and
+binary-extension-field mixing. It is exercised on Speck, Simon, and AES graphs. Results are explicitly
+``heuristic`` and never carry SAT or optimality status. Components without a
+defined continuous rule fail at the exact graph node.
 
 Linear trail search
 -------------------

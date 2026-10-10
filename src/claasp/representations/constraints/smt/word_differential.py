@@ -5,9 +5,28 @@ from dataclasses import dataclass
 from fractions import Fraction
 from hashlib import sha256
 
-from claasp.components import BitwiseAnd, Constant, Identity, ModularAdd, Rotate, Xor
-from claasp.domains import Word
+from claasp.analysis.linear_properties import expand_binary_field_matrix
+from claasp.components import (
+    Add,
+    BinaryAffineMap,
+    BitVectorSBox,
+    BitwiseAnd,
+    BitwiseNot,
+    BitwiseOr,
+    Constant,
+    Identity,
+    LinearMap,
+    ModularAdd,
+    ModularSubtract,
+    Permutation,
+    Rotate,
+    SBox,
+    Shift,
+    Xor,
+)
+from claasp.domains import BinaryExtensionField, Bit, Word
 from claasp.drivers.solvers import SatStatus
+from claasp.representations.constraints.smt._sbox_encoding import _add_sbox_relation
 from claasp.representations.constraints.smt.formula import SMTFormula
 from claasp.representations.constraints.smt.trails import _at_most
 from claasp.representations.constraints.smt.transitions import (
@@ -16,8 +35,12 @@ from claasp.representations.constraints.smt.transitions import (
 )
 from claasp.semantics.cryptanalysis import (
     BitwiseAndSemantics,
+    BitwiseOrSemantics,
     ModularAddTransitionSemantics,
+    SBoxTransitionSemantics,
+    TrailKind,
     TrailStep,
+    Transition,
 )
 
 from .word_linear import _packed
@@ -118,12 +141,15 @@ class WordDifferentialSMTModel:
 
     @staticmethod
     def _validate(value, value_type):
-        if not isinstance(value_type.domain, Word):
-            raise NotImplementedError("word differential lowering requires Word domains")
+        if not isinstance(value_type.domain, (Bit, Word, BinaryExtensionField)):
+            raise NotImplementedError(
+                "differential lowering requires Bit, Word, or BinaryExtensionField domains"
+            )
+        width = value_type.domain.encoded_bit_size
         if (
             not isinstance(value, int)
             or isinstance(value, bool)
-            or not 0 <= value < 1 << (value_type.unit_count * value_type.domain.width)
+            or not 0 <= value < 1 << (value_type.unit_count * width)
         ):
             raise ValueError("differences must fit their word type")
 
@@ -149,7 +175,7 @@ class WordDifferentialSMTModel:
             self._validate(0, value_type)
             ports[name] = tuple(
                 allocate(f"difference_{name}_{bit}")
-                for bit in range(value_type.unit_count * value_type.domain.width)
+                for bit in range(value_type.unit_count * value_type.domain.encoded_bit_size)
             )
 
         def selected(selection):
@@ -163,8 +189,8 @@ class WordDifferentialSMTModel:
             operands = tuple(selected(selection) for selection in component.inputs)
             operands_by_id[component.component_id] = operands
             output = ports[component.component_id]
-            width = component.output_type.domain.width
-            if isinstance(component, ModularAdd):
+            width = component.output_type.domain.encoded_bit_size
+            if isinstance(component, (ModularAdd, ModularSubtract)):
                 if len(operands) != 2:
                     raise NotImplementedError("differential modular addition requires two operands")
                 for unit in range(component.output_type.unit_count):
@@ -183,24 +209,25 @@ class WordDifferentialSMTModel:
                     }
                     for clause, label in zip(local.assertions, local.provenance):
                         add((mapping[abs(lit)] * (1 if lit > 0 else -1) for lit in clause), label)
-            elif isinstance(component, BitwiseAnd):
+            elif isinstance(component, (BitwiseAnd, BitwiseOr)):
                 for bit, target in enumerate(output):
                     left, right = (indices[operand[bit]] for operand in operands)
                     weight = indices[allocate(f"weight_{component.component_id}_{bit}")]
                     weights.append(variables[weight - 1])
-                    add((left, right, -indices[target]), "and_differential_support")
-                    add((-left, weight), "and_differential_weight")
-                    add((-right, weight), "and_differential_weight")
-                    add((left, right, -weight), "and_differential_weight")
-            elif isinstance(component, Xor):
+                    add((left, right, -indices[target]), "bitwise_differential_support")
+                    add((-left, weight), "bitwise_differential_weight")
+                    add((-right, weight), "bitwise_differential_weight")
+                    add((left, right, -weight), "bitwise_differential_weight")
+            elif isinstance(component, (Xor, Add)):
                 for bit, target in enumerate(output):
                     _xor_equivalence(
                         (target, *(operand[bit] for operand in operands)),
                         indices,
                         clauses,
                         provenance,
+                        allocate,
                     )
-            elif isinstance(component, Identity):
+            elif isinstance(component, (Identity, BitwiseNot)):
                 for source, target in zip(
                     (name for operand in operands for name in operand), output
                 ):
@@ -217,6 +244,99 @@ class WordDifferentialSMTModel:
                             indices,
                             clauses,
                             provenance,
+                        )
+            elif isinstance(component, Shift):
+                amount = min(component.amount, width)
+                for unit in range(component.output_type.unit_count):
+                    base = unit * width
+                    for bit in range(width):
+                        source = bit - amount if component.direction == "right" else bit + amount
+                        target = output[base + bit]
+                        if 0 <= source < width:
+                            _xor_equivalence(
+                                (operands[0][base + source], target),
+                                indices,
+                                clauses,
+                                provenance,
+                            )
+                        else:
+                            add((-indices[target],), "zero_fill_shift_difference")
+            elif isinstance(component, Permutation):
+                for target_unit, source_unit in enumerate(component.mapping):
+                    for bit in range(width):
+                        _xor_equivalence(
+                            (
+                                operands[0][source_unit * width + bit],
+                                output[target_unit * width + bit],
+                            ),
+                            indices,
+                            clauses,
+                            provenance,
+                        )
+            elif isinstance(component, (BitVectorSBox, SBox)):
+                input_names = tuple(name for operand in operands for name in operand)
+                if isinstance(component, BitVectorSBox):
+                    weights.extend(
+                        _add_sbox_relation(
+                            component.table,
+                            TrailKind.XOR_DIFFERENTIAL,
+                            input_names,
+                            output,
+                            component.component_id,
+                            allocate,
+                            indices,
+                            add,
+                        )
+                    )
+                else:
+                    for unit in range(component.output_type.unit_count):
+                        start = unit * width
+                        weights.extend(
+                            _add_sbox_relation(
+                                component.table,
+                                TrailKind.XOR_DIFFERENTIAL,
+                                input_names[start : start + width],
+                                output[start : start + width],
+                                f"{component.component_id}_{unit}",
+                                allocate,
+                                indices,
+                                add,
+                            )
+                        )
+            elif isinstance(component, (LinearMap, BinaryAffineMap)):
+                matrix = (
+                    expand_binary_field_matrix(component.matrix, component.output_type.domain)
+                    if isinstance(component, LinearMap)
+                    and isinstance(component.output_type.domain, BinaryExtensionField)
+                    else component.matrix
+                )
+                source = tuple(name for operand in operands for name in operand)
+                groups = (
+                    tuple(
+                        (
+                            source[unit * width : (unit + 1) * width],
+                            output[unit * width : (unit + 1) * width],
+                        )
+                        for unit in range(component.output_type.unit_count)
+                    )
+                    if isinstance(component, BinaryAffineMap)
+                    else ((source, output),)
+                )
+                for local_source, local_output in groups:
+                    for target, row in zip(local_output, matrix):
+                        _xor_equivalence(
+                            (
+                                target,
+                                *(
+                                    name
+                                    for name, coefficient in zip(local_source, row)
+                                    if coefficient
+                                ),
+                            ),
+                            indices,
+                            clauses,
+                            provenance,
+                            allocate,
                         )
             elif isinstance(component, Constant):
                 for name in output:
@@ -273,7 +393,7 @@ class WordDifferentialSMTModel:
     def _steps_and_wiring(self, values):
         steps = []
         for component in self.primitive.components:
-            width = component.output_type.domain.width
+            width = component.output_type.domain.encoded_bit_size
 
             def units(names, width=width):
                 return tuple(
@@ -282,11 +402,15 @@ class WordDifferentialSMTModel:
 
             output = units(self._ports[component.component_id])
             operands = tuple(units(names) for names in self._operands[component.component_id])
-            if isinstance(component, (ModularAdd, BitwiseAnd)):
+            if isinstance(component, (ModularAdd, ModularSubtract, BitwiseAnd, BitwiseOr)):
                 semantics = (
                     ModularAddTransitionSemantics(width)
-                    if isinstance(component, ModularAdd)
-                    else BitwiseAndSemantics(width)
+                    if isinstance(component, (ModularAdd, ModularSubtract))
+                    else (
+                        BitwiseOrSemantics(width)
+                        if isinstance(component, BitwiseOr)
+                        else BitwiseAndSemantics(width)
+                    )
                 )
                 for unit, target in enumerate(output):
                     transition = semantics.xor_differential(
@@ -294,7 +418,7 @@ class WordDifferentialSMTModel:
                     )
                     if not transition.is_possible:
                         return None
-                    if isinstance(component, ModularAdd):
+                    if isinstance(component, (ModularAdd, ModularSubtract)):
                         for bit in range(width - 1):
                             lower = width - 2 - bit
                             triple = tuple(
@@ -315,7 +439,7 @@ class WordDifferentialSMTModel:
                                 return None
                     steps.append(TrailStep(f"{component.component_id}[{unit}]", transition))
             else:
-                if isinstance(component, Xor):
+                if isinstance(component, (Xor, Add)):
                     from functools import reduce
 
                     expected = tuple(reduce(int.__xor__, items, 0) for items in zip(*operands))
@@ -327,6 +451,69 @@ class WordDifferentialSMTModel:
                         ((value >> amount) | (value << (width - amount))) & ((1 << width) - 1)
                         for value in operands[0]
                     )
+                elif isinstance(component, Shift):
+                    amount = min(component.amount, width)
+                    mask = (1 << width) - 1
+                    expected = tuple(
+                        (value >> amount)
+                        if component.direction == "right"
+                        else (value << amount) & mask
+                        for value in operands[0]
+                    )
+                elif isinstance(component, Permutation):
+                    expected = tuple(operands[0][position] for position in component.mapping)
+                elif isinstance(component, (BitVectorSBox, SBox)):
+                    sbox_semantics = SBoxTransitionSemantics(
+                        component.table,
+                        len(self._ports[component.component_id])
+                        if isinstance(component, BitVectorSBox)
+                        else width,
+                    )
+                    flat_input = tuple(value for operand in operands for value in operand)
+                    transitions: list[Transition] = []
+                    if isinstance(component, BitVectorSBox):
+                        transitions.append(
+                            sbox_semantics.xor_differential(
+                                _packed(self._operands[component.component_id][0], values),
+                                _packed(self._ports[component.component_id], values),
+                            )
+                        )
+                    else:
+                        for unit, target in enumerate(output):
+                            transitions.append(
+                                sbox_semantics.xor_differential(flat_input[unit], target)
+                            )
+                    if any(not transition.is_possible for transition in transitions):
+                        return None
+                    steps.extend(
+                        TrailStep(f"{component.component_id}[{unit}]", transition)
+                        for unit, transition in enumerate(transitions)
+                    )
+                    continue
+                elif isinstance(component, (LinearMap, BinaryAffineMap)):
+                    from claasp.analysis.linear_properties import apply_matrix
+
+                    if isinstance(component, BinaryAffineMap):
+                        expected = tuple(
+                            sum(
+                                (
+                                    sum(
+                                        coefficient & ((value >> (width - 1 - column)) & 1)
+                                        for column, coefficient in enumerate(row)
+                                    )
+                                    & 1
+                                )
+                                << (width - 1 - row_number)
+                                for row_number, row in enumerate(component.matrix)
+                            )
+                            for value in operands[0]
+                        )
+                    else:
+                        expected = apply_matrix(
+                            component.matrix,
+                            tuple(value for operand in operands for value in operand),
+                            component.output_type.domain,
+                        )
                 elif isinstance(component, Constant):
                     expected = (0,) * len(output)
                 else:
@@ -427,7 +614,9 @@ class WordDifferentialSMTModel:
             ("formula_sha256", sha256(repr(formula).encode()).hexdigest()),
         )
         indices = {name: index for index, name in enumerate(formula.variables, 1)}
-        trails, blocks, runtime = [], [], 0.0
+        trails: list[WordDifferentialCharacteristic] = []
+        blocks: list[tuple[int, ...]] = []
+        runtime = 0.0
         context = (
             solver.incremental(formula)
             if callable(getattr(solver, "incremental", None))

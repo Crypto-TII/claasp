@@ -2,7 +2,7 @@ import pytest
 
 from claasp.analysis import AnalysisProblem, FixedValue
 from claasp.drivers.solvers import GLPKSolver, MILPStatus
-from claasp.primitives import Simon, Speck
+from claasp.primitives import BitVectorSBox, Simon, Speck
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints.milp import (
     BooleanMonomialGraphMILPModel,
@@ -90,6 +90,14 @@ def test_glpk_proves_impossible_finite_sbox_relation():
         relation.milp_model(input_pattern=1, output_pattern=1)
     )
     assert result.status is MILPStatus.INFEASIBLE and result.assignment is None
+
+
+def test_glpk_public_trail_search_accepts_a_bit_graph():
+    result = BitVectorSBox(2).analysis.find_optimal_trail(backend="milp")
+
+    assert result.is_optimal
+    assert result.trail.total_weight == result.lower_bound == 0
+    assert "MILP" in result.metadata.technique
 
 
 @pytest.mark.parametrize("rounds, expected", ((1, 2), (2, 3), (4, 8)))

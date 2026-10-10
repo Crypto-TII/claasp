@@ -6,5 +6,15 @@ framework; only calling a driver's ``train`` method does (implemented in
 """
 
 from claasp.drivers.neural.sklearn_driver import SklearnMLPDriver
+from claasp.drivers.neural.tensorflow_driver import (
+    TensorFlowDistinguisherDriver,
+    build_dbitnet,
+    build_gohr_resnet,
+)
 
-__all__ = ["SklearnMLPDriver"]
+__all__ = [
+    "SklearnMLPDriver",
+    "TensorFlowDistinguisherDriver",
+    "build_dbitnet",
+    "build_gohr_resnet",
+]

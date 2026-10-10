@@ -107,11 +107,12 @@ Optional ML training drivers
 ``NeuralTrainingDriver`` implementations live under
 ``claasp.drivers.neural`` and are never imported by
 ``claasp``'s core. The bundled ``SklearnMLPDriver`` trains a small
-``sklearn.neural_network.MLPClassifier``. scikit-learn was chosen over
-legacy's TensorFlow/Keras (``docker/Dockerfile`` pins ``tensorflow==2.13.0``)
-specifically to keep the optional ``ml`` extra (``pip install
-'claasp[ml]'``) light and fast in CI; nothing prevents an equivalent
-TensorFlow, Keras, or PyTorch driver behind the same protocol. The
+``sklearn.neural_network.MLPClassifier``. The separate
+``TensorFlowDistinguisherDriver`` restores the legacy Gohr residual network
+and DBitNet architectures and retains a compatible model between staged-round
+training calls. Install it with ``pip install 'claasp[ml-tensorflow]'``.
+Framework imports remain lazy, so constructing either driver never requires
+its optional extra -- only building or training a model does. The
 scikit-learn import happens inside ``train``, so constructing a
 ``SklearnMLPDriver`` never requires the extra -- only calling ``train`` does::
 
@@ -129,3 +130,14 @@ evidence, never an exact cross-platform fixture: the dedicated
 ``neural-ml-execution`` CI job trains this same reduced-round Speck32/64
 differential distinguisher and only asserts that the final accuracy clears a
 documented threshold, not a specific value.
+
+Automated difference search and staged training
+-----------------------------------------------
+
+``primitive.analysis.find_good_neural_input_difference`` provides the seeded
+evolutionary input-difference search formerly exposed by AutoND.
+``train_staged_neural_distinguisher`` trains successive reduced-round graphs
+until validation accuracy falls below the configured statistical threshold,
+and ``run_autond`` composes both phases. Dataset generation, candidate ranking,
+round limits, and seeds are explicit; a real TensorFlow CI job constructs both
+legacy architectures and performs a bounded training run.

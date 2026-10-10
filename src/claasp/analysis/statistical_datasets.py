@@ -1,7 +1,7 @@
 """Lazy, reproducible statistical dataset families.
 
 These generators retain the useful final-output semantics of CLAASP's legacy
-correlation, CBC, and density datasets without requiring NumPy.  A dataset is
+avalanche, correlation, CBC, random, and density datasets without requiring NumPy. A dataset is
 re-iterable: every iteration reconstructs the same local pseudo-random stream.
 """
 
@@ -110,10 +110,14 @@ class StatisticalDataset:
         return packed_bit_width(self.primitive)
 
     def __iter__(self) -> Iterator[StatisticalRecord]:
+        if self.kind == "avalanche":
+            return self._avalanche_records()
         if self.kind == "correlation":
             return self._correlation_records()
         if self.kind == "cbc":
             return self._cbc_records()
+        if self.kind == "random":
+            return self._random_records()
         if self.kind in {"low_density", "high_density"}:
             return self._density_records()
         raise RuntimeError(f"unsupported statistical dataset kind {self.kind!r}")
@@ -206,6 +210,29 @@ class StatisticalDataset:
                     raise TypeError("statistical datasets require a packed integer output")
                 yield StatisticalRecord(sample, block, output ^ selected)
 
+    def _avalanche_records(self) -> Iterator[StatisticalRecord]:
+        random = Random(self.seed)
+        width = packed_bit_width(self.primitive, self.input_name)
+        fixed = dict(self.fixed_inputs)
+        for sample in range(self.sample_count):
+            inputs = {
+                name: (random.getrandbits(width) if name == self.input_name else fixed.get(name, 0))
+                for name, width in (
+                    (name, packed_bit_width(self.primitive, name))
+                    for name in self.primitive.input_ports
+                )
+            }
+            baseline = self.primitive.evaluate(inputs)
+            if not isinstance(baseline, int):
+                raise TypeError("statistical datasets require a packed integer output")
+            for bit in range(width):
+                changed = dict(inputs)
+                changed[self.input_name] ^= 1 << (width - bit - 1)
+                output = self.primitive.evaluate(changed)
+                if not isinstance(output, int):
+                    raise TypeError("statistical datasets require a packed integer output")
+                yield StatisticalRecord(sample, bit, baseline ^ output)
+
     def _cbc_records(self) -> Iterator[StatisticalRecord]:
         random = Random(self.seed)
         for sample in range(self.sample_count):
@@ -219,6 +246,19 @@ class StatisticalDataset:
                     raise TypeError("statistical datasets require a packed integer output")
                 yield StatisticalRecord(sample, block, output)
                 chaining_value = output
+
+    def _random_records(self) -> Iterator[StatisticalRecord]:
+        random = Random(self.seed)
+        selected_width = packed_bit_width(self.primitive, self.input_name)
+        for sample in range(self.sample_count):
+            other_inputs = self._random_other_inputs(random)
+            for block in range(self.block_count):
+                inputs = dict(other_inputs)
+                inputs[self.input_name] = random.getrandbits(selected_width)
+                output = self.primitive.evaluate(inputs)
+                if not isinstance(output, int):
+                    raise TypeError("statistical datasets require a packed integer output")
+                yield StatisticalRecord(sample, block, output)
 
     def _density_inputs(self) -> Iterator[int]:
         width = packed_bit_width(self.primitive, self.input_name)
@@ -285,6 +325,35 @@ def correlation_dataset(
     )
 
 
+def avalanche_statistical_dataset(
+    primitive: Primitive,
+    input_name: str,
+    number_of_samples: int,
+    *,
+    seed: int = 0,
+    fixed_inputs: Mapping[str, int] | None = None,
+) -> StatisticalDataset:
+    """Return one output difference per selected-input bit and sample.
+
+    EXAMPLES::
+
+        >>> callable(avalanche_statistical_dataset)
+        True
+    """
+
+    blocks = packed_bit_width(primitive, input_name)
+    return _dataset(
+        primitive,
+        "avalanche",
+        input_name,
+        number_of_samples,
+        blocks,
+        seed,
+        1.0,
+        fixed_inputs,
+    )
+
+
 def cbc_dataset(
     primitive: Primitive,
     input_name: str,
@@ -310,6 +379,35 @@ def cbc_dataset(
     return _dataset(
         primitive,
         "cbc",
+        input_name,
+        number_of_samples,
+        blocks_per_sample,
+        seed,
+        1.0,
+        fixed_inputs,
+    )
+
+
+def random_statistical_dataset(
+    primitive: Primitive,
+    input_name: str,
+    number_of_samples: int,
+    blocks_per_sample: int,
+    *,
+    seed: int = 0,
+    fixed_inputs: Mapping[str, int] | None = None,
+) -> StatisticalDataset:
+    """Return outputs for random selected inputs and sample-fixed other inputs.
+
+    EXAMPLES::
+
+        >>> callable(random_statistical_dataset)
+        True
+    """
+
+    return _dataset(
+        primitive,
+        "random",
         input_name,
         number_of_samples,
         blocks_per_sample,

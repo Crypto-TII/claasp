@@ -29,6 +29,8 @@ EXPECTED_TYPING_BOUNDARIES = [
     "pandas.*",
     "sklearn",
     "sklearn.*",
+    "tensorflow",
+    "tensorflow.*",
 ]
 EXPECTED_VERSIONS = {
     "build": "1.3.0",

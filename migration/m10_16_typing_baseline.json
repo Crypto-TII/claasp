@@ -1,14 +1,14 @@
 {
   "counts_by_code": {
-    "arg-type": 174,
-    "assignment": 79,
+    "arg-type": 173,
+    "assignment": 76,
     "attr-defined": 130,
     "call-arg": 7,
-    "call-overload": 82,
+    "call-overload": 81,
     "dict-item": 29,
     "has-type": 22,
     "import-untyped": 1,
-    "index": 73,
+    "index": 72,
     "list-item": 4,
     "misc": 29,
     "no-redef": 1,
@@ -17,15 +17,15 @@
     "return-value": 4,
     "type-var": 2,
     "union-attr": 54,
-    "var-annotated": 126
+    "var-annotated": 113
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 719,
+    "src/claasp": 700,
     "tests": 161,
     "tools": 20
   },
-  "diagnostic_count": 900,
+  "diagnostic_count": 881,
   "diagnostics": [
     {
       "code": "operator",
@@ -107,7 +107,7 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 105,
+      "line": 124,
       "message": "Need type annotation for \"results\" (hint: \"results: list[<type>] = ...\")",
       "path": "src/claasp/analysis/facade.py"
     },
@@ -3327,14 +3327,14 @@
     {
       "code": "var-annotated",
       "column": 23,
-      "line": 938,
+      "line": 956,
       "message": "Need type annotation for \"constraints\" (hint: \"constraints: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 1179,
+      "line": 1197,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "src/claasp/representations/constraints/cp/trails.py"
     },
@@ -3719,107 +3719,9 @@
     {
       "code": "arg-type",
       "column": 32,
-      "line": 208,
+      "line": 215,
       "message": "Argument 1 to \"extend\" of \"list\" has incompatible type \"tuple[tuple[int, int, int], tuple[int, int, int]]\"; expected \"Iterable[tuple[int]]\"",
       "path": "src/claasp/representations/constraints/smt/transitions.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 430,
-      "message": "Need type annotation for \"trails\" (hint: \"trails: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/word_differential.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 17,
-      "line": 430,
-      "message": "Need type annotation for \"blocks\" (hint: \"blocks: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/word_differential.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 21,
-      "line": 165,
-      "message": "Need type annotation for \"consumers\"",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 25,
-      "line": 166,
-      "message": "Need type annotation for \"weights\" (hint: \"weights: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
-    },
-    {
-      "code": "assignment",
-      "column": 45,
-      "line": 185,
-      "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, ...], ...]\", target has type \"tuple[()]\")",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
-    },
-    {
-      "code": "assignment",
-      "column": 21,
-      "line": 217,
-      "message": "Incompatible types in assignment (expression has type \"tuple[Any, ...]\", variable has type \"int\")",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
-    },
-    {
-      "code": "index",
-      "column": 56,
-      "line": 218,
-      "message": "Value of type \"int\" is not indexable",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 36,
-      "line": 221,
-      "message": "Argument 1 to \"append\" of \"list\" has incompatible type \"tuple[str | None, int, Any, None]\"; expected \"tuple[str | None, int, Any, str]\"",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
-    },
-    {
-      "code": "assignment",
-      "column": 17,
-      "line": 223,
-      "message": "Incompatible types in assignment (expression has type \"tuple[Any, ...]\", variable has type \"int\")",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 43,
-      "line": 224,
-      "message": "No overload variant of \"zip\" matches argument types \"int\", \"tuple[Any, ...]\"",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 24,
-      "line": 375,
-      "message": "Need type annotation for \"names\"",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 13,
-      "line": 379,
-      "message": "Need type annotation for \"edge_names\"",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 495,
-      "message": "Need type annotation for \"trails\" (hint: \"trails: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 17,
-      "line": 495,
-      "message": "Need type annotation for \"blocks\" (hint: \"blocks: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/word_linear.py"
     },
     {
       "code": "var-annotated",
@@ -4429,41 +4331,6 @@
       "line": 318,
       "message": "Cannot infer type of lambda",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 346,
-      "message": "Need type annotation for \"outputs\" (hint: \"outputs: set[<type>] = ...\")",
-      "path": "src/claasp/semantics/cryptanalysis/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 13,
-      "line": 417,
-      "message": "Need type annotation for \"next_carries\"",
-      "path": "src/claasp/semantics/cryptanalysis/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 13,
-      "line": 447,
-      "message": "Need type annotation for \"next_states\"",
-      "path": "src/claasp/semantics/cryptanalysis/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 464,
-      "message": "Need type annotation for \"counts\"",
-      "path": "src/claasp/semantics/cryptanalysis/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 13,
-      "line": 520,
-      "message": "Need type annotation for \"next_carries\"",
-      "path": "src/claasp/semantics/cryptanalysis/trails.py"
     },
     {
       "code": "operator",
@@ -5091,7 +4958,7 @@
     {
       "code": "dict-item",
       "column": 10,
-      "line": 132,
+      "line": 143,
       "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"Port | Selection\"",
       "path": "tests/integration/test_minizinc_integration.py"
     },
@@ -6232,28 +6099,28 @@
     {
       "code": "var-annotated",
       "column": 19,
-      "line": 290,
+      "line": 295,
       "message": "Need type annotation for \"REPRESENTATIONS\"",
       "path": "tools/generate_catalogue_metadata.py"
     },
     {
       "code": "var-annotated",
       "column": 12,
-      "line": 478,
+      "line": 501,
       "message": "Need type annotation for \"ANALYSES\"",
       "path": "tools/generate_catalogue_metadata.py"
     },
     {
       "code": "var-annotated",
       "column": 5,
-      "line": 661,
+      "line": 695,
       "message": "Need type annotation for \"test_evidence\" (hint: \"test_evidence: dict[<type>, <type>] = ...\")",
       "path": "tools/generate_catalogue_metadata.py"
     },
     {
       "code": "arg-type",
       "column": 41,
-      "line": 721,
+      "line": 755,
       "message": "Argument 1 to \"list\" has incompatible type \"Any | object\"; expected \"Iterable[Any]\"",
       "path": "tools/generate_catalogue_metadata.py"
     },
@@ -6274,49 +6141,49 @@
     {
       "code": "assignment",
       "column": 1,
-      "line": 1721,
+      "line": 1725,
       "message": "Incompatible types in assignment (expression has type \"str | None\", variable has type \"str\")",
       "path": "tools/legacy_inventory.py"
     },
     {
       "code": "no-redef",
       "column": 1,
-      "line": 2315,
-      "message": "Name \"_destination\" already defined on line 1295",
+      "line": 2319,
+      "message": "Name \"_destination\" already defined on line 1299",
       "path": "tools/legacy_inventory.py"
     },
     {
       "code": "operator",
       "column": 27,
-      "line": 2358,
+      "line": 2362,
       "message": "\"str\" not callable",
       "path": "tools/legacy_inventory.py"
     },
     {
       "code": "call-overload",
       "column": 5,
-      "line": 2394,
+      "line": 2398,
       "message": "No overload variant of \"update\" of \"MutableMapping\" matches argument type \"object\"",
       "path": "tools/legacy_inventory.py"
     },
     {
       "code": "var-annotated",
       "column": 5,
-      "line": 2497,
+      "line": 2501,
       "message": "Need type annotation for \"families\" (hint: \"families: dict[<type>, <type>] = ...\")",
       "path": "tools/legacy_inventory.py"
     },
     {
       "code": "var-annotated",
       "column": 5,
-      "line": 2583,
+      "line": 2587,
       "message": "Need type annotation for \"counts\" (hint: \"counts: dict[<type>, <type>] = ...\")",
       "path": "tools/legacy_inventory.py"
     },
     {
       "code": "var-annotated",
       "column": 5,
-      "line": 2584,
+      "line": 2588,
       "message": "Need type annotation for \"destinations\" (hint: \"destinations: dict[<type>, <type>] = ...\")",
       "path": "tools/legacy_inventory.py"
     },

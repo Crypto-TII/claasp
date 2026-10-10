@@ -5,7 +5,7 @@ import pytest
 
 from claasp.analysis import AnalysisProblem, FixedValue
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
-from claasp.primitives import AES, Present, Simon, Speck
+from claasp.primitives import AES, BitVectorSBox, Present, Simon, Speck
 from claasp.representations.constraints.cp import (
     ImpossibleBoundaryCPModel,
     MiniZincModel,
@@ -103,6 +103,17 @@ def test_minizinc_reports_unsatisfiable_models():
 
     assert result.status is CPStatus.UNSATISFIABLE
     assert result.values is None
+
+
+def test_minizinc_public_trail_search_accepts_a_bit_graph():
+    result = BitVectorSBox(2).analysis.find_optimal_trail(
+        backend="cp",
+        solver=MiniZincSolver(solver=_test_solver(), timeout_seconds=30),
+    )
+
+    assert result.is_optimal
+    assert result.trail.total_weight == result.lower_bound == 0
+    assert "CP" in result.metadata.technique
 
 
 def test_minizinc_recovers_and_independently_verifies_reduced_speck_key():
@@ -544,3 +555,41 @@ def test_minizinc_preserves_legacy_simon_eleven_round_impossible_fixture():
     assert str(boundary.forward).replace("?", "2") == "22222222222222220222222122222202"
     assert str(boundary.backward).replace("?", "2") == "22222222002222202222222022222222"
     assert boundary.contradictory_positions == (23,)
+
+
+def test_public_api_preserves_simon_impossible_search_fixture():
+    primitive = Simon(number_of_rounds=11)
+    result = primitive.analysis.find_impossible_xor_differential(
+        6,
+        input_pattern="00000000000000000000000000000001",
+        output_pattern="000000?0?00000000000000000000000",
+        solver=MiniZincSolver(solver=_test_solver(), timeout_seconds=30),
+    )
+
+    assert result.independently_valid
+    assert result.characteristic.contradictory_positions == (23,)
+
+
+def test_public_api_preserves_probabilistic_truncated_speck_fixture():
+    primitive = Speck(number_of_rounds=2)
+    result = primitive.analysis.find_probabilistic_truncated_xor_differential(
+        "00000000011111001110000000000000",
+        "???????????????1???????????????1",
+        solver=MiniZincSolver(solver=_test_solver(), timeout_seconds=60),
+    )
+
+    assert result.independently_valid
+    assert result.characteristic.weight == 1.0
+
+
+def test_public_api_preserves_exact_sbox_boomerang_search():
+    primitive = Present(number_of_rounds=1)
+    result = primitive.analysis.find_sbox_boomerang_transition(
+        "sbox_1_0",
+        input_difference=1,
+        output_difference=2,
+        solver=MiniZincSolver(solver=_test_solver()),
+    )
+
+    assert result.independently_valid
+    assert result.characteristic.count == 4

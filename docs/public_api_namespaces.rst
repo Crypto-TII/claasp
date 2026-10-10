@@ -25,6 +25,12 @@ claasp.analysis.linear_properties
 .. automodule:: claasp.analysis.linear_properties
    :no-index:
 
+claasp.analysis.trail_search
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.trail_search
+   :no-index:
+
 claasp.analysis.truncated
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -559,6 +565,12 @@ claasp.representations
 .. automodule:: claasp.representations
    :no-index:
 
+claasp.representations.constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints
+   :no-index:
+
 claasp.representations.constraints.cp
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -593,6 +605,12 @@ claasp.representations.constraints.sat.exporters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.representations.constraints.sat.exporters
+   :no-index:
+
+claasp.representations.constraints.sat.trails
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.trails
    :no-index:
 
 claasp.representations.constraints.smt

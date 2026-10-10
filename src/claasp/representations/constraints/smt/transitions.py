@@ -37,12 +37,12 @@ class SBoxTransitionSMTModel:
 
         width = self.semantics.width
         variables = tuple(f"input_{bit}" for bit in range(width)) + tuple(
-            f"output_{bit}" for bit in range(width)
+            f"output_{bit}" for bit in range(self.semantics.output_width)
         )
         clauses = []
         provenance = []
         for source in range(1 << width):
-            for target in range(1 << width):
+            for target in range(1 << self.semantics.output_width):
                 transition = (
                     self.semantics.xor_differential(source, target)
                     if self.kind is TrailKind.XOR_DIFFERENTIAL
@@ -50,7 +50,7 @@ class SBoxTransitionSMTModel:
                 )
                 if transition.is_possible:
                     continue
-                assignment = _bits(source, width) + _bits(target, width)
+                assignment = _bits(source, width) + _bits(target, self.semantics.output_width)
                 clauses.append(
                     tuple(
                         -(position + 1) if value else position + 1
@@ -64,9 +64,14 @@ class SBoxTransitionSMTModel:
         ):
             if value is None:
                 continue
-            if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < 1 << width:
+            pattern_width = width if prefix == "input" else self.semantics.output_width
+            if (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or not 0 <= value < 1 << pattern_width
+            ):
                 raise ValueError(f"{prefix}_pattern must fit the S-box width")
-            for bit, encoded in enumerate(_bits(value, width)):
+            for bit, encoded in enumerate(_bits(value, pattern_width)):
                 variable = offset + bit + 1
                 clauses.append((variable if encoded else -variable,))
                 provenance.append(f"fixed_{prefix}")
@@ -77,7 +82,9 @@ class SBoxTransitionSMTModel:
 
         width = self.semantics.width
         source = _integer(tuple(assignment[f"input_{bit}"] for bit in range(width)))
-        target = _integer(tuple(assignment[f"output_{bit}"] for bit in range(width)))
+        target = _integer(
+            tuple(assignment[f"output_{bit}"] for bit in range(self.semantics.output_width))
+        )
         return (
             self.semantics.xor_differential(source, target)
             if self.kind is TrailKind.XOR_DIFFERENTIAL
@@ -250,9 +257,21 @@ def _integer(bits: tuple[int, ...]) -> int:
     return value
 
 
-def _xor_equivalence(names, indices, clauses, provenance):
+def _xor_equivalence(names, indices, clauses, provenance, allocate=None):
     # names[0] equals the XOR of the remaining variables. Forbid precisely the
     # assignments with odd parity over all names.
+    names = tuple(names)
+    if len(names) > 5:
+        if allocate is None:
+            raise ValueError("large XOR relations require an auxiliary-variable allocator")
+        output, operands = names[0], names[1:]
+        current = operands[0]
+        for number, operand in enumerate(operands[1:-1]):
+            auxiliary = allocate(f"xor_aux_{len(indices)}_{number}")
+            _xor_equivalence((auxiliary, current, operand), indices, clauses, provenance)
+            current = auxiliary
+        _xor_equivalence((output, current, operands[-1]), indices, clauses, provenance)
+        return
     for assignment in range(1 << len(names)):
         values = tuple((assignment >> (len(names) - 1 - bit)) & 1 for bit in range(len(names)))
         if sum(values) % 2 == 0:
