@@ -4,7 +4,7 @@ Evaluating primitives
 One binary input
 ----------------
 
-At ordinary cipher boundaries, pass one packed Python integer for each named
+At ordinary binary primitive boundaries, pass one packed Python integer for each named
 input. The returned integer uses the primitive's documented bit width:
 
 .. doctest::

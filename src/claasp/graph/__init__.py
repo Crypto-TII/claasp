@@ -36,11 +36,12 @@ from claasp.graph.realization import (
     select_realization,
 )
 from claasp.graph.round import Round
-from claasp.graph.value_type import ValueType
+from claasp.graph.value_type import BitWord, ValueType
 
 __all__ = [
     "AmbiguousRealizationError",
     "BindingKind",
+    "BitWord",
     "Component",
     "CompositeBuilder",
     "CompositeDefinition",

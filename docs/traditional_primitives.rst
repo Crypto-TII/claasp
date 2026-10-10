@@ -114,7 +114,7 @@ rounds, and represents SubBytes algebraically:
 The ``lookup`` realization stores the published 256-entry AES substitution
 table. The ``algebraic`` realization expresses the same substitution as field
 inversion followed by the AES affine transformation. They produce the same
-cipher values but expose different graph components to analysis backends.
+output values but expose different graph components to analysis backends.
 
 Use :doc:`customizing_aes` to replace the S-box, omit MixColumns, change other
 AES building blocks, or use Toy AES with a smaller state or word size.

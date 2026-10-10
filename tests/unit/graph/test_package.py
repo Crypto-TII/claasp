@@ -1,7 +1,39 @@
 import pytest
 
-from claasp import Bit, Component, Port, PrimeField, Primitive, PrimitiveBuilder, Round, ValueType
-from claasp.components import Identity
+from claasp import (
+    Bit,
+    BitWord,
+    Component,
+    Port,
+    PrimeField,
+    Primitive,
+    PrimitiveBuilder,
+    Round,
+    ValueType,
+)
+from claasp.components import Identity, Xor
+
+
+def test_concise_builder_interface_reads_like_pseudocode():
+    builder = PrimitiveBuilder(
+        "one_time_pad",
+        message=BitWord(128),
+        key=BitWord(128),
+        instance_name="OneTimePad-128",
+    )
+    message, key = builder.inputs()
+    builder.add_round()
+    ciphertext = builder.add(Xor(message, key))
+    primitive = builder.build(ciphertext)
+
+    assert primitive.kind.value == "block_cipher"
+    assert primitive.evaluate(message=1, key=3) == 2
+    assert primitive.details().instance == "OneTimePad-128"
+
+
+def test_builder_rejects_mixed_input_declaration_styles():
+    with pytest.raises(TypeError, match="either as a mapping or as named arguments"):
+        PrimitiveBuilder("mixed", {"left": BitWord(1)}, right=BitWord(1))
 
 
 def test_logical_selection_is_independent_of_encoded_bit_size():

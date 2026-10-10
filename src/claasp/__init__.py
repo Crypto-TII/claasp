@@ -25,6 +25,7 @@ from claasp.drivers.source import (
 )
 from claasp.encoding import bits_from_int, int_from_bits, int_from_units, units_from_int
 from claasp.graph import (
+    BitWord,
     Component,
     CompositeBuilder,
     CompositeDefinition,
@@ -119,6 +120,7 @@ __all__ = [
     "BatchExecutionDriver",
     "BinaryExtensionField",
     "Bit",
+    "BitWord",
     "ChaChaQuarterRound",
     "Component",
     "ComponentInverseRegistry",

@@ -1604,13 +1604,17 @@ class PrimitiveBuilder:
     def __init__(
         self,
         family_name: str,
-        inputs: Mapping[str, ValueType | PrimitiveInput],
+        inputs: Mapping[str, ValueType | PrimitiveInput] | None = None,
         *,
         kind: PrimitiveKind | str | None = None,
         provenance: tuple[tuple[str, str], ...] = (),
         instance_name: str | None = None,
         round_count: int | None = None,
+        **named_inputs: ValueType | PrimitiveInput,
     ) -> None:
+        if inputs is not None and named_inputs:
+            raise TypeError("pass primitive inputs either as a mapping or as named arguments")
+        inputs = named_inputs if inputs is None else inputs
         self._built = False
         primitive = object.__new__(Primitive)
         self._primitive = primitive
@@ -1662,6 +1666,16 @@ class PrimitiveBuilder:
 
         self._ensure_open()
         return self._primitive._add_component(component, primitive_round=primitive_round)
+
+    def add(
+        self,
+        component: Component,
+        *,
+        primitive_round: Round | None = None,
+    ) -> Port:
+        """Append ``component`` using the concise pseudocode-style spelling."""
+
+        return self.add_component(component, primitive_round=primitive_round)
 
     def add_composite(
         self,

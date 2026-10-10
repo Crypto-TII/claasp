@@ -1,8 +1,8 @@
-from collections.abc import Iterable
 from dataclasses import dataclass
 
-from claasp.components.word._validation import require_word_inputs
-from claasp.graph import Component, Selection
+from claasp.components.algebraic._validation import normalize_inputs, require_homogeneous_inputs
+from claasp.domains import Bit, Word
+from claasp.graph import Component, PortLike
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -16,13 +16,19 @@ class Xor(Component):
         9
     """
 
-    def __init__(
-        self, component_inputs: Iterable[Selection], component_id: str | None = None
-    ) -> None:
-        inputs = tuple(component_inputs)
+    def __init__(self, *component_inputs: PortLike, component_id: str | None = None) -> None:
+        if component_inputs and isinstance(component_inputs[-1], str):
+            if component_id is not None:
+                raise TypeError("component_id was supplied twice")
+            *component_inputs, component_id = component_inputs
+        if len(component_inputs) == 1 and not isinstance(component_inputs[0], PortLike):
+            component_inputs = tuple(component_inputs[0])
+        inputs = normalize_inputs(tuple(component_inputs))
         if len(inputs) < 2:
             raise ValueError("word XOR requires at least two inputs")
-        inputs, output_type = require_word_inputs(inputs, "word XOR")
+        output_type = require_homogeneous_inputs(inputs, "XOR")
+        if not isinstance(output_type.domain, (Bit, Word)):
+            raise ValueError("XOR requires the Bit or Word domain")
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", inputs)
         object.__setattr__(self, "output_type", output_type)

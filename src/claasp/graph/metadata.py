@@ -106,7 +106,7 @@ def infer_primitive_kind(input_descriptors: dict[str, PrimitiveInput]) -> Primit
     if any(item.is_secret for item in input_descriptors.values()):
         if names & {"tweak", "input_tweak"}:
             return PrimitiveKind.TWEAKABLE_BLOCK_CIPHER
-        if "plaintext" in names:
+        if names & {"plaintext", "message"}:
             return PrimitiveKind.BLOCK_CIPHER
         return PrimitiveKind.BLOCK_FUNCTION
     if names == {"state"} or names == {"input_state"}:

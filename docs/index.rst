@@ -15,6 +15,7 @@ systems and solvers are optional backends.
 
    getting_started
    quick_analysis_scripts
+   implementing_toy_spn
    primitive_authoring
    analysis
    traditional_primitives

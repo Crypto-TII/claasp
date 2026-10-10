@@ -48,3 +48,27 @@ class ValueType:
 
         scalar_size = self.domain.encoded_bit_size
         return None if scalar_size is None else self.unit_count * scalar_size
+
+
+def BitWord(bit_size: int) -> ValueType:
+    """Return the boundary type for one packed string of individual bits.
+
+    ``BitWord(128)`` is the concise authoring form of
+    ``ValueType(domain=Bit(), shape=(128,))``. Use ``Word`` instead when
+    the value is one arithmetic word with rotation or modular-add semantics.
+
+    EXAMPLES::
+
+        >>> from claasp import BitWord
+        >>> value_type = BitWord(128)
+        >>> (value_type.unit_count, value_type.encoded_bit_size)
+        (128, 128)
+    """
+
+    from claasp.domains import Bit
+
+    if not isinstance(bit_size, int) or isinstance(bit_size, bool):
+        raise TypeError("bit_size must be an integer")
+    if bit_size <= 0:
+        raise ValueError("bit_size must be positive")
+    return ValueType(Bit(), (bit_size,))

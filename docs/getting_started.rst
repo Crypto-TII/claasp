@@ -51,48 +51,11 @@ That guide shows official instances, constructor parameters, realizations,
 reduced-round configurations, and links to S-box replacement and other AES
 customizations.
 
-Implement a primitive
----------------------
-
-A primitive is a typed graph. This one-round example implements a fixed-size
-one-time pad with one XOR component. Change ``bit_size`` to build another
-message and key size:
-
-.. doctest::
-
-   >>> from claasp import PrimitiveBuilder, ValueType, Word
-   >>> from claasp.components import Xor
-   >>> bit_size = 128
-   >>> value_type = ValueType(domain=Word(bit_size), shape=(1,))
-   >>> builder = PrimitiveBuilder(
-   ...     "one_time_pad",
-   ...     {"message": value_type, "key": value_type},
-   ...     kind="block_cipher",
-   ...     instance_name=f"OneTimePad-{bit_size}",
-   ... )
-   >>> builder.add_round()
-   Round(number=0)
-   >>> ciphertext = builder.add_component(Xor(builder.inputs()))
-   >>> one_time_pad = builder.build(ciphertext)
-   >>> one_time_pad.details()
-   Primitive details
-     Type: block cipher
-     Instance: OneTimePad-128
-     Inputs:
-       message: 128 bits (public)
-       key: 128 bits (secret)
-     Output: 128 bits
-     Rounds: 1
-     Realization: default
-
-See :doc:`primitive_authoring` for rounds, component selection, intermediate
-states, finite-field operations, and complete primitive classes.
-
-Evaluate a cipher
------------------
+Evaluate a primitive
+--------------------
 
 Supply one value for each named input. CLAASP accepts packed Python integers
-at ordinary binary cipher boundaries:
+at ordinary binary primitive boundaries:
 
 .. doctest::
 
@@ -152,3 +115,45 @@ probabilities by default:
 :doc:`Want to know more about displaying a trail? <displaying_results>`
 That guide covers ``show(details=True)``, structured report data, and terminal,
 Markdown, and CSV output.
+
+Implement your own primitive
+----------------------------
+
+Primitive source follows the order of the pseudocode. This function builds a
+fixed-size one-time pad with one XOR component. Change ``bit_size`` to build a
+different message and key size:
+
+.. doctest::
+
+   >>> from claasp import BitWord, PrimitiveBuilder
+   >>> from claasp.components import Xor
+   >>> def OneTimePad(bit_size=128):
+   ...     graph = PrimitiveBuilder(
+   ...         "one_time_pad",
+   ...         message=BitWord(bit_size),
+   ...         key=BitWord(bit_size),
+   ...         instance_name=f"OneTimePad-{bit_size}",
+   ...     )
+   ...     message, key = graph.inputs()
+   ...     graph.add_round()
+   ...     ciphertext = graph.add(Xor(message, key))
+   ...     return graph.build(ciphertext)
+   >>> one_time_pad = OneTimePad()
+   >>> one_time_pad.details()
+   Primitive details
+     Type: block cipher
+     Instance: OneTimePad-128
+     Inputs:
+       message: 128 bits (public)
+       key: 128 bits (secret)
+     Output: 128 bits
+     Rounds: 1
+     Realization: default
+
+``BitWord(128)`` means one packed 128-bit string. ``Word(128)`` has a different
+purpose: it declares one arithmetic word for operations such as rotation and
+addition modulo :math:`2^{128}`.
+
+:doc:`Want to know more about implementing your own primitives? <implementing_toy_spn>`
+That guide builds a complete two-round ToySPN and explains inputs, rounds,
+components, intermediate values, and the final output.

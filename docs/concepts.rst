@@ -74,6 +74,18 @@ visible:
    >>> vector.encoded_bit_size
    36
 
+For the common boundary type consisting of one packed string of individual
+bits, ``BitWord(size)`` is a concise spelling:
+
+.. doctest::
+
+   >>> from claasp import Bit, BitWord
+   >>> BitWord(128) == ValueType(domain=Bit(), shape=(128,))
+   True
+
+This is different from ``ValueType(domain=Word(128), shape=(1,))``: the latter
+declares one arithmetic word for word-level rotation and modular addition.
+
 The comma in ``(4,)`` is Python's syntax for a one-element tuple. Without the
 comma, ``(4)`` is just the integer ``4``. The tuple is needed because a shape
 may have more than one dimension:

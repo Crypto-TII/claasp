@@ -24,6 +24,7 @@ analysis guides for your own work.
    :caption: Working with primitives
 
    customizing_aes
+   implementing_toy_spn
    primitive_authoring
    composite_blocks
    transformations
