@@ -96,11 +96,11 @@ than being inferred from package names. Queries work in either direction:
    ...     item.name for item in catalogue.analyses(primitive="AES")}
    True
 
-These declarations are conservative. For example, AES is not advertised for
-the generic Boolean-CNF analysis merely because a CNF module exists: its graph
-contains component semantics that the current CNF lowering does not implement.
-When an analysis supports only particular primitive parameters, its catalogue
-record states that restriction explicitly.
+These declarations are conservative. For example, a reduced one-round AES
+graph has an exact generic SAT trail regression, but the catalogue does not
+advertise that analysis for the whole AES family until the supported parameter
+range is declared. When an analysis supports only particular primitive
+parameters, its catalogue record states that restriction explicitly.
 
 Formatting these records as terminal tables, Markdown, CSV, JSON, or dataframes
 belongs to the report/presentation layer rather than catalogue semantics.

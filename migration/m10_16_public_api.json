@@ -2396,6 +2396,18 @@
       "qualified_name": "claasp.analysis.facade.Analysis.find_optimal_trail"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.find_probabilistic_truncated_xor_differential",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.find_probabilistic_truncated_xor_differential"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.find_sbox_boomerang_transition",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.find_sbox_boomerang_transition"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.is_xor_differential_transition_possible",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -2520,11 +2532,25 @@
       "qualified_name": "claasp.analysis.facade.TrailSearchBackend.AUTO"
     },
     {
+      "canonical_name": "claasp.analysis.facade.TrailSearchBackend.CP",
+      "defined_in": "claasp.analysis.facade",
+      "documented_by": "claasp.analysis.facade.TrailSearchBackend",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.facade.TrailSearchBackend.CP"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.TrailSearchBackend.DEPENDENCY_FREE",
       "defined_in": "claasp.analysis.facade",
       "documented_by": "claasp.analysis.facade.TrailSearchBackend",
       "kind": "enum_member",
       "qualified_name": "claasp.analysis.facade.TrailSearchBackend.DEPENDENCY_FREE"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.TrailSearchBackend.MILP",
+      "defined_in": "claasp.analysis.facade",
+      "documented_by": "claasp.analysis.facade.TrailSearchBackend",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.facade.TrailSearchBackend.MILP"
     },
     {
       "canonical_name": "claasp.analysis.facade.TrailSearchBackend.SAT",
@@ -2534,11 +2560,42 @@
       "qualified_name": "claasp.analysis.facade.TrailSearchBackend.SAT"
     },
     {
+      "canonical_name": "claasp.analysis.facade.TrailSearchBackend.SMT",
+      "defined_in": "claasp.analysis.facade",
+      "documented_by": "claasp.analysis.facade.TrailSearchBackend",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.facade.TrailSearchBackend.SMT"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.TrailSearchBackend.__init__",
       "defined_in": "claasp.analysis.facade",
       "documented_by": "claasp.analysis.facade.TrailSearchBackend",
       "kind": "constructor",
       "qualified_name": "claasp.analysis.facade.TrailSearchBackend.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_workflows.find_good_input_difference",
+      "defined_in": "claasp.analysis.neural_workflows",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.find_good_input_difference"
+    },
+    {
+      "canonical_name": "claasp.analysis.advanced_trails.find_impossible_xor_differential",
+      "defined_in": "claasp.analysis.advanced_trails",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.find_impossible_xor_differential"
+    },
+    {
+      "canonical_name": "claasp.analysis.advanced_trails.find_probabilistic_truncated_xor_differential",
+      "defined_in": "claasp.analysis.advanced_trails",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.find_probabilistic_truncated_xor_differential"
+    },
+    {
+      "canonical_name": "claasp.analysis.advanced_trails.find_sbox_boomerang_transition",
+      "defined_in": "claasp.analysis.advanced_trails",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.find_sbox_boomerang_transition"
     },
     {
       "canonical_name": "claasp.analysis.datasets.generate_avalanche_dataset",
@@ -3468,6 +3525,12 @@
       "defined_in": "claasp.analysis.monomial",
       "kind": "function",
       "qualified_name": "claasp.analysis.project_optimal_pool_monomial_parity"
+    },
+    {
+      "canonical_name": "claasp.analysis.advanced_trails.propagate_truncated_xor_difference",
+      "defined_in": "claasp.analysis.advanced_trails",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.propagate_truncated_xor_difference"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.truncated.propagate_two_word_speck_round",
@@ -21867,6 +21930,12 @@
       "qualified_name": "claasp.representations.constraints.cp.trails.SpeckImpossibleCPModel.cp_model"
     },
     {
+      "canonical_name": "claasp.representations.constraints.cp.trails.SpeckImpossibleCPModel.decode_boundary",
+      "defined_in": "claasp.representations.constraints.cp.trails",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.trails.SpeckImpossibleCPModel.decode_boundary"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.cp.trails.SpeckProbabilisticTruncatedCPModel.__init__",
       "defined_in": "claasp.representations.constraints.cp.trails",
       "documented_by": "claasp.representations.constraints.cp.trails.SpeckProbabilisticTruncatedCPModel",
@@ -27012,74 +27081,6 @@
       "qualified_name": "claasp.representations.constraints.sat.trails.WordwiseImpossibleSATTrail.semantic_assignment"
     },
     {
-      "canonical_name": "claasp.representations.constraints.sat.trails",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "kind": "module",
-      "qualified_name": "claasp.representations.constraints.sat.trails"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "kind": "class",
-      "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.__init__",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "documented_by": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.check_characteristic",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.check_characteristic"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.cnf_formula",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.cnf_formula"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.decode_characteristic",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.sat.trails.WordDifferentialSATModel.decode_characteristic"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "kind": "class",
-      "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.__init__",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "documented_by": "claasp.representations.constraints.sat.trails.WordLinearSATModel",
-      "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.__init__"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.check_characteristic",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.check_characteristic"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.cnf_formula",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.cnf_formula"
-    },
-    {
-      "canonical_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.decode_characteristic",
-      "defined_in": "claasp.representations.constraints.sat.trails",
-      "kind": "method",
-      "qualified_name": "claasp.representations.constraints.sat.trails.WordLinearSATModel.decode_characteristic"
-    },
-    {
       "canonical_name": "claasp.representations.constraints.smt",
       "defined_in": "claasp.representations.constraints.smt",
       "kind": "module",
@@ -27158,14 +27159,14 @@
       "qualified_name": "claasp.representations.constraints.smt.WordDeterministicTruncatedSMTModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel",
-      "defined_in": "claasp.representations.constraints.smt.trails",
+      "canonical_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.word_differential",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.smt.WordDifferentialSMTModel"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel",
-      "defined_in": "claasp.representations.constraints.smt.trails",
+      "canonical_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel",
+      "defined_in": "claasp.representations.constraints.smt.word_linear",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.smt.WordLinearSMTModel"
     },
@@ -27476,66 +27477,66 @@
       "qualified_name": "claasp.representations.constraints.smt.trails.WordDeterministicTruncatedSMTModel.smt_formula"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.__init__",
-      "defined_in": "claasp.representations.constraints.smt.trails",
-      "documented_by": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel",
+      "canonical_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.__init__",
+      "defined_in": "claasp.representations.constraints.smt.word_differential",
+      "documented_by": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel",
       "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.__init__"
+      "qualified_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.check_characteristic",
-      "defined_in": "claasp.representations.constraints.smt.trails",
+      "canonical_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.check_characteristic",
+      "defined_in": "claasp.representations.constraints.smt.word_differential",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.check_characteristic"
+      "qualified_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.check_characteristic"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.decode_characteristic",
-      "defined_in": "claasp.representations.constraints.smt.trails",
+      "canonical_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.decode_characteristic",
+      "defined_in": "claasp.representations.constraints.smt.word_differential",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.decode_characteristic"
+      "qualified_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.decode_characteristic"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.enumerate_trails",
-      "defined_in": "claasp.representations.constraints.smt.trails",
+      "canonical_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.enumerate_trails",
+      "defined_in": "claasp.representations.constraints.smt.word_differential",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.enumerate_trails"
+      "qualified_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.enumerate_trails"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.smt_formula",
-      "defined_in": "claasp.representations.constraints.smt.trails",
+      "canonical_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.smt_formula",
+      "defined_in": "claasp.representations.constraints.smt.word_differential",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.trails.WordDifferentialSMTModel.smt_formula"
+      "qualified_name": "claasp.representations.constraints.smt.word_differential.WordDifferentialSMTModel.smt_formula"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.__init__",
-      "defined_in": "claasp.representations.constraints.smt.trails",
-      "documented_by": "claasp.representations.constraints.smt.trails.WordLinearSMTModel",
+      "canonical_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.__init__",
+      "defined_in": "claasp.representations.constraints.smt.word_linear",
+      "documented_by": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel",
       "kind": "constructor",
-      "qualified_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.__init__"
+      "qualified_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.__init__"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.check_characteristic",
-      "defined_in": "claasp.representations.constraints.smt.trails",
+      "canonical_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.check_characteristic",
+      "defined_in": "claasp.representations.constraints.smt.word_linear",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.check_characteristic"
+      "qualified_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.check_characteristic"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.decode_characteristic",
-      "defined_in": "claasp.representations.constraints.smt.trails",
+      "canonical_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.decode_characteristic",
+      "defined_in": "claasp.representations.constraints.smt.word_linear",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.decode_characteristic"
+      "qualified_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.decode_characteristic"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.enumerate_trails",
-      "defined_in": "claasp.representations.constraints.smt.trails",
+      "canonical_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.enumerate_trails",
+      "defined_in": "claasp.representations.constraints.smt.word_linear",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.enumerate_trails"
+      "qualified_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.enumerate_trails"
     },
     {
-      "canonical_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.smt_formula",
-      "defined_in": "claasp.representations.constraints.smt.trails",
+      "canonical_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.smt_formula",
+      "defined_in": "claasp.representations.constraints.smt.word_linear",
       "kind": "method",
-      "qualified_name": "claasp.representations.constraints.smt.trails.WordLinearSMTModel.smt_formula"
+      "qualified_name": "claasp.representations.constraints.smt.word_linear.WordLinearSMTModel.smt_formula"
     },
     {
       "canonical_name": "claasp.representations.diagrams",

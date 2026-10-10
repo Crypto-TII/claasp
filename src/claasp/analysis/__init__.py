@@ -231,7 +231,6 @@ __all__ = [
     "Trail",
     "TrailKind",
     "TrailRoundTransition",
-    "TrailSearchBackend",
     "TrailSearchResult",
     "TrailStep",
     "Transition",

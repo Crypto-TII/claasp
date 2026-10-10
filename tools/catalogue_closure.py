@@ -36,7 +36,7 @@ def check() -> tuple[int, int, int, int, int]:
     representation_names = {item["name"] for item in representations}
     driver_names = {item["name"] for item in catalogue["drivers"]}
     component_names = {item["name"] for item in catalogue["components"]}
-    assert len(representation_names) == len(representations) == 19
+    assert len(representation_names) == len(representations) == 21
     assert len({item["name"] for item in analyses}) == len(analyses) == 12
     for item in representations:
         assert set(item["components"]) <= component_names

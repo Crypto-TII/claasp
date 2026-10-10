@@ -64,16 +64,14 @@ class SBoxTransitionMILPModel:
         ),
     }
 
-    def __init__(self, table, kind):
+    def __init__(self, table, kind, output_width=None):
         if kind not in (TrailKind.XOR_DIFFERENTIAL, TrailKind.XOR_LINEAR):
             raise ValueError("S-box MILP requires differential or linear semantics")
-        self.semantics = SBoxTransitionSemantics(table)
+        self.semantics = SBoxTransitionSemantics(table, output_width)
         self.kind = kind
         self.model_provenance = self.model_provenance_by_kind[kind]
-        self.columns = tuple(
-            f"{prefix}_{bit}"
-            for prefix in ("input", "output")
-            for bit in range(self.semantics.width)
+        self.columns = tuple(f"input_{bit}" for bit in range(self.semantics.width)) + tuple(
+            f"output_{bit}" for bit in range(self.semantics.output_width)
         )
         rows, costs = [], []
         counts = (
@@ -82,14 +80,14 @@ class SBoxTransitionMILPModel:
             else self.semantics.walsh_correlation_table()
         )
         for source in range(len(self.semantics.table)):
-            for target in range(len(self.semantics.table)):
+            for target in range(self.semantics.output_size):
                 count = counts[source][target]
                 if count:
                     rows.append(
-                        tuple(
-                            (value >> bit) & 1
-                            for value in (source, target)
-                            for bit in reversed(range(self.semantics.width))
+                        tuple((source >> bit) & 1 for bit in reversed(range(self.semantics.width)))
+                        + tuple(
+                            (target >> bit) & 1
+                            for bit in reversed(range(self.semantics.output_width))
                         )
                     )
                     costs.append(log2(len(self.semantics.table) / abs(count)))
@@ -108,10 +106,13 @@ class SBoxTransitionMILPModel:
 
         model = self.relation.milp_model()
         constraints = list(model.constraints)
-        width = self.semantics.width
         for prefix, value in (("input", input_pattern), ("output", output_pattern)):
             if value is not None:
-                self.semantics._validate_pattern(value)
+                width = self.semantics.width if prefix == "input" else self.semantics.output_width
+                if prefix == "input":
+                    self.semantics._validate_input_pattern(value)
+                else:
+                    self.semantics._validate_output_pattern(value)
                 for bit in range(width):
                     constraints.append(
                         LinearConstraint(
@@ -139,7 +140,8 @@ class SBoxTransitionMILPModel:
         values = []
         for prefix in ("input", "output"):
             value = 0
-            for bit in range(self.semantics.width):
+            width = self.semantics.width if prefix == "input" else self.semantics.output_width
+            for bit in range(width):
                 value = (value << 1) | round(assignment[f"{prefix}_{bit}"])
             values.append(value)
         transition = self._transition(*values)

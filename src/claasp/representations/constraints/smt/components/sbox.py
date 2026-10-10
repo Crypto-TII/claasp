@@ -59,14 +59,15 @@ class SBoxTransitionSMTModel:
     ) -> SMTFormula:
         """Return the exact transition-support relation with optional patterns."""
 
-        width = self.semantics.width
-        variables = tuple(f"input_{bit}" for bit in range(width)) + tuple(
-            f"output_{bit}" for bit in range(width)
+        input_width = self.semantics.width
+        output_width = self.semantics.output_width
+        variables = tuple(f"input_{bit}" for bit in range(input_width)) + tuple(
+            f"output_{bit}" for bit in range(output_width)
         )
         clauses = []
         provenance = []
-        for source in range(1 << width):
-            for target in range(1 << width):
+        for source in range(1 << input_width):
+            for target in range(1 << output_width):
                 transition = (
                     self.semantics.xor_differential(source, target)
                     if self.kind is TrailKind.XOR_DIFFERENTIAL
@@ -74,7 +75,7 @@ class SBoxTransitionSMTModel:
                 )
                 if transition.is_possible:
                     continue
-                assignment = _bits(source, width) + _bits(target, width)
+                assignment = _bits(source, input_width) + _bits(target, output_width)
                 clauses.append(
                     tuple(
                         -(position + 1) if value else position + 1
@@ -84,13 +85,18 @@ class SBoxTransitionSMTModel:
                 provenance.append(f"{self.kind.value}_support")
         for prefix, value, offset in (
             ("input", input_pattern, 0),
-            ("output", output_pattern, width),
+            ("output", output_pattern, input_width),
         ):
             if value is None:
                 continue
-            if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < 1 << width:
+            pattern_width = input_width if prefix == "input" else output_width
+            if (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or not 0 <= value < 1 << pattern_width
+            ):
                 raise ValueError(f"{prefix}_pattern must fit the S-box width")
-            for bit, encoded in enumerate(_bits(value, width)):
+            for bit, encoded in enumerate(_bits(value, pattern_width)):
                 variable = offset + bit + 1
                 clauses.append((variable if encoded else -variable,))
                 provenance.append(f"fixed_{prefix}")
@@ -104,9 +110,10 @@ class SBoxTransitionSMTModel:
     def decode_transition(self, assignment: dict[str, int]):
         """Project an SMT assignment back to the shared transition object."""
 
-        width = self.semantics.width
-        source = _integer(tuple(assignment[f"input_{bit}"] for bit in range(width)))
-        target = _integer(tuple(assignment[f"output_{bit}"] for bit in range(width)))
+        input_width = self.semantics.width
+        output_width = self.semantics.output_width
+        source = _integer(tuple(assignment[f"input_{bit}"] for bit in range(input_width)))
+        target = _integer(tuple(assignment[f"output_{bit}"] for bit in range(output_width)))
         return (
             self.semantics.xor_differential(source, target)
             if self.kind is TrailKind.XOR_DIFFERENTIAL

@@ -7,7 +7,7 @@ from claasp import Primitive, ValueType, Word
 from claasp.analysis import AnalysisProblem, FixedValue
 from claasp.components import ModularAdd
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
-from claasp.primitives import AES, Present, Simon, Speck, ToyAES, ToySpeck
+from claasp.primitives import AES, BitVectorSBox, Present, Simon, Speck, ToyAES, ToySpeck
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints.cp import (
     HybridImpossibleBoundaryCPModel,

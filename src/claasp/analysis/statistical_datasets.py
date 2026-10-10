@@ -219,7 +219,7 @@ class StatisticalDataset:
                 name: (random.getrandbits(width) if name == self.input_name else fixed.get(name, 0))
                 for name, width in (
                     (name, packed_bit_width(self.primitive, name))
-                    for name in self.primitive.input_ports
+                    for name in self.primitive.graph.input_ports
                 )
             }
             baseline = self.primitive.evaluate(inputs)

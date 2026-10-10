@@ -46,9 +46,11 @@ from claasp.representations.constraints.sat.components import (
 )
 from claasp.representations.constraints.sat.lowering import _native_xor_formula
 from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
-from claasp.representations.constraints.smt.trails import (
+from claasp.representations.constraints.smt.word_differential import (
     WordDifferentialEnumeration,
     WordDifferentialSMTModel,
+)
+from claasp.representations.constraints.smt.word_linear import (
     WordLinearEnumeration,
     WordLinearSMTModel,
 )

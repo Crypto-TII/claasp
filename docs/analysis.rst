@@ -115,8 +115,8 @@ For two-round Speck32/64 XOR-differential search, the explicit
 ``backend="dependency_free"`` selection runs an exact Matsui-style
 branch-and-bound search. It uses rational transition probabilities and a
 monotone partial-carry bound, and independently checks the returned weight-one
-trail. The default ``backend="auto"`` continues to select Kissat; choosing the
-dependency-free implementation never changes the default solver policy.
+trail. The default ``backend="auto"`` selects this dependency-free
+implementation, so the search requires no external solver.
 
 .. doctest::
 
@@ -166,7 +166,7 @@ a PRESENT- or Speck-specific validator.  String and typed kinds are accepted:
    assert differential.trail.total_weight == 4
    assert linear.trail.total_weight == 2
 
-``backend="auto"`` retains deliberately optimized dependency-free PRESENT
+``backend="auto"`` selects deliberately optimized dependency-free PRESENT
 and Speck slices and otherwise selects generic SAT when the graph is supported.
 ``backend="sat"`` accepts a custom solver.  ``backend="dependency_free"``
 raises a capability error when no specialized implementation exists.
@@ -201,8 +201,9 @@ The ten reported transitions cover every rotation, modular addition, and XOR
 on the two-round data-state path. The default search fixes the key difference
 to zero, so its all-zero key schedule is omitted. An independent checker
 recomputes both modular-add probabilities and the rotations/XOR wiring.
-The explicit dependency-free method uses exact Matsui branch-and-bound. The
-default method uses Kissat and binary search over the maximum permitted
+The explicit dependency-free method uses exact Matsui branch-and-bound and is
+also the automatic choice for this reviewed Speck configuration. Selecting
+``backend="sat"`` uses MiniSat and binary search over the maximum permitted
 weight. Either backend may return a different representative when several
 trails have the same minimum weight.
 
@@ -231,7 +232,7 @@ the graph facade:
    >>> primitive.analysis.is_xor_differential_transition_possible("sbox_1_0", 1, 1)
    False
 
-The public facade also exposes the migrated multi-round workflows. Sound
+The public facade also exposes multi-round workflows. Sound
 deterministic propagation is dependency-free for the supported Speck and
 Simon graphs; probabilistic-truncated Speck optimization, impossible middle
 boundaries, and exact S-box boomerang transitions use the CP driver and decode
@@ -250,7 +251,7 @@ rule; it is never redirected to a different primitive family's model.
 Continuous diffusion
 --------------------
 
-``Analysis.continuous_evaluate`` propagates the legacy MUR2020 continuous
+``Analysis.continuous_evaluate`` propagates MUR2020 continuous
 correlations through the typed graph. The dependency-free implementation
 covers constants, structural wiring, XOR, AND, OR, NOT, modular add/subtract,
 fixed and data-dependent shifts/rotations, S-boxes, binary linear maps, and

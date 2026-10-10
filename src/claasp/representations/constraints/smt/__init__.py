@@ -15,9 +15,9 @@ from claasp.representations.constraints.smt.trails import (
     PresentLinearSMTModel,
     SpeckLinearSMTModel,
     WordDeterministicTruncatedSMTModel,
-    WordDifferentialSMTModel,
-    WordLinearSMTModel,
 )
+from claasp.representations.constraints.smt.word_differential import WordDifferentialSMTModel
+from claasp.representations.constraints.smt.word_linear import WordLinearSMTModel
 
 __all__ = [
     "BooleanSMTModel",

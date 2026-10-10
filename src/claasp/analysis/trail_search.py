@@ -27,7 +27,7 @@ from claasp.drivers.solvers import MinisatSolver, SatStatus
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
-    direct_model,
+    _direct_model,
 )
 from claasp.representations.constraints.sat import (
     WordDifferentialSATModel,
@@ -96,7 +96,7 @@ def _require_exact_trail_capability(primitive, kind: TrailKind, *, backend="sat"
         >>> _require_exact_trail_capability(Simon(number_of_rounds=1), TrailKind.XOR_DIFFERENTIAL)
     """
 
-    for name, port in primitive.input_ports.items():
+    for name, port in primitive.graph.input_ports.items():
         if not isinstance(port.value_type.domain, (Bit, Word, BinaryExtensionField)):
             raise _capability_error(
                 primitive,
@@ -104,16 +104,16 @@ def _require_exact_trail_capability(primitive, kind: TrailKind, *, backend="sat"
                 f"input {name!r} domain {type(port.value_type.domain).__name__}",
                 backend,
             )
-    if primitive.output is None:
+    if primitive.graph.output is None:
         raise _capability_error(primitive, kind, "missing primitive output", backend)
-    if not isinstance(primitive.output.value_type.domain, (Bit, Word, BinaryExtensionField)):
+    if not isinstance(primitive.graph.output.value_type.domain, (Bit, Word, BinaryExtensionField)):
         raise _capability_error(
             primitive,
             kind,
-            f"output domain {type(primitive.output.value_type.domain).__name__}",
+            f"output domain {type(primitive.graph.output.value_type.domain).__name__}",
             backend,
         )
-    for component in primitive.components:
+    for component in primitive.graph.components:
         if not isinstance(component.output_type.domain, (Bit, Word, BinaryExtensionField)):
             reason = f"component {component.component_id!r} domain {type(component.output_type.domain).__name__}"
             raise _capability_error(primitive, kind, reason, backend)
@@ -188,7 +188,7 @@ def resolve_input_policy(
 ) -> InputPolicy:
     """Choose one active data input and zero default key/tweak patterns."""
 
-    names = tuple(primitive.input_ports)
+    names = tuple(primitive.graph.input_ports)
     if nonzero_input is None:
         if "plaintext" in names:
             nonzero_input = "plaintext"
@@ -204,7 +204,7 @@ def resolve_input_policy(
                     f"set nonzero_input explicitly from {names!r}"
                 )
             nonzero_input = candidates[0]
-    if nonzero_input not in primitive.input_ports:
+    if nonzero_input not in primitive.graph.input_ports:
         raise ValueError(f"unknown nonzero input {nonzero_input!r}; choose from {names!r}")
     resolved = dict(fixed_patterns or {})
     for name in names:
@@ -251,7 +251,7 @@ def optimize_word_characteristic(
     )
     resolved_fixed_inputs = dict(fixed_inputs or {})
     if kind is TrailKind.XOR_LINEAR and fixed_input_masks is None:
-        for name in primitive.input_ports:
+        for name in primitive.graph.input_ports:
             if name != policy.nonzero_input and ("key" in name.lower() or "tweak" in name.lower()):
                 resolved_fixed_inputs.setdefault(name, 0)
     selected_solver = _solver_for_backend(backend) if solver is None else solver
@@ -334,7 +334,7 @@ def optimize_word_characteristic(
         float(upper),
         metadata,
         components,
-        _constraint_models(primitive, best_model.constraint_models, backend, kind),
+        _constraint_models(primitive, best_formula.constraint_models, backend, kind),
         rounds,
     )
 
@@ -373,7 +373,7 @@ def _constraint_models(primitive, sat_models, backend, kind):
     if backend in ("auto", "sat"):
         return sat_models
     selected = ConstraintBackend(backend)
-    translated = direct_model(
+    translated = _direct_model(
         selected,
         f"ExactEncodedGraph{kind.value.title().replace('_', '')}{backend.upper()}Adapter",
         kind.value,
@@ -387,7 +387,7 @@ def _constraint_models(primitive, sat_models, backend, kind):
             translated,
             tuple(
                 component.component_id
-                for component in primitive.components
+                for component in primitive.graph.components
                 if component.component_id is not None
             ),
         ),
@@ -409,9 +409,10 @@ def _trail(primitive, kind, active_input, characteristic):
     return Trail(
         kind,
         pattern(
-            inputs[active_input], primitive.input_ports[active_input].value_type.encoded_bit_size
+            inputs[active_input],
+            primitive.graph.input_ports[active_input].value_type.encoded_bit_size,
         ),
-        pattern(output, primitive.output.value_type.encoded_bit_size),
+        pattern(output, primitive.graph.output.value_type.encoded_bit_size),
         characteristic.steps,
     )
 
@@ -429,11 +430,11 @@ def _evidence(primitive, kind, model, characteristic):
     steps = {step.component_id: step.transition for step in characteristic.steps}
     round_by_id = {
         component.component_id: primitive_round.number
-        for primitive_round in primitive.rounds
+        for primitive_round in primitive.graph.rounds
         for component in primitive_round.components
     }
     components = []
-    for component in primitive.components:
+    for component in primitive.graph.components:
         output_names = model._ports[component.component_id]
         operand_groups = (
             model._operands[component.component_id]
@@ -455,7 +456,7 @@ def _evidence(primitive, kind, model, characteristic):
             )
         )
     rounds = []
-    for primitive_round in primitive.rounds:
+    for primitive_round in primitive.graph.rounds:
         component = primitive_round.components[-1]
         names = model._ports[component.component_id]
         ratio, sign = Fraction(1), 1

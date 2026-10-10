@@ -9552,10 +9552,10 @@
       "supersede": 207
     },
     "legacy_records": 581,
-    "v5_artifacts": 449,
+    "v5_artifacts": 456,
     "v5_by_classification": {
-      "legacy-lineage": 405,
-      "new-v5": 44
+      "legacy-lineage": 414,
+      "new-v5": 42
     }
   },
   "v5_artifacts": [
@@ -9591,6 +9591,15 @@
         "claasp/utils/utils.py"
       ],
       "path": "src/claasp/analysis/_trail_propagation.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py",
+        "claasp/cipher_modules/models/utils.py",
+        "claasp/utils/utils.py"
+      ],
+      "path": "src/claasp/analysis/advanced_trails.py"
     },
     {
       "classification": "legacy-lineage",
@@ -12780,6 +12789,14 @@
         "claasp/component.py"
       ],
       "path": "src/claasp/representations/constraints/smt/__init__.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/cipher_modules/models/smt/utils/utils.py",
+        "claasp/component.py"
+      ],
+      "path": "src/claasp/representations/constraints/smt/_sbox_encoding.py"
     },
     {
       "classification": "legacy-lineage",

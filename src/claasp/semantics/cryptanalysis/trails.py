@@ -348,70 +348,6 @@ class Trail:
 
 
 @dataclass(frozen=True, slots=True)
-class TrailSearchMetadata:
-    """Structured solver and optimization metadata for an exact search.
-
-    EXAMPLES::
-
-        >>> TrailSearchMetadata("binary search", solver="MiniSat").solver
-        'MiniSat'
-    """
-
-    technique: str
-    solver: str | None = None
-    solver_version: str | None = None
-    runtime_seconds: float | None = None
-
-
-@dataclass(frozen=True, slots=True)
-class TrailComponentTransition:
-    """One decoded graph component retained as displayable evidence.
-
-    EXAMPLES::
-
-        >>> item = TrailComponentTransition(0, "x", "XOR", None, XorDifference(0, 1))
-        >>> item.weight
-        0.0
-    """
-
-    round_number: int
-    component_id: str
-    component: str
-    input_pattern: BitPattern | None
-    output_pattern: BitPattern
-    local_transition: Transition | None = None
-
-    @property
-    def weight(self) -> float:
-        """Return the local probabilistic weight, or zero for wiring."""
-
-        return 0.0 if self.local_transition is None else self.local_transition.weight
-
-
-@dataclass(frozen=True, slots=True)
-class TrailRoundTransition:
-    """Decoded round boundary and the product of local round transitions.
-
-    EXAMPLES::
-
-        >>> TrailRoundTransition(0, XorDifference(1, 1), 1, 2).weight
-        1.0
-    """
-
-    round_number: int
-    output_pattern: BitPattern
-    numerator: int
-    denominator: int
-    sign: int = 1
-
-    @property
-    def weight(self) -> float:
-        """Return the exact round weight."""
-
-        return inf if not self.numerator else -log2(self.numerator / self.denominator)
-
-
-@dataclass(frozen=True, slots=True)
 class TrailSearchResult:
     """A trail together with its optimization claim and search metadata.
 
@@ -521,11 +457,17 @@ class SBoxTransitionSemantics:
         if size < 2 or size & (size - 1):
             raise ValueError("S-box table size must be a power of two")
         self.input_width = size.bit_length() - 1
+        inferred_output_width = max(1, max(self.table).bit_length())
         if output_width is None:
-            output_width = self.input_width
-        if not isinstance(output_width, int) or isinstance(output_width, bool) or output_width <= 0:
-            raise ValueError("S-box output width must be a positive integer")
+            output_width = inferred_output_width
+        if (
+            not isinstance(output_width, int)
+            or isinstance(output_width, bool)
+            or output_width < inferred_output_width
+        ):
+            raise ValueError("S-box output width must contain every table value")
         self.output_width = output_width
+        self.output_size = 1 << output_width
         # ``width`` remains the square-S-box input-width compatibility name.
         self.width = self.input_width
         if any(

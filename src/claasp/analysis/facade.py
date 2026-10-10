@@ -35,6 +35,9 @@ class TrailSearchBackend(str, Enum):
 
     AUTO = "auto"
     SAT = "sat"
+    SMT = "smt"
+    MILP = "milp"
+    CP = "cp"
     DEPENDENCY_FREE = "dependency_free"
 
 
@@ -209,8 +212,33 @@ class Analysis:
         )
         return self.solve(problem, solver)
 
-    def find_lowest_weight_xor_differential_trail(self, *, solver=None) -> TrailSearchResult:
-        """Find a lowest-weight trail, using Kissat by default for ARX."""
+    def find_lowest_weight_xor_differential_trail(
+        self,
+        *,
+        solver=None,
+        nonzero_input=None,
+        fixed_input_differences=None,
+    ) -> TrailSearchResult:
+        """Find an exact minimum-weight XOR-differential characteristic."""
+
+        return self.find_optimal_trail(
+            solver=solver,
+            nonzero_input=nonzero_input,
+            fixed_input_differences=fixed_input_differences,
+        )
+
+    def find_optimal_trail(
+        self,
+        kind: TrailKind | str = TrailKind.XOR_DIFFERENTIAL,
+        *,
+        backend: TrailSearchBackend | str = TrailSearchBackend.AUTO,
+        solver: object | None = None,
+        nonzero_input=None,
+        fixed_input_differences=None,
+        fixed_input_masks=None,
+        fixed_inputs=None,
+    ) -> TrailSearchResult:
+        """Find a proved optimum using graph capabilities, not a family fallback."""
 
         try:
             selected_kind = kind if isinstance(kind, TrailKind) else TrailKind(kind)
@@ -260,7 +288,7 @@ class Analysis:
         )
 
     def _dependency_free_trail_search(self, kind):
-        rounds = len(self.primitive.rounds)
+        rounds = len(self.primitive.graph.rounds)
         if self.primitive.family_name == "present":
             if kind is TrailKind.XOR_DIFFERENTIAL and rounds == 2:
                 from claasp.analysis.spn import find_two_round_spn_xor_differential
@@ -271,85 +299,15 @@ class Analysis:
 
                 return lambda: find_three_round_spn_xor_linear(self.primitive)
         if self.primitive.family_name == "speck":
-            from claasp.analysis.arx import find_speck_xor_differential
+            if kind is TrailKind.XOR_DIFFERENTIAL and rounds in (2, 3):
+                from claasp.analysis.arx import _find_speck_xor_differential_matsui
 
-            return find_speck_xor_differential(self.primitive, solver=solver)
-        if solver is not None:
-            raise TypeError("the selected differential search does not accept a solver")
-        from claasp.analysis.spn import find_two_round_spn_xor_differential
+                return lambda: _find_speck_xor_differential_matsui(self.primitive)
+            if kind is TrailKind.XOR_LINEAR and rounds == 4:
+                from claasp.analysis.arx import find_four_round_speck_xor_linear
 
                 return lambda: find_four_round_speck_xor_linear(self.primitive)
         return None
-
-    def find_optimal_trail(
-        self,
-        kind: TrailKind | str,
-        *,
-        backend: TrailSearchBackend | str = TrailSearchBackend.AUTO,
-        solver: object | None = None,
-    ) -> TrailSearchResult:
-        """Find a proved lowest-weight trail through the analysis namespace.
-
-        The default ``backend="auto"`` preserves existing search semantics:
-        Speck XOR-differential search uses Kissat, reviewed PRESENT
-        differential search is dependency-free, and the current linear slices
-        use their independently checked in-process paths. Advanced callers
-        may select ``"sat"`` or ``"dependency_free"`` explicitly. A custom
-        solver is accepted only by a supported SAT search.
-
-        EXAMPLES::
-
-            >>> from claasp.analysis import TrailKind
-            >>> from claasp.primitives import Present
-            >>> result = Present(number_of_rounds=2).analysis.find_optimal_trail(
-            ...     kind="xor_differential")
-            >>> result.trail.kind is TrailKind.XOR_DIFFERENTIAL
-            True
-        """
-
-        try:
-            selected_kind = kind if isinstance(kind, TrailKind) else TrailKind(kind)
-        except (TypeError, ValueError) as error:
-            supported = ", ".join(item.value for item in TrailKind)
-            raise ValueError(
-                f"unsupported trail kind {kind!r}; choose one of {supported}"
-            ) from error
-        try:
-            selected_backend = (
-                backend if isinstance(backend, TrailSearchBackend) else TrailSearchBackend(backend)
-            )
-        except (TypeError, ValueError) as error:
-            supported = ", ".join(item.value for item in TrailSearchBackend)
-            raise ValueError(
-                f"unsupported trail-search backend {backend!r}; choose one of {supported}"
-            ) from error
-
-        if selected_kind is TrailKind.XOR_DIFFERENTIAL:
-            if selected_backend is TrailSearchBackend.AUTO:
-                return self.find_lowest_weight_xor_differential_trail(solver=solver)
-            if selected_backend is TrailSearchBackend.SAT:
-                if self.primitive.family_name != "speck":
-                    raise NotImplementedError(
-                        "SAT optimization currently supports the reviewed Speck32/64 slice"
-                    )
-                return self.find_lowest_weight_xor_differential_trail(solver=solver)
-            if solver is not None:
-                raise TypeError("dependency-free trail search does not accept a solver")
-            if self.primitive.family_name == "speck":
-                from claasp.analysis.arx import (
-                    _find_speck_xor_differential_matsui,
-                )
-
-                return _find_speck_xor_differential_matsui(self.primitive)
-            from claasp.analysis.spn import find_two_round_spn_xor_differential
-
-            return find_two_round_spn_xor_differential(self.primitive)
-
-        if solver is not None:
-            raise TypeError("the reviewed XOR-linear searches do not accept a solver")
-        if selected_backend is TrailSearchBackend.SAT:
-            raise NotImplementedError("SAT optimization is not available for XOR-linear search")
-        return self.find_lowest_weight_xor_linear_trail()
 
     def avalanche(
         self,
@@ -656,6 +614,11 @@ class Analysis:
                 if "key" in self.primitive.graph.input_ports and nonzero_input != "key"
                 else {}
             )
+        policy = resolve_input_policy(
+            self.primitive,
+            nonzero_input,
+            fixed_input_differences,
+        )
         model = WordDifferentialSMTModel(
             self.primitive,
             maximum_weight=maximum_weight,
@@ -707,14 +670,15 @@ class Analysis:
         )
         return model.enumerate_trails(Z3Solver() if solver is None else solver, limit=limit)
 
-    def find_lowest_weight_xor_linear_trail(self) -> TrailSearchResult:
-        """Find the lowest-weight linear trail supported by the reviewed slice."""
-
-        if self.primitive.family_name == "speck":
-            from claasp.analysis.arx import find_four_round_speck_xor_linear
-
-            return find_four_round_speck_xor_linear(self.primitive)
-        from claasp.analysis.spn import find_three_round_spn_xor_linear
+    def find_lowest_weight_xor_linear_trail(
+        self,
+        *,
+        solver=None,
+        nonzero_input=None,
+        fixed_input_masks=None,
+        fixed_inputs=None,
+    ) -> TrailSearchResult:
+        """Find an exact minimum-weight XOR-linear characteristic."""
 
         return self.find_optimal_trail(
             TrailKind.XOR_LINEAR,

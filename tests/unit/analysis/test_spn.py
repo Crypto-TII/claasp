@@ -35,16 +35,17 @@ def test_find_optimal_trail_accepts_typed_and_string_kinds_with_explicit_backend
     assert linear.trail.total_weight == 4
 
 
-def test_find_optimal_trail_rejects_unsupported_advanced_combinations_explicitly():
+def test_find_optimal_trail_supports_sat_and_rejects_invalid_combinations():
     analysis = Present(number_of_rounds=2).analysis
 
     with pytest.raises(ValueError, match="unsupported trail kind"):
         analysis.find_optimal_trail("boomerang")
     with pytest.raises(ValueError, match="unsupported trail-search backend"):
         analysis.find_optimal_trail("xor_differential", backend="gurobi")
-    with pytest.raises(NotImplementedError, match="SAT optimization"):
-        analysis.find_optimal_trail("xor_differential", backend="sat")
-    with pytest.raises(TypeError, match="does not accept a solver"):
+    result = analysis.find_optimal_trail("xor_differential", backend="sat")
+    assert result.is_optimal
+    assert result.trail.total_weight == 4
+    with pytest.raises(TypeError, match="cannot consume a custom solver"):
         analysis.find_optimal_trail("xor_differential", backend="dependency_free", solver=object())
 
 
@@ -55,9 +56,11 @@ def test_analyze_remains_a_supported_compatibility_alias():
     assert primitive.analysis.primitive is primitive
 
 
-def test_speck_search_rejects_unreviewed_round_counts_explicitly():
-    with pytest.raises(NotImplementedError, match="two- or three-round Speck32/64"):
-        Speck(number_of_rounds=4).analysis.find_lowest_weight_xor_differential_trail()
+def test_speck_search_supports_generic_four_round_search():
+    result = Speck(number_of_rounds=4).analysis.find_lowest_weight_xor_differential_trail()
+
+    assert result.is_optimal
+    assert result.trail.total_weight == 5
 
 
 def test_three_round_present_reproduces_preserved_linear_weight_and_signs():

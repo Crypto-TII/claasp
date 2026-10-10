@@ -106,21 +106,21 @@ class ContinuousExecutionDriver:
             (1.0, -1.0)
         """
 
-        if set(inputs) != set(primitive.input_ports):
+        if set(inputs) != set(primitive.graph.input_ports):
             raise ValueError(
-                f"continuous inputs must contain exactly {sorted(primitive.input_ports)!r}"
+                f"continuous inputs must contain exactly {sorted(primitive.graph.input_ports)!r}"
             )
         if tolerance <= 0:
             raise ValueError("tolerance must be positive")
 
         values: dict[str, CorrelationValue] = {}
-        for name, port in primitive.input_ports.items():
+        for name, port in primitive.graph.input_ports.items():
             values[name] = _pack(port.value_type, inputs[name], name)
 
         binding_cache: dict[str, CorrelationValue] = {}
-        for component in primitive.components:
+        for component in primitive.graph.components:
             selected = tuple(
-                primitive.resolve_selection(item, values, binding_cache)
+                primitive.graph.resolve_selection(item, values, binding_cache)
                 for item in component.inputs
             )
             if component.component_id is None:
@@ -128,8 +128,10 @@ class ContinuousExecutionDriver:
             values[component.component_id] = self._component(primitive, component, selected)
 
         output = None
-        if primitive.output is not None:
-            output = _flatten(primitive.resolve_selection(primitive.output, values, binding_cache))
+        if primitive.graph.output is not None:
+            output = _flatten(
+                primitive.graph.resolve_selection(primitive.graph.output, values, binding_cache)
+            )
         flattened = {name: _flatten(value) for name, value in (values | binding_cache).items()}
         return ContinuousEvaluationResult(
             flattened,

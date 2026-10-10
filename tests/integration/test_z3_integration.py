@@ -4,7 +4,7 @@ import pytest
 
 from claasp.analysis import AnalysisProblem, FixedValue, TrailKind
 from claasp.drivers.solvers import SatStatus, Z3Solver
-from claasp.primitives import Present, Speck, ToySpeck
+from claasp.primitives import BitVectorSBox, Present, Speck, ToySpeck
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints.smt import (
     ModularAddDeterministicTruncatedSMTModel,
