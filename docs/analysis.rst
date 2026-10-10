@@ -190,6 +190,33 @@ the graph facade:
    >>> primitive.analyze().is_xor_differential_transition_possible("sbox_1_0", 1, 1)
    False
 
+The public facade also exposes the migrated multi-round workflows. Sound
+deterministic propagation is dependency-free for the supported Speck and
+Simon graphs; probabilistic-truncated Speck optimization, impossible middle
+boundaries, and exact S-box boomerang transitions use the CP driver and decode
+through independent semantic checkers::
+
+   boundaries = Speck(number_of_rounds=3).analysis \
+       .propagate_truncated_xor_difference(
+           "00000000011000000000000000000000"
+       )
+   assert len(boundaries.boundaries) == 4
+
+These are capability-checked operations. An unsupported graph raises an error
+that names the primitive, analysis kind, backend, and first missing semantic
+rule; it is never redirected to a different primitive family's model.
+
+Continuous diffusion
+--------------------
+
+``Analysis.continuous_evaluate`` propagates the legacy MUR2020 continuous
+correlations through the typed graph. The dependency-free implementation
+covers constants, structural wiring, XOR, AND, OR, NOT, modular add/subtract,
+fixed and data-dependent shifts/rotations, S-boxes, binary linear maps, and
+binary-extension-field mixing. It is exercised on Speck, Simon, and AES graphs. Results are explicitly
+``heuristic`` and never carry SAT or optimality status. Components without a
+defined continuous rule fail at the exact graph node.
+
 Linear trail search
 -------------------
 

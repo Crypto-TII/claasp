@@ -210,7 +210,7 @@
     {
       "destinations": [
         "src/claasp/semantics/cryptanalysis/continuous.py",
-        "src/claasp/analysis/legacy_evidence.py"
+        "src/claasp/representations/execution/continuous.py"
       ],
       "disposition": "supersede",
       "kind": "source",
@@ -219,7 +219,7 @@
       "public_entry_points": [
         "ContinuousDiffusionAnalysis"
       ],
-      "rationale": "M10.6d6 already replaced the mutable NumPy/Sage orchestration and report coupling. M10.15 closes the stale record but does not reopen continuous-analysis semantics.",
+      "rationale": "The typed graph-wide evaluator restores continuous propagation without mutable NumPy/Sage/report coupling. Results remain explicitly heuristic and unsupported graph nodes fail precisely.",
       "responsibility": "continuous diffusion analysis",
       "status": "superseded-in-m10.15d-audit"
     },
@@ -300,7 +300,8 @@
     },
     {
       "destinations": [
-        "src/claasp/semantics/cryptanalysis/continuous.py"
+        "src/claasp/semantics/cryptanalysis/continuous.py",
+        "src/claasp/representations/execution/continuous.py"
       ],
       "disposition": "supersede",
       "kind": "source",
@@ -342,7 +343,7 @@
         "get_sbox_precomputations",
         "select_bits_continuous_diffusion_analysis"
       ],
-      "rationale": "M10.6d6 already owns typed continuous heuristic semantics and evidence; the NumPy/Sage helper monolith is closed without reopening that milestone.",
+      "rationale": "Dependency-free scalar equations and typed graph orchestration replace the Sage/NumPy helper monolith. Fixed and data-dependent movement, S-boxes, binary maps, and finite-field mixing are executable.",
       "responsibility": "generic functions continuous diffusion analysis",
       "status": "superseded-in-m10.15d"
     },
@@ -1993,7 +1994,9 @@
     {
       "destinations": [
         "src/claasp/analysis/neural.py",
-        "src/claasp/analysis/neural_experiments.py"
+        "src/claasp/analysis/neural_experiments.py",
+        "src/claasp/analysis/neural_workflows.py",
+        "src/claasp/drivers/neural"
       ],
       "disposition": "migrate",
       "kind": "source",
@@ -2002,7 +2005,7 @@
       "public_entry_points": [
         "NeuralNetworkTests"
       ],
-      "rationale": "Framework-neutral experiment contracts and optional drivers replace direct TensorFlow/Keras ownership in the core API.",
+      "rationale": "Framework-neutral datasets and experiment contracts, seeded AutoND-style difference search, staged round training, and optional sklearn/TensorFlow drivers restore the result-bearing neural workflows without importing ML frameworks into the core API.",
       "responsibility": "neural network tests",
       "status": "migrated-in-m11a"
     },
@@ -2035,7 +2038,8 @@
     {
       "destinations": [
         "src/claasp/analysis/datasets.py",
-        "src/claasp/analysis/statistical_datasets.py"
+        "src/claasp/analysis/statistical_datasets.py",
+        "src/claasp/analysis/statistical.py"
       ],
       "disposition": "migrate",
       "kind": "source",
@@ -2047,7 +2051,7 @@
         "set_testing_data_amount",
         "DatasetGenerator"
       ],
-      "rationale": "Deterministic typed dataset families replace the mutable NumPy generator and make seeds and sample shapes explicit.",
+      "rationale": "All six deterministic typed dataset families replace the mutable NumPy generator; the public campaign runner applies them reproducibly across reduced-round graphs.",
       "responsibility": "dataset generator",
       "status": "migrated-in-m11a"
     },
@@ -9548,10 +9552,10 @@
       "supersede": 207
     },
     "legacy_records": 581,
-    "v5_artifacts": 411,
+    "v5_artifacts": 416,
     "v5_by_classification": {
-      "legacy-lineage": 370,
-      "new-v5": 41
+      "legacy-lineage": 377,
+      "new-v5": 39
     }
   },
   "v5_artifacts": [
@@ -9569,6 +9573,15 @@
         "claasp/utils/utils.py"
       ],
       "path": "src/claasp/analysis/__init__.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py",
+        "claasp/cipher_modules/models/utils.py",
+        "claasp/utils/utils.py"
+      ],
+      "path": "src/claasp/analysis/advanced_trails.py"
     },
     {
       "classification": "legacy-lineage",
@@ -9693,7 +9706,6 @@
     {
       "classification": "legacy-lineage",
       "legacy_predecessors": [
-        "claasp/cipher_modules/continuous_diffusion_analysis.py",
         "claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py",
         "claasp/cipher_modules/models/utils.py",
         "claasp/utils/utils.py"
@@ -9743,6 +9755,16 @@
       "legacy_predecessors": [
         "claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py",
         "claasp/cipher_modules/models/utils.py",
+        "claasp/cipher_modules/neural_network_tests.py",
+        "claasp/utils/utils.py"
+      ],
+      "path": "src/claasp/analysis/neural_workflows.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py",
+        "claasp/cipher_modules/models/utils.py",
         "claasp/utils/utils.py"
       ],
       "path": "src/claasp/analysis/problem.py"
@@ -9755,6 +9777,16 @@
         "claasp/utils/utils.py"
       ],
       "path": "src/claasp/analysis/spn.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py",
+        "claasp/cipher_modules/models/utils.py",
+        "claasp/cipher_modules/statistical_tests/dataset_generator.py",
+        "claasp/utils/utils.py"
+      ],
+      "path": "src/claasp/analysis/statistical.py"
     },
     {
       "classification": "legacy-lineage",
@@ -10269,16 +10301,25 @@
       "rationale": "New bounded typed external-driver boundary separates tools and optional dependencies from core semantics."
     },
     {
-      "classification": "new-v5",
-      "legacy_predecessors": [],
-      "path": "src/claasp/drivers/neural/__init__.py",
-      "rationale": "New bounded typed external-driver boundary separates tools and optional dependencies from core semantics."
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/cipher_modules/neural_network_tests.py"
+      ],
+      "path": "src/claasp/drivers/neural/__init__.py"
     },
     {
-      "classification": "new-v5",
-      "legacy_predecessors": [],
-      "path": "src/claasp/drivers/neural/sklearn_driver.py",
-      "rationale": "New bounded typed external-driver boundary separates tools and optional dependencies from core semantics."
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/cipher_modules/neural_network_tests.py"
+      ],
+      "path": "src/claasp/drivers/neural/sklearn_driver.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/cipher_modules/neural_network_tests.py"
+      ],
+      "path": "src/claasp/drivers/neural/tensorflow_driver.py"
     },
     {
       "classification": "legacy-lineage",
@@ -12571,6 +12612,16 @@
         "claasp/cipher_modules/generic_functions.py"
       ],
       "path": "src/claasp/representations/execution/boolean_degree.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/cipher_modules/continuous_diffusion_analysis.py",
+        "claasp/cipher_modules/evaluator.py",
+        "claasp/cipher_modules/generic_functions.py",
+        "claasp/cipher_modules/generic_functions_continuous_diffusion_analysis.py"
+      ],
+      "path": "src/claasp/representations/execution/continuous.py"
     },
     {
       "classification": "legacy-lineage",

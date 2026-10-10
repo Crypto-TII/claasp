@@ -192,7 +192,7 @@ def render_summary(matrix: dict[str, Any]) -> str:
     lines = [
         "# Final bidirectional migration audit",
         "",
-        "This generated M11a comparison is a disposition map, not a blanket executable-parity claim; the JSON matrix and closure tool are authoritative for mapping completeness, while capability-specific executable audits and tests establish behavioral parity.",
+        "This generated M11a comparison is a disposition map, not by itself a blanket executable-parity claim. The separately machine-tested public capability matrix at `docs/architecture/audits/data/legacy-public-capability-matrix.json` records 30 legacy capability families: 26 supported by named executable evidence and four deliberately removed with explicit scientific or trust-boundary reasons. Capability-specific catalogue matrices continue to record graph/component limits within those public workflows.",
         "",
         f"- Legacy records: {summary['legacy_records']}",
         f"- Shipped v5 artifacts: {summary['v5_artifacts']}",

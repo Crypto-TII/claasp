@@ -410,10 +410,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
 
-      - name: Install test dependencies with the optional ML extra
-        run: python -m pip install -e '.[dev,ml]'
+      - name: Install test dependencies with the optional ML extras
+        run: python -m pip install -e '.[dev,ml,ml-tensorflow]'
 
       - name: Execute neural distinguisher ML integration
-        run: python -m pytest -m external tests/integration/test_neural_driver_integration.py -q
+        run: python -m pytest -m external tests/integration/test_neural_driver_integration.py tests/integration/test_tensorflow_neural_driver.py -q

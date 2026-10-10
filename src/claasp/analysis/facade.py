@@ -324,6 +324,134 @@ class Analysis:
             fixed_inputs=fixed_inputs,
         )
 
+    def run_statistical_tests(
+        self,
+        driver,
+        kind,
+        input_name,
+        *,
+        number_of_samples,
+        blocks_per_sample=None,
+        ratio=1.0,
+        seed=0,
+        fixed_inputs=None,
+        round_start=1,
+        round_end=None,
+        driver_options=None,
+    ):
+        """Run a NIST/Dieharder-style dataset campaign over round boundaries."""
+
+        from claasp.analysis.statistical import run_statistical_campaign
+
+        return run_statistical_campaign(
+            self.primitive,
+            driver,
+            kind,
+            input_name,
+            number_of_samples=number_of_samples,
+            blocks_per_sample=blocks_per_sample,
+            ratio=ratio,
+            seed=seed,
+            fixed_inputs=fixed_inputs,
+            round_start=round_start,
+            round_end=round_end,
+            driver_options=driver_options,
+        )
+
+    def find_good_neural_input_difference(self, **options):
+        """Run the deterministic AutoND-style evolutionary difference search."""
+
+        from claasp.analysis.neural_workflows import find_good_input_difference
+
+        return find_good_input_difference(self.primitive, **options)
+
+    def train_staged_neural_distinguisher(
+        self,
+        driver,
+        input_differences,
+        *,
+        starting_round,
+        samples,
+        experiment,
+        maximum_round=None,
+        significance_samples=None,
+    ):
+        """Train successive reduced-round neural distinguishers."""
+
+        from claasp.analysis.neural_workflows import train_staged_neural_distinguisher
+
+        return train_staged_neural_distinguisher(
+            self.primitive,
+            driver,
+            input_differences,
+            starting_round=starting_round,
+            samples=samples,
+            experiment=experiment,
+            maximum_round=maximum_round,
+            significance_samples=significance_samples,
+        )
+
+    def run_autond(self, driver, experiment, **options):
+        """Optimize an input difference and run staged neural training."""
+
+        from claasp.analysis.neural_workflows import run_autond
+
+        return run_autond(self.primitive, driver, experiment, **options)
+
+    def continuous_evaluate(self, inputs, *, tolerance=1e-4):
+        """Propagate continuous-diffusion correlations through the typed graph."""
+
+        from claasp.representations.execution.continuous import ContinuousExecutionDriver
+
+        return ContinuousExecutionDriver().evaluate(self.primitive, inputs, tolerance=tolerance)
+
+    def propagate_truncated_xor_difference(self, input_pattern):
+        """Propagate a sound three-valued XOR difference over all rounds."""
+
+        from claasp.analysis.advanced_trails import propagate_truncated_xor_difference
+
+        return propagate_truncated_xor_difference(self.primitive, input_pattern)
+
+    def find_probabilistic_truncated_xor_differential(
+        self, input_pattern, output_pattern, *, solver=None
+    ):
+        """Optimize a supported counter-based truncated characteristic."""
+
+        from claasp.analysis.advanced_trails import (
+            find_probabilistic_truncated_xor_differential,
+        )
+
+        return find_probabilistic_truncated_xor_differential(
+            self.primitive, input_pattern, output_pattern, solver=solver
+        )
+
+    def find_impossible_xor_differential(
+        self,
+        middle_round,
+        *,
+        input_pattern=None,
+        output_pattern=None,
+        solver=None,
+    ):
+        """Find a supported impossible XOR-differential middle boundary."""
+
+        from claasp.analysis.advanced_trails import find_impossible_xor_differential
+
+        return find_impossible_xor_differential(
+            self.primitive,
+            middle_round,
+            input_pattern=input_pattern,
+            output_pattern=output_pattern,
+            solver=solver,
+        )
+
+    def find_sbox_boomerang_transition(self, component, **options):
+        """Optimize or check an exact S-box boomerang-connectivity entry."""
+
+        from claasp.analysis.advanced_trails import find_sbox_boomerang_transition
+
+        return find_sbox_boomerang_transition(self.primitive, component, **options)
+
     def component_groups(self, domain):
         """Return immutable semantic groups, never structural bindings.
 

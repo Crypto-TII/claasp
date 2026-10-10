@@ -372,11 +372,11 @@
       "public_entry_points": [
         "ContinuousDiffusionAnalysis"
       ],
-      "rationale": "M10.6d6 already replaced the mutable NumPy/Sage orchestration and report coupling. M10.15 closes the stale record but does not reopen continuous-analysis semantics.",
+      "rationale": "The typed graph-wide evaluator restores continuous propagation without mutable NumPy/Sage/report coupling. Results remain explicitly heuristic and unsupported graph nodes fail precisely.",
       "responsibility": "continuous diffusion analysis",
       "status": "superseded-in-m10.15d-audit",
       "tests": [],
-      "v5_destination": "src/claasp/semantics/cryptanalysis/continuous.py; src/claasp/analysis/legacy_evidence.py"
+      "v5_destination": "src/claasp/semantics/cryptanalysis/continuous.py; src/claasp/representations/execution/continuous.py"
     },
     {
       "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
@@ -534,11 +534,11 @@
         "get_sbox_precomputations",
         "select_bits_continuous_diffusion_analysis"
       ],
-      "rationale": "M10.6d6 already owns typed continuous heuristic semantics and evidence; the NumPy/Sage helper monolith is closed without reopening that milestone.",
+      "rationale": "Dependency-free scalar equations and typed graph orchestration replace the Sage/NumPy helper monolith. Fixed and data-dependent movement, S-boxes, binary maps, and finite-field mixing are executable.",
       "responsibility": "generic functions continuous diffusion analysis",
       "status": "superseded-in-m10.15d",
       "tests": [],
-      "v5_destination": "src/claasp/semantics/cryptanalysis/continuous.py; tests/unit/semantics/cryptanalysis/test_continuous.py"
+      "v5_destination": "src/claasp/semantics/cryptanalysis/continuous.py; src/claasp/representations/execution/continuous.py; tests/unit/semantics/cryptanalysis/test_continuous.py"
     },
     {
       "acceptance_criterion": "The M10.15 closure manifest names fixed evidence for every retained behavior, every destination exists, and the complete tooling closure gate passes.",
@@ -3009,11 +3009,11 @@
       "public_entry_points": [
         "NeuralNetworkTests"
       ],
-      "rationale": "Framework-neutral experiment contracts and optional drivers replace direct TensorFlow/Keras ownership in the core API.",
+      "rationale": "Framework-neutral datasets and experiment contracts, seeded AutoND-style difference search, staged round training, and optional sklearn/TensorFlow drivers restore the result-bearing neural workflows without importing ML frameworks into the core API.",
       "responsibility": "neural network tests",
       "status": "migrated-in-m11a",
       "tests": [],
-      "v5_destination": "src/claasp/analysis/neural.py; src/claasp/analysis/neural_experiments.py"
+      "v5_destination": "src/claasp/analysis/neural.py; src/claasp/analysis/neural_experiments.py; src/claasp/analysis/neural_workflows.py; src/claasp/drivers/neural"
     },
     {
       "acceptance_criterion": "Immutable typed tables, sections, report artifacts, adapters, renderers, exports, citations, reproducibility metadata, and safe file output preserve applicable presentation behavior without accepting legacy nested dictionaries.",
@@ -3098,11 +3098,11 @@
         "set_testing_data_amount",
         "DatasetGenerator"
       ],
-      "rationale": "Deterministic typed dataset families replace the mutable NumPy generator and make seeds and sample shapes explicit.",
+      "rationale": "All six deterministic typed dataset families replace the mutable NumPy generator; the public campaign runner applies them reproducibly across reduced-round graphs.",
       "responsibility": "dataset generator",
       "status": "migrated-in-m11a",
       "tests": [],
-      "v5_destination": "src/claasp/analysis/datasets.py; src/claasp/analysis/statistical_datasets.py"
+      "v5_destination": "src/claasp/analysis/datasets.py; src/claasp/analysis/statistical_datasets.py; src/claasp/analysis/statistical.py"
     },
     {
       "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",

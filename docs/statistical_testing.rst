@@ -32,15 +32,14 @@ output bits in MSB-first order:
    (False, 'empirical_paired_evaluation')
 
 The probability matrix is empirical evidence, never a proof of the strict
-avalanche criterion. Later M10.12 checkpoints add the remaining optional NIST
-STS and Dieharder drivers and parsers.
+avalanche criterion.
 
 Streaming dataset families
 --------------------------
 
-The correlation, CBC, low-density, and high-density families are lazy and
-re-iterable. They expose immutable records or fixed-width big-endian byte
-blocks without materializing the complete experiment:
+The avalanche, random, correlation, CBC, low-density, and high-density
+families are lazy and re-iterable. They expose immutable records or fixed-width
+big-endian byte blocks without materializing the complete experiment:
 
 .. doctest::
 
@@ -63,7 +62,10 @@ the zero chaining value and feeds each output into the next evaluation.
 Density datasets contain weight zero and one inputs plus a seeded ratio of
 weight-two inputs; high density uses their bitwise complements. The v5 seeded
 selection removes the legacy generator's nondeterministic subset behavior.
-Round-specific streams await the stable public trace-projection API.
+``primitive.analysis.run_statistical_tests`` builds and runs any of the six
+families over an inclusive range of reduced-round graphs, returning one
+immutable result per round. The suite driver remains injectable, so the same
+orchestration works with NIST STS, Dieharder, and test doubles.
 
 Serialization and identity
 --------------------------
