@@ -14,7 +14,7 @@ class Bit(Domain):
 
     EXAMPLES::
 
-        >>> from claasp import Bit
+        >>> from claasp.domains import Bit
         >>> (Bit().contains(0), Bit().contains(1), Bit().contains(True))
         (True, True, False)
     """

@@ -25,6 +25,12 @@
       "qualified_name": "claasp.AESSubstitutionLayer"
     },
     {
+      "canonical_name": "claasp.graph.array_type.ArrayType",
+      "defined_in": "claasp.graph.array_type",
+      "kind": "dataclass",
+      "qualified_name": "claasp.ArrayType"
+    },
+    {
       "canonical_name": "claasp.representations.execution.batch.BatchEvaluationResult",
       "defined_in": "claasp.representations.execution.batch",
       "kind": "dataclass",
@@ -43,20 +49,8 @@
       "qualified_name": "claasp.BatchExecutionDriver"
     },
     {
-      "canonical_name": "claasp.domains.binary_extension_field.BinaryExtensionField",
-      "defined_in": "claasp.domains.binary_extension_field",
-      "kind": "dataclass",
-      "qualified_name": "claasp.BinaryExtensionField"
-    },
-    {
-      "canonical_name": "claasp.domains.bit.Bit",
-      "defined_in": "claasp.domains.bit",
-      "kind": "dataclass",
-      "qualified_name": "claasp.Bit"
-    },
-    {
-      "canonical_name": "claasp.graph.value_type.BitWord",
-      "defined_in": "claasp.graph.value_type",
+      "canonical_name": "claasp.graph.array_type.BitWord",
+      "defined_in": "claasp.graph.array_type",
       "kind": "function",
       "qualified_name": "claasp.BitWord"
     },
@@ -209,12 +203,6 @@
       "defined_in": "claasp.graph.port",
       "kind": "dataclass",
       "qualified_name": "claasp.Port"
-    },
-    {
-      "canonical_name": "claasp.domains.prime_field.PrimeField",
-      "defined_in": "claasp.domains.prime_field",
-      "kind": "dataclass",
-      "qualified_name": "claasp.PrimeField"
     },
     {
       "canonical_name": "claasp.graph.primitive.Primitive",
@@ -395,18 +383,6 @@
       "defined_in": "claasp.representations.execution.batch",
       "kind": "class",
       "qualified_name": "claasp.TransposedBatchExecutionDriver"
-    },
-    {
-      "canonical_name": "claasp.graph.value_type.ValueType",
-      "defined_in": "claasp.graph.value_type",
-      "kind": "dataclass",
-      "qualified_name": "claasp.ValueType"
-    },
-    {
-      "canonical_name": "claasp.domains.word.Word",
-      "defined_in": "claasp.domains.word",
-      "kind": "dataclass",
-      "qualified_name": "claasp.Word"
     },
     {
       "canonical_name": "claasp.analysis",
@@ -8654,14 +8630,20 @@
       "qualified_name": "claasp.graph.AmbiguousRealizationError"
     },
     {
+      "canonical_name": "claasp.graph.array_type.ArrayType",
+      "defined_in": "claasp.graph.array_type",
+      "kind": "dataclass",
+      "qualified_name": "claasp.graph.ArrayType"
+    },
+    {
       "canonical_name": "claasp.graph.binding.BindingKind",
       "defined_in": "claasp.graph.binding",
       "kind": "enum",
       "qualified_name": "claasp.graph.BindingKind"
     },
     {
-      "canonical_name": "claasp.graph.value_type.BitWord",
-      "defined_in": "claasp.graph.value_type",
+      "canonical_name": "claasp.graph.array_type.BitWord",
+      "defined_in": "claasp.graph.array_type",
       "kind": "function",
       "qualified_name": "claasp.graph.BitWord"
     },
@@ -8816,10 +8798,37 @@
       "qualified_name": "claasp.graph.ValueBinding"
     },
     {
-      "canonical_name": "claasp.graph.value_type.ValueType",
-      "defined_in": "claasp.graph.value_type",
-      "kind": "dataclass",
-      "qualified_name": "claasp.graph.ValueType"
+      "canonical_name": "claasp.graph.array_type.ArrayType.__init__",
+      "defined_in": "claasp.graph.array_type",
+      "documented_by": "claasp.graph.array_type.ArrayType",
+      "kind": "constructor",
+      "qualified_name": "claasp.graph.array_type.ArrayType.__init__"
+    },
+    {
+      "canonical_name": "claasp.graph.array_type.ArrayType.domain",
+      "defined_in": "claasp.graph.array_type",
+      "documented_by": "claasp.graph.array_type.ArrayType",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.graph.array_type.ArrayType.domain"
+    },
+    {
+      "canonical_name": "claasp.graph.array_type.ArrayType.encoded_bit_size",
+      "defined_in": "claasp.graph.array_type",
+      "kind": "property",
+      "qualified_name": "claasp.graph.array_type.ArrayType.encoded_bit_size"
+    },
+    {
+      "canonical_name": "claasp.graph.array_type.ArrayType.shape",
+      "defined_in": "claasp.graph.array_type",
+      "documented_by": "claasp.graph.array_type.ArrayType",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.graph.array_type.ArrayType.shape"
+    },
+    {
+      "canonical_name": "claasp.graph.array_type.ArrayType.unit_count",
+      "defined_in": "claasp.graph.array_type",
+      "kind": "property",
+      "qualified_name": "claasp.graph.array_type.ArrayType.unit_count"
     },
     {
       "canonical_name": "claasp.graph.port.as_selection",
@@ -9297,6 +9306,13 @@
       "qualified_name": "claasp.graph.metadata.PrimitiveInput.__init__"
     },
     {
+      "canonical_name": "claasp.graph.metadata.PrimitiveInput.array_type",
+      "defined_in": "claasp.graph.metadata",
+      "documented_by": "claasp.graph.metadata.PrimitiveInput",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.graph.metadata.PrimitiveInput.array_type"
+    },
+    {
       "canonical_name": "claasp.graph.metadata.PrimitiveInput.is_secret",
       "defined_in": "claasp.graph.metadata",
       "kind": "property",
@@ -9308,13 +9324,6 @@
       "documented_by": "claasp.graph.metadata.PrimitiveInput",
       "kind": "dataclass_field",
       "qualified_name": "claasp.graph.metadata.PrimitiveInput.role"
-    },
-    {
-      "canonical_name": "claasp.graph.metadata.PrimitiveInput.value_type",
-      "defined_in": "claasp.graph.metadata",
-      "documented_by": "claasp.graph.metadata.PrimitiveInput",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.graph.metadata.PrimitiveInput.value_type"
     },
     {
       "canonical_name": "claasp.graph.metadata.PrimitiveInput.visibility",
@@ -9385,6 +9394,13 @@
       "qualified_name": "claasp.graph.port.Port.__init__"
     },
     {
+      "canonical_name": "claasp.graph.port.Port.array_type",
+      "defined_in": "claasp.graph.port",
+      "documented_by": "claasp.graph.port.Port",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.graph.port.Port.array_type"
+    },
+    {
       "canonical_name": "claasp.graph.port.Port.owner_id",
       "defined_in": "claasp.graph.port",
       "documented_by": "claasp.graph.port.Port",
@@ -9404,18 +9420,17 @@
       "qualified_name": "claasp.graph.port.Port.select_all"
     },
     {
-      "canonical_name": "claasp.graph.port.Port.value_type",
-      "defined_in": "claasp.graph.port",
-      "documented_by": "claasp.graph.port.Port",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.graph.port.Port.value_type"
-    },
-    {
       "canonical_name": "claasp.graph.port.Selection.__init__",
       "defined_in": "claasp.graph.port",
       "documented_by": "claasp.graph.port.Selection",
       "kind": "constructor",
       "qualified_name": "claasp.graph.port.Selection.__init__"
+    },
+    {
+      "canonical_name": "claasp.graph.port.Selection.array_type",
+      "defined_in": "claasp.graph.port",
+      "kind": "property",
+      "qualified_name": "claasp.graph.port.Selection.array_type"
     },
     {
       "canonical_name": "claasp.graph.port.Selection.positions",
@@ -9430,12 +9445,6 @@
       "documented_by": "claasp.graph.port.Selection",
       "kind": "dataclass_field",
       "qualified_name": "claasp.graph.port.Selection.source"
-    },
-    {
-      "canonical_name": "claasp.graph.port.Selection.value_type",
-      "defined_in": "claasp.graph.port",
-      "kind": "property",
-      "qualified_name": "claasp.graph.port.Selection.value_type"
     },
     {
       "canonical_name": "claasp.graph.primitive.Primitive.__init__",
@@ -12949,39 +12958,6 @@
       "defined_in": "claasp.graph.realization",
       "kind": "function",
       "qualified_name": "claasp.graph.select_realization"
-    },
-    {
-      "canonical_name": "claasp.graph.value_type.ValueType.__init__",
-      "defined_in": "claasp.graph.value_type",
-      "documented_by": "claasp.graph.value_type.ValueType",
-      "kind": "constructor",
-      "qualified_name": "claasp.graph.value_type.ValueType.__init__"
-    },
-    {
-      "canonical_name": "claasp.graph.value_type.ValueType.domain",
-      "defined_in": "claasp.graph.value_type",
-      "documented_by": "claasp.graph.value_type.ValueType",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.graph.value_type.ValueType.domain"
-    },
-    {
-      "canonical_name": "claasp.graph.value_type.ValueType.encoded_bit_size",
-      "defined_in": "claasp.graph.value_type",
-      "kind": "property",
-      "qualified_name": "claasp.graph.value_type.ValueType.encoded_bit_size"
-    },
-    {
-      "canonical_name": "claasp.graph.value_type.ValueType.shape",
-      "defined_in": "claasp.graph.value_type",
-      "documented_by": "claasp.graph.value_type.ValueType",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.graph.value_type.ValueType.shape"
-    },
-    {
-      "canonical_name": "claasp.graph.value_type.ValueType.unit_count",
-      "defined_in": "claasp.graph.value_type",
-      "kind": "property",
-      "qualified_name": "claasp.graph.value_type.ValueType.unit_count"
     },
     {
       "canonical_name": "claasp.transformations.editing.inline_reorderings",
@@ -31996,6 +31972,13 @@
       "qualified_name": "claasp.transformations.traversal.GraphSource.__init__"
     },
     {
+      "canonical_name": "claasp.transformations.traversal.GraphSource.array_type",
+      "defined_in": "claasp.transformations.traversal",
+      "documented_by": "claasp.transformations.traversal.GraphSource",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.transformations.traversal.GraphSource.array_type"
+    },
+    {
       "canonical_name": "claasp.transformations.traversal.GraphSource.kind",
       "defined_in": "claasp.transformations.traversal",
       "documented_by": "claasp.transformations.traversal.GraphSource",
@@ -32022,13 +32005,6 @@
       "documented_by": "claasp.transformations.traversal.GraphSource",
       "kind": "dataclass_field",
       "qualified_name": "claasp.transformations.traversal.GraphSource.source_id"
-    },
-    {
-      "canonical_name": "claasp.transformations.traversal.GraphSource.value_type",
-      "defined_in": "claasp.transformations.traversal",
-      "documented_by": "claasp.transformations.traversal.GraphSource",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.transformations.traversal.GraphSource.value_type"
     },
     {
       "canonical_name": "claasp.transformations.traversal.GraphSourceKind",

@@ -1,17 +1,8 @@
 import pytest
 
-from claasp import (
-    Bit,
-    BitWord,
-    Component,
-    Port,
-    PrimeField,
-    Primitive,
-    PrimitiveBuilder,
-    Round,
-    ValueType,
-)
+from claasp import ArrayType, BitWord, Component, Port, Primitive, PrimitiveBuilder, Round
 from claasp.components import Identity, Xor
+from claasp.domains import Bit, PrimeField
 
 
 def test_concise_builder_interface_reads_like_pseudocode():
@@ -75,20 +66,20 @@ def test_builder_inputs_must_be_declared_once_before_graph_construction():
 
 
 def test_logical_selection_is_independent_of_encoded_bit_size():
-    state_type = ValueType(PrimeField(17), (3,))
+    state_type = ArrayType(PrimeField(17), (3,))
     state = Port("state", state_type)
 
     selection = state.select(2, 0)
 
     assert selection.positions == (2, 0)
-    assert selection.value_type == ValueType(PrimeField(17), (2,))
-    assert selection.value_type.unit_count == 2
-    assert selection.value_type.encoded_bit_size == 10
+    assert selection.array_type == ArrayType(PrimeField(17), (2,))
+    assert selection.array_type.unit_count == 2
+    assert selection.array_type.encoded_bit_size == 10
 
 
 def test_builder_returns_a_completed_primitive_without_public_mutation_methods():
-    value_type = ValueType(Bit(), (1,))
-    builder = PrimitiveBuilder("identity", {"state": value_type})
+    array_type = ArrayType(Bit(), (1,))
+    builder = PrimitiveBuilder("identity", {"state": array_type})
     builder.add_round()
     output = builder.add_component(Identity(builder.input("state"), "identity_0_0"))
 
@@ -143,14 +134,14 @@ def test_published_graph_values_have_a_concise_interactive_representation():
 
 
 def test_selection_validates_logical_positions():
-    state = Port("state", ValueType(Bit(), (4,)))
+    state = Port("state", ArrayType(Bit(), (4,)))
 
     with pytest.raises(ValueError, match="outside source"):
         state.select(4)
 
 
 def test_primitive_builds_a_typed_acyclic_graph():
-    state_type = ValueType(PrimeField(17), (3,))
+    state_type = ArrayType(PrimeField(17), (3,))
     primitive = Primitive("toy", {"state": state_type})
     primitive_round = primitive._builder.add_round()
     first = Component(
@@ -168,24 +159,24 @@ def test_primitive_builds_a_typed_acyclic_graph():
 
 
 def test_primitive_rejects_a_source_from_another_graph():
-    value_type = ValueType(Bit(), (4,))
-    primitive = Primitive("left", {"state": value_type})
-    other = Primitive("right", {"foreign": value_type})
+    array_type = ArrayType(Bit(), (4,))
+    primitive = Primitive("left", {"state": array_type})
+    other = Primitive("right", {"foreign": array_type})
     primitive._builder.add_round()
-    component = Component("identity_0_0", (other.graph.input("foreign").select_all(),), value_type)
+    component = Component("identity_0_0", (other.graph.input("foreign").select_all(),), array_type)
 
     with pytest.raises(ValueError, match="not available"):
         primitive._builder.add_component(component)
 
 
 def test_primitive_rejects_a_forged_source_type():
-    primitive = Primitive("toy", {"state": ValueType(Bit(), (4,))})
+    primitive = Primitive("toy", {"state": ArrayType(Bit(), (4,))})
     primitive._builder.add_round()
-    forged = Port("state", ValueType(PrimeField(17), (4,)))
+    forged = Port("state", ArrayType(PrimeField(17), (4,)))
     component = Component(
         "identity_0_0",
         (forged.select_all(),),
-        ValueType(PrimeField(17), (4,)),
+        ArrayType(PrimeField(17), (4,)),
     )
 
     with pytest.raises(ValueError, match="does not match its graph port type"):
@@ -193,11 +184,11 @@ def test_primitive_rejects_a_forged_source_type():
 
 
 def test_primitive_rejects_duplicate_component_ids():
-    value_type = ValueType(Bit(), (4,))
-    primitive = Primitive("toy", {"state": value_type})
+    array_type = ArrayType(Bit(), (4,))
+    primitive = Primitive("toy", {"state": array_type})
     primitive._builder.add_round()
     component = Component(
-        "identity_0_0", (primitive.graph.input("state").select_all(),), value_type
+        "identity_0_0", (primitive.graph.input("state").select_all(),), array_type
     )
     primitive._builder.add_component(component)
 
@@ -206,12 +197,12 @@ def test_primitive_rejects_duplicate_component_ids():
 
 
 def test_components_can_only_be_added_to_current_round():
-    value_type = ValueType(Bit(), (1,))
-    primitive = Primitive("toy", {"state": value_type})
+    array_type = ArrayType(Bit(), (1,))
+    primitive = Primitive("toy", {"state": array_type})
     old_round = primitive._builder.add_round()
     primitive._builder.add_round()
     component = Component(
-        "identity_1_0", (primitive.graph.input("state").select_all(),), value_type
+        "identity_1_0", (primitive.graph.input("state").select_all(),), array_type
     )
 
     with pytest.raises(ValueError, match="current round"):
@@ -219,11 +210,11 @@ def test_components_can_only_be_added_to_current_round():
 
 
 def test_round_from_another_primitive_is_rejected():
-    value_type = ValueType(Bit(), (1,))
-    primitive = Primitive("toy", {"state": value_type})
+    array_type = ArrayType(Bit(), (1,))
+    primitive = Primitive("toy", {"state": array_type})
     primitive._builder.add_round()
     component = Component(
-        "identity_0_0", (primitive.graph.input("state").select_all(),), value_type
+        "identity_0_0", (primitive.graph.input("state").select_all(),), array_type
     )
 
     with pytest.raises(ValueError, match="does not belong"):

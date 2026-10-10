@@ -8,11 +8,11 @@ import pytest
 from claasp.domains import Bit
 from claasp.graph import (
     AmbiguousRealizationError,
+    ArrayType,
     Primitive,
     RealizationDescriptor,
     RealizationMaturity,
     UnsupportedRealizationError,
-    ValueType,
 )
 
 ROOT = next(
@@ -74,7 +74,7 @@ class _SelectablePrimitive(Primitive):
     )
 
     def __init__(self):
-        super().__init__("selectable", {"value": ValueType(Bit(), (1,))})
+        super().__init__("selectable", {"value": ArrayType(Bit(), (1,))})
         self._builder.set_output(self.graph.input("value"))
 
 
@@ -95,7 +95,7 @@ def test_generic_explicit_and_capability_selection_are_deterministic():
 
 
 def test_realization_metadata_and_default_identity_are_stable():
-    primitive = Primitive("plain", {"value": ValueType(Bit(), (1,))})
+    primitive = Primitive("plain", {"value": ArrayType(Bit(), (1,))})
     assert primitive.realization_identity == "plain:default"
     descriptor = _SelectablePrimitive.available_realizations()[1]
     assert descriptor.structure == frozenset(("sbox",))

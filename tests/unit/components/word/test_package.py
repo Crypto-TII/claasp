@@ -1,12 +1,13 @@
 import pytest
 
-from claasp import Primitive, ScalarEvaluator, ValueType, Word
+from claasp import ArrayType, Primitive, ScalarEvaluator
 from claasp.components import ModularAdd, Rotate, Xor
+from claasp.domains import Word
 
 
 def test_word_operations_wrap_and_rotate():
-    value_type = ValueType(Word(8), (1,))
-    primitive = Primitive("word_operations", {"left": value_type, "right": value_type})
+    array_type = ArrayType(Word(8), (1,))
+    primitive = Primitive("word_operations", {"left": array_type, "right": array_type})
     primitive._builder.add_round()
     added = primitive._builder.add_component(
         ModularAdd(
@@ -28,8 +29,8 @@ def test_word_rejects_noncanonical_values():
 
 
 def test_modular_add_accepts_an_explicit_non_power_of_two_modulus():
-    value_type = ValueType(Word(5), (1,))
-    primitive = Primitive("explicit_modulus", {"left": value_type, "right": value_type})
+    array_type = ArrayType(Word(5), (1,))
+    primitive = Primitive("explicit_modulus", {"left": array_type, "right": array_type})
     primitive._builder.add_round()
     output = primitive._builder.add_component(
         ModularAdd((primitive.graph.input("left"), primitive.graph.input("right")), modulus=31)

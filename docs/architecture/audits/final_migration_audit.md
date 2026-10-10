@@ -18,7 +18,7 @@ Relationship means: **direct** for one reviewed destination, **split** for one l
 |---|---|---|---|---|---|---|
 | `claasp/DTOs/__init__.py` | source | — | inapplicable | inapplicable | — | Empty package markers carry no behavior; contained modules are inventoried separately. |
 | `claasp/DTOs/component_state.py` | source | `ComponentState` | supersede | consolidated | `src/claasp/graph/port.py` | Immutable Port and Selection objects replace mutable component-id/bit-position state. |
-| `claasp/DTOs/power_of_2_word_based_dto.py` | source | `PowerOf2WordBasedDTO` | supersede | split | `src/claasp/domains/word.py`<br>`src/claasp/graph/value_type.py` | Typed Word domains and ValueType replace a mutable optional word-size probe DTO. |
+| `claasp/DTOs/power_of_2_word_based_dto.py` | source | `PowerOf2WordBasedDTO` | supersede | split | `src/claasp/domains/word.py`<br>`src/claasp/graph/array_type.py` | Typed Word domains and ArrayType replace a mutable optional word-size probe DTO. |
 | `claasp/__init__.py` | source | — | inapplicable | inapplicable | — | Empty package markers carry no behavior; contained modules are inventoried separately. |
 | `claasp/catalog.py` | source | `ClassInfo`, `CipherInfo`, `RenderedText`, `Catalog` | migrate | split | `src/claasp/catalogue/catalogue.py`<br>`src/claasp/catalogue/records.py` | Typed immutable catalogue records and dependency-free discovery replace AST scanning, pandas rendering, and eager solver probing. |
 | `claasp/cipher.py` | source | `Cipher` | supersede | split | `src/claasp/graph/primitive.py`<br>`src/claasp/transformations` | M10.10 owns only the legacy inversion, partial-graph, round-reduction, key-schedule, and paired-transformation entry points. Evaluation, reporting, serialization, code generation, and remaining helpers retain their recorded milestone ownership. |
@@ -717,6 +717,7 @@ Relationship means: **direct** for one reviewed destination, **split** for one l
 | `src/claasp/drivers/statistical/parsers.py` | new-v5 | new | New bounded typed external-driver boundary separates tools and optional dependencies from core semantics. |
 | `src/claasp/encoding.py` | new-v5 | new | New v5 package boundary, provenance, encoding, or public export authority has no single legacy predecessor. |
 | `src/claasp/graph/__init__.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/constants.py`<br>`claasp/name_mappings.py` |
+| `src/claasp/graph/array_type.py` | legacy-lineage | consolidated | `claasp/DTOs/power_of_2_word_based_dto.py`<br>`claasp/cipher_modules/models/sat/utils/constants.py`<br>`claasp/name_mappings.py` |
 | `src/claasp/graph/binding.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/constants.py`<br>`claasp/name_mappings.py` |
 | `src/claasp/graph/bit_builder.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/constants.py`<br>`claasp/name_mappings.py` |
 | `src/claasp/graph/component.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/constants.py`<br>`claasp/component.py`<br>`claasp/name_mappings.py` |
@@ -726,7 +727,6 @@ Relationship means: **direct** for one reviewed destination, **split** for one l
 | `src/claasp/graph/primitive.py` | legacy-lineage | consolidated | `claasp/cipher.py`<br>`claasp/cipher_modules/models/sat/utils/constants.py`<br>`claasp/components/cipher_output_component.py`<br>`claasp/name_mappings.py`<br>`claasp/round.py`<br>`claasp/rounds.py` |
 | `src/claasp/graph/realization.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/constants.py`<br>`claasp/name_mappings.py` |
 | `src/claasp/graph/round.py` | legacy-lineage | consolidated | `claasp/cipher_modules/models/sat/utils/constants.py`<br>`claasp/name_mappings.py`<br>`claasp/round.py`<br>`claasp/rounds.py` |
-| `src/claasp/graph/value_type.py` | legacy-lineage | consolidated | `claasp/DTOs/power_of_2_word_based_dto.py`<br>`claasp/cipher_modules/models/sat/utils/constants.py`<br>`claasp/name_mappings.py` |
 | `src/claasp/parameters/__init__.py` | new-v5 | new | New validated parameter-resource API makes packaged constants explicit and dependency-free. |
 | `src/claasp/parameters/poseidon.py` | new-v5 | new | New validated parameter-resource API makes packaged constants explicit and dependency-free. |
 | `src/claasp/presentation/__init__.py` | legacy-lineage | consolidated | `claasp/cipher_modules/report.py`<br>`claasp/cipher_modules/statistical_tests/nist_statistical_tests_report.py` |

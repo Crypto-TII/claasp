@@ -5,12 +5,12 @@ from copy import copy
 from dataclasses import dataclass
 
 from claasp.graph import (
+    ArrayType,
     Port,
     PortLike,
     Primitive,
     PrimitiveInput,
     Selection,
-    ValueType,
     as_selection,
 )
 from claasp.graph.composite import CompositeInstance
@@ -116,15 +116,15 @@ def _boundary_descriptors(primitive, inputs):
         pieces = _as_values(value)
         for piece in pieces:
             _validate_selection(primitive, piece)
-        domain = pieces[0].value_type.domain
-        if any(piece.value_type.domain != domain for piece in pieces[1:]):
+        domain = pieces[0].array_type.domain
+        if any(piece.array_type.domain != domain for piece in pieces[1:]):
             raise TransformationError(
                 TransformationFailureReason.AMBIGUOUS_BOUNDARY,
                 "one boundary input must use one scalar domain",
                 source_ids=tuple(piece.source.owner_id for piece in pieces),
             )
         descriptor = PrimitiveInput(
-            ValueType(domain, (sum(piece.value_type.unit_count for piece in pieces),)), role=name
+            ArrayType(domain, (sum(piece.array_type.unit_count for piece in pieces),)), role=name
         )
         descriptors[name] = descriptor
         offset = 0

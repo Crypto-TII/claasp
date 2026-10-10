@@ -1,12 +1,13 @@
 import pytest
 
-from claasp import CompositeBuilder, PrimeField, Primitive, ValueType
+from claasp import ArrayType, CompositeBuilder, Primitive
 from claasp.components import Add
+from claasp.domains import PrimeField
 
 
 def _double_then_add_definition():
-    value_type = ValueType(PrimeField(17), (1,))
-    builder = CompositeBuilder("DoubleThenAdd", {"value": value_type, "addend": value_type})
+    array_type = ArrayType(PrimeField(17), (1,))
+    builder = CompositeBuilder("DoubleThenAdd", {"value": array_type, "addend": array_type})
     value, addend = builder.inputs("value", 1)
     builder.add_round()
     doubled = builder.add_component(Add((value, value), component_id="double"))
@@ -27,8 +28,8 @@ def test_definition_is_immutable_and_projects_to_an_ordinary_primitive():
 
 def test_instantiation_lowers_namespaced_leaves_and_retains_scope_outputs():
     definition = _double_then_add_definition()
-    value_type = ValueType(PrimeField(17), (1,))
-    primitive = Primitive("parent", {"left": value_type, "right": value_type})
+    array_type = ArrayType(PrimeField(17), (1,))
+    primitive = Primitive("parent", {"left": array_type, "right": array_type})
     primitive_round = primitive._builder.add_round()
     instance = primitive._builder.add_composite(
         definition,
@@ -52,8 +53,8 @@ def test_instantiation_lowers_namespaced_leaves_and_retains_scope_outputs():
 
 def test_nested_scopes_survive_flat_lowering_with_deterministic_paths():
     child = _double_then_add_definition()
-    value_type = ValueType(PrimeField(17), (1,))
-    builder = CompositeBuilder("ParentBlock", {"left": value_type, "right": value_type})
+    array_type = ArrayType(PrimeField(17), (1,))
+    builder = CompositeBuilder("ParentBlock", {"left": array_type, "right": array_type})
     builder.add_round()
     nested = builder.add_composite(
         child,
@@ -63,7 +64,7 @@ def test_nested_scopes_survive_flat_lowering_with_deterministic_paths():
     builder.set_output("output", nested.output())
     parent = builder.build()
 
-    primitive = Primitive("outer", {"left": value_type, "right": value_type})
+    primitive = Primitive("outer", {"left": array_type, "right": array_type})
     primitive._builder.add_round()
     outer = primitive._builder.add_composite(
         parent,
@@ -82,7 +83,7 @@ def test_nested_scopes_survive_flat_lowering_with_deterministic_paths():
 
 def test_composite_bindings_are_exact_and_typed():
     definition = _double_then_add_definition()
-    primitive = Primitive("bad", {"value": ValueType(PrimeField(19), (1,))})
+    primitive = Primitive("bad", {"value": ArrayType(PrimeField(19), (1,))})
     primitive._builder.add_round()
     with pytest.raises(ValueError, match="bindings do not match"):
         primitive._builder.add_composite(definition, {"value": primitive.graph.input("value")})

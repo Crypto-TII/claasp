@@ -2,20 +2,13 @@
 
 import pytest
 
-from claasp import (
-    BinaryExtensionField,
-    Bit,
-    Primitive,
-    ScalarEvaluator,
-    TransposedBatchEvaluator,
-    ValueType,
-    Word,
-)
+from claasp import ArrayType, Primitive, ScalarEvaluator, TransposedBatchEvaluator
 from claasp.components import Permutation
+from claasp.domains import BinaryExtensionField, Bit, Word
 
 
 def _conversion_primitive() -> Primitive:
-    primitive = Primitive("conversion", {"bits": ValueType(Bit(), (16,))})
+    primitive = Primitive("conversion", {"bits": ArrayType(Bit(), (16,))})
     primitive._builder.add_round()
     packed = primitive._builder.pack_bits(primitive.graph.input("bits"), 8)
     swapped = primitive._builder.add_component(Permutation(packed, (1, 0)))
@@ -50,30 +43,30 @@ def test_conversion_scalar_and_transposed_batch_agree():
 
 
 def test_conversion_components_reject_implicit_or_partial_reinterpretation():
-    bit_primitive = Primitive("bits", {"state": ValueType(Bit(), (7,))})
+    bit_primitive = Primitive("bits", {"state": ArrayType(Bit(), (7,))})
     with pytest.raises(ValueError, match="multiple"):
         bit_primitive._builder.pack_bits(bit_primitive.graph.input("state"), 4)
     with pytest.raises(ValueError, match="Word"):
         bit_primitive._builder.unpack_bits(bit_primitive.graph.input("state"))
 
-    word_primitive = Primitive("words", {"state": ValueType(Word(8), (2,))})
+    word_primitive = Primitive("words", {"state": ArrayType(Word(8), (2,))})
     with pytest.raises(ValueError, match="Bit"):
         word_primitive._builder.pack_bits(word_primitive.graph.input("state"), 8)
 
 
 def test_pack_and_unpack_can_explicitly_cross_a_binary_field_boundary():
-    primitive = Primitive("field_conversion", {"bits": ValueType(Bit(), (16,))})
+    primitive = Primitive("field_conversion", {"bits": ArrayType(Bit(), (16,))})
     primitive._builder.add_round()
     field = BinaryExtensionField(8, 0x11D)
     packed = primitive._builder.pack_bits(primitive.graph.input("bits"), 8, output_domain=field)
     primitive._builder.set_output(primitive._builder.unpack_bits(packed))
 
     assert primitive.evaluate(0x12A5) == 0x12A5
-    assert packed.value_type == ValueType(field, (2,))
+    assert packed.array_type == ArrayType(field, (2,))
 
 
 def test_reverse_and_word_permutation_are_domain_neutral_permutations():
-    primitive = Primitive("structural", {"words": ValueType(Word(5), (4,))})
+    primitive = Primitive("structural", {"words": ArrayType(Word(5), (4,))})
     primitive._builder.add_round()
     reverse = primitive._builder.add_component(
         Permutation(primitive.graph.input("words"), (3, 2, 1, 0))

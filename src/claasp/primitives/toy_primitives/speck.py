@@ -2,7 +2,7 @@
 
 from claasp.components import Constant, ModularAdd, Rotate, Xor
 from claasp.domains import Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 
 class ToySpeck(Primitive):
@@ -26,10 +26,10 @@ class ToySpeck(Primitive):
             maximum=4,
             name="ToySpeck",
         )
-        word_type = ValueType(Word(4), (1,))
+        word_type = ArrayType(Word(4), (1,))
         super().__init__(
             "toy_speck",
-            {"plaintext": ValueType(Word(4), (2,)), "key": ValueType(Word(4), (4,))},
+            {"plaintext": ArrayType(Word(4), (2,)), "key": ArrayType(Word(4), (4,))},
             kind=PrimitiveKind.BLOCK_CIPHER,
         )
         x, y = self.graph.input("plaintext")[0], self.graph.input("plaintext")[1]

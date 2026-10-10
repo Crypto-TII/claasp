@@ -80,7 +80,7 @@ class Polynomial:
 
     EXAMPLES::
 
-        >>> from claasp import PrimeField
+        >>> from claasp.domains import PrimeField
         >>> from claasp.representations.constraints.polynomial import Polynomial
         >>> field = PrimeField(17)
         >>> x = Polynomial.variable(field, "x")

@@ -2,7 +2,7 @@
 
 from claasp.components import Identity as IdentityComponent
 from claasp.domains import Bit
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 from ._base import positive
 
@@ -30,7 +30,7 @@ class Identity(Primitive):
         bit_size = positive(bit_size, "bit_size")
         super().__init__(
             "identity",
-            {"input": ValueType(Bit(), (bit_size,))},
+            {"input": ArrayType(Bit(), (bit_size,))},
             kind=PrimitiveKind.PERMUTATION,
         )
         self._builder.add_round()

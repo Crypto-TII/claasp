@@ -14,10 +14,10 @@ that need names and ports together.
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, ValueType
+   >>> from claasp import PrimitiveBuilder, ArrayType
    >>> from claasp.components import Add, Permutation
    >>> from claasp.domains import PrimeField
-   >>> field_vector = ValueType(PrimeField(17), (3,))
+   >>> field_vector = ArrayType(PrimeField(17), (3,))
    >>> builder = PrimitiveBuilder("small_permutation", {"state": field_vector})
    >>> state = builder.input("state")
    >>> builder.input(0) is state
@@ -96,10 +96,10 @@ arithmetic is distinct from ordinary field arithmetic.
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, ValueType
+   >>> from claasp import PrimitiveBuilder, ArrayType
    >>> from claasp.components import ModularSubtract, Shift
    >>> from claasp.domains import Word
-   >>> words = ValueType(Word(8), (1,))
+   >>> words = ArrayType(Word(8), (1,))
    >>> builder = PrimitiveBuilder("word_example", {"left": words, "right": words})
    >>> builder.add_round()
    Round(number=0)
@@ -118,7 +118,7 @@ unambiguous.
 
    >>> from claasp.domains import Bit
    >>> from claasp.components import FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm
-   >>> builder = PrimitiveBuilder("lfsr", {"state": ValueType(Bit(), (4,))})
+   >>> builder = PrimitiveBuilder("lfsr", {"state": ArrayType(Bit(), (4,))})
    >>> builder.add_round()
    Round(number=0)
    >>> spec = FeedbackRegisterSpec(4, (FeedbackTerm((0,)), FeedbackTerm((1,))))
@@ -139,9 +139,9 @@ unambiguous scalar, batch, diagram, and model semantics.
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, ValueType
+   >>> from claasp import PrimitiveBuilder, ArrayType
    >>> from claasp.domains import Bit
-   >>> builder = PrimitiveBuilder("conversion", {"bits": ValueType(Bit(), (16,))})
+   >>> builder = PrimitiveBuilder("conversion", {"bits": ArrayType(Bit(), (16,))})
    >>> builder.add_round()
    Round(number=0)
    >>> words = builder.pack_bits(builder.input("bits"), 8)

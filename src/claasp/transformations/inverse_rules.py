@@ -76,9 +76,10 @@ class ComponentInverseRegistry:
 
     EXAMPLES::
 
-        >>> from claasp import Primitive, ValueType, Word
+        >>> from claasp import Primitive, ArrayType
+        >>> from claasp.domains import Word
         >>> from claasp.components import Rotate
-        >>> graph = Primitive("rule", {"x": ValueType(Word(8), (1,)), "y": ValueType(Word(8), (1,))})
+        >>> graph = Primitive("rule", {"x": ArrayType(Word(8), (1,)), "y": ArrayType(Word(8), (1,))})
         >>> component = Rotate(graph.graph.input("x"), 3, "left")
         >>> inverse = DEFAULT_INVERSE_REGISTRY.invert(component, graph.graph.input("y"), recover_input=0)
         >>> (type(inverse).__name__, inverse.amount, inverse.direction)
@@ -131,7 +132,7 @@ class ComponentInverseRegistry:
         if not isinstance(component, Component):
             raise TypeError("component must be a Component")
         output_selection = as_selection(output)
-        if output_selection.value_type != component.output_type:
+        if output_selection.array_type != component.output_type:
             raise TransformationError(
                 TransformationFailureReason.AMBIGUOUS_BOUNDARY,
                 "inverse output type does not match the component output",
@@ -193,10 +194,10 @@ class ComponentInverseRegistry:
             (item for index, item in enumerate(component.inputs) if index != recover_input),
             auxiliaries,
         ):
-            if original.value_type != replacement.value_type:
+            if original.array_type != replacement.array_type:
                 raise TransformationError(
                     TransformationFailureReason.AMBIGUOUS_BOUNDARY,
-                    "auxiliary value type does not match its predecessor",
+                    "auxiliary array type does not match its predecessor",
                     source_ids=(original.source.owner_id, replacement.source.owner_id),
                 )
         semantics = self._semantics.get(type(component))
@@ -250,7 +251,7 @@ def _inverse_sbox(component, output, auxiliaries, recover_input):
     for source, target in enumerate(component.table):
         inverse[target] = source
     if isinstance(component, BitVectorSBox):
-        if component.output_type.unit_count != component.inputs[0].value_type.unit_count:
+        if component.output_type.unit_count != component.inputs[0].array_type.unit_count:
             raise TransformationError(
                 TransformationFailureReason.INFORMATION_LOSS,
                 "bit-vector S-box changes width",
@@ -350,7 +351,7 @@ def _inverse_matrix(matrix, domain):
 
 
 def _inverse_linear_map(component, output, auxiliaries, recover_input):
-    domain = component.inputs[0].value_type.domain
+    domain = component.inputs[0].array_type.domain
     inverse = _inverse_matrix(component.matrix, domain)
     if inverse is None:
         raise TransformationError(
@@ -362,7 +363,7 @@ def _inverse_linear_map(component, output, auxiliaries, recover_input):
 
 
 def _inverse_binary_affine_map(component, output, auxiliaries, recover_input):
-    domain = component.inputs[0].value_type.domain
+    domain = component.inputs[0].array_type.domain
     inverse = _inverse_matrix(component.matrix, Bit())
     if inverse is None:
         raise TransformationError(
@@ -586,10 +587,11 @@ def invert_component(
 
     EXAMPLES::
 
-        >>> from claasp import Primitive, ValueType, Word
+        >>> from claasp import Primitive, ArrayType
+        >>> from claasp.domains import Word
         >>> from claasp.components import Rotate
         >>> from claasp.transformations import invert_component
-        >>> graph = Primitive("inverse", {"x": ValueType(Word(8), (1,))})
+        >>> graph = Primitive("inverse", {"x": ArrayType(Word(8), (1,))})
         >>> inverse = invert_component(Rotate(graph.graph.input("x"), 2, "left"),
         ...     graph.graph.input("x"), recover_input=0)
         >>> (inverse.direction, inverse.amount)

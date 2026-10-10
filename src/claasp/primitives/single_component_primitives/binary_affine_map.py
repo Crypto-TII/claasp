@@ -2,7 +2,7 @@
 
 from claasp.components import BinaryAffineMap as BinaryAffineMapComponent
 from claasp.domains import BinaryExtensionField, Bit
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 from claasp.utils import (
     first_irreducible_polynomial,
     identity_matrix,
@@ -52,7 +52,7 @@ class BinaryAffineMap(Primitive):
             if matrix_is_invertible(matrix, Bit())
             else PrimitiveKind.FUNCTION
         )
-        super().__init__("binary_affine_map", {"input": ValueType(field, (unit_count,))}, kind=kind)
+        super().__init__("binary_affine_map", {"input": ArrayType(field, (unit_count,))}, kind=kind)
         self._builder.add_round()
         output = self._builder.add_component(
             BinaryAffineMapComponent(self.graph.input("input"), matrix, offset)

@@ -15,11 +15,11 @@ from claasp.components import (
     Xor,
 )
 from claasp.domains import Word
-from claasp.graph import ValueType, as_selection
+from claasp.graph import ArrayType, as_selection
 
 
 def word_type(width, count=1):
-    return ValueType(Word(width), (count,))
+    return ArrayType(Word(width), (count,))
 
 
 def select(source, index):
@@ -102,7 +102,7 @@ def byte_swap(primitive, item, width):
 def low_bits(primitive, item, count):
     bits = primitive._builder.unpack_bits(item)
     return primitive._builder.pack_bits(
-        bits[tuple(range(bits.value_type.unit_count - count, bits.value_type.unit_count))], count
+        bits[tuple(range(bits.array_type.unit_count - count, bits.array_type.unit_count))], count
     )
 
 

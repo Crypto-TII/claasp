@@ -30,11 +30,11 @@ class Permutation(Component):
         frozen_mapping = tuple(mapping)
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
-        object.__setattr__(self, "output_type", component_input.value_type)
+        object.__setattr__(self, "output_type", component_input.array_type)
         object.__setattr__(self, "mapping", frozen_mapping)
         Component.__post_init__(self)
 
-        size = component_input.value_type.unit_count
+        size = component_input.array_type.unit_count
         if len(frozen_mapping) != size or set(frozen_mapping) != set(range(size)):
             raise ValueError(f"mapping must be a permutation of range({size})")
 
@@ -48,13 +48,14 @@ class Permutation(Component):
 
         EXAMPLES::
 
-            >>> from claasp import Bit, PrimitiveBuilder, ValueType
+            >>> from claasp import PrimitiveBuilder, ArrayType
+            >>> from claasp.domains import Bit
             >>> from claasp.components import Permutation
-            >>> builder = PrimitiveBuilder("reverse", {"x": ValueType(Bit(), (4,))})
+            >>> builder = PrimitiveBuilder("reverse", {"x": ArrayType(Bit(), (4,))})
             >>> _ = builder.add_round()
             >>> Permutation.reverse(builder.input("x")).mapping
             (3, 2, 1, 0)
         """
 
-        size = as_selection(component_input).value_type.unit_count
+        size = as_selection(component_input).array_type.unit_count
         return cls(component_input, reversed(range(size)), component_id)

@@ -441,7 +441,7 @@ def _trail_from_sat_characteristic(primitive, characteristic) -> Trail:
         if step.component_id.removesuffix("[0]") in state_additions
     )
     plaintext = dict(characteristic.input_differences)["plaintext"]
-    width = primitive.graph.input_ports["plaintext"].value_type.encoded_bit_size
+    width = primitive.graph.input_ports["plaintext"].array_type.encoded_bit_size
     return Trail(
         TrailKind.XOR_DIFFERENTIAL,
         XorDifference(plaintext, width),
@@ -457,10 +457,10 @@ def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     if (
         primitive.family_name != "speck"
         or plaintext is None
-        or not isinstance(plaintext.value_type.domain, Word)
+        or not isinstance(plaintext.array_type.domain, Word)
     ):
         return False
-    width = plaintext.value_type.domain.width
+    width = plaintext.array_type.domain.width
     if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != len(primitive.graph.rounds):
         return False
     if trail.input_pattern.width != 2 * width or trail.output_pattern.width != 2 * width:
@@ -502,8 +502,8 @@ def _validate_speck_slice(primitive: Primitive) -> int:
         primitive.family_name != "speck"
         or len(primitive.graph.rounds) not in {2, 3}
         or plaintext is None
-        or not isinstance(plaintext.value_type.domain, Word)
-        or plaintext.value_type.domain.width != 16
+        or not isinstance(plaintext.array_type.domain, Word)
+        or plaintext.array_type.domain.width != 16
     ):
         raise NotImplementedError(
             "the reviewed ARX search slice currently supports two- or three-round Speck32/64"
@@ -517,8 +517,8 @@ def _validate_speck_linear_slice(primitive: Primitive) -> int:
         primitive.family_name != "speck"
         or len(primitive.graph.rounds) != 4
         or plaintext is None
-        or not isinstance(plaintext.value_type.domain, Word)
-        or plaintext.value_type.domain.width != 16
+        or not isinstance(plaintext.array_type.domain, Word)
+        or plaintext.array_type.domain.width != 16
     ):
         raise NotImplementedError(
             "the reviewed ARX linear slice currently supports four-round Speck32/64"

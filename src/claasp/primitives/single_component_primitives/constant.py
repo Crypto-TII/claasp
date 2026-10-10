@@ -3,7 +3,7 @@
 from claasp.components import Constant as ConstantComponent
 from claasp.domains import Bit
 from claasp.encoding import bits_from_int
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 from ._base import positive
 
@@ -35,7 +35,7 @@ class Constant(Primitive):
         self._builder.add_round()
         output = self._builder.add_component(
             ConstantComponent(
-                ValueType(Bit(), (output_bit_size,)),
+                ArrayType(Bit(), (output_bit_size,)),
                 bits_from_int(value, output_bit_size),
             )
         )

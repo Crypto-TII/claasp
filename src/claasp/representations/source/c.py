@@ -166,8 +166,8 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
         f'  if (argc != {len(primitive.graph.input_ports) + 1}) {{ fputs("invalid input count\\n", stderr); return 2; }}',
     ]
     for index, (name, port) in enumerate(primitive.graph.input_ports.items()):
-        width = port.value_type.domain.encoded_bit_size
-        count = port.value_type.unit_count
+        width = port.array_type.domain.encoded_bit_size
+        count = port.array_type.unit_count
         lines.extend(
             (
                 f"  uint64_t {names[name]}[{count}];",
@@ -301,7 +301,7 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
     output_expressions = selection_expressions(primitive.graph.output)
     lines.append(f"  uint64_t result[{len(output_expressions)}];")
     _assign(lines, "result", output_expressions)
-    output_width = primitive.graph.output.value_type.domain.encoded_bit_size
+    output_width = primitive.graph.output.array_type.domain.encoded_bit_size
     lines.extend(
         (
             f"  print_hex_units(result, {len(output_expressions)}, {output_width});",
@@ -338,7 +338,7 @@ def _applicability(primitive):
             "missing_output", "C generation requires a declared primitive output"
         )
     for source_id, port in primitive.graph.input_ports.items():
-        domain = port.value_type.domain
+        domain = port.array_type.domain
         if not isinstance(domain, (Bit, Word)) or domain.encoded_bit_size > 64:
             return SourceDiagnostic(
                 "unsupported_domain",

@@ -4,15 +4,16 @@ from dataclasses import replace
 
 import pytest
 
-from claasp import Primitive, ValueType, Word
+from claasp import ArrayType, Primitive
 from claasp.components import BitwiseAnd, Xor
+from claasp.domains import Word
 from claasp.drivers.solvers import SatResult, SatStatus
 from claasp.representations.constraints.smt import WordLinearSMTModel
 
 
 def _xor_model():
     primitive = Primitive(
-        "xor", {"left": ValueType(Word(2), (1,)), "key": ValueType(Word(2), (1,))}
+        "xor", {"left": ArrayType(Word(2), (1,)), "key": ArrayType(Word(2), (1,))}
     )
     primitive._builder.add_round()
     output = primitive._builder.add_component(
@@ -93,7 +94,7 @@ def test_concrete_fixed_keys_are_constants_not_zero_masks():
 
 def test_bitwise_and_word_composition_recounts_signs_and_weights():
     primitive = Primitive(
-        "and", {"left": ValueType(Word(2), (1,)), "right": ValueType(Word(2), (1,))}
+        "and", {"left": ArrayType(Word(2), (1,)), "right": ArrayType(Word(2), (1,))}
     )
     primitive._builder.add_round()
     output = primitive._builder.add_component(

@@ -144,7 +144,7 @@ class ScalarExecutionDriver:
         values: dict[str, RuntimeValue] = {}
         for name, port in primitive.graph.input_ports.items():
             value = tuple(inputs[name])
-            self._validate_value(name, value, port.value_type.unit_count, port.value_type.domain)
+            self._validate_value(name, value, port.array_type.unit_count, port.array_type.domain)
             values[name] = value
 
         binding_cache = {}
@@ -271,7 +271,7 @@ class ScalarExecutionDriver:
     ) -> RuntimeValue:
         from claasp.domains import Bit
 
-        domain = component.inputs[0].value_type.domain
+        domain = component.inputs[0].array_type.domain
         vector = inputs[0]
         if isinstance(domain, Bit):
             packed = sum((value & 1) << index for index, value in enumerate(vector))

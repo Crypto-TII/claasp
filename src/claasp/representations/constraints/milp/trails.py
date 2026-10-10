@@ -357,7 +357,7 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
             return name
 
         for owner, port in self.primitive.graph.input_ports.items():
-            for position in range(port.value_type.unit_count):
+            for position in range(port.array_type.unit_count):
                 binary(self._name(owner, position))
         for component in self.primitive.graph.components:
             for position in range(component.output_type.unit_count):
@@ -461,7 +461,7 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
                     )
             elif isinstance(component, LinearMap):
                 source = operands[0]
-                domain = component.inputs[0].value_type.domain
+                domain = component.inputs[0].array_type.domain
                 if len(source) != len(output) or matrix_rank(component.matrix, domain) != len(
                     source
                 ):
@@ -514,7 +514,7 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
                 )
 
         for owner in self.zero_difference_inputs:
-            for position in range(self.primitive.graph.input_ports[owner].value_type.unit_count):
+            for position in range(self.primitive.graph.input_ports[owner].array_type.unit_count):
                 constraints.append(
                     LinearConstraint(
                         LinearExpression.from_terms({self._name(owner, position): 1}),
@@ -526,7 +526,7 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
         active_names = tuple(
             self._name(self.active_input, position)
             for position in range(
-                self.primitive.graph.input_ports[self.active_input].value_type.unit_count
+                self.primitive.graph.input_ports[self.active_input].array_type.unit_count
             )
         )
         constraints.append(

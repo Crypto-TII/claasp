@@ -1,7 +1,8 @@
 import pytest
 
-from claasp import Bit, Primitive, ValueType
+from claasp import ArrayType, Primitive
 from claasp.components import Identity
+from claasp.domains import Bit
 from claasp.primitives import Present
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.diagrams import (
@@ -23,7 +24,7 @@ from claasp.semantics.cryptanalysis import (
 
 
 def _toy_primitive():
-    primitive = Primitive("toy diagram", {"state": ValueType(Bit(), (4,))})
+    primitive = Primitive("toy diagram", {"state": ArrayType(Bit(), (4,))})
     primitive._builder.add_round()
     shuffled = primitive._builder.add_component(
         Identity(primitive.graph.input("state")[3, 1, 2, 0])

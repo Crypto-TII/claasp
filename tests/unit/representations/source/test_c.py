@@ -1,7 +1,8 @@
 import pytest
 
-from claasp import Bit, Primitive, ValueType, compile_source
+from claasp import ArrayType, Primitive, compile_source
 from claasp.components import FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm
+from claasp.domains import Bit
 from claasp.drivers.native import NativeCompilationStatus, compile_native
 from claasp.primitives import AES, Present, Speck
 from claasp.representations.source import SourceStatus
@@ -22,7 +23,7 @@ def test_c_source_reports_unsupported_field_components_honestly():
     result = compile_source(AES(number_of_rounds=1), target="c")
     assert result.status is SourceStatus.UNSUPPORTED
     assert result.diagnostic.code == "unsupported_domain"
-    primitive = Primitive("feedback", {"state": ValueType(Bit(), (4,))})
+    primitive = Primitive("feedback", {"state": ArrayType(Bit(), (4,))})
     primitive._builder.add_round()
     output = primitive._builder.add_component(
         FeedbackRegister(

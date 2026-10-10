@@ -2,8 +2,9 @@
 
 import pytest
 
-from claasp import Primitive, ValueType, Word
+from claasp import ArrayType, Primitive
 from claasp.components import BitwiseNot, BitwiseOr, ModularSubtract, Shift
+from claasp.domains import Word
 from claasp.drivers.solvers import (
     CPStatus,
     GLPKSolver,
@@ -21,8 +22,8 @@ pytestmark = pytest.mark.external
 
 
 def _primitive():
-    value_type = ValueType(Word(8), (1,))
-    primitive = Primitive("or_not_shift", {name: value_type for name in ("a", "b", "c")})
+    array_type = ArrayType(Word(8), (1,))
+    primitive = Primitive("or_not_shift", {name: array_type for name in ("a", "b", "c")})
     primitive._builder.add_round()
     merged = primitive._builder.add_component(
         BitwiseOr(

@@ -16,7 +16,7 @@ class PrimeField(Domain):
 
     EXAMPLES::
 
-        >>> from claasp import PrimeField
+        >>> from claasp.domains import PrimeField
         >>> field = PrimeField(17)
         >>> field.contains(16)
         True

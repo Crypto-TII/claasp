@@ -21,7 +21,7 @@ Grouping and provenance
 -----------------------
 
 ``semantic_component_groups`` keys operations by concrete component type,
-typed input/output value types, immutable semantic parameters, and requested
+typed input/output array types, immutable semantic parameters, and requested
 domain. It does not key by component id, description text, or traversal order.
 Stable round/component locations may appear only as evidence references.
 

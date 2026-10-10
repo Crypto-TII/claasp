@@ -6,7 +6,7 @@ from claasp import bits_from_int
 from claasp.components import Add
 from claasp.components import ModularMultiply as ModularMultiplyComponent
 from claasp.domains import Bit, Word
-from claasp.graph import Primitive, ValueType
+from claasp.graph import ArrayType, Primitive
 from claasp.primitives import MiMC, Present80, Simon, Speck
 from claasp.primitives.single_component_primitives import (
     BitwiseNot,
@@ -24,7 +24,7 @@ from claasp.representations.execution import ScalarEvaluator
 
 
 def _xor_primitive(operand_count=2):
-    primitive = Primitive("xor", {name: ValueType(Bit(), (1,)) for name in "abc"[:operand_count]})
+    primitive = Primitive("xor", {name: ArrayType(Bit(), (1,)) for name in "abc"[:operand_count]})
     primitive._builder.add_round()
     output = primitive._builder.add_component(
         Add(
@@ -168,7 +168,7 @@ def test_variable_shift_and_rotation_witnesses_are_exhaustive(primitive):
 def test_legacy_three_input_or_relation_retains_the_complete_truth_table():
     from claasp.components import BitVectorSBox
 
-    primitive = Primitive("or_lookup", {"x": ValueType(Bit(), (3,))})
+    primitive = Primitive("or_lookup", {"x": ArrayType(Bit(), (3,))})
     primitive._builder.add_round()
     output = primitive._builder.add_component(
         BitVectorSBox(primitive.graph.input("x"), (0, 1, 1, 1, 1, 1, 1, 1), component_id="or")
@@ -230,7 +230,7 @@ def test_modular_multiply_witnesses_are_exhaustive_at_three_bits():
 
 def test_non_power_of_two_modular_multiply_is_rejected_explicitly():
     primitive = Primitive(
-        "modmul_13", {name: ValueType(Word(4), (1,)) for name in ("left", "right")}
+        "modmul_13", {name: ArrayType(Word(4), (1,)) for name in ("left", "right")}
     )
     primitive._builder.add_round()
     primitive._builder.set_output(

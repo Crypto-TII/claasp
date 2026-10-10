@@ -1,6 +1,7 @@
 import pytest
 
-from claasp import BinaryExtensionField, Bit, PrimeField, ValueType
+from claasp import ArrayType
+from claasp.domains import BinaryExtensionField, Bit, PrimeField
 
 
 def test_bit_domain_uses_canonical_integer_values():
@@ -15,7 +16,7 @@ def test_bit_domain_uses_canonical_integer_values():
 
 def test_prime_field_distinguishes_logical_and_encoded_sizes():
     domain = PrimeField(17)
-    state_type = ValueType(domain, (3,))
+    state_type = ArrayType(domain, (3,))
 
     assert domain.contains(16)
     assert not domain.contains(17)
@@ -32,9 +33,9 @@ def test_binary_extension_field_records_defining_polynomial():
 
 
 @pytest.mark.parametrize("shape", [(), (0,), (-1,), (2, 0)])
-def test_value_type_rejects_invalid_shapes(shape):
+def test_array_type_rejects_invalid_shapes(shape):
     with pytest.raises(ValueError):
-        ValueType(Bit(), shape)
+        ArrayType(Bit(), shape)
 
 
 def test_domains_are_immutable_and_hashable():

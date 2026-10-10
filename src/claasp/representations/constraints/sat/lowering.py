@@ -235,20 +235,20 @@ class BooleanCNFModel:
             component.output for component in self.primitive.graph.components
         ]
         for port in sources:
-            if not isinstance(port.value_type.domain, (Bit, Word)):
+            if not isinstance(port.array_type.domain, (Bit, Word)):
                 raise ValueError(
                     f"Boolean CNF requires the Bit or Word domain; {port.owner_id!r} uses "
-                    f"{type(port.value_type.domain).__name__}"
+                    f"{type(port.array_type.domain).__name__}"
                 )
-        domains = {type(port.value_type.domain) for port in sources}
+        domains = {type(port.array_type.domain) for port in sources}
         if len(domains) != 1:
             raise ValueError("Boolean CNF requires a homogeneous Bit or Word graph")
 
         variables = [
             name
             for port in sources
-            for position in range(port.value_type.unit_count)
-            for name in unit_variable_names(port.owner_id, port.value_type, position)
+            for position in range(port.array_type.unit_count)
+            for name in unit_variable_names(port.owner_id, port.array_type, position)
         ]
         context = (
             _NativeXorEncodingContext(variables)
@@ -264,7 +264,7 @@ class BooleanCNFModel:
             ]
             selected = []
             for item in component.inputs:
-                width = item.value_type.domain.encoded_bit_size
+                width = item.array_type.domain.encoded_bit_size
                 names = [
                     self._bit_name(owner_id, bit)
                     for owner_id, bit in self.primitive.graph.selection_bit_sources(item)
@@ -395,14 +395,14 @@ class BooleanCNFModel:
             item.output for item in self.primitive.graph.components
         ]:
             if port.owner_id == owner_id:
-                return port.value_type
+                return port.array_type
         raise KeyError(owner_id)
 
     def _bit_name(self, owner_id: str, flat_bit: int) -> str:
-        value_type = self._port_type(owner_id)
-        width = value_type.domain.encoded_bit_size
+        array_type = self._port_type(owner_id)
+        width = array_type.domain.encoded_bit_size
         position, local_bit = divmod(flat_bit, width)
-        return unit_variable_names(owner_id, value_type, position)[local_bit]
+        return unit_variable_names(owner_id, array_type, position)[local_bit]
 
 
 class BooleanNativeXorModel(BooleanCNFModel):

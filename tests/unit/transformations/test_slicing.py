@@ -1,16 +1,16 @@
 from claasp import (
-    Bit,
+    ArrayType,
     CompositeBuilder,
     DependencyIndex,
     Primitive,
     TransformationError,
     TransformationFailureReason,
-    ValueType,
     reduce_rounds,
     slice_primitive,
     slice_rounds,
 )
 from claasp.components import Identity
+from claasp.domains import Bit
 from claasp.graph import as_selection
 from claasp.primitives import Speck
 
@@ -37,7 +37,7 @@ def test_dependency_slice_matches_independent_round_state_evaluation():
     derived = result.primitive
 
     assert (
-        derived._decode_boundary(derived.evaluate(PLAINTEXT, KEY), derived.graph.output.value_type)
+        derived._decode_boundary(derived.evaluate(PLAINTEXT, KEY), derived.graph.output.array_type)
         == expected
     )
     assert len(derived.graph.components) < len(primitive.graph.components)
@@ -55,7 +55,7 @@ def test_middle_round_slice_retains_key_schedule_and_accepts_state_boundary():
     derived = slice_rounds(primitive, 1, 2).primitive
     actual = derived._decode_boundary(
         derived.evaluate(state=start, key=KEY),
-        derived.graph.output.value_type,
+        derived.graph.output.array_type,
     )
 
     assert actual == expected
@@ -76,7 +76,7 @@ def test_round_reduction_is_a_validated_prefix_and_does_not_mutate_source():
 
 
 def test_partial_boundary_reports_missing_units_exactly():
-    primitive = Primitive("partial", {"state": ValueType(Bit(), (4,))})
+    primitive = Primitive("partial", {"state": ArrayType(Bit(), (4,))})
     primitive._builder.add_round()
     copied = primitive._builder.add_component(Identity(primitive.graph.input("state"), "copy"))
     primitive._builder.set_output(copied)
@@ -91,7 +91,7 @@ def test_partial_boundary_reports_missing_units_exactly():
 
 
 def test_slice_preserves_structural_bindings_and_complete_composite_scopes():
-    builder = CompositeBuilder("copy_block", {"value": ValueType(Bit(), (2,))})
+    builder = CompositeBuilder("copy_block", {"value": ArrayType(Bit(), (2,))})
     builder.add_round()
     copied = builder.add_component(Identity(builder.input("value"), "copy"))
     builder.set_output("output", copied)
@@ -99,7 +99,7 @@ def test_slice_preserves_structural_bindings_and_complete_composite_scopes():
 
     primitive = Primitive(
         "scoped",
-        {"left": ValueType(Bit(), (1,)), "right": ValueType(Bit(), (1,))},
+        {"left": ArrayType(Bit(), (1,)), "right": ArrayType(Bit(), (1,))},
     )
     primitive._builder.add_round()
     joined = primitive._builder.join(primitive.graph.input("left"), primitive.graph.input("right"))

@@ -37,7 +37,7 @@ def find_two_round_spn_xor_differential(primitive: Primitive) -> TrailSearchResu
     first_permutation = _component(primitive, "p_layer_1", Permutation)
     second_permutation = _component(primitive, "p_layer_2", Permutation)
     semantics = SBoxTransitionSemantics(first_sboxes[0].table)
-    width = primitive.graph.input("plaintext").value_type.unit_count
+    width = primitive.graph.input("plaintext").array_type.unit_count
     nibble_count = width // semantics.width
     transitions = {
         difference: tuple(
@@ -282,8 +282,8 @@ def _validate_present_slice(primitive: Primitive) -> None:
         or len(primitive.graph.rounds) != 2
         or plaintext is None
         or key is None
-        or not isinstance(plaintext.value_type.domain, Bit)
-        or plaintext.value_type.unit_count != 64
+        or not isinstance(plaintext.array_type.domain, Bit)
+        or plaintext.array_type.unit_count != 64
     ):
         raise NotImplementedError(
             "the reviewed SPN search slice currently supports two-round PRESENT"
@@ -296,8 +296,8 @@ def _validate_present_linear_slice(primitive: Primitive) -> None:
         primitive.family_name != "present"
         or len(primitive.graph.rounds) != 3
         or plaintext is None
-        or not isinstance(plaintext.value_type.domain, Bit)
-        or plaintext.value_type.unit_count != 64
+        or not isinstance(plaintext.array_type.domain, Bit)
+        or plaintext.array_type.unit_count != 64
     ):
         raise NotImplementedError(
             "the reviewed linear SPN search slice currently supports three-round PRESENT"

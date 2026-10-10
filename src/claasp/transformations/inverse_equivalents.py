@@ -83,8 +83,8 @@ def _qarmav2(primitive):
     return QARMAv2Compact(
         number_of_rounds=primitive.nrounds,
         number_of_layers=primitive.number_of_layers,
-        key_bit_size=primitive.graph.input("key").value_type.encoded_bit_size,
-        tweak_bit_size=primitive.graph.input("input_tweak").value_type.encoded_bit_size,
+        key_bit_size=primitive.graph.input("key").array_type.encoded_bit_size,
+        tweak_bit_size=primitive.graph.input("input_tweak").array_type.encoded_bit_size,
     )
 
 
@@ -111,7 +111,7 @@ def _tinyjambu_fsr(primitive):
     from claasp.primitives.block_ciphers.tinyjambu import TinyJambuWordBased
 
     return TinyJambuWordBased(
-        key_bit_size=primitive.graph.input("key").value_type.encoded_bit_size,
+        key_bit_size=primitive.graph.input("key").array_type.encoded_bit_size,
         number_of_rounds=_round_count(primitive) * 32,
     )
 
@@ -270,7 +270,7 @@ def inversion_equivalent(primitive: Primitive):
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "inverse-equivalent graph requires declared outputs",
         )
-    if primitive.graph.output.value_type != replacement.graph.output.value_type:
+    if primitive.graph.output.array_type != replacement.graph.output.array_type:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "inverse-equivalent graph has a different output contract",

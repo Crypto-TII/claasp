@@ -18,10 +18,10 @@ from claasp.composites.aes import (
     SHIFT_ROWS_MAPPING,
 )
 from claasp.graph import (
+    ArrayType,
     Primitive,
     PrimitiveKind,
     RealizationDescriptor,
-    ValueType,
     as_selection,
 )
 
@@ -59,7 +59,7 @@ def _sub_bytes(primitive, state, realization):
 def _key_schedule(primitive, key, key_word_count, number_of_rounds, realization):
     """FIPS 197 KEYEXPANSION, returning round keys in their natural order."""
 
-    word_type = ValueType(AES_FIELD, (4,))
+    word_type = ArrayType(AES_FIELD, (4,))
     words = [key[4 * index : 4 * index + 4] for index in range(key_word_count)]
     while len(words) < 4 * (number_of_rounds + 1):
         word_index = len(words)
@@ -141,10 +141,10 @@ class AES(Primitive):
         self._nk = key_bit_size // 32
         self._nr = rounds
         self.realization = descriptor
-        state_type = ValueType(AES_FIELD, (16,))
+        state_type = ArrayType(AES_FIELD, (16,))
         super().__init__(
             "aes",
-            {"plaintext": state_type, "key": ValueType(AES_FIELD, (key_bit_size // 8,))},
+            {"plaintext": state_type, "key": ArrayType(AES_FIELD, (key_bit_size // 8,))},
             kind=PrimitiveKind.BLOCK_CIPHER,
             provenance=(("identity", "AES"), ("specification", "FIPS 197")),
             instance_name=f"AES-{key_bit_size}",

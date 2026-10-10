@@ -42,12 +42,12 @@ def lower_boolean_problem(problem: AnalysisProblem) -> CNFFormula:
         label = f"constraint_{number}_{type(constraint).__name__.lower()}"
         if isinstance(constraint, FixedValue):
             values = problem.primitive._decode_boundary(
-                constraint.value, constraint.target.value_type
+                constraint.value, constraint.target.array_type
             )
-            if len(values) != constraint.target.value_type.unit_count:
+            if len(values) != constraint.target.array_type.unit_count:
                 raise ValueError("fixed value length must match its constraint target")
             for value in values:
-                constraint.target.value_type.domain.validate(value)
+                constraint.target.array_type.domain.validate(value)
             for group, value in zip(groups(constraint.target), values):
                 width = len(group)
                 for bit, variable in enumerate(group):
@@ -74,7 +74,7 @@ def lower_boolean_problem(problem: AnalysisProblem) -> CNFFormula:
         elif isinstance(constraint, Nonzero):
             add(literals(constraint.target), label)
         elif isinstance(constraint, HammingWeight):
-            if not isinstance(constraint.target.value_type.domain, Bit):
+            if not isinstance(constraint.target.array_type.domain, Bit):
                 raise NotImplementedError(
                     "word-unit Hamming weight requires cardinality auxiliaries"
                 )

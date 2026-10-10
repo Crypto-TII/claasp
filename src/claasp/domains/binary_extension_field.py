@@ -15,7 +15,7 @@ class BinaryExtensionField(Domain):
 
     EXAMPLES::
 
-        >>> from claasp import BinaryExtensionField
+        >>> from claasp.domains import BinaryExtensionField
         >>> aes_field = BinaryExtensionField(8, 0x11B)
         >>> aes_field.contains(0xFF)
         True

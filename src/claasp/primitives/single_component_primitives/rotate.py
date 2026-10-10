@@ -2,7 +2,7 @@
 
 from claasp.components import Rotate as RotateComponent
 from claasp.domains import Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 from ._base import positive
 
@@ -38,7 +38,7 @@ class Rotate(Primitive):
         bit_size = positive(bit_size, "bit_size")
         super().__init__(
             "rotate",
-            {"input": ValueType(Word(bit_size), (1,))},
+            {"input": ArrayType(Word(bit_size), (1,))},
             kind=PrimitiveKind.PERMUTATION,
         )
         self._builder.add_round()

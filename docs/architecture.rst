@@ -8,7 +8,7 @@ The typed graph
 ---------------
 
 Domains define scalar semantics such as a bit, a fixed-width word, an element
-of :math:`GF(2^w)`, or an element of :math:`GF(p)`. ``ValueType`` adds a
+of :math:`GF(2^w)`, or an element of :math:`GF(p)`. ``ArrayType`` adds a
 homogeneous shape. Ports and selections connect components using logical
 units, so a permutation is reusable without assuming that every unit is a
 bit.
@@ -21,7 +21,7 @@ The corresponding source packages have deliberately concrete names:
 
 .. code-block:: text
 
-   graph/       Primitive, Component, Port, Round, and ValueType structure
+   graph/       Primitive, Component, Port, Round, and ArrayType structure
    domains/     Bit, Word, GF(2^w), and GF(p) scalar units
    components/  Operations connecting graph values
    primitives/  Concrete block-cipher and permutation descriptions

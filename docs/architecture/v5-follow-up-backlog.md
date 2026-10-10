@@ -30,7 +30,7 @@ Status: **Complete**
   - perform one useful, small analysis and display its result;
   - link to a separate collection of quick analysis scripts;
   - remove the arbitrary "Next steps" list.
-- Explain `ValueType` in Core concepts with keyword arguments, the one-element
+- Explain `ArrayType` in Core concepts with keyword arguments, the one-element
   shape syntax `(4,)`, and a multidimensional example.
 - Introduce realizations in Core concepts rather than in the AES walkthrough.
 - Explain batch and transposed batch evaluation in plain language, using a

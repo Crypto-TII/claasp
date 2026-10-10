@@ -176,7 +176,7 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
             batch = tuple(tuple(item) for item in inputs[name])
             for item in batch:
                 self._scalar_evaluator._validate_value(
-                    name, item, port.value_type.unit_count, port.value_type.domain
+                    name, item, port.array_type.unit_count, port.array_type.domain
                 )
             values[name] = batch
 

@@ -39,6 +39,7 @@ from claasp.components import (
 )
 from claasp.domains import BinaryExtensionField, Bit
 from claasp.encoding import bits_from_int
+from claasp.graph.array_type import ArrayType
 from claasp.graph.metadata import (
     LEGACY_KIND_NAMES,
     InputVisibility,
@@ -47,7 +48,6 @@ from claasp.graph.metadata import (
 )
 from claasp.graph.port import PortLike, Selection, as_selection
 from claasp.graph.primitive import Primitive
-from claasp.graph.value_type import ValueType
 from claasp.utils.integers import coerce_exact_int as coerce_exact_int
 
 # Stable boundary-role and taxonomy values used by primitive source modules.
@@ -84,8 +84,8 @@ class BitComponent:
     input_bit_positions: list[list[int]]
 
 
-def _bit_type(width: int) -> ValueType:
-    return ValueType(Bit(), (width,))
+def _bit_type(width: int) -> ArrayType:
+    return ArrayType(Bit(), (width,))
 
 
 def simplify_inputs(inputs_id, inputs_pos):
@@ -415,7 +415,7 @@ class BitGraphPrimitive(Primitive):
         if operation in {"ROTATE_BY_VARIABLE_AMOUNT", "SHIFT_BY_VARIABLE_AMOUNT"}:
             operands = (source[:width], source[width:])
         else:
-            count = 1 if unary else source.value_type.unit_count // width
+            count = 1 if unary else source.array_type.unit_count // width
             operands = tuple(source[index * width : (index + 1) * width] for index in range(count))
         if operation in {"ROTATE_BY_VARIABLE_AMOUNT", "SHIFT_BY_VARIABLE_AMOUNT"}:
             words = (self._builder.pack_bits(operands[0], width),)
@@ -449,12 +449,12 @@ class BitGraphPrimitive(Primitive):
             )
         else:
             cls = VariableRotate if operation == "ROTATE_BY_VARIABLE_AMOUNT" else VariableShift
-            amount = self._builder.pack_bits(operands[1], operands[1].value_type.unit_count)
+            amount = self._builder.pack_bits(operands[1], operands[1].array_type.unit_count)
             direction = "right" if parameter >= 0 else "left"
             output = self._builder.add_component(
                 cls(words[0], amount, direction, component_id=component_id)
             )
-        if isinstance(output.value_type.domain, Bit):
+        if isinstance(output.array_type.domain, Bit):
             return self._record(output, positions)
         return self._record(self._builder.unpack_bits(output), positions)
 
@@ -671,7 +671,7 @@ class BitGraphPrimitive(Primitive):
             for length, feedback, *rest in registers
         )
         register_size = sum(register[0] for register in registers)
-        if bits_inside_word != 1 or source.value_type.unit_count == register_size:
+        if bits_inside_word != 1 or source.array_type.unit_count == register_size:
             output = self._builder.add_component(
                 FeedbackRegister(source, specifications, clocks=clocks, component_id=base_id)
             )
@@ -723,7 +723,7 @@ class BitGraphPrimitive(Primitive):
 
     def _output_component(self, ids, positions, output_bit_size, prefix, final=False):
         source = self._selection(ids, positions)
-        if source.value_type.unit_count != output_bit_size:
+        if source.array_type.unit_count != output_bit_size:
             raise ValueError("output selection size does not match output_bit_size")
         output = self._builder.view(source)
         state = self._record(output)

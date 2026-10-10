@@ -8,15 +8,16 @@ from claasp.domains.base import Domain
 
 
 @dataclass(frozen=True, slots=True)
-class ValueType:
+class ArrayType:
     """A homogeneous shape over one scalar domain.
 
     The logical size is deliberately distinct from its binary encoding size.
 
     EXAMPLES::
 
-        >>> from claasp import PrimeField, ValueType
-        >>> state_type = ValueType(PrimeField(17), (3,))
+        >>> from claasp import ArrayType
+        >>> from claasp.domains import PrimeField
+        >>> state_type = ArrayType(PrimeField(17), (3,))
         >>> state_type.unit_count
         3
         >>> state_type.encoded_bit_size
@@ -50,18 +51,18 @@ class ValueType:
         return None if scalar_size is None else self.unit_count * scalar_size
 
 
-def BitWord(bit_size: int) -> ValueType:
+def BitWord(bit_size: int) -> ArrayType:
     """Return the boundary type for one packed string of individual bits.
 
     ``BitWord(128)`` is the concise authoring form of
-    ``ValueType(domain=Bit(), shape=(128,))``. Use ``Word`` instead when
+    ``ArrayType(domain=Bit(), shape=(128,))``. Use ``Word`` instead when
     the value is one arithmetic word with rotation or modular-add semantics.
 
     EXAMPLES::
 
         >>> from claasp import BitWord
-        >>> value_type = BitWord(128)
-        >>> (value_type.unit_count, value_type.encoded_bit_size)
+        >>> array_type = BitWord(128)
+        >>> (array_type.unit_count, array_type.encoded_bit_size)
         (128, 128)
     """
 
@@ -71,4 +72,4 @@ def BitWord(bit_size: int) -> ValueType:
         raise TypeError("bit_size must be an integer")
     if bit_size <= 0:
         raise ValueError("bit_size must be positive")
-    return ValueType(Bit(), (bit_size,))
+    return ArrayType(Bit(), (bit_size,))

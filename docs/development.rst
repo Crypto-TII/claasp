@@ -31,7 +31,7 @@ Run one file or one test while developing a focused change:
 .. code-block:: console
 
    PYTHONPATH=src python -m pytest tests/unit/domains/test_package.py
-   PYTHONPATH=src python -m pytest tests/unit/domains/test_package.py::test_value_type_rejects_invalid_shapes
+   PYTHONPATH=src python -m pytest tests/unit/domains/test_package.py::test_array_type_rejects_invalid_shapes
 
 The configured default excludes tests marked ``external`` and ``extended``.
 Run every dependency-free test, including longer exhaustive checks, with:

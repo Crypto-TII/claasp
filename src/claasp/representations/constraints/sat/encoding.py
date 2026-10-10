@@ -3,13 +3,13 @@
 from collections.abc import Mapping
 
 from claasp.domains import Bit, Word
-from claasp.graph import Selection, ValueType
+from claasp.graph import ArrayType, Selection
 
 
-def unit_variable_names(owner_id: str, value_type: ValueType, position: int) -> tuple[str, ...]:
+def unit_variable_names(owner_id: str, array_type: ArrayType, position: int) -> tuple[str, ...]:
     """Return the MSB-first Boolean variables encoding one logical unit."""
 
-    domain = value_type.domain
+    domain = array_type.domain
     if isinstance(domain, Bit):
         return (f"{owner_id}_{position}",)
     if isinstance(domain, Word):
@@ -24,7 +24,7 @@ def selection_variable_names(selection: Selection) -> tuple[tuple[str, ...], ...
     """Return Boolean variable groups for a logical graph selection."""
 
     return tuple(
-        unit_variable_names(selection.source.owner_id, selection.source.value_type, position)
+        unit_variable_names(selection.source.owner_id, selection.source.array_type, position)
         for position in selection.positions
     )
 
@@ -40,24 +40,24 @@ def resolved_selection_variable_names(
     outputs that carry them.
     """
 
-    width = selection.value_type.domain.encoded_bit_size
+    width = selection.array_type.domain.encoded_bit_size
     if width is None:
         raise ValueError("Boolean encoding requires a canonically encoded selection domain")
     names = []
     for owner_id, flat_bit in primitive.graph.selection_bit_sources(selection):
-        value_type = primitive.graph.port(owner_id).value_type
-        source_width = value_type.domain.encoded_bit_size
+        array_type = primitive.graph.port(owner_id).array_type
+        source_width = array_type.domain.encoded_bit_size
         if source_width is None:  # pragma: no cover - guarded by selection_bit_sources
             raise ValueError("Boolean encoding requires canonically encoded source domains")
         position, local_bit = divmod(flat_bit, source_width)
-        names.append(unit_variable_names(owner_id, value_type, position)[local_bit])
+        names.append(unit_variable_names(owner_id, array_type, position)[local_bit])
     return tuple(tuple(names[start : start + width]) for start in range(0, len(names), width))
 
 
-def encode_unit(value: int, value_type: ValueType) -> tuple[int, ...]:
+def encode_unit(value: int, array_type: ArrayType) -> tuple[int, ...]:
     """Encode one logical Bit or Word value as MSB-first Boolean values."""
 
-    domain = value_type.domain
+    domain = array_type.domain
     domain.validate(value)
     if isinstance(domain, Bit):
         return (value,)

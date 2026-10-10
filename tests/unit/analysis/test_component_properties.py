@@ -8,7 +8,7 @@ from claasp.components import BitVectorSBox, LinearMap, LookupTable, SBox
 from claasp.composites.aes import AES_FIELD
 from claasp.domains import Bit, Word
 from claasp.drivers.analysis import BoundedBranchNumberDriver
-from claasp.graph import Port, ValueType
+from claasp.graph import ArrayType, Port
 from claasp.primitives import AES, Present
 
 
@@ -60,9 +60,9 @@ def test_public_driver_api_keeps_realization_separate_from_driver_provenance():
 
 
 def test_binary_and_field_linear_examples_have_fixed_evidence():
-    binary = LinearMap(Port("bits", ValueType(Bit(), (2,))), ((1, 0), (1, 1)))
+    binary = LinearMap(Port("bits", ArrayType(Bit(), (2,))), ((1, 0), (1, 1)))
     mix_column = LinearMap(
-        Port("column", ValueType(AES_FIELD, (4,))),
+        Port("column", ArrayType(AES_FIELD, (4,))),
         ((2, 3, 1, 1), (1, 2, 3, 1), (1, 1, 2, 3), (3, 1, 1, 2)),
     )
     from claasp.analysis import analyze_component_property
@@ -80,7 +80,7 @@ def test_binary_and_field_linear_examples_have_fixed_evidence():
 
 def test_unit_sbox_analysis_uses_one_unit_width_not_the_whole_vector():
     sbox = SBox(
-        Port("words", ValueType(Word(2), (3,))),
+        Port("words", ArrayType(Word(2), (3,))),
         (0, 1, 3, 2),
     )
     from claasp.analysis import analyze_component_property

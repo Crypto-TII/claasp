@@ -4,7 +4,7 @@ from decimal import Decimal, localcontext
 from math import ceil, log10
 
 from claasp.domains import Bit, Word
-from claasp.graph import Primitive, ValueType
+from claasp.graph import ArrayType, Primitive
 
 from ._word_graph import (
     add,
@@ -49,11 +49,11 @@ class RC5(Primitive):
         if key_size not in (0, 1) and key_size % 8:
             raise ValueError("this typed RC5 graph requires a byte-aligned nonempty key")
         key_type = (
-            ValueType(Bit(), (1,)) if key_size in (0, 1) else ValueType(Word(8), (key_size // 8,))
+            ArrayType(Bit(), (1,)) if key_size in (0, 1) else ArrayType(Word(8), (key_size // 8,))
         )
         byte_count = word_size // 8
         super().__init__(
-            "rc5", {"key": key_type, "plaintext": ValueType(Word(8), (2 * byte_count,))}
+            "rc5", {"key": key_type, "plaintext": ArrayType(Word(8), (2 * byte_count,))}
         )
         self._builder.add_round()
 

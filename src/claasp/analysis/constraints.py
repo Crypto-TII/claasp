@@ -40,8 +40,8 @@ class Equal:
 
     def __init__(self, left: PortLike, right: PortLike) -> None:
         left, right = as_selection(left), as_selection(right)
-        if left.value_type != right.value_type:
-            raise ValueError("equality operands must have identical value types")
+        if left.array_type != right.array_type:
+            raise ValueError("equality operands must have identical array types")
         object.__setattr__(self, "left", left)
         object.__setattr__(self, "right", right)
 
@@ -92,8 +92,8 @@ class HammingWeight:
 
     def __init__(self, target: PortLike, minimum: int = 0, maximum: int | None = None) -> None:
         target = as_selection(target)
-        maximum = target.value_type.unit_count if maximum is None else maximum
-        if not 0 <= minimum <= maximum <= target.value_type.unit_count:
+        maximum = target.array_type.unit_count if maximum is None else maximum
+        if not 0 <= minimum <= maximum <= target.array_type.unit_count:
             raise ValueError("weight bounds must satisfy 0 <= minimum <= maximum <= size")
         object.__setattr__(self, "target", target)
         object.__setattr__(self, "minimum", minimum)

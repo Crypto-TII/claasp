@@ -8,6 +8,7 @@ from inspect import Parameter, formatannotation, signature
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
+from claasp.graph.array_type import ArrayType
 from claasp.graph.binding import BindingKind, ValueBinding
 from claasp.graph.component import Component
 from claasp.graph.metadata import (
@@ -26,7 +27,6 @@ from claasp.graph.realization import (
     select_realization,
 )
 from claasp.graph.round import Round
-from claasp.graph.value_type import ValueType
 
 if TYPE_CHECKING:
     from claasp.analysis import Analysis
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
 
 def _normalize_primitive_inputs(
-    inputs: Mapping[str, ValueType | PrimitiveInput],
+    inputs: Mapping[str, ArrayType | PrimitiveInput],
 ) -> tuple[dict[str, PrimitiveInput], dict[str, Port]]:
     """Validate input declarations and create their descriptors and ports."""
 
@@ -47,7 +47,7 @@ def _normalize_primitive_inputs(
             raise ValueError("input names must not be empty")
         if isinstance(supplied, PrimitiveInput):
             descriptor = supplied
-        elif isinstance(supplied, ValueType):
+        elif isinstance(supplied, ArrayType):
             visibility = (
                 InputVisibility.SECRET
                 if name in {"key", "secret", "secret_key"}
@@ -55,9 +55,9 @@ def _normalize_primitive_inputs(
             )
             descriptor = PrimitiveInput(supplied, role=name, visibility=visibility)
         else:
-            raise TypeError(f"input {name!r} must have a ValueType or PrimitiveInput")
+            raise TypeError(f"input {name!r} must have an ArrayType or PrimitiveInput")
         descriptors[name] = descriptor
-        ports[name] = Port(name, descriptor.value_type)
+        ports[name] = Port(name, descriptor.array_type)
     return descriptors, ports
 
 
@@ -213,8 +213,8 @@ class PublishedValues(tuple):
 
     @staticmethod
     def _bit_size(value: object) -> int | None:
-        value_type = getattr(value, "value_type", None)
-        return None if value_type is None else value_type.encoded_bit_size
+        array_type = getattr(value, "array_type", None)
+        return None if array_type is None else array_type.encoded_bit_size
 
     def __repr__(self) -> str:
         lines = [f"{self.label} ({len(self)})"]
@@ -625,9 +625,10 @@ class Primitive:
 
     EXAMPLES::
 
-        >>> from claasp import PrimitiveBuilder, ValueType, Word
+        >>> from claasp import PrimitiveBuilder, ArrayType
+        >>> from claasp.domains import Word
         >>> from claasp.components import Xor
-        >>> nibble = ValueType(Word(4), (1,))
+        >>> nibble = ArrayType(Word(4), (1,))
         >>> builder = PrimitiveBuilder("xor_nibbles", {"left": nibble, "right": nibble})
         >>> builder.add_round()
         Round(number=0)
@@ -679,7 +680,7 @@ class Primitive:
     def __init__(
         self,
         family_name: str,
-        inputs: Mapping[str, ValueType | PrimitiveInput],
+        inputs: Mapping[str, ArrayType | PrimitiveInput],
         *,
         kind: PrimitiveKind | str | None = None,
         provenance: tuple[tuple[str, str], ...] = (),
@@ -692,7 +693,7 @@ class Primitive:
         if not family_name:
             raise ValueError("family_name must not be empty")
         if not isinstance(inputs, Mapping):
-            raise TypeError("inputs must be a mapping from names to ValueType objects")
+            raise TypeError("inputs must be a mapping from names to ArrayType objects")
         descriptors, ports = _normalize_primitive_inputs(inputs)
 
         if kind is None:
@@ -937,7 +938,7 @@ class Primitive:
         inputs = tuple(
             PrimitiveInputDetails(
                 name,
-                descriptor.value_type.encoded_bit_size,
+                descriptor.array_type.encoded_bit_size,
                 descriptor.role,
                 descriptor.visibility,
             )
@@ -950,7 +951,7 @@ class Primitive:
             self.kind,
             self._instance_name or type(self).__name__,
             inputs,
-            output.value_type.encoded_bit_size,
+            output.array_type.encoded_bit_size,
             self._round_count if self._round_count is not None else len(self._rounds),
             self.realization.name,
         )
@@ -1178,10 +1179,10 @@ class Primitive:
         if len(values) == 1:
             return as_selection(values[0])
         selections = tuple(as_selection(value) for value in values)
-        domain = selections[0].value_type.domain
-        if any(item.value_type.domain != domain for item in selections[1:]):
+        domain = selections[0].array_type.domain
+        if any(item.array_type.domain != domain for item in selections[1:]):
             raise ValueError("structural wiring requires one homogeneous domain")
-        output_type = ValueType(domain, (sum(item.value_type.unit_count for item in selections),))
+        output_type = ArrayType(domain, (sum(item.array_type.unit_count for item in selections),))
         return self._add_binding(BindingKind.JOIN, selections, output_type)
 
     def _pack_bits(
@@ -1196,11 +1197,11 @@ class Primitive:
         from claasp.domains import BinaryExtensionField, Bit, Word
 
         selection = as_selection(value)
-        if not isinstance(selection.value_type.domain, Bit):
+        if not isinstance(selection.array_type.domain, Bit):
             raise ValueError("pack_bits input must use the Bit domain")
         if not isinstance(word_width, int) or isinstance(word_width, bool) or word_width <= 0:
             raise ValueError("word_width must be a positive integer")
-        if selection.value_type.unit_count % word_width:
+        if selection.array_type.unit_count % word_width:
             raise ValueError("input bit count must be a multiple of word_width")
         if output_domain is not None:
             if not isinstance(output_domain, BinaryExtensionField):
@@ -1208,7 +1209,7 @@ class Primitive:
             if output_domain.degree != word_width:
                 raise ValueError("binary-field degree must equal word_width")
         domain = output_domain if output_domain is not None else Word(word_width)
-        output_type = ValueType(domain, (selection.value_type.unit_count // word_width,))
+        output_type = ArrayType(domain, (selection.array_type.unit_count // word_width,))
         return self._add_binding(
             BindingKind.PACK_BITS,
             (selection,),
@@ -1220,7 +1221,7 @@ class Primitive:
         """Give an ordered selection its own non-semantic wiring boundary."""
 
         selection = as_selection(value)
-        return self._add_binding(BindingKind.VIEW, (selection,), selection.value_type)
+        return self._add_binding(BindingKind.VIEW, (selection,), selection.array_type)
 
     def _unpack_bits(self, value: PortLike) -> Port:
         """View fixed-width words as consecutive MSB-first bits."""
@@ -1228,11 +1229,11 @@ class Primitive:
         from claasp.domains import BinaryExtensionField, Bit, Word
 
         selection = as_selection(value)
-        domain = selection.value_type.domain
+        domain = selection.array_type.domain
         if not isinstance(domain, (Word, BinaryExtensionField)):
             raise ValueError("unpack_bits input must use a Word or binary-field domain")
         word_width = domain.width if isinstance(domain, Word) else domain.degree
-        output_type = ValueType(Bit(), (selection.value_type.unit_count * word_width,))
+        output_type = ArrayType(Bit(), (selection.array_type.unit_count * word_width,))
         return self._add_binding(
             BindingKind.UNPACK_BITS,
             (selection,),
@@ -1244,7 +1245,7 @@ class Primitive:
         self,
         kind: BindingKind,
         inputs: tuple[Selection, ...],
-        output_type: ValueType,
+        output_type: ArrayType,
         *,
         word_width: int | None = None,
         binding_id: str | None = None,
@@ -1348,11 +1349,11 @@ class Primitive:
             component.output for component in self._components.values()
         )
         for port in ports:
-            width = port.value_type.domain.encoded_bit_size
+            width = port.array_type.domain.encoded_bit_size
             if width is None:
                 raise TypeError("graph wiring requires canonically encoded domains")
             units = []
-            for position in range(port.value_type.unit_count):
+            for position in range(port.array_type.unit_count):
                 refs = tuple((port.owner_id, position * width + bit) for bit in range(width))
                 units.append(refs[0] if width == 1 else refs)
             values[port.owner_id] = tuple(units)
@@ -1393,14 +1394,14 @@ class Primitive:
             )
 
         normalized: dict[str, Selection] = {}
-        for name, value_type in definition.input_types:
+        for name, array_type in definition.input_types:
             selection = as_selection(bindings[name])
             actual = self._port(selection.source.owner_id)
             if actual != selection.source:
                 raise ValueError(f"binding {name!r} does not match its graph port type")
-            if selection.value_type != value_type:
+            if selection.array_type != array_type:
                 raise ValueError(
-                    f"binding {name!r} has type {selection.value_type!r}, expected {value_type!r}"
+                    f"binding {name!r} has type {selection.array_type!r}, expected {array_type!r}"
                 )
             normalized[name] = selection
 
@@ -1506,7 +1507,7 @@ class Primitive:
         result = self.evaluate_with_trace(*args, **kwargs)
         if result.output is None or self._output is None:
             return None
-        return self._encode_boundary(result.output, self._output.value_type)
+        return self._encode_boundary(result.output, self._output.array_type)
 
     def evaluate_many(self, **inputs: object) -> tuple[int | tuple[int, ...] | None, ...]:
         """Evaluate named inputs, broadcasting scalar values across list inputs.
@@ -1546,7 +1547,7 @@ class Primitive:
 
         supplied = self._bind_inputs(args, kwargs)
         decoded = {
-            name: self._decode_boundary(value, self._input_ports[name].value_type)
+            name: self._decode_boundary(value, self._input_ports[name].array_type)
             for name, value in supplied.items()
         }
         return ScalarExecutionDriver().evaluate(self, decoded)
@@ -1586,34 +1587,34 @@ class Primitive:
         return supplied
 
     @staticmethod
-    def _decode_boundary(value: object, value_type: ValueType) -> tuple[int, ...]:
+    def _decode_boundary(value: object, array_type: ArrayType) -> tuple[int, ...]:
         from claasp.domains import Bit, PrimeField
         from claasp.encoding import bits_from_int, units_from_int
 
         if isinstance(value, int) and not isinstance(value, bool):
-            if isinstance(value_type.domain, Bit):
-                return bits_from_int(value, value_type.unit_count)
-            if isinstance(value_type.domain, PrimeField):
-                if value_type.unit_count != 1:
+            if isinstance(array_type.domain, Bit):
+                return bits_from_int(value, array_type.unit_count)
+            if isinstance(array_type.domain, PrimeField):
+                if array_type.unit_count != 1:
                     raise TypeError("prime-field vectors require a tuple of field elements")
                 return (value,)
-            width = value_type.domain.encoded_bit_size
+            width = array_type.domain.encoded_bit_size
             if width is not None:
-                return units_from_int(value, width, value_type.unit_count)
+                return units_from_int(value, width, array_type.unit_count)
         if isinstance(value, Sequence) and not isinstance(value, str):
             return tuple(value)
         raise TypeError("primitive inputs must be packed integers or sequences of logical units")
 
     @staticmethod
-    def _encode_boundary(value: tuple[int, ...], value_type: ValueType) -> int | tuple[int, ...]:
+    def _encode_boundary(value: tuple[int, ...], array_type: ArrayType) -> int | tuple[int, ...]:
         from claasp.domains import Bit, PrimeField
         from claasp.encoding import int_from_bits, int_from_units
 
-        if isinstance(value_type.domain, PrimeField):
-            return value[0] if value_type.unit_count == 1 else value
-        if isinstance(value_type.domain, Bit):
+        if isinstance(array_type.domain, PrimeField):
+            return value[0] if array_type.unit_count == 1 else value
+        if isinstance(array_type.domain, Bit):
             return int_from_bits(value)
-        width = value_type.domain.encoded_bit_size
+        width = array_type.domain.encoded_bit_size
         return value if width is None else int_from_units(value, width)
 
 
@@ -1625,9 +1626,10 @@ class PrimitiveBuilder:
 
     EXAMPLES::
 
-        >>> from claasp import PrimitiveBuilder, ValueType, Word
+        >>> from claasp import PrimitiveBuilder, ArrayType
+        >>> from claasp.domains import Word
         >>> from claasp.components import Xor
-        >>> bit = ValueType(Word(1), (1,))
+        >>> bit = ArrayType(Word(1), (1,))
         >>> builder = PrimitiveBuilder("xor", {"left": bit, "right": bit})
         >>> builder.add_round()
         Round(number=0)
@@ -1641,13 +1643,13 @@ class PrimitiveBuilder:
     def __init__(
         self,
         family_name: str,
-        inputs: Mapping[str, ValueType | PrimitiveInput] | None = None,
+        inputs: Mapping[str, ArrayType | PrimitiveInput] | None = None,
         *,
         kind: PrimitiveKind | str | None = None,
         provenance: tuple[tuple[str, str], ...] = (),
         instance_name: str | None = None,
         round_count: int | None = None,
-        **named_inputs: ValueType | PrimitiveInput,
+        **named_inputs: ArrayType | PrimitiveInput,
     ) -> None:
         if inputs is not None and named_inputs:
             raise TypeError("pass primitive inputs either as a mapping or as named arguments")
@@ -1688,8 +1690,8 @@ class PrimitiveBuilder:
 
     def set_inputs(
         self,
-        inputs: Mapping[str, ValueType | PrimitiveInput] | None = None,
-        **named_inputs: ValueType | PrimitiveInput,
+        inputs: Mapping[str, ArrayType | PrimitiveInput] | None = None,
+        **named_inputs: ArrayType | PrimitiveInput,
     ) -> Sequence[Port]:
         """Declare the named inputs before graph construction and return their ports."""
 
@@ -1698,7 +1700,7 @@ class PrimitiveBuilder:
             raise TypeError("pass primitive inputs either as a mapping or as named arguments")
         declarations = named_inputs if inputs is None else inputs
         if not isinstance(declarations, Mapping):
-            raise TypeError("inputs must be a mapping from names to ValueType objects")
+            raise TypeError("inputs must be a mapping from names to ArrayType objects")
         if not declarations:
             raise ValueError("set_inputs() requires at least one named input")
         if self._inputs_declared:

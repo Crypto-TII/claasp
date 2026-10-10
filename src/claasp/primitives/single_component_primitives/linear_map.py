@@ -2,7 +2,7 @@
 
 from claasp.components import LinearMap as LinearMapComponent
 from claasp.domains import Bit
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 from claasp.utils import identity_matrix, matrix_is_invertible, normalize_matrix
 
 
@@ -18,7 +18,7 @@ class LinearMap(Primitive):
     Select a field domain to express a MixColumn-style matrix with the same
     component:
 
-    >>> from claasp import BinaryExtensionField
+    >>> from claasp.domains import BinaryExtensionField
     >>> field = BinaryExtensionField(4, 0b10011)
     >>> mixing = LinearMap([[1, 2], [2, 1]], domain=field)
     >>> hex(mixing.evaluate(0x12))
@@ -42,7 +42,7 @@ class LinearMap(Primitive):
             if matrix_is_invertible(matrix, domain)
             else PrimitiveKind.FUNCTION
         )
-        super().__init__("linear_map", {"input": ValueType(domain, (len(matrix[0]),))}, kind=kind)
+        super().__init__("linear_map", {"input": ArrayType(domain, (len(matrix[0]),))}, kind=kind)
         self._builder.add_round()
         output = self._builder.add_component(LinearMapComponent(self.graph.input("input"), matrix))
         self._builder.set_output(output)

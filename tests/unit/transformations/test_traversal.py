@@ -1,19 +1,19 @@
 from claasp import (
-    Bit,
+    ArrayType,
     DependencyIndex,
     GraphSourceKind,
     Primitive,
     TransformationError,
     TransformationFailureReason,
     TransformationRecord,
-    ValueType,
 )
 from claasp.components import Add, Identity
+from claasp.domains import Bit
 
 
 def _graph():
     primitive = Primitive(
-        "traversal", {"left": ValueType(Bit(), (4,)), "right": ValueType(Bit(), (4,))}
+        "traversal", {"left": ArrayType(Bit(), (4,)), "right": ArrayType(Bit(), (4,))}
     )
     primitive._builder.add_round()
     joined = primitive._builder.join(

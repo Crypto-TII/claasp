@@ -538,7 +538,7 @@ class SpeckLinearSMTModel:
         if (
             primitive.family_name != "speck"
             or plaintext is None
-            or not isinstance(plaintext.value_type.domain, Word)
+            or not isinstance(plaintext.array_type.domain, Word)
             or not primitive.graph.rounds
         ):
             raise NotImplementedError("linear SMT composition requires a typed Speck primitive")
@@ -550,7 +550,7 @@ class SpeckLinearSMTModel:
             ):
                 raise ValueError("weights must be nonnegative integers")
         self.primitive = primitive
-        self.width = plaintext.value_type.domain.width
+        self.width = plaintext.array_type.domain.width
         for mask in (input_mask, output_mask):
             if mask is not None and (
                 not isinstance(mask, int)
@@ -785,7 +785,7 @@ class WordLinearSMTModel:
         for name, value in self.fixed_inputs.items():
             if name not in primitive.graph.input_ports:
                 raise ValueError("unknown fixed concrete input")
-            primitive._decode_boundary(value, primitive.graph.input_ports[name].value_type)
+            primitive._decode_boundary(value, primitive.graph.input_ports[name].array_type)
         if nonzero_input in self.fixed_inputs:
             raise ValueError("a concrete fixed input cannot have a nonzero external mask")
         if nonzero_input is not None and nonzero_input not in primitive.graph.input_ports:
@@ -793,12 +793,12 @@ class WordLinearSMTModel:
         for name, value in self.fixed_input_masks.items():
             if name not in primitive.graph.input_ports:
                 raise ValueError("unknown fixed input")
-            value_type = primitive.graph.input_ports[name].value_type
+            array_type = primitive.graph.input_ports[name].array_type
             if (
-                not isinstance(value_type.domain, Word)
+                not isinstance(array_type.domain, Word)
                 or not isinstance(value, int)
                 or isinstance(value, bool)
-                or not 0 <= value < (1 << (value_type.unit_count * value_type.domain.width))
+                or not 0 <= value < (1 << (array_type.unit_count * array_type.domain.width))
             ):
                 raise ValueError("fixed masks must fit the input word type")
         self._formula = None
@@ -823,11 +823,11 @@ class WordLinearSMTModel:
         return known
 
     @staticmethod
-    def _names(prefix, value_type):
-        if not isinstance(value_type.domain, Word):
+    def _names(prefix, array_type):
+        if not isinstance(array_type.domain, Word):
             raise NotImplementedError("word linear lowering requires Word domains")
         return tuple(
-            f"{prefix}_{bit}" for bit in range(value_type.unit_count * value_type.domain.width)
+            f"{prefix}_{bit}" for bit in range(array_type.unit_count * array_type.domain.width)
         )
 
     def smt_formula(self):
@@ -846,7 +846,7 @@ class WordLinearSMTModel:
             provenance.append(label)
 
         sources = [
-            (name, port.value_type) for name, port in self.primitive.graph.input_ports.items()
+            (name, port.array_type) for name, port in self.primitive.graph.input_ports.items()
         ]
         sources += [
             (item.component_id, item.output_type) for item in self.primitive.graph.components
@@ -867,7 +867,7 @@ class WordLinearSMTModel:
                 names = tuple(
                     allocate(n)
                     for n in self._names(
-                        f"edge_{component.component_id}_{operand}", selection.value_type
+                        f"edge_{component.component_id}_{operand}", selection.array_type
                     )
                 )
                 operands.append(names)
@@ -939,7 +939,7 @@ class WordLinearSMTModel:
                 )
         output = tuple(
             allocate(n)
-            for n in self._names("external_output", self.primitive.graph.output.value_type)
+            for n in self._names("external_output", self.primitive.graph.output.array_type)
         )
         for output_name, (owner_id, source_bit) in zip(
             output, self.primitive.graph.selection_bit_sources(self.primitive.graph.output)
@@ -1009,7 +1009,7 @@ class WordLinearSMTModel:
         constant_sign = 1
         for name in self.fixed_inputs:
             for unit, value in enumerate(self._folded_values[name]):
-                width = self.primitive.graph.input_ports[name].value_type.domain.width
+                width = self.primitive.graph.input_ports[name].array_type.domain.width
                 mask = _packed(self._ports[name][unit * width : (unit + 1) * width], assignment)
                 if (mask & value).bit_count() % 2:
                     constant_sign *= -1
@@ -1052,7 +1052,7 @@ class WordLinearSMTModel:
         ):
             return False
         sources = [
-            (name, port.value_type) for name, port in self.primitive.graph.input_ports.items()
+            (name, port.array_type) for name, port in self.primitive.graph.input_ports.items()
         ]
         sources += [
             (item.component_id, item.output_type) for item in self.primitive.graph.components
@@ -1065,7 +1065,7 @@ class WordLinearSMTModel:
 
         for name in self.fixed_inputs:
             masks = units(
-                self._ports[name], self.primitive.graph.input_ports[name].value_type.domain.width
+                self._ports[name], self.primitive.graph.input_ports[name].array_type.domain.width
             )
             if (
                 sum(
@@ -1080,7 +1080,7 @@ class WordLinearSMTModel:
             width = component.output_type.domain.width
             output = units(self._ports[component.component_id], width)
             operands = [
-                units(names, selection.value_type.domain.width)
+                units(names, selection.array_type.domain.width)
                 for names, selection in zip(self._edges[component.component_id], component.inputs)
             ]
             for selection, edge_names in zip(component.inputs, self._edges[component.component_id]):
@@ -1411,19 +1411,19 @@ class WordDifferentialSMTModel:
         for name, value in self.fixed_input_differences.items():
             if name not in primitive.graph.input_ports:
                 raise ValueError("unknown fixed input difference")
-            self._validate(value, primitive.graph.input_ports[name].value_type)
+            self._validate(value, primitive.graph.input_ports[name].array_type)
         if output_difference is not None:
-            self._validate(output_difference, primitive.graph.output.value_type)
+            self._validate(output_difference, primitive.graph.output.array_type)
         self._formula = None
 
     @staticmethod
-    def _validate(value, value_type):
-        if not isinstance(value_type.domain, Word):
+    def _validate(value, array_type):
+        if not isinstance(array_type.domain, Word):
             raise NotImplementedError("word differential lowering requires Word domains")
         if (
             not isinstance(value, int)
             or isinstance(value, bool)
-            or not 0 <= value < 1 << (value_type.unit_count * value_type.domain.width)
+            or not 0 <= value < 1 << (array_type.unit_count * array_type.domain.width)
         ):
             raise ValueError("differences must fit their word type")
 
@@ -1443,17 +1443,17 @@ class WordDifferentialSMTModel:
             provenance.append(label)
 
         sources = [
-            (name, port.value_type) for name, port in self.primitive.graph.input_ports.items()
+            (name, port.array_type) for name, port in self.primitive.graph.input_ports.items()
         ]
         sources += [
             (item.component_id, item.output_type) for item in self.primitive.graph.components
         ]
         ports = {}
-        for name, value_type in sources:
-            self._validate(0, value_type)
+        for name, array_type in sources:
+            self._validate(0, array_type)
             ports[name] = tuple(
                 allocate(f"difference_{name}_{bit}")
-                for bit in range(value_type.unit_count * value_type.domain.width)
+                for bit in range(array_type.unit_count * array_type.domain.width)
             )
 
         def selected(selection):

@@ -32,26 +32,26 @@ class _InversionTimeout(Exception):
     pass
 
 
-def _encoded_value(value_type, seed: bytes):
+def _encoded_value(array_type, seed: bytes):
     from claasp.domains import PrimeField
 
     integer = int.from_bytes(hashlib.sha256(seed).digest(), "big")
-    if isinstance(value_type.domain, PrimeField):
+    if isinstance(array_type.domain, PrimeField):
         values = tuple(
-            (integer >> (index * 17)) % value_type.domain.modulus
-            for index in range(value_type.unit_count)
+            (integer >> (index * 17)) % array_type.domain.modulus
+            for index in range(array_type.unit_count)
         )
         return values[0] if len(values) == 1 else values
-    width = value_type.encoded_bit_size
+    width = array_type.encoded_bit_size
     if width is None:
-        return tuple(integer >> (index * 8) & 0xFF for index in range(value_type.unit_count))
+        return tuple(integer >> (index * 8) & 0xFF for index in range(array_type.unit_count))
     return integer & ((1 << width) - 1)
 
 
 def _round_trip(primitive, inverse, recover_input: str, sample_number: int) -> bool:
     values = {
         name: _encoded_value(
-            port.value_type, f"{primitive.family_name}:{name}:{sample_number}".encode()
+            port.array_type, f"{primitive.family_name}:{name}:{sample_number}".encode()
         )
         for name, port in primitive.graph.input_ports.items()
     }

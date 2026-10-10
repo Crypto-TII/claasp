@@ -6,7 +6,7 @@ from claasp.components import (
 from claasp.components import (
     FeedbackRegisterParameters,
 )
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 
 class FeedbackRegister(Primitive):
@@ -44,7 +44,7 @@ class FeedbackRegister(Primitive):
             raise TypeError("parameters must be FeedbackRegisterParameters")
         super().__init__(
             "feedback_register",
-            {"input": ValueType(parameters.domain, (parameters.unit_count,))},
+            {"input": ArrayType(parameters.domain, (parameters.unit_count,))},
             kind=PrimitiveKind.FUNCTION,
         )
         self._builder.add_round()

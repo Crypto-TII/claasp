@@ -1,8 +1,9 @@
 import pytest
 
-from claasp import PrimeField, Primitive, ValueType
+import claasp
+from claasp import ArrayType, Primitive
 from claasp.components import Add, Permutation
-from claasp.domains import BinaryExtensionField
+from claasp.domains import BinaryExtensionField, PrimeField
 from claasp.representations.execution import ScalarEvaluator
 from claasp.utils import (
     binary_field_multiply,
@@ -12,8 +13,15 @@ from claasp.utils import (
 )
 
 
+def test_domains_are_exposed_from_the_domains_namespace_only():
+    assert not hasattr(claasp, "Bit")
+    assert not hasattr(claasp, "Word")
+    assert not hasattr(claasp, "PrimeField")
+    assert not hasattr(claasp, "BinaryExtensionField")
+
+
 def test_ports_support_whole_input_coercion_indexing_and_slicing():
-    primitive = Primitive("authoring", {"state": ValueType(PrimeField(17), (4,))})
+    primitive = Primitive("authoring", {"state": ArrayType(PrimeField(17), (4,))})
     state = primitive.graph.input("state")
     assert state[3, 1].positions == (3, 1)
     assert state[1:3].positions == (1, 2)
@@ -27,8 +35,8 @@ def test_ports_support_whole_input_coercion_indexing_and_slicing():
 
 
 def test_inputs_support_named_and_positional_authoring_without_exposing_storage():
-    value_type = ValueType(PrimeField(17), (1,))
-    primitive = Primitive("inputs", {"left": value_type, "right": value_type})
+    array_type = ArrayType(PrimeField(17), (1,))
+    primitive = Primitive("inputs", {"left": array_type, "right": array_type})
 
     assert primitive.graph.input("left") is primitive.graph.input(0)
     assert primitive.graph.input("right") is primitive.graph.input(1)
@@ -56,8 +64,8 @@ def test_inputs_support_named_and_positional_authoring_without_exposing_storage(
 
 
 def test_round_outputs_are_published_as_intermediate_outputs():
-    value_type = ValueType(PrimeField(17), (1,))
-    primitive = Primitive("observations", {"state": value_type})
+    array_type = ArrayType(PrimeField(17), (1,))
+    primitive = Primitive("observations", {"state": array_type})
     primitive._builder.add_round()
     published = primitive._builder.set_round_output(primitive.graph.input("state"))
 
@@ -69,8 +77,8 @@ def test_automatic_component_ids_are_deterministic_and_explicit_ids_remain_avail
     primitive = Primitive(
         "ids",
         {
-            "left": ValueType(PrimeField(17), (1,)),
-            "right": ValueType(PrimeField(17), (1,)),
+            "left": ArrayType(PrimeField(17), (1,)),
+            "right": ArrayType(PrimeField(17), (1,)),
         },
     )
     primitive._builder.add_round()

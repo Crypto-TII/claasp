@@ -9,7 +9,7 @@ from claasp.components import (
     LookupTable,
 )
 from claasp.domains import Bit
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 
 class BitVectorSBox(Primitive):
@@ -52,7 +52,7 @@ class BitVectorSBox(Primitive):
         kind = PrimitiveKind.PERMUTATION if table.is_bijective() else PrimitiveKind.FUNCTION
         super().__init__(
             "bit_vector_sbox",
-            {"input": ValueType(Bit(), (table.input_bit_size,))},
+            {"input": ArrayType(Bit(), (table.input_bit_size,))},
             kind=kind,
         )
         self._builder.add_round()

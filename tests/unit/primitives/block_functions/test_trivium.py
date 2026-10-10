@@ -120,7 +120,7 @@ def test_state_output_matches_the_independent_reference(clocks):
     primitive = Trivium(number_of_initialization_clocks=clocks, keystream_bit_size=0)
     _, expected = _reference_trivium(_unpack(key, 80), _unpack(iv, 80), clocks, 0)
 
-    assert primitive.graph.output.value_type.encoded_bit_size == 288
+    assert primitive.graph.output.array_type.encoded_bit_size == 288
     assert primitive.evaluate(key=key, iv=iv) == _pack(expected)
 
 
@@ -146,9 +146,9 @@ def test_graph_shape_and_reused_components():
     primitive = Trivium(number_of_initialization_clocks=13, keystream_bit_size=1)
 
     assert primitive.family_name == "trivium"
-    assert primitive.graph.input_ports["key"].value_type.unit_count == 80
-    assert primitive.graph.input_ports["iv"].value_type.unit_count == 80
-    assert primitive.graph.output.value_type.encoded_bit_size == 1
+    assert primitive.graph.input_ports["key"].array_type.unit_count == 80
+    assert primitive.graph.input_ports["iv"].array_type.unit_count == 80
+    assert primitive.graph.output.array_type.encoded_bit_size == 1
     assert len(primitive.graph.rounds) == 15
     assert {type(component) for component in primitive.graph.components} == {
         Constant,

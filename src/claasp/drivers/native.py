@@ -325,7 +325,7 @@ def run_compiled(
             )
         try:
             packed = int(completed.stdout.strip(), 16)
-            output = primitive._decode_boundary(packed, primitive.graph.output.value_type)
+            output = primitive._decode_boundary(packed, primitive.graph.output.array_type)
         except (TypeError, ValueError) as error:
             return _native_result(
                 NativeExecutionStatus.FAILED,
@@ -393,12 +393,12 @@ def _hex_arguments(primitive, inputs):
         if isinstance(value, int) and not isinstance(value, bool):
             packed = value
         elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
-            packed = primitive._encode_boundary(tuple(value), descriptor.value_type)
+            packed = primitive._encode_boundary(tuple(value), descriptor.array_type)
             if not isinstance(packed, int):
                 raise TypeError("native source requires canonically encoded fixed-width inputs")
         else:
             raise TypeError("native inputs must be integers or integer sequences")
-        if packed < 0 or packed.bit_length() > descriptor.value_type.encoded_bit_size:
+        if packed < 0 or packed.bit_length() > descriptor.array_type.encoded_bit_size:
             raise ValueError(f"native input {name!r} is outside its encoded width")
         arguments.append(f"0x{packed:x}")
     return tuple(arguments)

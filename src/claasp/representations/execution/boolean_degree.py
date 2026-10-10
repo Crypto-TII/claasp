@@ -59,11 +59,11 @@ class BooleanDegreeEvaluator:
 
         if variable_input not in primitive.graph.input_ports:
             raise ValueError(f"unknown variable input: {variable_input}")
-        capacity = primitive.graph.input_ports[variable_input].value_type.encoded_bit_size
+        capacity = primitive.graph.input_ports[variable_input].array_type.encoded_bit_size
         assert capacity is not None
         values: dict[str, tuple[DegreeUnit, ...]] = {}
         for name, port in primitive.graph.input_ports.items():
-            domain = port.value_type.domain
+            domain = port.array_type.domain
             width = domain.width if isinstance(domain, Word) else 1
             bits = iter(range(capacity)) if name == variable_input else None
 
@@ -75,11 +75,11 @@ class BooleanDegreeEvaluator:
                 )
 
             if isinstance(domain, Bit):
-                values[name] = tuple(degree_bit() for _ in range(port.value_type.unit_count))
+                values[name] = tuple(degree_bit() for _ in range(port.array_type.unit_count))
             elif isinstance(domain, Word):
                 values[name] = tuple(
                     tuple(degree_bit() for _ in range(width))
-                    for _ in range(port.value_type.unit_count)
+                    for _ in range(port.array_type.unit_count)
                 )
             else:
                 raise NotImplementedError("Boolean degree evaluation supports Bit and Word domains")

@@ -27,13 +27,13 @@ def check() -> tuple[int, int]:
             reference = graphs[0]
             contract = (
                 tuple(reference.graph.input_descriptors.items()),
-                reference.graph.output.value_type,
+                reference.graph.output.array_type,
                 reference.kind,
             )
             assert all(
                 (
                     tuple(graph.graph.input_descriptors.items()),
-                    graph.graph.output.value_type,
+                    graph.graph.output.array_type,
                     graph.kind,
                 )
                 == contract

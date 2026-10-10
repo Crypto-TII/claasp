@@ -1,5 +1,6 @@
 """Sage-independent typed graph definitions."""
 
+from claasp.graph.array_type import ArrayType, BitWord
 from claasp.graph.binding import BindingKind, ValueBinding
 from claasp.graph.component import Component
 from claasp.graph.composite import (
@@ -36,10 +37,10 @@ from claasp.graph.realization import (
     select_realization,
 )
 from claasp.graph.round import Round
-from claasp.graph.value_type import BitWord, ValueType
 
 __all__ = [
     "AmbiguousRealizationError",
+    "ArrayType",
     "BindingKind",
     "BitWord",
     "Component",
@@ -67,7 +68,6 @@ __all__ = [
     "Selection",
     "UnsupportedRealizationError",
     "ValueBinding",
-    "ValueType",
     "as_selection",
     "normalize_realization_contract",
     "public_input",

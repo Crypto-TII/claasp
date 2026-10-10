@@ -5,7 +5,7 @@ from math import gcd
 
 from claasp.components import Add, Constant, LinearMap, Power
 from claasp.domains import PrimeField
-from claasp.graph import Port, Primitive, ValueType
+from claasp.graph import ArrayType, Port, Primitive
 from claasp.utils import normalize_matrix
 
 
@@ -67,7 +67,7 @@ class Poseidon(Primitive):
         if any(len(row) != width for row in constants):
             raise ValueError(f"every round-constant row must contain {width} elements")
 
-        state_type = ValueType(field, (width,))
+        state_type = ArrayType(field, (width,))
         super().__init__("poseidon", {"state": state_type})
         state = self.graph.input("state")
         full_rounds_at_start = full_rounds // 2
@@ -121,6 +121,6 @@ class Poseidon(Primitive):
 
         first = Power(state[0], exponent, component_id=f"power_{round_number}_2")
         first_output = self._builder.add_component(first)
-        if state.value_type.unit_count == 1:
+        if state.array_type.unit_count == 1:
             return first_output
         return self._builder.join(first_output, state[1:])

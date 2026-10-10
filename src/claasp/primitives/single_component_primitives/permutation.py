@@ -2,7 +2,7 @@
 
 from claasp.components import Permutation as PermutationComponent
 from claasp.domains import Bit, Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 from ._base import positive
 
@@ -42,7 +42,7 @@ class Permutation(Primitive):
         domain = Bit() if word_size == 1 else Word(word_size)
         super().__init__(
             "permutation",
-            {"input": ValueType(domain, (count,))},
+            {"input": ArrayType(domain, (count,))},
             kind=PrimitiveKind.PERMUTATION,
         )
         self._builder.add_round()

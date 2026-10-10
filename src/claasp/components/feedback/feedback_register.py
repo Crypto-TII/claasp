@@ -187,14 +187,14 @@ class FeedbackRegister(Component):
     ) -> None:
         component_input = as_selection(component_input)
         registers = tuple(registers)
-        domain = component_input.value_type.domain
+        domain = component_input.array_type.domain
         if not isinstance(domain, (Bit, BinaryExtensionField)):
             raise ValueError("feedback registers require Bit or BinaryExtensionField units")
         if not registers:
             raise ValueError("feedback registers require at least one register spec")
         if any(not isinstance(register, FeedbackRegisterSpec) for register in registers):
             raise TypeError("registers must contain FeedbackRegisterSpec values")
-        if sum(register.length for register in registers) != component_input.value_type.unit_count:
+        if sum(register.length for register in registers) != component_input.array_type.unit_count:
             raise ValueError("register lengths must cover every input unit exactly")
         if not isinstance(clocks, int) or isinstance(clocks, bool):
             raise TypeError("clock count must be an integer")
@@ -202,7 +202,7 @@ class FeedbackRegister(Component):
             raise ValueError("clock count must be positive")
         if direction not in ("forward", "inverse"):
             raise ValueError("feedback-register direction must be 'forward' or 'inverse'")
-        unit_count = component_input.value_type.unit_count
+        unit_count = component_input.array_type.unit_count
         for register in registers:
             terms = register.feedback + (() if register.clock is None else register.clock)
             for term in terms:
@@ -213,7 +213,7 @@ class FeedbackRegister(Component):
                 raise ValueError("conditional register clocks require the Bit domain")
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
-        object.__setattr__(self, "output_type", component_input.value_type)
+        object.__setattr__(self, "output_type", component_input.array_type)
         object.__setattr__(self, "registers", registers)
         object.__setattr__(self, "clocks", clocks)
         object.__setattr__(self, "direction", direction)

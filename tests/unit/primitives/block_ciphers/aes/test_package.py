@@ -19,8 +19,8 @@ def test_aes128_matches_fips_197_known_answer_vector_and_uses_field_bytes():
     result = ScalarEvaluator().evaluate(primitive, {"plaintext": PLAINTEXT, "key": KEY})
 
     assert result.output == CIPHERTEXT
-    assert primitive.graph.input("plaintext").value_type.domain == BinaryExtensionField(8, 0x11B)
-    assert primitive.graph.input("plaintext").value_type.unit_count == 16
+    assert primitive.graph.input("plaintext").array_type.domain == BinaryExtensionField(8, 0x11B)
+    assert primitive.graph.input("plaintext").array_type.unit_count == 16
 
 
 def test_aes128_matches_fips_first_round_intermediate_values():

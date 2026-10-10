@@ -115,7 +115,7 @@ class ContinuousExecutionDriver:
 
         values: dict[str, CorrelationValue] = {}
         for name, port in primitive.graph.input_ports.items():
-            values[name] = _pack(port.value_type, inputs[name], name)
+            values[name] = _pack(port.array_type, inputs[name], name)
 
         binding_cache: dict[str, CorrelationValue] = {}
         for component in primitive.graph.components:
@@ -232,12 +232,12 @@ class ContinuousExecutionDriver:
         )
 
 
-def _pack(value_type, values, name):
-    width = value_type.domain.encoded_bit_size
+def _pack(array_type, values, name):
+    width = array_type.domain.encoded_bit_size
     if width is None:
         raise NotImplementedError(f"continuous input {name!r} has no canonical binary encoding")
     flat = tuple(float(value) for value in values)
-    expected = value_type.unit_count * width
+    expected = array_type.unit_count * width
     if len(flat) != expected:
         raise ValueError(f"continuous input {name!r} requires {expected} correlations")
     if any(not -1.0 <= value <= 1.0 for value in flat):

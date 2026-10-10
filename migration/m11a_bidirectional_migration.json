@@ -29,7 +29,7 @@
     {
       "destinations": [
         "src/claasp/domains/word.py",
-        "src/claasp/graph/value_type.py"
+        "src/claasp/graph/array_type.py"
       ],
       "disposition": "supersede",
       "kind": "source",
@@ -38,7 +38,7 @@
       "public_entry_points": [
         "PowerOf2WordBasedDTO"
       ],
-      "rationale": "Typed Word domains and ValueType replace a mutable optional word-size probe DTO.",
+      "rationale": "Typed Word domains and ArrayType replace a mutable optional word-size probe DTO.",
       "responsibility": "power of 2 word based dto",
       "status": "superseded-in-m10.9c2"
     },
@@ -10481,6 +10481,15 @@
     {
       "classification": "legacy-lineage",
       "legacy_predecessors": [
+        "claasp/DTOs/power_of_2_word_based_dto.py",
+        "claasp/cipher_modules/models/sat/utils/constants.py",
+        "claasp/name_mappings.py"
+      ],
+      "path": "src/claasp/graph/array_type.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
         "claasp/cipher_modules/models/sat/utils/constants.py",
         "claasp/name_mappings.py"
       ],
@@ -10558,15 +10567,6 @@
         "claasp/rounds.py"
       ],
       "path": "src/claasp/graph/round.py"
-    },
-    {
-      "classification": "legacy-lineage",
-      "legacy_predecessors": [
-        "claasp/DTOs/power_of_2_word_based_dto.py",
-        "claasp/cipher_modules/models/sat/utils/constants.py",
-        "claasp/name_mappings.py"
-      ],
-      "path": "src/claasp/graph/value_type.py"
     },
     {
       "classification": "new-v5",

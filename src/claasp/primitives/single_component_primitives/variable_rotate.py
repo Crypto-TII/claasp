@@ -2,7 +2,7 @@
 
 from claasp.components import VariableRotate as VariableRotateComponent
 from claasp.domains import Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 from ._base import positive
 
@@ -43,8 +43,8 @@ class VariableRotate(Primitive):
         super().__init__(
             "variable_rotate",
             {
-                "input": ValueType(Word(bit_size), (1,)),
-                "amount": ValueType(Word(amount_bit_size), (1,)),
+                "input": ArrayType(Word(bit_size), (1,)),
+                "amount": ArrayType(Word(amount_bit_size), (1,)),
             },
             kind=PrimitiveKind.FUNCTION,
         )

@@ -355,7 +355,7 @@ def semantic_component_key(component, domain: PropertyDomain) -> ComponentSemant
             parameters.append((field.name, _freeze_hashable(getattr(component, field.name))))
     return ComponentSemanticKey(
         component_type=f"{type(component).__module__}.{type(component).__qualname__}",
-        input_types=tuple(selection.value_type for selection in component.inputs),
+        input_types=tuple(selection.array_type for selection in component.inputs),
         output_type=component.output_type,
         parameters=tuple(parameters),
         domain=domain,
@@ -543,10 +543,10 @@ def _analyze_lookup_component(component, request, graph_locations, primitive, re
     from claasp.components import LookupTable, SBox
 
     if isinstance(component, SBox):
-        input_width = component.inputs[0].value_type.domain.encoded_bit_size
+        input_width = component.inputs[0].array_type.domain.encoded_bit_size
         output_width = component.output_type.domain.encoded_bit_size
     else:
-        input_width = component.inputs[0].value_type.encoded_bit_size
+        input_width = component.inputs[0].array_type.encoded_bit_size
         output_width = component.output_type.encoded_bit_size
     if input_width is None or output_width is None:
         raise ValueError("lookup component domains must have canonical bit encodings")
@@ -751,7 +751,7 @@ def _analyze_linear_component(component, request, graph_locations, primitive, re
 
     matrix = component.matrix
     domain = (
-        Bit() if isinstance(component, BinaryAffineMap) else component.inputs[0].value_type.domain
+        Bit() if isinstance(component, BinaryAffineMap) else component.inputs[0].array_type.domain
     )
     analysis_matrix = matrix
     analysis_domain = domain

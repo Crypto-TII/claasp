@@ -2,7 +2,7 @@
 
 from claasp.components import ModularAdd, Rotate, Xor
 from claasp.domains import Word
-from claasp.graph import Port, Primitive, Selection, ValueType
+from claasp.graph import ArrayType, Port, Primitive, Selection
 
 _COLUMNS = ((0, 4, 8, 12), (5, 9, 13, 1), (10, 14, 2, 6), (15, 3, 7, 11))
 _ROWS = ((0, 1, 2, 3), (5, 6, 7, 4), (10, 11, 8, 9), (15, 12, 13, 14))
@@ -53,7 +53,7 @@ class Salsa(Primitive):
         ):
             raise ValueError("rotations must contain four integers in range(word_size)")
 
-        super().__init__("salsa", {"state": ValueType(Word(word_size), (16,))})
+        super().__init__("salsa", {"state": ArrayType(Word(word_size), (16,))})
         state: list[Port | Selection] = [self.graph.input("state")[index] for index in range(16)]
         for round_number in range(number_of_rounds):
             self._builder.add_round()

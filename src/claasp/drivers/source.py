@@ -239,11 +239,11 @@ def _validate_generated_values(primitive, output, values):
         raise ValueError("generated values do not follow semantic graph order")
     mapping = {}
     for source_id, value in values:
-        value_type = primitive.graph.port(source_id).value_type
-        if len(value) != value_type.unit_count or any(
+        array_type = primitive.graph.port(source_id).array_type
+        if len(value) != array_type.unit_count or any(
             not isinstance(item, int)
             or isinstance(item, bool)
-            or not value_type.domain.contains(item)
+            or not array_type.domain.contains(item)
             for item in value
         ):
             raise ValueError(f"generated value for {source_id!r} violates its type")

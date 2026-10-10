@@ -3,9 +3,10 @@ import subprocess
 
 import pytest
 
-from claasp import Primitive, ValueType, Word
+from claasp import ArrayType, Primitive
 from claasp.analysis import AnalysisProblem, FixedValue
 from claasp.components import ModularAdd
+from claasp.domains import Word
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
 from claasp.primitives import AES, BitVectorSBox, Present, Simon, Speck, ToyAES, ToySpeck
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
@@ -93,8 +94,8 @@ def test_minizinc_solves_and_decodes_complete_modadd_boomerang_composition():
         primitive = Primitive(
             name,
             {
-                "left": ValueType(Word(4), (1,)),
-                "right": ValueType(Word(4), (1,)),
+                "left": ArrayType(Word(4), (1,)),
+                "right": ArrayType(Word(4), (1,)),
             },
         )
         primitive._builder.add_round()

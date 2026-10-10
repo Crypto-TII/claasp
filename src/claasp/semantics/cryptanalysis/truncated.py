@@ -570,7 +570,7 @@ def propagate_two_word_speck_round(
     plaintext = primitive.graph.input_ports.get("plaintext")
     if primitive.family_name != "speck" or plaintext is None:
         raise ValueError("primitive must be Speck")
-    width = plaintext.value_type.domain.width
+    width = plaintext.array_type.domain.width
     if len(difference.bits) != 2 * width:
         raise ValueError("difference width must match the Speck block")
     if (
@@ -608,7 +608,7 @@ def propagate_two_word_speck_inverse_round(
     plaintext = primitive.graph.input_ports.get("plaintext")
     if primitive.family_name != "speck" or plaintext is None:
         raise ValueError("primitive must be Speck")
-    width = plaintext.value_type.domain.width
+    width = plaintext.array_type.domain.width
     if len(difference.bits) != 2 * width:
         raise ValueError("difference width must match the Speck block")
     if not 0 <= round_number < len(primitive.graph.rounds):

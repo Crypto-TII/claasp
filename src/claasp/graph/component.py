@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
+from claasp.graph.array_type import ArrayType
 from claasp.graph.port import Port, Selection
-from claasp.graph.value_type import ValueType
 
 
 @dataclass(frozen=True, slots=True)
@@ -16,15 +16,16 @@ class Component:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, ValueType
-        >>> component = Component("identity_0", (), ValueType(Bit(), (1,)))
+        >>> from claasp import ArrayType
+        >>> from claasp.domains import Bit
+        >>> component = Component("identity_0", (), ArrayType(Bit(), (1,)))
         >>> component.output.owner_id
         'identity_0'
     """
 
     component_id: str | None
     inputs: tuple[Selection, ...]
-    output_type: ValueType
+    output_type: ArrayType
 
     def __post_init__(self) -> None:
         if self.component_id is not None:
@@ -36,8 +37,8 @@ class Component:
             raise TypeError("inputs must be a tuple")
         if any(not isinstance(component_input, Selection) for component_input in self.inputs):
             raise TypeError("every component input must be a Selection")
-        if not isinstance(self.output_type, ValueType):
-            raise TypeError("output_type must be a ValueType")
+        if not isinstance(self.output_type, ArrayType):
+            raise TypeError("output_type must be an ArrayType")
 
     @property
     def output(self) -> Port:

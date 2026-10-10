@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from claasp.components.substitution.lookup_table import LookupTable
 from claasp.domains import Bit
-from claasp.graph import Component, PortLike, ValueType, as_selection
+from claasp.graph import ArrayType, Component, PortLike, as_selection
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -30,9 +30,9 @@ class BitVectorSBox(Component):
         output_bit_size: int | None = None,
     ) -> None:
         component_input = as_selection(component_input)
-        if not isinstance(component_input.value_type.domain, Bit):
+        if not isinstance(component_input.array_type.domain, Bit):
             raise ValueError("bit-vector S-box requires the Bit domain")
-        width = component_input.value_type.unit_count
+        width = component_input.array_type.unit_count
         if isinstance(table, LookupTable):
             lookup_table = table
             if lookup_table.input_bit_size != width:
@@ -43,7 +43,7 @@ class BitVectorSBox(Component):
             lookup_table = LookupTable(table, width, output_bit_size)
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
-        object.__setattr__(self, "output_type", ValueType(Bit(), (lookup_table.output_bit_size,)))
+        object.__setattr__(self, "output_type", ArrayType(Bit(), (lookup_table.output_bit_size,)))
         object.__setattr__(self, "table", lookup_table.values)
         object.__setattr__(self, "output_bit_size", lookup_table.output_bit_size)
         Component.__post_init__(self)

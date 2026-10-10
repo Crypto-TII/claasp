@@ -58,13 +58,13 @@ def test_selected_realizations_have_identical_contracts_and_seeded_outputs(
         assert tuple(graph.graph.input_descriptors.items()) == tuple(
             reference.graph.input_descriptors.items()
         )
-        assert graph.graph.output.value_type == reference.graph.output.value_type
+        assert graph.graph.output.array_type == reference.graph.output.array_type
         assert graph.kind is reference.kind
 
     generator = random.Random(f"M10.9e:{primitive_class.__name__}")
     for _ in range(3):
         inputs = {
-            name: generator.getrandbits(item.value_type.encoded_bit_size)
+            name: generator.getrandbits(item.array_type.encoded_bit_size)
             for name, item in reference.graph.input_descriptors.items()
         }
         assert len({graph.evaluate(**inputs) for graph in graphs}) == 1

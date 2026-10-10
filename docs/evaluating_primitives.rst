@@ -50,10 +50,10 @@ element. The output preserves that logical-unit structure:
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, ValueType
+   >>> from claasp import PrimitiveBuilder, ArrayType
    >>> from claasp.components import Add
    >>> from claasp.domains import PrimeField
-   >>> vector = ValueType(domain=PrimeField(17), shape=(3,))
+   >>> vector = ArrayType(domain=PrimeField(17), shape=(3,))
    >>> builder = PrimitiveBuilder("field_add", {"left": vector, "right": vector})
    >>> builder.add_round()
    Round(number=0)
@@ -63,5 +63,5 @@ element. The output preserves that logical-unit structure:
    (5, 7, 2)
 
 The final coordinate is ``3 + 16 = 2`` modulo 17. See :doc:`concepts` for
-``ValueType`` and the available mathematical domains. For direct access to
+``ArrayType`` and the available mathematical domains. For direct access to
 batch execution strategies, see :doc:`batch_evaluation`.

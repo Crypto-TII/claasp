@@ -50,9 +50,9 @@ def evaluate_cube_sum(
         raise ValueError(f"unknown variable input: {variable_input}")
     if set(inputs) != set(primitive.graph.input_ports):
         raise ValueError("inputs must provide every primitive input exactly once")
-    width = primitive.graph.input_ports[variable_input].value_type.encoded_bit_size
+    width = primitive.graph.input_ports[variable_input].array_type.encoded_bit_size
     output_width = (
-        primitive.graph.output.value_type.encoded_bit_size if primitive.graph.output else 0
+        primitive.graph.output.array_type.encoded_bit_size if primitive.graph.output else 0
     )
     if width is None or output_width is None:
         raise TypeError("cube sums require canonically bit-encoded input and output domains")

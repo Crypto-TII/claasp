@@ -33,14 +33,14 @@ class XorDifferentialPropagation:
     components: tuple[TrailComponentTransition, ...]
 
 
-def _decode(value: int, value_type) -> tuple[int, ...]:
-    width = value_type.domain.encoded_bit_size
+def _decode(value: int, array_type) -> tuple[int, ...]:
+    width = array_type.domain.encoded_bit_size
     if width is None:
         raise TypeError("trail display requires canonically encoded domains")
     mask = (1 << width) - 1
     return tuple(
-        (value >> (width * (value_type.unit_count - 1 - position))) & mask
-        for position in range(value_type.unit_count)
+        (value >> (width * (array_type.unit_count - 1 - position))) & mask
+        for position in range(array_type.unit_count)
     )
 
 
@@ -57,14 +57,14 @@ def _packed_operands(component, operands) -> XorDifference | None:
     values = []
     total_width = 0
     for selection, operand in zip(component.inputs, operands):
-        width = selection.value_type.domain.encoded_bit_size
+        width = selection.array_type.domain.encoded_bit_size
         if width is None:
             raise TypeError("trail display requires canonically encoded domains")
         values.extend(operand)
         total_width += len(operand) * width
     # Components require homogeneous input domains, so packing every operand
     # with the first domain width preserves their declared input order.
-    width = component.inputs[0].value_type.domain.encoded_bit_size
+    width = component.inputs[0].array_type.domain.encoded_bit_size
     return XorDifference(_pack(tuple(values), width), total_width)
 
 
@@ -116,7 +116,7 @@ def xor_differential_propagation(
     if set(input_differences) != expected_inputs:
         raise ValueError("input_differences must define every primitive input")
     values = {
-        name: _decode(input_differences[name], port.value_type)
+        name: _decode(input_differences[name], port.array_type)
         for name, port in primitive.graph.input_ports.items()
     }
     dependencies = {name: frozenset((name,)) for name in primitive.graph.input_ports}
@@ -216,7 +216,7 @@ def xor_differential_propagation(
     if primitive.graph.output is None:
         raise ValueError("trail primitive must declare an output")
     output = tuple(primitive.graph.resolve_selection(primitive.graph.output, values))
-    output_width = primitive.graph.output.value_type.domain.encoded_bit_size
+    output_width = primitive.graph.output.array_type.domain.encoded_bit_size
     if output_width is None:
         raise TypeError("trail display requires a canonically encoded output domain")
     if (

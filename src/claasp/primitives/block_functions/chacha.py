@@ -3,7 +3,7 @@
 from claasp.components import Constant, ModularAdd, Rotate, Xor
 from claasp.domains import Bit
 from claasp.encoding import bits_from_int
-from claasp.graph import Primitive, ValueType
+from claasp.graph import ArrayType, Primitive
 
 ROUND_MODE_HALF = "half"
 ROUND_MODE_SINGLE = "single"
@@ -52,7 +52,7 @@ class ChaChaKeystreamBlock(Primitive):
         half_rounds = number_of_rounds * 2 if round_mode == ROUND_MODE_SINGLE else number_of_rounds
         if not isinstance(half_rounds, int) or isinstance(half_rounds, bool) or half_rounds <= 0:
             raise ValueError("number_of_rounds must be positive")
-        bit_vector = lambda width: ValueType(Bit(), (width,))
+        bit_vector = lambda width: ArrayType(Bit(), (width,))
         super().__init__(
             "chacha_stream_cipher",
             {"plaintext": bit_vector(512), "key": bit_vector(256), "nonce": bit_vector(96)},

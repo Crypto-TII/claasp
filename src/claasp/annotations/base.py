@@ -49,9 +49,10 @@ class GraphAnnotation:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, Primitive, ValueType
+        >>> from claasp import Primitive, ArrayType
+        >>> from claasp.domains import Bit
         >>> from claasp.semantics import CONCRETE
-        >>> primitive = Primitive("identity", {"state": ValueType(Bit(), (1,))})
+        >>> primitive = Primitive("identity", {"state": ArrayType(Bit(), (1,))})
         >>> annotation = GraphAnnotation.from_values(primitive, CONCRETE, {"state": 1}, output=1)
         >>> (annotation.value_of("state"), annotation.realization_identity)
         (1, 'identity:default')

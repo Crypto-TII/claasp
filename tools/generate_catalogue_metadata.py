@@ -742,7 +742,7 @@ def build_catalogue() -> dict:
             )
             component_names = {type(component).__name__ for component in primitive.graph.components}
             domain_names = {
-                type(port.value_type.domain).__name__
+                type(port.array_type.domain).__name__
                 for port in primitive.graph.input_ports.values()
             } | {
                 type(component.output_type.domain).__name__

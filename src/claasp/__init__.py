@@ -7,7 +7,6 @@ from claasp.composites import (
     ChaChaQuarterRound,
     ParallelSBoxLayer,
 )
-from claasp.domains import BinaryExtensionField, Bit, PrimeField, Word
 from claasp.drivers.native import (
     NativeArtifact,
     NativeCompilationResult,
@@ -25,6 +24,7 @@ from claasp.drivers.source import (
 )
 from claasp.encoding import bits_from_int, int_from_bits, int_from_units, units_from_int
 from claasp.graph import (
+    ArrayType,
     BitWord,
     Component,
     CompositeBuilder,
@@ -44,7 +44,6 @@ from claasp.graph import (
     PublishedValues,
     Round,
     Selection,
-    ValueType,
     public_input,
     secret_input,
 )
@@ -115,11 +114,10 @@ __all__ = [
     "AESKeySchedule",
     "AESRound",
     "AESSubstitutionLayer",
+    "ArrayType",
     "BatchEvaluationResult",
     "BatchEvaluator",
     "BatchExecutionDriver",
-    "BinaryExtensionField",
-    "Bit",
     "BitWord",
     "ChaChaQuarterRound",
     "Component",
@@ -145,7 +143,6 @@ __all__ = [
     "PairedTransformationResult",
     "ParallelSBoxLayer",
     "Port",
-    "PrimeField",
     "Primitive",
     "PrimitiveBuilder",
     "PrimitiveDetails",
@@ -176,8 +173,6 @@ __all__ = [
     "TransformationResult",
     "TransposedBatchEvaluator",
     "TransposedBatchExecutionDriver",
-    "ValueType",
-    "Word",
     "bits_from_int",
     "compile_native",
     "compile_source",

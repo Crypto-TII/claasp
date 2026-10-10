@@ -371,7 +371,7 @@ def project_optimal_pool_monomial_parity(compilation, pool):
         return SolutionPoolMonomialParityResult((), len(pool.assignments), False, pool.status.value)
     input_variables: list[tuple[str, str]] = []
     for input_name, port in compilation.primitive.graph.input_ports.items():
-        width = compilation._width(port.value_type)
+        width = compilation._width(port.array_type)
         input_variables.extend(
             (compilation._wire(input_name, bit), f"{input_name}[{bit}]") for bit in range(width)
         )
@@ -449,7 +449,7 @@ def enumerate_optimal_monomial_parity(compilation, solver, max_paths=10000):
         assignment = result.assignment
         mask = 0
         width = compilation._width(
-            compilation.primitive.graph.input_ports[compilation.variable_input].value_type
+            compilation.primitive.graph.input_ports[compilation.variable_input].array_type
         )
         for bit in range(width):
             mask = (mask << 1) | int(

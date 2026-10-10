@@ -2,7 +2,7 @@
 
 from claasp.components import Add, BitVectorSBox, Constant, Permutation
 from claasp.domains import Bit
-from claasp.graph import Port, Primitive, ValueType
+from claasp.graph import ArrayType, Port, Primitive
 
 PRESENT_SBOX = (0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2)
 
@@ -41,9 +41,9 @@ class Present(Primitive):
         if number_of_rounds <= 0 or number_of_rounds > 31:
             raise ValueError("PRESENT requires between 1 and 31 rounds")
         bit = Bit()
-        state_type = ValueType(bit, (64,))
-        key_type = ValueType(bit, (key_bit_size,))
-        counter_type = ValueType(bit, (5,))
+        state_type = ArrayType(bit, (64,))
+        key_type = ArrayType(bit, (key_bit_size,))
+        counter_type = ArrayType(bit, (5,))
         super().__init__("present", {"plaintext": state_type, "key": key_type})
         state = self.graph.input("plaintext")
         key = self.graph.input("key")
@@ -81,8 +81,8 @@ class Present(Primitive):
         self,
         key: Port,
         round_number: int,
-        key_type: ValueType,
-        counter_type: ValueType,
+        key_type: ArrayType,
+        counter_type: ArrayType,
         key_bit_size: int,
     ) -> Port:
         rotation_mapping = tuple((position + 61) % key_bit_size for position in range(key_bit_size))

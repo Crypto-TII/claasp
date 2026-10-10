@@ -2,7 +2,7 @@
 
 from claasp.components import Add, Constant, LinearMap, Multiply, Permutation
 from claasp.domains import Bit
-from claasp.graph import Primitive, PrimitiveInput, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveInput, PrimitiveKind
 from claasp.graph.bit_builder import (
     BitState,
     calculate_inputs,
@@ -53,7 +53,7 @@ class AradiCompactWord(AradiSBoxCompactLinearMap):
 
         >>> from claasp.transformations._inverse_realizations import AradiCompactWord
         >>> graph = AradiCompactWord(number_of_rounds=1)
-        >>> (graph.family_name, len(graph.graph.rounds), graph.graph.output.value_type.encoded_bit_size)
+        >>> (graph.family_name, len(graph.graph.rounds), graph.graph.output.array_type.encoded_bit_size)
         ('aradi', 1, 128)
     """
 
@@ -339,11 +339,11 @@ def subterranean_inverse(source, output_name="output"):
         ('output', 'key')
     """
 
-    size = source.graph.output.value_type.unit_count
+    size = source.graph.output.array_type.unit_count
     derived = Primitive(
         f"{source.family_name}_inverse",
         {
-            output_name: PrimitiveInput(source.graph.output.value_type, role=output_name),
+            output_name: PrimitiveInput(source.graph.output.array_type, role=output_name),
             "key": source.graph.input_descriptor("key"),
         },
         kind=source.kind,
@@ -362,8 +362,8 @@ def subterranean_inverse(source, output_name="output"):
     ]
     if len(permutations) != len(source.graph.rounds):
         raise ValueError("Subterranean inverse requires one terminal permutation per round")
-    one = derived._builder.add_component(Constant(ValueType(Bit(), (1,)), (1,)))
-    ones = derived._builder.add_component(Constant(ValueType(Bit(), (size,)), (1,) * size))
+    one = derived._builder.add_component(Constant(ArrayType(Bit(), (1,)), (1,)))
+    ones = derived._builder.add_component(Constant(ArrayType(Bit(), (size,)), (1,) * size))
 
     for permutation in reversed(permutations):
         inverse_mapping = [0] * size
@@ -544,12 +544,12 @@ def chilow_inverse(source, output_name="output"):
         ('output', 'input_tweak', 'key')
     """
 
-    if len(source.graph.rounds) != 1 or source.graph.output.value_type.unit_count != 40:
+    if len(source.graph.rounds) != 1 or source.graph.output.array_type.unit_count != 40:
         raise ValueError("direct ChiLow inverse currently requires the catalogue ChiLow-40 graph")
     derived = Primitive(
         f"{source.family_name}_inverse",
         {
-            output_name: PrimitiveInput(source.graph.output.value_type, role=output_name),
+            output_name: PrimitiveInput(source.graph.output.array_type, role=output_name),
             "input_tweak": source.graph.input_descriptor("input_tweak"),
             "key": source.graph.input_descriptor("key"),
         },
@@ -557,11 +557,11 @@ def chilow_inverse(source, output_name="output"):
         provenance=source.provenance,
     )
     derived._builder.add_round()
-    zero = derived._builder.add_component(Constant(ValueType(Bit(), (1,)), (0,)))
-    one = derived._builder.add_component(Constant(ValueType(Bit(), (1,)), (1,)))
+    zero = derived._builder.add_component(Constant(ArrayType(Bit(), (1,)), (0,)))
+    one = derived._builder.add_component(Constant(ArrayType(Bit(), (1,)), (1,)))
 
     def abstract_bits(port):
-        return [port[index] for index in range(port.value_type.unit_count - 1, -1, -1)]
+        return [port[index] for index in range(port.array_type.unit_count - 1, -1, -1)]
 
     def add(left, right):
         return derived._builder.add_component(Add((left, right)))

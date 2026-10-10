@@ -7,7 +7,7 @@ from claasp.domains import Word
 
 def require_word_inputs(inputs, operation):
     inputs = normalize_inputs(tuple(inputs))
-    value_type = require_homogeneous_inputs(inputs, operation)
-    if not isinstance(value_type.domain, Word):
+    array_type = require_homogeneous_inputs(inputs, operation)
+    if not isinstance(array_type.domain, Word):
         raise ValueError(f"{operation} requires the Word domain")
-    return inputs, value_type
+    return inputs, array_type

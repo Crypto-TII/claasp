@@ -2,7 +2,7 @@
 
 from claasp.components import BitwiseAnd, Constant, Rotate, Xor
 from claasp.domains import Word
-from claasp.graph import Port, Primitive, Selection, ValueType
+from claasp.graph import ArrayType, Port, Primitive, Selection
 
 PARAMETERS_CONFIGURATION_LIST = (
     (32, 64, 32),
@@ -64,12 +64,12 @@ class Simon(Primitive):
             )
         width = block_bit_size // 2
         key_words = key_bit_size // width
-        word_type = ValueType(Word(width), (1,))
+        word_type = ArrayType(Word(width), (1,))
         super().__init__(
             "simon",
             {
-                "plaintext": ValueType(Word(width), (2,)),
-                "key": ValueType(Word(width), (key_words,)),
+                "plaintext": ArrayType(Word(width), (2,)),
+                "key": ArrayType(Word(width), (key_words,)),
             },
         )
         plaintext, key = self.graph.input("plaintext"), self.graph.input("key")

@@ -7,13 +7,13 @@ results therefore remain meaningful when the solver changes.
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, ValueType
+   >>> from claasp import PrimitiveBuilder, ArrayType
    >>> from claasp.analysis import AnalysisProblem, FixedValue
    >>> from claasp.components import Add
    >>> from claasp.domains import Bit
    >>> builder = PrimitiveBuilder("xor", {
-   ...     "plaintext": ValueType(Bit(), (1,)),
-   ...     "key": ValueType(Bit(), (1,)),
+   ...     "plaintext": ArrayType(Bit(), (1,)),
+   ...     "key": ArrayType(Bit(), (1,)),
    ... })
    >>> builder.add_round()
    Round(number=0)

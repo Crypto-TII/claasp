@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-from claasp import PrimeField
+from claasp.domains import PrimeField
 from claasp.primitives import MiMC
 from claasp.representations.constraints.polynomial import (
     Polynomial,

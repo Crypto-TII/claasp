@@ -40,7 +40,7 @@ def _matrix_domain(component, request):
     if not isinstance(component, LinearMap):
         raise TypeError("branch-number drivers require a LinearMap component")
     matrix = component.matrix
-    domain = component.inputs[0].value_type.domain
+    domain = component.inputs[0].array_type.domain
     if request.domain is PropertyDomain.BIT_LINEAR:
         if isinstance(domain, BinaryExtensionField):
             return expand_binary_field_matrix(matrix, domain), Bit()
@@ -63,11 +63,12 @@ class BoundedBranchNumberDriver:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, Port, ValueType
+        >>> from claasp import Port, ArrayType
+        >>> from claasp.domains import Bit
         >>> from claasp.analysis import ComponentProperty, PropertyDomain, PropertyRequest
         >>> from claasp.components import LinearMap
         >>> from claasp.drivers.analysis import BoundedBranchNumberDriver
-        >>> component = LinearMap(Port("x", ValueType(Bit(), (2,))), ((1, 0), (0, 1)))
+        >>> component = LinearMap(Port("x", ArrayType(Bit(), (2,))), ((1, 0), (0, 1)))
         >>> request = PropertyRequest(ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
         ...     PropertyDomain.BIT_LINEAR)
         >>> result = BoundedBranchNumberDriver(1).analyze(component, request)

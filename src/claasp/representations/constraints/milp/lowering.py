@@ -141,7 +141,7 @@ class BooleanMonomialGraphMILPModel:
             raise ValueError(f"unknown variable input: {variable_input}")
         if primitive.graph.output is None:
             raise ValueError("primitive must have an output")
-        output_width = primitive.graph.output.value_type.encoded_bit_size
+        output_width = primitive.graph.output.array_type.encoded_bit_size
         if (
             not isinstance(output_bit, int)
             or isinstance(output_bit, bool)
@@ -149,14 +149,14 @@ class BooleanMonomialGraphMILPModel:
             or not 0 <= output_bit < output_width
         ):
             raise ValueError("output_bit must fit the primitive output")
-        domains = [port.value_type.domain for port in primitive.graph.input_ports.values()]
+        domains = [port.array_type.domain for port in primitive.graph.input_ports.values()]
         domains += [component.output_type.domain for component in primitive.graph.components]
         if not all(isinstance(domain, (Bit, Word)) for domain in domains):
             raise TypeError("Boolean monomial graph models require Bit or Word domains")
         self.primitive = primitive
         self.output_bit = output_bit
         self.variable_input = variable_input
-        selected_width = self._width(primitive.graph.input_ports[variable_input].value_type)
+        selected_width = self._width(primitive.graph.input_ports[variable_input].array_type)
         self.variable_positions = tuple(
             range(selected_width) if variable_positions is None else variable_positions
         )
@@ -177,8 +177,8 @@ class BooleanMonomialGraphMILPModel:
         return f"edge_{component_index}_{operand}_{bit}"
 
     @staticmethod
-    def _width(value_type):
-        width = value_type.encoded_bit_size
+    def _width(array_type):
+        width = array_type.encoded_bit_size
         if width is None:
             raise TypeError("value must have a canonical bit encoding")
         return width
@@ -199,7 +199,7 @@ class BooleanMonomialGraphMILPModel:
                 uses[name] = []
 
         for name, port in self.primitive.graph.input_ports.items():
-            add_wire(name, self._width(port.value_type))
+            add_wire(name, self._width(port.array_type))
         for component in self.primitive.graph.components:
             add_wire(component.component_id, self._width(component.output_type))
 
@@ -325,7 +325,7 @@ class BooleanMonomialGraphMILPModel:
             )
 
         selected_width = self._width(
-            self.primitive.graph.input_ports[self.variable_input].value_type
+            self.primitive.graph.input_ports[self.variable_input].array_type
         )
         selected_positions = set(self.variable_positions)
         for bit in range(selected_width):

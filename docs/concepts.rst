@@ -77,21 +77,22 @@ coefficients modulo two, which is bitwise XOR. The polynomial ``0x11B`` defines
 the binary extension field; it affects multiplication, while field addition
 remains XOR.
 
-Value types
+Array types
 -----------
 
-``ValueType`` describes the values carried by a graph wire. It combines:
+``ArrayType`` describes the fixed-shaped array of scalar elements carried by
+a graph wire. It combines:
 
 * a ``domain`` for each scalar unit; and
 * a ``shape`` giving the dimensions of the collection of units.
 
-Use keyword arguments when introducing a value type so that both parts are
+Use keyword arguments when introducing an array type so that both parts are
 visible:
 
 .. doctest::
 
-   >>> from claasp import ValueType
-   >>> vector = ValueType(domain=PrimeField(257), shape=(4,))
+   >>> from claasp import ArrayType
+   >>> vector = ArrayType(domain=PrimeField(257), shape=(4,))
    >>> vector.unit_count
    4
    >>> vector.encoded_bit_size
@@ -104,10 +105,10 @@ bits, ``BitWord(size)`` is a concise spelling:
 
    >>> from claasp import BitWord
    >>> from claasp.domains import Bit
-   >>> BitWord(128) == ValueType(domain=Bit(), shape=(128,))
+   >>> BitWord(128) == ArrayType(domain=Bit(), shape=(128,))
    True
 
-This is different from ``ValueType(domain=Word(128), shape=(1,))``: the latter
+This is different from ``ArrayType(domain=Word(128), shape=(1,))``: the latter
 declares one arithmetic word for word-level rotation and modular addition.
 
 The comma in ``(4,)`` is Python's syntax for a one-element tuple. Without the
@@ -116,7 +117,7 @@ may have more than one dimension:
 
 .. doctest::
 
-   >>> matrix = ValueType(domain=PrimeField(257), shape=(3, 4))
+   >>> matrix = ArrayType(domain=PrimeField(257), shape=(3, 4))
    >>> matrix.shape, matrix.unit_count
    ((3, 4), 12)
 
@@ -138,7 +139,7 @@ implicit bits, and their order is preserved.
    >>> selected = state[3, 1]
    >>> selected.positions
    (3, 1)
-   >>> selected.value_type.unit_count
+   >>> selected.array_type.unit_count
    2
 
 Components and rounds
@@ -164,7 +165,7 @@ order.
 .. doctest::
 
    >>> from claasp import PrimitiveBuilder
-   >>> pair = ValueType(domain=PrimeField(257), shape=(2,))
+   >>> pair = ArrayType(domain=PrimeField(257), shape=(2,))
    >>> builder = PrimitiveBuilder("wiring", {"left": pair, "right": pair})
    >>> builder.add_round()
    Round(number=0)

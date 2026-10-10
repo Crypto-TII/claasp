@@ -3,8 +3,8 @@
 from dataclasses import dataclass
 from enum import Enum
 
+from claasp.graph.array_type import ArrayType
 from claasp.graph.port import Port, Selection
-from claasp.graph.value_type import ValueType
 
 
 class BindingKind(str, Enum):
@@ -28,9 +28,10 @@ class ValueBinding:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, Port, ValueType
-        >>> source = Port("bits", ValueType(Bit(), (2,)))
-        >>> binding = ValueBinding("view_0", BindingKind.VIEW, (source[:],), source.value_type)
+        >>> from claasp import Port, ArrayType
+        >>> from claasp.domains import Bit
+        >>> source = Port("bits", ArrayType(Bit(), (2,)))
+        >>> binding = ValueBinding("view_0", BindingKind.VIEW, (source[:],), source.array_type)
         >>> binding.output.owner_id
         'view_0'
     """
@@ -38,7 +39,7 @@ class ValueBinding:
     binding_id: str
     kind: BindingKind
     inputs: tuple[Selection, ...]
-    output_type: ValueType
+    output_type: ArrayType
     word_width: int | None = None
 
     @property

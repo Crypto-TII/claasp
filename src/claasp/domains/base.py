@@ -11,7 +11,7 @@ class Domain(ABC):
 
     EXAMPLES::
 
-        >>> from claasp import Bit
+        >>> from claasp.domains import Bit
         >>> domain: Domain = Bit()
         >>> domain.validate(1)
         >>> try:

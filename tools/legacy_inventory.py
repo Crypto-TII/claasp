@@ -1575,8 +1575,8 @@ _M10_9C2_SUPERSEDED_SOURCES = {
         "Immutable Port and Selection objects replace mutable component-id/bit-position state.",
     ),
     "claasp/DTOs/power_of_2_word_based_dto.py": (
-        "src/claasp/domains/word.py; src/claasp/graph/value_type.py",
-        "Typed Word domains and ValueType replace a mutable optional word-size probe DTO.",
+        "src/claasp/domains/word.py; src/claasp/graph/array_type.py",
+        "Typed Word domains and ArrayType replace a mutable optional word-size probe DTO.",
     ),
     "claasp/component.py": (
         "src/claasp/graph/component.py; src/claasp/semantics; src/claasp/representations/constraints",

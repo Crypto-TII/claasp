@@ -16,7 +16,7 @@ class Add(Primitive):
 
     Select another domain explicitly when needed:
 
-    >>> from claasp import PrimeField
+    >>> from claasp.domains import PrimeField
     >>> Add(domain=PrimeField(17)).evaluate(5, 14)
     2
 

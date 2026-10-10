@@ -4,8 +4,9 @@ from dataclasses import replace
 
 import pytest
 
-from claasp import Primitive, ValueType, Word
+from claasp import ArrayType, Primitive
 from claasp.components import BitwiseAnd, ModularAdd, Xor
+from claasp.domains import Word
 from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.sat import (
@@ -32,7 +33,7 @@ from claasp.semantics.cryptanalysis import TruncatedXorDifference
 
 def _primitive(component):
     primitive = Primitive(
-        "boolean_word", {"left": ValueType(Word(2), (1,)), "key": ValueType(Word(2), (1,))}
+        "boolean_word", {"left": ArrayType(Word(2), (1,)), "key": ArrayType(Word(2), (1,))}
     )
     primitive._builder.add_round()
     output = primitive._builder.add_component(

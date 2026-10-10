@@ -33,6 +33,7 @@ from claasp.components import (
 )
 from claasp.domains import BinaryExtensionField, Bit, PrimeField, Word
 from claasp.graph import (
+    ArrayType,
     CompositeDefinition,
     CompositeInstance,
     InputVisibility,
@@ -43,7 +44,6 @@ from claasp.graph import (
     RealizationDescriptor,
     RealizationMaturity,
     Selection,
-    ValueType,
 )
 from claasp.graph.binding import BindingKind
 from claasp.provenance import TransformationRecord
@@ -272,8 +272,8 @@ def _decode_domain(value, path):
     )
 
 
-def _encode_type(value_type):
-    return {"domain": _encode_domain(value_type.domain), "shape": list(value_type.shape)}
+def _encode_type(array_type):
+    return {"domain": _encode_domain(array_type.domain), "shape": list(array_type.shape)}
 
 
 def _decode_type(value, path):
@@ -283,7 +283,7 @@ def _decode_type(value, path):
         for index, item in enumerate(_array(value["shape"], path=f"{path}.shape"))
     )
     try:
-        return ValueType(_decode_domain(value["domain"], f"{path}.domain"), shape)
+        return ArrayType(_decode_domain(value["domain"], f"{path}.domain"), shape)
     except (TypeError, ValueError) as error:
         raise SerializationError(
             SerializationFailure.MALFORMED_VALUE, str(error), path=path
@@ -553,8 +553,8 @@ def _encode_definition(definition):
     return {
         "bindings": [_encode_binding(item) for item in definition.bindings],
         "inputs": [
-            {"name": name, "type": _encode_type(value_type)}
-            for name, value_type in definition.input_types
+            {"name": name, "type": _encode_type(array_type)}
+            for name, array_type in definition.input_types
         ],
         "name": definition.name,
         "outputs": [
@@ -604,7 +604,7 @@ def _encode_primitive(primitive):
             {
                 "name": name,
                 "role": descriptor.role,
-                "type": _encode_type(descriptor.value_type),
+                "type": _encode_type(descriptor.array_type),
                 "visibility": descriptor.visibility.value,
             }
             for name, descriptor in primitive.graph.input_descriptors.items()
@@ -653,12 +653,12 @@ def _pairs(value, path):
 
 def _collect_sources(inputs, bindings, rounds, path):
     sources = {}
-    for name, value_type in inputs:
+    for name, array_type in inputs:
         if name in sources:
             raise SerializationError(
                 SerializationFailure.DUPLICATE_IDENTITY, f"duplicate source {name!r}", path=path
             )
-        sources[name] = Port(name, value_type)
+        sources[name] = Port(name, array_type)
     for record in list(bindings) + [component for group in rounds for component in group]:
         source_id = record["id"]
         if source_id in sources:
@@ -705,24 +705,24 @@ def _validate_binding(identifier, kind, inputs, output_type, word_width, path):
         if kind is BindingKind.JOIN:
             if word_width is not None:
                 raise ValueError("join binding must not declare word_width")
-            if any(item.value_type.domain != inputs[0].value_type.domain for item in inputs):
+            if any(item.array_type.domain != inputs[0].array_type.domain for item in inputs):
                 raise ValueError("join binding inputs must share one domain")
-            expected = ValueType(
-                inputs[0].value_type.domain,
-                (sum(item.value_type.unit_count for item in inputs),),
+            expected = ArrayType(
+                inputs[0].array_type.domain,
+                (sum(item.array_type.unit_count for item in inputs),),
             )
         elif kind is BindingKind.VIEW:
             if len(inputs) != 1 or word_width is not None:
                 raise ValueError("view binding requires one input and no word_width")
-            expected = inputs[0].value_type
+            expected = inputs[0].array_type
         elif kind is BindingKind.PACK_BITS:
             if (
                 len(inputs) != 1
                 or word_width is None
-                or not isinstance(inputs[0].value_type.domain, Bit)
+                or not isinstance(inputs[0].array_type.domain, Bit)
             ):
                 raise ValueError("pack_bits binding requires one Bit input and word_width")
-            if inputs[0].value_type.unit_count % word_width:
+            if inputs[0].array_type.unit_count % word_width:
                 raise ValueError("pack_bits input width must be divisible by word_width")
             if isinstance(output_type.domain, Word):
                 if output_type.domain.width != word_width:
@@ -732,13 +732,13 @@ def _validate_binding(identifier, kind, inputs, output_type, word_width, path):
                     raise ValueError("packed field degree is inconsistent")
             else:
                 raise ValueError("pack_bits output must use Word or binary-extension-field units")
-            expected = ValueType(
-                output_type.domain, (inputs[0].value_type.unit_count // word_width,)
+            expected = ArrayType(
+                output_type.domain, (inputs[0].array_type.unit_count // word_width,)
             )
         else:
             if len(inputs) != 1 or word_width is None:
                 raise ValueError("unpack_bits binding requires one input and word_width")
-            domain = inputs[0].value_type.domain
+            domain = inputs[0].array_type.domain
             actual_width = (
                 domain.width
                 if isinstance(domain, Word)
@@ -746,7 +746,7 @@ def _validate_binding(identifier, kind, inputs, output_type, word_width, path):
             )
             if actual_width != word_width:
                 raise ValueError("unpack_bits word_width is inconsistent with its input")
-            expected = ValueType(Bit(), (inputs[0].value_type.unit_count * word_width,))
+            expected = ArrayType(Bit(), (inputs[0].array_type.unit_count * word_width,))
         if expected != output_type:
             raise ValueError("binding output type is inconsistent with its operation")
     except (TypeError, ValueError) as error:
@@ -907,7 +907,7 @@ def _decode_primitive(value, path):
         component_groups.append(_array(group["components"], path=f"{group_path}.components"))
     binding_records = _array(value["bindings"], path=f"{path}.bindings")
     source_types = _collect_sources(
-        tuple((name, item.value_type) for name, item in input_descriptors),
+        tuple((name, item.array_type) for name, item in input_descriptors),
         binding_records,
         component_groups,
         path,

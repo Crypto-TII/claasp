@@ -4,8 +4,9 @@ from math import log2
 
 import pytest
 
-from claasp import Primitive, ValueType, Word
+from claasp import ArrayType, Primitive
 from claasp.components import Identity
+from claasp.domains import Word
 from claasp.drivers.solvers import SatStatus, Z3Solver
 from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints.smt.word_differential import WordDifferentialSMTModel
@@ -55,7 +56,7 @@ def test_cp_toy_speck_bounded_differential_enumeration_preserves_seven():
 
 def test_cp_identity_sbox_zero_weight_and_empty_positive_weight_range():
     """The identity lookup table is superseded by the typed identity relation."""
-    primitive = Primitive("identity", {"plaintext": ValueType(Word(3), (1,))})
+    primitive = Primitive("identity", {"plaintext": ArrayType(Word(3), (1,))})
     primitive._builder.add_round()
     primitive._builder.set_output(
         primitive._builder.add_component(Identity(primitive.graph.input("plaintext")))

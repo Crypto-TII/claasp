@@ -2,7 +2,7 @@
 
 from claasp.components import Constant, ModularAdd, Rotate, Xor
 from claasp.domains import Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 PARAMETERS_CONFIGURATION_LIST = (
     {"block_bit_size": 32, "key_bit_size": 64, "number_of_rounds": 22},
@@ -75,12 +75,12 @@ class Speck(Primitive):
             rotation_alpha,
             rotation_beta,
         )
-        word_type = ValueType(Word(word_size), (1,))
+        word_type = ArrayType(Word(word_size), (1,))
         super().__init__(
             "speck",
             {
-                "plaintext": ValueType(Word(word_size), (2,)),
-                "key": ValueType(Word(word_size), (key_word_count,)),
+                "plaintext": ArrayType(Word(word_size), (2,)),
+                "key": ArrayType(Word(word_size), (key_word_count,)),
             },
             kind=PrimitiveKind.BLOCK_CIPHER,
             instance_name=f"Speck{block_bit_size}/{key_bit_size}",

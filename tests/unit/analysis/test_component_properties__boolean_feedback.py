@@ -17,7 +17,7 @@ from claasp.components import (
     Xor,
 )
 from claasp.domains import Bit, Word
-from claasp.graph import Port, ValueType
+from claasp.graph import ArrayType, Port
 
 
 def _word_component(component, property_):
@@ -27,8 +27,8 @@ def _word_component(component, property_):
 
 
 def _ports(width=3):
-    value_type = ValueType(Word(width), (1,))
-    return Port("x", value_type), Port("y", value_type)
+    array_type = ArrayType(Word(width), (1,))
+    return Port("x", array_type), Port("y", array_type)
 
 
 def test_xor_and_not_rotate_shift_exact_anf_properties():
@@ -59,7 +59,7 @@ def test_reduced_modular_add_exact_anf_degree_and_variables():
 
 
 def test_linear_feedback_structure_and_connection_polynomial_are_typed():
-    state = Port("state", ValueType(Bit(), (4,)))
+    state = Port("state", ArrayType(Bit(), (4,)))
     component = FeedbackRegister(
         state,
         (FeedbackRegisterSpec(4, (FeedbackTerm(0), FeedbackTerm(3))),),
@@ -78,7 +78,7 @@ def test_linear_feedback_structure_and_connection_polynomial_are_typed():
 
 
 def test_nonlinear_or_clocked_feedback_rejects_connection_polynomial():
-    state = Port("state", ValueType(Bit(), (4,)))
+    state = Port("state", ArrayType(Bit(), (4,)))
     component = FeedbackRegister(
         state,
         (

@@ -1,14 +1,13 @@
 from claasp import (
-    Bit,
+    ArrayType,
     Primitive,
     PrimitiveKind,
-    ValueType,
-    Word,
     inline_reorderings,
     prune_orphans,
     remove_key_schedule,
 )
 from claasp.components import Identity, LinearMap, Permutation, Rotate, Shift, Xor
+from claasp.domains import Bit, Word
 from claasp.graph import as_selection
 from claasp.primitives import Present, Speck
 
@@ -70,7 +69,7 @@ def test_remove_key_schedule_without_injections_matches_zero_round_keys():
 def test_prune_orphans_reconstructs_only_the_output_dependency_closure():
     graph = Primitive(
         "orphans",
-        {"left": ValueType(Word(8), (1,)), "right": ValueType(Word(8), (1,))},
+        {"left": ArrayType(Word(8), (1,)), "right": ArrayType(Word(8), (1,))},
     )
     graph._builder.add_round()
     output = graph._builder.add_component(
@@ -105,7 +104,7 @@ def test_inline_reorderings_preserves_speck_and_present_semantics():
 
 
 def test_inline_reorderings_only_removes_permutation_matrices():
-    graph = Primitive("linear", {"state": ValueType(Bit(), (3,))}, kind=PrimitiveKind.PERMUTATION)
+    graph = Primitive("linear", {"state": ArrayType(Bit(), (3,))}, kind=PrimitiveKind.PERMUTATION)
     graph._builder.add_round()
     reordered = graph._builder.add_component(
         LinearMap(

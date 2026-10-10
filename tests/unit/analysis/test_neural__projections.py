@@ -54,9 +54,9 @@ def test_component_output_dataset_matches_direct_trace_inspection_of_round_state
         primitive, "plaintext", component_id, samples=samples, seed=seed
     )
 
-    plaintext_width = primitive.graph.input("plaintext").value_type.encoded_bit_size
-    key_width = primitive.graph.input("key").value_type.encoded_bit_size
-    component_width = primitive.graph.port(component_id).value_type.encoded_bit_size
+    plaintext_width = primitive.graph.input("plaintext").array_type.encoded_bit_size
+    key_width = primitive.graph.input("key").array_type.encoded_bit_size
+    component_width = primitive.graph.port(component_id).array_type.encoded_bit_size
     assert dataset.feature_width == plaintext_width + component_width
 
     # Replay the dataset's own seeded random stream so the "real" (label 1)
@@ -94,9 +94,9 @@ def test_component_output_dataset_supports_concatenated_round_projection():
     dataset = component_output_dataset(primitive, "key", ids, samples=6, seed=2)
 
     expected_width = sum(
-        primitive.graph.port(component_id).value_type.encoded_bit_size for component_id in ids
+        primitive.graph.port(component_id).array_type.encoded_bit_size for component_id in ids
     )
-    key_width = primitive.graph.input("key").value_type.encoded_bit_size
+    key_width = primitive.graph.input("key").array_type.encoded_bit_size
     assert dataset.feature_width == key_width + expected_width
     assert dataset.feature_names[0] == "key[0]"
     assert dataset.feature_names[-1] == f"{'+'.join(ids)}[{expected_width - 1}]"
@@ -112,9 +112,9 @@ def test_xor_differential_component_dataset_matches_direct_trace_inspection():
         primitive, differences, component_id, samples=samples, seed=seed
     )
 
-    plaintext_width = primitive.graph.input("plaintext").value_type.encoded_bit_size
-    key_width = primitive.graph.input("key").value_type.encoded_bit_size
-    component_width = primitive.graph.port(component_id).value_type.encoded_bit_size
+    plaintext_width = primitive.graph.input("plaintext").array_type.encoded_bit_size
+    key_width = primitive.graph.input("key").array_type.encoded_bit_size
+    component_width = primitive.graph.port(component_id).array_type.encoded_bit_size
     assert dataset.feature_width == 2 * component_width
 
     random = Random(seed)

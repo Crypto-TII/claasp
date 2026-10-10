@@ -54,21 +54,21 @@ def _values(value, path):
 
 def _validate_value(primitive, source_id, value, path):
     try:
-        value_type = primitive.graph.port(source_id).value_type
+        array_type = primitive.graph.port(source_id).array_type
     except KeyError as error:
         raise SerializationError(
             SerializationFailure.INVALID_REFERENCE,
             f"unknown graph source {source_id!r}",
             path=path,
         ) from error
-    if len(value) != value_type.unit_count:
+    if len(value) != array_type.unit_count:
         raise SerializationError(
             SerializationFailure.INCONSISTENT_WIDTH,
-            f"source {source_id!r} requires {value_type.unit_count} units",
+            f"source {source_id!r} requires {array_type.unit_count} units",
             path=path,
         )
     for scalar in value:
-        if not value_type.domain.contains(scalar):
+        if not array_type.domain.contains(scalar):
             raise SerializationError(
                 SerializationFailure.MALFORMED_VALUE,
                 f"value {scalar!r} is outside the source domain",
@@ -184,9 +184,9 @@ def deserialize_execution_trace(data: bytes | str, primitive: Primitive) -> Exec
                     "invalid primitive output trace source",
                     path=f"{path}.source",
                 )
-            value_type = primitive.graph.output.value_type
-            if len(value) != value_type.unit_count or any(
-                not value_type.domain.contains(unit) for unit in value
+            array_type = primitive.graph.output.array_type
+            if len(value) != array_type.unit_count or any(
+                not array_type.domain.contains(unit) for unit in value
             ):
                 raise SerializationError(
                     SerializationFailure.INCONSISTENT_WIDTH,

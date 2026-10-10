@@ -2,7 +2,7 @@
 
 from claasp.components import Permutation
 from claasp.domains import Bit
-from claasp.graph import Primitive, ValueType
+from claasp.graph import ArrayType, Primitive
 
 from ._word_graph import add, concatenate, idea_multiply, select, word_type, xor
 
@@ -26,7 +26,7 @@ class IDEA(Primitive):
             "idea",
             {
                 "plaintext": word_type(16, 4),
-                "key": ValueType(Bit(), (128,)),
+                "key": ArrayType(Bit(), (128,)),
             },
         )
         self._builder.add_round()

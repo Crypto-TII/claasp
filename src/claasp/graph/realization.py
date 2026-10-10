@@ -211,28 +211,28 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
     if reference.graph.output is None or candidate.graph.output is None:
         raise ValueError("equivalent realizations require declared outputs")
 
-    def encoded_size(value_type):
-        if value_type.encoded_bit_size is None:
+    def encoded_size(array_type):
+        if array_type.encoded_bit_size is None:
             raise ValueError("realization boundary normalization requires fixed-width types")
-        return value_type.encoded_bit_size
+        return array_type.encoded_bit_size
 
     for name, expected in reference.graph.input_descriptors.items():
         actual = candidate.graph.input_descriptor(name)
-        if encoded_size(expected.value_type) != encoded_size(actual.value_type):
+        if encoded_size(expected.array_type) != encoded_size(actual.array_type):
             raise ValueError(f"realization input {name!r} has a different encoded width")
         if expected.role != actual.role or expected.visibility != actual.visibility:
             raise ValueError(
                 f"realization input {name!r} has different role or visibility metadata"
             )
-    if encoded_size(reference.graph.output.value_type) != encoded_size(
-        candidate.graph.output.value_type
+    if encoded_size(reference.graph.output.array_type) != encoded_size(
+        candidate.graph.output.array_type
     ):
         raise ValueError("equivalent realizations have different output widths")
 
     exact_inputs = tuple(reference.graph.input_descriptors.items()) == tuple(
         candidate.graph.input_descriptors.items()
     )
-    if exact_inputs and reference.graph.output.value_type == candidate.graph.output.value_type:
+    if exact_inputs and reference.graph.output.array_type == candidate.graph.output.array_type:
         candidate._family_name = reference.family_name
         candidate.realization = descriptor
         return candidate
@@ -250,9 +250,9 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
 
     def convert(selection, target_type, component_id):
         selection = as_selection(selection)
-        if selection.value_type == target_type:
+        if selection.array_type == target_type:
             return selection
-        source_domain = selection.value_type.domain
+        source_domain = selection.array_type.domain
         target_domain = target_type.domain
         value = selection
         if not isinstance(source_domain, Bit):
@@ -271,7 +271,7 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
             raise ValueError(
                 f"cannot normalize realization boundary to {type(target_domain).__name__}"
             )
-        if converted.value_type != target_type:
+        if converted.array_type != target_type:
             raise ValueError("realization boundary conversion produced the wrong typed shape")
         return converted
 
@@ -316,7 +316,7 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
             for name, port in candidate.graph.input_ports.items():
                 remapped[name] = as_selection(
                     convert(
-                        normalized.graph.input(name), port.value_type, f"__realization_input_{name}"
+                        normalized.graph.input(name), port.array_type, f"__realization_input_{name}"
                     )
                 )
             drain_bindings()
@@ -339,6 +339,6 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
         candidate.graph.output.positions
     ]
     normalized._builder.set_output(
-        convert(candidate_output, reference.graph.output.value_type, "__realization_output")
+        convert(candidate_output, reference.graph.output.array_type, "__realization_output")
     )
     return normalized

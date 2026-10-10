@@ -4,7 +4,7 @@ from math import gcd
 
 from claasp.components import Power as PowerComponent
 from claasp.domains import BinaryExtensionField, Bit, PrimeField
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import ArrayType, Primitive, PrimitiveKind
 
 from ._base import positive
 
@@ -46,7 +46,7 @@ class Power(Primitive):
         kind = (
             PrimitiveKind.PERMUTATION if gcd(exponent, order - 1) == 1 else PrimitiveKind.FUNCTION
         )
-        super().__init__("power", {"input": ValueType(domain, (unit_count,))}, kind=kind)
+        super().__init__("power", {"input": ArrayType(domain, (unit_count,))}, kind=kind)
         self._builder.add_round()
         output = self._builder.add_component(PowerComponent(self.graph.input("input"), exponent))
         self._builder.set_output(output)

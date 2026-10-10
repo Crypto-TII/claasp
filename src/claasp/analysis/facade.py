@@ -155,7 +155,7 @@ class Analysis:
         if solved.is_satisfiable:
             for name, selection in problem.projections.items():
                 units = self._project(selection, solved.assignment)
-                projected[name] = self.primitive._encode_boundary(units, selection.value_type)
+                projected[name] = self.primitive._encode_boundary(units, selection.array_type)
         if getattr(solved.status, "value", None) == "unknown":
             raise RuntimeError("solver returned unknown; no analysis result can be projected")
         status = SatStatus.SATISFIABLE if solved.is_satisfiable else SatStatus.UNSATISFIABLE

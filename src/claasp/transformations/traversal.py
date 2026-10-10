@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from types import MappingProxyType
 
-from claasp.graph import Primitive, ValueType
+from claasp.graph import ArrayType, Primitive
 from claasp.transformations.contracts import (
     TransformationError,
     TransformationFailureReason,
@@ -33,16 +33,17 @@ class GraphSource:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, ValueType
+        >>> from claasp import ArrayType
+        >>> from claasp.domains import Bit
         >>> from claasp.transformations import GraphSource, GraphSourceKind
-        >>> source = GraphSource("state", GraphSourceKind.INPUT, ValueType(Bit(), (4,)))
-        >>> (source.source_id, source.value_type.unit_count)
+        >>> source = GraphSource("state", GraphSourceKind.INPUT, ArrayType(Bit(), (4,)))
+        >>> (source.source_id, source.array_type.unit_count)
         ('state', 4)
     """
 
     source_id: str
     kind: GraphSourceKind
-    value_type: ValueType
+    array_type: ArrayType
     round_number: int | None = None
     scopes: tuple[str, ...] = ()
 
@@ -55,9 +56,10 @@ class DependencyIndex:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, PrimitiveBuilder, ValueType
+        >>> from claasp import PrimitiveBuilder, ArrayType
+        >>> from claasp.domains import Bit
         >>> from claasp.components import Identity
-        >>> builder = PrimitiveBuilder("walk", {"state": ValueType(Bit(), (2,))})
+        >>> builder = PrimitiveBuilder("walk", {"state": ArrayType(Bit(), (2,))})
         >>> builder.add_round()
         Round(number=0)
         >>> copied = builder.add_component(Identity(builder.input("state")))
@@ -87,7 +89,7 @@ class DependencyIndex:
         dependencies: dict[str, tuple[str, ...]] = {}
         order: list[str] = []
         for name, port in primitive.graph.input_ports.items():
-            sources[name] = GraphSource(name, GraphSourceKind.INPUT, port.value_type)
+            sources[name] = GraphSource(name, GraphSourceKind.INPUT, port.array_type)
             dependencies[name] = ()
             order.append(name)
         for binding in primitive.graph.bindings:

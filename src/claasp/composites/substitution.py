@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from claasp.components import BitVectorSBox, SBox
 from claasp.domains import Bit
 from claasp.domains.base import Domain
-from claasp.graph import CompositeBuilder, CompositeDefinition, ValueType
+from claasp.graph import ArrayType, CompositeBuilder, CompositeDefinition
 
 
 def ParallelSBoxLayer(
@@ -36,13 +36,13 @@ def ParallelSBoxLayer(
         raise ValueError("S-box table length must be a positive power of two")
     width = len(frozen_table).bit_length() - 1
     if domain is None:
-        input_type = ValueType(Bit(), (box_count * width,))
+        input_type = ArrayType(Bit(), (box_count * width,))
     else:
         if not isinstance(domain, Domain):
             raise TypeError("domain must be a Domain or None")
         if domain.encoded_bit_size != width:
             raise ValueError("domain encoding width must match the S-box table")
-        input_type = ValueType(domain, (box_count,))
+        input_type = ArrayType(domain, (box_count,))
 
     builder = CompositeBuilder("ParallelSBoxLayer", {"state": input_type})
     builder.add_round()

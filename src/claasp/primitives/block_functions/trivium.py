@@ -35,14 +35,14 @@ state, key unit ``m`` is loaded at ``s(80 - m)`` and IV unit ``m`` at
 
 from claasp.components import BitwiseAnd, Constant, Xor
 from claasp.domains import Word
-from claasp.graph import Port, Primitive, Selection, ValueType
+from claasp.graph import ArrayType, Port, Primitive, Selection
 
 KEY_BIT_SIZE = 80
 IV_BIT_SIZE = 80
 STATE_BIT_SIZE = 288
 STANDARD_INITIALIZATION_CLOCKS = 4 * 288
 
-_BIT = ValueType(Word(1), (1,))
+_BIT = ArrayType(Word(1), (1,))
 #: ``(tap_a, tap_b, and_left, and_right, feedback_tap)`` for ``t1``, ``t2`` and
 #: ``t3``, using the specification's one-based state indices.
 _REGISTERS = (
@@ -142,8 +142,8 @@ class Trivium(Primitive):
         super().__init__(
             "trivium",
             {
-                "key": ValueType(Word(1), (KEY_BIT_SIZE,)),
-                "iv": ValueType(Word(1), (IV_BIT_SIZE,)),
+                "key": ArrayType(Word(1), (KEY_BIT_SIZE,)),
+                "iv": ArrayType(Word(1), (IV_BIT_SIZE,)),
             },
         )
         self.number_of_initialization_clocks = clocks

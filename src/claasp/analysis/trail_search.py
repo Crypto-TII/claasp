@@ -97,20 +97,20 @@ def _require_exact_trail_capability(primitive, kind: TrailKind, *, backend="sat"
     """
 
     for name, port in primitive.graph.input_ports.items():
-        if not isinstance(port.value_type.domain, (Bit, Word, BinaryExtensionField)):
+        if not isinstance(port.array_type.domain, (Bit, Word, BinaryExtensionField)):
             raise _capability_error(
                 primitive,
                 kind,
-                f"input {name!r} domain {type(port.value_type.domain).__name__}",
+                f"input {name!r} domain {type(port.array_type.domain).__name__}",
                 backend,
             )
     if primitive.graph.output is None:
         raise _capability_error(primitive, kind, "missing primitive output", backend)
-    if not isinstance(primitive.graph.output.value_type.domain, (Bit, Word, BinaryExtensionField)):
+    if not isinstance(primitive.graph.output.array_type.domain, (Bit, Word, BinaryExtensionField)):
         raise _capability_error(
             primitive,
             kind,
-            f"output domain {type(primitive.graph.output.value_type.domain).__name__}",
+            f"output domain {type(primitive.graph.output.array_type.domain).__name__}",
             backend,
         )
     for component in primitive.graph.components:
@@ -410,9 +410,9 @@ def _trail(primitive, kind, active_input, characteristic):
         kind,
         pattern(
             inputs[active_input],
-            primitive.graph.input_ports[active_input].value_type.encoded_bit_size,
+            primitive.graph.input_ports[active_input].array_type.encoded_bit_size,
         ),
-        pattern(output, primitive.graph.output.value_type.encoded_bit_size),
+        pattern(output, primitive.graph.output.array_type.encoded_bit_size),
         characteristic.steps,
     )
 

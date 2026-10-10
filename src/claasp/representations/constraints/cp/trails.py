@@ -363,7 +363,7 @@ class PresentProbabilisticKeyScheduleCPModel:
 
     def __init__(self, primitive, *, input_difference=None, maximum_weight=None) -> None:
         key = primitive.graph.input_ports.get("key")
-        if primitive.family_name != "present" or key is None or key.value_type.unit_count != 80:
+        if primitive.family_name != "present" or key is None or key.array_type.unit_count != 80:
             raise NotImplementedError("the reviewed key-schedule model supports PRESENT-80")
         if input_difference is not None and (
             not isinstance(input_difference, int)
@@ -646,8 +646,8 @@ class SpeckDifferentialCPModel:
         if (
             problem.primitive.family_name != "speck"
             or plaintext is None
-            or not isinstance(plaintext.value_type.domain, Word)
-            or plaintext.value_type.domain.width != 16
+            or not isinstance(plaintext.array_type.domain, Word)
+            or plaintext.array_type.domain.width != 16
         ):
             raise NotImplementedError("the reviewed CP slice supports Speck32/64")
         if problem.maximum_weight is None:
@@ -967,8 +967,8 @@ class SpeckProbabilisticTruncatedCPModel:
         if (
             problem.primitive.family_name != "speck"
             or plaintext is None
-            or not isinstance(plaintext.value_type.domain, Word)
-            or plaintext.value_type.domain.width != 16
+            or not isinstance(plaintext.array_type.domain, Word)
+            or plaintext.array_type.domain.width != 16
         ):
             raise NotImplementedError("the reviewed slice supports Speck32/64")
         if len(input_pattern.bits) != 32 or len(output_pattern.bits) != 32:
@@ -1723,8 +1723,8 @@ class SpeckImpossibleCPModel:
         if (
             primitive.family_name != "speck"
             or plaintext is None
-            or not isinstance(plaintext.value_type.domain, Word)
-            or plaintext.value_type.domain.width != 16
+            or not isinstance(plaintext.array_type.domain, Word)
+            or plaintext.array_type.domain.width != 16
         ):
             raise NotImplementedError("the reviewed impossible slice supports Speck32/64")
         if not 1 <= middle_round < len(primitive.graph.rounds):
@@ -2315,11 +2315,12 @@ class ModularAddBoomerangTrailCPModel:
 
     EXAMPLES::
 
-        >>> from claasp import PrimitiveBuilder, ValueType, Word
+        >>> from claasp import PrimitiveBuilder, ArrayType
+        >>> from claasp.domains import Word
         >>> from claasp.components import ModularAdd
         >>> def add_graph(name):
-        ...     builder = PrimitiveBuilder(name, {"left": ValueType(Word(4), (1,)),
-        ...         "right": ValueType(Word(4), (1,))})
+        ...     builder = PrimitiveBuilder(name, {"left": ArrayType(Word(4), (1,)),
+        ...         "right": ArrayType(Word(4), (1,))})
         ...     builder.add_round()
         ...     output = builder.add_component(
         ...         ModularAdd((builder.input("left"), builder.input("right"))))
@@ -2370,13 +2371,13 @@ class ModularAddBoomerangTrailCPModel:
             raise ValueError("full switch inputs must name bottom-graph inputs")
         if not full_switch and lower_input not in lower.primitive.graph.input_ports:
             raise ValueError("lower_input must name a bottom-graph input")
-        upper_size = upper.primitive.graph.output.value_type.encoded_bit_size
+        upper_size = upper.primitive.graph.output.array_type.encoded_bit_size
         expected_upper_size = 2 * switch.width if full_switch else switch.width
         if upper_size != expected_upper_size:
             raise ValueError(f"top output must contain exactly {expected_upper_size} bits")
         lower_names = (lower_output_input, lower_right_input) if full_switch else (lower_input,)
         if any(
-            lower.primitive.graph.input_ports[name].value_type.encoded_bit_size != switch.width
+            lower.primitive.graph.input_ports[name].array_type.encoded_bit_size != switch.width
             for name in lower_names
         ):
             raise ValueError("each selected bottom input must contain exactly one switch word")

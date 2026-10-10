@@ -21,11 +21,11 @@ from claasp.representations.execution import BatchEvaluator
 def _assert_scalar_and_batch(primitive, values, expected):
     assert primitive.evaluate(*values) == expected
     decoded = {
-        name: (primitive._decode_boundary(value, port.value_type),)
+        name: (primitive._decode_boundary(value, port.array_type),)
         for (name, port), value in zip(primitive.graph.input_ports.items(), values)
     }
     result = BatchEvaluator().evaluate(primitive, decoded).outputs[0]
-    assert primitive._encode_boundary(result, primitive.graph.output.value_type) == expected
+    assert primitive._encode_boundary(result, primitive.graph.output.array_type) == expected
 
 
 def test_aradi_hight_tea_xtea_and_raiden_vectors():

@@ -27,7 +27,7 @@ def binary_field_multiply(field: BinaryExtensionField, left: int, right: int) ->
 
     EXAMPLES::
 
-        >>> from claasp import BinaryExtensionField
+        >>> from claasp.domains import BinaryExtensionField
         >>> from claasp.utils import binary_field_multiply
         >>> binary_field_multiply(BinaryExtensionField(8, 0x11B), 0x57, 0x13)
         254
@@ -57,7 +57,7 @@ def binary_field_power(field: BinaryExtensionField, value: int, exponent: int) -
 
     EXAMPLES::
 
-        >>> from claasp import BinaryExtensionField
+        >>> from claasp.domains import BinaryExtensionField
         >>> from claasp.utils import binary_field_power
         >>> binary_field_power(BinaryExtensionField(8, 0x11B), 0x53, 254)
         202

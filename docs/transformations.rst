@@ -52,12 +52,12 @@ recovered from an XOR output:
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, ValueType, partial_inverse
+   >>> from claasp import PrimitiveBuilder, ArrayType, partial_inverse
    >>> from claasp.components import Xor
    >>> from claasp.domains import Word
    >>> builder = PrimitiveBuilder("mix", {
-   ...     "left": ValueType(Word(8), (1,)),
-   ...     "right": ValueType(Word(8), (1,)),
+   ...     "left": ArrayType(Word(8), (1,)),
+   ...     "right": ArrayType(Word(8), (1,)),
    ... })
    >>> _ = builder.add_round()
    >>> mixed = builder.add_component(Xor(builder.inputs()))

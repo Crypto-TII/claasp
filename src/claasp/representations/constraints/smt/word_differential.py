@@ -142,22 +142,22 @@ class WordDifferentialSMTModel:
         for name, value in self.fixed_input_differences.items():
             if name not in primitive.graph.input_ports:
                 raise ValueError("unknown fixed input difference")
-            self._validate(value, primitive.graph.input_ports[name].value_type)
+            self._validate(value, primitive.graph.input_ports[name].array_type)
         if output_difference is not None:
-            self._validate(output_difference, primitive.graph.output.value_type)
+            self._validate(output_difference, primitive.graph.output.array_type)
         self._formula = None
 
     @staticmethod
-    def _validate(value, value_type):
-        if not isinstance(value_type.domain, (Bit, Word, BinaryExtensionField)):
+    def _validate(value, array_type):
+        if not isinstance(array_type.domain, (Bit, Word, BinaryExtensionField)):
             raise NotImplementedError(
                 "differential lowering requires Bit, Word, or BinaryExtensionField domains"
             )
-        width = value_type.domain.encoded_bit_size
+        width = array_type.domain.encoded_bit_size
         if (
             not isinstance(value, int)
             or isinstance(value, bool)
-            or not 0 <= value < 1 << (value_type.unit_count * width)
+            or not 0 <= value < 1 << (array_type.unit_count * width)
         ):
             raise ValueError("differences must fit their word type")
 
@@ -177,17 +177,17 @@ class WordDifferentialSMTModel:
             provenance.append(label)
 
         sources = [
-            (name, port.value_type) for name, port in self.primitive.graph.input_ports.items()
+            (name, port.array_type) for name, port in self.primitive.graph.input_ports.items()
         ]
         sources += [
             (item.component_id, item.output_type) for item in self.primitive.graph.components
         ]
         ports = {}
-        for name, value_type in sources:
-            self._validate(0, value_type)
+        for name, array_type in sources:
+            self._validate(0, array_type)
             ports[name] = tuple(
                 allocate(f"difference_{name}_{bit}")
-                for bit in range(value_type.unit_count * value_type.domain.encoded_bit_size)
+                for bit in range(array_type.unit_count * array_type.domain.encoded_bit_size)
             )
 
         def selected(selection):

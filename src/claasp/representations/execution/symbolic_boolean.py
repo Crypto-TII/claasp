@@ -57,11 +57,11 @@ class BooleanSymbolicEvaluator:
         values = {}
         for name, port in primitive.graph.input_ports.items():
             prefix = {"plaintext": "p", "key": "k", "state": "s"}.get(name, name[:1])
-            domain = port.value_type.domain
+            domain = port.array_type.domain
             if isinstance(domain, Bit):
                 values[name] = tuple(
                     BooleanPolynomial.variable(f"{prefix}{index}")
-                    for index in range(port.value_type.unit_count)
+                    for index in range(port.array_type.unit_count)
                 )
             elif isinstance(domain, Word):
                 values[name] = tuple(
@@ -69,7 +69,7 @@ class BooleanSymbolicEvaluator:
                         BooleanPolynomial.variable(f"{prefix}{unit * domain.width + bit}")
                         for bit in range(domain.width)
                     )
-                    for unit in range(port.value_type.unit_count)
+                    for unit in range(port.array_type.unit_count)
                 )
             else:
                 raise NotImplementedError(
@@ -102,12 +102,12 @@ class BooleanSymbolicEvaluator:
 
         symbolic_inputs = []
         for operand_index, selection in enumerate(component.inputs):
-            domain = selection.value_type.domain
+            domain = selection.array_type.domain
             if isinstance(domain, Bit):
                 symbolic_inputs.append(
                     tuple(
                         BooleanPolynomial.variable(f"x{operand_index}_{unit_index}")
-                        for unit_index in range(selection.value_type.unit_count)
+                        for unit_index in range(selection.array_type.unit_count)
                     )
                 )
             elif isinstance(domain, Word):
@@ -117,7 +117,7 @@ class BooleanSymbolicEvaluator:
                             BooleanPolynomial.variable(f"x{operand_index}_{unit_index}_{bit_index}")
                             for bit_index in range(domain.width)
                         )
-                        for unit_index in range(selection.value_type.unit_count)
+                        for unit_index in range(selection.array_type.unit_count)
                     )
                 )
             else:

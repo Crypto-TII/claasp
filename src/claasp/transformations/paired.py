@@ -71,7 +71,7 @@ def _definition_from_primitive(primitive: Primitive) -> CompositeDefinition:
     )
     return CompositeDefinition(
         f"{primitive.family_name}_realization",
-        tuple((name, port.value_type) for name, port in primitive.graph.input_ports.items()),
+        tuple((name, port.array_type) for name, port in primitive.graph.input_ports.items()),
         tuple(tuple(primitive_round.components) for primitive_round in primitive.graph.rounds),
         primitive.graph.bindings,
         (("output", primitive.graph.output),),
@@ -90,13 +90,13 @@ def _scoped_selection(
 
 
 def _difference_component(left: Selection, right: Selection):
-    if left.value_type != right.value_type:
+    if left.array_type != right.array_type:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
-            "paired difference operands have different value types",
+            "paired difference operands have different array types",
             source_ids=(left.source.owner_id, right.source.owner_id),
         )
-    domain = left.value_type.domain
+    domain = left.array_type.domain
     if isinstance(domain, Word):
         return Xor((left, right))
     if isinstance(domain, (Bit, BinaryExtensionField)):
@@ -112,7 +112,7 @@ def _scoped_observation(parent, scope, observation):
     selections = tuple(
         _scoped_selection(parent, scope, selection) for selection in _as_observation(observation)
     )
-    domains = {selection.value_type.domain for selection in selections}
+    domains = {selection.array_type.domain for selection in selections}
     if len(domains) != 1:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,

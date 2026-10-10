@@ -91,15 +91,15 @@ RELATED_KEY_UNSAT = (
 
 
 def _fix_selection(primitive, selection, value, assumptions):
-    value_type = selection.value_type
+    array_type = selection.array_type
     units = units_from_int(
         value,
-        value_type.domain.width,
-        value_type.unit_count,
+        array_type.domain.width,
+        array_type.unit_count,
     )
     groups = resolved_selection_variable_names(primitive, selection)
     for names, unit in zip(groups, units):
-        for name, bit in zip(names, encode_unit(unit, value_type)):
+        for name, bit in zip(names, encode_unit(unit, array_type)):
             assumptions[name] = bit
 
 

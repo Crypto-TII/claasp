@@ -130,7 +130,7 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
                 "key injection is not a recognized zero-neutral operation",
                 source_ids=(component.component_id,),
             )
-        if component.inputs[data_index].value_type != component.output_type:
+        if component.inputs[data_index].array_type != component.output_type:
             raise TransformationError(
                 TransformationFailureReason.AMBIGUOUS_BOUNDARY,
                 "key injection data input does not match its output type",
@@ -287,7 +287,7 @@ def remove_key_schedule(
     for number in range(len(boundaries)):
         name = f"round_key_{number}"
         result.primitive._input_descriptors[name] = PrimitiveInput(
-            result.primitive.graph.input(name).value_type,
+            result.primitive.graph.input(name).array_type,
             role="round_key",
             visibility=InputVisibility.SECRET,
         )
@@ -311,7 +311,7 @@ def _linear_permutation(component):
     if not isinstance(component, LinearMap):
         return None
     size = len(component.matrix)
-    if size != component.inputs[0].value_type.unit_count:
+    if size != component.inputs[0].array_type.unit_count:
         return None
     mapping = []
     for row in component.matrix:
@@ -392,14 +392,14 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
             continue
         if isinstance(component, Rotate):
             selection = remap(component.inputs[0])
-            domain = selection.value_type.domain
+            domain = selection.array_type.domain
             if not isinstance(domain, Word):  # pragma: no cover - component validation owns this
                 raise AssertionError("Rotate has a non-Word input")
             bits = derived._builder.unpack_bits(selection)
             width = domain.width
             amount = component.amount
             bit_mapping = []
-            for word in range(selection.value_type.unit_count):
+            for word in range(selection.array_type.unit_count):
                 base = word * width
                 for output_bit in range(width):
                     if component.direction == "left":

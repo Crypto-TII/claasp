@@ -5,10 +5,10 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
+from claasp.graph.array_type import ArrayType
 from claasp.graph.binding import ValueBinding
 from claasp.graph.component import Component
 from claasp.graph.port import Port, PortLike, Selection, as_selection
-from claasp.graph.value_type import ValueType
 
 
 class CompositeOutputs(Sequence[Selection]):
@@ -16,9 +16,10 @@ class CompositeOutputs(Sequence[Selection]):
 
     EXAMPLES::
 
-        >>> from claasp import Bit, ValueType
+        >>> from claasp import ArrayType
+        >>> from claasp.domains import Bit
         >>> from claasp.components import Identity
-        >>> builder = CompositeBuilder("identity", {"state": ValueType(Bit(), (1,))})
+        >>> builder = CompositeBuilder("identity", {"state": ArrayType(Bit(), (1,))})
         >>> builder.add_round()
         Round(number=0)
         >>> builder.set_output("copy", builder.add_component(Identity(builder.input("state"))))
@@ -74,7 +75,7 @@ class CompositeDefinition:
     """
 
     name: str
-    input_types: tuple[tuple[str, ValueType], ...]
+    input_types: tuple[tuple[str, ArrayType], ...]
     rounds: tuple[tuple[Component, ...], ...]
     bindings: tuple[ValueBinding, ...]
     outputs: tuple[tuple[str, Selection], ...]
@@ -90,12 +91,12 @@ class CompositeDefinition:
             raise ValueError("composite input names must be non-empty and unique")
         if not output_names or len(set(output_names)) != len(output_names):
             raise ValueError("composite output names must be non-empty and unique")
-        if any(not isinstance(value_type, ValueType) for _, value_type in self.input_types):
-            raise TypeError("composite inputs must have ValueType objects")
+        if any(not isinstance(array_type, ArrayType) for _, array_type in self.input_types):
+            raise TypeError("composite inputs must have ArrayType objects")
 
     @property
-    def inputs(self) -> Mapping[str, ValueType]:
-        """Return input value types keyed by semantic name."""
+    def inputs(self) -> Mapping[str, ArrayType]:
+        """Return input array types keyed by semantic name."""
 
         return dict(self.input_types)
 
@@ -152,9 +153,10 @@ class CompositeInstance:
 
     EXAMPLES::
 
-        >>> from claasp import PrimitiveBuilder, ValueType, Word
+        >>> from claasp import PrimitiveBuilder, ArrayType
+        >>> from claasp.domains import Word
         >>> from claasp.composites import ChaChaQuarterRound
-        >>> word = ValueType(Word(8), (1,))
+        >>> word = ArrayType(Word(8), (1,))
         >>> builder = PrimitiveBuilder("scoped", {name: word for name in "abcd"})
         >>> builder.add_round()
         Round(number=0)
@@ -232,9 +234,10 @@ class CompositeBuilder:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, ValueType
+        >>> from claasp import ArrayType
+        >>> from claasp.domains import Bit
         >>> from claasp.components import Identity
-        >>> builder = CompositeBuilder("identity", {"state": ValueType(Bit(), (4,))})
+        >>> builder = CompositeBuilder("identity", {"state": ArrayType(Bit(), (4,))})
         >>> builder.add_round()
         Round(number=0)
         >>> copy = builder.add_component(Identity(builder.input("state")))
@@ -244,7 +247,7 @@ class CompositeBuilder:
         (10, (('source', 'example'),))
     """
 
-    def __init__(self, name: str, inputs: Mapping[str, ValueType]) -> None:
+    def __init__(self, name: str, inputs: Mapping[str, ArrayType]) -> None:
         from claasp.graph.primitive import Primitive
 
         self._primitive = Primitive(name, inputs)
@@ -336,7 +339,7 @@ class CompositeBuilder:
         )
         return CompositeDefinition(
             name=self.name,
-            input_types=tuple((name, port.value_type) for name, port in self.input_ports.items()),
+            input_types=tuple((name, port.array_type) for name, port in self.input_ports.items()),
             rounds=tuple(
                 tuple(primitive_round.components)
                 for primitive_round in self._primitive.graph.rounds
