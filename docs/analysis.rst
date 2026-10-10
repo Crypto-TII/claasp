@@ -166,6 +166,18 @@ a PRESENT- or Speck-specific validator.  String and typed kinds are accepted:
    assert differential.trail.total_weight == 4
    assert linear.trail.total_weight == 2
 
+The result separates the trail from the evidence used to prove it:
+
+* ``result.trail.total_weight`` is :math:`-\log_2` of the trail probability
+  (or absolute correlation for a linear trail).
+* ``result.lower_bound`` is the best proved lower bound. When it equals the
+  trail weight, ``result.is_optimal`` is true.
+* ``result.round_transitions`` contains the values and probabilities shown by
+  the default report; ``result.component_transitions`` contains the individual
+  graph operations used by the detailed report.
+* ``result.metadata`` records the search method, solver, version, runtime, and
+  memory measurement when available.
+
 ``backend="auto"`` selects deliberately optimized dependency-free PRESENT
 and Speck slices and otherwise selects generic SAT when the graph is supported.
 ``backend="sat"`` accepts a custom solver.  ``backend="dependency_free"``

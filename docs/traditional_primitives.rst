@@ -69,6 +69,56 @@ elements of :math:`GF(2^8)` in the polynomial basis defined by
    >>> f"{AES().evaluate(plaintext, key):032x}"
    '69c4e0d86a7b0430d8cdb78070b4c55a'
 
+Choosing an AES configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``instances`` lists the configurations approved by the AES specification,
+while ``parameters`` lists every constructor option, including options useful
+for reduced-round studies:
+
+.. doctest::
+
+   >>> aes = AES()
+   >>> aes.instances
+   Official instances for AES (3)
+     [0] AES(key_bit_size=128, number_of_rounds=10)
+     [1] AES(key_bit_size=192, number_of_rounds=12)
+     [2] AES(key_bit_size=256, number_of_rounds=14)
+   >>> aes.parameters
+   Customizable parameters for AES (3)
+     key_bit_size: int = 128
+     number_of_rounds: int | None = None
+     realization: str = 'lookup'
+
+Pass parameters by name. This example chooses a 256-bit key, keeps only five
+rounds, and represents SubBytes algebraically:
+
+.. doctest::
+
+   >>> aes256 = AES(
+   ...     key_bit_size=256,
+   ...     number_of_rounds=5,
+   ...     realization="algebraic",
+   ... )
+   >>> aes256.details()
+   Primitive details
+     Type: block cipher
+     Instance: AES-256
+     Inputs:
+       plaintext: 128 bits (public)
+       key: 256 bits (secret)
+     Output: 128 bits
+     Rounds: 5
+     Realization: algebraic
+
+The ``lookup`` realization stores the published 256-entry AES substitution
+table. The ``algebraic`` realization expresses the same substitution as field
+inversion followed by the AES affine transformation. They produce the same
+cipher values but expose different graph components to analysis backends.
+
+Use :doc:`customizing_aes` to replace the S-box, omit MixColumns, change other
+AES building blocks, or use Toy AES with a smaller state or word size.
+
 The graph supports AES-128, AES-192, and AES-256 key expansion. SubBytes uses a reusable typed
 ``SBox`` lookup, ShiftRows is a domain-neutral ``Permutation``, MixColumns is
 a ``LinearMap`` over the byte field, and AddRoundKey is field addition.

@@ -29,6 +29,16 @@ primitive component responsible for each transition. The explicit
 presentation API below provides immutable report data and selectable output
 formats for tools and exports.
 
+``show()`` can write either terminal text or Markdown to any text stream:
+
+.. code-block:: python
+
+   result.show(details=True)
+   result.show(format="markdown")
+
+   with open("trail.md", "w", encoding="utf-8") as output:
+       result.show(details=True, format="markdown", file=output)
+
 The default searches use a zero key difference. Their reports include every
 data-state component but omit the resulting all-zero key schedule. A
 related-key result must retain its key-schedule propagation as well.
