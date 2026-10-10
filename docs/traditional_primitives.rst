@@ -12,7 +12,7 @@ every operation to gates.
 
 .. doctest::
 
-   >>> from claasp import Word
+   >>> from claasp.domains import Word
    >>> Word(32).encoded_bit_size
    32
    >>> Word(32).contains(0xffffffff)

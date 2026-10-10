@@ -38,7 +38,7 @@ in each case.
 
 .. doctest::
 
-   >>> from claasp import BinaryExtensionField, PrimeField, Word
+   >>> from claasp.domains import BinaryExtensionField, PrimeField, Word
    >>> aes_field = BinaryExtensionField(8, 0x11B)
    >>> aes_field.encoded_bit_size
    8
@@ -102,7 +102,8 @@ bits, ``BitWord(size)`` is a concise spelling:
 
 .. doctest::
 
-   >>> from claasp import Bit, BitWord
+   >>> from claasp import BitWord
+   >>> from claasp.domains import Bit
    >>> BitWord(128) == ValueType(domain=Bit(), shape=(128,))
    True
 

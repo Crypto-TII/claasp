@@ -112,7 +112,7 @@ whole-bit-vector lookup from a lookup applied independently to typed units:
 
 .. doctest::
 
-   >>> from claasp import Word
+   >>> from claasp.domains import Word
    >>> from claasp.primitives.single_component_primitives import BitVectorSBox, SBox
    >>> BitVectorSBox(2, [3, 2, 1, 0]).evaluate(1)
    2

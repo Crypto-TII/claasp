@@ -50,8 +50,9 @@ element. The output preserves that logical-unit structure:
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, PrimeField, ValueType
+   >>> from claasp import PrimitiveBuilder, ValueType
    >>> from claasp.components import Add
+   >>> from claasp.domains import PrimeField
    >>> vector = ValueType(domain=PrimeField(17), shape=(3,))
    >>> builder = PrimitiveBuilder("field_add", {"left": vector, "right": vector})
    >>> builder.add_round()

@@ -22,8 +22,9 @@ lowering and can be queried from either the primitive or their parent scope.
 
 .. doctest::
 
-   >>> from claasp import CompositeBuilder, PrimeField, PrimitiveBuilder, ValueType
+   >>> from claasp import CompositeBuilder, PrimitiveBuilder, ValueType
    >>> from claasp.components import Add
+   >>> from claasp.domains import PrimeField
    >>> scalar = ValueType(PrimeField(17), (1,))
    >>> child_builder = CompositeBuilder("Double", {"x": scalar})
    >>> child_builder.add_round()

@@ -14,8 +14,9 @@ that need names and ports together.
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, PrimeField, ValueType
+   >>> from claasp import PrimitiveBuilder, ValueType
    >>> from claasp.components import Add, Permutation
+   >>> from claasp.domains import PrimeField
    >>> field_vector = ValueType(PrimeField(17), (3,))
    >>> builder = PrimitiveBuilder("small_permutation", {"state": field_vector})
    >>> state = builder.input("state")
@@ -95,8 +96,9 @@ arithmetic is distinct from ordinary field arithmetic.
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, ValueType, Word
+   >>> from claasp import PrimitiveBuilder, ValueType
    >>> from claasp.components import ModularSubtract, Shift
+   >>> from claasp.domains import Word
    >>> words = ValueType(Word(8), (1,))
    >>> builder = PrimitiveBuilder("word_example", {"left": words, "right": words})
    >>> builder.add_round()
@@ -114,7 +116,7 @@ unambiguous.
 
 .. doctest::
 
-   >>> from claasp import Bit
+   >>> from claasp.domains import Bit
    >>> from claasp.components import FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm
    >>> builder = PrimitiveBuilder("lfsr", {"state": ValueType(Bit(), (4,))})
    >>> builder.add_round()
@@ -137,7 +139,8 @@ unambiguous scalar, batch, diagram, and model semantics.
 
 .. doctest::
 
-   >>> from claasp import Bit, PrimitiveBuilder, ValueType
+   >>> from claasp import PrimitiveBuilder, ValueType
+   >>> from claasp.domains import Bit
    >>> builder = PrimitiveBuilder("conversion", {"bits": ValueType(Bit(), (16,))})
    >>> builder.add_round()
    Round(number=0)
@@ -180,7 +183,7 @@ not belong in primitive definitions.
 
 .. doctest::
 
-   >>> from claasp import BinaryExtensionField
+   >>> from claasp.domains import BinaryExtensionField
    >>> from claasp.components import FeedbackRegisterParameters
    >>> from claasp.primitives.single_component_primitives import FeedbackRegister, LinearMap
    >>> linear = LinearMap([[1, 0], [1, 1]])
