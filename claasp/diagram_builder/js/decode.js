@@ -900,6 +900,12 @@ function scanGrid(lines, onUnrecognized, pendingAmbiguous) {
     // connector row) -- an uppercase 'V' or any other spelling is a real
     // mismatch and reported as such, not silently accepted.
     const bandLines = lines.slice(rb * ROW_HEIGHT, rb * ROW_HEIGHT + ROW_HEIGHT);
+    // Only unframed permutations/swaps can begin with a completely blank
+    // word. Suffix grammar counts keep the sparse-grid fast path while
+    // preserving inactive leading lanes of those real wide blocks.
+    const suffixGlyphCount=glyph=>{const counts=new Array(totalWords+1).fill(0);for(let i=totalWords-1;i>=0;i--){const word=bandLines[0].substr(i*WORD_WIDTH,WORD_WIDTH);counts[i]=word===blank?counts[i+1]:word===(' '.repeat(5)+glyph+' '.repeat(5))?counts[i+1]+1:0;}return counts;};
+    const leadingPermutation=suffixGlyphCount('v'),leadingSwap=suffixGlyphCount('|');
+    const swapArrows=new Array(totalWords+1).fill(0);for(let i=totalWords-1;i>=0;i--)swapArrows[i]=swapArrows[i+1]+Number(['<','>'].includes(bandLines[2][i*WORD_WIDTH+5]));
     let col = 0;
     while (col < totalWords) {
       if (grid.getBlockAt(rb, col)) {
@@ -907,7 +913,13 @@ function scanGrid(lines, onUnrecognized, pendingAmbiguous) {
         continue;
       }
       const firstWord=bandLines.map(line=>line.substr(col*WORD_WIDTH,WORD_WIDTH));
-      if(firstWord.every(line=>!line.trim())) {col++;continue;}
+      if(firstWord.every(line=>!line.trim())) {
+        const wide=leadingPermutation[col]>=2?tryMultiBlockPermutationMatch(lines,rb,col,totalWords,rowBands):null;
+        const swap=wide?null:leadingSwap[col]>=2&&swapArrows[col]>=2?tryPartialSwapMatch(bandLines,col,totalWords):null;
+        const match=wide||swap;
+        if(match){grid.placeBlock(rb,col,match.typeName,match.params);col+=match.words;}else col++;
+        continue;
+      }
 
       // Extracted once at the widest width that could possibly fit here,
       // not once per candidate width tried below -- re-substr-ing from the

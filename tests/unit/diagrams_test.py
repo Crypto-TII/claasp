@@ -117,3 +117,11 @@ def test_native_role_annotations_survive_class_reimport():
     assert [i['role'] for i in from_cipher(rebuilt)['inputs']]==['data','key']
     assert [i['role'] for i in from_cipher(rebuilt,roles={})['inputs']]==['unspecified','unspecified']
     assert [i['role'] for i in from_cipher(rebuilt,roles={'control':'data'})['inputs']]==['unspecified','data']
+
+
+def test_inactive_leading_wide_glyph_lanes():
+    import pathlib,subprocess
+    import claasp.diagrams
+    script=pathlib.Path(claasp.diagrams.__file__).with_name('diagram_builder')/'tools'/'verify-leading-lanes.mjs'
+    result=subprocess.run(['node',str(script)],capture_output=True,text=True,timeout=30,check=True)
+    assert 'recovered from glyphs' in result.stdout
