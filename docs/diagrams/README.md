@@ -2,7 +2,7 @@
 
 `claasp.diagrams` preserves explicit native widths, ordered bit links, operation
 parameters/tables/constants and rounds. No primitive name or manual fixture
-selects the layout. Roles default to `unspecified`; supply them explicitly.
+selects the layout. Roles default to `unspecified`; supply them explicitly. Native classes reconstructed by this module retain those annotations on later `from_cipher` calls; an explicit `roles` mapping overrides them.
 
 ```python
 from claasp.diagrams import (from_cipher, to_ascii, from_ascii, to_cipher,
@@ -65,3 +65,40 @@ no publication or novelty claim is implied by this implementation checkpoint.
 Bundled ELK retains its EPL-2.0 OR GPL-3.0-or-later notices. Its source is bundled
 because the shared compiler also has a legacy layout fallback; the native glyph
 bridge uses the generic direct/conservative bus strategy.
+
+## Bounded print exports
+
+`to_tikz` accepts `rowsPerPanel` (default 16), `columnsPerPanel` (6),
+`maxPanels` (256), and half-open `rowRange`/`columnRange` crops. Limits fail
+explicitly instead of excluding primitive names. Bounds must align with complete
+blocks. Matching `rROWcCOLUMN` or `cCOLUMNrROW` labels connect neighboring panels.
+Long labels use exact coordinate keys and a wrapped legend. Use the returned
+fragment directly in a document body with `\usepackage{tikz}`, not one float;
+`pageBreaks=False` selects paragraph separation. Node parameters remain exact.
+
+`state_tikz` separately accepts `rows_per_panel`, `columns_per_panel`,
+`frame_range`, `max_panels` and `page_breaks`. Original state indices remain
+visible; large hex values use exact keyed legends. These controls change
+presentation only. Frontier modes retain future-live values and final outputs;
+declared mode exposes intermediate observable taps separately.
+
+Fourteen cropped and fourteen full paginated test documents compile without
+overfull boxes. Representative pages and a complete 12-page circuit were
+inspected; the 1,752-page full corpus was not exhaustively reviewed. Pagination
+does not cure dense-grid footprint. A new eight-family reduced-round sweep
+passes three native evaluations each; binary-string constants, FSRs and
+inconsistent declared/output widths are reported explicitly. The sibling
+builder evidence preserves original failures and subsequent prospective trials.
+
+Run the additional reproducible integration sweep using:
+
+```sh
+python docs/diagrams/conformance_extended.py --output /tmp/claasp-extended-corpus
+pytest tests/unit/diagrams_test.py -q
+```
+
+The sweep records actual configured rounds and byte footprints. Its shared
+evaluator comparisons are integration evidence, not known-answer correctness
+proofs. Representative browser flows cover wire/operand edits, deletion and
+replacement, undo/redo, saved-text reimport and malformed import rejection;
+exhaustive interactive coverage and stronger compactness remain open.
