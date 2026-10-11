@@ -49,3 +49,35 @@ def test_renaming_invariant_geometry():
         for edge in n['operands']:edge['source']=mapping[edge['source']]
     renamed['name']='unseen_name'
     assert to_ascii(ir).split('# CLAASP-TYPED-GLYPH 1')[0]==to_ascii(renamed).split('# CLAASP-TYPED-GLYPH 1')[0]
+
+
+def test_renamed_state_values_use_source_identities():
+    c=circuit(); ir=from_cipher(c); renamed=copy.deepcopy(ir)
+    mapping={n['id']:f'renamed_{i}' for i,n in enumerate(renamed['inputs']+renamed['nodes'])}
+    for n in renamed['inputs']+renamed['nodes']:n['id']=mapping[n['id']]
+    for n in renamed['nodes']:
+        for edge in n['operands']:edge['source']=mapping[edge['source']]
+    values=evaluate_state_values(to_cipher(renamed),[0xa5,7])
+    expected=evaluate_state_values(c,[0xa5,7])
+    for source,renamed_id in mapping.items():assert values[renamed_id]==expected[source]
+    for mode in ['layer','round']:
+        assert all(w['value'] is not None for f in state_snapshots(renamed,mode=mode,word_bits=4,values=values) for w in f['words'])
+
+
+def test_boolean_not_parameter_is_rejected():
+    c=Cipher('probe','permutation',['data'],[4],4);c.add_round()
+    n=c.add_not_component(['data'],[[0,1,2,3]],4)
+    c.add_cipher_output_component([n.id],[[0,1,2,3]],4)
+    ir=from_cipher(c);ir['nodes'][0]['description'][1]=False
+    with pytest.raises(ValueError,match='unsupported native'):validate(ir)
+
+
+def test_integer_mix_column_zero_polynomial():
+    c=Cipher('probe','permutation',['data'],[8],8);c.add_round()
+    n=c.add_mix_column_component(['data'],[list(range(8))],8,[[[1,-1],[2,1]],0,4])
+    c.add_cipher_output_component([n.id],[list(range(8))],8)
+    ir=from_cipher(c);validate(ir);recovered=to_cipher(from_ascii(to_ascii(ir)))
+    for value in range(256):
+        a,b=value>>4,value&15
+        expected=(((a-b)&15)<<4)|((2*a+b)&15)
+        assert recovered.evaluate([value])==expected

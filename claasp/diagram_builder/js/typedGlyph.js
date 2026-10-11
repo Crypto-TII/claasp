@@ -41,13 +41,17 @@ export function typedIrToGrid(ir,{diagnostics={}}={}) {
       if(edge.positions.length===bitSize(source)&&edge.positions.every((p,i)=>p===i))return source;
       return call('BS',[source],{kind:'selection',bits:edge.positions.length,positions:edge.positions});
     });
-    let joined=fragments[0];
-    for(let index=1;index<fragments.length;index++) {
-      const leftBits=bitSize(joined);
-      joined=call('JN',[joined,fragments[index]],{kind:'join',bits:leftBits+bitSize(fragments[index])});
-    }
+    // Balanced ordered stream assembly limits helper depth. A native box
+    // consumes up to two visible ordered fragments directly; larger streams
+    // use binary joins without changing native operand/bit ordering.
+    const join=parts=> {
+      if(parts.length===1)return parts[0];
+      const middle=Math.ceil(parts.length/2),left=join(parts.slice(0,middle)),right=join(parts.slice(middle));
+      return call('JN',[left,right],{kind:'join',bits:bitSize(left)+bitSize(right)});
+    };
+    const nativeArgs=fragments.length<=2?fragments:[join(fragments.slice(0,Math.ceil(fragments.length/2))),join(fragments.slice(Math.ceil(fragments.length/2)))];
     const prefix=(n.type==='word_operation'?String(n.description[0]):n.type).replace(/[^A-Za-z]/g,'').slice(0,2).toUpperCase().padEnd(2,'N');
-    const value=call(prefix,joined?[joined]:[],{kind:'native',ordinal,id:n.id,type:n.type,bits:n.bits,input_bits:n.input_bits,round:n.round,description:n.description});
+    const value=call(prefix,nativeArgs,{kind:'native',ordinal,id:n.id,type:n.type,bits:n.bits,input_bits:n.input_bits,round:n.round,description:n.description});
     values.set(n.id,value);
     if(['intermediate_output','cipher_output'].includes(n.type))targets.push({name:`output[${targets.length+1}]`,node:value,isOutput:true});
   }
@@ -132,7 +136,7 @@ export function typedGridToIr(grid) {
         if(args.length!==2)throw new Error('Join requires two ordered ports');result=args.flat();
         if(result.reduce((s,e)=>s+e.positions.length,0)!==d.bits)throw new Error('Join width mismatch');
       } else if(d.kind==='native') {
-        if(args.length>(d.input_bits?1:0))throw new Error('Native glyph consumes one concatenated input stream');
+        if(args.length>(d.input_bits?2:0))throw new Error('Native glyph consumes at most two ordered stream fragments');
         if(!Number.isInteger(d.ordinal)||d.ordinal<0)throw new Error('Missing explicit native execution order');
         const node={ordinal:d.ordinal,id:d.id,type:d.type,bits:d.bits,input_bits:d.input_bits,round:d.round,description:clone(d.description),operands:args.flat()};
         if(native.has(d.id)&&JSON.stringify(native.get(d.id))!==JSON.stringify(node))throw new Error('One alias has conflicting visible dependencies');

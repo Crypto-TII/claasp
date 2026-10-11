@@ -22,12 +22,20 @@ export function typedGridToTikz(grid,{columnSpacing=2,rowSpacing=1,roundedCorner
     } else {
       const d=b.params.typed;let label=b.type;
       if(d?.kind==='input')label=`${d.id} (${d.bits} bits, ${d.role})`;
-      else if(d?.kind==='native')label=`${d.type==='word_operation'?d.description[0]:d.type} (${d.bits} bits)`;
+      else if(d?.kind==='native') {
+        const description=d.description;
+        label=`${d.type==='word_operation'?description[0]:d.type} (${d.bits} bits)`;
+        if(d.type==='constant')label=`constant ${description[0]} (${d.bits} bits)`;
+        if(d.type==='word_operation'&&['ROTATE','SHIFT'].includes(description[0]))label=`${description[0]}(${description[1]}) (${d.bits} bits)`;
+        if(d.type==='word_operation'&&description[0].startsWith('MOD'))label+=` mod ${description[2]===null?`2^${d.bits}`:description[2]}`;
+        if(d.type==='mix_column')label+=` poly ${description[1]}, word ${description[2]}`;
+        lines.push(`% Native definition ${b.params.text}: ${JSON.stringify(d)}`);
+      }
       else if(d?.kind==='selection')label=`select ${d.positions.join(',')}`;
       else if(d?.kind==='join')label=`join (${d.bits} bits)`;
       if(labels==='alias'&&b.type==='typedbox')label=b.params.text;
       const id=`b${b.row}_${b.col}`;
-      lines.push(`\\node[draw,fill=white,align=center,minimum width=${columnSpacing*.8}cm,minimum height=${rowSpacing*.55}cm,text width=${columnSpacing*.7}cm] (${id}) at ${center(b)} {${escape(label)}${b.params.operand_order?`\\\\order ${escape(b.params.operand_order)}`:''}};`);
+      lines.push(`\\node[draw,fill=white,align=center,font=\\tiny,inner sep=1pt,minimum width=${columnSpacing*.8}cm,minimum height=${rowSpacing*.55}cm,text width=${columnSpacing*.7}cm] (${id}) at ${center(b)} {${escape(label)}${b.params.operand_order?`\\\\order ${escape(b.params.operand_order)}`:''}};`);
       for(let w=0;w<b.words;w++)for(const [side,dir] of Object.entries(blockPorts(b.type,b.params,w,b.words)))if(dir==='in'||dir==='out') {
         const anchor={top:'north',bottom:'south',left:'west',right:'east'}[side],boundary=point(b,{side,wordOffset:w});
         lines.push(`\\draw${dir==='in'?'[->]':''} ${dir==='in'?`${boundary} -- (${id}.${anchor})`:`(${id}.${anchor}) -- ${boundary}`};`);

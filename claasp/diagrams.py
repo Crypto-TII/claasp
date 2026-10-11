@@ -22,7 +22,7 @@ def validate_native_component(n):
             require(len(d) == (3 if arithmetic else 2) and integer(d[1]) and d[1] >= 1 and input_bits == d[1]*bits)
             if arithmetic: require(d[2] is None or integer(d[2]) and d[2] > 0)
         elif op in {'ROTATE','SHIFT'}: require(len(d)==2 and integer(d[1]) and input_bits==bits)
-        elif op in {'NOT','REVERSE'}: require(len(d)==2 and d[1]==0 and input_bits==bits)
+        elif op in {'NOT','REVERSE'}: require(len(d)==2 and type(d[1]) is int and d[1]==0 and input_bits==bits)
         else: require(False)
     elif typ == 'constant':
         import re
@@ -36,8 +36,8 @@ def validate_native_component(n):
     elif typ == 'linear_layer': require(len(d)==input_bits and all(isinstance(row,list) and len(row)==bits and all(type(v) is int and v in (0,1) for v in row) for row in d))
     elif typ == 'mix_column':
         require(len(d)==3)
-        matrix,polynomial,w=d; require(integer(w) and 1<=w<=52 and integer(polynomial) and polynomial>0 and input_bits%w==0 and bits%w==0)
-        require(isinstance(matrix,list) and len(matrix)==bits//w and all(isinstance(row,list) and len(row)==input_bits//w and all(integer(v) and 0<=v<2**w for v in row) for row in matrix))
+        matrix,polynomial,w=d; require(integer(w) and 1<=w<=52 and integer(polynomial) and polynomial>=0 and (polynomial==0 or 2**w<=polynomial<2**(w+1)) and input_bits%w==0 and bits%w==0)
+        require(isinstance(matrix,list) and len(matrix)==bits//w and all(isinstance(row,list) and len(row)==input_bits//w and all(integer(v) and (polynomial==0 or 0<=v<2**w) for v in row) for row in matrix))
     else: require(False)
 
 
@@ -247,7 +247,9 @@ def evaluate_state_values(cipher, inputs):
     evaluated = cipher.evaluate(inputs, intermediate_output=True)
     if not isinstance(evaluated, tuple) or len(evaluated) != 3:
         raise ValueError('Native evaluator did not expose component traces')
-    return {**dict(zip(cipher.inputs, inputs)), **{identity: pair[1] for identity,pair in evaluated[2].items()}}
+    native={**dict(zip(cipher.inputs, inputs)), **{identity: pair[1] for identity,pair in evaluated[2].items()}}
+    links=getattr(cipher, 'diagram_source_ids', None)
+    return {original:native[generated] for original,generated in links.items()} if links else native
 
 
 def state_snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='source', values=None, comparison=None):
@@ -265,7 +267,7 @@ def state_snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='so
     if mode=='declared':
         groups=[(n['id'], n['round'], [(e['source'],b) for e in n['operands'] for b in e['positions']]) for n in ir['nodes'] if n['type'] in {'intermediate_output','cipher_output'}]
     else:
-        ranks={i['id']:-1 for i in ir['inputs']}
+        ranks={i['id']:(0 if mode=='layer' else -1) for i in ir['inputs']}
         layers=layout(ir) if mode=='layer' else None
         ranks.update({n['id']:(layers[n['id']]['layer'] if mode=='layer' else n['round']) for n in ir['nodes']})
         consumers={identity:[] for identity in ranks}

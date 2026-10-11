@@ -877,6 +877,15 @@ function scanGrid(lines, onUnrecognized, pendingAmbiguous) {
     byRendered.get(c.rendered).push(c);
   }
   const descendingWidths = [...byWords.keys()].sort((a, b) => b - a);
+  // A full match must also match its first word. This exact prefix index
+  // retains widest-match precedence without trying every wide output record
+  // at each scalar wire cell in large sparse drawings.
+  const prefixWidths=new Map();
+  for(const candidate of cellList) {
+    const prefix=candidate.rendered.split('\n').map(line=>line.slice(0,WORD_WIDTH)).join('\n');
+    if(!prefixWidths.has(prefix))prefixWidths.set(prefix,new Set());
+    prefixWidths.get(prefix).add(candidate.words);
+  }
 
   const grid = new Grid();
   for (let rb = 0; rb < rowBands; rb++) {
@@ -891,6 +900,8 @@ function scanGrid(lines, onUnrecognized, pendingAmbiguous) {
         col += 1;
         continue;
       }
+      const firstWord=bandLines.map(line=>line.substr(col*WORD_WIDTH,WORD_WIDTH));
+      if(firstWord.every(line=>!line.trim())) {col++;continue;}
 
       // Extracted once at the widest width that could possibly fit here,
       // not once per candidate width tried below -- re-substr-ing from the
@@ -903,7 +914,9 @@ function scanGrid(lines, onUnrecognized, pendingAmbiguous) {
       let tied = null;
       const maxFit = totalWords - col;
       const widest = bandLines.map((l) => l.substr(col * WORD_WIDTH, maxFit * WORD_WIDTH));
+      const eligible=prefixWidths.get(firstWord.join('\n'));
       for (const words of descendingWidths) {
+        if(!eligible?.has(words))continue;
         if (words > maxFit) continue;
         const w = words * WORD_WIDTH;
         const slice = widest.map((s) => s.slice(0, w)).join('\n');

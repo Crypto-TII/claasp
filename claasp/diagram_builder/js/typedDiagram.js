@@ -27,7 +27,10 @@ export function validateNativeComponent(n) {
     if(d.length!==n.input_bits||d.some(row=>!Array.isArray(row)||row.length!==n.bits||row.some(v=>v!==0&&v!==1)))reject();
   } else if(n.type==='mix_column') {
     const [matrix,polynomial,w]=d;
-    if(d.length!==3||!integer(w)||w<1||w>52||!integer(polynomial)||polynomial<=0||n.input_bits%w||n.bits%w||!Array.isArray(matrix)||matrix.length!==n.bits/w||matrix.some(row=>!Array.isArray(row)||row.length!==n.input_bits/w||row.some(v=>!integer(v)||v<0||v>=2**w)))reject();
+    // Native polynomial=0 uses integer matrix arithmetic modulo 2^w.
+    // Nonzero definitions must be monic of degree w; irreducibility is not
+    // asserted by this contract (the native evaluator uses a quotient ring).
+    if(d.length!==3||!integer(w)||w<1||w>52||!integer(polynomial)||polynomial<0||(polynomial!==0&&(polynomial<2**w||polynomial>=2**(w+1)))||n.input_bits%w||n.bits%w||!Array.isArray(matrix)||matrix.length!==n.bits/w||matrix.some(row=>!Array.isArray(row)||row.length!==n.input_bits/w||row.some(v=>!integer(v)||(polynomial!==0&&(v<0||v>=2**w)))))reject();
   } else reject();
 }
 export function validateTypedDiagram(ir) {

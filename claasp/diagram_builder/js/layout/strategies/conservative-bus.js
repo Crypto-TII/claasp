@@ -106,7 +106,13 @@ export function graphToGridConservative(targetOrder, { diagnostics } = {}) {
     for (const arg of node.args) visit(arg);
     operations.push(node);
   }
-  for (const target of targetOrder) visit(target.node);
+  // Only observable outputs root the scalar circuit. Unused temporaries
+  // are ordinary dead assignments, not terminal intermediate-output boxes
+  // with an unconsumed bottom port. Named values reachable from outputs keep
+  // their explicit intermediate boundary; native typed observer taps are
+  // themselves output targets and therefore remain present.
+  const observableTargets=targetOrder.filter(target=>target.isOutput);
+  for (const target of observableTargets.length?observableTargets:targetOrder) visit(target.node);
   inputs.sort(naturalNameOrder);
 
   const argsOf = (node) => (node.kind === 'named' ? [canonical(node.inner)] : node.args.map(canonical));

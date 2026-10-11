@@ -617,7 +617,7 @@ export function gridToPseudocode(grid, { diagnostics } = {}) {
     const text = `${name} = ${renderExpr(expr)}`;
     return text;
   });
-  if (diagnostics) diagnostics.expressionAssignments = assignments;
+  if (diagnostics) {diagnostics.expressionAssignments = assignments;diagnostics.inputNames=Object.fromEntries(inputNames);}
   const body = lines.join('\n');
   // A block's secrecy/word-size is only worth declaring when there's an
   // actual assignment body to synthesize -- a file with no output at all
