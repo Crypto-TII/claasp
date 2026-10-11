@@ -6,7 +6,7 @@ mods=['permutations.chacha_permutation','permutations.keccak_permutation','permu
 for mod in mods:
  row={'module':mod};start=time.perf_counter()
  try:
-  m=importlib.import_module('claasp.ciphers.'+mod);cls=next(c for _,c in inspect.getmembers(m,inspect.isclass) if c.__module__==m.__name__ and issubclass(c,Cipher));c=cls(**({'number_of_rounds':1} if 'number_of_rounds' in inspect.signature(cls).parameters else {}));row.update(name=cls.__name__,rounds=c.number_of_rounds,components=sum(len(r.components) for r in c.rounds_as_list));ir=from_cipher(c);text=to_ascii(ir,timeout=90);back=from_ascii(text,timeout=90);assert back==ir;rebuilt=to_cipher(back)
+  m=importlib.import_module('claasp.ciphers.'+mod);cls=next(c for _,c in inspect.getmembers(m,inspect.isclass) if c.__module__==m.__name__ and issubclass(c,Cipher));c=cls(**({'number_of_rounds':1} if 'number_of_rounds' in inspect.signature(cls).parameters else {}));row.update(name=cls.__name__,rounds=c.number_of_rounds,components=sum(len(r.components) for r in c.rounds_as_list));ir=from_cipher(c);text=to_ascii(ir);back=from_ascii(text);assert back==ir;rebuilt=to_cipher(back)
   for _ in range(3):
    values=[rng.getrandbits(i['bits']) for i in ir['inputs']];assert c.evaluate(values,intermediate_output=True)==rebuilt.evaluate(values,intermediate_output=True)
   (out/(cls.__name__+'.asciiart')).write_text(text);row.update(status='passed',checks=3,bytes=len(text.encode()),state_frames=len(state_snapshots(ir)))

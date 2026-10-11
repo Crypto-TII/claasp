@@ -147,7 +147,11 @@ def build_grid(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=200
         ready=[i for i in sorted(pending) if all(v in slots for v in calls[i]['args'])]
         # Delay constants until another operand of a consumer is available.
         usable=[i for i in ready if calls[i]['args'] or ('call',i) in observers or any(('call',i) in c['args'] and all(v==('call',i) or v in slots for v in c['args']) for j,c in enumerate(calls) if j in pending)]
-        if not usable:raise ValueError('No progress in native live-register scheduling')
+        if not usable:
+            # Two ready constants may each await the other's consumer input.
+            # Break only that scheduling stall with the first ready source.
+            if ready:usable=[ready[0]]
+            else:raise ValueError('No progress in native live-register scheduling')
         i=usable[0];call=calls[i];args=call['args'];old=[slots[v] for v in args]
         replacement=0;copied=False
         if not args:target=free()
@@ -155,9 +159,12 @@ def build_grid(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=200
         elif len(args)==2 and strategy=='semantic-auto' and uses[args[1]]==1 and args[0]!=args[1]:replacement=1;target=old[1]
         else:
             target=free(old[0]);copied=True
-            side=horizontal(old[0],target,True)
+            keep_first=uses[args[0]]>1
+            side=horizontal(old[0],target,keep_first)
             place(target,'wire',{side:'in','bottom':'out'});fill(set(range(min(old[0],target),max(old[0],target)+1)))
-            row+=1;active.add(target)
+            row+=1
+            if not keep_first:active.discard(old[0])
+            active.add(target)
         if len(args)==2:
             source=old[1-replacement]
             keep=uses[args[1-replacement]]>args.count(args[1-replacement])
@@ -223,10 +230,22 @@ def render_grid(cells,dimensions):
     return '\n'.join(lines),records
 
 
-def encode(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000):
-    cells,dimensions=build_grid(ir,strategy=strategy,max_cells=max_cells,max_calls=max_calls);text,records=render_grid(cells,dimensions)
+def encode(ir, *, strategy='semantic-auto', max_cells=1000000,
+           max_calls=20000, max_grid_area=2000000, max_text_bytes=64000000):
+    if any(type(v) is not int or v<=0 for v in (max_grid_area,max_text_bytes)):
+        raise ValueError('Invalid native output bounds')
+    cells,dimensions=build_grid(ir,strategy=strategy,max_cells=max_cells,max_calls=max_calls)
+    area=dimensions['rows']*dimensions['cols']
+    if area>max_grid_area:raise ValueError('Native rectangular grid exceeds max_grid_area')
+    records=[{'row':r,'col':c,'definition':copy.deepcopy(cell['definition'])}
+             for (r,c),cell in sorted(cells.items()) if 'definition' in cell]
     primitive={k:copy.deepcopy(v) for k,v in ir.items() if k not in ('inputs','nodes')}
-    return text+MARKER+json.dumps({'primitive':primitive,'records':records},separators=(',',':'))+'\n'
+    footer=json.dumps({'primitive':primitive,'records':records},separators=(',',':'))
+    # The full rectangle includes blank cells, not just occupied glyphs.
+    estimated_bytes=area*55+dimensions['rows']*5-1+len(MARKER)+len(footer.encode('utf8'))+1
+    if estimated_bytes>max_text_bytes:raise ValueError('Native glyph export exceeds max_text_bytes')
+    text,_=render_grid(cells,dimensions)
+    return text+MARKER+footer+'\n'
 
 
 def _wire_templates():
@@ -393,8 +412,16 @@ def tikz(ir, **options):
             x=(c-cl)*xs;y=-(r-rt)*ys;key=f'D{r}:{c}';ports=cell['ports'];kind=cell['kind']
             if kind in ('input','box','output','tap'):
                 label=cell.get('tag','key' if cell.get('secret') else kind)
+                if cell.get('reverse'):label+=r'\\@21'
                 if 'definition' in cell:label+=r'\\'+key;legend.append((key,cell['definition']))
                 lines.append(fr'\node[draw,align=center,minimum width=12mm,minimum height=4mm,font=\scriptsize] at ({x},{y}) {{{escape(label).replace(escape(chr(92)*2),chr(92)*2)}}};')
+            if kind=='box':
+                ordered=[side for side in SIDES if ports.get(side)=='in']
+                if cell.get('reverse'):ordered.reverse()
+                for number,side in enumerate(ordered,1):
+                    dr,dc=DELTA[side];px=x+dc*.27*xs;py=y-dr*.27*ys
+                    anchor={'left':'east','right':'west','top':'south','bottom':'north'}[side]
+                    lines.append(fr'\node[font=\scriptsize,anchor={anchor}] at ({px},{py}) {{{number}}};')
             # A crossing has distinct horizontal/vertical routes; no junction
             # dot is drawn. Arrow endpoints retain each port's direction.
             for side,direction in ports.items():

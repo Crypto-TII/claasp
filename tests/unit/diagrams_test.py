@@ -199,3 +199,41 @@ def test_native_work_bounds_and_long_iterative_trace():
     ir['nodes'].append({'id':'end','type':'cipher_output','bits':8,'input_bits':8,'round':0,
         'description':['cipher_output'],'operands':[{'source':source,'positions':list(range(8))}]})
     assert from_ascii(to_ascii(ir))==ir
+
+
+@pytest.mark.parametrize('strategy',['semantic-auto','direct-bus'])
+@pytest.mark.parametrize('operation',['xor','modsub'])
+def test_ready_constants_make_progress_with_unused_input_and_tap(strategy,operation):
+    c=Cipher('constant_graph','permutation',['unused'],[4],4);c.add_round()
+    a=c.add_constant_component(4,9);b=c.add_constant_component(4,3)
+    c.add_intermediate_output_component([a.id],[list(range(4))],4,'constant_probe')
+    method=getattr(c,'add_'+operation+'_component')
+    result=method([b.id,a.id],[list(range(4)),list(range(4))],4)
+    c.add_cipher_output_component([result.id],[list(range(4))],4)
+    ir=from_cipher(c);parsed=from_ascii(to_ascii(ir,strategy=strategy))
+    assert parsed==ir
+    assert to_cipher(parsed).evaluate([0],intermediate_output=True)==c.evaluate([0],intermediate_output=True)
+
+
+def test_tikz_exposes_reversed_order_and_numbered_ports():
+    c=Cipher('ordered','permutation',['a','b'],[4,4],4);c.add_round()
+    sub=c.add_modsub_component(['b','a'],[list(range(4)),list(range(4))],4)
+    c.add_cipher_output_component([sub.id],[list(range(4))],4)
+    ir=from_cipher(c)
+    assert '@21' in to_ascii(ir)
+    vector=to_tikz(ir)
+    assert '@21' in vector and '{1};' in vector and '{2};' in vector
+    ir2=from_cipher(circuit())
+    assert '{1};' in to_tikz(ir2) and '{2};' in to_tikz(ir2)
+
+
+def test_record_import_and_rectangular_export_bounds_precede_render(monkeypatch):
+    from claasp.diagrams import to_records
+    import claasp.diagram_glyphs as glyphs
+    ir=from_cipher(circuit());record=to_records(ir)
+    with pytest.raises(ValueError,match='max_text_bytes'):from_ascii(record,max_text_bytes=1)
+    with pytest.raises(ValueError,match='max_grid_area'):from_ascii(record,max_grid_area=1)
+    def forbidden(*args,**kwargs):raise AssertionError('Rendered before checking output bounds')
+    monkeypatch.setattr(glyphs,'render_grid',forbidden)
+    with pytest.raises(ValueError,match='max_grid_area'):to_ascii(ir,max_grid_area=1)
+    with pytest.raises(ValueError,match='max_text_bytes'):to_ascii(ir,max_text_bytes=1)

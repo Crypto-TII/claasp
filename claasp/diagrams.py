@@ -203,19 +203,27 @@ def state_view(ir, *, shape=None):
     return stages
 
 
-def to_ascii(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000):
+def to_ascii(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000,
+             max_grid_area=2000000, max_text_bytes=64000000):
     """Generate native Python glyphs with locally typed boxes and visible wires."""
     from claasp.diagram_glyphs import encode, decode
     if not isinstance(ir, dict): ir=from_cipher(ir)
     validate(ir)
-    text=encode(ir,strategy=strategy,max_cells=max_cells,max_calls=max_calls)
-    if validate(decode(text))!=ir: raise ValueError('Native glyph round trip changed semantics')
+    text=encode(ir,strategy=strategy,max_cells=max_cells,max_calls=max_calls,
+                max_grid_area=max_grid_area,max_text_bytes=max_text_bytes)
+    if validate(decode(text,max_grid_area=max_grid_area,max_text_bytes=max_text_bytes))!=ir: raise ValueError('Native glyph round trip changed semantics')
     return text
 
 
 def from_ascii(text, *, max_text_bytes=64000000, max_grid_area=2000000):
     """Recover native operands by tracing visible glyph ports, without Node."""
-    if text.startswith('+ CLAASP-DIAGRAMS 1 +'): return from_records(text)
+    if not isinstance(text,str) or any(type(v) is not int or v<=0 for v in (max_text_bytes,max_grid_area)):
+        raise ValueError('Invalid diagram input or work bounds')
+    if len(text.encode('utf8'))>max_text_bytes:raise ValueError('Diagram text exceeds max_text_bytes')
+    if text.startswith('+ CLAASP-DIAGRAMS 1 +'):
+        ir=from_records(text)
+        if len(ir['inputs'])+len(ir['nodes'])>max_grid_area:raise ValueError('Record elements exceed max_grid_area')
+        return ir
     from claasp.diagram_glyphs import decode
     return validate(decode(text,max_text_bytes=max_text_bytes,max_grid_area=max_grid_area))
 

@@ -44,7 +44,11 @@ native tables, widths, bit selections or round annotations. `to_records` and
 
 `to_ascii` accepts `max_cells` (1,000,000) and `max_calls` (20,000). Bit expansion
 is bounded separately at 2,000,000 explicit bits. `from_ascii` accepts
-`max_text_bytes` (64,000,000) and `max_grid_area` (2,000,000). Bounds reject work;
+`max_text_bytes` (64,000,000) and `max_grid_area` (2,000,000); export accepts
+these bounds too and checks the rectangular area and byte count before rendering.
+`max_cells` counts occupied cells, whereas `max_grid_area` includes empty cells
+in the rendered rectangle. Diagnostic record imports apply the byte limit and
+use the area limit as a bound on input and component records. Bounds reject work;
 they never silently omit components. These are work/output limits, not wall
 clock guarantees. Wider native graphs may require a revised representation.
 
