@@ -31,7 +31,7 @@ export function typedGridToTikz(grid,options={}) {
 function renderPanel(grid,{columnSpacing=2,rowSpacing=1,roundedCorners=0,labels='operation',wireStyle='orthogonal',top,bottom,left,right,size,blocks}) {
   if(![columnSpacing,rowSpacing].every(v=>Number.isFinite(v)&&v>0)||!Number.isFinite(roundedCorners)||roundedCorners<0||!['operation','alias'].includes(labels)||!['orthogonal','smooth'].includes(wireStyle))throw new Error('Invalid TikZ layout options');
   const lines=['\\begin{tikzpicture}[>=stealth,line width=.4pt,font=\\scriptsize]'],legend=[];
-  const wrapped=value=>Array.from(String(value)).map((c,i)=>escape(c)+((i+1)%12===0?'\\allowbreak{}':'')).join('');
+  const wrapped=value=>Array.from(String(value)).map((c,i)=>escape(c)+((i+1)%6===0?'\\allowbreak{}':'')).join('');
   lines.push(`% Physical grid crop rows [${top},${bottom}), columns [${left},${right}); matching edge labels denote continuation, not new terminals.`);
   lines.push(`\\node[anchor=south west,align=left,text width=${(right-left)*columnSpacing}cm] at (0,.45) {rows ${top}--${bottom-1}, columns ${left}--${right-1}; continuation edges labelled};`);
   const point=(b,p)=>{const x=b.col-left+(p.side==='left'?0:p.side==='right'?b.words:p.wordOffset+.5),y=b.row-top+(p.side==='top'?0:p.side==='bottom'?b.rowSpan:b.rowSpan/2);return `(${(x*columnSpacing).toFixed(4)},${(-y*rowSpacing).toFixed(4)})`;};
@@ -62,11 +62,12 @@ function renderPanel(grid,{columnSpacing=2,rowSpacing=1,roundedCorners=0,labels=
       else if(d?.kind==='join')label=`join (${d.bits} bits)`;
       if(labels==='alias'&&b.type==='typedbox')label=b.params.text;
       const id=`b${b.row}_${b.col}`;
-      if(label.length>28||label.split(/\s+/).some(word=>word.length>12)){
+      if(label.length>12||label.split(/\s+/).some(word=>word.length>6)){
         const key=`D${b.row}:${b.col}`;legend.push({key,label});
-        label=d?.kind==='selection'?`select ${key}`:d?.kind==='input'?`input ${key} (${d.bits} bits)`:`${key} (${d?.bits??'?'} bits)`;
+        const kind=d?.kind==='join'?'join':d?.type==='word_operation'?d.description[0]:({intermediate_output:'tap',cipher_output:'final',linear_layer:'linear',mix_column:'mix',permutation:'perm',constant:'const'}[d?.type]||d?.type||'node');
+        label=d?.kind==='selection'?`select ${key}`:d?.kind==='input'?`input ${key}`:`${kind} ${key}`;
       }
-      lines.push(`\\node[draw,fill=white,align=center,font=\\tiny,inner sep=1pt,minimum width=${columnSpacing*.8}cm,minimum height=${rowSpacing*.55}cm,text width=${columnSpacing*.7}cm] (${id}) at ${center(b)} {${wrapped(label)}${b.params.operand_order?`\\\\order ${escape(b.params.operand_order)}`:''}};`);
+      lines.push(`\\node[draw,fill=white,align=center,font=\\scriptsize,inner sep=1pt,minimum width=${columnSpacing*.8}cm,minimum height=${rowSpacing*.55}cm,text width=${columnSpacing*.7}cm] (${id}) at ${center(b)} {${wrapped(label)}${b.params.operand_order?`\\\\order ${escape(b.params.operand_order)}`:''}};`);
       for(let w=0;w<b.words;w++)for(const [side,dir] of Object.entries(blockPorts(b.type,b.params,w,b.words)))if(dir==='in'||dir==='out') {
         const anchor={top:'north',bottom:'south',left:'west',right:'east'}[side],boundary=point(b,{side,wordOffset:w});
         lines.push(`\\draw${dir==='in'?'[->]':''} ${dir==='in'?`${boundary} -- (${id}.${anchor})`:`(${id}.${anchor}) -- ${boundary}`};`);

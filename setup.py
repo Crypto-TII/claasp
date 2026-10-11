@@ -80,6 +80,7 @@ setup(
             'diagram_builder/js/typedTikz.js',
             'diagram_builder/package.json',
             'diagram_builder/tools/typed-glyph-cli.mjs',
+            'diagram_builder/tools/verify-leading-lanes.mjs',
             'diagram_builder/vendor/elk-esm.js',
             'diagram_builder/vendor/elk.bundled.js',
             'cipher_modules/generic_bit_based_c_functions.c',

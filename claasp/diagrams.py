@@ -348,12 +348,12 @@ def state_tikz(ir, *, cell_width=1, cell_height=.5, rows_per_panel=24,
                     row,col=divmod(index,frame['columns'])
                     if not top<=row<bottom or not left<=col<right:continue
                     value=w['difference'] if w['difference'] is not None else w['value'];text='?' if value is None else f"{value:0{(frame['word_bits']+3)//4}x}"
-                    if len(text)>8:
+                    if len(text)>6:
                         key=f'V{index}';legend.append((key,text));text=key
                     fill='orange!25' if w['active'] else 'white'
                     lines.append(fr"\node[draw,fill={fill},minimum width={cell_width}cm,minimum height={cell_height}cm] at ({(col-left)*cell_width},{-(row-top)*cell_height}) {{{text}}};")
                     lines.append(fr"\node[font=\tiny,anchor=south] at ({(col-left)*cell_width},{-(row-top)*cell_height+cell_height/2}) {{{index}}};")
-                lines.append(r'\end{tikzpicture}')
+                lines.append(r'\end{tikzpicture}\par\smallskip')
                 for key,text in legend:lines.append(r'{\raggedright\scriptsize\noindent\textbf{'+key+'}: '+wrapped(text)+r'\par}\smallskip')
                 panels.append('\n'.join(lines))
     return ('\n'+(r'\clearpage' if page_breaks else r'\par\medskip')+'\n').join(panels)
