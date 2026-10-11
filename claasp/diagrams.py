@@ -342,8 +342,8 @@ def state_tikz(ir, *, cell_width=1, cell_height=.5, rows_per_panel=24,
                 bottom=min(frame['rows'],top+rows_per_panel);right=min(frame['columns'],left+columns_per_panel)
                 lines=[r'\begin{tikzpicture}[font=\scriptsize]'];legend=[]
                 title=f"{frame['id']}: {frame['geometry']}, {frame['word_bits']} bits/word, order {frame['order']}"
-                lines.append(fr"\node[anchor=south west,align=left,text width={columns_per_panel*cell_width}cm] at (0,.7) {{{wrapped(title)}}};")
-                lines.append(fr"\node[anchor=west,font=\tiny] at (0,.45) {{original cell rows {top}--{bottom-1}, columns {left}--{right-1}; indices retained}};")
+                lines.append(fr"\node[anchor=south west,align=left,text width={columns_per_panel*cell_width}cm] at (0,.95) {{{wrapped(title)}}};")
+                lines.append(fr"\node[anchor=west,font=\tiny] at (0,.6) {{original cell rows {top}--{bottom-1}, columns {left}--{right-1}; indices retained}};")
                 for index,w in enumerate(frame['words']):
                     row,col=divmod(index,frame['columns'])
                     if not top<=row<bottom or not left<=col<right:continue
