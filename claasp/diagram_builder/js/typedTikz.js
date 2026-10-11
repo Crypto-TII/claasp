@@ -30,9 +30,10 @@ export function typedGridToTikz(grid,options={}) {
 }
 function renderPanel(grid,{columnSpacing=2,rowSpacing=1,roundedCorners=0,labels='operation',wireStyle='orthogonal',top,bottom,left,right,size,blocks}) {
   if(![columnSpacing,rowSpacing].every(v=>Number.isFinite(v)&&v>0)||!Number.isFinite(roundedCorners)||roundedCorners<0||!['operation','alias'].includes(labels)||!['orthogonal','smooth'].includes(wireStyle))throw new Error('Invalid TikZ layout options');
-  const lines=['\\begin{tikzpicture}[>=stealth,line width=.4pt,font=\\scriptsize]'];
+  const lines=['\\begin{tikzpicture}[>=stealth,line width=.4pt,font=\\scriptsize]'],legend=[];
+  const wrapped=value=>Array.from(String(value)).map((c,i)=>escape(c)+((i+1)%12===0?'\\allowbreak{}':'')).join('');
   lines.push(`% Physical grid crop rows [${top},${bottom}), columns [${left},${right}); matching edge labels denote continuation, not new terminals.`);
-  lines.push(`\\node[anchor=south west] at (0,.45) {rows ${top}--${bottom-1}, columns ${left}--${right-1}; continuation edges labelled};`);
+  lines.push(`\\node[anchor=south west,align=left,text width=${(right-left)*columnSpacing}cm] at (0,.45) {rows ${top}--${bottom-1}, columns ${left}--${right-1}; continuation edges labelled};`);
   const point=(b,p)=>{const x=b.col-left+(p.side==='left'?0:p.side==='right'?b.words:p.wordOffset+.5),y=b.row-top+(p.side==='top'?0:p.side==='bottom'?b.rowSpan:b.rowSpan/2);return `(${(x*columnSpacing).toFixed(4)},${(-y*rowSpacing).toFixed(4)})`;};
   const center=b=>`(${((b.col-left+b.words/2)*columnSpacing).toFixed(4)},${(-(b.row-top+b.rowSpan/2)*rowSpacing).toFixed(4)})`;
   for(const b of blocks) {
@@ -61,7 +62,11 @@ function renderPanel(grid,{columnSpacing=2,rowSpacing=1,roundedCorners=0,labels=
       else if(d?.kind==='join')label=`join (${d.bits} bits)`;
       if(labels==='alias'&&b.type==='typedbox')label=b.params.text;
       const id=`b${b.row}_${b.col}`;
-      lines.push(`\\node[draw,fill=white,align=center,font=\\tiny,inner sep=1pt,minimum width=${columnSpacing*.8}cm,minimum height=${rowSpacing*.55}cm,text width=${columnSpacing*.7}cm] (${id}) at ${center(b)} {${escape(label)}${b.params.operand_order?`\\\\order ${escape(b.params.operand_order)}`:''}};`);
+      if(label.length>28||label.split(/\s+/).some(word=>word.length>12)){
+        const key=`D${b.row}:${b.col}`;legend.push({key,label});
+        label=d?.kind==='selection'?`select ${key}`:d?.kind==='input'?`input ${key} (${d.bits} bits)`:`${key} (${d?.bits??'?'} bits)`;
+      }
+      lines.push(`\\node[draw,fill=white,align=center,font=\\tiny,inner sep=1pt,minimum width=${columnSpacing*.8}cm,minimum height=${rowSpacing*.55}cm,text width=${columnSpacing*.7}cm] (${id}) at ${center(b)} {${wrapped(label)}${b.params.operand_order?`\\\\order ${escape(b.params.operand_order)}`:''}};`);
       for(let w=0;w<b.words;w++)for(const [side,dir] of Object.entries(blockPorts(b.type,b.params,w,b.words)))if(dir==='in'||dir==='out') {
         const anchor={top:'north',bottom:'south',left:'west',right:'east'}[side],boundary=point(b,{side,wordOffset:w});
         lines.push(`\\draw${dir==='in'?'[->]':''} ${dir==='in'?`${boundary} -- (${id}.${anchor})`:`(${id}.${anchor}) -- ${boundary}`};`);
@@ -76,5 +81,7 @@ function renderPanel(grid,{columnSpacing=2,rowSpacing=1,roundedCorners=0,labels=
       if(key)lines.push(`\\node[font=\\tiny,anchor=${{top:'south',bottom:'north',left:'east',right:'west'}[side]}] at ${point(b,{side,wordOffset:w})} {${key}};`);
     }
   }
-  return lines.concat('\\end{tikzpicture}').join('\n');
+  lines.push('\\end{tikzpicture}');
+  if(legend.length){lines.push('\\par\\smallskip');for(const {key,label} of legend)lines.push(`{\\raggedright\\scriptsize\\noindent\\textbf{${escape(key)}}: ${wrapped(label)}\\par}\\smallskip`);}
+  return lines.join('\n');
 }

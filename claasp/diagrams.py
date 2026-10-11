@@ -334,21 +334,26 @@ def state_tikz(ir, *, cell_width=1, cell_height=.5, rows_per_panel=24,
     count=sum(((f['rows']+rows_per_panel-1)//rows_per_panel)*((f['columns']+columns_per_panel-1)//columns_per_panel) for f in frames)
     if count>max_panels:raise ValueError(f'State needs {count} panels; supply frame_range or larger max_panels')
     escaped=lambda text: ''.join({'_':r'\_', '%':r'\%', '&':r'\&', '#':r'\#', '{':r'\{', '}':r'\}', '\\':r'\textbackslash{}', '$':r'\$', '^':r'\textasciicircum{}', '~':r'\textasciitilde{}'}.get(c,c) for c in str(text))
+    wrapped=lambda text: ''.join(escaped(c)+(r'\allowbreak{}' if (i+1)%12==0 else '') for i,c in enumerate(str(text)))
     panels=[]
     for frame in frames:
         for top in range(0,frame['rows'],rows_per_panel):
             for left in range(0,frame['columns'],columns_per_panel):
                 bottom=min(frame['rows'],top+rows_per_panel);right=min(frame['columns'],left+columns_per_panel)
-                lines=[r'\begin{tikzpicture}[font=\scriptsize]']
+                lines=[r'\begin{tikzpicture}[font=\scriptsize]'];legend=[]
                 title=f"{frame['id']}: {frame['geometry']}, {frame['word_bits']} bits/word, order {frame['order']}"
-                lines.append(fr"\node[anchor=south west,align=left,text width={columns_per_panel*cell_width}cm] at (0,.7) {{{escaped(title)}}};")
+                lines.append(fr"\node[anchor=south west,align=left,text width={columns_per_panel*cell_width}cm] at (0,.7) {{{wrapped(title)}}};")
                 lines.append(fr"\node[anchor=west,font=\tiny] at (0,.45) {{original cell rows {top}--{bottom-1}, columns {left}--{right-1}; indices retained}};")
                 for index,w in enumerate(frame['words']):
                     row,col=divmod(index,frame['columns'])
                     if not top<=row<bottom or not left<=col<right:continue
                     value=w['difference'] if w['difference'] is not None else w['value'];text='?' if value is None else f"{value:0{(frame['word_bits']+3)//4}x}"
+                    if len(text)>8:
+                        key=f'V{index}';legend.append((key,text));text=key
                     fill='orange!25' if w['active'] else 'white'
                     lines.append(fr"\node[draw,fill={fill},minimum width={cell_width}cm,minimum height={cell_height}cm] at ({(col-left)*cell_width},{-(row-top)*cell_height}) {{{text}}};")
                     lines.append(fr"\node[font=\tiny,anchor=south] at ({(col-left)*cell_width},{-(row-top)*cell_height+cell_height/2}) {{{index}}};")
-                panels.append('\n'.join(lines+[r'\end{tikzpicture}']))
+                lines.append(r'\end{tikzpicture}')
+                for key,text in legend:lines.append(r'{\raggedright\scriptsize\noindent\textbf{'+key+'}: '+wrapped(text)+r'\par}\smallskip')
+                panels.append('\n'.join(lines))
     return ('\n'+(r'\clearpage' if page_breaks else r'\par\medskip')+'\n').join(panels)

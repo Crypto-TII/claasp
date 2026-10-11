@@ -98,3 +98,14 @@ def test_bounded_paginated_diagrams():
         state_tikz(ir, mode='declared', word_bits=4, columns_per_panel=1, max_panels=1)
     with pytest.raises(ValueError, match='frame range'):
         state_tikz(ir, frame_range=[0,999])
+
+
+def test_precise_legends_for_large_labels_and_values():
+    c=Cipher('long_probe','permutation',['identifier_without_breaks_'*8],[128],128);c.add_round()
+    source=c.inputs[0];c.add_cipher_output_component([source],[list(range(128))],128)
+    ir=from_cipher(c);text=to_tikz(ir, rowsPerPanel=8, columnsPerPanel=3)
+    assert r'\textbf{D0:0}' in text and r'\allowbreak{}' in text
+    values=evaluate_state_values(c,[(1<<128)-1])
+    state=state_tikz(ir,word_bits=128,values=values)
+    assert r'\textbf{V0}' in state and 'V0' in state
+    assert 'ffff' in state and r'\allowbreak{}' in state
