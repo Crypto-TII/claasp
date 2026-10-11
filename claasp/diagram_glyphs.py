@@ -319,6 +319,18 @@ def decode(text, *, max_text_bytes=64000000, max_grid_area=2000000):
     drawing,footer=text.split(MARKER);manifest=json.loads(footer);records={}
     if set(manifest)!={'primitive','records'}:raise ValueError('Unexpected glyph metadata')
     if len(manifest['records'])>20000:raise ValueError('Glyph definitions exceed work bound')
+    native_count=0;bit_expansion=0
+    for record in manifest['records']:
+        definition=record['definition'];kind=definition.get('kind')
+        members=definition.get('members') if kind=='parallel' else [definition] if kind=='native' else []
+        if not isinstance(members,list) or kind=='parallel' and not members:raise ValueError('Invalid parallel members')
+        native_count+=len(members)
+        if native_count>20000:raise ValueError('Aggregate native component count exceeds work bound')
+        if kind=='input':bit_expansion+=definition.get('bits',2000001)
+        for member in members:
+            if not isinstance(member,dict) or any(type(member.get(field)) is not int or member[field]<0 for field in ('bits','input_bits')):raise ValueError('Invalid native bit expansion')
+            bit_expansion+=member['bits']+member['input_bits']
+        if bit_expansion>2000000:raise ValueError('Aggregate native explicit bit expansion exceeds bound')
     for record in manifest['records']:
         key=(record['row'],record['col']);d=record['definition']
         if any(type(x) is not int or x<0 for x in key):raise ValueError('Invalid glyph anchor')

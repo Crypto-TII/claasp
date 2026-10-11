@@ -294,7 +294,7 @@ def test_parallel_layers_use_visible_local_masks_and_independent_arithmetic():
         for edge in n.get('operands',[]):edge['source']=names[edge['source']]
     assert from_ascii(to_ascii(renamed,strategy='semantic-parallel'))==renamed
     for mutation,match in [(lambda g:g['members'][0].update(operands=[]),'Hidden dependency'),
-                           (lambda g:g['members'][0].update(bits=10**9),'member width'),
+                           (lambda g:g['members'][0].update(bits=10**9),'member width|explicit bit expansion'),
                            (lambda g:g['members'][0]['operand_positions'][0].__setitem__(0,10**9),'local operand positions')]:
         broken=copy.deepcopy(manifest)
         group=next(r['definition'] for r in broken['records'] if r['definition']['kind']=='parallel')
@@ -305,3 +305,17 @@ def test_parallel_layers_use_visible_local_masks_and_independent_arithmetic():
     if changed!=text:
         try:assert from_ascii(changed)!=ir
         except ValueError:pass
+
+
+def test_aggregate_group_limits_precede_visible_stream_allocation():
+    import json
+    from claasp.diagram_glyphs import MARKER
+    ir=from_cipher(circuit());drawing,footer=to_ascii(ir).split(MARKER)
+    manifest=json.loads(footer)
+    template={'id':'member','type':'word_operation','bits':1,'input_bits':1,'round':0,'description':['NOT'],'ordinal':0,'operand_positions':[[0]]}
+    record={'row':0,'col':0,'definition':{'kind':'parallel','bits':10001,'tag':'group','members':[template]*10001}}
+    manifest['records']=[record,copy.deepcopy(record)]
+    with pytest.raises(ValueError,match='Aggregate native component count'):from_ascii(drawing+MARKER+json.dumps(manifest))
+    record['definition']['members']=[{**template,'bits':1000000,'input_bits':1000001}]
+    manifest['records']=[record]
+    with pytest.raises(ValueError,match='Aggregate native explicit bit expansion'):from_ascii(drawing+MARKER+json.dumps(manifest))
