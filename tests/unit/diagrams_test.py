@@ -81,3 +81,20 @@ def test_integer_mix_column_zero_polynomial():
         a,b=value>>4,value&15
         expected=(((a-b)&15)<<4)|((2*a+b)&15)
         assert recovered.evaluate([value])==expected
+
+
+def test_bounded_paginated_diagrams():
+    ir=from_cipher(circuit())
+    text=to_tikz(ir, rowsPerPanel=4, columnsPerPanel=2)
+    assert text.count(r'\begin{tikzpicture}')>1
+    assert r'\clearpage' in text
+    with pytest.raises(ValueError, match='panels'):
+        to_tikz(ir, rowsPerPanel=1, columnsPerPanel=1, maxPanels=1)
+    frames=state_snapshots(ir, mode='declared', word_bits=4)
+    state=state_tikz(ir, mode='declared', word_bits=4, columns_per_panel=1)
+    assert state.count(r'\begin{tikzpicture}') == sum(len(f['words']) for f in frames)
+    assert 'indices retained' in state
+    with pytest.raises(ValueError, match='panels'):
+        state_tikz(ir, mode='declared', word_bits=4, columns_per_panel=1, max_panels=1)
+    with pytest.raises(ValueError, match='frame range'):
+        state_tikz(ir, frame_range=[0,999])

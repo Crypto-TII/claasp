@@ -114,6 +114,8 @@ export function graphToGridConservative(targetOrder, { diagnostics } = {}) {
   const observableTargets=targetOrder.filter(target=>target.isOutput);
   for (const target of observableTargets.length?observableTargets:targetOrder) visit(target.node);
   inputs.sort(naturalNameOrder);
+  const sparseScalarInputs=inputs.every(n=>!n.wordGroup&&/^input\[\d+\]$/.test(n.name))
+    && (inputs.length===1 || inputs.some((n,i)=>n.name!==`input[${i+1}]`));
 
   const argsOf = (node) => (node.kind === 'named' ? [canonical(node.inner)] : node.args.map(canonical));
   const uses = new Map();
@@ -148,6 +150,7 @@ export function graphToGridConservative(targetOrder, { diagnostics } = {}) {
       grid.placeBlock(row, inputCol, 'input', {
         ...defaultParams('input'),
         secrecy: node.secret || node.groupSecret ? 'secret' : 'public',
+        source_index:sparseScalarInputs?node.name.slice(6,-1):'',
       });
       live.add(inputCol);
       colOf.set(node, inputCol);

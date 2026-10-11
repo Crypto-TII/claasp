@@ -346,6 +346,7 @@ export const BLOCK_TYPES = {
     params: [
       wordsParam(),
       { name: 'secrecy', options: ['public', 'secret'], default: 'public' },
+      { name: 'source_index', kind: 'text', default: '' },
       ACTIVE_WORDS_PARAM,
     ],
   }),

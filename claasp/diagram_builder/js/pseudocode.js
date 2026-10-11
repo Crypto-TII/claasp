@@ -27,6 +27,8 @@ import { buildElkGraph, layoutToGrid, alignDeclaredOutputs } from './pseudocodeL
 import { graphToGridHumanDrawing } from './layout/strategies/human-drawing/synth.js';
 import { graphToGridDirectBus } from './layout/strategies/direct-bus.js';
 import { graphToGridConservative } from './layout/strategies/conservative-bus.js';
+import { renderGrid } from './render.js';
+import { decodeGrid } from './decode.js';
 
 // ---------------------------------------------------------- grid -> code --
 
@@ -113,6 +115,18 @@ export function gridToPseudocode(grid, { diagnostics } = {}) {
     for (const w of active) inputEntries.push({ row: b.row, col: b.col + w, word: 0, base: '', block: b });
   }
   const inputNames = assignNames(inputEntries, 'input');
+  const explicitInputNames = new Set();
+  for (const entry of inputEntries) {
+    const index = entry.block.params.source_index;
+    if (!index) continue;
+    if (entry.block.words !== 1 || !/^[1-9]\d{0,5}$/.test(String(index))) throw new Error('Invalid visible input index');
+    const name = `input[${index}]`;
+    if (explicitInputNames.has(name)) throw new Error(`Duplicate visible input identity ${name}`);
+    explicitInputNames.add(name);
+    inputNames.set(`${entry.row},${entry.col},${entry.word}`,name);
+  }
+  const allInputNames=[...inputNames.values()];
+  if (new Set(allInputNames).size!==allInputNames.length) throw new Error('Explicit and positional input identities conflict');
 
   // ---- declarations preamble: secrecy + multi-word grouping, per input
   // block -- both are dropped by every other part of this extraction
@@ -1155,7 +1169,7 @@ function bindBooleanPorts(text, grid, inputAliases = new Map()) {
 
 // Compare ordered computations with shared structural interning, without
 // expanding reused DAGs. This is a routing guard, not an independent evaluator.
-function assertOrderedGrid(sourceText, grid) {
+function assertOrderedGrid(sourceText, grid, {bind = true} = {}) {
   const inputAliases = new Map();
   const inputGraph = text => { const {body,declarations}=parseDeclarations(text); return buildGraph(parseAssignments(body),declarations); };
   const sourceInputs=[...inputGraph(sourceText).leaves.values()];
@@ -1199,6 +1213,7 @@ function assertOrderedGrid(sourceText, grid) {
       .sort((a,b) => a[0].localeCompare(b[0],'en',{numeric:true})));
   };
   if (signature(sourceText) !== signature(gridToPseudocode(grid),true)) {
+    if (!bind) throw new Error('Exported ASCII changes ordered operands or represented semantics.');
     bindBooleanPorts(sourceText,grid,inputAliases);
     if (signature(sourceText) !== signature(gridToPseudocode(grid),true)) throw new Error('Routing changed ordered operands or represented semantics.');
   }
@@ -1208,7 +1223,19 @@ function assertOrderedGrid(sourceText, grid) {
 export async function pseudocodeToGrid(text, { strategy = 'arg0', diagnostics } = {}) {
   // Only the consolidated primary route promises ordered fidelity. Legacy
   // experimental routes retain their behavior for comparison and ablation.
-  const faithful = grid => strategy === 'semantic-auto' ? assertOrderedGrid(text, grid) : grid;
+  const faithful = grid => {
+    if (strategy !== 'semantic-auto') return grid;
+    try {
+      assertOrderedGrid(text, grid);
+      assertOrderedGrid(text, decodeGrid(renderGrid(grid)), {bind:false});
+      return grid;
+    }
+    catch (error) {
+      if (diagnostics) (diagnostics.rejections ||= []).push({engine:diagnostics.engine,
+        error:error.message,pseudocode:gridToPseudocode(grid)});
+      throw error;
+    }
+  };
   const { declarations, body } = parseDeclarations(text);
   const assignments = parseAssignments(body);
   if (assignments.length === 0) throw new Error('Pseudocode is empty.');

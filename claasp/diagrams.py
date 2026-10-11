@@ -317,17 +317,38 @@ def state_ascii(ir, **options):
     return '\n'.join(lines)
 
 
-def state_tikz(ir, *, cell_width=1, cell_height=.5, **options):
+def state_tikz(ir, *, cell_width=1, cell_height=.5, rows_per_panel=24,
+               columns_per_panel=12, frame_range=None, page_breaks=True,
+               max_panels=256, **options):
+    """Paginated generic state cells; cuts never reinterpret state geometry.
+
+    Fragment output belongs directly in a LaTeX document body, not one float.
+    frame_range is a half-open range in the generated snapshot sequence.
+    """
     if cell_width<=0 or cell_height<=0:raise ValueError('Positive cell spacing required')
-    lines=[r'\begin{tikzpicture}[font=\scriptsize]'];offset=0
-    for frame in state_snapshots(ir, **options):
-        # IDs are escaped as text; shape comes only from generic annotations.
-        title=''.join({'_':r'\_', '%':r'\%', '&':r'\&', '#':r'\#', '{':r'\{', '}':r'\}', '\\':r'\textbackslash{}', '$':r'\$', '^':r'\textasciicircum{}', '~':r'\textasciitilde{}'}.get(c,c) for c in str(frame['id']))
-        lines.append(fr"\node[anchor=west] at (0,{-offset}) {{{title}: {frame['geometry']}, {frame['word_bits']} bits/word}};")
-        offset+=cell_height
-        for index,w in enumerate(frame['words']):
-            row,col=divmod(index,frame['columns']);v=w['difference'] if w['difference'] is not None else w['value'];text='?' if v is None else f"{v:0{(frame['word_bits']+3)//4}x}"
-            fill='orange!25' if w['active'] else 'white'
-            lines.append(fr"\node[draw,fill={fill},minimum width={cell_width}cm,minimum height={cell_height}cm] at ({col*cell_width},{-offset-row*cell_height}) {{{text}}};")
-        offset+=frame['rows']*cell_height+cell_height
-    return '\n'.join(lines+[r'\end{tikzpicture}'])
+    if any(type(n) is not int or n<=0 for n in [rows_per_panel,columns_per_panel,max_panels]) or type(page_breaks) is not bool:raise ValueError('Invalid state pagination options')
+    frames=state_snapshots(ir, **options)
+    if frame_range is not None:
+        if not isinstance(frame_range,(list,tuple)) or len(frame_range)!=2 or any(type(n) is not int for n in frame_range) or not 0<=frame_range[0]<frame_range[1]<=len(frames):raise ValueError('Invalid state frame range')
+        frames=frames[frame_range[0]:frame_range[1]]
+    count=sum(((f['rows']+rows_per_panel-1)//rows_per_panel)*((f['columns']+columns_per_panel-1)//columns_per_panel) for f in frames)
+    if count>max_panels:raise ValueError(f'State needs {count} panels; supply frame_range or larger max_panels')
+    escaped=lambda text: ''.join({'_':r'\_', '%':r'\%', '&':r'\&', '#':r'\#', '{':r'\{', '}':r'\}', '\\':r'\textbackslash{}', '$':r'\$', '^':r'\textasciicircum{}', '~':r'\textasciitilde{}'}.get(c,c) for c in str(text))
+    panels=[]
+    for frame in frames:
+        for top in range(0,frame['rows'],rows_per_panel):
+            for left in range(0,frame['columns'],columns_per_panel):
+                bottom=min(frame['rows'],top+rows_per_panel);right=min(frame['columns'],left+columns_per_panel)
+                lines=[r'\begin{tikzpicture}[font=\scriptsize]']
+                title=f"{frame['id']}: {frame['geometry']}, {frame['word_bits']} bits/word, order {frame['order']}"
+                lines.append(fr"\node[anchor=south west,align=left,text width={columns_per_panel*cell_width}cm] at (0,.7) {{{escaped(title)}}};")
+                lines.append(fr"\node[anchor=west,font=\tiny] at (0,.25) {{original cell rows {top}--{bottom-1}, columns {left}--{right-1}; indices retained}};")
+                for index,w in enumerate(frame['words']):
+                    row,col=divmod(index,frame['columns'])
+                    if not top<=row<bottom or not left<=col<right:continue
+                    value=w['difference'] if w['difference'] is not None else w['value'];text='?' if value is None else f"{value:0{(frame['word_bits']+3)//4}x}"
+                    fill='orange!25' if w['active'] else 'white'
+                    lines.append(fr"\node[draw,fill={fill},minimum width={cell_width}cm,minimum height={cell_height}cm] at ({(col-left)*cell_width},{-(row-top)*cell_height}) {{{text}}};")
+                    lines.append(fr"\node[font=\tiny,anchor=south] at ({(col-left)*cell_width},{-(row-top)*cell_height+cell_height/2}) {{{index}}};")
+                panels.append('\n'.join(lines+[r'\end{tikzpicture}']))
+    return ('\n'+(r'\clearpage' if page_breaks else r'\par\medskip')+'\n').join(panels)

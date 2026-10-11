@@ -647,6 +647,12 @@ function tryPartialIoMatch(bandLines, col, totalWords) {
   // rendering every possible empty wide I/O hypothesis at those cells.
   if (bandLines[1][col * WORD_WIDTH + 2] !== '_') return null;
   const maxWords = totalWords - col;
+  const scalar = bandLines.map(l => l.substr(col * WORD_WIDTH, WORD_WIDTH));
+  const index = /^\s*([|S])\s*I([1-9]\d{0,5})\s*\|\s*$/.exec(scalar[2]);
+  if (index) {
+    const params = {...defaultParams('input'),source_index:index[2],secrecy:index[1]==='S'?'secret':'public'};
+    if (renderBlock('input',params).join('\n')===scalar.join('\n')) return {typeName:'input',params,words:1};
+  }
   for (let words = maxWords; words >= 1; words--) {
     const slice = bandLines.map((l) => l.substr(col * WORD_WIDTH, words * WORD_WIDTH));
     for (const kind of ['input', 'output', 'intermediate_output']) {

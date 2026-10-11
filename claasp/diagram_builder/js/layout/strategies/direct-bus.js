@@ -319,6 +319,8 @@ export function graphToGridDirectBus(targetOrder, { diagnostics } = {}) {
   }
   if (!preserveAssignmentPhases) outputTargets.forEach((target) => visit(target.node));
   inputs.sort(naturalNameOrder);
+  const sparseScalarInputs=inputs.every(n=>!n.wordGroup&&/^input\[\d+\]$/.test(n.name))
+    && (inputs.length===1 || inputs.some((n,i)=>n.name!==`input[${i+1}]`));
 
   // Dependency depth identifies independent calls that may share a row.
   // Scalar programs keep their existing topological discovery order.
@@ -396,6 +398,7 @@ export function graphToGridDirectBus(targetOrder, { diagnostics } = {}) {
     grid.placeBlock(row, col, 'input', {
       ...defaultParams('input'),
       secrecy: node.secret || node.groupSecret ? 'secret' : 'public',
+      source_index:sparseScalarInputs?node.name.slice(6,-1):'',
     });
     live.add(col);
     colOf.set(node, col);

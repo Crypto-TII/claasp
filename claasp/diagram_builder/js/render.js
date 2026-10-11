@@ -322,10 +322,15 @@ function renderIo(typeName, params, showId) {
   const topActive = (i) => type.kind !== 'input' && isActive(i);
   const bottomActive = (i) => type.kind !== 'output' && isActive(i);
   const leftChar = type.kind === 'input' && params.secrecy === 'secret' ? 'S' : '|';
+  const sourceIndex = type.kind === 'input' ? String(params.source_index || '') : '';
+  if (sourceIndex && (words !== 1 || !/^[1-9]\d{0,5}$/.test(sourceIndex))) {
+    throw new Error('An input source_index must be a positive scalar index fitting its visible glyph');
+  }
   return [
     pipeRow(width, words, topActive),
     borderRowWithConnectors(width, words, 'v', topActive),
-    showId ? plainBorderRowWithId(width, leftChar, id) : plainBorderRow(width, leftChar),
+    sourceIndex ? plainBorderRowWithId(width, leftChar, `I${sourceIndex}`)
+      : showId ? plainBorderRowWithId(width, leftChar, id) : plainBorderRow(width, leftChar),
     pipeRow(width, words, bottomActive),
     pipeRow(width, words, bottomActive),
   ];
