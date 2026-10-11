@@ -203,44 +203,29 @@ def state_view(ir, *, shape=None):
     return stages
 
 
-def _glyph_request(request, *, node="node", timeout=30):
-    """Invoke the bundled shared builder strategy with bounded execution."""
-    import pathlib
-    import subprocess
-    script = pathlib.Path(__file__).with_name("diagram_builder") / "tools" / "typed-glyph-cli.mjs"
-    try:
-        result = subprocess.run([node, str(script)], input=json.dumps(request), text=True,
-                                capture_output=True, timeout=timeout, check=True)
-    except FileNotFoundError as error:
-        raise RuntimeError("Glyph diagrams require Node.js on PATH (tested with Node 24)") from error
-    except subprocess.TimeoutExpired as error:
-        raise RuntimeError("Shared glyph synthesis exceeded its execution bound") from error
-    except subprocess.CalledProcessError as error:
-        raise ValueError("Invalid or unsupported glyph diagram: " + error.stderr[-2000:]) from error
-    return result.stdout
-
-
-def to_ascii(ir, *, node="node", timeout=30):
-    """Emit actual builder-importable glyphs; local annotations contain no edges."""
-    if not isinstance(ir, dict):
-        ir = from_cipher(ir)
+def to_ascii(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000):
+    """Generate native Python glyphs with locally typed boxes and visible wires."""
+    from claasp.diagram_glyphs import encode, decode
+    if not isinstance(ir, dict): ir=from_cipher(ir)
     validate(ir)
-    return _glyph_request({"action":"ascii", "ir":ir}, node=node, timeout=timeout)
+    text=encode(ir,strategy=strategy,max_cells=max_cells,max_calls=max_calls)
+    if validate(decode(text))!=ir: raise ValueError('Native glyph round trip changed semantics')
+    return text
 
 
-def from_ascii(text, *, node="node", timeout=30):
-    """Parse actual glyph wires, or explicitly framed legacy typed records."""
-    if text.startswith("+ CLAASP-DIAGRAMS 1 +"):
-        return from_records(text)
-    return validate(json.loads(_glyph_request({"action":"parse", "text":text}, node=node, timeout=timeout)))
+def from_ascii(text, *, max_text_bytes=64000000, max_grid_area=2000000):
+    """Recover native operands by tracing visible glyph ports, without Node."""
+    if text.startswith('+ CLAASP-DIAGRAMS 1 +'): return from_records(text)
+    from claasp.diagram_glyphs import decode
+    return validate(decode(text,max_text_bytes=max_text_bytes,max_grid_area=max_grid_area))
 
 
-def to_tikz(ir, *, node="node", timeout=30, **options):
-    """Render the same shared glyph layout; spacing, labels and wires selectable."""
-    if not isinstance(ir, dict):
-        ir = from_cipher(ir)
+def to_tikz(ir, **options):
+    """Render a vector diagram using the same native Python glyph grid."""
+    from claasp.diagram_glyphs import tikz
+    if not isinstance(ir, dict): ir=from_cipher(ir)
     validate(ir)
-    return _glyph_request({"action":"tikz", "ir":ir, "options":options}, node=node, timeout=timeout)
+    return tikz(ir,**options)
 
 def evaluate_state_values(cipher, inputs):
     """Native component values keyed by source identities; no cipher adapters."""

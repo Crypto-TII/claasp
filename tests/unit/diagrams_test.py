@@ -119,9 +119,83 @@ def test_native_role_annotations_survive_class_reimport():
     assert [i['role'] for i in from_cipher(rebuilt,roles={'control':'data'})['inputs']]==['unspecified','data']
 
 
-def test_inactive_leading_wide_glyph_lanes():
-    import pathlib,subprocess
-    import claasp.diagrams
-    script=pathlib.Path(claasp.diagrams.__file__).with_name('diagram_builder')/'tools'/'verify-leading-lanes.mjs'
-    result=subprocess.run(['node',str(script)],capture_output=True,text=True,timeout=30,check=True)
-    assert 'recovered from glyphs' in result.stdout
+def test_native_runtime_needs_no_external_process(monkeypatch):
+    import subprocess
+    def forbidden(*args,**kwargs): raise AssertionError('Diagram runtime created a subprocess')
+    monkeypatch.setattr(subprocess,'Popen',forbidden)
+    ir=from_cipher(circuit(),roles={'control':'key'})
+    assert from_ascii(to_ascii(ir))==ir
+    assert r'\begin{tikzpicture}' in to_tikz(ir)
+
+
+def test_compact_native_register_program_with_mixed_widths_and_constant_observers():
+    """Native boxes must reach the shared planner and survive visible parsing."""
+    c=Cipher('arbitrary_structure','permutation',['data','key'],[24,24],24)
+    widths=[4,8,4,8]
+    offsets=[0,4,12,16]
+    state=[('data',list(range(offset,offset+width))) for offset,width in zip(offsets,widths)]
+    for r in range(4):
+        c.add_round()
+        next_state=[]
+        for i,((source,positions),width,offset) in enumerate(zip(state,widths,offsets)):
+            constant=c.add_constant_component(width,(r+i)%2**width)
+            # Independent constant-only observation cones previously broke
+            # generic component ordering before the register fallback ran.
+            c.add_intermediate_output_component([constant.id],[list(range(width))],width,'probe')
+            rotate=c.add_rotate_component([source],[positions],width,-1-i)
+            xor=c.add_xor_component([rotate.id,'key'],[list(range(width)),list(reversed(range(offset,offset+width)))],width)
+            add=c.add_modadd_component([xor.id,constant.id],[list(range(width)),list(range(width))],width)
+            next_state.append((add.id,list(range(width))))
+        state=next_state
+        c.add_intermediate_output_component([x[0] for x in state],[x[1] for x in state],24,'round_output')
+    c.add_cipher_output_component([x[0] for x in state],[x[1] for x in state],24)
+    ir=from_cipher(c,roles={'data':'data','key':'key'})
+    from claasp.diagram_glyphs import build_grid
+    grid,report=build_grid(ir)
+    baseline,base=build_grid(ir,strategy='direct-bus')
+    assert report['pattern']=='live-register-program'
+    assert report['rows']*report['cols']+report['blocks']<base['rows']*base['cols']+base['blocks']
+    parsed=from_ascii(to_ascii(ir))
+    rebuilt=to_cipher(parsed)
+    for inputs in [[0,0],[0xffffff,0],[0xa51234,0xfedcba]]:
+        assert rebuilt.evaluate(inputs,intermediate_output=True)==c.evaluate(inputs,intermediate_output=True)
+
+
+def test_generic_parallel_unary_geometry_and_visible_binding_mutation():
+    from claasp.diagram_glyphs import build_grid, MARKER
+    import json
+    c=Cipher('unnamed_parallel','permutation',['a','b'],[4,4],8);c.add_round()
+    a=c.add_rotate_component(['a'],[list(range(4))],4,-1)
+    b=c.add_rotate_component(['b'],[list(range(4))],4,-1)
+    c.add_cipher_output_component([b.id,a.id],[list(range(4)),list(range(4))],8)
+    ir=from_cipher(c);grid,_=build_grid(ir)
+    rotation_rows=[r for (r,col),cell in grid.items() if cell.get('definition',{}).get('description')==['ROTATE',-1]]
+    assert len(rotation_rows)==2 and rotation_rows[0]==rotation_rows[1]
+    text=to_ascii(ir);assert '@21' in text
+    changed=text.replace('@21','   ',1)
+    assert from_ascii(changed)!=ir  # Visible binding, not metadata, changes operands.
+    glyph,footer=text.split(MARKER);manifest=json.loads(footer)
+    manifest['records'][0]['definition']['operands']=[]
+    with pytest.raises(ValueError,match='hidden dependency'):
+        from_ascii(glyph+MARKER+json.dumps(manifest))
+
+
+def test_native_work_bounds_and_long_iterative_trace():
+    ir=from_cipher(circuit())
+    with pytest.raises(ValueError,match='max_calls'):to_ascii(ir,max_calls=1)
+    with pytest.raises(ValueError,match='max_cells'):to_ascii(ir,max_cells=1)
+    text=to_ascii(ir)
+    with pytest.raises(ValueError,match='max_text_bytes'):from_ascii(text,max_text_bytes=16)
+    with pytest.raises(ValueError,match='max_grid_area'):from_ascii(text,max_grid_area=1)
+    # A deep one-lane DAG must not depend on Python's recursion limit.
+    ir={'schema':'claasp-diagrams/1','name':'deep_unnamed','cipher_type':'permutation',
+        'inputs':[{'id':'data','bits':8,'role':'data'}],'rounds':1,'output_bits':8,'nodes':[]}
+    source='data'
+    for i in range(2200):
+        identity=f'n{i}'
+        ir['nodes'].append({'id':identity,'type':'word_operation','bits':8,'input_bits':8,'round':0,
+            'description':['ROTATE',-1],'operands':[{'source':source,'positions':list(range(8))}]})
+        source=identity
+    ir['nodes'].append({'id':'end','type':'cipher_output','bits':8,'input_bits':8,'round':0,
+        'description':['cipher_output'],'operands':[{'source':source,'positions':list(range(8))}]})
+    assert from_ascii(to_ascii(ir))==ir
