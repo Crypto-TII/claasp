@@ -1,47 +1,67 @@
-# Generic typed diagrams (initial implementation)
+# Generic glyph diagrams and state progression
 
-`claasp.diagrams` imports native component DAGs into a validated, width-aware
-IR and reconstructs native `Cipher` objects. Ordered bit positions, constant
-lexemes, component descriptions and round indices are explicit. Layout is a
-separate dependency-layer mapping. No primitive names select a renderer.
+`claasp.diagrams` preserves explicit native widths, ordered bit links, operation
+parameters/tables/constants and rounds. No primitive name or manual fixture
+selects the layout. Roles default to `unspecified`; supply them explicitly.
 
 ```python
-from claasp.diagrams import from_cipher, to_ascii, from_ascii, to_cipher, to_tikz, state_view
+from claasp.diagrams import (from_cipher, to_ascii, from_ascii, to_cipher,
+                            to_tikz, evaluate_state_values, state_ascii, state_tikz)
 ir = from_cipher(cipher, roles={'plaintext': 'data', 'key': 'key'})
-restored = to_cipher(from_ascii(to_ascii(ir)))
-print(to_tikz(ir, layer_spacing=2, slot_spacing=3))
-print(state_view(ir))
+glyphs = to_ascii(ir)  # actual builder-importable ASCII glyphs by default
+restored = to_cipher(from_ascii(glyphs))
+tikz = to_tikz(ir, columnSpacing=2, rowSpacing=1,
+               wireStyle='orthogonal', roundedCorners=2, labels='operation')
+values = evaluate_state_values(cipher, inputs)
+print(state_ascii(ir, mode='round', word_bits=8, columns=8, values=values))
+print(state_tikz(ir, mode='declared', word_bits=8, columns=8, values=values))
 ```
 
-Roles default to `unspecified`; names are never used to guess roles. Native
-zero-length input links are omitted during import because they select no bits.
-All nonempty selections preserve their order. Unsupported executable native
-component types/operations raise `ValueError` rather than becoming free-text
-functions. Reconstruction supports the tested arithmetic, Boolean, rotation,
-shift, reverse, S-box, linear/mix-column, permutation and output components.
-FSR import/reconstruction is implemented but not validated by this first corpus.
+ASCII and TikZ use a bundled snapshot of the same JavaScript builder strategy;
+`diagram_builder/SOURCE-MANIFEST.json` records upstream file hashes. Generation
+and glyph parsing require Node.js on PATH (tested with Node 24). Each subprocess
+has a 30-second default bound, configurable with `timeout`; `node` can select an
+explicit executable. Executing a reconstructed native Cipher requires Sage and
+CLAASP, but no Node subprocess. The retained `to_records`/`from_records` dialect
+is an explicit diagnostic interchange format; `from_ascii` also accepts it.
+`to_layered_tikz` retains the earlier separate dependency-layer visualization.
 
-ASCII v1 is an explicit framed record dialect, not the legacy builder glyph
-grid. Its inputs and individual operation/edge records are visible JSON fields;
-there is no embedded original graph to bypass text parsing. The builder-side
-`typedDiagram.js` parser validates actual exported files, but importing these
-records into the legacy graphical editor remains unfinished. Do not claim
-legacy glyph-grid compatibility for this dialect.
+Glyph footers associate explicit semantic definitions with visible box anchors.
+They contain no operand edges: actual wires and visible local operand bindings
+supply every dependency. Lossless arbitrary placement inversion is not promised
+from pseudocode alone. Identifier renaming does not select a different geometry.
+Selection/join helpers preserve ordered MSB-first fragments and mixed widths.
 
-TikZ draws generic DAG layers and ordered bit-link labels with configurable
-spacing. The mixed-selection smoke document compiled successfully with the
-desktop LaTeX compiler; the broad corpus is not assessed for readability. Long selections
-can produce unwieldy labels. State views expose native intermediate/output
-selections. Geometry is `ambiguous-flat-fallback` unless an explicit shape covers
-all bits. No cipher-specific state geometry is inferred. Numeric state evaluation
-is supplied by native CLAASP, not this view metadata.
+Supported validated executable components: fixed rotation/shift, reverse/NOT,
+XOR/AND/OR, modular arithmetic, constants, S-boxes, binary linear layers,
+mix columns, permutations and explicit intermediate/final outputs. FSR and
+variable-amount operations currently fail explicitly; their contracts need
+additional validation rather than a silent rendering/execution guess. Tables
+and arithmetic widths/arity are validated before download/reconstruction.
 
-Conformance scripts and saved corpus are in the sibling ASCII builder repository
-under `review/evidence/2026-10-11-builder-milestone3/`. They cover fourteen native
-primitive configurations, independent scalar-operation and mixed-width bit-link
-oracles, native intermediate outputs, identifier-renaming layout invariance,
-malformed selection rejection, and a full-round Speck known-answer vector.
-Native-vs-reconstructed comparisons validate serialization, not implementation
-independence; the separate integer oracles and known-answer check serve that role.
+State rendering supports declared outputs or generic live-value cuts by round
+or dependency layer. A live-value cut is not claimed to be an algorithm's state
+matrix. With no explicit columns it reports `ambiguous-flat-fallback`.
+`word_bits`, `columns` and `order='source'|'reverse'` specify generic shape/order;
+word width must divide the selected bits. Unknown values are shown as `?`.
+Provide `comparison` alongside `values` to annotate XOR differences; nonzero
+words are marked `*` in ASCII and shaded in TikZ. Values come from native
+component traces, never from a primitive-specific adapter.
 
-No paper, PR, CI run or novelty claim is implied by this initial module.
+The mixed-selection shared-layout/state TikZ smoke document compiles. Broad
+TikZ readability and route geometry still require review; large circuits can be
+very tall. Fifteen typed configurations recover complete native IR; fourteen
+native configurations pass three serialization comparisons each. Most use two
+rounds. Full-round Speck, Simon, PRESENT and AES known-answer vectors and native
+intermediate traces pass through actual glyph text. These shared-evaluator
+comparisons do not establish independent full-cipher correctness.
+
+Run `tests/unit/diagrams_test.py` and `docs/diagrams/conformance.py` in the Sage
+runtime. Additional frozen builder evidence is in the sibling repository's
+`review/evidence/2026-10-11-builder-milestone5/`. The paper, graded visual metric,
+held-out evaluation and complete interactive editing workflow remain unfinished;
+no publication or novelty claim is implied by this implementation checkpoint.
+
+Bundled ELK retains its EPL-2.0 OR GPL-3.0-or-later notices. Its source is bundled
+because the shared compiler also has a legacy layout fallback; the native glyph
+bridge uses the generic direct/conservative bus strategy.
