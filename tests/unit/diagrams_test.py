@@ -237,3 +237,71 @@ def test_record_import_and_rectangular_export_bounds_precede_render(monkeypatch)
     monkeypatch.setattr(glyphs,'render_grid',forbidden)
     with pytest.raises(ValueError,match='max_grid_area'):to_ascii(ir,max_grid_area=1)
     with pytest.raises(ValueError,match='max_text_bytes'):to_ascii(ir,max_text_bytes=1)
+
+
+def test_generic_local_port_selections_preserve_visible_sources_and_fragments():
+    import json
+    from claasp.diagram_glyphs import MARKER
+    c=Cipher('no_template','permutation',['wide','small'],[8,4],8);c.add_round()
+    x=c.add_modsub_component(['wide','small'],[[7,0,7,1],[3,2,1,0]],4)
+    c.add_intermediate_output_component([x.id],[list(range(4))],4,'tap')
+    c.add_cipher_output_component([x.id,x.id],[[3,0,2,1],[0,1,2,3]],8)
+    ir=from_cipher(c,roles={'small':'key'});text=to_ascii(ir,strategy='semantic-ports')
+    assert from_ascii(text)==ir
+    rebuilt=to_cipher(from_ascii(text))
+    for d,k in [(0,0),(255,15),(0xa5,7)]:
+        assert rebuilt.evaluate([d,k],intermediate_output=True)==c.evaluate([d,k],intermediate_output=True)
+    manifest=json.loads(text.split(MARKER)[1]);definitions=[r['definition'] for r in manifest['records']]
+    assert not any(d['kind']=='selection' for d in definitions)
+    assert any('operand_positions' in d for d in definitions)
+    assert all('operands' not in d for d in definitions)
+    for d in definitions:
+        if 'operand_positions' in d:d['operand_positions'][0][0]=10**9;break
+    with pytest.raises(ValueError,match='local operand positions'):
+        from_ascii(text.split(MARKER)[0]+MARKER+json.dumps(manifest))
+
+
+def test_unobserved_constant_cone_both_layout_variants():
+    for strategy in ['semantic-auto','semantic-ports','direct-bus']:
+        c=Cipher('constant_only','permutation',['unused'],[4],4);c.add_round()
+        a=c.add_constant_component(4,9);b=c.add_constant_component(4,3)
+        x=c.add_modsub_component([b.id,a.id],[list(range(4)),list(range(4))],4)
+        c.add_cipher_output_component([x.id],[list(range(4))],4)
+        ir=from_cipher(c);assert from_ascii(to_ascii(ir,strategy=strategy))==ir
+
+
+def test_parallel_layers_use_visible_local_masks_and_independent_arithmetic():
+    import json
+    from claasp.diagram_glyphs import MARKER
+    c=Cipher('arbitrary_layers','permutation',['data'],[8],8);c.add_round()
+    first=[c.add_rotate_component(['data'],[list(range(i,i+4))],4,-1) for i in (0,4)]
+    second=[c.add_not_component([n.id],[list(range(4))],4) for n in first]
+    c.add_cipher_output_component([n.id for n in reversed(second)],[list(range(4))]*2,8)
+    ir=from_cipher(c);text=to_ascii(ir,strategy='semantic-parallel')
+    glyph,footer=text.split(MARKER);manifest=json.loads(footer)
+    groups=[r['definition'] for r in manifest['records'] if r['definition']['kind']=='parallel']
+    assert len(groups)==2 and all(len(g['members'])==2 for g in groups)
+    parsed=from_ascii(text);assert parsed==ir
+    rebuilt=to_cipher(parsed)
+    def rotate(x):return ((x<<1)|(x>>3))&15
+    for x in range(256):
+        expected=((rotate(x&15)^15)<<4)|(rotate(x>>4)^15)
+        assert rebuilt.evaluate([x])==expected
+    renamed=copy.deepcopy(ir)
+    names={n['id']:'anonymous_'+str(i) for i,n in enumerate(ir['inputs']+ir['nodes'])}
+    for n in renamed['inputs']+renamed['nodes']:
+        n['id']=names[n['id']]
+        for edge in n.get('operands',[]):edge['source']=names[edge['source']]
+    assert from_ascii(to_ascii(renamed,strategy='semantic-parallel'))==renamed
+    for mutation,match in [(lambda g:g['members'][0].update(operands=[]),'Hidden dependency'),
+                           (lambda g:g['members'][0].update(bits=10**9),'member width'),
+                           (lambda g:g['members'][0]['operand_positions'][0].__setitem__(0,10**9),'local operand positions')]:
+        broken=copy.deepcopy(manifest)
+        group=next(r['definition'] for r in broken['records'] if r['definition']['kind']=='parallel')
+        mutation(group)
+        with pytest.raises(ValueError,match=match):from_ascii(glyph+MARKER+json.dumps(broken))
+    # Removing visible binding must affect parsing despite an unchanged footer.
+    changed=text.replace('@21','   ',1)
+    if changed!=text:
+        try:assert from_ascii(changed)!=ir
+        except ValueError:pass

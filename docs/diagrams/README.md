@@ -17,7 +17,7 @@ figure = to_tikz(ir, rowsPerPanel=16, columnsPerPanel=6, columnSpacing=3)
 
 Native records preserve widths, ordered bit fragments, constants, complete
 operation parameters and round membership. Each glyph annotation defines one
-local input or operation. It contains no original dependency edges. Parsing
+local input, operation or independent parallel group. It contains no original dependency edges. Parsing
 traces actual ports, crossings, forks and visible operand bindings. Renaming
 identifiers does not select a different geometry; primitive names and manual
 reference drawings never participate in placement.
@@ -28,6 +28,19 @@ Constants wait for a ready consumer. Rigid horizontal segments retain their
 per-column order during track compaction. `strategy='direct-bus'` provides a
 baseline with fresh result lanes. Native generation accepts its output only
 after an actual exported-text round trip recovers the complete IR.
+
+`semantic-auto` compares four generic candidates by rectangular area plus
+occupied cells: the legacy register schedule, local input selections,
+independent parallel groups, and round-aware scheduling. It never consults a
+primitive name or example. Explicit strategies `semantic-legacy`,
+`semantic-ports`, `semantic-parallel`, and `semantic-round` expose these
+candidates for reproducible comparisons. A parallel group contains adjacent
+independent operations with equal type, width, parameters and round, drawing
+from the same visible incoming values. It preserves each operation identity
+and ordinal; observations and dependencies end a group. Local operand masks
+index the bit stream traced from visible wires, including repeated and ordered
+bits. Neither masks nor group members contain hidden source edges. Removing or
+changing the visible wiring therefore changes parsing or fails validation.
 
 The separate web editor uses JavaScript. It shares the typed interchange and
 5-by-11 glyph specification, not a runtime dependency. Cross-language fixtures
@@ -54,7 +67,8 @@ clock guarantees. Wider native graphs may require a revised representation.
 
 TikZ accepts `rowsPerPanel`, `columnsPerPanel`, `maxPanels` (256), half-open
 `rowRange`/`columnRange` crops, spacing and `pageBreaks=False`. Long definitions
-use precise keyed legends. Panel count is separate from PDF page count. Insert
+use precise keyed legends. Native operation labels expose widths and parameters,
+parallel labels expose member counts, and wires attach to box boundaries. Panel count is separate from PDF page count. Insert
 the fragment directly in a document body with `\usepackage{tikz}`.
 
 State views are native Python too. Declared outputs, round boundaries and

@@ -67,8 +67,8 @@ def _art(cell):
             ''.join(middle),''.join(bottom),pipe('bottom' in ports)]
 
 
-def _graph(ir):
-    calls=[]; values={}; inputs=[]; serial=0
+def _graph(ir, *, port_selections=False, parallel=False):
+    calls=[]; values={}; source_offsets={}; inputs=[]; serial=0
     def call(prefix,args,definition):
         nonlocal serial
         alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';n=serial; digits=''
@@ -78,28 +78,56 @@ def _graph(ir):
         index=len(calls);calls.append({'args':args,'definition':dict(copy.deepcopy(definition),tag=tag),'tag':tag,'bits':definition['bits']})
         return ('call',index)
     def width(value):return ir['inputs'][value[1]]['bits'] if value[0]=='input' else calls[value[1]]['bits']
+    joined={}
     def join(parts):
         if len(parts)==1:return parts[0]
         middle=(len(parts)+1)//2;left=join(parts[:middle]);right=join(parts[middle:])
-        return call('JN',[left,right],{'kind':'join','bits':width(left)+width(right)})
+        key=(left,right)
+        if port_selections and key in joined:return joined[key]
+        result=call('JN',[left,right],{'kind':'join','bits':width(left)+width(right)})
+        if port_selections:joined[key]=result
+        return result
     for index,item in enumerate(ir['inputs']):
         v=('input',index);inputs.append(v);values[item['id']]=v
-    selections={}; targets=[]
-    for ordinal,node in enumerate(ir['nodes']):
-        args=[]
-        for edge in node['operands']:
-            value=values[edge['source']];positions=edge['positions']
-            if positions!=list(range(width(value))):
-                key=(value,tuple(positions))
-                if key not in selections:selections[key]=call('BS',[value],{'kind':'selection','bits':len(positions),'positions':positions})
-                value=selections[key]
-            args.append(value)
+    selections={}; targets=[];cursor=0
+    def signature(node):
+        if node['type'] in ('constant','intermediate_output','cipher_output') or any(edge['source'] not in values for edge in node['operands']):return None
+        return (node['type'],node['bits'],node['input_bits'],node['round'],json.dumps(node['description']),tuple(dict.fromkeys(values[e['source']] for e in node['operands'])))
+    while cursor<len(ir['nodes']):
+        node=ir['nodes'][cursor];members=[(cursor,node)];key=signature(node) if parallel else None;cursor+=1
+        if key is not None:
+            while cursor<len(ir['nodes']) and signature(ir['nodes'][cursor])==key:
+                members.append((cursor,ir['nodes'][cursor]));cursor+=1
+        args=[];offsets={};offset=0;definitions=[]
+        for ordinal,node in members:
+            local_positions=[]
+            for edge in node['operands']:
+                value=values[edge['source']]
+                if port_selections:
+                    if value not in offsets:
+                        offsets[value]=offset;offset+=width(value);args.append(value)
+                    local_positions.append([offsets[value]+source_offsets.get(edge['source'],0)+p for p in edge['positions']])
+                else:
+                    positions=edge['positions']
+                    if positions!=list(range(width(value))):
+                        key=(value,tuple(positions))
+                        if key not in selections:selections[key]=call('BS',[value],{'kind':'selection','bits':len(positions),'positions':positions})
+                        value=selections[key]
+                    args.append(value)
+            definition={k:copy.deepcopy(v) for k,v in node.items() if k!='operands'}
+            definition['ordinal']=ordinal
+            if port_selections and local_positions:definition['operand_positions']=local_positions
+            definitions.append(definition)
         if len(args)>2:
             middle=(len(args)+1)//2;args=[join(args[:middle]),join(args[middle:])]
         prefix=re.sub('[^A-Za-z]','',node['description'][0] if node['type']=='word_operation' else node['type'])[:2].upper().ljust(2,'N')
-        definition={k:copy.deepcopy(v) for k,v in node.items() if k!='operands'}
-        value=call(prefix,args,dict(definition,kind='native',ordinal=ordinal));values[node['id']]=value
-        if node['type'] in ('intermediate_output','cipher_output'):targets.append(value)
+        if len(definitions)>1:
+            value=call('G'+prefix[0],args,{'kind':'parallel','bits':sum(d['bits'] for d in definitions),'members':definitions})
+        else:value=call(prefix,args,dict(definitions[0],kind='native'))
+        output_offset=0
+        for _,node in members:
+            values[node['id']]=value;source_offsets[node['id']]=output_offset;output_offset+=node['bits']
+            if node['type'] in ('intermediate_output','cipher_output'):targets.append(value)
     # All native components and declared inputs stay observable, including
     # otherwise unreachable values. No original graph is embedded in metadata.
     consumed={v for c in calls for v in c['args']}
@@ -108,13 +136,23 @@ def _graph(ir):
     return inputs,calls,targets
 
 
-def build_grid(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000):
-    if strategy not in ('semantic-auto','direct-bus'):raise ValueError('Unknown native layout strategy')
+def _build_grid(ir, *, strategy='semantic-legacy', max_cells=1000000, max_calls=20000):
+    if strategy not in ('semantic-legacy','direct-bus','semantic-ports','semantic-parallel','semantic-round'):raise ValueError('Unknown native layout strategy')
     if type(max_cells) is not int or max_cells<=0 or type(max_calls) is not int or max_calls<=0:raise ValueError('Invalid native work bounds')
     if len(ir['nodes'])>max_calls:raise ValueError('Native component count exceeds max_calls')
     if sum(i['bits'] for i in ir['inputs'])+sum(n['bits']+sum(len(e['positions']) for e in n['operands']) for n in ir['nodes'])>2000000:raise ValueError('Native explicit bit expansion exceeds bound')
-    inputs,calls,targets=_graph(ir)
+    inputs,calls,targets=_graph(ir,port_selections=strategy in ('semantic-ports','semantic-parallel','semantic-round'),parallel=strategy in ('semantic-parallel','semantic-round'))
     if len(calls)>max_calls:raise ValueError('Native operation expansion exceeds max_calls')
+    consumers={}
+    for index,operation in enumerate(calls):
+        for value in set(operation['args']):consumers.setdefault(value,[]).append(index)
+    scheduling_rounds={}
+    for index in reversed(range(len(calls))):
+        definition=calls[index]['definition']
+        if definition['kind']=='native':rank=definition['round']
+        elif definition['kind']=='parallel':rank=min(member['round'] for member in definition['members'])
+        else:rank=min((scheduling_rounds[j] for j in consumers.get(('call',index),[])),default=ir['rounds'])
+        scheduling_rounds[index]=rank
     uses=Counter(v for c in calls for v in c['args']);uses.update(targets)
     slots={v:i for i,v in enumerate(inputs)};active=set(slots.values());cells={};row=0;maximum=len(inputs)-1
     def place(col,kind,ports,**data):
@@ -127,7 +165,7 @@ def build_grid(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=200
     def free(near=0):
         nonlocal maximum
         candidates=[c for c in range(maximum+2) if c not in active]
-        col=min(candidates,key=lambda c:(abs(c-near),c)) if strategy=='semantic-auto' else maximum+1
+        col=min(candidates,key=lambda c:(abs(c-near),c)) if strategy!='direct-bus' else maximum+1
         maximum=max(maximum,col);return col
     def horizontal(source,target,keep):
         side='right' if source<target else 'left'
@@ -146,17 +184,17 @@ def build_grid(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=200
     while pending:
         ready=[i for i in sorted(pending) if all(v in slots for v in calls[i]['args'])]
         # Delay constants until another operand of a consumer is available.
-        usable=[i for i in ready if calls[i]['args'] or ('call',i) in observers or any(('call',i) in c['args'] and all(v==('call',i) or v in slots for v in c['args']) for j,c in enumerate(calls) if j in pending)]
+        usable=[i for i in ready if calls[i]['args'] or ('call',i) in observers or any(j in pending and all(v==('call',i) or v in slots for v in calls[j]['args']) for j in consumers.get(('call',i),[]))]
         if not usable:
             # Two ready constants may each await the other's consumer input.
             # Break only that scheduling stall with the first ready source.
             if ready:usable=[ready[0]]
             else:raise ValueError('No progress in native live-register scheduling')
-        i=usable[0];call=calls[i];args=call['args'];old=[slots[v] for v in args]
+        i=min(usable,key=lambda index:((scheduling_rounds[index] if strategy=='semantic-round' else 0),calls[index]['definition']['kind']!='join',index)) if strategy in ('semantic-ports','semantic-parallel','semantic-round') else usable[0];call=calls[i];args=call['args'];old=[slots[v] for v in args]
         replacement=0;copied=False
         if not args:target=free()
-        elif strategy=='semantic-auto' and uses[args[0]]==1:target=old[0]
-        elif len(args)==2 and strategy=='semantic-auto' and uses[args[1]]==1 and args[0]!=args[1]:replacement=1;target=old[1]
+        elif strategy!='direct-bus' and uses[args[0]]==1:target=old[0]
+        elif len(args)==2 and strategy!='direct-bus' and uses[args[1]]==1 and args[0]!=args[1]:replacement=1;target=old[1]
         else:
             target=free(old[0]);copied=True
             keep_first=uses[args[0]]>1
@@ -192,8 +230,22 @@ def build_grid(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=200
         if value in observers and value in slots:
             target=slots.pop(value);place(target,'output',{'top':'in'});fill({target});row+=1;active.discard(target)
     if active:raise ValueError('Uncaptured native values remain live')
-    if strategy=='semantic-auto':cells=compact_tracks(cells,max_cells=max_cells)
+    if strategy!='direct-bus':cells=compact_tracks(cells,max_cells=max_cells)
     return cells,{'rows':max(r for r,c in cells)+1,'cols':max(c for r,c in cells)+1,'blocks':len(cells),'pattern':'live-register-program','strategy':strategy}
+
+
+def build_grid(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000):
+    if strategy!='semantic-auto':return _build_grid(ir,strategy=strategy,max_cells=max_cells,max_calls=max_calls)
+    candidates=[];errors=[]
+    for variant in ('semantic-legacy','semantic-ports','semantic-parallel','semantic-round'):
+        try:
+            cells,report=_build_grid(ir,strategy=variant,max_cells=max_cells,max_calls=max_calls)
+            cost=(report['rows']*report['cols']+report['blocks'],report['rows']*report['cols'],report['blocks'])
+            candidates.append((cost,len(candidates),cells,report))
+        except ValueError as error:errors.append(str(error))
+    if not candidates:raise ValueError('; '.join(errors))
+    _,_,cells,report=min(candidates,key=lambda item:item[:2]);report=dict(report,selectedVariant=report['strategy'],strategy='semantic-auto')
+    return cells,report
 
 
 def compact_tracks(cells, *, max_cells=1000000):
@@ -271,7 +323,7 @@ def decode(text, *, max_text_bytes=64000000, max_grid_area=2000000):
         key=(record['row'],record['col']);d=record['definition']
         if any(type(x) is not int or x<0 for x in key):raise ValueError('Invalid glyph anchor')
         if type(d.get('bits')) is not int or not 0<d['bits']<=2000000:raise ValueError('Local bit width exceeds work bound')
-        fields={'input':{'kind','index','id','bits','role'},'native':{'kind','ordinal','id','type','bits','input_bits','round','description','tag'},'selection':{'kind','bits','positions','tag'},'join':{'kind','bits','tag'}}
+        fields={'input':{'kind','index','id','bits','role'},'native':{'kind','ordinal','id','type','bits','input_bits','round','description','tag','operand_positions'},'parallel':{'kind','bits','tag','members'},'selection':{'kind','bits','positions','tag'},'join':{'kind','bits','tag'}}
         if key in records or set(d)-fields.get(d.get('kind'),set()):raise ValueError('Duplicate or hidden dependency record')
         records[key]=d
     lines=drawing.split('\n');rows=(len(lines)+4)//5;cols=(max(map(len,lines),default=0)+10)//11;cells={};templates=_wire_templates();choices={}
@@ -285,7 +337,7 @@ def decode(text, *, max_text_bytes=64000000, max_grid_area=2000000):
             if d and d.get('kind')=='input':
                 cell={'kind':'input','ports':{'bottom':'out'},'index':d['index'],'secret':d['role']=='key','definition':d,'unindexed':art[2][2:9]=='_______'}
             elif d:
-                if d.get('kind') not in ('native','selection','join'):raise ValueError('Unknown local glyph definition')
+                if d.get('kind') not in ('native','parallel','selection','join'):raise ValueError('Unknown local glyph definition')
                 if art[2][2:9].strip()!=d.get('tag'):raise ValueError('Operation alias disagrees with visible box')
                 ports={'bottom':'out'}
                 if art[0][5]=='v':ports['top']='in'
@@ -367,10 +419,31 @@ def decode(text, *, max_text_bytes=64000000, max_grid_area=2000000):
                 stream=[e for a in args for e in a]
                 if sum(len(e['positions']) for e in stream)!=d['bits']:raise ValueError('Join width mismatch')
             else:
-                node={k:copy.deepcopy(d[k]) for k in ('id','type','bits','input_bits','round','description')};node['operands']=[e for a in args for e in a]
-                ordinal=d.get('ordinal')
-                if type(ordinal) is not int or ordinal<0 or ordinal in native:raise ValueError('Invalid or duplicate native ordinal')
-                native[ordinal]=node;stream=[{'source':d['id'],'positions':list(range(d['bits']))}]
+                definitions=d['members'] if d['kind']=='parallel' else [d]
+                if not isinstance(definitions,list) or not definitions or len(definitions)>20000:raise ValueError('Invalid parallel members')
+                if any(not isinstance(item,dict) or type(item.get('bits')) is not int or not 0<item['bits']<=d['bits'] for item in definitions):raise ValueError('Invalid parallel member width')
+                if sum(item['bits'] for item in definitions)!=d['bits']:raise ValueError('Parallel output width mismatch')
+                flat=[(e['source'],bit) for incoming in args for e in incoming for bit in e['positions']]
+                stream=[]
+                for definition in definitions:
+                    allowed={'id','type','bits','input_bits','round','description','ordinal','operand_positions'}
+                    if d['kind']=='parallel' and set(definition)-allowed:raise ValueError('Hidden dependency in parallel operation')
+                    node={k:copy.deepcopy(definition[k]) for k in ('id','type','bits','input_bits','round','description')};node['operands']=[e for a in args for e in a]
+                    if 'operand_positions' in definition:
+                        maps=definition['operand_positions']
+                        if not isinstance(maps,list):raise ValueError('Invalid local operand positions')
+                        operands=[]
+                        for positions in maps:
+                            if not isinstance(positions,list) or not positions or any(type(p) is not int or p<0 or p>=len(flat) for p in positions):raise ValueError('Invalid local operand positions')
+                            selected=[flat[p] for p in positions]
+                            if len({source for source,bit in selected})!=1:raise ValueError('One native operand must select a single visible value')
+                            operands.append({'source':selected[0][0],'positions':[bit for source,bit in selected]})
+                        if sum(len(e['positions']) for e in operands)!=definition['input_bits']:raise ValueError('Local operand positions disagree with input width')
+                        node['operands']=operands
+                    ordinal=definition.get('ordinal')
+                    if type(ordinal) is not int or ordinal<0 or ordinal in native:raise ValueError('Invalid or duplicate native ordinal')
+                    native[ordinal]=node;stream.append({'source':definition['id'],'positions':list(range(definition['bits']))})
+                if sum(len(e['positions']) for e in stream)!=d['bits']:raise ValueError('Parallel output width mismatch')
         else:stream=args[0]
         memo[token]=stream
         for following in followers.get(token,[]):
@@ -387,7 +460,7 @@ def decode(text, *, max_text_bytes=64000000, max_grid_area=2000000):
 
 
 def tikz(ir, **options):
-    cells,dimensions=build_grid(ir)
+    cells,dimensions=build_grid(ir,strategy=options.get('strategy','semantic-auto'))
     xs=options.get('columnSpacing',3);ys=options.get('rowSpacing',1)
     if not isinstance(xs,(int,float)) or xs<=0 or not isinstance(ys,(int,float)) or ys<=0:raise ValueError('Invalid TikZ spacing')
     nr=options.get('rowsPerPanel',16);nc=options.get('columnsPerPanel',6);maximum=options.get('maxPanels',256)
@@ -407,28 +480,48 @@ def tikz(ir, **options):
     if len(groups)>maximum:raise ValueError(f'TikZ needs {len(groups)} panels; crop or increase maxPanels')
     panels=[]
     for (pr,pc),items in sorted(groups.items()):
-        rt=top+pr*nr;cl=left+pc*nc;lines=[r'\begin{tikzpicture}[>=stealth]'];legend=[]
+        rt=top+pr*nr;cl=left+pc*nc;lines=[r'\begin{tikzpicture}[>=stealth]'];legend=[];drawings=[]
         for r,c,cell in items:
             x=(c-cl)*xs;y=-(r-rt)*ys;key=f'D{r}:{c}';ports=cell['ports'];kind=cell['kind']
             if kind in ('input','box','output','tap'):
-                label=cell.get('tag','key' if cell.get('secret') else kind)
+                definition=cell.get('definition',{})
+                if kind=='input':label=('key' if cell.get('secret') else 'input')+'/'+str(definition.get('bits','?'))
+                elif definition.get('kind')=='parallel':
+                    first=definition['members'][0]
+                    operation=first['description'][0] if first['type']=='word_operation' else first['type'].upper()
+                    label=str(operation)+'/'+str(first['bits'])+' x'+str(len(definition['members']))
+                elif definition.get('kind')=='native':
+                    description=definition.get('description',[])
+                    operation=description[0] if definition.get('type')=='word_operation' else {'cipher_output':'OUT','intermediate_output':'OBSERVE','constant':'CONST'}.get(definition.get('type'),definition.get('type',''))
+                    label=str(operation)+'/'+str(definition.get('bits','?'))
+                    if operation in ('ROTATE','SHIFT'):label+='('+str(description[1])+')'
+                elif definition.get('kind') in ('join','selection'):label={'join':'PACK','selection':'SELECT'}[definition['kind']]+'/'+str(definition['bits'])
+                else:label=kind
                 if cell.get('reverse'):label+=r'\\@21'
                 if 'definition' in cell:label+=r'\\'+key;legend.append((key,cell['definition']))
-                lines.append(fr'\node[draw,align=center,minimum width=12mm,minimum height=4mm,font=\scriptsize] at ({x},{y}) {{{escape(label).replace(escape(chr(92)*2),chr(92)*2)}}};')
+                lines.append(fr'\node[draw,align=center,minimum width=12mm,minimum height=4mm,font=\scriptsize] (N{r}x{c}) at ({x},{y}) {{{escape(label).replace(escape(chr(92)*2),chr(92)*2)}}};')
             if kind=='box':
                 ordered=[side for side in SIDES if ports.get(side)=='in']
                 if cell.get('reverse'):ordered.reverse()
                 for number,side in enumerate(ordered,1):
-                    dr,dc=DELTA[side];px=x+dc*.27*xs;py=y-dr*.27*ys
-                    anchor={'left':'east','right':'west','top':'south','bottom':'north'}[side]
-                    lines.append(fr'\node[font=\scriptsize,anchor={anchor}] at ({px},{py}) {{{number}}};')
+                    anchor={'left':'south east','right':'south west','top':'south east','bottom':'north west'}[side]
+                    port={'left':'west','right':'east','top':'north','bottom':'south'}[side]
+                    lines.append(fr'\node[font=\scriptsize,inner sep=2pt,anchor={anchor}] at (N{r}x{c}.{port}) {{{number}}};')
             # A crossing has distinct horizontal/vertical routes; no junction
             # dot is drawn. Arrow endpoints retain each port's direction.
             for side,direction in ports.items():
                 if direction!='out':continue
                 dr,dc=DELTA[side];nx=x+dc*xs;ny=y-dr*ys
-                lines.append(fr'\draw[->] ({x},{y}) -- ({nx},{ny});')
+                port={'left':'west','right':'east','top':'north','bottom':'south'}
+                source=f'(N{r}x{c}.{port[side]})' if kind in ('input','box','output','tap') else f'({x},{y})'
+                neighbor=cells.get((r+dr,c+dc),{})
+                inside=rt<=r+dr<min(rt+nr,bottom) and cl<=c+dc<min(cl+nc,right)
+                target=f'(N{r+dr}x{c+dc}.{port[OPPOSITE[side]]})' if inside and neighbor.get('kind') in ('input','box','output','tap') else f'({nx},{ny})'
+                drawings.append(fr'\draw[->] {source} -- {target};')
+        lines.extend(drawings)
         lines.append(r'\end{tikzpicture}')
+        if legend:lines.append(r'\begingroup\raggedright')
         for key,d in legend:lines.append(fr'\par\scriptsize\textbf{{{escape(key)}}}: {wrapped(d)}')
+        if legend:lines.append(r'\par\endgroup')
         panels.append('\n'.join(lines))
     return ('\n'+r'\clearpage'+'\n' if options.get('pageBreaks',True) else '\n'+r'\par\medskip'+'\n').join(panels)
