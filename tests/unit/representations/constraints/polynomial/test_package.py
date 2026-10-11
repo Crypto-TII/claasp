@@ -1,7 +1,6 @@
 import pytest
 
-from claasp import ArrayType, Primitive, ScalarEvaluator
-from claasp.domains import Bit, PrimeField
+from claasp import Primitive, ScalarEvaluator, UnitArrayType
 from claasp.primitives import MiMC, Poseidon
 from claasp.representations.constraints.polynomial import (
     Monomial,
@@ -9,6 +8,7 @@ from claasp.representations.constraints.polynomial import (
     PowerLoweringPolicy,
     PrimeFieldPolynomialModel,
 )
+from claasp.unit_types import Bit, PrimeField
 
 
 def _assignment_from_evaluation(result):
@@ -63,7 +63,7 @@ def test_poseidon_execution_satisfies_lowered_equations():
 
 
 def test_prime_field_model_rejects_bit_graph():
-    primitive = Primitive("bits", {"state": ArrayType(Bit(), (2,))})
+    primitive = Primitive("bits", {"state": UnitArrayType(Bit(), (2,))})
 
     with pytest.raises(ValueError, match="homogeneous prime field"):
         PrimeFieldPolynomialModel(primitive)

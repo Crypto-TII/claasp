@@ -258,7 +258,7 @@ class _SBoxProvider:
 class _ModularAddProvider:
     def __init__(self, component: ModularAdd, semantics: SemanticType) -> None:
         self.semantic_type = semantics
-        width = component.output_type.domain.width
+        width = component.output_type.unit_type.width
         self.transition_semantics = (
             ModularAddTransitionSemantics(width)
             if semantics == XOR_DIFFERENTIAL
@@ -279,7 +279,7 @@ class _ModularAddProvider:
 class _BitwiseAndProvider(_ModularAddProvider):
     def __init__(self, component, semantics):
         self.semantic_type = semantics
-        self.transition_semantics = BitwiseAndSemantics(component.output_type.domain.width)
+        self.transition_semantics = BitwiseAndSemantics(component.output_type.unit_type.width)
 
     def transition(self, input_patterns, output_pattern):
         if len(input_patterns) != 2:

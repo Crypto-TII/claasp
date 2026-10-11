@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from claasp.components.word._validation import require_word_inputs
-from claasp.graph import Component, PortLike
+from claasp.graph import Component, UnitArrayLike
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -20,7 +20,7 @@ class Shift(Component):
 
     def __init__(
         self,
-        component_input: PortLike,
+        component_input: UnitArrayLike,
         amount: int,
         direction: str,
         component_id: str | None = None,

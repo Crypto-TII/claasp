@@ -37,17 +37,17 @@ from claasp.components import (
     sigma,
     xoodoo_theta,
 )
-from claasp.domains import BinaryExtensionField, Bit
 from claasp.encoding import bits_from_int
-from claasp.graph.array_type import ArrayType
 from claasp.graph.metadata import (
     LEGACY_KIND_NAMES,
     InputVisibility,
     PrimitiveInput,
     infer_primitive_kind,
 )
-from claasp.graph.port import PortLike, Selection, as_selection
 from claasp.graph.primitive import Primitive
+from claasp.graph.unit_array import Selection, UnitArrayLike, as_selection
+from claasp.graph.unit_array_type import UnitArrayType
+from claasp.unit_types import BinaryExtensionField, Bit
 from claasp.utils.integers import coerce_exact_int as coerce_exact_int
 
 # Stable boundary-role and taxonomy values used by primitive source modules.
@@ -84,8 +84,8 @@ class BitComponent:
     input_bit_positions: list[list[int]]
 
 
-def _bit_type(width: int) -> ArrayType:
-    return ArrayType(Bit(), (width,))
+def _bit_type(width: int) -> UnitArrayType:
+    return UnitArrayType(Bit(), (width,))
 
 
 def simplify_inputs(inputs_id, inputs_pos):
@@ -369,7 +369,7 @@ class BitGraphPrimitive(Primitive):
 
     def _selection(self, ids, positions) -> Selection:
         selections = tuple(
-            self.graph.port(source_id)[tuple(selected)]
+            self.graph.unit_array(source_id)[tuple(selected)]
             for source_id, selected in zip(ids, positions)
             if selected
         )
@@ -379,10 +379,10 @@ class BitGraphPrimitive(Primitive):
             return selections[0]
         return self._builder.join(*selections).select_all()
 
-    def _record(self, port: PortLike, input_positions=None) -> BitComponent:
-        selection = as_selection(port)
+    def _record(self, unit_array: UnitArrayLike, input_positions=None) -> BitComponent:
+        selection = as_selection(unit_array)
         state = BitComponent(
-            selection.source.owner_id,
+            selection.source.source_id,
             deepcopy(input_positions)
             if input_positions is not None
             else [list(selection.positions)],
@@ -454,7 +454,7 @@ class BitGraphPrimitive(Primitive):
             output = self._builder.add_component(
                 cls(words[0], amount, direction, component_id=component_id)
             )
-        if isinstance(output.array_type.domain, Bit):
+        if isinstance(output.array_type.unit_type, Bit):
             return self._record(output, positions)
         return self._record(self._builder.unpack_bits(output), positions)
 
@@ -658,7 +658,7 @@ class BitGraphPrimitive(Primitive):
             field = BinaryExtensionField(
                 bits_inside_word, {8: 0x11D, 16: 0x1002D, 32: 0x100008299}[bits_inside_word]
             )
-            source = self._builder.pack_bits(source, bits_inside_word, output_domain=field)
+            source = self._builder.pack_bits(source, bits_inside_word, output_unit_type=field)
             terms = lambda values: tuple(
                 FeedbackTerm(tuple(term[1]), int(term[0])) for term in values
             )

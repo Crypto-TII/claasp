@@ -23,7 +23,7 @@ class TRAX(Primitive):
     EXAMPLES::
 
         >>> primitive = TRAX()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x76e1920dad2b0f28', 255)

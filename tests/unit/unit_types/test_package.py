@@ -1,25 +1,25 @@
 import pytest
 
-from claasp import ArrayType
-from claasp.domains import BinaryExtensionField, Bit, PrimeField
+from claasp import UnitArrayType
+from claasp.unit_types import BinaryExtensionField, Bit, PrimeField
 
 
-def test_bit_domain_uses_canonical_integer_values():
-    domain = Bit()
+def test_bit_unit_type_uses_canonical_integer_values():
+    unit_type = Bit()
 
-    assert domain.contains(0)
-    assert domain.contains(1)
-    assert not domain.contains(2)
-    assert not domain.contains(True)
-    assert domain.encoded_bit_size == 1
+    assert unit_type.contains(0)
+    assert unit_type.contains(1)
+    assert not unit_type.contains(2)
+    assert not unit_type.contains(True)
+    assert unit_type.encoded_bit_size == 1
 
 
 def test_prime_field_distinguishes_logical_and_encoded_sizes():
-    domain = PrimeField(17)
-    state_type = ArrayType(domain, (3,))
+    unit_type = PrimeField(17)
+    state_type = UnitArrayType(unit_type, (3,))
 
-    assert domain.contains(16)
-    assert not domain.contains(17)
+    assert unit_type.contains(16)
+    assert not unit_type.contains(17)
     assert state_type.unit_count == 3
     assert state_type.encoded_bit_size == 15
 
@@ -35,10 +35,10 @@ def test_binary_extension_field_records_defining_polynomial():
 @pytest.mark.parametrize("shape", [(), (0,), (-1,), (2, 0)])
 def test_array_type_rejects_invalid_shapes(shape):
     with pytest.raises(ValueError):
-        ArrayType(Bit(), shape)
+        UnitArrayType(Bit(), shape)
 
 
-def test_domains_are_immutable_and_hashable():
+def test_unit_types_are_immutable_and_hashable():
     assert {PrimeField(17), PrimeField(17), PrimeField(19)} == {
         PrimeField(17),
         PrimeField(19),

@@ -293,12 +293,12 @@ def direct_inversion_equivalent(primitive: Primitive, output_name: str):
     if contract is None:
         return None, None
     if contract[0].endswith("chilow_inverse"):
-        if tuple(primitive.graph.input_ports) != ("plaintext", "input_tweak", "key"):
+        if tuple(primitive.graph.input_arrays) != ("plaintext", "input_tweak", "key"):
             return None, None
         from claasp.transformations._inverse_realizations import chilow_inverse
 
         return chilow_inverse(primitive, output_name), contract
-    if tuple(primitive.graph.input_ports) == ("plaintext", "key"):
+    if tuple(primitive.graph.input_arrays) == ("plaintext", "key"):
         from claasp.transformations._inverse_realizations import subterranean_inverse
 
         return subterranean_inverse(primitive, output_name), contract

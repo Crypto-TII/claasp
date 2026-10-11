@@ -11,7 +11,6 @@ from claasp.analysis._matsui import (
 )
 from claasp.analysis._trail_propagation import xor_differential_propagation
 from claasp.components import ModularAdd, Rotate
-from claasp.domains import Word
 from claasp.drivers.solvers import KissatSolver, SatStatus
 from claasp.graph import Primitive
 from claasp.representations.constraints.sat import CNFFormula
@@ -27,6 +26,7 @@ from claasp.semantics.cryptanalysis import (
     XorDifference,
     XorMask,
 )
+from claasp.unit_types import Word
 
 
 def find_speck_xor_differential(
@@ -48,7 +48,7 @@ def find_speck_xor_differential(
     if not hasattr(selected_solver, "solve"):
         raise TypeError("solver must provide a solve(formula) method")
 
-    fixed_inputs = {"key": 0} if "key" in primitive.graph.input_ports else {}
+    fixed_inputs = {"key": 0} if "key" in primitive.graph.input_arrays else {}
     feasible_model = WordDifferentialSMTModel(
         primitive,
         nonzero_input="plaintext",
@@ -441,7 +441,7 @@ def _trail_from_sat_characteristic(primitive, characteristic) -> Trail:
         if step.component_id.removesuffix("[0]") in state_additions
     )
     plaintext = dict(characteristic.input_differences)["plaintext"]
-    width = primitive.graph.input_ports["plaintext"].array_type.encoded_bit_size
+    width = primitive.graph.input_arrays["plaintext"].array_type.encoded_bit_size
     return Trail(
         TrailKind.XOR_DIFFERENTIAL,
         XorDifference(plaintext, width),
@@ -453,14 +453,14 @@ def _trail_from_sat_characteristic(primitive, characteristic) -> Trail:
 def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently check modular-add correlations and backward mask wiring."""
 
-    plaintext = primitive.graph.input_ports.get("plaintext")
+    plaintext = primitive.graph.input_arrays.get("plaintext")
     if (
         primitive.family_name != "speck"
         or plaintext is None
-        or not isinstance(plaintext.array_type.domain, Word)
+        or not isinstance(plaintext.array_type.unit_type, Word)
     ):
         return False
-    width = plaintext.array_type.domain.width
+    width = plaintext.array_type.unit_type.width
     if trail.kind is not TrailKind.XOR_LINEAR or len(trail.steps) != len(primitive.graph.rounds):
         return False
     if trail.input_pattern.width != 2 * width or trail.output_pattern.width != 2 * width:
@@ -497,13 +497,13 @@ def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
 
 
 def _validate_speck_slice(primitive: Primitive) -> int:
-    plaintext = primitive.graph.input_ports.get("plaintext")
+    plaintext = primitive.graph.input_arrays.get("plaintext")
     if (
         primitive.family_name != "speck"
         or len(primitive.graph.rounds) not in {2, 3}
         or plaintext is None
-        or not isinstance(plaintext.array_type.domain, Word)
-        or plaintext.array_type.domain.width != 16
+        or not isinstance(plaintext.array_type.unit_type, Word)
+        or plaintext.array_type.unit_type.width != 16
     ):
         raise NotImplementedError(
             "the reviewed ARX search slice currently supports two- or three-round Speck32/64"
@@ -512,13 +512,13 @@ def _validate_speck_slice(primitive: Primitive) -> int:
 
 
 def _validate_speck_linear_slice(primitive: Primitive) -> int:
-    plaintext = primitive.graph.input_ports.get("plaintext")
+    plaintext = primitive.graph.input_arrays.get("plaintext")
     if (
         primitive.family_name != "speck"
         or len(primitive.graph.rounds) != 4
         or plaintext is None
-        or not isinstance(plaintext.array_type.domain, Word)
-        or plaintext.array_type.domain.width != 16
+        or not isinstance(plaintext.array_type.unit_type, Word)
+        or plaintext.array_type.unit_type.width != 16
     ):
         raise NotImplementedError(
             "the reviewed ARX linear slice currently supports four-round Speck32/64"

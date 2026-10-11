@@ -6,10 +6,10 @@ from claasp.analysis import (
 )
 from claasp.components import BitVectorSBox, LinearMap, LookupTable, SBox
 from claasp.composites.aes import AES_FIELD
-from claasp.domains import Bit, Word
 from claasp.drivers.analysis import BoundedBranchNumberDriver
-from claasp.graph import ArrayType, Port
+from claasp.graph import UnitArray, UnitArrayType
 from claasp.primitives import AES, Present
+from claasp.unit_types import Bit, Word
 
 
 def test_public_primitive_api_retains_analysis_and_realization_provenance():
@@ -60,9 +60,9 @@ def test_public_driver_api_keeps_realization_separate_from_driver_provenance():
 
 
 def test_binary_and_field_linear_examples_have_fixed_evidence():
-    binary = LinearMap(Port("bits", ArrayType(Bit(), (2,))), ((1, 0), (1, 1)))
+    binary = LinearMap(UnitArray("bits", UnitArrayType(Bit(), (2,))), ((1, 0), (1, 1)))
     mix_column = LinearMap(
-        Port("column", ArrayType(AES_FIELD, (4,))),
+        UnitArray("column", UnitArrayType(AES_FIELD, (4,))),
         ((2, 3, 1, 1), (1, 2, 3, 1), (1, 1, 2, 3), (3, 1, 1, 2)),
     )
     from claasp.analysis import analyze_component_property
@@ -80,7 +80,7 @@ def test_binary_and_field_linear_examples_have_fixed_evidence():
 
 def test_unit_sbox_analysis_uses_one_unit_width_not_the_whole_vector():
     sbox = SBox(
-        Port("words", ArrayType(Word(2), (3,))),
+        UnitArray("words", UnitArrayType(Word(2), (3,))),
         (0, 1, 3, 2),
     )
     from claasp.analysis import analyze_component_property

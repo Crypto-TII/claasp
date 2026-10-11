@@ -28,7 +28,7 @@ class Threefish(Primitive):
     EXAMPLES::
 
         >>> primitive = Threefish()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x94eeea8b1f2ada84', 256)

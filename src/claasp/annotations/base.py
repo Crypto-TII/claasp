@@ -49,10 +49,10 @@ class GraphAnnotation:
 
     EXAMPLES::
 
-        >>> from claasp import Primitive, ArrayType
-        >>> from claasp.domains import Bit
+        >>> from claasp import Primitive, UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.semantics import CONCRETE
-        >>> primitive = Primitive("identity", {"state": ArrayType(Bit(), (1,))})
+        >>> primitive = Primitive("identity", {"state": UnitArrayType(Bit(), (1,))})
         >>> annotation = GraphAnnotation.from_values(primitive, CONCRETE, {"state": 1}, output=1)
         >>> (annotation.value_of("state"), annotation.realization_identity)
         (1, 'identity:default')
@@ -88,7 +88,7 @@ class GraphAnnotation:
         identifiers = tuple((entry.role, entry.source_id) for entry in frozen)
         if len(set(identifiers)) != len(identifiers):
             raise ValueError("each graph source and role may be annotated only once")
-        inputs = set(primitive.graph.input_ports)
+        inputs = set(primitive.graph.input_arrays)
         components = {component.component_id for component in primitive.graph.components}
         for entry in frozen:
             if entry.role is AnnotationRole.INPUT and entry.source_id not in inputs:
@@ -120,7 +120,7 @@ class GraphAnnotation:
     ) -> "GraphAnnotation":
         """Build entries from familiar source-ID mappings."""
 
-        input_names = set(primitive.graph.input_ports)
+        input_names = set(primitive.graph.input_arrays)
         entries = [
             AnnotationEntry(
                 source_id,

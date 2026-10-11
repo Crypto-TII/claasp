@@ -60,7 +60,7 @@ class XoodooSbox(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = XoodooSbox()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x89d5d88da963fcbf', 384)

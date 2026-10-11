@@ -1,4 +1,4 @@
-"""Exact probability-domain branch-and-bound primitives for trail search."""
+"""Exact probability-unit_type branch-and-bound primitives for trail search."""
 
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass

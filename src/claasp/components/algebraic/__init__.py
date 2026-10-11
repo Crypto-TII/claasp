@@ -1,4 +1,4 @@
-"""Components defined by algebraic operations in their scalar domain."""
+"""Components defined by algebraic operations on their unit type."""
 
 from claasp.components.algebraic.add import Add
 from claasp.components.algebraic.binary_affine_map import BinaryAffineMap

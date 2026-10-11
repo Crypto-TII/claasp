@@ -1,13 +1,13 @@
 import pytest
 
-from claasp import ArrayType, Primitive, ScalarEvaluator
+from claasp import Primitive, ScalarEvaluator, UnitArrayType
 from claasp.components import Add, BinaryAffineMap, LinearMap, Multiply, Power
-from claasp.domains import BinaryExtensionField, PrimeField
+from claasp.unit_types import BinaryExtensionField, PrimeField
 
 
 def test_prime_field_algebraic_components():
     field = PrimeField(17)
-    vector_type = ArrayType(field, (2,))
+    vector_type = UnitArrayType(field, (2,))
     primitive = Primitive("field_algebra", {"left": vector_type, "right": vector_type})
     primitive._builder.add_round()
     addition = Add(
@@ -30,7 +30,7 @@ def test_prime_field_algebraic_components():
 
 def test_aes_field_multiplication_and_linear_map():
     aes_field = BinaryExtensionField(8, 0x11B)
-    vector_type = ArrayType(aes_field, (2,))
+    vector_type = UnitArrayType(aes_field, (2,))
     primitive = Primitive("aes_field", {"state": vector_type})
     primitive._builder.add_round()
     linear_map = LinearMap(
@@ -47,8 +47,8 @@ def test_aes_field_multiplication_and_linear_map():
 
 
 def test_algebraic_components_reject_different_array_types():
-    prime = ArrayType(PrimeField(17), (1,))
-    other_prime = ArrayType(PrimeField(19), (1,))
+    prime = UnitArrayType(PrimeField(17), (1,))
+    other_prime = UnitArrayType(PrimeField(19), (1,))
     primitive = Primitive("mixed", {"left": prime, "right": other_prime})
 
     with pytest.raises(ValueError, match="identical array types"):
@@ -59,7 +59,7 @@ def test_binary_affine_map_composes_with_field_inverse_to_form_aes_sbox():
     from claasp.primitives.block_ciphers.aes import AES_AFFINE_MATRIX, AES_SBOX
 
     field = BinaryExtensionField(8, 0x11B)
-    primitive = Primitive("aes_substitution", {"values": ArrayType(field, (256,))})
+    primitive = Primitive("aes_substitution", {"values": UnitArrayType(field, (256,))})
     primitive._builder.add_round()
     inverse = primitive._builder.add_component(Power(primitive.graph.input("values"), 254))
     affine = primitive._builder.add_component(BinaryAffineMap(inverse, AES_AFFINE_MATRIX, 0x63))

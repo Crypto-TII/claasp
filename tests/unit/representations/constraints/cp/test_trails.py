@@ -2,9 +2,8 @@
 
 from types import SimpleNamespace
 
-from claasp import ArrayType, Primitive
+from claasp import Primitive, UnitArrayType
 from claasp.components import ModularAdd
-from claasp.domains import Word
 from claasp.primitives import Present, Speck, ToySpeck
 from claasp.representations.constraints.cp import (
     ModularAddBoomerangCPModel,
@@ -32,14 +31,15 @@ from claasp.representations.constraints.cp import (
 )
 from claasp.semantics import XOR_DIFFERENTIAL
 from claasp.semantics.cryptanalysis import PropagationProblem
+from claasp.unit_types import Word
 
 
 def _single_add(name):
     primitive = Primitive(
         name,
         {
-            "left": ArrayType(Word(4), (1,)),
-            "right": ArrayType(Word(4), (1,)),
+            "left": UnitArrayType(Word(4), (1,)),
+            "right": UnitArrayType(Word(4), (1,)),
         },
     )
     primitive._builder.add_round()
@@ -117,7 +117,7 @@ def test_speck_boomerang_cp_automatically_partitions_and_links_all_switch_words(
     query = model.cp_model()
     source = query.source()
     assert model.upper_graph.graph.output.array_type.unit_count == 2
-    assert tuple(model.lower_graph.graph.input_ports) == ("switch_output", "switch_right", "key")
+    assert tuple(model.lower_graph.graph.input_arrays) == ("switch_output", "switch_right", "key")
     assert "constraint switch_delta_right[0]" in source
     assert "constraint switch_nabla_output[0]" in source
     assert query.constraint_models[-1].model == model.model_provenance

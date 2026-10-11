@@ -11,7 +11,7 @@ class XTEA(Primitive):
     EXAMPLES::
 
         >>> primitive = XTEA()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xdee9d4d8f7131ed9', 64)

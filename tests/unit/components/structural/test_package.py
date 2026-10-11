@@ -1,19 +1,19 @@
 import pytest
 
-from claasp import ArrayType, Primitive, ScalarEvaluator
+from claasp import Primitive, ScalarEvaluator, UnitArrayType
 from claasp.components import Constant, Identity, Permutation
-from claasp.domains import Bit, PrimeField
+from claasp.unit_types import Bit, PrimeField
 
 
 @pytest.mark.parametrize(
-    "domain,values",
+    "unit_type,values",
     [
         (Bit(), (0, 1, 1)),
         (PrimeField(17), (3, 12, 16)),
     ],
 )
-def test_same_permutation_operates_on_different_domains(domain, values):
-    array_type = ArrayType(domain, (3,))
+def test_same_permutation_operates_on_different_domains(unit_type, values):
+    array_type = UnitArrayType(unit_type, (3,))
     primitive = Primitive("permutation", {"state": array_type})
     primitive._builder.add_round()
     permutation = Permutation(
@@ -29,7 +29,7 @@ def test_same_permutation_operates_on_different_domains(domain, values):
 
 def test_selection_identity_and_concatenation_use_logical_units():
     field = PrimeField(257)
-    state_type = ArrayType(field, (4,))
+    state_type = UnitArrayType(field, (4,))
     primitive = Primitive("selection", {"state": state_type})
     primitive._builder.add_round()
     high = Identity(primitive.graph.input("state")[3, 2], component_id="identity_0_0")
@@ -51,8 +51,8 @@ def test_primitive_output_accepts_multi_source_structural_wiring():
     primitive = Primitive(
         "wired_output",
         {
-            "left": ArrayType(field, (2,)),
-            "right": ArrayType(field, (2,)),
+            "left": UnitArrayType(field, (2,)),
+            "right": UnitArrayType(field, (2,)),
         },
     )
     primitive._builder.add_round()
@@ -67,19 +67,19 @@ def test_primitive_output_accepts_multi_source_structural_wiring():
 
 def test_join_keeps_one_source_as_wiring_and_normalizes_multiple_sources():
     field = PrimeField(17)
-    primitive = Primitive("wiring", {"state": ArrayType(field, (2,))})
+    primitive = Primitive("wiring", {"state": UnitArrayType(field, (2,))})
     primitive._builder.add_round()
     state = primitive.graph.input("state")
 
     assert primitive._builder.join(state).source == state
     joined = primitive._builder.join(state[1], state[0])
-    assert joined.owner_id == "__join_0"
+    assert joined.source_id == "__join_0"
     with pytest.raises(ValueError, match="at least one"):
         primitive._builder.join()
 
 
 def test_structural_binding_resolution_is_not_limited_by_python_recursion_depth():
-    primitive = Primitive("deep_wiring", {"state": ArrayType(Bit(), (1,))})
+    primitive = Primitive("deep_wiring", {"state": UnitArrayType(Bit(), (1,))})
     primitive._builder.add_round()
     state = primitive.graph.input("state")
     for _ in range(1_100):
@@ -91,9 +91,9 @@ def test_structural_binding_resolution_is_not_limited_by_python_recursion_depth(
 
 def test_constant_has_no_graph_inputs_and_is_domain_checked():
     field = PrimeField(17)
-    primitive = Primitive("constant", {"state": ArrayType(field, (1,))})
+    primitive = Primitive("constant", {"state": UnitArrayType(field, (1,))})
     primitive._builder.add_round()
-    constant = Constant(ArrayType(field, (3,)), (1, 2, 16), component_id="constant_0_0")
+    constant = Constant(UnitArrayType(field, (3,)), (1, 2, 16), component_id="constant_0_0")
     primitive._builder.add_component(constant)
 
     result = ScalarEvaluator().evaluate(primitive, {"state": (0,)})
@@ -101,11 +101,11 @@ def test_constant_has_no_graph_inputs_and_is_domain_checked():
     assert result.value_of("constant_0_0") == (1, 2, 16)
 
     with pytest.raises(ValueError, match="canonical element"):
-        Constant(ArrayType(field, (1,)), (17,), component_id="bad")
+        Constant(UnitArrayType(field, (1,)), (17,), component_id="bad")
 
 
 def test_scalar_evaluator_validates_primitive_inputs():
-    primitive = Primitive("typed", {"state": ArrayType(Bit(), (2,))})
+    primitive = Primitive("typed", {"state": UnitArrayType(Bit(), (2,))})
 
     with pytest.raises(ValueError, match="requires 2 logical units"):
         ScalarEvaluator().evaluate(primitive, {"state": (1,)})
@@ -117,7 +117,7 @@ def test_scalar_evaluator_validates_primitive_inputs():
 def test_scalar_evaluator_rejects_unsupported_base_component():
     from claasp import Component
 
-    array_type = ArrayType(Bit(), (1,))
+    array_type = UnitArrayType(Bit(), (1,))
     primitive = Primitive("unsupported", {"state": array_type})
     primitive._builder.add_round()
     primitive._builder.add_component(

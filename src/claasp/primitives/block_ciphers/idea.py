@@ -1,8 +1,8 @@
 """International Data Encryption Algorithm (IDEA)."""
 
 from claasp.components import Permutation
-from claasp.domains import Bit
-from claasp.graph import ArrayType, Primitive
+from claasp.graph import Primitive, UnitArrayType
+from claasp.unit_types import Bit
 
 from ._word_graph import add, concatenate, idea_multiply, select, word_type, xor
 
@@ -13,7 +13,7 @@ class IDEA(Primitive):
     EXAMPLES::
 
         >>> primitive = IDEA()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x1000100000000', 49)
@@ -26,7 +26,7 @@ class IDEA(Primitive):
             "idea",
             {
                 "plaintext": word_type(16, 4),
-                "key": ArrayType(Bit(), (128,)),
+                "key": UnitArrayType(Bit(), (128,)),
             },
         )
         self._builder.add_round()

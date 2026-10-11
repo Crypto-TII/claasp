@@ -5,10 +5,10 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
-from claasp.graph.array_type import ArrayType
 from claasp.graph.binding import ValueBinding
 from claasp.graph.component import Component
-from claasp.graph.port import Port, PortLike, Selection, as_selection
+from claasp.graph.unit_array import Selection, UnitArray, UnitArrayLike, as_selection
+from claasp.graph.unit_array_type import UnitArrayType
 
 
 class CompositeOutputs(Sequence[Selection]):
@@ -16,10 +16,10 @@ class CompositeOutputs(Sequence[Selection]):
 
     EXAMPLES::
 
-        >>> from claasp import ArrayType
-        >>> from claasp.domains import Bit
+        >>> from claasp import UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.components import Identity
-        >>> builder = CompositeBuilder("identity", {"state": ArrayType(Bit(), (1,))})
+        >>> builder = CompositeBuilder("identity", {"state": UnitArrayType(Bit(), (1,))})
         >>> builder.add_round()
         Round(number=0)
         >>> builder.set_output("copy", builder.add_component(Identity(builder.input("state"))))
@@ -75,7 +75,7 @@ class CompositeDefinition:
     """
 
     name: str
-    input_types: tuple[tuple[str, ArrayType], ...]
+    input_types: tuple[tuple[str, UnitArrayType], ...]
     rounds: tuple[tuple[Component, ...], ...]
     bindings: tuple[ValueBinding, ...]
     outputs: tuple[tuple[str, Selection], ...]
@@ -91,11 +91,11 @@ class CompositeDefinition:
             raise ValueError("composite input names must be non-empty and unique")
         if not output_names or len(set(output_names)) != len(output_names):
             raise ValueError("composite output names must be non-empty and unique")
-        if any(not isinstance(array_type, ArrayType) for _, array_type in self.input_types):
-            raise TypeError("composite inputs must have ArrayType objects")
+        if any(not isinstance(array_type, UnitArrayType) for _, array_type in self.input_types):
+            raise TypeError("composite inputs must have UnitArrayType objects")
 
     @property
-    def inputs(self) -> Mapping[str, ArrayType]:
+    def inputs(self) -> Mapping[str, UnitArrayType]:
         """Return input array types keyed by semantic name."""
 
         return dict(self.input_types)
@@ -153,10 +153,10 @@ class CompositeInstance:
 
     EXAMPLES::
 
-        >>> from claasp import PrimitiveBuilder, ArrayType
-        >>> from claasp.domains import Word
+        >>> from claasp import PrimitiveBuilder, UnitArrayType
+        >>> from claasp.unit_types import Word
         >>> from claasp.composites import ChaChaQuarterRound
-        >>> word = ArrayType(Word(8), (1,))
+        >>> word = UnitArrayType(Word(8), (1,))
         >>> builder = PrimitiveBuilder("scoped", {name: word for name in "abcd"})
         >>> builder.add_round()
         Round(number=0)
@@ -220,7 +220,7 @@ class CompositeInstance:
         """Read one named scope output from a parent-graph evaluation result."""
 
         selection = self.output(output)
-        value = evaluation.value_of(selection.source.owner_id)
+        value = evaluation.value_of(selection.source.source_id)
         return tuple(value[position] for position in selection.positions)
 
     def analyze(self, output: str = "output"):
@@ -234,10 +234,10 @@ class CompositeBuilder:
 
     EXAMPLES::
 
-        >>> from claasp import ArrayType
-        >>> from claasp.domains import Bit
+        >>> from claasp import UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.components import Identity
-        >>> builder = CompositeBuilder("identity", {"state": ArrayType(Bit(), (4,))})
+        >>> builder = CompositeBuilder("identity", {"state": UnitArrayType(Bit(), (4,))})
         >>> builder.add_round()
         Round(number=0)
         >>> copy = builder.add_component(Identity(builder.input("state")))
@@ -247,7 +247,7 @@ class CompositeBuilder:
         (10, (('source', 'example'),))
     """
 
-    def __init__(self, name: str, inputs: Mapping[str, ArrayType]) -> None:
+    def __init__(self, name: str, inputs: Mapping[str, UnitArrayType]) -> None:
         from claasp.graph.primitive import Primitive
 
         self._primitive = Primitive(name, inputs)
@@ -260,18 +260,18 @@ class CompositeBuilder:
         return self._primitive.family_name
 
     @property
-    def input_ports(self) -> Mapping[str, Port]:
-        """Return named authoring input ports."""
+    def input_arrays(self) -> Mapping[str, UnitArray]:
+        """Return named authoring input unit_arrays."""
 
-        return self._primitive.graph.input_ports
+        return self._primitive.graph.input_arrays
 
-    def inputs(self, *selectors: str | int) -> Sequence[Port]:
-        """Return selected input ports in the requested order."""
+    def inputs(self, *selectors: str | int) -> Sequence[UnitArray]:
+        """Return selected input unit_arrays in the requested order."""
 
         return self._primitive.graph.inputs(*selectors)
 
-    def input(self, selector: str | int) -> Port:
-        """Resolve one input port by name or position."""
+    def input(self, selector: str | int) -> UnitArray:
+        """Resolve one input unit_array by name or position."""
 
         return self._primitive.graph.input(selector)
 
@@ -280,46 +280,50 @@ class CompositeBuilder:
 
         return self._primitive._builder.add_round()
 
-    def add_component(self, component: Component, *, primitive_round=None) -> Port:
+    def add_component(self, component: Component, *, primitive_round=None) -> UnitArray:
         """Validate and append a semantic leaf component."""
 
         return self._primitive._builder.add_component(component, primitive_round=primitive_round)
 
     def add_composite(
-        self, definition: CompositeDefinition, bindings: Mapping[str, PortLike], **kwargs
+        self, definition: CompositeDefinition, bindings: Mapping[str, UnitArrayLike], **kwargs
     ):
         """Instantiate a nested reusable definition in this scope."""
 
         return self._primitive._builder.add_composite(definition, bindings, **kwargs)
 
-    def join(self, *values: PortLike) -> PortLike:
+    def join(self, *values: UnitArrayLike) -> UnitArrayLike:
         """Join values through the graph's normalized structural wiring."""
 
         return self._primitive._builder.join(*values)
 
-    def pack_bits(self, value: PortLike, word_width: int, *, output_domain=None) -> Port:
+    def pack_bits(
+        self, value: UnitArrayLike, word_width: int, *, output_unit_type=None
+    ) -> UnitArray:
         """Create an explicit MSB-first bit-to-word structural binding."""
 
-        return self._primitive._builder.pack_bits(value, word_width, output_domain=output_domain)
+        return self._primitive._builder.pack_bits(
+            value, word_width, output_unit_type=output_unit_type
+        )
 
-    def unpack_bits(self, value: PortLike) -> Port:
+    def unpack_bits(self, value: UnitArrayLike) -> UnitArray:
         """Create an explicit MSB-first word-to-bit structural binding."""
 
         return self._primitive._builder.unpack_bits(value)
 
-    def set_output(self, name: str, output: PortLike | Sequence[PortLike]) -> None:
+    def set_output(self, name: str, output: UnitArrayLike | Sequence[UnitArrayLike]) -> None:
         """Bind one unique semantic output name to graph values."""
 
         if not isinstance(name, str) or not name:
             raise ValueError("composite output name must be a non-empty string")
         if name in self._outputs:
             raise ValueError(f"composite output {name!r} already exists")
-        if isinstance(output, Sequence) and not isinstance(output, (Port, Selection)):
+        if isinstance(output, Sequence) and not isinstance(output, (UnitArray, Selection)):
             output = self.join(*output)
         selection = as_selection(output)
-        actual = self._primitive.graph.port(selection.source.owner_id)
+        actual = self._primitive.graph.unit_array(selection.source.source_id)
         if actual != selection.source:
-            raise ValueError("output source does not match its graph port type")
+            raise ValueError("output source does not match its graph unit_array type")
         self._outputs[name] = selection
 
     def build(self, *, provenance: Mapping[str, str] | None = None) -> CompositeDefinition:
@@ -339,7 +343,9 @@ class CompositeBuilder:
         )
         return CompositeDefinition(
             name=self.name,
-            input_types=tuple((name, port.array_type) for name, port in self.input_ports.items()),
+            input_types=tuple(
+                (name, unit_array.array_type) for name, unit_array in self.input_arrays.items()
+            ),
             rounds=tuple(
                 tuple(primitive_round.components)
                 for primitive_round in self._primitive.graph.rounds

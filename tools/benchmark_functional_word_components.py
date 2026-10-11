@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from statistics import median
 
-from claasp import ArrayType, PrimitiveBuilder
+from claasp import PrimitiveBuilder, UnitArrayType
 from claasp.components import (
     BitwiseNot,
     BitwiseOr,
@@ -18,7 +18,6 @@ from claasp.components import (
     VariableRotate,
     VariableShift,
 )
-from claasp.domains import Word
 from claasp.drivers.solvers import (
     CPStatus,
     GLPKSolver,
@@ -31,15 +30,16 @@ from claasp.representations.constraints.cp import BooleanMiniZincLowerer
 from claasp.representations.constraints.milp import BooleanGraphMILPModel
 from claasp.representations.constraints.sat import BooleanCNFModel
 from claasp.representations.constraints.smt import BooleanSMTModel
+from claasp.unit_types import Word
 
 
 def _primitive():
-    array_type = ArrayType(Word(8), (1,))
+    array_type = UnitArrayType(Word(8), (1,))
     builder = PrimitiveBuilder(
         "functional_word_components",
         {
             **{name: array_type for name in ("a", "b", "c")},
-            "amount": ArrayType(Word(3), (1,)),
+            "amount": UnitArrayType(Word(3), (1,)),
         },
     )
     builder.add_round()

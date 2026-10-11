@@ -1,13 +1,13 @@
-"""Prime-field domain descriptors."""
+"""Prime-field unit type."""
 
 from dataclasses import dataclass
 
-from claasp.domains.base import Domain
-from claasp.domains.validation import is_probable_prime
+from claasp.unit_types.base import UnitType
+from claasp.unit_types.validation import is_probable_prime
 
 
 @dataclass(frozen=True, slots=True)
-class PrimeField(Domain):
+class PrimeField(UnitType):
     """Canonical integer representatives of the field ``GF(modulus)``.
 
     The constructor applies a deterministic Miller--Rabin test below
@@ -16,7 +16,7 @@ class PrimeField(Domain):
 
     EXAMPLES::
 
-        >>> from claasp.domains import PrimeField
+        >>> from claasp.unit_types import PrimeField
         >>> field = PrimeField(17)
         >>> field.contains(16)
         True

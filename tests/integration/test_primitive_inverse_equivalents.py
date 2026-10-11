@@ -94,8 +94,8 @@ from claasp.primitives import (
 def test_reviewed_equivalent_realizations_recover_source_inputs(primitive_factory, values):
     primitive = primitive_factory()
     inputs = {
-        name: value & ((1 << port.array_type.encoded_bit_size) - 1)
-        for value, (name, port) in zip(values, primitive.graph.input_ports.items())
+        name: value & ((1 << unit_array.array_type.encoded_bit_size) - 1)
+        for value, (name, unit_array) in zip(values, primitive.graph.input_arrays.items())
     }
     recover = next(
         (name for name in inputs if primitive.graph.input_descriptor(name).role == "plaintext"),
@@ -127,8 +127,8 @@ def test_reviewed_equivalent_realizations_recover_source_inputs(primitive_factor
 def test_reviewed_direct_inverses_recover_inputs(primitive_factory, values):
     primitive = primitive_factory()
     inputs = {
-        name: value & ((1 << port.array_type.encoded_bit_size) - 1)
-        for value, (name, port) in zip(values, primitive.graph.input_ports.items())
+        name: value & ((1 << unit_array.array_type.encoded_bit_size) - 1)
+        for value, (name, unit_array) in zip(values, primitive.graph.input_arrays.items())
     }
     inverse = primitive.edit.inverse("plaintext").primitive
     inverse_inputs = {"output": primitive.evaluate(inputs)}

@@ -3,8 +3,8 @@
 from collections.abc import Iterable
 
 from claasp.components import Add, Constant, Power
-from claasp.domains import PrimeField
-from claasp.graph import ArrayType, Primitive
+from claasp.graph import Primitive, UnitArrayType
+from claasp.unit_types import PrimeField
 
 
 class MiMC(Primitive):
@@ -25,7 +25,7 @@ class MiMC(Primitive):
 
     def __init__(self, modulus: int, exponent: int, round_constants: Iterable[int]) -> None:
         field = PrimeField(modulus)
-        scalar_type = ArrayType(field, (1,))
+        scalar_type = UnitArrayType(field, (1,))
         constants = tuple(round_constants)
         if not constants:
             raise ValueError("MiMC requires at least one round constant")

@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from claasp.components.word._validation import require_word_inputs
-from claasp.graph import Component, PortLike
+from claasp.graph import Component, UnitArrayLike
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -17,7 +17,7 @@ class BitwiseNot(Component):
         5
     """
 
-    def __init__(self, component_input: PortLike, component_id: str | None = None) -> None:
+    def __init__(self, component_input: UnitArrayLike, component_id: str | None = None) -> None:
         inputs, output_type = require_word_inputs((component_input,), "word NOT")
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", inputs)

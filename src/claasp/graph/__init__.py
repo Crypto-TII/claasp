@@ -1,6 +1,5 @@
 """Sage-independent typed graph definitions."""
 
-from claasp.graph.array_type import ArrayType, BitWord
 from claasp.graph.binding import BindingKind, ValueBinding
 from claasp.graph.component import Component
 from claasp.graph.composite import (
@@ -16,7 +15,6 @@ from claasp.graph.metadata import (
     public_input,
     secret_input,
 )
-from claasp.graph.port import Port, PortLike, Selection, as_selection
 from claasp.graph.primitive import (
     Primitive,
     PrimitiveBuilder,
@@ -37,10 +35,12 @@ from claasp.graph.realization import (
     select_realization,
 )
 from claasp.graph.round import Round
+from claasp.graph.unit_array import Selection, UnitArray, UnitArrayLike, as_selection
+from claasp.graph.unit_array_type import BitWord, UnitArrayType
 
 __all__ = [
     "AmbiguousRealizationError",
-    "ArrayType",
+    "UnitArrayType",
     "BindingKind",
     "BitWord",
     "Component",
@@ -49,8 +49,8 @@ __all__ = [
     "CompositeInstance",
     "CompositeOutputs",
     "InputVisibility",
-    "Port",
-    "PortLike",
+    "UnitArray",
+    "UnitArrayLike",
     "Primitive",
     "PrimitiveBuilder",
     "PrimitiveDetails",

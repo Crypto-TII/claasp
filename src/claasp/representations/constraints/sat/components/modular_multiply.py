@@ -29,7 +29,7 @@ class ModularMultiplyFunctionalSATModel:
     def __init__(self, component) -> None:
         if not isinstance(component, ModularMultiply):
             raise TypeError("component must be a ModularMultiply")
-        width = component.output_type.domain.width
+        width = component.output_type.unit_type.width
         if component.modulus != 1 << width:
             raise NotImplementedError(
                 "functional SAT multiplication currently requires modulus 2**word_width"
@@ -113,7 +113,7 @@ class ModularMultiplyFunctionalSATModel:
         """Append a sequential multiplier for every output word."""
 
         label = self.component.component_id
-        width = self.component.output_type.domain.width
+        width = self.component.output_type.unit_type.width
         for position, output in enumerate(outputs):
             accumulator = selected[0][position]
             for operand_number, operand in enumerate(

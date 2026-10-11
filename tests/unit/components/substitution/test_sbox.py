@@ -1,13 +1,13 @@
 import pytest
 
-from claasp import ArrayType, Primitive, ScalarEvaluator
+from claasp import Primitive, ScalarEvaluator, UnitArrayType
 from claasp.components import SBox
-from claasp.domains import BinaryExtensionField, PrimeField
 from claasp.primitives.block_ciphers.aes import AES_SBOX
+from claasp.unit_types import BinaryExtensionField, PrimeField
 
 
 def test_sbox_maps_each_field_unit_independently():
-    array_type = ArrayType(BinaryExtensionField(8, 0x11B), (2,))
+    array_type = UnitArrayType(BinaryExtensionField(8, 0x11B), (2,))
     primitive = Primitive("sbox", {"state": array_type})
     primitive._builder.add_round()
     output = primitive._builder.add_component(
@@ -19,7 +19,7 @@ def test_sbox_maps_each_field_unit_independently():
 
 
 def test_sbox_rejects_non_dense_prime_field_domain():
-    array_type = ArrayType(PrimeField(17), (1,))
+    array_type = UnitArrayType(PrimeField(17), (1,))
     primitive = Primitive("invalid_sbox", {"state": array_type})
 
     with pytest.raises(ValueError, match="densely encoded"):
@@ -27,7 +27,7 @@ def test_sbox_rejects_non_dense_prime_field_domain():
 
 
 def test_sbox_validates_table_size():
-    array_type = ArrayType(BinaryExtensionField(8, 0x11B), (1,))
+    array_type = UnitArrayType(BinaryExtensionField(8, 0x11B), (1,))
     primitive = Primitive("invalid_sbox", {"state": array_type})
 
     with pytest.raises(ValueError, match="256 entries"):

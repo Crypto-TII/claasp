@@ -2,7 +2,7 @@ Composite graph architecture
 ============================
 
 Composite graphs add hierarchy without creating a second execution model.
-``CompositeDefinition`` is a frozen recipe containing typed boundary ports,
+``CompositeDefinition`` is a frozen recipe containing typed boundary arrays,
 ordinary immutable leaf components, named outputs, nested-scope templates, and
 small provenance records. ``CompositeInstance`` binds that recipe at one path
 in a parent graph.
@@ -22,10 +22,10 @@ lowering and can be queried from either the primitive or their parent scope.
 
 .. doctest::
 
-   >>> from claasp import CompositeBuilder, PrimitiveBuilder, ArrayType
+   >>> from claasp import CompositeBuilder, PrimitiveBuilder, UnitArrayType
    >>> from claasp.components import Add
-   >>> from claasp.domains import PrimeField
-   >>> scalar = ArrayType(PrimeField(17), (1,))
+   >>> from claasp.unit_types import PrimeField
+   >>> scalar = UnitArrayType(PrimeField(17), (1,))
    >>> child_builder = CompositeBuilder("Double", {"x": scalar})
    >>> child_builder.add_round()
    Round(number=0)

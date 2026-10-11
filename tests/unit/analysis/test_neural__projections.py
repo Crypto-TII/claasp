@@ -24,10 +24,10 @@ def test_round_component_ids_matches_the_primitive_graph_round_structure():
         component.component_id for component in primitive.graph.rounds[1].components
     )
     # Semantic references stay stable even when automatic identifiers change.
-    assert primitive.graph.round_outputs[0][1].owner_id in round_0
-    assert primitive.graph.key_schedule_states[0][1].owner_id in round_0
+    assert primitive.graph.round_outputs[0][1].source_id in round_0
+    assert primitive.graph.key_schedule_states[0][1].source_id in round_0
     assert {
-        owner_id for owner_id, _ in primitive.graph.selection_bit_sources(primitive.graph.output)
+        source_id for source_id, _ in primitive.graph.selection_bit_sources(primitive.graph.output)
     } <= set(round_1)
 
     with pytest.raises(ValueError, match="range"):
@@ -47,7 +47,7 @@ def test_component_output_dataset_matches_direct_trace_inspection_of_round_state
     """
 
     primitive = Speck(number_of_rounds=2)
-    component_id = primitive.graph.round_outputs[0][1].owner_id
+    component_id = primitive.graph.round_outputs[0][1].source_id
     seed = 5
     samples = 16
     dataset = component_output_dataset(
@@ -56,7 +56,7 @@ def test_component_output_dataset_matches_direct_trace_inspection_of_round_state
 
     plaintext_width = primitive.graph.input("plaintext").array_type.encoded_bit_size
     key_width = primitive.graph.input("key").array_type.encoded_bit_size
-    component_width = primitive.graph.port(component_id).array_type.encoded_bit_size
+    component_width = primitive.graph.unit_array(component_id).array_type.encoded_bit_size
     assert dataset.feature_width == plaintext_width + component_width
 
     # Replay the dataset's own seeded random stream so the "real" (label 1)
@@ -94,7 +94,7 @@ def test_component_output_dataset_supports_concatenated_round_projection():
     dataset = component_output_dataset(primitive, "key", ids, samples=6, seed=2)
 
     expected_width = sum(
-        primitive.graph.port(component_id).array_type.encoded_bit_size for component_id in ids
+        primitive.graph.unit_array(component_id).array_type.encoded_bit_size for component_id in ids
     )
     key_width = primitive.graph.input("key").array_type.encoded_bit_size
     assert dataset.feature_width == key_width + expected_width
@@ -104,7 +104,7 @@ def test_component_output_dataset_supports_concatenated_round_projection():
 
 def test_xor_differential_component_dataset_matches_direct_trace_inspection():
     primitive = Speck(number_of_rounds=2)
-    component_id = primitive.graph.key_schedule_states[0][1].owner_id
+    component_id = primitive.graph.key_schedule_states[0][1].source_id
     differences = {"plaintext": 0x0040_0000, "key": 0}
     seed = 11
     samples = 10
@@ -114,7 +114,7 @@ def test_xor_differential_component_dataset_matches_direct_trace_inspection():
 
     plaintext_width = primitive.graph.input("plaintext").array_type.encoded_bit_size
     key_width = primitive.graph.input("key").array_type.encoded_bit_size
-    component_width = primitive.graph.port(component_id).array_type.encoded_bit_size
+    component_width = primitive.graph.unit_array(component_id).array_type.encoded_bit_size
     assert dataset.feature_width == 2 * component_width
 
     random = Random(seed)

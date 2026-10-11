@@ -132,7 +132,7 @@ class ScalarExecutionDriver:
 
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
-        expected_names = set(primitive.graph.input_ports)
+        expected_names = set(primitive.graph.input_arrays)
         actual_names = set(inputs)
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
@@ -142,9 +142,11 @@ class ScalarExecutionDriver:
             )
 
         values: dict[str, RuntimeValue] = {}
-        for name, port in primitive.graph.input_ports.items():
+        for name, unit_array in primitive.graph.input_arrays.items():
             value = tuple(inputs[name])
-            self._validate_value(name, value, port.array_type.unit_count, port.array_type.domain)
+            self._validate_value(
+                name, value, unit_array.array_type.unit_count, unit_array.array_type.unit_type
+            )
             values[name] = value
 
         binding_cache = {}
@@ -164,7 +166,7 @@ class ScalarExecutionDriver:
                 component.component_id,
                 output,
                 component.output_type.unit_count,
-                component.output_type.domain,
+                component.output_type.unit_type,
             )
             values[component.component_id] = output
 
@@ -184,11 +186,11 @@ class ScalarExecutionDriver:
         )
 
     @staticmethod
-    def _validate_value(source_id: str, value: RuntimeValue, size: int, domain: object) -> None:
+    def _validate_value(source_id: str, value: RuntimeValue, size: int, unit_type: object) -> None:
         if len(value) != size:
             raise ValueError(f"{source_id!r} requires {size} logical units, got {len(value)}")
         for scalar in value:
-            domain.validate(scalar)
+            unit_type.validate(scalar)
 
     @staticmethod
     def _evaluate_constant(component: Constant, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
@@ -205,75 +207,79 @@ class ScalarExecutionDriver:
         return tuple(inputs[0][position] for position in component.mapping)
 
     @staticmethod
-    def _add_scalar(domain: object, left: int, right: int) -> int:
-        from claasp.domains import BinaryExtensionField, Bit, PrimeField
+    def _add_scalar(unit_type: object, left: int, right: int) -> int:
+        from claasp.unit_types import BinaryExtensionField, Bit, PrimeField
 
-        if isinstance(domain, (Bit, BinaryExtensionField)):
+        if isinstance(unit_type, (Bit, BinaryExtensionField)):
             return left ^ right
-        if isinstance(domain, PrimeField):
-            return (left + right) % domain.modulus
-        raise NotImplementedError(f"addition is not implemented for {type(domain).__name__}")
+        if isinstance(unit_type, PrimeField):
+            return (left + right) % unit_type.modulus
+        raise NotImplementedError(f"addition is not implemented for {type(unit_type).__name__}")
 
     @staticmethod
-    def _multiply_scalar(domain: object, left: int, right: int) -> int:
-        from claasp.domains import BinaryExtensionField, Bit, PrimeField
+    def _multiply_scalar(unit_type: object, left: int, right: int) -> int:
+        from claasp.unit_types import BinaryExtensionField, Bit, PrimeField
 
-        if isinstance(domain, Bit):
+        if isinstance(unit_type, Bit):
             return left & right
-        if isinstance(domain, PrimeField):
-            return (left * right) % domain.modulus
-        if isinstance(domain, BinaryExtensionField):
+        if isinstance(unit_type, PrimeField):
+            return (left * right) % unit_type.modulus
+        if isinstance(unit_type, BinaryExtensionField):
             from claasp.utils import binary_field_multiply
 
-            return binary_field_multiply(domain, left, right)
-        raise NotImplementedError(f"multiplication is not implemented for {type(domain).__name__}")
+            return binary_field_multiply(unit_type, left, right)
+        raise NotImplementedError(
+            f"multiplication is not implemented for {type(unit_type).__name__}"
+        )
 
     @classmethod
-    def _power_scalar(cls, domain: object, value: int, exponent: int) -> int:
+    def _power_scalar(cls, unit_type: object, value: int, exponent: int) -> int:
         result = 1
         base = value
         remaining = exponent
         while remaining:
             if remaining & 1:
-                result = cls._multiply_scalar(domain, result, base)
-            base = cls._multiply_scalar(domain, base, base)
+                result = cls._multiply_scalar(unit_type, result, base)
+            base = cls._multiply_scalar(unit_type, base, base)
             remaining >>= 1
         return result
 
     @classmethod
     def _evaluate_add(cls, component: Add, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
-        domain = component.output_type.domain
+        unit_type = component.output_type.unit_type
         output = list(inputs[0])
         for operand in inputs[1:]:
-            output = [cls._add_scalar(domain, left, right) for left, right in zip(output, operand)]
+            output = [
+                cls._add_scalar(unit_type, left, right) for left, right in zip(output, operand)
+            ]
         return tuple(output)
 
     @classmethod
     def _evaluate_multiply(
         cls, component: Multiply, inputs: tuple[RuntimeValue, ...]
     ) -> RuntimeValue:
-        domain = component.output_type.domain
+        unit_type = component.output_type.unit_type
         output = list(inputs[0])
         for operand in inputs[1:]:
             output = [
-                cls._multiply_scalar(domain, left, right) for left, right in zip(output, operand)
+                cls._multiply_scalar(unit_type, left, right) for left, right in zip(output, operand)
             ]
         return tuple(output)
 
     @classmethod
     def _evaluate_power(cls, component: Power, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
-        domain = component.output_type.domain
-        return tuple(cls._power_scalar(domain, value, component.exponent) for value in inputs[0])
+        unit_type = component.output_type.unit_type
+        return tuple(cls._power_scalar(unit_type, value, component.exponent) for value in inputs[0])
 
     @classmethod
     def _evaluate_linear_map(
         cls, component: LinearMap, inputs: tuple[RuntimeValue, ...]
     ) -> RuntimeValue:
-        from claasp.domains import Bit
+        from claasp.unit_types import Bit
 
-        domain = component.inputs[0].array_type.domain
+        unit_type = component.inputs[0].array_type.unit_type
         vector = inputs[0]
-        if isinstance(domain, Bit):
+        if isinstance(unit_type, Bit):
             packed = sum((value & 1) << index for index, value in enumerate(vector))
             return tuple(
                 (packed & mask).bit_count() & 1 for mask in _binary_row_masks(component.matrix)
@@ -281,12 +287,12 @@ class ScalarExecutionDriver:
         output = []
         for row in component.matrix:
             products = [
-                cls._multiply_scalar(domain, coefficient, value)
+                cls._multiply_scalar(unit_type, coefficient, value)
                 for coefficient, value in zip(row, vector)
             ]
             accumulator = products[0]
             for product in products[1:]:
-                accumulator = cls._add_scalar(domain, accumulator, product)
+                accumulator = cls._add_scalar(unit_type, accumulator, product)
             output.append(accumulator)
         return tuple(output)
 
@@ -296,7 +302,7 @@ class ScalarExecutionDriver:
     ) -> RuntimeValue:
         modulus = component.modulus
         if modulus is None:
-            mask = (1 << component.output_type.domain.width) - 1
+            mask = (1 << component.output_type.unit_type.width) - 1
             return tuple(sum(values) & mask for values in zip(*inputs))
         return tuple(sum(values) % modulus for values in zip(*inputs))
 
@@ -304,7 +310,7 @@ class ScalarExecutionDriver:
     def _evaluate_modular_subtract(
         component: ModularSubtract, inputs: tuple[RuntimeValue, ...]
     ) -> RuntimeValue:
-        mask = (1 << component.output_type.domain.width) - 1
+        mask = (1 << component.output_type.unit_type.width) - 1
         output = list(inputs[0])
         for operand in inputs[1:]:
             output = [(left - right) & mask for left, right in zip(output, operand)]
@@ -323,7 +329,7 @@ class ScalarExecutionDriver:
     def _evaluate_idea_multiply(
         component: IDEAMultiply, inputs: tuple[RuntimeValue, ...]
     ) -> RuntimeValue:
-        encoded_zero = 1 << component.output_type.domain.width
+        encoded_zero = 1 << component.output_type.unit_type.width
         modulus = encoded_zero + 1
         encoded_inputs = [
             [encoded_zero if value == 0 else value for value in operand] for operand in inputs
@@ -364,12 +370,12 @@ class ScalarExecutionDriver:
     def _evaluate_bitwise_not(
         component: BitwiseNot, inputs: tuple[RuntimeValue, ...]
     ) -> RuntimeValue:
-        mask = (1 << component.output_type.domain.width) - 1
+        mask = (1 << component.output_type.unit_type.width) - 1
         return tuple((~value) & mask for value in inputs[0])
 
     @staticmethod
     def _evaluate_rotate(component: Rotate, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
-        width = component.output_type.domain.width
+        width = component.output_type.unit_type.width
         amount = component.amount
         mask = (1 << width) - 1
         if amount == 0:
@@ -396,21 +402,21 @@ class ScalarExecutionDriver:
     @classmethod
     def _evaluate_shift(cls, component: Shift, inputs: tuple[RuntimeValue, ...]) -> RuntimeValue:
         return cls._shift_values(
-            inputs[0], component.output_type.domain.width, component.amount, component.direction
+            inputs[0], component.output_type.unit_type.width, component.amount, component.direction
         )
 
     @classmethod
     def _evaluate_variable_shift(
         cls, component: VariableShift, inputs: tuple[RuntimeValue, ...]
     ) -> RuntimeValue:
-        width = component.output_type.domain.width
+        width = component.output_type.unit_type.width
         return cls._shift_values(inputs[0], width, inputs[1][0] % width, component.direction)
 
     @staticmethod
     def _evaluate_variable_rotate(
         component: VariableRotate, inputs: tuple[RuntimeValue, ...]
     ) -> RuntimeValue:
-        width = component.output_type.domain.width
+        width = component.output_type.unit_type.width
         amount = inputs[1][0] % width
         if amount == 0:
             return inputs[0]
@@ -424,24 +430,26 @@ class ScalarExecutionDriver:
         )
 
     @classmethod
-    def _evaluate_feedback_term(cls, domain, term: FeedbackTerm, state: RuntimeValue) -> int:
+    def _evaluate_feedback_term(cls, unit_type, term: FeedbackTerm, state: RuntimeValue) -> int:
         value = term.coefficient
         for position in term.positions:
-            value = cls._multiply_scalar(domain, value, state[position])
+            value = cls._multiply_scalar(unit_type, value, state[position])
         return value
 
     @classmethod
-    def _evaluate_feedback_polynomial(cls, domain, terms, state: RuntimeValue) -> int:
+    def _evaluate_feedback_polynomial(cls, unit_type, terms, state: RuntimeValue) -> int:
         value = 0
         for term in terms:
-            value = cls._add_scalar(domain, value, cls._evaluate_feedback_term(domain, term, state))
+            value = cls._add_scalar(
+                unit_type, value, cls._evaluate_feedback_term(unit_type, term, state)
+            )
         return value
 
     @classmethod
     def _evaluate_feedback_register(
         cls, component: FeedbackRegister, inputs: tuple[RuntimeValue, ...]
     ) -> RuntimeValue:
-        domain = component.output_type.domain
+        unit_type = component.output_type.unit_type
         state = inputs[0]
         if component.direction == "inverse":
             return cls._evaluate_inverse_feedback_register(component, state)
@@ -454,11 +462,11 @@ class ScalarExecutionDriver:
                 clock = (
                     1
                     if register.clock is None
-                    else cls._evaluate_feedback_polynomial(domain, register.clock, previous)
+                    else cls._evaluate_feedback_polynomial(unit_type, register.clock, previous)
                 )
                 if clock:
                     feedback = cls._evaluate_feedback_polynomial(
-                        domain, register.feedback, previous
+                        unit_type, register.feedback, previous
                     )
                     updated[start:stop] = previous[start + 1 : stop] + (feedback,)
                 start = stop
@@ -467,10 +475,10 @@ class ScalarExecutionDriver:
 
     @classmethod
     def _evaluate_inverse_feedback_register(cls, component, state):
-        from claasp.domains import Bit
+        from claasp.unit_types import Bit
         from claasp.utils import binary_field_multiply
 
-        domain = component.output_type.domain
+        unit_type = component.output_type.unit_type
         starts = []
         start = 0
         for register in component.registers:
@@ -499,24 +507,24 @@ class ScalarExecutionDriver:
                 known_previous[start + 1 : stop] = current[start : stop - 1]
                 known_previous[start] = 0
                 remainder = cls._evaluate_feedback_polynomial(
-                    domain,
+                    unit_type,
                     tuple(term for term in register.feedback if term is not pivot_terms[0]),
                     tuple(known_previous),
                 )
                 target = current[stop - 1] ^ remainder
                 coefficient = pivot_terms[0].coefficient
-                if isinstance(domain, Bit):
+                if isinstance(unit_type, Bit):
                     recovered = target
                 else:
-                    inverse = pow(2, domain.degree) - 2
+                    inverse = pow(2, unit_type.degree) - 2
                     scale = 1
                     base = coefficient
                     while inverse:
                         if inverse & 1:
-                            scale = binary_field_multiply(domain, scale, base)
-                        base = binary_field_multiply(domain, base, base)
+                            scale = binary_field_multiply(unit_type, scale, base)
+                        base = binary_field_multiply(unit_type, base, base)
                         inverse >>= 1
-                    recovered = binary_field_multiply(domain, target, scale)
+                    recovered = binary_field_multiply(unit_type, target, scale)
                 previous[start:stop] = [recovered, *current[start : stop - 1]]
             state = tuple(previous)
         return state
@@ -529,7 +537,7 @@ class ScalarExecutionDriver:
     def _evaluate_binary_affine_map(
         component: BinaryAffineMap, inputs: tuple[RuntimeValue, ...]
     ) -> RuntimeValue:
-        width = component.output_type.domain.degree
+        width = component.output_type.unit_type.degree
         output = []
         for value in inputs[0]:
             transformed = component.offset

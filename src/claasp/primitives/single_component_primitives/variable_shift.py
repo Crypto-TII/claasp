@@ -1,8 +1,8 @@
 """One-component data-dependent shift function."""
 
 from claasp.components import VariableShift as VariableShiftComponent
-from claasp.domains import Word
-from claasp.graph import ArrayType, Primitive, PrimitiveKind
+from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
+from claasp.unit_types import Word
 
 from ._base import positive
 
@@ -24,7 +24,7 @@ class VariableShift(Primitive):
     EXAMPLES::
 
         >>> primitive = VariableShift()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -41,8 +41,8 @@ class VariableShift(Primitive):
         super().__init__(
             "variable_shift",
             {
-                "input": ArrayType(Word(bit_size), (1,)),
-                "amount": ArrayType(Word(amount_bit_size), (1,)),
+                "input": UnitArrayType(Word(bit_size), (1,)),
+                "amount": UnitArrayType(Word(amount_bit_size), (1,)),
             },
             kind=PrimitiveKind.FUNCTION,
         )

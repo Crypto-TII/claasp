@@ -4,7 +4,6 @@ import re
 from dataclasses import dataclass
 
 from claasp.components import BitVectorSBox, Permutation, Rotate
-from claasp.domains import Word
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
@@ -61,6 +60,7 @@ from claasp.semantics.cryptanalysis import (
     propagate_two_word_simon_round,
     propagate_two_word_speck_round,
 )
+from claasp.unit_types import Word
 
 ModularAddDeterministicTruncatedCPModel = _ModularAddDeterministicTruncatedCPModel
 ModularAddBoomerangCPModel = _ModularAddBoomerangCPModel
@@ -362,7 +362,7 @@ class PresentProbabilisticKeyScheduleCPModel:
     )
 
     def __init__(self, primitive, *, input_difference=None, maximum_weight=None) -> None:
-        key = primitive.graph.input_ports.get("key")
+        key = primitive.graph.input_arrays.get("key")
         if primitive.family_name != "present" or key is None or key.array_type.unit_count != 80:
             raise NotImplementedError("the reviewed key-schedule model supports PRESENT-80")
         if input_difference is not None and (
@@ -642,12 +642,12 @@ class SpeckDifferentialCPModel:
             raise TypeError("problem must be a PropagationProblem")
         if problem.semantics != XOR_DIFFERENTIAL:
             raise ValueError("Speck CP lowering requires XOR-differential semantics")
-        plaintext = problem.primitive.graph.input_ports.get("plaintext")
+        plaintext = problem.primitive.graph.input_arrays.get("plaintext")
         if (
             problem.primitive.family_name != "speck"
             or plaintext is None
-            or not isinstance(plaintext.array_type.domain, Word)
-            or plaintext.array_type.domain.width != 16
+            or not isinstance(plaintext.array_type.unit_type, Word)
+            or plaintext.array_type.unit_type.width != 16
         ):
             raise NotImplementedError("the reviewed CP slice supports Speck32/64")
         if problem.maximum_weight is None:
@@ -963,12 +963,12 @@ class SpeckProbabilisticTruncatedCPModel:
 
         if problem.semantics != PROBABILISTIC_TRUNCATED_XOR:
             raise ValueError("Speck model requires probabilistic-truncated XOR semantics")
-        plaintext = problem.primitive.graph.input_ports.get("plaintext")
+        plaintext = problem.primitive.graph.input_arrays.get("plaintext")
         if (
             problem.primitive.family_name != "speck"
             or plaintext is None
-            or not isinstance(plaintext.array_type.domain, Word)
-            or plaintext.array_type.domain.width != 16
+            or not isinstance(plaintext.array_type.unit_type, Word)
+            or plaintext.array_type.unit_type.width != 16
         ):
             raise NotImplementedError("the reviewed slice supports Speck32/64")
         if len(input_pattern.bits) != 32 or len(output_pattern.bits) != 32:
@@ -1719,12 +1719,12 @@ class SpeckImpossibleCPModel:
     )
 
     def __init__(self, primitive, middle_round: int) -> None:
-        plaintext = primitive.graph.input_ports.get("plaintext")
+        plaintext = primitive.graph.input_arrays.get("plaintext")
         if (
             primitive.family_name != "speck"
             or plaintext is None
-            or not isinstance(plaintext.array_type.domain, Word)
-            or plaintext.array_type.domain.width != 16
+            or not isinstance(plaintext.array_type.unit_type, Word)
+            or plaintext.array_type.unit_type.width != 16
         ):
             raise NotImplementedError("the reviewed impossible slice supports Speck32/64")
         if not 1 <= middle_round < len(primitive.graph.rounds):
@@ -2315,12 +2315,12 @@ class ModularAddBoomerangTrailCPModel:
 
     EXAMPLES::
 
-        >>> from claasp import PrimitiveBuilder, ArrayType
-        >>> from claasp.domains import Word
+        >>> from claasp import PrimitiveBuilder, UnitArrayType
+        >>> from claasp.unit_types import Word
         >>> from claasp.components import ModularAdd
         >>> def add_graph(name):
-        ...     builder = PrimitiveBuilder(name, {"left": ArrayType(Word(4), (1,)),
-        ...         "right": ArrayType(Word(4), (1,))})
+        ...     builder = PrimitiveBuilder(name, {"left": UnitArrayType(Word(4), (1,)),
+        ...         "right": UnitArrayType(Word(4), (1,))})
         ...     builder.add_round()
         ...     output = builder.add_component(
         ...         ModularAdd((builder.input("left"), builder.input("right"))))
@@ -2365,11 +2365,11 @@ class ModularAddBoomerangTrailCPModel:
         if full_switch == (lower_input is not None):
             raise ValueError("choose lower_input or both lower_output_input and lower_right_input")
         if full_switch and (
-            lower_output_input not in lower.primitive.graph.input_ports
-            or lower_right_input not in lower.primitive.graph.input_ports
+            lower_output_input not in lower.primitive.graph.input_arrays
+            or lower_right_input not in lower.primitive.graph.input_arrays
         ):
             raise ValueError("full switch inputs must name bottom-graph inputs")
-        if not full_switch and lower_input not in lower.primitive.graph.input_ports:
+        if not full_switch and lower_input not in lower.primitive.graph.input_arrays:
             raise ValueError("lower_input must name a bottom-graph input")
         upper_size = upper.primitive.graph.output.array_type.encoded_bit_size
         expected_upper_size = 2 * switch.width if full_switch else switch.width
@@ -2377,7 +2377,7 @@ class ModularAddBoomerangTrailCPModel:
             raise ValueError(f"top output must contain exactly {expected_upper_size} bits")
         lower_names = (lower_output_input, lower_right_input) if full_switch else (lower_input,)
         if any(
-            lower.primitive.graph.input_ports[name].array_type.encoded_bit_size != switch.width
+            lower.primitive.graph.input_arrays[name].array_type.encoded_bit_size != switch.width
             for name in lower_names
         ):
             raise ValueError("each selected bottom input must contain exactly one switch word")
@@ -2441,11 +2441,11 @@ class ModularAddBoomerangTrailCPModel:
         upper_output = self.upper._sat_model._shared._output
         lower_inputs = (
             (
-                self.lower._sat_model._shared._ports[self.lower_output_input],
-                self.lower._sat_model._shared._ports[self.lower_right_input],
+                self.lower._sat_model._shared._unit_arrays[self.lower_output_input],
+                self.lower._sat_model._shared._unit_arrays[self.lower_right_input],
             )
             if self.full_switch
-            else (self.lower._sat_model._shared._ports[self.lower_input],)
+            else (self.lower._sat_model._shared._unit_arrays[self.lower_input],)
         )
         links = []
         for bit in range(self.switch.width):
@@ -2605,8 +2605,8 @@ class SpeckBoomerangCPModel:
             inputs={"switch_output": component.output, "switch_right": component.inputs[1]},
             family_name=f"{primitive.family_name}_boomerang_lower_{switch_round}",
         ).primitive
-        upper_fixed = {"key": 0} if "key" in upper_graph.graph.input_ports else {}
-        lower_fixed = {"key": 0} if "key" in lower_graph.graph.input_ports else {}
+        upper_fixed = {"key": 0} if "key" in upper_graph.graph.input_arrays else {}
+        lower_fixed = {"key": 0} if "key" in lower_graph.graph.input_arrays else {}
         upper = WordDifferentialCPModel(
             upper_graph,
             maximum_weight=upper_maximum_weight,
@@ -2625,7 +2625,7 @@ class SpeckBoomerangCPModel:
         self._composition = ModularAddBoomerangTrailCPModel(
             upper,
             lower,
-            ModularAddBoomerangCPModel(component.output_type.domain.width),
+            ModularAddBoomerangCPModel(component.output_type.unit_type.width),
             lower_output_input="switch_output",
             lower_right_input="switch_right",
         )

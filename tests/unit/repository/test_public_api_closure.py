@@ -148,7 +148,7 @@ def test_foundational_public_api_documentation_is_closed():
     prefixes = (
         "claasp.annotations",
         "claasp.components",
-        "claasp.domains",
+        "claasp.unit_types",
         "claasp.encoding",
         "claasp.graph",
         "claasp.provenance",

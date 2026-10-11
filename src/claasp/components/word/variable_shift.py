@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from claasp.components.algebraic._validation import normalize_inputs
-from claasp.domains import Word
-from claasp.graph import Component, PortLike
+from claasp.graph import Component, UnitArrayLike
+from claasp.unit_types import Word
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -20,16 +20,18 @@ class VariableShift(Component):
 
     def __init__(
         self,
-        component_input: PortLike,
-        amount_input: PortLike,
+        component_input: UnitArrayLike,
+        amount_input: UnitArrayLike,
         direction: str,
         component_id: str | None = None,
     ) -> None:
         inputs = normalize_inputs((component_input, amount_input))
         array_type = inputs[0].array_type
         amount_type = inputs[1].array_type
-        if not isinstance(array_type.domain, Word) or not isinstance(amount_type.domain, Word):
-            raise ValueError("variable shift requires Word-domain value and amount inputs")
+        if not isinstance(array_type.unit_type, Word) or not isinstance(
+            amount_type.unit_type, Word
+        ):
+            raise ValueError("variable shift requires Word unit types for value and amount")
         if amount_type.unit_count != 1:
             raise ValueError("variable shift amount must contain exactly one word")
         if direction not in ("left", "right"):

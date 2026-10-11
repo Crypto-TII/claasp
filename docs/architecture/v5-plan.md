@@ -90,7 +90,7 @@ Usability is a release requirement, not post-release polish. In particular:
   construction, round constants, and state-layout helpers live in shared
   library modules instead of individual cipher implementations.
 - Common construction operations have concise builder methods and sensible
-  inference. Domain and shape errors remain early and precise.
+  inference. UnitType and shape errors remain early and precise.
 - Common analyses require only the cipher, analysis parameters, and optional
   solver choice. Backend IRs and solver command details remain available to
   advanced users but are not required for the usual workflow.
@@ -115,16 +115,16 @@ arithmetization-oriented extensions in a dedicated v5 section.
 
 ## Architectural invariants
 
-1. `claasp.graph` and `claasp.domains` depend only on Python's
+1. `claasp.graph` and `claasp.unit_types` depend only on Python's
    standard library.
-2. A domain describes mathematical semantics; a runtime representation does
+2. A unit type describes mathematical semantics; a runtime representation does
    not define those semantics.
-3. An array type is a homogeneous shape over one scalar domain.
+3. A unit-array type is a homogeneous shape over one unit type.
 4. Connections select logical units, not necessarily bits.
 5. Components describe operations. Evaluation and analysis live in external
    backends.
-6. Cross-domain conversions are explicit graph operations.
-7. Unsupported backend/component/domain combinations fail explicitly.
+6. Cross-unit-type conversions are explicit graph operations.
+7. Unsupported backend/component/unit-type combinations fail explicitly.
 8. Scalar evaluation is the correctness reference for optimized evaluators.
 9. Every public API includes CLAASP-style examples that are executable as
    doctests.
@@ -254,7 +254,7 @@ and lower-level explicit API produce equivalent validated graphs.
 
 Exit criterion: a new user can reach a successful AES evaluation from the
 landing page, and can find a minimal cipher-authoring and analysis example
-without first reading domain, port, selection, or lowering terminology.
+without first reading unit-type, unit-array, selection, or lowering terminology.
 
 ### M9.3: Separate user and developer guides
 
@@ -1704,7 +1704,7 @@ is absent). Update this table in the same commit that changes milestone state.
 | Complete primitive catalogue closure (M10.9d10) | Achieved | Machine closure reports 149/149 classified sources, 145/145 behavioral destinations, zero unresolved evidence, zero intermediate frozen graphs, and zero runtime frozen artifacts; 432 audited constructor configurations pass; host 946 passed/510 deselected; API/user/developer doctests 39/253/480; warning-free user/developer HTML; wheel 358 files/11 owned data files/zero graph artifacts; Python-3.10 compatibility Docker 943 passed/3 skipped/510 deselected and external 76 passed/2 skipped/1378 deselected |
 | Catalogue layout/authoring refinement (M10.9d11) | Achieved | All five corrective slices are complete: families are packaged, inputs and primitive kinds are typed, AES/Speck/ChaCha are reference sources, public structural joins reconcile the legacy concatenate removal, and teaching fixtures mirror the v5 base-component API |
 | Realization-family packages (M10.9d11a) | Achieved | All 16 audited multi-realization families use stable same-import-path packages; KTANTAN was added to the initial list and TinyJambu has three realizations. PRINCE and PRINCEv2 have separate module paths and primitive identities because they are distinct specifications. Legacy-derived Simon/Simeck/Gimli S-box forms remain explicitly non-canonical pending M10.9f authenticity metadata; 432-constructor audit retained |
-| Primitive/input metadata (M10.9d11b) | Achieved | `PrimitiveKind`, `PrimitiveInput`, and `InputVisibility` distinguish mathematical interfaces from engines and make key secrecy an overridable study default; `input(name_or_position)` and `inputs(*selectors)` expose ordered graph ports without leaking their storage representation, while `input_ports` explicitly serves mapping-oriented graph consumers; all 26 single-component primitives contain exactly one round and one semantic component, carry conservative function/permutation kinds, and visibly demonstrate `add_round`, `add_component`, and `set_output` in their advertised operation module. Public constructors now expose only canonical v5 parameters: `LinearLayer(matrix)` infers its input width from one row-major matrix, `Fsr(parameters)` uses typed register data, permutations use direct output-to-input mappings, directions are explicit, and compatibility-only aliases, encodings, numeric sentinels, and ignored arguments are absent. Fifteen catalogue families now use `None` for omitted configuration and reject explicit zero rounds, steps, or S-box counts. The refinement checkpoint retains 432 catalogue constructor configurations and reports host 1416 passed/78 external deselected, API/user/developer doctests 41/284/498, warning-free HTML, and Python-3.10 compatibility Docker 1413 passed/3 skipped/78 deselected |
+| Primitive/input metadata (M10.9d11b) | Achieved | `PrimitiveKind`, `PrimitiveInput`, and `InputVisibility` distinguish mathematical interfaces from engines and make key secrecy an overridable study default; `input(name_or_position)` and `inputs(*selectors)` expose ordered graph unit arrays without leaking their storage representation, while `input_arrays` explicitly serves mapping-oriented graph consumers; all 26 single-component primitives contain exactly one round and one semantic component, carry conservative function/permutation kinds, and visibly demonstrate `add_round`, `add_component`, and `set_output` in their advertised operation module. Public constructors now expose only canonical v5 parameters: `LinearLayer(matrix)` infers its input width from one row-major matrix, `Fsr(parameters)` uses typed register data, permutations use direct output-to-input mappings, directions are explicit, and compatibility-only aliases, encodings, numeric sentinels, and ignored arguments are absent. Fifteen catalogue families now use `None` for omitted configuration and reject explicit zero rounds, steps, or S-box counts. The refinement checkpoint retains 432 catalogue constructor configurations and reports host 1416 passed/78 external deselected, API/user/developer doctests 41/284/498, warning-free HTML, and Python-3.10 compatibility Docker 1413 passed/3 skipped/78 deselected |
 | Reference authoring implementations (M10.9d11c) | Achieved | Direct AES, Speck, and ChaCha sources follow specification pseudocode, omit incidental ids, retain semantic boundary references, and share Primitive configuration validation; semantic setters and incremental recorders publish round keys, states, key-schedule states, and named operation landmarks without author-visible storage conversions; ordered composite outputs support `key_schedule.output[n]`; `CustomAES` owns research variants separately from ToyAES |
 | Structural wiring and closure (M10.9d11d) | Achieved | `Primitive.join`, `CompositeBuilder.join`, and multi-value `set_output` make joining an authoring-level typed wiring operation; M10.9f6 later replaced the temporary internal normalization node with a non-component typed binding. The corrected PRINCE identities and discoverable single-component sources retain the extended 432-constructor audit, and every semantic single-component source visibly demonstrates the complete authoring sequence without inline container normalization; host 966 passed/510 deselected; API/user/developer doctests 41/281/495; warning-free HTML; wheel 380 files/14 owned data files/zero graph artifacts; Python-3.10 compatibility Docker 963 passed/3 skipped/510 deselected and external 76 passed/2 skipped/1398 deselected |
 | Base-component primitive alignment (M10.9d11e) | Achieved | A dedicated machine catalogue maps all 26 public base component classes one-to-one to same-named, same-module teaching primitives with one round, one component, class docstrings, and executable examples. `LinearMap` replaces legacy LinearLayer/MixColumn fixture types, all new algebraic/conversion components are represented, and `FeedbackRegister` uses `feedback_register.py`; legacy fixture records remain many-to-one migration evidence. Host: 980 passed/510 external deselected; API/user/developer doctests: 67/290/500; warning-free user/developer HTML; Python-3.10 compatibility Docker: 977 passed/3 skipped/510 deselected; Docker external: 76 passed/2 skipped/1412 deselected |

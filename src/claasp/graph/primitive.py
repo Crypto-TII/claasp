@@ -8,7 +8,6 @@ from inspect import Parameter, formatannotation, signature
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from claasp.graph.array_type import ArrayType
 from claasp.graph.binding import BindingKind, ValueBinding
 from claasp.graph.component import Component
 from claasp.graph.metadata import (
@@ -17,7 +16,6 @@ from claasp.graph.metadata import (
     PrimitiveKind,
     infer_primitive_kind,
 )
-from claasp.graph.port import Port, PortLike, Selection, as_selection
 from claasp.graph.realization import (
     RealizationDescriptor,
     RealizationMaturity,
@@ -27,6 +25,8 @@ from claasp.graph.realization import (
     select_realization,
 )
 from claasp.graph.round import Round
+from claasp.graph.unit_array import Selection, UnitArray, UnitArrayLike, as_selection
+from claasp.graph.unit_array_type import UnitArrayType
 
 if TYPE_CHECKING:
     from claasp.analysis import Analysis
@@ -34,12 +34,12 @@ if TYPE_CHECKING:
 
 
 def _normalize_primitive_inputs(
-    inputs: Mapping[str, ArrayType | PrimitiveInput],
-) -> tuple[dict[str, PrimitiveInput], dict[str, Port]]:
-    """Validate input declarations and create their descriptors and ports."""
+    inputs: Mapping[str, UnitArrayType | PrimitiveInput],
+) -> tuple[dict[str, PrimitiveInput], dict[str, UnitArray]]:
+    """Validate input declarations and create their descriptors and unit arrays."""
 
     descriptors: dict[str, PrimitiveInput] = {}
-    ports: dict[str, Port] = {}
+    unit_arrays: dict[str, UnitArray] = {}
     for name, supplied in inputs.items():
         if not isinstance(name, str):
             raise TypeError("input names must be strings")
@@ -47,7 +47,7 @@ def _normalize_primitive_inputs(
             raise ValueError("input names must not be empty")
         if isinstance(supplied, PrimitiveInput):
             descriptor = supplied
-        elif isinstance(supplied, ArrayType):
+        elif isinstance(supplied, UnitArrayType):
             visibility = (
                 InputVisibility.SECRET
                 if name in {"key", "secret", "secret_key"}
@@ -55,10 +55,10 @@ def _normalize_primitive_inputs(
             )
             descriptor = PrimitiveInput(supplied, role=name, visibility=visibility)
         else:
-            raise TypeError(f"input {name!r} must have an ArrayType or PrimitiveInput")
+            raise TypeError(f"input {name!r} must have an UnitArrayType or PrimitiveInput")
         descriptors[name] = descriptor
-        ports[name] = Port(name, descriptor.array_type)
-    return descriptors, ports
+        unit_arrays[name] = UnitArray(name, descriptor.array_type)
+    return descriptors, unit_arrays
 
 
 class _OfficialInstances(tuple):
@@ -221,11 +221,11 @@ class PublishedValues(tuple):
         for index, value in enumerate(self):
             bit_size = self._bit_size(value)
             suffix = "" if bit_size is None else f": {bit_size} bits"
-            if isinstance(value, (Port, Selection)):
-                source = value.owner_id if isinstance(value, Port) else value.source.owner_id
+            if isinstance(value, (UnitArray, Selection)):
+                source = value.source_id if isinstance(value, UnitArray) else value.source.source_id
                 description = (
                     f"input {source}"
-                    if source in self._primitive._input_ports
+                    if source in self._primitive._input_arrays
                     else "derived graph value"
                 )
             elif isinstance(value, Mapping):
@@ -243,7 +243,7 @@ class PrimitiveGraph:
 
         >>> from claasp.primitives import AES
         >>> graph = AES(number_of_rounds=2).graph
-        >>> (len(graph.rounds), len(graph.input_ports))
+        >>> (len(graph.rounds), len(graph.input_arrays))
         (3, 2)
     """
 
@@ -265,18 +265,18 @@ class PrimitiveGraph:
         )
 
     @property
-    def input_ports(self) -> Mapping[str, Port]:
-        """Return the graph's name-to-input-port mapping."""
+    def input_arrays(self) -> Mapping[str, UnitArray]:
+        """Return the graph's name-to-input-array mapping."""
 
-        return dict(self._primitive._input_ports)
+        return dict(self._primitive._input_arrays)
 
-    def input(self, selector: str | int) -> Port:
-        """Return one input port by name or zero-based declaration position.
+    def input(self, selector: str | int) -> UnitArray:
+        """Return one input unit array by name or zero-based declaration position.
 
         EXAMPLES::
 
             >>> from claasp.primitives import AES
-            >>> AES().graph.input("key").owner_id
+            >>> AES().graph.input("key").source_id
             'key'
         """
 
@@ -294,13 +294,13 @@ class PrimitiveGraph:
 
         return self._primitive._input_descriptor(name)
 
-    def inputs(self, *selectors: str | int) -> Sequence[Port]:
-        """Return input ports in declaration or explicitly requested order.
+    def inputs(self, *selectors: str | int) -> Sequence[UnitArray]:
+        """Return input unit arrays in declaration or explicitly requested order.
 
         EXAMPLES::
 
             >>> from claasp.primitives import AES
-            >>> tuple(port.owner_id for port in AES().graph.inputs())
+            >>> tuple(unit_array.source_id for unit_array in AES().graph.inputs())
             ('plaintext', 'key')
         """
 
@@ -384,26 +384,28 @@ class PrimitiveGraph:
         for outputs in self.intermediate_outputs:
             components = {}
             for name, value in outputs.items():
-                if name == "round_output" or not isinstance(value, (Port, Selection)):
+                if name == "round_output" or not isinstance(value, (UnitArray, Selection)):
                     continue
-                owner_id = value.owner_id if isinstance(value, Port) else value.source.owner_id
-                component = self._primitive._components.get(owner_id)
+                source_id = (
+                    value.source_id if isinstance(value, UnitArray) else value.source.source_id
+                )
+                component = self._primitive._components.get(source_id)
                 if component is not None:
                     components[name] = component
             result.append(MappingProxyType(components))
         return tuple(result)
 
-    def port(self, owner_id: str) -> Port:
-        """Resolve an input, component, or binding output port by identity.
+    def unit_array(self, source_id: str) -> UnitArray:
+        """Resolve an input, component, or binding output unit array by identity.
 
         EXAMPLES::
 
             >>> from claasp.primitives import AES
-            >>> AES().graph.port("plaintext").owner_id
+            >>> AES().graph.unit_array("plaintext").source_id
             'plaintext'
         """
 
-        return self._primitive._port(owner_id)
+        return self._primitive._unit_array(source_id)
 
     def component(self, component_id: str) -> Component:
         """Resolve a semantic component by its deterministic identifier.
@@ -486,7 +488,7 @@ class PrimitiveEditor:
 
         return invert_primitive(self._primitive, recover_input, **options)
 
-    def partial_inverse(self, target: PortLike, *, known, **options):
+    def partial_inverse(self, target: UnitArrayLike, *, known, **options):
         """Return a solver-free partial inverse from explicit known wires.
 
         EXAMPLES::
@@ -536,7 +538,7 @@ class PrimitiveEditor:
 
             >>> from claasp.primitives import Speck
             >>> result = Speck(number_of_rounds=1).edit.remove_key_schedule().primitive
-            >>> tuple(result.graph.input_ports)
+            >>> tuple(result.graph.input_arrays)
             ('plaintext', 'round_key_0')
         """
 
@@ -584,7 +586,7 @@ class PrimitiveEditor:
 
             >>> from claasp.primitives import Speck
             >>> paired = Speck(number_of_rounds=1).edit.pair_xor(shared_inputs=("key",))
-            >>> tuple(paired.primitive.graph.input_ports)
+            >>> tuple(paired.primitive.graph.input_arrays)
             ('left_plaintext', 'right_plaintext', 'key')
         """
 
@@ -618,17 +620,17 @@ class PrimitiveEditor:
 class Primitive:
     """A validated, executable round-oriented directed acyclic graph.
 
-    A primitive owns typed input ports, immutable component descriptions, and
+    A primitive owns typed input unit_arrays, immutable component descriptions, and
     an explicit output binding. Use :class:`PrimitiveBuilder` to author a new
     graph; completed primitives expose evaluation, analysis, transformations,
     and read-only graph inspection.
 
     EXAMPLES::
 
-        >>> from claasp import PrimitiveBuilder, ArrayType
-        >>> from claasp.domains import Word
+        >>> from claasp import PrimitiveBuilder, UnitArrayType
+        >>> from claasp.unit_types import Word
         >>> from claasp.components import Xor
-        >>> nibble = ArrayType(Word(4), (1,))
+        >>> nibble = UnitArrayType(Word(4), (1,))
         >>> builder = PrimitiveBuilder("xor_nibbles", {"left": nibble, "right": nibble})
         >>> builder.add_round()
         Round(number=0)
@@ -680,7 +682,7 @@ class Primitive:
     def __init__(
         self,
         family_name: str,
-        inputs: Mapping[str, ArrayType | PrimitiveInput],
+        inputs: Mapping[str, UnitArrayType | PrimitiveInput],
         *,
         kind: PrimitiveKind | str | None = None,
         provenance: tuple[tuple[str, str], ...] = (),
@@ -693,8 +695,8 @@ class Primitive:
         if not family_name:
             raise ValueError("family_name must not be empty")
         if not isinstance(inputs, Mapping):
-            raise TypeError("inputs must be a mapping from names to ArrayType objects")
-        descriptors, ports = _normalize_primitive_inputs(inputs)
+            raise TypeError("inputs must be a mapping from names to UnitArrayType objects")
+        descriptors, unit_arrays = _normalize_primitive_inputs(inputs)
 
         if kind is None:
             kind = infer_primitive_kind(descriptors)
@@ -714,8 +716,8 @@ class Primitive:
         self._provenance = tuple(provenance)
         self._transformation_provenance = ()
         self._input_descriptors = descriptors
-        self._input_ports = ports
-        self._ports = dict(ports)
+        self._input_arrays = unit_arrays
+        self._unit_arrays = dict(unit_arrays)
         self._rounds: list[Round] = []
         self._components: dict[str, Component] = {}
         self._bindings: dict[str, ValueBinding] = {}
@@ -957,13 +959,13 @@ class Primitive:
         )
 
     @property
-    def _input_ports_view(self) -> Mapping[str, Port]:
-        """Name-to-port mapping for representations and other graph consumers."""
+    def _input_arrays_view(self) -> Mapping[str, UnitArray]:
+        """Name-to-unit-array mapping for representations and other graph consumers."""
 
-        return dict(self._input_ports)
+        return dict(self._input_arrays)
 
-    def _inputs(self, *selectors: str | int) -> Sequence[Port]:
-        """Return input ports in declaration or explicitly requested order.
+    def _inputs(self, *selectors: str | int) -> Sequence[UnitArray]:
+        """Return input unit_arrays in declaration or explicitly requested order.
 
         With no selectors, all inputs are returned in declaration order. Names
         are preferable in specification-oriented code; zero-based positions
@@ -971,7 +973,7 @@ class Primitive:
         """
 
         if not selectors:
-            return tuple(self._input_ports.values())
+            return tuple(self._input_arrays.values())
         return tuple(self._input(selector) for selector in selectors)
 
     @property
@@ -996,30 +998,30 @@ class Primitive:
         return round_key
 
     def _normalize_published_output(
-        self, output: PortLike | Sequence[PortLike]
-    ) -> PortLike | tuple[PortLike, ...]:
+        self, output: UnitArrayLike | Sequence[UnitArrayLike]
+    ) -> UnitArrayLike | tuple[UnitArrayLike, ...]:
         """Validate an inspectable output without changing the primitive output."""
 
         values = (
             tuple(output)
-            if isinstance(output, Sequence) and not isinstance(output, (Port, Selection))
+            if isinstance(output, Sequence) and not isinstance(output, (UnitArray, Selection))
             else (output,)
         )
         for value in values:
             selection = as_selection(value)
             try:
-                actual_port = self._ports[selection.source.owner_id]
+                actual_port = self._unit_arrays[selection.source.source_id]
             except KeyError as error:
                 raise ValueError(
                     "published output source is not available in this graph"
                 ) from error
             if selection.source != actual_port:
-                raise ValueError("published output source does not match its graph port type")
+                raise ValueError("published output source does not match its graph unit_array type")
         return values[0] if len(values) == 1 else values
 
     def _set_intermediate_output(
         self,
-        output: PortLike | Sequence[PortLike],
+        output: UnitArrayLike | Sequence[UnitArrayLike],
         *,
         name: str,
     ) -> object:
@@ -1085,27 +1087,27 @@ class Primitive:
 
         return self._output
 
-    def _input(self, selector: str | int) -> Port:
-        """Return one input port by name or zero-based declaration position."""
+    def _input(self, selector: str | int) -> UnitArray:
+        """Return one input unit array by name or zero-based declaration position."""
 
         if isinstance(selector, str):
             try:
-                return self._input_ports[selector]
+                return self._input_arrays[selector]
             except KeyError as error:
                 raise KeyError(f"primitive input {selector!r} does not exist") from error
         if isinstance(selector, bool) or not isinstance(selector, int):
             raise TypeError("primitive input selector must be a name or integer position")
-        if selector < 0 or selector >= len(self._input_ports):
+        if selector < 0 or selector >= len(self._input_arrays):
             raise IndexError(f"primitive input position {selector} is out of range")
-        return tuple(self._input_ports.values())[selector]
+        return tuple(self._input_arrays.values())[selector]
 
-    def _port(self, owner_id: str) -> Port:
-        """Resolve an input, component, or binding output port by identity."""
+    def _unit_array(self, source_id: str) -> UnitArray:
+        """Resolve an input, component, or binding output unit array by identity."""
 
         try:
-            return self._ports[owner_id]
+            return self._unit_arrays[source_id]
         except KeyError as error:
-            raise KeyError(f"graph source {owner_id!r} does not exist") from error
+            raise KeyError(f"graph source {source_id!r} does not exist") from error
 
     def _component(self, component_id: str) -> Component:
         """Resolve a semantic component by its deterministic identifier."""
@@ -1130,8 +1132,10 @@ class Primitive:
         self._rounds.append(primitive_round)
         return primitive_round
 
-    def _add_component(self, component: Component, *, primitive_round: Round | None = None) -> Port:
-        """Validate and append a component, returning its output port."""
+    def _add_component(
+        self, component: Component, *, primitive_round: Round | None = None
+    ) -> UnitArray:
+        """Validate and append a component, returning its output unit array."""
 
         if not isinstance(component, Component):
             raise TypeError("component must be a Component")
@@ -1143,7 +1147,7 @@ class Primitive:
             generated_id = f"{kind}_{target_round.number}_{len(target_round.components)}"
             component = copy(component)
             object.__setattr__(component, "component_id", generated_id)
-        if component.component_id in self._ports:
+        if component.component_id in self._unit_arrays:
             raise ValueError(f"graph source {component.component_id!r} already exists")
 
         if not any(target_round is existing_round for existing_round in self._rounds):
@@ -1152,22 +1156,24 @@ class Primitive:
             raise ValueError("components may only be appended to the current round")
 
         for component_input in component.inputs:
-            source_id = component_input.source.owner_id
+            source_id = component_input.source.source_id
             try:
-                actual_port = self._ports[source_id]
+                actual_port = self._unit_arrays[source_id]
             except KeyError as error:
                 raise ValueError(
                     f"input source {source_id!r} is not available in this graph"
                 ) from error
             if component_input.source != actual_port:
-                raise ValueError(f"input source {source_id!r} does not match its graph port type")
+                raise ValueError(
+                    f"input source {source_id!r} does not match its graph unit_array type"
+                )
 
         target_round._append(component)
         self._components[component.component_id] = component
-        self._ports[component.component_id] = component.output
+        self._unit_arrays[component.component_id] = component.output
         return component.output
 
-    def _join(self, *values: PortLike) -> PortLike:
+    def _join(self, *values: UnitArrayLike) -> UnitArrayLike:
         """Join homogeneous values as structural wiring.
 
         A single value remains a selection. Multiple sources become an
@@ -1179,37 +1185,39 @@ class Primitive:
         if len(values) == 1:
             return as_selection(values[0])
         selections = tuple(as_selection(value) for value in values)
-        domain = selections[0].array_type.domain
-        if any(item.array_type.domain != domain for item in selections[1:]):
-            raise ValueError("structural wiring requires one homogeneous domain")
-        output_type = ArrayType(domain, (sum(item.array_type.unit_count for item in selections),))
+        unit_type = selections[0].array_type.unit_type
+        if any(item.array_type.unit_type != unit_type for item in selections[1:]):
+            raise ValueError("structural wiring requires one homogeneous unit type")
+        output_type = UnitArrayType(
+            unit_type, (sum(item.array_type.unit_count for item in selections),)
+        )
         return self._add_binding(BindingKind.JOIN, selections, output_type)
 
     def _pack_bits(
         self,
-        value: PortLike,
+        value: UnitArrayLike,
         word_width: int,
         *,
-        output_domain=None,
-    ) -> Port:
+        output_unit_type=None,
+    ) -> UnitArray:
         """View consecutive MSB-first bits as fixed-width words."""
 
-        from claasp.domains import BinaryExtensionField, Bit, Word
+        from claasp.unit_types import BinaryExtensionField, Bit, Word
 
         selection = as_selection(value)
-        if not isinstance(selection.array_type.domain, Bit):
-            raise ValueError("pack_bits input must use the Bit domain")
+        if not isinstance(selection.array_type.unit_type, Bit):
+            raise ValueError("pack_bits input must use the Bit unit type")
         if not isinstance(word_width, int) or isinstance(word_width, bool) or word_width <= 0:
             raise ValueError("word_width must be a positive integer")
         if selection.array_type.unit_count % word_width:
             raise ValueError("input bit count must be a multiple of word_width")
-        if output_domain is not None:
-            if not isinstance(output_domain, BinaryExtensionField):
-                raise TypeError("output_domain must be a BinaryExtensionField")
-            if output_domain.degree != word_width:
+        if output_unit_type is not None:
+            if not isinstance(output_unit_type, BinaryExtensionField):
+                raise TypeError("output_unit_type must be a BinaryExtensionField")
+            if output_unit_type.degree != word_width:
                 raise ValueError("binary-field degree must equal word_width")
-        domain = output_domain if output_domain is not None else Word(word_width)
-        output_type = ArrayType(domain, (selection.array_type.unit_count // word_width,))
+        unit_type = output_unit_type if output_unit_type is not None else Word(word_width)
+        output_type = UnitArrayType(unit_type, (selection.array_type.unit_count // word_width,))
         return self._add_binding(
             BindingKind.PACK_BITS,
             (selection,),
@@ -1217,23 +1225,23 @@ class Primitive:
             word_width=word_width,
         )
 
-    def _view(self, value: PortLike) -> Port:
+    def _view(self, value: UnitArrayLike) -> UnitArray:
         """Give an ordered selection its own non-semantic wiring boundary."""
 
         selection = as_selection(value)
         return self._add_binding(BindingKind.VIEW, (selection,), selection.array_type)
 
-    def _unpack_bits(self, value: PortLike) -> Port:
+    def _unpack_bits(self, value: UnitArrayLike) -> UnitArray:
         """View fixed-width words as consecutive MSB-first bits."""
 
-        from claasp.domains import BinaryExtensionField, Bit, Word
+        from claasp.unit_types import BinaryExtensionField, Bit, Word
 
         selection = as_selection(value)
-        domain = selection.array_type.domain
-        if not isinstance(domain, (Word, BinaryExtensionField)):
-            raise ValueError("unpack_bits input must use a Word or binary-field domain")
-        word_width = domain.width if isinstance(domain, Word) else domain.degree
-        output_type = ArrayType(Bit(), (selection.array_type.unit_count * word_width,))
+        unit_type = selection.array_type.unit_type
+        if not isinstance(unit_type, (Word, BinaryExtensionField)):
+            raise ValueError("unpack_bits input must use a Word or binary-field unit type")
+        word_width = unit_type.width if isinstance(unit_type, Word) else unit_type.degree
+        output_type = UnitArrayType(Bit(), (selection.array_type.unit_count * word_width,))
         return self._add_binding(
             BindingKind.UNPACK_BITS,
             (selection,),
@@ -1245,24 +1253,24 @@ class Primitive:
         self,
         kind: BindingKind,
         inputs: tuple[Selection, ...],
-        output_type: ArrayType,
+        output_type: UnitArrayType,
         *,
         word_width: int | None = None,
         binding_id: str | None = None,
         _validate_inputs: bool = True,
-    ) -> Port:
+    ) -> UnitArray:
         if _validate_inputs:
             for selection in inputs:
-                actual = self._ports.get(selection.source.owner_id)
+                actual = self._unit_arrays.get(selection.source.source_id)
                 if actual != selection.source:
-                    raise ValueError("binding input does not match its graph port type")
+                    raise ValueError("binding input does not match its graph unit_array type")
         if binding_id is None:
             binding_id = f"__{kind.value}_{len(self._bindings)}"
-        if binding_id in self._ports:
+        if binding_id in self._unit_arrays:
             raise ValueError(f"graph source {binding_id!r} already exists")
         binding = ValueBinding(binding_id, kind, inputs, output_type, word_width)
         self._bindings[binding_id] = binding
-        self._ports[binding_id] = binding.output
+        self._unit_arrays[binding_id] = binding.output
         return binding.output
 
     def _resolve_selection(
@@ -1277,13 +1285,13 @@ class Primitive:
 
         def selected(item: Selection) -> tuple:
             source = (
-                tuple(values[item.source.owner_id])
-                if item.source.owner_id in values
-                else cache[item.source.owner_id]
+                tuple(values[item.source.source_id])
+                if item.source.source_id in values
+                else cache[item.source.source_id]
             )
             return tuple(source[position] for position in item.positions)
 
-        pending = [selection.source.owner_id]
+        pending = [selection.source.source_id]
         while pending:
             source_id = pending[-1]
             if available(source_id):
@@ -1294,9 +1302,9 @@ class Primitive:
             except KeyError as error:
                 raise KeyError(f"graph source {source_id!r} has no available value") from error
             missing = tuple(
-                item.source.owner_id
+                item.source.source_id
                 for item in binding.inputs
-                if not available(item.source.owner_id)
+                if not available(item.source.source_id)
             )
             if missing:
                 pending.extend(reversed(missing))
@@ -1337,7 +1345,7 @@ class Primitive:
             cache[source_id] = result
             pending.pop()
 
-        source_id = selection.source.owner_id
+        source_id = selection.source.source_id
         source = tuple(values[source_id]) if source_id in values else cache[source_id]
         return tuple(source[position] for position in selection.positions)
 
@@ -1345,18 +1353,18 @@ class Primitive:
         """Flatten a selection to the encoded bits of semantic graph sources."""
 
         values = {}
-        ports = tuple(self._input_ports.values()) + tuple(
+        unit_arrays = tuple(self._input_arrays.values()) + tuple(
             component.output for component in self._components.values()
         )
-        for port in ports:
-            width = port.array_type.domain.encoded_bit_size
+        for unit_array in unit_arrays:
+            width = unit_array.array_type.unit_type.encoded_bit_size
             if width is None:
-                raise TypeError("graph wiring requires canonically encoded domains")
+                raise TypeError("graph wiring requires canonically encoded unit types")
             units = []
-            for position in range(port.array_type.unit_count):
-                refs = tuple((port.owner_id, position * width + bit) for bit in range(width))
+            for position in range(unit_array.array_type.unit_count):
+                refs = tuple((unit_array.source_id, position * width + bit) for bit in range(width))
                 units.append(refs[0] if width == 1 else refs)
-            values[port.owner_id] = tuple(units)
+            values[unit_array.source_id] = tuple(units)
         selected = self._resolve_selection(selection, values)
         return tuple(
             ref
@@ -1367,7 +1375,7 @@ class Primitive:
     def _add_composite(
         self,
         definition,
-        bindings: Mapping[str, PortLike],
+        bindings: Mapping[str, UnitArrayLike],
         *,
         scope_id: str | None = None,
         primitive_round: Round | None = None,
@@ -1384,7 +1392,7 @@ class Primitive:
         if target_round is not self._rounds[-1]:
             raise ValueError("composites may only be appended to the current round")
         if not isinstance(bindings, Mapping):
-            raise TypeError("bindings must map composite input names to graph ports")
+            raise TypeError("bindings must map composite input names to graph unit_arrays")
         expected = set(definition.inputs)
         if set(bindings) != expected:
             missing = sorted(expected - set(bindings))
@@ -1396,9 +1404,9 @@ class Primitive:
         normalized: dict[str, Selection] = {}
         for name, array_type in definition.input_types:
             selection = as_selection(bindings[name])
-            actual = self._port(selection.source.owner_id)
+            actual = self._unit_array(selection.source.source_id)
             if actual != selection.source:
-                raise ValueError(f"binding {name!r} does not match its graph port type")
+                raise ValueError(f"binding {name!r} does not match its graph unit_array type")
             if selection.array_type != array_type:
                 raise ValueError(
                     f"binding {name!r} has type {selection.array_type!r}, expected {array_type!r}"
@@ -1410,12 +1418,12 @@ class Primitive:
             scope_id = f"{kind}_{target_round.number}_{len(target_round.scopes)}"
         if not isinstance(scope_id, str) or not scope_id or "/" in scope_id:
             raise ValueError("scope_id must be a non-empty local path segment")
-        if scope_id in self._scopes or scope_id in self._ports:
+        if scope_id in self._scopes or scope_id in self._unit_arrays:
             raise ValueError(f"graph scope {scope_id!r} already exists")
 
         remapped: dict[str, Selection] = dict(normalized)
         for binding in definition.bindings:
-            remapped[binding.binding_id] = Port(
+            remapped[binding.binding_id] = UnitArray(
                 f"{scope_id}/{binding.binding_id}", binding.output_type
             ).select_all()
         for components in definition.rounds:
@@ -1424,12 +1432,12 @@ class Primitive:
                     raise ValueError(
                         "composite definitions must contain assigned component identifiers"
                     )
-                remapped[template_component.component_id] = Port(
+                remapped[template_component.component_id] = UnitArray(
                     f"{scope_id}/{template_component.component_id}", template_component.output_type
                 ).select_all()
 
         def remap(selection: Selection) -> Selection:
-            source = remapped[selection.source.owner_id]
+            source = remapped[selection.source.source_id]
             return source[selection.positions]
 
         for binding in definition.bindings:
@@ -1482,18 +1490,18 @@ class Primitive:
             target_round._append_scope(nested)
         return instance
 
-    def _set_output(self, output: PortLike | Sequence[PortLike]) -> None:
+    def _set_output(self, output: UnitArrayLike | Sequence[UnitArrayLike]) -> None:
         """Declare the ordered logical units returned by this primitive."""
 
-        if isinstance(output, Sequence) and not isinstance(output, (Port, Selection)):
+        if isinstance(output, Sequence) and not isinstance(output, (UnitArray, Selection)):
             output = self._join(*output)
         output = as_selection(output)
         try:
-            actual_port = self._ports[output.source.owner_id]
+            actual_port = self._unit_arrays[output.source.source_id]
         except KeyError as error:
             raise ValueError("output source is not available in this graph") from error
         if output.source != actual_port:
-            raise ValueError("output source does not match its graph port type")
+            raise ValueError("output source does not match its graph unit_array type")
         self._output = output
 
     def evaluate(self, *args: object, **kwargs: object) -> int | tuple[int, ...] | None:
@@ -1547,7 +1555,7 @@ class Primitive:
 
         supplied = self._bind_inputs(args, kwargs)
         decoded = {
-            name: self._decode_boundary(value, self._input_ports[name].array_type)
+            name: self._decode_boundary(value, self._input_arrays[name].array_type)
             for name, value in supplied.items()
         }
         return ScalarExecutionDriver().evaluate(self, decoded)
@@ -1572,12 +1580,12 @@ class Primitive:
         elif len(args) == 1 and isinstance(args[0], Mapping):
             supplied = dict(args[0])
         else:
-            if len(args) != len(self._input_ports):
+            if len(args) != len(self._input_arrays):
                 raise TypeError(
-                    f"expected {len(self._input_ports)} positional inputs, got {len(args)}"
+                    f"expected {len(self._input_arrays)} positional inputs, got {len(args)}"
                 )
-            supplied = dict(zip(self._input_ports, args))
-        expected = set(self._input_ports)
+            supplied = dict(zip(self._input_arrays, args))
+        expected = set(self._input_arrays)
         if set(supplied) != expected:
             missing = sorted(expected - set(supplied))
             unexpected = sorted(set(supplied) - expected)
@@ -1587,18 +1595,18 @@ class Primitive:
         return supplied
 
     @staticmethod
-    def _decode_boundary(value: object, array_type: ArrayType) -> tuple[int, ...]:
-        from claasp.domains import Bit, PrimeField
+    def _decode_boundary(value: object, array_type: UnitArrayType) -> tuple[int, ...]:
         from claasp.encoding import bits_from_int, units_from_int
+        from claasp.unit_types import Bit, PrimeField
 
         if isinstance(value, int) and not isinstance(value, bool):
-            if isinstance(array_type.domain, Bit):
+            if isinstance(array_type.unit_type, Bit):
                 return bits_from_int(value, array_type.unit_count)
-            if isinstance(array_type.domain, PrimeField):
+            if isinstance(array_type.unit_type, PrimeField):
                 if array_type.unit_count != 1:
                     raise TypeError("prime-field vectors require a tuple of field elements")
                 return (value,)
-            width = array_type.domain.encoded_bit_size
+            width = array_type.unit_type.encoded_bit_size
             if width is not None:
                 return units_from_int(value, width, array_type.unit_count)
         if isinstance(value, Sequence) and not isinstance(value, str):
@@ -1606,15 +1614,17 @@ class Primitive:
         raise TypeError("primitive inputs must be packed integers or sequences of logical units")
 
     @staticmethod
-    def _encode_boundary(value: tuple[int, ...], array_type: ArrayType) -> int | tuple[int, ...]:
-        from claasp.domains import Bit, PrimeField
+    def _encode_boundary(
+        value: tuple[int, ...], array_type: UnitArrayType
+    ) -> int | tuple[int, ...]:
         from claasp.encoding import int_from_bits, int_from_units
+        from claasp.unit_types import Bit, PrimeField
 
-        if isinstance(array_type.domain, PrimeField):
+        if isinstance(array_type.unit_type, PrimeField):
             return value[0] if array_type.unit_count == 1 else value
-        if isinstance(array_type.domain, Bit):
+        if isinstance(array_type.unit_type, Bit):
             return int_from_bits(value)
-        width = array_type.domain.encoded_bit_size
+        width = array_type.unit_type.encoded_bit_size
         return value if width is None else int_from_units(value, width)
 
 
@@ -1626,10 +1636,10 @@ class PrimitiveBuilder:
 
     EXAMPLES::
 
-        >>> from claasp import PrimitiveBuilder, ArrayType
-        >>> from claasp.domains import Word
+        >>> from claasp import PrimitiveBuilder, UnitArrayType
+        >>> from claasp.unit_types import Word
         >>> from claasp.components import Xor
-        >>> bit = ArrayType(Word(1), (1,))
+        >>> bit = UnitArrayType(Word(1), (1,))
         >>> builder = PrimitiveBuilder("xor", {"left": bit, "right": bit})
         >>> builder.add_round()
         Round(number=0)
@@ -1643,13 +1653,13 @@ class PrimitiveBuilder:
     def __init__(
         self,
         family_name: str,
-        inputs: Mapping[str, ArrayType | PrimitiveInput] | None = None,
+        inputs: Mapping[str, UnitArrayType | PrimitiveInput] | None = None,
         *,
         kind: PrimitiveKind | str | None = None,
         provenance: tuple[tuple[str, str], ...] = (),
         instance_name: str | None = None,
         round_count: int | None = None,
-        **named_inputs: ArrayType | PrimitiveInput,
+        **named_inputs: UnitArrayType | PrimitiveInput,
     ) -> None:
         if inputs is not None and named_inputs:
             raise TypeError("pass primitive inputs either as a mapping or as named arguments")
@@ -1675,7 +1685,7 @@ class PrimitiveBuilder:
         builder = object.__new__(cls)
         builder._primitive = primitive
         builder._built = False
-        builder._inputs_declared = bool(primitive._input_ports)
+        builder._inputs_declared = bool(primitive._input_arrays)
         builder._infer_kind_from_inputs = False
         return builder
 
@@ -1683,24 +1693,24 @@ class PrimitiveBuilder:
         if self._built:
             raise RuntimeError("this primitive builder has already been built")
 
-    def input(self, selector: str | int) -> Port:
-        """Return one input port for use in the graph being authored."""
+    def input(self, selector: str | int) -> UnitArray:
+        """Return one input unit array for use in the graph being authored."""
 
         return self._primitive._input(selector)
 
     def set_inputs(
         self,
-        inputs: Mapping[str, ArrayType | PrimitiveInput] | None = None,
-        **named_inputs: ArrayType | PrimitiveInput,
-    ) -> Sequence[Port]:
-        """Declare the named inputs before graph construction and return their ports."""
+        inputs: Mapping[str, UnitArrayType | PrimitiveInput] | None = None,
+        **named_inputs: UnitArrayType | PrimitiveInput,
+    ) -> Sequence[UnitArray]:
+        """Declare the named inputs before graph construction and return their unit_arrays."""
 
         self._ensure_open()
         if inputs is not None and named_inputs:
             raise TypeError("pass primitive inputs either as a mapping or as named arguments")
         declarations = named_inputs if inputs is None else inputs
         if not isinstance(declarations, Mapping):
-            raise TypeError("inputs must be a mapping from names to ArrayType objects")
+            raise TypeError("inputs must be a mapping from names to UnitArrayType objects")
         if not declarations:
             raise ValueError("set_inputs() requires at least one named input")
         if self._inputs_declared:
@@ -1708,17 +1718,17 @@ class PrimitiveBuilder:
         primitive = self._primitive
         if primitive._rounds or primitive._components or primitive._bindings or primitive._scopes:
             raise RuntimeError("primitive inputs must be declared before graph construction begins")
-        descriptors, ports = _normalize_primitive_inputs(declarations)
+        descriptors, unit_arrays = _normalize_primitive_inputs(declarations)
         primitive._input_descriptors = descriptors
-        primitive._input_ports = ports
-        primitive._ports = dict(ports)
+        primitive._input_arrays = unit_arrays
+        primitive._unit_arrays = dict(unit_arrays)
         if self._infer_kind_from_inputs:
             primitive._kind = infer_primitive_kind(descriptors)
         self._inputs_declared = True
-        return tuple(ports.values())
+        return tuple(unit_arrays.values())
 
-    def inputs(self, *selectors: str | int) -> Sequence[Port]:
-        """Return input ports in declaration or requested order."""
+    def inputs(self, *selectors: str | int) -> Sequence[UnitArray]:
+        """Return input unit_arrays in declaration or requested order."""
 
         return self._primitive._inputs(*selectors)
 
@@ -1733,8 +1743,8 @@ class PrimitiveBuilder:
         component: Component,
         *,
         primitive_round: Round | None = None,
-    ) -> Port:
-        """Validate and append a component, returning its output port."""
+    ) -> UnitArray:
+        """Validate and append a component, returning its output unit array."""
 
         self._ensure_open()
         return self._primitive._add_component(component, primitive_round=primitive_round)
@@ -1744,7 +1754,7 @@ class PrimitiveBuilder:
         component: Component,
         *,
         primitive_round: Round | None = None,
-    ) -> Port:
+    ) -> UnitArray:
         """Append ``component`` using the concise pseudocode-style spelling."""
 
         return self.add_component(component, primitive_round=primitive_round)
@@ -1752,7 +1762,7 @@ class PrimitiveBuilder:
     def add_composite(
         self,
         definition,
-        bindings: Mapping[str, PortLike],
+        bindings: Mapping[str, UnitArrayLike],
         *,
         scope_id: str | None = None,
         primitive_round: Round | None = None,
@@ -1767,25 +1777,27 @@ class PrimitiveBuilder:
             primitive_round=primitive_round,
         )
 
-    def join(self, *values: PortLike) -> PortLike:
+    def join(self, *values: UnitArrayLike) -> UnitArrayLike:
         """Join homogeneous values as structural wiring."""
 
         self._ensure_open()
         return self._primitive._join(*values)
 
-    def pack_bits(self, value: PortLike, word_width: int, *, output_domain=None) -> Port:
+    def pack_bits(
+        self, value: UnitArrayLike, word_width: int, *, output_unit_type=None
+    ) -> UnitArray:
         """View consecutive MSB-first bits as fixed-width words."""
 
         self._ensure_open()
-        return self._primitive._pack_bits(value, word_width, output_domain=output_domain)
+        return self._primitive._pack_bits(value, word_width, output_unit_type=output_unit_type)
 
-    def view(self, value: PortLike) -> Port:
+    def view(self, value: UnitArrayLike) -> UnitArray:
         """Give an ordered selection a structural wiring boundary."""
 
         self._ensure_open()
         return self._primitive._view(value)
 
-    def unpack_bits(self, value: PortLike) -> Port:
+    def unpack_bits(self, value: UnitArrayLike) -> UnitArray:
         """View fixed-width words as consecutive MSB-first bits."""
 
         self._ensure_open()
@@ -1805,7 +1817,7 @@ class PrimitiveBuilder:
 
     def set_intermediate_output(
         self,
-        output: PortLike | Sequence[PortLike],
+        output: UnitArrayLike | Sequence[UnitArrayLike],
         *,
         name: str,
     ) -> object:
@@ -1814,13 +1826,15 @@ class PrimitiveBuilder:
         self._ensure_open()
         return self._primitive._set_intermediate_output(output, name=name)
 
-    def set_round_output(self, *outputs: PortLike) -> object:
+    def set_round_output(self, *outputs: UnitArrayLike) -> object:
         """Publish the current round output as an intermediate named ``round_output``."""
 
         self._ensure_open()
         if not outputs:
             raise ValueError("round output must contain at least one value")
-        output: PortLike | Sequence[PortLike] = outputs[0] if len(outputs) == 1 else outputs
+        output: UnitArrayLike | Sequence[UnitArrayLike] = (
+            outputs[0] if len(outputs) == 1 else outputs
+        )
         return self.set_intermediate_output(output, name="round_output")
 
     def set_key_schedule_states(self, states: Iterable[object]) -> Sequence[object]:
@@ -1835,13 +1849,13 @@ class PrimitiveBuilder:
         self._ensure_open()
         return self._primitive._publish_key_schedule_state(*values)
 
-    def set_output(self, output: PortLike | Sequence[PortLike]) -> None:
+    def set_output(self, output: UnitArrayLike | Sequence[UnitArrayLike]) -> None:
         """Declare the graph output without completing the builder."""
 
         self._ensure_open()
         self._primitive._set_output(output)
 
-    def build(self, output: PortLike | Sequence[PortLike] | None = None) -> Primitive:
+    def build(self, output: UnitArrayLike | Sequence[UnitArrayLike] | None = None) -> Primitive:
         """Return the completed primitive after an output has been declared."""
 
         self._ensure_open()

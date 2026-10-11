@@ -11,7 +11,7 @@ def is_probable_prime(value: int) -> bool:
 
     EXAMPLES::
 
-        >>> from claasp.domains.validation import is_probable_prime
+        >>> from claasp.unit_types.validation import is_probable_prime
         >>> is_probable_prime(17)
         True
         >>> is_probable_prime(15)
@@ -62,7 +62,7 @@ def is_irreducible_binary_polynomial(polynomial: int, degree: int) -> bool:
 
     EXAMPLES::
 
-        >>> from claasp.domains.validation import is_irreducible_binary_polynomial
+        >>> from claasp.unit_types.validation import is_irreducible_binary_polynomial
         >>> is_irreducible_binary_polynomial(0x11B, 8)
         True
         >>> is_irreducible_binary_polynomial(0b10101, 4)

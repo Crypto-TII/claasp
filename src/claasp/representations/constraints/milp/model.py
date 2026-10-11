@@ -55,7 +55,7 @@ class ObjectiveSense(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class LinearVariable:
-    """A named variable and its domain bounds.
+    """A named variable and its unit_type bounds.
 
     EXAMPLES::
 

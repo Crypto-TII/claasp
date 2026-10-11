@@ -1,8 +1,8 @@
 """Canonical word-oriented Simon block primitive."""
 
 from claasp.components import BitwiseAnd, Constant, Rotate, Xor
-from claasp.domains import Word
-from claasp.graph import ArrayType, Port, Primitive, Selection
+from claasp.graph import Primitive, Selection, UnitArray, UnitArrayType
+from claasp.unit_types import Word
 
 PARAMETERS_CONFIGURATION_LIST = (
     (32, 64, 32),
@@ -64,17 +64,17 @@ class Simon(Primitive):
             )
         width = block_bit_size // 2
         key_words = key_bit_size // width
-        word_type = ArrayType(Word(width), (1,))
+        word_type = UnitArrayType(Word(width), (1,))
         super().__init__(
             "simon",
             {
-                "plaintext": ArrayType(Word(width), (2,)),
-                "key": ArrayType(Word(width), (key_words,)),
+                "plaintext": UnitArrayType(Word(width), (2,)),
+                "key": UnitArrayType(Word(width), (key_words,)),
             },
         )
         plaintext, key = self.graph.input("plaintext"), self.graph.input("key")
         left, right = plaintext[0], plaintext[1]
-        round_keys: list[Port | Selection] = [
+        round_keys: list[UnitArray | Selection] = [
             key[key_words - index - 1] for index in range(key_words)
         ]
         z = _Z[_Z_INDEX[width][key_words]]

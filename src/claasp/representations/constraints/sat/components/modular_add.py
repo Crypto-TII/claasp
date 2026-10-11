@@ -44,7 +44,7 @@ class ModularAddFunctionalSATModel:
 
         component = self.component
         label = component.component_id
-        width = component.output_type.domain.width
+        width = component.output_type.unit_type.width
         for position, output in enumerate(outputs):
             accumulator = selected[0][position]
             for operand_number, operand in enumerate(
@@ -153,7 +153,7 @@ class ModularSubtractFunctionalSATModel:
 
         component = self.component
         label = component.component_id
-        width = component.output_type.domain.width
+        width = component.output_type.unit_type.width
         for position, output in enumerate(outputs):
             accumulator = selected[0][position]
             for operand_number, operand in enumerate(

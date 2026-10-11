@@ -135,9 +135,9 @@ class BooleanMonomialGraphMILPModel:
     def __init__(
         self, primitive, output_bit: int, variable_input: str, variable_positions=None
     ) -> None:
-        from claasp.domains import Bit, Word
+        from claasp.unit_types import Bit, Word
 
-        if variable_input not in primitive.graph.input_ports:
+        if variable_input not in primitive.graph.input_arrays:
             raise ValueError(f"unknown variable input: {variable_input}")
         if primitive.graph.output is None:
             raise ValueError("primitive must have an output")
@@ -149,14 +149,16 @@ class BooleanMonomialGraphMILPModel:
             or not 0 <= output_bit < output_width
         ):
             raise ValueError("output_bit must fit the primitive output")
-        domains = [port.array_type.domain for port in primitive.graph.input_ports.values()]
-        domains += [component.output_type.domain for component in primitive.graph.components]
-        if not all(isinstance(domain, (Bit, Word)) for domain in domains):
+        domains = [
+            unit_array.array_type.unit_type for unit_array in primitive.graph.input_arrays.values()
+        ]
+        domains += [component.output_type.unit_type for component in primitive.graph.components]
+        if not all(isinstance(unit_type, (Bit, Word)) for unit_type in domains):
             raise TypeError("Boolean monomial graph models require Bit or Word domains")
         self.primitive = primitive
         self.output_bit = output_bit
         self.variable_input = variable_input
-        selected_width = self._width(primitive.graph.input_ports[variable_input].array_type)
+        selected_width = self._width(primitive.graph.input_arrays[variable_input].array_type)
         self.variable_positions = tuple(
             range(selected_width) if variable_positions is None else variable_positions
         )
@@ -169,8 +171,8 @@ class BooleanMonomialGraphMILPModel:
             raise ValueError("variable_positions must be unique positions in variable_input")
 
     @staticmethod
-    def _wire(owner_id, bit):
-        return f"wire_{owner_id}_{bit}"
+    def _wire(source_id, bit):
+        return f"wire_{source_id}_{bit}"
 
     @staticmethod
     def _edge(component_index, operand, bit):
@@ -192,14 +194,14 @@ class BooleanMonomialGraphMILPModel:
         constraints = []
         uses = {}
 
-        def add_wire(owner_id, width):
+        def add_wire(source_id, width):
             for bit in range(width):
-                name = self._wire(owner_id, bit)
+                name = self._wire(source_id, bit)
                 variables.append(LinearVariable(name, VariableKind.BINARY))
                 uses[name] = []
 
-        for name, port in self.primitive.graph.input_ports.items():
-            add_wire(name, self._width(port.array_type))
+        for name, unit_array in self.primitive.graph.input_arrays.items():
+            add_wire(name, self._width(unit_array.array_type))
         for component in self.primitive.graph.components:
             add_wire(component.component_id, self._width(component.output_type))
 
@@ -207,12 +209,12 @@ class BooleanMonomialGraphMILPModel:
             operand_edges = []
             for operand, selection in enumerate(component.inputs):
                 edges = []
-                for bit, (owner_id, source_bit) in enumerate(
+                for bit, (source_id, source_bit) in enumerate(
                     self.primitive.graph.selection_bit_sources(selection)
                 ):
                     edge = self._edge(component_index, operand, bit)
                     variables.append(LinearVariable(edge, VariableKind.BINARY))
-                    uses[self._wire(owner_id, source_bit)].append(edge)
+                    uses[self._wire(source_id, source_bit)].append(edge)
                     edges.append(edge)
                 operand_edges.append(tuple(edges))
 
@@ -260,11 +262,11 @@ class BooleanMonomialGraphMILPModel:
                         )
                     )
             elif isinstance(component, Constant):
-                domain_width = component.output_type.domain.encoded_bit_size
+                unit_width = component.output_type.unit_type.encoded_bit_size
                 for unit, value in enumerate(component.values):
-                    for local_bit in range(domain_width):
-                        bit = unit * domain_width + local_bit
-                        if not value & (1 << (domain_width - 1 - local_bit)):
+                    for local_bit in range(unit_width):
+                        bit = unit * unit_width + local_bit
+                        if not value & (1 << (unit_width - 1 - local_bit)):
                             constraints.append(
                                 LinearConstraint(
                                     LinearExpression.from_terms({output[bit]: 1}),
@@ -278,12 +280,12 @@ class BooleanMonomialGraphMILPModel:
                     f"Boolean monomial graph MILP does not support {type(component).__name__}"
                 )
 
-        for bit, (owner_id, source_bit) in enumerate(
+        for bit, (source_id, source_bit) in enumerate(
             self.primitive.graph.selection_bit_sources(self.primitive.graph.output)
         ):
             edge = f"primitive_output_{bit}"
             variables.append(LinearVariable(edge, VariableKind.BINARY))
-            uses[self._wire(owner_id, source_bit)].append(edge)
+            uses[self._wire(source_id, source_bit)].append(edge)
             constraints.append(
                 LinearConstraint(
                     LinearExpression.from_terms({edge: 1}),
@@ -325,7 +327,7 @@ class BooleanMonomialGraphMILPModel:
             )
 
         selected_width = self._width(
-            self.primitive.graph.input_ports[self.variable_input].array_type
+            self.primitive.graph.input_arrays[self.variable_input].array_type
         )
         selected_positions = set(self.variable_positions)
         for bit in range(selected_width):

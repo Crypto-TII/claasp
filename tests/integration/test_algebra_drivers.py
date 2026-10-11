@@ -2,7 +2,6 @@ import shutil
 
 import pytest
 
-from claasp.domains import PrimeField
 from claasp.drivers.algebra import MsolveDriver, SingularDriver
 from claasp.primitives import MiMC
 from claasp.representations.constraints.polynomial import (
@@ -14,6 +13,7 @@ from claasp.representations.constraints.polynomial.exporters import (
     MsolveExporter,
     SingularExporter,
 )
+from claasp.unit_types import PrimeField
 
 pytestmark = pytest.mark.external
 

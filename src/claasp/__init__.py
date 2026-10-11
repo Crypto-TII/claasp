@@ -24,7 +24,6 @@ from claasp.drivers.source import (
 )
 from claasp.encoding import bits_from_int, int_from_bits, int_from_units, units_from_int
 from claasp.graph import (
-    ArrayType,
     BitWord,
     Component,
     CompositeBuilder,
@@ -32,7 +31,6 @@ from claasp.graph import (
     CompositeInstance,
     CompositeOutputs,
     InputVisibility,
-    Port,
     Primitive,
     PrimitiveBuilder,
     PrimitiveDetails,
@@ -44,6 +42,8 @@ from claasp.graph import (
     PublishedValues,
     Round,
     Selection,
+    UnitArray,
+    UnitArrayType,
     public_input,
     secret_input,
 )
@@ -114,7 +114,7 @@ __all__ = [
     "AESKeySchedule",
     "AESRound",
     "AESSubstitutionLayer",
-    "ArrayType",
+    "UnitArrayType",
     "BatchEvaluationResult",
     "BatchEvaluator",
     "BatchExecutionDriver",
@@ -142,7 +142,7 @@ __all__ = [
     "NativeExecutionStatus",
     "PairedTransformationResult",
     "ParallelSBoxLayer",
-    "Port",
+    "UnitArray",
     "Primitive",
     "PrimitiveBuilder",
     "PrimitiveDetails",

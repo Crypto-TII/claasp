@@ -31,23 +31,23 @@ from claasp.components import (
     VariableShift,
     Xor,
 )
-from claasp.domains import BinaryExtensionField, Bit, PrimeField, Word
 from claasp.graph import (
-    ArrayType,
     CompositeDefinition,
     CompositeInstance,
     InputVisibility,
-    Port,
     Primitive,
     PrimitiveInput,
     PrimitiveKind,
     RealizationDescriptor,
     RealizationMaturity,
     Selection,
+    UnitArray,
+    UnitArrayType,
 )
 from claasp.graph.binding import BindingKind
 from claasp.provenance import TransformationRecord
 from claasp.serialization.errors import SerializationError, SerializationFailure
+from claasp.unit_types import BinaryExtensionField, Bit, PrimeField, Word
 
 SCHEMA_ID = "org.claasp.primitive"
 SCHEMA_VERSION = 1
@@ -221,29 +221,31 @@ def _array(value, *, path):
     return value
 
 
-def _encode_domain(domain):
-    if isinstance(domain, Bit):
+def _encode_unit_type(unit_type):
+    if isinstance(unit_type, Bit):
         return {"kind": "bit"}
-    if isinstance(domain, Word):
-        return {"kind": "word", "width": domain.width}
-    if isinstance(domain, PrimeField):
-        return {"kind": "prime_field", "modulus": domain.modulus}
-    if isinstance(domain, BinaryExtensionField):
+    if isinstance(unit_type, Word):
+        return {"kind": "word", "width": unit_type.width}
+    if isinstance(unit_type, PrimeField):
+        return {"kind": "prime_field", "modulus": unit_type.modulus}
+    if isinstance(unit_type, BinaryExtensionField):
         return {
-            "basis": domain.basis,
-            "degree": domain.degree,
+            "basis": unit_type.basis,
+            "degree": unit_type.degree,
             "kind": "binary_extension_field",
-            "modulus": domain.modulus,
+            "modulus": unit_type.modulus,
         }
     raise SerializationError(
-        SerializationFailure.UNKNOWN_DOMAIN,
-        f"unsupported domain {type(domain).__name__}",
+        SerializationFailure.UNKNOWN_UNIT_TYPE,
+        f"unsupported unit type {type(unit_type).__name__}",
     )
 
 
-def _decode_domain(value, path):
+def _decode_unit_type(value, path):
     if not isinstance(value, dict) or not isinstance(value.get("kind"), str):
-        raise SerializationError(SerializationFailure.MALFORMED_VALUE, "invalid domain", path=path)
+        raise SerializationError(
+            SerializationFailure.MALFORMED_VALUE, "invalid unit type", path=path
+        )
     kind = value["kind"]
     try:
         if kind == "bit":
@@ -268,22 +270,24 @@ def _decode_domain(value, path):
             SerializationFailure.MALFORMED_VALUE, str(error), path=path
         ) from error
     raise SerializationError(
-        SerializationFailure.UNKNOWN_DOMAIN, f"unknown domain kind {kind!r}", path=path
+        SerializationFailure.UNKNOWN_UNIT_TYPE,
+        f"unknown unit type kind {kind!r}",
+        path=path,
     )
 
 
 def _encode_type(array_type):
-    return {"domain": _encode_domain(array_type.domain), "shape": list(array_type.shape)}
+    return {"unit_type": _encode_unit_type(array_type.unit_type), "shape": list(array_type.shape)}
 
 
 def _decode_type(value, path):
-    _object(value, {"domain", "shape"}, path=path)
+    _object(value, {"unit_type", "shape"}, path=path)
     shape = tuple(
         _integer(item, path=f"{path}.shape[{index}]", minimum=1)
         for index, item in enumerate(_array(value["shape"], path=f"{path}.shape"))
     )
     try:
-        return ArrayType(_decode_domain(value["domain"], f"{path}.domain"), shape)
+        return UnitArrayType(_decode_unit_type(value["unit_type"], f"{path}.unit_type"), shape)
     except (TypeError, ValueError) as error:
         raise SerializationError(
             SerializationFailure.MALFORMED_VALUE, str(error), path=path
@@ -291,14 +295,14 @@ def _decode_type(value, path):
 
 
 def _encode_selection(selection):
-    return {"positions": list(selection.positions), "source": selection.source.owner_id}
+    return {"positions": list(selection.positions), "source": selection.source.source_id}
 
 
 def _decode_selection(value, sources, path):
     _object(value, {"positions", "source"}, path=path)
     source_id = _string(value["source"], path=f"{path}.source")
     try:
-        port = sources[source_id]
+        unit_array = sources[source_id]
     except KeyError as error:
         raise SerializationError(
             SerializationFailure.INVALID_REFERENCE,
@@ -310,7 +314,7 @@ def _decode_selection(value, sources, path):
         for index, item in enumerate(_array(value["positions"], path=f"{path}.positions"))
     )
     try:
-        return Selection(port, positions)
+        return Selection(unit_array, positions)
     except (TypeError, ValueError) as error:
         raise SerializationError(
             SerializationFailure.INVALID_REFERENCE, str(error), path=path
@@ -658,7 +662,7 @@ def _collect_sources(inputs, bindings, rounds, path):
             raise SerializationError(
                 SerializationFailure.DUPLICATE_IDENTITY, f"duplicate source {name!r}", path=path
             )
-        sources[name] = Port(name, array_type)
+        sources[name] = UnitArray(name, array_type)
     for record in list(bindings) + [component for group in rounds for component in group]:
         source_id = record["id"]
         if source_id in sources:
@@ -667,7 +671,7 @@ def _collect_sources(inputs, bindings, rounds, path):
                 f"duplicate source {source_id!r}",
                 path=path,
             )
-        sources[source_id] = Port(
+        sources[source_id] = UnitArray(
             source_id, _decode_type(record["output_type"], f"{path}.{source_id}.output_type")
         )
     return sources
@@ -697,7 +701,7 @@ def _decode_binding(value, sources, path):
 
 
 def _validate_binding(identifier, kind, inputs, output_type, word_width, path):
-    from claasp.domains import BinaryExtensionField
+    from claasp.unit_types import BinaryExtensionField
 
     try:
         if not inputs:
@@ -705,10 +709,10 @@ def _validate_binding(identifier, kind, inputs, output_type, word_width, path):
         if kind is BindingKind.JOIN:
             if word_width is not None:
                 raise ValueError("join binding must not declare word_width")
-            if any(item.array_type.domain != inputs[0].array_type.domain for item in inputs):
-                raise ValueError("join binding inputs must share one domain")
-            expected = ArrayType(
-                inputs[0].array_type.domain,
+            if any(item.array_type.unit_type != inputs[0].array_type.unit_type for item in inputs):
+                raise ValueError("join binding inputs must share one unit type")
+            expected = UnitArrayType(
+                inputs[0].array_type.unit_type,
                 (sum(item.array_type.unit_count for item in inputs),),
             )
         elif kind is BindingKind.VIEW:
@@ -719,34 +723,34 @@ def _validate_binding(identifier, kind, inputs, output_type, word_width, path):
             if (
                 len(inputs) != 1
                 or word_width is None
-                or not isinstance(inputs[0].array_type.domain, Bit)
+                or not isinstance(inputs[0].array_type.unit_type, Bit)
             ):
                 raise ValueError("pack_bits binding requires one Bit input and word_width")
             if inputs[0].array_type.unit_count % word_width:
                 raise ValueError("pack_bits input width must be divisible by word_width")
-            if isinstance(output_type.domain, Word):
-                if output_type.domain.width != word_width:
+            if isinstance(output_type.unit_type, Word):
+                if output_type.unit_type.width != word_width:
                     raise ValueError("packed Word width is inconsistent")
-            elif isinstance(output_type.domain, BinaryExtensionField):
-                if output_type.domain.degree != word_width:
+            elif isinstance(output_type.unit_type, BinaryExtensionField):
+                if output_type.unit_type.degree != word_width:
                     raise ValueError("packed field degree is inconsistent")
             else:
                 raise ValueError("pack_bits output must use Word or binary-extension-field units")
-            expected = ArrayType(
-                output_type.domain, (inputs[0].array_type.unit_count // word_width,)
+            expected = UnitArrayType(
+                output_type.unit_type, (inputs[0].array_type.unit_count // word_width,)
             )
         else:
             if len(inputs) != 1 or word_width is None:
                 raise ValueError("unpack_bits binding requires one input and word_width")
-            domain = inputs[0].array_type.domain
+            unit_type = inputs[0].array_type.unit_type
             actual_width = (
-                domain.width
-                if isinstance(domain, Word)
-                else (domain.degree if isinstance(domain, BinaryExtensionField) else None)
+                unit_type.width
+                if isinstance(unit_type, Word)
+                else (unit_type.degree if isinstance(unit_type, BinaryExtensionField) else None)
             )
             if actual_width != word_width:
                 raise ValueError("unpack_bits word_width is inconsistent with its input")
-            expected = ArrayType(Bit(), (inputs[0].array_type.unit_count * word_width,))
+            expected = UnitArrayType(Bit(), (inputs[0].array_type.unit_count * word_width,))
         if expected != output_type:
             raise ValueError("binding output type is inconsistent with its operation")
     except (TypeError, ValueError) as error:
@@ -757,7 +761,7 @@ def _validate_binding(identifier, kind, inputs, output_type, word_width, path):
 
 def _validate_dependency_order(primitive, path):
     bindings = {item.binding_id: item for item in primitive.graph.bindings}
-    available = set(primitive.graph.input_ports)
+    available = set(primitive.graph.input_arrays)
 
     def resolvable(source_id, stack):
         if source_id in available:
@@ -772,11 +776,12 @@ def _validate_dependency_order(primitive, path):
                 path=path,
             )
         return all(
-            resolvable(selected.source.owner_id, stack | {source_id}) for selected in binding.inputs
+            resolvable(selected.source.source_id, stack | {source_id})
+            for selected in binding.inputs
         )
 
     for component in primitive.graph.components:
-        if not all(resolvable(selected.source.owner_id, set()) for selected in component.inputs):
+        if not all(resolvable(selected.source.source_id, set()) for selected in component.inputs):
             raise SerializationError(
                 SerializationFailure.INVALID_REFERENCE,
                 f"component {component.component_id!r} has a forward or dangling dependency",
@@ -784,7 +789,7 @@ def _validate_dependency_order(primitive, path):
             )
         available.add(component.component_id)
     if primitive.graph.output is not None and not resolvable(
-        primitive.graph.output.source.owner_id, set()
+        primitive.graph.output.source.source_id, set()
     ):
         raise SerializationError(
             SerializationFailure.INVALID_REFERENCE,
@@ -967,7 +972,7 @@ def _decode_primitive(value, path):
         ) from error
     for binding in primitive.graph.bindings:
         for selected in binding.inputs:
-            actual = primitive.graph.port(selected.source.owner_id)
+            actual = primitive.graph.unit_array(selected.source.source_id)
             if actual != selected.source:
                 raise SerializationError(
                     SerializationFailure.TYPE_MISMATCH,

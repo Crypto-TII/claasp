@@ -1,4 +1,4 @@
-"""Primitive consisting of one domain-polymorphic multiplication."""
+"""Primitive consisting of one unit_type-polymorphic multiplication."""
 
 from claasp.components import Multiply as MultiplyComponent
 from claasp.graph import Primitive, PrimitiveKind
@@ -9,15 +9,15 @@ from ._base import algebraic_inputs
 class Multiply(Primitive):
     """Multiply corresponding units in two or more inputs.
 
-    The default domain is GF(2), where multiplication is AND.
+    The default unit_type is GF(2), where multiplication is AND.
 
     >>> Multiply().evaluate(1, 0)
     0
 
-    Select another domain explicitly when needed:
+    Select another unit_type explicitly when needed:
 
-    >>> from claasp.domains import PrimeField
-    >>> Multiply(domain=PrimeField(17)).evaluate(5, 7)
+    >>> from claasp.unit_types import PrimeField
+    >>> Multiply(unit_type=PrimeField(17)).evaluate(5, 7)
     1
 
     ``unit_count`` and ``number_of_inputs`` build component-wise vector
@@ -31,16 +31,16 @@ class Multiply(Primitive):
     EXAMPLES::
 
         >>> primitive = Multiply()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
     """
 
-    def __init__(self, domain=None, unit_count: int = 1, number_of_inputs: int = 2) -> None:
+    def __init__(self, unit_type=None, unit_count: int = 1, number_of_inputs: int = 2) -> None:
         super().__init__(
             "multiply",
-            algebraic_inputs(domain, unit_count, number_of_inputs),
+            algebraic_inputs(unit_type, unit_count, number_of_inputs),
             kind=PrimitiveKind.FUNCTION,
         )
         self._builder.add_round()

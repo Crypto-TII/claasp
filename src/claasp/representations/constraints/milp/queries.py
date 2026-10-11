@@ -105,12 +105,12 @@ class CubeSuperpolyQuery:
         if symbolic_input is None and self.symbolic_positions:
             raise ValueError("symbolic_input is required for symbolic_positions")
         for name in (cube_input, symbolic_input):
-            if name is not None and name not in primitive.graph.input_ports:
+            if name is not None and name not in primitive.graph.input_arrays:
                 raise ValueError(f"unknown primitive input {name!r}")
         for name, value in self.fixed_inputs.items():
-            if name not in primitive.graph.input_ports:
+            if name not in primitive.graph.input_arrays:
                 raise ValueError(f"unknown fixed input {name!r}")
-            primitive._decode_boundary(value, primitive.graph.input_ports[name].array_type)
+            primitive._decode_boundary(value, primitive.graph.input_arrays[name].array_type)
         self._validate_positions(cube_input, self.cube_positions, "cube_positions")
         if symbolic_input is not None:
             self._validate_positions(symbolic_input, self.symbolic_positions, "symbolic_positions")
@@ -133,7 +133,7 @@ class CubeSuperpolyQuery:
             raise ValueError("output_bit must select a bit-encoded primitive output")
 
     def _validate_positions(self, name, positions, label):
-        size = self.primitive.graph.input_ports[name].array_type.encoded_bit_size
+        size = self.primitive.graph.input_arrays[name].array_type.encoded_bit_size
         if (
             size is None
             or len(set(positions)) != len(positions)
@@ -153,13 +153,15 @@ class CubeSuperpolyQuery:
         return value
 
     def _output_value(self, cube_mask, symbolic_mask):
-        values = {name: self.fixed_inputs.get(name, 0) for name in self.primitive.graph.input_ports}
-        cube_size = self.primitive.graph.input_ports[self.cube_input].array_type.encoded_bit_size
+        values = {
+            name: self.fixed_inputs.get(name, 0) for name in self.primitive.graph.input_arrays
+        }
+        cube_size = self.primitive.graph.input_arrays[self.cube_input].array_type.encoded_bit_size
         values[self.cube_input] = self._set_positions(
             values[self.cube_input], cube_size, self.cube_positions, cube_mask
         )
         if self.symbolic_input is not None:
-            symbolic_size = self.primitive.graph.input_ports[
+            symbolic_size = self.primitive.graph.input_arrays[
                 self.symbolic_input
             ].array_type.encoded_bit_size
             values[self.symbolic_input] = self._set_positions(

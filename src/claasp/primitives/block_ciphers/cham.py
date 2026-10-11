@@ -13,7 +13,7 @@ class CHAM(Primitive):
     EXAMPLES::
 
         >>> primitive = CHAM()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xce2084f0a4c1b6bf', 64)

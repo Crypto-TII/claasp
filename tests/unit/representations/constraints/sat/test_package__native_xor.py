@@ -58,8 +58,8 @@ def test_native_xor_graph_lowering_matches_ordinary_cnf(primitive):
     assert canonical(native_formula.expanded_cnf().clauses) == canonical(ordinary_formula.clauses)
 
     inputs = {
-        name: tuple(0 for _ in range(port.array_type.unit_count))
-        for name, port in primitive.graph.input_ports.items()
+        name: tuple(0 for _ in range(unit_array.array_type.unit_count))
+        for name, unit_array in primitive.graph.input_arrays.items()
     }
     evaluation = ScalarEvaluator().evaluate(primitive, inputs)
     assert native_formula.is_satisfied(native.witness(evaluation))

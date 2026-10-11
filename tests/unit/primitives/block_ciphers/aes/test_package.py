@@ -1,13 +1,13 @@
 import pytest
 
 from claasp.composites import AESKeySchedule, AESRound
-from claasp.domains import BinaryExtensionField
 from claasp.primitives import AES, AES128, CustomAES
 from claasp.representations.execution import (
     BatchEvaluator,
     ScalarEvaluator,
     TransposedBatchEvaluator,
 )
+from claasp.unit_types import BinaryExtensionField
 
 PLAINTEXT = tuple(bytes.fromhex("00112233445566778899aabbccddeeff"))
 KEY = tuple(bytes.fromhex("000102030405060708090a0b0c0d0e0f"))
@@ -19,7 +19,7 @@ def test_aes128_matches_fips_197_known_answer_vector_and_uses_field_bytes():
     result = ScalarEvaluator().evaluate(primitive, {"plaintext": PLAINTEXT, "key": KEY})
 
     assert result.output == CIPHERTEXT
-    assert primitive.graph.input("plaintext").array_type.domain == BinaryExtensionField(8, 0x11B)
+    assert primitive.graph.input("plaintext").array_type.unit_type == BinaryExtensionField(8, 0x11B)
     assert primitive.graph.input("plaintext").array_type.unit_count == 16
 
 
@@ -29,7 +29,7 @@ def test_aes128_matches_fips_first_round_intermediate_values():
 
     def value(selection):
         selection = selection.select_all() if hasattr(selection, "select_all") else selection
-        source = result.value_of(selection.source.owner_id)
+        source = result.value_of(selection.source.source_id)
         return tuple(source[position] for position in selection.positions)
 
     intermediates = primitive.graph.intermediate_outputs[0]

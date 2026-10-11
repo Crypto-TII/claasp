@@ -57,7 +57,7 @@ def compile_python_source(primitive: Primitive) -> SourceCompilationResult:
             "def evaluate(inputs):",
             "    result = PRIMITIVE.evaluate_with_trace(inputs)",
             "    order = (",
-            "        tuple(PRIMITIVE.graph.input_ports)",
+            "        tuple(PRIMITIVE.graph.input_arrays)",
             "        + tuple(item.component_id for item in PRIMITIVE.graph.components)",
             "        + tuple(item.binding_id for item in PRIMITIVE.graph.bindings)",
             "    )",

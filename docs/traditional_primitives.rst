@@ -12,7 +12,7 @@ every operation to gates.
 
 .. doctest::
 
-   >>> from claasp.domains import Word
+   >>> from claasp.unit_types import Word
    >>> Word(32).encoded_bit_size
    32
    >>> Word(32).contains(0xffffffff)
@@ -120,7 +120,7 @@ Use :doc:`customizing_aes` to replace the S-box, omit MixColumns, change other
 AES building blocks, or use Toy AES with a smaller state or word size.
 
 The graph supports AES-128, AES-192, and AES-256 key expansion. SubBytes uses a reusable typed
-``SBox`` lookup, ShiftRows is a domain-neutral ``Permutation``, MixColumns is
+``SBox`` lookup, ShiftRows is a unit-type-neutral ``Permutation``, MixColumns is
 a ``LinearMap`` over the byte field, and AddRoundKey is field addition.
 ``number_of_rounds`` constructs a prefix of the standard primitive; MixColumns
 is omitted only in standard round 10.

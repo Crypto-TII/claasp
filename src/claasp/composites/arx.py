@@ -1,8 +1,8 @@
 """Reusable add-rotate-XOR composites."""
 
 from claasp.components import ModularAdd, Rotate, Xor
-from claasp.domains import Word
-from claasp.graph import ArrayType, CompositeBuilder, CompositeDefinition
+from claasp.graph import CompositeBuilder, CompositeDefinition, UnitArrayType
+from claasp.unit_types import Word
 
 
 def ChaChaQuarterRound(
@@ -28,7 +28,7 @@ def ChaChaQuarterRound(
     ):
         raise ValueError("rotations must contain four integers in range(word_size)")
 
-    array_type = ArrayType(Word(word_size), (1,))
+    array_type = UnitArrayType(Word(word_size), (1,))
     builder = CompositeBuilder(
         "ChaChaQuarterRound", {name: array_type for name in ("a", "b", "c", "d")}
     )

@@ -5,12 +5,12 @@ from copy import copy
 from dataclasses import dataclass
 
 from claasp.graph import (
-    ArrayType,
-    Port,
-    PortLike,
     Primitive,
     PrimitiveInput,
     Selection,
+    UnitArray,
+    UnitArrayLike,
+    UnitArrayType,
     as_selection,
 )
 from claasp.graph.composite import CompositeInstance
@@ -49,8 +49,8 @@ def split_dependencies(
 
         >>> from claasp.primitives import Speck
         >>> primitive = Speck(number_of_rounds=2)
-        >>> first = primitive.graph.round_outputs[0][0].owner_id
-        >>> second = primitive.graph.round_outputs[1][0].owner_id
+        >>> first = primitive.graph.round_outputs[0][0].source_id
+        >>> second = primitive.graph.round_outputs[1][0].source_id
         >>> split = split_dependencies(primitive, top_outputs=first, bottom_inputs=second)
         >>> first in split.top and second in split.bottom
         True
@@ -64,13 +64,15 @@ def split_dependencies(
 
 
 def _as_values(value) -> tuple[Selection, ...]:
-    if isinstance(value, (Port, Selection)):
+    if isinstance(value, (UnitArray, Selection)):
         return (as_selection(value),)
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
         result = tuple(as_selection(item) for item in value)
         if result:
             return result
-    raise TypeError("a graph boundary must be a port, selection, or non-empty sequence of them")
+    raise TypeError(
+        "a graph boundary must be a unit_array, selection, or non-empty sequence of them"
+    )
 
 
 def _normalize_outputs(primitive: Primitive, outputs) -> tuple[Selection, ...]:
@@ -82,24 +84,24 @@ def _normalize_outputs(primitive: Primitive, outputs) -> tuple[Selection, ...]:
             )
         return (primitive.graph.output,)
     if isinstance(outputs, str):
-        return (primitive.graph.port(outputs).select_all(),)
+        return (primitive.graph.unit_array(outputs).select_all(),)
     return _as_values(outputs)
 
 
 def _validate_selection(primitive: Primitive, selection: Selection) -> None:
     try:
-        actual = primitive.graph.port(selection.source.owner_id)
+        actual = primitive.graph.unit_array(selection.source.source_id)
     except KeyError as error:
         raise TransformationError(
             TransformationFailureReason.DISCONNECTED_DEPENDENCY,
             "boundary source is not in the primitive",
-            source_ids=(selection.source.owner_id,),
+            source_ids=(selection.source.source_id,),
         ) from error
     if actual != selection.source:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
-            "boundary port type does not match the primitive",
-            source_ids=(selection.source.owner_id,),
+            "boundary unit_array type does not match the primitive",
+            source_ids=(selection.source.source_id,),
         )
 
 
@@ -116,20 +118,21 @@ def _boundary_descriptors(primitive, inputs):
         pieces = _as_values(value)
         for piece in pieces:
             _validate_selection(primitive, piece)
-        domain = pieces[0].array_type.domain
-        if any(piece.array_type.domain != domain for piece in pieces[1:]):
+        unit_type = pieces[0].array_type.unit_type
+        if any(piece.array_type.unit_type != unit_type for piece in pieces[1:]):
             raise TransformationError(
                 TransformationFailureReason.AMBIGUOUS_BOUNDARY,
-                "one boundary input must use one scalar domain",
-                source_ids=tuple(piece.source.owner_id for piece in pieces),
+                "one boundary input must use one scalar unit_type",
+                source_ids=tuple(piece.source.source_id for piece in pieces),
             )
         descriptor = PrimitiveInput(
-            ArrayType(domain, (sum(piece.array_type.unit_count for piece in pieces),)), role=name
+            UnitArrayType(unit_type, (sum(piece.array_type.unit_count for piece in pieces),)),
+            role=name,
         )
         descriptors[name] = descriptor
         offset = 0
         for piece in pieces:
-            source_id = piece.source.owner_id
+            source_id = piece.source.source_id
             if source_id in pieces_by_source:
                 raise TransformationError(
                     TransformationFailureReason.MULTIPLE_PREDECESSORS,
@@ -158,7 +161,7 @@ def slice_primitive(
     primitive: Primitive,
     outputs=None,
     *,
-    inputs: Mapping[str, PortLike | Sequence[PortLike]] | None = None,
+    inputs: Mapping[str, UnitArrayLike | Sequence[UnitArrayLike]] | None = None,
     family_name: str | None = None,
 ) -> TransformationResult:
     """Return the validated dependency slice between explicit graph boundaries.
@@ -186,11 +189,11 @@ def slice_primitive(
     index = DependencyIndex(primitive)
     required = _required_sources(
         index,
-        tuple(selection.source.owner_id for selection in output_selections),
+        tuple(selection.source.source_id for selection in output_selections),
         set(boundary_by_source),
     )
 
-    for source_id in primitive.graph.input_ports:
+    for source_id in primitive.graph.input_arrays:
         if source_id in required and source_id not in boundary_by_source:
             boundary_descriptors[source_id] = primitive.graph.input_descriptor(source_id)
 
@@ -198,7 +201,7 @@ def slice_primitive(
         inputs is None
         and len(output_selections) == 1
         and primitive.graph.output == output_selections[0]
-        and set(primitive.graph.input_ports) <= required
+        and set(primitive.graph.input_arrays) <= required
     )
     derived = Primitive(
         family_name or f"{primitive.family_name}_slice",
@@ -208,20 +211,20 @@ def slice_primitive(
     )
     derived.realization = primitive.realization
     old_transformations = primitive.transformation_provenance
-    source_ports: dict[str, Port] = {}
+    source_unit_arrays: dict[str, UnitArray] = {}
     boundary_positions = {}
     for name in boundary_descriptors:
-        source_ports[name] = derived.graph.input(name)
+        source_unit_arrays[name] = derived.graph.input(name)
     for source_id, (_name, positions, offset) in boundary_by_source.items():
         boundary_positions[source_id] = {
             position: offset + relative for relative, position in enumerate(positions)
         }
-    for input_name in primitive.graph.input_ports:
+    for input_name in primitive.graph.input_arrays:
         if input_name in required and input_name not in boundary_by_source:
-            source_ports[input_name] = derived.graph.input(input_name)
+            source_unit_arrays[input_name] = derived.graph.input(input_name)
 
     def remap(selection: Selection) -> Selection:
-        source_id = selection.source.owner_id
+        source_id = selection.source.source_id
         if source_id in boundary_positions:
             position_map = boundary_positions[source_id]
             try:
@@ -235,7 +238,7 @@ def slice_primitive(
             name = boundary_by_source[source_id][0]
             return derived.graph.input(name)[positions]
         try:
-            return source_ports[source_id][selection.positions]
+            return source_unit_arrays[source_id][selection.positions]
         except KeyError as error:
             raise TransformationError(
                 TransformationFailureReason.DISCONNECTED_DEPENDENCY,
@@ -260,7 +263,7 @@ def slice_primitive(
         source = index.source(source_id)
         if source.kind is GraphSourceKind.BINDING:
             binding = binding_by_id[source_id]
-            source_ports[source_id] = derived._add_binding(
+            source_unit_arrays[source_id] = derived._add_binding(
                 binding.kind,
                 tuple(remap(item) for item in binding.inputs),
                 binding.output_type,
@@ -274,7 +277,7 @@ def slice_primitive(
                 active_round = original_round
             component = copy(component_by_id[source_id])
             object.__setattr__(component, "inputs", tuple(remap(item) for item in component.inputs))
-            source_ports[source_id] = derived._builder.add_component(component)
+            source_unit_arrays[source_id] = derived._builder.add_component(component)
 
     transformed_outputs = tuple(remap(selection) for selection in output_selections)
     derived._builder.set_output(
@@ -304,15 +307,15 @@ def slice_primitive(
 
     operation = "slice"
     parameters = (
-        ("outputs", ",".join(selection.source.owner_id for selection in output_selections)),
+        ("outputs", ",".join(selection.source.source_id for selection in output_selections)),
         ("inputs", ",".join(boundary_descriptors)),
     )
     record = TransformationRecord(operation, parameters, primitive.realization_identity)
     object.__setattr__(derived, "_transformation_provenance", (*old_transformations, record))
     source_map = tuple(
-        (source_id, source_ports[source_id].owner_id)
+        (source_id, source_unit_arrays[source_id].source_id)
         for source_id in index.topological_ids
-        if source_id in source_ports
+        if source_id in source_unit_arrays
     )
     return TransformationResult(derived, source_map)
 

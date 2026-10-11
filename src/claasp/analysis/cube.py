@@ -46,11 +46,11 @@ def evaluate_cube_sum(
         required arguments rejected
     """
 
-    if variable_input not in primitive.graph.input_ports:
+    if variable_input not in primitive.graph.input_arrays:
         raise ValueError(f"unknown variable input: {variable_input}")
-    if set(inputs) != set(primitive.graph.input_ports):
+    if set(inputs) != set(primitive.graph.input_arrays):
         raise ValueError("inputs must provide every primitive input exactly once")
-    width = primitive.graph.input_ports[variable_input].array_type.encoded_bit_size
+    width = primitive.graph.input_arrays[variable_input].array_type.encoded_bit_size
     output_width = (
         primitive.graph.output.array_type.encoded_bit_size if primitive.graph.output else 0
     )

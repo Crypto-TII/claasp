@@ -6,7 +6,6 @@ from time import perf_counter
 
 from claasp.analysis._trail_propagation import xor_differential_propagation
 from claasp.components import BitVectorSBox, Permutation
-from claasp.domains import Bit
 from claasp.graph import Primitive
 from claasp.semantics.cryptanalysis import (
     SBoxTransitionSemantics,
@@ -19,6 +18,7 @@ from claasp.semantics.cryptanalysis import (
     XorDifference,
     XorMask,
 )
+from claasp.unit_types import Bit
 
 
 def find_two_round_spn_xor_differential(primitive: Primitive) -> TrailSearchResult:
@@ -275,14 +275,14 @@ def check_spn_linear_trail(primitive: Primitive, trail: Trail) -> bool:
 
 
 def _validate_present_slice(primitive: Primitive) -> None:
-    plaintext = primitive.graph.input_ports.get("plaintext")
-    key = primitive.graph.input_ports.get("key")
+    plaintext = primitive.graph.input_arrays.get("plaintext")
+    key = primitive.graph.input_arrays.get("key")
     if (
         primitive.family_name != "present"
         or len(primitive.graph.rounds) != 2
         or plaintext is None
         or key is None
-        or not isinstance(plaintext.array_type.domain, Bit)
+        or not isinstance(plaintext.array_type.unit_type, Bit)
         or plaintext.array_type.unit_count != 64
     ):
         raise NotImplementedError(
@@ -291,12 +291,12 @@ def _validate_present_slice(primitive: Primitive) -> None:
 
 
 def _validate_present_linear_slice(primitive: Primitive) -> None:
-    plaintext = primitive.graph.input_ports.get("plaintext")
+    plaintext = primitive.graph.input_arrays.get("plaintext")
     if (
         primitive.family_name != "present"
         or len(primitive.graph.rounds) != 3
         or plaintext is None
-        or not isinstance(plaintext.array_type.domain, Bit)
+        or not isinstance(plaintext.array_type.unit_type, Bit)
         or plaintext.array_type.unit_count != 64
     ):
         raise NotImplementedError(

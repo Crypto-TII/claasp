@@ -34,7 +34,7 @@ class XorDifferentialPropagation:
 
 
 def _decode(value: int, array_type) -> tuple[int, ...]:
-    width = array_type.domain.encoded_bit_size
+    width = array_type.unit_type.encoded_bit_size
     if width is None:
         raise TypeError("trail display requires canonically encoded domains")
     mask = (1 << width) - 1
@@ -57,14 +57,14 @@ def _packed_operands(component, operands) -> XorDifference | None:
     values = []
     total_width = 0
     for selection, operand in zip(component.inputs, operands):
-        width = selection.array_type.domain.encoded_bit_size
+        width = selection.array_type.unit_type.encoded_bit_size
         if width is None:
             raise TypeError("trail display requires canonically encoded domains")
         values.extend(operand)
         total_width += len(operand) * width
     # Components require homogeneous input domains, so packing every operand
-    # with the first domain width preserves their declared input order.
-    width = component.inputs[0].array_type.domain.encoded_bit_size
+    # with the first unit_type width preserves their declared input order.
+    width = component.inputs[0].array_type.unit_type.encoded_bit_size
     return XorDifference(_pack(tuple(values), width), total_width)
 
 
@@ -112,14 +112,14 @@ def xor_differential_propagation(
 ) -> XorDifferentialPropagation:
     """Propagate a trail to specification-level rounds and graph components."""
 
-    expected_inputs = set(primitive.graph.input_ports)
+    expected_inputs = set(primitive.graph.input_arrays)
     if set(input_differences) != expected_inputs:
         raise ValueError("input_differences must define every primitive input")
     values = {
-        name: _decode(input_differences[name], port.array_type)
-        for name, port in primitive.graph.input_ports.items()
+        name: _decode(input_differences[name], unit_array.array_type)
+        for name, unit_array in primitive.graph.input_arrays.items()
     }
-    dependencies = {name: frozenset((name,)) for name in primitive.graph.input_ports}
+    dependencies = {name: frozenset((name,)) for name in primitive.graph.input_arrays}
     weighted = {step.component_id: step.transition for step in trail.steps}
     round_numbers = {
         component.component_id: primitive_round.number
@@ -135,9 +135,9 @@ def xor_differential_propagation(
             for selection in component.inputs
         )
         source_ids = {
-            owner_id
+            source_id
             for selection in component.inputs
-            for owner_id, _ in primitive.graph.selection_bit_sources(selection)
+            for source_id, _ in primitive.graph.selection_bit_sources(selection)
         }
         component_dependencies = frozenset(
             name for source_id in source_ids for name in dependencies[source_id]
@@ -145,9 +145,9 @@ def xor_differential_propagation(
         local_transition = weighted.get(component.component_id)
 
         if isinstance(component, Rotate):
-            width = component.output_type.domain.encoded_bit_size
+            width = component.output_type.unit_type.encoded_bit_size
             if width is None:
-                raise TypeError("rotate trail display requires a canonically encoded domain")
+                raise TypeError("rotate trail display requires a canonically encoded unit_type")
             amount = component.amount % width
             output = tuple(
                 (
@@ -199,7 +199,7 @@ def xor_differential_propagation(
         if is_key_schedule_only and not include_key_schedule:
             continue
 
-        output_width = component.output_type.domain.encoded_bit_size
+        output_width = component.output_type.unit_type.encoded_bit_size
         if output_width is None:
             raise TypeError("trail display requires canonically encoded domains")
         result.append(
@@ -216,9 +216,9 @@ def xor_differential_propagation(
     if primitive.graph.output is None:
         raise ValueError("trail primitive must declare an output")
     output = tuple(primitive.graph.resolve_selection(primitive.graph.output, values))
-    output_width = primitive.graph.output.array_type.domain.encoded_bit_size
+    output_width = primitive.graph.output.array_type.unit_type.encoded_bit_size
     if output_width is None:
-        raise TypeError("trail display requires a canonically encoded output domain")
+        raise TypeError("trail display requires a canonically encoded output unit_type")
     if (
         _pack(output, output_width) != trail.output_pattern.value
         or len(output) * output_width != trail.output_pattern.width

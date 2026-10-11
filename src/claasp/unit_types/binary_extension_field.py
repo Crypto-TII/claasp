@@ -1,13 +1,13 @@
-"""Binary extension-field domain descriptors."""
+"""Binary extension-field unit type."""
 
 from dataclasses import dataclass
 
-from claasp.domains.base import Domain
-from claasp.domains.validation import is_irreducible_binary_polynomial
+from claasp.unit_types.base import UnitType
+from claasp.unit_types.validation import is_irreducible_binary_polynomial
 
 
 @dataclass(frozen=True, slots=True)
-class BinaryExtensionField(Domain):
+class BinaryExtensionField(UnitType):
     """Polynomial-basis representation of ``GF(2^degree)``.
 
     ``modulus`` stores the coefficients of the degree-``degree`` defining
@@ -15,7 +15,7 @@ class BinaryExtensionField(Domain):
 
     EXAMPLES::
 
-        >>> from claasp.domains import BinaryExtensionField
+        >>> from claasp.unit_types import BinaryExtensionField
         >>> aes_field = BinaryExtensionField(8, 0x11B)
         >>> aes_field.contains(0xFF)
         True

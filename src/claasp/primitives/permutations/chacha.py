@@ -1,8 +1,8 @@
 """Reference ChaCha implementation following the designers' pseudocode."""
 
 from claasp.components import ModularAdd, Rotate, Xor
-from claasp.domains import Word
-from claasp.graph import ArrayType, Primitive, PrimitiveKind
+from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
+from claasp.unit_types import Word
 
 _COLUMNS = ((0, 4, 8, 12), (1, 5, 9, 13), (2, 6, 10, 14), (3, 7, 11, 15))
 _DIAGONALS = ((0, 5, 10, 15), (1, 6, 11, 12), (2, 7, 8, 13), (3, 4, 9, 14))
@@ -52,7 +52,7 @@ class ChaCha(Primitive):
 
         super().__init__(
             "chacha",
-            {"state": ArrayType(Word(word_size), (16,))},
+            {"state": UnitArrayType(Word(word_size), (16,))},
             kind=PrimitiveKind.PERMUTATION,
         )
         state = [self.graph.input("state")[index] for index in range(16)]

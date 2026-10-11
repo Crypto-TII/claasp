@@ -1,10 +1,10 @@
-"""Domain-neutral logical-unit permutation."""
+"""UnitType-neutral logical-unit permutation."""
 
 from collections.abc import Iterable
 from dataclasses import dataclass
 
 from claasp.graph.component import Component
-from claasp.graph.port import PortLike, as_selection
+from claasp.graph.unit_array import UnitArrayLike, as_selection
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -22,7 +22,7 @@ class Permutation(Component):
 
     def __init__(
         self,
-        component_input: PortLike,
+        component_input: UnitArrayLike,
         mapping: Iterable[int],
         component_id: str | None = None,
     ) -> None:
@@ -41,17 +41,17 @@ class Permutation(Component):
     @classmethod
     def reverse(
         cls,
-        component_input: PortLike,
+        component_input: UnitArrayLike,
         component_id: str | None = None,
     ) -> "Permutation":
         """Reverse all logical units in a component input.
 
         EXAMPLES::
 
-            >>> from claasp import PrimitiveBuilder, ArrayType
-            >>> from claasp.domains import Bit
+            >>> from claasp import PrimitiveBuilder, UnitArrayType
+            >>> from claasp.unit_types import Bit
             >>> from claasp.components import Permutation
-            >>> builder = PrimitiveBuilder("reverse", {"x": ArrayType(Bit(), (4,))})
+            >>> builder = PrimitiveBuilder("reverse", {"x": UnitArrayType(Bit(), (4,))})
             >>> _ = builder.add_round()
             >>> Permutation.reverse(builder.input("x")).mapping
             (3, 2, 1, 0)

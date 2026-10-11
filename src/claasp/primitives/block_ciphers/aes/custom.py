@@ -4,7 +4,7 @@ from collections.abc import Iterable
 
 from claasp.components import Add
 from claasp.composites.aes import AES_FIELD, AES_SBOX, AESKeySchedule, AESRound
-from claasp.graph import ArrayType, Primitive, PrimitiveKind
+from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 
 
 class CustomAES(Primitive):
@@ -17,7 +17,7 @@ class CustomAES(Primitive):
     EXAMPLES::
 
         >>> primitive = CustomAES()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x66e94bd4ef8a2c3b', 127)
@@ -56,10 +56,10 @@ class CustomAES(Primitive):
         if not modifications:
             modifications.append("explicit AES-derived block composition")
 
-        state_type = ArrayType(AES_FIELD, (16,))
+        state_type = UnitArrayType(AES_FIELD, (16,))
         super().__init__(
             "custom_aes",
-            {"plaintext": state_type, "key": ArrayType(AES_FIELD, (key_bit_size // 8,))},
+            {"plaintext": state_type, "key": UnitArrayType(AES_FIELD, (key_bit_size // 8,))},
             kind=PrimitiveKind.BLOCK_CIPHER,
             provenance=(("derived_from", "AES"), ("modifications", "; ".join(modifications))),
             instance_name=f"CustomAES-{key_bit_size}",

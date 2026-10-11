@@ -1,8 +1,7 @@
 """Private compact realizations used by reviewed inversion equivalents."""
 
 from claasp.components import Add, Constant, LinearMap, Multiply, Permutation
-from claasp.domains import Bit
-from claasp.graph import ArrayType, Primitive, PrimitiveInput, PrimitiveKind
+from claasp.graph import Primitive, PrimitiveInput, PrimitiveKind, UnitArrayType
 from claasp.graph.bit_builder import (
     BitState,
     calculate_inputs,
@@ -28,6 +27,7 @@ from claasp.primitives.permutations.xoodoo.sbox import (
 )
 from claasp.primitives.tweakable_block_ciphers.qarmav2.primitive import QARMAv2
 from claasp.transformations.inverse_rules import _inverse_matrix
+from claasp.unit_types import Bit
 
 # Each output bit is the XOR of three rotated input words.
 _QARMAV2_M_MATRIX = tuple(
@@ -75,8 +75,8 @@ class AradiCompactWord(AradiSBoxCompactLinearMap):
         self.B = [8, 9, 4, 9]
         self.C = [14, 11, 14, 7]
         self.linear_layers = create_linear_layers(self.A, self.B, self.C)
-        state = self._builder.unpack_bits(self.graph.input("plaintext")).owner_id
-        key = self._builder.unpack_bits(self.graph.input("key")).owner_id
+        state = self._builder.unpack_bits(self.graph.input("plaintext")).source_id
+        key = self._builder.unpack_bits(self.graph.input("key")).source_id
         for round_i in range(number_of_rounds):
             self._builder.add_round()
             round_key = self.get_round_key_id(key, round_i)
@@ -91,7 +91,7 @@ class AradiCompactWord(AradiSBoxCompactLinearMap):
             ).id
             for start in range(0, 128, 32)
         ]
-        bits = self._builder.join(*(self.graph.port(output) for output in outputs))
+        bits = self._builder.join(*(self.graph.unit_array(output) for output in outputs))
         self._builder.set_output(self._builder.pack_bits(bits, 16))
 
 
@@ -194,9 +194,9 @@ class QARMAv2Compact(QARMAv2):
             ),
             input_pos,
         )
-        port = self.graph.port(component_id)
+        unit_array = self.graph.unit_array(component_id)
         return [
-            self._builder.view(port[tuple(range(word * 4, (word + 1) * 4))]).owner_id
+            self._builder.view(unit_array[tuple(range(word * 4, (word + 1) * 4))]).source_id
             for word in range(4)
         ]
 
@@ -254,7 +254,7 @@ class GimliTriangular(Gimli):
     """
 
     def _source_bit(self, state, position):
-        return self.graph.port(state.id[0])[state.input_bit_positions[0][position]]
+        return self.graph.unit_array(state.id[0])[state.input_bit_positions[0][position]]
 
     def _sum_bits(self, *values):
         return values[0] if len(values) == 1 else self._builder.add_component(Add(values))
@@ -322,7 +322,7 @@ class GimliTriangular(Gimli):
             for row in range(N_ROWS):
                 joined = self._builder.view(self._builder.join(*output_bits[row]))
                 result[row][column] = BitState(
-                    [joined.owner_id],
+                    [joined.source_id],
                     [list(range(self.word_bit_size))],
                 )
         return result
@@ -335,7 +335,7 @@ def subterranean_inverse(source, output_name="output"):
 
         >>> from claasp.primitives import Subterranean
         >>> from claasp.transformations._inverse_realizations import subterranean_inverse
-        >>> tuple(subterranean_inverse(Subterranean()).graph.input_ports)
+        >>> tuple(subterranean_inverse(Subterranean()).graph.input_arrays)
         ('output', 'key')
     """
 
@@ -362,8 +362,8 @@ def subterranean_inverse(source, output_name="output"):
     ]
     if len(permutations) != len(source.graph.rounds):
         raise ValueError("Subterranean inverse requires one terminal permutation per round")
-    one = derived._builder.add_component(Constant(ArrayType(Bit(), (1,)), (1,)))
-    ones = derived._builder.add_component(Constant(ArrayType(Bit(), (size,)), (1,) * size))
+    one = derived._builder.add_component(Constant(UnitArrayType(Bit(), (1,)), (1,)))
+    ones = derived._builder.add_component(Constant(UnitArrayType(Bit(), (size,)), (1,) * size))
 
     for permutation in reversed(permutations):
         inverse_mapping = [0] * size
@@ -540,7 +540,7 @@ def chilow_inverse(source, output_name="output"):
 
         >>> from claasp.primitives import Chilow
         >>> from claasp.transformations._inverse_realizations import chilow_inverse
-        >>> tuple(chilow_inverse(Chilow()).graph.input_ports)
+        >>> tuple(chilow_inverse(Chilow()).graph.input_arrays)
         ('output', 'input_tweak', 'key')
     """
 
@@ -557,11 +557,11 @@ def chilow_inverse(source, output_name="output"):
         provenance=source.provenance,
     )
     derived._builder.add_round()
-    zero = derived._builder.add_component(Constant(ArrayType(Bit(), (1,)), (0,)))
-    one = derived._builder.add_component(Constant(ArrayType(Bit(), (1,)), (1,)))
+    zero = derived._builder.add_component(Constant(UnitArrayType(Bit(), (1,)), (0,)))
+    one = derived._builder.add_component(Constant(UnitArrayType(Bit(), (1,)), (1,)))
 
-    def abstract_bits(port):
-        return [port[index] for index in range(port.array_type.unit_count - 1, -1, -1)]
+    def abstract_bits(unit_array):
+        return [unit_array[index] for index in range(unit_array.array_type.unit_count - 1, -1, -1)]
 
     def add(left, right):
         return derived._builder.add_component(Add((left, right)))

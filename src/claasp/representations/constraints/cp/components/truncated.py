@@ -283,8 +283,8 @@ class HybridXorCPModel:
     def cp_model(self, *, left=None, right=None, output=None):
         """Return independent per-bit tagged-XOR constraints."""
 
-        domain = f"0..2 union {{i | i in 10..{self.maximum_tag} where i mod 10 = 0}}"
-        declarations = (f"set of int: HybridDomain = {domain};",) + tuple(
+        unit_type = f"0..2 union {{i | i in 10..{self.maximum_tag} where i mod 10 = 0}}"
+        declarations = (f"set of int: HybridDomain = {unit_type};",) + tuple(
             f"array[0..{self.width - 1}] of var HybridDomain: {name};"
             for name in ("left", "right", "result")
         )

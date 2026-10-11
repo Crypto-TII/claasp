@@ -62,13 +62,13 @@ class WiringFunctionalSATModel:
                 for output_bit, input_bit in zip(output, selected[0][position]):
                     context.equal(output_bit, input_bit, label)
         elif isinstance(component, Rotate):
-            width = component.output_type.domain.width
+            width = component.output_type.unit_type.width
             offset = component.amount if component.direction == "left" else -component.amount
             for output, input_ in zip(outputs, selected[0]):
                 for bit, output_bit in enumerate(output):
                     context.equal(output_bit, input_[(bit + offset) % width], label)
         else:
-            width = component.output_type.domain.width
+            width = component.output_type.unit_type.width
             offset = component.amount if component.direction == "left" else -component.amount
             for output, input_ in zip(outputs, selected[0]):
                 for bit, output_bit in enumerate(output):
@@ -111,7 +111,7 @@ class VariableWiringFunctionalSATModel:
 
         component = self.component
         label = component.component_id
-        width = component.output_type.domain.width
+        width = component.output_type.unit_type.width
         amount = selected[1][0]
         if isinstance(component, VariableShift):
             self._encode_shift(context, outputs, selected[0], amount, label, width)

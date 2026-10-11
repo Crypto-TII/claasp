@@ -93,9 +93,9 @@ def test_hybrid_boundary_rejects_unverified_assignment():
 
 
 def test_hybrid_xor_preserves_only_zero_passthrough_and_concrete_parity():
-    domain = (0, 1, 2, 10, 20)
-    for left in domain:
-        for right in domain:
+    unit_type = (0, 1, 2, 10, 20)
+    for left in unit_type:
+        for right in unit_type:
             expected = (
                 (left + right) % 2
                 if left < 2 and right < 2

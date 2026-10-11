@@ -3,19 +3,19 @@ import random
 import pytest
 
 from claasp import (
-    ArrayType,
     Primitive,
     PrimitiveKind,
     TransformationError,
     TransformationFailureReason,
+    UnitArrayType,
     invert_primitive,
     partial_inverse,
 )
 from claasp.catalogue import catalogue
 from claasp.components import Identity, Permutation, Shift, Xor
-from claasp.domains import Bit, Word
 from claasp.primitives import Present, Simon, Speck
 from claasp.primitives._catalogue_exports import load_export
+from claasp.unit_types import Bit, Word
 
 PLAINTEXT = 0x6574694C
 KEY = 0x1918111009080100
@@ -66,7 +66,7 @@ def test_reviewed_retained_input_obligations_round_trip(primitive_name):
     parameters = dict(record.parameter_sets[0].values)
     primitive = load_export(primitive_name)(**parameters)
     by_role = {
-        primitive.graph.input_descriptor(name).role: name for name in primitive.graph.input_ports
+        primitive.graph.input_descriptor(name).role: name for name in primitive.graph.input_arrays
     }
     recover_input = next(
         (
@@ -74,15 +74,15 @@ def test_reviewed_retained_input_obligations_round_trip(primitive_name):
             for role in ("plaintext", "state", "input_state", "input")
             if role in by_role
         ),
-        next(iter(primitive.graph.input_ports)),
+        next(iter(primitive.graph.input_arrays)),
     )
     inverse = primitive.edit.inverse(recover_input).primitive
 
     assert record.bijectivity_obligation
     for sample in (0x13579BDF, 0xECA86420):
         values = {
-            name: (sample * (index + 1)) & ((1 << port.array_type.encoded_bit_size) - 1)
-            for index, (name, port) in enumerate(primitive.graph.input_ports.items())
+            name: (sample * (index + 1)) & ((1 << unit_array.array_type.encoded_bit_size) - 1)
+            for index, (name, unit_array) in enumerate(primitive.graph.input_arrays.items())
         }
         output = primitive.evaluate(values)
         inverse_values = {"output": output}
@@ -119,13 +119,13 @@ def test_inverse_preserves_realization_and_records_transformation_separately():
     assert inverse.transformation_provenance[-1].operation == "inverse"
     assert primitive.transformation_provenance == ()
     assert not any(isinstance(component, Identity) for component in inverse.graph.components)
-    assert tuple(inverse.graph.input_ports) == ("output", "key")
+    assert tuple(inverse.graph.input_arrays) == ("output", "key")
 
 
 def test_partial_inverse_recovers_through_equivalent_fanout_wires():
     graph = Primitive(
         "fanout",
-        {"left": ArrayType(Word(8), (1,)), "right": ArrayType(Word(8), (1,))},
+        {"left": UnitArrayType(Word(8), (1,)), "right": UnitArrayType(Word(8), (1,))},
     )
     graph._builder.add_round()
     first = graph._builder.add_component(Xor(graph.graph.inputs()))
@@ -146,7 +146,7 @@ def test_partial_inverse_recovers_through_equivalent_fanout_wires():
 def test_partial_inverse_can_recover_an_internal_wire():
     graph = Primitive(
         "internal",
-        {"left": ArrayType(Word(8), (1,)), "right": ArrayType(Word(8), (1,))},
+        {"left": UnitArrayType(Word(8), (1,)), "right": UnitArrayType(Word(8), (1,))},
     )
     graph._builder.add_round()
     mixed = graph._builder.add_component(Xor(graph.graph.inputs()))
@@ -164,7 +164,7 @@ def test_partial_inverse_can_recover_an_internal_wire():
 def test_joint_xor_region_recovers_multiple_predecessors_without_a_solver():
     graph = Primitive(
         "joint",
-        {"state": ArrayType(Word(4), (3,))},
+        {"state": UnitArrayType(Word(4), (3,))},
         kind=PrimitiveKind.PERMUTATION,
     )
     graph._builder.add_round()
@@ -184,7 +184,9 @@ def test_joint_xor_region_recovers_multiple_predecessors_without_a_solver():
 
 
 def test_pack_unpack_bindings_remain_structural_during_inversion():
-    graph = Primitive("packed", {"state": ArrayType(Word(8), (1,))}, kind=PrimitiveKind.PERMUTATION)
+    graph = Primitive(
+        "packed", {"state": UnitArrayType(Word(8), (1,))}, kind=PrimitiveKind.PERMUTATION
+    )
     graph._builder.add_round()
     bits = graph._builder.unpack_bits(graph.graph.input("state"))
     permuted = graph._builder.add_component(Permutation(bits, (7, 6, 5, 4, 3, 2, 1, 0)))
@@ -206,7 +208,7 @@ def test_stalls_report_multiple_predecessors_information_loss_and_disconnection(
         invert_primitive(speck, retained_inputs=())
     assert multiple.value.reason is TransformationFailureReason.MULTIPLE_PREDECESSORS
 
-    shifted = Primitive("shifted", {"state": ArrayType(Word(8), (1,))})
+    shifted = Primitive("shifted", {"state": UnitArrayType(Word(8), (1,))})
     shifted._builder.add_round()
     shifted._builder.set_output(
         shifted._builder.add_component(Shift(shifted.graph.input("state"), 1, "left", "loss"))
@@ -218,7 +220,7 @@ def test_stalls_report_multiple_predecessors_information_loss_and_disconnection(
 
     disconnected = Primitive(
         "disconnected",
-        {"left": ArrayType(Bit(), (1,)), "right": ArrayType(Bit(), (1,))},
+        {"left": UnitArrayType(Bit(), (1,)), "right": UnitArrayType(Bit(), (1,))},
     )
     disconnected._builder.add_round()
     disconnected._builder.set_output(disconnected.graph.input("right"))
@@ -236,7 +238,9 @@ def test_zero_input_primitive_reports_an_ambiguous_boundary():
     graph._builder.add_round()
     from claasp.components import Constant
 
-    graph._builder.set_output(graph._builder.add_component(Constant(ArrayType(Bit(), (1,)), (1,))))
+    graph._builder.set_output(
+        graph._builder.add_component(Constant(UnitArrayType(Bit(), (1,)), (1,)))
+    )
 
     with pytest.raises(TransformationError) as caught:
         invert_primitive(graph)

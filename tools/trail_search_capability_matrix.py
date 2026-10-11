@@ -102,12 +102,12 @@ def generate():
         "schema": 3,
         "meaning": {
             "supported_and_tested": (
-                "the reduced/default graph passed the exact component/domain contract; "
+                "the reduced/default graph passed the exact component/unit_type contract; "
                 "the encodings are covered by focused construction and solver tests"
             ),
             "unsupported": (
                 "the graph cannot enter the exact optimizer for the recorded component, "
-                "weight-domain, output, or constructor reason"
+                "weight-unit_type, output, or constructor reason"
             ),
         },
         "rows": rows,

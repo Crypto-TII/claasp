@@ -1,8 +1,8 @@
 """Generic component semantics for Boolean monomial trails."""
 
 from claasp.components import Add, BitVectorSBox, Constant, Identity, Permutation
-from claasp.domains import Bit
 from claasp.representations.constraints.polynomial import monomial_transition_table
+from claasp.unit_types import Bit
 
 
 class ComponentMonomialSemantics:
@@ -14,11 +14,11 @@ class ComponentMonomialSemantics:
 
     EXAMPLES::
 
-        >>> from claasp import Primitive, ArrayType
-        >>> from claasp.domains import Bit
+        >>> from claasp import Primitive, UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.components import Identity
         >>> from claasp.semantics.cryptanalysis import ComponentMonomialSemantics
-        >>> graph = Primitive("identity", {"x": ArrayType(Bit(), (2,))})
+        >>> graph = Primitive("identity", {"x": UnitArrayType(Bit(), (2,))})
         >>> component = Identity(graph.graph.input("x"))
         >>> ComponentMonomialSemantics.is_possible(component, (0b10,), 0b10)
         True
@@ -30,17 +30,17 @@ class ComponentMonomialSemantics:
 
         EXAMPLES::
 
-            >>> from claasp import Primitive, ArrayType
-            >>> from claasp.domains import Bit
+            >>> from claasp import Primitive, UnitArrayType
+            >>> from claasp.unit_types import Bit
             >>> from claasp.components import Identity
             >>> from claasp.semantics.cryptanalysis import ComponentMonomialSemantics
-            >>> graph = Primitive("identity", {"x": ArrayType(Bit(), (1,))})
+            >>> graph = Primitive("identity", {"x": UnitArrayType(Bit(), (1,))})
             >>> ComponentMonomialSemantics.is_possible(Identity(graph.graph.input("x")), (1,), 1)
             True
         """
 
-        if not isinstance(component.output_type.domain, Bit):
-            raise TypeError("Boolean monomial semantics currently require the Bit domain")
+        if not isinstance(component.output_type.unit_type, Bit):
+            raise TypeError("Boolean monomial semantics currently require the Bit unit_type")
         output_width = component.output_type.unit_count
         ComponentMonomialSemantics._mask(output_mask, output_width, "output_mask")
         if len(input_masks) != len(component.inputs):

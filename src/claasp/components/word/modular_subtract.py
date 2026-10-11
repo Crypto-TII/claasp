@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from claasp.components.word._validation import require_word_inputs
-from claasp.graph import Component, PortLike
+from claasp.graph import Component, UnitArrayLike
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -17,7 +17,7 @@ class ModularSubtract(Component):
     """
 
     def __init__(
-        self, component_inputs: Iterable[PortLike], component_id: str | None = None
+        self, component_inputs: Iterable[UnitArrayLike], component_id: str | None = None
     ) -> None:
         inputs = tuple(component_inputs)
         if len(inputs) < 2:

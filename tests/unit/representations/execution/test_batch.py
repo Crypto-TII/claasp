@@ -1,8 +1,14 @@
 import pytest
 
-from claasp import ArrayType, BatchEvaluator, Primitive, ScalarEvaluator, TransposedBatchEvaluator
-from claasp.domains import Bit
+from claasp import (
+    BatchEvaluator,
+    Primitive,
+    ScalarEvaluator,
+    TransposedBatchEvaluator,
+    UnitArrayType,
+)
 from claasp.primitives import MiMC, Poseidon
+from claasp.unit_types import Bit
 
 
 def test_mimc_batch_matches_individual_scalar_evaluations():
@@ -42,7 +48,7 @@ def test_poseidon_batch_matches_scalar_evaluation():
 
 
 def test_batch_inputs_must_have_equal_lengths():
-    array_type = ArrayType(Bit(), (1,))
+    array_type = UnitArrayType(Bit(), (1,))
     primitive = Primitive("two_inputs", {"left": array_type, "right": array_type})
 
     with pytest.raises(ValueError, match="same number"):

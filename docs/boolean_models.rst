@@ -198,7 +198,7 @@ assembled component constraints:
 
 Call ``enumerate_trails(solver, limit=...)`` to obtain typed
 ``WordDeterministicTruncatedCharacteristic`` values. Enumeration blocks the
-canonical port trits, rather than internal carry witnesses, so one semantic
+canonical unit-array trits, rather than internal carry witnesses, so one semantic
 trail is not counted more than once. ``fixed_input_patterns``,
 ``output_pattern``, and ``nonzero_input`` provide explicit search boundaries.
 Components outside the documented ARX/structural subset are rejected instead

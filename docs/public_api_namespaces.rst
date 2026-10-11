@@ -115,12 +115,6 @@ claasp.composites
 .. automodule:: claasp.composites
    :no-index:
 
-claasp.domains
-~~~~~~~~~~~~~~
-
-.. automodule:: claasp.domains
-   :no-index:
-
 claasp.drivers
 ~~~~~~~~~~~~~~
 
@@ -875,6 +869,12 @@ claasp.transformations.traversal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.transformations.traversal
+   :no-index:
+
+claasp.unit_types
+~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.unit_types
    :no-index:
 
 claasp.utils

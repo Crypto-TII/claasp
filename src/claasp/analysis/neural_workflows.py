@@ -135,7 +135,7 @@ def find_good_input_difference(
     if not 0.0 <= threshold <= 0.5:
         raise ValueError("threshold must be between zero and 0.5")
     names = _active_inputs(primitive, active_inputs)
-    widths = {name: packed_bit_width(primitive, name) for name in primitive.graph.input_ports}
+    widths = {name: packed_bit_width(primitive, name) for name in primitive.graph.input_arrays}
     difference_bits = sum(widths[name] for name in names)
     random = Random(seed)
     initial = tuple(initial_candidates or ())
@@ -273,7 +273,7 @@ def run_autond(
 
 def _difference_score(primitive, differences, *, samples, seed, threshold):
     random = Random(seed)
-    widths = {name: packed_bit_width(primitive, name) for name in primitive.graph.input_ports}
+    widths = {name: packed_bit_width(primitive, name) for name in primitive.graph.input_arrays}
     base_inputs = tuple(
         {name: random.getrandbits(width) for name, width in widths.items()} for _ in range(samples)
     )
@@ -307,16 +307,16 @@ def _difference_score(primitive, differences, *, samples, seed, threshold):
 
 def _active_inputs(primitive, requested):
     if requested is None:
-        plaintexts = tuple(name for name in primitive.graph.input_ports if "plaintext" in name)
+        plaintexts = tuple(name for name in primitive.graph.input_arrays if "plaintext" in name)
         if len(plaintexts) == 1:
             return plaintexts
-        if len(primitive.graph.input_ports) == 1:
-            return tuple(primitive.graph.input_ports)
+        if len(primitive.graph.input_arrays) == 1:
+            return tuple(primitive.graph.input_arrays)
         raise ValueError("active_inputs is ambiguous; specify one or more primitive input names")
     names = tuple(requested)
     if not names:
         raise ValueError("active_inputs must not be empty")
-    unknown = set(names) - set(primitive.graph.input_ports)
+    unknown = set(names) - set(primitive.graph.input_arrays)
     if unknown:
         raise ValueError(f"unknown active inputs: {sorted(unknown)}")
     if len(names) != len(set(names)):
@@ -334,7 +334,7 @@ def _unpack_difference(value, active_inputs, widths):
 
 
 def _validate_differences(primitive, differences):
-    widths = {name: packed_bit_width(primitive, name) for name in primitive.graph.input_ports}
+    widths = {name: packed_bit_width(primitive, name) for name in primitive.graph.input_arrays}
     if set(differences) != set(widths):
         raise ValueError("input_differences must define every primitive input exactly once")
     normalized = dict(differences)

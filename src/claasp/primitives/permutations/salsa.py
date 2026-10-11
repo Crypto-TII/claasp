@@ -1,8 +1,8 @@
 """The fixed-length Salsa permutation."""
 
 from claasp.components import ModularAdd, Rotate, Xor
-from claasp.domains import Word
-from claasp.graph import ArrayType, Port, Primitive, Selection
+from claasp.graph import Primitive, Selection, UnitArray, UnitArrayType
+from claasp.unit_types import Word
 
 _COLUMNS = ((0, 4, 8, 12), (5, 9, 13, 1), (10, 14, 2, 6), (15, 3, 7, 11))
 _ROWS = ((0, 1, 2, 3), (5, 6, 7, 4), (10, 11, 8, 9), (15, 12, 13, 14))
@@ -28,7 +28,7 @@ class Salsa(Primitive):
     EXAMPLES::
 
         >>> primitive = Salsa()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -53,8 +53,10 @@ class Salsa(Primitive):
         ):
             raise ValueError("rotations must contain four integers in range(word_size)")
 
-        super().__init__("salsa", {"state": ArrayType(Word(word_size), (16,))})
-        state: list[Port | Selection] = [self.graph.input("state")[index] for index in range(16)]
+        super().__init__("salsa", {"state": UnitArrayType(Word(word_size), (16,))})
+        state: list[UnitArray | Selection] = [
+            self.graph.input("state")[index] for index in range(16)
+        ]
         for round_number in range(number_of_rounds):
             self._builder.add_round()
             groups = _COLUMNS if round_number % 2 == 0 else _ROWS
@@ -71,13 +73,13 @@ class Salsa(Primitive):
 
     def _quarter_round(
         self,
-        a: Port | Selection,
-        b: Port | Selection,
-        c: Port | Selection,
-        d: Port | Selection,
+        a: UnitArray | Selection,
+        b: UnitArray | Selection,
+        c: UnitArray | Selection,
+        d: UnitArray | Selection,
         rotations: tuple[int, int, int, int],
         prefix: str,
-    ) -> tuple[Port | Selection, Port, Port, Port]:
+    ) -> tuple[UnitArray | Selection, UnitArray, UnitArray, UnitArray]:
         b = self._add_rotate_xor(a, d, b, rotations[0], f"{prefix}_step_0")
         c = self._add_rotate_xor(a, b, c, rotations[1], f"{prefix}_step_1")
         d = self._add_rotate_xor(b, c, d, rotations[2], f"{prefix}_step_2")
@@ -86,12 +88,12 @@ class Salsa(Primitive):
 
     def _add_rotate_xor(
         self,
-        left: Port | Selection,
-        right: Port | Selection,
-        destination: Port | Selection,
+        left: UnitArray | Selection,
+        right: UnitArray | Selection,
+        destination: UnitArray | Selection,
         rotation: int,
         prefix: str,
-    ) -> Port:
+    ) -> UnitArray:
         added = self._builder.add_component(ModularAdd((left, right), component_id=f"{prefix}_add"))
         rotated = self._builder.add_component(
             Rotate(added, rotation, "left", component_id=f"{prefix}_rotate")

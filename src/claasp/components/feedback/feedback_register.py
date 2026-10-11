@@ -3,9 +3,9 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from claasp.domains import BinaryExtensionField, Bit
-from claasp.graph import Component, PortLike
-from claasp.graph.port import as_selection
+from claasp.graph import Component, UnitArrayLike
+from claasp.graph.unit_array import as_selection
+from claasp.unit_types import BinaryExtensionField, Bit
 from claasp.utils.finite_fields import first_irreducible_polynomial
 
 
@@ -79,7 +79,7 @@ class FeedbackRegisterSpec:
 
 @dataclass(frozen=True, slots=True, init=False)
 class FeedbackRegisterParameters:
-    """Validated domain and register parameters for one feedback component.
+    """Validated unit type and register parameters for one feedback component.
 
     EXAMPLES::
 
@@ -89,26 +89,26 @@ class FeedbackRegisterParameters:
         4
     """
 
-    domain: Bit | BinaryExtensionField
+    unit_type: Bit | BinaryExtensionField
     registers: tuple[FeedbackRegisterSpec, ...]
     clocks: int = 1
 
     def __init__(
         self,
-        domain: Bit | BinaryExtensionField,
+        unit_type: Bit | BinaryExtensionField,
         registers: Iterable[FeedbackRegisterSpec],
         clocks: int = 1,
     ) -> None:
         frozen_registers = tuple(registers)
-        if not isinstance(domain, (Bit, BinaryExtensionField)):
-            raise TypeError("feedback-register domain must be Bit or BinaryExtensionField")
+        if not isinstance(unit_type, (Bit, BinaryExtensionField)):
+            raise TypeError("feedback-register unit_type must be Bit or BinaryExtensionField")
         if not frozen_registers or any(
             not isinstance(register, FeedbackRegisterSpec) for register in frozen_registers
         ):
             raise TypeError("registers must contain FeedbackRegisterSpec values")
         if not isinstance(clocks, int) or isinstance(clocks, bool) or clocks <= 0:
             raise ValueError("clock count must be a positive integer")
-        object.__setattr__(self, "domain", domain)
+        object.__setattr__(self, "unit_type", unit_type)
         object.__setattr__(self, "registers", frozen_registers)
         object.__setattr__(self, "clocks", clocks)
 
@@ -145,7 +145,7 @@ class FeedbackRegisterParameters:
             raise ValueError("word_width must be a positive integer")
         if register_size % word_width:
             raise ValueError("register_size must be divisible by word_width")
-        domain = (
+        unit_type = (
             Bit()
             if word_width == 1
             else BinaryExtensionField(
@@ -155,7 +155,7 @@ class FeedbackRegisterParameters:
         )
         feedback = [FeedbackTerm(tap) for tap in taps]
         return cls(
-            domain,
+            unit_type,
             [FeedbackRegisterSpec(register_size // word_width, feedback)],
             clocks,
         )
@@ -178,7 +178,7 @@ class FeedbackRegister(Component):
 
     def __init__(
         self,
-        component_input: PortLike,
+        component_input: UnitArrayLike,
         registers: Iterable[FeedbackRegisterSpec],
         clocks: int = 1,
         component_id: str | None = None,
@@ -187,8 +187,8 @@ class FeedbackRegister(Component):
     ) -> None:
         component_input = as_selection(component_input)
         registers = tuple(registers)
-        domain = component_input.array_type.domain
-        if not isinstance(domain, (Bit, BinaryExtensionField)):
+        unit_type = component_input.array_type.unit_type
+        if not isinstance(unit_type, (Bit, BinaryExtensionField)):
             raise ValueError("feedback registers require Bit or BinaryExtensionField units")
         if not registers:
             raise ValueError("feedback registers require at least one register spec")
@@ -206,11 +206,11 @@ class FeedbackRegister(Component):
         for register in registers:
             terms = register.feedback + (() if register.clock is None else register.clock)
             for term in terms:
-                domain.validate(term.coefficient)
+                unit_type.validate(term.coefficient)
                 if any(position >= unit_count for position in term.positions):
                     raise ValueError("feedback position lies outside the register state")
-            if register.clock is not None and not isinstance(domain, Bit):
-                raise ValueError("conditional register clocks require the Bit domain")
+            if register.clock is not None and not isinstance(unit_type, Bit):
+                raise ValueError("conditional register clocks require the Bit unit type")
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
         object.__setattr__(self, "output_type", component_input.array_type)

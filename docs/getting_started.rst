@@ -155,7 +155,7 @@ different message and key size:
    >>> hex(one_time_pad.evaluate(message=0x1234, key=0x00FF))
    '0x12cb'
 
-``set_inputs()`` names the external values and returns the ports used inside
+``set_inputs()`` names the external values and returns the unit arrays used inside
 the graph. ``set_output()`` selects the value returned by the complete
 primitive. Finally, ``build()`` validates the graph and turns the mutable
 builder into the finished primitive.

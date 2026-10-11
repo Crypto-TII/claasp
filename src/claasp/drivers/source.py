@@ -207,7 +207,7 @@ def run_python_source(
 
 
 def _json_inputs(primitive, inputs):
-    if not isinstance(inputs, Mapping) or set(inputs) != set(primitive.graph.input_ports):
+    if not isinstance(inputs, Mapping) or set(inputs) != set(primitive.graph.input_arrays):
         raise ValueError("generated-source inputs must match primitive input names exactly")
     payload = {}
     for name, value in inputs.items():
@@ -231,7 +231,7 @@ def _primitive_digest(primitive):
 
 def _validate_generated_values(primitive, output, values):
     expected_order = (
-        tuple(primitive.graph.input_ports)
+        tuple(primitive.graph.input_arrays)
         + tuple(item.component_id for item in primitive.graph.components)
         + tuple(item.binding_id for item in primitive.graph.bindings)
     )
@@ -239,11 +239,11 @@ def _validate_generated_values(primitive, output, values):
         raise ValueError("generated values do not follow semantic graph order")
     mapping = {}
     for source_id, value in values:
-        array_type = primitive.graph.port(source_id).array_type
+        array_type = primitive.graph.unit_array(source_id).array_type
         if len(value) != array_type.unit_count or any(
             not isinstance(item, int)
             or isinstance(item, bool)
-            or not array_type.domain.contains(item)
+            or not array_type.unit_type.contains(item)
             for item in value
         ):
             raise ValueError(f"generated value for {source_id!r} violates its type")

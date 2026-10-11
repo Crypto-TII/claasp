@@ -1,11 +1,11 @@
 from claasp import ChaChaQuarterRound, ParallelSBoxLayer
-from claasp.domains import Word
 from claasp.representations.constraints.sat import BooleanCNFModel
+from claasp.unit_types import Word
 
 
 def test_parallel_sbox_layer_handles_different_box_widths_and_counts():
     nibble = ParallelSBoxLayer((0xC, 5, 6, 0xB, 9, 0, 0xA, 0xD, 3, 0xE, 0xF, 8, 4, 7, 1, 2), 2)
-    byte = ParallelSBoxLayer(tuple(value ^ 0xA5 for value in range(256)), 3, domain=Word(8))
+    byte = ParallelSBoxLayer(tuple(value ^ 0xA5 for value in range(256)), 3, unit_type=Word(8))
 
     assert nibble.evaluate(0x0F) == 0xC2
     assert byte.evaluate(0x001122) == 0xA5B487
@@ -38,10 +38,10 @@ def test_chacha_quarter_round_preserves_the_rfc_8439_vector_and_named_outputs():
 
 
 def test_composite_block_can_be_instantiated_and_queried_as_a_scope():
-    from claasp import ArrayType, Primitive
+    from claasp import Primitive, UnitArrayType
 
     primitive = Primitive(
-        "one_quarter_round", {name: ArrayType(Word(32), (1,)) for name in ("a", "b", "c", "d")}
+        "one_quarter_round", {name: UnitArrayType(Word(32), (1,)) for name in ("a", "b", "c", "d")}
     )
     primitive._builder.add_round()
     scope = primitive._builder.add_composite(

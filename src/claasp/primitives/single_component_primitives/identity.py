@@ -1,8 +1,8 @@
 """Single-component identity-permutation primitive implementation."""
 
 from claasp.components import Identity as IdentityComponent
-from claasp.domains import Bit
-from claasp.graph import ArrayType, Primitive, PrimitiveKind
+from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
+from claasp.unit_types import Bit
 
 from ._base import positive
 
@@ -20,7 +20,7 @@ class Identity(Primitive):
     EXAMPLES::
 
         >>> primitive = Identity()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -30,7 +30,7 @@ class Identity(Primitive):
         bit_size = positive(bit_size, "bit_size")
         super().__init__(
             "identity",
-            {"input": ArrayType(Bit(), (bit_size,))},
+            {"input": UnitArrayType(Bit(), (bit_size,))},
             kind=PrimitiveKind.PERMUTATION,
         )
         self._builder.add_round()

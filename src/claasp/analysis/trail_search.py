@@ -22,7 +22,6 @@ from claasp.components import (
     Shift,
     Xor,
 )
-from claasp.domains import BinaryExtensionField, Bit, Word
 from claasp.drivers.solvers import MinisatSolver, SatStatus
 from claasp.representations.constraints import (
     ConstraintBackend,
@@ -47,6 +46,7 @@ from claasp.semantics.cryptanalysis import (
     XorDifference,
     XorMask,
 )
+from claasp.unit_types import BinaryExtensionField, Bit, Word
 
 
 class TrailSearchCapabilityError(NotImplementedError):
@@ -88,7 +88,7 @@ _EXACT_COMPONENTS = (
 
 
 def _require_exact_trail_capability(primitive, kind: TrailKind, *, backend="sat") -> None:
-    """Reject the first unsupported domain/component with actionable context.
+    """Reject the first unsupported unit_type/component with actionable context.
 
     EXAMPLES::
 
@@ -96,26 +96,28 @@ def _require_exact_trail_capability(primitive, kind: TrailKind, *, backend="sat"
         >>> _require_exact_trail_capability(Simon(number_of_rounds=1), TrailKind.XOR_DIFFERENTIAL)
     """
 
-    for name, port in primitive.graph.input_ports.items():
-        if not isinstance(port.array_type.domain, (Bit, Word, BinaryExtensionField)):
+    for name, unit_array in primitive.graph.input_arrays.items():
+        if not isinstance(unit_array.array_type.unit_type, (Bit, Word, BinaryExtensionField)):
             raise _capability_error(
                 primitive,
                 kind,
-                f"input {name!r} domain {type(port.array_type.domain).__name__}",
+                f"input {name!r} unit_type {type(unit_array.array_type.unit_type).__name__}",
                 backend,
             )
     if primitive.graph.output is None:
         raise _capability_error(primitive, kind, "missing primitive output", backend)
-    if not isinstance(primitive.graph.output.array_type.domain, (Bit, Word, BinaryExtensionField)):
+    if not isinstance(
+        primitive.graph.output.array_type.unit_type, (Bit, Word, BinaryExtensionField)
+    ):
         raise _capability_error(
             primitive,
             kind,
-            f"output domain {type(primitive.graph.output.array_type.domain).__name__}",
+            f"output unit_type {type(primitive.graph.output.array_type.unit_type).__name__}",
             backend,
         )
     for component in primitive.graph.components:
-        if not isinstance(component.output_type.domain, (Bit, Word, BinaryExtensionField)):
-            reason = f"component {component.component_id!r} domain {type(component.output_type.domain).__name__}"
+        if not isinstance(component.output_type.unit_type, (Bit, Word, BinaryExtensionField)):
+            reason = f"component {component.component_id!r} unit_type {type(component.output_type.unit_type).__name__}"
             raise _capability_error(primitive, kind, reason, backend)
         if not isinstance(component, _EXACT_COMPONENTS):
             reason = f"component {component.component_id!r} ({type(component).__name__})"
@@ -125,7 +127,7 @@ def _require_exact_trail_capability(primitive, kind: TrailKind, *, backend="sat"
                 output_width = (
                     component.output_type.unit_count
                     if isinstance(component, BitVectorSBox)
-                    else component.output_type.domain.encoded_bit_size
+                    else component.output_type.unit_type.encoded_bit_size
                 )
                 _require_integral_sbox_weights(component.table, kind, output_width)
             except (_NonIntegralTransitionWeightError, NotImplementedError) as error:
@@ -136,23 +138,23 @@ def _require_exact_trail_capability(primitive, kind: TrailKind, *, backend="sat"
                     backend,
                 ) from error
         if isinstance(component, Add) and not isinstance(
-            component.output_type.domain, (Bit, BinaryExtensionField)
+            component.output_type.unit_type, (Bit, BinaryExtensionField)
         ):
             raise _capability_error(
                 primitive,
                 kind,
-                f"component {component.component_id!r} Add domain "
-                f"{type(component.output_type.domain).__name__}",
+                f"component {component.component_id!r} Add unit_type "
+                f"{type(component.output_type.unit_type).__name__}",
                 backend,
             )
         if isinstance(component, LinearMap) and not isinstance(
-            component.output_type.domain, (Bit, BinaryExtensionField)
+            component.output_type.unit_type, (Bit, BinaryExtensionField)
         ):
             raise _capability_error(
                 primitive,
                 kind,
-                f"component {component.component_id!r} LinearMap domain "
-                f"{type(component.output_type.domain).__name__}",
+                f"component {component.component_id!r} LinearMap unit_type "
+                f"{type(component.output_type.unit_type).__name__}",
                 backend,
             )
         if (
@@ -164,7 +166,7 @@ def _require_exact_trail_capability(primitive, kind: TrailKind, *, backend="sat"
 
 
 def require_word_sat_capability(primitive, kind: TrailKind) -> None:
-    """Compatibility name for the domain-generic exact SAT capability check.
+    """Compatibility name for the unit_type-generic exact SAT capability check.
 
     EXAMPLES::
 
@@ -188,7 +190,7 @@ def resolve_input_policy(
 ) -> InputPolicy:
     """Choose one active data input and zero default key/tweak patterns."""
 
-    names = tuple(primitive.graph.input_ports)
+    names = tuple(primitive.graph.input_arrays)
     if nonzero_input is None:
         if "plaintext" in names:
             nonzero_input = "plaintext"
@@ -204,7 +206,7 @@ def resolve_input_policy(
                     f"set nonzero_input explicitly from {names!r}"
                 )
             nonzero_input = candidates[0]
-    if nonzero_input not in primitive.graph.input_ports:
+    if nonzero_input not in primitive.graph.input_arrays:
         raise ValueError(f"unknown nonzero input {nonzero_input!r}; choose from {names!r}")
     resolved = dict(fixed_patterns or {})
     for name in names:
@@ -251,7 +253,7 @@ def optimize_word_characteristic(
     )
     resolved_fixed_inputs = dict(fixed_inputs or {})
     if kind is TrailKind.XOR_LINEAR and fixed_input_masks is None:
-        for name in primitive.graph.input_ports:
+        for name in primitive.graph.input_arrays:
             if name != policy.nonzero_input and ("key" in name.lower() or "tweak" in name.lower()):
                 resolved_fixed_inputs.setdefault(name, 0)
     selected_solver = _solver_for_backend(backend) if solver is None else solver
@@ -410,7 +412,7 @@ def _trail(primitive, kind, active_input, characteristic):
         kind,
         pattern(
             inputs[active_input],
-            primitive.graph.input_ports[active_input].array_type.encoded_bit_size,
+            primitive.graph.input_arrays[active_input].array_type.encoded_bit_size,
         ),
         pattern(output, primitive.graph.output.array_type.encoded_bit_size),
         characteristic.steps,
@@ -435,7 +437,7 @@ def _evidence(primitive, kind, model, characteristic):
     }
     components = []
     for component in primitive.graph.components:
-        output_names = model._ports[component.component_id]
+        output_names = model._unit_arrays[component.component_id]
         operand_groups = (
             model._operands[component.component_id]
             if kind is TrailKind.XOR_DIFFERENTIAL
@@ -458,7 +460,7 @@ def _evidence(primitive, kind, model, characteristic):
     rounds = []
     for primitive_round in primitive.graph.rounds:
         component = primitive_round.components[-1]
-        names = model._ports[component.component_id]
+        names = model._unit_arrays[component.component_id]
         ratio, sign = Fraction(1), 1
         for step in characteristic.steps:
             if round_by_id[step.component_id.split("[")[0]] == primitive_round.number:

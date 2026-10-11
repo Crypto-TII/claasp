@@ -1,15 +1,15 @@
 import pytest
 
-from claasp import ArrayType, Primitive
+from claasp import Primitive, UnitArrayType
 from claasp.components import Add
-from claasp.domains import Bit
 from claasp.drivers.solvers import SatStatus, Z3Solver
 from claasp.representations.constraints.smt import BooleanSMTModel, SMTFormula
 from claasp.representations.constraints.smt.exporter import SMTLibExporter
+from claasp.unit_types import Bit
 
 
 def _xor_primitive():
-    primitive = Primitive("xor", {"x": ArrayType(Bit(), (1,)), "y": ArrayType(Bit(), (1,))})
+    primitive = Primitive("xor", {"x": UnitArrayType(Bit(), (1,)), "y": UnitArrayType(Bit(), (1,))})
     primitive._builder.add_round()
     primitive._builder.set_output(
         primitive._builder.add_component(

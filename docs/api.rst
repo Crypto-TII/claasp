@@ -1,13 +1,13 @@
 API reference
 =============
 
-Domains
--------
+Unit types
+----------
 
-.. autoclass:: claasp.domains.base.Domain
+.. autoclass:: claasp.unit_types.base.UnitType
    :members:
 
-.. automodule:: claasp.domains
+.. automodule:: claasp.unit_types
    :members:
 
 Primitive graph

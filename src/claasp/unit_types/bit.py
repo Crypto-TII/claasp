@@ -1,12 +1,12 @@
-"""The two-element bit domain."""
+"""The two-element bit unit type."""
 
 from dataclasses import dataclass
 
-from claasp.domains.base import Domain
+from claasp.unit_types.base import UnitType
 
 
 @dataclass(frozen=True, slots=True)
-class Bit(Domain):
+class Bit(UnitType):
     """Represent one element of the set ``{0, 1}``.
 
     Boolean objects are deliberately rejected even though ``bool`` subclasses
@@ -14,7 +14,7 @@ class Bit(Domain):
 
     EXAMPLES::
 
-        >>> from claasp.domains import Bit
+        >>> from claasp.unit_types import Bit
         >>> (Bit().contains(0), Bit().contains(1), Bit().contains(True))
         (True, True, False)
     """

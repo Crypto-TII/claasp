@@ -14,12 +14,12 @@ from claasp.components import (
     VariableShift,
     Xor,
 )
-from claasp.domains import Word
-from claasp.graph import ArrayType, as_selection
+from claasp.graph import UnitArrayType, as_selection
+from claasp.unit_types import Word
 
 
 def word_type(width, count=1):
-    return ArrayType(Word(width), (count,))
+    return UnitArrayType(Word(width), (count,))
 
 
 def select(source, index):

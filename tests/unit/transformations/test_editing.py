@@ -1,15 +1,15 @@
 from claasp import (
-    ArrayType,
     Primitive,
     PrimitiveKind,
+    UnitArrayType,
     inline_reorderings,
     prune_orphans,
     remove_key_schedule,
 )
 from claasp.components import Identity, LinearMap, Permutation, Rotate, Shift, Xor
-from claasp.domains import Bit, Word
 from claasp.graph import as_selection
 from claasp.primitives import Present, Speck
+from claasp.unit_types import Bit, Word
 
 PLAINTEXT = 0x6574694C
 KEY = 0x1918111009080100
@@ -33,7 +33,7 @@ def test_remove_key_schedule_externalizes_round_keys_and_preserves_evaluation():
     supplied.update((f"round_key_{index}", value) for index, value in enumerate(round_keys))
 
     assert transformed.evaluate(**supplied) == primitive.evaluate(PLAINTEXT, KEY)
-    assert tuple(transformed.graph.input_ports) == (
+    assert tuple(transformed.graph.input_arrays) == (
         "plaintext",
         "round_key_0",
         "round_key_1",
@@ -55,13 +55,13 @@ def test_remove_key_schedule_without_injections_matches_zero_round_keys():
     primitive = Speck(number_of_rounds=4)
     retained = primitive.edit.remove_key_schedule().primitive
     removed = primitive.edit.remove_key_schedule(keep_round_key_injection=False).primitive
-    zero_keys = {name: 0 for name in retained.graph.input_ports if name.startswith("round_key_")}
+    zero_keys = {name: 0 for name in retained.graph.input_arrays if name.startswith("round_key_")}
 
-    assert tuple(removed.graph.input_ports) == ("plaintext",)
+    assert tuple(removed.graph.input_arrays) == ("plaintext",)
     assert removed.evaluate(PLAINTEXT) == retained.evaluate(plaintext=PLAINTEXT, **zero_keys)
     assert removed.kind is PrimitiveKind.FUNCTION
     assert all(
-        not any(item.source.owner_id.startswith("round_key_") for item in component.inputs)
+        not any(item.source.source_id.startswith("round_key_") for item in component.inputs)
         for component in removed.graph.components
     )
 
@@ -69,7 +69,7 @@ def test_remove_key_schedule_without_injections_matches_zero_round_keys():
 def test_prune_orphans_reconstructs_only_the_output_dependency_closure():
     graph = Primitive(
         "orphans",
-        {"left": ArrayType(Word(8), (1,)), "right": ArrayType(Word(8), (1,))},
+        {"left": UnitArrayType(Word(8), (1,)), "right": UnitArrayType(Word(8), (1,))},
     )
     graph._builder.add_round()
     output = graph._builder.add_component(
@@ -104,7 +104,9 @@ def test_inline_reorderings_preserves_speck_and_present_semantics():
 
 
 def test_inline_reorderings_only_removes_permutation_matrices():
-    graph = Primitive("linear", {"state": ArrayType(Bit(), (3,))}, kind=PrimitiveKind.PERMUTATION)
+    graph = Primitive(
+        "linear", {"state": UnitArrayType(Bit(), (3,))}, kind=PrimitiveKind.PERMUTATION
+    )
     graph._builder.add_round()
     reordered = graph._builder.add_component(
         LinearMap(

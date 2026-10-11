@@ -60,7 +60,7 @@ class BluetoothE0(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = BluetoothE0()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)

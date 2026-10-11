@@ -1,4 +1,4 @@
-"""Domain-polymorphic multiplication."""
+"""UnitType-polymorphic multiplication."""
 
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -8,7 +8,7 @@ from claasp.components.algebraic._validation import (
     require_homogeneous_inputs,
 )
 from claasp.graph.component import Component
-from claasp.graph.port import Selection
+from claasp.graph.unit_array import Selection
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -17,9 +17,9 @@ class Multiply(Component):
 
     EXAMPLES::
 
-        >>> from claasp.domains import PrimeField
+        >>> from claasp.unit_types import PrimeField
         >>> from claasp.primitives.single_component_primitives import Multiply as MultiplyPrimitive
-        >>> MultiplyPrimitive(domain=PrimeField(17)).evaluate(5, 7)
+        >>> MultiplyPrimitive(unit_type=PrimeField(17)).evaluate(5, 7)
         1
     """
 

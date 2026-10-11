@@ -96,8 +96,8 @@ def test_specialized_results_remain_available():
 )
 @pytest.mark.parametrize("kind", tuple(TrailKind))
 def test_recovered_basic_word_component_semantics(primitive, kind):
-    active = next(iter(primitive.graph.input_ports))
-    fixed = {name: 0 for name in primitive.graph.input_ports if name != active}
+    active = next(iter(primitive.graph.input_arrays))
+    fixed = {name: 0 for name in primitive.graph.input_arrays if name != active}
     options = (
         {"fixed_input_differences": fixed}
         if kind is TrailKind.XOR_DIFFERENTIAL

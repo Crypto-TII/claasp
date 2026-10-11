@@ -1,8 +1,8 @@
 """Nonstandard Speck8/16 fixture, distinct from the official catalogue."""
 
 from claasp.components import Constant, ModularAdd, Rotate, Xor
-from claasp.domains import Word
-from claasp.graph import ArrayType, Primitive, PrimitiveKind
+from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
+from claasp.unit_types import Word
 
 
 class ToySpeck(Primitive):
@@ -11,7 +11,7 @@ class ToySpeck(Primitive):
     EXAMPLES::
 
         >>> primitive = ToySpeck()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x91', 8)
@@ -26,10 +26,10 @@ class ToySpeck(Primitive):
             maximum=4,
             name="ToySpeck",
         )
-        word_type = ArrayType(Word(4), (1,))
+        word_type = UnitArrayType(Word(4), (1,))
         super().__init__(
             "toy_speck",
-            {"plaintext": ArrayType(Word(4), (2,)), "key": ArrayType(Word(4), (4,))},
+            {"plaintext": UnitArrayType(Word(4), (2,)), "key": UnitArrayType(Word(4), (4,))},
             kind=PrimitiveKind.BLOCK_CIPHER,
         )
         x, y = self.graph.input("plaintext")[0], self.graph.input("plaintext")[1]

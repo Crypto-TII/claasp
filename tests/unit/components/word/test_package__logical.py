@@ -2,15 +2,15 @@
 
 from itertools import product
 
-from claasp import ArrayType, Primitive, ScalarEvaluator, TransposedBatchEvaluator
+from claasp import Primitive, ScalarEvaluator, TransposedBatchEvaluator, UnitArrayType
 from claasp.components import BitwiseAnd, BitwiseNot, BitwiseOr, Xor
-from claasp.domains import Word
 from claasp.representations.constraints.polynomial import BooleanMonomial
 from claasp.representations.execution import BooleanDegreeEvaluator, BooleanSymbolicEvaluator
+from claasp.unit_types import Word
 
 
 def _logical_primitive(width: int = 4) -> Primitive:
-    array_type = ArrayType(Word(width), (1,))
+    array_type = UnitArrayType(Word(width), (1,))
     primitive = Primitive("logical", {"left": array_type, "right": array_type})
     primitive._builder.add_round()
     either = primitive._builder.add_component(

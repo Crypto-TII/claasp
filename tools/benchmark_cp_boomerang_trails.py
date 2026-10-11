@@ -10,9 +10,8 @@ from pathlib import Path
 from statistics import median
 from time import monotonic
 
-from claasp import ArrayType, PrimitiveBuilder
+from claasp import PrimitiveBuilder, UnitArrayType
 from claasp.components import ModularAdd
-from claasp.domains import Word
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
 from claasp.primitives import Present, Speck
 from claasp.representations.constraints.cp import (
@@ -26,6 +25,7 @@ from claasp.representations.constraints.cp import (
 )
 from claasp.semantics import XOR_DIFFERENTIAL
 from claasp.semantics.cryptanalysis import PropagationProblem
+from claasp.unit_types import Word
 
 
 def _version():
@@ -38,7 +38,7 @@ def _version():
 def _graph(name):
     builder = PrimitiveBuilder(
         name,
-        {"left": ArrayType(Word(4), (1,)), "right": ArrayType(Word(4), (1,))},
+        {"left": UnitArrayType(Word(4), (1,)), "right": UnitArrayType(Word(4), (1,))},
     )
     builder.add_round()
     output = builder.add_component(ModularAdd((builder.input("left"), builder.input("right"))))

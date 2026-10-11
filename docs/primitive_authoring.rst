@@ -1,23 +1,23 @@
 Implementing a primitive
 =========================
 
-Primitive code should resemble the primitive's pseudocode. Whole ports can be
+Primitive code should resemble the primitive's pseudocode. Whole unit arrays can be
 passed directly to components, indexing selects logical units, and component
 identifiers are optional.
 
-``input(name_or_position)`` returns one graph input port. ``inputs()`` returns
-all input ports in declaration order, while selectors can request a subset in
+``input(name_or_position)`` returns one graph input array. ``inputs()`` returns
+all input arrays in declaration order, while selectors can request a subset in
 an explicit order. These methods expose graph references, not runtime values,
 and deliberately leave the collection representation unspecified. The
-``input_ports`` mapping is reserved for representations and other consumers
-that need names and ports together.
+``input_arrays`` mapping is reserved for representations and other consumers
+that need names and arrays together.
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, ArrayType
+   >>> from claasp import PrimitiveBuilder, UnitArrayType
    >>> from claasp.components import Add, Permutation
-   >>> from claasp.domains import PrimeField
-   >>> field_vector = ArrayType(PrimeField(17), (3,))
+   >>> from claasp.unit_types import PrimeField
+   >>> field_vector = UnitArrayType(PrimeField(17), (3,))
    >>> builder = PrimitiveBuilder("small_permutation", {"state": field_vector})
    >>> state = builder.input("state")
    >>> builder.input(0) is state
@@ -29,16 +29,16 @@ that need names and ports together.
    >>> builder.add_round()
    Round(number=0)
    >>> shuffled = builder.add_component(Permutation(state, (2, 0, 1)))
-   >>> shuffled.owner_id
+   >>> shuffled.source_id
    'permutation_0_0'
    >>> output = builder.add_component(Add((shuffled, state)))
-   >>> output.owner_id
+   >>> output.source_id
    'add_0_1'
    >>> primitive = builder.build(output)
 
 Automatic identifiers combine the component kind, round number, and position,
 so rebuilding the same graph produces the same names.  Normal primitive source
-should omit identifiers and retain semantic ports instead. Mark a value for
+should omit identifiers and retain the returned unit arrays instead. Mark a value for
 inspection with ``builder.set_intermediate_output(value, name=...)`` and mark
 the current round boundary with ``builder.set_round_output(value)``. The latter
 is shorthand for an intermediate output named ``round_output``. Round keys use
@@ -58,7 +58,7 @@ the reusable-block style. Composite outputs are ordered, so a key schedule can
 be read naturally as ``key_schedule.output[round_number]``; named lookup is
 also available for self-documenting boundaries.
 
-Use ``builder.join(left, right)`` when several homogeneous ports form one
+Use ``builder.join(left, right)`` when several homogeneous unit arrays form one
 state for a later operation, or simply ``builder.build((left, right))``
 at the boundary. This creates an addressable typed binding, not a semantic
 component, so component queries contain only actual operations.
@@ -96,10 +96,10 @@ arithmetic is distinct from ordinary field arithmetic.
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, ArrayType
+   >>> from claasp import PrimitiveBuilder, UnitArrayType
    >>> from claasp.components import ModularSubtract, Shift
-   >>> from claasp.domains import Word
-   >>> words = ArrayType(Word(8), (1,))
+   >>> from claasp.unit_types import Word
+   >>> words = UnitArrayType(Word(8), (1,))
    >>> builder = PrimitiveBuilder("word_example", {"left": words, "right": words})
    >>> builder.add_round()
    Round(number=0)
@@ -111,14 +111,14 @@ arithmetic is distinct from ordinary field arithmetic.
    127
 
 Feedback is described by typed terms rather than nested unlabelled lists. A
-binary-extension-field domain similarly makes word-register multiplication
+binary-extension-field unit type similarly makes word-register multiplication
 unambiguous.
 
 .. doctest::
 
-   >>> from claasp.domains import Bit
+   >>> from claasp.unit_types import Bit
    >>> from claasp.components import FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm
-   >>> builder = PrimitiveBuilder("lfsr", {"state": ArrayType(Bit(), (4,))})
+   >>> builder = PrimitiveBuilder("lfsr", {"state": UnitArrayType(Bit(), (4,))})
    >>> builder.add_round()
    Round(number=0)
    >>> spec = FeedbackRegisterSpec(4, (FeedbackTerm((0,)), FeedbackTerm((1,))))
@@ -139,9 +139,9 @@ unambiguous scalar, batch, diagram, and model semantics.
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, ArrayType
-   >>> from claasp.domains import Bit
-   >>> builder = PrimitiveBuilder("conversion", {"bits": ArrayType(Bit(), (16,))})
+   >>> from claasp import PrimitiveBuilder, UnitArrayType
+   >>> from claasp.unit_types import Bit
+   >>> builder = PrimitiveBuilder("conversion", {"bits": UnitArrayType(Bit(), (16,))})
    >>> builder.add_round()
    Round(number=0)
    >>> words = builder.pack_bits(builder.input("bits"), 8)
@@ -177,13 +177,13 @@ finite-field/matrix helpers, so following an import path always reaches the
 primitive definition rather than a forwarding shim or hidden graph builder.
 
 Primitive authors supply mathematical parameters using ordinary lists. The
-component and utility layers validate shape, orientation, domains, and stable
+component and utility layers validate shape, orientation, unit types, and stable
 internal storage. Matrix comprehensions and container freezing therefore do
 not belong in primitive definitions.
 
 .. doctest::
 
-   >>> from claasp.domains import BinaryExtensionField
+   >>> from claasp.unit_types import BinaryExtensionField
    >>> from claasp.components import FeedbackRegisterParameters
    >>> from claasp.primitives.single_component_primitives import FeedbackRegister, LinearMap
    >>> linear = LinearMap([[1, 0], [1, 1]])
@@ -198,7 +198,7 @@ not belong in primitive definitions.
    5
 
 ``LinearMap`` accepts one row-major matrix and infers the input size from its
-columns. Its domain distinguishes an ordinary binary linear layer from a
+columns. Its unit type distinguishes an ordinary binary linear layer from a
 MixColumn-style finite-field matrix; these are not separate operations.
 ``FeedbackRegister`` accepts typed feedback parameters. Use ``from_taps()`` for a
 simple Fibonacci register, or construct ``FeedbackRegisterSpec`` and

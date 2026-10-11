@@ -1,9 +1,9 @@
 """Single-component constant-function primitive implementation."""
 
 from claasp.components import Constant as ConstantComponent
-from claasp.domains import Bit
 from claasp.encoding import bits_from_int
-from claasp.graph import ArrayType, Primitive, PrimitiveKind
+from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
+from claasp.unit_types import Bit
 
 from ._base import positive
 
@@ -23,7 +23,7 @@ class Constant(Primitive):
     EXAMPLES::
 
         >>> primitive = Constant()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x2', 2)
@@ -35,7 +35,7 @@ class Constant(Primitive):
         self._builder.add_round()
         output = self._builder.add_component(
             ConstantComponent(
-                ArrayType(Bit(), (output_bit_size,)),
+                UnitArrayType(Bit(), (output_bit_size,)),
                 bits_from_int(value, output_bit_size),
             )
         )

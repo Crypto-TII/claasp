@@ -326,10 +326,10 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
         active_input: str,
         zero_difference_inputs: tuple[str, ...] = (),
     ) -> None:
-        if active_input not in primitive.graph.input_ports:
+        if active_input not in primitive.graph.input_arrays:
             raise ValueError("active_input must name a primitive input")
         if not isinstance(zero_difference_inputs, tuple) or any(
-            name == active_input or name not in primitive.graph.input_ports
+            name == active_input or name not in primitive.graph.input_arrays
             for name in zero_difference_inputs
         ):
             raise ValueError("zero_difference_inputs must name other primitive inputs")
@@ -356,8 +356,8 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
                 variables.append(LinearVariable(name, VariableKind.BINARY))
             return name
 
-        for owner, port in self.primitive.graph.input_ports.items():
-            for position in range(port.array_type.unit_count):
+        for owner, unit_array in self.primitive.graph.input_arrays.items():
+            for position in range(unit_array.array_type.unit_count):
                 binary(self._name(owner, position))
         for component in self.primitive.graph.components:
             for position in range(component.output_type.unit_count):
@@ -374,18 +374,18 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
                 for selection in binding.inputs:
                     if position < offset + len(selection.positions):
                         local = position - offset
-                        return resolve(selection.source.owner_id, selection.positions[local])
+                        return resolve(selection.source.source_id, selection.positions[local])
                     offset += len(selection.positions)
             elif binding.kind is BindingKind.VIEW:
                 selection = binding.inputs[0]
-                return resolve(selection.source.owner_id, selection.positions[position])
+                return resolve(selection.source.source_id, selection.positions[position])
             raise NotImplementedError(
                 f"wordwise activity does not support {binding.kind.value} binding {owner!r}"
             )
 
         def selected(selection):
             return tuple(
-                resolve(selection.source.owner_id, position) for position in selection.positions
+                resolve(selection.source.source_id, position) for position in selection.positions
             )
 
         def equality(left, right, label):
@@ -461,12 +461,12 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
                     )
             elif isinstance(component, LinearMap):
                 source = operands[0]
-                domain = component.inputs[0].array_type.domain
-                if len(source) != len(output) or matrix_rank(component.matrix, domain) != len(
+                unit_type = component.inputs[0].array_type.unit_type
+                if len(source) != len(output) or matrix_rank(component.matrix, unit_type) != len(
                     source
                 ):
                     raise NotImplementedError("wordwise linear maps must be square and invertible")
-                branch_number = exact_branch_number(component.matrix, domain)
+                branch_number = exact_branch_number(component.matrix, unit_type)
                 if branch_number is None:
                     raise NotImplementedError("exact word branch number exceeds the safe budget")
                 indicator = binary(f"active_relation_{component.component_id}")
@@ -514,7 +514,7 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
                 )
 
         for owner in self.zero_difference_inputs:
-            for position in range(self.primitive.graph.input_ports[owner].array_type.unit_count):
+            for position in range(self.primitive.graph.input_arrays[owner].array_type.unit_count):
                 constraints.append(
                     LinearConstraint(
                         LinearExpression.from_terms({self._name(owner, position): 1}),
@@ -526,7 +526,7 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
         active_names = tuple(
             self._name(self.active_input, position)
             for position in range(
-                self.primitive.graph.input_ports[self.active_input].array_type.unit_count
+                self.primitive.graph.input_arrays[self.active_input].array_type.unit_count
             )
         )
         constraints.append(
@@ -1007,7 +1007,7 @@ class SpeckImpossibleMILPModel(WordImpossibleMILPModel):
     def __init__(
         self, primitive, middle_round: int, *, input_pattern=None, output_pattern=None
     ) -> None:
-        plaintext = primitive.graph.input_ports.get("plaintext")
+        plaintext = primitive.graph.input_arrays.get("plaintext")
         if primitive.family_name != "speck" or plaintext is None:
             raise NotImplementedError("the reviewed impossible slice supports Speck32/64")
         super().__init__(

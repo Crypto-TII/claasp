@@ -19,7 +19,7 @@ NEW_V5_RATIONALES = {
     "catalogue": "New immutable generated catalogue and query architecture replaces cross-cutting legacy discovery behavior.",
     "components": "New typed component hierarchy and shared semantic contracts consolidate many legacy backend-bearing classes.",
     "composites": "New reusable composite-block authoring layer has no direct legacy module predecessor.",
-    "domains": "New explicit Bit, Word, and finite-field domain model replaces implicit backend-specific types.",
+    "unit_types": "New explicit Bit, Word, and finite-field unit type model replaces implicit backend-specific types.",
     "drivers": "New bounded typed external-driver boundary separates tools and optional dependencies from core semantics.",
     "graph": "New immutable typed graph, binding, round, metadata, and realization architecture is v5 infrastructure.",
     "parameters": "New validated parameter-resource API makes packaged constants explicit and dependency-free.",

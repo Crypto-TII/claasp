@@ -3,10 +3,10 @@ import itertools
 import pytest
 
 from claasp import (
-    ArrayType,
     Primitive,
     TransformationError,
     TransformationFailureReason,
+    UnitArrayType,
     invert_component,
 )
 from claasp.components import (
@@ -28,15 +28,17 @@ from claasp.components import (
     VariableRotate,
     Xor,
 )
-from claasp.domains import BinaryExtensionField, Bit, PrimeField, Word
+from claasp.unit_types import BinaryExtensionField, Bit, PrimeField, Word
 
 
 def test_permutation_and_rotation_inverse_semantics_are_independent_components():
-    source = Primitive("source", {"bits": ArrayType(Bit(), (4,)), "word": ArrayType(Word(8), (1,))})
+    source = Primitive(
+        "source", {"bits": UnitArrayType(Bit(), (4,)), "word": UnitArrayType(Word(8), (1,))}
+    )
     permutation = Permutation(source.graph.input("bits"), (2, 0, 3, 1), "authored")
     rotation = Rotate(source.graph.input("word"), 3, "left", "authored_rotate")
     destination = Primitive(
-        "destination", {"bits": ArrayType(Bit(), (4,)), "word": ArrayType(Word(8), (1,))}
+        "destination", {"bits": UnitArrayType(Bit(), (4,)), "word": UnitArrayType(Word(8), (1,))}
     )
 
     inverse_permutation = invert_component(
@@ -51,7 +53,9 @@ def test_permutation_and_rotation_inverse_semantics_are_independent_components()
 
 @pytest.mark.parametrize("component_type", (SBox, BitVectorSBox))
 def test_bijective_substitution_inverse_round_trips_exhaustively(component_type):
-    array_type = ArrayType(Word(2), (1,)) if component_type is SBox else ArrayType(Bit(), (2,))
+    array_type = (
+        UnitArrayType(Word(2), (1,)) if component_type is SBox else UnitArrayType(Bit(), (2,))
+    )
     source = Primitive("source", {"x": array_type})
     component = component_type(source.graph.input("x"), (2, 0, 3, 1))
     destination = Primitive("destination", {"y": component.output_type})
@@ -68,7 +72,7 @@ def test_bijective_substitution_inverse_round_trips_exhaustively(component_type)
 
 
 def test_linear_and_binary_affine_inverse_round_trip_independent_evaluation():
-    bit_graph = Primitive("linear", {"x": ArrayType(Bit(), (3,))})
+    bit_graph = Primitive("linear", {"x": UnitArrayType(Bit(), (3,))})
     linear = LinearMap(bit_graph.graph.input("x"), ((1, 1, 0), (0, 1, 1), (1, 1, 1)))
     inverse_graph = Primitive("linear_inverse", {"y": linear.output_type})
     inverse_graph._builder.add_round()
@@ -91,7 +95,7 @@ def test_linear_and_binary_affine_inverse_round_trip_independent_evaluation():
         )
 
     field = BinaryExtensionField(4, 0b10011)
-    affine_source = Primitive("affine", {"x": ArrayType(field, (1,))})
+    affine_source = Primitive("affine", {"x": UnitArrayType(field, (1,))})
     affine = BinaryAffineMap(
         affine_source.graph.input("x"),
         ((1, 1, 0, 0), (0, 1, 1, 0), (0, 0, 1, 1), (0, 0, 0, 1)),
@@ -104,7 +108,7 @@ def test_linear_and_binary_affine_inverse_round_trip_independent_evaluation():
             invert_component(affine, affine_inverse.graph.input("y"), recover_input=0)
         )
     )
-    forward_graph = Primitive("affine_forward", {"x": ArrayType(field, (1,))})
+    forward_graph = Primitive("affine_forward", {"x": UnitArrayType(field, (1,))})
     forward_graph._builder.add_round()
     forward_graph._builder.set_output(
         forward_graph._builder.add_component(
@@ -116,25 +120,25 @@ def test_linear_and_binary_affine_inverse_round_trip_independent_evaluation():
 
 
 @pytest.mark.parametrize(
-    ("domain", "exponent"),
+    ("unit_type", "exponent"),
     ((PrimeField(7), 5), (BinaryExtensionField(3, 0b1011), 5)),
 )
-def test_power_inverse_round_trips_finite_fields(domain, exponent):
-    source = Primitive("power", {"x": ArrayType(domain, (1,))})
+def test_power_inverse_round_trips_finite_fields(unit_type, exponent):
+    source = Primitive("power", {"x": UnitArrayType(unit_type, (1,))})
     component = Power(source.graph.input("x"), exponent)
-    forward = Primitive("forward", {"x": ArrayType(domain, (1,))})
+    forward = Primitive("forward", {"x": UnitArrayType(unit_type, (1,))})
     forward._builder.add_round()
     forward._builder.set_output(
         forward._builder.add_component(Power(forward.graph.input("x"), exponent))
     )
-    inverse = Primitive("inverse", {"y": ArrayType(domain, (1,))})
+    inverse = Primitive("inverse", {"y": UnitArrayType(unit_type, (1,))})
     inverse._builder.add_round()
     inverse._builder.set_output(
         inverse._builder.add_component(
             invert_component(component, inverse.graph.input("y"), recover_input=0)
         )
     )
-    cardinality = domain.modulus if isinstance(domain, PrimeField) else 1 << domain.degree
+    cardinality = unit_type.modulus if isinstance(unit_type, PrimeField) else 1 << unit_type.degree
     assert tuple(
         inverse.evaluate(forward.evaluate(value)) for value in range(cardinality)
     ) == tuple(range(cardinality))
@@ -142,14 +146,14 @@ def test_power_inverse_round_trips_finite_fields(domain, exponent):
 
 @pytest.mark.parametrize("component_type", (Xor, ModularAdd))
 def test_multi_input_recovery_uses_retained_auxiliaries(component_type):
-    source = Primitive("source", {name: ArrayType(Word(4), (1,)) for name in ("a", "b", "c")})
+    source = Primitive("source", {name: UnitArrayType(Word(4), (1,)) for name in ("a", "b", "c")})
     component = component_type(source.graph.inputs())
     inverse = Primitive(
         "inverse",
         {
-            "output": ArrayType(Word(4), (1,)),
-            "a": ArrayType(Word(4), (1,)),
-            "c": ArrayType(Word(4), (1,)),
+            "output": UnitArrayType(Word(4), (1,)),
+            "a": UnitArrayType(Word(4), (1,)),
+            "c": UnitArrayType(Word(4), (1,)),
         },
     )
     inverse._builder.add_round()
@@ -169,15 +173,15 @@ def test_multi_input_recovery_uses_retained_auxiliaries(component_type):
 
 
 def test_modular_subtract_recovers_each_operand():
-    source = Primitive("source", {name: ArrayType(Word(4), (1,)) for name in ("a", "b", "c")})
+    source = Primitive("source", {name: UnitArrayType(Word(4), (1,)) for name in ("a", "b", "c")})
     component = ModularSubtract(source.graph.inputs())
     for recover in range(3):
         names = tuple(name for index, name in enumerate(("a", "b", "c")) if index != recover)
         inverse = Primitive(
             "inverse",
             {
-                "output": ArrayType(Word(4), (1,)),
-                **{name: ArrayType(Word(4), (1,)) for name in names},
+                "output": UnitArrayType(Word(4), (1,)),
+                **{name: UnitArrayType(Word(4), (1,)) for name in names},
             },
         )
         inverse._builder.add_round()
@@ -203,15 +207,15 @@ def test_modular_subtract_recovers_each_operand():
 
 
 def test_idea_multiply_recovers_each_operand_exhaustively():
-    source = Primitive("source", {name: ArrayType(Word(4), (1,)) for name in ("a", "b", "c")})
+    source = Primitive("source", {name: UnitArrayType(Word(4), (1,)) for name in ("a", "b", "c")})
     component = IDEAMultiply(source.graph.inputs())
     for recover in range(3):
         retained = tuple(name for index, name in enumerate(("a", "b", "c")) if index != recover)
         inverse = Primitive(
             "inverse",
             {
-                "output": ArrayType(Word(4), (1,)),
-                **{name: ArrayType(Word(4), (1,)) for name in retained},
+                "output": UnitArrayType(Word(4), (1,)),
+                **{name: UnitArrayType(Word(4), (1,)) for name in retained},
             },
         )
         inverse._builder.add_round()
@@ -236,13 +240,13 @@ def test_idea_multiply_recovers_each_operand_exhaustively():
 
 
 def test_reversible_feedback_register_inverse_round_trips_all_states():
-    source = Primitive("source", {"state": ArrayType(Bit(), (4,))})
+    source = Primitive("source", {"state": UnitArrayType(Bit(), (4,))})
     component = FeedbackRegister(
         source.graph.input("state"),
         (FeedbackRegisterSpec(4, (FeedbackTerm((0,)), FeedbackTerm((1,)))),),
         clocks=3,
     )
-    forward = Primitive("forward", {"state": ArrayType(Bit(), (4,))})
+    forward = Primitive("forward", {"state": UnitArrayType(Bit(), (4,))})
     forward._builder.add_round()
     forward._builder.set_output(
         forward._builder.add_component(
@@ -253,7 +257,7 @@ def test_reversible_feedback_register_inverse_round_trips_all_states():
             )
         )
     )
-    inverse = Primitive("inverse", {"state": ArrayType(Bit(), (4,))})
+    inverse = Primitive("inverse", {"state": UnitArrayType(Bit(), (4,))})
     inverse._builder.add_round()
     recovered = invert_component(component, inverse.graph.input("state"), recover_input=0)
     inverse._builder.set_output(inverse._builder.add_component(recovered))
@@ -263,7 +267,7 @@ def test_reversible_feedback_register_inverse_round_trips_all_states():
 
 
 def test_nonreversible_feedback_register_reports_information_loss():
-    source = Primitive("source", {"state": ArrayType(Bit(), (4,))})
+    source = Primitive("source", {"state": UnitArrayType(Bit(), (4,))})
     component = FeedbackRegister(
         source.graph.input("state"),
         (FeedbackRegisterSpec(4, (FeedbackTerm((1,)), FeedbackTerm((2,)))),),
@@ -275,13 +279,13 @@ def test_nonreversible_feedback_register_reports_information_loss():
 
 def test_variable_rotation_only_recovers_value_with_retained_amount():
     source = Primitive(
-        "source", {"x": ArrayType(Word(8), (1,)), "amount": ArrayType(Word(8), (1,))}
+        "source", {"x": UnitArrayType(Word(8), (1,)), "amount": UnitArrayType(Word(8), (1,))}
     )
     component = VariableRotate(
         source.graph.input("x"), source.graph.input("amount"), "left", "rotate"
     )
     destination = Primitive(
-        "destination", {"y": ArrayType(Word(8), (1,)), "amount": ArrayType(Word(8), (1,))}
+        "destination", {"y": UnitArrayType(Word(8), (1,)), "amount": UnitArrayType(Word(8), (1,))}
     )
     inverse = invert_component(
         component,
@@ -302,7 +306,9 @@ def test_variable_rotation_only_recovers_value_with_retained_amount():
 
 
 def test_failure_reasons_distinguish_ambiguity_missing_auxiliary_and_loss():
-    source = Primitive("source", {"a": ArrayType(Word(4), (1,)), "b": ArrayType(Word(4), (1,))})
+    source = Primitive(
+        "source", {"a": UnitArrayType(Word(4), (1,)), "b": UnitArrayType(Word(4), (1,))}
+    )
     xor = Xor(source.graph.inputs(), "xor")
     shift = Shift(source.graph.input("a"), 1, "left", "shift")
     bitwise_and = BitwiseAnd(source.graph.inputs(), "and")
@@ -328,9 +334,9 @@ def test_singular_maps_and_nonbijective_tables_report_information_loss():
     source = Primitive(
         "source",
         {
-            "bits": ArrayType(Bit(), (2,)),
-            "word": ArrayType(Word(2), (1,)),
-            "field": ArrayType(PrimeField(7), (1,)),
+            "bits": UnitArrayType(Bit(), (2,)),
+            "word": UnitArrayType(Word(2), (1,)),
+            "field": UnitArrayType(PrimeField(7), (1,)),
         },
     )
     components = (

@@ -4,10 +4,10 @@ from enum import Enum
 
 from claasp.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp.components.structural import Constant, Identity, Permutation
-from claasp.domains import PrimeField
 from claasp.graph import Primitive, Selection
 from claasp.representations.constraints.polynomial.expression import Polynomial
 from claasp.representations.constraints.polynomial.system import PolynomialSystem
+from claasp.unit_types import PrimeField
 
 
 class PowerLoweringPolicy(str, Enum):
@@ -46,8 +46,10 @@ class PrimeFieldPolynomialModel:
     ) -> None:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
-        domains = {port.array_type.domain for port in primitive.graph.input_ports.values()}
-        domains.update(component.output_type.domain for component in primitive.graph.components)
+        domains = {
+            unit_array.array_type.unit_type for unit_array in primitive.graph.input_arrays.values()
+        }
+        domains.update(component.output_type.unit_type for component in primitive.graph.components)
         if len(domains) != 1 or not isinstance(next(iter(domains)), PrimeField):
             raise ValueError("PrimeFieldPolynomialModel requires one homogeneous prime field")
         self._primitive = primitive
@@ -72,11 +74,11 @@ class PrimeFieldPolynomialModel:
 
     def _selection(self, selection: Selection) -> tuple[Polynomial, ...]:
         values = {
-            port.owner_id: tuple(
-                self._variable(port.owner_id, position)
-                for position in range(port.array_type.unit_count)
+            unit_array.source_id: tuple(
+                self._variable(unit_array.source_id, position)
+                for position in range(unit_array.array_type.unit_count)
             )
-            for port in tuple(self._primitive.graph.input_ports.values())
+            for unit_array in tuple(self._primitive.graph.input_arrays.values())
             + tuple(component.output for component in self._primitive.graph.components)
         }
         return self._primitive.graph.resolve_selection(selection, values)
@@ -85,9 +87,10 @@ class PrimeFieldPolynomialModel:
         """Compute the polynomial system for this public typed contract."""
 
         variables = []
-        for name, port in self._primitive.graph.input_ports.items():
+        for name, unit_array in self._primitive.graph.input_arrays.items():
             variables.extend(
-                self.variable_name(name, position) for position in range(port.array_type.unit_count)
+                self.variable_name(name, position)
+                for position in range(unit_array.array_type.unit_count)
             )
         for component in self._primitive.graph.components:
             variables.extend(

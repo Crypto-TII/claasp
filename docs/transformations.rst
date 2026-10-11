@@ -20,7 +20,7 @@ key is retained:
    >>> plaintext, key = 0x6574694c, 0x1918111009080100
    >>> ciphertext = source.evaluate(plaintext, key)
    >>> inverse = source.edit.inverse().primitive
-   >>> tuple(inverse.graph.input_ports)
+   >>> tuple(inverse.graph.input_arrays)
    ('output', 'key')
    >>> inverse.evaluate(ciphertext, key) == plaintext
    True
@@ -52,12 +52,12 @@ recovered from an XOR output:
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, ArrayType, partial_inverse
+   >>> from claasp import PrimitiveBuilder, UnitArrayType, partial_inverse
    >>> from claasp.components import Xor
-   >>> from claasp.domains import Word
+   >>> from claasp.unit_types import Word
    >>> builder = PrimitiveBuilder("mix", {
-   ...     "left": ArrayType(Word(8), (1,)),
-   ...     "right": ArrayType(Word(8), (1,)),
+   ...     "left": UnitArrayType(Word(8), (1,)),
+   ...     "right": UnitArrayType(Word(8), (1,)),
    ... })
    >>> _ = builder.add_round()
    >>> mixed = builder.add_component(Xor(builder.inputs()))
@@ -111,7 +111,7 @@ models round keys independently:
    ...     for selection in source.graph.round_keys
    ... )
    >>> external = source.edit.remove_key_schedule().primitive
-   >>> tuple(external.graph.input_ports)
+   >>> tuple(external.graph.input_arrays)
    ('plaintext', 'round_key_0', 'round_key_1')
    >>> external.evaluate(
    ...     plaintext=plaintext,

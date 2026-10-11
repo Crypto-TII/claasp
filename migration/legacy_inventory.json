@@ -42,11 +42,11 @@
       "public_entry_points": [
         "ComponentState"
       ],
-      "rationale": "Immutable Port and Selection objects replace mutable component-id/bit-position state.",
+      "rationale": "Immutable UnitArray and Selection objects replace mutable component-id/bit-position state.",
       "responsibility": "component state",
       "status": "superseded-in-m10.9c2",
       "tests": [],
-      "v5_destination": "src/claasp/graph/port.py"
+      "v5_destination": "src/claasp/graph/unit_array.py"
     },
     {
       "acceptance_criterion": "Typed Sage-independent graph and helper contracts preserve applicable semantic results without legacy mutable state, generated strings, or presentation behavior.",
@@ -63,11 +63,11 @@
       "public_entry_points": [
         "PowerOf2WordBasedDTO"
       ],
-      "rationale": "Typed Word domains and ArrayType replace a mutable optional word-size probe DTO.",
+      "rationale": "Typed Word domains and UnitArrayType replace a mutable optional word-size probe DTO.",
       "responsibility": "power of 2 word based dto",
       "status": "superseded-in-m10.9c2",
       "tests": [],
-      "v5_destination": "src/claasp/domains/word.py; src/claasp/graph/array_type.py"
+      "v5_destination": "src/claasp/unit_types/word.py; src/claasp/graph/unit_array_type.py"
     },
     {
       "acceptance_criterion": "Containing package is represented by its non-marker entries.",
@@ -9309,7 +9309,7 @@
       "v5_destination": "src/claasp/components/word/bitwise_and.py; src/claasp/semantics/cryptanalysis/bitwise.py"
     },
     {
-      "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
+      "acceptance_criterion": "UnitType-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
       "dependencies": [
         "claasp"
       ],
@@ -9332,7 +9332,7 @@
       "v5_destination": "src/claasp/graph/primitive.py; src/claasp/annotations/traces.py"
     },
     {
-      "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
+      "acceptance_criterion": "UnitType-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
       "dependencies": [
         "claasp"
       ],
@@ -9403,7 +9403,7 @@
       "v5_destination": "src/claasp/components/word/idea_multiply.py"
     },
     {
-      "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
+      "acceptance_criterion": "UnitType-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
       "dependencies": [
         "claasp"
       ],
@@ -9450,7 +9450,7 @@
       "responsibility": "linear layer component",
       "status": "superseded-in-m10.9c6",
       "tests": [],
-      "v5_destination": "src/claasp/components/algebraic/linear_map.py; src/claasp/domains"
+      "v5_destination": "src/claasp/components/algebraic/linear_map.py; src/claasp/unit_types"
     },
     {
       "acceptance_criterion": "A row-major typed LinearMap evaluates binary and extension-field matrices without Sage and validates every coefficient against its domain.",
@@ -9478,7 +9478,7 @@
       "responsibility": "mix column component",
       "status": "superseded-in-m10.9c6",
       "tests": [],
-      "v5_destination": "src/claasp/components/algebraic/linear_map.py; src/claasp/domains/binary_extension_field.py; src/claasp/utils/finite_fields.py"
+      "v5_destination": "src/claasp/components/algebraic/linear_map.py; src/claasp/unit_types/binary_extension_field.py; src/claasp/utils/finite_fields.py"
     },
     {
       "acceptance_criterion": "Typed word operations match independently computed exhaustive small-width arithmetic and scalar/transposed-batch evaluation.",
@@ -9654,7 +9654,7 @@
       "v5_destination": "src/claasp/components/word/bitwise_or.py"
     },
     {
-      "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
+      "acceptance_criterion": "UnitType-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
       "dependencies": [
         "claasp"
       ],
@@ -9677,7 +9677,7 @@
       "v5_destination": "src/claasp/components/structural/permutation.py"
     },
     {
-      "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
+      "acceptance_criterion": "UnitType-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
       "dependencies": [
         "claasp"
       ],
@@ -9947,7 +9947,7 @@
       "v5_destination": "src/claasp/components/word/variable_shift.py"
     },
     {
-      "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
+      "acceptance_criterion": "UnitType-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
       "dependencies": [
         "claasp"
       ],
@@ -10130,7 +10130,7 @@
       "responsibility": "input",
       "status": "superseded-in-m10.9c2",
       "tests": [],
-      "v5_destination": "src/claasp/graph/port.py"
+      "v5_destination": "src/claasp/graph/unit_array.py"
     },
     {
       "acceptance_criterion": "Typed Sage-independent graph and helper contracts preserve applicable semantic results without legacy mutable state, generated strings, or presentation behavior.",
@@ -19929,7 +19929,7 @@
       "v5_destination": "tests/unit/components/word/test_package__arithmetic.py"
     },
     {
-      "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
+      "acceptance_criterion": "UnitType-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
       "dependencies": [
         "claasp"
       ],
@@ -19967,7 +19967,7 @@
       "v5_destination": "tests/unit/components/permutation/test_layers.py"
     },
     {
-      "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
+      "acceptance_criterion": "UnitType-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
       "dependencies": [
         "claasp"
       ],
@@ -20004,7 +20004,7 @@
       "v5_destination": "tests/unit/components/permutation/test_layers.py"
     },
     {
-      "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
+      "acceptance_criterion": "UnitType-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
       "dependencies": [
         "claasp"
       ],
@@ -20032,7 +20032,7 @@
       "v5_destination": "tests/unit/components/permutation/test_layers.py"
     },
     {
-      "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
+      "acceptance_criterion": "UnitType-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
       "dependencies": [
         "claasp"
       ],
@@ -20069,7 +20069,7 @@
       "v5_destination": "tests/unit/components/permutation/test_layers.py"
     },
     {
-      "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
+      "acceptance_criterion": "UnitType-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
       "dependencies": [
         "claasp"
       ],

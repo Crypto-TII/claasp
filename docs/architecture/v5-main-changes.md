@@ -11,7 +11,7 @@ The main changes are:
   binary-extension-field elements, or prime-field elements. This allows a
   primitive to be described using the data type that naturally matches its
   specification.
-- **Ports make graph wiring explicit.** A `Port` is a named, typed source of
+- **Ports make graph wiring explicit.** A `UnitArray` is a named, typed source of
   data, such as a primitive input or a component output. A `Selection` chooses
   an ordered set of logical units from that port. A connection is made when
   such a selection is used by another component or as the primitive output; it

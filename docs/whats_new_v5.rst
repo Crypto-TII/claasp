@@ -4,8 +4,8 @@ What's new in CLAASP v5
 CLAASP v5 broadens the kinds of primitives that can be represented while
 making the main Python interface easier to discover and use.
 
-* **Typed values.** Values are described by their mathematical domain and
-  shape. A connection in a primitive graph may carry bits, fixed-width words,
+* **Typed values.** Values are described by their unit type and shape. A
+  connection in a primitive graph may carry bits, fixed-width words,
   binary-field elements, or prime-field elements. Traditional and
   arithmetization-oriented primitives can therefore use the same graph model
   without being forced into an artificial bit representation.

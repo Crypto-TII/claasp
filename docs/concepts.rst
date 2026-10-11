@@ -19,26 +19,28 @@ Constructing a primitive builds this description; it does not evaluate it:
 
    >>> from claasp.primitives import AES
    >>> aes = AES(number_of_rounds=2)
-   >>> aes.graph.input("plaintext").owner_id
+   >>> aes.graph.input("plaintext").source_id
    'plaintext'
-   >>> aes.graph.input("key").owner_id
+   >>> aes.graph.input("key").source_id
    'key'
    >>> len(aes.graph.round_outputs)
    2
    >>> len(aes.graph.components) > 0
    True
 
-Domains
--------
+Unit types
+----------
 
-A *domain* defines what one scalar value means and which operations are valid
-for it. The Python integer ``0x57`` could encode an unsigned byte, a vector of
-bits, or an element of :math:`GF(2^8)`; multiplication has a different meaning
-in each case.
+A *unit type* defines what one individual unit means and which operations are
+valid for it. The Python integer ``0x57`` could represent an unsigned 8-bit
+word or an element of :math:`GF(2^8)`; multiplication has a different meaning
+in each case. In mathematical language, the unit's value belongs to a domain.
+In the Python API, however, ``UnitType`` is the name of the object that defines
+and validates those values.
 
 .. doctest::
 
-   >>> from claasp.domains import BinaryExtensionField, PrimeField, Word
+   >>> from claasp.unit_types import BinaryExtensionField, PrimeField, Word
    >>> aes_field = BinaryExtensionField(8, 0x11B)
    >>> aes_field.encoded_bit_size
    8
@@ -54,15 +56,15 @@ encoded, but they do not have the same algebra. A word supports operations
 such as integer addition modulo :math:`2^8` and rotation. A field element
 supports polynomial-basis field arithmetic.
 
-The difference is visible when the same two 8-bit encodings are added in
-three domains:
+The difference is visible when the same two 8-bit encodings are added using
+three unit types:
 
 .. doctest::
 
    >>> from claasp.primitives.single_component_primitives import Add, ModularAdd
    >>> word_addition = ModularAdd(word_bit_size=8)
-   >>> prime_field_addition = Add(domain=PrimeField(251))
-   >>> binary_field_addition = Add(domain=BinaryExtensionField(8, 0x11B))
+   >>> prime_field_addition = Add(unit_type=PrimeField(251))
+   >>> binary_field_addition = Add(unit_type=BinaryExtensionField(8, 0x11B))
    >>> hex(word_addition.evaluate(0xF0, 0x30))
    '0x20'
    >>> hex(prime_field_addition.evaluate(0xF0, 0x30))
@@ -70,20 +72,19 @@ three domains:
    >>> hex(binary_field_addition.evaluate(0xF0, 0x30))
    '0xc0'
 
-All three domains have an 8-bit encoding, but they reduce the sum differently.
+All three unit types have an 8-bit encoding, but they reduce the sum differently.
 The word result is :math:`240 + 48 \bmod 256`; the prime-field result is
 :math:`240 + 48 \bmod 251`; and addition in :math:`GF(2^8)` adds polynomial
 coefficients modulo two, which is bitwise XOR. The polynomial ``0x11B`` defines
 the binary extension field; it affects multiplication, while field addition
 remains XOR.
 
-Array types
------------
+Unit-array types
+----------------
 
-``ArrayType`` describes the fixed-shaped array of scalar elements carried by
-a graph wire. It combines:
+``UnitArrayType`` describes a fixed-shaped array of logical units. It combines:
 
-* a ``domain`` for each scalar unit; and
+* a ``unit_type`` for every unit; and
 * a ``shape`` giving the dimensions of the collection of units.
 
 Use keyword arguments when introducing an array type so that both parts are
@@ -91,8 +92,8 @@ visible:
 
 .. doctest::
 
-   >>> from claasp import ArrayType
-   >>> vector = ArrayType(domain=PrimeField(257), shape=(4,))
+   >>> from claasp import UnitArrayType
+   >>> vector = UnitArrayType(unit_type=PrimeField(257), shape=(4,))
    >>> vector.unit_count
    4
    >>> vector.encoded_bit_size
@@ -104,11 +105,11 @@ bits, ``BitWord(size)`` is a concise spelling:
 .. doctest::
 
    >>> from claasp import BitWord
-   >>> from claasp.domains import Bit
-   >>> BitWord(128) == ArrayType(domain=Bit(), shape=(128,))
+   >>> from claasp.unit_types import Bit
+   >>> BitWord(128) == UnitArrayType(unit_type=Bit(), shape=(128,))
    True
 
-This is different from ``ArrayType(domain=Word(128), shape=(1,))``: the latter
+This is different from ``UnitArrayType(unit_type=Word(128), shape=(1,))``: the latter
 declares one arithmetic word for word-level rotation and modular addition.
 
 The comma in ``(4,)`` is Python's syntax for a one-element tuple. Without the
@@ -117,7 +118,7 @@ may have more than one dimension:
 
 .. doctest::
 
-   >>> matrix = ArrayType(domain=PrimeField(257), shape=(3, 4))
+   >>> matrix = UnitArrayType(unit_type=PrimeField(257), shape=(3, 4))
    >>> matrix.shape, matrix.unit_count
    ((3, 4), 12)
 
@@ -125,22 +126,39 @@ The shape is logical rather than a nested Python container. Runtime values are
 passed as an ordered flat tuple of scalar units; the shape records how an
 author or backend should understand those units.
 
-Ports and selections
---------------------
+Unit arrays and selections
+--------------------------
 
-A *port* is a named graph input or component output. A *selection* chooses
-logical units from a port. Positions refer to whole domain elements, not to
+A ``UnitArray`` is a particular identified array in a primitive graph. Its
+``source_id`` is the identifier of the graph input, component, or structural
+operation that produced it; it is not an arbitrary display name. A *selection*
+chooses logical units from an array. Positions refer to whole units, not to
 implicit bits, and their order is preserved.
 
 .. doctest::
 
-   >>> from claasp import Port
-   >>> state = Port("state", vector)
+   >>> from claasp import UnitArray
+   >>> state = UnitArray("state", array_type=vector)
    >>> selected = state[3, 1]
    >>> selected.positions
    (3, 1)
    >>> selected.array_type.unit_count
    2
+
+The reusable and inline construction forms are equivalent:
+
+.. doctest::
+
+   >>> inline = UnitArray(
+   ...     "inline_state", unit_type=PrimeField(257), shape=(4,)
+   ... )
+   >>> inline.array_type == vector
+   True
+   >>> inline.unit_type, inline.shape
+   (PrimeField(modulus=257), (4,))
+
+Primitive authors normally receive these arrays from ``builder.input()`` or a
+component operation, so CLAASP assigns and validates ``source_id`` for them.
 
 Components and rounds
 ---------------------
@@ -154,7 +172,7 @@ easy to find. It does not change the mathematics of the graph.
 If a backend does not support a component, it raises an error instead of
 silently changing the operation or decomposing it into bits.
 
-Joining graph wires
+Joining unit arrays
 -------------------
 
 Joining values is structural wiring, not a cryptographic operation. Pass a
@@ -165,7 +183,7 @@ order.
 .. doctest::
 
    >>> from claasp import PrimitiveBuilder
-   >>> pair = ArrayType(domain=PrimeField(257), shape=(2,))
+   >>> pair = UnitArrayType(unit_type=PrimeField(257), shape=(2,))
    >>> builder = PrimitiveBuilder("wiring", {"left": pair, "right": pair})
    >>> builder.add_round()
    Round(number=0)
@@ -248,5 +266,5 @@ provenance are separate from the generic construction classes.
 
 ``PrimeField`` rejects composite moduli. ``BinaryExtensionField`` verifies
 that its defining polynomial is irreducible over :math:`GF(2)` and currently
-uses the polynomial basis. These checks establish a valid domain; they are not
+uses the polynomial basis. These checks establish a valid unit type; they are not
 a certificate that a custom cryptographic design is secure.

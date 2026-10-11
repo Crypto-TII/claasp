@@ -1,8 +1,8 @@
 """Bit-oriented PRESENT block primitive."""
 
 from claasp.components import Add, BitVectorSBox, Constant, Permutation
-from claasp.domains import Bit
-from claasp.graph import ArrayType, Port, Primitive
+from claasp.graph import Primitive, UnitArray, UnitArrayType
+from claasp.unit_types import Bit
 
 PRESENT_SBOX = (0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2)
 
@@ -41,9 +41,9 @@ class Present(Primitive):
         if number_of_rounds <= 0 or number_of_rounds > 31:
             raise ValueError("PRESENT requires between 1 and 31 rounds")
         bit = Bit()
-        state_type = ArrayType(bit, (64,))
-        key_type = ArrayType(bit, (key_bit_size,))
-        counter_type = ArrayType(bit, (5,))
+        state_type = UnitArrayType(bit, (64,))
+        key_type = UnitArrayType(bit, (key_bit_size,))
+        counter_type = UnitArrayType(bit, (5,))
         super().__init__("present", {"plaintext": state_type, "key": key_type})
         state = self.graph.input("plaintext")
         key = self.graph.input("key")
@@ -79,12 +79,12 @@ class Present(Primitive):
 
     def _update_key(
         self,
-        key: Port,
+        key: UnitArray,
         round_number: int,
-        key_type: ArrayType,
-        counter_type: ArrayType,
+        key_type: UnitArrayType,
+        counter_type: UnitArrayType,
         key_bit_size: int,
-    ) -> Port:
+    ) -> UnitArray:
         rotation_mapping = tuple((position + 61) % key_bit_size for position in range(key_bit_size))
         rotated = self._builder.add_component(
             Permutation(key, rotation_mapping, component_id=f"key_rotate_{round_number}")
@@ -129,7 +129,7 @@ class Present80(Present):
     EXAMPLES::
 
         >>> primitive = Present80()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x5579c1387b228445', 63)

@@ -107,7 +107,7 @@ class BatchExecutionDriver:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
 
-        expected_names = set(primitive.graph.input_ports)
+        expected_names = set(primitive.graph.input_arrays)
         actual_names = set(inputs)
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
@@ -123,7 +123,7 @@ class BatchExecutionDriver:
 
         results = []
         for item_index in range(batch_size):
-            item_inputs = {name: inputs[name][item_index] for name in primitive.graph.input_ports}
+            item_inputs = {name: inputs[name][item_index] for name in primitive.graph.input_arrays}
             results.append(self._scalar_evaluator.evaluate(primitive, item_inputs))
         return BatchEvaluationResult(
             tuple(results), ResultProvenance.for_primitive(primitive, self.identity)
@@ -158,7 +158,7 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
 
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
-        expected_names = set(primitive.graph.input_ports)
+        expected_names = set(primitive.graph.input_arrays)
         actual_names = set(inputs)
         if actual_names != expected_names:
             missing = sorted(expected_names - actual_names)
@@ -172,11 +172,11 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
         batch_size = batch_sizes.pop() if batch_sizes else 0
 
         values: dict[str, tuple[RuntimeValue, ...]] = {}
-        for name, port in primitive.graph.input_ports.items():
+        for name, unit_array in primitive.graph.input_arrays.items():
             batch = tuple(tuple(item) for item in inputs[name])
             for item in batch:
                 self._scalar_evaluator._validate_value(
-                    name, item, port.array_type.unit_count, port.array_type.domain
+                    name, item, unit_array.array_type.unit_count, unit_array.array_type.unit_type
                 )
             values[name] = batch
 
@@ -199,7 +199,7 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
                     component.component_id,
                     item,
                     component.output_type.unit_count,
-                    component.output_type.domain,
+                    component.output_type.unit_type,
                 )
             values[component.component_id] = output
 

@@ -11,8 +11,8 @@ from claasp.components import (
     Rotate,
     Xor,
 )
-from claasp.domains import Bit, Word
 from claasp.graph import Primitive
+from claasp.unit_types import Bit, Word
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,14 +57,14 @@ class BooleanDegreeEvaluator:
     def evaluate(self, primitive: Primitive, variable_input: str) -> BooleanDegreeResult:
         """Compute the evaluate for this public typed contract."""
 
-        if variable_input not in primitive.graph.input_ports:
+        if variable_input not in primitive.graph.input_arrays:
             raise ValueError(f"unknown variable input: {variable_input}")
-        capacity = primitive.graph.input_ports[variable_input].array_type.encoded_bit_size
+        capacity = primitive.graph.input_arrays[variable_input].array_type.encoded_bit_size
         assert capacity is not None
         values: dict[str, tuple[DegreeUnit, ...]] = {}
-        for name, port in primitive.graph.input_ports.items():
-            domain = port.array_type.domain
-            width = domain.width if isinstance(domain, Word) else 1
+        for name, unit_array in primitive.graph.input_arrays.items():
+            unit_type = unit_array.array_type.unit_type
+            width = unit_type.width if isinstance(unit_type, Word) else 1
             bits = iter(range(capacity)) if name == variable_input else None
 
             def degree_bit(bits=bits):
@@ -74,12 +74,12 @@ class BooleanDegreeEvaluator:
                     else _Degree(0, frozenset())
                 )
 
-            if isinstance(domain, Bit):
-                values[name] = tuple(degree_bit() for _ in range(port.array_type.unit_count))
-            elif isinstance(domain, Word):
+            if isinstance(unit_type, Bit):
+                values[name] = tuple(degree_bit() for _ in range(unit_array.array_type.unit_count))
+            elif isinstance(unit_type, Word):
                 values[name] = tuple(
                     tuple(degree_bit() for _ in range(width))
-                    for _ in range(port.array_type.unit_count)
+                    for _ in range(unit_array.array_type.unit_count)
                 )
             else:
                 raise NotImplementedError("Boolean degree evaluation supports Bit and Word domains")
@@ -91,18 +91,18 @@ class BooleanDegreeEvaluator:
                 for selection in component.inputs
             )
             if isinstance(component, Constant):
-                domain = component.output_type.domain
-                if isinstance(domain, Bit):
+                unit_type = component.output_type.unit_type
+                if isinstance(unit_type, Bit):
                     values[component.component_id] = tuple(
                         _Degree(0 if value else -1, frozenset()) for value in component.values
                     )
-                elif isinstance(domain, Word):
+                elif isinstance(unit_type, Word):
                     values[component.component_id] = tuple(
                         tuple(
                             _Degree(
-                                0 if value & (1 << (domain.width - 1 - bit)) else -1, frozenset()
+                                0 if value & (1 << (unit_type.width - 1 - bit)) else -1, frozenset()
                             )
-                            for bit in range(domain.width)
+                            for bit in range(unit_type.width)
                         )
                         for value in component.values
                     )

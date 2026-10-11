@@ -47,7 +47,7 @@ class SCARF(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = SCARF()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -69,7 +69,7 @@ class SCARF(BitGraphPrimitive):
         plaintext = self.graph.input(INPUT_PLAINTEXT)
         left = self._builder.view(plaintext[tuple(range(5))])
         right = self._builder.view(plaintext[tuple(range(5, 10))])
-        data = BitState([left.owner_id, right.owner_id], [list(range(5))] * 2)
+        data = BitState([left.source_id, right.source_id], [list(range(5))] * 2)
         key = [INPUT_KEY], [list(range(self.key_bit_size))]
         tweak = [INPUT_TWEAK], [list(range(self.tweak_bit_size))]
 

@@ -522,7 +522,7 @@ ANALYSES = (
         {"component_bounded", "component_minizinc"},
         set(),
         set(),
-        "applicability and evidence strength are reported per semantic component and domain",
+        "applicability and evidence strength are reported per semantic component and unit_type",
     ),
     (
         "avalanche",
@@ -742,10 +742,10 @@ def build_catalogue() -> dict:
             )
             component_names = {type(component).__name__ for component in primitive.graph.components}
             domain_names = {
-                type(port.array_type.domain).__name__
-                for port in primitive.graph.input_ports.values()
+                type(unit_array.array_type.unit_type).__name__
+                for unit_array in primitive.graph.input_arrays.values()
             } | {
-                type(component.output_type.domain).__name__
+                type(component.output_type.unit_type).__name__
                 for component in primitive.graph.components
             }
             labels = []

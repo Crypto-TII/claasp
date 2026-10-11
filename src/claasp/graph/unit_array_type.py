@@ -1,35 +1,35 @@
-"""Types carried by ports in a CLAASP graph."""
+"""Types carried by unit arrays in a CLAASP graph."""
 
 from dataclasses import dataclass
 from functools import reduce
 from operator import mul
 
-from claasp.domains.base import Domain
+from claasp.unit_types.base import UnitType
 
 
 @dataclass(frozen=True, slots=True)
-class ArrayType:
-    """A homogeneous shape over one scalar domain.
+class UnitArrayType:
+    """Describe the unit type and shape of a homogeneous array.
 
     The logical size is deliberately distinct from its binary encoding size.
 
     EXAMPLES::
 
-        >>> from claasp import ArrayType
-        >>> from claasp.domains import PrimeField
-        >>> state_type = ArrayType(PrimeField(17), (3,))
+        >>> from claasp import UnitArrayType
+        >>> from claasp.unit_types import PrimeField
+        >>> state_type = UnitArrayType(unit_type=PrimeField(17), shape=(3,))
         >>> state_type.unit_count
         3
         >>> state_type.encoded_bit_size
         15
     """
 
-    domain: Domain
+    unit_type: UnitType
     shape: tuple[int, ...]
 
     def __post_init__(self) -> None:
-        if not isinstance(self.domain, Domain):
-            raise TypeError("domain must be a Domain")
+        if not isinstance(self.unit_type, UnitType):
+            raise TypeError("unit_type must be a UnitType")
         if not self.shape:
             raise ValueError("shape must contain at least one dimension")
         if any(
@@ -45,17 +45,17 @@ class ArrayType:
 
     @property
     def encoded_bit_size(self) -> int | None:
-        """Canonical encoded size when the domain defines one."""
+        """Canonical encoded size when the unit type defines one."""
 
-        scalar_size = self.domain.encoded_bit_size
+        scalar_size = self.unit_type.encoded_bit_size
         return None if scalar_size is None else self.unit_count * scalar_size
 
 
-def BitWord(bit_size: int) -> ArrayType:
-    """Return the boundary type for one packed string of individual bits.
+def BitWord(bit_size: int) -> UnitArrayType:
+    """Return the array type for one packed string of individual bits.
 
     ``BitWord(128)`` is the concise authoring form of
-    ``ArrayType(domain=Bit(), shape=(128,))``. Use ``Word`` instead when
+    ``UnitArrayType(unit_type=Bit(), shape=(128,))``. Use ``Word`` instead when
     the value is one arithmetic word with rotation or modular-add semantics.
 
     EXAMPLES::
@@ -66,10 +66,10 @@ def BitWord(bit_size: int) -> ArrayType:
         (128, 128)
     """
 
-    from claasp.domains import Bit
+    from claasp.unit_types import Bit
 
     if not isinstance(bit_size, int) or isinstance(bit_size, bool):
         raise TypeError("bit_size must be an integer")
     if bit_size <= 0:
         raise ValueError("bit_size must be positive")
-    return ArrayType(Bit(), (bit_size,))
+    return UnitArrayType(Bit(), (bit_size,))

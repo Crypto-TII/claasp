@@ -9,9 +9,9 @@ from claasp.analysis.component_properties import (
     PropertyRequest,
 )
 from claasp.components import LinearMap
-from claasp.domains import Bit
 from claasp.drivers.analysis import MiniZincBranchNumberDriver
-from claasp.graph import ArrayType, Port
+from claasp.graph import UnitArray, UnitArrayType
+from claasp.unit_types import Bit
 
 pytestmark = pytest.mark.external
 
@@ -34,7 +34,7 @@ def test_minizinc_driver_proves_asymmetric_differential_and_linear_branches():
         (1, 0, 1, 0),
         (1, 1, 1, 1),
     )
-    component = LinearMap(Port("x", ArrayType(Bit(), (4,))), matrix)
+    component = LinearMap(UnitArray("x", UnitArrayType(Bit(), (4,))), matrix)
     driver = MiniZincBranchNumberDriver(solver=_solver(), timeout_seconds=10)
 
     differential = driver.analyze(

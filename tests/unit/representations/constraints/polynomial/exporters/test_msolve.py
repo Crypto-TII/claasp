@@ -5,7 +5,6 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-from claasp.domains import PrimeField
 from claasp.primitives import MiMC
 from claasp.representations.constraints.polynomial import (
     Polynomial,
@@ -13,6 +12,7 @@ from claasp.representations.constraints.polynomial import (
     PrimeFieldPolynomialModel,
 )
 from claasp.representations.constraints.polynomial.exporters import MsolveExporter
+from claasp.unit_types import PrimeField
 
 
 def test_msolve_export_is_deterministic_and_uses_ordered_variable_mapping():

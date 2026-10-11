@@ -1,8 +1,8 @@
 """Fixed and independently derived checks for reusable permutation layers."""
 
-from claasp import ArrayType, Primitive, ScalarEvaluator
+from claasp import Primitive, ScalarEvaluator, UnitArrayType
 from claasp.components import gaston_theta, keccak_theta, shift_rows, sigma, xoodoo_theta
-from claasp.domains import Bit, Word
+from claasp.unit_types import Bit, Word
 
 
 def _bits(data: bytes):
@@ -14,7 +14,7 @@ def _bit_string(values):
 
 
 def _bit_primitive(name, size, constructor, *args):
-    primitive = Primitive(name, {"state": ArrayType(Bit(), (size,))})
+    primitive = Primitive(name, {"state": UnitArrayType(Bit(), (size,))})
     primitive._builder.add_round()
     output = primitive._builder.add_component(constructor(primitive.graph.input("state"), *args))
     primitive._builder.set_output(output)
@@ -22,7 +22,7 @@ def _bit_primitive(name, size, constructor, *args):
 
 
 def test_shift_rows_is_a_domain_neutral_row_permutation():
-    array_type = ArrayType(Word(8), (8,))
+    array_type = UnitArrayType(Word(8), (8,))
     primitive = Primitive("shift_rows", {"state": array_type})
     primitive._builder.add_round()
     output = primitive._builder.add_component(shift_rows(primitive.graph.input("state"), 4, (1, 2)))

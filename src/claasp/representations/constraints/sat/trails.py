@@ -20,7 +20,6 @@ from claasp.components import (
     SBox,
     Xor,
 )
-from claasp.domains import BinaryExtensionField, Bit, Word
 from claasp.drivers.solvers import SatStatus
 from claasp.graph.binding import BindingKind
 from claasp.primitives import Speck
@@ -66,6 +65,7 @@ from claasp.semantics.cryptanalysis import (
     truncated_modular_subtract,
 )
 from claasp.transformations import invert_primitive, slice_rounds
+from claasp.unit_types import BinaryExtensionField, Bit, Word
 
 
 def _component_applications(primitive, default, specialized):
@@ -209,7 +209,7 @@ class NWindowSATStrategy:
                     selected_items.append((component, window))
             selected = tuple(selected_items)
         for component, window in selected:
-            width = getattr(component.output_type.domain, "width", None)
+            width = getattr(component.output_type.unit_type, "width", None)
             if width is None:
                 raise NotImplementedError("n-window constraints require Word domains")
             if window > width - 1:
@@ -281,9 +281,9 @@ def _apply_n_window(model, formula, strategy):
     selections = strategy.selections(model.primitive)
     full_windows: list[str] = []
     for component, window in selections:
-        width = component.output_type.domain.width
+        width = component.output_type.unit_type.width
         operands = model._shared._operands[component.component_id]
-        output = model._shared._ports[component.component_id]
+        output = model._shared._unit_arrays[component.component_id]
         for unit in range(component.output_type.unit_count):
             local_model = ModularAddNWindowSATModel(width, window)
             local = local_model.cnf_formula()
@@ -349,9 +349,9 @@ def _check_n_window(model, trail):
     values = dict(trail.semantic_assignment)
     full_window_count = 0
     for component, window in model._n_window_selections:
-        width = component.output_type.domain.width
+        width = component.output_type.unit_type.width
         operands = model._shared._operands[component.component_id]
-        output = model._shared._ports[component.component_id]
+        output = model._shared._unit_arrays[component.component_id]
         for unit in range(component.output_type.unit_count):
             carry_differences = tuple(
                 values[operands[0][unit * width + bit]]
@@ -404,7 +404,7 @@ def _enumeration_metadata(model, formula, solver, extra=()):
             sha256(
                 repr(
                     (
-                        model.primitive.graph.input_ports,
+                        model.primitive.graph.input_arrays,
                         model.primitive.graph.bindings,
                         tuple(model.primitive.graph.components),
                         model.primitive.graph.output,
@@ -511,7 +511,7 @@ def _truncated_pattern(bits, assignment):
 class WordDeterministicTruncatedSATModel:
     """Assemble deterministic-truncated ARX Word graphs as ordinary CNF.
 
-    Port trits use a canonical ``(unknown, value)`` representation. Structural
+    UnitArray trits use a canonical ``(unknown, value)`` representation. Structural
     wiring and XOR are composed directly, while every two-input modular-add
     step reuses :class:`ModularAddDeterministicTruncatedSATModel`. Decoding
     independently propagates the typed three-valued semantics over the graph.
@@ -545,15 +545,15 @@ class WordDeterministicTruncatedSATModel:
         nonzero_input=None,
     ) -> None:
         self.primitive = primitive
-        if nonzero_input is not None and nonzero_input not in primitive.graph.input_ports:
+        if nonzero_input is not None and nonzero_input not in primitive.graph.input_arrays:
             raise ValueError("unknown nonzero input")
         self.nonzero_input = nonzero_input
         fixed = dict(fixed_input_patterns or {})
-        unknown = set(fixed) - set(primitive.graph.input_ports)
+        unknown = set(fixed) - set(primitive.graph.input_arrays)
         if unknown:
             raise ValueError(f"unknown fixed input pattern: {sorted(unknown)!r}")
         self.fixed_input_patterns = {
-            name: self._coerce(pattern, primitive.graph.input_ports[name].array_type)
+            name: self._coerce(pattern, primitive.graph.input_arrays[name].array_type)
             for name, pattern in fixed.items()
         }
         self.output_pattern = (
@@ -562,20 +562,20 @@ class WordDeterministicTruncatedSATModel:
             else self._coerce(output_pattern, primitive.graph.output.array_type)
         )
         self._formula: CNFFormula | None = None
-        self._ports: dict[str, tuple[tuple[str, str], ...]] = {}
+        self._unit_arrays: dict[str, tuple[tuple[str, str], ...]] = {}
         self._operands: dict[str, tuple[tuple[tuple[str, str], ...], ...]] = {}
         self._output: tuple[tuple[str, str], ...] = ()
         self._semantic_names: tuple[str, ...] = ()
 
     @staticmethod
     def _coerce(pattern, array_type):
-        if not isinstance(array_type.domain, Word):
+        if not isinstance(array_type.unit_type, Word):
             raise NotImplementedError("truncated SAT lowering requires Word domains")
         if isinstance(pattern, str):
             pattern = TruncatedXorDifference.parse(pattern)
         if not isinstance(pattern, TruncatedXorDifference):
             raise TypeError("truncated patterns must be strings or TruncatedXorDifference values")
-        expected = array_type.unit_count * array_type.domain.width
+        expected = array_type.unit_count * array_type.unit_type.width
         if len(pattern.bits) != expected:
             raise ValueError(f"truncated pattern must contain {expected} bits")
         return pattern
@@ -624,24 +624,25 @@ class WordDeterministicTruncatedSATModel:
                     )
 
         sources = [
-            (name, port.array_type) for name, port in self.primitive.graph.input_ports.items()
+            (name, unit_array.array_type)
+            for name, unit_array in self.primitive.graph.input_arrays.items()
         ]
         sources += [
             (item.component_id, item.output_type) for item in self.primitive.graph.components
         ]
-        ports = {}
+        unit_arrays = {}
         for name, array_type in sources:
-            if not isinstance(array_type.domain, Word):
+            if not isinstance(array_type.unit_type, Word):
                 raise NotImplementedError("truncated SAT lowering requires Word domains")
-            ports[name] = tuple(
+            unit_arrays[name] = tuple(
                 pair(f"truncated_{name}_{bit}")
-                for bit in range(array_type.unit_count * array_type.domain.width)
+                for bit in range(array_type.unit_count * array_type.unit_type.width)
             )
 
         def selected(selection):
             return tuple(
-                ports[owner_id][bit]
-                for owner_id, bit in self.primitive.graph.selection_bit_sources(selection)
+                unit_arrays[source_id][bit]
+                for source_id, bit in self.primitive.graph.selection_bit_sources(selection)
             )
 
         operands_by_id = {}
@@ -649,8 +650,8 @@ class WordDeterministicTruncatedSATModel:
             component_id = component.component_id
             operands = tuple(selected(selection) for selection in component.inputs)
             operands_by_id[component_id] = operands
-            output = ports[component_id]
-            width = component.output_type.domain.width
+            output = unit_arrays[component_id]
+            width = component.output_type.unit_type.width
             if isinstance(component, (ModularAdd, ModularSubtract)):
                 for unit in range(component.output_type.unit_count):
                     accumulator = operands[0][unit * width : (unit + 1) * width]
@@ -735,7 +736,11 @@ class WordDeterministicTruncatedSATModel:
         output = selected(self.primitive.graph.output)
         if self.nonzero_input is not None:
             add(
-                (indices[name] for names_pair in ports[self.nonzero_input] for name in names_pair),
+                (
+                    indices[name]
+                    for names_pair in unit_arrays[self.nonzero_input]
+                    for name in names_pair
+                ),
                 "truncated_nonzero_input",
             )
 
@@ -746,13 +751,13 @@ class WordDeterministicTruncatedSATModel:
                     add(((indices[name] if value else -indices[name]),), label)
 
         for name, pattern in self.fixed_input_patterns.items():
-            fix(ports[name], pattern, "truncated_fixed_input")
+            fix(unit_arrays[name], pattern, "truncated_fixed_input")
         if self.output_pattern is not None:
             fix(output, self.output_pattern, "truncated_fixed_output")
 
-        self._ports, self._operands, self._output = ports, operands_by_id, output
+        self._unit_arrays, self._operands, self._output = unit_arrays, operands_by_id, output
         self._semantic_names = tuple(
-            name for names in ports.values() for names_pair in names for name in names_pair
+            name for names in unit_arrays.values() for names_pair in names for name in names_pair
         )
         self._formula = CNFFormula(
             tuple(variables),
@@ -781,10 +786,10 @@ class WordDeterministicTruncatedSATModel:
 
     def _evaluate(self, assignment):
         patterns = {
-            name: _truncated_pattern(bits, assignment) for name, bits in self._ports.items()
+            name: _truncated_pattern(bits, assignment) for name, bits in self._unit_arrays.items()
         }
         for component in self.primitive.graph.components:
-            width = component.output_type.domain.width
+            width = component.output_type.unit_type.width
             operands = tuple(
                 _truncated_pattern(names, assignment)
                 for names in self._operands[component.component_id]
@@ -844,7 +849,7 @@ class WordDeterministicTruncatedSATModel:
         if patterns is None:
             raise ValueError("truncated witness violates independent graph propagation")
         result = WordDeterministicTruncatedCharacteristic(
-            tuple((name, patterns[name]) for name in self.primitive.graph.input_ports),
+            tuple((name, patterns[name]) for name in self.primitive.graph.input_arrays),
             _truncated_pattern(self._output, assignment),
             tuple(
                 (item.component_id, patterns[item.component_id])
@@ -871,7 +876,7 @@ class WordDeterministicTruncatedSATModel:
         patterns = self._evaluate(values)
         if patterns is None:
             return False
-        inputs = tuple((name, patterns[name]) for name in self.primitive.graph.input_ports)
+        inputs = tuple((name, patterns[name]) for name in self.primitive.graph.input_arrays)
         output = _truncated_pattern(self._output, values)
         components = tuple(
             (item.component_id, patterns[item.component_id])
@@ -893,7 +898,7 @@ class WordDeterministicTruncatedSATModel:
         )
 
     def enumerate_trails(self, solver, *, limit=1000):
-        """Enumerate distinct port-pattern characteristics."""
+        """Enumerate distinct unit_array-pattern characteristics."""
 
         formula = self.cnf_formula()
         metadata = _enumeration_metadata(
@@ -989,19 +994,19 @@ class WordwiseDeterministicTruncatedSATModel:
         nonzero_input=None,
     ) -> None:
         self.primitive = primitive
-        if nonzero_input is not None and nonzero_input not in primitive.graph.input_ports:
+        if nonzero_input is not None and nonzero_input not in primitive.graph.input_arrays:
             raise ValueError("unknown nonzero input")
-        if any(name not in primitive.graph.input_ports for name in zero_difference_inputs):
+        if any(name not in primitive.graph.input_arrays for name in zero_difference_inputs):
             raise ValueError("unknown zero-difference input")
         if nonzero_input in zero_difference_inputs:
             raise ValueError("an input cannot be both zero and nonzero")
         self.nonzero_input = nonzero_input
         self.zero_difference_inputs = tuple(zero_difference_inputs)
         fixed = dict(fixed_input_differences or {})
-        if unknown := set(fixed) - set(primitive.graph.input_ports):
+        if unknown := set(fixed) - set(primitive.graph.input_arrays):
             raise ValueError(f"unknown fixed input differences: {sorted(unknown)!r}")
         self.fixed_input_differences = {
-            name: self._coerce(values, primitive.graph.input_ports[name].array_type)
+            name: self._coerce(values, primitive.graph.input_arrays[name].array_type)
             for name, values in fixed.items()
         }
         self.output_differences = (
@@ -1010,7 +1015,7 @@ class WordwiseDeterministicTruncatedSATModel:
             else self._coerce(output_differences, primitive.graph.output.array_type)
         )
         self._formula: CNFFormula | None = None
-        self._ports: dict[str, tuple[Any, ...]] = {}
+        self._unit_arrays: dict[str, tuple[Any, ...]] = {}
         self._operands: dict[str, tuple[Any, ...]] = {}
         self._output: tuple[Any, ...] = ()
         self._semantic_names: tuple[str, ...] = ()
@@ -1020,7 +1025,7 @@ class WordwiseDeterministicTruncatedSATModel:
         values = tuple(values)
         if len(values) != array_type.unit_count:
             raise ValueError(f"wordwise boundary must contain {array_type.unit_count} units")
-        width = array_type.domain.encoded_bit_size
+        width = array_type.unit_type.encoded_bit_size
         if any(not isinstance(item, WordwiseXorDifference) for item in values):
             raise TypeError("wordwise boundaries require WordwiseXorDifference values")
         if any(item.width != width for item in values):
@@ -1138,26 +1143,27 @@ class WordwiseDeterministicTruncatedSATModel:
                 for selection in binding.inputs:
                     if position < offset + len(selection.positions):
                         return resolve(
-                            selection.source.owner_id,
+                            selection.source.source_id,
                             selection.positions[position - offset],
                         )
                     offset += len(selection.positions)
             elif binding.kind is BindingKind.VIEW:
                 selection = binding.inputs[0]
-                return resolve(selection.source.owner_id, selection.positions[position])
+                return resolve(selection.source.source_id, selection.positions[position])
             raise NotImplementedError(
                 f"wordwise propagation does not support {binding.kind.value} binding {owner!r}"
             )
 
         sources = [
-            (name, port.array_type) for name, port in self.primitive.graph.input_ports.items()
+            (name, unit_array.array_type)
+            for name, unit_array in self.primitive.graph.input_arrays.items()
         ]
         sources += [
             (item.component_id, item.output_type) for item in self.primitive.graph.components
         ]
-        ports = {
+        unit_arrays = {
             name: tuple(
-                word(f"wordwise_{name}_{position}", array_type.domain.encoded_bit_size)
+                word(f"wordwise_{name}_{position}", array_type.unit_type.encoded_bit_size)
                 for position in range(array_type.unit_count)
             )
             for name, array_type in sources
@@ -1165,19 +1171,19 @@ class WordwiseDeterministicTruncatedSATModel:
 
         def selected(selection):
             return tuple(
-                ports[owner][source_position]
+                unit_arrays[owner][source_position]
                 for position in selection.positions
-                for owner, source_position in (resolve(selection.source.owner_id, position),)
+                for owner, source_position in (resolve(selection.source.source_id, position),)
             )
 
         operands_by_id = {}
         for component in self.primitive.graph.components:
             operands = tuple(selected(selection) for selection in component.inputs)
             operands_by_id[component.component_id] = operands
-            output = ports[component.component_id]
+            output = unit_arrays[component.component_id]
             if isinstance(component, (Add, Xor)):
                 if isinstance(component, Add) and not isinstance(
-                    component.output_type.domain, (Bit, BinaryExtensionField)
+                    component.output_type.unit_type, (Bit, BinaryExtensionField)
                 ):
                     raise NotImplementedError("wordwise Add requires characteristic-two fields")
                 if any(len(items) != len(output) for items in operands):
@@ -1256,33 +1262,35 @@ class WordwiseDeterministicTruncatedSATModel:
 
         for name in self.zero_difference_inputs:
             fix(
-                ports[name],
+                unit_arrays[name],
                 tuple(
                     WordwiseXorDifference(
-                        self.primitive.graph.input_ports[name].array_type.domain.encoded_bit_size,
+                        self.primitive.graph.input_arrays[
+                            name
+                        ].array_type.unit_type.encoded_bit_size,
                         WordwiseDifferenceKind.ZERO,
                     )
-                    for _ in ports[name]
+                    for _ in unit_arrays[name]
                 ),
                 "wordwise_zero_input",
             )
         for name, differences in self.fixed_input_differences.items():
-            fix(ports[name], differences, "wordwise_fixed_input")
+            fix(unit_arrays[name], differences, "wordwise_fixed_input")
         if self.output_differences is not None:
             fix(output, self.output_differences, "wordwise_fixed_output")
         if self.nonzero_input is not None:
             add(
                 (
                     -indices[item[0][WordwiseDifferenceKind.ZERO.value]]
-                    for item in ports[self.nonzero_input]
+                    for item in unit_arrays[self.nonzero_input]
                 ),
                 "wordwise_nonzero_input",
             )
 
-        self._ports, self._operands, self._output = ports, operands_by_id, output
+        self._unit_arrays, self._operands, self._output = unit_arrays, operands_by_id, output
         self._semantic_names = tuple(
             name
-            for words in ports.values()
+            for words in unit_arrays.values()
             for states, value in words
             for name in (*states, *value)
         )
@@ -1312,7 +1320,7 @@ class WordwiseDeterministicTruncatedSATModel:
 
     def _evaluate(self, assignment):
         patterns = {
-            name: self._decode_words(words, assignment) for name, words in self._ports.items()
+            name: self._decode_words(words, assignment) for name, words in self._unit_arrays.items()
         }
         for component in self.primitive.graph.components:
             operands = tuple(
@@ -1349,9 +1357,11 @@ class WordwiseDeterministicTruncatedSATModel:
             elif isinstance(component, Permutation):
                 expected = tuple(operands[0][position] for position in component.mapping)
             elif isinstance(component, Constant):
-                width = component.output_type.domain.encoded_bit_size
+                width = component.output_type.unit_type.encoded_bit_size
                 if width is None:
-                    raise NotImplementedError("wordwise constants require a finite encoded domain")
+                    raise NotImplementedError(
+                        "wordwise constants require a finite encoded unit_type"
+                    )
                 expected = tuple(
                     WordwiseXorDifference(width, WordwiseDifferenceKind.ZERO)
                     for _ in range(component.output_type.unit_count)
@@ -1378,7 +1388,7 @@ class WordwiseDeterministicTruncatedSATModel:
         if patterns is None:
             raise ValueError("wordwise witness violates independent graph propagation")
         trail = WordwiseDeterministicTruncatedCharacteristic(
-            tuple((name, patterns[name]) for name in self.primitive.graph.input_ports),
+            tuple((name, patterns[name]) for name in self.primitive.graph.input_arrays),
             self._decode_words(self._output, projected),
             tuple(
                 (component.component_id, patterns[component.component_id])
@@ -1403,7 +1413,7 @@ class WordwiseDeterministicTruncatedSATModel:
         patterns = self._evaluate(assignment)
         if patterns is None:
             return False
-        inputs = tuple((name, patterns[name]) for name in self.primitive.graph.input_ports)
+        inputs = tuple((name, patterns[name]) for name in self.primitive.graph.input_arrays)
         output = self._decode_words(self._output, assignment)
         components = tuple(
             (component.component_id, patterns[component.component_id])
@@ -1556,11 +1566,11 @@ class WordImpossibleSATModel:
         input_pattern=None,
         output_pattern=None,
     ) -> None:
-        selected = primitive.graph.input_ports.get(active_input)
-        if selected is None or not isinstance(selected.array_type.domain, Word):
-            raise ValueError("active_input must name a Word-domain primitive input")
+        selected = primitive.graph.input_arrays.get(active_input)
+        if selected is None or not isinstance(selected.array_type.unit_type, Word):
+            raise ValueError("active_input must name a Word-unit_type primitive input")
         if not isinstance(zero_difference_inputs, tuple) or any(
-            name == active_input or name not in primitive.graph.input_ports
+            name == active_input or name not in primitive.graph.input_arrays
             for name in zero_difference_inputs
         ):
             raise ValueError("zero_difference_inputs must name other primitive inputs")
@@ -1580,8 +1590,8 @@ class WordImpossibleSATModel:
         zero_patterns = {
             name: "0"
             * (
-                primitive.graph.input_ports[name].array_type.unit_count
-                * primitive.graph.input_ports[name].array_type.domain.width
+                primitive.graph.input_arrays[name].array_type.unit_count
+                * primitive.graph.input_arrays[name].array_type.unit_type.width
             )
             for name in zero_difference_inputs
         }
@@ -1835,10 +1845,10 @@ class WordwiseImpossibleSATModel:
         input_differences=None,
         output_differences=None,
     ) -> None:
-        if active_input not in primitive.graph.input_ports:
+        if active_input not in primitive.graph.input_arrays:
             raise ValueError("active_input must name a primitive input")
         if not isinstance(zero_difference_inputs, tuple) or any(
-            name == active_input or name not in primitive.graph.input_ports
+            name == active_input or name not in primitive.graph.input_arrays
             for name in zero_difference_inputs
         ):
             raise ValueError("zero_difference_inputs must name other primitive inputs")
@@ -1856,22 +1866,22 @@ class WordwiseImpossibleSATModel:
             suffix, recover_input="state", retained_inputs=zero_difference_inputs
         ).primitive
 
-        def zeros(port):
-            width = port.array_type.domain.encoded_bit_size
+        def zeros(unit_array):
+            width = unit_array.array_type.unit_type.encoded_bit_size
             if width is None:
                 raise NotImplementedError("wordwise impossible search requires finite domains")
             return tuple(
                 WordwiseXorDifference(width, WordwiseDifferenceKind.ZERO)
-                for _ in range(port.array_type.unit_count)
+                for _ in range(unit_array.array_type.unit_count)
             )
 
         forward_fixed = {
-            name: zeros(primitive.graph.input_ports[name]) for name in zero_difference_inputs
+            name: zeros(primitive.graph.input_arrays[name]) for name in zero_difference_inputs
         }
         if input_differences is not None:
             forward_fixed[active_input] = input_differences
         backward_fixed = {
-            name: zeros(inverse.graph.input_ports[name]) for name in zero_difference_inputs
+            name: zeros(inverse.graph.input_arrays[name]) for name in zero_difference_inputs
         }
         if output_differences is not None:
             backward_fixed["output"] = output_differences
@@ -2013,12 +2023,12 @@ class SpeckImpossibleSATModel(WordImpossibleSATModel):
     )
 
     def __init__(self, primitive, middle_round: int, *, input_pattern=None, output_pattern=None):
-        plaintext = primitive.graph.input_ports.get("plaintext")
+        plaintext = primitive.graph.input_arrays.get("plaintext")
         if (
             primitive.family_name != "speck"
             or plaintext is None
-            or not isinstance(plaintext.array_type.domain, Word)
-            or plaintext.array_type.domain.width != 16
+            or not isinstance(plaintext.array_type.unit_type, Word)
+            or plaintext.array_type.unit_type.width != 16
         ):
             raise NotImplementedError("the reviewed impossible slice supports Speck32/64")
         super().__init__(
@@ -2124,12 +2134,12 @@ class SpeckProbabilisticTruncatedSATModel:
     def __init__(
         self, primitive, input_pattern, output_pattern, *, maximum_scaled_weight=None
     ) -> None:
-        plaintext = primitive.graph.input_ports.get("plaintext")
+        plaintext = primitive.graph.input_arrays.get("plaintext")
         if (
             primitive.family_name != "speck"
             or plaintext is None
-            or not isinstance(plaintext.array_type.domain, Word)
-            or plaintext.array_type.domain.width != 16
+            or not isinstance(plaintext.array_type.unit_type, Word)
+            or plaintext.array_type.unit_type.width != 16
         ):
             raise NotImplementedError("the reviewed probabilistic slice supports Speck32/64")
         self.primitive = primitive
@@ -2700,9 +2710,9 @@ class SharedDifferencePairedWordDifferentialSATModel:
             applications.extend(formula.constraint_models)
             maps[namespace] = mapping
 
-        for input_name in self.primitive.graph.input_ports:
-            left = self.left_model._shared._ports[input_name]
-            right = self.right_model._shared._ports[input_name]
+        for input_name in self.primitive.graph.input_arrays:
+            left = self.left_model._shared._unit_arrays[input_name]
+            right = self.right_model._shared._unit_arrays[input_name]
             for left_name, right_name in zip(left, right):
                 left_index = indices[maps["left"][left_name]]
                 right_index = indices[maps["right"][right_name]]
@@ -2715,8 +2725,8 @@ class SharedDifferencePairedWordDifferentialSATModel:
             if isinstance(component, ModularAdd)
         )
         for component in additions:
-            left = self.left_model._shared._ports[component.component_id]
-            right = self.right_model._shared._ports[component.component_id]
+            left = self.left_model._shared._unit_arrays[component.component_id]
+            right = self.right_model._shared._unit_arrays[component.component_id]
             for left_name, right_name in zip(left, right):
                 add(
                     (
@@ -2794,8 +2804,8 @@ class SharedDifferencePairedWordDifferentialSATModel:
         for component in self.primitive.graph.components:
             if not isinstance(component, ModularAdd):
                 continue
-            left_names = self.left_model._shared._ports[component.component_id]
-            right_names = self.right_model._shared._ports[component.component_id]
+            left_names = self.left_model._shared._unit_arrays[component.component_id]
+            right_names = self.right_model._shared._unit_arrays[component.component_id]
             if any(
                 left_assignment[a] and right_assignment[b] for a, b in zip(left_names, right_names)
             ):
@@ -2977,8 +2987,8 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
             ):
                 raise ValueError("weight bounds must be nonnegative integers")
         block_width = sum(
-            port.array_type.unit_count * port.array_type.domain.width
-            for name, port in primitive.graph.input_ports.items()
+            unit_array.array_type.unit_count * unit_array.array_type.unit_type.width
+            for name, unit_array in primitive.graph.input_arrays.items()
             if name == "plaintext"
         )
         if not block_width:
@@ -3008,7 +3018,7 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
         suffix = slice_rounds(
             self.primitive, self.prefix_rounds, len(self.primitive.graph.rounds) - 1
         ).primitive
-        fixed_differences = {"key": 0} if "key" in prefix.graph.input_ports else {}
+        fixed_differences = {"key": 0} if "key" in prefix.graph.input_arrays else {}
         if self.input_difference is not None:
             fixed_differences["plaintext"] = self.input_difference
         self._paired = SharedDifferencePairedWordDifferentialSATModel(
@@ -3017,7 +3027,7 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
             nonzero_input="plaintext" if self.input_difference is None else None,
             fixed_input_differences=fixed_differences,
         )
-        fixed_masks = {name: 0 for name in suffix.graph.input_ports if name != "state"}
+        fixed_masks = {name: 0 for name in suffix.graph.input_arrays if name != "state"}
         self._linear = WordLinearSATModel(
             suffix,
             maximum_weight=self.linear_maximum_weight,
@@ -3057,7 +3067,7 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
             applications.extend(formula.constraint_models)
             maps[namespace] = mapping
 
-        linear_input = self._linear._shared._ports["state"]
+        linear_input = self._linear._shared._unit_arrays["state"]
         for side, model in (("left", self._paired.left_model), ("right", self._paired.right_model)):
             paired_output = model._shared._output
             if len(paired_output) != len(linear_input):
@@ -3145,7 +3155,7 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
         paired = self._paired.decode_trail(paired_assignment)
         linear = self._linear.decode_characteristic(linear_assignment)
         state_mask = dict(linear.input_masks)["state"]
-        width = len(self._linear._shared._ports["state"])
+        width = len(self._linear._shared._unit_arrays["state"])
         mask_bits = tuple((state_mask >> (width - bit - 1)) & 1 for bit in range(width))
         for difference in (paired.left.output_difference, paired.right.output_difference):
             difference_bits = tuple((difference >> (width - bit - 1)) & 1 for bit in range(width))
@@ -3251,8 +3261,8 @@ class WordSemiDeterministicDifferentialLinearSATModel:
             ):
                 raise ValueError("weight bounds must be nonnegative integers")
         block_width = (
-            primitive.graph.input_ports["plaintext"].array_type.unit_count
-            * primitive.graph.input_ports["plaintext"].array_type.domain.width
+            primitive.graph.input_arrays["plaintext"].array_type.unit_count
+            * primitive.graph.input_arrays["plaintext"].array_type.unit_type.width
         )
         for value, label in ((input_difference, "input difference"), (output_mask, "output mask")):
             if value is not None and (
@@ -3281,7 +3291,7 @@ class WordSemiDeterministicDifferentialLinearSATModel:
         suffix = slice_rounds(
             self.primitive, middle_end + 1, len(self.primitive.graph.rounds) - 1
         ).primitive
-        fixed_differences = {"key": 0} if "key" in prefix.graph.input_ports else {}
+        fixed_differences = {"key": 0} if "key" in prefix.graph.input_arrays else {}
         if self.input_difference is not None:
             fixed_differences["plaintext"] = self.input_difference
         self._prefix = WordDifferentialSATModel(
@@ -3296,7 +3306,7 @@ class WordSemiDeterministicDifferentialLinearSATModel:
             None,
             maximum_scaled_weight=self.middle_maximum_scaled_weight,
         )
-        fixed_masks = {name: 0 for name in suffix.graph.input_ports if name != "state"}
+        fixed_masks = {name: 0 for name in suffix.graph.input_arrays if name != "state"}
         self._linear = WordLinearSATModel(
             suffix,
             maximum_weight=self.linear_maximum_weight,
@@ -3357,7 +3367,7 @@ class WordSemiDeterministicDifferentialLinearSATModel:
         self._append_connector(upper, upper_mapping, indices, add, applications)
 
         middle_output = self._middle._states[-1][0] + self._middle._states[-1][1]
-        linear_input = self._linear._shared._ports["state"]
+        linear_input = self._linear._shared._unit_arrays["state"]
         if len(middle_output) != len(linear_input):
             raise ValueError("lower semi-deterministic boundary widths disagree")
         lower = TruncatedToLinearSATModel(len(linear_input)).cnf_formula()
@@ -3519,8 +3529,8 @@ class WordDeterministicDifferentialLinearSATModel:
             if not isinstance(weight, int) or isinstance(weight, bool) or weight < 0:
                 raise ValueError("weight bounds must be nonnegative integers")
         block_width = sum(
-            port.array_type.unit_count * port.array_type.domain.width
-            for name, port in primitive.graph.input_ports.items()
+            unit_array.array_type.unit_count * unit_array.array_type.unit_type.width
+            for name, unit_array in primitive.graph.input_arrays.items()
             if name == "plaintext"
         )
         if not block_width:
@@ -3544,8 +3554,8 @@ class WordDeterministicDifferentialLinearSATModel:
         self._maps: dict[str, dict[str, str]] = {}
 
     @staticmethod
-    def _zero_pattern(port):
-        return "0" * (port.array_type.unit_count * port.array_type.domain.width)
+    def _zero_pattern(unit_array):
+        return "0" * (unit_array.array_type.unit_count * unit_array.array_type.unit_type.width)
 
     def cnf_formula(self) -> CNFFormula:
         """Return the complete round-sliced differential-linear formula."""
@@ -3558,7 +3568,7 @@ class WordDeterministicDifferentialLinearSATModel:
             self.primitive, middle_end + 1, len(self.primitive.graph.rounds) - 1
         ).primitive
 
-        prefix_fixed = {"key": 0} if "key" in prefix_primitive.graph.input_ports else {}
+        prefix_fixed = {"key": 0} if "key" in prefix_primitive.graph.input_arrays else {}
         if self.input_difference is not None:
             prefix_fixed["plaintext"] = self.input_difference
         self._prefix = WordDifferentialSATModel(
@@ -3568,14 +3578,14 @@ class WordDeterministicDifferentialLinearSATModel:
             fixed_input_differences=prefix_fixed,
         )
         middle_fixed = {
-            name: self._zero_pattern(port)
-            for name, port in middle_primitive.graph.input_ports.items()
+            name: self._zero_pattern(unit_array)
+            for name, unit_array in middle_primitive.graph.input_arrays.items()
             if name != "state"
         }
         self._middle = WordDeterministicTruncatedSATModel(
             middle_primitive, fixed_input_patterns=middle_fixed
         )
-        suffix_fixed = {name: 0 for name in suffix_primitive.graph.input_ports if name != "state"}
+        suffix_fixed = {name: 0 for name in suffix_primitive.graph.input_arrays if name != "state"}
         self._linear = WordLinearSATModel(
             suffix_primitive,
             maximum_weight=self.linear_maximum_weight,
@@ -3630,7 +3640,7 @@ class WordDeterministicDifferentialLinearSATModel:
             applications.extend(formula.constraint_models)
 
         prefix_output = self._prefix._shared._output
-        middle_input = self._middle._ports["state"]
+        middle_input = self._middle._unit_arrays["state"]
         if len(prefix_output) != len(middle_input):
             raise ValueError("upper differential-linear boundary widths disagree")
         upper = DifferentialToTruncatedSATModel(len(prefix_output)).cnf_formula()
@@ -3650,7 +3660,7 @@ class WordDeterministicDifferentialLinearSATModel:
         )
 
         middle_output = self._middle._output
-        linear_input = self._linear._shared._ports["state"]
+        linear_input = self._linear._shared._unit_arrays["state"]
         if len(middle_output) != len(linear_input):
             raise ValueError("lower differential-linear boundary widths disagree")
         lower = TruncatedToLinearSATModel(len(linear_input)).cnf_formula()

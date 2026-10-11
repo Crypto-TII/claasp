@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from types import MappingProxyType
 
-from claasp.graph import ArrayType, Primitive
+from claasp.graph import Primitive, UnitArrayType
 from claasp.transformations.contracts import (
     TransformationError,
     TransformationFailureReason,
@@ -33,17 +33,17 @@ class GraphSource:
 
     EXAMPLES::
 
-        >>> from claasp import ArrayType
-        >>> from claasp.domains import Bit
+        >>> from claasp import UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.transformations import GraphSource, GraphSourceKind
-        >>> source = GraphSource("state", GraphSourceKind.INPUT, ArrayType(Bit(), (4,)))
+        >>> source = GraphSource("state", GraphSourceKind.INPUT, UnitArrayType(Bit(), (4,)))
         >>> (source.source_id, source.array_type.unit_count)
         ('state', 4)
     """
 
     source_id: str
     kind: GraphSourceKind
-    array_type: ArrayType
+    array_type: UnitArrayType
     round_number: int | None = None
     scopes: tuple[str, ...] = ()
 
@@ -56,10 +56,10 @@ class DependencyIndex:
 
     EXAMPLES::
 
-        >>> from claasp import PrimitiveBuilder, ArrayType
-        >>> from claasp.domains import Bit
+        >>> from claasp import PrimitiveBuilder, UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.components import Identity
-        >>> builder = PrimitiveBuilder("walk", {"state": ArrayType(Bit(), (2,))})
+        >>> builder = PrimitiveBuilder("walk", {"state": UnitArrayType(Bit(), (2,))})
         >>> builder.add_round()
         Round(number=0)
         >>> copied = builder.add_component(Identity(builder.input("state")))
@@ -88,8 +88,8 @@ class DependencyIndex:
         sources: dict[str, GraphSource] = {}
         dependencies: dict[str, tuple[str, ...]] = {}
         order: list[str] = []
-        for name, port in primitive.graph.input_ports.items():
-            sources[name] = GraphSource(name, GraphSourceKind.INPUT, port.array_type)
+        for name, unit_array in primitive.graph.input_arrays.items():
+            sources[name] = GraphSource(name, GraphSourceKind.INPUT, unit_array.array_type)
             dependencies[name] = ()
             order.append(name)
         for binding in primitive.graph.bindings:
@@ -102,7 +102,7 @@ class DependencyIndex:
                     path for path in primitive._scopes if source_id.startswith(f"{path}/")
                 ),
             )
-            dependencies[source_id] = self._unique(item.source.owner_id for item in binding.inputs)
+            dependencies[source_id] = self._unique(item.source.source_id for item in binding.inputs)
             order.append(source_id)
         for component in primitive.graph.components:
             source_id = component.component_id
@@ -114,7 +114,7 @@ class DependencyIndex:
                 tuple(scope_by_component.get(source_id, ())),
             )
             dependencies[source_id] = self._unique(
-                item.source.owner_id for item in component.inputs
+                item.source.source_id for item in component.inputs
             )
             order.append(source_id)
 

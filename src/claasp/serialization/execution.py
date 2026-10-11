@@ -54,7 +54,7 @@ def _values(value, path):
 
 def _validate_value(primitive, source_id, value, path):
     try:
-        array_type = primitive.graph.port(source_id).array_type
+        array_type = primitive.graph.unit_array(source_id).array_type
     except KeyError as error:
         raise SerializationError(
             SerializationFailure.INVALID_REFERENCE,
@@ -68,10 +68,10 @@ def _validate_value(primitive, source_id, value, path):
             path=path,
         )
     for scalar in value:
-        if not array_type.domain.contains(scalar):
+        if not array_type.unit_type.contains(scalar):
             raise SerializationError(
                 SerializationFailure.MALFORMED_VALUE,
-                f"value {scalar!r} is outside the source domain",
+                f"value {scalar!r} is outside the source unit_type",
                 path=path,
             )
 
@@ -142,7 +142,7 @@ def deserialize_execution_trace(data: bytes | str, primitive: Primitive) -> Exec
         )
     entries = []
     seen = set()
-    input_names = set(primitive.graph.input_ports)
+    input_names = set(primitive.graph.input_arrays)
     component_ids = {item.component_id for item in primitive.graph.components}
     for index, item in enumerate(_array(payload["entries"], path="$.payload.entries")):
         path = f"$.payload.entries[{index}]"
@@ -186,7 +186,7 @@ def deserialize_execution_trace(data: bytes | str, primitive: Primitive) -> Exec
                 )
             array_type = primitive.graph.output.array_type
             if len(value) != array_type.unit_count or any(
-                not array_type.domain.contains(unit) for unit in value
+                not array_type.unit_type.contains(unit) for unit in value
             ):
                 raise SerializationError(
                     SerializationFailure.INCONSISTENT_WIDTH,
@@ -297,7 +297,7 @@ def serialize_evaluation_result(result: EvaluationResult) -> bytes:
         raise TypeError("serialize_evaluation_result requires an EvaluationResult")
     primitive = result.trace.annotation.primitive
     expected_order = (
-        tuple(primitive.graph.input_ports)
+        tuple(primitive.graph.input_arrays)
         + tuple(item.component_id for item in primitive.graph.components)
         + tuple(item.binding_id for item in primitive.graph.bindings)
     )
@@ -349,7 +349,7 @@ def deserialize_evaluation_result(data: bytes | str, primitive: Primitive) -> Ev
             path="$.payload.primitive_digest",
         )
     expected_order = (
-        tuple(primitive.graph.input_ports)
+        tuple(primitive.graph.input_arrays)
         + tuple(item.component_id for item in primitive.graph.components)
         + tuple(item.binding_id for item in primitive.graph.bindings)
     )
@@ -388,7 +388,7 @@ def deserialize_evaluation_result(data: bytes | str, primitive: Primitive) -> Ev
     provenance = _decode_provenance(payload["provenance"], primitive, "$.payload.provenance")
     annotation_values = {
         source_id: values[source_id]
-        for source_id in tuple(primitive.graph.input_ports)
+        for source_id in tuple(primitive.graph.input_arrays)
         + tuple(item.component_id for item in primitive.graph.components)
     }
     trace = ExecutionTrace(

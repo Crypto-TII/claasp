@@ -1,22 +1,22 @@
 import pytest
 
 from claasp import (
-    ArrayType,
     InputVisibility,
     Primitive,
     PrimitiveInput,
     PrimitiveKind,
+    UnitArrayType,
     public_input,
     secret_input,
 )
-from claasp.domains import Bit
 from claasp.primitives import AES, Ascon
 from claasp.primitives.block_ciphers.katan import Katan
 from claasp.primitives.block_functions.siphash import SiphashMAC
 from claasp.primitives.tweakable_block_ciphers.qarmav2 import QARMAv2
+from claasp.unit_types import Bit
 
 
-def test_input_descriptors_mark_keys_secret_without_changing_ports():
+def test_input_descriptors_mark_keys_secret_without_changing_unit_arrays():
     aes = AES()
     assert aes.kind is PrimitiveKind.BLOCK_CIPHER
     assert aes.graph.secret_inputs == ("key",)
@@ -37,7 +37,7 @@ def test_study_can_override_visibility_without_mutating_the_graph():
 
 
 def test_explicit_descriptors_and_kinds_are_public_authoring_api():
-    bit = ArrayType(Bit(), (1,))
+    bit = UnitArrayType(Bit(), (1,))
     primitive = Primitive(
         "keyed_bit_function",
         {"message": public_input(bit, role="message"), "mask": secret_input(bit, role="key")},

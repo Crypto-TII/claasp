@@ -1,8 +1,8 @@
 """Reference Speck implementation following the designers' pseudocode."""
 
 from claasp.components import Constant, ModularAdd, Rotate, Xor
-from claasp.domains import Word
-from claasp.graph import ArrayType, Primitive, PrimitiveKind
+from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
+from claasp.unit_types import Word
 
 PARAMETERS_CONFIGURATION_LIST = (
     {"block_bit_size": 32, "key_bit_size": 64, "number_of_rounds": 22},
@@ -75,12 +75,12 @@ class Speck(Primitive):
             rotation_alpha,
             rotation_beta,
         )
-        word_type = ArrayType(Word(word_size), (1,))
+        word_type = UnitArrayType(Word(word_size), (1,))
         super().__init__(
             "speck",
             {
-                "plaintext": ArrayType(Word(word_size), (2,)),
-                "key": ArrayType(Word(word_size), (key_word_count,)),
+                "plaintext": UnitArrayType(Word(word_size), (2,)),
+                "key": UnitArrayType(Word(word_size), (key_word_count,)),
             },
             kind=PrimitiveKind.BLOCK_CIPHER,
             instance_name=f"Speck{block_bit_size}/{key_bit_size}",

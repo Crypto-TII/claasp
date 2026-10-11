@@ -9,15 +9,15 @@ from claasp.components import (
     Shift,
     Xor,
 )
-from claasp.domains import Bit
 from claasp.encoding import bits_from_int
-from claasp.graph import ArrayType, PortLike, as_selection
+from claasp.graph import UnitArrayLike, UnitArrayType, as_selection
+from claasp.unit_types import Bit
 
 
-def bit_type(width: int) -> ArrayType:
+def bit_type(width: int) -> UnitArrayType:
     if not isinstance(width, int) or isinstance(width, bool) or width <= 0:
         raise ValueError("bit width must be a positive integer")
-    return ArrayType(Bit(), (width,))
+    return UnitArrayType(Bit(), (width,))
 
 
 def concatenate(primitive, selections, *, component_id=None):
@@ -60,7 +60,7 @@ def modular_add_bits(primitive, *operands, component_id=None):
     return primitive._builder.unpack_bits(output)
 
 
-def shift_bits(primitive, source: PortLike, amount: int, *, component_id=None):
+def shift_bits(primitive, source: UnitArrayLike, amount: int, *, component_id=None):
     source = as_selection(source)
     width = source.array_type.unit_count
     word = primitive._builder.pack_bits(source, width)
@@ -77,7 +77,7 @@ def constant_bits(primitive, width: int, value: int, *, component_id=None):
     )
 
 
-def sbox_layer(primitive, source: PortLike, table, *, component_id_prefix="sbox"):
+def sbox_layer(primitive, source: UnitArrayLike, table, *, component_id_prefix="sbox"):
     source = as_selection(source)
     width = (len(table)).bit_length() - 1
     if 1 << width != len(table) or source.array_type.unit_count % width:
@@ -93,14 +93,14 @@ def sbox_layer(primitive, source: PortLike, table, *, component_id_prefix="sbox"
     return concatenate(primitive, outputs)
 
 
-def rotate_bits(primitive, source: PortLike, amount: int, *, component_id=None):
+def rotate_bits(primitive, source: UnitArrayLike, amount: int, *, component_id=None):
     source = as_selection(source)
     width = source.array_type.unit_count
     mapping = tuple((index - amount) % width for index in range(width))
     return primitive._builder.add_component(Permutation(source, mapping, component_id=component_id))
 
 
-def permute_bits(primitive, source: PortLike, destination_by_source, *, component_id=None):
+def permute_bits(primitive, source: UnitArrayLike, destination_by_source, *, component_id=None):
     source = as_selection(source)
     description = tuple(destination_by_source)
     if sorted(description) != list(range(source.array_type.unit_count)):

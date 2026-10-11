@@ -78,7 +78,7 @@ class Keccak(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Keccak()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xf1258f7940e1dde7', 1600)

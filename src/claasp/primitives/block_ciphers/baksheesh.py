@@ -38,7 +38,7 @@ class Baksheesh(BitGraphPrimitive):
     EXAMPLES::
 
         >>> primitive = Baksheesh()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0xc002be5e64c78a72', 128)

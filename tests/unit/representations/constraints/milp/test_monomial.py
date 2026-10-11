@@ -2,10 +2,9 @@
 
 import pytest
 
-from claasp import ArrayType, Primitive
+from claasp import Primitive, UnitArrayType
 from claasp.analysis import project_optimal_pool_monomial_parity
 from claasp.components import BitwiseAnd
-from claasp.domains import Word
 from claasp.drivers.solvers import GurobiSolutionPoolResult, MILPStatus
 from claasp.primitives import Simon
 from claasp.representations.constraints.milp import (
@@ -14,6 +13,7 @@ from claasp.representations.constraints.milp import (
     CubeSuperpolyQuery,
     MonomialDegreeMILPModel,
 )
+from claasp.unit_types import Word
 
 
 def test_simon_graph_model_has_a_maximum_degree_objective():
@@ -52,7 +52,7 @@ def test_public_monomial_queries_add_explicit_degree_and_cube_contracts():
 
 def test_exact_cube_superpoly_accounts_for_parity_and_key_coefficients():
     primitive = Primitive(
-        "and", {"plaintext": ArrayType(Word(1), (1,)), "key": ArrayType(Word(1), (1,))}
+        "and", {"plaintext": UnitArrayType(Word(1), (1,)), "key": UnitArrayType(Word(1), (1,))}
     )
     primitive._builder.add_round()
     primitive._builder.set_output(
@@ -92,8 +92,8 @@ def test_complete_solution_pool_projects_full_input_monomials_with_parity():
     compilation = BooleanMonomialGraphMILPModel(Simon(number_of_rounds=1), 0, "plaintext")
     names = {
         f"{input_name}[{bit}]": compilation._wire(input_name, bit)
-        for input_name, port in compilation.primitive.graph.input_ports.items()
-        for bit in range(compilation._width(port.array_type))
+        for input_name, unit_array in compilation.primitive.graph.input_arrays.items()
+        for bit in range(compilation._width(unit_array.array_type))
     }
 
     def assignment(*active):
@@ -123,8 +123,8 @@ def test_truncated_solution_pool_cannot_certify_projected_parity():
     compilation = BooleanMonomialGraphMILPModel(Simon(number_of_rounds=1), 0, "plaintext")
     assignment = {
         compilation._wire(input_name, bit): 0.0
-        for input_name, port in compilation.primitive.graph.input_ports.items()
-        for bit in range(compilation._width(port.array_type))
+        for input_name, unit_array in compilation.primitive.graph.input_arrays.items()
+        for bit in range(compilation._width(unit_array.array_type))
     }
     pool = GurobiSolutionPoolResult(MILPStatus.OPTIMAL, (assignment,), 0.0, 0.0, False)
     result = project_optimal_pool_monomial_parity(compilation, pool)

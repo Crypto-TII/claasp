@@ -21,8 +21,8 @@ from claasp.analysis.linear_properties import (
     matrix_rank,
 )
 from claasp.components import LinearMap
-from claasp.domains import BinaryExtensionField, Bit, PrimeField
 from claasp.provenance import DriverIdentity, DriverKind
+from claasp.unit_types import BinaryExtensionField, Bit, PrimeField
 from claasp.utils.matrices import transpose_matrix
 
 
@@ -40,18 +40,18 @@ def _matrix_domain(component, request):
     if not isinstance(component, LinearMap):
         raise TypeError("branch-number drivers require a LinearMap component")
     matrix = component.matrix
-    domain = component.inputs[0].array_type.domain
+    unit_type = component.inputs[0].array_type.unit_type
     if request.domain is PropertyDomain.BIT_LINEAR:
-        if isinstance(domain, BinaryExtensionField):
-            return expand_binary_field_matrix(matrix, domain), Bit()
-        if isinstance(domain, Bit):
-            return matrix, domain
+        if isinstance(unit_type, BinaryExtensionField):
+            return expand_binary_field_matrix(matrix, unit_type), Bit()
+        if isinstance(unit_type, Bit):
+            return matrix, unit_type
         raise ValueError("bit-linear requests require Bit or binary-field matrices")
     if request.domain in {PropertyDomain.WORD_LINEAR, PropertyDomain.FINITE_FIELD_LINEAR}:
-        if isinstance(domain, (BinaryExtensionField, PrimeField)):
-            return matrix, domain
+        if isinstance(unit_type, (BinaryExtensionField, PrimeField)):
+            return matrix, unit_type
         raise ValueError("word/field requests require a non-binary finite field")
-    raise ValueError("branch-number drivers require a linear analysis domain")
+    raise ValueError("branch-number drivers require a linear analysis unit_type")
 
 
 class BoundedBranchNumberDriver:
@@ -63,12 +63,12 @@ class BoundedBranchNumberDriver:
 
     EXAMPLES::
 
-        >>> from claasp import Port, ArrayType
-        >>> from claasp.domains import Bit
+        >>> from claasp import UnitArray, UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.analysis import ComponentProperty, PropertyDomain, PropertyRequest
         >>> from claasp.components import LinearMap
         >>> from claasp.drivers.analysis import BoundedBranchNumberDriver
-        >>> component = LinearMap(Port("x", ArrayType(Bit(), (2,))), ((1, 0), (0, 1)))
+        >>> component = LinearMap(UnitArray("x", UnitArrayType(Bit(), (2,))), ((1, 0), (0, 1)))
         >>> request = PropertyRequest(ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
         ...     PropertyDomain.BIT_LINEAR)
         >>> result = BoundedBranchNumberDriver(1).analyze(component, request)
@@ -102,14 +102,14 @@ class BoundedBranchNumberDriver:
                 "bounded branch enumeration supports only differential/linear branch numbers",
             )
         try:
-            matrix, domain = _matrix_domain(component, request)
+            matrix, unit_type = _matrix_domain(component, request)
         except (TypeError, ValueError) as error:
             return unavailable_result(
                 request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN, str(error)
             )
         if request.property is ComponentProperty.LINEAR_BRANCH_NUMBER:
             matrix = transpose_matrix(matrix)
-        cardinality = _cardinality(domain)
+        cardinality = _cardinality(unit_type)
         column_count = len(matrix[0])
         limit = min(self.maximum_input_weight, column_count)
         best = len(matrix) + column_count + 1
@@ -119,9 +119,9 @@ class BoundedBranchNumberDriver:
                     vector = [0] * column_count
                     for position, value in zip(support, values):
                         vector[position] = value
-                    output = apply_matrix(matrix, vector, domain)
+                    output = apply_matrix(matrix, vector, unit_type)
                     best = min(best, weight + sum(value != 0 for value in output))
-        injective = matrix_rank(matrix, domain) == column_count
+        injective = matrix_rank(matrix, unit_type) == column_count
         lower_bound = 2 if injective else 1
         complete = limit == column_count or best == lower_bound
         claim = PropertyClaim.EXACT if complete else PropertyClaim.PROVED_UPPER_BOUND
@@ -160,12 +160,12 @@ class MiniZincBranchNumberDriver:
                 "MiniZinc branch optimization supports only differential/linear branch numbers",
             )
         try:
-            matrix, domain = _matrix_domain(component, request)
+            matrix, unit_type = _matrix_domain(component, request)
         except (TypeError, ValueError) as error:
             return unavailable_result(
                 request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN, str(error)
             )
-        if not isinstance(domain, Bit):
+        if not isinstance(unit_type, Bit):
             return unavailable_result(
                 request,
                 provenance,
@@ -221,12 +221,12 @@ def _minizinc_model(matrix):
     )
 
 
-def _cardinality(domain):
-    if isinstance(domain, Bit):
+def _cardinality(unit_type):
+    if isinstance(unit_type, Bit):
         return 2
-    if isinstance(domain, BinaryExtensionField):
-        return 1 << domain.degree
-    return domain.modulus
+    if isinstance(unit_type, BinaryExtensionField):
+        return 1 << unit_type.degree
+    return unit_type.modulus
 
 
 __all__ = ["BoundedBranchNumberDriver", "MiniZincBranchNumberDriver"]

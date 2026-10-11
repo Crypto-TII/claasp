@@ -1,18 +1,18 @@
 from claasp import (
-    ArrayType,
     CompositeBuilder,
     DependencyIndex,
     Primitive,
     TransformationError,
     TransformationFailureReason,
+    UnitArrayType,
     reduce_rounds,
     slice_primitive,
     slice_rounds,
 )
 from claasp.components import Identity
-from claasp.domains import Bit
 from claasp.graph import as_selection
 from claasp.primitives import Speck
+from claasp.unit_types import Bit
 
 PLAINTEXT = 0x6574694C
 KEY = 0x1918111009080100
@@ -59,7 +59,7 @@ def test_middle_round_slice_retains_key_schedule_and_accepts_state_boundary():
     )
 
     assert actual == expected
-    assert tuple(derived.graph.input_ports) == ("state", "key")
+    assert tuple(derived.graph.input_arrays) == ("state", "key")
     assert derived.realization == primitive.realization
 
 
@@ -76,7 +76,7 @@ def test_round_reduction_is_a_validated_prefix_and_does_not_mutate_source():
 
 
 def test_partial_boundary_reports_missing_units_exactly():
-    primitive = Primitive("partial", {"state": ArrayType(Bit(), (4,))})
+    primitive = Primitive("partial", {"state": UnitArrayType(Bit(), (4,))})
     primitive._builder.add_round()
     copied = primitive._builder.add_component(Identity(primitive.graph.input("state"), "copy"))
     primitive._builder.set_output(copied)
@@ -91,7 +91,7 @@ def test_partial_boundary_reports_missing_units_exactly():
 
 
 def test_slice_preserves_structural_bindings_and_complete_composite_scopes():
-    builder = CompositeBuilder("copy_block", {"value": ArrayType(Bit(), (2,))})
+    builder = CompositeBuilder("copy_block", {"value": UnitArrayType(Bit(), (2,))})
     builder.add_round()
     copied = builder.add_component(Identity(builder.input("value"), "copy"))
     builder.set_output("output", copied)
@@ -99,7 +99,7 @@ def test_slice_preserves_structural_bindings_and_complete_composite_scopes():
 
     primitive = Primitive(
         "scoped",
-        {"left": ArrayType(Bit(), (1,)), "right": ArrayType(Bit(), (1,))},
+        {"left": UnitArrayType(Bit(), (1,)), "right": UnitArrayType(Bit(), (1,))},
     )
     primitive._builder.add_round()
     joined = primitive._builder.join(primitive.graph.input("left"), primitive.graph.input("right"))

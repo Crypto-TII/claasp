@@ -1,7 +1,7 @@
 """Small authoring helpers shared by one-component primitive examples."""
 
-from claasp.domains import Bit, Word
-from claasp.graph import ArrayType
+from claasp.graph import UnitArrayType
+from claasp.unit_types import Bit, Word
 
 
 def positive(value: int, name: str) -> int:
@@ -18,12 +18,12 @@ def word_inputs(word_bit_size: int, number_of_inputs: int):
         or number_of_inputs < 2
     ):
         raise ValueError("number_of_inputs must be at least 2")
-    array_type = ArrayType(Word(word_bit_size), (1,))
+    array_type = UnitArrayType(Word(word_bit_size), (1,))
     return {f"input_{index}": array_type for index in range(number_of_inputs)}
 
 
-def algebraic_inputs(domain, unit_count: int, number_of_inputs: int):
-    domain = Bit() if domain is None else domain
+def algebraic_inputs(unit_type, unit_count: int, number_of_inputs: int):
+    unit_type = Bit() if unit_type is None else unit_type
     positive(unit_count, "unit_count")
     if (
         not isinstance(number_of_inputs, int)
@@ -31,5 +31,5 @@ def algebraic_inputs(domain, unit_count: int, number_of_inputs: int):
         or number_of_inputs < 2
     ):
         raise ValueError("number_of_inputs must be at least 2")
-    array_type = ArrayType(domain, (unit_count,))
+    array_type = UnitArrayType(unit_type, (unit_count,))
     return {f"input_{index}": array_type for index in range(number_of_inputs)}

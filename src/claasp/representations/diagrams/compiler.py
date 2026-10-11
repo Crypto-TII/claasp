@@ -61,31 +61,31 @@ class DiagramCompiler:
                 None,
                 values.get((AnnotationRole.INPUT, name)),
             )
-            for name in primitive.graph.input_ports
+            for name in primitive.graph.input_arrays
         ]
         edges = []
 
         def routed_edges(selected, destination_id, input_index):
-            if selected.source.owner_id not in {
+            if selected.source.source_id not in {
                 binding.binding_id for binding in primitive.graph.bindings
             }:
                 return (
                     DiagramEdge(
-                        selected.source.owner_id,
+                        selected.source.source_id,
                         destination_id,
                         selected.positions,
                         input_index,
                     ),
                 )
             grouped = []
-            for owner_id, bit in primitive.graph.selection_bit_sources(selected):
-                if grouped and grouped[-1][0] == owner_id:
+            for source_id, bit in primitive.graph.selection_bit_sources(selected):
+                if grouped and grouped[-1][0] == source_id:
                     grouped[-1][1].append(bit)
                 else:
-                    grouped.append((owner_id, [bit]))
+                    grouped.append((source_id, [bit]))
             return tuple(
-                DiagramEdge(owner_id, destination_id, tuple(bits), input_index)
-                for owner_id, bits in grouped
+                DiagramEdge(source_id, destination_id, tuple(bits), input_index)
+                for source_id, bits in grouped
             )
 
         rounds = []

@@ -385,7 +385,7 @@ def _compiler_version(executable):
 
 
 def _hex_arguments(primitive, inputs):
-    if not isinstance(inputs, Mapping) or set(inputs) != set(primitive.graph.input_ports):
+    if not isinstance(inputs, Mapping) or set(inputs) != set(primitive.graph.input_arrays):
         raise ValueError("native inputs must match primitive input names exactly")
     arguments = []
     for name, descriptor in primitive.graph.input_descriptors.items():

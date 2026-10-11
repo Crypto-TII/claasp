@@ -2,8 +2,8 @@
 
 from claasp.components import Add, Constant, LinearMap, Permutation, SBox
 from claasp.composites.aes import AES_SBOX
-from claasp.domains import BinaryExtensionField
-from claasp.graph import ArrayType, Primitive
+from claasp.graph import Primitive, UnitArrayType
+from claasp.unit_types import BinaryExtensionField
 
 SBOXES = {
     2: (0x0, 0x1, 0x1, 0x2),
@@ -48,7 +48,7 @@ class ToyAES(Primitive):
     EXAMPLES::
 
         >>> primitive = ToyAES()
-        >>> inputs = {name: 0 for name in primitive.graph.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x66e94bd4ef8a2c3b', 127)
@@ -67,7 +67,7 @@ class ToyAES(Primitive):
         self.mix_column_matrix = MIX_COLUMN_MATRICES[(word_size, state_size)]
         self.irreducible_polynomial = IRREDUCIBLE_POLYNOMIALS[word_size]
         field = BinaryExtensionField(word_size, self.irreducible_polynomial)
-        state_type = ArrayType(field, (state_size * state_size,))
+        state_type = UnitArrayType(field, (state_size * state_size,))
         super().__init__(
             "toy_aes",
             {"key": state_type, "plaintext": state_type},
@@ -110,7 +110,7 @@ class ToyAES(Primitive):
             substituted = self._builder.add_component(SBox(rotated, SBOXES[word_size]))
             constant = self._builder.add_component(
                 Constant(
-                    ArrayType(field, (state_size,)),
+                    UnitArrayType(field, (state_size,)),
                     (ROUND_CONSTANT_WORDS[word_size][round_number],) + (0,) * (state_size - 1),
                 )
             )

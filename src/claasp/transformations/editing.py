@@ -11,7 +11,6 @@ from claasp.components import (
     Rotate,
     Xor,
 )
-from claasp.domains import Word
 from claasp.graph import (
     InputVisibility,
     Primitive,
@@ -27,6 +26,7 @@ from claasp.transformations.contracts import (
 )
 from claasp.transformations.slicing import slice_primitive
 from claasp.transformations.traversal import DependencyIndex, GraphSourceKind
+from claasp.unit_types import Word
 
 
 def _record(derived, source, operation, parameters=()):
@@ -77,7 +77,7 @@ def _round_key_boundaries(primitive, index, dependencies, secret_inputs):
         if component_dependencies <= secret_inputs:
             continue
         for selection in component.inputs:
-            source_id = selection.source.owner_id
+            source_id = selection.source.source_id
             source_dependencies = dependencies[source_id]
             if source_dependencies and source_dependencies <= secret_inputs:
                 if source_id not in positions:
@@ -94,8 +94,8 @@ def _zero_neutral_data_input(component, dependencies, secret_inputs):
         index
         for index, selection in enumerate(component.inputs)
         if not (
-            dependencies[selection.source.owner_id]
-            and dependencies[selection.source.owner_id] <= secret_inputs
+            dependencies[selection.source.source_id]
+            and dependencies[selection.source.source_id] <= secret_inputs
         )
     )
     key_indices = tuple(
@@ -117,8 +117,8 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
         if source_dependencies <= secret_inputs:
             continue
         has_key = any(
-            dependencies[item.source.owner_id]
-            and dependencies[item.source.owner_id] <= secret_inputs
+            dependencies[item.source.source_id]
+            and dependencies[item.source.source_id] <= secret_inputs
             for item in component.inputs
         )
         if not has_key:
@@ -139,14 +139,14 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
         injections[component.component_id] = component.inputs[data_index]
 
     required = set()
-    visiting = [primitive.graph.output.source.owner_id]
+    visiting = [primitive.graph.output.source.source_id]
     while visiting:
         source_id = visiting.pop()
         if source_id in required:
             continue
         required.add(source_id)
         if source_id in injections:
-            visiting.append(injections[source_id].source.owner_id)
+            visiting.append(injections[source_id].source.source_id)
         else:
             visiting.extend(index.predecessors(source_id))
 
@@ -162,7 +162,7 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
         provenance=primitive.provenance,
     )
     derived.realization = primitive.realization
-    ports = {name: derived.graph.input(name) for name in inputs}
+    unit_arrays = {name: derived.graph.input(name) for name in inputs}
     binding_by_id = {binding.binding_id: binding for binding in primitive.graph.bindings}
     component_by_id = {
         component.component_id: component for component in primitive.graph.components
@@ -176,24 +176,24 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
 
     def remap(selection):
         try:
-            return ports[selection.source.owner_id][selection.positions]
+            return unit_arrays[selection.source.source_id][selection.positions]
         except KeyError as error:
             raise TransformationError(
                 TransformationFailureReason.DISCONNECTED_DEPENDENCY,
                 "key removal left a required source unavailable",
-                source_ids=(selection.source.owner_id,),
+                source_ids=(selection.source.source_id,),
             ) from error
 
     for source_id in index.topological_ids:
         if source_id not in required or source_id in inputs:
             continue
         if source_id in injections:
-            ports[source_id] = remap(injections[source_id])
+            unit_arrays[source_id] = remap(injections[source_id])
             continue
         source = index.source(source_id)
         if source.kind is GraphSourceKind.BINDING:
             binding = binding_by_id[source_id]
-            ports[source_id] = derived._add_binding(
+            unit_arrays[source_id] = derived._add_binding(
                 binding.kind,
                 tuple(remap(item) for item in binding.inputs),
                 binding.output_type,
@@ -208,7 +208,7 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
             clone = copy(component)
             object.__setattr__(clone, "component_id", None)
             object.__setattr__(clone, "inputs", tuple(remap(item) for item in component.inputs))
-            ports[source_id] = derived._builder.add_component(clone)
+            unit_arrays[source_id] = derived._builder.add_component(clone)
     derived._builder.set_output(remap(primitive.graph.output))
     _record(
         derived,
@@ -237,7 +237,7 @@ def remove_key_schedule(
 
         >>> from claasp.primitives import Speck
         >>> transformed = remove_key_schedule(Speck(number_of_rounds=2)).primitive
-        >>> tuple(transformed.graph.input_ports)
+        >>> tuple(transformed.graph.input_arrays)
         ('plaintext', 'round_key_0', 'round_key_1')
     """
 
@@ -274,11 +274,11 @@ def remove_key_schedule(
         )
     slice_inputs = {
         name: primitive.graph.input(name)
-        for name in primitive.graph.input_ports
+        for name in primitive.graph.input_arrays
         if name not in secret_inputs
     }
     for number, (source_id, positions) in enumerate(boundaries):
-        slice_inputs[f"round_key_{number}"] = primitive.graph.port(source_id)[positions]
+        slice_inputs[f"round_key_{number}"] = primitive.graph.unit_array(source_id)[positions]
     result = slice_primitive(
         primitive,
         inputs=slice_inputs,
@@ -342,7 +342,7 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
             "primitive has no declared output",
         )
     index = DependencyIndex(primitive)
-    required = set(index.ancestors(primitive.graph.output.source.owner_id))
+    required = set(index.ancestors(primitive.graph.output.source.source_id))
     derived = Primitive(
         f"{primitive.family_name}_inlined",
         primitive.graph.input_descriptors,
@@ -350,7 +350,7 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
         provenance=primitive.provenance,
     )
     derived.realization = primitive.realization
-    ports = {name: derived.graph.input(name) for name in primitive.graph.input_ports}
+    unit_arrays = {name: derived.graph.input(name) for name in primitive.graph.input_arrays}
     binding_by_id = {binding.binding_id: binding for binding in primitive.graph.bindings}
     component_by_id = {
         component.component_id: component for component in primitive.graph.components
@@ -365,15 +365,15 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
     inlined = set()
 
     def remap(selection):
-        return ports[selection.source.owner_id][selection.positions]
+        return unit_arrays[selection.source.source_id][selection.positions]
 
     for source_id in index.topological_ids:
-        if source_id not in required or source_id in primitive.graph.input_ports:
+        if source_id not in required or source_id in primitive.graph.input_arrays:
             continue
         source = index.source(source_id)
         if source.kind is GraphSourceKind.BINDING:
             binding = binding_by_id[source_id]
-            ports[source_id] = derived._add_binding(
+            unit_arrays[source_id] = derived._add_binding(
                 binding.kind,
                 tuple(remap(item) for item in binding.inputs),
                 binding.output_type,
@@ -387,16 +387,16 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
             else _linear_permutation(component)
         )
         if mapping is not None:
-            ports[source_id] = derived._builder.view(remap(component.inputs[0])[mapping])
+            unit_arrays[source_id] = derived._builder.view(remap(component.inputs[0])[mapping])
             inlined.add(source_id)
             continue
         if isinstance(component, Rotate):
             selection = remap(component.inputs[0])
-            domain = selection.array_type.domain
-            if not isinstance(domain, Word):  # pragma: no cover - component validation owns this
+            unit_type = selection.array_type.unit_type
+            if not isinstance(unit_type, Word):  # pragma: no cover - component validation owns this
                 raise AssertionError("Rotate has a non-Word input")
             bits = derived._builder.unpack_bits(selection)
-            width = domain.width
+            width = unit_type.width
             amount = component.amount
             bit_mapping = []
             for word in range(selection.array_type.unit_count):
@@ -408,7 +408,7 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
                         source_bit = (output_bit - amount) % width
                     bit_mapping.append(base + source_bit)
             reordered = derived._builder.view(bits[tuple(bit_mapping)])
-            ports[source_id] = derived._builder.pack_bits(reordered, width)
+            unit_arrays[source_id] = derived._builder.pack_bits(reordered, width)
             inlined.add(source_id)
             continue
         original_round = round_by_component[source_id]
@@ -418,7 +418,7 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
         clone = copy(component)
         object.__setattr__(clone, "component_id", None)
         object.__setattr__(clone, "inputs", tuple(remap(item) for item in component.inputs))
-        ports[source_id] = derived._builder.add_component(clone)
+        unit_arrays[source_id] = derived._builder.add_component(clone)
 
     derived._builder.set_output(remap(primitive.graph.output))
     for scope in primitive.graph.scopes:
@@ -429,7 +429,7 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
             scope.definition,
             tuple((name, remap(value)) for name, value in scope.input_bindings),
             tuple((name, remap(value)) for name, value in scope.output_bindings),
-            tuple(ports[component_id].owner_id for component_id in scope.component_ids),
+            tuple(unit_arrays[component_id].source_id for component_id in scope.component_ids),
             derived,
         )
         derived._scopes[scope.path] = instance
@@ -440,9 +440,9 @@ def inline_reorderings(primitive: Primitive) -> TransformationResult:
     return TransformationResult(
         derived,
         tuple(
-            (source_id, ports[source_id].owner_id)
+            (source_id, unit_arrays[source_id].source_id)
             for source_id in index.topological_ids
-            if source_id in ports
+            if source_id in unit_arrays
         ),
     )
 

@@ -1,16 +1,16 @@
-"""Matrix transformations over a scalar domain."""
+"""Matrix transformations over a unit type."""
 
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from claasp.graph.array_type import ArrayType
 from claasp.graph.component import Component
-from claasp.graph.port import PortLike, as_selection
+from claasp.graph.unit_array import UnitArrayLike, as_selection
+from claasp.graph.unit_array_type import UnitArrayType
 
 
 @dataclass(frozen=True, slots=True, init=False)
 class LinearMap(Component):
-    """Apply a row-major matrix over the input's scalar domain.
+    """Apply a row-major matrix over the input's unit type.
 
     EXAMPLES::
 
@@ -23,7 +23,7 @@ class LinearMap(Component):
 
     def __init__(
         self,
-        component_input: PortLike,
+        component_input: UnitArrayLike,
         matrix: Iterable[Iterable[int]],
         component_id: str | None = None,
     ) -> None:
@@ -34,13 +34,13 @@ class LinearMap(Component):
         width = component_input.array_type.unit_count
         if any(len(row) != width for row in frozen_matrix):
             raise ValueError(f"every matrix row must contain {width} coefficients")
-        domain = component_input.array_type.domain
+        unit_type = component_input.array_type.unit_type
         for row in frozen_matrix:
             for coefficient in row:
-                domain.validate(coefficient)
+                unit_type.validate(coefficient)
 
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
-        object.__setattr__(self, "output_type", ArrayType(domain, (len(frozen_matrix),)))
+        object.__setattr__(self, "output_type", UnitArrayType(unit_type, (len(frozen_matrix),)))
         object.__setattr__(self, "matrix", frozen_matrix)
         Component.__post_init__(self)

@@ -33,12 +33,12 @@ class _InversionTimeout(Exception):
 
 
 def _encoded_value(array_type, seed: bytes):
-    from claasp.domains import PrimeField
+    from claasp.unit_types import PrimeField
 
     integer = int.from_bytes(hashlib.sha256(seed).digest(), "big")
-    if isinstance(array_type.domain, PrimeField):
+    if isinstance(array_type.unit_type, PrimeField):
         values = tuple(
-            (integer >> (index * 17)) % array_type.domain.modulus
+            (integer >> (index * 17)) % array_type.unit_type.modulus
             for index in range(array_type.unit_count)
         )
         return values[0] if len(values) == 1 else values
@@ -51,9 +51,9 @@ def _encoded_value(array_type, seed: bytes):
 def _round_trip(primitive, inverse, recover_input: str, sample_number: int) -> bool:
     values = {
         name: _encoded_value(
-            port.array_type, f"{primitive.family_name}:{name}:{sample_number}".encode()
+            unit_array.array_type, f"{primitive.family_name}:{name}:{sample_number}".encode()
         )
-        for name, port in primitive.graph.input_ports.items()
+        for name, unit_array in primitive.graph.input_arrays.items()
     }
     output = primitive.evaluate(values)
     inverse_values = {"output": output}
@@ -160,15 +160,15 @@ def _one_round_instance(primitive_class, parameters: dict, graph_rounds: int):
 
 def _recover_input(primitive, bijectivity_obligation: bool) -> str:
     if not bijectivity_obligation:
-        return next(iter(primitive.graph.input_ports))
+        return next(iter(primitive.graph.input_arrays))
     preferred_roles = ("plaintext", "state", "input_state", "input")
     by_role = {
-        primitive.graph.input_descriptor(name).role: name for name in primitive.graph.input_ports
+        primitive.graph.input_descriptor(name).role: name for name in primitive.graph.input_arrays
     }
     for role in preferred_roles:
         if role in by_role:
             return by_role[role]
-    return next(iter(primitive.graph.input_ports))
+    return next(iter(primitive.graph.input_arrays))
 
 
 def _worker(primitive_index: int, parameter_index: int, timeout: float, repetitions: int) -> dict:
@@ -201,7 +201,7 @@ def _worker(primitive_index: int, parameter_index: int, timeout: float, repetiti
         components=len(primitive.graph.components),
         bindings=len(primitive.graph.bindings),
     )
-    if not primitive.graph.input_ports:
+    if not primitive.graph.input_arrays:
         result.update(
             status="not-applicable",
             diagnostic="primitive has no input to recover",

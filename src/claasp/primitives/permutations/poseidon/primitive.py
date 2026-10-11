@@ -4,8 +4,8 @@ from collections.abc import Iterable
 from math import gcd
 
 from claasp.components import Add, Constant, LinearMap, Power
-from claasp.domains import PrimeField
-from claasp.graph import ArrayType, Port, Primitive
+from claasp.graph import Primitive, UnitArray, UnitArrayType
+from claasp.unit_types import PrimeField
 from claasp.utils import normalize_matrix
 
 
@@ -67,7 +67,7 @@ class Poseidon(Primitive):
         if any(len(row) != width for row in constants):
             raise ValueError(f"every round-constant row must contain {width} elements")
 
-        state_type = ArrayType(field, (width,))
+        state_type = UnitArrayType(field, (width,))
         super().__init__("poseidon", {"state": state_type})
         state = self.graph.input("state")
         full_rounds_at_start = full_rounds // 2
@@ -110,11 +110,11 @@ class Poseidon(Primitive):
 
     def _add_sbox_layer(
         self,
-        state: Port,
+        state: UnitArray,
         exponent: int,
         round_number: int,
         is_full_round: bool,
-    ) -> Port:
+    ) -> UnitArray:
         if is_full_round:
             power = Power(state, exponent, component_id=f"power_{round_number}_2")
             return self._builder.add_component(power)

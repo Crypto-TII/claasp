@@ -3,22 +3,22 @@
 from collections.abc import Iterable
 
 from claasp.components import BitVectorSBox, SBox
-from claasp.domains import Bit
-from claasp.domains.base import Domain
-from claasp.graph import ArrayType, CompositeBuilder, CompositeDefinition
+from claasp.graph import CompositeBuilder, CompositeDefinition, UnitArrayType
+from claasp.unit_types import Bit
+from claasp.unit_types.base import UnitType
 
 
 def ParallelSBoxLayer(
     table: Iterable[int],
     box_count: int,
     *,
-    domain: Domain | None = None,
+    unit_type: UnitType | None = None,
 ) -> CompositeDefinition:
     """Return independent equal-width S-boxes applied in parallel.
 
-    With no ``domain`` the boundary is one flat MSB-first bit vector and each
+    With no ``unit_type`` the boundary is one flat MSB-first bit vector and each
     box is a :class:`~claasp.components.BitVectorSBox`, which is directly consumable by Boolean
-    constraint representations.  Supplying a finite encoded domain gives one
+    constraint representations.  Supplying a finite encoded unit_type gives one
     logical unit per box and uses ordinary :class:`~claasp.components.SBox` leaves.
 
     EXAMPLES::
@@ -35,20 +35,20 @@ def ParallelSBoxLayer(
     if not frozen_table or len(frozen_table) & (len(frozen_table) - 1):
         raise ValueError("S-box table length must be a positive power of two")
     width = len(frozen_table).bit_length() - 1
-    if domain is None:
-        input_type = ArrayType(Bit(), (box_count * width,))
+    if unit_type is None:
+        input_type = UnitArrayType(Bit(), (box_count * width,))
     else:
-        if not isinstance(domain, Domain):
-            raise TypeError("domain must be a Domain or None")
-        if domain.encoded_bit_size != width:
-            raise ValueError("domain encoding width must match the S-box table")
-        input_type = ArrayType(domain, (box_count,))
+        if not isinstance(unit_type, UnitType):
+            raise TypeError("unit_type must be a UnitType or None")
+        if unit_type.encoded_bit_size != width:
+            raise ValueError("unit_type encoding width must match the S-box table")
+        input_type = UnitArrayType(unit_type, (box_count,))
 
     builder = CompositeBuilder("ParallelSBoxLayer", {"state": input_type})
     builder.add_round()
     outputs = []
     for index in range(box_count):
-        if domain is None:
+        if unit_type is None:
             selection = builder.input("state")[index * width : (index + 1) * width]
             component = BitVectorSBox(selection, frozen_table, component_id=f"sbox_{index}")
         else:

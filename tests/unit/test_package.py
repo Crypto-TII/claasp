@@ -1,10 +1,10 @@
 import pytest
 
 import claasp
-from claasp import ArrayType, Primitive
+from claasp import Primitive, UnitArrayType
 from claasp.components import Add, Permutation
-from claasp.domains import BinaryExtensionField, PrimeField
 from claasp.representations.execution import ScalarEvaluator
+from claasp.unit_types import BinaryExtensionField, PrimeField
 from claasp.utils import (
     binary_field_multiply,
     binary_field_power,
@@ -13,15 +13,15 @@ from claasp.utils import (
 )
 
 
-def test_domains_are_exposed_from_the_domains_namespace_only():
+def test_unit_types_are_exposed_from_the_unit_types_namespace_only():
     assert not hasattr(claasp, "Bit")
     assert not hasattr(claasp, "Word")
     assert not hasattr(claasp, "PrimeField")
     assert not hasattr(claasp, "BinaryExtensionField")
 
 
-def test_ports_support_whole_input_coercion_indexing_and_slicing():
-    primitive = Primitive("authoring", {"state": ArrayType(PrimeField(17), (4,))})
+def test_unit_arrays_support_whole_input_coercion_indexing_and_slicing():
+    primitive = Primitive("authoring", {"state": UnitArrayType(PrimeField(17), (4,))})
     state = primitive.graph.input("state")
     assert state[3, 1].positions == (3, 1)
     assert state[1:3].positions == (1, 2)
@@ -30,12 +30,12 @@ def test_ports_support_whole_input_coercion_indexing_and_slicing():
     primitive._builder.add_round()
     output = primitive._builder.add_component(Permutation(state, (3, 2, 1, 0)))
     primitive._builder.set_output(output)
-    assert output.owner_id == "permutation_0_0"
+    assert output.source_id == "permutation_0_0"
     assert ScalarEvaluator().evaluate(primitive, {"state": (1, 2, 3, 4)}).output == (4, 3, 2, 1)
 
 
 def test_inputs_support_named_and_positional_authoring_without_exposing_storage():
-    array_type = ArrayType(PrimeField(17), (1,))
+    array_type = UnitArrayType(PrimeField(17), (1,))
     primitive = Primitive("inputs", {"left": array_type, "right": array_type})
 
     assert primitive.graph.input("left") is primitive.graph.input(0)
@@ -48,7 +48,7 @@ def test_inputs_support_named_and_positional_authoring_without_exposing_storage(
         primitive.graph.input("right"),
         primitive.graph.input("left"),
     ]
-    assert primitive.graph.input_ports == {
+    assert primitive.graph.input_arrays == {
         "left": primitive.graph.input(0),
         "right": primitive.graph.input(1),
     }
@@ -64,7 +64,7 @@ def test_inputs_support_named_and_positional_authoring_without_exposing_storage(
 
 
 def test_round_outputs_are_published_as_intermediate_outputs():
-    array_type = ArrayType(PrimeField(17), (1,))
+    array_type = UnitArrayType(PrimeField(17), (1,))
     primitive = Primitive("observations", {"state": array_type})
     primitive._builder.add_round()
     published = primitive._builder.set_round_output(primitive.graph.input("state"))
@@ -77,8 +77,8 @@ def test_automatic_component_ids_are_deterministic_and_explicit_ids_remain_avail
     primitive = Primitive(
         "ids",
         {
-            "left": ArrayType(PrimeField(17), (1,)),
-            "right": ArrayType(PrimeField(17), (1,)),
+            "left": UnitArrayType(PrimeField(17), (1,)),
+            "right": UnitArrayType(PrimeField(17), (1,)),
         },
     )
     primitive._builder.add_round()
@@ -89,7 +89,11 @@ def test_automatic_component_ids_are_deterministic_and_explicit_ids_remain_avail
     named = primitive._builder.add_component(
         Add((second, primitive.graph.input("right")), component_id="final_sum")
     )
-    assert (first.owner_id, second.owner_id, named.owner_id) == ("add_0_0", "add_0_1", "final_sum")
+    assert (first.source_id, second.source_id, named.source_id) == (
+        "add_0_0",
+        "add_0_1",
+        "final_sum",
+    )
 
     with pytest.raises(ValueError, match="already exists"):
         primitive._builder.add_component(Add((first, second), component_id="final_sum"))
@@ -119,7 +123,7 @@ def test_primitive_evaluate_accepts_packed_positional_keyword_and_mapping_inputs
     assert primitive.evaluate({"plaintext": plaintext, "key": key}) == positional
     trace = primitive.evaluate_with_trace(plaintext, key)
     sub_bytes = primitive.graph.intermediate_outputs[0]["sub_bytes"]
-    assert trace.value_of(sub_bytes.owner_id)
+    assert trace.value_of(sub_bytes.source_id)
     assert positional == int.from_bytes(bytes(trace.output), "big")
 
 

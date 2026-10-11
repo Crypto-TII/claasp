@@ -1,12 +1,12 @@
-"""Semantic ports of the legacy AES, PRESENT, and Speck regression tests."""
+"""Semantic unit_arrays of the legacy AES, PRESENT, and Speck regression tests."""
 
 import pytest
 
 from claasp import bits_from_int, int_from_bits
 from claasp.components import Add, BinaryAffineMap, Power, Rotate, SBox
-from claasp.domains import BinaryExtensionField, Bit, Word
 from claasp.primitives import AES, Present, Speck
 from claasp.representations.execution import BatchEvaluator, ScalarEvaluator
+from claasp.unit_types import BinaryExtensionField, Bit, Word
 
 PRESENT_SBOX = (12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2)
 
@@ -142,8 +142,8 @@ def test_aes_preserves_legacy_configuration_semantics(key_size, rounds, nk):
     assert primitive.details().number_of_rounds == rounds
     assert primitive.graph.input("key").array_type.encoded_bit_size == key_size
     assert primitive.graph.output.array_type.encoded_bit_size == 128
-    assert primitive.graph.input("plaintext").array_type.domain == BinaryExtensionField(8, 0x11B)
-    assert isinstance(primitive.graph.component(primitive._initial_state.owner_id), Add)
+    assert primitive.graph.input("plaintext").array_type.unit_type == BinaryExtensionField(8, 0x11B)
+    assert isinstance(primitive.graph.component(primitive._initial_state.source_id), Add)
     assert len(primitive.graph.round_keys) == rounds + 1
 
 
@@ -178,7 +178,7 @@ def test_present_preserves_legacy_variants_and_exact_vectors(key_size, plaintext
     assert batch.outputs == (scalar.output,)
     assert primitive.family_name == "present"
     assert len(primitive.graph.rounds) == 31
-    assert primitive.graph.input("key").array_type.domain == Bit()
+    assert primitive.graph.input("key").array_type.unit_type == Bit()
     assert primitive.graph.input("key").array_type.encoded_bit_size == key_size
     assert isinstance(primitive.graph.rounds[0].components[0], Add)
 
@@ -235,7 +235,7 @@ def test_speck_preserves_legacy_variants_and_exact_vectors(
     assert (scalar.output[0] << word_size) | scalar.output[1] == ciphertext
     assert batch.outputs == (scalar.output,)
     assert primitive.family_name == "speck"
-    assert primitive.graph.input("plaintext").array_type.domain == Word(word_size)
+    assert primitive.graph.input("plaintext").array_type.unit_type == Word(word_size)
     assert primitive.graph.input("key").array_type.encoded_bit_size == key_size
     assert primitive.graph.output.array_type.encoded_bit_size == block_size
     assert isinstance(primitive.graph.rounds[0].components[0], Rotate)

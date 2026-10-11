@@ -3,7 +3,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from claasp.domains import PrimeField
+from claasp.unit_types import PrimeField
 
 
 @dataclass(frozen=True, slots=True, order=True)
@@ -73,14 +73,14 @@ class Monomial:
 @dataclass(frozen=True, slots=True, init=False)
 class Polynomial:
     """An immutable sparse polynomial over a
-    :class:`~claasp.domains.prime_field.PrimeField`.
+    :class:`~claasp.unit_types.prime_field.PrimeField`.
 
     Terms are normalized modulo the field modulus, zero coefficients are
     removed, and monomials are stored in deterministic order.
 
     EXAMPLES::
 
-        >>> from claasp.domains import PrimeField
+        >>> from claasp.unit_types import PrimeField
         >>> from claasp.representations.constraints.polynomial import Polynomial
         >>> field = PrimeField(17)
         >>> x = Polynomial.variable(field, "x")

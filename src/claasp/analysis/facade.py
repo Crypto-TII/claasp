@@ -191,11 +191,11 @@ class Analysis:
     ) -> AnalysisResult:
         """Recover one unknown input from known inputs and primitive output."""
 
-        if input_name not in self.primitive.graph.input_ports:
+        if input_name not in self.primitive.graph.input_arrays:
             raise ValueError(f"unknown primitive input {input_name!r}")
         if input_name in known_inputs:
             raise ValueError("the recovered input must not also be fixed")
-        expected_known = set(self.primitive.graph.input_ports) - {input_name}
+        expected_known = set(self.primitive.graph.input_arrays) - {input_name}
         if set(known_inputs) != expected_known:
             raise ValueError(f"known_inputs must contain exactly {sorted(expected_known)!r}")
         if self.primitive.graph.output is None:
@@ -611,7 +611,7 @@ class Analysis:
         if fixed_input_differences is None:
             fixed_input_differences = (
                 {"key": 0}
-                if "key" in self.primitive.graph.input_ports and nonzero_input != "key"
+                if "key" in self.primitive.graph.input_arrays and nonzero_input != "key"
                 else {}
             )
         policy = resolve_input_policy(
@@ -658,7 +658,7 @@ class Analysis:
         if fixed_inputs is None and fixed_input_masks is None:
             fixed_inputs = (
                 {"key": 0}
-                if "key" in self.primitive.graph.input_ports and nonzero_input != "key"
+                if "key" in self.primitive.graph.input_arrays and nonzero_input != "key"
                 else {}
             )
         model = WordLinearSMTModel(

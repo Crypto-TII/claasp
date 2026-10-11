@@ -31,12 +31,12 @@ from claasp.components import (
     VariableShift,
     Xor,
 )
-from claasp.domains import BinaryExtensionField, Bit, PrimeField
-from claasp.graph import Component, PortLike, Selection, as_selection
+from claasp.graph import Component, Selection, UnitArrayLike, as_selection
 from claasp.transformations.contracts import (
     TransformationError,
     TransformationFailureReason,
 )
+from claasp.unit_types import BinaryExtensionField, Bit, PrimeField
 from claasp.utils import binary_field_multiply
 
 InverseFactory = Callable[[Component, Selection, tuple[Selection, ...], int], Component]
@@ -76,10 +76,10 @@ class ComponentInverseRegistry:
 
     EXAMPLES::
 
-        >>> from claasp import Primitive, ArrayType
-        >>> from claasp.domains import Word
+        >>> from claasp import Primitive, UnitArrayType
+        >>> from claasp.unit_types import Word
         >>> from claasp.components import Rotate
-        >>> graph = Primitive("rule", {"x": ArrayType(Word(8), (1,)), "y": ArrayType(Word(8), (1,))})
+        >>> graph = Primitive("rule", {"x": UnitArrayType(Word(8), (1,)), "y": UnitArrayType(Word(8), (1,))})
         >>> component = Rotate(graph.graph.input("x"), 3, "left")
         >>> inverse = DEFAULT_INVERSE_REGISTRY.invert(component, graph.graph.input("y"), recover_input=0)
         >>> (type(inverse).__name__, inverse.amount, inverse.direction)
@@ -117,10 +117,10 @@ class ComponentInverseRegistry:
     def invert(
         self,
         component: Component,
-        output: PortLike,
+        output: UnitArrayLike,
         *,
         recover_input: int | None = None,
-        auxiliary_inputs: Mapping[int, PortLike] | None = None,
+        auxiliary_inputs: Mapping[int, UnitArrayLike] | None = None,
     ) -> Component:
         """Build a component recovering one input from an output and auxiliaries.
 
@@ -163,7 +163,7 @@ class ComponentInverseRegistry:
                 raise TransformationError(
                     reason,
                     "recovery requires exactly one unspecified predecessor",
-                    source_ids=tuple(item.source.owner_id for item in component.inputs),
+                    source_ids=tuple(item.source.source_id for item in component.inputs),
                 )
             recover_input = missing[0]
         if not isinstance(recover_input, int) or isinstance(recover_input, bool):
@@ -175,7 +175,7 @@ class ComponentInverseRegistry:
             )
         supplied.pop(recover_input, None)
         missing_auxiliary = tuple(
-            component.inputs[index].source.owner_id
+            component.inputs[index].source.source_id
             for index in range(len(component.inputs))
             if index != recover_input and index not in supplied
         )
@@ -198,7 +198,7 @@ class ComponentInverseRegistry:
                 raise TransformationError(
                     TransformationFailureReason.AMBIGUOUS_BOUNDARY,
                     "auxiliary array type does not match its predecessor",
-                    source_ids=(original.source.owner_id, replacement.source.owner_id),
+                    source_ids=(original.source.source_id, replacement.source.source_id),
                 )
         semantics = self._semantics.get(type(component))
         if semantics is None:
@@ -221,7 +221,7 @@ def _component_ids(component: Component) -> tuple[str, ...]:
 
 
 def _source_ids(component: Component, output: Selection) -> tuple[str, ...]:
-    return (*_component_ids(component), output.source.owner_id)
+    return (*_component_ids(component), output.source.source_id)
 
 
 def _unary(factory: Callable[[Selection], Component]) -> InverseFactory:
@@ -261,50 +261,50 @@ def _inverse_sbox(component, output, auxiliaries, recover_input):
     return SBox(output, inverse)
 
 
-def _domain_add(domain, left, right):
-    if isinstance(domain, (Bit, BinaryExtensionField)):
+def _unit_add(unit_type, left, right):
+    if isinstance(unit_type, (Bit, BinaryExtensionField)):
         return left ^ right
-    if isinstance(domain, PrimeField):
-        return (left + right) % domain.modulus
-    raise TypeError(f"matrix inversion does not support {type(domain).__name__}")
+    if isinstance(unit_type, PrimeField):
+        return (left + right) % unit_type.modulus
+    raise TypeError(f"matrix inversion does not support {type(unit_type).__name__}")
 
 
-def _domain_multiply(domain, left, right):
-    if isinstance(domain, Bit):
+def _unit_multiply(unit_type, left, right):
+    if isinstance(unit_type, Bit):
         return left & right
-    if isinstance(domain, BinaryExtensionField):
-        return binary_field_multiply(domain, left, right)
-    if isinstance(domain, PrimeField):
-        return (left * right) % domain.modulus
-    raise TypeError(f"matrix inversion does not support {type(domain).__name__}")
+    if isinstance(unit_type, BinaryExtensionField):
+        return binary_field_multiply(unit_type, left, right)
+    if isinstance(unit_type, PrimeField):
+        return (left * right) % unit_type.modulus
+    raise TypeError(f"matrix inversion does not support {type(unit_type).__name__}")
 
 
-def _domain_inverse(domain, value):
+def _unit_inverse(unit_type, value):
     if not value:
         raise ZeroDivisionError
-    if isinstance(domain, Bit):
+    if isinstance(unit_type, Bit):
         return 1
-    if isinstance(domain, BinaryExtensionField):
+    if isinstance(unit_type, BinaryExtensionField):
         result = 1
         base = value
-        exponent = (1 << domain.degree) - 2
+        exponent = (1 << unit_type.degree) - 2
         while exponent:
             if exponent & 1:
-                result = _domain_multiply(domain, result, base)
-            base = _domain_multiply(domain, base, base)
+                result = _unit_multiply(unit_type, result, base)
+            base = _unit_multiply(unit_type, base, base)
             exponent >>= 1
         return result
-    if isinstance(domain, PrimeField):
-        return pow(value, domain.modulus - 2, domain.modulus)
-    raise TypeError(f"matrix inversion does not support {type(domain).__name__}")
+    if isinstance(unit_type, PrimeField):
+        return pow(value, unit_type.modulus - 2, unit_type.modulus)
+    raise TypeError(f"matrix inversion does not support {type(unit_type).__name__}")
 
 
 @lru_cache(maxsize=64)
-def _inverse_matrix(matrix, domain):
+def _inverse_matrix(matrix, unit_type):
     size = len(matrix)
     if size == 0 or any(len(row) != size for row in matrix):
         return None
-    if isinstance(domain, Bit):
+    if isinstance(unit_type, Bit):
         augmented = [
             sum((coefficient & 1) << column for column, coefficient in enumerate(row))
             | (1 << (size + row_index))
@@ -333,26 +333,26 @@ def _inverse_matrix(matrix, domain):
         if pivot is None:
             return None
         augmented[column], augmented[pivot] = augmented[pivot], augmented[column]
-        scale = _domain_inverse(domain, augmented[column][column])
-        augmented[column] = [_domain_multiply(domain, scale, value) for value in augmented[column]]
+        scale = _unit_inverse(unit_type, augmented[column][column])
+        augmented[column] = [_unit_multiply(unit_type, scale, value) for value in augmented[column]]
         for row in range(size):
             if row == column or not augmented[row][column]:
                 continue
             factor = augmented[row][column]
             # Subtraction equals addition in characteristic two.  Prime fields
             # need the additive inverse of the elimination factor.
-            if isinstance(domain, PrimeField):
-                factor = (-factor) % domain.modulus
+            if isinstance(unit_type, PrimeField):
+                factor = (-factor) % unit_type.modulus
             augmented[row] = [
-                _domain_add(domain, value, _domain_multiply(domain, factor, pivot_value))
+                _unit_add(unit_type, value, _unit_multiply(unit_type, factor, pivot_value))
                 for value, pivot_value in zip(augmented[row], augmented[column])
             ]
     return tuple(tuple(row[size:]) for row in augmented)
 
 
 def _inverse_linear_map(component, output, auxiliaries, recover_input):
-    domain = component.inputs[0].array_type.domain
-    inverse = _inverse_matrix(component.matrix, domain)
+    unit_type = component.inputs[0].array_type.unit_type
+    inverse = _inverse_matrix(component.matrix, unit_type)
     if inverse is None:
         raise TransformationError(
             TransformationFailureReason.INFORMATION_LOSS,
@@ -363,7 +363,7 @@ def _inverse_linear_map(component, output, auxiliaries, recover_input):
 
 
 def _inverse_binary_affine_map(component, output, auxiliaries, recover_input):
-    domain = component.inputs[0].array_type.domain
+    unit_type = component.inputs[0].array_type.unit_type
     inverse = _inverse_matrix(component.matrix, Bit())
     if inverse is None:
         raise TransformationError(
@@ -372,21 +372,22 @@ def _inverse_binary_affine_map(component, output, auxiliaries, recover_input):
             source_ids=_component_ids(component),
         )
     bits = tuple(
-        (component.offset >> (domain.degree - 1 - index)) & 1 for index in range(domain.degree)
+        (component.offset >> (unit_type.degree - 1 - index)) & 1
+        for index in range(unit_type.degree)
     )
     transformed = tuple(
         sum(coefficient & value for coefficient, value in zip(row, bits)) & 1 for row in inverse
     )
-    offset = sum(value << (domain.degree - 1 - index) for index, value in enumerate(transformed))
+    offset = sum(value << (unit_type.degree - 1 - index) for index, value in enumerate(transformed))
     return BinaryAffineMap(output, inverse, offset)
 
 
 def _inverse_power(component, output, auxiliaries, recover_input):
-    domain = component.output_type.domain
-    if isinstance(domain, Bit):
+    unit_type = component.output_type.unit_type
+    if isinstance(unit_type, Bit):
         exponent = 1
-    elif isinstance(domain, BinaryExtensionField):
-        order = (1 << domain.degree) - 1
+    elif isinstance(unit_type, BinaryExtensionField):
+        order = (1 << unit_type.degree) - 1
         if gcd(component.exponent, order) != 1:
             raise TransformationError(
                 TransformationFailureReason.INFORMATION_LOSS,
@@ -394,8 +395,8 @@ def _inverse_power(component, output, auxiliaries, recover_input):
                 source_ids=_component_ids(component),
             )
         exponent = pow(component.exponent, -1, order)
-    elif isinstance(domain, PrimeField):
-        order = domain.modulus - 1
+    elif isinstance(unit_type, PrimeField):
+        order = unit_type.modulus - 1
         if gcd(component.exponent, order) != 1:
             raise TransformationError(
                 TransformationFailureReason.INFORMATION_LOSS,
@@ -406,7 +407,7 @@ def _inverse_power(component, output, auxiliaries, recover_input):
     else:
         raise TransformationError(
             TransformationFailureReason.UNSUPPORTED_COMPONENT,
-            f"power inversion is unavailable for {type(domain).__name__}",
+            f"power inversion is unavailable for {type(unit_type).__name__}",
             source_ids=_component_ids(component),
         )
     return Power(output, exponent)
@@ -417,7 +418,7 @@ def _recover_xor(component, output, auxiliaries, recover_input):
 
 
 def _recover_add(component, output, auxiliaries, recover_input):
-    if isinstance(component.output_type.domain, (Bit, BinaryExtensionField)):
+    if isinstance(component.output_type.unit_type, (Bit, BinaryExtensionField)):
         return Add((output, *auxiliaries))
     raise TransformationError(
         TransformationFailureReason.UNSUPPORTED_COMPONENT,
@@ -427,7 +428,7 @@ def _recover_add(component, output, auxiliaries, recover_input):
 
 
 def _recover_modular_add(component, output, auxiliaries, recover_input):
-    modulus = 1 << component.output_type.domain.width
+    modulus = 1 << component.output_type.unit_type.width
     if component.modulus not in (None, modulus):
         raise TransformationError(
             TransformationFailureReason.UNSUPPORTED_COMPONENT,
@@ -574,10 +575,10 @@ DEFAULT_INVERSE_REGISTRY = ComponentInverseRegistry(
 
 def invert_component(
     component: Component,
-    output: PortLike,
+    output: UnitArrayLike,
     *,
     recover_input: int | None = None,
-    auxiliary_inputs: Mapping[int, PortLike] | None = None,
+    auxiliary_inputs: Mapping[int, UnitArrayLike] | None = None,
     registry: ComponentInverseRegistry = DEFAULT_INVERSE_REGISTRY,
 ) -> Component:
     """Build the semantic component that recovers one predecessor.
@@ -587,11 +588,11 @@ def invert_component(
 
     EXAMPLES::
 
-        >>> from claasp import Primitive, ArrayType
-        >>> from claasp.domains import Word
+        >>> from claasp import Primitive, UnitArrayType
+        >>> from claasp.unit_types import Word
         >>> from claasp.components import Rotate
         >>> from claasp.transformations import invert_component
-        >>> graph = Primitive("inverse", {"x": ArrayType(Word(8), (1,))})
+        >>> graph = Primitive("inverse", {"x": UnitArrayType(Word(8), (1,))})
         >>> inverse = invert_component(Rotate(graph.graph.input("x"), 2, "left"),
         ...     graph.graph.input("x"), recover_input=0)
         >>> (inverse.direction, inverse.amount)

@@ -32,7 +32,7 @@ def _component_ids(component_ids: str | Sequence[str]) -> tuple[str, ...]:
 def _projection_width(primitive: Primitive, component_ids: tuple[str, ...]) -> int:
     total = 0
     for component_id in component_ids:
-        width = primitive.graph.port(component_id).array_type.encoded_bit_size
+        width = primitive.graph.unit_array(component_id).array_type.encoded_bit_size
         if width is None:
             raise ValueError(f"{component_id!r} is not canonically bit-encoded")
         total += width
@@ -42,14 +42,14 @@ def _projection_width(primitive: Primitive, component_ids: tuple[str, ...]) -> i
 def _trace_bits(primitive: Primitive, source_id: str, value: tuple[int, ...]) -> tuple[int, ...]:
     """Flatten one execution-trace value into canonical MSB-first bits.
 
-    ``value`` holds one integer per logical unit in the domain declared for
+    ``value`` holds one integer per logical unit in the unit_type declared for
     ``source_id`` (for example one 16-bit word per Speck state half); each
     unit is expanded to its own canonical bit width and the results are
     concatenated in order, matching the flat encoding every other dataset in
     this module uses for primitive inputs and outputs.
     """
 
-    scalar_width = primitive.graph.port(source_id).array_type.domain.encoded_bit_size
+    scalar_width = primitive.graph.unit_array(source_id).array_type.unit_type.encoded_bit_size
     if scalar_width is None:
         raise ValueError(f"{source_id!r} is not canonically bit-encoded")
     bits: list[int] = []
@@ -70,7 +70,8 @@ def _projection_bits(
 
 def _widths(primitive: Primitive) -> dict[str, int]:
     widths = {
-        name: port.array_type.encoded_bit_size for name, port in primitive.graph.input_ports.items()
+        name: unit_array.array_type.encoded_bit_size
+        for name, unit_array in primitive.graph.input_arrays.items()
     }
     if any(width is None for width in widths.values()):
         raise ValueError("neural datasets require canonically bit-encoded inputs")

@@ -105,7 +105,7 @@ the intermediate values from one evaluation:
    >>> key = 0x000102030405060708090A0B0C0D0E0F
    >>> execution = aes.evaluate_with_trace(plaintext=plaintext, key=key)
    >>> for round_number, outputs in enumerate(aes.graph.intermediate_outputs, start=1):
-   ...     value = execution.value_of(outputs["add_round_key"].owner_id)
+   ...     value = execution.value_of(outputs["add_round_key"].source_id)
    ...     print(round_number, bytes(value).hex())
    1 89d810e8855ace682d1843d8cb128fe4
    2 4915598f55e5d7a0daca94fa1f0a63f7

@@ -30,7 +30,7 @@ Status: **Complete**
   - perform one useful, small analysis and display its result;
   - link to a separate collection of quick analysis scripts;
   - remove the arbitrary "Next steps" list.
-- Explain `ArrayType` in Core concepts with keyword arguments, the one-element
+- Explain `UnitArrayType` in Core concepts with keyword arguments, the one-element
   shape syntax `(4,)`, and a multidimensional example.
 - Introduce realizations in Core concepts rather than in the AES walkthrough.
 - Explain batch and transposed batch evaluation in plain language, using a
@@ -478,7 +478,7 @@ the independent paired-carry implementation. MiniSat, Kissat, and
 CryptoMiniSat fixtures agree on a four-bit accepted and rejected boundary.
 The following deterministic-truncated SAT slice adds
 ``WordDeterministicTruncatedSATModel`` for constants, identities, permutations,
-rotations, XOR, and modular addition over Word graphs. Port trits are canonical
+rotations, XOR, and modular addition over Word graphs. UnitArray trits are canonical
 while the local recovered addition retains its legacy internal representation.
 Decoded trails are independently propagated with typed semantics; MiniSat,
 Kissat, and CryptoMiniSat agree on accepted and rejected ToySpeck-2 boundaries.

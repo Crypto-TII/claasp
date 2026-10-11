@@ -7,11 +7,11 @@ or analyze it.
 The typed graph
 ---------------
 
-Domains define scalar semantics such as a bit, a fixed-width word, an element
-of :math:`GF(2^w)`, or an element of :math:`GF(p)`. ``ArrayType`` adds a
-homogeneous shape. Ports and selections connect components using logical
-units, so a permutation is reusable without assuming that every unit is a
-bit.
+Unit types define the semantics of one logical unit, such as a bit, a
+fixed-width word, an element of :math:`GF(2^w)`, or an element of
+:math:`GF(p)`. ``UnitArrayType`` adds a homogeneous shape. ``UnitArray`` and
+``Selection`` connect components using logical units, so a permutation is
+reusable without assuming that every unit is a bit.
 
 Components are immutable operation descriptions. They do not evaluate
 themselves and do not contain MiniSat-, Z3-, MILP-, or computer-algebra-system
@@ -21,8 +21,8 @@ The corresponding source packages have deliberately concrete names:
 
 .. code-block:: text
 
-   graph/       Primitive, Component, Port, Round, and ArrayType structure
-   domains/     Bit, Word, GF(2^w), and GF(p) scalar units
+   graph/       Primitive, Component, UnitArray, Round, and UnitArrayType structure
+   unit_types/  Bit, Word, GF(2^w), and GF(p) logical unit types
    components/  Operations connecting graph values
    primitives/  Concrete block-cipher and permutation descriptions
    semantics/   What flowing values mean and how transitions behave
@@ -89,7 +89,7 @@ Annotations, traces, and trails
 -------------------------------
 
 Concrete execution, cryptanalytic propagation, simulated leakage, and
-visualization all attach information to ports and components of the same
+visualization all attach information to unit arrays and components of the same
 primitive graph. They therefore share an immutable graph-annotation foundation.
 Their public semantic types remain distinct: an ``ExecutionTrace`` records
 concrete values, a cryptanalytic ``Trail`` records transitions and weights,

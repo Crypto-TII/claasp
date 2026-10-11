@@ -167,7 +167,9 @@ class WordwiseImpossibleFixture:
             self.backward_middle,
         )
         if any(len(pattern) != 16 or set(pattern) - set("0123") for pattern in patterns):
-            raise ValueError("wordwise fixture patterns must contain sixteen base-domain symbols")
+            raise ValueError(
+                "wordwise fixture patterns must contain sixteen base-unit_type symbols"
+            )
         if self.claim_kind != "abstract-incompatibility-witness":
             raise ValueError("wordwise fixture cannot claim a concrete differential proof")
 
@@ -567,10 +569,10 @@ def propagate_two_word_speck_round(
         True
     """
 
-    plaintext = primitive.graph.input_ports.get("plaintext")
+    plaintext = primitive.graph.input_arrays.get("plaintext")
     if primitive.family_name != "speck" or plaintext is None:
         raise ValueError("primitive must be Speck")
-    width = plaintext.array_type.domain.width
+    width = plaintext.array_type.unit_type.width
     if len(difference.bits) != 2 * width:
         raise ValueError("difference width must match the Speck block")
     if (
@@ -605,10 +607,10 @@ def propagate_two_word_speck_inverse_round(
         True
     """
 
-    plaintext = primitive.graph.input_ports.get("plaintext")
+    plaintext = primitive.graph.input_arrays.get("plaintext")
     if primitive.family_name != "speck" or plaintext is None:
         raise ValueError("primitive must be Speck")
-    width = plaintext.array_type.domain.width
+    width = plaintext.array_type.unit_type.width
     if len(difference.bits) != 2 * width:
         raise ValueError("difference width must match the Speck block")
     if not 0 <= round_number < len(primitive.graph.rounds):
@@ -713,12 +715,12 @@ def propagate_single_active_aes_byte(
     boundaries = primitive.graph.intermediate_outputs[0]
     shifted = _named_component(
         primitive,
-        boundaries["shift_rows"].owner_id,
+        boundaries["shift_rows"].source_id,
         Permutation,
     )
     mixed = _named_component(
         primitive,
-        boundaries["mix_columns"].owner_id,
+        boundaries["mix_columns"].source_id,
         LinearMap,
     )
     sbox_activity = [WordwiseXorDifference(8, WordwiseDifferenceKind.ZERO) for _ in range(16)]

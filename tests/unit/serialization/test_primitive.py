@@ -3,23 +3,23 @@ import json
 import pytest
 
 from claasp import (
-    ArrayType,
     Primitive,
     SerializationError,
     SerializationFailure,
+    UnitArrayType,
     deserialize_primitive,
     primitive_digest,
     serialize_primitive,
 )
 from claasp.components import Identity
-from claasp.domains import Bit
 from claasp.primitives import AES, Present, Speck
 from claasp.primitives.block_ciphers.katan import Katan
+from claasp.unit_types import Bit
 
 
 def _toy():
     primitive = Primitive(
-        "canonical", {"state": ArrayType(Bit(), (4,))}, provenance=(("source", "test"),)
+        "canonical", {"state": UnitArrayType(Bit(), (4,))}, provenance=(("source", "test"),)
     )
     primitive._builder.add_round()
     copied = primitive._builder.add_component(Identity(primitive.graph.input("state")[3, 1, 2, 0]))
@@ -94,7 +94,7 @@ def test_composite_scope_round_trip_preserves_hierarchy_and_named_output():
     )
     primitive._builder.add_round()
     instance = primitive._builder.add_composite(
-        definition, primitive.graph.input_ports, scope_id="quarter"
+        definition, primitive.graph.input_arrays, scope_id="quarter"
     )
     primitive._builder.set_output(instance.output)
     restored = deserialize_primitive(serialize_primitive(primitive))
@@ -157,7 +157,7 @@ def test_duplicate_sources_invalid_output_and_inconsistent_binding_width_are_rej
     with pytest.raises(SerializationError, match="invalid_reference"):
         deserialize_primitive(json.dumps(value))
 
-    primitive = Primitive("binding", {"state": ArrayType(Bit(), (8,))})
+    primitive = Primitive("binding", {"state": UnitArrayType(Bit(), (8,))})
     primitive._builder.add_round()
     packed = primitive._builder.pack_bits(primitive.graph.input("state"), 4)
     primitive._builder.set_output(packed)

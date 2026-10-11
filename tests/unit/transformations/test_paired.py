@@ -1,19 +1,19 @@
 import pytest
 
 from claasp import (
-    ArrayType,
     CompositeBuilder,
     PairedTransformationResult,
     Primitive,
     TransformationError,
     TransformationFailureReason,
+    UnitArrayType,
     paired_xor_primitive,
 )
 from claasp.components import Identity
-from claasp.domains import PrimeField, Word
 from claasp.graph import as_selection
 from claasp.primitives import Present, Speck
 from claasp.representations.constraints.sat import BooleanCNFModel
+from claasp.unit_types import PrimeField, Word
 
 LEFT = 0x6574694C
 RIGHT = 0x6574694D
@@ -72,7 +72,7 @@ def test_related_key_pair_has_independent_inputs_and_fixed_output_difference():
     result = source.edit.pair_xor()
     paired = result.primitive
 
-    assert tuple(paired.graph.input_ports) == (
+    assert tuple(paired.graph.input_arrays) == (
         "left_plaintext",
         "right_plaintext",
         "left_key",
@@ -101,11 +101,11 @@ def test_pair_uses_composite_scopes_and_no_identity_wiring_placeholders():
 
 
 def test_nested_source_scopes_remain_nested_in_each_paired_realization():
-    block = CompositeBuilder("copy", {"value": ArrayType(Word(4), (1,))})
+    block = CompositeBuilder("copy", {"value": UnitArrayType(Word(4), (1,))})
     block.add_round()
     copied = block.add_component(Identity(block.input("value"), "copy"))
     block.set_output("output", copied)
-    source = Primitive("scoped", {"state": ArrayType(Word(4), (1,))})
+    source = Primitive("scoped", {"state": UnitArrayType(Word(4), (1,))})
     source._builder.add_round()
     instance = source._builder.add_composite(
         block.build(), {"value": source.graph.input("state")}, scope_id="block"
@@ -124,7 +124,7 @@ def test_nested_source_scopes_remain_nested_in_each_paired_realization():
 
 
 def test_xor_pair_rejects_domains_without_characteristic_two_semantics():
-    source = Primitive("prime", {"state": ArrayType(PrimeField(7), (1,))})
+    source = Primitive("prime", {"state": UnitArrayType(PrimeField(7), (1,))})
     source._builder.set_output(source.graph.input("state"))
 
     with pytest.raises(TransformationError) as caught:

@@ -437,7 +437,7 @@ def analyze_component_property(
 ) -> ComponentPropertyResult:
     """Analyze one semantic component under an explicit typed request.
 
-    Unsupported component/property/domain combinations return a typed
+    Unsupported component/property/unit_type combinations return a typed
     unavailable result. Invalid component parameters continue to raise at
     component construction boundaries.
 
@@ -543,8 +543,8 @@ def _analyze_lookup_component(component, request, graph_locations, primitive, re
     from claasp.components import LookupTable, SBox
 
     if isinstance(component, SBox):
-        input_width = component.inputs[0].array_type.domain.encoded_bit_size
-        output_width = component.output_type.domain.encoded_bit_size
+        input_width = component.inputs[0].array_type.unit_type.encoded_bit_size
+        output_width = component.output_type.unit_type.encoded_bit_size
     else:
         input_width = component.inputs[0].array_type.encoded_bit_size
         output_width = component.output_type.encoded_bit_size
@@ -710,7 +710,7 @@ def _analyze_linear_component(component, request, graph_locations, primitive, re
         permutation_order,
     )
     from claasp.components import BinaryAffineMap, Permutation
-    from claasp.domains import BinaryExtensionField, Bit
+    from claasp.unit_types import BinaryExtensionField, Bit
 
     key = semantic_component_key(component, request.domain)
     provenance = ComponentAnalysisProvenance(
@@ -750,15 +750,17 @@ def _analyze_linear_component(component, request, graph_locations, primitive, re
         )
 
     matrix = component.matrix
-    domain = (
-        Bit() if isinstance(component, BinaryAffineMap) else component.inputs[0].array_type.domain
+    unit_type = (
+        Bit()
+        if isinstance(component, BinaryAffineMap)
+        else component.inputs[0].array_type.unit_type
     )
     analysis_matrix = matrix
-    analysis_domain = domain
-    if request.domain is PropertyDomain.BIT_LINEAR and isinstance(domain, BinaryExtensionField):
-        analysis_matrix = expand_binary_field_matrix(matrix, domain)
+    analysis_domain = unit_type
+    if request.domain is PropertyDomain.BIT_LINEAR and isinstance(unit_type, BinaryExtensionField):
+        analysis_matrix = expand_binary_field_matrix(matrix, unit_type)
         analysis_domain = Bit()
-    elif request.domain is PropertyDomain.BIT_LINEAR and not isinstance(domain, Bit):
+    elif request.domain is PropertyDomain.BIT_LINEAR and not isinstance(unit_type, Bit):
         return unavailable_result(
             request,
             provenance,
@@ -766,7 +768,7 @@ def _analyze_linear_component(component, request, graph_locations, primitive, re
             "bit-linear analysis requires Bit or binary-extension-field semantics",
         )
     elif request.domain in {PropertyDomain.WORD_LINEAR, PropertyDomain.FINITE_FIELD_LINEAR}:
-        if isinstance(component, BinaryAffineMap) or isinstance(domain, Bit):
+        if isinstance(component, BinaryAffineMap) or isinstance(unit_type, Bit):
             return unavailable_result(
                 request,
                 provenance,
@@ -874,7 +876,7 @@ def _analyze_boolean_word_component(component, request, graph_locations, primiti
             request,
             provenance,
             DiagnosticCode.INAPPLICABLE_DOMAIN,
-            "Boolean word properties require the boolean or word-operation domain",
+            "Boolean word properties require the boolean or word-operation unit_type",
         )
     supported = {
         ComponentProperty.ALGEBRAIC_DEGREE,
@@ -930,7 +932,7 @@ def _word_permutation_property(component, property_):
     if isinstance(component, Rotate):
         if property_ is ComponentProperty.INVERTIBLE:
             return True
-        width = component.output_type.domain.width
+        width = component.output_type.unit_type.width
         return 1 if component.amount == 0 else width // gcd(width, component.amount)
     return None
 
@@ -948,7 +950,7 @@ def _analyze_feedback_component(component, request, graph_locations, primitive, 
             request,
             provenance,
             DiagnosticCode.INAPPLICABLE_DOMAIN,
-            "feedback properties require the feedback-register domain",
+            "feedback properties require the feedback-register unit_type",
         )
     supported = {
         ComponentProperty.REGISTER_STRUCTURE,
@@ -1022,7 +1024,7 @@ def _analyze_feedback_component(component, request, graph_locations, primitive, 
                     for term in register.feedback
                     if term.coefficient
                 ),
-                "domain": repr(component.output_type.domain),
+                "unit_type": repr(component.output_type.unit_type),
             }
             for register in component.registers
         )

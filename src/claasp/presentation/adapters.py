@@ -458,7 +458,7 @@ def component_property_section(
         (
             TableColumn("component", "Semantic component"),
             TableColumn("property", "Property"),
-            TableColumn("domain", "Domain"),
+            TableColumn("unit_type", "UnitType"),
             TableColumn("value", "Value", Alignment.RIGHT),
             TableColumn("evidence", "Evidence"),
             TableColumn("applicability", "Applicability"),

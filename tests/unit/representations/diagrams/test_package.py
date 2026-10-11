@@ -1,8 +1,7 @@
 import pytest
 
-from claasp import ArrayType, Primitive
+from claasp import Primitive, UnitArrayType
 from claasp.components import Identity
-from claasp.domains import Bit
 from claasp.primitives import Present
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.diagrams import (
@@ -21,10 +20,11 @@ from claasp.semantics.cryptanalysis import (
     TrailStep,
     XorDifference,
 )
+from claasp.unit_types import Bit
 
 
 def _toy_primitive():
-    primitive = Primitive("toy diagram", {"state": ArrayType(Bit(), (4,))})
+    primitive = Primitive("toy diagram", {"state": UnitArrayType(Bit(), (4,))})
     primitive._builder.add_round()
     shuffled = primitive._builder.add_component(
         Identity(primitive.graph.input("state")[3, 1, 2, 0])
@@ -102,8 +102,8 @@ def test_ascii_routes_multiple_inputs_in_declared_order():
     )
 
     ascii_art = ASCIIArtSerializer().serialize(DiagramCompiler().compile(primitive))
-    first = f"[0] {component.inputs[0].source.owner_id}"
-    second = f"[1] {component.inputs[1].source.owner_id}"
+    first = f"[0] {component.inputs[0].source.source_id}"
+    second = f"[1] {component.inputs[1].source.source_id}"
 
     assert ascii_art.index(first) < ascii_art.index(second)
     assert "--+--> +" in ascii_art

@@ -25,12 +25,6 @@
       "qualified_name": "claasp.AESSubstitutionLayer"
     },
     {
-      "canonical_name": "claasp.graph.array_type.ArrayType",
-      "defined_in": "claasp.graph.array_type",
-      "kind": "dataclass",
-      "qualified_name": "claasp.ArrayType"
-    },
-    {
       "canonical_name": "claasp.representations.execution.batch.BatchEvaluationResult",
       "defined_in": "claasp.representations.execution.batch",
       "kind": "dataclass",
@@ -49,8 +43,8 @@
       "qualified_name": "claasp.BatchExecutionDriver"
     },
     {
-      "canonical_name": "claasp.graph.array_type.BitWord",
-      "defined_in": "claasp.graph.array_type",
+      "canonical_name": "claasp.graph.unit_array_type.BitWord",
+      "defined_in": "claasp.graph.unit_array_type",
       "kind": "function",
       "qualified_name": "claasp.BitWord"
     },
@@ -199,12 +193,6 @@
       "qualified_name": "claasp.ParallelSBoxLayer"
     },
     {
-      "canonical_name": "claasp.graph.port.Port",
-      "defined_in": "claasp.graph.port",
-      "kind": "dataclass",
-      "qualified_name": "claasp.Port"
-    },
-    {
       "canonical_name": "claasp.graph.primitive.Primitive",
       "defined_in": "claasp.graph.primitive",
       "kind": "class",
@@ -283,8 +271,8 @@
       "qualified_name": "claasp.ScalarExecutionDriver"
     },
     {
-      "canonical_name": "claasp.graph.port.Selection",
-      "defined_in": "claasp.graph.port",
+      "canonical_name": "claasp.graph.unit_array.Selection",
+      "defined_in": "claasp.graph.unit_array",
       "kind": "dataclass",
       "qualified_name": "claasp.Selection"
     },
@@ -383,6 +371,18 @@
       "defined_in": "claasp.representations.execution.batch",
       "kind": "class",
       "qualified_name": "claasp.TransposedBatchExecutionDriver"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array.UnitArray",
+      "defined_in": "claasp.graph.unit_array",
+      "kind": "dataclass",
+      "qualified_name": "claasp.UnitArray"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array_type.UnitArrayType",
+      "defined_in": "claasp.graph.unit_array_type",
+      "kind": "dataclass",
+      "qualified_name": "claasp.UnitArrayType"
     },
     {
       "canonical_name": "claasp.analysis",
@@ -5769,13 +5769,6 @@
       "qualified_name": "claasp.components.feedback.feedback_register.FeedbackRegisterParameters.clocks"
     },
     {
-      "canonical_name": "claasp.components.feedback.feedback_register.FeedbackRegisterParameters.domain",
-      "defined_in": "claasp.components.feedback.feedback_register",
-      "documented_by": "claasp.components.feedback.feedback_register.FeedbackRegisterParameters",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.components.feedback.feedback_register.FeedbackRegisterParameters.domain"
-    },
-    {
       "canonical_name": "claasp.components.feedback.feedback_register.FeedbackRegisterParameters.from_taps",
       "defined_in": "claasp.components.feedback.feedback_register",
       "kind": "method",
@@ -5793,6 +5786,13 @@
       "defined_in": "claasp.components.feedback.feedback_register",
       "kind": "property",
       "qualified_name": "claasp.components.feedback.feedback_register.FeedbackRegisterParameters.unit_count"
+    },
+    {
+      "canonical_name": "claasp.components.feedback.feedback_register.FeedbackRegisterParameters.unit_type",
+      "defined_in": "claasp.components.feedback.feedback_register",
+      "documented_by": "claasp.components.feedback.feedback_register.FeedbackRegisterParameters",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.components.feedback.feedback_register.FeedbackRegisterParameters.unit_type"
     },
     {
       "canonical_name": "claasp.components.feedback.feedback_register.FeedbackRegisterSpec.__init__",
@@ -6720,147 +6720,6 @@
       "defined_in": "claasp.serialization.primitive",
       "kind": "function",
       "qualified_name": "claasp.deserialize_primitive"
-    },
-    {
-      "canonical_name": "claasp.domains",
-      "defined_in": "claasp.domains",
-      "kind": "module",
-      "qualified_name": "claasp.domains"
-    },
-    {
-      "canonical_name": "claasp.domains.binary_extension_field.BinaryExtensionField",
-      "defined_in": "claasp.domains.binary_extension_field",
-      "kind": "dataclass",
-      "qualified_name": "claasp.domains.BinaryExtensionField"
-    },
-    {
-      "canonical_name": "claasp.domains.bit.Bit",
-      "defined_in": "claasp.domains.bit",
-      "kind": "dataclass",
-      "qualified_name": "claasp.domains.Bit"
-    },
-    {
-      "canonical_name": "claasp.domains.prime_field.PrimeField",
-      "defined_in": "claasp.domains.prime_field",
-      "kind": "dataclass",
-      "qualified_name": "claasp.domains.PrimeField"
-    },
-    {
-      "canonical_name": "claasp.domains.word.Word",
-      "defined_in": "claasp.domains.word",
-      "kind": "dataclass",
-      "qualified_name": "claasp.domains.Word"
-    },
-    {
-      "canonical_name": "claasp.domains.binary_extension_field.BinaryExtensionField.__init__",
-      "defined_in": "claasp.domains.binary_extension_field",
-      "documented_by": "claasp.domains.binary_extension_field.BinaryExtensionField",
-      "kind": "constructor",
-      "qualified_name": "claasp.domains.binary_extension_field.BinaryExtensionField.__init__"
-    },
-    {
-      "canonical_name": "claasp.domains.binary_extension_field.BinaryExtensionField.basis",
-      "defined_in": "claasp.domains.binary_extension_field",
-      "documented_by": "claasp.domains.binary_extension_field.BinaryExtensionField",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.domains.binary_extension_field.BinaryExtensionField.basis"
-    },
-    {
-      "canonical_name": "claasp.domains.binary_extension_field.BinaryExtensionField.contains",
-      "defined_in": "claasp.domains.binary_extension_field",
-      "kind": "method",
-      "qualified_name": "claasp.domains.binary_extension_field.BinaryExtensionField.contains"
-    },
-    {
-      "canonical_name": "claasp.domains.binary_extension_field.BinaryExtensionField.degree",
-      "defined_in": "claasp.domains.binary_extension_field",
-      "documented_by": "claasp.domains.binary_extension_field.BinaryExtensionField",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.domains.binary_extension_field.BinaryExtensionField.degree"
-    },
-    {
-      "canonical_name": "claasp.domains.binary_extension_field.BinaryExtensionField.encoded_bit_size",
-      "defined_in": "claasp.domains.binary_extension_field",
-      "kind": "property",
-      "qualified_name": "claasp.domains.binary_extension_field.BinaryExtensionField.encoded_bit_size"
-    },
-    {
-      "canonical_name": "claasp.domains.binary_extension_field.BinaryExtensionField.modulus",
-      "defined_in": "claasp.domains.binary_extension_field",
-      "documented_by": "claasp.domains.binary_extension_field.BinaryExtensionField",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.domains.binary_extension_field.BinaryExtensionField.modulus"
-    },
-    {
-      "canonical_name": "claasp.domains.bit.Bit.__init__",
-      "defined_in": "claasp.domains.bit",
-      "documented_by": "claasp.domains.bit.Bit",
-      "kind": "constructor",
-      "qualified_name": "claasp.domains.bit.Bit.__init__"
-    },
-    {
-      "canonical_name": "claasp.domains.bit.Bit.contains",
-      "defined_in": "claasp.domains.bit",
-      "kind": "method",
-      "qualified_name": "claasp.domains.bit.Bit.contains"
-    },
-    {
-      "canonical_name": "claasp.domains.bit.Bit.encoded_bit_size",
-      "defined_in": "claasp.domains.bit",
-      "kind": "property",
-      "qualified_name": "claasp.domains.bit.Bit.encoded_bit_size"
-    },
-    {
-      "canonical_name": "claasp.domains.prime_field.PrimeField.__init__",
-      "defined_in": "claasp.domains.prime_field",
-      "documented_by": "claasp.domains.prime_field.PrimeField",
-      "kind": "constructor",
-      "qualified_name": "claasp.domains.prime_field.PrimeField.__init__"
-    },
-    {
-      "canonical_name": "claasp.domains.prime_field.PrimeField.contains",
-      "defined_in": "claasp.domains.prime_field",
-      "kind": "method",
-      "qualified_name": "claasp.domains.prime_field.PrimeField.contains"
-    },
-    {
-      "canonical_name": "claasp.domains.prime_field.PrimeField.encoded_bit_size",
-      "defined_in": "claasp.domains.prime_field",
-      "kind": "property",
-      "qualified_name": "claasp.domains.prime_field.PrimeField.encoded_bit_size"
-    },
-    {
-      "canonical_name": "claasp.domains.prime_field.PrimeField.modulus",
-      "defined_in": "claasp.domains.prime_field",
-      "documented_by": "claasp.domains.prime_field.PrimeField",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.domains.prime_field.PrimeField.modulus"
-    },
-    {
-      "canonical_name": "claasp.domains.word.Word.__init__",
-      "defined_in": "claasp.domains.word",
-      "documented_by": "claasp.domains.word.Word",
-      "kind": "constructor",
-      "qualified_name": "claasp.domains.word.Word.__init__"
-    },
-    {
-      "canonical_name": "claasp.domains.word.Word.contains",
-      "defined_in": "claasp.domains.word",
-      "kind": "method",
-      "qualified_name": "claasp.domains.word.Word.contains"
-    },
-    {
-      "canonical_name": "claasp.domains.word.Word.encoded_bit_size",
-      "defined_in": "claasp.domains.word",
-      "kind": "property",
-      "qualified_name": "claasp.domains.word.Word.encoded_bit_size"
-    },
-    {
-      "canonical_name": "claasp.domains.word.Word.width",
-      "defined_in": "claasp.domains.word",
-      "documented_by": "claasp.domains.word.Word",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.domains.word.Word.width"
     },
     {
       "canonical_name": "claasp.drivers",
@@ -8630,20 +8489,14 @@
       "qualified_name": "claasp.graph.AmbiguousRealizationError"
     },
     {
-      "canonical_name": "claasp.graph.array_type.ArrayType",
-      "defined_in": "claasp.graph.array_type",
-      "kind": "dataclass",
-      "qualified_name": "claasp.graph.ArrayType"
-    },
-    {
       "canonical_name": "claasp.graph.binding.BindingKind",
       "defined_in": "claasp.graph.binding",
       "kind": "enum",
       "qualified_name": "claasp.graph.BindingKind"
     },
     {
-      "canonical_name": "claasp.graph.array_type.BitWord",
-      "defined_in": "claasp.graph.array_type",
+      "canonical_name": "claasp.graph.unit_array_type.BitWord",
+      "defined_in": "claasp.graph.unit_array_type",
       "kind": "function",
       "qualified_name": "claasp.graph.BitWord"
     },
@@ -8682,18 +8535,6 @@
       "defined_in": "claasp.graph.metadata",
       "kind": "enum",
       "qualified_name": "claasp.graph.InputVisibility"
-    },
-    {
-      "canonical_name": "claasp.graph.port.Port",
-      "defined_in": "claasp.graph.port",
-      "kind": "dataclass",
-      "qualified_name": "claasp.graph.Port"
-    },
-    {
-      "canonical_name": "claasp.graph.PortLike",
-      "defined_in": "types",
-      "kind": "data",
-      "qualified_name": "claasp.graph.PortLike"
     },
     {
       "canonical_name": "claasp.graph.primitive.Primitive",
@@ -8780,10 +8621,28 @@
       "qualified_name": "claasp.graph.Round"
     },
     {
-      "canonical_name": "claasp.graph.port.Selection",
-      "defined_in": "claasp.graph.port",
+      "canonical_name": "claasp.graph.unit_array.Selection",
+      "defined_in": "claasp.graph.unit_array",
       "kind": "dataclass",
       "qualified_name": "claasp.graph.Selection"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array.UnitArray",
+      "defined_in": "claasp.graph.unit_array",
+      "kind": "dataclass",
+      "qualified_name": "claasp.graph.UnitArray"
+    },
+    {
+      "canonical_name": "claasp.graph.UnitArrayLike",
+      "defined_in": "types",
+      "kind": "data",
+      "qualified_name": "claasp.graph.UnitArrayLike"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array_type.UnitArrayType",
+      "defined_in": "claasp.graph.unit_array_type",
+      "kind": "dataclass",
+      "qualified_name": "claasp.graph.UnitArrayType"
     },
     {
       "canonical_name": "claasp.graph.realization.UnsupportedRealizationError",
@@ -8798,41 +8657,8 @@
       "qualified_name": "claasp.graph.ValueBinding"
     },
     {
-      "canonical_name": "claasp.graph.array_type.ArrayType.__init__",
-      "defined_in": "claasp.graph.array_type",
-      "documented_by": "claasp.graph.array_type.ArrayType",
-      "kind": "constructor",
-      "qualified_name": "claasp.graph.array_type.ArrayType.__init__"
-    },
-    {
-      "canonical_name": "claasp.graph.array_type.ArrayType.domain",
-      "defined_in": "claasp.graph.array_type",
-      "documented_by": "claasp.graph.array_type.ArrayType",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.graph.array_type.ArrayType.domain"
-    },
-    {
-      "canonical_name": "claasp.graph.array_type.ArrayType.encoded_bit_size",
-      "defined_in": "claasp.graph.array_type",
-      "kind": "property",
-      "qualified_name": "claasp.graph.array_type.ArrayType.encoded_bit_size"
-    },
-    {
-      "canonical_name": "claasp.graph.array_type.ArrayType.shape",
-      "defined_in": "claasp.graph.array_type",
-      "documented_by": "claasp.graph.array_type.ArrayType",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.graph.array_type.ArrayType.shape"
-    },
-    {
-      "canonical_name": "claasp.graph.array_type.ArrayType.unit_count",
-      "defined_in": "claasp.graph.array_type",
-      "kind": "property",
-      "qualified_name": "claasp.graph.array_type.ArrayType.unit_count"
-    },
-    {
-      "canonical_name": "claasp.graph.port.as_selection",
-      "defined_in": "claasp.graph.port",
+      "canonical_name": "claasp.graph.unit_array.as_selection",
+      "defined_in": "claasp.graph.unit_array",
       "kind": "function",
       "qualified_name": "claasp.graph.as_selection"
     },
@@ -9034,10 +8860,10 @@
       "qualified_name": "claasp.graph.composite.CompositeBuilder.input"
     },
     {
-      "canonical_name": "claasp.graph.composite.CompositeBuilder.input_ports",
+      "canonical_name": "claasp.graph.composite.CompositeBuilder.input_arrays",
       "defined_in": "claasp.graph.composite",
       "kind": "property",
-      "qualified_name": "claasp.graph.composite.CompositeBuilder.input_ports"
+      "qualified_name": "claasp.graph.composite.CompositeBuilder.input_arrays"
     },
     {
       "canonical_name": "claasp.graph.composite.CompositeBuilder.inputs",
@@ -9385,66 +9211,6 @@
       "defined_in": "claasp.graph.realization",
       "kind": "function",
       "qualified_name": "claasp.graph.normalize_realization_contract"
-    },
-    {
-      "canonical_name": "claasp.graph.port.Port.__init__",
-      "defined_in": "claasp.graph.port",
-      "documented_by": "claasp.graph.port.Port",
-      "kind": "constructor",
-      "qualified_name": "claasp.graph.port.Port.__init__"
-    },
-    {
-      "canonical_name": "claasp.graph.port.Port.array_type",
-      "defined_in": "claasp.graph.port",
-      "documented_by": "claasp.graph.port.Port",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.graph.port.Port.array_type"
-    },
-    {
-      "canonical_name": "claasp.graph.port.Port.owner_id",
-      "defined_in": "claasp.graph.port",
-      "documented_by": "claasp.graph.port.Port",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.graph.port.Port.owner_id"
-    },
-    {
-      "canonical_name": "claasp.graph.port.Port.select",
-      "defined_in": "claasp.graph.port",
-      "kind": "method",
-      "qualified_name": "claasp.graph.port.Port.select"
-    },
-    {
-      "canonical_name": "claasp.graph.port.Port.select_all",
-      "defined_in": "claasp.graph.port",
-      "kind": "method",
-      "qualified_name": "claasp.graph.port.Port.select_all"
-    },
-    {
-      "canonical_name": "claasp.graph.port.Selection.__init__",
-      "defined_in": "claasp.graph.port",
-      "documented_by": "claasp.graph.port.Selection",
-      "kind": "constructor",
-      "qualified_name": "claasp.graph.port.Selection.__init__"
-    },
-    {
-      "canonical_name": "claasp.graph.port.Selection.array_type",
-      "defined_in": "claasp.graph.port",
-      "kind": "property",
-      "qualified_name": "claasp.graph.port.Selection.array_type"
-    },
-    {
-      "canonical_name": "claasp.graph.port.Selection.positions",
-      "defined_in": "claasp.graph.port",
-      "documented_by": "claasp.graph.port.Selection",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.graph.port.Selection.positions"
-    },
-    {
-      "canonical_name": "claasp.graph.port.Selection.source",
-      "defined_in": "claasp.graph.port",
-      "documented_by": "claasp.graph.port.Selection",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.graph.port.Selection.source"
     },
     {
       "canonical_name": "claasp.graph.primitive.Primitive.__init__",
@@ -12632,6 +12398,12 @@
       "qualified_name": "claasp.graph.primitive.PrimitiveGraph.input"
     },
     {
+      "canonical_name": "claasp.graph.primitive.PrimitiveGraph.input_arrays",
+      "defined_in": "claasp.graph.primitive",
+      "kind": "property",
+      "qualified_name": "claasp.graph.primitive.PrimitiveGraph.input_arrays"
+    },
+    {
       "canonical_name": "claasp.graph.primitive.PrimitiveGraph.input_descriptor",
       "defined_in": "claasp.graph.primitive",
       "kind": "method",
@@ -12642,12 +12414,6 @@
       "defined_in": "claasp.graph.primitive",
       "kind": "property",
       "qualified_name": "claasp.graph.primitive.PrimitiveGraph.input_descriptors"
-    },
-    {
-      "canonical_name": "claasp.graph.primitive.PrimitiveGraph.input_ports",
-      "defined_in": "claasp.graph.primitive",
-      "kind": "property",
-      "qualified_name": "claasp.graph.primitive.PrimitiveGraph.input_ports"
     },
     {
       "canonical_name": "claasp.graph.primitive.PrimitiveGraph.inputs",
@@ -12672,12 +12438,6 @@
       "defined_in": "claasp.graph.primitive",
       "kind": "property",
       "qualified_name": "claasp.graph.primitive.PrimitiveGraph.output"
-    },
-    {
-      "canonical_name": "claasp.graph.primitive.PrimitiveGraph.port",
-      "defined_in": "claasp.graph.primitive",
-      "kind": "method",
-      "qualified_name": "claasp.graph.primitive.PrimitiveGraph.port"
     },
     {
       "canonical_name": "claasp.graph.primitive.PrimitiveGraph.resolve_selection",
@@ -12726,6 +12486,12 @@
       "defined_in": "claasp.graph.primitive",
       "kind": "method",
       "qualified_name": "claasp.graph.primitive.PrimitiveGraph.selection_bit_sources"
+    },
+    {
+      "canonical_name": "claasp.graph.primitive.PrimitiveGraph.unit_array",
+      "defined_in": "claasp.graph.primitive",
+      "kind": "method",
+      "qualified_name": "claasp.graph.primitive.PrimitiveGraph.unit_array"
     },
     {
       "canonical_name": "claasp.graph.primitive.PrimitiveInputDetails.__init__",
@@ -12958,6 +12724,111 @@
       "defined_in": "claasp.graph.realization",
       "kind": "function",
       "qualified_name": "claasp.graph.select_realization"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array.Selection.__init__",
+      "defined_in": "claasp.graph.unit_array",
+      "documented_by": "claasp.graph.unit_array.Selection",
+      "kind": "constructor",
+      "qualified_name": "claasp.graph.unit_array.Selection.__init__"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array.Selection.array_type",
+      "defined_in": "claasp.graph.unit_array",
+      "kind": "property",
+      "qualified_name": "claasp.graph.unit_array.Selection.array_type"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array.Selection.positions",
+      "defined_in": "claasp.graph.unit_array",
+      "documented_by": "claasp.graph.unit_array.Selection",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.graph.unit_array.Selection.positions"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array.Selection.source",
+      "defined_in": "claasp.graph.unit_array",
+      "documented_by": "claasp.graph.unit_array.Selection",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.graph.unit_array.Selection.source"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array.UnitArray.__init__",
+      "defined_in": "claasp.graph.unit_array",
+      "documented_by": "claasp.graph.unit_array.UnitArray",
+      "kind": "constructor",
+      "qualified_name": "claasp.graph.unit_array.UnitArray.__init__"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array.UnitArray.array_type",
+      "defined_in": "claasp.graph.unit_array",
+      "documented_by": "claasp.graph.unit_array.UnitArray",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.graph.unit_array.UnitArray.array_type"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array.UnitArray.select",
+      "defined_in": "claasp.graph.unit_array",
+      "kind": "method",
+      "qualified_name": "claasp.graph.unit_array.UnitArray.select"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array.UnitArray.select_all",
+      "defined_in": "claasp.graph.unit_array",
+      "kind": "method",
+      "qualified_name": "claasp.graph.unit_array.UnitArray.select_all"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array.UnitArray.shape",
+      "defined_in": "claasp.graph.unit_array",
+      "kind": "property",
+      "qualified_name": "claasp.graph.unit_array.UnitArray.shape"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array.UnitArray.source_id",
+      "defined_in": "claasp.graph.unit_array",
+      "documented_by": "claasp.graph.unit_array.UnitArray",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.graph.unit_array.UnitArray.source_id"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array.UnitArray.unit_type",
+      "defined_in": "claasp.graph.unit_array",
+      "kind": "property",
+      "qualified_name": "claasp.graph.unit_array.UnitArray.unit_type"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array_type.UnitArrayType.__init__",
+      "defined_in": "claasp.graph.unit_array_type",
+      "documented_by": "claasp.graph.unit_array_type.UnitArrayType",
+      "kind": "constructor",
+      "qualified_name": "claasp.graph.unit_array_type.UnitArrayType.__init__"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array_type.UnitArrayType.encoded_bit_size",
+      "defined_in": "claasp.graph.unit_array_type",
+      "kind": "property",
+      "qualified_name": "claasp.graph.unit_array_type.UnitArrayType.encoded_bit_size"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array_type.UnitArrayType.shape",
+      "defined_in": "claasp.graph.unit_array_type",
+      "documented_by": "claasp.graph.unit_array_type.UnitArrayType",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.graph.unit_array_type.UnitArrayType.shape"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array_type.UnitArrayType.unit_count",
+      "defined_in": "claasp.graph.unit_array_type",
+      "kind": "property",
+      "qualified_name": "claasp.graph.unit_array_type.UnitArrayType.unit_count"
+    },
+    {
+      "canonical_name": "claasp.graph.unit_array_type.UnitArrayType.unit_type",
+      "defined_in": "claasp.graph.unit_array_type",
+      "documented_by": "claasp.graph.unit_array_type.UnitArrayType",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.graph.unit_array_type.UnitArrayType.unit_type"
     },
     {
       "canonical_name": "claasp.transformations.editing.inline_reorderings",
@@ -30964,18 +30835,18 @@
       "qualified_name": "claasp.serialization.errors.SerializationFailure.UNKNOWN_COMPONENT"
     },
     {
-      "canonical_name": "claasp.serialization.errors.SerializationFailure.UNKNOWN_DOMAIN",
-      "defined_in": "claasp.serialization.errors",
-      "documented_by": "claasp.serialization.errors.SerializationFailure",
-      "kind": "enum_member",
-      "qualified_name": "claasp.serialization.errors.SerializationFailure.UNKNOWN_DOMAIN"
-    },
-    {
       "canonical_name": "claasp.serialization.errors.SerializationFailure.UNKNOWN_SCHEMA",
       "defined_in": "claasp.serialization.errors",
       "documented_by": "claasp.serialization.errors.SerializationFailure",
       "kind": "enum_member",
       "qualified_name": "claasp.serialization.errors.SerializationFailure.UNKNOWN_SCHEMA"
+    },
+    {
+      "canonical_name": "claasp.serialization.errors.SerializationFailure.UNKNOWN_UNIT_TYPE",
+      "defined_in": "claasp.serialization.errors",
+      "documented_by": "claasp.serialization.errors.SerializationFailure",
+      "kind": "enum_member",
+      "qualified_name": "claasp.serialization.errors.SerializationFailure.UNKNOWN_UNIT_TYPE"
     },
     {
       "canonical_name": "claasp.serialization.errors.SerializationFailure.UNKNOWN_VERSION",
@@ -32039,6 +31910,196 @@
       "documented_by": "claasp.transformations.traversal.GraphSourceKind",
       "kind": "constructor",
       "qualified_name": "claasp.transformations.traversal.GraphSourceKind.__init__"
+    },
+    {
+      "canonical_name": "claasp.unit_types",
+      "defined_in": "claasp.unit_types",
+      "kind": "module",
+      "qualified_name": "claasp.unit_types"
+    },
+    {
+      "canonical_name": "claasp.unit_types.binary_extension_field.BinaryExtensionField",
+      "defined_in": "claasp.unit_types.binary_extension_field",
+      "kind": "dataclass",
+      "qualified_name": "claasp.unit_types.BinaryExtensionField"
+    },
+    {
+      "canonical_name": "claasp.unit_types.bit.Bit",
+      "defined_in": "claasp.unit_types.bit",
+      "kind": "dataclass",
+      "qualified_name": "claasp.unit_types.Bit"
+    },
+    {
+      "canonical_name": "claasp.unit_types.prime_field.PrimeField",
+      "defined_in": "claasp.unit_types.prime_field",
+      "kind": "dataclass",
+      "qualified_name": "claasp.unit_types.PrimeField"
+    },
+    {
+      "canonical_name": "claasp.unit_types.base.UnitType",
+      "defined_in": "claasp.unit_types.base",
+      "kind": "abstract_class",
+      "qualified_name": "claasp.unit_types.UnitType"
+    },
+    {
+      "canonical_name": "claasp.unit_types.word.Word",
+      "defined_in": "claasp.unit_types.word",
+      "kind": "dataclass",
+      "qualified_name": "claasp.unit_types.Word"
+    },
+    {
+      "canonical_name": "claasp.unit_types.base.UnitType.__init__",
+      "defined_in": "claasp.unit_types.base",
+      "documented_by": "claasp.unit_types.base.UnitType",
+      "kind": "constructor",
+      "qualified_name": "claasp.unit_types.base.UnitType.__init__"
+    },
+    {
+      "canonical_name": "claasp.unit_types.base.UnitType.contains",
+      "defined_in": "claasp.unit_types.base",
+      "inherited_by": [
+        "claasp.unit_types.binary_extension_field.BinaryExtensionField",
+        "claasp.unit_types.bit.Bit",
+        "claasp.unit_types.prime_field.PrimeField",
+        "claasp.unit_types.word.Word"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.unit_types.base.UnitType.contains"
+    },
+    {
+      "canonical_name": "claasp.unit_types.base.UnitType.encoded_bit_size",
+      "defined_in": "claasp.unit_types.base",
+      "inherited_by": [
+        "claasp.unit_types.binary_extension_field.BinaryExtensionField",
+        "claasp.unit_types.bit.Bit",
+        "claasp.unit_types.prime_field.PrimeField",
+        "claasp.unit_types.word.Word"
+      ],
+      "kind": "property",
+      "qualified_name": "claasp.unit_types.base.UnitType.encoded_bit_size"
+    },
+    {
+      "canonical_name": "claasp.unit_types.base.UnitType.validate",
+      "defined_in": "claasp.unit_types.base",
+      "inherited_by": [
+        "claasp.unit_types.binary_extension_field.BinaryExtensionField",
+        "claasp.unit_types.bit.Bit",
+        "claasp.unit_types.prime_field.PrimeField",
+        "claasp.unit_types.word.Word"
+      ],
+      "kind": "method",
+      "qualified_name": "claasp.unit_types.base.UnitType.validate"
+    },
+    {
+      "canonical_name": "claasp.unit_types.binary_extension_field.BinaryExtensionField.__init__",
+      "defined_in": "claasp.unit_types.binary_extension_field",
+      "documented_by": "claasp.unit_types.binary_extension_field.BinaryExtensionField",
+      "kind": "constructor",
+      "qualified_name": "claasp.unit_types.binary_extension_field.BinaryExtensionField.__init__"
+    },
+    {
+      "canonical_name": "claasp.unit_types.binary_extension_field.BinaryExtensionField.basis",
+      "defined_in": "claasp.unit_types.binary_extension_field",
+      "documented_by": "claasp.unit_types.binary_extension_field.BinaryExtensionField",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.unit_types.binary_extension_field.BinaryExtensionField.basis"
+    },
+    {
+      "canonical_name": "claasp.unit_types.binary_extension_field.BinaryExtensionField.contains",
+      "defined_in": "claasp.unit_types.binary_extension_field",
+      "kind": "method",
+      "qualified_name": "claasp.unit_types.binary_extension_field.BinaryExtensionField.contains"
+    },
+    {
+      "canonical_name": "claasp.unit_types.binary_extension_field.BinaryExtensionField.degree",
+      "defined_in": "claasp.unit_types.binary_extension_field",
+      "documented_by": "claasp.unit_types.binary_extension_field.BinaryExtensionField",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.unit_types.binary_extension_field.BinaryExtensionField.degree"
+    },
+    {
+      "canonical_name": "claasp.unit_types.binary_extension_field.BinaryExtensionField.encoded_bit_size",
+      "defined_in": "claasp.unit_types.binary_extension_field",
+      "kind": "property",
+      "qualified_name": "claasp.unit_types.binary_extension_field.BinaryExtensionField.encoded_bit_size"
+    },
+    {
+      "canonical_name": "claasp.unit_types.binary_extension_field.BinaryExtensionField.modulus",
+      "defined_in": "claasp.unit_types.binary_extension_field",
+      "documented_by": "claasp.unit_types.binary_extension_field.BinaryExtensionField",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.unit_types.binary_extension_field.BinaryExtensionField.modulus"
+    },
+    {
+      "canonical_name": "claasp.unit_types.bit.Bit.__init__",
+      "defined_in": "claasp.unit_types.bit",
+      "documented_by": "claasp.unit_types.bit.Bit",
+      "kind": "constructor",
+      "qualified_name": "claasp.unit_types.bit.Bit.__init__"
+    },
+    {
+      "canonical_name": "claasp.unit_types.bit.Bit.contains",
+      "defined_in": "claasp.unit_types.bit",
+      "kind": "method",
+      "qualified_name": "claasp.unit_types.bit.Bit.contains"
+    },
+    {
+      "canonical_name": "claasp.unit_types.bit.Bit.encoded_bit_size",
+      "defined_in": "claasp.unit_types.bit",
+      "kind": "property",
+      "qualified_name": "claasp.unit_types.bit.Bit.encoded_bit_size"
+    },
+    {
+      "canonical_name": "claasp.unit_types.prime_field.PrimeField.__init__",
+      "defined_in": "claasp.unit_types.prime_field",
+      "documented_by": "claasp.unit_types.prime_field.PrimeField",
+      "kind": "constructor",
+      "qualified_name": "claasp.unit_types.prime_field.PrimeField.__init__"
+    },
+    {
+      "canonical_name": "claasp.unit_types.prime_field.PrimeField.contains",
+      "defined_in": "claasp.unit_types.prime_field",
+      "kind": "method",
+      "qualified_name": "claasp.unit_types.prime_field.PrimeField.contains"
+    },
+    {
+      "canonical_name": "claasp.unit_types.prime_field.PrimeField.encoded_bit_size",
+      "defined_in": "claasp.unit_types.prime_field",
+      "kind": "property",
+      "qualified_name": "claasp.unit_types.prime_field.PrimeField.encoded_bit_size"
+    },
+    {
+      "canonical_name": "claasp.unit_types.prime_field.PrimeField.modulus",
+      "defined_in": "claasp.unit_types.prime_field",
+      "documented_by": "claasp.unit_types.prime_field.PrimeField",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.unit_types.prime_field.PrimeField.modulus"
+    },
+    {
+      "canonical_name": "claasp.unit_types.word.Word.__init__",
+      "defined_in": "claasp.unit_types.word",
+      "documented_by": "claasp.unit_types.word.Word",
+      "kind": "constructor",
+      "qualified_name": "claasp.unit_types.word.Word.__init__"
+    },
+    {
+      "canonical_name": "claasp.unit_types.word.Word.contains",
+      "defined_in": "claasp.unit_types.word",
+      "kind": "method",
+      "qualified_name": "claasp.unit_types.word.Word.contains"
+    },
+    {
+      "canonical_name": "claasp.unit_types.word.Word.encoded_bit_size",
+      "defined_in": "claasp.unit_types.word",
+      "kind": "property",
+      "qualified_name": "claasp.unit_types.word.Word.encoded_bit_size"
+    },
+    {
+      "canonical_name": "claasp.unit_types.word.Word.width",
+      "defined_in": "claasp.unit_types.word",
+      "documented_by": "claasp.unit_types.word.Word",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.unit_types.word.Word.width"
     },
     {
       "canonical_name": "claasp.encoding.units_from_int",

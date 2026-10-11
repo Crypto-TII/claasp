@@ -20,7 +20,7 @@ Every transformation preserves these boundaries:
 * realization identity identifies the chosen source construction, while
   :class:`~claasp.provenance.TransformationRecord` records graph
   derivation and execution provenance records the eventual engine; and
-* reconstruction validates source membership, logical-unit positions, domain
+* reconstruction validates source membership, logical-unit positions, unit-type
   equality, acyclicity, and output availability through the ordinary graph
   API.
 
@@ -108,7 +108,7 @@ views and bit packing bindings, leaving non-permutation linear maps semantic.
 
 Paired XOR construction instantiates the source definition twice under
 ``left`` and ``right`` composite scopes. Shared inputs bind both scopes to one
-port. Characteristic-two differences are ordinary semantic XOR/addition
+unit array. Characteristic-two differences are ordinary semantic XOR/addition
 components over input, published round-state, round-key, and output boundaries.
 Domains without XOR semantics fail explicitly.
 

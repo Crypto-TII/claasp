@@ -71,7 +71,6 @@ from claasp.components import (
 from claasp.components import (
     Xor as XorComponent,
 )
-from claasp.domains import BinaryExtensionField, PrimeField, Word
 from claasp.graph import PrimitiveKind
 from claasp.primitives._catalogue_exports import CATEGORY_EXPORTS
 from claasp.primitives.single_component_primitives import (
@@ -99,6 +98,7 @@ from claasp.primitives.single_component_primitives import (
     VariableShift,
     Xor,
 )
+from claasp.unit_types import BinaryExtensionField, PrimeField, Word
 
 CLASSES = (
     Add,

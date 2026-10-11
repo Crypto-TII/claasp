@@ -2,7 +2,7 @@ from itertools import product
 
 import pytest
 
-from claasp import ArrayType, Primitive
+from claasp import Primitive, UnitArrayType
 from claasp.analysis import (
     AnalysisProblem,
     Equal,
@@ -14,12 +14,14 @@ from claasp.analysis import (
 )
 from claasp.analysis.boolean import lower_boolean_problem
 from claasp.components import Add
-from claasp.domains import Bit
 from claasp.drivers.solvers import SatResult, SatStatus
+from claasp.unit_types import Bit
 
 
 def _xor_primitive():
-    primitive = Primitive("xor", {"left": ArrayType(Bit(), (1,)), "key": ArrayType(Bit(), (1,))})
+    primitive = Primitive(
+        "xor", {"left": UnitArrayType(Bit(), (1,)), "key": UnitArrayType(Bit(), (1,))}
+    )
     primitive._builder.add_round()
     output = primitive._builder.add_component(
         Add((primitive.graph.input("left"), primitive.graph.input("key")))

@@ -2,7 +2,6 @@ from itertools import combinations, product
 
 import pytest
 
-from claasp.domains import BinaryExtensionField
 from claasp.primitives.toy_primitives import (
     CipherFour,
     Fancy,
@@ -13,6 +12,7 @@ from claasp.primitives.toy_primitives import (
     ToySPN2,
 )
 from claasp.primitives.toy_primitives.toyaes import MIX_COLUMN_MATRICES
+from claasp.unit_types import BinaryExtensionField
 from claasp.utils import binary_field_multiply
 
 

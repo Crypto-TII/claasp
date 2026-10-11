@@ -23,7 +23,6 @@ from claasp.components import (
     VariableShift,
     Xor,
 )
-from claasp.domains import Bit, Word
 from claasp.graph import Primitive
 from claasp.graph.binding import BindingKind
 from claasp.provenance import DriverIdentity, DriverKind
@@ -35,6 +34,7 @@ from claasp.representations.source.model import (
     SourceStatus,
 )
 from claasp.serialization import primitive_digest
+from claasp.unit_types import Bit, Word
 
 C_COMPILER = DriverIdentity("claasp_c_source", DriverKind.COMPILER, "1")
 
@@ -56,7 +56,7 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
     diagnostic = _applicability(primitive)
     if diagnostic is not None:
         return SourceCompilationResult(SourceStatus.UNSUPPORTED, diagnostic=diagnostic)
-    names = {name: f"in{index}" for index, name in enumerate(primitive.graph.input_ports)}
+    names = {name: f"in{index}" for index, name in enumerate(primitive.graph.input_arrays)}
     names.update(
         {item.component_id: f"v{index}" for index, item in enumerate(primitive.graph.components)}
     )
@@ -64,7 +64,7 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
 
     def selection_expressions(selection):
         return tuple(
-            source_expression(selection.source.owner_id, position, set())
+            source_expression(selection.source.source_id, position, set())
             for position in selection.positions
         )
 
@@ -100,7 +100,7 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
 
     def selection_expressions_with_stack(selection, stack):
         return tuple(
-            source_expression(selection.source.owner_id, position, stack)
+            source_expression(selection.source.source_id, position, stack)
             for position in selection.positions
         )
 
@@ -163,11 +163,11 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
         "}",
         "",
         "int main(int argc, char **argv) {",
-        f'  if (argc != {len(primitive.graph.input_ports) + 1}) {{ fputs("invalid input count\\n", stderr); return 2; }}',
+        f'  if (argc != {len(primitive.graph.input_arrays) + 1}) {{ fputs("invalid input count\\n", stderr); return 2; }}',
     ]
-    for index, (name, port) in enumerate(primitive.graph.input_ports.items()):
-        width = port.array_type.domain.encoded_bit_size
-        count = port.array_type.unit_count
+    for index, (name, unit_array) in enumerate(primitive.graph.input_arrays.items()):
+        width = unit_array.array_type.unit_type.encoded_bit_size
+        count = unit_array.array_type.unit_count
         lines.extend(
             (
                 f"  uint64_t {names[name]}[{count}];",
@@ -177,7 +177,7 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
     for component in primitive.graph.components:
         output = names[component.component_id]
         count = component.output_type.unit_count
-        width = component.output_type.domain.encoded_bit_size
+        width = component.output_type.unit_type.encoded_bit_size
         operands = tuple(selection_expressions(item) for item in component.inputs)
         lines.append(f"  uint64_t {output}[{count}];")
         if isinstance(component, Constant):
@@ -301,7 +301,7 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
     output_expressions = selection_expressions(primitive.graph.output)
     lines.append(f"  uint64_t result[{len(output_expressions)}];")
     _assign(lines, "result", output_expressions)
-    output_width = primitive.graph.output.array_type.domain.encoded_bit_size
+    output_width = primitive.graph.output.array_type.unit_type.encoded_bit_size
     lines.extend(
         (
             f"  print_hex_units(result, {len(output_expressions)}, {output_width});",
@@ -337,12 +337,12 @@ def _applicability(primitive):
         return SourceDiagnostic(
             "missing_output", "C generation requires a declared primitive output"
         )
-    for source_id, port in primitive.graph.input_ports.items():
-        domain = port.array_type.domain
-        if not isinstance(domain, (Bit, Word)) or domain.encoded_bit_size > 64:
+    for source_id, unit_array in primitive.graph.input_arrays.items():
+        unit_type = unit_array.array_type.unit_type
+        if not isinstance(unit_type, (Bit, Word)) or unit_type.encoded_bit_size > 64:
             return SourceDiagnostic(
                 "unsupported_domain",
-                f"C generation does not support {type(domain).__name__} input {source_id!r}",
+                f"C generation does not support {type(unit_type).__name__} input {source_id!r}",
             )
     supported = (
         Constant,
@@ -366,11 +366,11 @@ def _applicability(primitive):
         SBox,
     )
     for component in primitive.graph.components:
-        domain = component.output_type.domain
-        if not isinstance(domain, (Bit, Word)) or domain.encoded_bit_size > 64:
+        unit_type = component.output_type.unit_type
+        if not isinstance(unit_type, (Bit, Word)) or unit_type.encoded_bit_size > 64:
             return SourceDiagnostic(
                 "unsupported_domain",
-                f"C generation does not support {type(domain).__name__}",
+                f"C generation does not support {type(unit_type).__name__}",
                 component.component_id,
             )
         if not isinstance(component, supported):
@@ -379,7 +379,7 @@ def _applicability(primitive):
                 f"C generation does not support {type(component).__name__}",
                 component.component_id,
             )
-        if isinstance(component, (Add, Multiply, LinearMap)) and not isinstance(domain, Bit):
+        if isinstance(component, (Add, Multiply, LinearMap)) and not isinstance(unit_type, Bit):
             return SourceDiagnostic(
                 "unsupported_component_domain",
                 f"{type(component).__name__} is supported only over Bit",

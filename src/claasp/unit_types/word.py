@@ -1,12 +1,12 @@
-"""Fixed-width unsigned machine-word domain."""
+"""Fixed-width unsigned machine-word unit type."""
 
 from dataclasses import dataclass
 
-from claasp.domains.base import Domain
+from claasp.unit_types.base import UnitType
 
 
 @dataclass(frozen=True, slots=True)
-class Word(Domain):
+class Word(UnitType):
     """Unsigned integers represented by exactly ``width`` bits.
 
     A word is a logical unit, not an array of individual graph bits.

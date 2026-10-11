@@ -13,7 +13,7 @@
     },
     {
       "destinations": [
-        "src/claasp/graph/port.py"
+        "src/claasp/graph/unit_array.py"
       ],
       "disposition": "supersede",
       "kind": "source",
@@ -22,14 +22,14 @@
       "public_entry_points": [
         "ComponentState"
       ],
-      "rationale": "Immutable Port and Selection objects replace mutable component-id/bit-position state.",
+      "rationale": "Immutable UnitArray and Selection objects replace mutable component-id/bit-position state.",
       "responsibility": "component state",
       "status": "superseded-in-m10.9c2"
     },
     {
       "destinations": [
-        "src/claasp/domains/word.py",
-        "src/claasp/graph/array_type.py"
+        "src/claasp/unit_types/word.py",
+        "src/claasp/graph/unit_array_type.py"
       ],
       "disposition": "supersede",
       "kind": "source",
@@ -38,7 +38,7 @@
       "public_entry_points": [
         "PowerOf2WordBasedDTO"
       ],
-      "rationale": "Typed Word domains and ArrayType replace a mutable optional word-size probe DTO.",
+      "rationale": "Typed Word domains and UnitArrayType replace a mutable optional word-size probe DTO.",
       "responsibility": "power of 2 word based dto",
       "status": "superseded-in-m10.9c2"
     },
@@ -4637,7 +4637,7 @@
     {
       "destinations": [
         "src/claasp/components/algebraic/linear_map.py",
-        "src/claasp/domains"
+        "src/claasp/unit_types"
       ],
       "disposition": "supersede",
       "kind": "source",
@@ -4655,7 +4655,7 @@
     {
       "destinations": [
         "src/claasp/components/algebraic/linear_map.py",
-        "src/claasp/domains/binary_extension_field.py",
+        "src/claasp/unit_types/binary_extension_field.py",
         "src/claasp/utils/finite_fields.py"
       ],
       "disposition": "supersede",
@@ -5114,7 +5114,7 @@
     },
     {
       "destinations": [
-        "src/claasp/graph/port.py"
+        "src/claasp/graph/unit_array.py"
       ],
       "disposition": "supersede",
       "kind": "source",
@@ -10210,57 +10210,6 @@
       "rationale": "New reusable composite-block authoring layer has no direct legacy module predecessor."
     },
     {
-      "classification": "legacy-lineage",
-      "legacy_predecessors": [
-        "claasp/components/linear_layer_component.py"
-      ],
-      "path": "src/claasp/domains/__init__.py"
-    },
-    {
-      "classification": "legacy-lineage",
-      "legacy_predecessors": [
-        "claasp/components/linear_layer_component.py"
-      ],
-      "path": "src/claasp/domains/base.py"
-    },
-    {
-      "classification": "legacy-lineage",
-      "legacy_predecessors": [
-        "claasp/components/linear_layer_component.py",
-        "claasp/components/mix_column_component.py"
-      ],
-      "path": "src/claasp/domains/binary_extension_field.py"
-    },
-    {
-      "classification": "legacy-lineage",
-      "legacy_predecessors": [
-        "claasp/components/linear_layer_component.py"
-      ],
-      "path": "src/claasp/domains/bit.py"
-    },
-    {
-      "classification": "legacy-lineage",
-      "legacy_predecessors": [
-        "claasp/components/linear_layer_component.py"
-      ],
-      "path": "src/claasp/domains/prime_field.py"
-    },
-    {
-      "classification": "legacy-lineage",
-      "legacy_predecessors": [
-        "claasp/components/linear_layer_component.py"
-      ],
-      "path": "src/claasp/domains/validation.py"
-    },
-    {
-      "classification": "legacy-lineage",
-      "legacy_predecessors": [
-        "claasp/DTOs/power_of_2_word_based_dto.py",
-        "claasp/components/linear_layer_component.py"
-      ],
-      "path": "src/claasp/domains/word.py"
-    },
-    {
       "classification": "new-v5",
       "legacy_predecessors": [],
       "path": "src/claasp/drivers/__init__.py",
@@ -10481,15 +10430,6 @@
     {
       "classification": "legacy-lineage",
       "legacy_predecessors": [
-        "claasp/DTOs/power_of_2_word_based_dto.py",
-        "claasp/cipher_modules/models/sat/utils/constants.py",
-        "claasp/name_mappings.py"
-      ],
-      "path": "src/claasp/graph/array_type.py"
-    },
-    {
-      "classification": "legacy-lineage",
-      "legacy_predecessors": [
         "claasp/cipher_modules/models/sat/utils/constants.py",
         "claasp/name_mappings.py"
       ],
@@ -10531,16 +10471,6 @@
     {
       "classification": "legacy-lineage",
       "legacy_predecessors": [
-        "claasp/DTOs/component_state.py",
-        "claasp/cipher_modules/models/sat/utils/constants.py",
-        "claasp/input.py",
-        "claasp/name_mappings.py"
-      ],
-      "path": "src/claasp/graph/port.py"
-    },
-    {
-      "classification": "legacy-lineage",
-      "legacy_predecessors": [
         "claasp/cipher.py",
         "claasp/cipher_modules/models/sat/utils/constants.py",
         "claasp/components/cipher_output_component.py",
@@ -10567,6 +10497,25 @@
         "claasp/rounds.py"
       ],
       "path": "src/claasp/graph/round.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/DTOs/component_state.py",
+        "claasp/cipher_modules/models/sat/utils/constants.py",
+        "claasp/input.py",
+        "claasp/name_mappings.py"
+      ],
+      "path": "src/claasp/graph/unit_array.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/DTOs/power_of_2_word_based_dto.py",
+        "claasp/cipher_modules/models/sat/utils/constants.py",
+        "claasp/name_mappings.py"
+      ],
+      "path": "src/claasp/graph/unit_array_type.py"
     },
     {
       "classification": "new-v5",
@@ -13295,6 +13244,57 @@
         "claasp/cipher_modules/graph_generator.py"
       ],
       "path": "src/claasp/transformations/traversal.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/components/linear_layer_component.py"
+      ],
+      "path": "src/claasp/unit_types/__init__.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/components/linear_layer_component.py"
+      ],
+      "path": "src/claasp/unit_types/base.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/components/linear_layer_component.py",
+        "claasp/components/mix_column_component.py"
+      ],
+      "path": "src/claasp/unit_types/binary_extension_field.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/components/linear_layer_component.py"
+      ],
+      "path": "src/claasp/unit_types/bit.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/components/linear_layer_component.py"
+      ],
+      "path": "src/claasp/unit_types/prime_field.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/components/linear_layer_component.py"
+      ],
+      "path": "src/claasp/unit_types/validation.py"
+    },
+    {
+      "classification": "legacy-lineage",
+      "legacy_predecessors": [
+        "claasp/DTOs/power_of_2_word_based_dto.py",
+        "claasp/components/linear_layer_component.py"
+      ],
+      "path": "src/claasp/unit_types/word.py"
     },
     {
       "classification": "new-v5",

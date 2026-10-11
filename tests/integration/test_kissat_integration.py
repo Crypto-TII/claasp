@@ -2,12 +2,12 @@ import shutil
 
 import pytest
 
-from claasp import ArrayType, Primitive
+from claasp import Primitive, UnitArrayType
 from claasp.analysis import AnalysisProblem
 from claasp.components import Add
-from claasp.domains import Bit
 from claasp.drivers.solvers import KissatSolver, SatStatus
 from claasp.primitives import Speck
+from claasp.unit_types import Bit
 
 pytestmark = pytest.mark.external
 
@@ -15,7 +15,7 @@ pytestmark = pytest.mark.external
 def test_kissat_solves_named_cnf_and_reports_version():
     assert shutil.which("kissat") is not None, "the external test job must install Kissat"
     primitive = Primitive(
-        "xor", {"plaintext": ArrayType(Bit(), (1,)), "key": ArrayType(Bit(), (1,))}
+        "xor", {"plaintext": UnitArrayType(Bit(), (1,)), "key": UnitArrayType(Bit(), (1,))}
     )
     primitive._builder.add_round()
     primitive._builder.set_output(

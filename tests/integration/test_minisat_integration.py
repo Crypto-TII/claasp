@@ -2,9 +2,8 @@ import shutil
 
 import pytest
 
-from claasp import ArrayType, Primitive
+from claasp import Primitive, UnitArrayType
 from claasp.components import Add
-from claasp.domains import Bit
 from claasp.drivers.solvers import MinisatSolver, SatStatus
 from claasp.primitives import Present80, Simon, Speck, ToyAES
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
@@ -17,6 +16,7 @@ from claasp.representations.constraints.sat import (
     WordwiseImpossibleSATModel,
 )
 from claasp.semantics.cryptanalysis import WordwiseDifferenceKind, WordwiseXorDifference
+from claasp.unit_types import Bit
 
 pytestmark = pytest.mark.external
 
@@ -84,7 +84,7 @@ def test_minisat_solves_and_refutes_named_present_constraints():
 
 def test_high_level_analysis_recovers_an_unknown_input():
     primitive = Primitive(
-        "xor", {"plaintext": ArrayType(Bit(), (1,)), "key": ArrayType(Bit(), (1,))}
+        "xor", {"plaintext": UnitArrayType(Bit(), (1,)), "key": UnitArrayType(Bit(), (1,))}
     )
     primitive._builder.add_round()
     output = primitive._builder.add_component(

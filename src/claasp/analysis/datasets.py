@@ -94,12 +94,12 @@ def packed_bit_width(primitive: Primitive, input_name: str | None = None) -> int
     )
     if input_name is not None:
         try:
-            array_type = primitive.graph.input_ports[input_name].array_type
+            array_type = primitive.graph.input_arrays[input_name].array_type
         except KeyError as error:
             raise KeyError(f"primitive input {input_name!r} does not exist") from error
     if array_type is None:
         raise ValueError("primitive has no output")
-    unit_width = array_type.domain.encoded_bit_size
+    unit_width = array_type.unit_type.encoded_bit_size
     if unit_width is None:
         raise TypeError("dataset generation requires a fixed-width binary encoding")
     return unit_width * array_type.unit_count
@@ -135,11 +135,11 @@ def generate_random_dataset(
     if not isinstance(seed, int) or isinstance(seed, bool):
         raise TypeError("seed must be an integer")
     fixed = dict(fixed_inputs or {})
-    unexpected = set(fixed) - set(primitive.graph.input_ports)
+    unexpected = set(fixed) - set(primitive.graph.input_arrays)
     if unexpected:
         raise ValueError(f"unknown fixed inputs: {sorted(unexpected)}")
 
-    widths = {name: packed_bit_width(primitive, name) for name in primitive.graph.input_ports}
+    widths = {name: packed_bit_width(primitive, name) for name in primitive.graph.input_arrays}
     random = Random(seed)
     samples = []
     for _ in range(number_of_samples):

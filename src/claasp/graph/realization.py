@@ -198,9 +198,9 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
 
     from copy import copy
 
-    from claasp.domains import BinaryExtensionField, Bit, Word
-    from claasp.graph.port import as_selection
     from claasp.graph.primitive import Primitive
+    from claasp.graph.unit_array import as_selection
+    from claasp.unit_types import BinaryExtensionField, Bit, Word
 
     if not isinstance(reference, Primitive) or not isinstance(candidate, Primitive):
         raise TypeError("realization contract normalization requires Primitive graphs")
@@ -252,24 +252,24 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
         selection = as_selection(selection)
         if selection.array_type == target_type:
             return selection
-        source_domain = selection.array_type.domain
-        target_domain = target_type.domain
+        source_unit_type = selection.array_type.unit_type
+        target_unit_type = target_type.unit_type
         value = selection
-        if not isinstance(source_domain, Bit):
+        if not isinstance(source_unit_type, Bit):
             value = normalized._builder.unpack_bits(value)
-        if isinstance(target_domain, Bit):
+        if isinstance(target_unit_type, Bit):
             converted = value
-        elif isinstance(target_domain, Word):
-            converted = normalized._builder.pack_bits(value, target_domain.width)
-        elif isinstance(target_domain, BinaryExtensionField):
+        elif isinstance(target_unit_type, Word):
+            converted = normalized._builder.pack_bits(value, target_unit_type.width)
+        elif isinstance(target_unit_type, BinaryExtensionField):
             converted = normalized._builder.pack_bits(
                 value,
-                target_domain.degree,
-                output_domain=target_domain,
+                target_unit_type.degree,
+                output_unit_type=target_unit_type,
             )
         else:
             raise ValueError(
-                f"cannot normalize realization boundary to {type(target_domain).__name__}"
+                f"cannot normalize realization boundary to {type(target_unit_type).__name__}"
             )
         if converted.array_type != target_type:
             raise ValueError("realization boundary conversion produced the wrong typed shape")
@@ -285,10 +285,10 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
         while changed:
             changed = False
             for binding in tuple(pending_bindings):
-                if not all(item.source.owner_id in remapped for item in binding.inputs):
+                if not all(item.source.source_id in remapped for item in binding.inputs):
                     continue
                 inputs = tuple(
-                    remapped[item.source.owner_id][item.positions] for item in binding.inputs
+                    remapped[item.source.source_id][item.positions] for item in binding.inputs
                 )
                 if binding.kind is BindingKind.JOIN:
                     output = normalized._builder.join(*inputs)
@@ -298,9 +298,9 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
                     output = normalized._builder.pack_bits(
                         inputs[0],
                         binding.word_width,
-                        output_domain=(
-                            binding.output_type.domain
-                            if isinstance(binding.output_type.domain, BinaryExtensionField)
+                        output_unit_type=(
+                            binding.output_type.unit_type
+                            if isinstance(binding.output_type.unit_type, BinaryExtensionField)
                             else None
                         ),
                     )
@@ -313,10 +313,12 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
     for round_index, candidate_round in enumerate(candidate_rounds):
         normalized._builder.add_round()
         if round_index == 0:
-            for name, port in candidate.graph.input_ports.items():
+            for name, unit_array in candidate.graph.input_arrays.items():
                 remapped[name] = as_selection(
                     convert(
-                        normalized.graph.input(name), port.array_type, f"__realization_input_{name}"
+                        normalized.graph.input(name),
+                        unit_array.array_type,
+                        f"__realization_input_{name}",
                     )
                 )
             drain_bindings()
@@ -326,7 +328,7 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
             object.__setattr__(
                 cloned,
                 "inputs",
-                tuple(remapped[item.source.owner_id][item.positions] for item in component.inputs),
+                tuple(remapped[item.source.source_id][item.positions] for item in component.inputs),
             )
             remapped[component.component_id] = normalized._builder.add_component(
                 cloned
@@ -335,7 +337,7 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
     if pending_bindings:
         raise ValueError("realization contains unresolved structural bindings")
 
-    candidate_output = remapped[candidate.graph.output.source.owner_id][
+    candidate_output = remapped[candidate.graph.output.source.source_id][
         candidate.graph.output.positions
     ]
     normalized._builder.set_output(

@@ -94,7 +94,7 @@ def _fix_selection(primitive, selection, value, assumptions):
     array_type = selection.array_type
     units = units_from_int(
         value,
-        array_type.domain.width,
+        array_type.unit_type.width,
         array_type.unit_count,
     )
     groups = resolved_selection_variable_names(primitive, selection)
