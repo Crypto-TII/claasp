@@ -79,7 +79,7 @@ def validate(ir):
 
 def from_cipher(cipher, *, roles=None):
     d = cipher.as_python_dictionary()
-    roles = roles or {}
+    roles = dict(getattr(cipher, "diagram_input_roles", {})) if roles is None else roles
     ir = {'schema': SCHEMA, 'name': cipher.family_name, 'cipher_type': d['cipher_type'],
           'inputs': [{'id': name, 'bits': bits, 'role': roles.get(name, 'unspecified')}
                      for name, bits in zip(d['cipher_inputs'], d['cipher_inputs_bit_size'])],

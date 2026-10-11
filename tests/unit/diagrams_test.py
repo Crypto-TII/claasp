@@ -109,3 +109,11 @@ def test_precise_legends_for_large_labels_and_values():
     state=state_tikz(ir,word_bits=128,values=values)
     assert r'\textbf{V0}' in state and 'V0' in state
     assert 'ffff' in state and r'\allowbreak{}' in state
+
+
+def test_native_role_annotations_survive_class_reimport():
+    ir=from_cipher(circuit(),roles={'data':'data','control':'key'})
+    rebuilt=to_cipher(ir)
+    assert [i['role'] for i in from_cipher(rebuilt)['inputs']]==['data','key']
+    assert [i['role'] for i in from_cipher(rebuilt,roles={})['inputs']]==['unspecified','unspecified']
+    assert [i['role'] for i in from_cipher(rebuilt,roles={'control':'data'})['inputs']]==['unspecified','data']
