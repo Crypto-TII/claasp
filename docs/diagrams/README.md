@@ -307,6 +307,24 @@ records their reasons in `rejected_candidates`. The selected diagram is still
 reparsed from its actual exported glyphs. Other multi-input operations and mixed
 word shapes remain explicit admission limits.
 
+## Optional native value bundles and parameter legends
+
+`to_ascii(ir, annotations=True, native_bundles=True)` keeps each native input and
+observation value at its declared width. It emits SEL helpers for proper bit
+selections and JOIN helpers for actual multipart values. This option requires
+whole projection, compact lanes and no fixed `word_bits`. It can enlarge a
+layout; uniform-word generation remains the default. All existing work/output
+caps remain active. Human TikZ and `synthesis_report` accept the same policy.
+
+`parameter_refs=True` adds a visible parameter legend for long hexadecimal or
+binary constants and explicit arithmetic moduli. Canonical `P0`, `P1`, ... labels
+bind to exact typed entries; missing, contradictory, duplicate or unused entries
+reject. Literal spelling is preserved. Explicit moduli are limited to `2^53-1`
+by the shared integer schema. Exact native import requires annotations, and the
+builder must support the P1 legend grammar, including its Library-format metadata
+merge correction. The two options may be combined. Human TikZ forwards them;
+audit output rejects these human presentation options.
+
 ## Aligned mixed-width projection
 
 Generic lane granularity is inferred from native output widths and selected

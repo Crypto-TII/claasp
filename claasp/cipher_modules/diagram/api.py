@@ -483,7 +483,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     - ``gathering`` -- ``'linear'`` (default); ``'shared-linear'`` reuses identical ordered JOIN pairs, while experimental ``'balanced'`` gathers through a balanced tree; neither alternative is selected automatically
     - ``projection`` -- ``'whole'`` (default) or opt-in ``'wordwise'``; split independent XOR/AND/OR/NOT into word gates, retaining native semantics through visible subordinate group/word references
     - ``native_bundles`` -- **boolean** (default: ``False``); experimental whole native input/boundary values with demand-driven SEL/JOIN helpers and heterogeneous widths. Requires compact lanes, whole projection and no fixed word_bits; all existing caps and operation-signature limits remain active. No new local record kinds are introduced.
-    - ``parameter_refs`` -- **boolean** (default: ``False``); experimental native-only visible parameter legend for long hexadecimal/binary literals and explicit moduli up to ``2^53-1``. Exact native reconstruction requires local annotations; requires a builder with the P1 parameter-legend parser.
+    - ``parameter_refs`` -- **boolean** (default: ``False``); experimental visible parameter legend for long hexadecimal/binary literals and explicit moduli up to ``2^53-1``. Exact native reconstruction requires local annotations; requires a builder with the P1 parameter-legend parser.
     - ``lane_policy`` -- ``'compact'`` (default) or opt-in ``'state'``; prefer contiguous explicit key/data input banks and place matching-width final output words under the data bank; ambiguous banks use the generic compact output fallback
     - ``alignment`` -- ``'left'`` (default) or ``'right'``; prefer an expired operand lane, subject to liveness and ordered arithmetic
     - ``layout_preference`` -- ``'balanced'`` (default), ``'crossings'``, ``'depth'`` or ``'width'``; select among measured generic candidate layouts
@@ -848,8 +848,8 @@ def to_tikz(ir, **options):
         # The manual encoder already reparsed and compared its actual text.
         return _present_grid(ir, cells, dimensions, options)
     else:
-        if options.get('native_bundles', False):
-            raise ValueError('native_bundles requires human TikZ layoutSource')
+        if options.get('native_bundles', False) or options.get('parameter_refs', False):
+            raise ValueError('native_bundles and parameter_refs require human TikZ layoutSource')
         text, cells, dimensions = _encode_layout(ir, strategy=options.get('strategy', 'semantic-auto'))
     recovered = validate(decode(text))
     if recovered != ir:
