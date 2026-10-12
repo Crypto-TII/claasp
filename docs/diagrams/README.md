@@ -101,8 +101,9 @@ Lanes use the fixed manual 5-by-11 vocabulary; arbitrary column spacing and
 whole-operation border removal are unsupported. Routing-cell frames are a
 render option. Numeric rotation/shift arrows retain amounts in both styles.
 Unsupported shapes, oversized parameter labels and custom moduli explicitly
-require audit mode; human support currently covers uniform unary/binary words,
-constants, selections and native boundary fragments.
+require audit mode; human support covers admitted aligned mixed-width operations, three-port
+XOR/AND/OR, constants, S-box/linear/mix-column glyphs, explicit JOIN/SEL helpers
+and native boundary fragments.
 
 Key roles come from explicit `roles`, retained `diagram_input_roles`, or CLAASP's
 standard `INPUT_KEY`/`INPUT_PLAINTEXT` block-cipher interface conventions. Other
@@ -295,3 +296,18 @@ with disconnected ports are rejected before cost comparison; `synthesis_report`
 records their reasons in `rejected_candidates`. The selected diagram is still
 reparsed from its actual exported glyphs. Other multi-input operations and mixed
 word shapes remain explicit admission limits.
+
+## Aligned mixed-width projection
+
+Generic lane granularity is inferred from native output widths and selected
+fragment lengths. Native values retain their full widths; visible JOIN helpers
+assemble logical operands and SEL helpers expose selections only when needed.
+Repeated selections reuse their explicit helper outputs. S-box, linear-layer
+and mix-column operations use their existing manual glyphs and local native
+parameters. Observation pass-through wires depend on their own incoming value;
+assembling a multi-fragment observation does not block those wires. No cipher
+name or manual fixture selects these rules.
+
+The separate builder imports these annotated glyphs and exports classes; its
+pseudocode/rebuild operation mapping still needs matching S-box/linear/mix-column
+admission. This gap is explicit, and typed TikZ remains a separate layout path.

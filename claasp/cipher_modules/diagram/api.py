@@ -92,8 +92,8 @@ def from_cipher(cipher, *, roles=None):
     ``to_ascii(ir, annotations=True)`` adds lossless local human metadata.
     ``to_audit_ascii(ir)`` retains the explicit lossless audit encoding.
     ``to_ascii(ir, format='audit')`` is its alternate entry point. Human rendering
-    currently requires uniform words and supported unary/binary word
-    operations; noncontiguous selections use visible selection helpers; other graphs use the audit view explicitly. ``roles={}``
+    supports admitted operations at aligned mixed widths, with explicit JOIN/SEL
+    helpers and three-port XOR/AND/OR; unsupported graphs use the audit view explicitly. ``roles={}``
     disables native interface role conventions. See ``to_ascii`` for complete
     printouts, rendering choices and work bounds.
 
@@ -450,7 +450,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     - ``ir`` -- **dictionary** or **Cipher**; supported native computation
     - ``format`` -- ``'human'`` (default) or ``'audit'``
     - ``annotations`` -- **boolean** (default: ``False``); append lossless local human metadata
-    - ``word_bits`` -- positive **integer** or ``None``; infer the GCD of native word-operation widths, with output width as a generic fallback
+    - ``word_bits`` -- positive **integer** or ``None``; infer the GCD of native output widths and selected-fragment lengths, with output width as a generic fallback
     - ``operator_style`` -- ``'symbols'`` (default) or ``'labels'``; numeric rotation/shift arrows remain explicit in both
     - ``wire_borders`` -- **boolean** (default: ``False``); draw routing-cell frames; operation frames follow the manual vocabulary
     - ``alignment`` -- ``'left'`` (default) or ``'right'``; prefer an expired operand lane, subject to liveness and ordered arithmetic
@@ -483,8 +483,9 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
 
     ``ValueError`` for invalid options/bounds, unsupported projection or a
     fresh exported-body parse that changes native semantics. Current human
-    projection supports uniform unary/binary word operations, constants and
-    boundary fragments. Unsupported shapes, oversized labels and custom
+    projection supports aligned mixed native widths, unary/binary word operations,
+    three-port XOR/AND/OR, constants, S-box/linear/mix-column operations and
+    boundary fragments through explicit JOIN/SEL helpers. Unsupported shapes, oversized labels and custom
     moduli require the explicit audit view. Lanes have fixed manual width;
     arbitrary column-spacing and whole-operation border removal are unsupported.
 

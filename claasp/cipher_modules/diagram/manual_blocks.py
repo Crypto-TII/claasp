@@ -33,6 +33,9 @@ def label(definition, style='symbols'):
     if kind in ('selection', 'join'):
         return 'SEL'+definition.get('reference', '') if kind == 'selection' else 'JOIN'
     description = definition['description']
+    if definition['type'] in ('sbox', 'linear_layer', 'mix_column'):
+        return ({'sbox': 'S', 'linear_layer': 'L', 'mix_column': 'MC'} if style == 'symbols'
+                else {'sbox': 'SBOX', 'linear_layer': 'LINL', 'mix_column': 'MIXC'})[definition['type']]
     if definition['type'] == 'constant':
         value = int(description[0], 0)
         text = 'x'+format(value, 'X')
@@ -98,6 +101,7 @@ class _WordGraph:
     def __init__(self, ir, bits):
         self.ir, self.bits = ir, bits
         self.calls, self.inputs, self.values = [], [], {}
+        self.raw_values, self.selection_cache = {}, {}
         self.input_definitions, self.fake_inputs = [], []
         for native_index, item in enumerate(ir['inputs']):
             parts = []
@@ -110,13 +114,26 @@ class _WordGraph:
                 parts.append(('input', index))
             self.values[item['id']] = parts
         for ordinal, node in enumerate(ir['nodes']):
-            args = []
+            args, pieces, filled = [], [], 0
+            logical_bits = bits if node['type'] in ('cipher_output', 'intermediate_output') else node['bits']
             for edge in node['operands']:
                 positions = edge['positions']
                 if len(positions) % bits:
                     raise ValueError('Partial word selection needs explicit word shape; use audit')
-                for start in range(0, len(positions), bits):
-                    args.append(self.select(edge['source'], positions[start:start+bits]))
+                if node['type'] in ('sbox', 'linear_layer', 'mix_column'):
+                    args.append(self.select(edge['source'], positions))
+                    continue
+                start = 0
+                while start < len(positions):
+                    count = min(logical_bits-filled, len(positions)-start)
+                    pieces.append(self.select(edge['source'], positions[start:start+count]))
+                    filled += count
+                    start += count
+                    if filled == logical_bits:
+                        args.append(self.join(pieces))
+                        pieces, filled = [], 0
+            if pieces:
+                raise ValueError('Logical word operands must cover complete native words; use audit')
             local = {key: copy.deepcopy(node[key]) for key in NODE_FIELDS}
             local['ordinal'] = ordinal
             local['operand_positions'] = []
@@ -130,12 +147,17 @@ class _WordGraph:
                     definition = dict(local, kind='native_boundary', positions=list(range(index*bits, (index+1)*bits)))
                     parts.append(self.call([arg], definition))
                 self.values[node['id']] = parts
-            elif node['bits'] == bits and node['type'] in ('constant', 'word_operation') and (len(args) <= 2 or (len(args) == 3 and node['type'] == 'word_operation' and node['description'][0] in ('XOR', 'AND', 'OR'))):
+            elif node['bits'] % bits == 0 and node['type'] in ('constant', 'word_operation', 'sbox', 'linear_layer', 'mix_column'):
+                if node['type'] in ('sbox', 'linear_layer', 'mix_column'):
+                    args = [self.join(args)]
+                if len(args) > 2 and not (len(args) == 3 and node['type'] == 'word_operation' and node['description'][0] in ('XOR', 'AND', 'OR')):
+                    raise ValueError('Manual operation exceeds its explicit physical port arity; use audit')
                 definition = dict(local, kind='native')
                 label(definition)
-                self.values[node['id']] = [self.call(args, definition)]
+                value = self.call(args, definition)
+                self.raw_values[node['id']] = value
             else:
-                raise ValueError('Manual projection needs uniform unary/binary words; use audit')
+                raise ValueError('Manual projection needs an admitted operation and aligned native width; use audit')
 
     def call(self, args, definition):
         index = len(self.calls)
@@ -151,7 +173,26 @@ class _WordGraph:
         self.calls.append({'args': args, 'definition': definition, 'tag': 'local', 'bits': definition['bits']})
         return ('call', index)
 
+    def join(self, parts):
+        if not parts:
+            raise ValueError('Native operation lacks its visible input')
+        value = parts[0]
+        for part in parts[1:]:
+            value = self.call([value, part], {'kind': 'join', 'bits': self.width(value)+self.width(part)})
+        return value
+
     def select(self, identity, positions):
+        key = identity, tuple(positions)
+        if key not in self.selection_cache:
+            self.selection_cache[key] = self._select(identity, positions)
+        return self.selection_cache[key]
+
+    def _select(self, identity, positions):
+        if identity in self.raw_values:
+            value = self.raw_values[identity]
+            if positions == list(range(self.width(value))):
+                return value
+            return self.call([value], {'kind': 'selection', 'bits': len(positions), 'positions': list(positions)})
         word_indices = list(dict.fromkeys(position//self.bits for position in positions))
         parts = [self.values[identity][index] for index in word_indices]
         value = parts[0]
@@ -159,7 +200,7 @@ class _WordGraph:
             width = self.width(value)+self.width(part)
             value = self.call([value, part], {'kind': 'join', 'bits': width})
         mask = [word_indices.index(position//self.bits)*self.bits+position%self.bits for position in positions]
-        if mask == list(range(self.bits)) and len(parts) == 1:
+        if mask == list(range(self.width(value))):
             return value
         return self.call([value], {'kind': 'selection', 'bits': len(mask), 'positions': mask})
 
@@ -554,7 +595,8 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left',
     if alignment not in ('left', 'right') or layout_preference not in ('balanced', 'crossings', 'depth', 'width'):
         raise ValueError('Choose left/right alignment and balanced/crossings/depth/width layout preference')
     glyphs._graph_limits(ir, 'semantic-legacy', max_cells, max_calls)
-    widths = [node['bits'] for node in ir['nodes'] if node['type'] == 'word_operation']
+    widths = [node['bits'] for node in ir['nodes']]
+    widths.extend(len(edge['positions']) for node in ir['nodes'] for edge in node['operands'])
     bits = reduce(gcd, widths or [ir['output_bits']]) if word_bits is None else word_bits
     if type(bits) is not int or bits < 1 or any(item['bits'] % bits for item in ir['inputs']):
         raise ValueError('Supply uniform aligned positive word_bits')
@@ -901,7 +943,8 @@ def _trace(cells, groups):
                 continue
             token = key, side
             if definition and definition['kind'] == 'native_boundary':
-                incoming = _group_inputs(groups[definition['ordinal']])
+                incoming = ([parser._adjacent(key, 'top')] if definition.get('flow') == 'observe'
+                            else _group_inputs(groups[definition['ordinal']]))
             elif cell['kind'] == 'input':
                 incoming = []
             elif cell['kind'] == 'swap':
@@ -924,7 +967,8 @@ def _trace(cells, groups):
         if cell['kind'] == 'input':
             stream = [{'source': definition['id'], 'positions': definition['positions']}]
         elif definition and definition['kind'] == 'native_boundary':
-            _boundary_native(groups[definition['ordinal']], memo, native)
+            if definition.get('flow') != 'observe':
+                _boundary_native(groups[definition['ordinal']], memo, native)
             if definition.get('flow') == 'observe':
                 stream = memo[parser._adjacent(token[0], 'top')]
             elif definition.get('flow', 'alias') == 'alias':

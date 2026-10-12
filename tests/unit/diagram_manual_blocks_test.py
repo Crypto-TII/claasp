@@ -420,3 +420,57 @@ def test_three_port_repeated_rounds_and_renaming_keep_visible_semantics():
         node['id']=mapping[node['id']]
         for edge in node['operands']:edge['source']=mapping[edge['source']]
     assert encode(renamed)==framing(text)[0]
+
+
+
+@pytest.mark.parametrize('strategy',['semantic-auto','semantic-crossings'])
+def test_observation_fragments_do_not_block_their_through_wires(strategy):
+    c=Cipher('anonymous_observe','permutation',['a'],[16],16);c.add_round()
+    positions=list(range(12,16))+list(range(12))
+    x=c.add_rotate_component(['a'],[positions],16,1)
+    c.add_intermediate_output_component(['a',x.id],[list(range(16))]*2,32,'state')
+    c.add_cipher_output_component([x.id],[list(range(16))],16)
+    ir=from_cipher(c);text=encode(ir,annotations=True,word_bits=4,strategy=strategy)
+    assert decode(text)==ir
+    compiled=to_cipher(decode(text))
+    for value in [0,1,0x35,0x1234,0xffff]:
+        permuted=((value&15)<<12)|(value>>4)
+        expected=(permuted>>1)|((permuted&1)<<15)
+        assert compiled.evaluate([value])==expected
+
+
+
+def test_mixed_width_sbox_linear_and_field_matrix_have_direct_oracle():
+    c=Cipher('anonymous_mixed','permutation',['a','b'],[8,8],12);c.add_round()
+    r=c.add_rotate_component(['a'],[list(range(8))],8,3)
+    x=c.add_xor_component([r.id,'b'],[list(range(8))]*2,8)
+    table=[i^9 for i in range(16)]
+    sub=c.add_sbox_component([x.id],[list(range(4,8))],4,table)
+    mix=c.add_mix_column_component([x.id],[list(range(8))],8,[[[1,2],[3,1]],0x13,4])
+    reverse=[[int(row+col==7) for col in range(8)] for row in range(8)]
+    linear=c.add_linear_layer_component([mix.id],[list(range(8))],8,reverse)
+    c.add_cipher_output_component([sub.id,linear.id],[list(range(4)),list(range(8))],12)
+    ir=from_cipher(c);text=encode(ir,annotations=True);assert decode(text)==ir
+    body,footer=framing(text)
+    assert 'JOIN' in body and 'SEL' in body and 'MC' in body
+    compiled=to_cipher(decode(text))
+    def multiply(a,b):
+        value=0
+        for _ in range(4):
+            if b&1:value^=a
+            a<<=1
+            if a&16:a^=0x13
+            b>>=1
+        return value&15
+    for a in range(256):
+        for b in (0,0x35,255):
+            value=((a>>3)|((a&7)<<5))^b
+            high,low=value>>4,value&15
+            mixed=((high^multiply(2,low))<<4)|(multiply(3,high)^low)
+            reversed_bits=int(format(mixed,'08b')[::-1],2)
+            expected=((low^9)<<8)|reversed_bits
+            assert compiled.evaluate([a,b])==expected
+    changed=body.replace('|   S   |','|   L   |',1)
+    assert changed!=body
+    with pytest.raises(ValueError,match='visible glyph'):
+        decode(altered(changed,footer))
