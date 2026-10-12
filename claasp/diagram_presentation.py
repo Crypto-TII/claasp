@@ -41,6 +41,8 @@ def operation(node, registry=None, short=False):
     description = node.get('description', [])
     if kind == 'word_operation':
         name = description[0]
+        if name in ('NOT', 'REVERSE'):
+            return f'{name}/{node["bits"]}(unary)'
         parameters = str(description[1]) if name in ('ROTATE', 'SHIFT') else 'arity=' + str(description[1])
         if short and name not in ('ROTATE', 'SHIFT'):
             parameters = str(description[1])

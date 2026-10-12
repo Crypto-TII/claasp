@@ -412,3 +412,11 @@ def test_overview_preserves_nonadjacent_dependencies_without_overlapping_arc_lab
     assert '0 & 2 & 4' in text
     assert '(S0.east) to[bend left=25] node[right,font=\\scriptsize] {4 bits} (S2.east)' not in text
     assert '(S1.east);' in text
+
+
+def test_unary_native_marker_is_not_presented_as_zero_operand_arity():
+    from claasp.diagram_presentation import operation
+    for name in ('NOT', 'REVERSE'):
+        label = operation({'type': 'word_operation', 'description': [name, 0], 'bits': 17})
+        assert label == name + '/17(unary)'
+        assert 'arity=0' not in label
