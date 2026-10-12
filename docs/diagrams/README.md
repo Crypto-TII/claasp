@@ -285,3 +285,13 @@ JavaScript-backed results from the previous implementation are historical.
 Native Python measurements, installed-package tests and cross-language
 conformance are recorded separately. No general readability, exact layout
 inversion or unseen-family guarantee follows from a successful semantic test.
+
+## Three-port word gates
+
+Uniform XOR/AND/OR operations with three ordered operands use the existing
+left/top/right manual ports. Source copies retain repeated operands explicitly,
+and free three-lane regions are reused after their last use. Candidate schedules
+with disconnected ports are rejected before cost comparison; `synthesis_report`
+records their reasons in `rejected_candidates`. The selected diagram is still
+reparsed from its actual exported glyphs. Other multi-input operations and mixed
+word shapes remain explicit admission limits.

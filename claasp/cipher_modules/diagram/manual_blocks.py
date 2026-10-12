@@ -130,7 +130,7 @@ class _WordGraph:
                     definition = dict(local, kind='native_boundary', positions=list(range(index*bits, (index+1)*bits)))
                     parts.append(self.call([arg], definition))
                 self.values[node['id']] = parts
-            elif node['bits'] == bits and node['type'] in ('constant', 'word_operation') and len(args) <= 2:
+            elif node['bits'] == bits and node['type'] in ('constant', 'word_operation') and (len(args) <= 2 or (len(args) == 3 and node['type'] == 'word_operation' and node['description'][0] in ('XOR', 'AND', 'OR'))):
                 definition = dict(local, kind='native')
                 label(definition)
                 self.values[node['id']] = [self.call(args, definition)]
@@ -297,6 +297,12 @@ class _Scheduler(glyphs._RegisterScheduler):
         self.row += 1
 
     def target_lane(self, arguments, old):
+        if len(arguments) == 3:
+            starts = [lane for lane in range(self.maximum+2)
+                      if not self.active.intersection(range(lane, lane+3))]
+            near = sorted(old)[1]
+            start = min(starts, key=lambda lane: (abs(lane+1-near), lane)) if starts else self.maximum+1
+            return start+1, 1
         # Native subtraction must have the same ordered physical ports as the
         # existing manual grammar. If neither old lane works, copy operand 2.
         index = getattr(self, 'executing', None)
@@ -323,6 +329,32 @@ class _Scheduler(glyphs._RegisterScheduler):
                 target = self.copy_first(list(reversed(arguments)), list(reversed(old)))
                 return target, 1
         return super().target_lane(arguments, old)
+
+    def emit_box(self, call, arguments, old, target, replacement):
+        if len(arguments) != 3:
+            return super().emit_box(call, arguments, old, target, replacement)
+        # Three physical lanes keep every operand explicit, including repeats.
+        # Copy each live source before consuming any original operand.
+        lanes = [target-1, target, target+1]
+        self.maximum = max(self.maximum, lanes[-1])
+        copied = Counter()
+        for value, source, lane in zip(arguments, old, lanes):
+            copied[value] += 1
+            keep = self.uses[value] > copied[value]
+            side = self.horizontal(source, lane, keep)
+            self.place(lane, 'wire', {side: 'in', 'bottom': 'out'})
+            self.fill(set(range(min(source, lane), max(source, lane)+1)))
+            if not keep:
+                self.active.discard(source)
+            self.active.add(lane)
+            self.row += 1
+        self.horizontal(lanes[0], target, False)
+        self.horizontal(lanes[2], target, False)
+        self.place(target, 'box', {'left': 'in', 'top': 'in', 'right': 'in', 'bottom': 'out'},
+                   definition=call['definition'], tag=call['tag'], reverse=False)
+        self.fill(set(lanes))
+        self.active.difference_update((lanes[0], lanes[2]))
+        self.row += 1
 
     def relocate(self, value, target):
         source = self.slots[value]
@@ -527,7 +559,7 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left',
     if type(bits) is not int or bits < 1 or any(item['bits'] % bits for item in ir['inputs']):
         raise ValueError('Supply uniform aligned positive word_bits')
     variants = STRATEGIES if strategy == 'semantic-auto' else (strategy,)
-    best, reports, errors = None, [], []
+    best, reports, errors, rejected = None, [], [], []
     for index, variant in enumerate(variants):
         try:
             graph = _WordGraph(ir, bits)
@@ -535,6 +567,9 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left',
                 raise ValueError('Manual word expansion exceeds max_calls')
             cells, report = _Scheduler(ir, graph, variant, max_cells, alignment).build()
             cells = _decorate(cells, ir)
+            # Reject structurally disconnected schedules before comparing costs.
+            # The winner is still reparsed from its actual exported text.
+            parser._connected_ports(cells)
             if len(cells) > max_cells:
                 raise ValueError('Manual glyphs/legends exceed max_cells')
             report = dict(report, rows=max(row for row, col in cells)+1, cols=max(col for row, col in cells)+1, blocks=len(cells))
@@ -548,12 +583,13 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left',
             del cells, report, candidate
         except ValueError as error:
             errors.append(str(error))
+            rejected.append({'strategy': variant, 'reason': str(error)})
     if best is None:
         raise ValueError('; '.join(errors))
     _, _, cells, report, metrics = best
     return cells, dict(report, selected_variant=report['strategy'], strategy=strategy,
                        alignment=alignment, layout_preference=layout_preference,
-                       metrics=metrics, candidates=reports)
+                       metrics=metrics, candidates=reports, rejected_candidates=rejected)
 
 
 def encode(ir, *, annotations=False, word_bits=None, operator_style='symbols',

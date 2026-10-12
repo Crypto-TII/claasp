@@ -374,3 +374,49 @@ def test_input_fragment_order_is_visible_but_identifiers_can_be_renamed():
     for record in renamed['records']:
         if record['definition']['kind']=='input':record['definition']['id']='renamed'
     assert to_cipher(decode(altered(body,renamed))).evaluate([0x35])==0x35
+
+
+
+@pytest.mark.parametrize('operation', ['xor', 'and', 'or'])
+@pytest.mark.parametrize('repeated', [False, True])
+def test_generic_three_port_gates_preserve_ordered_visible_operands(operation,repeated):
+    c=Cipher('anonymous_three_ports','permutation',['a','b','c'],[4]*3,4);c.add_round()
+    sources=['a','b','a' if repeated else 'c']
+    x=getattr(c,'add_'+operation+'_component')(sources,[list(range(4))]*3,4)
+    c.add_cipher_output_component([x.id],[list(range(4))],4)
+    ir=from_cipher(c);text=encode(ir,annotations=True);restored=decode(text)
+    assert restored==ir
+    _,footer=framing(text)
+    gate=next(r['definition'] for r in footer['records'] if r['definition'].get('type')=='word_operation')
+    assert gate['operand_ports']==['left','top','right']
+    compiled=to_cipher(restored)
+    for a in range(16):
+        for b in range(16):
+            z=a if repeated else 9
+            expected=a^b^z if operation=='xor' else a&b&z if operation=='and' else a|b|z
+            assert compiled.evaluate([a,b,9])==expected
+
+
+
+def test_three_port_repeated_rounds_and_renaming_keep_visible_semantics():
+    c=Cipher('anonymous_rounds','permutation',['a','b','c'],[4]*3,12)
+    sources=['a','b','c']
+    for _ in range(3):
+        c.add_round()
+        x=c.add_xor_component(sources,[list(range(4))]*3,4)
+        state=c.add_intermediate_output_component([x.id,sources[1],sources[2]],[list(range(4))]*3,12,'state')
+        sources=[state.id]*3
+        selections=[list(range(4)),list(range(4,8)),list(range(8,12))]
+        if _!=2:
+            # The next XOR has three fragments of the same declared state.
+            x=c.add_xor_component(sources,selections,4)
+            sources=[x.id,'b','c']
+    c.add_cipher_output_component([x.id,'b','c'],[list(range(4))]*3,12)
+    ir=from_cipher(c);text=encode(ir,annotations=True);assert decode(text)==ir
+    renamed=copy.deepcopy(ir);mapping={item['id']:'input'+str(i) for i,item in enumerate(renamed['inputs'])}
+    mapping.update({node['id']:'node'+str(i) for i,node in enumerate(renamed['nodes'])})
+    for item in renamed['inputs']:item['id']=mapping[item['id']]
+    for node in renamed['nodes']:
+        node['id']=mapping[node['id']]
+        for edge in node['operands']:edge['source']=mapping[edge['source']]
+    assert encode(renamed)==framing(text)[0]
