@@ -35,9 +35,9 @@ def label(definition, style='symbols'):
     if kind in ('selection', 'join'):
         return 'SEL'+definition.get('reference', '') if kind == 'selection' else 'JOIN'
     description = definition['description']
-    if definition['type'] in ('sbox', 'linear_layer', 'mix_column'):
-        return ({'sbox': 'S', 'linear_layer': 'L', 'mix_column': 'MC'} if style == 'symbols'
-                else {'sbox': 'SBOX', 'linear_layer': 'LINL', 'mix_column': 'MIXC'})[definition['type']]
+    if definition['type'] in ('sbox', 'linear_layer', 'mix_column', 'permutation'):
+        return ({'sbox': 'S', 'linear_layer': 'L', 'mix_column': 'MC', 'permutation': 'P'} if style == 'symbols'
+                else {'sbox': 'SBOX', 'linear_layer': 'LINL', 'mix_column': 'MIXC', 'permutation': 'PERM'})[definition['type']]
     if definition['type'] == 'constant':
         value = int(description[0], 0)
         text = 'x'+format(value, 'X')
@@ -165,7 +165,7 @@ class _WordGraph:
                 positions = edge['positions']
                 if len(positions) % bits:
                     raise ValueError('Partial word selection needs explicit word shape; use audit')
-                if node['type'] in ('sbox', 'linear_layer', 'mix_column'):
+                if node['type'] in ('sbox', 'linear_layer', 'mix_column', 'permutation'):
                     args.append(self.select(edge['source'], positions))
                     continue
                 start = 0
@@ -200,8 +200,8 @@ class _WordGraph:
                     operands = [args[operand*words+word] for operand in range(arity)]
                     parts.append(self.call(operands, definition))
                 self.values[node['id']] = parts
-            elif node['bits'] % bits == 0 and node['type'] in ('constant', 'word_operation', 'sbox', 'linear_layer', 'mix_column'):
-                if node['type'] in ('sbox', 'linear_layer', 'mix_column'):
+            elif node['bits'] % bits == 0 and node['type'] in ('constant', 'word_operation', 'sbox', 'linear_layer', 'mix_column', 'permutation'):
+                if node['type'] in ('sbox', 'linear_layer', 'mix_column', 'permutation'):
                     args = [self.join(args)]
                 if len(args) > 2 and not (len(args) == 3 and node['type'] == 'word_operation' and node['description'][0] in ('XOR', 'AND', 'OR')):
                     raise ValueError('Manual operation exceeds its explicit physical port arity; use audit')

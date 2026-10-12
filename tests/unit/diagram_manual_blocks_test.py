@@ -710,3 +710,34 @@ def test_fragment_word_group_reference_is_unambiguous_and_operand_binding_is_vis
         for data in (0,0xa5,255):assert compiled.evaluate([key,data])==(key^data^0x99)
     ambiguous=body.replace('G1W.W0',' G1WW0').replace('G1W.W1',' G1WW1')
     with pytest.raises(ValueError):decode(altered(ambiguous,footer))
+
+
+@pytest.mark.parametrize('word_size',[1,4])
+def test_generic_native_permutation_projects_ordered_wires_and_matches_independent_map(word_size):
+    c=Cipher('anonymous_shuffle','permutation',['a','b'],[8,8],16);c.add_round()
+    count=16//word_size;mapping=[(i+1)%count for i in range(count)]
+    p=c.add_permutation_component(['a','b'],[list(reversed(range(8))),list(range(8))],16,mapping,word_size)
+    c.add_cipher_output_component([p.id],[list(range(16))],16)
+    ir=from_cipher(c,roles={});text=encode(ir,annotations=True,word_bits=4)
+    assert decode(text)==ir
+    compiled=to_cipher(decode(text))
+    mask=(1<<word_size)-1
+    for a in range(256):
+        reversed_a=int(f'{a:08b}'[::-1],2)
+        for b in (0,0x35,255):
+            flat=(reversed_a<<8)|b;expected=0
+            for source,destination in enumerate(mapping):
+                word=(flat>>(16-(source+1)*word_size))&mask
+                expected|=word<<(16-(destination+1)*word_size)
+            assert compiled.evaluate([a,b])==expected
+    renamed=copy.deepcopy(ir);ids={n['id']:'value'+str(i) for i,n in enumerate(ir['inputs']+ir['nodes'])}
+    renamed['name']='unseen_family'
+    for n in renamed['inputs']+renamed['nodes']:n['id']=ids[n['id']]
+    for n in renamed['nodes']:
+        for e in n['operands']:e['source']=ids[e['source']]
+    assert encode(renamed,word_bits=4)==framing(text)[0]
+    for _ in range(3):assert encode(decode(text),annotations=True,word_bits=4)==text
+    body,footer=framing(text)
+    d=next(r['definition'] for r in footer['records'] if r['definition'].get('type')=='permutation')
+    d['description'][0][0]=d['description'][0][1]
+    with pytest.raises(ValueError):decode(altered(body,footer))
