@@ -550,3 +550,143 @@ def test_balanced_gathering_shares_ordered_subtrees_without_changing_values():
         for b in (0,0xabcdef01,0xffffffff):
             expected=((a^b)<<20)|(((a>>16)&(b>>16))<<4)|((a&15)^9)
             assert compiled.evaluate([a,b])==expected
+
+
+
+def test_explicit_data_bank_keeps_outputs_below_data_instead_of_key_inputs():
+    c=Cipher('anonymous_banks','block_cipher',['k','d'],[8,8],8);c.add_round()
+    x=c.add_xor_component(['k','d'],[list(range(8))]*2,8)
+    pieces=[c.add_sbox_component([x.id],[list(range(start,start+4))],4,[value^9 for value in range(16)]) for start in (0,4)]
+    c.add_cipher_output_component([piece.id for piece in pieces],[list(range(4))]*2,8)
+    ir=from_cipher(c,roles={'k':'key','d':'data'})
+    text=encode(ir,annotations=True,lane_policy='state');assert decode(text)==ir
+    _,footer=framing(text)
+    outputs=[r for r in footer['records'] if r['definition'].get('type')=='cipher_output']
+    assert sorted(r['col'] for r in outputs)==[2,3]
+    compiled=to_cipher(decode(text))
+    for key in range(256):
+        for data in (0,0x35,255):assert compiled.evaluate([key,data])==(key^data^0x99)
+
+
+
+def test_wordwise_projection_traces_fragment_gates_without_hidden_inputs():
+    c=Cipher('anonymous_fragments','block_cipher',['k','d'],[8,8],8);c.add_round()
+    x=c.add_xor_component(['k','d'],[list(range(8))]*2,8)
+    pieces=[c.add_sbox_component([x.id],[list(range(start,start+4))],4,[value^9 for value in range(16)]) for start in (0,4)]
+    c.add_cipher_output_component([piece.id for piece in pieces],[list(range(4))]*2,8)
+    ir=from_cipher(c,roles={'k':'key','d':'data'})
+    text=encode(ir,annotations=True,projection='wordwise',lane_policy='state');assert decode(text)==ir
+    body,footer=framing(text)
+    assert 'JOIN' not in body and 'SEL' not in body
+    fragments=[r for r in footer['records'] if r['definition']['kind']=='native_fragment']
+    assert len(fragments)==2
+    assert all(not any(key in r['definition'] for key in ('source','operands','nodes')) for r in fragments)
+    compiled=to_cipher(decode(text))
+    for key in range(256):
+        for data in (0,0x35,255):assert compiled.evaluate([key,data])==(key^data^0x99)
+    fragments[0]['definition']['positions'],fragments[1]['definition']['positions']=fragments[1]['definition']['positions'],fragments[0]['definition']['positions']
+    # Unchanged scalar glyphs cannot introduce an invisible word permutation.
+    with pytest.raises(ValueError,match='fragment|word|visible glyph'):
+        decode(altered(body,footer))
+
+
+@pytest.mark.parametrize('operation,arity', [('XOR',2),('AND',2),('OR',2),('NOT',1),('XOR',3),('AND',3),('OR',3)])
+def test_generic_word_fragments_keep_ordered_selections_and_independent_values(operation,arity):
+    c=Cipher('unseen_words','permutation',['a','b','c'][:arity],[8]*arity,8);c.add_round()
+    masks=[list(reversed(range(8))),[4,5,6,7,0,1,2,3],list(range(8))][:arity]
+    factory={'XOR':c.add_xor_component,'AND':c.add_and_component,'OR':c.add_or_component,'NOT':c.add_not_component}[operation]
+    x=factory(c.inputs,masks,8)
+    pieces=[c.add_sbox_component([x.id],[list(range(start,start+4))],4,[v^9 for v in range(16)]) for start in (0,4)]
+    c.add_cipher_output_component([n.id for n in pieces],[list(range(4))]*2,8)
+    ir=from_cipher(c,roles={});text=encode(ir,annotations=True,projection='wordwise')
+    assert decode(text)==ir
+    compiled=to_cipher(decode(text))
+    def selected(value,mask):
+        result=0
+        for bit in mask:result=(result<<1)|((value>>(7-bit))&1)
+        return result
+    for seed in range(32):
+        inputs=[(seed*37+index*83)&255 for index in range(arity)]
+        values=[selected(value,mask) for value,mask in zip(inputs,masks)]
+        result=(~values[0])&255 if operation=='NOT' else values[0]
+        for value in values[1:]:
+            if operation=='XOR':result^=value
+            elif operation=='AND':result&=value
+            elif operation=='OR':result|=value
+        assert compiled.evaluate(inputs)==result^0x99
+    for _ in range(3):
+        assert encode(decode(text),annotations=True,projection='wordwise')==text
+    renamed=copy.deepcopy(ir);mapping={item['id']:'v'+str(i) for i,item in enumerate(ir['inputs']+ir['nodes'])}
+    renamed['name']='unseen_renamed'
+    for item in renamed['inputs']+renamed['nodes']:item['id']=mapping[item['id']]
+    for node in renamed['nodes']:
+        for edge in node['operands']:edge['source']=mapping[edge['source']]
+    assert encode(renamed,projection='wordwise')==framing(text)[0]
+
+
+@pytest.mark.parametrize('mutation',['coverage','width','opcode','ordinal','hidden-source','glyph','anchor','negative-ordinal','empty-positions','boolean-position','oversized-anchor','missing-mask','ordinal-collision'])
+def test_word_fragment_mutations_are_rejected(mutation):
+    c=Cipher('unseen_mutations','permutation',['a','b'],[8,8],8);c.add_round()
+    x=c.add_xor_component(c.inputs,[list(range(8))]*2,8)
+    pieces=[c.add_sbox_component([x.id],[list(range(start,start+4))],4,list(range(16))) for start in (0,4)]
+    c.add_cipher_output_component([n.id for n in pieces],[list(range(4))]*2,8)
+    body,footer=framing(encode(from_cipher(c),annotations=True,projection='wordwise'))
+    fragments=[r for r in footer['records'] if r['definition']['kind']=='native_fragment'];definition=fragments[0]['definition']
+    if mutation=='coverage':definition['positions']=[0,1,2,2]
+    elif mutation=='width':definition['bits']=12
+    elif mutation=='opcode':definition['description'][0]='AND'
+    elif mutation=='ordinal':definition['ordinal']+=1
+    elif mutation=='hidden-source':definition['source']='a'
+    elif mutation=='negative-ordinal':definition['ordinal']=-1
+    elif mutation=='empty-positions':definition['positions']=[]
+    elif mutation=='boolean-position':definition['positions']=[False,1,2,3]
+    elif mutation=='oversized-anchor':definition['ordinal']=36**7
+    elif mutation=='missing-mask':
+        for record in fragments:record['definition'].pop('operand_positions')
+    elif mutation=='ordinal-collision':
+        native=next(r['definition'] for r in footer['records'] if r['definition'].get('type')=='sbox')
+        native['ordinal']=definition['ordinal']
+    else:
+        lines=body.splitlines();record=fragments[0];row=record['row']*5+(2 if mutation=='glyph' else 1);column=record['col']*11
+        local=lines[row][column:column+11]
+        local=local.replace('^','&') if mutation=='glyph' else local.replace('W0','W1')
+        lines[row]=lines[row][:column]+local+lines[row][column+11:];body='\n'.join(lines)+'\n'
+    with pytest.raises(ValueError):decode(altered(body,footer))
+
+
+def test_public_opt_in_projection_controls_and_readable_vector_labels():
+    from claasp.diagrams import to_ascii,synthesis_report,to_tikz
+    c=Cipher('api_words','block_cipher',['k','d'],[8,8],8);c.add_round()
+    x=c.add_xor_component(c.inputs,[list(range(8))]*2,8)
+    pieces=[c.add_sbox_component([x.id],[list(range(s,s+4))],4,list(range(16))) for s in (0,4)]
+    c.add_cipher_output_component([n.id for n in pieces],[list(range(4))]*2,8)
+    ir=from_cipher(c,roles={'k':'key','d':'data'})
+    text=to_ascii(ir,annotations=True,projection='wordwise',lane_policy='state');assert decode(text)==ir
+    report=synthesis_report(ir,projection='wordwise',lane_policy='state')
+    assert report['projection']=='wordwise' and report['lane_policy']=='state'
+    assert report['banks']=={'key':[0,2],'data':[2,4]}
+    assert report['bank_reason']=='explicit-data-role' and report['output_bank']==2
+    vector=to_tikz(ir,layoutSource='human',projection='wordwise',lane_policy='state',view='wires')
+    assert 'XOR/4' in vector and 'word 0:1:3' in vector and 'word 4:1:7' in vector
+    assert '@21' not in vector
+    assert 'DATA I1 bits 0:1:7' in vector and 'KEY I0 bits 0:1:7' in vector
+    from claasp.cipher_modules.diagram.glyphs import _numbered_ports
+    cell={'ports':{'top':'in','left':'in','bottom':'out'},'reverse':True,'definition':{'operand_ports':['left','top']}}
+    port_labels=_numbered_ports(1,2,cell)
+    assert '(N1x2.west)' in port_labels[0] and '{1}' in port_labels[0]
+    assert '(N1x2.north)' in port_labels[1] and '{2}' in port_labels[1]
+    for kwargs in ({'projection':'cipher-template'},{'lane_policy':'name-based'},{'format':'audit','projection':'wordwise'},{'format':'audit','lane_policy':'state'}):
+        with pytest.raises(ValueError):to_ascii(ir,**kwargs)
+
+
+def test_noncontiguous_role_bank_reports_generic_fallback():
+    from claasp.diagrams import synthesis_report
+    c=Cipher('anonymous_interleaved','permutation',['x','k','y'],[4,4,4],8);c.add_round()
+    c.add_cipher_output_component(['x','y'],[list(range(4))]*2,8)
+    ir=from_cipher(c,roles={'x':'data','k':'key','y':'data'})
+    report=synthesis_report(ir,lane_policy='state')
+    assert 'data' not in report['banks']
+    assert report['bank_reason']=='ambiguous-compact-fallback' and report['output_bank']==0
+    compiled=to_cipher(decode(encode(ir,lane_policy='state',annotations=True)))
+    for a in range(16):
+        for b in range(16):assert compiled.evaluate([a,9,b])==(a<<4)|b

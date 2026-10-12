@@ -19,6 +19,7 @@ FIELDS = {
     'discard': {'kind', 'bits'},
     'input': {'kind', 'index', 'native_index', 'id', 'bits', 'role', 'positions', 'unused_positions'},
     'native': {'kind', 'ordinal', *NODE_FIELDS, 'operand_ports', 'operand_positions'},
+    'native_fragment': {'kind', 'ordinal', *NODE_FIELDS, 'operand_ports', 'operand_positions', 'positions'},
     'native_boundary': {'kind', 'ordinal', *NODE_FIELDS, 'operand_ports', 'operand_positions', 'positions', 'flow'},
     'selection': {'kind', 'bits', 'positions', 'operand_ports', 'reference'},
     'join': {'kind', 'bits', 'operand_ports'},
@@ -59,6 +60,18 @@ def label(definition, style='symbols'):
     return text
 
 
+def _base36(value):
+    if type(value) is not int or value < 0:
+        raise ValueError('Visible fragment references require nonnegative integer indexes')
+    alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    digits = ''
+    while True:
+        digits = alphabet[value % 36]+digits
+        value //= 36
+        if not value:
+            return digits
+
+
 def art(cell, style='symbols'):
     if cell['kind'] == 'note':
         return ['  _______  ', ' |       | ', ' ('+glyphs._center(cell['text'])+') ', ' |_______| ', ' '*11]
@@ -83,6 +96,15 @@ def art(cell, style='symbols'):
     result = glyphs._box_art(dict(cell, tag=displayed, reverse=False))
     if continued:
         result[1] = ' |'+glyphs._center(text[:7])+'| '
+    if definition['kind'] == 'native_fragment':
+        positions = definition.get('positions')
+        if not isinstance(positions, list) or not positions or any(type(bit) is not int or bit < 0 for bit in positions):
+            raise ValueError('Invalid visible fragment word positions')
+        word = positions[0]//len(positions)
+        tag = 'G'+_base36(definition['ordinal'])+'W'+_base36(word)
+        if len(tag) > 7:
+            raise ValueError('Visible fragment group/word reference exceeds manual label capacity; use whole projection')
+        result[1] = ' |'+glyphs._center(tag)+'| '
     ports = cell['ports']
     # Existing manual helpers use the distinct free-text bracket vocabulary.
     left, right = ('[', ']') if definition['kind'] in ('selection', 'join') else ('|', '|')
@@ -95,7 +117,7 @@ def art(cell, style='symbols'):
 
 
 class _WordGraph:
-    def __init__(self, ir, bits, gathering="linear"):
+    def __init__(self, ir, bits, gathering="linear", projection="whole"):
         self.ir, self.bits, self.gathering = ir, bits, gathering
         self.calls, self.inputs, self.values = [], [], {}
         self.raw_values, self.selection_cache, self.join_cache = {}, {}, {}
@@ -112,7 +134,8 @@ class _WordGraph:
             self.values[item['id']] = parts
         for ordinal, node in enumerate(ir['nodes']):
             args, pieces, filled = [], [], 0
-            logical_bits = bits if node['type'] in ('cipher_output', 'intermediate_output') else node['bits']
+            fragment = projection == 'wordwise' and node['type'] == 'word_operation' and node['description'][0] in ('XOR', 'AND', 'OR', 'NOT') and node['bits'] > bits and node['input_bits']//node['bits'] <= 3
+            logical_bits = bits if fragment or node['type'] in ('cipher_output', 'intermediate_output') else node['bits']
             for edge in node['operands']:
                 positions = edge['positions']
                 if len(positions) % bits:
@@ -144,6 +167,14 @@ class _WordGraph:
                     definition = dict(local, kind='native_boundary', positions=list(range(index*bits, (index+1)*bits)))
                     parts.append(self.call([arg], definition))
                 self.values[node['id']] = parts
+            elif fragment:
+                words, arity = node['bits']//bits, node['input_bits']//node['bits']
+                parts = []
+                for word in range(words):
+                    definition = dict(local, kind='native_fragment', positions=list(range(word*bits, (word+1)*bits)))
+                    operands = [args[operand*words+word] for operand in range(arity)]
+                    parts.append(self.call(operands, definition))
+                self.values[node['id']] = parts
             elif node['bits'] % bits == 0 and node['type'] in ('constant', 'word_operation', 'sbox', 'linear_layer', 'mix_column'):
                 if node['type'] in ('sbox', 'linear_layer', 'mix_column'):
                     args = [self.join(args)]
@@ -167,7 +198,7 @@ class _WordGraph:
                 if not number:
                     break
             definition['reference'] = digits
-        self.calls.append({'args': args, 'definition': definition, 'tag': 'local', 'bits': definition['bits']})
+        self.calls.append({'args': args, 'definition': definition, 'tag': 'local', 'bits': len(definition['positions']) if definition['kind'] == 'native_fragment' else definition['bits']})
         return ('call', index)
 
     def join(self, parts):
@@ -222,11 +253,11 @@ class _WordGraph:
         if value[0] == 'input':
             return self.bits
         definition = self.calls[value[1]]['definition']
-        return len(definition['positions']) if definition['kind'] == 'native_boundary' else definition['bits']
+        return len(definition['positions']) if definition['kind'] in ('native_boundary', 'native_fragment') else definition['bits']
 
 
 class _Scheduler(glyphs._RegisterScheduler):
-    def __init__(self, ir, graph, strategy, maximum, alignment='left'):
+    def __init__(self, ir, graph, strategy, maximum, alignment='left', lane_policy='compact'):
         used = Counter(value for call in graph.calls for value in call['args'])
         visible_inputs = []
         for native_index in range(len(ir['inputs'])):
@@ -249,6 +280,22 @@ class _Scheduler(glyphs._RegisterScheduler):
         super().__init__(dict(ir, inputs=graph.fake_inputs), graph.inputs, graph.calls, targets, strategy, maximum)
         self.active = {self.slots[value] for value in self.inputs if used[value]}
         self.original_inputs = graph.input_definitions
+        self.lane_policy = lane_policy
+        self.bank_ranges = {}
+        for role in ('data', 'key'):
+            lanes = [self.slots[value] for value in self.inputs if used[value] and self.original_inputs[value[1]]['role'] == role]
+            if lanes and lanes == list(range(min(lanes), max(lanes)+1)):
+                self.bank_ranges[role] = (min(lanes), max(lanes)+1)
+        self.output_bank = 0
+        self.bank_reason = 'ambiguous-compact-fallback'
+        bank = self.bank_ranges.get('data')
+        if bank and bank[1]-bank[0] == ir['output_bits']//graph.bits:
+            self.output_bank, self.bank_reason = bank[0], 'explicit-data-role'
+        self.value_roles = {value: self.original_inputs[value[1]]['role'] for value in self.inputs}
+        for index, call in enumerate(self.calls):
+            roles = {self.value_roles.get(value, 'unspecified') for value in call['args']}
+            role = 'data' if 'data' in roles else 'key' if roles == {'key'} else 'unspecified'
+            self.value_roles[('call', index)] = role
         for index in reversed(range(len(self.calls))):
             definition = self.calls[index]['definition']
             self.scheduling_rounds[index] = definition.get('round', min((self.scheduling_rounds[consumer] for consumer in self.consumers.get(('call', index), [])), default=ir['rounds']-1))
@@ -266,7 +313,7 @@ class _Scheduler(glyphs._RegisterScheduler):
         self.layers = {}
         for index, call in enumerate(self.calls):
             prior = max((self.layers[value[1]] if value[0] == 'call' else 0 for value in call['args']), default=0)
-            self.layers[index] = ordinal_layers[call['definition']['ordinal']] if call['definition']['kind'] in ('native', 'native_boundary') else prior
+            self.layers[index] = ordinal_layers[call['definition']['ordinal']] if call['definition']['kind'] in ('native', 'native_boundary', 'native_fragment') else prior
         self.word_bits = graph.bits
         self.final_boundaries = {}
         self.constant_stages = [(call['definition']['round'], index) for index, call in enumerate(self.calls)
@@ -284,7 +331,7 @@ class _Scheduler(glyphs._RegisterScheduler):
         if kind in ('output', 'tap') and not definition:
             if executing is None:
                 raise ValueError('Discard sink lacks its computed width')
-            data['definition'] = {'kind': 'discard', 'bits': self.calls[executing]['definition']['bits']}
+            data['definition'] = {'kind': 'discard', 'bits': self.calls[executing]['bits']}
         call_kind = self.calls[executing]['definition']['kind'] if executing is not None else 'input'
         layer = 2*self.layers.get(executing, 0)+int(call_kind in ('selection', 'join'))
         super().place(col, kind, ports, stage=stage, layer=layer, **data)
@@ -301,7 +348,10 @@ class _Scheduler(glyphs._RegisterScheduler):
         return cells, {'rows': max(row for row, col in cells)+1,
                        'cols': max(col for row, col in cells)+1,
                        'blocks': len(cells), 'pattern': 'word-register-program',
-                       'strategy': self.strategy}
+                       'strategy': self.strategy, 'lane_policy': self.lane_policy,
+                       'banks': {role: list(bounds) for role, bounds in self.bank_ranges.items()},
+                       'output_bank': self.output_bank if self.lane_policy == 'state' else 0,
+                       'bank_reason': self.bank_reason if self.lane_policy == 'state' else 'compact-policy'}
 
     def simple_output_exchange(self):
         finals = [(index, self.calls[index]) for index in self.pending
@@ -312,12 +362,12 @@ class _Scheduler(glyphs._RegisterScheduler):
         values = [call['args'][0] for _, call in finals]
         if values[0] == values[1] or any(self.uses[value] != 1 for value in values):
             return
-        targets = [call['definition']['positions'][0]//self.word_bits for _, call in finals]
+        targets = [call['definition']['positions'][0]//self.word_bits+(self.output_bank if self.lane_policy == 'state' else 0) for _, call in finals]
         sources = [self.slots[value] for value in values]
-        if targets != [0, 1] or sources != [1, 0] or self.active != {0, 1}:
+        if targets[1] != targets[0]+1 or sources != list(reversed(targets)) or self.active != set(targets):
             return
-        self.place(0, 'swap', {'top': 'in', 'bottom': 'out', 'right': 'out'}, partner=1, column=0)
-        self.place(1, 'swap', {'top': 'in', 'bottom': 'out', 'left': 'in'}, partner=0, column=1)
+        self.place(targets[0], 'swap', {'top': 'in', 'bottom': 'out', 'right': 'out'}, partner=targets[1], column=targets[0])
+        self.place(targets[1], 'swap', {'top': 'in', 'bottom': 'out', 'left': 'in'}, partner=targets[0], column=targets[1])
         self.row += 1
         self.slots.update(zip(values, targets))
 
@@ -385,6 +435,22 @@ class _Scheduler(glyphs._RegisterScheduler):
                        secret=definition['role'] == 'key', definition=definition)
         self.row += 1
 
+    def free(self, near=0):
+        index = getattr(self, 'executing', None)
+        role = self.value_roles.get(('call', index)) if index is not None else None
+        bank = self.bank_ranges.get(role) if getattr(self, 'lane_policy', 'compact') == 'state' else None
+        if not bank:
+            return super().free(near)
+        candidates = [lane for lane in range(*bank) if lane not in self.active]
+        if not candidates:
+            start = max(end for _, end in self.bank_ranges.values())
+            candidates = [lane for lane in range(start, self.maximum+2) if lane not in self.active]
+            if not candidates:
+                candidates = [max(start, self.maximum+1)]
+        lane = min(candidates, key=lambda candidate: (abs(candidate-near), candidate))
+        self.maximum = max(self.maximum, lane)
+        return lane
+
     def target_lane(self, arguments, old):
         if len(arguments) == 3:
             starts = [lane for lane in range(self.maximum+2)
@@ -409,6 +475,10 @@ class _Scheduler(glyphs._RegisterScheduler):
                 self.active.discard(old[1])
             self.active.add(target)
             return target, 1
+        if self.lane_policy == 'state' and not is_sub and len(arguments) == 2:
+            data = [position for position, value in enumerate(arguments) if self.value_roles.get(value) == 'data']
+            if len(data) == 1 and self.uses[arguments[data[0]]] == arguments.count(arguments[data[0]]):
+                return old[data[0]], data[0]
         if self.strategy != 'direct-bus' and arguments and (len(arguments) == 1 or arguments[0] != arguments[-1]):
             expired = [index for index, value in enumerate(arguments) if self.uses[value] == arguments.count(value)]
             if expired:
@@ -463,7 +533,7 @@ class _Scheduler(glyphs._RegisterScheduler):
     def final_boundary(self, index, call):
         self.simple_output_exchange()
         value = call['args'][0]
-        target = call['definition']['positions'][0]//self.word_bits
+        target = call['definition']['positions'][0]//self.word_bits+(self.output_bank if self.lane_policy == 'state' else 0)
         if target in self.active and self.slots[value] != target:
             occupant = next(token for token, lane in self.slots.items()
                             if lane == target and self.uses[token] > 0)
@@ -578,17 +648,27 @@ def _decorate(cells, ir):
     output = dict(cells)
     legend = max(col for row, col in cells)+1
     inputs = [cell['definition'] for cell in cells.values() if cell.get('definition', {}).get('kind') == 'input']
-    def put(row, text):
+    def put(row, text, vector_label=None):
         if len(text) > 7:
             return  # Larger declarations stay explicit in local annotations.
         col = legend
         while (row, col) in output:
             col += 1
         output[(row, col)] = {'kind': 'note', 'ports': {}, 'text': text}
+        if vector_label is not None:
+            output[(row, col)]['vector_label'] = vector_label
     row = 0
     for role, prefix in (('data', 'DATA'), ('key', 'KEY')):
         for span in _ranges(item['index']+1 for item in inputs if item['role'] == role and item['positions']):
-            put(row, prefix+span)
+            from .presentation import selections
+            ends = [int(part) for part in span.split('-')]
+            words = set(range(ends[0], ends[-1]+1))
+            by_input = {}
+            for item in inputs:
+                if item['index']+1 in words:
+                    by_input.setdefault(item['native_index'], set()).update(item['positions'])
+            visible = prefix+' '+', '.join('I'+str(index)+' bits '+selections(sorted(positions)) for index, positions in sorted(by_input.items()))
+            put(row, prefix+span, visible)
             row += 1
     widths = [len(item['positions']) for item in inputs if item['positions']]
     widths.extend(len(cell['definition']['positions']) for cell in cells.values() if cell.get('definition', {}).get('kind') == 'native_boundary')
@@ -602,7 +682,16 @@ def _decorate(cells, ir):
         put(row, 'UNUSED')
         row += 1
         for span in _ranges(unused):
-            put(row, 'I'+span)
+            from .presentation import selections
+            ends = [int(part) for part in span.split('-')]
+            words = set(range(ends[0], ends[-1]+1))
+            by_input = {}
+            for item in inputs:
+                for bit in item.get('unused_positions', []):
+                    if offsets[item['native_index']]+bit//bits+1 in words:
+                        by_input.setdefault(item['native_index'], set()).add(bit)
+            visible = ', '.join('I'+str(index)+' bits '+selections(sorted(positions)) for index, positions in sorted(by_input.items()))
+            put(row, 'I'+span, visible)
             row += 1
     if ir['rounds'] > 1:
         first = {}
@@ -642,10 +731,14 @@ def infer_word_bits(ir):
     return reduce(gcd, widths or [ir['output_bits']])
 
 
-def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gathering='linear',
+def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gathering='linear', lane_policy='compact', projection='whole',
           layout_preference='balanced', max_cells=1000000, max_calls=20000):
     """Compare generic schedules by measured crossings, depth and width."""
     validate(ir)
+    if projection not in ('whole', 'wordwise'):
+        raise ValueError('Choose whole or wordwise projection')
+    if lane_policy not in ('compact', 'state'):
+        raise ValueError('Choose compact or state lane_policy')
     if gathering not in ('linear', 'shared-linear', 'balanced'):
         raise ValueError('Choose linear, shared-linear or balanced gathering')
     if strategy not in ('semantic-auto', 'direct-bus', 'semantic-layer', *STRATEGIES):
@@ -660,10 +753,10 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gat
     best, reports, errors, rejected = None, [], [], []
     for index, variant in enumerate(variants):
         try:
-            graph = _WordGraph(ir, bits, gathering)
+            graph = _WordGraph(ir, bits, gathering, projection)
             if len(graph.calls) > max_calls:
                 raise ValueError('Manual word expansion exceeds max_calls')
-            cells, report = _Scheduler(ir, graph, variant, max_cells, alignment).build()
+            cells, report = _Scheduler(ir, graph, variant, max_cells, alignment, lane_policy).build()
             cells = _decorate(cells, ir)
             # Reject structurally disconnected schedules before comparing costs.
             # The winner is still reparsed from its actual exported text.
@@ -686,18 +779,18 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gat
         raise ValueError('; '.join(errors))
     _, _, cells, report, metrics = best
     return cells, dict(report, selected_variant=report['strategy'], strategy=strategy,
-                       alignment=alignment, layout_preference=layout_preference, gathering=gathering,
+                       alignment=alignment, layout_preference=layout_preference, gathering=gathering, projection=projection,
                        metrics=metrics, candidates=reports, rejected_candidates=rejected)
 
 
 def _encode_layout(ir, *, annotations=True, word_bits=None, operator_style='symbols',
-           strategy='semantic-auto', alignment='left', layout_preference='balanced', gathering='linear',
+           strategy='semantic-auto', alignment='left', layout_preference='balanced', gathering='linear', lane_policy='compact', projection='whole',
            wire_borders=False, max_cells=1000000, max_calls=20000,
            max_grid_area=2000000, max_text_bytes=64000000):
     if type(annotations) is not bool or type(wire_borders) is not bool or operator_style not in ('symbols', 'labels'):
         raise ValueError('Choose boolean annotations and symbols/labels')
     cells, report = build(ir, word_bits=word_bits, strategy=strategy, alignment=alignment,
-                          layout_preference=layout_preference, gathering=gathering, max_cells=max_cells, max_calls=max_calls)
+                          layout_preference=layout_preference, gathering=gathering, lane_policy=lane_policy, projection=projection, max_cells=max_cells, max_calls=max_calls)
     if type(max_grid_area) is not int or max_grid_area < 1 or report['rows']*report['cols'] > max_grid_area:
         raise ValueError('Manual rectangular output exceeds max_grid_area')
     if type(max_text_bytes) is not int or max_text_bytes < 1:
@@ -770,7 +863,7 @@ def _metadata(text, max_text_bytes, max_grid_area):
             raise ValueError('Invalid observation flow role')
         if definition['kind'] == 'input' and (type(definition.get('index')) is not int or definition['index'] < 0):
             raise ValueError('Invalid visible input index')
-        if definition['kind'] in ('native', 'native_boundary') and 'operand_positions' in definition:
+        if definition['kind'] in ('native', 'native_boundary', 'native_fragment') and 'operand_positions' in definition:
             masks = definition['operand_positions']
             if not isinstance(masks, list) or any(not isinstance(mask, list) for mask in masks) or [bit for mask in masks for bit in mask] != list(range(definition['input_bits'])):
                 raise ValueError('Nontrivial bit selections require an actual visible SEL helper')
@@ -995,8 +1088,57 @@ def _boundary_native(fragments, memo, native):
     parser._native_node(definition, definition, [edges], flat, native)
 
 
+def _fragment_groups(cells):
+    groups = {}
+    for key, cell in cells.items():
+        definition = cell.get('definition', {})
+        if definition.get('kind') == 'native_fragment':
+            if set(definition) != FIELDS['native_fragment']:
+                raise ValueError('Incomplete native word fragment definition')
+            groups.setdefault(definition['ordinal'], []).append((key, definition))
+    for cell in cells.values():
+        definition = cell.get('definition', {})
+        if definition.get('kind') in ('native', 'native_boundary') and definition['ordinal'] in groups:
+            raise ValueError('Native word fragment group collides with another native operation')
+    for fragments in groups.values():
+        first = fragments[0][1]
+        if first['type'] != 'word_operation' or first['description'][0] not in ('XOR', 'AND', 'OR', 'NOT'):
+            raise ValueError('Only independent bitwise words admit native fragments')
+        widths = set()
+        coverage = []
+        for _, definition in fragments:
+            if any(definition.get(field) != first.get(field) for field in (*NODE_FIELDS, 'operand_positions')):
+                raise ValueError('Native word fragments disagree about their operation')
+            positions = definition['positions']
+            if not isinstance(positions, list) or not positions or any(type(bit) is not int or bit < 0 for bit in positions) or positions != list(range(positions[0], positions[0]+len(positions))):
+                raise ValueError('Native word fragment positions must be ordered contiguous words')
+            widths.add(len(positions));coverage.extend(positions)
+        if len(widths) != 1 or sorted(coverage) != list(range(first['bits'])):
+            raise ValueError('Native word fragments must cover every output bit exactly once')
+    return groups
+
+
+def _fragment_native(fragments, memo, native):
+    definition = fragments[0][1]
+    if definition['ordinal'] in native:
+        return
+    arity = definition['input_bits']//definition['bits']
+    operands = [[] for _ in range(arity)]
+    for key, fragment in sorted(fragments, key=lambda item: item[1]['positions'][0]):
+        ports = fragment['operand_ports']
+        if len(ports) != arity:
+            raise ValueError('Native word fragment arity disagrees with visible ports')
+        for index, port in enumerate(ports):
+            stream = memo[parser._adjacent(key, port)]
+            if len(parser._flat_stream([stream])) != len(fragment['positions']):
+                raise ValueError('Native word fragment width disagrees with actual input')
+            operands[index].extend(stream)
+    parser._native_node(definition, definition, operands, parser._flat_stream(operands), native)
+
+
 def _trace(cells, groups):
     dependencies, followers = {}, {}
+    fragments = _fragment_groups(cells)
     for key, cell in cells.items():
         definition = cell.get('definition')
         for side, direction in cell['ports'].items():
@@ -1006,6 +1148,8 @@ def _trace(cells, groups):
             if definition and definition['kind'] == 'native_boundary':
                 incoming = ([parser._adjacent(key, 'top')] if definition.get('flow') == 'observe'
                             else _group_inputs(groups[definition['ordinal']]))
+            elif definition and definition['kind'] == 'native_fragment':
+                incoming = [parser._adjacent(fragment_key, port) for fragment_key, local in fragments[definition['ordinal']] for port in local['operand_ports']]
             elif cell['kind'] == 'input':
                 incoming = []
             elif cell['kind'] == 'swap':
@@ -1036,6 +1180,9 @@ def _trace(cells, groups):
                 stream = [{'source': definition['id'], 'positions': definition['positions']}]
             else:
                 raise ValueError('Invalid observation flow role')
+        elif definition and definition['kind'] == 'native_fragment':
+            _fragment_native(fragments[definition['ordinal']], memo, native)
+            stream = [{'source': definition['id'], 'positions': definition['positions']}]
         elif cell['kind'] == 'box':
             if definition['kind'] == 'native':
                 stream = [parser._native_node(definition, definition, arguments, parser._flat_stream(arguments), native)]

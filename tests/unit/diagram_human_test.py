@@ -193,3 +193,17 @@ def test_human_vector_input_references_and_all_boundary_fragments_are_retained()
     text=to_tikz(ir,layoutSource='human',word_bits=4,view='wires',columnsPerPanel=20,rowsPerPanel=20)
     assert 'I0: a' in text and text.count('I0 input/4')==2
     assert 'I1 input/4' not in text
+
+
+
+def test_human_vector_partial_unused_note_uses_native_input_and_bit_range():
+    from claasp.diagrams import to_tikz
+    c=Cipher('anonymous_partial','permutation',['a'],[8],4);c.add_round()
+    c.add_cipher_output_component(['a'],[[0,1,2,3]],4)
+    ir=from_cipher(c)
+    plain=to_ascii(ir,word_bits=4)
+    assert '(  I2   )' in plain
+    assert from_ascii(to_ascii(ir,word_bits=4,annotations=True))==ir
+    vector=to_tikz(ir,layoutSource='human',word_bits=4,view='wires')
+    assert 'I0 bits 4:1:7' in vector and '{I2}' not in vector
+    assert 'I0 input/4' in vector and 'I0: a' in vector

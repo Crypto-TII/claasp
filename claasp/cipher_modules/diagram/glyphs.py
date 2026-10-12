@@ -710,7 +710,7 @@ def _cell_label(cell, key, registry):
     definition = cell.get('definition', {})
     kind = definition.get('kind')
     if cell['kind'] == 'note':
-        return cell['text']
+        return cell.get('vector_label', cell['text'])
     if cell['kind'] == 'input':
         name = 'key' if cell.get('secret') else 'input'
         bits = len(definition['positions']) if 'positions' in definition else definition.get('bits', '?')
@@ -725,6 +725,10 @@ def _cell_label(cell, key, registry):
         label = operation(definition['members'][0], registry, short=True)+' x'+str(len(definition['members']))
     elif kind == 'native':
         label = _native_label(definition, registry)
+    elif kind == 'native_fragment':
+        from claasp.cipher_modules.diagram.presentation import selections
+        local = dict(definition, bits=len(definition['positions']))
+        label = _native_label(local, registry)+r'\\'+'word '+selections(definition['positions'])
     elif kind == 'native_boundary':
         label = ('OUT' if definition['type'] == 'cipher_output' else 'OBS')+'/'+str(len(definition['positions']))
     elif kind == 'discard':
@@ -733,7 +737,7 @@ def _cell_label(cell, key, registry):
         label = {'join': 'PACK', 'selection': 'SELECT'}[kind]+'/'+str(definition['bits'])
     else:
         label = cell['kind']
-    if cell.get('reverse'):
+    if cell.get('reverse') and 'operand_ports' not in definition:
         label += r'\\@21'
     if 'definition' in cell:
         label += r'\\'+key
@@ -748,8 +752,9 @@ def _box_node(row, col, cell, x, y, registry):
 
 
 def _numbered_ports(row, col, cell):
-    ordered = [side for side in SIDES if cell['ports'].get(side) == 'in']
-    if cell.get('reverse'):
+    local_order = cell.get('definition', {}).get('operand_ports')
+    ordered = local_order if local_order is not None else [side for side in SIDES if cell['ports'].get(side) == 'in']
+    if local_order is None and cell.get('reverse'):
         ordered.reverse()
     return [fr'\node[font=\scriptsize,inner sep=2pt,anchor={_LABEL_ANCHORS[side]}] at (N{row}x{col}.{_PORT_ANCHORS[side]}) {{{number}}};'
             for number, side in enumerate(ordered, 1)]
