@@ -229,11 +229,17 @@ def from_ascii(text, *, max_text_bytes=64000000, max_grid_area=2000000):
 
 
 def to_tikz(ir, **options):
-    """Render a vector diagram using the same native Python glyph grid."""
+    """Readable overview/detail by default; view="wires" exposes full grid panels.
+
+    Native parameters and ordered input-fragment tables are paginated.
+    legend="audit" or audit=True explicitly includes full local JSON.
+    """
     from claasp.diagram_glyphs import tikz
     if not isinstance(ir, dict): ir=from_cipher(ir)
     validate(ir)
-    return tikz(ir,**options)
+    recovered=from_ascii(to_ascii(ir,strategy=options.get("strategy","semantic-auto")))
+    if recovered!=ir:raise ValueError("Vector source glyphs changed native IR")
+    return tikz(recovered,**options)
 
 def evaluate_state_values(cipher, inputs):
     """Native component values keyed by source identities; no cipher adapters."""

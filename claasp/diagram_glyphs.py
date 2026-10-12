@@ -472,6 +472,10 @@ def decode(text, *, max_text_bytes=64000000, max_grid_area=2000000):
 
 
 def tikz(ir, **options):
+    from claasp.diagram_presentation import operation as readable_operation, parameter_registry, present
+    view=options.get('view','overview-detail');legend_mode=options.get('legend','readable')
+    if view not in ('overview','detail','overview-detail','wires') or legend_mode not in ('readable','audit','none'):raise ValueError('Invalid TikZ presentation mode')
+    registry={key:value[0] for key,value in parameter_registry(ir).items()}
     cells,dimensions=build_grid(ir,strategy=options.get('strategy','semantic-auto'))
     xs=options.get('columnSpacing',3);ys=options.get('rowSpacing',1)
     if not isinstance(xs,(int,float)) or xs<=0 or not isinstance(ys,(int,float)) or ys<=0:raise ValueError('Invalid TikZ spacing')
@@ -489,7 +493,7 @@ def tikz(ir, **options):
     groups={}
     for (r,c),cell in sorted(cells.items()):
         if top<=r<bottom and left<=c<right:groups.setdefault(((r-top)//nr,(c-left)//nc),[]).append((r,c,cell))
-    if len(groups)>maximum:raise ValueError(f'TikZ needs {len(groups)} panels; crop or increase maxPanels')
+    if view=='wires' and len(groups)>maximum:raise ValueError(f'TikZ needs {len(groups)} panels; crop or increase maxPanels')
     panels=[]
     for (pr,pc),items in sorted(groups.items()):
         rt=top+pr*nr;cl=left+pc*nc;lines=[r'\begin{tikzpicture}[>=stealth]'];legend=[];drawings=[]
@@ -501,12 +505,13 @@ def tikz(ir, **options):
                 elif definition.get('kind')=='parallel':
                     first=definition['members'][0]
                     operation=first['description'][0] if first['type']=='word_operation' else first['type'].upper()
-                    label=str(operation)+'/'+str(first['bits'])+' x'+str(len(definition['members']))
+                    label=readable_operation(first,registry,short=True)+' x'+str(len(definition['members']))
                 elif definition.get('kind')=='native':
                     description=definition.get('description',[])
                     operation=description[0] if definition.get('type')=='word_operation' else {'cipher_output':'OUT','intermediate_output':'OBSERVE','constant':'CONST'}.get(definition.get('type'),definition.get('type',''))
                     label=str(operation)+'/'+str(definition.get('bits','?'))
-                    if operation in ('ROTATE','SHIFT'):label+='('+str(description[1])+')'
+                    if definition.get('type') not in ('cipher_output','intermediate_output'):
+                        label=readable_operation(definition,registry,short=True)
                 elif definition.get('kind') in ('join','selection'):label={'join':'PACK','selection':'SELECT'}[definition['kind']]+'/'+str(definition['bits'])
                 else:label=kind
                 if cell.get('reverse'):label+=r'\\@21'
@@ -532,8 +537,5 @@ def tikz(ir, **options):
                 drawings.append(fr'\draw[->] {source} -- {target};')
         lines.extend(drawings)
         lines.append(r'\end{tikzpicture}')
-        if legend:lines.append(r'\begingroup\raggedright')
-        for key,d in legend:lines.append(fr'\par\scriptsize\textbf{{{escape(key)}}}: {wrapped(d)}')
-        if legend:lines.append(r'\par\endgroup')
         panels.append('\n'.join(lines))
-    return ('\n'+r'\clearpage'+'\n' if options.get('pageBreaks',True) else '\n'+r'\par\medskip'+'\n').join(panels)
+    return present(ir,cells,dimensions,panels,options)

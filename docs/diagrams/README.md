@@ -65,11 +65,45 @@ use the area limit as a bound on input and component records. Bounds reject work
 they never silently omit components. These are work/output limits, not wall
 clock guarantees. Wider native graphs may require a revised representation.
 
-TikZ accepts `rowsPerPanel`, `columnsPerPanel`, `maxPanels` (256), half-open
-`rowRange`/`columnRange` crops, spacing and `pageBreaks=False`. Long definitions
-use precise keyed legends. Native operation labels expose widths and parameters,
-parallel labels expose member counts, and wires attach to box boundaries. Panel count is separate from PDF page count. Insert
-the fragment directly in a document body with `\usepackage{tikz}`.
+TikZ now defaults to `view='overview-detail'`: a generic round dependency
+overview, hyperlinked readable native-member/input-fragment tables, and shared
+parameter definitions. It never selects stages or shapes from a primitive name.
+All native operations remain in the member tables; ordinal references `n0`,
+`n1`, etc. link fragments to those identities, and `I0`, `I1`, etc. follow declared
+input order. Consecutive members of an independent bundle can be displayed as
+a range, explicitly retaining one input fragment per member. Stride notation
+`a:s:b` is inclusive and lossless; repetitions remain explicit.
+
+`view='overview'` is explicitly a compact summary. `view='detail'` emits the
+complete readable member/parameter tables. `view='wires'` emits the complete
+low-level glyph grid with signed rotations, widths, numbered ports and visible
+ordered-binding markers. Detailed wire views can use `rowsPerPanel`,
+`columnsPerPanel`, `maxPanels` (256), half-open `rowRange`/`columnRange` crops,
+spacing and `pageBreaks=False`. Crops apply to the wire view; they do not silently
+remove member records from readable tables. Large wire views may need several
+pages even when their generic round overview is compact.
+
+Readable tables paginate with `tableLineBudget` (42) and `maxPages` (2048).
+`overviewStagesPerPanel` (6) and `stageMode='round'|'layer'` configure the summary.
+Use a unique alphanumeric/hyphen `anchorPrefix` when combining multiple diagrams
+in one document. Add `\usepackage{tikz,hyperref}` for clickable overview/detail
+navigation; TikZ alone works with fallback navigation commands. Full local JSON
+is no longer the default legend. `audit=True` or `legend='audit'` appends a
+separate full local-definition audit; `legend='none'` omits tables in the wire
+view. Typed ASCII remains the complete independent audit source. Long constant
+values use shared references, with their complete values in the readable parameter tables.
+
+```python
+readable = to_tikz(ir)  # overview + every native member + parameter tables
+compact = to_tikz(ir, view='overview', stageMode='layer')
+wires = to_tikz(ir, view='wires', legend='none', rowsPerPanel=18,
+                columnsPerPanel=10, columnSpacing=3, anchorPrefix='example')
+with_audit = to_tikz(ir, audit=True)
+```
+
+Every vector export reparses its actual generated ASCII before presentation.
+The readable presentation preserves parameters and ordered input fragments;
+it does not claim arbitrary original placement inversion or a human-study score.
 
 State views are native Python too. Declared outputs, round boundaries and
 layer frontiers are generic choices. `word_bits`, `columns` and source order

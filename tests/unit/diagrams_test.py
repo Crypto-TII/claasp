@@ -85,11 +85,11 @@ def test_integer_mix_column_zero_polynomial():
 
 def test_bounded_paginated_diagrams():
     ir=from_cipher(circuit())
-    text=to_tikz(ir, rowsPerPanel=4, columnsPerPanel=2)
+    text=to_tikz(ir, view="wires", rowsPerPanel=4, columnsPerPanel=2)
     assert text.count(r'\begin{tikzpicture}')>1
     assert r'\clearpage' in text
     with pytest.raises(ValueError, match='panels'):
-        to_tikz(ir, rowsPerPanel=1, columnsPerPanel=1, maxPanels=1)
+        to_tikz(ir, view="wires", rowsPerPanel=1, columnsPerPanel=1, maxPanels=1)
     frames=state_snapshots(ir, mode='declared', word_bits=4)
     state=state_tikz(ir, mode='declared', word_bits=4, columns_per_panel=1)
     assert state.count(r'\begin{tikzpicture}') == sum(len(f['words']) for f in frames)
@@ -103,8 +103,8 @@ def test_bounded_paginated_diagrams():
 def test_precise_legends_for_large_labels_and_values():
     c=Cipher('long_probe','permutation',['identifier_without_breaks_'*8],[128],128);c.add_round()
     source=c.inputs[0];c.add_cipher_output_component([source],[list(range(128))],128)
-    ir=from_cipher(c);text=to_tikz(ir, rowsPerPanel=8, columnsPerPanel=3)
-    assert r'\textbf{D0:0}' in text and r'\allowbreak{}' in text
+    ir=from_cipher(c);text=to_tikz(ir, view="wires", legend="audit", rowsPerPanel=8, columnsPerPanel=3)
+    assert 'D0:0' in text and 'Optional audit' in text and r'\allowbreak{}' in text
     values=evaluate_state_values(c,[(1<<128)-1])
     state=state_tikz(ir,word_bits=128,values=values)
     assert r'\textbf{V0}' in state and 'V0' in state
@@ -221,10 +221,10 @@ def test_tikz_exposes_reversed_order_and_numbered_ports():
     c.add_cipher_output_component([sub.id],[list(range(4))],4)
     ir=from_cipher(c)
     assert '@21' in to_ascii(ir)
-    vector=to_tikz(ir)
+    vector=to_tikz(ir,view="wires")
     assert '@21' in vector and '{1};' in vector and '{2};' in vector
     ir2=from_cipher(circuit())
-    assert '{1};' in to_tikz(ir2) and '{2};' in to_tikz(ir2)
+    assert '{1};' in to_tikz(ir2,view='wires') and '{2};' in to_tikz(ir2,view='wires')
 
 
 def test_record_import_and_rectangular_export_bounds_precede_render(monkeypatch):
@@ -319,3 +319,78 @@ def test_aggregate_group_limits_precede_visible_stream_allocation():
     record['definition']['members']=[{**template,'bits':1000000,'input_bits':1000001}]
     manifest['records']=[record]
     with pytest.raises(ValueError,match='Aggregate native explicit bit expansion'):from_ascii(drawing+MARKER+json.dumps(manifest))
+
+
+def test_readable_public_api_has_all_members_and_optional_audit():
+    ir=from_cipher(circuit())
+    text=to_tikz(ir)
+    assert 'Ordered input fragments' in text and 'Operation / parameters' in text
+    assert 'Computation overview' in text and 'hypertarget' in text and 'hyperlink' in text
+    for index in range(len(ir['nodes'])):
+        assert f'diagram-member-{index}' in text
+    assert 'operand_positions' not in text and '\\allowbreak{}' in text
+    audit=to_tikz(ir,audit=True)
+    assert 'Optional audit' in audit and 'operand' in audit
+    assert 'round 0' in to_tikz(ir,view='overview')
+    assert 'Round 0:' in to_tikz(ir,view='detail')
+    with pytest.raises(ValueError,match='pages'):
+        to_tikz(ir,maxPages=1)
+    for options in ({'view':'template'},{'legend':'hidden'},{'tableLineBudget':0},
+                    {'anchorPrefix':'bad\\input'},{'stageMode':'cipher-name'}):
+        with pytest.raises(ValueError):to_tikz(ir,**options)
+
+
+def test_vector_api_rejects_changed_actual_source_glyph(monkeypatch):
+    import claasp.diagrams as diagrams
+    ir=from_cipher(circuit());changed=copy.deepcopy(ir)
+    changed['nodes'][0]['description']=['MODSUB',2,None]
+    changed_text=diagrams.to_ascii(changed)
+    monkeypatch.setattr(diagrams,'to_ascii',lambda *args,**kwargs:changed_text)
+    with pytest.raises(ValueError,match='changed native IR'):
+        diagrams.to_tikz(ir)
+
+
+def test_readable_stride_and_member_compression_preserve_order_and_repeats():
+    from claasp.diagram_presentation import selections,input_fragments
+    def expand(value):
+        result=[]
+        for item in value.split(','):
+            if ':' in item:
+                start,step,end=map(int,item.split(':'));result.extend(range(start,end+(1 if step>0 else -1),step))
+            else:result.append(int(item))
+        return result
+    for values in ([0,3,6,9],[9,6,3,0],[3,1,3,2,0],[0,0,1,2,3]):
+        assert expand(selections(values))==list(values)
+    operands=[{'source':f'arbitrary_{i}','positions':[2,0,2]} for i in range(5)]
+    locations={f'arbitrary_{i}':('D5:7',i+1) for i in range(5)}
+    text=input_fragments(operands,locations)
+    assert '1..5: D5:7.members[1:1:5]' in text and 'each [2,0,2]' in text
+    renamed=[dict(e,source='renamed_'+str(i)) for i,e in enumerate(operands)]
+    assert input_fragments(renamed,{e['source']:('D5:7',i+1) for i,e in enumerate(renamed)})==text
+
+
+def test_readable_group_rotation_parameters_and_member_counts():
+    c=Cipher('opaque','permutation',['value'],[8],8);c.add_round()
+    nodes=[c.add_rotate_component(['value'],[[0,1,2,3]],4,-1),
+           c.add_rotate_component(['value'],[[4,5,6,7]],4,-1)]
+    c.add_cipher_output_component([n.id for n in nodes],[list(range(4))]*2,8)
+    ir=from_cipher(c);text=to_tikz(ir,view='wires')
+    assert 'ROTATE/4(-1) x2' in text
+    assert text.count('diagram-member-')==len(ir['nodes'])
+    assert from_ascii(to_ascii(ir))==ir
+
+
+def test_readable_long_constants_are_complete_without_audit_and_empty_rounds_have_no_dead_links():
+    c = Cipher('opaque', 'permutation', ['value'], [128], 128)
+    c.add_round()
+    constant = c.add_constant_component(128, 0x123456789abcdef0123456789abcdef0)
+    c.add_cipher_output_component([constant.id], [list(range(128))], 128)
+    c.add_round()
+    ir = from_cipher(c)
+    text = to_tikz(ir).replace(r'\allowbreak{}', '')
+    assert 'CONST/128=P1' in text
+    assert '0x123456789abcdef0123456789abcdef0' in text
+    assert 'Optional audit' not in text
+    assert 'round 1: 0 operations' in text
+    assert r'\hyperlink{diagram-round-1}' not in text
+    assert from_ascii(to_ascii(ir)) == ir
