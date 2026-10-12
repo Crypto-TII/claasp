@@ -1,7 +1,7 @@
 import copy
 import pytest
 from claasp.cipher import Cipher
-from claasp.diagrams import (from_cipher,to_ascii,from_ascii,to_cipher,to_tikz,
+from claasp.diagrams import (from_cipher,to_audit_ascii,from_ascii,to_cipher,to_tikz,
     validate,state_snapshots,state_ascii,state_tikz,evaluate_state_values)
 
 
@@ -46,7 +46,7 @@ def circuit():
 
 def test_actual_glyph_roundtrip():
     source=circuit();ir=from_cipher(source,roles={'data':'data','control':'key'})
-    text=to_ascii(ir)
+    text=to_audit_ascii(ir)
     assert '# CLAASP-TYPED-GLYPH 1' in text
     assert '+ CLAASP-DIAGRAMS 1 +' not in text
     assert from_ascii(text)==ir
@@ -57,7 +57,7 @@ def test_actual_glyph_roundtrip():
 def test_unsupported_contract_fails_before_export():
     ir=from_cipher(circuit());ir['nodes'][0]['description']=['UNKNOWN_OPERATION',2]
     with pytest.raises(ValueError,match='unsupported native'):validate(ir)
-    with pytest.raises(ValueError,match='unsupported native'):to_ascii(ir)
+    with pytest.raises(ValueError,match='unsupported native'):to_audit_ascii(ir)
     with pytest.raises(ValueError,match='unsupported native'):to_cipher(ir)
 
 
@@ -80,7 +80,7 @@ def test_renaming_invariant_geometry():
     for n in renamed['nodes']:
         for edge in n['operands']:edge['source']=mapping[edge['source']]
     renamed['name']='unseen_name'
-    assert to_ascii(ir).split('# CLAASP-TYPED-GLYPH 1')[0]==to_ascii(renamed).split('# CLAASP-TYPED-GLYPH 1')[0]
+    assert to_audit_ascii(ir).split('# CLAASP-TYPED-GLYPH 1')[0]==to_audit_ascii(renamed).split('# CLAASP-TYPED-GLYPH 1')[0]
 
 
 def test_renamed_state_values_use_source_identities():
@@ -108,7 +108,7 @@ def test_integer_mix_column_zero_polynomial():
     c=Cipher('probe','permutation',['data'],[8],8);c.add_round()
     n=c.add_mix_column_component(['data'],[list(range(8))],8,[[[1,-1],[2,1]],0,4])
     c.add_cipher_output_component([n.id],[list(range(8))],8)
-    ir=from_cipher(c);validate(ir);recovered=to_cipher(from_ascii(to_ascii(ir)))
+    ir=from_cipher(c);validate(ir);recovered=to_cipher(from_ascii(to_audit_ascii(ir)))
     for value in range(256):
         a,b=value>>4,value&15
         expected=(((a-b)&15)<<4)|((2*a+b)&15)
@@ -160,7 +160,7 @@ def test_native_runtime_needs_no_external_process(monkeypatch):
     def forbidden(*args,**kwargs): raise AssertionError('Diagram runtime created a subprocess')
     monkeypatch.setattr(subprocess,'Popen',forbidden)
     ir=from_cipher(circuit(),roles={'control':'key'})
-    assert from_ascii(to_ascii(ir))==ir
+    assert from_ascii(to_audit_ascii(ir))==ir
     assert r'\begin{tikzpicture}' in to_tikz(ir)
 
 
@@ -186,19 +186,19 @@ def test_compact_native_register_program_with_mixed_widths_and_constant_observer
         c.add_intermediate_output_component([x[0] for x in state],[x[1] for x in state],24,'round_output')
     c.add_cipher_output_component([x[0] for x in state],[x[1] for x in state],24)
     ir=from_cipher(c,roles={'data':'data','key':'key'})
-    from claasp.diagram_glyphs import build_grid
+    from claasp.cipher_modules.diagram.glyphs import build_grid
     grid,report=build_grid(ir)
     baseline,base=build_grid(ir,strategy='direct-bus')
     assert report['pattern']=='live-register-program'
     assert report['rows']*report['cols']+report['blocks']<base['rows']*base['cols']+base['blocks']
-    parsed=from_ascii(to_ascii(ir))
+    parsed=from_ascii(to_audit_ascii(ir))
     rebuilt=to_cipher(parsed)
     for inputs in [[0,0],[0xffffff,0],[0xa51234,0xfedcba]]:
         assert rebuilt.evaluate(inputs,intermediate_output=True)==c.evaluate(inputs,intermediate_output=True)
 
 
 def test_generic_parallel_unary_geometry_and_visible_binding_mutation():
-    from claasp.diagram_glyphs import build_grid, MARKER
+    from claasp.cipher_modules.diagram.glyphs import build_grid, MARKER
     import json
     c=Cipher('unnamed_parallel','permutation',['a','b'],[4,4],8);c.add_round()
     a=c.add_rotate_component(['a'],[list(range(4))],4,-1)
@@ -208,7 +208,7 @@ def test_generic_parallel_unary_geometry_and_visible_binding_mutation():
     rotation_rows=[r for (r,col),cell in grid.items() if cell.get('definition',{}).get('description')==['ROTATE',-1]]
     assert len(rotation_rows) == 2
     assert rotation_rows[0] == rotation_rows[1]
-    text=to_ascii(ir);assert '@21' in text
+    text=to_audit_ascii(ir);assert '@21' in text
     changed=text.replace('@21','   ',1)
     assert from_ascii(changed)!=ir  # Visible binding, not metadata, changes operands.
     glyph,footer=text.split(MARKER);manifest=json.loads(footer)
@@ -220,9 +220,9 @@ def test_generic_parallel_unary_geometry_and_visible_binding_mutation():
 
 def test_native_work_bounds_and_long_iterative_trace():
     ir=from_cipher(circuit())
-    with pytest.raises(ValueError,match='max_calls'):to_ascii(ir,max_calls=1)
-    with pytest.raises(ValueError,match='max_cells'):to_ascii(ir,max_cells=1)
-    text=to_ascii(ir)
+    with pytest.raises(ValueError,match='max_calls'):to_audit_ascii(ir,max_calls=1)
+    with pytest.raises(ValueError,match='max_cells'):to_audit_ascii(ir,max_cells=1)
+    text=to_audit_ascii(ir)
     with pytest.raises(ValueError,match='max_text_bytes'):from_ascii(text,max_text_bytes=16)
     with pytest.raises(ValueError,match='max_grid_area'):from_ascii(text,max_grid_area=1)
     # A deep one-lane DAG must not depend on Python's recursion limit.
@@ -236,7 +236,7 @@ def test_native_work_bounds_and_long_iterative_trace():
         source=identity
     ir['nodes'].append({'id':'end','type':'cipher_output','bits':8,'input_bits':8,'round':0,
         'description':['cipher_output'],'operands':[{'source':source,'positions':list(range(8))}]})
-    assert from_ascii(to_ascii(ir))==ir
+    assert from_ascii(to_audit_ascii(ir))==ir
 
 
 @pytest.mark.parametrize('strategy',['semantic-auto','direct-bus'])
@@ -248,7 +248,7 @@ def test_ready_constants_make_progress_with_unused_input_and_tap(strategy,operat
     method=getattr(c,'add_'+operation+'_component')
     result=method([b.id,a.id],[list(range(4)),list(range(4))],4)
     c.add_cipher_output_component([result.id],[list(range(4))],4)
-    ir=from_cipher(c);parsed=from_ascii(to_ascii(ir,strategy=strategy))
+    ir=from_cipher(c);parsed=from_ascii(to_audit_ascii(ir,strategy=strategy))
     assert parsed==ir
     assert to_cipher(parsed).evaluate([0],intermediate_output=True)==c.evaluate([0],intermediate_output=True)
 
@@ -258,7 +258,7 @@ def test_tikz_exposes_reversed_order_and_numbered_ports():
     sub=c.add_modsub_component(['b','a'],[list(range(4)),list(range(4))],4)
     c.add_cipher_output_component([sub.id],[list(range(4))],4)
     ir=from_cipher(c)
-    assert '@21' in to_ascii(ir)
+    assert '@21' in to_audit_ascii(ir)
     vector=to_tikz(ir,view="wires")
     assert '@21' in vector
     assert '{1};' in vector
@@ -270,24 +270,24 @@ def test_tikz_exposes_reversed_order_and_numbered_ports():
 
 def test_record_import_and_rectangular_export_bounds_precede_render(monkeypatch):
     from claasp.diagrams import to_records
-    import claasp.diagram_glyphs as glyphs
+    import claasp.cipher_modules.diagram.glyphs as glyphs
     ir=from_cipher(circuit());record=to_records(ir)
     with pytest.raises(ValueError,match='max_text_bytes'):from_ascii(record,max_text_bytes=1)
     with pytest.raises(ValueError,match='max_grid_area'):from_ascii(record,max_grid_area=1)
     def forbidden(*args,**kwargs):raise AssertionError('Rendered before checking output bounds')
     monkeypatch.setattr(glyphs,'render_grid',forbidden)
-    with pytest.raises(ValueError,match='max_grid_area'):to_ascii(ir,max_grid_area=1)
-    with pytest.raises(ValueError,match='max_text_bytes'):to_ascii(ir,max_text_bytes=1)
+    with pytest.raises(ValueError,match='max_grid_area'):to_audit_ascii(ir,max_grid_area=1)
+    with pytest.raises(ValueError,match='max_text_bytes'):to_audit_ascii(ir,max_text_bytes=1)
 
 
 def test_generic_local_port_selections_preserve_visible_sources_and_fragments():
     import json
-    from claasp.diagram_glyphs import MARKER
+    from claasp.cipher_modules.diagram.glyphs import MARKER
     c=Cipher('no_template','permutation',['wide','small'],[8,4],8);c.add_round()
     x=c.add_modsub_component(['wide','small'],[[7,0,7,1],[3,2,1,0]],4)
     c.add_intermediate_output_component([x.id],[list(range(4))],4,'tap')
     c.add_cipher_output_component([x.id,x.id],[[3,0,2,1],[0,1,2,3]],8)
-    ir=from_cipher(c,roles={'small':'key'});text=to_ascii(ir,strategy='semantic-ports')
+    ir=from_cipher(c,roles={'small':'key'});text=to_audit_ascii(ir,strategy='semantic-ports')
     assert from_ascii(text)==ir
     rebuilt=to_cipher(from_ascii(text))
     for d,k in [(0,0),(255,15),(0xa5,7)]:
@@ -309,17 +309,17 @@ def test_unobserved_constant_cone_both_layout_variants():
         a=c.add_constant_component(4,9);b=c.add_constant_component(4,3)
         x=c.add_modsub_component([b.id,a.id],[list(range(4)),list(range(4))],4)
         c.add_cipher_output_component([x.id],[list(range(4))],4)
-        ir=from_cipher(c);assert from_ascii(to_ascii(ir,strategy=strategy))==ir
+        ir=from_cipher(c);assert from_ascii(to_audit_ascii(ir,strategy=strategy))==ir
 
 
 def test_parallel_layers_use_visible_local_masks_and_independent_arithmetic():
     import json
-    from claasp.diagram_glyphs import MARKER
+    from claasp.cipher_modules.diagram.glyphs import MARKER
     c=Cipher('arbitrary_layers','permutation',['data'],[8],8);c.add_round()
     first=[c.add_rotate_component(['data'],[list(range(i,i+4))],4,-1) for i in (0,4)]
     second=[c.add_not_component([n.id],[list(range(4))],4) for n in first]
     c.add_cipher_output_component([n.id for n in reversed(second)],[list(range(4))]*2,8)
-    ir=from_cipher(c);text=to_ascii(ir,strategy='semantic-parallel')
+    ir=from_cipher(c);text=to_audit_ascii(ir,strategy='semantic-parallel')
     glyph,footer=text.split(MARKER);manifest=json.loads(footer)
     groups=[r['definition'] for r in manifest['records'] if r['definition']['kind']=='parallel']
     assert len(groups) == 2
@@ -335,7 +335,7 @@ def test_parallel_layers_use_visible_local_masks_and_independent_arithmetic():
     for n in renamed['inputs']+renamed['nodes']:
         n['id']=names[n['id']]
         for edge in n.get('operands',[]):edge['source']=names[edge['source']]
-    assert from_ascii(to_ascii(renamed,strategy='semantic-parallel'))==renamed
+    assert from_ascii(to_audit_ascii(renamed,strategy='semantic-parallel'))==renamed
     for mutation,match in [(lambda g:g['members'][0].update(operands=[]),'Hidden dependency'),
                            (lambda g:g['members'][0].update(bits=10**9),'member width|explicit bit expansion'),
                            (lambda g:g['members'][0]['operand_positions'][0].__setitem__(0,10**9),'local operand positions')]:
@@ -353,8 +353,8 @@ def test_parallel_layers_use_visible_local_masks_and_independent_arithmetic():
 
 def test_aggregate_group_limits_precede_visible_stream_allocation():
     import json
-    from claasp.diagram_glyphs import MARKER
-    ir=from_cipher(circuit());drawing,footer=to_ascii(ir).split(MARKER)
+    from claasp.cipher_modules.diagram.glyphs import MARKER
+    ir=from_cipher(circuit());drawing,footer=to_audit_ascii(ir).split(MARKER)
     manifest=json.loads(footer)
     template={'id':'member','type':'word_operation','bits':1,'input_bits':1,'round':0,'description':['NOT'],'ordinal':0,'operand_positions':[[0]]}
     record={'row':0,'col':0,'definition':{'kind':'parallel','bits':10001,'tag':'group','members':[template]*10001}}
@@ -395,8 +395,8 @@ def test_vector_api_rejects_changed_actual_source_glyph(monkeypatch):
     import claasp.diagrams as diagrams
     ir=from_cipher(circuit());changed=copy.deepcopy(ir)
     changed['nodes'][0]['description']=['MODSUB',2,None]
-    changed_text=diagrams.to_ascii(changed)
-    import claasp.diagram_glyphs as glyphs
+    changed_text=diagrams.to_audit_ascii(changed)
+    import claasp.cipher_modules.diagram.glyphs as glyphs
     encode_layout = glyphs._encode_layout
     def changed_export(*args, **kwargs):
         _, cells, dimensions = encode_layout(*args, **kwargs)
@@ -407,7 +407,7 @@ def test_vector_api_rejects_changed_actual_source_glyph(monkeypatch):
 
 
 def test_readable_stride_and_member_compression_preserve_order_and_repeats():
-    from claasp.diagram_presentation import selections,input_fragments
+    from claasp.cipher_modules.diagram.presentation import selections,input_fragments
     def expand(value):
         result=[]
         for item in value.split(','):
@@ -434,7 +434,7 @@ def test_readable_group_rotation_parameters_and_member_counts():
     ir=from_cipher(c);text=to_tikz(ir,view='wires')
     assert 'ROTATE/4(-1) x2' in text
     assert text.count('diagram-member-')==len(ir['nodes'])
-    assert from_ascii(to_ascii(ir))==ir
+    assert from_ascii(to_audit_ascii(ir))==ir
 
 
 def test_readable_long_constants_are_complete_without_audit_and_empty_rounds_have_no_dead_links():
@@ -450,11 +450,11 @@ def test_readable_long_constants_are_complete_without_audit_and_empty_rounds_hav
     assert 'Optional audit' not in text
     assert 'round 1: 0 operations' in text
     assert r'\hyperlink{diagram-round-1}' not in text
-    assert from_ascii(to_ascii(ir)) == ir
+    assert from_ascii(to_audit_ascii(ir)) == ir
 
 
 def test_overview_preserves_nonadjacent_dependencies_without_overlapping_arc_labels():
-    from claasp.diagram_presentation import overview
+    from claasp.cipher_modules.diagram.presentation import overview
     c = Cipher('opaque', 'permutation', ['value'], [4], 4)
     c.add_round()
     first = c.add_not_component(['value'], [list(range(4))], 4)
@@ -472,7 +472,7 @@ def test_overview_preserves_nonadjacent_dependencies_without_overlapping_arc_lab
 
 
 def test_unary_native_marker_is_not_presented_as_zero_operand_arity():
-    from claasp.diagram_presentation import operation
+    from claasp.cipher_modules.diagram.presentation import operation
     for name in ('NOT', 'REVERSE'):
         label = operation({'type': 'word_operation', 'description': [name, 0], 'bits': 17})
         assert label == name + '/17(unary)'
@@ -480,7 +480,7 @@ def test_unary_native_marker_is_not_presented_as_zero_operand_arity():
 
 
 def test_readable_observation_and_final_output_tags_survive_escaping_and_wrapping():
-    from claasp.diagram_presentation import escape
+    from claasp.cipher_modules.diagram.presentation import escape
     c = Cipher('opaque', 'permutation', ['value'], [4], 4)
     c.add_round()
     tags = ['UNIQUE_STATE_TAG_a&b_%#{}', 'SECOND_STATE_' + 'long_token_' * 15]
@@ -498,7 +498,7 @@ def test_readable_observation_and_final_output_tags_survive_escaping_and_wrappin
         assert 'OBSERVE/4 tag=P2' in text
         assert 'OUT/4 tag=P3' in text
         assert 'Optional audit' not in text
-    assert from_ascii(to_ascii(ir)) == ir
+    assert from_ascii(to_audit_ascii(ir)) == ir
 
 
 def test_state_indices_reserve_a_lane_between_value_rows():
@@ -532,7 +532,7 @@ def test_readable_serial_arithmetic_wraps_all_columns_and_retains_every_member()
 
 
 def test_default_vector_export_searches_once_parses_actual_text_once_and_skips_wires(monkeypatch):
-    import claasp.diagram_glyphs as glyphs
+    import claasp.cipher_modules.diagram.glyphs as glyphs
     counts = {'layouts': 0, 'parses': 0}
     build, decode = glyphs.build_grid, glyphs.decode
     def counted_layout(*args, **kwargs):
@@ -554,7 +554,7 @@ def test_default_vector_export_searches_once_parses_actual_text_once_and_skips_w
 
 
 def test_ready_heap_defers_constants_until_a_consumer_can_progress():
-    from claasp.diagram_glyphs import _ReadyCalls, _call_consumers
+    from claasp.cipher_modules.diagram.glyphs import _ReadyCalls, _call_consumers
     calls = [{'args': args} for args in [[], [], [('input', 0)],
              [('call', 0), ('call', 0), ('call', 2)], [('call', 1), ('call', 3)], []]]
     pending = set(range(len(calls)))
@@ -601,7 +601,7 @@ def test_branching_rounds_match_independent_bit_arithmetic(seed):
     selected = [len(ids)-1, len(ids)-7, len(ids)-13]
     c.add_cipher_output_component([ids[i] for i in selected], [list(range(8))]*3, 24)
     ir = from_cipher(c)
-    drawing = to_ascii(ir)
+    drawing = to_audit_ascii(ir)
     restored = to_cipher(from_ascii(drawing))
     for a, b in [(0, 0), (255, 1), (0x83, 0x35), (1, 255)]:
         expected = 0
@@ -615,7 +615,7 @@ def test_branching_rounds_match_independent_bit_arithmetic(seed):
     for node in renamed['nodes']:
         for operand in node['operands']:
             operand['source'] = names[operand['source']]
-    assert to_ascii(renamed).split('# CLAASP-TYPED-GLYPH 1')[0] == drawing.split('# CLAASP-TYPED-GLYPH 1')[0]
+    assert to_audit_ascii(renamed).split('# CLAASP-TYPED-GLYPH 1')[0] == drawing.split('# CLAASP-TYPED-GLYPH 1')[0]
 
 
 def test_native_sage_and_tuple_containers_preserve_order_without_mutating_sources():
@@ -630,7 +630,7 @@ def test_native_sage_and_tuple_containers_preserve_order_without_mutating_source
     assert ir['nodes'][0]['description'] == [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
     assert repr(node.description) == before
     assert isinstance(node.description, tuple)
-    restored = to_cipher(from_ascii(to_ascii(ir)))
+    restored = to_cipher(from_ascii(to_audit_ascii(ir)))
     for value in range(8):
         expected = int(f'{value:03b}'[::-1], 2)
         assert restored.evaluate([value]) == expected
@@ -641,7 +641,7 @@ def test_native_sage_and_tuple_containers_preserve_order_without_mutating_source
     c.add_cipher_output_component([sbox.id], [[0, 1]], 2)
     ir = from_cipher(c)
     assert ir['nodes'][0]['description'] == [2, 0, 3, 1]
-    restored = to_cipher(from_ascii(to_ascii(ir)))
+    restored = to_cipher(from_ascii(to_audit_ascii(ir)))
     assert [restored.evaluate([i]) for i in range(4)] == [2, 0, 3, 1]
 
 
@@ -660,7 +660,7 @@ def test_native_sage_vector_regression_extracts_a_real_supported_graph():
     c = AsconSboxSigmaPermutation(number_of_rounds=1)
     ir = from_cipher(c)
     assert any(node['type'] == 'linear_layer' for node in ir['nodes'])
-    assert from_ascii(to_ascii(ir)) == ir
+    assert from_ascii(to_audit_ascii(ir)) == ir
 
 
 def test_binary_constants_keep_the_declared_width_and_reject_truncation():
@@ -670,8 +670,8 @@ def test_binary_constants_keep_the_declared_width_and_reject_truncation():
     c.add_cipher_output_component([constant.id], [[0, 1, 2]], 3)
     ir = from_cipher(c)
     assert ir['nodes'][0]['description'] == ['0b101']
-    assert from_ascii(to_ascii(ir)) == ir
-    assert to_cipher(from_ascii(to_ascii(ir))).evaluate([0]) == 5
+    assert from_ascii(to_audit_ascii(ir)) == ir
+    assert to_cipher(from_ascii(to_audit_ascii(ir))).evaluate([0]) == 5
     for literal in ('0b1000', '0b102', '0x8'):
         malformed = copy.deepcopy(ir)
         malformed['nodes'][0]['description'] = [literal]
@@ -689,8 +689,8 @@ def test_variable_amount_operations_match_independent_arithmetic(width, directio
         ['data', 'control'], [list(range(width)), list(range(4))], width, direction)
     c.add_cipher_output_component([node.id], [list(range(width))], width)
     ir = from_cipher(c)
-    assert from_ascii(to_ascii(ir)) == ir
-    restored = to_cipher(from_ascii(to_ascii(ir)))
+    assert from_ascii(to_audit_ascii(ir)) == ir
+    restored = to_cipher(from_ascii(to_audit_ascii(ir)))
     mask = (1 << width)-1
     for value in (0, 1, mask, mask//3):
         for control in (0, 1, width, width+1, 15):
@@ -712,7 +712,7 @@ def test_idea_multiplication_admits_only_two_operands_and_explicit_safe_modulus(
     node = c.add_idea_modmul_component(['a', 'b'], [list(range(4))]*2, 4, 17)
     c.add_cipher_output_component([node.id], [list(range(4))], 4)
     ir = from_cipher(c)
-    restored = to_cipher(from_ascii(to_ascii(ir)))
+    restored = to_cipher(from_ascii(to_audit_ascii(ir)))
     for a in range(16):
         for b in range(16):
             product = ((a or 16)*(b or 16)) % 17
@@ -758,8 +758,8 @@ def test_binary_fsr_uses_synchronous_global_bits_and_preserves_clock_conditions(
     node = c.add_fsr_component(['data'], [list(range(5))], 5, [registers, 1, clocks])
     c.add_cipher_output_component([node.id], [list(range(5))], 5)
     ir = from_cipher(c)
-    assert from_ascii(to_ascii(ir)) == ir
-    restored = to_cipher(from_ascii(to_ascii(ir)))
+    assert from_ascii(to_audit_ascii(ir)) == ir
+    restored = to_cipher(from_ascii(to_audit_ascii(ir)))
     for value in range(32):
         assert restored.evaluate([value]) == _binary_fsr_reference(value, 5, registers, clocks)
 
@@ -802,7 +802,7 @@ def test_native_extra_fsr_bits_are_rejected_instead_of_silently_discarded():
 def test_semantic_auto_releases_losing_full_grids_before_building_another(monkeypatch):
     import gc
     import weakref
-    import claasp.diagram_glyphs as glyphs
+    import claasp.cipher_modules.diagram.glyphs as glyphs
     class WeakCells(dict):
         """A dictionary that supports weak references for retention checks."""
     references = []
@@ -820,7 +820,7 @@ def test_semantic_auto_releases_losing_full_grids_before_building_another(monkey
 
 
 def test_semantic_auto_ties_keep_the_first_successful_variant(monkeypatch):
-    import claasp.diagram_glyphs as glyphs
+    import claasp.cipher_modules.diagram.glyphs as glyphs
     def candidate(ir, *, strategy, **options):
         if strategy == 'semantic-legacy':
             raise ValueError('Bounded candidate rejected')
@@ -831,7 +831,7 @@ def test_semantic_auto_ties_keep_the_first_successful_variant(monkeypatch):
 
 
 def test_narrow_parameter_column_wraps_continuation_without_losing_matrix_values():
-    from claasp.diagram_presentation import table_pages
+    from claasp.cipher_modules.diagram.presentation import table_pages
     values = '01'*4096
     pages = table_pages('Parameters', [('P1', 'binary matrix', values)],
                         ['Reference', 'Type', 'Values'], [18, 40, 106])

@@ -1,5 +1,5 @@
 """Generic observation states, dependency frontiers and paginated state cells."""
-from claasp.diagram_validation import validate
+from claasp.cipher_modules.diagram.validation import validate
 
 
 def _state_options(mode, order, word_bits, columns):

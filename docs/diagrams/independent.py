@@ -11,7 +11,7 @@ for op in ['xor','and','or','modadd','modsub','modmul','not','reverse','rotate',
             ids=['a'] if unary else ['a','b'];positions=[list(range(width)) for _ in ids]
             args=[ids,positions,width]+([amount] if op in ['rotate','shift'] else [])
             n=getattr(c,f'add_{op}_component')(*args);c.add_cipher_output_component([n.id],[list(range(width))],width)
-            rebuilt=to_cipher(from_ascii(to_ascii(from_cipher(c))))
+            rebuilt=to_cipher(from_ascii(to_audit_ascii(from_cipher(c))))
             for a,b in [(0,0),(mask,1),(mask//3,mask//2),(1,mask)]:
                 if op=='xor':expected=a^b
                 elif op=='and':expected=a&b
@@ -31,7 +31,7 @@ x=c.add_xor_component(['named_data','named_key'],[[0,2,5,7],[3,2,1,0]],4)
 c.add_intermediate_output_component([x.id],[[0,1,2,3]],4,'explicit_state');c.add_round()
 r=c.add_rotate_component([x.id],[[0,1,2,3]],4,-1)
 c.add_cipher_output_component([r.id,x.id],[[0,1,2,3],[3,2,1,0]],8)
-ir=from_cipher(c,roles={'named_data':'data','named_key':'key'});rebuilt=to_cipher(from_ascii(to_ascii(ir)))
+ir=from_cipher(c,roles={'named_data':'data','named_key':'key'});rebuilt=to_cipher(from_ascii(to_audit_ascii(ir)))
 def select(value,width,indices):
     result=0
     for i in indices:result=(result<<1)|((value>>(width-1-i))&1)
@@ -48,10 +48,10 @@ assert to_cipher(mutated).evaluate([128,0])!=rebuilt.evaluate([128,0])
 assert state_view(ir)[0]['geometry']=='ambiguous-flat-fallback'
 try:state_view(ir,shape=[3,3]);raise AssertionError('invalid shape accepted')
 except ValueError:pass
-pathlib.Path('/tmp/claasp-diagrams-corpus/mixed_selection.asciiart').write_text(to_ascii(ir))
+pathlib.Path('/tmp/claasp-diagrams-corpus/mixed_selection.asciiart').write_text(to_audit_ascii(ir))
 print(f'{checks} independent operations/width-boundary/mixed-selection checks passed; bit mutation changes computation')
 # Known-answer vector transcribed from pinned develop's Speck unit test.
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-kat=to_cipher(from_ascii(to_ascii(from_cipher(SpeckBlockCipher()))))
+kat=to_cipher(from_ascii(to_audit_ascii(from_cipher(SpeckBlockCipher()))))
 assert kat.evaluate([0x6574694c,0x1918111009080100])==0xa86842f2
 print('Full-round Speck32/64 pinned-repository known-answer vector passed')

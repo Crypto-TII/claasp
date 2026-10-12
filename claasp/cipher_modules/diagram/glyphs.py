@@ -655,7 +655,7 @@ def _wire_templates():
 
 
 def decode(text, *, max_text_bytes=64000000, max_grid_area=2000000):
-    from claasp.diagram_parser import decode as parse_visible_glyphs
+    from claasp.cipher_modules.diagram.parser import decode as parse_visible_glyphs
     return parse_visible_glyphs(text, max_text_bytes=max_text_bytes, max_grid_area=max_grid_area)
 
 
@@ -697,7 +697,7 @@ def _panel_groups(cells, options):
 
 
 def _native_label(definition, registry):
-    from claasp.diagram_presentation import operation
+    from claasp.cipher_modules.diagram.presentation import operation
     kind = definition.get('type')
     if kind in ('cipher_output', 'intermediate_output'):
         name = {'cipher_output': 'OUT', 'intermediate_output': 'OBSERVE'}[kind]
@@ -706,7 +706,7 @@ def _native_label(definition, registry):
 
 
 def _cell_label(cell, key, registry):
-    from claasp.diagram_presentation import operation
+    from claasp.cipher_modules.diagram.presentation import operation
     definition = cell.get('definition', {})
     kind = definition.get('kind')
     if cell['kind'] == 'input':
@@ -728,7 +728,7 @@ def _cell_label(cell, key, registry):
 
 
 def _box_node(row, col, cell, x, y, registry):
-    from claasp.diagram_presentation import escape
+    from claasp.cipher_modules.diagram.presentation import escape
     label = _cell_label(cell, f'D{row}:{col}', registry)
     escaped = escape(label).replace(escape(chr(92)*2), chr(92)*2)
     return fr'\node[draw,align=center,minimum width=12mm,minimum height=4mm,font=\scriptsize] (N{row}x{col}) at ({x},{y}) {{{escaped}}};'
@@ -782,7 +782,7 @@ def _wire_panel(cells, panel, items, options, registry):
 
 
 def _present_grid(ir, cells, dimensions, options):
-    from claasp.diagram_presentation import parameter_registry, present
+    from claasp.cipher_modules.diagram.presentation import parameter_registry, present
     view, legend = options.get('view', 'overview-detail'), options.get('legend', 'readable')
     if view not in ('overview', 'detail', 'overview-detail', 'wires') or legend not in ('readable', 'audit', 'none'):
         raise ValueError('Invalid TikZ presentation mode')

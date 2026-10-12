@@ -1,0 +1,23 @@
+16-bit words; MSB-first input order; x crossing, o fork
+   plaintext[0]      plaintext[1]        S:key[3]
+         |                 |                 |
+r0       |                 |                 |
+         v                 |                 |
+       >>>7                |                 |
+         |                 |                 |
+         v                 |                 |
+         +<----------------o                 |
+         |                 |                 |
+         v                 |                 |
+         ^<----------------x-----------------o
+         |                 |                 |
+         |                 v                 |
+         |               <<<2                |
+         |                 |                 |
+         |                 v                 |
+         o---------------->^                 |
+         |                 |                 |
+      out[0]            out[1]
+Declarations and observations:
+Declared inputs unused in this computation: key[0], key[1], key[2]
+round 0: round_key_output = key[3]

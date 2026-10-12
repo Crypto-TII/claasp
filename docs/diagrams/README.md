@@ -1,21 +1,51 @@
 # Native Python diagrams and state progression
 
-`claasp.diagrams` extracts typed CLAASP component graphs, generates editable ASCII
+`claasp.cipher_modules.diagram` contains the implementation; `claasp.diagrams`
+retains the public compatibility imports. It extracts typed CLAASP component graphs, generates editable ASCII
 circuits, reparses their visible wires, reconstructs working primitive classes,
 and emits TikZ and generic state views. The contribution contains no JavaScript,
 Node bridge, downloaded runtime or ELK dependency. Python's standard library
 implements diagram planning, glyph parsing/rendering and vector emission.
 
 ```python
-from claasp.diagrams import from_cipher, to_ascii, from_ascii, to_cipher, to_tikz
+from claasp.diagrams import from_cipher, to_ascii, to_audit_ascii, from_ascii, to_cipher, to_tikz
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 cipher = SpeckBlockCipher(number_of_rounds=1)
-ir = from_cipher(cipher, roles={'plaintext': 'data', 'key': 'key'})
-text = to_ascii(ir)
+ir = from_cipher(cipher)
+print(to_ascii(ir))  # human presentation is the default
+text = to_audit_ascii(ir)  # explicit lossless editor/import encoding
 assert from_ascii(text) == ir
 restored = to_cipher(from_ascii(text))
 figure = to_tikz(ir, rowsPerPanel=16, columnsPerPanel=6, columnSpacing=3)
 ```
+
+Human rendering options are explicit: `operator_style='symbols'|'labels'`,
+`borders=False|True`, `alignment='left'|'right'`, `column_spacing=18` (at least
+16), and an optional positive `word_bits`. The default word projection uses
+native operation widths and aligned selections; unsupported/ambiguous
+projections raise an error pointing to the audit view. Human drawings are not
+lossless editor interchange. Use `to_audit_ascii` or `to_ascii(format='audit')`
+for `from_ascii`, corpus export and import tooling. Audit strategy options do
+not apply to human word presentation.
+
+Key roles come from explicit `roles`, retained `diagram_input_roles`, or CLAASP's
+standard `INPUT_KEY`/`INPUT_PLAINTEXT` block-cipher interface conventions. Other
+inputs remain unspecified. `roles={}` disables automatic conventions. Component
+names never determine roles or placement. Unused declared words are listed
+explicitly below the drawing rather than occupying empty lanes. In one-round
+Speck the supplied key word is observed; there is no expanded key schedule.
+The five-round example includes the native computed key operations.
+
+`x` marks a wire crossing without connection, `o` a fork, and `+` modular
+addition. Port numbers are retained for noncommutative subtraction. Declared
+output order determines the bottom anchors; a generic temporary lane breaks
+permutation cycles. Human work/output bounds reject oversized drawings.
+
+Complete current printouts are included in [one-round Speck](examples/speck-1-round-public-human.txt),
+[five-round Speck](examples/speck-5-round-public-human.txt), and a
+[generic Feistel F-chain step](examples/generic-feistel-f-chain-public-human.txt).
+The public API docstring prints complete examples with `operator_style='labels'`;
+the saved samples use the exact default symbol rendering.
 
 Ordered native tuples/Sage vectors and integer scalars normalize to JSON-safe
 lists/integers. Binary linear-layer entries convert only if exactly zero or one;
@@ -78,7 +108,7 @@ literals fail rather than being silently truncated. A scalar drawing alone canno
 native tables, widths, bit selections or round annotations. `to_records` and
 `from_records` remain explicit diagnostic record interchange.
 
-`to_ascii` accepts `max_cells` (1,000,000) and `max_calls` (20,000). Bit expansion
+`to_audit_ascii` accepts `max_cells` (1,000,000) and `max_calls` (20,000). Bit expansion
 is bounded separately at 2,000,000 explicit bits. `from_ascii` accepts
 `max_text_bytes` (64,000,000) and `max_grid_area` (2,000,000); export accepts
 these bounds too and checks the rectangular area and byte count before rendering.
@@ -164,7 +194,7 @@ state_figure = state_tikz(ir, mode='declared', word_bits=16, columns=2,
 
 The public API docstrings contain runnable Sage examples with inputs, outputs,
 errors and visible snippets. Run them with `python -m sage.doctest
-claasp/diagrams.py`; correctness and malformed-input cases remain in pytest.
+claasp/cipher_modules/diagram/api.py`; correctness and malformed-input cases remain in pytest.
 
 Run in the CLAASP/Sage environment:
 

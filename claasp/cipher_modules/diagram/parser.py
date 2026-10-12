@@ -2,7 +2,7 @@
 import copy
 import json
 from collections import deque
-from claasp.diagram_glyphs import MARKER, SIDES, DELTA, OPPOSITE, _art, _wire_templates
+from claasp.cipher_modules.diagram.glyphs import MARKER, SIDES, DELTA, OPPOSITE, _art, _wire_templates
 
 _RECORD_FIELDS = {
     'input': {'kind', 'index', 'id', 'bits', 'role'},
