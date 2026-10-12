@@ -1,5 +1,5 @@
 from claasp.cipher import Cipher
-from claasp.diagrams import *
+from claasp.diagrams import from_cipher, to_audit_ascii, from_ascii, to_cipher, state_view
 import pathlib, copy
 checks=0
 for op in ['xor','and','or','modadd','modsub','modmul','not','reverse','rotate','shift']:

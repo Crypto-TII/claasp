@@ -19,6 +19,15 @@ restored = to_cipher(from_ascii(text))
 figure = to_tikz(ir, rowsPerPanel=16, columnsPerPanel=6, columnSpacing=3)
 ```
 
+Migration notice: `to_ascii(ir)` now means human presentation. Existing
+lossless replay/corpus code must replace `from_ascii(to_ascii(ir))` with
+`from_ascii(to_audit_ascii(ir))`, or select `to_ascii(ir, format='audit')`.
+The repository's conformance generators, independent oracle script and audit
+unit tests use the explicit audit API. The new human presentation is currently
+**not accepted by the builder's existing 5-by-11 import grammar**. Audit-mode
+round trips do not establish human-view importability; a compatible visible
+human grammar and its parsing tests remain required for that acceptance goal.
+
 Human rendering options are explicit: `operator_style='symbols'|'labels'`,
 `borders=False|True`, `alignment='left'|'right'`, `column_spacing=18` (at least
 16), and an optional positive `word_bits`. The default word projection uses

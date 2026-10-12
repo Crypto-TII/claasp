@@ -86,6 +86,16 @@ def from_cipher(cipher, *, roles=None):
 
     This reduced-round Speck example teaches the API; it is not the full-round cipher. Names never select layout or state shape.
 
+    Rendering options are separate from extraction: pass this result to
+    ``to_ascii(ir, operator_style='symbols', borders=False, alignment='left',
+    column_spacing=18, word_bits=None)`` for the default human presentation.
+    ``to_audit_ascii(ir)`` is the explicit lossless builder/import encoding.
+    ``to_ascii(ir, format='audit')`` is its alternate entry point. Human rendering
+    currently requires uniform aligned words and supported unary/binary word
+    operations; other graphs use the audit view explicitly. ``roles={}``
+    disables native interface role conventions. See ``to_ascii`` for complete
+    printouts, rendering choices and work bounds.
+
     INPUT:
 
     - ``cipher`` -- **Cipher**; primitive whose complete component graph is extracted

@@ -1,5 +1,6 @@
 import json, pathlib, copy
-from claasp.diagrams import *
+from claasp.cipher import Cipher
+from claasp.diagrams import from_cipher, to_audit_ascii, from_ascii, to_cipher, to_tikz, layout, state_view
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
