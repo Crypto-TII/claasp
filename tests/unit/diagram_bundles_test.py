@@ -2,7 +2,7 @@ import copy
 import json
 import pytest
 from claasp.cipher import Cipher
-from claasp.diagrams import from_cipher, to_ascii, from_ascii, to_cipher, synthesis_report
+from claasp.diagrams import from_cipher, to_ascii, from_ascii, to_cipher, synthesis_report, to_tikz
 from claasp.cipher_modules.diagram.manual_blocks import _WordGraph, infer_word_bits, MARKER
 
 
@@ -83,3 +83,22 @@ def test_unaligned_unused_declaration_is_preserved_without_word_index_caption():
     restored = to_cipher(from_ascii(text))
     assert restored.evaluate([0,0]) == restored.evaluate([0,127]) == 0
     assert restored.evaluate([0x80000001,0]) == restored.evaluate([0x80000001,127]) == 2
+
+
+def test_human_tikz_uses_the_same_bundle_geometry_and_rejects_audit_mismatch(monkeypatch):
+    from claasp.cipher_modules.diagram import glyphs
+    original = glyphs._present_grid
+    observed = []
+    def capture(ir, cells, dimensions, options):
+        observed.append(copy.deepcopy(dimensions))
+        return original(ir, cells, dimensions, options)
+    monkeypatch.setattr(glyphs,'_present_grid',capture)
+    vector = to_tikz(tiny(),layoutSource='human',native_bundles=True,view='wires')
+    assert r'\begin{tikzpicture}' in vector
+    expected = synthesis_report(tiny(),native_bundles=True)
+    assert observed[-1]['metrics'] == expected['metrics']
+    assert observed[-1]['packing_policy'] == 'native-bundles'
+    with pytest.raises(ValueError,match='human TikZ'):
+        to_tikz(tiny(),layoutSource='audit',native_bundles=True)
+    with pytest.raises(ValueError,match='no fixed word_bits'):
+        to_tikz(tiny(),layoutSource='human',native_bundles=True,word_bits=1)

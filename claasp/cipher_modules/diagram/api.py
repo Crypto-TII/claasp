@@ -840,13 +840,15 @@ def to_tikz(ir, **options):
         raise ValueError('Choose audit or human TikZ layoutSource')
     if source == 'human':
         from claasp.cipher_modules.diagram.manual_blocks import _encode_layout as manual_layout
-        keys = ('word_bits', 'gathering', 'projection', 'lane_policy', 'alignment', 'layout_preference', 'operator_style', 'wire_borders',
+        keys = ('word_bits', 'gathering', 'projection', 'lane_policy', 'native_bundles', 'alignment', 'layout_preference', 'operator_style', 'wire_borders',
                 'max_cells', 'max_calls', 'max_grid_area', 'max_text_bytes')
         text, cells, dimensions = manual_layout(ir, strategy=options.get('strategy', 'semantic-auto'),
             **{key: options[key] for key in keys if key in options})
         # The manual encoder already reparsed and compared its actual text.
         return _present_grid(ir, cells, dimensions, options)
     else:
+        if options.get('native_bundles', False):
+            raise ValueError('native_bundles requires human TikZ layoutSource')
         text, cells, dimensions = _encode_layout(ir, strategy=options.get('strategy', 'semantic-auto'))
     recovered = validate(decode(text))
     if recovered != ir:
