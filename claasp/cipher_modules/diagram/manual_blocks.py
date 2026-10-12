@@ -73,19 +73,26 @@ def _base36(value):
 
 
 def _fragment_reference(ordinal, word):
-    group, index = _base36(ordinal), _base36(word)
-    tag = 'G'+group+'W'+index
-    splits = 0
-    for split in range(2, len(tag)-1):
-        if tag[split] == 'W':
-            left, right = tag[1:split], tag[split+1:]
-            if _base36(int(left, 36)) == left and _base36(int(right, 36)) == right:
-                splits += 1
-    if splits != 1:
-        tag = 'G'+group+'.W'+index
+    tag = 'G'+_base36(ordinal)+'.W'+_base36(word)
     if len(tag) > 7:
         raise ValueError('Visible fragment group/word reference exceeds manual label capacity; use whole projection')
     return tag
+
+
+def _fragment_identity(text):
+    if not isinstance(text, str) or len(text) > 7 or not text.startswith('G'):
+        raise ValueError('Invalid visible fragment group/word reference')
+    pairs = [text[1:].split('.W')] if '.W' in text else [(text[1:split], text[split+1:]) for split in range(2, len(text)-1) if text[split] == 'W']
+    candidates = []
+    for pair in pairs:
+        if len(pair) != 2 or any(not part or any(character not in '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' for character in part) for part in pair):
+            continue
+        values = tuple(int(part, 36) for part in pair)
+        if all(_base36(value) == part for value, part in zip(values, pair)):
+            candidates.append(values)
+    if len(candidates) != 1:
+        raise ValueError('Invalid or ambiguous fragment reference; use G<group>.W<word>')
+    return candidates[0]
 
 
 def art(cell, style='symbols'):
@@ -907,7 +914,14 @@ def _manual_operation(definition, visible):
     if definition.get('type') == 'word_operation' and definition['description'][0] == 'MODSUB' and ordered != physical:
         raise ValueError('Noncommutative binding must agree with its visible manual placement')
     cell = {'kind': 'box', 'ports': ports, 'definition': definition, 'tag': 'local'}
-    if not any(tuple(art(cell, style)) == visible for style in ('symbols', 'labels')):
+    comparison = visible
+    if definition['kind'] == 'native_fragment':
+        expected = art(cell)
+        identity = _fragment_identity(visible[1][2:9].strip())
+        if identity != (definition['ordinal'], definition['positions'][0]//len(definition['positions'])):
+            raise ValueError('Native fragment identity disagrees with visible group/word reference')
+        comparison = tuple(expected[1] if index == 1 else line for index, line in enumerate(visible))
+    if not any(tuple(art(cell, style)) == comparison for style in ('symbols', 'labels')):
         raise ValueError('Native operation/parameter definition disagrees with visible glyph')
     return cell
 
