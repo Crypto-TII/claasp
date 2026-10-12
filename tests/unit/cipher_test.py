@@ -592,41 +592,52 @@ def test_zero_correlation_linear_search():
     assert len(zero_correlation_linear_approximations) > 0
 
 
-def test_find_impossible_property_related_key_without_key_raises():
-    # a keyless permutation has no key difference to vary; related-key must be refused, not KeyError
+def test_find_impossible_property_keyed_scenarios_without_key_raise():
+    # a keyless permutation has no key: single-key and related-key must be refused, not silently remapped
     keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
-    with pytest.raises(ValueError, match="related-key"):
-        keccak.find_impossible_property(type="differential", scenario="related-key")
+    for scenario in ("single-key", "related-key"):
+        with pytest.raises(ValueError, match=scenario):
+            keccak.find_impossible_property(type="differential", scenario=scenario)
+    with pytest.raises(ValueError, match="single-key"):
+        keccak.impossible_differential_search("sat", "KISSAT_EXT")
+
+
+def test_find_impossible_property_unknown_scenario_raises():
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    with pytest.raises(ValueError, match="unknown scenario"):
+        speck.find_impossible_property(type="differential", scenario="non-key")
 
 
 def test_impossible_differential_search_on_keyless_permutation():
-    # single-key (the default) on a keyless cipher must not try to fix a key difference at all
     keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
-    impossible_differentials = keccak.impossible_differential_search("sat", "KISSAT_EXT")
+    impossible_differentials = keccak.impossible_differential_search("sat", "KISSAT_EXT", scenario="no-key")
     assert isinstance(impossible_differentials, list)
 
 
 def test_zero_correlation_linear_search_on_keyless_permutation():
     keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
-    zero_correlation_linear_approximations = keccak.zero_correlation_linear_search("sat", "KISSAT_EXT")
+    zero_correlation_linear_approximations = keccak.zero_correlation_linear_search("sat", "KISSAT_EXT", scenario="no-key")
     assert isinstance(zero_correlation_linear_approximations, list)
 
 
-def test_find_impossible_property_non_key_scenario_on_keyless_permutation_matches_default():
-    # scenario="non-key" is the honestly-named option for a keyless cipher; the default scenario="single-key"
-    # is silently treated the same way for backward compatibility, and both must agree exactly.
-    keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
-    via_default = keccak.find_impossible_property(type="differential", solver="KISSAT_EXT")
-    via_non_key = keccak.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="non-key")
-    assert via_default == via_non_key
-
-
-def test_find_impossible_property_non_key_scenario_on_keyed_cipher():
-    # "non-key" is also a legitimate, different scenario on a keyed cipher: the key is left unconstrained
-    # rather than fixed to zero or varied, so it must not crash and must return a list.
+def test_find_impossible_property_no_key_scenario_on_keyed_cipher():
+    # "no-key" on a keyed cipher leaves the key unconstrained, so it must not crash and must return a list
     speck = SpeckBlockCipher(number_of_rounds=3)
-    result = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="non-key")
+    result = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="no-key")
     assert isinstance(result, list)
+
+
+def test_find_impossible_property_related_key_sweeps_plaintext_and_key():
+    # related-key varies both inputs: results are (plaintext_difference, key_difference, output_difference)
+    # triples with exactly one active input bit, and the plaintext-side ones coincide with single-key
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    related_key = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="related-key")
+    single_key = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="single-key")
+    for plaintext_difference, key_difference, _ in related_key:
+        assert (plaintext_difference == 0) != (key_difference == 0)
+    assert [(p, o) for p, k, o in related_key if k == 0] == single_key
+    assert any(k != 0 for _, k, _ in related_key)
+
 
 def test_cipher_inverse():
     key = 0xabcdef01abcdef01

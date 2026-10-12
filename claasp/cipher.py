@@ -866,7 +866,7 @@ class Cipher:
 
         - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
         - ``solver`` -- **string**; the name of the solver to use for the search
-        - ``scenario`` -- **string**; the type of impossible differentials to search, single-key or related-key
+        - ``scenario`` -- **string**; {"single-key", "related-key", "no-key"}: see :meth:`find_impossible_property`
         """
         return self.find_impossible_property(type="differential", technique=technique, solver=solver, scenario=scenario)
 
@@ -1564,24 +1564,26 @@ class Cipher:
         to find a solution; if none is found, then the propagation is impossible.
         Return a list of impossible differentials or zero_correlation linear approximations if there are any; otherwise return an empty list
 
-        Three scenarios, based on whether the key is present or not, and if present, whether it needs to be fixed or not:
+        Three scenarios, based on whether the cipher has a key input and, if so, how its difference is treated:
 
-        - ``"single-key"`` -- the key difference is fixed to zero (requires a key input).
-        - ``"related-key"`` -- the key difference is varied instead of the plaintext difference (requires a key
-          input; raises ``ValueError`` without one -- there is no key difference to vary).
-        - ``"non-key"`` -- no key is fixed or varied at all: only the plaintext/output difference is swept. The
-          only sensible scenario for a keyless permutation or function, where ``"single-key"``/``"related-key"`` would be
-          vacuous or impossible; also usable on a keyed cipher to search with the key left unconstrained.
+        - ``"single-key"`` -- the key difference is fixed to zero and only the plaintext difference is swept over
+          all Hamming weight 1 values (requires a key input; raises ``ValueError`` without one).
+        - ``"related-key"`` -- both the key and the plaintext differences are free to vary: the input difference
+          is swept over all Hamming weight 1 values of the full (plaintext, key) input, so for each candidate
+          exactly one bit of either the plaintext or the key is active and the other input has zero difference
+          (requires a key input; raises ``ValueError`` without one). Each result is a triple
+          ``(plaintext_difference, key_difference, output_difference)``.
+        - ``"no-key"`` -- only the plaintext difference is swept and no constraint is put on the key. This is the
+          scenario for a keyless permutation or function, where the full input is the plaintext.
 
-        For backward compatibility, the default ``scenario="single-key"`` on a cipher with no key input is
-        silently treated as ``"non-key"`` (there is nothing else it could mean); pass ``scenario="non-key"``
-        explicitly to say so without relying on that fallback.
+        For ``"single-key"`` and ``"no-key"`` each result is a pair ``(plaintext_difference, output_difference)``.
 
         INPUT:
 
         - ``type`` -- **string**; {"differential", "linear"}: the type of property to search for
         - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
         - ``solver`` -- **string**; the name of the solver to use for the search
+        - ``scenario`` -- **string** (default: ``"single-key"``); {"single-key", "related-key", "no-key"}
         """
         from claasp.cipher_modules.models.utils import (
             integer_to_bit_list,
@@ -1599,113 +1601,65 @@ class Cipher:
         plain_bits = inputs_dictionary[INPUT_PLAINTEXT]
         has_key = INPUT_KEY in inputs_dictionary
         key_bits = inputs_dictionary.get(INPUT_KEY, 0)
-        if scenario == "related-key" and not has_key:
-            raise ValueError("scenario='related-key' requires a cipher with a key input; this cipher has none "
-                             "(use scenario='non-key' for a keyless permutation)")
-        if scenario == "single-key" and not has_key:
-            scenario = "non-key"  # the default is meaningless without a key; this is its honest name
+        if scenario not in ("single-key", "related-key", "no-key"):
+            raise ValueError(f"unknown scenario {scenario!r}; expected 'single-key', 'related-key' or 'no-key'")
+        if scenario in ("single-key", "related-key") and not has_key:
+            raise ValueError(f"scenario={scenario!r} requires a cipher with a key input; this cipher has none "
+                             "(use scenario='no-key' for a keyless permutation or function)")
 
-        if scenario == "non-key":
-            # No key to fix or vary at all (a keyless permutation, or a keyed cipher searched with the key left
-            # unconstrained): sweep only the plaintext/output Hamming-weight-1 difference.
-            for input_bit_position in range(plain_bits):
-                for output_bit_position in range(plain_bits):
-                    fixed_values = []
-                    fixed_values.append(
-                        set_fixed_variables(
-                            INPUT_PLAINTEXT,
-                            "equal",
-                            list(range(plain_bits)),
-                            integer_to_bit_list(1 << input_bit_position, plain_bits, "big"),
-                        )
-                    )
-                    fixed_values.append(
-                        set_fixed_variables(
-                            last_component_id,
-                            "equal",
-                            list(range(plain_bits)),
-                            integer_to_bit_list(1 << output_bit_position, plain_bits, "big"),
-                        )
-                    )
-                    solution = search_function(fixed_values, solver_name=solver)
-                    if solution["status"] == "UNSATISFIABLE":
-                        impossible.append((1 << input_bit_position, 1 << output_bit_position))
-        elif scenario == "single-key":
-            # Fix the key difference to be zero, and the plaintext difference to be non-zero. has_key is
-            # guaranteed True here: a keyless cipher was already converted to scenario == "non-key" above.
-            for input_bit_position in range(plain_bits):
-                for output_bit_position in range(plain_bits):
-                    fixed_values = []
+        # Hamming weight 1 input differences to sweep, as (plaintext_difference, key_difference) pairs.
+        if scenario == "related-key":
+            input_differences = [(1 << i, 0) for i in range(plain_bits)] + [(0, 1 << i) for i in range(key_bits)]
+        else:
+            input_differences = [(1 << i, 0) for i in range(plain_bits)]
+
+        for plaintext_difference, key_difference in input_differences:
+            for output_bit_position in range(plain_bits):
+                output_difference = 1 << output_bit_position
+                fixed_values = []
+                if scenario != "no-key":
                     fixed_values.append(
                         set_fixed_variables(
                             INPUT_KEY,
                             "equal",
                             list(range(key_bits)),
-                            integer_to_bit_list(0, key_bits, "big"),
+                            integer_to_bit_list(key_difference, key_bits, "big"),
                         )
                     )
-                    fixed_values.append(
-                        set_fixed_variables(
-                            INPUT_PLAINTEXT,
-                            "equal",
-                            list(range(plain_bits)),
-                            integer_to_bit_list(1 << input_bit_position, plain_bits, "big"),
-                        )
+                fixed_values.append(
+                    set_fixed_variables(
+                        INPUT_PLAINTEXT,
+                        "equal",
+                        list(range(plain_bits)),
+                        integer_to_bit_list(plaintext_difference, plain_bits, "big"),
                     )
-                    fixed_values.append(
-                        set_fixed_variables(
-                            last_component_id,
-                            "equal",
-                            list(range(plain_bits)),
-                            integer_to_bit_list(1 << output_bit_position, plain_bits, "big"),
-                        )
+                )
+                fixed_values.append(
+                    set_fixed_variables(
+                        last_component_id,
+                        "equal",
+                        list(range(plain_bits)),
+                        integer_to_bit_list(output_difference, plain_bits, "big"),
                     )
-                    solution = search_function(fixed_values, solver_name=solver)
-                    if solution["status"] == "UNSATISFIABLE":
-                        impossible.append((1 << input_bit_position, 1 << output_bit_position))
-        elif scenario == "related-key":
-            for input_bit_position in range(key_bits):
-                for output_bit_position in range(plain_bits):
-                    fixed_values = []
-                    fixed_values.append(
-                        set_fixed_variables(
-                            INPUT_KEY,
-                            "equal",
-                            list(range(key_bits)),
-                            integer_to_bit_list(1 << (input_bit_position), key_bits, "big"),
-                        )
-                    )
-                    fixed_values.append(
-                        set_fixed_variables(
-                            INPUT_PLAINTEXT,
-                            "equal",
-                            list(range(plain_bits)),
-                            integer_to_bit_list(0, plain_bits, "big"),
-                        )
-                    )
-
-                    fixed_values.append(
-                        set_fixed_variables(
-                            last_component_id,
-                            "equal",
-                            list(range(plain_bits)),
-                            integer_to_bit_list(1 << output_bit_position, plain_bits, "big"),
-                        )
-                    )
-                    solution = search_function(fixed_values, solver_name=solver)
-                    if solution["status"] == "UNSATISFIABLE":
-                        impossible.append((1 << input_bit_position, 1 << output_bit_position))
+                )
+                solution = search_function(fixed_values, solver_name=solver)
+                if solution["status"] == "UNSATISFIABLE":
+                    if scenario == "related-key":
+                        impossible.append((plaintext_difference, key_difference, output_difference))
+                    else:
+                        impossible.append((plaintext_difference, output_difference))
         return impossible
 
-    def zero_correlation_linear_search(self, technique="sat", solver="Kissat"):
+    def zero_correlation_linear_search(self, technique="sat", solver="Kissat", scenario="single-key"):
         """
         Return a list of zero_correlation linear approximations if there are any; otherwise return an empty list
         INPUT:
 
         - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
         - ``solver`` -- **string**; the name of the solver to use for the search
+        - ``scenario`` -- **string**; {"single-key", "related-key", "no-key"}: see :meth:`find_impossible_property`
         """
-        return self.find_impossible_property(type="linear", technique=technique, solver=solver)
+        return self.find_impossible_property(type="linear", technique=technique, solver=solver, scenario=scenario)
 
     def convert_to_compound_xor_cipher(self):
         convert_to_compound_xor_cipher(self)
