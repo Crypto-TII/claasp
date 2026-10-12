@@ -272,3 +272,33 @@ def test_visible_binary_literal_mutation_cannot_hide_behind_metadata():
     assert 'x5' in body
     with pytest.raises(ValueError, match='definition disagrees with visible glyph'):
         decode(altered(body.replace('x5', 'x6', 1), footer))
+
+
+@pytest.mark.parametrize('strategy', ['semantic-legacy', 'semantic-ports', 'semantic-round',
+                                     'semantic-width', 'semantic-depth', 'semantic-crossings',
+                                     'semantic-auto', 'direct-bus'])
+def test_unused_leading_declaration_does_not_shadow_live_output_lane(strategy):
+    c = Cipher('anonymous_unused_first', 'permutation', ['unused', 'a', 'b'], [4]*3, 12)
+    c.add_round()
+    x = c.add_xor_component(['a', 'b'], [list(range(4))]*2, 4)
+    c.add_cipher_output_component(['a', x.id, 'b'], [list(range(4))]*3, 12)
+    ir = from_cipher(c)
+    recovered = decode(encode(ir, strategy=strategy, annotations=True))
+    assert recovered == ir
+    compiled = to_cipher(recovered)
+    for a in range(16):
+        for b in range(16):
+            assert compiled.evaluate([9, a, b]) == (a << 8) | ((a ^ b) << 4) | b
+
+
+def test_final_output_metadata_cannot_reorder_unchanged_visible_body():
+    text = encode(toy(), annotations=True)
+    body, footer = framing(text)
+    finals = [record for record in footer['records']
+              if record['definition'].get('type') == 'cipher_output']
+    assert len(finals) == 2
+    left, right = sorted(finals, key=lambda record: record['col'])
+    left['definition']['positions'], right['definition']['positions'] = (
+        right['definition']['positions'], left['definition']['positions'])
+    with pytest.raises(ValueError, match='visible left-to-right order'):
+        decode(altered(body, footer))

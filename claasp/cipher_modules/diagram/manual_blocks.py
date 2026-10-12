@@ -328,7 +328,8 @@ class _Scheduler(glyphs._RegisterScheduler):
         value = call['args'][0]
         target = call['definition']['positions'][0]//self.word_bits
         if target in self.active and self.slots[value] != target:
-            occupant = next(token for token, lane in self.slots.items() if lane == target)
+            occupant = next(token for token, lane in self.slots.items()
+                            if lane == target and self.uses[token] > 0)
             temporary = next(lane for lane in range(self.maximum+2) if lane not in self.active)
             self.relocate(occupant, temporary)
         self.relocate(value, target)
@@ -788,6 +789,13 @@ def _boundary_groups(records):
             occupied.extend(definition['positions'])
         if any(type(bit) is not int for bit in occupied) or sorted(occupied) != list(range(first['bits'])):
             raise ValueError('Boundary fragments must cover every bit exactly once')
+        if first.get('type') == 'cipher_output':
+            ordered = sorted(fragments, key=lambda item: item[0][1])
+            if len({key[0] for key, _ in ordered}) != 1:
+                raise ValueError('Final outputs must share a visible row')
+            visible_order = [bit for _, definition in ordered for bit in definition['positions']]
+            if visible_order != list(range(first['bits'])):
+                raise ValueError('Final output positions disagree with visible left-to-right order')
     return groups
 
 
