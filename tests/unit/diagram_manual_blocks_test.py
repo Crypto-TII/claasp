@@ -224,3 +224,51 @@ def test_dynamic_ready_frontier_does_not_retain_consumed_chain_calls(monkeypatch
     ir = from_cipher(c)
     assert decode(encode(ir,annotations=True,strategy='semantic-width')) == ir
     assert max(observed) <= 2
+
+
+def literal_ir(literal, width):
+    c = Cipher('generic_literal', 'permutation', [], [], width)
+    c.add_round()
+    constant = c.add_constant_component(width, 0)
+    c.add_cipher_output_component([constant.id], [list(range(width))], width)
+    ir = from_cipher(c)
+    ir['nodes'][0]['description'] = [literal]
+    return ir
+
+
+@pytest.mark.parametrize('literal,width,expected', [
+    ('0b101', 8, 5), ('0b10001', 8, 17), ('0B000101', 8, 5),
+    ('0x05', 8, 5), ('0X11', 8, 17), ('0x0000', 8, 0), ('0xff', 8, 255),
+])
+def test_visible_constant_value_is_independent_of_native_radix(literal, width, expected):
+    import re
+    from claasp.diagrams import to_ascii
+    ir = literal_ir(literal, width)
+    for style in ('symbols', 'labels'):
+        body = to_ascii(ir, operator_style=style)
+        # Decode the visible hexadecimal token independently, rather than
+        # calling the native label formatter or using metadata as an oracle.
+        tokens = re.findall(r'\|\s*x([0-9A-F]+)\s*\|', body)
+        assert len(tokens) == 1 and int(tokens[0], 16) == expected
+        assert 'xB101' not in body and 'xB10001' not in body
+        recovered = decode(to_ascii(ir, operator_style=style, annotations=True))
+        assert recovered['nodes'][0]['description'] == [literal]
+        assert to_cipher(recovered).evaluate([]) == expected
+
+
+@pytest.mark.parametrize('literal,width', [
+    ('0b102', 8), ('0b', 8), ('0x', 8), ('0xGG', 8), ('17', 8),
+    ('-0x1', 8), ('0b10000', 4), ('0x100', 8),
+])
+def test_invalid_and_overwide_literals_fail_before_rendering(literal, width):
+    from claasp.diagrams import to_ascii
+    with pytest.raises(ValueError, match='unsupported native constant'):
+        to_ascii(literal_ir(literal, width))
+
+
+def test_visible_binary_literal_mutation_cannot_hide_behind_metadata():
+    text = encode(literal_ir('0b101',8), annotations=True)
+    body, footer = framing(text)
+    assert 'x5' in body
+    with pytest.raises(ValueError, match='definition disagrees with visible glyph'):
+        decode(altered(body.replace('x5', 'x6', 1), footer))

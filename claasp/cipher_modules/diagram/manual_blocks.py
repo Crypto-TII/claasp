@@ -33,7 +33,7 @@ def label(definition, style='symbols'):
         return 'SEL'+definition.get('reference', '') if kind == 'selection' else 'JOIN'
     description = definition['description']
     if definition['type'] == 'constant':
-        value = int(description[0], 16)
+        value = int(description[0], 0)
         text = 'x'+format(value, 'X')
     else:
         operation = description[0]
