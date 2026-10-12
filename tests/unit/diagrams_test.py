@@ -828,3 +828,34 @@ def test_semantic_auto_ties_keep_the_first_successful_variant(monkeypatch):
     monkeypatch.setattr(glyphs, '_build_grid', candidate)
     _, report = glyphs.build_grid({})
     assert report['selectedVariant'] == 'semantic-ports'
+
+
+def test_narrow_parameter_column_wraps_continuation_without_losing_matrix_values():
+    from claasp.diagram_presentation import table_pages
+    values = '01'*4096
+    pages = table_pages('Parameters', [('P1', 'binary matrix', values)],
+                        ['Reference', 'Type', 'Values'], [18, 40, 106])
+    assert len(pages) > 1
+    assert r'\mbox{(continued)}' not in '\n'.join(pages)
+    visible = _table_text('\n'.join(pages))
+    assert visible.count('(continued)') == len(pages)-1
+    # The long payload survives splitting, in its original order and multiplicity.
+    payload = ''
+    for line in '\n'.join(pages).splitlines():
+        if line.endswith(chr(92)*2) and ' & ' in line:
+            cell = _table_text(line.split(' & ', 2)[2][:-2])
+            if '01' in cell:
+                payload += cell
+    assert payload == values
+
+
+def test_public_small_budget_identity_matrix_wraps_parameter_continuations():
+    c = Cipher('small_matrix_probe', 'permutation', ['data'], [16], 16)
+    c.add_round()
+    matrix = [[int(i == j) for j in range(16)] for i in range(16)]
+    node = c.add_linear_layer_component(['data'], [list(range(16))], 16, matrix)
+    c.add_cipher_output_component([node.id], [list(range(16))], 16)
+    text = to_tikz(from_cipher(c), tableLineBudget=8)
+    assert r'\mbox{(continued)}' not in text
+    assert '(continued)' in _table_text(text)
+    assert 'LINEAR' in _table_text(text)

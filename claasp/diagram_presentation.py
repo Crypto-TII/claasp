@@ -158,12 +158,16 @@ def _table_row_parts(row, widths, budget):
     cells = [_cell_lines(value, width) for value, width in zip(row, widths)]
     maximum = max(map(len, cells))
     # Leave room for the explicit continuation marker; split any large column.
-    per_part = budget-2
+    continuation = _cell_lines('(continued)', widths[0])
+    per_part = budget-len(continuation)
+    if per_part < 1:
+        raise ValueError('Table column and line budget cannot fit a continuation marker')
     prefixes = [value.prefix if isinstance(value, _Tex) else '' for value in row]
     for start in range(0, maximum, per_part):
         part = [lines[start:start+per_part] or [''] for lines in cells]
         if start:
-            part[0] = ['(continued)']+part[0]
+            data = [] if part[0] == [''] else part[0]
+            part[0] = continuation+data
         yield part, prefixes if start == 0 else ['']*len(row)
 
 
