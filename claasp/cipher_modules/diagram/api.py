@@ -477,6 +477,21 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     details and validates every selection against the actually traced stream.
     Pseudocode alone does not recover arbitrary original placement.
 
+    Opt-in wordwise projection keeps rotations, additions and other operations
+    whole; only independent XOR/AND/OR/NOT words split into parallel gates.
+    Their subordinate ``G<group>.W<word>`` references use zero-based base36
+    indexes and a seven-character bound. The opcode remains the primary label.
+    A suffix such as ``^@21`` explicitly reverses the physical left/top/right
+    input order; human TikZ instead displays ordered operand numbers and bit
+    ranges. Ambiguous legacy references or footer-only word/port reassignments
+    reject. Plain bodies describe scalar word gates, not original native IDs.
+
+    State lane policy prefers contiguous data/key banks declared by the IR.
+    A matching-width final state is placed beneath its data input bank; other
+    shapes report a generic compact fallback. Temporaries may use auxiliary
+    lanes. This is a role/liveness preference, not an inferred state matrix.
+    ``synthesis_report`` reports ``banks``, ``output_bank`` and ``bank_reason``.
+
     Balanced minimizes rectangular area plus occupied cells. Other preferences
     prioritize actual crossing-cell count, block-row depth or lane width, with
     deterministic ties. These are heuristic choices, not global optimality
@@ -500,6 +515,8 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         sage: ir = from_cipher(speck)
         sage: drawing = to_ascii(ir)
         sage: from_ascii(to_ascii(ir, annotations=True)) == ir
+        True
+        sage: from_ascii(to_ascii(ir, annotations=True, word_bits=int(8), projection='wordwise', lane_policy='state')) == ir
         True
 
     Complete default printouts follow. A left margin prevents the doctest
