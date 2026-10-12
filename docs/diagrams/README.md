@@ -336,3 +336,19 @@ granularity and reports `word_bits_source="inferred-gcd"`. It does not infer a
 two-dimensional state: `columns=None` remains `ambiguous-flat-fallback`; explicit
 columns are a caller-provided convention. Ordered source bit positions remain
 unchanged. The default one-bit state view and existing order modes are retained.
+
+## Round lifetime and gathering controls
+
+Manual scheduling respects round order before routing cost. Earlier-declared
+constants are emitted before advancing to a later scheduled round, so compaction
+cannot hoist their birth across a reused lane lifetime. Strict port connectivity
+and actual exported-text semantic checks remain required. A minimal three-round
+XOR/subtraction regression covers this independently across seven baseline
+choices; default Photon/Sparkle are separate representative rechecks.
+
+The original `gathering="linear"` remains default. `"shared-linear"` reuses
+identical ordered JOIN pairs; `"balanced"` is an explicit depth experiment.
+On the small AES case, shared-linear removes three JOINs with slightly fewer
+rows/crossings; balanced shortens height but greatly increases crossings.
+Neither experimental mode is an automatic replacement. Native widths and
+ordered selections are unchanged.

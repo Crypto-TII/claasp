@@ -4,6 +4,7 @@ The public human default uses this encoder. Plain bodies follow the existing
 5x11 grammar; optional local annotations support fresh native reconstruction.
 """
 import copy
+import heapq
 import json
 from collections import Counter, deque
 from functools import reduce
@@ -94,10 +95,10 @@ def art(cell, style='symbols'):
 
 
 class _WordGraph:
-    def __init__(self, ir, bits):
-        self.ir, self.bits = ir, bits
+    def __init__(self, ir, bits, gathering="linear"):
+        self.ir, self.bits, self.gathering = ir, bits, gathering
         self.calls, self.inputs, self.values = [], [], {}
-        self.raw_values, self.selection_cache = {}, {}
+        self.raw_values, self.selection_cache, self.join_cache = {}, {}, {}
         self.input_definitions, self.fake_inputs = [], []
         for native_index, item in enumerate(ir['inputs']):
             parts = []
@@ -172,10 +173,30 @@ class _WordGraph:
     def join(self, parts):
         if not parts:
             raise ValueError('Native operation lacks its visible input')
-        value = parts[0]
-        for part in parts[1:]:
-            value = self.call([value, part], {'kind': 'join', 'bits': self.width(value)+self.width(part)})
-        return value
+        if self.gathering != 'balanced':
+            value = parts[0]
+            for part in parts[1:]:
+                pair = value, part
+                if self.gathering == 'shared-linear' and pair in self.join_cache:
+                    value = self.join_cache[pair]
+                else:
+                    value = self.call(list(pair), {'kind': 'join', 'bits': self.width(value)+self.width(part)})
+                    if self.gathering == 'shared-linear':
+                        self.join_cache[pair] = value
+            return value
+        level = list(parts)
+        while len(level) > 1:
+            following = []
+            for index in range(0, len(level), 2):
+                if index+1 == len(level):
+                    following.append(level[index])
+                    continue
+                pair = level[index], level[index+1]
+                if pair not in self.join_cache:
+                    self.join_cache[pair] = self.call(list(pair), {'kind': 'join', 'bits': sum(self.width(value) for value in pair)})
+                following.append(self.join_cache[pair])
+            level = following
+        return level[0]
 
     def select(self, identity, positions):
         key = identity, tuple(positions)
@@ -191,10 +212,7 @@ class _WordGraph:
             return self.call([value], {'kind': 'selection', 'bits': len(positions), 'positions': list(positions)})
         word_indices = list(dict.fromkeys(position//self.bits for position in positions))
         parts = [self.values[identity][index] for index in word_indices]
-        value = parts[0]
-        for part in parts[1:]:
-            width = self.width(value)+self.width(part)
-            value = self.call([value, part], {'kind': 'join', 'bits': width})
+        value = self.join(parts)
         mask = [word_indices.index(position//self.bits)*self.bits+position%self.bits for position in positions]
         if mask == list(range(self.width(value))):
             return value
@@ -251,6 +269,9 @@ class _Scheduler(glyphs._RegisterScheduler):
             self.layers[index] = ordinal_layers[call['definition']['ordinal']] if call['definition']['kind'] in ('native', 'native_boundary') else prior
         self.word_bits = graph.bits
         self.final_boundaries = {}
+        self.constant_stages = [(call['definition']['round'], index) for index, call in enumerate(self.calls)
+                                if call['definition'].get('type') == 'constant']
+        heapq.heapify(self.constant_stages)
 
     def place(self, col, kind, ports, **data):
         definition = data.get('definition', {})
@@ -303,7 +324,7 @@ class _Scheduler(glyphs._RegisterScheduler):
     def priority(self, index):
         definition = self.calls[index]['definition']
         final = definition.get('type') == 'cipher_output'
-        return (final, *super().priority(index))
+        return (self.scheduling_rounds[index], final, *super().priority(index))
 
     def routing_estimate(self, index):
         arguments = self.calls[index]['args']
@@ -322,6 +343,20 @@ class _Scheduler(glyphs._RegisterScheduler):
         return crossings, len(expired)
 
     def next_call(self):
+        chosen = self._next_scheduled_call()
+        while self.constant_stages and self.constant_stages[0][1] not in self.pending:
+            heapq.heappop(self.constant_stages)
+        if self.constant_stages and self.constant_stages[0][0] < self.scheduling_rounds[chosen]:
+            # A deferred constant cannot be born on a reused lane in a later
+            # round and then be hoisted across that lane's existing lifetime.
+            if chosen in self.ready_calls.eligible:
+                heapq.heappush(self.ready_calls.usable, (self.priority(chosen), chosen))
+            else:
+                heapq.heappush(self.ready_calls.ready, chosen)
+            return heapq.heappop(self.constant_stages)[1]
+        return chosen
+
+    def _next_scheduled_call(self):
         if self.strategy == 'semantic-layer':
             eligible = [index for index in self.ready_calls.eligible if index in self.pending]
             eligible.extend(index for index in self.pending if not self.calls[index]['args'] and index not in eligible)
@@ -336,10 +371,10 @@ class _Scheduler(glyphs._RegisterScheduler):
             final = self.calls[index]['definition'].get('type') == 'cipher_output'
             crossings, expired = self.routing_estimate(index)
             if self.strategy == 'semantic-width':
-                return final, -expired, crossings, index
+                return self.scheduling_rounds[index], final, -expired, crossings, index
             if self.strategy == 'semantic-depth':
-                return final, -self.critical[index], crossings, index
-            return final, crossings, -expired, index
+                return self.scheduling_rounds[index], final, -self.critical[index], crossings, index
+            return self.scheduling_rounds[index], final, crossings, -expired, index
         return min(eligible, key=cost)
 
     def seed_inputs(self):
@@ -607,10 +642,12 @@ def infer_word_bits(ir):
     return reduce(gcd, widths or [ir['output_bits']])
 
 
-def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left',
+def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gathering='linear',
           layout_preference='balanced', max_cells=1000000, max_calls=20000):
     """Compare generic schedules by measured crossings, depth and width."""
     validate(ir)
+    if gathering not in ('linear', 'shared-linear', 'balanced'):
+        raise ValueError('Choose linear, shared-linear or balanced gathering')
     if strategy not in ('semantic-auto', 'direct-bus', 'semantic-layer', *STRATEGIES):
         raise ValueError('Unsupported manual block scheduling strategy')
     if alignment not in ('left', 'right') or layout_preference not in ('balanced', 'crossings', 'depth', 'width'):
@@ -623,7 +660,7 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left',
     best, reports, errors, rejected = None, [], [], []
     for index, variant in enumerate(variants):
         try:
-            graph = _WordGraph(ir, bits)
+            graph = _WordGraph(ir, bits, gathering)
             if len(graph.calls) > max_calls:
                 raise ValueError('Manual word expansion exceeds max_calls')
             cells, report = _Scheduler(ir, graph, variant, max_cells, alignment).build()
@@ -649,18 +686,18 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left',
         raise ValueError('; '.join(errors))
     _, _, cells, report, metrics = best
     return cells, dict(report, selected_variant=report['strategy'], strategy=strategy,
-                       alignment=alignment, layout_preference=layout_preference,
+                       alignment=alignment, layout_preference=layout_preference, gathering=gathering,
                        metrics=metrics, candidates=reports, rejected_candidates=rejected)
 
 
 def _encode_layout(ir, *, annotations=True, word_bits=None, operator_style='symbols',
-           strategy='semantic-auto', alignment='left', layout_preference='balanced',
+           strategy='semantic-auto', alignment='left', layout_preference='balanced', gathering='linear',
            wire_borders=False, max_cells=1000000, max_calls=20000,
            max_grid_area=2000000, max_text_bytes=64000000):
     if type(annotations) is not bool or type(wire_borders) is not bool or operator_style not in ('symbols', 'labels'):
         raise ValueError('Choose boolean annotations and symbols/labels')
     cells, report = build(ir, word_bits=word_bits, strategy=strategy, alignment=alignment,
-                          layout_preference=layout_preference, max_cells=max_cells, max_calls=max_calls)
+                          layout_preference=layout_preference, gathering=gathering, max_cells=max_cells, max_calls=max_calls)
     if type(max_grid_area) is not int or max_grid_area < 1 or report['rows']*report['cols'] > max_grid_area:
         raise ValueError('Manual rectangular output exceeds max_grid_area')
     if type(max_text_bytes) is not int or max_text_bytes < 1:

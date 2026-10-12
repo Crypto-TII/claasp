@@ -514,3 +514,39 @@ def test_generic_layers_align_parallel_substitutions_and_preserve_word_lanes():
                 value=table[value^word_key];value=table[value^word_key]
                 expected=(expected<<4)|value
             assert compiled.evaluate([state,key])==expected
+
+
+
+@pytest.mark.parametrize('strategy',['semantic-legacy','semantic-ports','semantic-round',
+                                     'semantic-width','semantic-depth','semantic-crossings','semantic-auto'])
+def test_deferred_constant_does_not_cross_a_reused_round_lane(strategy):
+    c=Cipher('anonymous_late_constant','permutation',['a','b'],[4,4],4);c.add_round()
+    first=c.add_constant_component(4,1);late=c.add_constant_component(4,2)
+    y=c.add_xor_component(['a',first.id],[list(range(4))]*2,4)
+    c.add_intermediate_output_component([y.id],[list(range(4))],4,'state')
+    c.add_round();z=c.add_modsub_component(['b',y.id],[list(range(4))]*2,4)
+    c.add_round();w=c.add_xor_component([z.id,late.id],[list(range(4))]*2,4)
+    c.add_cipher_output_component([w.id],[list(range(4))],4)
+    ir=from_cipher(c);text=encode(ir,annotations=True,strategy=strategy);assert decode(text)==ir
+    restored=to_cipher(decode(text))
+    for a in range(16):
+        for b in range(16):assert restored.evaluate([a,b])==((b-(a^1))&15)^2
+
+
+
+def test_balanced_gathering_shares_ordered_subtrees_without_changing_values():
+    c=Cipher('anonymous_gather','permutation',['a','b'],[32,32],52);c.add_round()
+    whole=c.add_xor_component(['a','b'],[list(range(32))]*2,32)
+    prefix=c.add_and_component(['a','b'],[list(range(16))]*2,16)
+    small=c.add_sbox_component(['a'],[list(range(28,32))],4,[value^9 for value in range(16)])
+    c.add_cipher_output_component([whole.id,prefix.id,small.id],[list(range(32)),list(range(16)),list(range(4))],52)
+    ir=from_cipher(c);text=encode(ir,annotations=True,gathering="balanced");assert decode(text)==ir
+    _,footer=framing(text)
+    # Each full eight-fragment input needs seven JOINs; its four-fragment
+    # prefix reuses that existing subtree instead of adding three more.
+    assert sum(r['definition']['kind']=='join' for r in footer['records'])==14
+    compiled=to_cipher(decode(text))
+    for a in (0,1,0x12345678,0xffffffff):
+        for b in (0,0xabcdef01,0xffffffff):
+            expected=((a^b)<<20)|(((a>>16)&(b>>16))<<4)|((a&15)^9)
+            assert compiled.evaluate([a,b])==expected
