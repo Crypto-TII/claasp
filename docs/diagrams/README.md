@@ -19,6 +19,16 @@ restored = to_cipher(from_ascii(text))
 figure = to_tikz(ir, rowsPerPanel=16, columnsPerPanel=6, columnSpacing=3)
 ```
 
+Annotated ASCII round trips preserve the representation's identifiers. Executable
+reconstruction preserves values and roles, while CLAASP generates component
+identifiers. `diagram_source_ids` maps every original input and component to a
+unique runtime identifier. Safe ASCII Python input names remain unchanged;
+other names receive aliases, and generated component names are renamed if they
+collide with an input. Compare component values through this mapping, or use
+`evaluate_state_values` for original keys. Raw trace key equality is not part of
+the reconstruction contract. Extracting the reconstructed Cipher with
+`from_cipher` exposes its runtime identifiers.
+
 ## Docker workflow migration
 
 Run this in the Sage Python environment where CLAASP is installed (the user's
