@@ -716,8 +716,11 @@ def _cell_label(cell, key, registry):
         bits = len(definition['positions']) if 'positions' in definition else definition.get('bits', '?')
         if bits == 0:
             name, bits = 'UNUSED', definition['bits']
-        index = 'I'+str(definition['index']+1)+' ' if 'native_index' in definition else ''
+        index = 'I'+str(definition['native_index'])+' ' if 'native_index' in definition else ''
         label = index+name+'/'+str(bits)
+        if definition.get('positions') and len(definition['positions']) != definition['bits']:
+            from claasp.cipher_modules.diagram.presentation import selections as bit_positions
+            label += r'\\'+bit_positions(definition['positions'])
     elif kind == 'parallel':
         label = operation(definition['members'][0], registry, short=True)+' x'+str(len(definition['members']))
     elif kind == 'native':

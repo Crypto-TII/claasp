@@ -416,7 +416,13 @@ def _member_locations(cells):
         definition = cell.get('definition', {})
         for index, member in enumerate(definition.get('members', [definition])):
             if 'id' in member and member.get('kind', 'native') != 'input':
-                locations[member['id']] = (f'D{row}:{col}', index+1)
+                label = f'D{row}:{col}'
+                if member.get('kind') == 'native_boundary':
+                    label += '['+selections(member['positions'])+']'
+                if member['id'] in locations:
+                    previous, _ = locations[member['id']]
+                    label = previous+', '+label
+                locations[member['id']] = (label, index+1)
     return locations
 
 

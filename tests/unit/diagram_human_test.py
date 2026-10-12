@@ -142,7 +142,7 @@ def test_manual_tikz_reuses_verified_cells_instead_of_audit_planner(monkeypatch)
     monkeypatch.setattr(glyphs,'_encode_layout',no_audit)
     tikz=to_tikz(ir,layoutSource='human',view='wires',legend='none',columnsPerPanel=20,rowsPerPanel=20)
     assert 'Consolidated manual synthesis' in tikz
-    assert 'OUT/4' in tikz and 'I1 input/4' in tikz
+    assert 'OUT/4' in tikz and 'I0 input/4' in tikz
     for (row,col),cell in expected_cells.items():
         if cell['kind'] in ('input','box','output','tap','note'):
             assert '(N'+str(row)+'x'+str(col)+')' in tikz
@@ -173,3 +173,23 @@ def test_state_auto_word_granularity_is_shared_but_shape_stays_ambiguous():
     assert frames[0]['geometry']=='ambiguous-flat-fallback'
     explicit=state_snapshots(ir,word_bits=None,columns=1)
     assert explicit[0]['geometry']=='explicit-columns' and explicit[0]['rows']==2
+
+
+
+def test_human_vector_input_references_and_all_boundary_fragments_are_retained():
+    from claasp.diagrams import to_tikz
+    from claasp.cipher_modules.diagram.manual_blocks import _encode_layout
+    from claasp.cipher_modules.diagram.presentation import _member_locations
+    c=Cipher('anonymous_split','permutation',['a'],[8],8);c.add_round()
+    c.add_intermediate_output_component(['a'],[list(range(8))],8,'state')
+    c.add_cipher_output_component(['a'],[list(range(8))],8)
+    ir=from_cipher(c);_,cells,_=_encode_layout(ir,word_bits=4)
+    locations=_member_locations(cells)
+    for node in ir['nodes']:
+        parts=[(key,cell['definition']) for key,cell in cells.items() if cell.get('definition',{}).get('id')==node['id']]
+        assert len(parts)==2
+        for (row,col),definition in parts:
+            assert f'D{row}:{col}[' in locations[node['id']][0]
+    text=to_tikz(ir,layoutSource='human',word_bits=4,view='wires',columnsPerPanel=20,rowsPerPanel=20)
+    assert 'I0: a' in text and text.count('I0 input/4')==2
+    assert 'I1 input/4' not in text
