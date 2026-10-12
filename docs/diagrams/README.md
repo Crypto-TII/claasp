@@ -26,7 +26,9 @@ reference drawings never participate in placement.
 
 The generic live-register planner counts uses, reuses expired lanes, copies
 values that remain live and captures intermediate observations at production.
-Constants wait for a ready consumer. Rigid horizontal segments retain their
+Dependency-ready heaps update only consumers of each produced value; their
+stable index/round/join priorities preserve deterministic scheduling. Constants
+wait for a ready consumer, with a bounded fallback for constant-only cones. Rigid horizontal segments retain their
 per-column order during track compaction. `strategy='direct-bus'` provides a
 baseline with fresh result lanes. Native generation accepts its output only
 after an actual exported-text round trip recovers the complete IR.

@@ -551,3 +551,68 @@ def test_default_vector_export_searches_once_parses_actual_text_once_and_skips_w
     assert 'Computation overview:' in text
     assert counts['layouts'] == 1
     assert counts['parses'] == 1
+
+
+def test_ready_heap_defers_constants_until_a_consumer_can_progress():
+    from claasp.diagram_glyphs import _ReadyCalls, _call_consumers
+    calls = [{'args': args} for args in [[], [], [('input', 0)],
+             [('call', 0), ('call', 0), ('call', 2)], [('call', 1), ('call', 3)], []]]
+    pending = set(range(len(calls)))
+    queue = _ReadyCalls(calls, _call_consumers(calls), {('input', 0)}, pending, set(), lambda i: (i,))
+    order = []
+    while pending:
+        index = queue.next()
+        pending.remove(index)
+        order.append(index)
+        queue.publish(('call', index))
+    assert order == [2, 0, 3, 1, 4, 5]
+
+
+@pytest.mark.parametrize('seed', [19, 43, 97])
+def test_branching_rounds_match_independent_bit_arithmetic(seed):
+    import random
+    rng = random.Random(seed)
+    c = Cipher('branch_probe', 'permutation', ['a', 'b'], [8, 8], 24)
+    c.add_round()
+    ids, functions = ['a', 'b'], [lambda a, b: a, lambda a, b: b]
+    for index in range(48):
+        if index and index % 12 == 0:
+            c.add_round()
+        left, right = rng.randrange(len(ids)), rng.randrange(len(ids))
+        f, g = functions[left], functions[right]
+        positions = [list(range(8)), list(reversed(range(8)))]
+        # Reverse the second selected bit stream independently of the native backend.
+        selected_g = lambda a, b, g=g: int(f'{g(a, b):08b}'[::-1], 2)
+        if index % 4 == 0:
+            value = rng.randrange(256)
+            node = c.add_constant_component(8, value)
+            function = lambda a, b, value=value: value
+        elif index % 4 == 1:
+            node = c.add_modsub_component([ids[left], ids[right]], positions, 8)
+            function = lambda a, b, f=f, g=selected_g: (f(a, b)-g(a, b)) & 255
+        elif index % 4 == 2:
+            node = c.add_xor_component([ids[left], ids[right]], positions, 8)
+            function = lambda a, b, f=f, g=selected_g: f(a, b)^g(a, b)
+        else:
+            node = c.add_rotate_component([ids[left]], [list(range(8))], 8, -1)
+            function = lambda a, b, f=f: ((f(a, b)<<1)|(f(a, b)>>7)) & 255
+        ids.append(node.id)
+        functions.append(function)
+    selected = [len(ids)-1, len(ids)-7, len(ids)-13]
+    c.add_cipher_output_component([ids[i] for i in selected], [list(range(8))]*3, 24)
+    ir = from_cipher(c)
+    drawing = to_ascii(ir)
+    restored = to_cipher(from_ascii(drawing))
+    for a, b in [(0, 0), (255, 1), (0x83, 0x35), (1, 255)]:
+        expected = 0
+        for index in selected:
+            expected = (expected << 8) | functions[index](a, b)
+        assert restored.evaluate([a, b]) == expected
+    renamed = copy.deepcopy(ir)
+    names = {item['id']: f'v{i}' for i, item in enumerate(renamed['inputs']+renamed['nodes'])}
+    for item in renamed['inputs']+renamed['nodes']:
+        item['id'] = names[item['id']]
+    for node in renamed['nodes']:
+        for operand in node['operands']:
+            operand['source'] = names[operand['source']]
+    assert to_ascii(renamed).split('# CLAASP-TYPED-GLYPH 1')[0] == drawing.split('# CLAASP-TYPED-GLYPH 1')[0]

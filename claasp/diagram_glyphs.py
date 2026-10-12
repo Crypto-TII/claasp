@@ -4,6 +4,7 @@ The 5-by-11 cell grammar is shared with the web editor. Placement never uses
 primitive names. This module has no external process or JavaScript dependency.
 """
 import copy
+import heapq
 import json
 import re
 from collections import Counter
@@ -296,6 +297,63 @@ def _scheduling_rounds(ir, calls, consumers):
     return ranks
 
 
+class _ReadyCalls:
+    """Dependency-driven ready heaps with deterministic constant deferral."""
+
+    def __init__(self, calls, consumers, available, pending, observers, priority):
+        self.calls, self.consumers, self.pending = calls, consumers, pending
+        self.observers, self.priority = observers, priority
+        self.missing = [set(call['args'])-available for call in calls]
+        self.ready, self.usable, self.eligible = [], [], set()
+        for index, missing in enumerate(self.missing):
+            if not missing:
+                self._enqueue(index)
+
+    def _constant_usable(self, index):
+        value = ('call', index)
+        return any(consumer in self.pending and self.missing[consumer] == {value}
+                   for consumer in self.consumers.get(value, []))
+
+    def _make_usable(self, index):
+        if index not in self.eligible:
+            heapq.heappush(self.usable, (self.priority(index), index))
+            self.eligible.add(index)
+
+    def _enqueue(self, index):
+        heapq.heappush(self.ready, index)
+        if self.calls[index]['args'] or ('call', index) in self.observers or self._constant_usable(index):
+            self._make_usable(index)
+
+    def _wake_last_constant(self, missing):
+        if len(missing) != 1:
+            return
+        kind, index = next(iter(missing))
+        if kind == 'call' and index in self.pending and not self.calls[index]['args']:
+            self._make_usable(index)
+
+    def publish(self, value):
+        for consumer in self.consumers.get(value, []):
+            if consumer not in self.pending:
+                continue
+            missing = self.missing[consumer]
+            missing.discard(value)
+            if not missing:
+                self._enqueue(consumer)
+            else:
+                self._wake_last_constant(missing)
+
+    def next(self):
+        while self.usable:
+            _, index = heapq.heappop(self.usable)
+            if index in self.pending:
+                return index
+        while self.ready:
+            index = heapq.heappop(self.ready)
+            if index in self.pending:
+                return index
+        raise ValueError('No progress in native live-register scheduling')
+
+
 class _RegisterScheduler:
     """Schedule ready calls and route liveness-preserving register lanes."""
 
@@ -313,6 +371,8 @@ class _RegisterScheduler:
         self.maximum = len(inputs)-1
         self.pending = set(range(len(calls)))
         self.observers = set(targets)
+        self.ready_calls = _ReadyCalls(calls, self.consumers, set(self.slots), self.pending,
+                                      self.observers, self.priority)
 
     def place(self, col, kind, ports, **data):
         key = (self.row, col)
@@ -355,23 +415,12 @@ class _RegisterScheduler:
                        definition=dict(item, kind='input', index=value[1]))
         self.row += 1
 
-    def constant_ready(self, index):
-        value = ('call', index)
-        return any(consumer in self.pending and all(argument == value or argument in self.slots
-                   for argument in self.calls[consumer]['args']) for consumer in self.consumers.get(value, []))
-
     def next_call(self):
-        ready = [index for index in sorted(self.pending) if all(value in self.slots for value in self.calls[index]['args'])]
-        usable = [index for index in ready if self.calls[index]['args'] or ('call', index) in self.observers or self.constant_ready(index)]
-        if not usable:
-            if not ready:
-                raise ValueError('No progress in native live-register scheduling')
-            usable = [ready[0]]
-        if self.strategy not in ('semantic-ports', 'semantic-parallel', 'semantic-round'):
-            return usable[0]
-        return min(usable, key=self.priority)
+        return self.ready_calls.next()
 
     def priority(self, index):
+        if self.strategy not in ('semantic-ports', 'semantic-parallel', 'semantic-round'):
+            return (index,)
         rank = self.scheduling_rounds[index] if self.strategy == 'semantic-round' else 0
         return (rank, self.calls[index]['definition']['kind'] != 'join', index)
 
@@ -447,6 +496,7 @@ class _RegisterScheduler:
         self.active.add(target)
         if value in self.observers:
             self.observe(value, target)
+        self.ready_calls.publish(value)
 
     def capture_unused_inputs(self):
         for value in self.inputs:
