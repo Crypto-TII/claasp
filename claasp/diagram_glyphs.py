@@ -534,16 +534,24 @@ def _build_grid(ir, *, strategy='semantic-legacy', max_cells=1000000, max_calls=
 
 def build_grid(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000):
     if strategy!='semantic-auto':return _build_grid(ir,strategy=strategy,max_cells=max_cells,max_calls=max_calls)
-    candidates=[];errors=[]
-    for variant in ('semantic-legacy','semantic-ports','semantic-parallel','semantic-round'):
+    best = None
+    errors = []
+    for index, variant in enumerate(('semantic-legacy', 'semantic-ports', 'semantic-parallel', 'semantic-round')):
         try:
-            cells,report=_build_grid(ir,strategy=variant,max_cells=max_cells,max_calls=max_calls)
-            cost=(report['rows']*report['cols']+report['blocks'],report['rows']*report['cols'],report['blocks'])
-            candidates.append((cost,len(candidates),cells,report))
-        except ValueError as error:errors.append(str(error))
-    if not candidates:raise ValueError('; '.join(errors))
-    _,_,cells,report=min(candidates,key=lambda item:item[:2]);report=dict(report,selectedVariant=report['strategy'],strategy='semantic-auto')
-    return cells,report
+            cells, report = _build_grid(ir, strategy=variant, max_cells=max_cells, max_calls=max_calls)
+            area = report['rows']*report['cols']
+            candidate = ((area+report['blocks'], area, report['blocks']), index, cells, report)
+            if best is None or candidate[:2] < best[:2]:
+                best = candidate
+            # Retain only the winner before constructing another full grid.
+            del cells, report, candidate
+        except ValueError as error:
+            errors.append(str(error))
+    if best is None:
+        raise ValueError('; '.join(errors))
+    _, _, cells, report = best
+    report = dict(report, selectedVariant=report['strategy'], strategy='semantic-auto')
+    return cells, report
 
 
 def _rigid_rows(cells):

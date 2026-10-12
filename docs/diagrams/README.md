@@ -39,7 +39,8 @@ baseline with fresh result lanes. Native generation accepts its output only
 after an actual exported-text round trip recovers the complete IR.
 
 `semantic-auto` compares four generic candidates by rectangular area plus
-occupied cells: the legacy register schedule, local input selections,
+occupied cells, retaining only the current candidate and winner: the legacy
+register schedule, local input selections,
 independent parallel groups, and round-aware scheduling. It never consults a
 primitive name or example. Explicit strategies `semantic-legacy`,
 `semantic-ports`, `semantic-parallel`, and `semantic-round` expose these

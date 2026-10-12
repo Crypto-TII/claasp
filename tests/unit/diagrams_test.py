@@ -797,3 +797,34 @@ def test_native_extra_fsr_bits_are_rejected_instead_of_silently_discarded():
     c.add_cipher_output_component([node.id], [[0, 1]], 2)
     with pytest.raises(ValueError, match='unsupported native fsr'):
         from_cipher(c)
+
+
+def test_semantic_auto_releases_losing_full_grids_before_building_another(monkeypatch):
+    import gc
+    import weakref
+    import claasp.diagram_glyphs as glyphs
+    class WeakCells(dict):
+        pass
+    references = []
+    def candidate(ir, *, strategy, **options):
+        gc.collect()
+        assert sum(reference() is not None for reference in references) <= 1
+        cells = WeakCells()
+        references.append(weakref.ref(cells))
+        size = len(references)
+        return cells, {'rows': size, 'cols': 1, 'blocks': size, 'strategy': strategy}
+    monkeypatch.setattr(glyphs, '_build_grid', candidate)
+    _, report = glyphs.build_grid({})
+    assert report['selectedVariant'] == 'semantic-legacy'
+    assert sum(reference() is not None for reference in references) == 1
+
+
+def test_semantic_auto_ties_keep_the_first_successful_variant(monkeypatch):
+    import claasp.diagram_glyphs as glyphs
+    def candidate(ir, *, strategy, **options):
+        if strategy == 'semantic-legacy':
+            raise ValueError('Bounded candidate rejected')
+        return {}, {'rows': 2, 'cols': 3, 'blocks': 4, 'strategy': strategy}
+    monkeypatch.setattr(glyphs, '_build_grid', candidate)
+    _, report = glyphs.build_grid({})
+    assert report['selectedVariant'] == 'semantic-ports'
