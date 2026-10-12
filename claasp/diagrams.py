@@ -9,6 +9,7 @@ import json
 from claasp.cipher import Cipher
 
 from claasp.diagram_validation import SCHEMA, validate as _validate, validate_native_component as _validate_native_component
+from claasp.diagram_validation import _native_description
 from claasp import diagram_states
 
 RECORD_HEADER = '+ CLAASP-DIAGRAMS 1 +'
@@ -79,6 +80,10 @@ def from_cipher(cipher, *, roles=None):
     r"""
     Extract the supported native computation without choosing a drawing layout.
 
+    Ordered native tuples/vectors and exact integer scalars become JSON-safe lists/integers.
+    Binary-field entries are converted only when they are exactly zero or one in a binary linear layer.
+    Conversion preserves entries and their order without changing the native source.
+
     This reduced-round Speck example teaches the API; it is not the full-round cipher. Names never select layout or state shape.
 
     INPUT:
@@ -118,7 +123,7 @@ def from_cipher(cipher, *, roles=None):
                                 'round': r, 'input_bits': c['input_bit_size'],
                                 'operands': [{'source': a, 'positions': copy.deepcopy(b)} for a,b in
                                              zip(c['input_id_link'], c['input_bit_positions']) if b],
-                                'description': copy.deepcopy(c['description'])})
+                                'description': _native_description(c['type'], c['description'])})
     return validate(ir)
 
 

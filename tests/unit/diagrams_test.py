@@ -616,3 +616,48 @@ def test_branching_rounds_match_independent_bit_arithmetic(seed):
         for operand in node['operands']:
             operand['source'] = names[operand['source']]
     assert to_ascii(renamed).split('# CLAASP-TYPED-GLYPH 1')[0] == drawing.split('# CLAASP-TYPED-GLYPH 1')[0]
+
+
+def test_native_sage_and_tuple_containers_preserve_order_without_mutating_sources():
+    from sage.all import GF, Integer, vector
+    c = Cipher('ordered_probe', 'permutation', ['data'], [3], 3)
+    c.add_round()
+    rows = tuple(vector(GF(2), row) for row in [(0, 0, 1), (0, 1, 0), (1, 0, 0)])
+    node = c.add_linear_layer_component(['data'], [[0, 1, 2]], 3, rows)
+    c.add_cipher_output_component([node.id], [[0, 1, 2]], 3)
+    before = repr(node.description)
+    ir = from_cipher(c)
+    assert ir['nodes'][0]['description'] == [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
+    assert repr(node.description) == before
+    assert isinstance(node.description, tuple)
+    restored = to_cipher(from_ascii(to_ascii(ir)))
+    for value in range(8):
+        expected = int(f'{value:03b}'[::-1], 2)
+        assert restored.evaluate([value]) == expected
+    # Arbitrary integral containers are storage differences, not new transforms.
+    c = Cipher('table_probe', 'permutation', ['data'], [2], 2)
+    c.add_round()
+    sbox = c.add_sbox_component(['data'], [[0, 1]], 2, tuple(Integer(i) for i in [2, 0, 3, 1]))
+    c.add_cipher_output_component([sbox.id], [[0, 1]], 2)
+    ir = from_cipher(c)
+    assert ir['nodes'][0]['description'] == [2, 0, 3, 1]
+    restored = to_cipher(from_ascii(to_ascii(ir)))
+    assert [restored.evaluate([i]) for i in range(4)] == [2, 0, 3, 1]
+
+
+def test_binary_native_container_conversion_rejects_nonbinary_field_entries():
+    from sage.all import GF, vector
+    c = Cipher('invalid_field_probe', 'permutation', ['data'], [1], 1)
+    c.add_round()
+    node = c.add_linear_layer_component(['data'], [[0]], 1, [vector(GF(4), [GF(4).gen()])])
+    c.add_cipher_output_component([node.id], [[0]], 1)
+    with pytest.raises(ValueError, match='unsupported native linear_layer'):
+        from_cipher(c)
+
+
+def test_native_sage_vector_regression_extracts_a_real_supported_graph():
+    from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
+    c = AsconSboxSigmaPermutation(number_of_rounds=1)
+    ir = from_cipher(c)
+    assert any(node['type'] == 'linear_layer' for node in ir['nodes'])
+    assert from_ascii(to_ascii(ir)) == ir

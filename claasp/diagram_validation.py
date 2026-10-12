@@ -1,7 +1,42 @@
 """Validation of local native transforms and ordered graph connectivity."""
 import re
+import copy
+import operator
 
 SCHEMA = 'claasp-diagrams/1'
+
+
+def _ordered_native_value(value, depth=0):
+    if depth > 64:
+        raise ValueError('Native description nesting exceeds 64 levels')
+    if type(value) in (str, int, bool, type(None)):
+        return copy.deepcopy(value)
+    try:
+        return operator.index(value)
+    except TypeError:
+        pass
+    unordered = isinstance(value, (dict, set, frozenset, bytes))
+    if not unordered and hasattr(value, '__len__') and hasattr(value, '__getitem__'):
+        return [_ordered_native_value(entry, depth+1) for entry in value]
+    return copy.deepcopy(value)
+
+
+def _binary_native_rows(rows):
+    for row in rows:
+        if not isinstance(row, list):
+            continue
+        for index, entry in enumerate(row):
+            if type(entry) not in (int, bool) and entry in (0, 1):
+                row[index] = int(entry)
+    return rows
+
+
+def _native_description(kind, value):
+    """Canonical ordered native containers; exact binary entries only for binary maps."""
+    result = _ordered_native_value(value)
+    if kind == 'linear_layer' and isinstance(result, list):
+        result = _binary_native_rows(result)
+    return result
 
 
 def _integer(value):

@@ -17,6 +17,11 @@ restored = to_cipher(from_ascii(text))
 figure = to_tikz(ir, rowsPerPanel=16, columnsPerPanel=6, columnSpacing=3)
 ```
 
+Ordered native tuples/Sage vectors and integer scalars normalize to JSON-safe
+lists/integers. Binary linear-layer entries convert only if exactly zero or one;
+nonbinary field entries fail. Native containers remain unmodified, and this
+storage normalization does not admit new operation types.
+
 Native records preserve widths, ordered bit fragments, constants, complete
 operation parameters and round membership. Each glyph annotation defines one
 local input, operation or independent parallel group. It contains no original dependency edges. Parsing
