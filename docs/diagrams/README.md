@@ -8,6 +8,8 @@ implements diagram planning, glyph parsing/rendering and vector emission.
 
 ```python
 from claasp.diagrams import from_cipher, to_ascii, from_ascii, to_cipher, to_tikz
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+cipher = SpeckBlockCipher(number_of_rounds=1)
 ir = from_cipher(cipher, roles={'plaintext': 'data', 'key': 'key'})
 text = to_ascii(ir)
 assert from_ascii(text) == ir
@@ -88,6 +90,11 @@ remove member records from readable tables. Large wire views may need several
 pages even when their generic round overview is compact.
 
 Readable tables paginate with `tableLineBudget` (42) and `maxPages` (2048).
+Cells use explicit 9-point monospaced line boxes with an 11-point baseline;
+all columns, including identities and operation labels, contribute to pagination.
+Long rows split into explicitly marked continuations. Declared inputs get their
+own bounded pages. Use a document text width of at least 175 mm (for example,
+A4 with 17 mm margins); paste the output in the document body, not a float.
 `overviewStagesPerPanel` (6) and `stageMode='round'|'layer'` configure the summary.
 Use a unique alphanumeric/hyphen `anchorPrefix` when combining multiple diagrams
 in one document. Add `\usepackage{tikz,hyperref}` for clickable overview/detail
@@ -114,7 +121,24 @@ layer frontiers are generic choices. `word_bits`, `columns` and source order
 are explicit shape annotations; absent identifiable geometry produces
 `ambiguous-flat-fallback`. Evaluated values and XOR differences retain native
 source identities. Unknown values remain unknown. No cipher-specific state
-adapter is used.
+adapter is used. `state_tikz` reserves `row_gap=0.25` cm between rows
+for cell indices, avoiding an index overlapping the preceding value box.
+`state_view` describes bits, whereas `state_snapshots` can group them into
+words; an explicit bit-level shape must cover every selected observation.
+For instance, Speck observations include different widths, so one shared
+bit shape cannot cover both its key and data observations.
+
+```python
+from claasp.diagrams import evaluate_state_values, state_ascii, state_tikz
+values = evaluate_state_values(cipher, [0x6574694c, 0x1918111009080100])
+print(state_ascii(ir, mode='round', word_bits=16, columns=2, values=values))
+state_figure = state_tikz(ir, mode='declared', word_bits=16, columns=2,
+                          values=values, rows_per_panel=12)
+```
+
+The public API docstrings contain runnable Sage examples with inputs, outputs,
+errors and visible snippets. Run them with `python -m sage.doctest
+claasp/diagrams.py`; correctness and malformed-input cases remain in pytest.
 
 Run in the CLAASP/Sage environment:
 

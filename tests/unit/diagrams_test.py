@@ -5,6 +5,36 @@ from claasp.diagrams import (from_cipher,to_ascii,from_ascii,to_cipher,to_tikz,
     validate,state_snapshots,state_ascii,state_tikz,evaluate_state_values)
 
 
+def _box_contents(text, start):
+    depth, index, output = 1, start, []
+    while depth:
+        char = text[index]
+        if char == chr(92):
+            output.extend(text[index:index+2])
+            index += 2
+            continue
+        if char == '{':
+            depth += 1
+        if char == '}':
+            depth -= 1
+        if depth:
+            output.append(char)
+        index += 1
+    return ''.join(output), index
+
+
+def _table_text(text):
+    output, index = [], 0
+    while index < len(text):
+        if text.startswith(r'\mbox{', index):
+            content, index = _box_contents(text, index+6)
+            output.append(content)
+        else:
+            output.append(text[index])
+            index += 1
+    return ''.join(output).replace(r'\newline{}', '').replace(r'\allowbreak{}', '')
+
+
 def circuit():
     c=Cipher('generic_probe','permutation',['data','control'],[8,4],4)
     c.add_round()
@@ -17,7 +47,8 @@ def circuit():
 def test_actual_glyph_roundtrip():
     source=circuit();ir=from_cipher(source,roles={'data':'data','control':'key'})
     text=to_ascii(ir)
-    assert '# CLAASP-TYPED-GLYPH 1' in text and '+ CLAASP-DIAGRAMS 1 +' not in text
+    assert '# CLAASP-TYPED-GLYPH 1' in text
+    assert '+ CLAASP-DIAGRAMS 1 +' not in text
     assert from_ascii(text)==ir
     assert to_cipher(from_ascii(text)).evaluate([0xa5,7],intermediate_output=True)==source.evaluate([0xa5,7],intermediate_output=True)
     assert '\\begin{tikzpicture}' in to_tikz(ir,columnSpacing=2,wireStyle='smooth')
@@ -34,7 +65,8 @@ def test_generic_states_and_differences():
     c=circuit();ir=from_cipher(c);v=evaluate_state_values(c,[0xa5,7]);other=evaluate_state_values(c,[0xa4,7])
     for mode in ['declared','round','layer']:
         frames=state_snapshots(ir,mode=mode,columns=4,values=v,comparison=other)
-        assert frames and any(w['active'] for f in frames for w in f['words'])
+        assert frames
+        assert any((w['active'] for f in frames for w in f['words']))
         assert 'explicit-columns' in state_ascii(ir,mode=mode,columns=4,values=v)
         assert 'orange!25' in state_tikz(ir,mode=mode,columns=4,values=v,comparison=other)
     assert state_snapshots(ir)[0]['geometry']=='ambiguous-flat-fallback'
@@ -104,11 +136,15 @@ def test_precise_legends_for_large_labels_and_values():
     c=Cipher('long_probe','permutation',['identifier_without_breaks_'*8],[128],128);c.add_round()
     source=c.inputs[0];c.add_cipher_output_component([source],[list(range(128))],128)
     ir=from_cipher(c);text=to_tikz(ir, view="wires", legend="audit", rowsPerPanel=8, columnsPerPanel=3)
-    assert 'D0:0' in text and 'Optional audit' in text and r'\allowbreak{}' in text
+    assert 'D0:0' in text
+    assert 'Optional audit' in text
+    assert '\\mbox{' in text
     values=evaluate_state_values(c,[(1<<128)-1])
     state=state_tikz(ir,word_bits=128,values=values)
-    assert r'\textbf{V0}' in state and 'V0' in state
-    assert 'ffff' in state and r'\allowbreak{}' in state
+    assert '\\textbf{V0}' in state
+    assert 'V0' in state
+    assert 'ffff' in state
+    assert '\\allowbreak{}' in state
 
 
 def test_native_role_annotations_survive_class_reimport():
@@ -170,14 +206,16 @@ def test_generic_parallel_unary_geometry_and_visible_binding_mutation():
     c.add_cipher_output_component([b.id,a.id],[list(range(4)),list(range(4))],8)
     ir=from_cipher(c);grid,_=build_grid(ir)
     rotation_rows=[r for (r,col),cell in grid.items() if cell.get('definition',{}).get('description')==['ROTATE',-1]]
-    assert len(rotation_rows)==2 and rotation_rows[0]==rotation_rows[1]
+    assert len(rotation_rows) == 2
+    assert rotation_rows[0] == rotation_rows[1]
     text=to_ascii(ir);assert '@21' in text
     changed=text.replace('@21','   ',1)
     assert from_ascii(changed)!=ir  # Visible binding, not metadata, changes operands.
     glyph,footer=text.split(MARKER);manifest=json.loads(footer)
     manifest['records'][0]['definition']['operands']=[]
+    malformed = glyph+MARKER+json.dumps(manifest)
     with pytest.raises(ValueError,match='hidden dependency'):
-        from_ascii(glyph+MARKER+json.dumps(manifest))
+        from_ascii(malformed)
 
 
 def test_native_work_bounds_and_long_iterative_trace():
@@ -222,9 +260,12 @@ def test_tikz_exposes_reversed_order_and_numbered_ports():
     ir=from_cipher(c)
     assert '@21' in to_ascii(ir)
     vector=to_tikz(ir,view="wires")
-    assert '@21' in vector and '{1};' in vector and '{2};' in vector
+    assert '@21' in vector
+    assert '{1};' in vector
+    assert '{2};' in vector
     ir2=from_cipher(circuit())
-    assert '{1};' in to_tikz(ir2,view='wires') and '{2};' in to_tikz(ir2,view='wires')
+    assert '{1};' in to_tikz(ir2, view='wires')
+    assert '{2};' in to_tikz(ir2, view='wires')
 
 
 def test_record_import_and_rectangular_export_bounds_precede_render(monkeypatch):
@@ -257,8 +298,9 @@ def test_generic_local_port_selections_preserve_visible_sources_and_fragments():
     assert all('operands' not in d for d in definitions)
     for d in definitions:
         if 'operand_positions' in d:d['operand_positions'][0][0]=10**9;break
+    malformed = text.split(MARKER)[0]+MARKER+json.dumps(manifest)
     with pytest.raises(ValueError,match='local operand positions'):
-        from_ascii(text.split(MARKER)[0]+MARKER+json.dumps(manifest))
+        from_ascii(malformed)
 
 
 def test_unobserved_constant_cone_both_layout_variants():
@@ -280,7 +322,8 @@ def test_parallel_layers_use_visible_local_masks_and_independent_arithmetic():
     ir=from_cipher(c);text=to_ascii(ir,strategy='semantic-parallel')
     glyph,footer=text.split(MARKER);manifest=json.loads(footer)
     groups=[r['definition'] for r in manifest['records'] if r['definition']['kind']=='parallel']
-    assert len(groups)==2 and all(len(g['members'])==2 for g in groups)
+    assert len(groups) == 2
+    assert all((len(g['members']) == 2 for g in groups))
     parsed=from_ascii(text);assert parsed==ir
     rebuilt=to_cipher(parsed)
     def rotate(x):return ((x<<1)|(x>>3))&15
@@ -299,7 +342,8 @@ def test_parallel_layers_use_visible_local_masks_and_independent_arithmetic():
         broken=copy.deepcopy(manifest)
         group=next(r['definition'] for r in broken['records'] if r['definition']['kind']=='parallel')
         mutation(group)
-        with pytest.raises(ValueError,match=match):from_ascii(glyph+MARKER+json.dumps(broken))
+        malformed = glyph+MARKER+json.dumps(broken)
+        with pytest.raises(ValueError,match=match):from_ascii(malformed)
     # Removing visible binding must affect parsing despite an unchanged footer.
     changed=text.replace('@21','   ',1)
     if changed!=text:
@@ -315,22 +359,29 @@ def test_aggregate_group_limits_precede_visible_stream_allocation():
     template={'id':'member','type':'word_operation','bits':1,'input_bits':1,'round':0,'description':['NOT'],'ordinal':0,'operand_positions':[[0]]}
     record={'row':0,'col':0,'definition':{'kind':'parallel','bits':10001,'tag':'group','members':[template]*10001}}
     manifest['records']=[record,copy.deepcopy(record)]
-    with pytest.raises(ValueError,match='Aggregate native component count'):from_ascii(drawing+MARKER+json.dumps(manifest))
+    malformed = drawing+MARKER+json.dumps(manifest)
+    with pytest.raises(ValueError,match='Aggregate native component count'):from_ascii(malformed)
     record['definition']['members']=[{**template,'bits':1000000,'input_bits':1000001}]
     manifest['records']=[record]
-    with pytest.raises(ValueError,match='Aggregate native explicit bit expansion'):from_ascii(drawing+MARKER+json.dumps(manifest))
+    malformed = drawing+MARKER+json.dumps(manifest)
+    with pytest.raises(ValueError,match='Aggregate native explicit bit expansion'):from_ascii(malformed)
 
 
 def test_readable_public_api_has_all_members_and_optional_audit():
     ir=from_cipher(circuit())
     text=to_tikz(ir)
-    assert 'Ordered input fragments' in text and 'Operation / parameters' in text
-    assert 'Computation overview' in text and 'hypertarget' in text and 'hyperlink' in text
+    assert 'Ordered input fragments' in text
+    assert 'Operation / parameters' in _table_text(text)
+    assert 'Computation overview' in text
+    assert 'hypertarget' in text
+    assert 'hyperlink' in text
     for index in range(len(ir['nodes'])):
         assert f'diagram-member-{index}' in text
-    assert 'operand_positions' not in text and '\\allowbreak{}' in text
+    assert 'operand_positions' not in text
+    assert '\\mbox{' in text
     audit=to_tikz(ir,audit=True)
-    assert 'Optional audit' in audit and 'operand' in audit
+    assert 'Optional audit' in audit
+    assert 'operand' in audit
     assert 'round 0' in to_tikz(ir,view='overview')
     assert 'Round 0:' in to_tikz(ir,view='detail')
     with pytest.raises(ValueError,match='pages'):
@@ -364,7 +415,8 @@ def test_readable_stride_and_member_compression_preserve_order_and_repeats():
     operands=[{'source':f'arbitrary_{i}','positions':[2,0,2]} for i in range(5)]
     locations={f'arbitrary_{i}':('D5:7',i+1) for i in range(5)}
     text=input_fragments(operands,locations)
-    assert '1..5: D5:7.members[1:1:5]' in text and 'each [2,0,2]' in text
+    assert '1..5: D5:7.members[1:1:5]' in text
+    assert 'each [2,0,2]' in text
     renamed=[dict(e,source='renamed_'+str(i)) for i,e in enumerate(operands)]
     assert input_fragments(renamed,{e['source']:('D5:7',i+1) for i,e in enumerate(renamed)})==text
 
@@ -409,7 +461,7 @@ def test_overview_preserves_nonadjacent_dependencies_without_overlapping_arc_lab
     text = '\n'.join(overview(ir, {}, {}))
     assert 'Complete cross-stage dependencies' in text
     assert 'Adjacent-stage dependencies' in text
-    assert '0 & 2 & 4' in text
+    assert '0 & 2 & 4' in _table_text(text)
     assert '(S0.east) to[bend left=25] node[right,font=\\scriptsize] {4 bits} (S2.east)' not in text
     assert '(S1.east);' in text
 
@@ -434,10 +486,41 @@ def test_readable_observation_and_final_output_tags_survive_escaping_and_wrappin
     final_tag = 'FINAL_TAG_$^~' + 'final_long_' * 10
     ir['nodes'][-1]['description'] = [final_tag]
     for view in ('overview-detail', 'detail'):
-        text = to_tikz(ir, view=view).replace(r'\allowbreak{}', '')
+        text = _table_text(to_tikz(ir, view=view))
         for tag in tags + [final_tag]:
             assert escape(tag) in text
-        assert 'OBSERVE/4 tag=P1' in text and 'OBSERVE/4 tag=P2' in text
+        assert 'OBSERVE/4 tag=P1' in text
+        assert 'OBSERVE/4 tag=P2' in text
         assert 'OUT/4 tag=P3' in text
         assert 'Optional audit' not in text
     assert from_ascii(to_ascii(ir)) == ir
+
+
+def test_state_indices_reserve_a_lane_between_value_rows():
+    import re
+    c = Cipher('index_probe', 'permutation', ['data'], [2], 2)
+    c.add_round()
+    c.add_cipher_output_component(['data'], [[0, 1]], 2)
+    text = state_tikz(from_cipher(c), columns=1)
+    centers = [float(y) for y in re.findall(r'minimum height=0.5cm.*at \(0,([^)]*)\)', text)]
+    # Adjacent values need their .5 cm boxes plus a lane for the tiny index.
+    assert centers == [0.0, -0.75]
+    ir = from_cipher(c)
+    with pytest.raises(ValueError, match='index labels'):
+        state_tikz(ir, columns=1, row_gap=0)
+
+
+def test_readable_serial_arithmetic_wraps_all_columns_and_retains_every_member():
+    c = Cipher('serial_probe', 'permutation', ['data'], [32], 32)
+    c.add_round()
+    source = 'data'
+    for _ in range(34):
+        source = c.add_modadd_component([source, 'data'], [list(range(32))]*2, 32).id
+    c.add_cipher_output_component([source], [list(range(32))], 32)
+    text = to_tikz(from_cipher(c), view='detail')
+    visible = _table_text(text)
+    for ordinal in range(34):
+        assert f'{ordinal}: modadd\\_0\\_{ordinal}' in visible
+    assert '34: cipher\\_output\\_0\\_34' in visible
+    assert r'\fontfamily{cmtt}\fontsize{9}{11}' in text
+    assert r'\noindent\begin{tabular}' in text

@@ -36,35 +36,60 @@ def selections(positions):
     return ','.join(result)
 
 
+def _parameter_key(kind, description):
+    return json.dumps([kind, description], separators=(',', ':'))
+
+
+def _reference(kind, description, registry):
+    if not registry:
+        return None
+    return registry.get(_parameter_key(kind, description))
+
+
+def _word_label(node, short):
+    description = node['description']
+    name = description[0]
+    if name in ('NOT', 'REVERSE'):
+        return f'{name}/{node["bits"]}(unary)'
+    fixed_amount = name in ('ROTATE', 'SHIFT')
+    parameters = 'arity='+str(description[1])
+    if fixed_amount or short:
+        parameters = str(description[1])
+    if len(description) > 2 and description[2] is not None:
+        parameters += ',mod='+str(description[2])
+    return f'{name}/{node["bits"]}({parameters})'
+
+
+def _constant_label(node, registry):
+    value = node['description'][0]
+    if len(value) > 12:
+        value = _reference('constant', node['description'], registry) or value
+    return f'CONST/{node["bits"]}={value}'
+
+
+def _output_label(node, registry, short):
+    kind = node['type']
+    name = 'OUT' if kind == 'cipher_output' else 'OBSERVE'
+    label = name+'/'+str(node['bits'])
+    reference = _reference(kind, node['description'], registry)
+    if short:
+        return label+(' '+reference if reference else '')
+    return label+' tag='+(reference or node['description'][0])
+
+
 def operation(node, registry=None, short=False):
     kind = node.get('type', node.get('kind', ''))
-    description = node.get('description', [])
     if kind == 'word_operation':
-        name = description[0]
-        if name in ('NOT', 'REVERSE'):
-            return f'{name}/{node["bits"]}(unary)'
-        parameters = str(description[1]) if name in ('ROTATE', 'SHIFT') else 'arity=' + str(description[1])
-        if short and name not in ('ROTATE', 'SHIFT'):
-            parameters = str(description[1])
-        if len(description) > 2 and description[2] is not None:
-            parameters += ',mod=' + str(description[2])
-        return f'{name}/{node["bits"]}({parameters})'
+        return _word_label(node, short)
     if kind == 'constant':
-        value = description[0]
-        if len(value) > 12:
-            key = json.dumps([kind, description], separators=(',', ':'))
-            reference = registry.get(key) if registry else None
-            value = reference or value
-        return f'CONST/{node["bits"]}={value}'
+        return _constant_label(node, registry)
     if kind in ('cipher_output', 'intermediate_output'):
-        label = ('OUT' if kind == 'cipher_output' else 'OBSERVE') + '/' + str(node['bits'])
-        key = json.dumps([kind, description], separators=(',', ':'))
-        reference = registry.get(key) if registry else None
-        return label + (' ' + reference if reference else '') if short else label + ' tag=' + (reference or description[0])
+        return _output_label(node, registry, short)
     if kind in ('input', 'join', 'selection'):
-        return {'input': 'INPUT', 'join': 'PACK', 'selection': 'SELECT'}[kind] + '/' + str(node['bits'])
-    reference = registry.get(json.dumps([kind, description], separators=(',', ':'))) if registry else None
-    return kind.upper() + '/' + str(node['bits']) + (' ' + reference if reference else '')
+        return {'input': 'INPUT', 'join': 'PACK', 'selection': 'SELECT'}[kind]+'/'+str(node['bits'])
+    reference = _reference(kind, node.get('description', []), registry)
+    return kind.upper()+'/'+str(node['bits'])+(' '+reference if reference else '')
+
 
 
 def parameter_registry(ir):
@@ -77,73 +102,147 @@ def parameter_registry(ir):
     return parameters
 
 
-class Tex(str):
-    """Escaped/generated presentation markup, never raw input data."""
+class _Tex(str):
+    """Generated TeX with plaintext available for bounded table wrapping.
+
+    INPUT:
+
+    - ``markup`` -- **string**; already generated/escaped TeX
+    - ``plain_text`` -- **string** (default: ``None``); visible cell contents
+    - ``prefix`` -- **string** (default: ``''``); zero-width generated anchor
+    """
+    def __new__(cls, markup, *, plain_text=None, prefix=''):
+        value = super().__new__(cls, markup)
+        value.plain_text = plain_text
+        value.prefix = prefix
+        return value
+
+
+_TABLE_FONT_POINTS = 9
+_TABLE_BASELINE_POINTS = 11
+_TABLE_CHARACTER_POINTS = _TABLE_FONT_POINTS*.525
+_POINTS_PER_MM = 72.27/25.4
+
+
+def _cell_capacity(width):
+    # Every line uses the declared cmtt font, not a guessed proportional width.
+    return max(1, math.floor(width*_POINTS_PER_MM/_TABLE_CHARACTER_POINTS)-1)
+
+
+def _plain_cell(value):
+    if isinstance(value, _Tex) and value.plain_text is not None:
+        return value.plain_text
+    return str(value)
+
+
+def _cell_lines(value, width):
+    text = _plain_cell(value)
+    capacity = _cell_capacity(width)
+    lines = []
+    while len(text) > capacity:
+        boundary = text.rfind(' ', 0, capacity)
+        end = boundary+1 if boundary > 0 else capacity
+        lines.append(text[:end])
+        text = text[end:]
+    lines.append(text)
+    return lines
+
+
+def _table_row_parts(row, widths, budget):
+    cells = [_cell_lines(value, width) for value, width in zip(row, widths)]
+    maximum = max(map(len, cells))
+    # Leave room for the explicit continuation marker; split any large column.
+    per_part = budget-2
+    prefixes = [value.prefix if isinstance(value, _Tex) else '' for value in row]
+    for start in range(0, maximum, per_part):
+        part = [lines[start:start+per_part] or [''] for lines in cells]
+        if start:
+            part[0] = ['(continued)']+part[0]
+        yield part, prefixes if start == 0 else ['']*len(row)
+
+
+def _table_parts(rows, widths, budget):
+    pages, page, used = [], [], 0
+    for row in rows:
+        for cells, prefixes in _table_row_parts(row, widths, budget):
+            height = max(map(len, cells))
+            if page and used+height > budget:
+                pages.append(page)
+                page, used = [], 0
+            page.append((cells, prefixes))
+            used += height
+    if page:
+        pages.append(page)
+    return pages
+
+
+def _boxed_cell(lines, prefix=''):
+    # Explicit fixed-width line boxes make the Python height bound match TeX.
+    anchor = r'\smash{'+prefix+'}' if prefix else ''
+    return anchor+r'\newline{}'.join(r'\mbox{'+escape(line)+'}' for line in lines)
+
+
+def _table_page(title, page, headings, widths, index, count):
+    lines = [r'\par\noindent\textbf{'+escape(title)+f' ({index+1}/{count})'+'}',
+             r'\par\medskip\begingroup\setlength{\tabcolsep}{3pt}',
+             r'\fontfamily{cmtt}\fontsize{9}{11}\selectfont\frenchspacing',
+             r'\noindent\begin{tabular}{@{}'+''.join(f'p{{{width}mm}}' for width in widths)+'@{}}',
+             ' & '.join(_boxed_cell(_cell_lines(heading, width)) for heading, width in zip(headings, widths))+r'\\\hline']
+    for cells, prefixes in page:
+        lines.append(' & '.join(_boxed_cell(cell, prefix) for cell, prefix in zip(cells, prefixes))+r'\\')
+    lines.extend([r'\end{tabular}', r'\par\endgroup\normalsize'])
+    return '\n'.join(lines)
 
 
 def table_pages(title, rows, headings, widths, line_budget=42):
-    """Paginate by estimated wrapped lines as well as native record count."""
-    parts = []
-    page = []
-    used = 0
-    for row in rows:
-        visible=lambda value:re.sub(r'\\hypertarget\{[^}]*\}\{\}', '', str(value)).replace(r'\allowbreak{}','').replace(r'\_','_')
-        lines = max(1, max(math.ceil(len(visible(value)) / max(8, int(width * .65)))
-                           for value, width in zip(row, widths)))
-        if page and used + lines > line_budget:
-            parts.append(page)
-            page = []
-            used = 0
-        # Very large fields are split into visibly numbered continuation rows.
-        limit = max(80, int(widths[-1] * .65 * (line_budget - 3)))
-        tail = str(row[-1])
-        chunks = [tail[i:i + limit] for i in range(0, len(tail), limit)] or ['']
-        for index, chunk in enumerate(chunks):
-            continuation = tuple(row[:-1]) + (chunk,)
-            if index:
-                identifier=re.sub(r'\\hypertarget\{[^}]*\}\{\}', '', str(row[0])) if isinstance(row[0],Tex) else wrapped(row[0])
-                continuation = (Tex(identifier + ' (continued)'),) + ('',) * (len(row) - 2) + (chunk,)
-            estimated = max(1, math.ceil(len(chunk) / max(8, int(widths[-1] * .65))))
-            if page and used + estimated > line_budget:
-                parts.append(page)
-                page = []
-                used = 0
-            page.append(continuation)
-            used += max(lines if len(chunks) == 1 else estimated, 1)
-    if page:
-        parts.append(page)
-    output = []
-    for index, page in enumerate(parts):
-        lines = [r'\par\noindent\textbf{' + escape(title) + f' ({index + 1}/{len(parts)})' + '}',
-                 r'\par\medskip\small\setlength{\tabcolsep}{3pt}',
-                 r'\begin{tabular}{@{}' + ''.join(f'p{{{width}mm}}' for width in widths) + '@{}}',
-                 ' & '.join(escape(h) for h in headings) + r'\\\hline']
-        lines.extend(' & '.join(str(value) if isinstance(value,Tex) else wrapped(value) for value in row) + r'\\' for row in page)
-        lines.extend([r'\end{tabular}', r'\par\normalsize'])
-        output.append('\n'.join(lines))
-    return output
+    """Paginate fixed-metric cmtt line boxes; split long data in any column."""
+    pages = _table_parts(rows, widths, line_budget)
+    return [_table_page(title, page, headings, widths, index, len(pages)) for index, page in enumerate(pages)]
+
+
+
+def _next_member(edge, locations, box, member, offset, step, positions):
+    next_box, next_member = locations.get(edge['source'], ('', 0))
+    return next_box == box and next_member == member+step*offset and edge['positions'] == positions
+
+
+def _member_run(operands, start, locations):
+    edge = operands[start]
+    box, member = locations.get(edge['source'], ('', 0))
+    if not box or start+1 >= len(operands):
+        return start, None, box, member
+    next_box, next_member = locations.get(operands[start+1]['source'], ('', 0))
+    if next_box != box:
+        return start, None, box, member
+    step = next_member-member
+    end = start
+    if step in (-1, 1):
+        while end+1 < len(operands) and _next_member(operands[end+1], locations, box, member, end+1-start, step, edge['positions']):
+            end += 1
+    return end, step, box, member
+
+
+def _fragment(edge, index, references):
+    source = edge['source']
+    if references:
+        source = references.get(source, source)
+    return f'{index+1}: {source}[{selections(edge["positions"])}]'
 
 
 def input_fragments(operands, locations, references=None):
     """Compact consecutive bundle members without losing fragment boundaries."""
-    result=[];index=0
-    while index<len(operands):
-        edge=operands[index];box,member=locations.get(edge['source'],('',0));end=index;step=None
-        if box and index+1<len(operands):
-            next_box,next_member=locations.get(operands[index+1]['source'],('',0))
-            step=next_member-member if next_box==box else None
-            if step in (-1,1):
-                while end+1<len(operands):
-                    following=operands[end+1];following_box,following_member=locations.get(following['source'],('',0))
-                    if following_box!=box or following_member!=member+step*(end+1-index) or following['positions']!=edge['positions']:break
-                    end+=1
-        if end-index>=2:
+    result, index = [], 0
+    while index < len(operands):
+        edge = operands[index]
+        end, step, box, member = _member_run(operands, index, locations)
+        if end-index >= 2:
             result.append(f'{index+1}..{end+1}: {box}.members[{member}:{step}:{member+step*(end-index)}], each [{selections(edge["positions"])}]')
-            index=end+1
+            index = end+1
         else:
-            source=references.get(edge['source'],edge['source']) if references else edge['source']
-            result.append(f'{index+1}: {source}[{selections(edge["positions"])}]');index+=1
+            result.append(_fragment(edge, index, references))
+            index += 1
     return '; '.join(result) or '(no input fragments)'
+
 
 
 def member_pages(ir, registry, locations, options):
@@ -153,7 +252,9 @@ def member_pages(ir, registry, locations, options):
     for ordinal, node in enumerate(ir['nodes']):
         box, member = locations.get(node['id'], ('', 1))
         fragments = input_fragments(node['operands'], locations, references)
-        identity=Tex(r'\hypertarget{'+options.get('anchorPrefix','diagram')+'-member-'+str(ordinal)+'}{}'+wrapped(f'{ordinal}: {node["id"]}'))
+        prefix = r'\hypertarget{'+options.get('anchorPrefix','diagram')+'-member-'+str(ordinal)+'}{}'
+        plain = f'{ordinal}: {node["id"]}'
+        identity = _Tex(prefix+wrapped(plain), plain_text=plain, prefix=prefix)
         stages.setdefault(node['round'], []).append((identity,
             f'{box}/{member}', f'{node["input_bits"]}/{node["bits"]}', operation(node, registry), fragments))
     output = []
@@ -182,99 +283,171 @@ def parameter_pages(parameters, options):
                        [18, 40, 106], options.get('tableLineBudget', 42)) if rows else []
 
 
-def overview(ir, registry, options):
+def _overview_options(options):
     mode = options.get('stageMode', 'round')
     if mode not in ('round', 'layer'):
         raise ValueError('Invalid TikZ stageMode')
     count = options.get('overviewStagesPerPanel', 6)
-    if type(count) is not int or count < 1 or count > 12:
+    if type(count) is not int or not 1 <= count <= 12:
         raise ValueError('Invalid overviewStagesPerPanel')
-    ranks = {i['id']: 0 for i in ir['inputs']}
-    stages = {round_index: [] for round_index in range(ir['rounds'])} if mode == 'round' else {}
-    assignments = {i['id']: 'input:' + i['id'] for i in ir['inputs']}
+    return mode, count
+
+
+def _stage_assignments(ir, mode):
+    ranks = {item['id']: 0 for item in ir['inputs']}
+    stages = {}
+    if mode == 'round':
+        stages = {index: [] for index in range(ir['rounds'])}
+    assignments = {item['id']: 'input:'+item['id'] for item in ir['inputs']}
     for node in ir['nodes']:
-        rank = 1 + max([ranks[e['source']] for e in node['operands']] or [0])
+        rank = 1+max([ranks[edge['source']] for edge in node['operands']] or [0])
         ranks[node['id']] = rank
         stage = node['round'] if mode == 'round' else rank
         assignments[node['id']] = stage
         stages.setdefault(stage, []).append(node)
+    return stages, assignments
+
+
+def _stage_edges(ir, assignments):
     edges = {}
     for node in ir['nodes']:
         for edge in node['operands']:
             source, target = assignments[edge['source']], assignments[node['id']]
             if source != target:
-                edges.setdefault((source, target), set()).update((edge['source'], p) for p in edge['positions'])
-    output = []
+                edges.setdefault((source, target), set()).update((edge['source'], position) for position in edge['positions'])
+    return edges
+
+
+def _stage_summary(nodes, registry):
+    patterns = Counter(operation(node, registry, short=True) for node in nodes)
+    summary = '; '.join(f'{label} x{count}' for label, count in list(patterns.items())[:3])
+    if len(patterns) > 3:
+        summary += f'; {len(patterns)-3} additional parameter patterns'
+    return summary
+
+
+def _stage_heading(ir, stage, nodes, mode, options):
+    prefix = options.get('anchorPrefix', 'diagram')
+    if mode == 'round':
+        target = prefix+'-round-'+str(stage)
+    else:
+        target = prefix+'-member-'+str(ir['nodes'].index(nodes[0]))
+    heading = escape(mode)+' '+str(stage)
+    if options.get('view', 'overview-detail') != 'overview' and nodes:
+        heading = r'\hyperlink{'+target+'}{'+heading+'}'
+    return heading
+
+
+def _adjacent_edges(visible, edges):
+    return [(source, target, bits) for (source, target), bits in edges.items()
+            if source in visible and target in visible and visible.index(target) == visible.index(source)+1]
+
+
+def _boundary_text(visible, edges, mode):
+    ingress = [(str(source), str(target), str(len(bits))) for (source, target), bits in edges.items()
+               if target in visible and source not in visible]
+    if not ingress:
+        return None
+    text = escape('; '.join(f'{source} -> {mode} {target}: {bits} distinct referenced bits' for source, target, bits in ingress))
+    return r'\par\small Boundary inputs: '+text.replace(' -> ', r' $\to$ ')+r'\par\normalsize'
+
+
+def _overview_panel(ir, stages, visible, edges, mode, registry, options):
+    lines = [r'\par\noindent\textbf{Computation overview: '+str(len(ir['nodes']))+' native operations}',
+             r'\par These boxes are '+mode+' summaries, not individual operations. Select overview-detail or detail for every native identity and ordered input fragment.',
+             r'\par Adjacent-stage dependencies are drawn below; the complete cross-stage dependency table follows.',
+             r'\par\medskip\begin{tikzpicture}[>=stealth]']
+    for index, stage in enumerate(visible):
+        heading = _stage_heading(ir, stage, stages[stage], mode, options)
+        summary = _stage_summary(stages[stage], registry)
+        lines.append(fr'\node[draw,align=left,text width=100mm,font=\small] (S{stage}) at (0,{-2.4*index}) {{{heading}: {len(stages[stage])} operations\\{escape(summary)}}};')
+    for source, target, bits in _adjacent_edges(visible, edges):
+        lines.append(fr'\draw[->] (S{source}.east) to[bend left=25] node[right,font=\scriptsize] {{{len(bits)} bits}} (S{target}.east);')
+    lines.append(r'\end{tikzpicture}')
+    boundary = _boundary_text(visible, edges, mode)
+    if boundary:
+        lines.append(boundary)
+    return '\n'.join(lines)
+
+
+def overview(ir, registry, options):
+    mode, count = _overview_options(options)
+    stages, assignments = _stage_assignments(ir, mode)
+    edges = _stage_edges(ir, assignments)
     ordered = sorted(stages)
-    for start in range(0, len(ordered), count):
-        visible = ordered[start:start + count]
-        lines = [r'\par\noindent\textbf{Computation overview: ' + str(len(ir['nodes'])) + ' native operations}',
-                 r'\par These boxes are ' + mode + ' summaries, not individual operations. Select overview-detail or detail for every native identity and ordered input fragment.',
-                 r'\par Adjacent-stage dependencies are drawn below; the complete cross-stage dependency table follows.',
-                 r'\par\medskip\begin{tikzpicture}[>=stealth]']
-        for index, stage in enumerate(visible):
-            patterns = Counter(operation(node, registry, short=True) for node in stages[stage])
-            summary = '; '.join(f'{op} x{n}' for op, n in list(patterns.items())[:3])
-            if len(patterns) > 3:
-                summary += f'; {len(patterns) - 3} additional parameter patterns'
-            target=options.get('anchorPrefix','diagram')+'-round-'+str(stage) if mode=='round' else options.get('anchorPrefix','diagram')+'-member-'+str(ir['nodes'].index(stages[stage][0]))
-            heading=(r'\hyperlink{'+target+'}{'+escape(mode)+' '+str(stage)+'}') if options.get('view','overview-detail')!='overview' and stages[stage] else escape(mode)+' '+str(stage)
-            lines.append(fr'\node[draw,align=left,text width=100mm,font=\small] (S{stage}) at (0,{-2.4 * index}) {{{heading}: {len(stages[stage])} operations\\{escape(summary)}}};')
-        for (source, target), bits in edges.items():
-            if source in visible and target in visible and visible.index(target) == visible.index(source) + 1:
-                lines.append(fr'\draw[->] (S{source}.east) to[bend left=25] node[right,font=\scriptsize] {{{len(bits)} bits}} (S{target}.east);')
-        lines.append(r'\end{tikzpicture}')
-        ingress = [(str(source), str(target), str(len(bits))) for (source, target), bits in edges.items()
-                   if target in visible and source not in visible]
-        if ingress:
-            lines.append(r'\par\small Boundary inputs: ' + escape('; '.join(f'{s} -> {mode} {t}: {b} distinct referenced bits' for s, t, b in ingress)).replace(' -> ', r' $\to$ ') + r'\par\normalsize')
-        output.append('\n'.join(lines))
-    dependency_rows = [(str(source), str(target), str(len(bits)))
-                       for (source, target), bits in edges.items()]
-    output.extend(table_pages('Complete cross-stage dependencies', dependency_rows,
+    output = [_overview_panel(ir, stages, ordered[start:start+count], edges, mode, registry, options)
+              for start in range(0, len(ordered), count)]
+    rows = [(str(source), str(target), str(len(bits))) for (source, target), bits in edges.items()]
+    output.extend(table_pages('Complete cross-stage dependencies', rows,
                               ['Source input / stage', 'Destination stage', 'Distinct referenced bits'],
                               [76, 45, 45], options.get('tableLineBudget', 42)))
     return output
 
 
-def present(ir, cells, dimensions, wire_panels, options):
+
+def _presentation_options(options):
     view = options.get('view', 'overview-detail')
     if view not in ('overview', 'detail', 'overview-detail', 'wires'):
         raise ValueError('Invalid TikZ view')
-    prefix=options.get('anchorPrefix','diagram')
-    if not isinstance(prefix,str) or not re.fullmatch('[A-Za-z0-9-]+',prefix):raise ValueError('Invalid TikZ anchorPrefix')
-    if type(options.get('audit',False)) is not bool:raise ValueError('Invalid TikZ audit option')
-    budget = options.get('tableLineBudget', 42)
-    maximum = options.get('maxPages', 2048)
+    prefix = options.get('anchorPrefix', 'diagram')
+    if not isinstance(prefix, str) or not re.fullmatch('[A-Za-z0-9-]+', prefix):
+        raise ValueError('Invalid TikZ anchorPrefix')
+    if type(options.get('audit', False)) is not bool:
+        raise ValueError('Invalid TikZ audit option')
+    budget, maximum = options.get('tableLineBudget', 42), options.get('maxPages', 2048)
     if type(budget) is not int or not 8 <= budget <= 100 or type(maximum) is not int or maximum < 1:
         raise ValueError('Invalid readable TikZ pagination')
-    parameters = parameter_registry(ir)
-    registry = {key: value[0] for key, value in parameters.items()}
+    return view, budget, maximum
+
+
+def _member_locations(cells):
     locations = {}
     for (row, col), cell in cells.items():
         definition = cell.get('definition', {})
         for index, member in enumerate(definition.get('members', [definition])):
             if 'id' in member and member.get('kind', 'native') != 'input':
-                locations[member['id']] = (f'D{row}:{col}', index + 1)
+                locations[member['id']] = (f'D{row}:{col}', index+1)
+    return locations
+
+
+def _audit_pages(cells, budget):
+    rows = [(f'D{row}:{col}', json.dumps(cell['definition'], separators=(',', ':')))
+            for (row, col), cell in sorted(cells.items()) if 'definition' in cell]
+    return table_pages('Optional audit: complete local definitions', rows, ['Box', 'Local definition'], [20, 145], budget)
+
+
+def _presentation_pages(ir, cells, wire_panels, parameters, options, view, budget):
+    registry = {key: value[0] for key, value in parameters.items()}
     pages = []
-    inputs = [('I'+str(index)+': '+i['id'], str(i['bits']), i['role']) for index,i in enumerate(ir['inputs'])]
-    input_pages=table_pages('Declared inputs', inputs, ['Input index / identity', 'Bits', 'Role'], [85, 20, 60], budget)
-    intro='\n'.join(input_pages)
     if view in ('overview', 'overview-detail'):
         pages.extend(overview(ir, registry, options))
     if view == 'wires':
         pages.extend(wire_panels)
-    if view in ('detail', 'overview-detail', 'wires') and options.get('legend', 'readable') != 'none':
-        pages.extend(member_pages(ir, registry, locations, options))
+    include_members = view in ('detail', 'overview-detail', 'wires') and options.get('legend', 'readable') != 'none'
+    if include_members:
+        pages.extend(member_pages(ir, registry, _member_locations(cells), options))
         pages.extend(parameter_pages(parameters, options))
-    if options.get('audit', False) or options.get('legend')=='audit':
-        rows = [(f'D{r}:{c}', json.dumps(cell['definition'], separators=(',', ':')))
-                for (r, c), cell in sorted(cells.items()) if 'definition' in cell]
-        pages.extend(table_pages('Optional audit: complete local definitions', rows, ['Box', 'Local definition'], [20, 145], budget))
-    if len(pages) > maximum:
-        raise ValueError(f'Readable TikZ needs {len(pages)} pages; increase maxPages or select a view')
-    separator = '\n' + (r'\clearpage' if options.get('pageBreaks', True) else r'\par\bigskip') + '\n'
-    header = (r'\par\noindent\textbf{Typed native computation: ' + str(len(ir['nodes'])) + ' operations, ' + str(ir['rounds']) + ' rounds}'
-              + '\n' + r'\par Detail boxes and members preserve the complete computation. Input references I0,I1,... follow declared input order; n0,n1,... denote native ordinals in the detail tables. Input fragments are concatenated in order; native arity and widths determine logical operands. Stride a:s:b denotes inclusive positions a,a+s,...,b; repeats remain explicit. The typed ASCII source retains full audit data.' + '\n')
-    navigation=r'\providecommand{\hypertarget}[2]{#2}'+r'\providecommand{\hyperlink}[2]{#2}'+'\n'
-    return navigation + header + intro + r"\par\bigskip" + separator.join(pages)
+    if options.get('audit', False) or options.get('legend') == 'audit':
+        pages.extend(_audit_pages(cells, budget))
+    return pages
+
+
+def _presentation_header(ir):
+    return (r'\par\noindent\textbf{Typed native computation: '+str(len(ir['nodes']))+' operations, '+str(ir['rounds'])+' rounds}'
+            +'\n'+r'\par Detail boxes and members preserve the complete computation. Input references I0,I1,... follow declared input order; n0,n1,... denote native ordinals in the detail tables. Input fragments are concatenated in order; native arity and widths determine logical operands. Stride a:s:b denotes inclusive positions a,a+s,...,b; repeats remain explicit. The typed ASCII source retains full audit data.'+'\n')
+
+
+def present(ir, cells, wire_panels, options):
+    view, budget, maximum = _presentation_options(options)
+    parameters = parameter_registry(ir)
+    pages = _presentation_pages(ir, cells, wire_panels, parameters, options, view, budget)
+    inputs = [('I'+str(index)+': '+item['id'], str(item['bits']), item['role']) for index, item in enumerate(ir['inputs'])]
+    input_pages = table_pages('Declared inputs', inputs, ['Input index / identity', 'Bits', 'Role'], [85, 20, 60], budget)
+    all_pages = input_pages+pages
+    if len(all_pages) > maximum:
+        raise ValueError(f'Readable TikZ needs {len(all_pages)} pages; increase maxPages or select a view')
+    separator = '\n'+(r'\clearpage' if options.get('pageBreaks', True) else r'\par\bigskip')+'\n'
+    navigation = r'\providecommand{\hypertarget}[2]{#2}'+r'\providecommand{\hyperlink}[2]{#2}'+'\n'
+    # Input declarations have their own measured table pages, so a detailed
+    # first table or wire panel cannot overflow beneath an arbitrary intro.
+    return navigation+_presentation_header(ir)+separator.join(all_pages)

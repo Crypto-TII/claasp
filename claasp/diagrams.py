@@ -8,76 +8,104 @@ import copy
 import json
 from claasp.cipher import Cipher
 
-SCHEMA = 'claasp-diagrams/1'
+from claasp.diagram_validation import SCHEMA, validate as _validate, validate_native_component as _validate_native_component
+from claasp import diagram_states
 
-def validate_native_component(n):
-    d = n['description']; bits = n['bits']; input_bits = n['input_bits']; typ = n['type']
-    integer = lambda v: type(v) is int and abs(v) <= 2**53-1
-    def require(ok):
-        if not ok: raise ValueError(f"Invalid or unsupported native {typ} description/width: {n['id']}")
-    if typ == 'word_operation':
-        op = d[0] if d else None
-        if op in {'XOR','AND','OR','MODADD','MODSUB','MODMUL'}:
-            arithmetic = op.startswith('MOD')
-            require(len(d) == (3 if arithmetic else 2) and integer(d[1]) and d[1] >= 1 and input_bits == d[1]*bits)
-            if arithmetic: require(d[2] is None or integer(d[2]) and d[2] > 0)
-        elif op in {'ROTATE','SHIFT'}: require(len(d)==2 and integer(d[1]) and input_bits==bits)
-        elif op in {'NOT','REVERSE'}: require(len(d)==2 and type(d[1]) is int and d[1]==0 and input_bits==bits)
-        else: require(False)
-    elif typ == 'constant':
-        import re
-        require(input_bits==0 and len(d)==1 and isinstance(d[0],str) and re.fullmatch(r'0x[0-9a-f]+', d[0], re.I) is not None)
-        require(int(d[0],16) < 2**bits)
-    elif typ in {'intermediate_output','cipher_output'}: require(input_bits==bits and len(d)==1 and isinstance(d[0],str))
-    elif typ == 'sbox': require(input_bits<=20 and len(d)==2**input_bits and all(integer(v) and 0<=v<2**bits for v in d))
-    elif typ == 'permutation':
-        require(len(d)==2 and isinstance(d[0],list) and integer(d[1]) and d[1]>0)
-        p,w=d;require(input_bits==bits and bits%w==0 and len(p)==bits//w and all(integer(v) for v in p) and sorted(p)==list(range(len(p))))
-    elif typ == 'linear_layer': require(len(d)==input_bits and all(isinstance(row,list) and len(row)==bits and all(type(v) is int and v in (0,1) for v in row) for row in d))
-    elif typ == 'mix_column':
-        require(len(d)==3)
-        matrix,polynomial,w=d; require(integer(w) and 1<=w<=52 and integer(polynomial) and polynomial>=0 and (polynomial==0 or 2**w<=polynomial<2**(w+1)) and input_bits%w==0 and bits%w==0)
-        require(isinstance(matrix,list) and len(matrix)==bits//w and all(isinstance(row,list) and len(row)==input_bits//w and all(integer(v) and (polynomial==0 or 0<=v<2**w) for v in row) for row in matrix))
-    else: require(False)
-
+RECORD_HEADER = '+ CLAASP-DIAGRAMS 1 +'
 
 
 def validate(ir):
-    if ir.get('schema') != SCHEMA:
-        raise ValueError('Unsupported diagram schema')
-    if type(ir.get('output_bits')) is not int or ir['output_bits'] <= 0:
-        raise ValueError('Missing or invalid output width')
-    known = {}
-    for item in ir['inputs']:
-        if item['id'] in known or type(item['bits']) is not int or item['bits'] <= 0:
-            raise ValueError('Invalid or duplicate input')
-        known[item['id']] = item['bits']
-    last_round = -1
-    for n in ir['nodes']:
-        if n['id'] in known or type(n['bits']) is not int or n['bits'] <= 0 or type(n['round']) is not int or n['round'] < 0 or n['round'] < last_round or type(n['input_bits']) is not int or n['input_bits'] < 0 or not isinstance(n['description'], list):
-            raise ValueError('Invalid node identity, width or round order')
-        last_round = n['round']
-        total = 0
-        for edge in n['operands']:
-            if edge['source'] not in known:
-                raise ValueError('Unknown, forward or cyclic bit link')
-            positions = edge['positions']
-            if not isinstance(positions, list) or any(type(b) is not int or b < 0 or b >= known[edge['source']] for b in positions):
-                raise ValueError('Invalid bit selection')
-            total += len(positions)
-        if total != n['input_bits']:
-            raise ValueError('Input width disagrees with ordered bit links')
-        validate_native_component(n)
-        known[n['id']] = n['bits']
-    outputs = [n for n in ir['nodes'] if n['type'] == 'cipher_output']
-    if len(outputs) != 1 or outputs[0]['bits'] != ir['output_bits']:
-        raise ValueError('Require one explicitly sized native cipher output')
-    if type(ir['rounds']) is not int or ir['rounds'] <= 0 or last_round >= ir['rounds']:
-        raise ValueError('Round outside declared range')
-    return ir
+    r"""
+    Validate a complete typed native computation without modifying it.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary**; representation returned by ``from_cipher`` or ``from_ascii``
+
+    OUTPUT:
+
+    The same validated **dictionary**.
+
+    RAISES:
+
+    ``ValueError`` for invalid widths, selections, output declarations, dependency order or unsupported transforms.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
+        sage: ir = from_cipher(speck)
+        sage: from claasp.diagrams import validate
+        sage: checked = validate(ir)
+        sage: checked['output_bits']
+        32
+    """
+    return _validate(ir)
+
+
+def validate_native_component(node):
+    r"""
+    Check one local native transform against the supported description grammar.
+
+    INPUT:
+
+    - ``node`` -- **dictionary**; native node with type, description, input/output widths and identity
+
+    OUTPUT:
+
+    ``None`` after successful validation.
+
+    RAISES:
+
+    ``ValueError`` for unsupported transforms or inconsistent local parameters.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
+        sage: ir = from_cipher(speck)
+        sage: from claasp.diagrams import validate_native_component
+        sage: rotation = ir['nodes'][0]
+        sage: validate_native_component(rotation)
+        sage: rotation['description']
+        ['ROTATE', 7]
+    """
+    return _validate_native_component(node)
 
 
 def from_cipher(cipher, *, roles=None):
+    r"""
+    Extract the supported native computation without choosing a drawing layout.
+
+    This reduced-round Speck example teaches the API; it is not the full-round cipher. Names never select layout or state shape.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher**; primitive whose complete component graph is extracted
+    - ``roles`` -- **dictionary** (default: ``None``); explicit input roles, such as data/key; omitted roles reuse annotations on a reconstructed cipher
+
+    OUTPUT:
+
+    A typed **dictionary** containing ordered input fragments, complete native descriptions, widths and numeric rounds. Missing roles are ``unspecified``.
+
+    RAISES:
+
+    ``ValueError`` if native descriptions or graph widths/order are unsupported or inconsistent.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
+        sage: ir = from_cipher(speck)
+        sage: ir = from_cipher(speck, roles={'plaintext': 'data', 'key': 'key'})
+        sage: [(item['id'], item['bits'], item['role']) for item in ir['inputs']]
+        [('plaintext', 32, 'data'), ('key', 64, 'key')]
+        sage: (ir['rounds'], len(ir['nodes']))
+        (1, 7)
+    """
     d = cipher.as_python_dictionary()
     roles = dict(getattr(cipher, "diagram_input_roles", {})) if roles is None else roles
     ir = {'schema': SCHEMA, 'name': cipher.family_name, 'cipher_type': d['cipher_type'],
@@ -94,55 +122,120 @@ def from_cipher(cipher, *, roles=None):
     return validate(ir)
 
 
+def _word_component(cipher, ids, positions, node):
+    description = node['description']
+    name = description[0].lower()
+    allowed = {'xor', 'and', 'or', 'not', 'modadd', 'modsub', 'modmul',
+               'rotate', 'shift', 'reverse', 'variable_rotate', 'variable_shift'}
+    if name not in allowed:
+        raise ValueError(f'Unsupported executable word operation: {name}')
+    arguments = [ids, positions, node['bits']]
+    if name in {'rotate', 'shift', 'variable_rotate', 'variable_shift'}:
+        arguments.append(description[1])
+    if name in {'modadd', 'modsub', 'modmul'}:
+        modulus = description[2] if len(description) > 2 else None
+        arguments.append(modulus)
+    return getattr(cipher, f'add_{name}_component')(*arguments)
+
+
+def _append_component(cipher, node, links):
+    ids = [links[edge['source']] for edge in node['operands']]
+    positions = [edge['positions'] for edge in node['operands']]
+    description, kind, bits = node['description'], node['type'], node['bits']
+    if kind == 'constant':
+        return cipher.add_constant_component(bits, int(description[0], 0))
+    if kind == 'word_operation':
+        return _word_component(cipher, ids, positions, node)
+    if kind in {'sbox', 'linear_layer', 'mix_column', 'fsr'}:
+        return getattr(cipher, f'add_{kind}_component')(ids, positions, bits, description)
+    if kind == 'permutation':
+        return cipher.add_permutation_component(ids, positions, bits, description[0], description[1])
+    if kind == 'cipher_output':
+        return cipher.add_cipher_output_component(ids, positions, bits)
+    if kind == 'intermediate_output':
+        return cipher.add_intermediate_output_component(ids, positions, bits, description[0])
+    raise ValueError(f'Unsupported executable component type: {kind}')
+
+
 def to_cipher(ir):
+    r"""
+    Reconstruct an executable CLAASP Cipher from ordered native semantics.
+
+    Reconstruction preserves the computation, not arbitrary original diagram placement.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary**; supported typed representation
+
+    OUTPUT:
+
+    An executable **Cipher**, with ``diagram_source_ids`` mapping original identifiers to reconstructed identifiers and ``diagram_input_roles`` retaining roles.
+
+    RAISES:
+
+    ``ValueError`` if validation or executable-component support fails.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
+        sage: ir = from_cipher(speck)
+        sage: from claasp.diagrams import to_cipher
+        sage: rebuilt = to_cipher(ir)
+        sage: hex(rebuilt.evaluate(list(map(int, [0x6574694c, 0x1918111009080100]))))
+        '0x5316f627'
+        sage: rebuilt.number_of_rounds
+        1
+    """
     validate(ir)
-    cipher = Cipher(ir['name'], ir['cipher_type'], [i['id'] for i in ir['inputs']],
-                    [i['bits'] for i in ir['inputs']], ir['output_bits'])
-    cipher.diagram_input_roles = {i['id']: i['role'] for i in ir['inputs']}
-    links = {i['id']: i['id'] for i in ir['inputs']}
+    cipher = Cipher(ir['name'], ir['cipher_type'], [item['id'] for item in ir['inputs']],
+                    [item['bits'] for item in ir['inputs']], ir['output_bits'])
+    cipher.diagram_input_roles = {item['id']: item['role'] for item in ir['inputs']}
+    links = {item['id']: item['id'] for item in ir['inputs']}
     current_round = -1
-    for n in ir['nodes']:
-        while current_round < n['round']:
-            cipher.add_round(); current_round += 1
-        ids = [links[e['source']] for e in n['operands']]
-        pos = [e['positions'] for e in n['operands']]
-        desc = n['description']; typ = n['type']; bits = n['bits']
-        if typ == 'constant':
-            component = cipher.add_constant_component(bits, int(desc[0], 0))
-        elif typ == 'word_operation':
-            op = desc[0].lower()
-            if op not in {'xor','and','or','not','modadd','modsub','modmul','rotate','shift','reverse','variable_rotate','variable_shift'}:
-                raise ValueError(f'Unsupported executable word operation: {op}')
-            args = [ids, pos, bits]
-            if op in {'rotate','shift','variable_rotate','variable_shift'}: args.append(desc[1])
-            if op in {'modadd','modsub','modmul'}: args.append(desc[2] if len(desc)>2 else None)
-            component = getattr(cipher, f'add_{op}_component')(*args)
-        elif typ in {'sbox','linear_layer','mix_column','fsr'}:
-            component = getattr(cipher, f'add_{typ}_component')(ids,pos,bits,desc)
-        elif typ == 'permutation':
-            component = cipher.add_permutation_component(ids,pos,bits,desc[0],desc[1])
-        elif typ == 'cipher_output':
-            component = cipher.add_cipher_output_component(ids,pos,bits)
-        elif typ == 'intermediate_output':
-            component = cipher.add_intermediate_output_component(ids,pos,bits,desc[0])
-        else:
-            raise ValueError(f'Unsupported executable component type: {typ}')
-        links[n['id']] = component.id
+    for node in ir['nodes']:
+        while current_round < node['round']:
+            cipher.add_round()
+            current_round += 1
+        component = _append_component(cipher, node, links)
+        links[node['id']] = component.id
     while current_round < ir['rounds']-1:
-        cipher.add_round(); current_round += 1
+        cipher.add_round()
+        current_round += 1
     cipher.diagram_source_ids = links
     return cipher
 
 
-def to_records(ir):
-    """Lossless, visible ASCII DAG exchange; JSON fields are explicit semantics.
 
-    This first typed dialect is not a legacy glyph-grid layout. The builder's
-    typed importer parses these visible records without an embedded graph blob.
+def to_records(ir):
+    r"""
+    Emit explicit diagnostic JSON records in an ASCII envelope.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary**; supported typed computation
+
+    OUTPUT:
+
+    A **string** of primitive/input/node records. This diagnostic format explicitly contains dependencies and is distinct from the visible-wire glyph format.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
+        sage: ir = from_cipher(speck)
+        sage: from claasp.diagrams import to_records
+        sage: records = to_records(ir)
+        sage: print(records.splitlines()[0])
+        + CLAASP-DIAGRAMS 1 +
+        sage: print(records.splitlines()[-1])
+        + END +
     """
     validate(ir)
     header = {k: v for k,v in ir.items() if k not in {'inputs','nodes'}}
-    lines = ['+ CLAASP-DIAGRAMS 1 +', '| primitive '+json.dumps(header,sort_keys=True)]
+    lines = [RECORD_HEADER, '| primitive '+json.dumps(header,sort_keys=True)]
     lines += ['| input '+json.dumps(i,sort_keys=True) for i in ir['inputs']]
     for n in ir['nodes']:
         lines += ['+ node '+json.dumps(n,sort_keys=True)]
@@ -150,8 +243,34 @@ def to_records(ir):
 
 
 def from_records(text):
+    r"""
+    Read the explicit diagnostic record interchange.
+
+    INPUT:
+
+    - ``text`` -- **string**; record envelope produced by ``to_records``
+
+    OUTPUT:
+
+    A validated typed **dictionary**.
+
+    RAISES:
+
+    ``ValueError`` for invalid framing, missing/duplicate primitive records or unsupported native semantics.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
+        sage: ir = from_cipher(speck)
+        sage: from claasp.diagrams import to_records, from_records
+        sage: parsed = from_records(to_records(ir))
+        sage: [(item['id'], item['bits']) for item in parsed['inputs']]
+        [('plaintext', 32), ('key', 64)]
+    """
     lines = text.splitlines()
-    if not lines or lines[0] != '+ CLAASP-DIAGRAMS 1 +' or lines[-1] != '+ END +':
+    if not lines or lines[0] != RECORD_HEADER or lines[-1] != '+ END +':
         raise ValueError('Invalid typed ASCII framing')
     ir = None; inputs = []; nodes = []
     for line in lines[1:-1]:
@@ -165,7 +284,30 @@ def from_records(text):
 
 
 def layout(ir):
-    """Deterministic dependency layers; no name-based placement decisions."""
+    r"""
+    Assign deterministic dependency layers and source-order slots.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary**; supported typed graph
+
+    OUTPUT:
+
+    A **dictionary** mapping each input/native identity to ``layer`` and ``slot``. This is a generic DAG placement, not inversion of an original drawing.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
+        sage: ir = from_cipher(speck)
+        sage: from claasp.diagrams import layout
+        sage: positions = layout(ir)
+        sage: positions['plaintext']
+        {'layer': 0, 'slot': 0}
+        sage: positions['rot_0_0']
+        {'layer': 1, 'slot': 0}
+    """
     validate(ir)
     depth = {i['id']: 0 for i in ir['inputs']}; rows = {}
     for n in ir['nodes']:
@@ -175,6 +317,30 @@ def layout(ir):
 
 
 def to_layered_tikz(ir, *, layer_spacing=2, slot_spacing=3):
+    r"""
+    Render the diagnostic dependency-layer graph with ordered bit-link labels.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary**; supported typed graph
+    - ``layer_spacing`` -- **number** (default: ``2``); vertical layer distance
+    - ``slot_spacing`` -- **number** (default: ``3``); horizontal slot distance
+
+    OUTPUT:
+
+    A **string** containing a TikZ picture. ``to_tikz`` provides the more readable overview/detail presentation.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
+        sage: ir = from_cipher(speck)
+        sage: from claasp.diagrams import to_layered_tikz
+        sage: picture = to_layered_tikz(ir)
+        sage: print(picture.splitlines()[1])
+        \node (n0) at (0,0) {plaintext};
+    """
     positions = layout(ir); aliases = {identity: f'n{i}' for i, identity in enumerate(positions)}
     def escape(s):
         return ''.join({'_':r'\_', '%':r'\%', '&':r'\&', '#':r'\#', '{':r'\{', '}':r'\}', '\\':r'\textbackslash{}', '$':r'\$', '^':r'\textasciicircum{}', '~':r'\textasciitilde{}'}.get(c,c) for c in str(s))
@@ -188,15 +354,53 @@ def to_layered_tikz(ir, *, layer_spacing=2, slot_spacing=3):
     return '\n'.join(lines+[r'\end{tikzpicture}'])
 
 
+def _validate_state_shape(shape, bits):
+    if shape is None:
+        return
+    if len(shape) != 2 or any(type(x) is not int or x <= 0 for x in shape):
+        raise ValueError('Explicit shape must cover all selected state bits')
+    if shape[0]*shape[1] != bits:
+        raise ValueError('Explicit shape must cover all selected state bits')
+
+
 def state_view(ir, *, shape=None):
-    """Declared intermediate outputs only; a flat fallback exposes ambiguity."""
+    r"""
+    Describe declared observations as ordered bit selections, with explicit shape ambiguity.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary**; supported graph
+    - ``shape`` -- **pair of integers** (default: ``None``); explicit bit-level row/column counts covering every observation
+
+    OUTPUT:
+
+    A **list of dictionaries** with source-bit positions, tags, rounds and geometry. Omitted shape is ``ambiguous-flat-fallback``.
+
+    RAISES:
+
+    ``ValueError`` if an explicit shape does not cover all selected bits.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
+        sage: ir = from_cipher(speck)
+        sage: from claasp.diagrams import state_view
+        sage: [(frame['round'], frame['shape'], frame['geometry']) for frame in state_view(ir)]
+        [(0, [1, 16], 'ambiguous-flat-fallback'),
+         (0, [1, 32], 'ambiguous-flat-fallback')]
+        sage: state_view(ir, shape=(int(2), int(16)))
+        Traceback (most recent call last):
+        ...
+        ValueError: Explicit shape must cover all selected state bits
+    """
     validate(ir)
     stages = []
     for n in ir['nodes']:
         if n['type'] not in {'intermediate_output','cipher_output'}: continue
         positions = [(e['source'],b) for e in n['operands'] for b in e['positions']]
-        if shape is not None and (len(shape)!=2 or any(type(x) is not int or x<=0 for x in shape) or shape[0]*shape[1]!=len(positions)):
-            raise ValueError('Explicit shape must cover all selected state bits')
+        _validate_state_shape(shape, len(positions))
         stages.append({'id':n['id'],'round':n['round'],'tag':n['description'],
                        'shape':list(shape) if shape else [1,len(positions)],
                        'geometry':'explicit' if shape else 'ambiguous-flat-fallback', 'ordered_bits':positions})
@@ -205,7 +409,45 @@ def state_view(ir, *, shape=None):
 
 def to_ascii(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000,
              max_grid_area=2000000, max_text_bytes=64000000):
-    """Generate native Python glyphs with locally typed boxes and visible wires."""
+    r"""
+    Synthesize an editable typed ASCII circuit and verify its visible-wire round trip.
+
+    Manual reference diagrams and primitive names do not participate in synthesis. Bounds reject work rather than omit components.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary** or **Cipher**; complete supported computation
+    - ``strategy`` -- **string** (default: ``'semantic-auto'``); deterministic choice among legacy, local-port, independent-parallel and round candidates; explicit values are ``semantic-legacy``, ``semantic-ports``, ``semantic-parallel``, ``semantic-round`` and ``direct-bus``
+    - ``max_cells`` -- **integer** (default: ``1000000``); occupied-cell bound
+    - ``max_calls`` -- **integer** (default: ``20000``); native/helper-call bound
+    - ``max_grid_area`` -- **integer** (default: ``2000000``); full rectangular cell bound
+    - ``max_text_bytes`` -- **integer** (default: ``64000000``); UTF-8 output bound
+
+    OUTPUT:
+
+    A **string** containing visible 5-by-11 glyph cells and local definitions. Incoming sources are recovered from wires, not copied into the footer.
+
+    RAISES:
+
+    ``ValueError`` for invalid strategy, exceeded bounds or an exported diagram that fails exact semantic reconstruction.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
+        sage: ir = from_cipher(speck)
+        sage: from claasp.diagrams import to_ascii
+        sage: drawing = to_ascii(ir)
+        sage: print('\n'.join(line.rstrip() for line in drawing.splitlines()[1:5]))
+          _______    _______
+         |  I1   |  |  I2   |
+             |          |
+             |          |
+        sage: local_ports = to_ascii(ir, strategy='semantic-ports')
+        sage: local_ports.splitlines()[0].strip()
+        ''
+    """
     from claasp.diagram_glyphs import encode, decode
     if not isinstance(ir, dict): ir=from_cipher(ir)
     validate(ir)
@@ -216,11 +458,44 @@ def to_ascii(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000
 
 
 def from_ascii(text, *, max_text_bytes=64000000, max_grid_area=2000000):
-    """Recover native operands by tracing visible glyph ports, without Node."""
+    r"""
+    Parse a typed ASCII drawing by tracing its actual directed ports and bit streams.
+
+    Unannotated legacy art cannot supply missing native tables/widths. Ambiguous, malformed, hidden-dependency and circular routes fail explicitly.
+
+    INPUT:
+
+    - ``text`` -- **string**; exported typed glyph drawing, or explicit diagnostic record exchange
+    - ``max_text_bytes`` -- **integer** (default: ``64000000``); UTF-8 input bound
+    - ``max_grid_area`` -- **integer** (default: ``2000000``); rectangle/record bound
+
+    OUTPUT:
+
+    A validated typed **dictionary** with ordered operands and local operation descriptions.
+
+    RAISES:
+
+    ``ValueError`` for malformed framing/routing, ambiguity, incompatible local definitions or exceeded work bounds.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
+        sage: ir = from_cipher(speck)
+        sage: from claasp.diagrams import to_ascii, from_ascii
+        sage: parsed = from_ascii(to_ascii(ir))
+        sage: (parsed['name'], parsed['rounds'], parsed['nodes'][0]['description'])
+        ('speck', 1, ['ROTATE', 7])
+        sage: parsed['nodes'][0]['operands'][0]['source']
+        'plaintext'
+        sage: parsed['nodes'][0]['operands'][0]['positions']
+        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    """
     if not isinstance(text,str) or any(type(v) is not int or v<=0 for v in (max_text_bytes,max_grid_area)):
         raise ValueError('Invalid diagram input or work bounds')
     if len(text.encode('utf8'))>max_text_bytes:raise ValueError('Diagram text exceeds max_text_bytes')
-    if text.startswith('+ CLAASP-DIAGRAMS 1 +'):
+    if text.startswith(RECORD_HEADER):
         ir=from_records(text)
         if len(ir['inputs'])+len(ir['nodes'])>max_grid_area:raise ValueError('Record elements exceed max_grid_area')
         return ir
@@ -229,10 +504,42 @@ def from_ascii(text, *, max_text_bytes=64000000, max_grid_area=2000000):
 
 
 def to_tikz(ir, **options):
-    """Readable overview/detail by default; view="wires" exposes full grid panels.
+    r"""
+    Produce a readable vector overview/detail of the verified native computation.
 
-    Native parameters and ordered input-fragment tables are paginated.
-    legend="audit" or audit=True explicitly includes full local JSON.
+    Every export reparses its generated ASCII before presentation. Member/input-fragment/parameter tables retain all native operations and tags. ``audit=True`` adds complete local JSON; ``legend='none'`` omits member tables. ``anchorPrefix`` must be unique alphanumeric/hyphen text when combining diagrams.
+
+    Wire options: ``rowsPerPanel=16``, ``columnsPerPanel=6``, ``maxPanels=256``, positive ``columnSpacing=3``/``rowSpacing=1``, and half-open ``rowRange``/``columnRange`` crops. Table options: ``tableLineBudget=42`` fixed 11-point baselines and ``maxPages=2048``; ``overviewStagesPerPanel=6`` limits summaries. ``pageBreaks=False`` lets the caller manage page separation. Crops affect wires, not the complete semantic tables.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary** or **Cipher**; supported computation
+    - ``options`` -- **keyword options**; ``view`` selects ``overview-detail`` (default), ``overview``, ``detail`` or ``wires``; ``stageMode`` chooses generic ``round`` or ``layer`` summaries; ``strategy`` chooses the ASCII planner
+
+    OUTPUT:
+
+    A **string** inserted into a LaTeX document body with ``tikz``. Load ``hyperref`` for navigation; fallback commands work without it.
+
+    RAISES:
+
+    ``ValueError`` for invalid presentation options, unsupported semantics or exceeded panel/page bounds.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
+        sage: ir = from_cipher(speck)
+        sage: from claasp.diagrams import to_tikz
+        sage: overview = to_tikz(ir, view='overview', stageMode='layer')
+        sage: print(next(line for line in overview.splitlines() if 'Computation overview:' in line))
+        \par\noindent\textbf{Computation overview: 7 native operations}
+        sage: details = to_tikz(ir, view='detail')
+        sage: print(next(line for line in details.splitlines() if 'Round 0:' in line))
+        \hypertarget{diagram-round-0}{}\par\noindent\textbf{Round 0: 7 native operations (1/1)}
+        sage: wires = to_tikz(ir, view='wires', legend='none')
+        sage: print(next(line for line in wires.splitlines() if 'begin{tikzpicture}' in line))
+        \begin{tikzpicture}[>=stealth]
     """
     from claasp.diagram_glyphs import tikz
     if not isinstance(ir, dict): ir=from_cipher(ir)
@@ -242,7 +549,33 @@ def to_tikz(ir, **options):
     return tikz(recovered,**options)
 
 def evaluate_state_values(cipher, inputs):
-    """Native component values keyed by source identities; no cipher adapters."""
+    r"""
+    Evaluate native component values keyed by their original source identities.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher**; original or reconstructed primitive
+    - ``inputs`` -- **list of integers**; ordered values fitting the declared input widths
+
+    OUTPUT:
+
+    A **dictionary** of input/component integer values. Reconstructed ciphers use their source-ID mapping; no cipher-specific state adapter is used.
+
+    RAISES:
+
+    ``ValueError`` if the native evaluator does not expose component traces.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
+        sage: ir = from_cipher(speck)
+        sage: from claasp.diagrams import evaluate_state_values
+        sage: values = evaluate_state_values(speck, list(map(int, [0x6574694c, 0x1918111009080100])))
+        sage: hex(values['cipher_output_0_6'])
+        '0x5316f627'
+    """
     evaluated = cipher.evaluate(inputs, intermediate_output=True)
     if not isinstance(evaluated, tuple) or len(evaluated) != 3:
         raise ValueError('Native evaluator did not expose component traces')
@@ -252,107 +585,145 @@ def evaluate_state_values(cipher, inputs):
 
 
 def state_snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='source', values=None, comparison=None):
-    """Explicit outputs or generic live-value cuts by dependency layer/round.
+    r"""
+    Build declared observations or generic live-value cuts by round/dependency layer.
 
-    With no column annotation, shape is an ambiguous flat fallback. A cut is
-    live native values, not an inferred algorithm-specific state matrix.
+    A frontier comprises values with future uses, not a guessed AES/Speck/etc. matrix. Bit selections are MSB-first. The example explicitly supplies a word grouping.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary**; supported graph
+    - ``mode`` -- **string** (default: ``'declared'``); ``declared``, ``round`` or ``layer``
+    - ``word_bits`` -- **integer** (default: ``1``); explicit group width dividing every selected state
+    - ``columns`` -- **integer** (default: ``None``); explicit display columns, not inferred algorithmic geometry
+    - ``order`` -- **string** (default: ``'source'``); ``source`` or ``reverse`` source-bit order
+    - ``values`` -- **dictionary** (default: ``None``); evaluated values from ``evaluate_state_values``; absent values stay unknown
+    - ``comparison`` -- **dictionary** (default: ``None``); second evaluated values; words show XOR differences when both dictionaries are supplied
+
+    OUTPUT:
+
+    A **list of dictionaries** with word positions, values/differences/activity and explicit or ambiguous geometry.
+
+    RAISES:
+
+    ``ValueError`` for invalid modes, shape/order parameters, indivisible words or missing/out-of-range values.
+
+    EXAMPLES::
+
+        sage: from claasp.cipher import Cipher
+        sage: width = int(4)
+        sage: small = Cipher('small_example', 'permutation', ['data', 'key'], [width, width], width)
+        sage: small.add_round()
+        sage: xor = small.add_xor_component(['data', 'key'], [list(range(width))]*2, width)
+        sage: observation = small.add_intermediate_output_component([xor.id], [list(range(width))], width, 'state')
+        sage: small.add_round()
+        sage: rotation = small.add_rotate_component([xor.id], [list(range(width))], width, int(-1))
+        sage: result = small.add_cipher_output_component([rotation.id], [list(range(width))], width)
+        sage: from claasp.diagrams import from_cipher, evaluate_state_values
+        sage: ir = from_cipher(small)
+        sage: values = evaluate_state_values(small, list(map(int, [9, 3])))
+        sage: from claasp.diagrams import state_snapshots
+        sage: [[word['value'] for word in frame['words']] for frame in state_snapshots(ir, word_bits=width, values=values)]
+        [[10], [5]]
+        sage: [[word['value'] for word in frame['words']] for frame in state_snapshots(ir, mode='round', word_bits=width, values=values)]
+        [[9, 3], [10], [5]]
+        sage: [[word['value'] for word in frame['words']] for frame in state_snapshots(ir, mode='layer', word_bits=width, values=values)]
+        [[9, 3], [10], [5], [5]]
     """
-    validate(ir)
-    if mode not in {'declared','layer','round'} or order not in {'source','reverse'}:
-        raise ValueError('Unknown state snapshot mode or order')
-    if type(word_bits) is not int or word_bits<=0 or columns is not None and (type(columns) is not int or columns<=0):
-        raise ValueError('Positive explicit word width/columns required')
-    all_nodes=ir['inputs']+ir['nodes']; widths={n['id']:n['bits'] for n in all_nodes}
-    if mode=='declared':
-        groups=[(n['id'], n['round'], [(e['source'],b) for e in n['operands'] for b in e['positions']]) for n in ir['nodes'] if n['type'] in {'intermediate_output','cipher_output'}]
-    else:
-        ranks={i['id']:(0 if mode=='layer' else -1) for i in ir['inputs']}
-        layers=layout(ir) if mode=='layer' else None
-        ranks.update({n['id']:(layers[n['id']]['layer'] if mode=='layer' else n['round']) for n in ir['nodes']})
-        consumers={identity:[] for identity in ranks}
-        for n in ir['nodes']:
-            for e in n['operands']:consumers[e['source']].append(ranks[n['id']])
-        final=next(n['id'] for n in ir['nodes'] if n['type']=='cipher_output')
-        groups=[]
-        for cut in sorted(set(ranks.values())):
-            selected=[n for n in all_nodes if ranks[n['id']]<=cut and (any(c>cut for c in consumers[n['id']]) or n['id']==final)]
-            groups.append((f'{mode}-{cut}',cut,[(n['id'],b) for n in selected for b in range(n['bits'])]))
-    snapshots=[]
-    for identity,stage,positions in groups:
-        if order=='reverse':positions=list(reversed(positions))
-        if len(positions)%word_bits:raise ValueError('Explicit word width must divide selected state bits')
-        words=[]
-        for start in range(0,len(positions),word_bits):
-            bits=positions[start:start+word_bits];value=delta=0;known=values is not None;difference=comparison is not None and known
-            for source,bit in bits:
-                if known:
-                    if source not in values or type(values[source]) is not int or not 0<=values[source]<2**widths[source]:raise ValueError('Missing or out-of-range component value')
-                    value=(value<<1)|((values[source]>>(widths[source]-1-bit))&1)
-                if difference:
-                    if source not in comparison or type(comparison[source]) is not int or not 0<=comparison[source]<2**widths[source]:raise ValueError('Missing or out-of-range comparison value')
-                    delta=(delta<<1)|(((values[source]^comparison[source])>>(widths[source]-1-bit))&1)
-            words.append({'positions':bits,'value':value if known else None,'difference':delta if difference else None,'active':bool(delta if difference else value) if known else None})
-        cols=columns or max(1,len(words));snapshots.append({'id':identity,'stage':stage,'mode':mode,'order':order,'word_bits':word_bits,'columns':cols,'rows':(len(words)+cols-1)//cols,'geometry':'explicit-columns' if columns else 'ambiguous-flat-fallback','words':words})
-    return snapshots
+    return diagram_states.snapshots(ir, mode=mode, word_bits=word_bits, columns=columns,
+                                   order=order, values=values, comparison=comparison)
 
 
 def state_ascii(ir, **options):
-    """Render snapshots with hex values or explicit unknowns; * marks activity."""
-    lines=[]
-    for frame in state_snapshots(ir, **options):
-        lines.append(f"{frame['id']} ({frame['mode']}, {frame['geometry']}, order={frame['order']}, word_bits={frame['word_bits']})")
-        words=frame['words'];digits=(frame['word_bits']+3)//4;size=max(5,digits+3)
-        border='+'+('+'.join('-'*size for _ in range(frame['columns'])))+'+'
-        for row in range(frame['rows']):
-            lines.append(border);cells=[]
-            for col in range(frame['columns']):
-                index=row*frame['columns']+col
-                if index>=len(words):cells.append(' '*size);continue
-                w=words[index];v=w['difference'] if w['difference'] is not None else w['value']
-                text='?' if v is None else f'{v:0{digits}x}';text+= '*' if w['active'] else ' '
-                cells.append(text.center(size))
-            lines.append('|'+'|'.join(cells)+'|')
-        lines.append(border);lines.append('')
-    return '\n'.join(lines)
+    r"""
+    Render generic state snapshots as hex words or explicit unknown cells.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary**; supported graph
+    - ``options`` -- **keyword options**; the same mode, word grouping, columns, order and value/comparison dictionaries as ``state_snapshots``
+
+    OUTPUT:
+
+    A **string** of state frames. ``*`` marks a nonzero value or XOR difference.
+
+    EXAMPLES::
+
+        sage: from claasp.cipher import Cipher
+        sage: width = int(4)
+        sage: small = Cipher('small_example', 'permutation', ['data', 'key'], [width, width], width)
+        sage: small.add_round()
+        sage: xor = small.add_xor_component(['data', 'key'], [list(range(width))]*2, width)
+        sage: observation = small.add_intermediate_output_component([xor.id], [list(range(width))], width, 'state')
+        sage: small.add_round()
+        sage: rotation = small.add_rotate_component([xor.id], [list(range(width))], width, int(-1))
+        sage: result = small.add_cipher_output_component([rotation.id], [list(range(width))], width)
+        sage: from claasp.diagrams import from_cipher, evaluate_state_values
+        sage: ir = from_cipher(small)
+        sage: values = evaluate_state_values(small, list(map(int, [9, 3])))
+        sage: from claasp.diagrams import state_ascii
+        sage: text = state_ascii(ir, word_bits=width, columns=int(1), values=values)
+        sage: print('\n'.join(text.splitlines()[:4]))
+        intermediate_output_0_1 (declared, explicit-columns, order=source, word_bits=4)
+        +-----+
+        |  a* |
+        +-----+
+        sage: other = evaluate_state_values(small, list(map(int, [8, 3])))
+        sage: print(state_ascii(ir, word_bits=width, columns=int(1), values=values, comparison=other).splitlines()[2])
+        |  1* |
+    """
+    return diagram_states.ascii_states(ir, **options)
 
 
 def state_tikz(ir, *, cell_width=1, cell_height=.5, rows_per_panel=24,
                columns_per_panel=12, frame_range=None, page_breaks=True,
-               max_panels=256, **options):
-    """Paginated generic state cells; cuts never reinterpret state geometry.
+               max_panels=256, row_gap=.25, **options):
+    r"""
+    Render paginated generic state cells with separate index-label lanes.
 
-    Fragment output belongs directly in a LaTeX document body, not one float.
-    frame_range is a half-open range in the generated snapshot sequence.
+    INPUT:
+
+    - ``ir`` -- **dictionary**; supported graph
+    - ``cell_width`` -- **number** (default: ``1``); cell width in cm
+    - ``cell_height`` -- **number** (default: ``0.5``); value-box height in cm
+    - ``rows_per_panel`` -- **integer** (default: ``24``); maximum visible rows per panel
+    - ``columns_per_panel`` -- **integer** (default: ``12``); maximum visible columns per panel
+    - ``frame_range`` -- **pair of integers** (default: ``None``); explicit half-open snapshot range
+    - ``page_breaks`` -- **boolean** (default: ``True``); separate panels on pages
+    - ``max_panels`` -- **integer** (default: ``256``); reject rather than truncate excessive output
+    - ``row_gap`` -- **number** (default: ``0.25``); reserved index-label lane in cm, at least ``0.25``
+    - ``options`` -- **keyword options**; state selection/value options from ``state_snapshots``
+
+    OUTPUT:
+
+    A **string** of TikZ pictures, retaining original cell indices across panels. Insert it in the document body, not in one float.
+
+    RAISES:
+
+    ``ValueError`` for invalid spacing/ranges, incompatible states or excessive panels.
+
+    EXAMPLES::
+
+        sage: from claasp.cipher import Cipher
+        sage: width = int(4)
+        sage: small = Cipher('small_example', 'permutation', ['data', 'key'], [width, width], width)
+        sage: small.add_round()
+        sage: xor = small.add_xor_component(['data', 'key'], [list(range(width))]*2, width)
+        sage: observation = small.add_intermediate_output_component([xor.id], [list(range(width))], width, 'state')
+        sage: small.add_round()
+        sage: rotation = small.add_rotate_component([xor.id], [list(range(width))], width, int(-1))
+        sage: result = small.add_cipher_output_component([rotation.id], [list(range(width))], width)
+        sage: from claasp.diagrams import from_cipher, evaluate_state_values
+        sage: ir = from_cipher(small)
+        sage: values = evaluate_state_values(small, list(map(int, [9, 3])))
+        sage: from claasp.diagrams import state_tikz
+        sage: picture = state_tikz(ir, word_bits=width, columns=int(1), values=values)
+        sage: print(picture.splitlines()[0])
+        \begin{tikzpicture}[font=\scriptsize]
+        sage: print(next(line for line in picture.splitlines() if 'fill=orange' in line))
+        \node[draw,fill=orange!25,minimum width=1cm,minimum height=0.5cm] at (0,0.0) {a};
     """
-    if cell_width<=0 or cell_height<=0:raise ValueError('Positive cell spacing required')
-    if any(type(n) is not int or n<=0 for n in [rows_per_panel,columns_per_panel,max_panels]) or type(page_breaks) is not bool:raise ValueError('Invalid state pagination options')
-    frames=state_snapshots(ir, **options)
-    if frame_range is not None:
-        if not isinstance(frame_range,(list,tuple)) or len(frame_range)!=2 or any(type(n) is not int for n in frame_range) or not 0<=frame_range[0]<frame_range[1]<=len(frames):raise ValueError('Invalid state frame range')
-        frames=frames[frame_range[0]:frame_range[1]]
-    count=sum(((f['rows']+rows_per_panel-1)//rows_per_panel)*((f['columns']+columns_per_panel-1)//columns_per_panel) for f in frames)
-    if count>max_panels:raise ValueError(f'State needs {count} panels; supply frame_range or larger max_panels')
-    escaped=lambda text: ''.join({'_':r'\_', '%':r'\%', '&':r'\&', '#':r'\#', '{':r'\{', '}':r'\}', '\\':r'\textbackslash{}', '$':r'\$', '^':r'\textasciicircum{}', '~':r'\textasciitilde{}'}.get(c,c) for c in str(text))
-    wrapped=lambda text: ''.join(escaped(c)+(r'\allowbreak{}' if (i+1)%12==0 else '') for i,c in enumerate(str(text)))
-    panels=[]
-    for frame in frames:
-        for top in range(0,frame['rows'],rows_per_panel):
-            for left in range(0,frame['columns'],columns_per_panel):
-                bottom=min(frame['rows'],top+rows_per_panel);right=min(frame['columns'],left+columns_per_panel)
-                lines=[r'\begin{tikzpicture}[font=\scriptsize]'];legend=[]
-                title=f"{frame['id']}: {frame['geometry']}, {frame['word_bits']} bits/word, order {frame['order']}"
-                lines.append(fr"\node[anchor=south west,align=left,text width={columns_per_panel*cell_width}cm] at (0,.95) {{{wrapped(title)}}};")
-                lines.append(fr"\node[anchor=west,font=\tiny] at (0,.6) {{original cell rows {top}--{bottom-1}, columns {left}--{right-1}; indices retained}};")
-                for index,w in enumerate(frame['words']):
-                    row,col=divmod(index,frame['columns'])
-                    if not top<=row<bottom or not left<=col<right:continue
-                    value=w['difference'] if w['difference'] is not None else w['value'];text='?' if value is None else f"{value:0{(frame['word_bits']+3)//4}x}"
-                    if len(text)>6:
-                        key=f'V{index}';legend.append((key,text));text=key
-                    fill='orange!25' if w['active'] else 'white'
-                    lines.append(fr"\node[draw,fill={fill},minimum width={cell_width}cm,minimum height={cell_height}cm] at ({(col-left)*cell_width},{-(row-top)*cell_height}) {{{text}}};")
-                    lines.append(fr"\node[font=\tiny,anchor=south] at ({(col-left)*cell_width},{-(row-top)*cell_height+cell_height/2}) {{{index}}};")
-                lines.append(r'\end{tikzpicture}\par\smallskip')
-                for key,text in legend:lines.append(r'{\raggedright\scriptsize\noindent\textbf{'+key+'}: '+wrapped(text)+r'\par}\smallskip')
-                panels.append('\n'.join(lines))
-    return ('\n'+(r'\clearpage' if page_breaks else r'\par\medskip')+'\n').join(panels)
+    return diagram_states.tikz_states(ir, cell_width=cell_width, cell_height=cell_height,
+                                     rows_per_panel=rows_per_panel, columns_per_panel=columns_per_panel,
+                                     frame_range=frame_range, page_breaks=page_breaks,
+                                     max_panels=max_panels, row_gap=row_gap, **options)
