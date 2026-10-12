@@ -467,7 +467,7 @@ def state_view(ir, *, shape=None):
 def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
              operator_style='symbols', wire_borders=False, alignment='left',
              layout_preference='balanced', strategy='semantic-auto', gathering='linear',
-             lane_policy='compact', projection='whole', native_bundles=False, parameter_refs=False, max_cells=1000000, max_calls=20000, max_grid_area=2000000,
+             lane_policy='compact', projection='whole', native_bundles=False, parameter_refs=False, associative_reductions=False, max_cells=1000000, max_calls=20000, max_grid_area=2000000,
              max_text_bytes=64000000):
     r"""
     Draw a readable, builder-importable manual block body by default.
@@ -490,6 +490,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     - ``projection`` -- ``'whole'`` (default) or opt-in ``'wordwise'``; split independent XOR/AND/OR/NOT into word gates, retaining native semantics through visible subordinate group/word references
     - ``native_bundles`` -- **boolean** (default: ``False``); experimental whole native input/boundary values with demand-driven SEL/JOIN helpers and heterogeneous widths. Requires compact lanes, whole projection and no fixed word_bits; all existing caps and operation-signature limits remain active. No new local record kinds are introduced.
     - ``parameter_refs`` -- **boolean** (default: ``False``); experimental visible parameter legend for long hexadecimal/binary literals and explicit moduli up to ``2^53-1``. Exact native reconstruction requires local annotations; requires a builder with the P1 parameter-legend parser.
+    - ``associative_reductions`` -- **boolean** (default: ``False``); experimental whole-projection binary trees for XOR/AND/OR and implicit-modulus MODADD. Visible group/step anchors and ordered bindings recover one original native node. Explicit moduli and non-associative lowering reject; requires a builder with the R1 reduction parser.
     - ``lane_policy`` -- ``'compact'`` (default) or opt-in ``'state'``; prefer contiguous explicit key/data input banks and place matching-width final output words under the data bank; ambiguous banks use the generic compact output fallback
     - ``alignment`` -- ``'left'`` (default) or ``'right'``; prefer an expired operand lane, subject to liveness and ordered arithmetic
     - ``layout_preference`` -- ``'balanced'`` (default), ``'crossings'``, ``'depth'`` or ``'width'``; select among measured generic candidate layouts
@@ -647,7 +648,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     if any(type(value) is not int or value < 1 for value in bounds.values()):
         raise ValueError('Work and output bounds must be positive integers')
     if format == 'audit':
-        if annotations or word_bits is not None or operator_style != 'symbols' or wire_borders or alignment != 'left' or layout_preference != 'balanced' or gathering != 'linear' or lane_policy != 'compact' or projection != 'whole' or native_bundles or parameter_refs:
+        if annotations or word_bits is not None or operator_style != 'symbols' or wire_borders or alignment != 'left' or layout_preference != 'balanced' or gathering != 'linear' or lane_policy != 'compact' or projection != 'whole' or native_bundles or parameter_refs or associative_reductions:
             raise ValueError('Human rendering/layout options do not apply to the audit format')
         return to_audit_ascii(ir, strategy=strategy, **bounds)
     if not isinstance(ir, dict):
@@ -656,10 +657,10 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     return encode(ir, annotations=annotations, word_bits=word_bits,
                   operator_style=operator_style, wire_borders=wire_borders,
                   alignment=alignment, layout_preference=layout_preference, gathering=gathering,
-                  lane_policy=lane_policy, projection=projection, native_bundles=native_bundles, parameter_refs=parameter_refs, strategy=strategy, **bounds)
+                  lane_policy=lane_policy, projection=projection, native_bundles=native_bundles, parameter_refs=parameter_refs, associative_reductions=associative_reductions, strategy=strategy, **bounds)
 
 
-def synthesis_report(ir, *, word_bits=None, strategy='semantic-auto', gathering='linear', native_bundles=False, parameter_refs=False,
+def synthesis_report(ir, *, word_bits=None, strategy='semantic-auto', gathering='linear', native_bundles=False, parameter_refs=False, associative_reductions=False,
                      alignment='left', layout_preference='balanced', lane_policy='compact', projection='whole',
                      max_cells=1000000, max_calls=20000):
     r"""
@@ -691,7 +692,7 @@ def synthesis_report(ir, *, word_bits=None, strategy='semantic-auto', gathering=
     from .manual_blocks import build
     _, report = build(ir, word_bits=word_bits, strategy=strategy, gathering=gathering,
                       alignment=alignment, layout_preference=layout_preference, lane_policy=lane_policy, projection=projection,
-                      max_cells=max_cells, max_calls=max_calls, native_bundles=native_bundles, parameter_refs=parameter_refs)
+                      max_cells=max_cells, max_calls=max_calls, native_bundles=native_bundles, parameter_refs=parameter_refs, associative_reductions=associative_reductions)
     return report
 
 
@@ -847,15 +848,15 @@ def to_tikz(ir, **options):
         raise ValueError('Choose audit or human TikZ layoutSource')
     if source == 'human':
         from claasp.cipher_modules.diagram.manual_blocks import _encode_layout as manual_layout
-        keys = ('word_bits', 'gathering', 'projection', 'lane_policy', 'native_bundles', 'parameter_refs', 'alignment', 'layout_preference', 'operator_style', 'wire_borders',
+        keys = ('word_bits', 'gathering', 'projection', 'lane_policy', 'native_bundles', 'parameter_refs', 'associative_reductions', 'alignment', 'layout_preference', 'operator_style', 'wire_borders',
                 'max_cells', 'max_calls', 'max_grid_area', 'max_text_bytes')
         text, cells, dimensions = manual_layout(ir, strategy=options.get('strategy', 'semantic-auto'),
             **{key: options[key] for key in keys if key in options})
         # The manual encoder already reparsed and compared its actual text.
         return _present_grid(ir, cells, dimensions, options)
     else:
-        if options.get('native_bundles', False) or options.get('parameter_refs', False):
-            raise ValueError('native_bundles and parameter_refs require human TikZ layoutSource')
+        if options.get('native_bundles', False) or options.get('parameter_refs', False) or options.get('associative_reductions', False):
+            raise ValueError('native_bundles, parameter_refs and associative_reductions require human TikZ layoutSource')
         text, cells, dimensions = _encode_layout(ir, strategy=options.get('strategy', 'semantic-auto'))
     recovered = validate(decode(text))
     if recovered != ir:

@@ -11,7 +11,7 @@ from collections import Counter, deque
 from functools import reduce
 from math import gcd
 
-from . import glyphs, parser, parameters
+from . import glyphs, parser, parameters, reductions
 from .validation import validate
 
 MARKER = '\n# CLAASP-HUMAN-BLOCKS 1\n'
@@ -20,6 +20,7 @@ FIELDS = {
     'discard': {'kind', 'bits'},
     'input': {'kind', 'index', 'native_index', 'id', 'bits', 'role', 'positions', 'unused_positions'},
     'native': {'kind', 'ordinal', *NODE_FIELDS, 'operand_ports', 'operand_positions', 'parameter_ref'},
+    'native_reduce': {'kind', 'ordinal', *NODE_FIELDS, 'operand_ports', 'operand_positions', 'step'},
     'native_fragment': {'kind', 'ordinal', *NODE_FIELDS, 'operand_ports', 'operand_positions', 'positions'},
     'native_boundary': {'kind', 'ordinal', *NODE_FIELDS, 'operand_ports', 'operand_positions', 'positions', 'flow'},
     'selection': {'kind', 'bits', 'positions', 'operand_ports', 'reference'},
@@ -134,12 +135,17 @@ def art(cell, style='symbols'):
     if 'parameter_ref' in definition:
         parameters.valid_reference(definition['parameter_ref'])
         result[1] = ' |'+glyphs._center(definition['parameter_ref'])+'| '
-    if definition['kind'] == 'native_fragment':
-        positions = definition.get('positions')
-        if not isinstance(positions, list) or not positions or any(type(bit) is not int or bit < 0 for bit in positions):
-            raise ValueError('Invalid visible fragment word positions')
-        word = positions[0]//len(positions)
-        tag = _fragment_reference(definition['ordinal'], word)
+    if definition['kind'] in ('native_fragment', 'native_reduce'):
+        if definition['kind'] == 'native_reduce':
+            tag = 'G'+_base36(definition['ordinal'])+'.R'+_base36(definition['step'])
+            if len(tag) > 7:
+                raise ValueError('Visible reduction reference exceeds manual capacity')
+        else:
+            positions = definition.get('positions')
+            if not isinstance(positions, list) or not positions or any(type(bit) is not int or bit < 0 for bit in positions):
+                raise ValueError('Invalid visible fragment word positions')
+            word = positions[0]//len(positions)
+            tag = _fragment_reference(definition['ordinal'], word)
         result[1] = ' |'+glyphs._center(tag)+'| '
         physical = [side for side in ('left', 'top', 'right', 'bottom') if cell['ports'].get(side) == 'in']
         binding = [physical.index(side)+1 for side in definition['operand_ports']]
@@ -157,7 +163,7 @@ def art(cell, style='symbols'):
 
 
 class _WordGraph:
-    def __init__(self, ir, bits, gathering="linear", projection="whole", native_bundles=False, parameter_refs=False):
+    def __init__(self, ir, bits, gathering="linear", projection="whole", native_bundles=False, parameter_refs=False, associative_reductions=False):
         self.ir, self.bits, self.gathering = ir, bits, gathering
         references = parameters.assignments(ir) if parameter_refs else {}
         self.calls, self.inputs, self.values = [], [], {}
@@ -205,7 +211,22 @@ class _WordGraph:
             for edge in node['operands']:
                 local['operand_positions'].append(list(range(offset, offset+len(edge['positions']))))
                 offset += len(edge['positions'])
-            if native_bundles and node['type'] in ('cipher_output', 'intermediate_output'):
+            if associative_reductions and len(args) > 2 and node['type'] == 'word_operation':
+                operation = node['description'][0]
+                if operation not in reductions.ALLOWED or operation == 'MODADD' and node['description'][2] is not None:
+                    raise ValueError('R1 excludes non-associative operations and explicit moduli')
+                level, step = args, 0
+                while len(level) > 1:
+                    following = []
+                    for index in range(0, len(level), 2):
+                        if index+1 == len(level):
+                            following.append(level[index])
+                        else:
+                            following.append(self.call(level[index:index+2], dict(local, kind='native_reduce', step=step)))
+                            step += 1
+                    level = following
+                self.raw_values[node['id']] = level[0]
+            elif native_bundles and node['type'] in ('cipher_output', 'intermediate_output'):
                 definition = dict(local, kind='native_boundary', positions=list(range(node['bits'])))
                 value = self.call([self.join(args)], definition)
                 self.raw_values[node['id']] = value
@@ -793,13 +814,15 @@ def infer_word_bits(ir):
 
 
 def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gathering='linear', lane_policy='compact', projection='whole',
-          layout_preference='balanced', max_cells=1000000, max_calls=20000, native_bundles=False, parameter_refs=False):
+          layout_preference='balanced', max_cells=1000000, max_calls=20000, native_bundles=False, parameter_refs=False, associative_reductions=False):
     """Compare generic schedules by measured crossings, depth and width."""
     validate(ir)
     if type(native_bundles) is not bool or native_bundles and (word_bits is not None or projection != 'whole' or lane_policy != 'compact'):
         raise ValueError('Native bundles require whole projection, compact lanes and no fixed word_bits')
     if type(parameter_refs) is not bool:
         raise ValueError('parameter_refs must be boolean')
+    if type(associative_reductions) is not bool or associative_reductions and projection != 'whole':
+        raise ValueError('R1 requires boolean associative_reductions and whole projection')
     if projection not in ('whole', 'wordwise'):
         raise ValueError('Choose whole or wordwise projection')
     if lane_policy not in ('compact', 'state'):
@@ -823,7 +846,7 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gat
     best, reports, errors, rejected = None, [], [], []
     for index, variant in enumerate(variants):
         try:
-            graph = _WordGraph(ir, bits, gathering, projection, native_bundles=native_bundles, parameter_refs=parameter_refs)
+            graph = _WordGraph(ir, bits, gathering, projection, native_bundles=native_bundles, parameter_refs=parameter_refs, associative_reductions=associative_reductions)
             if len(graph.calls) > max_calls:
                 raise ValueError('Manual word expansion exceeds max_calls')
             cells, report = _Scheduler(ir, graph, variant, max_cells, alignment, lane_policy).build()
@@ -856,12 +879,12 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gat
 
 def _encode_layout(ir, *, annotations=True, word_bits=None, operator_style='symbols',
            strategy='semantic-auto', alignment='left', layout_preference='balanced', gathering='linear', lane_policy='compact', projection='whole',
-           wire_borders=False, native_bundles=False, parameter_refs=False, max_cells=1000000, max_calls=20000,
+           wire_borders=False, native_bundles=False, parameter_refs=False, associative_reductions=False, max_cells=1000000, max_calls=20000,
            max_grid_area=2000000, max_text_bytes=64000000):
     if type(annotations) is not bool or type(wire_borders) is not bool or operator_style not in ('symbols', 'labels'):
         raise ValueError('Choose boolean annotations and symbols/labels')
     cells, report = build(ir, word_bits=word_bits, strategy=strategy, alignment=alignment,
-                          layout_preference=layout_preference, gathering=gathering, lane_policy=lane_policy, projection=projection, max_cells=max_cells, max_calls=max_calls, native_bundles=native_bundles, parameter_refs=parameter_refs)
+                          layout_preference=layout_preference, gathering=gathering, lane_policy=lane_policy, projection=projection, max_cells=max_cells, max_calls=max_calls, native_bundles=native_bundles, parameter_refs=parameter_refs, associative_reductions=associative_reductions)
     if type(max_grid_area) is not int or max_grid_area < 1 or report['rows']*report['cols'] > max_grid_area:
         raise ValueError('Manual rectangular output exceeds max_grid_area')
     if type(max_text_bytes) is not int or max_text_bytes < 1:
@@ -938,7 +961,7 @@ def _metadata(text, max_text_bytes, max_grid_area):
             raise ValueError('Invalid observation flow role')
         if definition['kind'] == 'input' and (type(definition.get('index')) is not int or definition['index'] < 0):
             raise ValueError('Invalid visible input index')
-        if definition['kind'] in ('native', 'native_boundary', 'native_fragment') and 'operand_positions' in definition:
+        if definition['kind'] in ('native', 'native_boundary', 'native_fragment', 'native_reduce') and 'operand_positions' in definition:
             masks = definition['operand_positions']
             if not isinstance(masks, list) or any(not isinstance(mask, list) for mask in masks) or [bit for mask in masks for bit in mask] != list(range(definition['input_bits'])):
                 raise ValueError('Nontrivial bit selections require an actual visible SEL helper')
@@ -1264,6 +1287,7 @@ def _trace(cells, groups):
             dependencies[token] = incoming
             for predecessor in set(incoming):
                 followers.setdefault(predecessor, []).append(token)
+    reduction_groups = reductions.groups(cells, dependencies, NODE_FIELDS, FIELDS['native_reduce'])
     remaining = {token: len(set(incoming)) for token, incoming in dependencies.items()}
     ready = deque(token for token, count in remaining.items() if not count)
     memo, native = {}, {}
@@ -1286,6 +1310,8 @@ def _trace(cells, groups):
         elif definition and definition['kind'] == 'native_fragment':
             _fragment_native(fragments[definition['ordinal']], memo, native)
             stream = [{'source': definition['id'], 'positions': definition['positions']}]
+        elif definition and definition['kind'] == 'native_reduce':
+            stream = reductions.stream(definition, arguments, reduction_groups, native)
         elif cell['kind'] == 'box':
             if definition['kind'] == 'native':
                 _check_native_word_ports(definition, arguments)
