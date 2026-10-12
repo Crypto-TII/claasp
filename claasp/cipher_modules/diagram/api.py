@@ -620,6 +620,12 @@ def from_ascii(text, *, max_text_bytes=64000000, max_grid_area=2000000):
 
     Unannotated legacy art cannot supply missing native tables/widths. Ambiguous, malformed, hidden-dependency and circular routes fail explicitly.
 
+    Annotated manual blocks with ``# CLAASP-HUMAN-BLOCKS 1`` are also
+    accepted. Their local native definitions attach to actual readable glyphs;
+    fresh routing determines all source links. A plain manual body has no
+    native widths/rounds and remains a scalar builder import, not lossless
+    native reconstruction through this function.
+
     INPUT:
 
     - ``text`` -- **string**; exported typed glyph drawing, or explicit diagnostic record exchange
@@ -656,6 +662,10 @@ def from_ascii(text, *, max_text_bytes=64000000, max_grid_area=2000000):
         ir=from_records(text)
         if len(ir['inputs'])+len(ir['nodes'])>max_grid_area:raise ValueError('Record elements exceed max_grid_area')
         return ir
+    from .manual_blocks import MARKER as human_marker, decode as decode_human
+    if human_marker in text:
+        return validate(decode_human(text, max_grid_area=max_grid_area,
+                                     max_text_bytes=max_text_bytes))
     from claasp.cipher_modules.diagram.glyphs import decode
     return validate(decode(text,max_text_bytes=max_text_bytes,max_grid_area=max_grid_area))
 

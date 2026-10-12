@@ -217,3 +217,19 @@ JavaScript-backed results from the previous implementation are historical.
 Native Python measurements, installed-package tests and cross-language
 conformance are recorded separately. No general readability, exact layout
 inversion or unseen-family guarantee follows from a successful semantic test.
+
+The private compatible-block vertical slice lives in
+`claasp.cipher_modules.diagram.manual_blocks`. It uses the existing manual
+5-by-11 drawing vocabulary, readable repeated operation labels and
+coordinate-local annotations without source links. `from_ascii` recognizes its
+annotated marker and freshly traces its visible wires. Its plain body already
+imports through the existing builder scalar decoder. Public default/annotation
+controls and builder native-footer integration remain pending shared-contract
+coordination; this prototype is not yet the public default or visual acceptance.
+
+Private block controls are real planning choices: `alignment='left'|'right'`
+respects liveness and ordered arithmetic; `layout_preference='balanced'|'crossings'|'depth'|'width'` compares measured costs of six generic schedules.
+`manual_blocks.build` returns the selected strategy, metrics and candidate
+reports. These heuristics do not guarantee globally optimal drawings. Wire
+border rendering is independent of those synthesis controls. Public exposure
+is pending the same default/annotation coordination.
