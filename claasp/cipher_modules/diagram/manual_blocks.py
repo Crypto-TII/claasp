@@ -164,8 +164,6 @@ class _WordGraph:
             logical_bits = bits if fragment or node['type'] in ('cipher_output', 'intermediate_output') else node['bits']
             for edge in node['operands']:
                 positions = edge['positions']
-                if len(positions) % bits:
-                    raise ValueError('Partial word selection needs explicit word shape; use audit')
                 if node['type'] in ('sbox', 'linear_layer', 'mix_column', 'permutation'):
                     args.append(self.select(edge['source'], positions))
                     continue

@@ -757,3 +757,46 @@ def test_routing_cost_counts_strict_intervals_and_nearest_free_ties(alignment):
     assert scheduler.routing_estimate(0)==(1,1)
     scheduler.calls=[{'args':[a,a]}];scheduler.uses[a]=2
     assert scheduler.routing_estimate(0)==(0,1)
+
+
+
+@pytest.mark.parametrize('projection',['whole','wordwise'])
+def test_explicit_word_width_keeps_partial_repeated_multi_source_selections(projection):
+    c=Cipher('opaque_partial','permutation',['a','b'],[8,8],8);c.add_round()
+    masks=[[7,0,2,7,5],[6,1,6],[4,0,4,2,7],[5,1,5]]
+    n=c.add_xor_component(['a','b','b','a'],masks,8)
+    c.add_cipher_output_component([n.id],[list(range(8))],8)
+    ir=from_cipher(c,roles={});text=encode(ir,annotations=True,word_bits=4,projection=projection)
+    assert decode(text)==ir
+    restored=to_cipher(decode(text))
+    def select(value,mask):
+        result=0
+        for bit in mask:result=(result<<1)|((value>>(7-bit))&1)
+        return result
+    for a in range(256):
+        for b in (0,0x5a,255):
+            left=(select(a,masks[0])<<3)|select(b,masks[1])
+            right=(select(b,masks[2])<<3)|select(a,masks[3])
+            assert restored.evaluate([a,b])==left^right
+    for _ in range(3):assert encode(decode(text),annotations=True,word_bits=4,projection=projection)==text
+    renamed=copy.deepcopy(ir);ids={n['id']:'opaque'+str(i) for i,n in enumerate(ir['inputs']+ir['nodes'])}
+    for n in renamed['inputs']+renamed['nodes']:n['id']=ids[n['id']]
+    for n in renamed['nodes']:
+        for e in n['operands']:e['source']=ids[e['source']]
+    assert encode(renamed,word_bits=4,projection=projection)==framing(text)[0]
+
+
+def test_one_bit_edge_fragments_gather_into_word_sbox_without_lost_bits():
+    c=Cipher('opaque_strided','permutation',['a','b'],[8,8],4);c.add_round()
+    s=c.add_sbox_component(['a','a','b','b'],[[0],[5],[2],[7]],4,[value^9 for value in range(16)])
+    c.add_cipher_output_component([s.id],[list(range(4))],4)
+    ir=from_cipher(c,roles={});text=encode(ir,annotations=True,word_bits=4);assert decode(text)==ir
+    restored=to_cipher(decode(text))
+    for a in range(256):
+        for b in (0,0x5a,255):
+            selected=(((a>>7)&1)<<3)|(((a>>2)&1)<<2)|(((b>>5)&1)<<1)|(b&1)
+            assert restored.evaluate([a,b])==selected^9
+    body,footer=framing(text)
+    helper=next(r['definition'] for r in footer['records'] if r['definition']['kind']=='selection')
+    helper['positions']=[100]
+    with pytest.raises(ValueError):decode(altered(body,footer))

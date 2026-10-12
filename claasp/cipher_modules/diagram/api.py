@@ -501,7 +501,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
 
     ``ValueError`` for invalid options/bounds, unsupported projection or a
     fresh exported-body parse that changes native semantics. Current human
-    projection supports aligned mixed native widths, unary/binary word operations,
+    projection supports aligned mixed native widths with explicit partial-bit selection helpers, unary/binary word operations,
     three-port XOR/AND/OR, constants, S-box/linear/mix-column/permutation operations and
     boundary fragments through explicit JOIN/SEL helpers. Unsupported shapes, oversized labels and custom
     moduli require the explicit audit view. Lanes have fixed manual width;
