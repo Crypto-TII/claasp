@@ -227,7 +227,7 @@ def overview(ir, registry, options):
         ingress = [(str(source), str(target), str(len(bits))) for (source, target), bits in edges.items()
                    if target in visible and source not in visible]
         if ingress:
-            lines.append(r'\par\small Boundary inputs: ' + escape('; '.join(f'{s} -> {mode} {t}: {b} distinct referenced bits' for s, t, b in ingress)).replace(' -> ', r' $	o$ ') + r'\par\normalsize')
+            lines.append(r'\par\small Boundary inputs: ' + escape('; '.join(f'{s} -> {mode} {t}: {b} distinct referenced bits' for s, t, b in ingress)).replace(' -> ', r' $\to$ ') + r'\par\normalsize')
         output.append('\n'.join(lines))
     dependency_rows = [(str(source), str(target), str(len(bits)))
                        for (source, target), bits in edges.items()]
