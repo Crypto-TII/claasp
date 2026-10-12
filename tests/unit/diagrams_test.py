@@ -804,7 +804,7 @@ def test_semantic_auto_releases_losing_full_grids_before_building_another(monkey
     import weakref
     import claasp.diagram_glyphs as glyphs
     class WeakCells(dict):
-        pass
+        """A dictionary that supports weak references for retention checks."""
     references = []
     def candidate(ir, *, strategy, **options):
         gc.collect()

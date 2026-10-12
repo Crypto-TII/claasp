@@ -178,7 +178,7 @@ def _supported_variant(key, variant, alternatives):
 
 def _propagate_alternatives(alternatives):
     changed = False
-    for key, variants in list(alternatives.items()):
+    for key, variants in alternatives.items():
         supported = [variant for variant in variants if _supported_variant(key, variant, alternatives)]
         if not supported:
             raise ValueError(f'Disconnected or reversed port at {key}')
@@ -190,8 +190,9 @@ def _propagate_alternatives(alternatives):
 
 def _resolved_alternatives(cells, choices):
     alternatives = {key: choices.get(key, [cell]) for key, cell in cells.items()}
-    while _propagate_alternatives(alternatives):
-        pass
+    changed = True
+    while changed:
+        changed = _propagate_alternatives(alternatives)
     for key, variants in alternatives.items():
         if len(variants) != 1:
             raise ValueError(f'Ambiguous wire direction at {key}')
