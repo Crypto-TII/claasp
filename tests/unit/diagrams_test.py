@@ -859,3 +859,32 @@ def test_public_small_budget_identity_matrix_wraps_parameter_continuations():
     assert r'\mbox{(continued)}' not in text
     assert '(continued)' in _table_text(text)
     assert 'LINEAR' in _table_text(text)
+
+
+def test_state_tiles_skip_empty_horizontal_spans_and_count_only_populated_panels():
+    c = Cipher('partial_state_probe', 'permutation', ['data'], [19], 19)
+    c.add_round()
+    c.add_cipher_output_component(['data'], [list(range(19))], 19)
+    ir = from_cipher(c)
+    values = evaluate_state_values(c, [0b101])
+    frames = state_snapshots(ir, columns=16, values=values)
+    assert len(frames[0]['words']) == 19
+    text = state_tikz(ir, columns=16, rows_per_panel=1, columns_per_panel=12,
+                      values=values, max_panels=3)
+    assert text.count(r'\begin{tikzpicture}') == 3
+    assert 'rows 1--1, columns 12--15' not in text
+    # Population, not value/activity, controls tile retention: zero-valued cells stay.
+    assert text.count('minimum height=0.5cm') == 19
+    assert 'at (0,0.0) {0};' in text
+    assert any(word['value'] == 1 for word in frames[0]['words'])
+    assert state_snapshots(ir, columns=16, values=values) == frames
+
+
+def test_a_small_explicit_state_does_not_need_a_title_only_second_panel():
+    c = Cipher('small_state_probe', 'permutation', ['data'], [3], 3)
+    c.add_round()
+    c.add_cipher_output_component(['data'], [[0, 1, 2]], 3)
+    ir = from_cipher(c)
+    text = state_tikz(ir, columns=16, max_panels=1)
+    assert text.count(r'\begin{tikzpicture}') == 1
+    assert text.count('minimum height=0.5cm') == 3

@@ -171,8 +171,16 @@ def _selected_frames(frames, frame_range):
     return frames[frame_range[0]:frame_range[1]]
 
 
+def _state_tiles(frames, rows, columns):
+    for frame in frames:
+        for top in range(0, frame['rows'], rows):
+            occupied_columns = min(frame['columns'], len(frame['words'])-top*frame['columns'])
+            for left in range(0, occupied_columns, columns):
+                yield frame, top, left
+
+
 def _panel_count(frames, rows, columns):
-    return sum(((frame['rows']+rows-1)//rows)*((frame['columns']+columns-1)//columns) for frame in frames)
+    return sum(1 for _ in _state_tiles(frames, rows, columns))
 
 
 def _panel_words(frame, top, bottom, left, right):
@@ -219,10 +227,8 @@ def tikz_states(ir, *, cell_width=1, cell_height=.5, rows_per_panel=24, columns_
     count = _panel_count(frames, rows_per_panel, columns_per_panel)
     if count > max_panels:
         raise ValueError(f'State needs {count} panels; supply frame_range or larger max_panels')
-    panels = []
-    for frame in frames:
-        for top in range(0, frame['rows'], rows_per_panel):
-            for left in range(0, frame['columns'], columns_per_panel):
-                panels.append(_state_panel(frame, top, left, rows_per_panel, columns_per_panel, cell_width, cell_height, row_gap))
+    panels = [_state_panel(frame, top, left, rows_per_panel, columns_per_panel,
+                           cell_width, cell_height, row_gap)
+              for frame, top, left in _state_tiles(frames, rows_per_panel, columns_per_panel)]
     separator = r'\clearpage' if page_breaks else r'\par\medskip'
     return ('\n'+separator+'\n').join(panels)
