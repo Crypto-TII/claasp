@@ -49,17 +49,21 @@ def _reference(kind, description, registry):
 def _word_label(node, short):
     description = node['description']
     name = description[0]
+    label_name = name
+    if short:
+        label_name = {'ROTATE_BY_VARIABLE_AMOUNT': 'VROT',
+                      'SHIFT_BY_VARIABLE_AMOUNT': 'VSHIFT', 'IDEA_MODMUL': 'MAPMUL'}.get(name, name)
     if name in ('NOT', 'REVERSE'):
         return f'{name}/{node["bits"]}(unary)'
     fixed_amount = name in ('ROTATE', 'SHIFT')
     parameters = 'arity='+str(description[1])
     if name in ('ROTATE_BY_VARIABLE_AMOUNT', 'SHIFT_BY_VARIABLE_AMOUNT'):
-        parameters = 'direction='+str(description[1])
+        parameters = ('dir=' if short else 'direction=')+str(description[1])
     elif fixed_amount or short:
         parameters = str(description[1])
     if len(description) > 2 and description[2] is not None:
         parameters += ',mod='+str(description[2])
-    return f'{name}/{node["bits"]}({parameters})'
+    return f'{label_name}/{node["bits"]}({parameters})'
 
 
 def _constant_label(node, registry):

@@ -103,7 +103,10 @@ a range, explicitly retaining one input fragment per member. Stride notation
 `view='overview'` is explicitly a compact summary. `view='detail'` emits the
 complete readable member/parameter tables. `view='wires'` emits the complete
 low-level glyph grid with signed rotations, widths, numbered ports and visible
-ordered-binding markers. Detailed wire views can use `rowsPerPanel`,
+ordered-binding markers. Compact wire labels `VROT`, `VSHIFT` and `MAPMUL`
+refer to variable rotate, variable shift and mapped modular multiplication;
+readable tables retain the complete native operation names and parameters.
+Detailed wire views can use `rowsPerPanel`,
 `columnsPerPanel`, `maxPanels` (256), half-open `rowRange`/`columnRange` crops,
 spacing and `pageBreaks=False`. Crops apply to the wire view; they do not silently
 remove member records from readable tables. Large wire views may need several
