@@ -52,6 +52,10 @@ The human defaults are `annotations=False`, `word_bits=None`,
 `max_text_bytes=64000000`. Choose `layout_preference='crossings'`, `'depth'` or
 `'width'` for measured generic priorities; use `synthesis_report` to inspect
 tradeoffs. Native source links always come from actual exported wires.
+Manual constants use a visible hexadecimal literal across up to two seven-character
+interior lines (14 characters including `x`). Values through the 52-bit maximum fit;
+longer literals fail explicitly and require audit output. Capacity depends on the
+value, not the declared operation width; no literal is truncated.
 
 Migration notice: `to_ascii(ir)` now returns the readable manual block body.
 It directly imports through the builder's existing scalar/manual decoder.

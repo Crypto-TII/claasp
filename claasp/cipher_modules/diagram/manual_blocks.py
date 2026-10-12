@@ -52,7 +52,8 @@ def label(definition, style='symbols'):
                 raise ValueError('Manual word projection does not yet support this operation; use audit')
             if operation in ('MODADD', 'MODSUB', 'MODMUL') and description[2] is not None:
                 raise ValueError('Custom modulus needs a visible parameter reference; use audit until supported')
-    if len(text) > 7:
+    capacity = 14 if definition['type'] == 'constant' else 7
+    if len(text) > capacity:
         raise ValueError('Parameter exceeds visible manual label capacity; use audit until references are supported')
     return text
 
@@ -70,11 +71,15 @@ def art(cell, style='symbols'):
         return glyphs._art(cell)
     definition = cell['definition']
     text = label(definition, style)
-    result = glyphs._box_art(dict(cell, tag=text, reverse=False))
+    continued = definition.get('type') == 'constant' and len(text) > 7
+    displayed = text[7:] if continued else text
+    result = glyphs._box_art(dict(cell, tag=displayed, reverse=False))
+    if continued:
+        result[1] = ' |'+glyphs._center(text[:7])+'| '
     ports = cell['ports']
     # Existing manual helpers use the distinct free-text bracket vocabulary.
     left, right = ('[', ']') if definition['kind'] in ('selection', 'join') else ('|', '|')
-    result[2] = ('>' if ports.get('left') == 'in' else ' ')+left+glyphs._center(text)+right+('<' if ports.get('right') == 'in' else ' ')
+    result[2] = ('>' if ports.get('left') == 'in' else ' ')+left+glyphs._center(displayed)+right+('<' if ports.get('right') == 'in' else ' ')
     # Generic native ordering is in local port metadata. Only noncommutative
     # operations require an explicit visible permutation (scheduler avoids it).
     if definition['kind'] == 'native' and definition['type'] == 'word_operation' and definition['description'][0] == 'MODSUB' and cell.get('reverse'):

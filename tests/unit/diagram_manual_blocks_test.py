@@ -302,3 +302,34 @@ def test_final_output_metadata_cannot_reorder_unchanged_visible_body():
         right['definition']['positions'], left['definition']['positions'])
     with pytest.raises(ValueError, match='visible left-to-right order'):
         decode(altered(body, footer))
+
+
+@pytest.mark.parametrize('width', [24, 28, 32, 52])
+def test_two_line_constant_visible_value_is_complete(width):
+    import re
+    value = (1 << width)-1
+    ir = literal_ir(hex(value), width)
+    for style in ('symbols', 'labels'):
+        text = encode(ir, annotations=True, operator_style=style)
+        body, footer = framing(text)
+        # Read both interior text lines directly, without the native formatter.
+        rows = body.splitlines()
+        tokens = []
+        for index in range(0, len(rows), 5):
+            first, second = rows[index+1][2:9].strip(), rows[index+2][2:9].strip()
+            token = first+second if first.startswith('x') else second
+            if re.fullmatch(r'x[0-9A-F]+', token):
+                tokens.append(token)
+        assert tokens == ['x'+format(value, 'X')]
+        assert to_cipher(decode(text)).evaluate([]) == value
+        if width > 24:
+            changed = body.replace('xFFFFFF', 'xEFFFFF', 1)
+            assert changed != body
+            with pytest.raises(ValueError, match='visible glyph'):
+                decode(altered(changed, footer))
+
+
+@pytest.mark.parametrize('width', [56, 64])
+def test_constant_beyond_two_line_capacity_rejects_without_truncation(width):
+    with pytest.raises(ValueError, match='visible manual label capacity'):
+        encode(literal_ir(hex((1 << width)-1), width))
