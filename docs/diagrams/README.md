@@ -70,6 +70,8 @@ overview, a complete cross-stage dependency table, hyperlinked readable
 native-member/input-fragment tables, and shared
 parameter definitions. Adjacent-stage edges are drawn in the summary; longer dependencies stay explicit
 in its complete table. It never selects stages or shapes from a primitive name.
+Observation and final-output tags use readable member references and complete
+shared parameter entries, so long tags do not widen the operation column.
 All native operations remain in the member tables; ordinal references `n0`,
 `n1`, etc. link fragments to those identities, and `I0`, `I1`, etc. follow declared
 input order. Consecutive members of an independent bundle can be displayed as

@@ -57,7 +57,10 @@ def operation(node, registry=None, short=False):
             value = reference or value
         return f'CONST/{node["bits"]}={value}'
     if kind in ('cipher_output', 'intermediate_output'):
-        return ('OUT' if kind == 'cipher_output' else 'OBSERVE') + '/' + str(node['bits'])
+        label = ('OUT' if kind == 'cipher_output' else 'OBSERVE') + '/' + str(node['bits'])
+        key = json.dumps([kind, description], separators=(',', ':'))
+        reference = registry.get(key) if registry else None
+        return label + (' ' + reference if reference else '') if short else label + ' tag=' + (reference or description[0])
     if kind in ('input', 'join', 'selection'):
         return {'input': 'INPUT', 'join': 'PACK', 'selection': 'SELECT'}[kind] + '/' + str(node['bits'])
     reference = registry.get(json.dumps([kind, description], separators=(',', ':'))) if registry else None
@@ -67,7 +70,7 @@ def operation(node, registry=None, short=False):
 def parameter_registry(ir):
     parameters = {}
     for node in ir['nodes']:
-        if node['type'] not in ('word_operation', 'constant', 'cipher_output', 'intermediate_output') or (node['type'] == 'constant' and len(node['description'][0]) > 12):
+        if node['type'] not in ('word_operation', 'constant') or (node['type'] == 'constant' and len(node['description'][0]) > 12):
             key = json.dumps([node['type'], node['description']], separators=(',', ':'))
             if key not in parameters:
                 parameters[key] = (f'P{len(parameters) + 1}', node['type'], node['description'])
@@ -166,7 +169,9 @@ def member_pages(ir, registry, locations, options):
 def parameter_pages(parameters, options):
     rows = []
     for reference, kind, description in parameters.values():
-        if kind == 'sbox':
+        if kind in ('cipher_output', 'intermediate_output'):
+            rows.append((reference, kind + ' tag', description[0]))
+        elif kind == 'sbox':
             rows.append((reference, f'SBOX: {len(description)} entries', ''))
             for start in range(0, len(description), 16):
                 rows.append((reference, f'indices {start}..{min(start + 15, len(description) - 1)}',

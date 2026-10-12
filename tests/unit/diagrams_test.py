@@ -420,3 +420,24 @@ def test_unary_native_marker_is_not_presented_as_zero_operand_arity():
         label = operation({'type': 'word_operation', 'description': [name, 0], 'bits': 17})
         assert label == name + '/17(unary)'
         assert 'arity=0' not in label
+
+
+def test_readable_observation_and_final_output_tags_survive_escaping_and_wrapping():
+    from claasp.diagram_presentation import escape
+    c = Cipher('opaque', 'permutation', ['value'], [4], 4)
+    c.add_round()
+    tags = ['UNIQUE_STATE_TAG_a&b_%#{}', 'SECOND_STATE_' + 'long_token_' * 15]
+    for tag in tags:
+        c.add_intermediate_output_component(['value'], [list(range(4))], 4, tag)
+    c.add_cipher_output_component(['value'], [list(range(4))], 4)
+    ir = from_cipher(c)
+    final_tag = 'FINAL_TAG_$^~' + 'final_long_' * 10
+    ir['nodes'][-1]['description'] = [final_tag]
+    for view in ('overview-detail', 'detail'):
+        text = to_tikz(ir, view=view).replace(r'\allowbreak{}', '')
+        for tag in tags + [final_tag]:
+            assert escape(tag) in text
+        assert 'OBSERVE/4 tag=P1' in text and 'OBSERVE/4 tag=P2' in text
+        assert 'OUT/4 tag=P3' in text
+        assert 'Optional audit' not in text
+    assert from_ascii(to_ascii(ir)) == ir
