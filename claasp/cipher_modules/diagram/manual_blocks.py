@@ -143,25 +143,28 @@ def art(cell, style='symbols'):
 
 
 class _WordGraph:
-    def __init__(self, ir, bits, gathering="linear", projection="whole"):
+    def __init__(self, ir, bits, gathering="linear", projection="whole", native_bundles=False):
         self.ir, self.bits, self.gathering = ir, bits, gathering
         self.calls, self.inputs, self.values = [], [], {}
         self.raw_values, self.selection_cache, self.join_cache = {}, {}, {}
         self.input_definitions, self.fake_inputs = [], []
         for native_index, item in enumerate(ir['inputs']):
             parts = []
-            for start in range(0, item['bits'], bits):
+            slices = [(0, item['bits'])] if native_bundles else [(start, bits) for start in range(0, item['bits'], bits)]
+            for start, width in slices:
                 index = len(self.inputs)
                 self.inputs.append(('input', index))
-                self.fake_inputs.append(dict(item, bits=bits))
+                self.fake_inputs.append(dict(item, bits=width))
                 self.input_definitions.append(dict(item, kind='input', index=index,
-                    native_index=native_index, positions=list(range(start, start+bits))))
+                    native_index=native_index, positions=list(range(start, start+width))))
                 parts.append(('input', index))
             self.values[item['id']] = parts
+            if native_bundles:
+                self.raw_values[item['id']] = parts[0]
         for ordinal, node in enumerate(ir['nodes']):
             args, pieces, filled = [], [], 0
             fragment = projection == 'wordwise' and node['type'] == 'word_operation' and node['description'][0] in ('XOR', 'AND', 'OR', 'NOT') and node['bits'] > bits and node['input_bits']//node['bits'] <= 3
-            logical_bits = bits if fragment or node['type'] in ('cipher_output', 'intermediate_output') else node['bits']
+            logical_bits = bits if fragment or not native_bundles and node['type'] in ('cipher_output', 'intermediate_output') else node['bits']
             for edge in node['operands']:
                 positions = edge['positions']
                 if node['type'] in ('sbox', 'linear_layer', 'mix_column', 'permutation'):
@@ -185,7 +188,12 @@ class _WordGraph:
             for edge in node['operands']:
                 local['operand_positions'].append(list(range(offset, offset+len(edge['positions']))))
                 offset += len(edge['positions'])
-            if node['type'] in ('cipher_output', 'intermediate_output'):
+            if native_bundles and node['type'] in ('cipher_output', 'intermediate_output'):
+                definition = dict(local, kind='native_boundary', positions=list(range(node['bits'])))
+                value = self.call([self.join(args)], definition)
+                self.raw_values[node['id']] = value
+                self.values[node['id']] = [value]
+            elif node['type'] in ('cipher_output', 'intermediate_output'):
                 parts = []
                 for index, arg in enumerate(args):
                     definition = dict(local, kind='native_boundary', positions=list(range(index*bits, (index+1)*bits)))
@@ -275,7 +283,7 @@ class _WordGraph:
 
     def width(self, value):
         if value[0] == 'input':
-            return self.bits
+            return self.fake_inputs[value[1]]['bits']
         definition = self.calls[value[1]]['definition']
         return len(definition['positions']) if definition['kind'] in ('native_boundary', 'native_fragment') else definition['bits']
 
@@ -675,7 +683,7 @@ def _ranges(indices):
     return [str(group[0]) if len(group) == 1 else f'{group[0]}-{group[-1]}' for group in groups]
 
 
-def _decorate(cells, ir):
+def _decorate(cells, ir, native_bundles=False):
     output = dict(cells)
     legend = max(col for row, col in cells)+1
     inputs = [cell['definition'] for cell in cells.values() if cell.get('definition', {}).get('kind') == 'input']
@@ -712,7 +720,7 @@ def _decorate(cells, ir):
     if unused:
         put(row, 'UNUSED')
         row += 1
-        for span in _ranges(unused):
+        for span in ([] if native_bundles else _ranges(unused)):
             from .presentation import selections
             ends = [int(part) for part in span.split('-')]
             words = set(range(ends[0], ends[-1]+1))
@@ -763,9 +771,11 @@ def infer_word_bits(ir):
 
 
 def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gathering='linear', lane_policy='compact', projection='whole',
-          layout_preference='balanced', max_cells=1000000, max_calls=20000):
+          layout_preference='balanced', max_cells=1000000, max_calls=20000, native_bundles=False):
     """Compare generic schedules by measured crossings, depth and width."""
     validate(ir)
+    if type(native_bundles) is not bool or native_bundles and (word_bits is not None or projection != 'whole' or lane_policy != 'compact'):
+        raise ValueError('Native bundles require whole projection, compact lanes and no fixed word_bits')
     if projection not in ('whole', 'wordwise'):
         raise ValueError('Choose whole or wordwise projection')
     if lane_policy not in ('compact', 'state'):
@@ -777,18 +787,18 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gat
     if alignment not in ('left', 'right') or layout_preference not in ('balanced', 'crossings', 'depth', 'width'):
         raise ValueError('Choose left/right alignment and balanced/crossings/depth/width layout preference')
     glyphs._graph_limits(ir, 'semantic-legacy', max_cells, max_calls)
-    bits = infer_word_bits(ir) if word_bits is None else word_bits
+    bits = 1 if native_bundles else infer_word_bits(ir) if word_bits is None else word_bits
     if type(bits) is not int or bits < 1 or any(item['bits'] % bits for item in ir['inputs']):
         raise ValueError('Supply uniform aligned positive word_bits')
     variants = STRATEGIES if strategy == 'semantic-auto' else (strategy,)
     best, reports, errors, rejected = None, [], [], []
     for index, variant in enumerate(variants):
         try:
-            graph = _WordGraph(ir, bits, gathering, projection)
+            graph = _WordGraph(ir, bits, gathering, projection, native_bundles)
             if len(graph.calls) > max_calls:
                 raise ValueError('Manual word expansion exceeds max_calls')
             cells, report = _Scheduler(ir, graph, variant, max_cells, alignment, lane_policy).build()
-            cells = _decorate(cells, ir)
+            cells = _decorate(cells, ir, native_bundles)
             # Reject structurally disconnected schedules before comparing costs.
             # The winner is still reparsed from its actual exported text.
             parser._connected_ports(cells)
@@ -811,17 +821,18 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gat
     _, _, cells, report, metrics = best
     return cells, dict(report, selected_variant=report['strategy'], strategy=strategy,
                        alignment=alignment, layout_preference=layout_preference, gathering=gathering, projection=projection,
+                       packing_policy='native-bundles' if native_bundles else 'uniform-words',
                        metrics=metrics, candidates=reports, rejected_candidates=rejected)
 
 
 def _encode_layout(ir, *, annotations=True, word_bits=None, operator_style='symbols',
            strategy='semantic-auto', alignment='left', layout_preference='balanced', gathering='linear', lane_policy='compact', projection='whole',
-           wire_borders=False, max_cells=1000000, max_calls=20000,
+           wire_borders=False, native_bundles=False, max_cells=1000000, max_calls=20000,
            max_grid_area=2000000, max_text_bytes=64000000):
     if type(annotations) is not bool or type(wire_borders) is not bool or operator_style not in ('symbols', 'labels'):
         raise ValueError('Choose boolean annotations and symbols/labels')
     cells, report = build(ir, word_bits=word_bits, strategy=strategy, alignment=alignment,
-                          layout_preference=layout_preference, gathering=gathering, lane_policy=lane_policy, projection=projection, max_cells=max_cells, max_calls=max_calls)
+                          layout_preference=layout_preference, gathering=gathering, lane_policy=lane_policy, projection=projection, max_cells=max_cells, max_calls=max_calls, native_bundles=native_bundles)
     if type(max_grid_area) is not int or max_grid_area < 1 or report['rows']*report['cols'] > max_grid_area:
         raise ValueError('Manual rectangular output exceeds max_grid_area')
     if type(max_text_bytes) is not int or max_text_bytes < 1:
