@@ -741,3 +741,19 @@ def test_generic_native_permutation_projects_ordered_wires_and_matches_independe
     d=next(r['definition'] for r in footer['records'] if r['definition'].get('type')=='permutation')
     d['description'][0][0]=d['description'][0][1]
     with pytest.raises(ValueError):decode(altered(body,footer))
+
+
+@pytest.mark.parametrize('alignment',['left','right'])
+def test_routing_cost_counts_strict_intervals_and_nearest_free_ties(alignment):
+    from collections import Counter
+    from claasp.cipher_modules.diagram.manual_blocks import _Scheduler
+    scheduler=_Scheduler.__new__(_Scheduler)
+    a,b=('input',0),('input',1)
+    scheduler.calls=[{'args':[a,b]}];scheduler.slots={a:0,b:7}
+    scheduler.active={0,3,7};scheduler.maximum=7;scheduler.alignment=alignment
+    scheduler.uses=Counter({a:2,b:2})
+    assert scheduler.routing_estimate(0)==(1,0)
+    scheduler.uses[a]=1
+    assert scheduler.routing_estimate(0)==(1,1)
+    scheduler.calls=[{'args':[a,a]}];scheduler.uses[a]=2
+    assert scheduler.routing_estimate(0)==(0,1)

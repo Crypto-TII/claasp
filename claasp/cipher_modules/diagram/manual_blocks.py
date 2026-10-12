@@ -4,6 +4,7 @@ The public human default uses this encoder. Plain bodies follow the existing
 5x11 grammar; optional local annotations support fresh native reconstruction.
 """
 import copy
+from bisect import bisect_left, bisect_right
 import heapq
 import json
 from collections import Counter, deque
@@ -401,19 +402,24 @@ class _Scheduler(glyphs._RegisterScheduler):
         final = definition.get('type') == 'cipher_output'
         return (self.scheduling_rounds[index], final, *super().priority(index))
 
-    def routing_estimate(self, index):
+    def routing_estimate(self, index, active_lanes=None, free_lanes=None):
         arguments = self.calls[index]['args']
         old = [self.slots[value] for value in arguments]
         expired = {self.slots[value] for value in arguments if self.uses[value] == arguments.count(value)}
         if not old:
             return 0, 0
+        if active_lanes is None:
+            active_lanes = tuple(sorted(self.active))
         if expired:
             target = min(expired) if self.alignment == 'left' else max(expired)
         else:
             near = old[0] if self.alignment == 'left' else old[-1]
-            free = [lane for lane in range(self.maximum+2) if lane not in self.active]
-            target = min(free, key=lambda lane: (abs(lane-near), lane))
-        crossings = sum(sum(min(source, target) < lane < max(source, target) for lane in self.active)
+            if free_lanes is None:
+                free_lanes = tuple(lane for lane in range(self.maximum+2) if lane not in self.active)
+            at = bisect_left(free_lanes, near)
+            nearest = free_lanes[max(0, at-1):at+1]
+            target = min(nearest, key=lambda lane: (abs(lane-near), lane))
+        crossings = sum(bisect_left(active_lanes, max(source, target))-bisect_right(active_lanes, min(source, target))
                         for source in old if source != target)
         return crossings, len(expired)
 
@@ -442,9 +448,11 @@ class _Scheduler(glyphs._RegisterScheduler):
         eligible = [index for index in self.ready_calls.eligible if index in self.pending]
         if not eligible:
             return super().next_call()
+        active_lanes = tuple(sorted(self.active))
+        free_lanes = tuple(lane for lane in range(self.maximum+2) if lane not in self.active)
         def cost(index):
             final = self.calls[index]['definition'].get('type') == 'cipher_output'
-            crossings, expired = self.routing_estimate(index)
+            crossings, expired = self.routing_estimate(index, active_lanes, free_lanes)
             if self.strategy == 'semantic-width':
                 return self.scheduling_rounds[index], final, -expired, crossings, index
             if self.strategy == 'semantic-depth':
