@@ -1564,13 +1564,13 @@ class Cipher:
         to find a solution; if none is found, then the propagation is impossible.
         Return a list of impossible differentials or zero_correlation linear approximations if there are any; otherwise return an empty list
 
-        Three scenarios, honestly named for what they actually fix:
+        Three scenarios, based on whether the key is present or not, and if present, whether it needs to be fixed or not:
 
         - ``"single-key"`` -- the key difference is fixed to zero (requires a key input).
         - ``"related-key"`` -- the key difference is varied instead of the plaintext difference (requires a key
           input; raises ``ValueError`` without one -- there is no key difference to vary).
         - ``"non-key"`` -- no key is fixed or varied at all: only the plaintext/output difference is swept. The
-          only sensible scenario for a keyless permutation, where ``"single-key"``/``"related-key"`` would be
+          only sensible scenario for a keyless permutation or function, where ``"single-key"``/``"related-key"`` would be
           vacuous or impossible; also usable on a keyed cipher to search with the key left unconstrained.
 
         For backward compatibility, the default ``scenario="single-key"`` on a cipher with no key input is
