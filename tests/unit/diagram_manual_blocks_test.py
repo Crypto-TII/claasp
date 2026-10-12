@@ -6,6 +6,30 @@ from claasp.diagrams import from_cipher, to_cipher, from_ascii
 from claasp.cipher_modules.diagram.manual_blocks import encode, decode, MARKER
 
 
+def test_mixed_observation_fragment_flow_is_local_and_terminal_alias_rejects():
+    c = Cipher('anonymous_mixed_flow', 'permutation', ['a', 'b'], [8, 8], 4)
+    c.add_round()
+    x = c.add_xor_component(['a', 'b'], [list(range(8))]*2, 8)
+    observed = c.add_intermediate_output_component([x.id], [list(range(8))], 8, 'trace')
+    c.add_cipher_output_component([observed.id], [list(range(4))], 4)
+    ir = from_cipher(c, roles={'b': 'key'})
+    text = encode(ir, annotations=True, word_bits=4)
+    assert decode(text) == ir
+    body, footer = text.split(MARKER)
+    metadata = json.loads(footer)
+    fragments = [record['definition'] for record in metadata['records'] if record['definition'].get('type') == 'intermediate_output']
+    assert {record['flow'] for record in fragments} == {'alias', 'observe'}
+    terminal = next(record for record in fragments if record['flow'] == 'observe')
+    terminal['flow'] = 'alias'
+    with pytest.raises(ValueError, match='through-tap'):
+        decode(body+MARKER+json.dumps(metadata))
+    restored = to_cipher(decode(text))
+    for a in range(256):
+        for b in [0, 255, 90]:
+            assert restored.evaluate([a, b]) == (a^b)>>4
+            assert restored.evaluate([a, b], intermediate_output=True)[1]['trace'][0] == a^b
+
+
 def toy():
     c = Cipher('anonymous', 'permutation', ['a', 'b'], [4, 4], 8)
     c.add_round()

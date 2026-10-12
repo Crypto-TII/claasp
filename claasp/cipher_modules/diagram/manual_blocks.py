@@ -991,6 +991,8 @@ def _read(records, lines, rows, cols):
                 if definition['kind'] == 'discard':
                     cells[key] = cell
                     continue
+                if definition.get('type') == 'intermediate_output' and definition.get('flow') == 'alias' and cell['kind'] != 'tap':
+                    raise ValueError('An aliased observation requires an actual through-tap')
                 if definition.get('type') == 'cipher_output' and row != rows-1:
                     raise ValueError('Final anchor must occupy the physical bottom output row')
                 if definition.get('operand_ports') != ['top']:
