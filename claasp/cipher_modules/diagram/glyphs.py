@@ -420,7 +420,7 @@ class _RegisterScheduler:
 
     def priority(self, index):
         if self.strategy not in ('semantic-ports', 'semantic-parallel', 'semantic-round'):
-            return (index,)
+            return (0, False, index)
         rank = self.scheduling_rounds[index] if self.strategy == 'semantic-round' else 0
         return (rank, self.calls[index]['definition']['kind'] != 'join', index)
 

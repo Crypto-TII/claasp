@@ -43,13 +43,9 @@ def label(definition, style='symbols'):
         operation = description[0]
         if operation in ('ROTATE', 'SHIFT'):
             amount = description[1]
-            if style == 'symbols':
-                token = ('<<<' if amount < 0 else '>>>') if operation == 'ROTATE' else ('<<' if amount < 0 else '>>')
-                text = token+str(abs(amount))
-            else:
-                # Manual word labels omit amounts, so retain numeric arrows.
-                token = ('<<<' if amount < 0 else '>>>') if operation == 'ROTATE' else ('<<' if amount < 0 else '>>')
-                text = token+str(abs(amount))
+            # Both styles retain numeric arrows because bare words omit amounts.
+            token = ('<<<' if amount < 0 else '>>>') if operation == 'ROTATE' else ('<<' if amount < 0 else '>>')
+            text = token+str(abs(amount))
         else:
             text = (SYMBOLS if style == 'symbols' else WORDS).get(operation)
             if text is None:
