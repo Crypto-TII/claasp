@@ -19,6 +19,40 @@ restored = to_cipher(from_ascii(text))
 figure = to_tikz(ir, rowsPerPanel=16, columnsPerPanel=6, columnSpacing=3)
 ```
 
+## Docker workflow migration
+
+Run this in the Sage Python environment where CLAASP is installed (the user's
+container uses `/opt/conda/envs/sage/bin/python`). Updating this isolated branch
+does not automatically update an existing container's mounted CLAASP checkout;
+install or mount the reviewed revision before expecting the new API there.
+
+```python
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+# Canonical implementation package:
+from claasp.cipher_modules.diagram import from_cipher, to_ascii, from_ascii
+# Existing public imports remain supported:
+# from claasp.diagrams import from_cipher, to_ascii, from_ascii
+
+speck = SpeckBlockCipher(number_of_rounds=1)
+ir = from_cipher(speck)
+print(to_ascii(ir))                 # readable manual grid, no JSON
+text = to_ascii(ir, annotations=True)  # exact native local metadata
+assert from_ascii(text) == ir
+
+from claasp.cipher_modules.diagram import to_audit_ascii, synthesis_report
+legacy = to_audit_ascii(ir)         # explicit audit compatibility
+assert from_ascii(legacy) == ir
+print(synthesis_report(ir)['metrics'])
+```
+
+The human defaults are `annotations=False`, `word_bits=None`,
+`operator_style='symbols'`, `wire_borders=False`, `alignment='left'`,
+`layout_preference='balanced'`, and `strategy='semantic-auto'`. Work defaults:
+`max_cells=1000000`, `max_calls=20000`, `max_grid_area=2000000`,
+`max_text_bytes=64000000`. Choose `layout_preference='crossings'`, `'depth'` or
+`'width'` for measured generic priorities; use `synthesis_report` to inspect
+tradeoffs. Native source links always come from actual exported wires.
+
 Migration notice: `to_ascii(ir)` now returns the readable manual block body.
 It directly imports through the builder's existing scalar/manual decoder.
 For exact native reconstruction, use `to_ascii(ir, annotations=True)` and
@@ -241,4 +275,3 @@ JavaScript-backed results from the previous implementation are historical.
 Native Python measurements, installed-package tests and cross-language
 conformance are recorded separately. No general readability, exact layout
 inversion or unseen-family guarantee follows from a successful semantic test.
-

@@ -501,7 +501,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     Complete default printouts follow. A left margin prevents the doctest
     parser from interpreting a visible ``>>>`` rotation as a Python prompt::
 
-        sage: print('\n'.join('| '+line.rstrip() for line in drawing.splitlines()))
+        sage: print('\n'.join(('| '+line.rstrip()).rstrip() for line in drawing.splitlines()))
         |                                    _______
         |   _______    _______    _______   |       |
         |  |  I1   |  |  I2   |  S  I6   |  (DATA1-2)
@@ -535,8 +535,8 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         |      |          |
         |   ___v___    ___v___
         |  |_______|  |_______|
-        | 
-        | 
+        |
+        |
 
     Generic F chain with exchanged output anchors::
 
@@ -547,8 +547,8 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         sage: f = c.add_not_component([r.id], [list(range(int(4)))], int(4))
         sage: x = c.add_xor_component(['left', f.id], [list(range(int(4)))]*int(2), int(4))
         sage: output = c.add_cipher_output_component(['right', x.id], [list(range(int(4)))]*int(2), int(8))
-        sage: print('\n'.join('| '+line.rstrip() for line in to_ascii(from_cipher(c)).splitlines()))
-        | 
+        sage: print('\n'.join(('| '+line.rstrip()).rstrip() for line in to_ascii(from_cipher(c)).splitlines()))
+        |
         |   _______    _______
         |  |  I1   |  |  I2   |
         |      |          |
@@ -574,15 +574,15 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         |  |_______|      |
         |      |          |
         |      v          v
-        | 
+        |
         |      <---------->
-        | 
+        |
         |      |          |
         |      |          |
         |   ___v___    ___v___
         |  |_______|  |_______|
-        | 
-        | 
+        |
+        |
     """
     if format not in ('human', 'audit'):
         raise ValueError("format must be 'human' or 'audit'")
