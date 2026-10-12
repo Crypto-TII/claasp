@@ -541,12 +541,14 @@ def to_tikz(ir, **options):
         sage: print(next(line for line in wires.splitlines() if 'begin{tikzpicture}' in line))
         \begin{tikzpicture}[>=stealth]
     """
-    from claasp.diagram_glyphs import tikz
+    from claasp.diagram_glyphs import _encode_layout, _present_grid, decode
     if not isinstance(ir, dict): ir=from_cipher(ir)
     validate(ir)
-    recovered=from_ascii(to_ascii(ir,strategy=options.get("strategy","semantic-auto")))
-    if recovered!=ir:raise ValueError("Vector source glyphs changed native IR")
-    return tikz(recovered,**options)
+    text, cells, dimensions = _encode_layout(ir, strategy=options.get('strategy', 'semantic-auto'))
+    recovered = validate(decode(text))
+    if recovered != ir:
+        raise ValueError('Vector source glyphs changed native IR')
+    return _present_grid(recovered, cells, dimensions, options)
 
 def evaluate_state_values(cipher, inputs):
     r"""

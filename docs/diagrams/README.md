@@ -113,6 +113,8 @@ with_audit = to_tikz(ir, audit=True)
 ```
 
 Every vector export reparses its actual generated ASCII before presentation.
+The selected layout is reused after exact IR validation: one generic candidate
+search, one exported-text parse, and wire panels only for `view='wires'`.
 The readable presentation preserves parameters and ordered input fragments;
 it does not claim arbitrary original placement inversion or a human-study score.
 

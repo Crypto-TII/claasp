@@ -557,7 +557,7 @@ def render_grid(cells,dimensions):
     return '\n'.join(lines),records
 
 
-def encode(ir, *, strategy='semantic-auto', max_cells=1000000,
+def _encode_layout(ir, *, strategy='semantic-auto', max_cells=1000000,
            max_calls=20000, max_grid_area=2000000, max_text_bytes=64000000):
     if any(type(v) is not int or v<=0 for v in (max_grid_area,max_text_bytes)):
         raise ValueError('Invalid native output bounds')
@@ -572,7 +572,15 @@ def encode(ir, *, strategy='semantic-auto', max_cells=1000000,
     estimated_bytes=area*55+dimensions['rows']*5-1+len(MARKER)+len(footer.encode('utf8'))+1
     if estimated_bytes>max_text_bytes:raise ValueError('Native glyph export exceeds max_text_bytes')
     text,_=render_grid(cells,dimensions)
-    return text+MARKER+footer+'\n'
+    return text+MARKER+footer+'\n', cells, dimensions
+
+
+def encode(ir, *, strategy='semantic-auto', max_cells=1000000,
+           max_calls=20000, max_grid_area=2000000, max_text_bytes=64000000):
+    text, _, _ = _encode_layout(ir, strategy=strategy, max_cells=max_cells,
+                               max_calls=max_calls, max_grid_area=max_grid_area,
+                               max_text_bytes=max_text_bytes)
+    return text
 
 
 def _wire_templates():
@@ -715,16 +723,22 @@ def _wire_panel(cells, panel, items, options, registry):
     return '\n'.join(lines)
 
 
-def tikz(ir, **options):
+def _present_grid(ir, cells, dimensions, options):
     from claasp.diagram_presentation import parameter_registry, present
     view, legend = options.get('view', 'overview-detail'), options.get('legend', 'readable')
     if view not in ('overview', 'detail', 'overview-detail', 'wires') or legend not in ('readable', 'audit', 'none'):
         raise ValueError('Invalid TikZ presentation mode')
-    registry = {key: value[0] for key, value in parameter_registry(ir).items()}
-    cells, dimensions = build_grid(ir, strategy=options.get('strategy', 'semantic-auto'))
     wire_options = _wire_options(options, dimensions)
-    groups = _panel_groups(cells, wire_options)
-    if view == 'wires' and len(groups) > wire_options['maximum']:
-        raise ValueError(f"TikZ needs {len(groups)} panels; crop or increase maxPanels")
-    panels = [_wire_panel(cells, panel, items, wire_options, registry) for panel, items in sorted(groups.items())]
+    panels = []
+    if view == 'wires':
+        registry = {key: value[0] for key, value in parameter_registry(ir).items()}
+        groups = _panel_groups(cells, wire_options)
+        if len(groups) > wire_options['maximum']:
+            raise ValueError(f"TikZ needs {len(groups)} panels; crop or increase maxPanels")
+        panels = [_wire_panel(cells, panel, items, wire_options, registry) for panel, items in sorted(groups.items())]
     return present(ir, cells, panels, options)
+
+
+def tikz(ir, **options):
+    cells, dimensions = build_grid(ir, strategy=options.get('strategy', 'semantic-auto'))
+    return _present_grid(ir, cells, dimensions, options)

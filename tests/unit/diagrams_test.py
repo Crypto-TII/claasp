@@ -396,7 +396,12 @@ def test_vector_api_rejects_changed_actual_source_glyph(monkeypatch):
     ir=from_cipher(circuit());changed=copy.deepcopy(ir)
     changed['nodes'][0]['description']=['MODSUB',2,None]
     changed_text=diagrams.to_ascii(changed)
-    monkeypatch.setattr(diagrams,'to_ascii',lambda *args,**kwargs:changed_text)
+    import claasp.diagram_glyphs as glyphs
+    encode_layout = glyphs._encode_layout
+    def changed_export(*args, **kwargs):
+        _, cells, dimensions = encode_layout(*args, **kwargs)
+        return changed_text, cells, dimensions
+    monkeypatch.setattr(glyphs, '_encode_layout', changed_export)
     with pytest.raises(ValueError,match='changed native IR'):
         diagrams.to_tikz(ir)
 
@@ -524,3 +529,25 @@ def test_readable_serial_arithmetic_wraps_all_columns_and_retains_every_member()
     assert '34: cipher\\_output\\_0\\_34' in visible
     assert r'\fontfamily{cmtt}\fontsize{9}{11}' in text
     assert r'\noindent\begin{tabular}' in text
+
+
+def test_default_vector_export_searches_once_parses_actual_text_once_and_skips_wires(monkeypatch):
+    import claasp.diagram_glyphs as glyphs
+    counts = {'layouts': 0, 'parses': 0}
+    build, decode = glyphs.build_grid, glyphs.decode
+    def counted_layout(*args, **kwargs):
+        counts['layouts'] += 1
+        return build(*args, **kwargs)
+    def counted_decode(text, **kwargs):
+        counts['parses'] += 1
+        assert '# CLAASP-TYPED-GLYPH 1' in text
+        return decode(text, **kwargs)
+    def unwanted_panel(*args, **kwargs):
+        pytest.fail('A summary/detail export must not construct wire panels')
+    monkeypatch.setattr(glyphs, 'build_grid', counted_layout)
+    monkeypatch.setattr(glyphs, 'decode', counted_decode)
+    monkeypatch.setattr(glyphs, '_wire_panel', unwanted_panel)
+    text = to_tikz(from_cipher(circuit()))
+    assert 'Computation overview:' in text
+    assert counts['layouts'] == 1
+    assert counts['parses'] == 1
