@@ -1,132 +1,132 @@
 import copy
+import json
 import pytest
 from claasp.cipher import Cipher
-from claasp.diagrams import from_cipher
-from claasp.cipher_modules.diagram.human import to_word_ascii
+from claasp.diagrams import from_cipher, to_ascii, to_audit_ascii, from_ascii, to_cipher, synthesis_report
+from claasp.cipher_modules.diagram.manual_blocks import MARKER
 
 
 def toy(left='left', right='right'):
-    cipher = Cipher('generic_probe', 'permutation', [left, right], [4, 4], 8)
-    cipher.add_round()
-    node = cipher.add_xor_component([left, right], [list(range(4))]*2, 4)
-    cipher.add_cipher_output_component([node.id, right], [list(range(4))]*2, 8)
-    return from_cipher(cipher)
+    c = Cipher('generic_probe', 'permutation', [left, right], [4,4], 8)
+    c.add_round()
+    node = c.add_xor_component([left,right], [list(range(4))]*2, 4)
+    c.add_cipher_output_component([node.id,right], [list(range(4))]*2, 8)
+    return from_cipher(c)
 
 
-def test_toy_is_deterministic_and_preserves_ir():
+def manifest(text):
+    return json.loads(text.split(MARKER)[1])
+
+
+def test_default_is_deterministic_manual_body_and_preserves_ir():
+    ir = toy(); before = copy.deepcopy(ir)
+    text = to_ascii(ir)
+    assert text == to_ascii(ir) and ir == before
+    assert MARKER not in text and '# CLAASP-TYPED' not in text
+    assert len(text.splitlines()) % 5 == 0
+    assert all(len(line) % 11 == 0 for line in text.splitlines())
+    assert '^' in text and '___v___' in text
+
+
+def test_identifier_renaming_preserves_entire_body_geometry():
+    assert to_ascii(toy()) == to_ascii(toy('opaque_long_identifier','z'))
+
+
+def test_real_render_options_preserve_annotated_native_semantics():
     ir = toy()
-    before = copy.deepcopy(ir)
-    text = to_word_ascii(ir)
-    assert text == to_word_ascii(ir)
-    assert ir == before
-    assert '^<' in text and 'v' in text
-    assert text.splitlines()[-1].index('out[0]') < text.splitlines()[-1].index('out[1]')
+    text = to_ascii(ir, operator_style='labels', wire_borders=True, annotations=True)
+    assert 'XOR' in text and from_ascii(text) == ir
 
 
-def test_identifier_renaming_preserves_geometry():
-    original = to_word_ascii(toy()).splitlines()
-    renamed = to_word_ascii(toy('opaque_long_identifier', 'z')).splitlines()
-    assert original[2:] == renamed[2:]
+def test_noncontiguous_selection_is_visible_and_reconstructs():
+    ir = toy(); ir['nodes'][0]['operands'][0]['positions'] = [0,2,1,3]
+    text = to_ascii(ir, annotations=True)
+    assert 'SEL' in text and from_ascii(text) == ir
 
 
-def test_labels_and_borders_keep_operand_markers():
-    text = to_word_ascii(toy(), operator_style='labels', borders=True)
-    assert '[XOR]' in text and '<' in text and 'v' in text
+@pytest.mark.parametrize('kwargs', [{'alignment':'center'},{'word_bits':-1},{'word_bits':0},{'word_bits':False},{'annotations':1},{'wire_borders':1},{'layout_preference':'bad'}])
+def test_invalid_supported_options_are_rejected(kwargs):
+    with pytest.raises(ValueError):to_ascii(toy(), **kwargs)
 
 
-def test_partial_word_projection_is_explicitly_rejected():
+def test_unsupported_spacing_is_not_an_advertised_knob():
+    with pytest.raises(TypeError):to_ascii(toy(), column_spacing=18)
+
+
+def test_public_human_and_audit_lossless_modes():
     ir = toy()
-    ir['nodes'][0]['operands'][0]['positions'] = [0, 2, 1, 3]
-    with pytest.raises(ValueError, match='Noncontiguous'):
-        to_word_ascii(ir)
-
-
-@pytest.mark.parametrize('kwargs', [{'column_spacing': 1}, {'alignment': 'center'}, {'word_bits': -1}, {'word_bits': 0}, {'word_bits': False}])
-def test_invalid_options_are_rejected(kwargs):
-    with pytest.raises(ValueError):
-        to_word_ascii(toy(), **kwargs)
-
-
-def test_public_default_and_explicit_audit_modes():
-    from claasp.diagrams import to_ascii, to_audit_ascii, from_ascii
-    ir = toy()
-    assert to_ascii(ir) == to_word_ascii(ir)
+    assert from_ascii(to_ascii(ir,annotations=True)) == ir
     assert from_ascii(to_audit_ascii(ir)) == ir
-    assert to_ascii(ir, format='audit') == to_audit_ascii(ir)
+    assert to_ascii(ir,format='audit') == to_audit_ascii(ir)
+    with pytest.raises(ValueError):to_ascii(ir,format='audit',annotations=True)
 
 
 def test_native_roles_and_explicit_override():
     from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-    cipher = SpeckBlockCipher(number_of_rounds=1)
-    assert [i['role'] for i in from_cipher(cipher)['inputs']] == ['data', 'key']
-    assert all(i['role'] == 'unspecified' for i in from_cipher(cipher, roles={})['inputs'])
-    arbitrary = Cipher('key_named', 'permutation', ['key'], [4], 4)
-    arbitrary.add_round()
-    arbitrary.add_cipher_output_component(['key'], [list(range(4))], 4)
-    assert from_cipher(arbitrary)['inputs'][0]['role'] == 'unspecified'
+    c = SpeckBlockCipher(number_of_rounds=1)
+    assert [i['role'] for i in from_cipher(c)['inputs']] == ['data','key']
+    assert all(i['role']=='unspecified' for i in from_cipher(c,roles={})['inputs'])
+    arbitrary = Cipher('key_named','permutation',['key'],[4],4);arbitrary.add_round()
+    arbitrary.add_cipher_output_component(['key'],[list(range(4))],4)
+    assert from_cipher(arbitrary)['inputs'][0]['role']=='unspecified'
 
 
-def test_permuted_and_repeated_outputs_have_declared_anchors():
-    from claasp.diagrams import to_ascii
-    for identities in (['right', 'left'], ['left', 'left']):
-        cipher = Cipher('generic_order', 'permutation', ['left', 'right'], [4, 4], 8)
-        cipher.add_round()
-        cipher.add_cipher_output_component(identities, [list(range(4))]*2, 8)
-        text = to_ascii(from_cipher(cipher), word_bits=4)
-        anchor = next(line for line in text.splitlines() if 'out[0]' in line)
-        assert anchor.index('out[0]') < anchor.index('out[1]')
-        assert text.count('out[0]') == 1 and text.count('out[1]') == 1
+def test_permuted_and_repeated_outputs_share_declared_bottom_anchors():
+    for ids in (['right','left'],['left','left']):
+        c = Cipher('generic_order','permutation',['left','right'],[4,4],8);c.add_round()
+        c.add_cipher_output_component(ids,[list(range(4))]*2,8)
+        ir = from_cipher(c);text = to_ascii(ir,word_bits=4,annotations=True)
+        boundaries = [r for r in manifest(text)['records'] if r['definition'].get('type')=='cipher_output']
+        assert len({r['row'] for r in boundaries})==1
+        assert all(r['col']==r['definition']['positions'][0]//4 for r in boundaries)
+        assert from_ascii(text)==ir
 
 
-def test_noncommutative_operands_remain_numbered():
-    cipher = Cipher('generic_sub', 'permutation', ['a', 'b'], [4, 4], 4)
-    cipher.add_round()
-    node = cipher.add_modsub_component(['a', 'b'], [list(range(4))]*2, 4)
-    cipher.add_cipher_output_component([node.id], [list(range(4))], 4)
-    text = to_word_ascii(from_cipher(cipher))
-    assert '1v' in text and '<2' in text
+def test_noncommutative_operands_keep_actual_visible_order():
+    c = Cipher('generic_sub','permutation',['a','b'],[4,4],4);c.add_round()
+    n = c.add_modsub_component(['b','a'],[list(range(4))]*2,4)
+    c.add_cipher_output_component([n.id],[list(range(4))],4)
+    ir=from_cipher(c);text=to_ascii(ir,annotations=True)
+    assert from_ascii(text)==ir and to_cipher(from_ascii(text)).evaluate([3,7])==4
 
 
-def test_full_native_speck_schedule_is_present_and_one_round_has_no_expansion():
-    from claasp.diagrams import to_ascii
+def test_speck_observations_unused_legend_and_expanded_key_rounds():
     from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-    one = to_ascii(from_cipher(SpeckBlockCipher(number_of_rounds=1)))
-    five = to_ascii(from_cipher(SpeckBlockCipher(number_of_rounds=5)))
-    assert one.splitlines()[1].count('S:key[') == 1
-    assert 'Declared inputs unused in this computation: key[0], key[1], key[2]' in one
-    assert 'round 0: round_key_output = key[3]' in one
-    assert five.splitlines()[1].count('S:key[') == 4
-    assert all(f'r{r} ' in five for r in range(5))
-    assert all(f'round {r}: round_key_output = xor_{r}_5[0]' in five for r in range(1,5))
-    assert five.count('>>>7') == 9 and five.count('<<<2') == 9
+    one = to_ascii(SpeckBlockCipher(number_of_rounds=1))
+    five = to_ascii(SpeckBlockCipher(number_of_rounds=5))
+    assert 'KEY6' in one and 'UNUSED' in one and 'I3-5' in one and 'OBS0' in one
+    assert one.count('>>>7')==1 and one.count('<<<2')==1
+    assert five.count('>>>7')==9 and five.count('<<<2')==9
+    assert all('R'+str(r) in five for r in range(5))
+    ir=from_cipher(SpeckBlockCipher(number_of_rounds=5))
+    assert from_ascii(to_ascii(ir,annotations=True))==ir
+    assert all(any(n['description']==['round_key_output'] and n['round']==r and n['operands'][0]['source']==f'xor_{r}_5' for n in ir['nodes']) for r in range(1,5))
 
 
-def test_generic_feistel_f_chain_and_exchange_with_independent_oracle():
-    from claasp.diagrams import to_ascii
-    cipher = Cipher('generic_feistel', 'permutation', ['left', 'right'], [4,4], 8)
-    cipher.add_round()
-    rotate = cipher.add_rotate_component(['right'], [list(range(4))], 4, 1)
-    invert = cipher.add_not_component([rotate.id], [list(range(4))], 4)
-    mix = cipher.add_xor_component(['left', invert.id], [list(range(4))]*2, 4)
-    cipher.add_cipher_output_component(['right', mix.id], [list(range(4))]*2, 8)
-    text = to_ascii(from_cipher(cipher))
-    assert '>>>1' in text and '~' in text and '^' in text and 'x' in text
+def test_generic_feistel_f_chain_and_exchange_independent_oracle():
+    c=Cipher('generic_feistel','permutation',['left','right'],[4,4],8);c.add_round()
+    r=c.add_rotate_component(['right'],[list(range(4))],4,1)
+    f=c.add_not_component([r.id],[list(range(4))],4)
+    x=c.add_xor_component(['left',f.id],[list(range(4))]*2,4)
+    c.add_cipher_output_component(['right',x.id],[list(range(4))]*2,8)
+    text=to_ascii(c,annotations=True);rebuilt=to_cipher(from_ascii(text))
+    assert '>>>1' in text and '!' in text and '^' in text and '<---------->' in text
     for left in range(16):
         for right in range(16):
-            rotate_right = (right >> 1) | ((right & 1) << 3)
-            expected = (right << 4) | (left ^ (rotate_right ^ 15))
-            assert cipher.evaluate([left, right]) == expected
+            rotated=(right>>1)|((right&1)<<3)
+            assert rebuilt.evaluate([left,right]) == (right<<4)|(left^(rotated^15))
 
 
-@pytest.mark.parametrize('options', [{'max_calls':1}, {'max_cells':1}, {'max_grid_area':1}, {'max_text_bytes':1}, {'format':'bad'}, {'strategy':'direct-bus'}, {'borders':1}])
-def test_public_human_bounds_and_options_fail_explicitly(options):
-    from claasp.diagrams import to_ascii
-    with pytest.raises(ValueError):
-        to_ascii(toy(), **options)
+@pytest.mark.parametrize('options',[{'max_calls':1},{'max_cells':1},{'max_grid_area':1},{'max_text_bytes':1},{'format':'bad'}])
+def test_public_work_bounds_fail_explicitly(options):
+    with pytest.raises(ValueError):to_ascii(toy(),**options)
 
 
-def test_supported_package_and_compatibility_exports_are_identical():
+def test_public_report_and_compatibility_exports():
     import claasp.diagrams as compatibility
     import claasp.cipher_modules.diagram as package
     assert compatibility.to_ascii is package.to_ascii
     assert compatibility.to_audit_ascii is package.to_audit_ascii
+    report=synthesis_report(toy(),layout_preference='width')
+    assert report['layout_preference']=='width' and len(report['candidates'])==6
+    assert set(report['metrics'])=={'crossings','depth','width','cells'}

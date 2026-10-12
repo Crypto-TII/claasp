@@ -1,7 +1,7 @@
 """Manual-vocabulary word blocks with edge-free, coordinate-local annotations.
 
-Private vertical-slice implementation. Public default selection is pending the
-shared builder contract review. Plain bodies use the existing 5x11 grammar.
+The public human default uses this encoder. Plain bodies follow the existing
+5x11 grammar; optional local annotations support fresh native reconstruction.
 """
 import copy
 import json
@@ -58,6 +58,11 @@ def label(definition, style='symbols'):
 
 
 def art(cell, style='symbols'):
+    if cell['kind'] == 'note':
+        return ['  _______  ', ' |       | ', ' ('+glyphs._center(cell['text'])+') ', ' |_______| ', ' '*11]
+    if cell['kind'] == 'swap':
+        middle = '     <-----' if cell['partner'] > cell['column'] else '----->     '
+        return ['     v     ', ' '*11, middle, ' '*11, '     |     ']
     if cell['kind'] == 'input' and not cell['definition']['positions']:
         text = 'SUNUSED' if cell.get('secret') else 'UNUSED'
         return ['  _______  ', ' |       | ', ' ('+glyphs._center(text)+') ', ' |_______| ', ' '*11]
@@ -177,12 +182,58 @@ class _Scheduler(glyphs._RegisterScheduler):
         super().__init__(dict(ir, inputs=graph.fake_inputs), graph.inputs, graph.calls, targets, strategy, maximum)
         self.active = {self.slots[value] for value in self.inputs if used[value]}
         self.original_inputs = graph.input_definitions
+        for index in reversed(range(len(self.calls))):
+            definition = self.calls[index]['definition']
+            self.scheduling_rounds[index] = definition.get('round', min((self.scheduling_rounds[consumer] for consumer in self.consumers.get(('call', index), [])), default=ir['rounds']-1))
+        self.ready_calls = glyphs._ReadyCalls(self.calls, self.consumers, set(self.slots), self.pending, self.observers, self.priority)
         self.alignment = alignment
         self.critical = {}
         for index in reversed(range(len(self.calls))):
             self.critical[index] = 1+max((self.critical[consumer] for consumer in self.consumers.get(('call', index), [])), default=0)
         self.word_bits = graph.bits
         self.final_boundaries = {}
+
+    def place(self, col, kind, ports, **data):
+        definition = data.get('definition', {})
+        stage = definition.get('round')
+        executing = getattr(self, 'executing', None)
+        if kind == 'input':
+            stage = -1
+        elif stage is None and executing is not None:
+            stage = self.calls[executing]['definition'].get('round', self.scheduling_rounds[executing])
+        super().place(col, kind, ports, stage=stage, **data)
+
+    def build(self):
+        self.seed_inputs()
+        while self.pending:
+            self.execute_call(self.next_call())
+        self.capture_unused_inputs()
+        if self.active:
+            raise ValueError('Uncaptured manual values remain live')
+        cells = self.cells if self.strategy == 'direct-bus' else _round_compact(self.cells, self.max_cells)
+        cells = _final_row(cells)
+        return cells, {'rows': max(row for row, col in cells)+1,
+                       'cols': max(col for row, col in cells)+1,
+                       'blocks': len(cells), 'pattern': 'word-register-program',
+                       'strategy': self.strategy}
+
+    def simple_output_exchange(self):
+        finals = [(index, self.calls[index]) for index in self.pending
+                  if self.calls[index]['definition'].get('type') == 'cipher_output']
+        if len(finals) != 2 or self.final_boundaries:
+            return
+        finals.sort(key=lambda item: item[1]['definition']['positions'][0])
+        values = [call['args'][0] for _, call in finals]
+        if values[0] == values[1] or any(self.uses[value] != 1 for value in values):
+            return
+        targets = [call['definition']['positions'][0]//self.word_bits for _, call in finals]
+        sources = [self.slots[value] for value in values]
+        if targets != [0, 1] or sources != [1, 0] or self.active != {0, 1}:
+            return
+        self.place(0, 'swap', {'top': 'in', 'bottom': 'out', 'right': 'out'}, partner=1, column=0)
+        self.place(1, 'swap', {'top': 'in', 'bottom': 'out', 'left': 'in'}, partner=0, column=1)
+        self.row += 1
+        self.slots.update(zip(values, targets))
 
     def priority(self, index):
         definition = self.calls[index]['definition']
@@ -273,6 +324,7 @@ class _Scheduler(glyphs._RegisterScheduler):
         self.slots[value] = target
 
     def final_boundary(self, index, call):
+        self.simple_output_exchange()
         value = call['args'][0]
         target = call['definition']['positions'][0]//self.word_bits
         if target in self.active and self.slots[value] != target:
@@ -284,6 +336,7 @@ class _Scheduler(glyphs._RegisterScheduler):
         self.active.add(target)
         self.final_boundaries[target] = call['definition']
         self.pending.remove(index)
+        self.ready_calls.eligible.discard(index)
         self.ready_calls.publish(('call', index))
         if not any(self.calls[remaining]['definition'].get('type') == 'cipher_output' for remaining in self.pending):
             occupied = set(self.final_boundaries)
@@ -299,6 +352,7 @@ class _Scheduler(glyphs._RegisterScheduler):
         call = self.calls[index]
         if call['definition']['kind'] != 'native_boundary':
             super().execute_call(index)
+            self.ready_calls.eligible.discard(index)
             return
         if call['definition']['type'] == 'cipher_output':
             self.final_boundary(index, call)
@@ -319,6 +373,7 @@ class _Scheduler(glyphs._RegisterScheduler):
         self.fill({target})
         self.row += 1
         self.pending.remove(index)
+        self.ready_calls.eligible.discard(index)
         self.consume_operands(args)
         if keep and not observational:
             self.slots[value] = target
@@ -326,6 +381,103 @@ class _Scheduler(glyphs._RegisterScheduler):
         elif not keep:
             self.active.discard(target)
         self.ready_calls.publish(value)
+
+
+def _round_compact(cells, maximum):
+    groups = []
+    for row, items in glyphs._rigid_rows(cells).items():
+        for order, group in enumerate(glyphs._horizontal_groups(items)):
+            stages = [cell.get('stage') for _, cell in group if cell.get('stage') is not None]
+            groups.append((max(stages, default=-1), row, order, group))
+    output, last = {}, {}
+    stage, floor = None, 0
+    for current, _, _, group in sorted(groups, key=lambda item: item[:3]):
+        if stage != current:
+            floor = max((row for row, col in output), default=-1)+1
+            stage = current
+        target = max(floor, max((last.get(col, (-1, None))[0]+1 for col, _ in group), default=0))
+        for col, cell in group:
+            glyphs._vertical_gap(output, col, cell, last.get(col), target)
+            output[(target, col)] = copy.deepcopy(cell)
+            last[col] = target, cell
+            if len(output) > maximum:
+                raise ValueError('Round-preserving manual compaction exceeds max_cells')
+    return output
+
+
+def _final_row(cells):
+    final = [(key, cell) for key, cell in cells.items()
+             if cell.get('definition', {}).get('type') == 'cipher_output']
+    if not final:
+        return cells
+    output = dict(cells)
+    for key, _ in final:
+        del output[key]
+    bottom = max((row for row, col in output), default=-1)+1
+    bottom = max(bottom, max(key[0] for key, _ in final))
+    for (old, col), cell in final:
+        for row in range(old, bottom):
+            if (row, col) in output:
+                raise ValueError('Final anchor would cross a later occupied lane')
+            output[(row, col)] = {'kind': 'wire', 'ports': {'top': 'in', 'bottom': 'out'}}
+        output[(bottom, col)] = cell
+    return output
+
+
+def _ranges(indices):
+    indices = sorted(set(indices))
+    groups = []
+    for index in indices:
+        if groups and index == groups[-1][-1]+1:
+            groups[-1].append(index)
+        else:
+            groups.append([index])
+    return [str(group[0]) if len(group) == 1 else f'{group[0]}-{group[-1]}' for group in groups]
+
+
+def _decorate(cells, ir):
+    output = dict(cells)
+    legend = max(col for row, col in cells)+1
+    inputs = [cell['definition'] for cell in cells.values() if cell.get('definition', {}).get('kind') == 'input']
+    def put(row, text):
+        if len(text) > 7:
+            return  # Larger declarations stay explicit in local annotations.
+        col = legend
+        while (row, col) in output:
+            col += 1
+        output[(row, col)] = {'kind': 'note', 'ports': {}, 'text': text}
+    row = 0
+    for role, prefix in (('data', 'DATA'), ('key', 'KEY')):
+        for span in _ranges(item['index']+1 for item in inputs if item['role'] == role and item['positions']):
+            put(row, prefix+span)
+            row += 1
+    widths = [len(item['positions']) for item in inputs if item['positions']]
+    widths.extend(len(cell['definition']['positions']) for cell in cells.values() if cell.get('definition', {}).get('kind') == 'native_boundary')
+    bits = reduce(gcd, widths or [ir['output_bits']])
+    declarations = {item['native_index']: item for item in inputs}
+    offsets, total = {}, 0
+    for index, item in sorted(declarations.items()):
+        offsets[index], total = total, total+item['bits']//bits
+    unused = [offsets[item['native_index']]+bit//bits+1 for item in inputs for bit in item.get('unused_positions', [])]
+    if unused:
+        put(row, 'UNUSED')
+        row += 1
+        for span in _ranges(unused):
+            put(row, 'I'+span)
+            row += 1
+    if ir['rounds'] > 1:
+        first = {}
+        for (r, col), cell in sorted(cells.items()):
+            definition = cell.get('definition', {})
+            if 'round' in definition:
+                first.setdefault(definition['round'], r)
+        for stage, r in sorted(first.items()):
+            put(r, 'R'+str(stage))
+    observations = {(r, cell['definition']['round']) for (r, col), cell in cells.items()
+                    if cell.get('definition', {}).get('type') == 'intermediate_output'}
+    for r, stage in sorted(observations):
+        put(r, 'OBS'+str(stage))
+    return _final_row(output)
 
 
 STRATEGIES = ('semantic-legacy', 'semantic-ports', 'semantic-round',
@@ -365,6 +517,10 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left',
             if len(graph.calls) > max_calls:
                 raise ValueError('Manual word expansion exceeds max_calls')
             cells, report = _Scheduler(ir, graph, variant, max_cells, alignment).build()
+            cells = _decorate(cells, ir)
+            if len(cells) > max_cells:
+                raise ValueError('Manual glyphs/legends exceed max_cells')
+            report = dict(report, rows=max(row for row, col in cells)+1, cols=max(col for row, col in cells)+1, blocks=len(cells))
             metrics = {'crossings': sum(cell['kind'] == 'cross' for cell in cells.values()),
                        'depth': report['rows'], 'width': report['cols'], 'cells': report['blocks']}
             score = _layout_score(metrics, layout_preference)
@@ -506,6 +662,15 @@ def _swap_row(lines, row, cols):
             for col, other in ((first, second), (second, first))}
 
 
+def _note(visible):
+    import re
+    text = visible[2][2:9].strip()
+    if not re.fullmatch(r'(?:DATA\d+(?:-\d+)?|KEY\d+(?:-\d+)?|UNUSED|I\d+(?:-\d+)?|R\d+|OBS\d+)', text):
+        return None
+    candidate = {'kind': 'note', 'ports': {}, 'text': text}
+    return candidate if tuple(art(candidate)) == visible else None
+
+
 def _read(records, lines, rows, cols):
     cells, choices = {}, {}
     templates = glyphs._wire_templates()
@@ -535,6 +700,8 @@ def _read(records, lines, rows, cols):
                     raise ValueError('A native boundary needs its actual top input')
             elif definition:
                 cell = _manual_operation(definition, visible)
+            elif _note(visible):
+                cell = _note(visible)
             elif visible in templates:
                 choices[key] = copy.deepcopy(templates[visible])
                 cell = choices[key][0]
@@ -546,6 +713,38 @@ def _read(records, lines, rows, cols):
     parser._resolved_alternatives(cells, choices)
     parser._connected_ports(cells)
     return cells
+
+
+def _verify_notes(cells, records):
+    import re
+    inputs = [definition for definition in records.values() if definition['kind'] == 'input']
+    roles = {role: {item['index']+1 for item in inputs if item['role'] == role and item['positions']}
+             for role in ('data', 'key')}
+    widths = [len(item['positions']) for item in inputs if item['positions']]
+    widths.extend(len(definition['positions']) for definition in records.values() if definition['kind'] == 'native_boundary')
+    bits = reduce(gcd, widths or [1])
+    offset, offsets = 0, {}
+    for index, item in sorted({item['native_index']: item for item in inputs}.items()):
+        offsets[index], offset = offset, offset+item['bits']//bits
+    unused = {offsets[item['native_index']]+bit//bits+1 for item in inputs for bit in item.get('unused_positions', [])}
+    for (row, col), cell in cells.items():
+        if cell['kind'] != 'note':
+            continue
+        text = cell['text']
+        if text.startswith('OBS'):
+            valid = any(key[0] == row and d.get('type') == 'intermediate_output' and d['round'] == int(text[3:]) for key, d in records.items())
+        elif re.fullmatch(r'R\d+', text):
+            valid = any(key[0] == row and d.get('round') == int(text[1:]) for key, d in records.items())
+        elif text == 'UNUSED':
+            valid = bool(unused)
+        else:
+            match = re.fullmatch(r'(DATA|KEY|I)(\d+)(?:-(\d+))?', text)
+            start, stop = int(match[2]), int(match[3] or match[2])
+            declared = set(range(start, stop+1))
+            pool = unused if match[1] == 'I' else roles['data' if match[1] == 'DATA' else 'key']
+            valid = start <= stop and declared <= pool
+        if not valid:
+            raise ValueError('Readable legend/stage cue disagrees with local native definitions')
 
 
 def _input_declarations(records):
@@ -681,6 +880,7 @@ def _decode(text, *, max_text_bytes=64000000, max_grid_area=2000000):
     inputs = _input_declarations(records)
     groups = _boundary_groups(records)
     cells = _read(records, lines, rows, cols)
+    _verify_notes(cells, records)
     native = _trace(cells, groups)
     if sorted(native) != list(range(len(native))):
         raise ValueError('Missing native execution ordinal')

@@ -87,12 +87,13 @@ def from_cipher(cipher, *, roles=None):
     This reduced-round Speck example teaches the API; it is not the full-round cipher. Names never select layout or state shape.
 
     Rendering options are separate from extraction: pass this result to
-    ``to_ascii(ir, operator_style='symbols', borders=False, alignment='left',
-    column_spacing=18, word_bits=None)`` for the default human presentation.
-    ``to_audit_ascii(ir)`` is the explicit lossless builder/import encoding.
+    ``to_ascii(ir, operator_style='symbols', wire_borders=False, alignment='left',
+    layout_preference='balanced', word_bits=None)`` for the default manual body.
+    ``to_ascii(ir, annotations=True)`` adds lossless local human metadata.
+    ``to_audit_ascii(ir)`` retains the explicit lossless audit encoding.
     ``to_ascii(ir, format='audit')`` is its alternate entry point. Human rendering
-    currently requires uniform aligned words and supported unary/binary word
-    operations; other graphs use the audit view explicitly. ``roles={}``
+    currently requires uniform words and supported unary/binary word
+    operations; noncontiguous selections use visible selection helpers; other graphs use the audit view explicitly. ``roles={}``
     disables native interface role conventions. See ``to_ascii`` for complete
     printouts, rendering choices and work bounds.
 
@@ -430,81 +431,114 @@ def state_view(ir, *, shape=None):
     return stages
 
 
-def to_ascii(ir, *, format='human', word_bits=None, operator_style='symbols',
-             borders=False, alignment='left', column_spacing=18,
-             strategy='semantic-auto', max_cells=1000000, max_calls=20000,
-             max_grid_area=2000000, max_text_bytes=64000000):
+def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
+             operator_style='symbols', wire_borders=False, alignment='left',
+             layout_preference='balanced', strategy='semantic-auto',
+             max_cells=1000000, max_calls=20000, max_grid_area=2000000,
+             max_text_bytes=64000000):
     r"""
-    Draw a computation as readable aligned words by default.
+    Draw a readable, builder-importable manual block body by default.
 
-    ``format='audit'`` explicitly selects the lossless editable glyph encoding,
-    also available as ``to_audit_ascii``. Human drawings are presentations:
-    ``from_ascii`` parses the audit grammar, not arbitrary human placement.
-    Names never select a topology. Aligned word widths are inferred from native
-    operation widths; ambiguous selections and unsupported projections raise
-    errors directing callers to the audit view.
+    ``annotations=True`` appends coordinate-local native metadata for exact
+    ``from_ascii`` reconstruction. Dependencies are traced from exported
+    glyphs and wires; annotations contain no original graph or source links.
+    ``to_audit_ascii`` and ``format='audit'`` retain the explicit audit grammar.
+    Primitive names and manual references never select a layout.
 
     INPUT:
 
     - ``ir`` -- **dictionary** or **Cipher**; supported native computation
     - ``format`` -- ``'human'`` (default) or ``'audit'``
-    - ``word_bits`` -- positive **integer** or ``None``; explicit uniform word width
-    - ``operator_style`` -- ``'symbols'`` (default) or ``'labels'``
-    - ``borders`` -- **boolean** (default: ``False``); bracket operation labels
-    - ``alignment`` -- ``'left'`` (default) or ``'right'``; prefer a dead operand lane
-    - ``column_spacing`` -- **integer**, at least 16 (default: ``18``); lane pitch
-    - ``strategy`` -- audit synthesis strategy; human view accepts ``semantic-auto`` only
-    - ``max_cells``, ``max_calls``, ``max_grid_area``, ``max_text_bytes`` -- positive work/output bounds
+    - ``annotations`` -- **boolean** (default: ``False``); append lossless local human metadata
+    - ``word_bits`` -- positive **integer** or ``None``; infer the GCD of native word-operation widths, with output width as a generic fallback
+    - ``operator_style`` -- ``'symbols'`` (default) or ``'labels'``; numeric rotation/shift arrows remain explicit in both
+    - ``wire_borders`` -- **boolean** (default: ``False``); draw routing-cell frames; operation frames follow the manual vocabulary
+    - ``alignment`` -- ``'left'`` (default) or ``'right'``; prefer an expired operand lane, subject to liveness and ordered arithmetic
+    - ``layout_preference`` -- ``'balanced'`` (default), ``'crossings'``, ``'depth'`` or ``'width'``; select among measured generic candidate layouts
+    - ``strategy`` -- ``'semantic-auto'`` (default); human candidates are ``semantic-legacy``, ``semantic-ports``, ``semantic-round``, ``semantic-width``, ``semantic-depth`` and ``semantic-crossings``; ``direct-bus`` is an explicit baseline
+    - ``max_cells`` -- positive **integer** (default: ``1000000``); occupied block limit
+    - ``max_calls`` -- positive **integer** (default: ``20000``); native/helper word-expansion limit
+    - ``max_grid_area`` -- positive **integer** (default: ``2000000``); rectangular block limit
+    - ``max_text_bytes`` -- positive **integer** (default: ``64000000``); output/local verification byte limit
 
     OUTPUT:
 
-    A **string**. Declared inputs appear MSB first; noncommutative operand arrows retain their numbers.
-    Redundant port numbers are suppressed for commutative operations. ``S:`` identifies explicit/native key roles. Final outputs
-    are anchored in declared output order. ``x`` is a crossing; ``o`` is a fork.
-    Observations report native round numbers and selected word identities.
+    A **string** using the manual 5-line by 11-character block grammar.
+    ``o`` is a fork; wire-cell ``+`` is a crossing/turn; arithmetic ``+``
+    is inside an operation box. Final outputs have declared-order anchors.
+
+    Plain-body import preserves visible scalar computation, parameters and
+    secrecy; it does not reconstruct native widths, IDs, rounds, input bundles
+    or unused bits. ``SELn`` and ``JOIN`` helpers require local annotations for
+    their masks/bundle widths. Annotated reconstruction retains these native
+    details and validates every selection against the actually traced stream.
+    Pseudocode alone does not recover arbitrary original placement.
+
+    Balanced minimizes rectangular area plus occupied cells. Other preferences
+    prioritize actual crossing-cell count, block-row depth or lane width, with
+    deterministic ties. These are heuristic choices, not global optimality
+    guarantees. ``synthesis_report`` exposes costs and the selected candidate.
 
     RAISES:
 
-    ``ValueError`` for invalid options, exceeded bounds or ambiguous word projection.
-
-
-
+    ``ValueError`` for invalid options/bounds, unsupported projection or a
+    fresh exported-body parse that changes native semantics. Current human
+    projection supports uniform unary/binary word operations, constants and
+    boundary fragments. Unsupported shapes, oversized labels and custom
+    moduli require the explicit audit view. Lanes have fixed manual width;
+    arbitrary column-spacing and whole-operation border removal are unsupported.
 
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-        sage: from claasp.diagrams import from_cipher, to_ascii
+        sage: from claasp.diagrams import from_cipher, to_ascii, from_ascii
         sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
-        sage: drawing = to_ascii(from_cipher(speck))
-        sage: print(to_ascii(from_cipher(speck), operator_style='labels'))
-        16-bit words; MSB-first input order; x crossing, o fork
-           plaintext[0]      plaintext[1]        S:key[3]
-                 |                 |                 |
-        r0       |                 |                 |
-                 v                 |                 |
-               ROR7                |                 |
-                 |                 |                 |
-                 v                 |                 |
-                 v<----------------o                 |
-              MODADD               |                 |
-                 |                 |                 |
-                 v                 |                 |
-                 v<----------------x-----------------o
-                XOR                |                 |
-                 |                 |                 |
-                 |                 v                 |
-                 |               ROL2                |
-                 |                 |                 |
-                 |                 v                 |
-                 o---------------->v                 |
-                 |                XOR                |
-                 |                 |                 |
-              out[0]            out[1]
-        Declarations and observations:
-        Declared inputs unused in this computation: key[0], key[1], key[2]
-        round 0: round_key_output = key[3]
+        sage: ir = from_cipher(speck)
+        sage: drawing = to_ascii(ir)
+        sage: from_ascii(to_ascii(ir, annotations=True)) == ir
+        True
 
-    A generic Feistel step with an actual F chain and explicit exchanged outputs::
+    Complete default printouts follow. A left margin prevents the doctest
+    parser from interpreting a visible ``>>>`` rotation as a Python prompt::
+
+        sage: print('\n'.join('| '+line.rstrip() for line in drawing.splitlines()))
+        |                                    _______
+        |   _______    _______    _______   |       |
+        |  |  I1   |  |  I2   |  S  I6   |  (DATA1-2)
+        |      |          |          |      |_______|
+        |      |          |          |
+        |   ___v___       |          |       _______
+        |  |       |      |          |      |       |
+        |  | >>>7  |      |          |      ( KEY6  )
+        |  |_______|      |          |      |_______|
+        |      |          |          |
+        |   ___v___       |          |       _______
+        |  |       |      |          |      |       |
+        |  |   +   |<-----o          |      (UNUSED )
+        |  |_______|      |          |      |_______|
+        |      |          |          |
+        |   ___v___       |          |       _______
+        |  |       |      |          |      |       |
+        |  |   ^   |<-----+----------o      ( I3-5  )
+        |  |_______|      |          |      |_______|
+        |      |          |          |
+        |      |       ___v___       |       _______
+        |      |      |       |   ___v___   |       |
+        |      |      | <<<2  |  |_______|  ( OBS0  )
+        |      |      |_______|             |_______|
+        |      |          |
+        |      |       ___v___
+        |      |      |       |
+        |      o----->|   ^   |
+        |      |      |_______|
+        |      |          |
+        |      |          |
+        |   ___v___    ___v___
+        |  |_______|  |_______|
+        | 
+        | 
+
+    Generic F chain with exchanged output anchors::
 
         sage: from claasp.cipher import Cipher
         sage: c = Cipher('generic_feistel', 'permutation', ['left', 'right'], [int(4), int(4)], int(8))
@@ -513,28 +547,42 @@ def to_ascii(ir, *, format='human', word_bits=None, operator_style='symbols',
         sage: f = c.add_not_component([r.id], [list(range(int(4)))], int(4))
         sage: x = c.add_xor_component(['left', f.id], [list(range(int(4)))]*int(2), int(4))
         sage: output = c.add_cipher_output_component(['right', x.id], [list(range(int(4)))]*int(2), int(8))
-        sage: print(to_ascii(from_cipher(c), operator_style='labels'))
-        4-bit words; MSB-first input order; x crossing, o fork
-              left[0]          right[0]
-                 |                 |
-        r0       |                 |
-                 |                 o-----------------v
-                 |                 |                 |
-                 |                 v                 |
-                 |               ROR1                |
-                 |                 |                 |
-                 |                 v                 |
-                 |                NOT                |
-                 |                 |                 |
-                 v                 |                 |
-                 v<----------------/                 |
-                XOR                |                 |
-                 |                                   |
-                 \-----------------v                 |
-                                   |                 |
-                 v-----------------x-----------------/
-                 |                 |
-              out[0]            out[1]
+        sage: print('\n'.join('| '+line.rstrip() for line in to_ascii(from_cipher(c)).splitlines()))
+        | 
+        |   _______    _______
+        |  |  I1   |  |  I2   |
+        |      |          |
+        |      |          |
+        |      |          |
+        |      |          |
+        |      |          o----------+
+        |      |          |          |
+        |      |          |          |
+        |      |          |       ___v___
+        |      |          |      |       |
+        |      |          |      | >>>1  |
+        |      |          |      |_______|
+        |      |          |          |
+        |      |          |       ___v___
+        |      |          |      |       |
+        |      |          |      |   !   |
+        |      |          |      |_______|
+        |      |          |          |
+        |   ___v___       |          |
+        |  |       |      |          |
+        |  |   ^   |<-----+----------+
+        |  |_______|      |
+        |      |          |
+        |      v          v
+        | 
+        |      <---------->
+        | 
+        |      |          |
+        |      |          |
+        |   ___v___    ___v___
+        |  |_______|  |_______|
+        | 
+        | 
     """
     if format not in ('human', 'audit'):
         raise ValueError("format must be 'human' or 'audit'")
@@ -543,25 +591,52 @@ def to_ascii(ir, *, format='human', word_bits=None, operator_style='symbols',
     if any(type(value) is not int or value < 1 for value in bounds.values()):
         raise ValueError('Work and output bounds must be positive integers')
     if format == 'audit':
-        if word_bits is not None or operator_style != 'symbols' or borders or alignment != 'left' or column_spacing != 18:
-            raise ValueError('Human rendering options do not apply to the audit format')
+        if annotations or word_bits is not None or operator_style != 'symbols' or wire_borders or alignment != 'left' or layout_preference != 'balanced':
+            raise ValueError('Human rendering/layout options do not apply to the audit format')
         return to_audit_ascii(ir, strategy=strategy, **bounds)
-    if strategy != 'semantic-auto':
-        raise ValueError('Human presentation supports semantic-auto; select audit for glyph strategies')
-    if type(borders) is not bool:
-        raise ValueError('borders must be boolean')
     if not isinstance(ir, dict):
         ir = from_cipher(ir)
-    validate(ir)
-    if len(ir['nodes']) > max_calls:
-        raise ValueError('Human presentation exceeds max_calls')
-    from .human import to_word_ascii
-    text = to_word_ascii(ir, word_bits=word_bits, operator_style=operator_style,
-                         borders=borders, alignment=alignment, column_spacing=column_spacing,
-                         max_grid_area=min(max_grid_area, max_cells))
-    if len(text.encode('utf-8')) > max_text_bytes:
-        raise ValueError('Human presentation exceeds max_text_bytes')
-    return text
+    from .manual_blocks import encode
+    return encode(ir, annotations=annotations, word_bits=word_bits,
+                  operator_style=operator_style, wire_borders=wire_borders,
+                  alignment=alignment, layout_preference=layout_preference,
+                  strategy=strategy, **bounds)
+
+
+def synthesis_report(ir, *, word_bits=None, strategy='semantic-auto',
+                     alignment='left', layout_preference='balanced',
+                     max_cells=1000000, max_calls=20000):
+    r"""
+    Report measured costs and the selected generic human layout.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary** or **Cipher**; native graph
+    - remaining keyword defaults match ``to_ascii`` synthesis controls
+
+    OUTPUT:
+
+    A **dictionary** containing ``selected_variant``, ``metrics`` (crossings,
+    depth in block rows, width in lanes, occupied cells), candidate costs and
+    the applied alignment/preference. No original dependency graph is stored.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import synthesis_report
+        sage: report = synthesis_report(SpeckBlockCipher(number_of_rounds=int(1)))
+        sage: sorted(report['metrics'])
+        ['cells', 'crossings', 'depth', 'width']
+        sage: report['layout_preference']
+        'balanced'
+    """
+    if not isinstance(ir, dict):
+        ir = from_cipher(ir)
+    from .manual_blocks import build
+    _, report = build(ir, word_bits=word_bits, strategy=strategy,
+                      alignment=alignment, layout_preference=layout_preference,
+                      max_cells=max_cells, max_calls=max_calls)
+    return report
 
 
 def to_audit_ascii(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000,

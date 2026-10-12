@@ -19,42 +19,66 @@ restored = to_cipher(from_ascii(text))
 figure = to_tikz(ir, rowsPerPanel=16, columnsPerPanel=6, columnSpacing=3)
 ```
 
-Migration notice: `to_ascii(ir)` now means human presentation. Existing
-lossless replay/corpus code must replace `from_ascii(to_ascii(ir))` with
-`from_ascii(to_audit_ascii(ir))`, or select `to_ascii(ir, format='audit')`.
-The repository's conformance generators, independent oracle script and audit
-unit tests use the explicit audit API. The new human presentation is currently
-**not accepted by the builder's existing 5-by-11 import grammar**. Audit-mode
-round trips do not establish human-view importability; a compatible visible
-human grammar and its parsing tests remain required for that acceptance goal.
+Migration notice: `to_ascii(ir)` now returns the readable manual block body.
+It directly imports through the builder's existing scalar/manual decoder.
+For exact native reconstruction, use `to_ascii(ir, annotations=True)` and
+`from_ascii`, or retain `to_audit_ascii`/`to_ascii(format='audit')`. The conformance
+corpus generators, independent oracle script and audit tests use the explicit
+audit API, including native shapes outside the current human projection.
 
-Human rendering options are explicit: `operator_style='symbols'|'labels'`,
-`borders=False|True`, `alignment='left'|'right'`, `column_spacing=18` (at least
-16), and an optional positive `word_bits`. The default word projection uses
-native operation widths and aligned selections; unsupported/ambiguous
-projections raise an error pointing to the audit view. Human drawings are not
-lossless editor interchange. Use `to_audit_ascii` or `to_ascii(format='audit')`
-for `from_ascii`, corpus export and import tooling. Audit strategy options do
-not apply to human word presentation.
+```python
+body = to_ascii(ir)
+annotated = to_ascii(ir, annotations=True)
+assert from_ascii(annotated) == ir
+```
+
+The plain body retains visible scalar operations, fixed rotation/shift amounts,
+constants, secrecy markers and directed connectivity. It cannot recover native
+widths, identities, numeric rounds, input bundles or unused bits. `SELn`/`JOIN`
+helpers need their coordinate-local masks/bundle widths to reconstruct executable
+native semantics. The annotated format retains these details and parses actual
+wires; it contains no original graph or source links. Pseudocode alone cannot
+recover arbitrary original placement or missing native annotations.
+
+Supported human controls are `operator_style='symbols'|'labels'`,
+`wire_borders=False|True`, `alignment='left'|'right'`, an optional positive
+`word_bits`, and `layout_preference='balanced'|'crossings'|'depth'|'width'`.
+`semantic-auto` compares six generic schedules: declaration order, joins,
+numeric rounds, liveness/width, dependency depth and estimated crossings.
+Explicit strategies are `semantic-legacy`, `semantic-ports`, `semantic-round`,
+`semantic-width`, `semantic-depth`, `semantic-crossings`; `direct-bus` is a
+baseline. The preference selects by measured crossing-cell count, block-row
+depth and lane width. Balanced minimizes rectangle area plus occupied cells.
+These heuristics do not guarantee globally optimal drawings. `synthesis_report`
+returns the selected variant, costs and candidate reports. Alignment prefers
+expired operand lanes while respecting liveness and ordered arithmetic.
+
+Lanes use the fixed manual 5-by-11 vocabulary; arbitrary column spacing and
+whole-operation border removal are unsupported. Routing-cell frames are a
+render option. Numeric rotation/shift arrows retain amounts in both styles.
+Unsupported shapes, oversized parameter labels and custom moduli explicitly
+require audit mode; human support currently covers uniform unary/binary words,
+constants, selections and native boundary fragments.
 
 Key roles come from explicit `roles`, retained `diagram_input_roles`, or CLAASP's
 standard `INPUT_KEY`/`INPUT_PLAINTEXT` block-cipher interface conventions. Other
-inputs remain unspecified. `roles={}` disables automatic conventions. Component
-names never determine roles or placement. Unused declared words are listed
-explicitly below the drawing rather than occupying empty lanes. In one-round
-Speck the supplied key word is observed; there is no expanded key schedule.
-The five-round example includes the native computed key operations.
+inputs remain unspecified; `roles={}` disables automatic conventions. Names
+never select roles or layouts. Port-free readable labels give input/unused-word
+legends, declared-round cues and observation markers. They have no computation
+ports. Observation taps continue their live lanes; final output caps share a
+common bottom row. Adjacent two-lane output cycles use a visible generic
+exchange. Declared-round fences keep later-round constants within their stage.
 
-`x` marks a wire crossing without connection, `o` a fork, and `+` modular
-addition. Port numbers are retained for noncommutative subtraction. Declared
-output order determines the bottom anchors; a generic temporary lane breaks
-permutation cycles. Human work/output bounds reject oversized drawings.
+`o` is duplication. Wire-cell `+` is a turn/crossing; arithmetic `+` is inside
+its operation box. In one-round Speck the supplied key word is observed without
+an expanded schedule. The five-round example shows the native key operations.
 
-Complete current printouts are included in [one-round Speck](examples/speck-1-round-public-human.txt),
-[five-round Speck](examples/speck-5-round-public-human.txt), and a
-[generic Feistel F-chain step](examples/generic-feistel-f-chain-public-human.txt).
-The public API docstring prints complete examples with `operator_style='labels'`;
-the saved samples use the exact default symbol rendering.
+Complete default printouts: [one-round Speck](examples/speck-1-round-public-human.txt),
+[five-round Speck](examples/speck-5-round-public-human.txt), and
+[generic Feistel](examples/generic-feistel-f-chain-public-human.txt). The API
+docstring prints every line, with a display margin solely to keep rotation
+arrows from being interpreted as doctest prompts. Actual `to_ascii` output has
+no added margin or default JSON dump.
 
 Ordered native tuples/Sage vectors and integer scalars normalize to JSON-safe
 lists/integers. Binary linear-layer entries convert only if exactly zero or one;
@@ -218,18 +242,3 @@ Native Python measurements, installed-package tests and cross-language
 conformance are recorded separately. No general readability, exact layout
 inversion or unseen-family guarantee follows from a successful semantic test.
 
-The private compatible-block vertical slice lives in
-`claasp.cipher_modules.diagram.manual_blocks`. It uses the existing manual
-5-by-11 drawing vocabulary, readable repeated operation labels and
-coordinate-local annotations without source links. `from_ascii` recognizes its
-annotated marker and freshly traces its visible wires. Its plain body already
-imports through the existing builder scalar decoder. Public default/annotation
-controls and builder native-footer integration remain pending shared-contract
-coordination; this prototype is not yet the public default or visual acceptance.
-
-Private block controls are real planning choices: `alignment='left'|'right'`
-respects liveness and ordered arithmetic; `layout_preference='balanced'|'crossings'|'depth'|'width'` compares measured costs of six generic schedules.
-`manual_blocks.build` returns the selected strategy, metrics and candidate
-reports. These heuristics do not guarantee globally optimal drawings. Wire
-border rendering is independent of those synthesis controls. Public exposure
-is pending the same default/annotation coordination.

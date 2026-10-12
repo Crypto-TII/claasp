@@ -198,3 +198,29 @@ def test_wire_border_option_uses_supported_manual_vocabulary():
     framed = encode(ir, annotations=True, wire_borders=True)
     assert framing(plain)[0] != framing(framed)[0]
     assert decode(plain) == decode(framed) == ir
+
+
+def test_readable_cue_mutation_is_checked_against_local_definitions():
+    text = encode(toy(), annotations=True)
+    body, footer = framing(text)
+    assert 'KEY2' in body
+    with pytest.raises(ValueError, match='legend/stage'):
+        decode(altered(body.replace('KEY2', 'KEY1', 1), footer))
+
+
+def test_dynamic_ready_frontier_does_not_retain_consumed_chain_calls(monkeypatch):
+    from claasp.cipher_modules.diagram.manual_blocks import _Scheduler
+    observed = []
+    original = _Scheduler.next_call
+    def check_frontier(self):
+        observed.append(len(self.ready_calls.eligible))
+        return original(self)
+    monkeypatch.setattr(_Scheduler, 'next_call', check_frontier)
+    c = Cipher('generic_chain', 'permutation', ['a','b'], [4,4], 4)
+    c.add_round(); value = 'a'
+    for _ in range(96):
+        value = c.add_xor_component([value,'b'], [list(range(4))]*2, 4).id
+    c.add_cipher_output_component([value], [list(range(4))], 4)
+    ir = from_cipher(c)
+    assert decode(encode(ir,annotations=True,strategy='semantic-width')) == ir
+    assert max(observed) <= 2
