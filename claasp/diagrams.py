@@ -129,15 +129,16 @@ def from_cipher(cipher, *, roles=None):
 
 def _word_component(cipher, ids, positions, node):
     description = node['description']
-    name = description[0].lower()
+    name = {'ROTATE_BY_VARIABLE_AMOUNT': 'variable_rotate',
+            'SHIFT_BY_VARIABLE_AMOUNT': 'variable_shift'}.get(description[0], description[0].lower())
     allowed = {'xor', 'and', 'or', 'not', 'modadd', 'modsub', 'modmul',
-               'rotate', 'shift', 'reverse', 'variable_rotate', 'variable_shift'}
+               'rotate', 'shift', 'reverse', 'variable_rotate', 'variable_shift', 'idea_modmul'}
     if name not in allowed:
         raise ValueError(f'Unsupported executable word operation: {name}')
     arguments = [ids, positions, node['bits']]
     if name in {'rotate', 'shift', 'variable_rotate', 'variable_shift'}:
         arguments.append(description[1])
-    if name in {'modadd', 'modsub', 'modmul'}:
+    if name in {'modadd', 'modsub', 'modmul', 'idea_modmul'}:
         modulus = description[2] if len(description) > 2 else None
         arguments.append(modulus)
     return getattr(cipher, f'add_{name}_component')(*arguments)

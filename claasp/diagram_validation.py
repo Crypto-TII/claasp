@@ -51,7 +51,10 @@ def _word_operation(node):
     validators = {
         'XOR': _logical_word, 'AND': _logical_word, 'OR': _logical_word,
         'MODADD': _modular_word, 'MODSUB': _modular_word, 'MODMUL': _modular_word,
+        'IDEA_MODMUL': _idea_word,
         'ROTATE': _fixed_parameter_word, 'SHIFT': _fixed_parameter_word,
+        'ROTATE_BY_VARIABLE_AMOUNT': _variable_parameter_word,
+        'SHIFT_BY_VARIABLE_AMOUNT': _variable_parameter_word,
         'NOT': _unary_word, 'REVERSE': _unary_word,
     }
     validator = validators.get(name)
@@ -75,6 +78,20 @@ def _modular_word(node):
     return modulus is None or (_integer(modulus) and modulus > 0)
 
 
+def _idea_word(node):
+    if not _arity(node, 3) or node['description'][1] != 2:
+        return False
+    modulus = node['description'][2]
+    if not _integer(modulus) or modulus <= 0:
+        return False
+    return node['bits'] >= 53 or modulus <= 2**node['bits']+1
+
+
+def _variable_parameter_word(node):
+    description = node['description']
+    return len(description) == 2 and _integer(description[1]) and node['input_bits'] > node['bits']
+
+
 def _fixed_parameter_word(node):
     description = node['description']
     return len(description) == 2 and _integer(description[1]) and node['input_bits'] == node['bits']
@@ -91,9 +108,9 @@ def _constant(node):
     if node['input_bits'] != 0 or len(description) != 1:
         return False
     literal = description[0]
-    if not isinstance(literal, str) or re.fullmatch(r'0x[0-9a-f]+', literal, re.I) is None:
+    if not isinstance(literal, str) or re.fullmatch(r'(?:0x[0-9a-f]+|0b[01]+)', literal, re.I) is None:
         return False
-    return int(literal, 16) < 2**node['bits']
+    return int(literal, 0).bit_length() <= node['bits']
 
 
 def _output(node):
@@ -157,11 +174,43 @@ def _mix_column(node):
             and all(_field_row(row, node['input_bits']//width, polynomial, width) for row in matrix))
 
 
+def _binary_polynomial(expression, bits):
+    return isinstance(expression, list) and all(
+        isinstance(term, list) and all(_integer(index) and 0 <= index < bits for index in term)
+        for term in expression)
+
+
+def _binary_register(register, bits):
+    if not isinstance(register, list) or len(register) not in (2, 3):
+        return False
+    if not _integer(register[0]) or register[0] <= 0 or not _binary_polynomial(register[1], bits):
+        return False
+    if len(register) == 3 and register[2] is not None:
+        return _binary_polynomial(register[2], bits)
+    return True
+
+
+def _fsr(node):
+    description = node['description']
+    if len(description) not in (2, 3) or not isinstance(description[0], list) or not description[0]:
+        return False
+    # Word-register native replay loses registers and breaks after multiple clocks.
+    # Admit verified binary-register semantics only, without silently rewriting it.
+    if type(description[1]) is not int or description[1] != 1 or node['input_bits'] != node['bits']:
+        return False
+    clocks = description[2] if len(description) == 3 else 1
+    if not _integer(clocks) or not 1 <= clocks <= 100000:
+        return False
+    registers = description[0]
+    return (all(_binary_register(register, node['bits']) for register in registers)
+            and sum(register[0] for register in registers) == node['bits'])
+
+
 _TRANSFORMS = {
     'word_operation': _word_operation, 'constant': _constant,
     'intermediate_output': _output, 'cipher_output': _output,
     'sbox': _sbox, 'permutation': _permutation,
-    'linear_layer': _linear_layer, 'mix_column': _mix_column,
+    'linear_layer': _linear_layer, 'mix_column': _mix_column, 'fsr': _fsr,
 }
 
 

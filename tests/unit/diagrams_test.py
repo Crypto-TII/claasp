@@ -661,3 +661,139 @@ def test_native_sage_vector_regression_extracts_a_real_supported_graph():
     ir = from_cipher(c)
     assert any(node['type'] == 'linear_layer' for node in ir['nodes'])
     assert from_ascii(to_ascii(ir)) == ir
+
+
+def test_binary_constants_keep_the_declared_width_and_reject_truncation():
+    c = Cipher('binary_literal_probe', 'permutation', ['unused'], [3], 3)
+    c.add_round()
+    constant = c.add_constant_component(3, 5)
+    c.add_cipher_output_component([constant.id], [[0, 1, 2]], 3)
+    ir = from_cipher(c)
+    assert ir['nodes'][0]['description'] == ['0b101']
+    assert from_ascii(to_ascii(ir)) == ir
+    assert to_cipher(from_ascii(to_ascii(ir))).evaluate([0]) == 5
+    for literal in ('0b1000', '0b102', '0x8'):
+        malformed = copy.deepcopy(ir)
+        malformed['nodes'][0]['description'] = [literal]
+        with pytest.raises(ValueError, match='unsupported native constant'):
+            validate(malformed)
+
+
+@pytest.mark.parametrize('width', [1, 5, 8])
+@pytest.mark.parametrize('direction', [-2, -1, 0, 1, 2])
+@pytest.mark.parametrize('operation', ['rotate', 'shift'])
+def test_variable_amount_operations_match_independent_arithmetic(width, direction, operation):
+    c = Cipher('amount_probe', 'permutation', ['data', 'control'], [width, 4], width)
+    c.add_round()
+    node = getattr(c, f'add_variable_{operation}_component')(
+        ['data', 'control'], [list(range(width)), list(range(4))], width, direction)
+    c.add_cipher_output_component([node.id], [list(range(width))], width)
+    ir = from_cipher(c)
+    assert from_ascii(to_ascii(ir)) == ir
+    restored = to_cipher(from_ascii(to_ascii(ir)))
+    mask = (1 << width)-1
+    for value in (0, 1, mask, mask//3):
+        for control in (0, 1, width, width+1, 15):
+            if operation == 'rotate':
+                amount = (control*direction) % width
+                expected = ((value >> amount)|(value << (width-amount))) & mask
+            else:
+                # The native variable-shift definition reduces the control first.
+                amount = (control % width)*direction
+                expected = value >> amount if amount >= 0 else (value << -amount) & mask
+            assert restored.evaluate([value, control]) == expected
+    text = _table_text(to_tikz(ir, view='detail'))
+    assert f'direction={direction}' in text
+
+
+def test_idea_multiplication_admits_only_two_operands_and_explicit_safe_modulus():
+    c = Cipher('mapped_product_probe', 'permutation', ['a', 'b'], [4, 4], 4)
+    c.add_round()
+    node = c.add_idea_modmul_component(['a', 'b'], [list(range(4))]*2, 4, 17)
+    c.add_cipher_output_component([node.id], [list(range(4))], 4)
+    ir = from_cipher(c)
+    restored = to_cipher(from_ascii(to_ascii(ir)))
+    for a in range(16):
+        for b in range(16):
+            product = ((a or 16)*(b or 16)) % 17
+            expected = 0 if product == 16 else product
+            assert restored.evaluate([a, b]) == expected
+    for arity, modulus in [(1, 17), (3, 17), (2, None), (2, 0), (2, 19)]:
+        malformed = copy.deepcopy(ir)
+        malformed['nodes'][0]['description'] = ['IDEA_MODMUL', arity, modulus]
+        with pytest.raises(ValueError, match='unsupported native word_operation'):
+            validate(malformed)
+
+
+def _binary_fsr_reference(value, bits, registers, clocks):
+    state = [int(bit) for bit in f'{value:0{bits}b}']
+    def polynomial(terms):
+        output = 0
+        for term in terms:
+            product = 1
+            for index in term:
+                product &= state[index]
+            output ^= product
+        return output
+    for _ in range(clocks):
+        previous = state[:]
+        updates, start = [], 0
+        for register in registers:
+            length, feedback = register[:2]
+            condition = register[2] if len(register) == 3 else None
+            enabled = condition is None or condition == [] or polynomial(condition) != 0
+            updates.append((start, length, enabled, polynomial(feedback)))
+            start += length
+        for start, length, enabled, bit in updates:
+            if enabled:
+                state[start:start+length] = previous[start+1:start+length]+[bit]
+    return int(''.join(map(str, state)), 2)
+
+
+@pytest.mark.parametrize('clocks', [1, 2, 7])
+def test_binary_fsr_uses_synchronous_global_bits_and_preserves_clock_conditions(clocks):
+    registers = [[3, [[0], [4], []], [[1]]], [2, [[0, 2], [3]], None]]
+    c = Cipher('register_probe', 'permutation', ['data'], [5], 5)
+    c.add_round()
+    node = c.add_fsr_component(['data'], [list(range(5))], 5, [registers, 1, clocks])
+    c.add_cipher_output_component([node.id], [list(range(5))], 5)
+    ir = from_cipher(c)
+    assert from_ascii(to_ascii(ir)) == ir
+    restored = to_cipher(from_ascii(to_ascii(ir)))
+    for value in range(32):
+        assert restored.evaluate([value]) == _binary_fsr_reference(value, 5, registers, clocks)
+
+
+def test_fsr_rejects_unsafe_word_registers_width_mismatches_and_malformed_polynomials():
+    c = Cipher('invalid_register_probe', 'permutation', ['data'], [2], 2)
+    c.add_round()
+    node = c.add_fsr_component(['data'], [[0, 1]], 2, [[[2, [[0]]]], 1, 1])
+    c.add_cipher_output_component([node.id], [[0, 1]], 2)
+    ir = from_cipher(c)
+    for description in [[[[1, [[1, [0]]]]], 2, 1], [[[2, [[2]]]], 1, 1],
+                        [[[1, [[0]]]], 1, 1], [[[2, [[0]]]], 1, 0],
+                        [[[2, [[0]]]], 1, 100001], [[[2, [[0]], 0]], 1, 1]]:
+        malformed = copy.deepcopy(ir)
+        malformed['nodes'][0]['description'] = description
+        with pytest.raises(ValueError, match='unsupported native fsr'):
+            validate(malformed)
+
+
+@pytest.mark.parametrize('arity', [1, 3])
+def test_native_idea_arity_is_rejected_even_when_its_input_width_agrees(arity):
+    names = [f'input{i}' for i in range(arity)]
+    c = Cipher('unsupported_product_probe', 'permutation', names, [4]*arity, 4)
+    c.add_round()
+    node = c.add_idea_modmul_component(names, [list(range(4))]*arity, 4, 17)
+    c.add_cipher_output_component([node.id], [list(range(4))], 4)
+    with pytest.raises(ValueError, match='unsupported native word_operation'):
+        from_cipher(c)
+
+
+def test_native_extra_fsr_bits_are_rejected_instead_of_silently_discarded():
+    c = Cipher('extra_state_probe', 'permutation', ['data'], [3], 2)
+    c.add_round()
+    node = c.add_fsr_component(['data'], [[0, 1, 2]], 2, [[[2, [[0]]]], 1, 1])
+    c.add_cipher_output_component([node.id], [[0, 1]], 2)
+    with pytest.raises(ValueError, match='unsupported native fsr'):
+        from_cipher(c)

@@ -59,8 +59,21 @@ resolved from neighboring ports, and ambiguous directions fail explicitly.
 
 Supported executable components include fixed rotations/shifts, reverse/NOT,
 XOR/AND/OR, modular arithmetic, constants, S-boxes, binary linear layers, mix
-columns, permutations and intermediate/final outputs. FSR and variable-amount
-operations fail explicitly. A scalar drawing alone cannot identify missing
+columns, permutations and intermediate/final outputs. Binary constants and
+variable rotations/shifts are supported: the ordered stream contains data bits
+first, then control bits, and the signed multiplier is preserved. Native variable
+shift reduces its control modulo the output width before multiplying by the
+direction; this differs from saturating an arbitrary shift count.
+
+`IDEA_MODMUL` requires exactly two logical operands and an explicit positive
+modulus no larger than `2^width+1`; zero inputs map to `2^width`, and that result
+maps back to zero. Descriptions with one/three operands or `None` modulus fail.
+Binary FSRs preserve ordered synchronous registers, global bit-index ANF
+feedback and optional clock conditions, with 1--100,000 clocks. Empty/`None`
+binary clock conditions mean unconditional clocking, as in the native backend.
+Word FSRs remain unsupported because current native replay drops registers
+and fails across repeated clocks. Extra input bits and over-wide constant
+literals fail rather than being silently truncated. A scalar drawing alone cannot identify missing
 native tables, widths, bit selections or round annotations. `to_records` and
 `from_records` remain explicit diagnostic record interchange.
 

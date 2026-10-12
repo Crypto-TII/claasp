@@ -53,7 +53,9 @@ def _word_label(node, short):
         return f'{name}/{node["bits"]}(unary)'
     fixed_amount = name in ('ROTATE', 'SHIFT')
     parameters = 'arity='+str(description[1])
-    if fixed_amount or short:
+    if name in ('ROTATE_BY_VARIABLE_AMOUNT', 'SHIFT_BY_VARIABLE_AMOUNT'):
+        parameters = 'direction='+str(description[1])
+    elif fixed_amount or short:
         parameters = str(description[1])
     if len(description) > 2 and description[2] is not None:
         parameters += ',mod='+str(description[2])
