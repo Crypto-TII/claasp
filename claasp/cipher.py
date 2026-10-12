@@ -866,7 +866,7 @@ class Cipher:
 
         - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
         - ``solver`` -- **string**; the name of the solver to use for the search
-        - ``scenario`` -- **string**; {"single-key", "related-key", "no-key"}: see :meth:`find_impossible_property`
+        - ``scenario`` -- **string**; {"single-key", "variable-key", "related-key", "no-key"}: see :meth:`find_impossible_property`
         """
         return self.find_impossible_property(type="differential", technique=technique, solver=solver, scenario=scenario)
 
@@ -1564,26 +1564,30 @@ class Cipher:
         to find a solution; if none is found, then the propagation is impossible.
         Return a list of impossible differentials or zero_correlation linear approximations if there are any; otherwise return an empty list
 
-        Three scenarios, based on whether the cipher has a key input and, if so, how its difference is treated:
+        Four scenarios, based on whether the cipher has a key input and, if so, which input differences are swept.
+        A "1-bit difference" is a difference with exactly one bit set (Hamming weight 1).
 
-        - ``"single-key"`` -- the key difference is fixed to zero and only the plaintext difference is swept over
-          all Hamming weight 1 values (requires a key input; raises ``ValueError`` without one).
-        - ``"related-key"`` -- both the key and the plaintext differences are free to vary: the input difference
-          is swept over all Hamming weight 1 values of the full (plaintext, key) input, so for each candidate
-          exactly one bit of either the plaintext or the key is active and the other input has zero difference
-          (requires a key input; raises ``ValueError`` without one). Each result is a triple
-          ``(plaintext_difference, key_difference, output_difference)``.
-        - ``"no-key"`` -- only the plaintext difference is swept and no constraint is put on the key. This is the
-          scenario for a keyless permutation or function, where the full input is the plaintext.
+        - ``"single-key"`` -- the key difference is zero and the plaintext difference goes over all 1-bit values.
+        - ``"variable-key"`` -- the plaintext difference is zero and the key difference goes over all 1-bit values.
+        - ``"related-key"`` -- the plaintext difference and the key difference each go over zero and all 1-bit
+          values, in every combination except both zero. This covers the ``"single-key"`` and ``"variable-key"``
+          cases, plus the cases where one plaintext bit and one key bit are active together.
+        - ``"no-key"`` -- the plaintext difference goes over all 1-bit values and the key, if any, is not
+          constrained. This is the scenario for keyless permutations and functions.
 
-        For ``"single-key"`` and ``"no-key"`` each result is a pair ``(plaintext_difference, output_difference)``.
+        ``"single-key"``, ``"variable-key"`` and ``"related-key"`` need a key input and raise ``ValueError``
+        without one. The output difference always goes over all 1-bit values.
+
+        Each result of ``"single-key"`` and ``"no-key"`` is a pair ``(plaintext_difference, output_difference)``;
+        each result of ``"variable-key"`` and ``"related-key"`` is a triple
+        ``(plaintext_difference, key_difference, output_difference)``.
 
         INPUT:
 
         - ``type`` -- **string**; {"differential", "linear"}: the type of property to search for
         - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
         - ``solver`` -- **string**; the name of the solver to use for the search
-        - ``scenario`` -- **string** (default: ``"single-key"``); {"single-key", "related-key", "no-key"}
+        - ``scenario`` -- **string** (default: ``"single-key"``); {"single-key", "variable-key", "related-key", "no-key"}
         """
         from claasp.cipher_modules.models.utils import (
             integer_to_bit_list,
@@ -1601,17 +1605,22 @@ class Cipher:
         plain_bits = inputs_dictionary[INPUT_PLAINTEXT]
         has_key = INPUT_KEY in inputs_dictionary
         key_bits = inputs_dictionary.get(INPUT_KEY, 0)
-        if scenario not in ("single-key", "related-key", "no-key"):
-            raise ValueError(f"unknown scenario {scenario!r}; expected 'single-key', 'related-key' or 'no-key'")
-        if scenario in ("single-key", "related-key") and not has_key:
+        scenarios = ("single-key", "variable-key", "related-key", "no-key")
+        if scenario not in scenarios:
+            raise ValueError(f"unknown scenario {scenario!r}; expected one of {scenarios}")
+        if scenario != "no-key" and not has_key:
             raise ValueError(f"scenario={scenario!r} requires a cipher with a key input; this cipher has none "
                              "(use scenario='no-key' for a keyless permutation or function)")
 
-        # Hamming weight 1 input differences to sweep, as (plaintext_difference, key_difference) pairs.
-        if scenario == "related-key":
-            input_differences = [(1 << i, 0) for i in range(plain_bits)] + [(0, 1 << i) for i in range(key_bits)]
+        # Input differences to sweep, as (plaintext_difference, key_difference) pairs.
+        plaintext_1_bit = [1 << i for i in range(plain_bits)]
+        key_1_bit = [1 << i for i in range(key_bits)]
+        if scenario == "variable-key":
+            input_differences = [(0, k) for k in key_1_bit]
+        elif scenario == "related-key":
+            input_differences = [(p, k) for p in [0] + plaintext_1_bit for k in [0] + key_1_bit if p or k]
         else:
-            input_differences = [(1 << i, 0) for i in range(plain_bits)]
+            input_differences = [(p, 0) for p in plaintext_1_bit]
 
         for plaintext_difference, key_difference in input_differences:
             for output_bit_position in range(plain_bits):
@@ -1644,7 +1653,7 @@ class Cipher:
                 )
                 solution = search_function(fixed_values, solver_name=solver)
                 if solution["status"] == "UNSATISFIABLE":
-                    if scenario == "related-key":
+                    if scenario in ("variable-key", "related-key"):
                         impossible.append((plaintext_difference, key_difference, output_difference))
                     else:
                         impossible.append((plaintext_difference, output_difference))
@@ -1657,7 +1666,7 @@ class Cipher:
 
         - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
         - ``solver`` -- **string**; the name of the solver to use for the search
-        - ``scenario`` -- **string**; {"single-key", "related-key", "no-key"}: see :meth:`find_impossible_property`
+        - ``scenario`` -- **string**; {"single-key", "variable-key", "related-key", "no-key"}: see :meth:`find_impossible_property`
         """
         return self.find_impossible_property(type="linear", technique=technique, solver=solver, scenario=scenario)
 

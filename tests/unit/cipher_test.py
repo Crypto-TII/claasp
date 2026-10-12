@@ -593,9 +593,9 @@ def test_zero_correlation_linear_search():
 
 
 def test_find_impossible_property_keyed_scenarios_without_key_raise():
-    # a keyless permutation has no key: single-key and related-key must be refused, not silently remapped
+    # a keyless permutation has no key: the keyed scenarios must be refused, not silently remapped
     keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
-    for scenario in ("single-key", "related-key"):
+    for scenario in ("single-key", "variable-key", "related-key"):
         with pytest.raises(ValueError, match=scenario):
             keccak.find_impossible_property(type="differential", scenario=scenario)
     with pytest.raises(ValueError, match="single-key"):
@@ -627,16 +627,18 @@ def test_find_impossible_property_no_key_scenario_on_keyed_cipher():
     assert isinstance(result, list)
 
 
-def test_find_impossible_property_related_key_sweeps_plaintext_and_key():
-    # related-key varies both inputs: results are (plaintext_difference, key_difference, output_difference)
-    # triples with exactly one active input bit, and the plaintext-side ones coincide with single-key
-    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    related_key = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="related-key")
+def test_find_impossible_property_variable_key_and_related_key():
+    # variable-key: zero plaintext difference, 1-bit key difference
+    # related-key: every combination of <= 1-bit plaintext and key differences (except both zero), so it
+    # contains the single-key and variable-key results, plus cases with both a plaintext and a key bit active
+    speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
     single_key = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="single-key")
-    for plaintext_difference, key_difference, _ in related_key:
-        assert (plaintext_difference == 0) != (key_difference == 0)
-    assert [(p, o) for p, k, o in related_key if k == 0] == single_key
-    assert any(k != 0 for _, k, _ in related_key)
+    variable_key = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="variable-key")
+    related_key = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="related-key")
+    assert all(p == 0 and bin(k).count("1") == 1 for p, k, _ in variable_key)
+    assert all(p or k for p, k, _ in related_key)
+    assert [(p, o) for p, k, o in related_key if k == 0] == sorted(single_key)
+    assert sorted(t for t in related_key if t[0] == 0) == sorted(variable_key)
 
 
 def test_cipher_inverse():
