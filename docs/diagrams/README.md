@@ -52,6 +52,12 @@ The human defaults are `annotations=False`, `word_bits=None`,
 `max_text_bytes=64000000`. Choose `layout_preference='crossings'`, `'depth'` or
 `'width'` for measured generic priorities; use `synthesis_report` to inspect
 tradeoffs. Native source links always come from actual exported wires.
+Final, intermediate and unused-value sinks visibly read `OUT`, `OBS` and `DEAD`.
+A `DEAD` sink has a width-only local discard record; the actual wire supplies
+its value and the unused computation remains in the recovered primitive. Final
+anchors occupy the physical bottom block row. Native input fragments retain
+ascending source-bit order by their visible word indices; reordered selections
+require visible SEL helpers. Footer-only anchor or word reassignment rejects.
 Manual constants use a visible hexadecimal literal across up to two seven-character
 interior lines (14 characters including `x`). Values through the 52-bit maximum fit;
 longer literals fail explicitly and require audit output. Capacity depends on the

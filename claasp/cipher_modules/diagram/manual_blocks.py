@@ -15,6 +15,7 @@ from .validation import validate
 MARKER = '\n# CLAASP-HUMAN-BLOCKS 1\n'
 NODE_FIELDS = ('id', 'type', 'bits', 'input_bits', 'round', 'description')
 FIELDS = {
+    'discard': {'kind', 'bits'},
     'input': {'kind', 'index', 'native_index', 'id', 'bits', 'role', 'positions', 'unused_positions'},
     'native': {'kind', 'ordinal', *NODE_FIELDS, 'operand_ports', 'operand_positions'},
     'native_boundary': {'kind', 'ordinal', *NODE_FIELDS, 'operand_ports', 'operand_positions', 'positions', 'flow'},
@@ -67,6 +68,12 @@ def art(cell, style='symbols'):
     if cell['kind'] == 'input' and not cell['definition']['positions']:
         text = 'SUNUSED' if cell.get('secret') else 'UNUSED'
         return ['  _______  ', ' |       | ', ' ('+glyphs._center(text)+') ', ' |_______| ', ' '*11]
+    if cell['kind'] in ('output', 'tap'):
+        result = glyphs._art(cell)
+        definition = cell.get('definition', {})
+        text = 'OUT' if definition.get('type') == 'cipher_output' else 'OBS' if definition.get('type') == 'intermediate_output' else 'DEAD'
+        result[2] = ' |'+glyphs._center(text)+'| '
+        return result
     if cell['kind'] != 'box':
         return glyphs._art(cell)
     definition = cell['definition']
@@ -206,6 +213,10 @@ class _Scheduler(glyphs._RegisterScheduler):
             stage = -1
         elif stage is None and executing is not None:
             stage = self.calls[executing]['definition'].get('round', self.scheduling_rounds[executing])
+        if kind in ('output', 'tap') and not definition:
+            if executing is None:
+                raise ValueError('Discard sink lacks its computed width')
+            data['definition'] = {'kind': 'discard', 'bits': self.calls[executing]['definition']['bits']}
         super().place(col, kind, ports, stage=stage, **data)
 
     def build(self):
@@ -699,9 +710,16 @@ def _read(records, lines, rows, cols):
                     cell['ports'] = {}
                 if tuple(art(cell)) != visible:
                     raise ValueError('Input identity/secrecy disagrees with visible glyph')
-            elif definition and definition['kind'] == 'native_boundary':
-                cell = parser._sink_cell(visible, row, col)
-                cell['definition'] = definition
+            elif definition and definition['kind'] in ('native_boundary', 'discard'):
+                candidates = [{'kind': kind, 'ports': dict(top='in', **({'bottom': 'out'} if kind == 'tap' else {})), 'definition': definition} for kind in ('output', 'tap')]
+                cell = next((candidate for candidate in candidates if tuple(art(candidate)) == visible), None)
+                if cell is None:
+                    raise ValueError('Sink identity disagrees with its visible OUT/OBS/DEAD label')
+                if definition['kind'] == 'discard':
+                    cells[key] = cell
+                    continue
+                if definition.get('type') == 'cipher_output' and row != rows-1:
+                    raise ValueError('Final anchor must occupy the physical bottom output row')
                 if definition.get('operand_ports') != ['top']:
                     raise ValueError('A native boundary needs its actual top input')
             elif definition:
@@ -712,7 +730,7 @@ def _read(records, lines, rows, cols):
                 choices[key] = copy.deepcopy(templates[visible])
                 cell = choices[key][0]
             else:
-                cell = parser._sink_cell(visible, row, col)
+                raise ValueError('Unknown manual glyph or sink without its local definition')
             cells[key] = cell
     if set(records)-set(cells):
         raise ValueError('Local annotation lacks a visible block')
@@ -754,10 +772,13 @@ def _verify_notes(cells, records):
 
 
 def _input_declarations(records):
-    declarations, covered, unused = {}, {}, {}
+    declarations, covered, unused, fragments, visible_indices = {}, {}, {}, {}, set()
     for definition in records.values():
         if definition['kind'] != 'input':
             continue
+        if definition['index'] in visible_indices:
+            raise ValueError('Duplicate visible input word index')
+        visible_indices.add(definition['index'])
         index = definition['native_index']
         if type(index) is not int or index < 0:
             raise ValueError('Invalid native declaration order')
@@ -769,11 +790,17 @@ def _input_declarations(records):
         absent = definition.get('unused_positions', [])
         if not isinstance(selected, list) or not isinstance(absent, list) or any(type(bit) is not int or not 0 <= bit < item['bits'] for bit in selected+absent):
             raise ValueError('Input selection exceeds the declared width')
+        fragments.setdefault(index, []).append(definition)
         covered.setdefault(index, set()).update(selected)
         unused.setdefault(index, set()).update(absent)
     if sorted(declarations) != list(range(len(declarations))):
         raise ValueError('Missing native input declaration')
     for index, item in declarations.items():
+        ordered = sorted(fragments[index], key=lambda definition: definition['index'])
+        indices = [definition['index'] for definition in ordered]
+        positions = [bit for definition in ordered for bit in definition['positions']]
+        if len(set(indices)) != len(indices) or positions != sorted(covered[index]) or len(positions) != len(covered[index]):
+            raise ValueError('Input fragments disagree with visible word index order')
         if covered[index] & unused[index] or covered[index] | unused[index] != set(range(item['bits'])):
             raise ValueError('Input fragments must expose or explicitly declare every bit unused')
     return [declarations[index] for index in sorted(declarations)]
@@ -882,6 +909,12 @@ def _trace(cells, groups):
                 ready.append(follower)
     if len(memo) != len(dependencies):
         raise ValueError('Unresolved or circular visible wires')
+    for key, cell in cells.items():
+        definition = cell.get('definition', {})
+        if definition.get('kind') == 'discard':
+            incoming = parser._flat_stream([memo[parser._adjacent(key, 'top')]])
+            if len(incoming) != definition['bits']:
+                raise ValueError('Discard width disagrees with its actual visible input')
     for fragments in groups.values():
         _boundary_native(fragments, memo, native)
     return native

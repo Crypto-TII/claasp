@@ -524,7 +524,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         |      |          |          |
         |      |       ___v___       |       _______
         |      |      |       |   ___v___   |       |
-        |      |      | <<<2  |  |_______|  ( OBS0  )
+        |      |      | <<<2  |  |  OBS  |  ( OBS0  )
         |      |      |_______|             |_______|
         |      |          |
         |      |       ___v___
@@ -534,7 +534,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         |      |          |
         |      |          |
         |   ___v___    ___v___
-        |  |_______|  |_______|
+        |  |  OUT  |  |  OUT  |
         |
         |
 
@@ -580,7 +580,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         |      |          |
         |      |          |
         |   ___v___    ___v___
-        |  |_______|  |_______|
+        |  |  OUT  |  |  OUT  |
         |
         |
     """

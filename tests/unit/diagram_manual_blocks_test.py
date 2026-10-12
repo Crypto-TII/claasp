@@ -333,3 +333,44 @@ def test_two_line_constant_visible_value_is_complete(width):
 def test_constant_beyond_two_line_capacity_rejects_without_truncation(width):
     with pytest.raises(ValueError, match='visible manual label capacity'):
         encode(literal_ir(hex((1 << width)-1), width))
+
+
+
+def test_dead_sink_is_visible_and_cannot_become_final_by_footer_reassignment():
+    c = Cipher('anonymous_dead', 'permutation', ['a','b'], [4,4], 4)
+    c.add_round()
+    c.add_not_component(['a'], [list(range(4))], 4)
+    c.add_cipher_output_component(['b'], [list(range(4))], 4)
+    ir=from_cipher(c)
+    text=encode(ir, annotations=True)
+    body,footer=framing(text)
+    assert 'DEAD' in body and 'OUT' in body
+    assert decode(text)==ir
+    assert to_cipher(decode(text)).evaluate([3,5])==5
+    dead=next(r for r in footer['records'] if r['definition']['kind']=='discard')
+    final=next(r for r in footer['records'] if r['definition'].get('type')=='cipher_output')
+    wrong_width=copy.deepcopy(footer)
+    next(r['definition'] for r in wrong_width['records'] if r['definition']['kind']=='discard')['bits']=8
+    with pytest.raises(ValueError,match='Discard width'):
+        decode(altered(body,wrong_width))
+    footer['records'].remove(dead)
+    final['row'],final['col']=dead['row'],dead['col']
+    with pytest.raises(ValueError, match='Sink identity|Final anchor'):
+        decode(altered(body,footer))
+
+
+def test_input_fragment_order_is_visible_but_identifiers_can_be_renamed():
+    c=Cipher('anonymous_identity','permutation',['a'],[8],8);c.add_round()
+    c.add_cipher_output_component(['a'],[list(range(8))],8)
+    ir=from_cipher(c);text=encode(ir,annotations=True,word_bits=4)
+    body,footer=framing(text)
+    assert to_cipher(decode(text)).evaluate([0x35])==0x35
+    inputs=sorted((r['definition'] for r in footer['records'] if r['definition']['kind']=='input'),key=lambda d:d['index'])
+    assert len(inputs)==2
+    inputs[0]['positions'],inputs[1]['positions']=inputs[1]['positions'],inputs[0]['positions']
+    with pytest.raises(ValueError,match='visible word index order'):
+        decode(altered(body,footer))
+    _,renamed=framing(text)
+    for record in renamed['records']:
+        if record['definition']['kind']=='input':record['definition']['id']='renamed'
+    assert to_cipher(decode(altered(body,renamed))).evaluate([0x35])==0x35
