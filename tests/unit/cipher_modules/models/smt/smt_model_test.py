@@ -1,3 +1,5 @@
+import shutil
+
 import pytest
 
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
@@ -10,6 +12,8 @@ from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
 from claasp.name_mappings import INPUT_PLAINTEXT, SATISFIABLE, UNSATISFIABLE
 
+requires_mathsat = pytest.mark.skipif(shutil.which("mathsat") is None, reason="MathSAT not available in PATH")
+
 
 def test_solve():
     # testing with Z3
@@ -21,17 +25,19 @@ def test_solve():
     assert solution["status"] == SATISFIABLE
     assert int(solution["components_values"]["modadd_0_3"]["value"], 16) >= 0
     assert int(solution["components_values"]["cipher_output_31_16"]["value"], 16) >= 0
-    # testing with the other solvers
+
+
+@pytest.mark.parametrize("solver_name", [pytest.param(MATHSAT_EXT, marks=requires_mathsat), YICES_EXT])
+def test_solve_with_other_solvers(solver_name):
     simon = SimonBlockCipher(number_of_rounds=32)
-    for solver_name in (MATHSAT_EXT, YICES_EXT):
-        smt = SmtCipherModel(simon)
-        smt.build_cipher_model()
-        solution = smt.solve("cipher", solver_name=solver_name)
-        assert str(solution["cipher"]) == "simon_p32_k64_o32_r32"
-        assert solution["solver_name"] == solver_name
-        assert solution["status"] == SATISFIABLE
-        assert int(solution["components_values"]["rot_0_3"]["value"], 16) >= 0
-        assert int(solution["components_values"]["cipher_output_31_13"]["value"], 16) >= 0
+    smt = SmtCipherModel(simon)
+    smt.build_cipher_model()
+    solution = smt.solve("cipher", solver_name=solver_name)
+    assert str(solution["cipher"]) == "simon_p32_k64_o32_r32"
+    assert solution["solver_name"] == solver_name
+    assert solution["status"] == SATISFIABLE
+    assert int(solution["components_values"]["rot_0_3"]["value"], 16) >= 0
+    assert int(solution["components_values"]["cipher_output_31_13"]["value"], 16) >= 0
 
 
 def test_solver_names():

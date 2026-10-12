@@ -1,3 +1,5 @@
+import shutil
+
 import pytest
 
 from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
@@ -6,6 +8,8 @@ from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, SATISFIABLE, XOR_DIFFERENTIAL
+
+requires_mathsat = pytest.mark.skipif(shutil.which("mathsat") is None, reason="MathSAT not available in PATH")
 
 speck_5rounds = SpeckBlockCipher(number_of_rounds=5)
 
@@ -102,13 +106,22 @@ def test_find_one_xor_differential_trail():
     assert int(trail["components_values"]["cipher_output_4_12"]["value"], 16) >= 0
     assert trail["components_values"]["cipher_output_4_12"]["weight"] == 0
 
-    # a tight upper bound keeps MathSAT and Yices fast: with the default one (32) they take minutes
-    for solver_name in (MATHSAT_EXT, YICES_EXT):
-        trail = smt.find_one_xor_differential_trail(fixed_values=[plaintext], upper_bound=9, solver_name=solver_name)
 
-        assert trail["solver_name"] == solver_name
-        assert trail["status"] == SATISFIABLE
-        assert int(trail["total_weight"]) <= 9
+@pytest.mark.parametrize("solver_name", [pytest.param(MATHSAT_EXT, marks=requires_mathsat), YICES_EXT])
+def test_find_one_xor_differential_trail_with_other_solvers(solver_name):
+    smt = SmtXorDifferentialModel(speck_5rounds)
+    plaintext = set_fixed_variables(
+        component_id=INPUT_PLAINTEXT,
+        constraint_type="not_equal",
+        bit_positions=range(32),
+        bit_values=(0,) * 32,
+    )
+    # a tight upper bound keeps MathSAT and Yices fast: with the default one (32) they take minutes
+    trail = smt.find_one_xor_differential_trail(fixed_values=[plaintext], upper_bound=9, solver_name=solver_name)
+
+    assert trail["solver_name"] == solver_name
+    assert trail["status"] == SATISFIABLE
+    assert int(trail["total_weight"]) <= 9
 
 
 def test_find_one_xor_differential_trail_with_fixed_weight():
@@ -140,6 +153,7 @@ def test_find_one_xor_differential_trail_with_wrong_bounds():
         smt.find_one_xor_differential_trail(lower_bound=2, upper_bound=3)
 
 
+@requires_mathsat
 def test_build_xor_differential_trail_model_fixed_weight_and_mathsat():
     speck = SpeckBlockCipher(number_of_rounds=3)
     smt = SmtXorDifferentialModel(speck)
