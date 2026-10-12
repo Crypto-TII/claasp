@@ -203,6 +203,7 @@ def overview(ir, registry, options):
         visible = ordered[start:start + count]
         lines = [r'\par\noindent\textbf{Computation overview: ' + str(len(ir['nodes'])) + ' native operations}',
                  r'\par These boxes are ' + mode + ' summaries, not individual operations. Select overview-detail or detail for every native identity and ordered input fragment.',
+                 r'\par Adjacent-stage dependencies are drawn below; the complete cross-stage dependency table follows.',
                  r'\par\medskip\begin{tikzpicture}[>=stealth]']
         for index, stage in enumerate(visible):
             patterns = Counter(operation(node, registry, short=True) for node in stages[stage])
@@ -213,7 +214,7 @@ def overview(ir, registry, options):
             heading=(r'\hyperlink{'+target+'}{'+escape(mode)+' '+str(stage)+'}') if options.get('view','overview-detail')!='overview' and stages[stage] else escape(mode)+' '+str(stage)
             lines.append(fr'\node[draw,align=left,text width=100mm,font=\small] (S{stage}) at (0,{-2.4 * index}) {{{heading}: {len(stages[stage])} operations\\{escape(summary)}}};')
         for (source, target), bits in edges.items():
-            if source in visible and target in visible:
+            if source in visible and target in visible and visible.index(target) == visible.index(source) + 1:
                 lines.append(fr'\draw[->] (S{source}.east) to[bend left=25] node[right,font=\scriptsize] {{{len(bits)} bits}} (S{target}.east);')
         lines.append(r'\end{tikzpicture}')
         ingress = [(str(source), str(target), str(len(bits))) for (source, target), bits in edges.items()
@@ -221,6 +222,11 @@ def overview(ir, registry, options):
         if ingress:
             lines.append(r'\par\small Boundary inputs: ' + escape('; '.join(f'{s} -> {mode} {t}: {b} distinct referenced bits' for s, t, b in ingress)).replace(' -> ', r' $	o$ ') + r'\par\normalsize')
         output.append('\n'.join(lines))
+    dependency_rows = [(str(source), str(target), str(len(bits)))
+                       for (source, target), bits in edges.items()]
+    output.extend(table_pages('Complete cross-stage dependencies', dependency_rows,
+                              ['Source input / stage', 'Destination stage', 'Distinct referenced bits'],
+                              [76, 45, 45], options.get('tableLineBudget', 42)))
     return output
 
 

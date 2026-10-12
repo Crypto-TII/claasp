@@ -394,3 +394,21 @@ def test_readable_long_constants_are_complete_without_audit_and_empty_rounds_hav
     assert 'round 1: 0 operations' in text
     assert r'\hyperlink{diagram-round-1}' not in text
     assert from_ascii(to_ascii(ir)) == ir
+
+
+def test_overview_preserves_nonadjacent_dependencies_without_overlapping_arc_labels():
+    from claasp.diagram_presentation import overview
+    c = Cipher('opaque', 'permutation', ['value'], [4], 4)
+    c.add_round()
+    first = c.add_not_component(['value'], [list(range(4))], 4)
+    c.add_round()
+    c.add_not_component([first.id], [list(range(4))], 4)
+    c.add_round()
+    c.add_cipher_output_component([first.id], [list(range(4))], 4)
+    ir = from_cipher(c)
+    text = '\n'.join(overview(ir, {}, {}))
+    assert 'Complete cross-stage dependencies' in text
+    assert 'Adjacent-stage dependencies' in text
+    assert '0 & 2 & 4' in text
+    assert '(S0.east) to[bend left=25] node[right,font=\\scriptsize] {4 bits} (S2.east)' not in text
+    assert '(S1.east);' in text
