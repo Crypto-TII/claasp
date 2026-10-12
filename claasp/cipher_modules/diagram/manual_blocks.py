@@ -11,7 +11,7 @@ from collections import Counter, deque
 from functools import reduce
 from math import gcd
 
-from . import glyphs, parser
+from . import glyphs, parser, parameters
 from .validation import validate
 
 MARKER = '\n# CLAASP-HUMAN-BLOCKS 1\n'
@@ -19,7 +19,7 @@ NODE_FIELDS = ('id', 'type', 'bits', 'input_bits', 'round', 'description')
 FIELDS = {
     'discard': {'kind', 'bits'},
     'input': {'kind', 'index', 'native_index', 'id', 'bits', 'role', 'positions', 'unused_positions'},
-    'native': {'kind', 'ordinal', *NODE_FIELDS, 'operand_ports', 'operand_positions'},
+    'native': {'kind', 'ordinal', *NODE_FIELDS, 'operand_ports', 'operand_positions', 'parameter_ref'},
     'native_fragment': {'kind', 'ordinal', *NODE_FIELDS, 'operand_ports', 'operand_positions', 'positions'},
     'native_boundary': {'kind', 'ordinal', *NODE_FIELDS, 'operand_ports', 'operand_positions', 'positions', 'flow'},
     'selection': {'kind', 'bits', 'positions', 'operand_ports', 'reference'},
@@ -40,6 +40,9 @@ def label(definition, style='symbols'):
         return ({'sbox': 'S', 'linear_layer': 'L', 'mix_column': 'MC', 'permutation': 'P'} if style == 'symbols'
                 else {'sbox': 'SBOX', 'linear_layer': 'LINL', 'mix_column': 'MIXC', 'permutation': 'PERM'})[definition['type']]
     if definition['type'] == 'constant':
+        if 'parameter_ref' in definition:
+            parameters.valid_reference(definition['parameter_ref'])
+            return 'CONST'
         value = int(description[0], 0)
         text = 'x'+format(value, 'X')
     else:
@@ -53,7 +56,7 @@ def label(definition, style='symbols'):
             text = (SYMBOLS if style == 'symbols' else WORDS).get(operation)
             if text is None:
                 raise ValueError('Manual word projection does not yet support this operation; use audit')
-            if operation in ('MODADD', 'MODSUB', 'MODMUL') and description[2] is not None:
+            if operation in ('MODADD', 'MODSUB', 'MODMUL') and description[2] is not None and 'parameter_ref' not in definition:
                 raise ValueError('Custom modulus needs a visible parameter reference; use audit until supported')
     capacity = 14 if definition['type'] == 'constant' else 7
     if len(text) > capacity:
@@ -120,6 +123,9 @@ def art(cell, style='symbols'):
     result = glyphs._box_art(dict(cell, tag=displayed, reverse=False))
     if continued:
         result[1] = ' |'+glyphs._center(text[:7])+'| '
+    if 'parameter_ref' in definition:
+        parameters.valid_reference(definition['parameter_ref'])
+        result[1] = ' |'+glyphs._center(definition['parameter_ref'])+'| '
     if definition['kind'] == 'native_fragment':
         positions = definition.get('positions')
         if not isinstance(positions, list) or not positions or any(type(bit) is not int or bit < 0 for bit in positions):
@@ -143,8 +149,9 @@ def art(cell, style='symbols'):
 
 
 class _WordGraph:
-    def __init__(self, ir, bits, gathering="linear", projection="whole", native_bundles=False):
+    def __init__(self, ir, bits, gathering="linear", projection="whole", native_bundles=False, parameter_refs=False):
         self.ir, self.bits, self.gathering = ir, bits, gathering
+        references = parameters.assignments(ir) if parameter_refs else {}
         self.calls, self.inputs, self.values = [], [], {}
         self.raw_values, self.selection_cache, self.join_cache = {}, {}, {}
         self.input_definitions, self.fake_inputs = [], []
@@ -183,6 +190,8 @@ class _WordGraph:
                 raise ValueError('Logical word operands must cover complete native words; use audit')
             local = {key: copy.deepcopy(node[key]) for key in NODE_FIELDS}
             local['ordinal'] = ordinal
+            if ordinal in references:
+                local['parameter_ref'] = references[ordinal]
             local['operand_positions'] = []
             offset = 0
             for edge in node['operands']:
@@ -771,11 +780,13 @@ def infer_word_bits(ir):
 
 
 def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gathering='linear', lane_policy='compact', projection='whole',
-          layout_preference='balanced', max_cells=1000000, max_calls=20000, native_bundles=False):
+          layout_preference='balanced', max_cells=1000000, max_calls=20000, native_bundles=False, parameter_refs=False):
     """Compare generic schedules by measured crossings, depth and width."""
     validate(ir)
     if type(native_bundles) is not bool or native_bundles and (word_bits is not None or projection != 'whole' or lane_policy != 'compact'):
         raise ValueError('Native bundles require whole projection, compact lanes and no fixed word_bits')
+    if type(parameter_refs) is not bool:
+        raise ValueError('parameter_refs must be boolean')
     if projection not in ('whole', 'wordwise'):
         raise ValueError('Choose whole or wordwise projection')
     if lane_policy not in ('compact', 'state'):
@@ -794,7 +805,7 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gat
     best, reports, errors, rejected = None, [], [], []
     for index, variant in enumerate(variants):
         try:
-            graph = _WordGraph(ir, bits, gathering, projection, native_bundles)
+            graph = _WordGraph(ir, bits, gathering, projection, native_bundles=native_bundles, parameter_refs=parameter_refs)
             if len(graph.calls) > max_calls:
                 raise ValueError('Manual word expansion exceeds max_calls')
             cells, report = _Scheduler(ir, graph, variant, max_cells, alignment, lane_policy).build()
@@ -827,12 +838,12 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gat
 
 def _encode_layout(ir, *, annotations=True, word_bits=None, operator_style='symbols',
            strategy='semantic-auto', alignment='left', layout_preference='balanced', gathering='linear', lane_policy='compact', projection='whole',
-           wire_borders=False, native_bundles=False, max_cells=1000000, max_calls=20000,
+           wire_borders=False, native_bundles=False, parameter_refs=False, max_cells=1000000, max_calls=20000,
            max_grid_area=2000000, max_text_bytes=64000000):
     if type(annotations) is not bool or type(wire_borders) is not bool or operator_style not in ('symbols', 'labels'):
         raise ValueError('Choose boolean annotations and symbols/labels')
     cells, report = build(ir, word_bits=word_bits, strategy=strategy, alignment=alignment,
-                          layout_preference=layout_preference, gathering=gathering, lane_policy=lane_policy, projection=projection, max_cells=max_cells, max_calls=max_calls, native_bundles=native_bundles)
+                          layout_preference=layout_preference, gathering=gathering, lane_policy=lane_policy, projection=projection, max_cells=max_cells, max_calls=max_calls, native_bundles=native_bundles, parameter_refs=parameter_refs)
     if type(max_grid_area) is not int or max_grid_area < 1 or report['rows']*report['cols'] > max_grid_area:
         raise ValueError('Manual rectangular output exceeds max_grid_area')
     if type(max_text_bytes) is not int or max_text_bytes < 1:
@@ -860,7 +871,7 @@ def _encode_layout(ir, *, annotations=True, word_bits=None, operator_style='symb
         elif definition['kind'] == 'native_boundary':
             definition['operand_ports'] = ['top']
         records.append({'row': row, 'col': col, 'definition': definition})
-    body = '\n'.join(lines)
+    body = '\n'.join(lines)+parameters.serialize(record['definition'] for record in records)
     primitive = {key: copy.deepcopy(ir[key]) for key in ('schema', 'name', 'cipher_type', 'output_bits', 'rounds')}
     text = body+MARKER+json.dumps({'format': 'claasp-human-blocks/1', 'primitive': primitive, 'records': records}, separators=(',', ':'))+'\n'
     if len(text.encode('utf-8')) > max_text_bytes:
@@ -884,6 +895,7 @@ def _metadata(text, max_text_bytes, max_grid_area):
         raise ValueError('Invalid human-block framing')
     if set(manifest['primitive']) != {'schema', 'name', 'cipher_type', 'output_bits', 'rounds'}:
         raise ValueError('Original graph or unknown primitive fields are forbidden')
+    body, parameter_definitions = parameters.split(body)
     lines = body.split('\n')
     width = max(map(len, lines), default=0)
     if len(lines) % 5 or width % 11 or not lines:
@@ -916,6 +928,7 @@ def _metadata(text, max_text_bytes, max_grid_area):
         if expansion > 2000000:
             raise ValueError('Human explicit bit expansion exceeds work bounds')
         records[key] = definition
+    parameters.verify(records.values(), parameter_definitions)
     return manifest, records, lines, rows, cols
 
 
