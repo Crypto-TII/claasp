@@ -624,7 +624,7 @@ def test_generic_word_fragments_keep_ordered_selections_and_independent_values(o
     assert encode(renamed,projection='wordwise')==framing(text)[0]
 
 
-@pytest.mark.parametrize('mutation',['coverage','width','opcode','ordinal','hidden-source','glyph','anchor','negative-ordinal','empty-positions','boolean-position','oversized-anchor','missing-mask','ordinal-collision'])
+@pytest.mark.parametrize('mutation',['coverage','width','opcode','ordinal','hidden-source','glyph','anchor','negative-ordinal','empty-positions','boolean-position','oversized-anchor','missing-mask','ordinal-collision','port-reorder'])
 def test_word_fragment_mutations_are_rejected(mutation):
     c=Cipher('unseen_mutations','permutation',['a','b'],[8,8],8);c.add_round()
     x=c.add_xor_component(c.inputs,[list(range(8))]*2,8)
@@ -637,6 +637,7 @@ def test_word_fragment_mutations_are_rejected(mutation):
     elif mutation=='opcode':definition['description'][0]='AND'
     elif mutation=='ordinal':definition['ordinal']+=1
     elif mutation=='hidden-source':definition['source']='a'
+    elif mutation=='port-reorder':definition['operand_ports'].reverse()
     elif mutation=='negative-ordinal':definition['ordinal']=-1
     elif mutation=='empty-positions':definition['positions']=[]
     elif mutation=='boolean-position':definition['positions']=[False,1,2,3]
@@ -690,3 +691,22 @@ def test_noncontiguous_role_bank_reports_generic_fallback():
     compiled=to_cipher(decode(encode(ir,lane_policy='state',annotations=True)))
     for a in range(16):
         for b in range(16):assert compiled.evaluate([a,9,b])==(a<<4)|b
+
+
+
+def test_fragment_word_group_reference_is_unambiguous_and_operand_binding_is_visible():
+    c=Cipher('opaque_group','block_cipher',['k','d'],[8,8],8);c.add_round()
+    for _ in range(68):c.add_constant_component(4,0)
+    x=c.add_xor_component(['d','k'],[list(range(8))]*2,8)
+    pieces=[c.add_sbox_component([x.id],[list(range(s,s+4))],4,[v^9 for v in range(16)]) for s in (0,4)]
+    c.add_cipher_output_component([n.id for n in pieces],[list(range(4))]*2,8)
+    ir=from_cipher(c,roles={'k':'key','d':'data'})
+    text=encode(ir,annotations=True,projection='wordwise',lane_policy='state')
+    body,footer=framing(text)
+    assert 'G1W.W0' in body and 'G1W.W1' in body and '^@21' in body
+    assert decode(text)==ir
+    compiled=to_cipher(decode(text))
+    for key in (0,0x35,255):
+        for data in (0,0xa5,255):assert compiled.evaluate([key,data])==(key^data^0x99)
+    ambiguous=body.replace('G1W.W0',' G1WW0').replace('G1W.W1',' G1WW1')
+    with pytest.raises(ValueError):decode(altered(ambiguous,footer))

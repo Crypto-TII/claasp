@@ -72,6 +72,22 @@ def _base36(value):
             return digits
 
 
+def _fragment_reference(ordinal, word):
+    group, index = _base36(ordinal), _base36(word)
+    tag = 'G'+group+'W'+index
+    splits = 0
+    for split in range(2, len(tag)-1):
+        if tag[split] == 'W':
+            left, right = tag[1:split], tag[split+1:]
+            if _base36(int(left, 36)) == left and _base36(int(right, 36)) == right:
+                splits += 1
+    if splits != 1:
+        tag = 'G'+group+'.W'+index
+    if len(tag) > 7:
+        raise ValueError('Visible fragment group/word reference exceeds manual label capacity; use whole projection')
+    return tag
+
+
 def art(cell, style='symbols'):
     if cell['kind'] == 'note':
         return ['  _______  ', ' |       | ', ' ('+glyphs._center(cell['text'])+') ', ' |_______| ', ' '*11]
@@ -101,10 +117,12 @@ def art(cell, style='symbols'):
         if not isinstance(positions, list) or not positions or any(type(bit) is not int or bit < 0 for bit in positions):
             raise ValueError('Invalid visible fragment word positions')
         word = positions[0]//len(positions)
-        tag = 'G'+_base36(definition['ordinal'])+'W'+_base36(word)
-        if len(tag) > 7:
-            raise ValueError('Visible fragment group/word reference exceeds manual label capacity; use whole projection')
+        tag = _fragment_reference(definition['ordinal'], word)
         result[1] = ' |'+glyphs._center(tag)+'| '
+        physical = [side for side in ('left', 'top', 'right', 'bottom') if cell['ports'].get(side) == 'in']
+        binding = [physical.index(side)+1 for side in definition['operand_ports']]
+        if binding != list(range(1, len(binding)+1)):
+            displayed += '@'+''.join(map(str, binding))
     ports = cell['ports']
     # Existing manual helpers use the distinct free-text bracket vocabulary.
     left, right = ('[', ']') if definition['kind'] in ('selection', 'join') else ('|', '|')
@@ -800,6 +818,9 @@ def _encode_layout(ir, *, annotations=True, word_bits=None, operator_style='symb
         raise ValueError('Manual body exceeds max_text_bytes before rendering')
     lines, records = [], []
     for cell in cells.values():
+        if cell['kind'] == 'box':
+            physical = [side for side in glyphs.SIDES if cell['ports'].get(side) == 'in']
+            cell['definition']['operand_ports'] = list(reversed(physical)) if cell.get('reverse') else physical
         if cell['kind'] in ('wire', 'fork', 'cross'):
             cell['invisible'] = not wire_borders
     for row in range(report['rows']):
