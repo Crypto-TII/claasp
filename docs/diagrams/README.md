@@ -311,3 +311,28 @@ name or manual fixture selects these rules.
 The separate builder imports these annotated glyphs and exports classes; its
 pseudocode/rebuild operation mapping still needs matching S-box/linear/mix-column
 admission. This gap is explicit, and typed TikZ remains a separate layout path.
+
+## Optional dependency-layer alignment
+
+`strategy="semantic-layer"` schedules by generic native dependency depth,
+orders projection helpers after their producers, and aligns operation layers
+while retaining existing lane columns and round boundaries. Layout depth is
+separate from the semantic representation. All six auto candidates and direct
+bus remain available. This strategy is optional rather than an extra auto
+candidate: aligned layers can increase crossings. A two-round, four-word
+SPN preserves its four data columns and puts parallel substitutions on shared
+rows; this is a tested geometry property, not reader-study evidence.
+
+## Shared manual vector and state conventions
+
+`to_tikz(ir, layoutSource="human", strategy="semantic-layer", view="wires")`
+reuses the selected manual synthesis cells after fresh ASCII verification. The
+existing `layoutSource="audit"` remains the default and selectable baseline.
+Column/row spacing, panel and crop controls apply to both paths. Crossings have
+no junction dot; forks have a dot, and exchanges use crossed directed curves.
+
+`state_snapshots(ir, word_bits=None)` infers the same conservative common word
+granularity and reports `word_bits_source="inferred-gcd"`. It does not infer a
+two-dimensional state: `columns=None` remains `ambiguous-flat-fallback`; explicit
+columns are a caller-provided convention. Ordered source bit positions remain
+unchanged. The default one-bit state view and existing order modes are retained.

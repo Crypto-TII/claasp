@@ -96,11 +96,22 @@ def _snapshot(identity, stage, positions, widths, mode, order, word_bits, column
 
 def snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='source', values=None, comparison=None):
     validate(ir)
-    _state_options(mode, order, word_bits, columns)
+    _state_options(mode, order, 1 if word_bits is None else word_bits, columns)
     widths = {node['id']: node['bits'] for node in ir['inputs']+ir['nodes']}
     groups = _declared_groups(ir) if mode == 'declared' else _frontier_groups(ir, mode)
-    return [_snapshot(identity, stage, positions, widths, mode, order, word_bits, columns, values, comparison)
-            for identity, stage, positions in groups]
+    inferred = word_bits is None
+    if inferred:
+        from math import gcd
+        from claasp.cipher_modules.diagram.manual_blocks import infer_word_bits
+        word_bits = infer_word_bits(ir)
+        for _, _, positions in groups:
+            word_bits = gcd(word_bits, len(positions))
+    frames = [_snapshot(identity, stage, positions, widths, mode, order, word_bits, columns, values, comparison)
+              for identity, stage, positions in groups]
+    if inferred:
+        for frame in frames:
+            frame['word_bits_source'] = 'inferred-gcd'
+    return frames
 
 
 def _display_value(word):

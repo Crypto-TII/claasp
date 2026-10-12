@@ -660,7 +660,7 @@ def decode(text, *, max_text_bytes=64000000, max_grid_area=2000000):
 
 
 
-_BOX_KINDS = ('input', 'box', 'output', 'tap')
+_BOX_KINDS = ('input', 'box', 'output', 'tap', 'note')
 _PORT_ANCHORS = {'left': 'west', 'right': 'east', 'top': 'north', 'bottom': 'south'}
 _LABEL_ANCHORS = {'left': 'south east', 'right': 'south west', 'top': 'south east', 'bottom': 'north west'}
 
@@ -709,13 +709,23 @@ def _cell_label(cell, key, registry):
     from claasp.cipher_modules.diagram.presentation import operation
     definition = cell.get('definition', {})
     kind = definition.get('kind')
+    if cell['kind'] == 'note':
+        return cell['text']
     if cell['kind'] == 'input':
         name = 'key' if cell.get('secret') else 'input'
-        label = name+'/'+str(definition.get('bits', '?'))
+        bits = len(definition['positions']) if 'positions' in definition else definition.get('bits', '?')
+        if bits == 0:
+            name, bits = 'UNUSED', definition['bits']
+        index = 'I'+str(definition['index']+1)+' ' if 'native_index' in definition else ''
+        label = index+name+'/'+str(bits)
     elif kind == 'parallel':
         label = operation(definition['members'][0], registry, short=True)+' x'+str(len(definition['members']))
     elif kind == 'native':
         label = _native_label(definition, registry)
+    elif kind == 'native_boundary':
+        label = ('OUT' if definition['type'] == 'cipher_output' else 'OBS')+'/'+str(len(definition['positions']))
+    elif kind == 'discard':
+        label = 'DEAD/'+str(definition['bits'])
     elif kind in ('join', 'selection'):
         label = {'join': 'PACK', 'selection': 'SELECT'}[kind]+'/'+str(definition['bits'])
     else:
@@ -761,8 +771,24 @@ def _segment(cells, row, col, cell, side, x, y, top, left, options):
 
 
 def _cell_segments(cells, row, col, cell, x, y, top, left, options):
-    return [_segment(cells, row, col, cell, side, x, y, top, left, options)
-            for side, direction in cell['ports'].items() if direction == 'out']
+    if cell['kind'] == 'swap':
+        partner = cell['partner']
+        nx, ny = (partner-left)*options['xs'], y-options['ys']
+        neighbor = cells.get((row+1, partner), {})
+        target = f'(N{row+1}x{partner}.north)' if _inside_panel(row+1, partner, top, left, options) and neighbor.get('kind') in _BOX_KINDS else f'({nx},{ny})'
+        return [fr'\draw[->,preaction={{draw=white,line width=2pt}}] ({x},{y}) to[out=-90,in=90] {target};']
+    outgoing = [side for side, direction in cell['ports'].items() if direction == 'out']
+    if cell['kind'] == 'cross':
+        outgoing.sort(key=lambda side: side in ('left', 'right'))
+    segments = []
+    for side in outgoing:
+        segment = _segment(cells, row, col, cell, side, x, y, top, left, options)
+        if cell['kind'] == 'cross' and side in ('left', 'right'):
+            segment = segment.replace(r'\draw[->]', r'\draw[->,preaction={draw=white,line width=2pt}]')
+        segments.append(segment)
+    if cell['kind'] == 'fork':
+        segments.append(fr'\fill ({x},{y}) circle (0.7pt);')
+    return segments
 
 
 def _wire_panel(cells, panel, items, options, registry):

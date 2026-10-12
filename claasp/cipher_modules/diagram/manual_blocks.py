@@ -239,6 +239,16 @@ class _Scheduler(glyphs._RegisterScheduler):
         self.critical = {}
         for index in reversed(range(len(self.calls))):
             self.critical[index] = 1+max((self.critical[consumer] for consumer in self.consumers.get(('call', index), [])), default=0)
+        native_layers = {item['id']: 0 for item in ir['inputs']}
+        ordinal_layers = {}
+        for ordinal, node in enumerate(ir['nodes']):
+            layer = 1+max((native_layers[edge['source']] for edge in node['operands']), default=0)
+            native_layers[node['id']] = layer
+            ordinal_layers[ordinal] = layer
+        self.layers = {}
+        for index, call in enumerate(self.calls):
+            prior = max((self.layers[value[1]] if value[0] == 'call' else 0 for value in call['args']), default=0)
+            self.layers[index] = ordinal_layers[call['definition']['ordinal']] if call['definition']['kind'] in ('native', 'native_boundary') else prior
         self.word_bits = graph.bits
         self.final_boundaries = {}
 
@@ -254,7 +264,9 @@ class _Scheduler(glyphs._RegisterScheduler):
             if executing is None:
                 raise ValueError('Discard sink lacks its computed width')
             data['definition'] = {'kind': 'discard', 'bits': self.calls[executing]['definition']['bits']}
-        super().place(col, kind, ports, stage=stage, **data)
+        call_kind = self.calls[executing]['definition']['kind'] if executing is not None else 'input'
+        layer = 2*self.layers.get(executing, 0)+int(call_kind in ('selection', 'join'))
+        super().place(col, kind, ports, stage=stage, layer=layer, **data)
 
     def build(self):
         self.seed_inputs()
@@ -263,7 +275,7 @@ class _Scheduler(glyphs._RegisterScheduler):
         self.capture_unused_inputs()
         if self.active:
             raise ValueError('Uncaptured manual values remain live')
-        cells = self.cells if self.strategy == 'direct-bus' else _round_compact(self.cells, self.max_cells)
+        cells = self.cells if self.strategy == 'direct-bus' else _round_compact(self.cells, self.max_cells, align_layers=self.strategy == 'semantic-layer')
         cells = _final_row(cells)
         return cells, {'rows': max(row for row, col in cells)+1,
                        'cols': max(col for row, col in cells)+1,
@@ -310,6 +322,11 @@ class _Scheduler(glyphs._RegisterScheduler):
         return crossings, len(expired)
 
     def next_call(self):
+        if self.strategy == 'semantic-layer':
+            eligible = [index for index in self.ready_calls.eligible if index in self.pending]
+            eligible.extend(index for index in self.pending if not self.calls[index]['args'] and index not in eligible)
+            if eligible:
+                return min(eligible, key=lambda index: (self.scheduling_rounds[index], 2*self.layers[index]+int(self.calls[index]['definition']['kind'] in ('selection', 'join')), index))
         if self.strategy not in ('semantic-width', 'semantic-depth', 'semantic-crossings'):
             return super().next_call()
         eligible = [index for index in self.ready_calls.eligible if index in self.pending]
@@ -469,18 +486,19 @@ class _Scheduler(glyphs._RegisterScheduler):
         self.ready_calls.publish(value)
 
 
-def _round_compact(cells, maximum):
+def _round_compact(cells, maximum, align_layers=False):
     groups = []
     for row, items in glyphs._rigid_rows(cells).items():
         for order, group in enumerate(glyphs._horizontal_groups(items)):
             stages = [cell.get('stage') for _, cell in group if cell.get('stage') is not None]
-            groups.append((max(stages, default=-1), row, order, group))
+            layer = max((cell.get('layer', 0) for _, cell in group), default=0) if align_layers else 0
+            groups.append((max(stages, default=-1), layer, row, order, group))
     output, last = {}, {}
     stage, floor = None, 0
-    for current, _, _, group in sorted(groups, key=lambda item: item[:3]):
-        if stage != current:
+    for current, layer, _, _, group in sorted(groups, key=lambda item: item[:4]):
+        if stage != (current, layer):
             floor = max((row for row, col in output), default=-1)+1
-            stage = current
+            stage = current, layer
         target = max(floor, max((last.get(col, (-1, None))[0]+1 for col, _ in group), default=0))
         for col, cell in group:
             glyphs._vertical_gap(output, col, cell, last.get(col), target)
@@ -582,18 +600,23 @@ def _layout_score(metrics, preference):
     return area+cells, crossings, depth, width
 
 
+def infer_word_bits(ir):
+    """Conservative common granularity; it does not infer a two-dimensional shape."""
+    widths = [node['bits'] for node in ir['nodes']]
+    widths.extend(len(edge['positions']) for node in ir['nodes'] for edge in node['operands'])
+    return reduce(gcd, widths or [ir['output_bits']])
+
+
 def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left',
           layout_preference='balanced', max_cells=1000000, max_calls=20000):
     """Compare generic schedules by measured crossings, depth and width."""
     validate(ir)
-    if strategy not in ('semantic-auto', 'direct-bus', *STRATEGIES):
+    if strategy not in ('semantic-auto', 'direct-bus', 'semantic-layer', *STRATEGIES):
         raise ValueError('Unsupported manual block scheduling strategy')
     if alignment not in ('left', 'right') or layout_preference not in ('balanced', 'crossings', 'depth', 'width'):
         raise ValueError('Choose left/right alignment and balanced/crossings/depth/width layout preference')
     glyphs._graph_limits(ir, 'semantic-legacy', max_cells, max_calls)
-    widths = [node['bits'] for node in ir['nodes']]
-    widths.extend(len(edge['positions']) for node in ir['nodes'] for edge in node['operands'])
-    bits = reduce(gcd, widths or [ir['output_bits']]) if word_bits is None else word_bits
+    bits = infer_word_bits(ir) if word_bits is None else word_bits
     if type(bits) is not int or bits < 1 or any(item['bits'] % bits for item in ir['inputs']):
         raise ValueError('Supply uniform aligned positive word_bits')
     variants = STRATEGIES if strategy == 'semantic-auto' else (strategy,)
@@ -630,7 +653,7 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left',
                        metrics=metrics, candidates=reports, rejected_candidates=rejected)
 
 
-def encode(ir, *, annotations=False, word_bits=None, operator_style='symbols',
+def _encode_layout(ir, *, annotations=True, word_bits=None, operator_style='symbols',
            strategy='semantic-auto', alignment='left', layout_preference='balanced',
            wire_borders=False, max_cells=1000000, max_calls=20000,
            max_grid_area=2000000, max_text_bytes=64000000):
@@ -669,7 +692,12 @@ def encode(ir, *, annotations=False, word_bits=None, operator_style='symbols',
         raise ValueError('Manual output/local verification exceeds max_text_bytes')
     if decode(text, max_grid_area=max_grid_area, max_text_bytes=max_text_bytes) != ir:
         raise ValueError('Fresh manual-block parsing changed native semantics')
-    return text if annotations else body
+    return text, cells, report
+
+
+def encode(ir, *, annotations=False, **options):
+    text, _, _ = _encode_layout(ir, annotations=annotations, **options)
+    return text if annotations else text.split(MARKER)[0]
 
 
 def _metadata(text, max_text_bytes, max_grid_area):

@@ -474,3 +474,43 @@ def test_mixed_width_sbox_linear_and_field_matrix_have_direct_oracle():
     assert changed!=body
     with pytest.raises(ValueError,match='visible glyph'):
         decode(altered(changed,footer))
+
+
+
+def test_generic_layers_align_parallel_substitutions_and_preserve_word_lanes():
+    c=Cipher('anonymous_layers','block_cipher',['state','key'],[16,16],16)
+    words=[('state',list(range(i*4,(i+1)*4))) for i in range(4)]
+    table=[(value*value+value+3)&15 for value in range(16)]
+    for _ in range(2):
+        c.add_round();updated=[]
+        for i,(source,positions) in enumerate(words):
+            x=c.add_xor_component([source,'key'],[positions,list(range(i*4,(i+1)*4))],4)
+            sub=c.add_sbox_component([x.id],[list(range(4))],4,table)
+            updated.append(sub.id)
+        state=c.add_intermediate_output_component(updated,[list(range(4))]*4,16,'state')
+        words=[(state.id,list(range(i*4,(i+1)*4))) for i in range(4)]
+    c.add_cipher_output_component([source for source,_ in words],[positions for _,positions in words],16)
+    ir=from_cipher(c,roles={'state':'data','key':'key'})
+    text=encode(ir,annotations=True,strategy='semantic-layer');assert decode(text)==ir
+    _,footer=framing(text)
+    for round_index in range(2):
+        substitutions=[r for r in footer['records'] if r['definition'].get('type')=='sbox' and r['definition']['round']==round_index]
+        assert len(substitutions)==4 and len({r['row'] for r in substitutions})==1
+        assert sorted(r['col'] for r in substitutions)==[0,1,2,3]
+    renamed=copy.deepcopy(ir)
+    mapping={item['id']:'input'+str(index) for index,item in enumerate(renamed['inputs'])}
+    mapping.update({node['id']:'node'+str(index) for index,node in enumerate(renamed['nodes'])})
+    for item in renamed['inputs']:item['id']=mapping[item['id']]
+    for node in renamed['nodes']:
+        node['id']=mapping[node['id']]
+        for edge in node['operands']:edge['source']=mapping[edge['source']]
+    assert encode(renamed,strategy='semantic-layer')==framing(text)[0]
+    compiled=to_cipher(decode(text))
+    for state in range(256):
+        for key in (0,0x1234,0xffff):
+            expected=0
+            for shift in (12,8,4,0):
+                value=(state>>shift)&15;word_key=(key>>shift)&15
+                value=table[value^word_key];value=table[value^word_key]
+                expected=(expected<<4)|value
+            assert compiled.evaluate([state,key])==expected

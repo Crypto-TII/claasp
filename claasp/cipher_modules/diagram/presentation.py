@@ -442,7 +442,10 @@ def _presentation_pages(ir, cells, wire_panels, parameters, options, view, budge
     return pages
 
 
-def _presentation_header(ir):
+def _presentation_header(ir, options=None):
+    if (options or {}).get('layoutSource') == 'human':
+        return (r'\par\noindent\textbf{Consolidated manual synthesis: '+str(len(ir['nodes']))+' native operations}'
+                +'\n'+r'\par Wire placement is reused from the verified manual ASCII strategy. Local tables retain native widths and parameters; JOIN/SELECT boxes expose ordered word projections. OUT, OBS and DEAD identify final, observation and discarded-value sinks.'+'\n')
     return (r'\par\noindent\textbf{Typed native computation: '+str(len(ir['nodes']))+' operations, '+str(ir['rounds'])+' rounds}'
             +'\n'+r'\par Detail boxes and members preserve the complete computation. Input references I0,I1,... follow declared input order; n0,n1,... denote native ordinals in the detail tables. Input fragments are concatenated in order; native arity and widths determine logical operands. Stride a:s:b denotes inclusive positions a,a+s,...,b; repeats remain explicit. The typed ASCII source retains full audit data.'+'\n')
 
@@ -460,4 +463,4 @@ def present(ir, cells, wire_panels, options):
     navigation = r'\providecommand{\hypertarget}[2]{#2}'+r'\providecommand{\hyperlink}[2]{#2}'+'\n'
     # Input declarations have their own measured table pages, so a detailed
     # first table or wire panel cannot overflow beneath an arbitrary intro.
-    return navigation+_presentation_header(ir)+separator.join(all_pages)
+    return navigation+_presentation_header(ir, options)+separator.join(all_pages)

@@ -130,3 +130,46 @@ def test_public_report_and_compatibility_exports():
     report=synthesis_report(toy(),layout_preference='width')
     assert report['layout_preference']=='width' and len(report['candidates'])==6
     assert set(report['metrics'])=={'crossings','depth','width','cells'}
+
+
+
+def test_manual_tikz_reuses_verified_cells_instead_of_audit_planner(monkeypatch):
+    from claasp.diagrams import to_tikz
+    from claasp.cipher_modules.diagram import glyphs, manual_blocks
+    ir=toy();expected_cells,expected_report=manual_blocks.build(ir)
+    def no_audit(*args,**kwargs):
+        raise AssertionError('Human vector path must not invoke audit planner')
+    monkeypatch.setattr(glyphs,'_encode_layout',no_audit)
+    tikz=to_tikz(ir,layoutSource='human',view='wires',legend='none',columnsPerPanel=20,rowsPerPanel=20)
+    assert 'Consolidated manual synthesis' in tikz
+    assert 'OUT/4' in tikz and 'I1 input/4' in tikz
+    for (row,col),cell in expected_cells.items():
+        if cell['kind'] in ('input','box','output','tap','note'):
+            assert '(N'+str(row)+'x'+str(col)+')' in tikz
+    with pytest.raises(ValueError,match='layoutSource'):
+        to_tikz(ir,layoutSource='by-name')
+
+
+def test_manual_tikz_exchange_is_visible_as_two_crossed_routes():
+    from claasp.diagrams import to_tikz
+    c=Cipher('generic_exchange','permutation',['a','b'],[4,4],8);c.add_round()
+    x=c.add_xor_component(['a','b'],[list(range(4))]*2,4)
+    c.add_cipher_output_component(['b',x.id],[list(range(4))]*2,8)
+    ir=from_cipher(c)
+    text=to_ascii(ir,annotations=True)
+    assert '<---------->' in text
+    tikz=to_tikz(ir,layoutSource='human',view='wires',legend='none',rowsPerPanel=30,columnsPerPanel=10)
+    assert tikz.count('to[out=-90,in=90]')==2
+
+
+
+def test_state_auto_word_granularity_is_shared_but_shape_stays_ambiguous():
+    from claasp.diagrams import state_snapshots
+    from claasp.cipher_modules.diagram.manual_blocks import infer_word_bits
+    ir=toy();frames=state_snapshots(ir,word_bits=None)
+    assert infer_word_bits(ir)==4
+    assert frames[0]['word_bits']==4 and len(frames[0]['words'])==2
+    assert frames[0]['word_bits_source']=='inferred-gcd'
+    assert frames[0]['geometry']=='ambiguous-flat-fallback'
+    explicit=state_snapshots(ir,word_bits=None,columns=1)
+    assert explicit[0]['geometry']=='explicit-columns' and explicit[0]['rows']==2

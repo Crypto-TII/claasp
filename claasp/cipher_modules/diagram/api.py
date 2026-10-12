@@ -455,7 +455,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     - ``wire_borders`` -- **boolean** (default: ``False``); draw routing-cell frames; operation frames follow the manual vocabulary
     - ``alignment`` -- ``'left'`` (default) or ``'right'``; prefer an expired operand lane, subject to liveness and ordered arithmetic
     - ``layout_preference`` -- ``'balanced'`` (default), ``'crossings'``, ``'depth'`` or ``'width'``; select among measured generic candidate layouts
-    - ``strategy`` -- ``'semantic-auto'`` (default); human candidates are ``semantic-legacy``, ``semantic-ports``, ``semantic-round``, ``semantic-width``, ``semantic-depth`` and ``semantic-crossings``; ``direct-bus`` is an explicit baseline
+    - ``strategy`` -- ``'semantic-auto'`` (default); human candidates are ``semantic-legacy``, ``semantic-ports``, ``semantic-round``, ``semantic-width``, ``semantic-depth`` and ``semantic-crossings``; ``semantic-layer`` aligns generic native dependency layers; ``direct-bus`` is an explicit baseline
     - ``max_cells`` -- positive **integer** (default: ``1000000``); occupied block limit
     - ``max_calls`` -- positive **integer** (default: ``20000``); native/helper word-expansion limit
     - ``max_grid_area`` -- positive **integer** (default: ``2000000``); rectangular block limit
@@ -757,7 +757,7 @@ def to_tikz(ir, **options):
     INPUT:
 
     - ``ir`` -- **dictionary** or **Cipher**; supported computation
-    - ``options`` -- **keyword options**; ``view`` selects ``overview-detail`` (default), ``overview``, ``detail`` or ``wires``; ``stageMode`` chooses generic ``round`` or ``layer`` summaries; ``strategy`` chooses the ASCII planner
+    - ``options`` -- **keyword options**; ``view`` selects ``overview-detail`` (default), ``overview``, ``detail`` or ``wires``; ``stageMode`` chooses generic ``round`` or ``layer`` summaries; ``strategy`` chooses the ASCII planner; ``layoutSource='human'`` reuses consolidated manual synthesis cells, while ``'audit'`` retains the default typed path
 
     OUTPUT:
 
@@ -787,7 +787,19 @@ def to_tikz(ir, **options):
     from claasp.cipher_modules.diagram.glyphs import _encode_layout, _present_grid, decode
     if not isinstance(ir, dict): ir=from_cipher(ir)
     validate(ir)
-    text, cells, dimensions = _encode_layout(ir, strategy=options.get('strategy', 'semantic-auto'))
+    source = options.get('layoutSource', 'audit')
+    if source not in ('audit', 'human'):
+        raise ValueError('Choose audit or human TikZ layoutSource')
+    if source == 'human':
+        from claasp.cipher_modules.diagram.manual_blocks import _encode_layout as manual_layout
+        keys = ('word_bits', 'alignment', 'layout_preference', 'operator_style', 'wire_borders',
+                'max_cells', 'max_calls', 'max_grid_area', 'max_text_bytes')
+        text, cells, dimensions = manual_layout(ir, strategy=options.get('strategy', 'semantic-auto'),
+            **{key: options[key] for key in keys if key in options})
+        # The manual encoder already reparsed and compared its actual text.
+        return _present_grid(ir, cells, dimensions, options)
+    else:
+        text, cells, dimensions = _encode_layout(ir, strategy=options.get('strategy', 'semantic-auto'))
     recovered = validate(decode(text))
     if recovered != ir:
         raise ValueError('Vector source glyphs changed native IR')
@@ -839,7 +851,7 @@ def state_snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='so
 
     - ``ir`` -- **dictionary**; supported graph
     - ``mode`` -- **string** (default: ``'declared'``); ``declared``, ``round`` or ``layer``
-    - ``word_bits`` -- **integer** (default: ``1``); explicit group width dividing every selected state
+    - ``word_bits`` -- **integer** (default: ``1``), or ``None`` to infer common native/selection granularity while retaining shape ambiguity; explicit group width dividing every selected state
     - ``columns`` -- **integer** (default: ``None``); explicit display columns, not inferred algorithmic geometry
     - ``order`` -- **string** (default: ``'source'``); ``source`` or ``reverse`` source-bit order
     - ``values`` -- **dictionary** (default: ``None``); evaluated values from ``evaluate_state_values``; absent values stay unknown
