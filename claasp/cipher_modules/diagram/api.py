@@ -468,7 +468,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
              operator_style='symbols', wire_borders=False, alignment='left',
              layout_preference='balanced', strategy='semantic-auto', gathering='linear',
              lane_policy='compact', projection='whole', native_bundles=False, parameter_refs=False, associative_reductions=False, max_cells=1000000, max_calls=20000, max_grid_area=2000000,
-             max_text_bytes=64000000, key_side='right'):
+             max_text_bytes=64000000, key_side='right', parallel_unary=1):
     r"""
     Draw persistent word lanes when their generic state shape is identifiable.
 
@@ -503,6 +503,8 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     - ``word_bits`` -- positive **integer** or ``None``; infer the GCD of native output widths and selected-fragment lengths, with output width as a generic fallback
     - ``operator_style`` -- ``'symbols'`` (default) or ``'labels'``; numeric rotation/shift arrows remain explicit in both
     - ``wire_borders`` -- **boolean** (default: ``False``); draw routing-cell frames; operation frames follow the manual vocabulary
+    - ``parallel_unary`` -- positive **integer** (default: ``1``); persistent-only maximum compatible
+      independent vertical unary boxes per row. ``1`` retains accepted placement; ``4`` can align four rotations.
     - ``gathering`` -- ``'linear'`` (default); ``'shared-linear'`` reuses identical ordered JOIN pairs, while experimental ``'balanced'`` gathers through a balanced tree; neither alternative is selected automatically
     - ``projection`` -- ``'whole'`` (default) or opt-in ``'wordwise'``; split independent XOR/AND/OR/NOT into word gates, retaining native semantics through visible subordinate group/word references
     - ``native_bundles`` -- **boolean** (default: ``False``); experimental whole native input/boundary values with demand-driven SEL/JOIN helpers and heterogeneous widths. Requires compact lanes, whole projection and no fixed word_bits; all existing caps and operation-signature limits remain active. No new local record kinds are introduced.
@@ -691,8 +693,10 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         raise ValueError('Work and output bounds must be positive integers')
     if type(annotations) is not bool:
         raise ValueError('annotations must be a boolean')
+    if type(parallel_unary) is not int or parallel_unary < 1:
+        raise ValueError('parallel_unary must be a positive integer')
     if format == 'audit':
-        if annotations or word_bits is not None or operator_style != 'symbols' or wire_borders or alignment != 'left' or layout_preference != 'balanced' or gathering != 'linear' or lane_policy != 'compact' or projection != 'whole' or native_bundles or parameter_refs or associative_reductions or key_side != 'right':
+        if parallel_unary != 1 or annotations or word_bits is not None or operator_style != 'symbols' or wire_borders or alignment != 'left' or layout_preference != 'balanced' or gathering != 'linear' or lane_policy != 'compact' or projection != 'whole' or native_bundles or parameter_refs or associative_reductions or key_side != 'right':
             raise ValueError('Human rendering/layout options do not apply to the audit format')
         return to_audit_ascii(ir, strategy=strategy, **bounds)
     if not isinstance(ir, dict):
@@ -705,7 +709,8 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         from .word_bindings import export_bindings, MARKER as word_marker
         try:
             body, bindings = export_bindings(ir, key_side=key_side, word_bits=word_bits,
-                                            max_calls=max_calls, max_cells=max_cells, max_grid_area=max_grid_area)
+                                            max_calls=max_calls, max_cells=max_cells, max_grid_area=max_grid_area,
+                                            parallel_unary=parallel_unary)
         except UnsupportedProjection as error:
             raise UnsupportedProjection(str(error)+"; request format='human-legacy' explicitly for the old serializer") from error
         else:
@@ -713,6 +718,8 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
             if len(text.encode('utf8')) > max_text_bytes:
                 raise ValueError('Visual text exceeds max_text_bytes')
             return text
+    if parallel_unary != 1:
+        raise ValueError('parallel_unary is supported only by the persistent-word view')
     if key_side != 'right':
         raise ValueError('key_side relocation is supported only by the persistent-word view')
     from .manual_blocks import encode
@@ -915,6 +922,11 @@ def to_tikz(ir, **options):
     across combined figures. ``fitToPage=None`` retains ordinary panels; a positive pair overrides them
     with a uniformly shrunk complete nominal grid. The caller supplies page size/margins and checks TeX
     text extents; long labels can enlarge boxes. No minimum font size is enforced.
+
+    ``parallel_unary=1`` preserves existing placement. A positive integer such as ``4`` coalesces compatible
+    independent vertical unary rows from the generic dependency-aware schedule. Opcode, width, parameters
+    and native round must match; destinations must be distinct and all routes vertical. Horizontal
+    additions/XORs are not coalesced. No cipher name, constructor order or reference-diagram lookup is used.
 
     Persistent layout has no requested width/depth, alternative scheduling strategy, automatic state
     matrix shape, or row/column crop controls. Lane count/depth follow generic dependencies and liveness.

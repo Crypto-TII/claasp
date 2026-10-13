@@ -8,4 +8,6 @@ native metadata. ``format='human-legacy'`` retains the old exact manual serializ
 """
 from .api import (validate, validate_native_component, from_cipher, to_cipher, to_records, from_records, layout, to_layered_tikz, state_view, to_ascii, synthesis_report, to_audit_ascii, from_ascii, to_tikz, evaluate_state_values, state_snapshots, state_ascii, state_tikz)
 
-__all__ = ['validate', 'validate_native_component', 'from_cipher', 'to_cipher', 'to_records', 'from_records', 'layout', 'to_layered_tikz', 'state_view', 'to_ascii', 'synthesis_report', 'to_audit_ascii', 'from_ascii', 'to_tikz', 'evaluate_state_values', 'state_snapshots', 'state_ascii', 'state_tikz']
+from .facade import Diagrams
+
+__all__ = ['Diagrams', 'validate', 'validate_native_component', 'from_cipher', 'to_cipher', 'to_records', 'from_records', 'layout', 'to_layered_tikz', 'state_view', 'to_ascii', 'synthesis_report', 'to_audit_ascii', 'from_ascii', 'to_tikz', 'evaluate_state_values', 'state_snapshots', 'state_ascii', 'state_tikz']

@@ -128,3 +128,46 @@ set ``word_bits=None`` explicitly for inference. Other state modes keep their
 bitwise default and do not use ``key_side`` or ``granularity``. Activity with
 only evaluated values means nonzero value; provide ``comparison`` for XOR
 activity against a second evaluation, not against the preceding snapshot.
+
+
+Object interface and compatible unary rows
+-----------------------------------------
+
+.. code-block:: python
+
+    from claasp.diagrams import Diagrams
+    from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+    cipher = SpeckBlockCipher(number_of_rounds=1)
+    diagram = Diagrams(cipher)
+    ascii_body = diagram.to_ascii()
+    tikz = diagram.to_tikz(fitToPage=(25,30))
+    values = diagram.evaluate_state_values([0x6574694c,0x1918111009080100])
+    states = diagram.state_tikz(mode='word',word_bits=None,values=values)
+
+``Diagrams`` captures native semantics at construction. Later edits to the
+original cipher and edits to the independent ``diagram.ir`` dictionary do not
+change it. The functional API remains supported. Methods accept their functional
+counterpart's keyword options; executable export is ``diagram.to_cipher()``.
+
+``parallel_unary`` defaults to ``1``, preserving the accepted Speck fixtures. An
+explicit ``parallel_unary=4`` coalesces compatible independent vertical unary
+rows from the generic dependency-aware schedule. Actual vertical routes must
+be disjoint; opcode, width, parameters and native round must match. Additions
+and XORs retain their actual routes and separate rows. This is a conservative
+post-schedule compaction, not an optimal width/depth planner. Original word
+bindings and observations survive fresh parsing. No lane permutation operation
+is inserted for presentation.
+
+``ChachaPermutation(number_of_rounds=2,round_mode='single')`` contains four
+native half-round stages and 96 word operations: 32 additions, 32 XORs and 32 rotations.
+It represents the column-plus-diagonal pair in the supplied manual reference.
+``number_of_rounds=2,round_mode='half'`` contains only 48 operations. Both settings
+retain one 512-bit data input; the renderer does not infer reference decorations
+for constants or key words. Word state summaries retain all four native
+boundaries even when the caption calls this two full rounds.
+
+A single quarter round is a genuine four-word, 12-operation graph constructed
+in ``examples/quarter_round.py``; it is not ``ChachaPermutation(number_of_rounds=1)``.
+Its rotations are 16, 12, 8, 7. Example construction stays outside the generic
+renderer. ``examples/render_facade_examples.py`` produces the quarter-round,
+two-full-round overview/detail and native Rotate/Shift/Not primitive controls.

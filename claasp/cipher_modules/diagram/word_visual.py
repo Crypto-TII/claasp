@@ -67,7 +67,8 @@ def project(ir, word_bits=None, *, max_calls=20000, max_cells=1000000):
             'observations': observations}
 
 
-def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=1000000, max_grid_area=2000000, capture_states=False):
+def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=1000000,
+          max_grid_area=2000000, capture_states=False, parallel_unary=1):
     r"""
     Infer a persistent word-state layout from native dependencies and roles.
 
@@ -79,6 +80,8 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
     - ``max_calls`` -- positive **integer** (default: ``20000``); native/projected operation limit
     - ``max_cells`` -- positive **integer** (default: ``1000000``); occupied-cell limit
     - ``max_grid_area`` -- positive **integer** (default: ``2000000``); rectangular-grid limit
+    - ``parallel_unary`` -- positive **integer** (default: ``1``); maximum compatible independent
+      unary operations coalesced per row after the dependency-aware route schedule;1preserves existing bytes
     - ``capture_states`` -- **boolean** (default: ``False``); record initial/every-operation primary lane banks;
       constants are parameters, not state updates
 
@@ -101,6 +104,8 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
         sage: (model['bits'], model['columns'], len(model['cipher_columns']))
         (16, 6, 2)
     """
+    if type(parallel_unary) is not int or parallel_unary < 1:
+        raise ValueError('parallel_unary must be a positive integer')
     if key_side not in ('right', 'left'):
         raise ValueError('Choose key_side right or left')
     model = project(ir, word_bits, max_calls=max_calls, max_cells=max_cells)
@@ -268,7 +273,8 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
     model.update(primary=primary, input_bindings=[model['input_definitions'][value[1]] for value in primary],
                  cipher_columns=data_columns, records=records, cells=cells, rows=row+1, columns=columns,
                  key_side=key_side, state_frames=state_frames)
-    return model
+    from .compact_unary import compact
+    return compact(model, parallel_unary)
 
 
 def _art(cell):

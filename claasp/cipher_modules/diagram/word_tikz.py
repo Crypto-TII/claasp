@@ -162,7 +162,8 @@ def to_tikz(ir, **options):
     - ``options`` -- ``key_side`` (default: ``'right'``; ``'right'`` or ``'left'``), ``word_bits``
       (default: ``None``; infer the admitted uniform native word width), work bounds
       ``max_calls=20000``, ``max_cells=1000000``, ``max_grid_area=2000000``,
-      ``max_text_bytes=64000000``, and the presentation controls of ``render_model``
+      ``max_text_bytes=64000000``, ``parallel_unary=1`` (compatible independent unary row cap),
+      and the presentation controls of ``render_model``
 
     Key placement follows declared generic roles and first use; it does not infer a key schedule or
     algorithmic state matrix. Key-word order can vary between round counts. Mixed widths, nonuniform
@@ -185,7 +186,7 @@ def to_tikz(ir, **options):
     maximum_text = options.pop('max_text_bytes', 64000000)
     if type(maximum_text) is not int or maximum_text < 1:
         raise ValueError('max_text_bytes must be a positive integer')
-    keys = ('key_side', 'word_bits', 'max_calls', 'max_cells', 'max_grid_area')
+    keys = ('key_side', 'word_bits', 'max_calls', 'max_cells', 'max_grid_area', 'parallel_unary')
     layout = {key: options.pop(key) for key in keys if key in options}
     body, bindings = word_bindings.export_bindings(ir, **layout)
     if word_bindings.decode_bindings(body, bindings) != ir:
