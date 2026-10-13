@@ -37,14 +37,17 @@ def test_existing_visible_records_pack_widths_without_hidden_sources():
 
 
 def test_no_caps_are_raised_and_incompatible_packing_rejects():
+    candidate_ir = tiny()
     with pytest.raises(ValueError, match='max_calls'):
-        to_ascii(tiny(), annotations=True, max_calls=4)
+        to_ascii(candidate_ir, annotations=True, max_calls=4)
     assert from_ascii(to_ascii(tiny(), annotations=True, native_bundles=True, max_calls=4)) == tiny()
+    candidate_ir = tiny()
     with pytest.raises(ValueError, match='max_calls'):
-        to_ascii(tiny(), annotations=True, native_bundles=True, max_calls=3)
+        to_ascii(candidate_ir, annotations=True, native_bundles=True, max_calls=3)
     for options in [{'word_bits':1},{'projection':'wordwise'},{'lane_policy':'state'},{'native_bundles':1}]:
+        candidate_ir = tiny()
         with pytest.raises(ValueError, match='Native bundles'):
-            to_ascii(tiny(), annotations=True, **{'native_bundles':True, **options})
+            to_ascii(candidate_ir, annotations=True, **{'native_bundles':True, **options})
 
 
 def test_wider_input_masks_and_whole_observation_are_checked_from_text():
@@ -54,8 +57,9 @@ def test_wider_input_masks_and_whole_observation_are_checked_from_text():
     for kind, field, value in [('input','bits',31),('selection','positions',[0,13,32]),('native_boundary','bits',31)]:
         metadata = copy.deepcopy(original)
         next(record['definition'] for record in metadata['records'] if record['definition']['kind']==kind)[field] = value
+        malformed_text = body+MARKER+json.dumps(metadata)
         with pytest.raises(ValueError):
-            from_ascii(body+MARKER+json.dumps(metadata))
+            from_ascii(malformed_text)
 
 
 def test_consistent_identifier_renaming_is_geometry_invariant():
@@ -79,7 +83,8 @@ def test_unaligned_unused_declaration_is_preserved_without_word_index_caption():
     c.add_cipher_output_component([x.id], [list(range(3))], 3)
     ir = from_cipher(c,roles={'a':'data','unused':'key'})
     text = to_ascii(ir,annotations=True,native_bundles=True)
-    assert 'SUNUSED' in text and from_ascii(text) == ir
+    assert 'SUNUSED' in text
+    assert from_ascii(text) == ir
     restored = to_cipher(from_ascii(text))
     assert restored.evaluate([0,0]) == restored.evaluate([0,127]) == 0
     assert restored.evaluate([0x80000001,0]) == restored.evaluate([0x80000001,127]) == 2
@@ -98,7 +103,9 @@ def test_human_tikz_uses_the_same_bundle_geometry_and_rejects_audit_mismatch(mon
     expected = synthesis_report(tiny(),native_bundles=True)
     assert observed[-1]['metrics'] == expected['metrics']
     assert observed[-1]['packing_policy'] == 'native-bundles'
+    candidate_ir = tiny()
     with pytest.raises(ValueError,match='human TikZ'):
-        to_tikz(tiny(),layoutSource='audit',native_bundles=True)
+        to_tikz(candidate_ir, layoutSource='audit', native_bundles=True)
+    candidate_ir = tiny()
     with pytest.raises(ValueError,match='no fixed word_bits'):
-        to_tikz(tiny(),layoutSource='human',native_bundles=True,word_bits=1)
+        to_tikz(candidate_ir, layoutSource='human', native_bundles=True, word_bits=1)

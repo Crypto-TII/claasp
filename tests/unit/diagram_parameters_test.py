@@ -21,7 +21,8 @@ def test_opt_in_visible_literal_exact_cycles_and_independent_values():
     with pytest.raises(ValueError, match='label capacity'):
         to_ascii(ir, annotations=True, word_bits=64)
     text = to_ascii(ir, annotations=True, word_bits=64, parameter_refs=True)
-    assert 'CONST' in text and 'P0 CONST bits=64 literal=0x8000000000000001' in text
+    assert 'CONST' in text
+    assert 'P0 CONST bits=64 literal=0x8000000000000001' in text
     for _ in range(3):
         actual = from_ascii(text)
         assert actual == ir
@@ -49,8 +50,9 @@ def test_visible_and_local_parameters_cannot_disagree():
     metadata = json.loads(footer)
     definition = next(item['definition'] for item in metadata['records'] if 'parameter_ref' in item['definition'])
     definition['description'][0] = '0x8000000000000000'
+    malformed_text = body + MARKER + json.dumps(metadata)
     with pytest.raises(ValueError):
-        from_ascii(body + MARKER + json.dumps(metadata))
+        from_ascii(malformed_text)
 
 
 def test_explicit_modulus_keeps_native_description_and_arithmetic():
@@ -65,8 +67,9 @@ def test_explicit_modulus_keeps_native_description_and_arithmetic():
     restored = to_cipher(from_ascii(text))
     for values in [[0, 0], [(1 << 32)-1, 1], [(1 << 32)-1]*2]:
         assert restored.evaluate(values) == sum(values) & ((1 << 32)-1)
+    malformed_text = text.replace('modulus=4294967296', 'modulus=65536')
     with pytest.raises(ValueError):
-        from_ascii(text.replace('modulus=4294967296', 'modulus=65536'))
+        from_ascii(malformed_text)
 
 
 def test_parameter_deduplication_is_exact_typed_and_source_free():
@@ -79,7 +82,8 @@ def test_parameter_deduplication_is_exact_typed_and_source_free():
     assert parameters.assignments(ir)[0] != parameters.assignments(ir)[1]
     definitions = [dict(ir['nodes'][index], parameter_ref=tag) for index, tag in parameters.assignments(ir).items()]
     legend = parameters.serialize(definitions)
-    assert 'other_constant' not in legend and 'operands' not in legend
+    assert 'other_constant' not in legend
+    assert 'operands' not in legend
 
 
 def test_128_bit_last_bit_and_renaming_invariance():
@@ -101,10 +105,12 @@ def test_128_bit_last_bit_and_renaming_invariance():
 
 
 def test_parameter_option_is_explicit_and_audit_rejects_it():
+    candidate_ir = constant_ir()
     with pytest.raises(ValueError):
-        to_ascii(constant_ir(), annotations=True, parameter_refs=1)
+        to_ascii(candidate_ir, annotations=True, parameter_refs=1)
+    candidate_ir = constant_ir()
     with pytest.raises(ValueError, match='audit'):
-        to_ascii(constant_ir(), format='audit', parameter_refs=True)
+        to_ascii(candidate_ir, format='audit', parameter_refs=True)
 
 
 def test_literal_base_and_leading_zero_spelling_are_preserved():

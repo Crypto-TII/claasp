@@ -21,8 +21,9 @@ def test_mixed_observation_fragment_flow_is_local_and_terminal_alias_rejects():
     assert {record['flow'] for record in fragments} == {'alias', 'observe'}
     terminal = next(record for record in fragments if record['flow'] == 'observe')
     terminal['flow'] = 'alias'
+    malformed_text = body+MARKER+json.dumps(metadata)
     with pytest.raises(ValueError, match='through-tap'):
-        decode(body+MARKER+json.dumps(metadata))
+        decode(malformed_text)
     restored = to_cipher(decode(text))
     for a in range(256):
         for b in [0, 255, 90]:
@@ -67,7 +68,9 @@ def test_manual_body_and_annotated_repeated_round_trips():
     ir = toy()
     before = copy.deepcopy(ir)
     body = encode(ir)
-    assert MARKER not in body and '^' in body and 'S  I2' in body
+    assert MARKER not in body
+    assert '^' in body
+    assert 'S  I2' in body
     for _ in range(3):
         text = encode(ir, annotations=True)
         assert framing(text)[0] == body
@@ -81,8 +84,9 @@ def test_actual_glyph_and_wire_mutations_are_not_hidden_by_annotations():
     body, footer = framing(text)
     for changed in (body.replace('^', '&', 1), body.replace('o', '+', 1), body.replace('<-----', '<     ', 1), body.replace('S  I2', '|  I2', 1)):
         assert changed != body
+        malformed_text = altered(changed, footer)
         with pytest.raises(ValueError):
-            decode(altered(changed, footer))
+            decode(malformed_text)
 
 
 def test_selection_masks_and_unused_declarations_have_independent_oracle():
@@ -101,8 +105,9 @@ def test_selection_masks_and_unused_declarations_have_independent_oracle():
     body, footer = framing(text)
     unused = next(r['definition'] for r in footer['records'] if r['definition'].get('unused_positions'))
     unused['unused_positions'].pop()
+    malformed_text = altered(body, footer)
     with pytest.raises(ValueError, match='every bit'):
-        decode(altered(body, footer))
+        decode(malformed_text)
 
 
 def test_local_mask_change_changes_parsed_computation():
@@ -141,16 +146,18 @@ def test_noncommutative_order_with_reversed_declared_inputs():
     body, footer = framing(text)
     definition = next(r['definition'] for r in footer['records'] if r['definition']['kind'] == 'native')
     definition['operand_ports'].reverse()
+    malformed_text = altered(body, footer)
     with pytest.raises(ValueError, match='Noncommutative'):
-        decode(altered(body, footer))
+        decode(malformed_text)
 
 
 @pytest.mark.parametrize('field', ['source', 'operands', 'nodes', 'output_values', 'original_graph'])
 def test_hidden_dependency_annotations_are_rejected(field):
     body, footer = framing(encode(toy(), annotations=True))
     footer['records'][0]['definition'][field] = []
+    malformed_text = altered(body, footer)
     with pytest.raises(ValueError, match='Hidden dependency'):
-        decode(altered(body, footer))
+        decode(malformed_text)
 
 
 def test_identifier_renaming_does_not_change_manual_body():
@@ -212,8 +219,9 @@ def test_every_generic_schedule_keeps_fresh_native_semantics(strategy):
 
 @pytest.mark.parametrize('options', [{'alignment':'bad'}, {'layout_preference':'bad'}, {'strategy':'by-cipher-name'}, {'max_calls':1}, {'max_cells':1}, {'max_grid_area':1}, {'max_text_bytes':1}, {'wire_borders':1}])
 def test_real_controls_and_work_bounds_reject_invalid_requests(options):
+    candidate_ir = toy()
     with pytest.raises(ValueError):
-        encode(toy(), **options)
+        encode(candidate_ir, **options)
 
 
 def test_wire_border_option_uses_supported_manual_vocabulary():
@@ -228,8 +236,9 @@ def test_readable_cue_mutation_is_checked_against_local_definitions():
     text = encode(toy(), annotations=True)
     body, footer = framing(text)
     assert 'KEY2' in body
+    malformed_text = altered(body.replace('KEY2', 'KEY1', 1), footer)
     with pytest.raises(ValueError, match='legend/stage'):
-        decode(altered(body.replace('KEY2', 'KEY1', 1), footer))
+        decode(malformed_text)
 
 
 def test_dynamic_ready_frontier_does_not_retain_consumed_chain_calls(monkeypatch):
@@ -273,8 +282,10 @@ def test_visible_constant_value_is_independent_of_native_radix(literal, width, e
         # Decode the visible hexadecimal token independently, rather than
         # calling the native label formatter or using metadata as an oracle.
         tokens = re.findall(r'\|\s*x([0-9A-F]+)\s*\|', body)
-        assert len(tokens) == 1 and int(tokens[0], 16) == expected
-        assert 'xB101' not in body and 'xB10001' not in body
+        assert len(tokens) == 1
+        assert int(tokens[0], 16) == expected
+        assert 'xB101' not in body
+        assert 'xB10001' not in body
         recovered = decode(to_ascii(ir, operator_style=style, annotations=True))
         assert recovered['nodes'][0]['description'] == [literal]
         assert to_cipher(recovered).evaluate([]) == expected
@@ -286,16 +297,18 @@ def test_visible_constant_value_is_independent_of_native_radix(literal, width, e
 ])
 def test_invalid_and_overwide_literals_fail_before_rendering(literal, width):
     from claasp.diagrams import to_ascii
+    candidate_ir = literal_ir(literal, width)
     with pytest.raises(ValueError, match='unsupported native constant'):
-        to_ascii(literal_ir(literal, width))
+        to_ascii(candidate_ir)
 
 
 def test_visible_binary_literal_mutation_cannot_hide_behind_metadata():
     text = encode(literal_ir('0b101',8), annotations=True)
     body, footer = framing(text)
     assert 'x5' in body
+    malformed_text = altered(body.replace('x5', 'x6', 1), footer)
     with pytest.raises(ValueError, match='definition disagrees with visible glyph'):
-        decode(altered(body.replace('x5', 'x6', 1), footer))
+        decode(malformed_text)
 
 
 @pytest.mark.parametrize('strategy', ['semantic-legacy', 'semantic-ports', 'semantic-round',
@@ -324,8 +337,9 @@ def test_final_output_metadata_cannot_reorder_unchanged_visible_body():
     left, right = sorted(finals, key=lambda record: record['col'])
     left['definition']['positions'], right['definition']['positions'] = (
         right['definition']['positions'], left['definition']['positions'])
+    malformed_text = altered(body, footer)
     with pytest.raises(ValueError, match='visible left-to-right order'):
-        decode(altered(body, footer))
+        decode(malformed_text)
 
 
 @pytest.mark.parametrize('width', [24, 28, 32, 52])
@@ -349,14 +363,16 @@ def test_two_line_constant_visible_value_is_complete(width):
         if width > 24:
             changed = body.replace('xFFFFFF', 'xEFFFFF', 1)
             assert changed != body
+            malformed_text = altered(changed, footer)
             with pytest.raises(ValueError, match='visible glyph'):
-                decode(altered(changed, footer))
+                decode(malformed_text)
 
 
 @pytest.mark.parametrize('width', [56, 64])
 def test_constant_beyond_two_line_capacity_rejects_without_truncation(width):
+    candidate_ir = literal_ir(hex((1 << width)-1), width)
     with pytest.raises(ValueError, match='visible manual label capacity'):
-        encode(literal_ir(hex((1 << width)-1), width))
+        encode(candidate_ir)
 
 
 
@@ -368,19 +384,22 @@ def test_dead_sink_is_visible_and_cannot_become_final_by_footer_reassignment():
     ir=from_cipher(c)
     text=encode(ir, annotations=True)
     body,footer=framing(text)
-    assert 'DEAD' in body and 'OUT' in body
+    assert 'DEAD' in body
+    assert 'OUT' in body
     assert decode(text)==ir
     assert to_cipher(decode(text)).evaluate([3,5])==5
     dead=next(r for r in footer['records'] if r['definition']['kind']=='discard')
     final=next(r for r in footer['records'] if r['definition'].get('type')=='cipher_output')
     wrong_width=copy.deepcopy(footer)
     next(r['definition'] for r in wrong_width['records'] if r['definition']['kind']=='discard')['bits']=8
+    malformed_text = altered(body,wrong_width)
     with pytest.raises(ValueError,match='Discard width'):
-        decode(altered(body,wrong_width))
+        decode(malformed_text)
     footer['records'].remove(dead)
     final['row'],final['col']=dead['row'],dead['col']
+    malformed_text = altered(body,footer)
     with pytest.raises(ValueError, match='Sink identity|Final anchor'):
-        decode(altered(body,footer))
+        decode(malformed_text)
 
 
 def test_input_fragment_order_is_visible_but_identifiers_can_be_renamed():
@@ -392,8 +411,9 @@ def test_input_fragment_order_is_visible_but_identifiers_can_be_renamed():
     inputs=sorted((r['definition'] for r in footer['records'] if r['definition']['kind']=='input'),key=lambda d:d['index'])
     assert len(inputs)==2
     inputs[0]['positions'],inputs[1]['positions']=inputs[1]['positions'],inputs[0]['positions']
+    malformed_text = altered(body,footer)
     with pytest.raises(ValueError,match='visible word index order'):
-        decode(altered(body,footer))
+        decode(malformed_text)
     _,renamed=framing(text)
     for record in renamed['records']:
         if record['definition']['kind']=='input':record['definition']['id']='renamed'
@@ -476,7 +496,9 @@ def test_mixed_width_sbox_linear_and_field_matrix_have_direct_oracle():
     c.add_cipher_output_component([sub.id,linear.id],[list(range(4)),list(range(8))],12)
     ir=from_cipher(c);text=encode(ir,annotations=True);assert decode(text)==ir
     body,footer=framing(text)
-    assert 'JOIN' in body and 'SEL' in body and 'MC' in body
+    assert 'JOIN' in body
+    assert 'SEL' in body
+    assert 'MC' in body
     compiled=to_cipher(decode(text))
     def multiply(a,b):
         value=0
@@ -496,8 +518,9 @@ def test_mixed_width_sbox_linear_and_field_matrix_have_direct_oracle():
             assert compiled.evaluate([a,b])==expected
     changed=body.replace('|   S   |','|   L   |',1)
     assert changed!=body
+    malformed_text = altered(changed,footer)
     with pytest.raises(ValueError,match='visible glyph'):
-        decode(altered(changed,footer))
+        decode(malformed_text)
 
 
 
@@ -519,7 +542,8 @@ def test_generic_layers_align_parallel_substitutions_and_preserve_word_lanes():
     _,footer=framing(text)
     for round_index in range(2):
         substitutions=[r for r in footer['records'] if r['definition'].get('type')=='sbox' and r['definition']['round']==round_index]
-        assert len(substitutions)==4 and len({r['row'] for r in substitutions})==1
+        assert len(substitutions) == 4
+        assert len({r['row'] for r in substitutions}) == 1
         assert sorted(r['col'] for r in substitutions)==[0,1,2,3]
     renamed=copy.deepcopy(ir)
     mapping={item['id']:'input'+str(index) for index,item in enumerate(renamed['inputs'])}
@@ -601,7 +625,8 @@ def test_wordwise_projection_traces_fragment_gates_without_hidden_inputs():
     ir=from_cipher(c,roles={'k':'key','d':'data'})
     text=encode(ir,annotations=True,projection='wordwise',lane_policy='state');assert decode(text)==ir
     body,footer=framing(text)
-    assert 'JOIN' not in body and 'SEL' not in body
+    assert 'JOIN' not in body
+    assert 'SEL' not in body
     fragments=[r for r in footer['records'] if r['definition']['kind']=='native_fragment']
     assert len(fragments)==2
     assert all(not any(key in r['definition'] for key in ('source','operands','nodes')) for r in fragments)
@@ -610,8 +635,9 @@ def test_wordwise_projection_traces_fragment_gates_without_hidden_inputs():
         for data in (0,0x35,255):assert compiled.evaluate([key,data])==(key^data^0x99)
     fragments[0]['definition']['positions'],fragments[1]['definition']['positions']=fragments[1]['definition']['positions'],fragments[0]['definition']['positions']
     # Unchanged scalar glyphs cannot introduce an invisible word permutation.
+    malformed_text = altered(body,footer)
     with pytest.raises(ValueError,match='fragment|word|visible glyph'):
-        decode(altered(body,footer))
+        decode(malformed_text)
 
 
 @pytest.mark.parametrize('operation,arity', [('XOR',2),('AND',2),('OR',2),('NOT',1),('XOR',3),('AND',3),('OR',3)])
@@ -676,7 +702,9 @@ def test_word_fragment_mutations_are_rejected(mutation):
         local=lines[row][column:column+11]
         local=local.replace('^','&') if mutation=='glyph' else local.replace('W0','W1')
         lines[row]=lines[row][:column]+local+lines[row][column+11:];body='\n'.join(lines)+'\n'
-    with pytest.raises(ValueError):decode(altered(body,footer))
+    malformed_text = altered(body,footer)
+    with pytest.raises(ValueError):
+        decode(malformed_text)
 
 
 def test_public_opt_in_projection_controls_and_readable_vector_labels():
@@ -688,18 +716,25 @@ def test_public_opt_in_projection_controls_and_readable_vector_labels():
     ir=from_cipher(c,roles={'k':'key','d':'data'})
     text=to_ascii(ir,annotations=True,projection='wordwise',lane_policy='state');assert decode(text)==ir
     report=synthesis_report(ir,projection='wordwise',lane_policy='state')
-    assert report['projection']=='wordwise' and report['lane_policy']=='state'
+    assert report['projection'] == 'wordwise'
+    assert report['lane_policy'] == 'state'
     assert report['banks']=={'key':[0,2],'data':[2,4]}
-    assert report['bank_reason']=='explicit-data-role' and report['output_bank']==2
+    assert report['bank_reason'] == 'explicit-data-role'
+    assert report['output_bank'] == 2
     vector=to_tikz(ir,layoutSource='human',projection='wordwise',lane_policy='state',view='wires')
-    assert 'XOR/4' in vector and 'word 0:1:3' in vector and 'word 4:1:7' in vector
+    assert 'XOR/4' in vector
+    assert 'word 0:1:3' in vector
+    assert 'word 4:1:7' in vector
     assert '@21' not in vector
-    assert 'DATA I1 bits 0:1:7' in vector and 'KEY I0 bits 0:1:7' in vector
+    assert 'DATA I1 bits 0:1:7' in vector
+    assert 'KEY I0 bits 0:1:7' in vector
     from claasp.cipher_modules.diagram.glyphs import _numbered_ports
     cell={'ports':{'top':'in','left':'in','bottom':'out'},'reverse':True,'definition':{'operand_ports':['left','top']}}
     port_labels=_numbered_ports(1,2,cell)
-    assert '(N1x2.west)' in port_labels[0] and '{1}' in port_labels[0]
-    assert '(N1x2.north)' in port_labels[1] and '{2}' in port_labels[1]
+    assert '(N1x2.west)' in port_labels[0]
+    assert '{1}' in port_labels[0]
+    assert '(N1x2.north)' in port_labels[1]
+    assert '{2}' in port_labels[1]
     for kwargs in ({'projection':'cipher-template'},{'lane_policy':'name-based'},{'format':'audit','projection':'wordwise'},{'format':'audit','lane_policy':'state'}):
         with pytest.raises(ValueError):to_ascii(ir,**kwargs)
 
@@ -711,7 +746,8 @@ def test_noncontiguous_role_bank_reports_generic_fallback():
     ir=from_cipher(c,roles={'x':'data','k':'key','y':'data'})
     report=synthesis_report(ir,lane_policy='state')
     assert 'data' not in report['banks']
-    assert report['bank_reason']=='ambiguous-compact-fallback' and report['output_bank']==0
+    assert report['bank_reason'] == 'ambiguous-compact-fallback'
+    assert report['output_bank'] == 0
     compiled=to_cipher(decode(encode(ir,lane_policy='state',annotations=True)))
     for a in range(16):
         for b in range(16):assert compiled.evaluate([a,9,b])==(a<<4)|b
@@ -727,13 +763,17 @@ def test_fragment_word_group_reference_is_unambiguous_and_operand_binding_is_vis
     ir=from_cipher(c,roles={'k':'key','d':'data'})
     text=encode(ir,annotations=True,projection='wordwise',lane_policy='state')
     body,footer=framing(text)
-    assert 'G1W.W0' in body and 'G1W.W1' in body and '^@21' in body
+    assert 'G1W.W0' in body
+    assert 'G1W.W1' in body
+    assert '^@21' in body
     assert decode(text)==ir
     compiled=to_cipher(decode(text))
     for key in (0,0x35,255):
         for data in (0,0xa5,255):assert compiled.evaluate([key,data])==(key^data^0x99)
     ambiguous=body.replace('G1W.W0',' G1WW0').replace('G1W.W1',' G1WW1')
-    with pytest.raises(ValueError):decode(altered(ambiguous,footer))
+    malformed_text = altered(ambiguous,footer)
+    with pytest.raises(ValueError):
+        decode(malformed_text)
 
 
 @pytest.mark.parametrize('word_size',[1,4])
@@ -764,7 +804,9 @@ def test_generic_native_permutation_projects_ordered_wires_and_matches_independe
     body,footer=framing(text)
     d=next(r['definition'] for r in footer['records'] if r['definition'].get('type')=='permutation')
     d['description'][0][0]=d['description'][0][1]
-    with pytest.raises(ValueError):decode(altered(body,footer))
+    malformed_text = altered(body,footer)
+    with pytest.raises(ValueError):
+        decode(malformed_text)
 
 
 @pytest.mark.parametrize('alignment',['left','right'])
@@ -823,4 +865,6 @@ def test_one_bit_edge_fragments_gather_into_word_sbox_without_lost_bits():
     body,footer=framing(text)
     helper=next(r['definition'] for r in footer['records'] if r['definition']['kind']=='selection')
     helper['positions']=[100]
-    with pytest.raises(ValueError):decode(altered(body,footer))
+    malformed_text = altered(body,footer)
+    with pytest.raises(ValueError):
+        decode(malformed_text)
