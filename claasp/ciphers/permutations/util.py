@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
 from claasp.name_mappings import INPUT_PLAINTEXT
 from claasp.utils.utils import get_2d_array_element_from_1d_array_index, set_2d_array_element_from_1d_array_index
@@ -73,25 +74,17 @@ def half_like_round_function_latin_dances(permutation, round_number, columns, di
             bottom_half_quarter_round(diagonals[0], diagonals[1], diagonals[2], diagonals[3])
 
 
-_QUARTER_STAGE_METHODS = (
-    "first_quarter_round",
-    "second_quarter_round",
-    "third_quarter_round",
-    "fourth_quarter_round",
-)
-
-
 def quarter_like_round_function_latin_dances(permutation, quarter_number, columns, diagonals):
     """
     Single-modular-addition granularity: each call performs exactly one of the four ARX
     stages that together make up a full column/diagonal round (``half_half`` round mode).
     """
     state = permutation.state_of_components
-    stage_method = getattr(permutation, _QUARTER_STAGE_METHODS[quarter_number % 4])
+    stage = quarter_number % 4
     groups = columns if (quarter_number // 4) % 2 == 0 else diagonals
 
     for group in groups:
-        stage_method(*group, state)
+        permutation.quarter_stage(stage, *group, state)
 
 
 def sub_quarter_round_latin_dances(permutation, state, p1_index, p2_index, p3_index, rot_amount, cipher_name):
@@ -159,9 +152,24 @@ _QUARTER_START_STAGES = {
 }
 
 
+def _first_round_index(start_round, round_granularity):
+    offset = round_granularity if start_round[0] == "even" else 0
+    if round_granularity == 4:
+        stage_label = start_round[1] if len(start_round) > 1 else "top"
+        if stage_label not in _QUARTER_START_STAGES:
+            raise ValueError(
+                "start_round[1] must be one of "
+                "'top' ('top_first'), 'top_second', 'bottom' ('bottom_first') or 'bottom_second' "
+                "when round_granularity is 4"
+            )
+        return offset + _QUARTER_START_STAGES[stage_label]
+    if start_round[1] == "bottom":
+        return offset + 1
+    return offset
+
+
 def init_latin_dances_cipher(
     permutation,
-    super_class,
     input_plaintext,
     state_of_components,
     number_of_rounds,
@@ -195,7 +203,8 @@ def init_latin_dances_cipher(
     else:
         permutation.state_of_components = state_of_components
 
-    super_class.__init__(
+    Cipher.__init__(
+        permutation,
         family_name=cipher_family,
         cipher_type=cipher_type,
         cipher_inputs=inputs if inputs else [input_plaintext],
@@ -203,26 +212,12 @@ def init_latin_dances_cipher(
         cipher_output_bit_size=permutation.block_bit_size,
     )
 
+    first_round_index = _first_round_index(start_round, round_granularity)
+    if round_granularity == 4:
+        round_function = quarter_like_round_function_latin_dances
+    else:
+        round_function = half_like_round_function_latin_dances
     for i in range(number_of_rounds):
-        if round_granularity == 4:
-            j = i + 4 if start_round[0] == "even" else i
-            stage_label = start_round[1] if len(start_round) > 1 else "top"
-            if stage_label not in _QUARTER_START_STAGES:
-                raise ValueError(
-                    "start_round[1] must be one of "
-                    "'top' ('top_first'), 'top_second', 'bottom' ('bottom_first') or 'bottom_second' "
-                    "when round_granularity is 4"
-                )
-            j += _QUARTER_START_STAGES[stage_label]
-            permutation.add_round()
-            quarter_like_round_function_latin_dances(permutation, j, columns, diagonals)
-        else:
-            if start_round[0] == "even":
-                j = i + 2
-            else:
-                j = i
-            if start_round[1] == "bottom":
-                j += 1
-            permutation.add_round()
-            half_like_round_function_latin_dances(permutation, j, columns, diagonals)
+        permutation.add_round()
+        round_function(permutation, first_round_index + i, columns, diagonals)
         add_intermediate_output_component_latin_dances_permutations(permutation, i, number_of_rounds)

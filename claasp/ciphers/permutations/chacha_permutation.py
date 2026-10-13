@@ -93,7 +93,6 @@ class ChachaPermutation(Cipher):
         round_granularity = 4 if round_mode == ROUND_MODE_HALF_HALF else 2
         init_latin_dances_cipher(
             self,
-            super(),
             INPUT_PLAINTEXT,
             state_of_components,
             resolved_rounds,
@@ -123,22 +122,15 @@ class ChachaPermutation(Cipher):
 
         return requested_rounds
 
-    def first_quarter_round(self, a, b, c, d, state):
-        sub_quarter_round_latin_dances(self, state, a, b, d, -self.rotation_3, "chacha")
-
-    def second_quarter_round(self, a, b, c, d, state):
-        sub_quarter_round_latin_dances(self, state, c, d, b, -self.rotation_4, "chacha")
-
-    def third_quarter_round(self, a, b, c, d, state):
-        sub_quarter_round_latin_dances(self, state, a, b, d, -self.rotation_1, "chacha")
-
-    def fourth_quarter_round(self, a, b, c, d, state):
-        sub_quarter_round_latin_dances(self, state, c, d, b, -self.rotation_2, "chacha")
+    def quarter_stage(self, stage, a, b, c, d, state):
+        p1, p2, p3 = (a, b, d) if stage % 2 == 0 else (c, d, b)
+        rotation = (self.rotation_3, self.rotation_4, self.rotation_1, self.rotation_2)[stage]
+        sub_quarter_round_latin_dances(self, state, p1, p2, p3, -rotation, "chacha")
 
     def top_half_quarter_round(self, a, b, c, d, state):
-        self.first_quarter_round(a, b, c, d, state)
-        self.second_quarter_round(a, b, c, d, state)
+        self.quarter_stage(0, a, b, c, d, state)
+        self.quarter_stage(1, a, b, c, d, state)
 
     def bottom_half_quarter_round(self, a, b, c, d, state):
-        self.third_quarter_round(a, b, c, d, state)
-        self.fourth_quarter_round(a, b, c, d, state)
+        self.quarter_stage(2, a, b, c, d, state)
+        self.quarter_stage(3, a, b, c, d, state)
