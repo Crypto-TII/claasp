@@ -27,10 +27,25 @@ def render_model(model, *, operator_style='symbols', wire_borders=False,
     INPUT:
 
     - ``model`` -- **dictionary**; validated ``word_visual.build`` model
-    - ``operator_style`` -- **string**; ``'symbols'`` or ``'labels'``
-    - ``wire_borders`` -- **boolean**; optional outlines around wiring cells
-    - spacing/box dimensions are positive **numbers** in centimetres
-    - panel controls crop the same global grid, with explicit continuation labels
+    - ``operator_style`` -- **string** (default: ``'symbols'``); ``'symbols'`` or ``'labels'``
+    - ``wire_borders`` -- **boolean** (default: ``False``); optional routing-cell outlines;
+      operation and input/output bars retain their frames
+    - ``columnSpacing``, ``rowSpacing`` -- positive **numbers** (defaults: ``1.4``, ``1.0``); cm per grid step
+    - ``boxWidth``, ``boxHeight`` -- positive **numbers** (defaults: ``0.98``, ``0.65``); minimum operation-box
+      dimensions in cm, smaller than the corresponding grid spacing
+    - ``anchorPrefix`` -- **string** (default: ``'word'``); letter followed by letters, digits or hyphens;
+      use distinct prefixes when combining figures in one document
+    - ``rowsPerPanel``, ``columnsPerPanel`` -- positive **integers** (defaults: ``24``, ``16``);
+      balance rows within the maximum, partition columns, and label cut routes without omitting cells
+    - ``maxPanels`` -- positive **integer** (default: ``256``); reject rather than truncate excessive output
+    - ``pageBreaks`` -- **boolean** (default: ``False``); separate panels with a page break or paragraph gap
+    - ``fitToPage`` -- **pair of positive numbers** or ``None`` (default); usable width/height in cm;
+      override panel sizes with one complete nominal grid and uniformly shrink it, never enlarge it
+
+    Grid spacing, panels and scaling affect presentation, not layout depth or lane count. Scaling uses
+    nominal grid dimensions; unusually long labels can enlarge TeX boxes. The caller chooses page size
+    and margins and must check the rendered result. No minimum font size or automatic text-fit guarantee
+    is provided. Page-size, row/column-range and audit-table options are not accepted by this renderer.
 
     OUTPUT:
 
@@ -144,7 +159,16 @@ def to_tikz(ir, **options):
     INPUT:
 
     - ``ir`` -- **dictionary**; admitted persistent word graph
-    - ``options`` -- ``key_side``, ``word_bits``, work bounds and ``render_model`` controls
+    - ``options`` -- ``key_side`` (default: ``'right'``; ``'right'`` or ``'left'``), ``word_bits``
+      (default: ``None``; infer the admitted uniform native word width), work bounds
+      ``max_calls=20000``, ``max_cells=1000000``, ``max_grid_area=2000000``,
+      ``max_text_bytes=64000000``, and the presentation controls of ``render_model``
+
+    Key placement follows declared generic roles and first use; it does not infer a key schedule or
+    algorithmic state matrix. Key-word order can vary between round counts. Mixed widths, nonuniform
+    bit selections and output permutations requiring a new route remain unsupported. Work bounds limit
+    computation and allocation; they do not request a desired diagram width/depth. Unknown options raise
+    ``TypeError``; unsupported shapes and invalid dimensions/bounds raise ``ValueError``.
 
     OUTPUT:
 

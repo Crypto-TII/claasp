@@ -906,6 +906,23 @@ def to_tikz(ir, **options):
 
     The following overview/detail/table options apply only to explicit ``layoutSource='audit'``. Every export reparses its generated ASCII before presentation. Member/input-fragment/parameter tables retain all native operations and tags. ``audit=True`` adds complete local JSON; ``legend='none'`` omits member tables. ``anchorPrefix`` must be unique alphanumeric/hyphen text when combining diagrams.
 
+    Persistent options: ``key_side='right'`` or ``'left'``, ``word_bits=None`` for admitted uniform-word
+    inference, ``operator_style='symbols'`` or ``'labels'``, and ``wire_borders=False`` (routing-cell frames
+    disabled; operation/input/output frames remain). Grid spacing defaults to ``columnSpacing=1.4`` and
+    ``rowSpacing=1.0`` cm; minimum box dimensions are ``boxWidth=0.98`` and ``boxHeight=0.65`` cm.
+    ``rowsPerPanel=24`` and ``columnsPerPanel=16`` bound panels; ``maxPanels=256`` rejects excessive output.
+    ``pageBreaks=False`` separates panels with paragraph gaps. ``anchorPrefix='word'`` must be distinct
+    across combined figures. ``fitToPage=None`` retains ordinary panels; a positive pair overrides them
+    with a uniformly shrunk complete nominal grid. The caller supplies page size/margins and checks TeX
+    text extents; long labels can enlarge boxes. No minimum font size is enforced.
+
+    Persistent layout has no requested width/depth, alternative scheduling strategy, automatic state
+    matrix shape, or row/column crop controls. Lane count/depth follow generic dependencies and liveness.
+    Bounds ``max_calls=20000``, ``max_cells=1000000``, ``max_grid_area=2000000`` and
+    ``max_text_bytes=64000000`` limit work/output, not layout quality. Key-bank order follows first use
+    and can differ between round counts. Nonuniform selections, mixed widths and output permutations
+    requiring another route fail explicitly. See ``word_tikz.render_model`` for presentation validation.
+
     Wire options: ``rowsPerPanel=16``, ``columnsPerPanel=6``, ``maxPanels=256``, positive ``columnSpacing=3``/``rowSpacing=1``, and half-open ``rowRange``/``columnRange`` crops. Table options: ``tableLineBudget=42`` fixed 11-point baselines and ``maxPages=2048``; ``overviewStagesPerPanel=6`` limits summaries. ``pageBreaks=False`` lets the caller manage page separation. Crops affect wires, not the complete semantic tables.
 
     INPUT:
@@ -1017,17 +1034,27 @@ def state_snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='so
 
     - ``ir`` -- **dictionary**; supported graph
     - ``mode`` -- **string** (default: ``'declared'``); ``declared``, ``round``, ``layer`` or ``word`` (persistent lanes)
-    - ``word_bits`` -- **integer** (default: ``1``), or ``None`` to infer common native/selection granularity while retaining shape ambiguity; explicit group width dividing every selected state
-    - ``columns`` -- **integer** (default: ``None``); explicit display columns, not inferred algorithmic geometry
+    - ``word_bits`` -- positive **integer** (default: ``1``), or ``None`` to infer native/selection granularity;
+      use ``None`` explicitly for automatic word mode. Other modes require a group width dividing each state.
+    - ``columns`` -- positive **integer** (default: ``None``); explicit row-major display columns;
+      with ``None`` use a flat bank and report shape ambiguity, never an inferred algorithmic matrix
     - ``order`` -- **string** (default: ``'source'``); ``source`` or ``reverse`` source-bit order; word mode reverses whole words
     - ``values`` -- **dictionary** (default: ``None``); evaluated values from ``evaluate_state_values``; absent values stay unknown
-    - ``granularity`` -- **string** (word mode); ``round`` shows initial/round boundaries with omission label; ``operation`` includes every word operation
-    - ``key_side`` -- **string** (word mode); persistent bank ordering, ``right`` or ``left``
+    - ``granularity`` -- **string** (default: ``'round'``; word mode only); ``'round'`` shows initial/all
+      native round boundaries with an intra-round omission label; ``'operation'`` includes every word operation
+    - ``key_side`` -- **string** (default: ``'right'``; word mode only); persistent bank ordering, ``'right'``
+      or ``'left'``. Key-word order follows first use and can differ between round counts.
     - ``comparison`` -- **dictionary** (default: ``None``); second evaluated values; words show XOR differences when both dictionaries are supplied
 
     OUTPUT:
 
     A **list of dictionaries** with word positions, values/differences/activity and explicit or ambiguous geometry.
+    Word mode uses the admitted persistent lane bank and records data/key roles. It retains carried lanes
+    at rounds without word operations and unchanged banks when a temporary result uses an auxiliary lane.
+    Constants are parameters, not state updates. This is a producer/lane progression, not a complete live
+    dependency frontier or a cipher-specific matrix. ``granularity`` and ``key_side`` have no effect in
+    non-word modes. Without ``values`` words are unknown; without ``comparison`` activity means nonzero
+    value, not a change from the previous snapshot. Mixed-width and selected-bit persistent shapes reject.
 
     RAISES:
 

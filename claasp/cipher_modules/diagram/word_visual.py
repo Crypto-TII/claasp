@@ -74,14 +74,23 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
     INPUT:
 
     - ``ir`` -- **dictionary**; validated native graph
-    - ``key_side`` -- **string**; ``'right'`` or ``'left'``
-    - ``word_bits`` -- **integer** or ``None``; explicit or inferred word width
-    - remaining bounds limit native/projected calls, cells and grid area
+    - ``key_side`` -- **string** (default: ``'right'``); ``'right'`` or ``'left'`` generic key-bank placement
+    - ``word_bits`` -- positive **integer** or ``None`` (default); explicit or inferred admitted word width
+    - ``max_calls`` -- positive **integer** (default: ``20000``); native/projected operation limit
+    - ``max_cells`` -- positive **integer** (default: ``1000000``); occupied-cell limit
+    - ``max_grid_area`` -- positive **integer** (default: ``2000000``); rectangular-grid limit
+    - ``capture_states`` -- **boolean** (default: ``False``); record initial/every-operation primary lane banks;
+      constants are parameters, not state updates
+
+    These limits do not constrain the requested width/depth of a layout. Lane count and operation rows
+    follow the generic dependency/liveness schedule; no width/depth preference or cipher template is used.
 
     OUTPUT:
 
     A **dictionary** containing actual cells, native input bindings and explicit
-    cipher endpoint columns. Other primary terminals carry display state.
+    cipher endpoint columns. Other primary terminals carry display state. ``state_frames`` is empty
+    unless capture is requested; captured frames retain actual native producer-bit positions and roles,
+    including unchanged primary lanes while a temporary result resides in an auxiliary lane.
 
     EXAMPLES::
 

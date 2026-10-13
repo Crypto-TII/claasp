@@ -100,3 +100,31 @@ Reproduce the evaluated Speck, ChaCha, both subtraction orders, balanced
 continuations and full overview PDFs using ``examples/render_word_states.py``.
 The script needs Sage-enabled Python, TikZ/pdflatex and Poppler; it writes into
 an explicitly supplied output directory. No primitive name selects a layout.
+
+
+Supported presentation controls and limits
+------------------------------------------
+
+``key_side`` accepts ``'right'`` (default) or ``'left'``. It places generic key
+roles; it does not infer a primitive's key schedule. Routing-cell borders are
+off by default (``wire_borders=False``); operation and input/output bars remain
+framed. Persistent TikZ spacing defaults to 1.4 cm horizontally and 1.0 cm
+vertically, with minimum operation boxes of 0.98 by 0.65 cm. These controls
+change physical spacing, not the lane count or dependency schedule. There is
+no persistent width/depth target, layout-preference selector or cropping API;
+work caps are rejection bounds. Legacy/audit layout controls require their
+explicit layout source and do not configure the persistent renderer.
+
+``fitToPage`` scales the nominal grid, with no minimum font size. It does not
+choose the surrounding LaTeX page size or margins. Long labels may expand TeX
+boxes beyond nominal dimensions, so inspect the rendered document. Use
+paginated detail for readable large graphs. Persistent panels default to at
+most 24 balanced rows and 16 columns, with 256 panels as a rejection limit.
+
+State ``columns`` is an explicit row-major arrangement, with padding in a
+partial last row. It is not a matrix-recovery algorithm. Omit it to retain the
+flat-bank shape ambiguity. Word mode requires an admitted uniform-word graph;
+set ``word_bits=None`` explicitly for inference. Other state modes keep their
+bitwise default and do not use ``key_side`` or ``granularity``. Activity with
+only evaluated values means nonzero value; provide ``comparison`` for XOR
+activity against a second evaluation, not against the preceding snapshot.
