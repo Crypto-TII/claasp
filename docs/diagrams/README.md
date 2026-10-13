@@ -334,6 +334,8 @@ and original edge segmentation. Non-root members cannot be observed or consumed
 outside their group. The root may be reused or observed. Explicit-modulus and
 non-associative reductions reject. The option requires whole projection and a
 builder supporting the R1 parser; it remains off by default.
+Detailed TikZ members show the binary operation and width with their group and
+step; the native group metadata retains the original operation arity.
 
 The native exporter may combine this capability with parameter legends and
 native bundles. The frozen v9 builder rejects graphs containing both P1

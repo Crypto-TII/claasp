@@ -705,6 +705,14 @@ def _native_label(definition, registry):
     return operation(definition, registry, short=True)
 
 
+def _reduction_label(definition, registry):
+    # A visible member is binary; the group metadata retains native arity.
+    local = dict(definition, description=list(definition['description']))
+    local['description'][1] = 2
+    return (_native_label(local, registry)+r'\\'+'group '+str(definition['ordinal'])
+            +' step '+str(definition['step']))
+
+
 def _cell_label(cell, key, registry):
     from claasp.cipher_modules.diagram.presentation import operation
     definition = cell.get('definition', {})
@@ -725,6 +733,8 @@ def _cell_label(cell, key, registry):
         label = operation(definition['members'][0], registry, short=True)+' x'+str(len(definition['members']))
     elif kind == 'native':
         label = _native_label(definition, registry)
+    elif kind == 'native_reduce':
+        label = _reduction_label(definition, registry)
     elif kind == 'native_fragment':
         from claasp.cipher_modules.diagram.presentation import selections
         local = dict(definition, bits=len(definition['positions']))

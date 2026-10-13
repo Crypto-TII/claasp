@@ -58,6 +58,18 @@ def test_observation_and_reused_root_are_retained():
         assert restored.evaluate([a, 7, 3, a, 15]) == (x<<4)|(x^15)
 
 
+def test_detailed_tikz_members_show_operation_width_and_group_step():
+    from claasp.diagrams import to_tikz
+    ir = tree()
+    tikz = to_tikz(ir, layoutSource='human', view='wires', word_bits=4,
+                   associative_reductions=True)
+    members = [line for line in tikz.splitlines() if 'group 0 step ' in line]
+    assert len(members) == 3
+    for step in range(3):
+        line = next(line for line in members if 'group 0 step '+str(step) in line)
+        assert 'XOR/4(2)' in line
+
+
 def test_reduction_records_and_glyphs_cannot_conceal_changes():
     text = to_ascii(tree(), annotations=True, word_bits=4, associative_reductions=True)
     body, footer = text.split(MARKER)
