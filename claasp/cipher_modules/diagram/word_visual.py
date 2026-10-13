@@ -70,6 +70,31 @@ def project(ir, word_bits=None, *, max_calls=20000, max_cells=1000000, routed_wo
             'observations': observations}
 
 
+
+def _downstream_contexts(operations, outputs, signatures):
+    """Hash dependency/output context without identifiers or declaration order.
+
+    Upstream-identical operations can feed different consumers. Their argument
+    positions, consumer structures and ordered cipher words resolve a scheduling
+    tie reproducibly. Digests keep context size linear rather than expanding a
+    recursive expression string. Fully symmetric unused nodes retain the final
+    stable declaration-index tie-break; their physical glyphs are identical.
+    """
+    uses, endpoints = {}, {}
+    for consumer, call in operations.items():
+        for index, argument in enumerate(call['args']):
+            uses.setdefault(argument, []).append((consumer, index))
+    for index, value in enumerate(outputs):
+        endpoints.setdefault(value, []).append(('output', index))
+    contexts = {}
+    for value in reversed(list(operations)):
+        terms = list(endpoints.get(value, []))
+        terms.extend(('use', index, signatures[consumer], contexts[consumer])
+                     for consumer, index in uses.get(value, []))
+        terms.sort(key=lambda term: json.dumps(term, sort_keys=True))
+        contexts[value] = hashlib.sha256(json.dumps(terms).encode()).hexdigest()
+    return contexts
+
 def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=1000000,
           max_grid_area=2000000, capture_states=False, parallel_unary=1, routed_words=False):
     r"""
@@ -132,6 +157,8 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
         roles[value] = 'key' if inherited == {'key'} else 'data'
         facts = (call['definition']['round'], call['definition']['description'], [signatures[arg] for arg in call['args']])
         signatures[value] = hashlib.sha256(json.dumps(facts, sort_keys=True).encode()).hexdigest()
+    duplicate_signatures = Counter(signatures[value] for value in ops)
+    contexts = _downstream_contexts(ops, model['outputs'], signatures) if routed_words else {}
     consumers = {value: [] for value in roles}
     for value, call in ops.items():
         for arg in call['args']:
@@ -234,9 +261,12 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
         def score(value):
             call = ops[value]
             anchors = [homes[arg] for arg in call['args'] if arg in homes]
-            return (call['definition']['round'], roles[value] != 'key', -critical[value],
-                    -max((births.get(arg, -1) for arg in call['args']), default=-1),
-                    min(anchors, default=10**9), str(signatures[value]))
+            priority = (call['definition']['round'], roles[value] != 'key', -critical[value],
+                        -max((births.get(arg, -1) for arg in call['args']), default=-1),
+                        min(anchors, default=10**9), str(signatures[value]))
+            if routed_words and duplicate_signatures[signatures[value]] > 1:
+                return priority+(contexts[value], value[1])
+            return priority
         value = min(ready, key=score)
         call = ops[value]
         for arg in call['args']:
