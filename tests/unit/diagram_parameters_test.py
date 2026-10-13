@@ -133,3 +133,11 @@ def test_binary_explicit_modulus_generic_operations(operation):
     for a, b in [(0, 0), (255, 1), (7, 19), (255, 255)]:
         expected = {'modadd': a+b, 'modsub': a-b, 'modmul': a*b}[operation] % 251
         assert restored.evaluate([a, b]) == expected
+
+
+@pytest.mark.parametrize('spelling', ['bits=3٢ literal=0x1', 'bits=32 literal=0xA٨', 'bits=32 modulus=1٧'])
+def test_parameter_numeric_grammar_remains_ascii_only(spelling):
+    operation = 'MODADD' if 'modulus' in spelling else 'CONST'
+    legend = parameters.START + 'P0 ' + operation + ' ' + spelling + parameters.END
+    with pytest.raises(ValueError,match='Invalid visible parameter definition'):
+        parameters.split(legend)

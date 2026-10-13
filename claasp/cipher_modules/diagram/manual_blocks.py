@@ -670,7 +670,7 @@ def _final_row(cells):
     output = dict(cells)
     for key, _ in final:
         del output[key]
-    bottom = max((row for row, col in output), default=-1)+1
+    bottom = max((position[0] for position in output), default=-1)+1
     bottom = max(bottom, max(key[0] for key, _ in final))
     for (old, col), cell in final:
         for row in range(old, bottom):

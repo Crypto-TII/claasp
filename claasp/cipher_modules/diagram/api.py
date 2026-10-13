@@ -181,6 +181,22 @@ def _append_component(cipher, node, links):
     raise ValueError(f'Unsupported executable component type: {kind}')
 
 
+def _runtime_input_names(inputs):
+    """Keep usable input names and allocate collision-safe evaluator aliases."""
+    import keyword
+    reserved = {item['id'] for item in inputs}
+    input_names = []
+    for index, item in enumerate(inputs):
+        name = item['id']
+        if not isinstance(name, str) or not name.isascii() or not name.isidentifier() or keyword.iskeyword(name) or name in {'intermediate', 'cipher'}:
+            name = f'diagram_input_{index}'
+            while name in reserved:
+                name += '_'
+        reserved.add(name)
+        input_names.append(name)
+    return input_names
+
+
 def to_cipher(ir):
     r"""
     Reconstruct an executable CLAASP Cipher from ordered native semantics.
@@ -219,17 +235,7 @@ def to_cipher(ir):
         1
     """
     validate(ir)
-    import keyword
-    reserved = {item['id'] for item in ir['inputs']}
-    input_names = []
-    for index, item in enumerate(ir['inputs']):
-        name = item['id']
-        if not isinstance(name, str) or not name.isascii() or not name.isidentifier() or keyword.iskeyword(name) or name in {'intermediate', 'cipher'}:
-            name = f'diagram_input_{index}'
-            while name in reserved:
-                name += '_'
-        reserved.add(name)
-        input_names.append(name)
+    input_names = _runtime_input_names(ir['inputs'])
     cipher = Cipher(ir['name'], ir['cipher_type'], input_names,
                     [item['bits'] for item in ir['inputs']], ir['output_bits'])
     cipher.diagram_input_roles = {name: item['role'] for name, item in zip(input_names, ir['inputs'])}

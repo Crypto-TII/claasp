@@ -72,6 +72,38 @@ def serialize(records):
     return START + '\n'.join(lines) + END
 
 
+def _entry(line):
+    """Read one ASCII parameter entry without changing literal spelling."""
+    tokens = line.split(' ')
+    if len(tokens) != 4:
+        raise ValueError('Invalid visible parameter definition')
+    tag, operation, encoded_width, encoded_value = tokens
+    width_match = re.fullmatch(r'bits=([1-9]\d*)', encoded_width, flags=re.ASCII)
+    value_match = re.fullmatch(r'literal=(?:0[xX][\da-fA-F]+|0[bB][01]+)|modulus=[1-9]\d*', encoded_value, flags=re.ASCII)
+    if not re.fullmatch(r'P[0-9A-Z]{1,6}', tag) or operation not in ('CONST','MODADD','MODSUB','MODMUL') or not width_match or not value_match:
+        raise ValueError('Invalid visible parameter definition')
+    valid_reference(tag)
+    return tag, operation, width_match.group(1), encoded_value
+
+
+def _entry_value(operation, width, encoded_value):
+    bits = int(width)
+    if bits > 2000000:
+        raise ValueError('Visible parameter width exceeds bounds')
+    field, spelling = encoded_value.split('=')
+    if (operation == 'CONST') != (field == 'literal'):
+        raise ValueError('Parameter kind disagrees with visible operation')
+    if field == 'literal':
+        if int(spelling, 0).bit_length() > bits:
+            raise ValueError('Visible literal exceeds its width')
+        value = spelling
+    else:
+        value = int(spelling)
+        if value > 9007199254740991:
+            raise ValueError('Parameter legend v1 modulus exceeds the interoperable exact integer range')
+    return operation, bits, field, value
+
+
 def split(body):
     if START not in body:
         if '# CLAASP-HUMAN-PARAMETERS' in body or '# END CLAASP-HUMAN-PARAMETERS' in body:
@@ -82,24 +114,10 @@ def split(body):
     grid, text = body.split(START)
     definitions = {}
     for line in text[:-len(END)].split('\n'):
-        match = re.fullmatch(r'(P[0-9A-Z]{1,6}) (CONST|MODADD|MODSUB|MODMUL) bits=([1-9][0-9]*) (literal=(?:0[xX][0-9a-fA-F]+|0[bB][01]+)|modulus=[1-9][0-9]*)', line)
-        if not match:
-            raise ValueError('Invalid visible parameter definition')
-        tag, op, width, value = match.groups()
-        valid_reference(tag)
+        tag, operation, width, encoded_value = _entry(line)
         if tag in definitions:
             raise ValueError('Duplicate visible parameter definition')
-        bits = int(width)
-        if bits > 2000000:
-            raise ValueError('Visible parameter width exceeds bounds')
-        field, spelling = value.split('=')
-        if (op == 'CONST') != (field == 'literal'):
-            raise ValueError('Parameter kind disagrees with visible operation')
-        if field == 'literal' and int(spelling, 0).bit_length() > bits:
-            raise ValueError('Visible literal exceeds its width')
-        definitions[tag] = op, bits, field, spelling if field == 'literal' else int(spelling)
-        if field == 'modulus' and definitions[tag][3] > 9007199254740991:
-            raise ValueError('Parameter legend v1 modulus exceeds the interoperable exact integer range')
+        definitions[tag] = _entry_value(operation, width, encoded_value)
     return grid, definitions
 
 

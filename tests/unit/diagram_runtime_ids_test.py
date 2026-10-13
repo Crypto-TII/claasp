@@ -25,7 +25,10 @@ def test_runtime_namespace_cannot_alias_a_valid_original_input(name):
         for b in range(16):
             assert cipher.evaluate([a,b]) == (a-(a^b))&15
     values = evaluate_state_values(cipher,[5,7])
-    assert values[name] == 5 and values['x'] == 2 and values['y'] == 3 and values['out'] == 3
+    assert values[name] == 5
+    assert values['x'] == 2
+    assert values['y'] == 3
+    assert values['out'] == 3
 
 
 def test_collision_suffix_and_ordinary_input_names_are_preserved():

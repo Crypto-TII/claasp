@@ -22,8 +22,9 @@ def test_real_selected_port_widths_cannot_disagree_with_native_signature(operati
     right['positions'].pop(0);right['bits']=3
     # Original edge partition and flattened bit stream remain exactly unchanged.
     # Only actual typed connectivity is invalid:5+3 rather than declared4+4.
+    malformed = body+MARKER+json.dumps(metadata)
     with pytest.raises(ValueError,match='logical operand ports'):
-        from_ascii(body+MARKER+json.dumps(metadata))
+        from_ascii(malformed)
 
 
 def test_original_edge_can_cross_logical_ports_without_changing_typed_widths():
