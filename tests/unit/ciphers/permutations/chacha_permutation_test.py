@@ -54,7 +54,7 @@ def test_chacha_permutation_half_half_round_mode():
 
     # Each half_half round has exactly one modular addition per column/diagonal (a single ARX layer).
     chacha = ChachaPermutation(number_of_rounds=1, round_mode=ROUND_MODE_HALF_HALF)
-    assert len([c for c in chacha.get_all_components() if c.id.startswith("modadd_")]) == 4
+    assert len([c for c in chacha.all_components() if c.id.startswith("modadd_")]) == 4
     assert chacha.component_from_id("rot_0_2").description[1] == -16
 
     chacha = ChachaPermutation(number_of_rounds=1, start_round=('odd', 'top_second'), round_mode=ROUND_MODE_HALF_HALF)
