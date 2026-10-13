@@ -237,3 +237,22 @@ the ``DriverIdentity`` are separate fields:
    'python_scalar'
    >>> result.provenance.realization_identity
    'aes:algebraic'
+
+Statistical-program drivers
+---------------------------
+
+The NIST STS adapter wraps the patched, non-interactive ``assess`` build that
+CLAASP compiles from ``required_dependencies/`` on top of the official
+``sts-2_1_2.zip`` release, mirroring ``docker/Dockerfile``. Unlike Dieharder,
+this executable does not print its report to standard output. It changes into
+a compile-time constant working directory and rewrites the fixed path
+``<working_dir>/experiments/AlgorithmTesting/finalAnalysisReport.txt`` on each
+run.
+
+``NistStsDriver`` therefore reads that path immediately after execution. It
+serializes invocations sharing a working directory with an in-process lock and
+a best-effort cross-process file lock, and checks that the report modification
+time advanced before parsing it. This prevents a stale report from a previous
+run from being returned as new evidence. The driver also handles ``assess``'s
+inverted exit-code convention: a successful run returns ``1``, while a
+bad-usage invocation returns ``0``.

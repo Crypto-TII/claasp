@@ -150,23 +150,8 @@ unambiguous scalar, batch, diagram, and model semantics.
    >>> conversion.evaluate(0x1234)
    4660
 
-Catalogue categories
---------------------
-
-The public catalogue classifies fixed-length maps by their mathematical
-interface.  Unkeyed maps belong to ``permutations`` when bijectivity is an
-obligation and to ``functions`` otherwise.  Keyed maps use ``block_ciphers``
-or ``block_functions``; an explicit tweak promotes those categories to
-``tweakable_block_ciphers`` or ``tweakable_block_functions``.  Execution
-engines and graph realizations do not change this classification.
-
-``single_component_primitives`` and ``toy_primitives`` are orthogonal fixture
-folders.  Hash, MAC, and stream constructions are not catalogue categories:
-only a fixed-length core is catalogued, with the higher-level construction
-recorded as provenance.  A catalogue record also states its external input
-roles and whether bijectivity must eventually be demonstrated by the migrated
-implementation.  Helpers and documentation modules receive an explicit
-outside-scope disposition instead of being silently counted as primitives.
+Single-component primitive modules
+----------------------------------
 
 Each module under ``single_component_primitives`` contains the public class it
 advertises. For example, ``single_component_primitives.bitwise_and.BitwiseAnd`` directly

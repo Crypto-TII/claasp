@@ -6,18 +6,40 @@ an analysis, solver, statistical program, or neural-training framework. The
 returned ``ReportData`` is immutable and keeps evidence, applicability,
 citations, realization identity, and execution metadata separate.
 
-Trail and trace summaries
--------------------------
+Present a result
+----------------
 
-By default, a trail report shows only the input and each round difference,
-together with the relative and cumulative probability:
+Start with an analysis result, adapt it into report data with ``present()``,
+then render that report for a terminal or another supported destination:
 
 .. doctest::
 
+   >>> from claasp.presentation import present, render_report
    >>> from claasp.primitives import Speck
    >>> result = Speck(number_of_rounds=2).analysis.find_optimal_trail(
    ...     kind="xor_differential", backend="dependency_free"
    ... )
+   >>> report = present(result)
+   >>> report.title, report.sections[0].title
+   ('Trail', 'Trail')
+   >>> rendered = render_report(report)
+   >>> "Round | Difference | Relative probability | Cumulative probability" in rendered
+   True
+   >>> "Proved optimal." in rendered
+   True
+
+``ReportData`` can be rendered, exported, combined with other report sections,
+or passed to an application without parsing terminal text.
+
+Trail and trace summaries
+-------------------------
+
+For quick interactive inspection, ``show()`` is a convenience that presents
+and renders the trail directly. By default it shows only the input and each
+round difference, together with the relative and cumulative probability:
+
+.. doctest::
+
    >>> result.show()  # doctest: +ELLIPSIS
    Trail
    ...

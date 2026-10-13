@@ -7,6 +7,55 @@ lowering ordinary leaf components into the canonical graph.  Consequently the
 same block can be evaluated alone, reused many times, or passed to an existing
 analysis or constraint representation.
 
+Define and reuse a small block
+------------------------------
+
+Start with a block that XORs two 8-bit words and rotates the result one bit to
+the left. ``CompositeBuilder`` uses the same component vocabulary as an
+ordinary primitive builder:
+
+.. doctest::
+
+   >>> from claasp import CompositeBuilder, PrimitiveBuilder, UnitArrayType
+   >>> from claasp.components import Rotate, Xor
+   >>> from claasp.unit_types import Word
+   >>> byte = UnitArrayType(Word(8), (1,))
+   >>> block_builder = CompositeBuilder("XorRotate", {"left": byte, "right": byte})
+   >>> block_builder.add_round()
+   Round(number=0)
+   >>> mixed = block_builder.add_component(
+   ...     Xor(block_builder.input("left"), block_builder.input("right"))
+   ... )
+   >>> rotated = block_builder.add_component(Rotate(mixed, 1, "left"))
+   >>> block_builder.set_output("output", rotated)
+   >>> xor_rotate = block_builder.build()
+   >>> hex(xor_rotate.evaluate(0x80, 0x01))
+   '0x3'
+
+The definition can now be inserted more than once. Each insertion gets a
+named scope, while its XOR and rotation remain ordinary graph components:
+
+.. doctest::
+
+   >>> builder = PrimitiveBuilder("two_xor_rotates", {name: byte for name in "abc"})
+   >>> builder.add_round()
+   Round(number=0)
+   >>> first = builder.add_composite(
+   ...     xor_rotate,
+   ...     {"left": builder.input("a"), "right": builder.input("b")},
+   ...     scope_id="first",
+   ... )
+   >>> second = builder.add_composite(
+   ...     xor_rotate,
+   ...     {"left": first.output(), "right": builder.input("c")},
+   ...     scope_id="second",
+   ... )
+   >>> two_steps = builder.build(second.output())
+   >>> hex(two_steps.evaluate(0x80, 0x01, 0x03))
+   '0x0'
+   >>> tuple(scope.path for scope in two_steps.graph.scopes)
+   ('first', 'second')
+
 Building AES from blocks
 ------------------------
 
@@ -17,7 +66,6 @@ shows the alternative reusable-block style used by ``CustomAES``.
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder
    >>> from claasp.components import Add
    >>> from claasp.composites import AESKeySchedule, AESRound
    >>> def block_aes128():

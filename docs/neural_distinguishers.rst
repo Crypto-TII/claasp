@@ -108,6 +108,7 @@ Keras, or PyTorch driver can implement the same protocol. The
 scikit-learn import happens inside ``train``, so constructing a
 ``SklearnMLPDriver`` never requires the extra -- only calling ``train`` does::
 
+   from claasp.analysis import NeuralExperiment
    from claasp.drivers.neural import SklearnMLPDriver
 
    dataset = xor_differential_dataset(

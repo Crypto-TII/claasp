@@ -17,6 +17,14 @@ The categories describe mathematical interfaces, not execution engines.
 Graph realizations remain separate from scalar, batch, and constraint
 representations.
 
+``single_component_primitives`` and ``toy_primitives`` are orthogonal fixture
+collections rather than additional mathematical interfaces. Hash, MAC, and
+stream constructions are not catalogue categories: only a fixed-length core
+is catalogued, with the higher-level construction recorded as provenance.
+Catalogue records also state their external input roles and bijectivity
+obligations. Helpers and documentation modules are outside the primitive
+catalogue rather than being silently counted as primitives.
+
 Discovering primitives
 ----------------------
 
