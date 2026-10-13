@@ -1020,7 +1020,7 @@ def _swap_row(lines, row, cols):
 def _note(visible):
     import re
     text = visible[2][2:9].strip()
-    if not re.fullmatch(r'(?:DATA\d+(?:-\d+)?|KEY\d+(?:-\d+)?|UNUSED|I\d+(?:-\d+)?|R\d+|OBS\d+)', text):
+    if not re.fullmatch(r'(?:(?:DATA|KEY|I)\d+(?:-\d+)?|UNUSED|(?:R|OBS)\d+)', text):
         return None
     candidate = {'kind': 'note', 'ports': {}, 'text': text}
     return candidate if tuple(art(candidate)) == visible else None

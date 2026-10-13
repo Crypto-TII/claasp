@@ -713,6 +713,27 @@ def _reduction_label(definition, registry):
             +' step '+str(definition['step']))
 
 
+def _input_cell_label(cell, definition):
+    name = 'key' if cell.get('secret') else 'input'
+    bits = len(definition['positions']) if 'positions' in definition else definition.get('bits', '?')
+    if bits == 0:
+        name, bits = 'UNUSED', definition['bits']
+    index = 'I'+str(definition['native_index'])+' ' if 'native_index' in definition else ''
+    label = index+name+'/'+str(bits)
+    if definition.get('positions') and len(definition['positions']) != definition['bits']:
+        from claasp.cipher_modules.diagram.presentation import selections as bit_positions
+        label += r'\\'+bit_positions(definition['positions'])
+    return label
+
+
+def _label_with_binding(label, cell, key, definition):
+    if cell.get('reverse') and 'operand_ports' not in definition:
+        label += r'\\@21'
+    if 'definition' in cell:
+        label += r'\\'+key
+    return label
+
+
 def _cell_label(cell, key, registry):
     from claasp.cipher_modules.diagram.presentation import operation
     definition = cell.get('definition', {})
@@ -720,15 +741,7 @@ def _cell_label(cell, key, registry):
     if cell['kind'] == 'note':
         return cell.get('vector_label', cell['text'])
     if cell['kind'] == 'input':
-        name = 'key' if cell.get('secret') else 'input'
-        bits = len(definition['positions']) if 'positions' in definition else definition.get('bits', '?')
-        if bits == 0:
-            name, bits = 'UNUSED', definition['bits']
-        index = 'I'+str(definition['native_index'])+' ' if 'native_index' in definition else ''
-        label = index+name+'/'+str(bits)
-        if definition.get('positions') and len(definition['positions']) != definition['bits']:
-            from claasp.cipher_modules.diagram.presentation import selections as bit_positions
-            label += r'\\'+bit_positions(definition['positions'])
+        label = _input_cell_label(cell, definition)
     elif kind == 'parallel':
         label = operation(definition['members'][0], registry, short=True)+' x'+str(len(definition['members']))
     elif kind == 'native':
@@ -747,11 +760,7 @@ def _cell_label(cell, key, registry):
         label = {'join': 'PACK', 'selection': 'SELECT'}[kind]+'/'+str(definition['bits'])
     else:
         label = cell['kind']
-    if cell.get('reverse') and 'operand_ports' not in definition:
-        label += r'\\@21'
-    if 'definition' in cell:
-        label += r'\\'+key
-    return label
+    return _label_with_binding(label, cell, key, definition)
 
 
 def _box_node(row, col, cell, x, y, registry):
