@@ -50,8 +50,10 @@ def test_normal_multiround_ciphers_native_glyph_and_integer_agreement(factory,ro
         assert evaluate(body,input_words(model,ir,inputs),16,model['cipher_columns'])['cipher']==expected
 
 
-def test_simon_key_schedule_four_port_node_remains_explicitly_unsupported():
-    diagram=Diagrams(SimonBlockCipher(block_bit_size=32,key_bit_size=64,number_of_rounds=6))
+@pytest.mark.parametrize('rounds',[5,6])
+def test_simon_key_schedule_four_port_node_remains_explicitly_unsupported(rounds):
+    diagram=Diagrams(SimonBlockCipher(block_bit_size=32,key_bit_size=64,number_of_rounds=rounds))
+    assert min(n['round'] for n in diagram.ir['nodes'] if n['description']==['XOR',4])==4
     assert any(n['description']==['XOR',4] for n in diagram.ir['nodes'])
     with pytest.raises(ValueError,match='physical port arity'):
         diagram.to_ascii(routed_words=True)

@@ -208,7 +208,8 @@ symmetric unused operations use stable declaration order; their glyphs are
 indistinguishable. The accepted defaults and delivered example bytes remain
 unchanged. No wall-clock guarantee is inferred from small local timing samples.
 
-Simon32/64 at 6 rounds requires a four-input key-schedule XOR and remains
+Simon32/64 first requires a four-input key-schedule XOR at native round index 4
+(five-round constructor), and remains
 unsupported by this representation. It needs an agreed generic native-node
 grouping/bundled-port contract rather than a silent semantic substitution; no
 new glyph, grouping schema or larger admission scope is added here.
