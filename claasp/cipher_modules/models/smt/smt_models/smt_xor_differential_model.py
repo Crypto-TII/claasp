@@ -160,27 +160,7 @@ class SmtXorDifferentialModel(SmtModel):
         solutions_list = []
         while solution["total_weight"] is not None:
             solutions_list.append(solution)
-            operands = self.get_operands(solution)
-            for component in self._cipher.all_components():
-                bit_len = component.output_bit_size
-                is_word_operation = component.type == WORD_OPERATION and component.description[0] in (
-                    "AND",
-                    "MODADD",
-                    "MODSUB",
-                    "OR",
-                    "SHIFT_BY_VARIABLE_AMOUNT",
-                )
-                if component.type == SBOX or is_word_operation:
-                    value_to_avoid = int(solution["components_values"][component.id]["value"], base=16)
-                    operands.extend(
-                        [
-                            utils.smt_not(f"{component.id}_{j}")
-                            if value_to_avoid >> (bit_len - 1 - j) & 1
-                            else f"{component.id}_{j}"
-                            for j in range(bit_len)
-                        ]
-                    )
-            clause = utils.smt_or(operands)
+            clause = utils.smt_or(self._get_solution_exclusion_operands(solution))
             self._model_constraints = (
                 self._model_constraints[: -len(constants.MODEL_SUFFIX)]
                 + [utils.smt_assert(clause)]
@@ -414,6 +394,41 @@ class SmtXorDifferentialModel(SmtModel):
                     for j in range(bit_len)
                 ]
             )
+        return operands
+
+    def _get_solution_exclusion_operands(self, solution):
+        """
+        Return the operands of the clause excluding ``solution`` from the next searches.
+
+        Used by :py:meth:`~find_all_xor_differential_trails_with_fixed_weight`: besides the cipher-input
+        bits returned by :py:meth:`~get_operands`, the clause negates the output bits of every S-box and non-linear
+        word operation.
+
+        INPUT:
+
+        - ``solution`` -- **dict**; a solution as returned by :py:meth:`~SmtModel.solve`
+        """
+        operands = self.get_operands(solution)
+        for component in self._cipher.all_components():
+            bit_len = component.output_bit_size
+            is_word_operation = component.type == WORD_OPERATION and component.description[0] in (
+                "AND",
+                "MODADD",
+                "MODSUB",
+                "OR",
+                "SHIFT_BY_VARIABLE_AMOUNT",
+            )
+            if component.type == SBOX or is_word_operation:
+                value_to_avoid = int(solution["components_values"][component.id]["value"], base=16)
+                operands.extend(
+                    [
+                        utils.smt_not(f"{component.id}_{j}")
+                        if value_to_avoid >> (bit_len - 1 - j) & 1
+                        else f"{component.id}_{j}"
+                        for j in range(bit_len)
+                    ]
+                )
+
         return operands
 
     def _parse_solver_output(self, variable2value):
