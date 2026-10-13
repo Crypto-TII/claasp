@@ -1203,6 +1203,19 @@ def _fragment_native(fragments, memo, native):
     parser._native_node(definition, definition, operands, parser._flat_stream(operands), native)
 
 
+def _check_native_word_ports(definition, arguments):
+    if definition.get('type') != 'word_operation':
+        return
+    operation = definition['description'][0]
+    arithmetic = ('XOR', 'AND', 'OR', 'MODADD', 'MODSUB', 'MODMUL')
+    unary = ('NOT', 'ROTATE', 'SHIFT', 'REVERSE')
+    if operation not in arithmetic + unary:
+        return
+    arity = definition['description'][1] if operation in arithmetic else 1
+    if len(arguments) != arity or any(sum(len(edge['positions']) for edge in stream) != definition['bits'] for stream in arguments):
+        raise ValueError('Visible logical operand ports must retain declared arity and width')
+
+
 def _trace(cells, groups):
     dependencies, followers = {}, {}
     fragments = _fragment_groups(cells)
@@ -1252,6 +1265,7 @@ def _trace(cells, groups):
             stream = [{'source': definition['id'], 'positions': definition['positions']}]
         elif cell['kind'] == 'box':
             if definition['kind'] == 'native':
+                _check_native_word_ports(definition, arguments)
                 stream = [parser._native_node(definition, definition, arguments, parser._flat_stream(arguments), native)]
             else:
                 stream = parser._box_stream(definition, arguments, native)
