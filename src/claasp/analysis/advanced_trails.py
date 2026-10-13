@@ -68,10 +68,10 @@ def propagate_truncated_xor_difference(primitive, input_pattern):
     else:
         raise NotImplementedError(
             f"primitive {primitive.family_name!r}, analysis 'deterministic_truncated_xor', "
-            "backend 'dependency_free': first unsupported component/domain has no "
+            "backend 'dependency_free': first unsupported component/unit_type has no "
             "sound three-valued propagation rule"
         )
-    for _ in primitive.rounds:
+    for _ in primitive.graph.rounds:
         boundaries.append(operation(boundaries[-1]))
     return TruncatedPropagationResult(tuple(boundaries), primitive.family_name)
 
@@ -147,7 +147,7 @@ def find_impossible_xor_differential(
     else:
         raise NotImplementedError(
             f"primitive {primitive.family_name!r}, analysis 'impossible_xor_differential', "
-            "backend 'cp': first unsupported component/domain has no inverse "
+            "backend 'cp': first unsupported component/unit_type has no inverse "
             "deterministic-truncated rule"
         )
     cp_model = model.cp_model()
@@ -216,10 +216,10 @@ def _solver(solver):
 
 def _component(primitive, component):
     if not isinstance(component, str):
-        if any(item is component for item in primitive.components):
+        if any(item is component for item in primitive.graph.components):
             return component
         raise ValueError("component does not belong to this primitive")
     try:
-        return next(item for item in primitive.components if item.component_id == component)
+        return next(item for item in primitive.graph.components if item.component_id == component)
     except StopIteration as error:
         raise KeyError(f"primitive component {component!r} does not exist") from error

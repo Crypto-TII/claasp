@@ -4,13 +4,13 @@ from itertools import combinations
 
 from claasp.analysis.constraints import Equal, FixedValue, HammingWeight, Nonzero, NotEqual
 from claasp.analysis.problem import AnalysisProblem
-from claasp.domains import Bit
 from claasp.representations.constraints.sat import BooleanCNFModel, CNFFormula
 from claasp.representations.constraints.sat.encoding import resolved_selection_variable_names
+from claasp.unit_types import Bit
 
 
 def lower_boolean_problem(problem: AnalysisProblem) -> CNFFormula:
-    """Lower a bit-domain analysis problem to CNF."""
+    """Lower a bit-unit_type analysis problem to CNF."""
 
     if problem.objective is not None:
         raise NotImplementedError("Boolean optimization requires an optimization-capable adapter")
@@ -42,12 +42,12 @@ def lower_boolean_problem(problem: AnalysisProblem) -> CNFFormula:
         label = f"constraint_{number}_{type(constraint).__name__.lower()}"
         if isinstance(constraint, FixedValue):
             values = problem.primitive._decode_boundary(
-                constraint.value, constraint.target.value_type
+                constraint.value, constraint.target.array_type
             )
-            if len(values) != constraint.target.value_type.unit_count:
+            if len(values) != constraint.target.array_type.unit_count:
                 raise ValueError("fixed value length must match its constraint target")
             for value in values:
-                constraint.target.value_type.domain.validate(value)
+                constraint.target.array_type.unit_type.validate(value)
             for group, value in zip(groups(constraint.target), values):
                 width = len(group)
                 for bit, variable in enumerate(group):
@@ -74,7 +74,7 @@ def lower_boolean_problem(problem: AnalysisProblem) -> CNFFormula:
         elif isinstance(constraint, Nonzero):
             add(literals(constraint.target), label)
         elif isinstance(constraint, HammingWeight):
-            if not isinstance(constraint.target.value_type.domain, Bit):
+            if not isinstance(constraint.target.array_type.unit_type, Bit):
                 raise NotImplementedError(
                     "word-unit Hamming weight requires cardinality auxiliaries"
                 )

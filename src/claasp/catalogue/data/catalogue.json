@@ -5,7 +5,7 @@
         "component_bounded",
         "component_minizinc"
       ],
-      "entry_point": "Primitive.analyze().component_property",
+      "entry_point": "Primitive.analysis.component_property",
       "evidence": "qualified",
       "kind": "component_property",
       "name": "component_property",
@@ -14,13 +14,13 @@
         "component_properties"
       ],
       "required_components": [],
-      "restriction": "applicability and evidence strength are reported per semantic component and domain"
+      "restriction": "applicability and evidence strength are reported per semantic component and unit_type"
     },
     {
       "drivers": [
         "python_scalar"
       ],
-      "entry_point": "Primitive.analyze().avalanche",
+      "entry_point": "Primitive.analysis.avalanche",
       "evidence": "empirical",
       "kind": "statistical",
       "name": "avalanche",
@@ -33,12 +33,14 @@
     },
     {
       "drivers": [
+        "cryptominisat",
         "glpk",
+        "kissat",
         "minisat",
         "minizinc",
         "z3"
       ],
-      "entry_point": "Primitive.analyze().enumerate_solutions",
+      "entry_point": "Primitive.analysis.enumerate_solutions",
       "evidence": "exact",
       "kind": "constraint",
       "name": "enumerate_solutions",
@@ -53,7 +55,7 @@
       "drivers": [
         "z3"
       ],
-      "entry_point": "Primitive.analyze().enumerate_xor_differential_trails",
+      "entry_point": "Primitive.analysis.enumerate_xor_differential_trails",
       "evidence": "exact_characteristic",
       "kind": "xor_differential",
       "name": "enumerate_xor_differential_trails",
@@ -68,7 +70,7 @@
       "drivers": [
         "z3"
       ],
-      "entry_point": "Primitive.analyze().enumerate_xor_linear_trails",
+      "entry_point": "Primitive.analysis.enumerate_xor_linear_trails",
       "evidence": "exact_characteristic",
       "kind": "xor_linear",
       "name": "enumerate_xor_linear_trails",
@@ -93,13 +95,13 @@
         "word_linear_sat"
       ],
       "required_components": [],
-      "restriction": "capability-based Word graph support; specialized dependency-free PRESENT/Speck slices"
+      "restriction": "capability-based graph support; specialized dependency-free PRESENT/Speck slices"
     },
     {
       "drivers": [
         "minisat"
       ],
-      "entry_point": "Primitive.analyze().find_lowest_weight_xor_differential_trail",
+      "entry_point": "Primitive.analysis.find_optimal_trail(kind=\"xor_differential\")",
       "evidence": "exact",
       "kind": "xor_differential",
       "name": "find_lowest_weight_xor_differential_trail",
@@ -108,13 +110,13 @@
         "word_differential_sat"
       ],
       "required_components": [],
-      "restriction": "capability-based Word graph support plus specialized PRESENT/Speck slices"
+      "restriction": "capability-based graph support plus specialized PRESENT/Speck slices"
     },
     {
       "drivers": [
         "minisat"
       ],
-      "entry_point": "Primitive.analyze().find_lowest_weight_xor_linear_trail",
+      "entry_point": "Primitive.analysis.find_optimal_trail(kind=\"xor_linear\")",
       "evidence": "exact",
       "kind": "xor_linear",
       "name": "find_lowest_weight_xor_linear_trail",
@@ -127,7 +129,7 @@
     },
     {
       "drivers": [],
-      "entry_point": "Primitive.analyze().is_xor_differential_transition_possible",
+      "entry_point": "Primitive.analysis.is_xor_differential_transition_possible",
       "evidence": "exact",
       "kind": "component_transition",
       "name": "is_xor_differential_transition_possible",
@@ -142,12 +144,14 @@
     },
     {
       "drivers": [
+        "cryptominisat",
         "glpk",
+        "kissat",
         "minisat",
         "minizinc",
         "z3"
       ],
-      "entry_point": "Primitive.analyze().recover_input",
+      "entry_point": "Primitive.analysis.recover_input",
       "evidence": "exact",
       "kind": "constraint",
       "name": "recover_input",
@@ -160,12 +164,14 @@
     },
     {
       "drivers": [
+        "cryptominisat",
         "glpk",
+        "kissat",
         "minisat",
         "minizinc",
         "z3"
       ],
-      "entry_point": "Primitive.analyze().solve",
+      "entry_point": "Primitive.analysis.solve",
       "evidence": "exact",
       "kind": "constraint",
       "name": "solve",
@@ -358,6 +364,26 @@
       "name": "minizinc_chuffed",
       "representations": [],
       "target": "minizinc:chuffed"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.kissat:KissatSolver",
+      "kind": "solver",
+      "name": "kissat",
+      "representations": [
+        "boolean_cnf"
+      ],
+      "target": "kissat"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.cryptominisat:CryptoMiniSatSolver",
+      "kind": "solver",
+      "name": "cryptominisat",
+      "representations": [
+        "boolean_cnf"
+      ],
+      "target": "cryptominisat5"
     },
     {
       "availability": "executable",
@@ -6130,12 +6156,12 @@
           "visibility": "public"
         }
       ],
-      "kind": "block_cipher",
+      "kind": "block_function",
       "labels": [],
       "legacy_source": "claasp/ciphers/stream_ciphers/chacha_stream_cipher.py",
       "module": "claasp.primitives.block_functions.chacha",
-      "name": "ChaChaKeystreamBlock",
-      "official_name": "ChaChaKeystreamBlock",
+      "name": "ChaChaBlockFunction",
+      "official_name": "ChaChaBlockFunction",
       "parameter_sets": [
         {
           "name": "standard-1",
@@ -7265,8 +7291,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/permutations/chacha_permutation.py",
       "module": "claasp.primitives.permutations.chacha",
-      "name": "ChaCha",
-      "official_name": "ChaCha",
+      "name": "ChaChaPermutation",
+      "official_name": "ChaChaPermutation",
       "parameter_sets": [
         {
           "name": "default",
@@ -9137,9 +9163,9 @@
         {
           "name": "default",
           "values": {
-            "domain": null,
             "number_of_inputs": 2,
-            "unit_count": 1
+            "unit_count": 1,
+            "unit_type": null
           }
         }
       ],
@@ -9760,8 +9786,8 @@
         {
           "name": "default",
           "values": {
-            "domain": null,
-            "matrix": null
+            "matrix": null,
+            "unit_type": null
           }
         }
       ],
@@ -10022,9 +10048,9 @@
         {
           "name": "default",
           "values": {
-            "domain": null,
             "number_of_inputs": 2,
-            "unit_count": 1
+            "unit_count": 1,
+            "unit_type": null
           }
         }
       ],
@@ -10146,9 +10172,9 @@
         {
           "name": "default",
           "values": {
-            "domain": null,
             "exponent": 3,
-            "unit_count": 1
+            "unit_count": 1,
+            "unit_type": null
           }
         }
       ],
@@ -10271,9 +10297,9 @@
         {
           "name": "default",
           "values": {
-            "domain": null,
             "lookup_table": null,
-            "unit_count": 1
+            "unit_count": 1,
+            "unit_type": null
           }
         }
       ],
@@ -11960,7 +11986,9 @@
         "Word"
       ],
       "drivers": [
+        "cryptominisat",
         "glpk",
+        "kissat",
         "minisat",
         "minizinc",
         "z3"
@@ -12480,8 +12508,8 @@
   ],
   "schema_version": 2,
   "sources": {
-    "classification": "migration/legacy_inventory.json",
-    "components": "migration/single_component_catalogue.json",
-    "realizations": "migration/realization_catalogue.json"
+    "classification": "tools/data/legacy_inventory.json",
+    "components": "tools/data/single_component_catalogue.json",
+    "realizations": "tools/data/realization_catalogue.json"
   }
 }

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from claasp.components.word._validation import require_word_inputs
-from claasp.graph import Component, PortLike
+from claasp.graph import Component, UnitArrayLike
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -20,7 +20,7 @@ class Rotate(Component):
 
     def __init__(
         self,
-        component_input: PortLike,
+        component_input: UnitArrayLike,
         amount: int,
         direction: str,
         component_id: str | None = None,
@@ -36,6 +36,6 @@ class Rotate(Component):
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
         object.__setattr__(self, "output_type", output_type)
-        object.__setattr__(self, "amount", amount % output_type.domain.width)
+        object.__setattr__(self, "amount", amount % output_type.unit_type.width)
         object.__setattr__(self, "direction", direction)
         Component.__post_init__(self)

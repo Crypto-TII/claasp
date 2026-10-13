@@ -4,22 +4,25 @@ from dataclasses import replace
 
 import pytest
 
-from claasp import Primitive, ValueType, Word
+from claasp import Primitive, UnitArrayType
 from claasp.components import BitwiseAnd, Xor
 from claasp.drivers.solvers import SatResult, SatStatus
 from claasp.representations.constraints.smt import WordDifferentialSMTModel
 from claasp.representations.constraints.smt.word_differential import (
     WordDifferentialEnumeration,
 )
+from claasp.unit_types import Word
 
 
 def _primitive(component):
     primitive = Primitive(
-        "boolean_word", {"left": ValueType(Word(2), (1,)), "key": ValueType(Word(2), (1,))}
+        "boolean_word", {"left": UnitArrayType(Word(2), (1,)), "key": UnitArrayType(Word(2), (1,))}
     )
-    primitive.add_round()
-    output = primitive.add_component(component((primitive.input("left"), primitive.input("key"))))
-    primitive.set_output(output)
+    primitive._builder.add_round()
+    output = primitive._builder.add_component(
+        component((primitive.graph.input("left"), primitive.graph.input("key")))
+    )
+    primitive._builder.set_output(output)
     return primitive
 
 
@@ -27,7 +30,7 @@ def test_xor_difference_propagation_is_forward_not_mask_fanout():
     model = WordDifferentialSMTModel(_primitive(Xor), maximum_weight=0)
     formula = model.smt_formula()
     assignment = dict.fromkeys(formula.variables, 0)
-    for name in model._ports["left"]:
+    for name in model._unit_arrays["left"]:
         assignment[name] = 1
     for name in model._output:
         assignment[name] = 1

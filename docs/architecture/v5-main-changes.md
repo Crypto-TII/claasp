@@ -11,7 +11,7 @@ The main changes are:
   binary-extension-field elements, or prime-field elements. This allows a
   primitive to be described using the data type that naturally matches its
   specification.
-- **Ports make graph wiring explicit.** A `Port` is a named, typed source of
+- **Ports make graph wiring explicit.** A `UnitArray` is a named, typed source of
   data, such as a primitive input or a component output. A `Selection` chooses
   an ordered set of logical units from that port. A connection is made when
   such a selection is used by another component or as the primitive output; it
@@ -88,11 +88,5 @@ The main changes are:
   library behaves and is checked against the code.
 - **Documentation and quality checks are automatic.** The public API,
   examples, formatting, linting, typing baseline, documentation builds,
-  package contents, migration records, and multi-architecture release
-  environment all have automated checks.
-
-The migration does not assume that every old API should be reproduced exactly.
-The complete comparison in `../final_migration_audit.md` lists every legacy
-source and test record and every shipped v5 artifact. It shows what moved
-directly, what was split or combined, what was removed, and what is new, with a
-reason for each decision.
+  package contents, and multi-architecture environment all have automated
+  checks.

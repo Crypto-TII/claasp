@@ -3,12 +3,12 @@
 from itertools import combinations, product
 from math import gcd
 
-from claasp.domains import BinaryExtensionField, Bit, PrimeField
+from claasp.unit_types import BinaryExtensionField, Bit, PrimeField
 from claasp.utils.finite_fields import binary_field_multiply, binary_field_power
 from claasp.utils.matrices import identity_matrix, normalize_matrix, transpose_matrix
 
 
-def matrix_rank(matrix, domain) -> int:
+def matrix_rank(matrix, unit_type) -> int:
     """Return exact row rank over the supplied scalar field.
 
     EXAMPLES::
@@ -21,21 +21,21 @@ def matrix_rank(matrix, domain) -> int:
     """
 
     rows = [list(row) for row in normalize_matrix(matrix)]
-    _validate_matrix_domain(rows, domain)
+    _validate_matrix_domain(rows, unit_type)
     rank = 0
     for column in range(len(rows[0])):
         pivot = next((index for index in range(rank, len(rows)) if rows[index][column]), None)
         if pivot is None:
             continue
         rows[rank], rows[pivot] = rows[pivot], rows[rank]
-        inverse = _inverse(domain, rows[rank][column])
-        rows[rank] = [_multiply(domain, value, inverse) for value in rows[rank]]
+        inverse = _inverse(unit_type, rows[rank][column])
+        rows[rank] = [_multiply(unit_type, value, inverse) for value in rows[rank]]
         for index, row in enumerate(rows):
             if index == rank or not row[column]:
                 continue
             factor = row[column]
             rows[index] = [
-                _subtract(domain, left, _multiply(domain, factor, right))
+                _subtract(unit_type, left, _multiply(unit_type, factor, right))
                 for left, right in zip(row, rows[rank])
             ]
         rank += 1
@@ -44,7 +44,7 @@ def matrix_rank(matrix, domain) -> int:
     return rank
 
 
-def matrix_is_mds(matrix, domain) -> bool:
+def matrix_is_mds(matrix, unit_type) -> bool:
     """Return whether every square minor of a square matrix is nonsingular.
 
     EXAMPLES::
@@ -66,13 +66,13 @@ def matrix_is_mds(matrix, domain) -> bool:
                 minor = tuple(
                     tuple(frozen[row][column] for column in column_indices) for row in row_indices
                 )
-                if matrix_rank(minor, domain) != order:
+                if matrix_rank(minor, unit_type) != order:
                     return False
     return True
 
 
 def exact_branch_number(
-    matrix, domain, *, linear: bool = False, maximum_vectors: int = 65536
+    matrix, unit_type, *, linear: bool = False, maximum_vectors: int = 65536
 ) -> int | None:
     """Return an exact unit branch number, or ``None`` above the safe budget.
 
@@ -90,11 +90,11 @@ def exact_branch_number(
     """
 
     frozen = normalize_matrix(matrix)
-    _validate_matrix_domain(frozen, domain)
+    _validate_matrix_domain(frozen, unit_type)
     selected = transpose_matrix(frozen) if linear else frozen
-    if len(selected) == len(selected[0]) and matrix_is_mds(selected, domain):
+    if len(selected) == len(selected[0]) and matrix_is_mds(selected, unit_type):
         return len(selected) + 1
-    cardinality = _cardinality(domain)
+    cardinality = _cardinality(unit_type)
     vector_count = cardinality ** len(selected[0])
     if vector_count - 1 > maximum_vectors:
         return None
@@ -102,14 +102,14 @@ def exact_branch_number(
     for vector in product(range(cardinality), repeat=len(selected[0])):
         if not any(vector):
             continue
-        output = apply_matrix(selected, vector, domain)
+        output = apply_matrix(selected, vector, unit_type)
         best = min(best, _weight(vector) + _weight(output))
-        if best == 1 or (best == 2 and matrix_rank(selected, domain) == len(selected[0])):
+        if best == 1 or (best == 2 and matrix_rank(selected, unit_type) == len(selected[0])):
             break
     return best
 
 
-def exact_matrix_order(matrix, domain, *, maximum_steps: int = 65536, offset=None) -> int | None:
+def exact_matrix_order(matrix, unit_type, *, maximum_steps: int = 65536, offset=None) -> int | None:
     """Return the exact linear/affine order when found within ``maximum_steps``.
 
     EXAMPLES::
@@ -122,7 +122,7 @@ def exact_matrix_order(matrix, domain, *, maximum_steps: int = 65536, offset=Non
     """
 
     frozen = normalize_matrix(matrix)
-    if len(frozen) != len(frozen[0]) or matrix_rank(frozen, domain) != len(frozen):
+    if len(frozen) != len(frozen[0]) or matrix_rank(frozen, unit_type) != len(frozen):
         return None
     size = len(frozen)
     identity = identity_matrix(size)
@@ -131,14 +131,16 @@ def exact_matrix_order(matrix, domain, *, maximum_steps: int = 65536, offset=Non
     affine_offset = zero if offset is None else tuple(offset)
     if len(affine_offset) != size:
         raise ValueError("affine offset length must match matrix size")
-    _validate_matrix_domain((affine_offset,), domain)
+    _validate_matrix_domain((affine_offset,), unit_type)
     current_offset = zero
     for order in range(1, maximum_steps + 1):
         current_offset = tuple(
-            _add(domain, value, constant)
-            for value, constant in zip(apply_matrix(frozen, current_offset, domain), affine_offset)
+            _add(unit_type, value, constant)
+            for value, constant in zip(
+                apply_matrix(frozen, current_offset, unit_type), affine_offset
+            )
         )
-        current_matrix = multiply_matrices(frozen, current_matrix, domain)
+        current_matrix = multiply_matrices(frozen, current_matrix, unit_type)
         if current_matrix == identity and current_offset == zero:
             return order
     return None
@@ -205,12 +207,12 @@ def expand_binary_field_matrix(matrix, field: BinaryExtensionField):
     return tuple(tuple(row) for row in expanded)
 
 
-def apply_matrix(matrix, vector, domain):
+def apply_matrix(matrix, vector, unit_type):
     """Apply a finite-field matrix to one compatible vector.
 
     EXAMPLES::
 
-        >>> from claasp import Bit
+        >>> from claasp.unit_types import Bit
         >>> from claasp.analysis.linear_properties import apply_matrix
         >>> apply_matrix(((1, 1), (1, 0)), (1, 0), Bit())
         (1, 1)
@@ -220,22 +222,22 @@ def apply_matrix(matrix, vector, domain):
     vector = tuple(vector)
     if len(vector) != len(frozen[0]):
         raise ValueError("vector length must match matrix column count")
-    _validate_matrix_domain((vector,), domain)
+    _validate_matrix_domain((vector,), unit_type)
     return tuple(
         _sum(
-            domain,
-            (_multiply(domain, coefficient, value) for coefficient, value in zip(row, vector)),
+            unit_type,
+            (_multiply(unit_type, coefficient, value) for coefficient, value in zip(row, vector)),
         )
         for row in frozen
     )
 
 
-def multiply_matrices(left, right, domain):
+def multiply_matrices(left, right, unit_type):
     """Multiply two dimension-compatible finite-field matrices.
 
     EXAMPLES::
 
-        >>> from claasp import Bit
+        >>> from claasp.unit_types import Bit
         >>> from claasp.analysis.linear_properties import multiply_matrices
         >>> multiply_matrices(((1, 1),), ((1,), (1,)), Bit())
         ((0,),)
@@ -247,7 +249,7 @@ def multiply_matrices(left, right, domain):
     columns = transpose_matrix(right)
     return tuple(
         tuple(
-            _sum(domain, (_multiply(domain, x, y) for x, y in zip(row, column)))
+            _sum(unit_type, (_multiply(unit_type, x, y) for x, y in zip(row, column)))
             for column in columns
         )
         for row in left
@@ -258,58 +260,58 @@ def _weight(vector):
     return sum(value != 0 for value in vector)
 
 
-def _cardinality(domain):
-    if isinstance(domain, Bit):
+def _cardinality(unit_type):
+    if isinstance(unit_type, Bit):
         return 2
-    if isinstance(domain, BinaryExtensionField):
-        return 1 << domain.degree
-    if isinstance(domain, PrimeField):
-        return domain.modulus
-    raise TypeError("matrix analysis requires a finite field domain")
+    if isinstance(unit_type, BinaryExtensionField):
+        return 1 << unit_type.degree
+    if isinstance(unit_type, PrimeField):
+        return unit_type.modulus
+    raise TypeError("matrix analysis requires a finite field unit_type")
 
 
-def _validate_matrix_domain(matrix, domain):
-    if not isinstance(domain, (Bit, BinaryExtensionField, PrimeField)):
+def _validate_matrix_domain(matrix, unit_type):
+    if not isinstance(unit_type, (Bit, BinaryExtensionField, PrimeField)):
         raise TypeError("matrix analysis requires Bit, BinaryExtensionField, or PrimeField")
     for row in matrix:
         for value in row:
-            domain.validate(value)
+            unit_type.validate(value)
 
 
-def _add(domain, left, right):
-    if isinstance(domain, PrimeField):
-        return (left + right) % domain.modulus
+def _add(unit_type, left, right):
+    if isinstance(unit_type, PrimeField):
+        return (left + right) % unit_type.modulus
     return left ^ right
 
 
-def _subtract(domain, left, right):
-    if isinstance(domain, PrimeField):
-        return (left - right) % domain.modulus
+def _subtract(unit_type, left, right):
+    if isinstance(unit_type, PrimeField):
+        return (left - right) % unit_type.modulus
     return left ^ right
 
 
-def _multiply(domain, left, right):
-    if isinstance(domain, Bit):
+def _multiply(unit_type, left, right):
+    if isinstance(unit_type, Bit):
         return left & right
-    if isinstance(domain, BinaryExtensionField):
-        return binary_field_multiply(domain, left, right)
-    return (left * right) % domain.modulus
+    if isinstance(unit_type, BinaryExtensionField):
+        return binary_field_multiply(unit_type, left, right)
+    return (left * right) % unit_type.modulus
 
 
-def _inverse(domain, value):
+def _inverse(unit_type, value):
     if not value:
         raise ZeroDivisionError("zero has no field inverse")
-    if isinstance(domain, Bit):
+    if isinstance(unit_type, Bit):
         return 1
-    if isinstance(domain, BinaryExtensionField):
-        return binary_field_power(domain, value, (1 << domain.degree) - 2)
-    return pow(value, domain.modulus - 2, domain.modulus)
+    if isinstance(unit_type, BinaryExtensionField):
+        return binary_field_power(unit_type, value, (1 << unit_type.degree) - 2)
+    return pow(value, unit_type.modulus - 2, unit_type.modulus)
 
 
-def _sum(domain, values):
+def _sum(unit_type, values):
     result = 0
     for value in values:
-        result = _add(domain, result, value)
+        result = _add(unit_type, result, value)
     return result
 
 

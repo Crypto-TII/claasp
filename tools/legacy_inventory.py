@@ -23,7 +23,7 @@ if str(TOOLS_ROOT) not in sys.path:
 from catalogue_classification import classify_bijectivity
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "migration" / "legacy_inventory.json"
+OUTPUT = ROOT / "tools" / "data" / "legacy_inventory.json"
 LEGACY_ROOTS = (ROOT / "legacy-v4/claasp", ROOT / "legacy-v4/tests")
 SCHEMA_VERSION = 1
 
@@ -66,9 +66,9 @@ OFFICIAL_NAME_OVERRIDES = {
     "claasp/ciphers/block_ciphers/sparx_block_cipher.py": "SPARX",
     "claasp/ciphers/block_ciphers/tea_block_cipher.py": "TEA",
     "claasp/ciphers/block_ciphers/xtea_block_cipher.py": "XTEA",
-    "claasp/ciphers/permutations/chacha_permutation.py": "ChaCha",
+    "claasp/ciphers/permutations/chacha_permutation.py": "ChaChaPermutation",
     "claasp/ciphers/permutations/subterranean_permutation.py": "Subterranean",
-    "claasp/ciphers/stream_ciphers/chacha_stream_cipher.py": "ChaChaKeystreamBlock",
+    "claasp/ciphers/stream_ciphers/chacha_stream_cipher.py": "ChaChaBlockFunction",
     "claasp/ciphers/stream_ciphers/bluetooth_stream_cipher_e0.py": "BluetoothE0",
 }
 PROPOSED_MODULE_STEM_OVERRIDES = {
@@ -475,7 +475,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The test's 19,768 constraints, first/last Sage expressions and arbitrary feasible/minimum-count statuses are not fixed cryptanalytic results.",
     },
     "claasp/cipher_modules/models/milp/milp_models/milp_xor_differential_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; docs/architecture/audits/data/trail-search-capability-matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -507,7 +507,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Building time, Sage solver name and model tag are not scientific results. uBlock's one-round value follows directly from a required nonzero input and one bijective S-box layer; broader uBlock evidence is audited separately.",
     },
     "claasp/cipher_modules/models/milp/milp_models/milp_xor_linear_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; docs/architecture/audits/data/trail-search-capability-matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -699,7 +699,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The legacy base mixes encodings and result parsing through inheritance. v5 makes the claim kind explicit and shares no mutable SAT model state between them.",
     },
     "claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_differential.py; docs/architecture/audits/data/trail-search-capability-matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -715,7 +715,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Window constraints are optional search heuristics over otherwise exact trails; requested-weight existence does not make literal counter placement a contract. File-output formatting and arbitrary witnesses are removed. The separate uBlock aggregate remains owned by the typed-primitive prerequisite audit.",
     },
     "claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_linear.py; docs/architecture/audits/data/trail-search-capability-matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -907,7 +907,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Assertions on nSolutions>1, arbitrary weights>1 and internal probability-variable names are not scientific fixtures. Every exact numeric result is retained by generic graph models.",
     },
     "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; docs/architecture/audits/data/trail-search-capability-matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -915,7 +915,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The legacy model duplicates search modes, parsing and component dispatch. v5 separates one semantic problem from CP/SMT representations and explicit solver drivers.",
     },
     "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; docs/architecture/audits/data/trail-search-capability-matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -1024,7 +1024,7 @@ MIGRATION_OVERRIDES = {
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
         "acceptance_criterion": "Typed dense-layer activity reproduces every one of the 256 model-5 rows; the caller must prove nonzero coefficients and no exact joint field witness is claimed.",
-        "rationale": "The coarse domain transfer, not Espresso output or a wordsize-keyed mutable cache, owns the mathematics. This abstraction is distinct from the separate 94-row branch-number table and from exact field-matrix support.",
+        "rationale": "The coarse unit_type transfer, not Espresso output or a wordsize-keyed mutable cache, owns the mathematics. This abstraction is distinct from the separate 94-row branch-number table and from exact field-matrix support.",
     },
     "tests/unit/cipher_modules/models/milp/utils/generate_inequalities_for_wordwise_truncated_mds_matrix_test.py": {
         "v5_destination": "tests/unit/semantics/cryptanalysis/test_truncated__wordwise_relations.py",
@@ -1047,7 +1047,7 @@ MIGRATION_OVERRIDES = {
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
-        "acceptance_criterion": "All fixed counts/rows and full generators match; the seven fixed input cubes define exactly the same domain, and four fixed three-input XOR cubes reject no valid row.",
+        "acceptance_criterion": "All fixed counts/rows and full generators match; the seven fixed input cubes define exactly the same unit_type, and four fixed three-input XOR cubes reject no valid row.",
         "rationale": "Exact semantic rows supersede pickle-cache updates and deterministic choices of minimized Espresso cubes; no minimum-cube count is claimed.",
     },
     "claasp/cipher_modules/models/milp/utils/generate_inequalities_for_xor_with_n_input_bits.py": {
@@ -1128,14 +1128,14 @@ MIGRATION_OVERRIDES = {
         "disposition": "remove",
         "status": "removed-in-m10.8d",
         "acceptance_criterion": "Typed model declarations retain explicit identities; no variable groups are inferred by parsing declaration strings.",
-        "rationale": "The only helpers filter declaration strings and infer groups from legacy _y names. Typed graph ports and immutable MiniZinc model parts remove this formatting-dependent responsibility.",
+        "rationale": "The only helpers filter declaration strings and infer groups from legacy _y names. Typed graph unit_arrays and immutable MiniZinc model parts remove this formatting-dependent responsibility.",
     },
     "claasp/cipher_modules/models/sat/utils/constants.py": {
         "v5_destination": "src/claasp/graph",
         "prerequisites": [],
         "disposition": "remove",
         "status": "removed-in-m10.8d",
-        "acceptance_criterion": "Input/output port identities and logical selections are typed independently of solver variable suffixes.",
+        "acceptance_criterion": "Input/output unit_array identities and logical selections are typed independently of solver variable suffixes.",
         "rationale": "The file contains only _i and _o formatting constants, which are not v5 public model contracts.",
     },
     "claasp/cipher_modules/models/milp/utils/milp_name_mappings.py": {
@@ -1283,12 +1283,12 @@ _SMT_SOURCE_DESTINATIONS = {
     "claasp/cipher_modules/models/smt/smt_models/smt_xor_differential_model.py": (
         "src/claasp/analysis/trail_search.py; "
         "src/claasp/representations/constraints/smt/word_differential.py; "
-        "docs/architecture/audits/data/trail-search-capability-matrix.json"
+        "tests/fixtures/analysis/trail_search_capability_matrix.json"
     ),
     "claasp/cipher_modules/models/smt/smt_models/smt_xor_linear_model.py": (
         "src/claasp/analysis/trail_search.py; "
         "src/claasp/representations/constraints/smt/word_linear.py; "
-        "docs/architecture/audits/data/trail-search-capability-matrix.json"
+        "tests/fixtures/analysis/trail_search_capability_matrix.json"
     ),
     "claasp/cipher_modules/models/smt/solvers.py": ("src/claasp/drivers/solvers/z3.py"),
     "claasp/cipher_modules/models/smt/utils/constants.py": ("src/claasp/drivers/solvers/z3.py"),
@@ -1571,19 +1571,19 @@ for _module, (_disposition, _destination, _criterion) in _CMS_TEST_REPLACEMENTS.
 
 _M10_9C2_SUPERSEDED_SOURCES = {
     "claasp/DTOs/component_state.py": (
-        "src/claasp/graph/port.py",
-        "Immutable Port and Selection objects replace mutable component-id/bit-position state.",
+        "src/claasp/graph/unit_array.py",
+        "Immutable UnitArray and Selection objects replace mutable component-id/bit-position state.",
     ),
     "claasp/DTOs/power_of_2_word_based_dto.py": (
-        "src/claasp/domains/word.py; src/claasp/graph/value_type.py",
-        "Typed Word domains and ValueType replace a mutable optional word-size probe DTO.",
+        "src/claasp/unit_types/word.py; src/claasp/graph/unit_array_type.py",
+        "Typed Word domains and UnitArrayType replace a mutable optional word-size probe DTO.",
     ),
     "claasp/component.py": (
         "src/claasp/graph/component.py; src/claasp/semantics; src/claasp/representations/constraints",
         "The immutable component contract is separate from semantic providers and backend representations; legacy backend methods, generated identifiers, and printing are not component behavior.",
     ),
     "claasp/input.py": (
-        "src/claasp/graph/port.py",
+        "src/claasp/graph/unit_array.py",
         "Validated immutable logical-unit selections replace parallel mutable id-link and bit-position arrays.",
     ),
     "claasp/round.py": (
@@ -1704,7 +1704,7 @@ _M10_9C3_SOURCE_DISPOSITIONS = {
     "claasp/components/reverse_component.py": (
         "supersede",
         "src/claasp/components/structural/permutation.py",
-        "Reverse is the ordinary domain-neutral permutation with reversed positions; a separate class would duplicate semantics.",
+        "Reverse is the ordinary unit_type-neutral permutation with reversed positions; a separate class would duplicate semantics.",
     ),
     "claasp/components/word_permutation_component.py": (
         "supersede",
@@ -1730,7 +1730,7 @@ for _path, (_disposition, _destination, _rationale) in _M10_9C3_SOURCE_DISPOSITI
         "status": f"{_disposition}d-in-m10.9c3"
         if _disposition == "supersede"
         else "migrated-in-m10.9c3",
-        "acceptance_criterion": "Domain-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
+        "acceptance_criterion": "UnitType-neutral structural evaluation, graph boundaries, and scalar/batch behavior preserve applicable values independently of backend strings.",
         "rationale": _rationale,
     }
 
@@ -1765,7 +1765,7 @@ for _path, _destination in _M10_9C4_SOURCE_DESTINATIONS.items():
         "prerequisites": [],
         "disposition": "migrate",
         "status": "migrated-in-m10.9c4",
-        "acceptance_criterion": "Typed logical/substitution components have exhaustive small-domain or fixed lookup checks, scalar/batch parity, and shared semantics where cryptanalytic relations apply.",
+        "acceptance_criterion": "Typed logical/substitution components have exhaustive small-unit_type or fixed lookup checks, scalar/batch parity, and shared semantics where cryptanalytic relations apply.",
         "rationale": None,
     }
 MIGRATION_OVERRIDES["claasp/components/multi_input_non_linear_logical_operator_component.py"] = {
@@ -1845,8 +1845,8 @@ for _path, _destination in _M10_9C5_TEST_DESTINATIONS.items():
     }
 
 _M10_9C6_SOURCE_DESTINATIONS = {
-    "claasp/components/linear_layer_component.py": "src/claasp/components/algebraic/linear_map.py; src/claasp/domains",
-    "claasp/components/mix_column_component.py": "src/claasp/components/algebraic/linear_map.py; src/claasp/domains/binary_extension_field.py; src/claasp/utils/finite_fields.py",
+    "claasp/components/linear_layer_component.py": "src/claasp/components/algebraic/linear_map.py; src/claasp/unit_types",
+    "claasp/components/mix_column_component.py": "src/claasp/components/algebraic/linear_map.py; src/claasp/unit_types/binary_extension_field.py; src/claasp/utils/finite_fields.py",
 }
 for _path, _destination in _M10_9C6_SOURCE_DESTINATIONS.items():
     MIGRATION_OVERRIDES[_path] = {
@@ -1854,7 +1854,7 @@ for _path, _destination in _M10_9C6_SOURCE_DESTINATIONS.items():
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.9c6",
-        "acceptance_criterion": "A row-major typed LinearMap evaluates binary and extension-field matrices without Sage and validates every coefficient against its domain.",
+        "acceptance_criterion": "A row-major typed LinearMap evaluates binary and extension-field matrices without Sage and validates every coefficient against its unit_type.",
         "rationale": "A separate MixColumn operation duplicates linear-map semantics once the field modulus and logical word size are carried by BinaryExtensionField; backend constraints and branch-number analysis belong to representations and analyses.",
     }
 
@@ -2035,7 +2035,7 @@ for _path, _destination in _M10_9C8_TEST_DESTINATIONS.items():
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.9c8",
-        "acceptance_criterion": "Domain-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
+        "acceptance_criterion": "UnitType-neutral row permutation, legacy Sigma output, independently derived Keccak diffusion, and fixed Xoodoo/Gaston prefixes are executable.",
         "rationale": "Component identifiers, matrix dimensions, generated clauses, and exact constraint ordering do not add semantics beyond the tested permutation and linear maps.",
     }
 
@@ -2553,7 +2553,7 @@ def component_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
             if destination.startswith(("removed:", "inapplicable:")):
                 continue
             if (
-                not destination.startswith(("src/", "tests/", "docs/", "migration/", "tools/"))
+                not destination.startswith(("src/", "tests/", "docs/", "tools/"))
                 or not (ROOT / destination).exists()
             ):
                 destination_errors.append(f"{item['path']}: {destination}")
@@ -2771,7 +2771,7 @@ def component_analysis_closure_status(payload: dict[str, Any]) -> dict[str, Any]
         for destination in item.get("v5_destination", "").split(";"):
             destination = destination.strip()
             if (
-                destination.startswith(("src/", "tests/", "docs/", "migration/", "tools/"))
+                destination.startswith(("src/", "tests/", "docs/", "tools/"))
                 and not (ROOT / destination).exists()
             ):
                 errors.append(f"{path}: missing destination {destination}")
@@ -2815,12 +2815,12 @@ def presentation_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
         for destination in item.get("v5_destination", "").split(";"):
             destination = destination.strip()
             if (
-                destination.startswith(("src/", "tests/", "docs/", "migration/", "tools/"))
+                destination.startswith(("src/", "tests/", "docs/", "tools/"))
                 and not (ROOT / destination).exists()
             ):
                 errors.append(f"{path}: missing destination {destination}")
 
-    manifest_path = ROOT / "migration/m10_14_presentation_obligations.json"
+    manifest_path = ROOT / "tools/data/presentation_inventory.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     obligations = manifest.get("obligations", ())
     for item in obligations:
@@ -2866,7 +2866,7 @@ def tooling_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
         for destination in item.get("v5_destination", "").split(";"):
             destination = destination.strip()
             if (
-                destination.startswith(("src/", "tests/", "docs/", "migration/", "tools/"))
+                destination.startswith(("src/", "tests/", "docs/", "tools/"))
                 and not (ROOT / destination).exists()
             ):
                 errors.append(f"{path}: missing destination {destination}")
@@ -2883,7 +2883,7 @@ def tooling_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
         ):
             errors.append(f"{path}: achieved M10.6d6 ownership was reopened")
 
-    manifest_path = ROOT / "migration/m10_15_tooling_obligations.json"
+    manifest_path = ROOT / "tools/data/tooling_inventory.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("status") != "achieved":
         errors.append("M10.15 manifest is not achieved")

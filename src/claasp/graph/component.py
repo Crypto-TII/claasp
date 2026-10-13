@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
-from claasp.graph.port import Port, Selection
-from claasp.graph.value_type import ValueType
+from claasp.graph.unit_array import Selection, UnitArray
+from claasp.graph.unit_array_type import UnitArrayType
 
 
 @dataclass(frozen=True, slots=True)
@@ -16,15 +16,16 @@ class Component:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, ValueType
-        >>> component = Component("identity_0", (), ValueType(Bit(), (1,)))
-        >>> component.output.owner_id
+        >>> from claasp import UnitArrayType
+        >>> from claasp.unit_types import Bit
+        >>> component = Component("identity_0", (), UnitArrayType(Bit(), (1,)))
+        >>> component.output.source_id
         'identity_0'
     """
 
     component_id: str | None
     inputs: tuple[Selection, ...]
-    output_type: ValueType
+    output_type: UnitArrayType
 
     def __post_init__(self) -> None:
         if self.component_id is not None:
@@ -36,13 +37,13 @@ class Component:
             raise TypeError("inputs must be a tuple")
         if any(not isinstance(component_input, Selection) for component_input in self.inputs):
             raise TypeError("every component input must be a Selection")
-        if not isinstance(self.output_type, ValueType):
-            raise TypeError("output_type must be a ValueType")
+        if not isinstance(self.output_type, UnitArrayType):
+            raise TypeError("output_type must be an UnitArrayType")
 
     @property
-    def output(self) -> Port:
+    def output(self) -> UnitArray:
         """Return the component output after an identifier is assigned."""
 
         if self.component_id is None:
             raise ValueError("component has no identifier until it is added to a primitive")
-        return Port(self.component_id, self.output_type)
+        return UnitArray(self.component_id, self.output_type)

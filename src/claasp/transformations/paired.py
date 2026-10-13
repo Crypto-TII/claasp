@@ -4,13 +4,12 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from claasp.components import Add, Xor
-from claasp.domains import BinaryExtensionField, Bit, Word
 from claasp.graph import (
     CompositeDefinition,
-    Port,
     Primitive,
     PrimitiveKind,
     Selection,
+    UnitArray,
     as_selection,
 )
 from claasp.graph.composite import CompositeInstance, CompositeTemplate
@@ -19,6 +18,7 @@ from claasp.transformations.contracts import (
     TransformationError,
     TransformationFailureReason,
 )
+from claasp.unit_types import BinaryExtensionField, Bit, Word
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,8 +28,8 @@ class PairedTransformationResult:
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> result = Speck(number_of_rounds=1).paired_xor(shared_inputs=("key",))
-        >>> (tuple(result.differences_by_input), tuple(result.primitive.input_ports))
+        >>> result = Speck(number_of_rounds=1).edit.pair_xor(shared_inputs=("key",))
+        >>> (tuple(result.differences_by_input), tuple(result.primitive.graph.input_arrays))
         (('plaintext',), ('left_plaintext', 'right_plaintext', 'key'))
     """
 
@@ -49,13 +49,13 @@ class PairedTransformationResult:
 
 
 def _as_observation(value) -> tuple[Selection, ...]:
-    if isinstance(value, (Port, Selection)):
+    if isinstance(value, (UnitArray, Selection)):
         return (as_selection(value),)
     if isinstance(value, Mapping):
         return tuple(as_selection(item) for item in value.values())
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
         return tuple(as_selection(item) for item in value)
-    raise TypeError("published paired observations must contain graph ports or selections")
+    raise TypeError("published paired observations must contain graph unit_arrays or selections")
 
 
 def _definition_from_primitive(primitive: Primitive) -> CompositeDefinition:
@@ -67,14 +67,17 @@ def _definition_from_primitive(primitive: Primitive) -> CompositeDefinition:
             scope.output_bindings,
             scope.component_ids,
         )
-        for scope in primitive.scopes
+        for scope in primitive.graph.scopes
     )
     return CompositeDefinition(
         f"{primitive.family_name}_realization",
-        tuple((name, port.value_type) for name, port in primitive.input_ports.items()),
-        tuple(tuple(primitive_round.components) for primitive_round in primitive.rounds),
-        primitive.bindings,
-        (("output", primitive.output),),
+        tuple(
+            (name, unit_array.array_type)
+            for name, unit_array in primitive.graph.input_arrays.items()
+        ),
+        tuple(tuple(primitive_round.components) for primitive_round in primitive.graph.rounds),
+        primitive.graph.bindings,
+        (("output", primitive.graph.output),),
         primitive.provenance,
         templates,
     )
@@ -83,28 +86,28 @@ def _definition_from_primitive(primitive: Primitive) -> CompositeDefinition:
 def _scoped_selection(
     parent: Primitive, scope: CompositeInstance, selection: Selection
 ) -> Selection:
-    source_id = selection.source.owner_id
+    source_id = selection.source.source_id
     if source_id in scope.inputs:
         return scope.inputs[source_id][selection.positions]
-    return parent.port(f"{scope.path}/{source_id}")[selection.positions]
+    return parent.graph.unit_array(f"{scope.path}/{source_id}")[selection.positions]
 
 
 def _difference_component(left: Selection, right: Selection):
-    if left.value_type != right.value_type:
+    if left.array_type != right.array_type:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
-            "paired difference operands have different value types",
-            source_ids=(left.source.owner_id, right.source.owner_id),
+            "paired difference operands have different array types",
+            source_ids=(left.source.source_id, right.source.source_id),
         )
-    domain = left.value_type.domain
-    if isinstance(domain, Word):
+    unit_type = left.array_type.unit_type
+    if isinstance(unit_type, Word):
         return Xor((left, right))
-    if isinstance(domain, (Bit, BinaryExtensionField)):
+    if isinstance(unit_type, (Bit, BinaryExtensionField)):
         return Add((left, right))
     raise TransformationError(
         TransformationFailureReason.UNSUPPORTED_COMPONENT,
-        f"XOR observation is unavailable for {type(domain).__name__}",
-        source_ids=(left.source.owner_id, right.source.owner_id),
+        f"XOR observation is unavailable for {type(unit_type).__name__}",
+        source_ids=(left.source.source_id, right.source.source_id),
     )
 
 
@@ -112,14 +115,14 @@ def _scoped_observation(parent, scope, observation):
     selections = tuple(
         _scoped_selection(parent, scope, selection) for selection in _as_observation(observation)
     )
-    domains = {selection.value_type.domain for selection in selections}
+    domains = {selection.array_type.unit_type for selection in selections}
     if len(domains) != 1:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
-            "one paired observation must use one scalar domain",
-            source_ids=tuple(selection.source.owner_id for selection in selections),
+            "one paired observation must use one scalar unit_type",
+            source_ids=tuple(selection.source.source_id for selection in selections),
         )
-    return as_selection(parent.join(*selections))
+    return as_selection(parent._builder.join(*selections))
 
 
 def paired_xor_primitive(
@@ -148,13 +151,13 @@ def paired_xor_primitive(
 
     if not isinstance(primitive, Primitive):
         raise TypeError("paired_xor_primitive requires a Primitive")
-    if primitive.output is None:
+    if primitive.graph.output is None:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "primitive has no declared output",
         )
-    shared_ports = tuple(primitive.input(selector) for selector in shared_inputs)
-    shared = tuple(port.owner_id for port in shared_ports)
+    shared_unit_arrays = tuple(primitive.graph.input(selector) for selector in shared_inputs)
+    shared = tuple(unit_array.source_id for unit_array in shared_unit_arrays)
     if len(set(shared)) != len(shared):
         raise TransformationError(
             TransformationFailureReason.MULTIPLE_PREDECESSORS,
@@ -162,7 +165,7 @@ def paired_xor_primitive(
             source_ids=shared,
         )
     descriptors = {}
-    for name, descriptor in primitive.input_descriptors.items():
+    for name, descriptor in primitive.graph.input_descriptors.items():
         if name in shared:
             descriptors[name] = descriptor
         else:
@@ -175,27 +178,27 @@ def paired_xor_primitive(
         provenance=primitive.provenance,
     )
     paired.realization = primitive.realization
-    paired.add_round()
+    paired._builder.add_round()
     definition = _definition_from_primitive(primitive)
     left_bindings = {
-        name: paired.input(name if name in shared else f"left_{name}")
-        for name in primitive.input_ports
+        name: paired.graph.input(name if name in shared else f"left_{name}")
+        for name in primitive.graph.input_arrays
     }
     right_bindings = {
-        name: paired.input(name if name in shared else f"right_{name}")
-        for name in primitive.input_ports
+        name: paired.graph.input(name if name in shared else f"right_{name}")
+        for name in primitive.graph.input_arrays
     }
-    left_scope = paired.add_composite(definition, left_bindings, scope_id="left")
-    right_scope = paired.add_composite(definition, right_bindings, scope_id="right")
+    left_scope = paired._builder.add_composite(definition, left_bindings, scope_id="left")
+    right_scope = paired._builder.add_composite(definition, right_bindings, scope_id="right")
 
     input_differences = []
-    for name in primitive.input_ports:
+    for name in primitive.graph.input_arrays:
         if name in shared:
             continue
-        difference = paired.add_component(
+        difference = paired._builder.add_component(
             _difference_component(
-                paired.input(f"left_{name}").select_all(),
-                paired.input(f"right_{name}").select_all(),
+                paired.graph.input(f"left_{name}").select_all(),
+                paired.graph.input(f"right_{name}").select_all(),
             )
         )
         input_differences.append((name, difference.select_all()))
@@ -205,18 +208,20 @@ def paired_xor_primitive(
         for observation in observations:
             left = _scoped_observation(paired, left_scope, observation)
             right = _scoped_observation(paired, right_scope, observation)
-            result.append(paired.add_component(_difference_component(left, right)).select_all())
+            result.append(
+                paired._builder.add_component(_difference_component(left, right)).select_all()
+            )
         return tuple(result)
 
-    round_differences = differences(tuple(getattr(primitive, "round_states", ())))
-    key_differences = differences(tuple(getattr(primitive, "round_keys", ())))
-    output_difference = paired.add_component(
+    round_differences = differences(primitive.graph.round_outputs)
+    key_differences = differences(primitive.graph.round_keys)
+    output_difference = paired._builder.add_component(
         _difference_component(
             left_scope.output(),
             right_scope.output(),
         )
     ).select_all()
-    paired.set_output(output_difference)
+    paired._builder.set_output(output_difference)
     record = TransformationRecord(
         "paired_xor",
         (("shared_inputs", ",".join(shared)),),

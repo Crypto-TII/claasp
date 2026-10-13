@@ -1,11 +1,9 @@
 Primitive catalogue architecture
 ================================
 
-The checked-in migration inventory is the source of truth for catalogue
-coverage. Its M10.9d closure gate requires all 145 behavioral source records
-to resolve to importable v5 modules and every one of the 143 legacy primitive
-test records to point at existing v5 evidence. The four reviewed helper
-modules remain explicitly outside the behavioral catalogue.
+The checked-in catalogue data is the source of truth for catalogue coverage.
+Its closure gate requires every public primitive record to resolve to an
+importable module and to point at existing executable evidence.
 
 Public export layer
 -------------------
@@ -14,12 +12,10 @@ Public export layer
 map from each official public class name to its module. The top-level package
 and each semantic category expose those classes lazily. This keeps simple
 imports cheap while making the full catalogue discoverable through
-``__all__``. Ordinary primitive exports come from the legacy migration
-inventory. ``migration/single_component_catalogue.json`` separately records
-the one-to-one v5 base-component wrappers: several obsolete legacy fixtures
-may be evidence for one modern component, while new v5 components may have no
-legacy fixture. Alternate graphs belong to realization metadata rather than
-new execution-engine types.
+``__all__``. Ordinary primitive exports come from the reviewed catalogue
+inventory. ``tools/data/single_component_catalogue.json`` separately records
+the one-to-one base-component wrappers. Alternate graphs belong to realization
+metadata rather than new execution-engine types.
 
 Primitive and input metadata
 ----------------------------
@@ -27,12 +23,12 @@ Primitive and input metadata
 ``Primitive.kind`` is a ``PrimitiveKind`` value describing the mathematical
 interface: function, permutation, block function, block primitive, or tweakable
 block primitive. It does not select an evaluator. ``PrimitiveInput`` keeps a
-boundary's ``ValueType``, semantic role, and ``InputVisibility`` together.
+boundary's ``UnitArrayType``, semantic role, and ``InputVisibility`` together.
 Conventional ``key`` inputs default to secret; other inputs default to public.
 Source can be explicit with ``public_input`` and ``secret_input``.
 
 ``Primitive.with_input_visibility`` makes a shallow metadata derivation. The
-typed ports, components, rounds, scopes, output, and semantic results remain
+typed unit arrays, components, rounds, scopes, output, and semantic results remain
 the same. This is intentional: whether a key is known is a property of one
 analysis scenario, not a different realization of the primitive.
 
@@ -88,8 +84,8 @@ same-import-path package:
 
 Simple primitives remain ``name.py`` modules. Their constructors contain the
 readable round function, key schedule, constants, and parameter validation and
-emit ordinary typed v5 components. Migration-time source compilers remain in
-the preserved v4 history rather than the release tree; all shipped Python is
+emit ordinary typed components. Historical source compilers remain in the
+preserved v4 branch rather than the release tree; all shipped Python is
 reviewed source, not serialized graph data. Runtime construction imports
 neither legacy CLAASP nor Sage.
 
@@ -112,20 +108,20 @@ alternate realizations nor data, so their implementations remain directly
 visible in ``twofish.py`` and ``warp.py``.
 
 The package layout is not itself a realization claim. The reviewed decisions
-live in ``migration/realization_catalogue.json`` and are checked by
+live in ``tools/data/realization_catalogue.json`` and are checked by
 ``tools/realization_closure.py --check``. DES with a 56-bit key boundary is a
 different parameterization from parity-bearing DES; CustomAES and ToyAES are
 different primitives from AES; PRINCEv2 is not a PRINCE realization. Empty
 subclasses that reproduce an identical graph are historical aliases rather
 than extra choices. Legacy-derived Simon, Simeck, and Gimli S-box forms have
-``legacy_regression`` maturity and remain explicitly non-canonical; M10.9f
-records that distinction in catalogue authenticity and query labels.
+``legacy_regression`` maturity and remain explicitly non-canonical; catalogue
+authenticity and query labels record that distinction.
 
 Discovery metadata and records
 ------------------------------
 
 ``claasp.catalogue`` is the public discovery boundary. Its packaged,
-versioned ``data/catalogue.json`` joins the M10.9b classification, public
+versioned ``data/catalogue.json`` joins the reviewed classification, public
 export map, typed input contract, component vocabulary, parameter sets,
 realization descriptors, fixed evidence, and driver declarations. Runtime
 queries read that committed resource. They never infer semantics from a

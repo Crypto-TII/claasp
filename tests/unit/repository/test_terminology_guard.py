@@ -3,7 +3,7 @@
 CLAASP v5 renamed the generic graph abstraction ``Cipher`` to ``Primitive``
 and the public catalogue package ``ciphers`` to ``primitives`` (see the
 "Primitive terminology and catalogue taxonomy" section of
-``docs/architecture/v5-plan.md``). This test wires
+``tools/terminology_guard.py``). This test wires
 :mod:`tools.terminology_guard` into the routine fast unit-test run so a
 regression to the transitional vocabulary fails CI immediately, without a
 separate job.
@@ -66,6 +66,7 @@ def test_guard_allows_the_real_block_cipher_taxonomy_and_ciphertext(tmp_path):
     (scan_root / "fine.py").write_text(
         '"""Keyed block-cipher graphs, e.g. block_ciphers and tweakable_block_ciphers.\n'
         "Evaluation returns plaintext/ciphertext pairs; ChaCha was a stream cipher mode.\n"
+        "Exact paper titles may name ARX ciphers or SPN ciphers.\n"
         '"""\n'
     )
 

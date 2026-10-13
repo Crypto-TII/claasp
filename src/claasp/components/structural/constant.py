@@ -4,12 +4,12 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from claasp.graph.component import Component
-from claasp.graph.value_type import ValueType
+from claasp.graph.unit_array_type import UnitArrayType
 
 
 @dataclass(frozen=True, slots=True, init=False)
 class Constant(Component):
-    """Produce a fixed homogeneous vector in a declared domain.
+    """Produce a fixed homogeneous vector with a declared unit type.
 
     EXAMPLES::
 
@@ -21,7 +21,7 @@ class Constant(Component):
     values: tuple[int, ...]
 
     def __init__(
-        self, output_type: ValueType, values: Iterable[int], component_id: str | None = None
+        self, output_type: UnitArrayType, values: Iterable[int], component_id: str | None = None
     ) -> None:
         frozen_values = tuple(values)
         object.__setattr__(self, "component_id", component_id)
@@ -33,4 +33,4 @@ class Constant(Component):
         if len(frozen_values) != output_type.unit_count:
             raise ValueError("constant value count must match its output type")
         for value in frozen_values:
-            output_type.domain.validate(value)
+            output_type.unit_type.validate(value)

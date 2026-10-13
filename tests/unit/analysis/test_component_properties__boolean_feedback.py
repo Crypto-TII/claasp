@@ -16,8 +16,8 @@ from claasp.components import (
     Shift,
     Xor,
 )
-from claasp.domains import Bit, Word
-from claasp.graph import Port, ValueType
+from claasp.graph import UnitArray, UnitArrayType
+from claasp.unit_types import Bit, Word
 
 
 def _word_component(component, property_):
@@ -26,13 +26,13 @@ def _word_component(component, property_):
     )
 
 
-def _ports(width=3):
-    value_type = ValueType(Word(width), (1,))
-    return Port("x", value_type), Port("y", value_type)
+def _unit_arrays(width=3):
+    array_type = UnitArrayType(Word(width), (1,))
+    return UnitArray("x", array_type), UnitArray("y", array_type)
 
 
 def test_xor_and_not_rotate_shift_exact_anf_properties():
-    left, right = _ports()
+    left, right = _unit_arrays()
     xor = Xor((left, right))
     bitwise_and = BitwiseAnd((left, right))
     bitwise_not = BitwiseNot(left)
@@ -50,7 +50,7 @@ def test_xor_and_not_rotate_shift_exact_anf_properties():
 
 
 def test_reduced_modular_add_exact_anf_degree_and_variables():
-    left, right = _ports(3)
+    left, right = _unit_arrays(3)
     component = ModularAdd((left, right))
 
     assert _word_component(component, ComponentProperty.ALGEBRAIC_DEGREE).value == 3
@@ -59,7 +59,7 @@ def test_reduced_modular_add_exact_anf_degree_and_variables():
 
 
 def test_linear_feedback_structure_and_connection_polynomial_are_typed():
-    state = Port("state", ValueType(Bit(), (4,)))
+    state = UnitArray("state", UnitArrayType(Bit(), (4,)))
     component = FeedbackRegister(
         state,
         (FeedbackRegisterSpec(4, (FeedbackTerm(0), FeedbackTerm(3))),),
@@ -78,7 +78,7 @@ def test_linear_feedback_structure_and_connection_polynomial_are_typed():
 
 
 def test_nonlinear_or_clocked_feedback_rejects_connection_polynomial():
-    state = Port("state", ValueType(Bit(), (4,)))
+    state = UnitArray("state", UnitArrayType(Bit(), (4,)))
     component = FeedbackRegister(
         state,
         (

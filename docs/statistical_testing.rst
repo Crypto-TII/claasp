@@ -21,7 +21,7 @@ output bits in MSB-first order:
 
 .. doctest::
 
-   >>> result = primitive.analyze().avalanche(
+   >>> result = primitive.analysis.avalanche(
    ...     "plaintext", 4, seed=9, fixed_inputs={"key": 0}
    ... )
    >>> result.input_bit_count, result.output_bit_count
@@ -32,7 +32,8 @@ output bits in MSB-first order:
    (False, 'empirical_paired_evaluation')
 
 The probability matrix is empirical evidence, never a proof of the strict
-avalanche criterion.
+avalanche criterion. NIST STS and Dieharder are available through optional
+drivers and parsers.
 
 Streaming dataset families
 --------------------------
@@ -57,15 +58,12 @@ big-endian byte blocks without materializing the complete experiment:
    >>> density.block_count, tuple(density.iter_selected_inputs())[:3]
    (33, (0, 2147483648, 1073741824))
 
-Correlation retains the legacy output-XOR-input construction. CBC begins at
-the zero chaining value and feeds each output into the next evaluation.
+Correlation uses the output-XOR-input construction. CBC begins at the zero
+chaining value and feeds each output into the next evaluation.
 Density datasets contain weight zero and one inputs plus a seeded ratio of
-weight-two inputs; high density uses their bitwise complements. The v5 seeded
-selection removes the legacy generator's nondeterministic subset behavior.
-``primitive.analysis.run_statistical_tests`` builds and runs any of the six
-families over an inclusive range of reduced-round graphs, returning one
-immutable result per round. The suite driver remains injectable, so the same
-orchestration works with NIST STS, Dieharder, and test doubles.
+weight-two inputs; high density uses their bitwise complements. Seeded
+selection makes the chosen subset reproducible. Round-specific streams are
+not currently part of the public API.
 
 Serialization and identity
 --------------------------
@@ -125,22 +123,8 @@ example, ``DieharderDriver(timeout_seconds=10).run(stream, test=0)`` runs one
 bounded test when ``dieharder`` is installed. A dedicated CI job exercises
 the real executable; importing and parsing results never requires it.
 
-The optional NIST STS adapter has a different execution contract than
-Dieharder's: the patched, non-interactive ``assess`` build this project
-compiles from ``required_dependencies/`` (applied on top of the official
-``sts-2_1_2.zip`` release, mirroring ``docker/Dockerfile``) never prints its
-report to stdout. It ``chdir``s into a compile-time constant working
-directory and always (re)writes the very same fixed report file,
-``<working_dir>/experiments/AlgorithmTesting/finalAnalysisReport.txt``, for
-every run. ``NistStsDriver`` locates and reads that fixed path immediately
-after each run instead of trusting stdout, serializes invocations against
-the same working directory with an in-process lock plus a best-effort
-cross-process file lock, and refuses to parse a report whose modification
-time did not advance -- guarding against silently returning a stale report
-from a previous run. It also does not treat ``assess``'s own exit code as a
-success signal, since the tool's convention is inverted (a fully successful
-run returns ``1``; a bad-usage invocation returns ``0``). For example,
 ``NistStsDriver(timeout_seconds=10).run(stream, number_of_bit_streams=1)``
-runs one bounded pass over every NIST STS test when ``niststs`` is
-installed. A dedicated CI job builds the patched tool from source and
-exercises it; importing and parsing results never requires it.
+runs one bounded pass over every NIST STS test when ``niststs`` is installed.
+It returns a ``StatisticalTestRun`` containing the parsed observations and
+execution metadata. A dedicated CI job builds the patched tool from source
+and exercises it; importing and parsing results never requires it.

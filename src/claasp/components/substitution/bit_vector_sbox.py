@@ -4,8 +4,8 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from claasp.components.substitution.lookup_table import LookupTable
-from claasp.domains import Bit
-from claasp.graph import Component, PortLike, ValueType, as_selection
+from claasp.graph import Component, UnitArrayLike, UnitArrayType, as_selection
+from claasp.unit_types import Bit
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -24,15 +24,15 @@ class BitVectorSBox(Component):
 
     def __init__(
         self,
-        component_input: PortLike,
+        component_input: UnitArrayLike,
         table: Iterable[int] | LookupTable,
         component_id: str | None = None,
         output_bit_size: int | None = None,
     ) -> None:
         component_input = as_selection(component_input)
-        if not isinstance(component_input.value_type.domain, Bit):
-            raise ValueError("bit-vector S-box requires the Bit domain")
-        width = component_input.value_type.unit_count
+        if not isinstance(component_input.array_type.unit_type, Bit):
+            raise ValueError("bit-vector S-box requires the Bit unit_type")
+        width = component_input.array_type.unit_count
         if isinstance(table, LookupTable):
             lookup_table = table
             if lookup_table.input_bit_size != width:
@@ -43,7 +43,9 @@ class BitVectorSBox(Component):
             lookup_table = LookupTable(table, width, output_bit_size)
         object.__setattr__(self, "component_id", component_id)
         object.__setattr__(self, "inputs", (component_input,))
-        object.__setattr__(self, "output_type", ValueType(Bit(), (lookup_table.output_bit_size,)))
+        object.__setattr__(
+            self, "output_type", UnitArrayType(Bit(), (lookup_table.output_bit_size,))
+        )
         object.__setattr__(self, "table", lookup_table.values)
         object.__setattr__(self, "output_bit_size", lookup_table.output_bit_size)
         Component.__post_init__(self)

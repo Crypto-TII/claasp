@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-MATRIX = ROOT / "docs/architecture/audits/data/legacy-public-capability-matrix.json"
+MATRIX = ROOT / "tests/fixtures/analysis/legacy_public_capability_matrix.json"
 
 
 def test_every_audited_legacy_capability_has_an_executable_disposition():

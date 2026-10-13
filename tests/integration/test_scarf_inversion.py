@@ -5,7 +5,7 @@ from claasp.primitives import SCARF
 
 def test_scarf_uses_and_recovers_both_plaintext_halves():
     primitive = SCARF()
-    inverse = primitive.inverse("plaintext").primitive
+    inverse = primitive.edit.inverse("plaintext").primitive
     key = 0x0123456789ABCDEF0123456789ABCDEF
     tweak = 0x123456789ABC
     plaintexts = (0x001, 0x020, 0x155, 0x2AA, 0x3FF)

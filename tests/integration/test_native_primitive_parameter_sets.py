@@ -9,7 +9,9 @@ import pytest
 from claasp.graph import Primitive, PrimitiveKind
 
 PARAMETER_SETS = json.loads(
-    (Path(__file__).parents[2] / "migration/m10_9d_parameter_sets.json").read_text(encoding="utf-8")
+    (
+        Path(__file__).parents[2] / "tests/fixtures/catalogue/primitive_parameter_sets.json"
+    ).read_text(encoding="utf-8")
 )
 
 
@@ -27,6 +29,6 @@ def test_every_audited_parameter_set_builds_from_native_source(record):
     primitive = getattr(module, record["class"])(**parameters)
     assert isinstance(primitive, Primitive)
     assert isinstance(primitive.kind, PrimitiveKind)
-    assert set(primitive.input_descriptors) == set(primitive.input_ports)
-    assert primitive.rounds
-    assert primitive.output is not None
+    assert set(primitive.graph.input_descriptors) == set(primitive.graph.input_arrays)
+    assert primitive.graph.rounds
+    assert primitive.graph.output is not None

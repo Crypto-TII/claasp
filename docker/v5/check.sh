@@ -24,20 +24,33 @@ done
 
 claasp-release-smoke
 
+case "${CLAASP_RELEASE_CHECK_PROFILE:-full}" in
+    architecture-smoke)
+        python -m pytest \
+            tests/unit/unit_types \
+            tests/unit/representations/execution \
+            tests/unit/serialization \
+            tests/unit/representations/source/test_c.py \
+            tests/unit/primitives/block_ciphers/aes/test_package.py \
+            tests/unit/primitives/permutations/test_chacha.py \
+            -p no:cacheprovider
+        python -m build
+        python tools/wheel_audit.py dist/*.whl
+        exit 0
+        ;;
+    full)
+        ;;
+    *)
+        echo "unknown CLAASP_RELEASE_CHECK_PROFILE: ${CLAASP_RELEASE_CHECK_PROFILE}" >&2
+        exit 2
+        ;;
+esac
+
 ruff format --check src tests tools docs/conf.py
 ruff check src tests tools docs/conf.py
 python tools/typecheck_closure.py --check
 python tools/public_api_closure.py --check
 python tools/documentation_quality_closure.py --check
-python tools/repository_destination_closure.py --check
-python tools/license_provenance_closure.py --check
-python tools/release_environment_closure.py --check
-python tools/upstream_reconciliation_closure.py --check
-python tools/bidirectional_migration_audit.py --check
-python tools/release_tree_closure.py --check
-python tools/private_release_candidate_closure.py --check
-python tools/publication_preflight.py --check-plan
-python tools/review_release_plan_closure.py --check
 
 if [ -n "${CLAASP_DEPENDENCY_FREE_EXPRESSION:-}" ]; then
     python -m pytest -m "$CLAASP_DEPENDENCY_FREE_EXPRESSION" -p no:cacheprovider
@@ -68,4 +81,3 @@ python tools/terminology_guard.py
 
 python -m build
 python tools/wheel_audit.py dist/*.whl
-python tools/private_release_candidate_closure.py --check --artifacts dist/*

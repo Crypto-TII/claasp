@@ -41,6 +41,7 @@ renderers.
    :caption: Reference
 
    primitive_authoring
+   implementing_toy_spn
    analysis
    whats_new_v5
    parameters

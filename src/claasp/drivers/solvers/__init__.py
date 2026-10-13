@@ -1,6 +1,8 @@
 """Optional external constraint-solver drivers."""
 
 from claasp.drivers.solvers.base import SatResult, SatStatus
+from claasp.drivers.solvers.cryptominisat import CryptoMiniSatSolver
+from claasp.drivers.solvers.kissat import KissatSolver
 from claasp.drivers.solvers.milp_results import MILPResult, MILPStatus
 from claasp.drivers.solvers.minisat import MinisatSolver
 from claasp.drivers.solvers.minizinc import (
@@ -14,7 +16,11 @@ __all__ = [
     "CPEnumerationResult",
     "CPResult",
     "CPStatus",
+    "CryptoMiniSatSolver",
     "GLPKSolver",
+    "GurobiSolver",
+    "GurobiSolutionPoolResult",
+    "KissatSolver",
     "MILPResult",
     "MILPStatus",
     "MiniZincSolver",
@@ -36,4 +42,10 @@ def __getattr__(name: str):
         from claasp.drivers.solvers.glpk import GLPKSolver
 
         return GLPKSolver
+    if name in ("GurobiSolutionPoolResult", "GurobiSolver"):
+        from claasp.drivers.solvers.gurobi import GurobiSolutionPoolResult, GurobiSolver
+
+        return {"GurobiSolutionPoolResult": GurobiSolutionPoolResult, "GurobiSolver": GurobiSolver}[
+            name
+        ]
     raise AttributeError(name)

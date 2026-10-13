@@ -2,7 +2,7 @@
 
 from collections.abc import Iterable
 
-from claasp.domains import BinaryExtensionField, Bit
+from claasp.unit_types import BinaryExtensionField, Bit
 from claasp.utils.finite_fields import binary_field_multiply, binary_field_power
 
 
@@ -55,13 +55,13 @@ def transpose_matrix(matrix: Iterable[Iterable[int]]) -> tuple[tuple[int, ...], 
 
 def matrix_is_invertible(
     matrix: Iterable[Iterable[int]],
-    domain: Bit | BinaryExtensionField,
+    unit_type: Bit | BinaryExtensionField,
 ) -> bool:
-    """Return whether a square matrix is invertible over a binary domain.
+    """Return whether a square matrix is invertible over a binary unit_type.
 
     EXAMPLES::
 
-        >>> from claasp import Bit
+        >>> from claasp.unit_types import Bit
         >>> from claasp.utils import matrix_is_invertible
         >>> matrix_is_invertible(((1, 1), (1, 0)), Bit())
         True
@@ -74,11 +74,11 @@ def matrix_is_invertible(
         or any(len(row) != len(frozen) for row in frozen)
     ):
         return False
-    if not isinstance(domain, (Bit, BinaryExtensionField)):
-        raise TypeError("domain must be Bit or BinaryExtensionField")
+    if not isinstance(unit_type, (Bit, BinaryExtensionField)):
+        raise TypeError("unit_type must be Bit or BinaryExtensionField")
     for row in frozen:
         for coefficient in row:
-            domain.validate(coefficient)
+            unit_type.validate(coefficient)
 
     rank = 0
     for column in range(len(frozen)):
@@ -89,22 +89,24 @@ def matrix_is_invertible(
         if pivot is None:
             continue
         frozen[rank], frozen[pivot] = frozen[pivot], frozen[rank]
-        if isinstance(domain, BinaryExtensionField):
+        if isinstance(unit_type, BinaryExtensionField):
             inverse = binary_field_power(
-                domain,
+                unit_type,
                 frozen[rank][column],
-                (1 << domain.degree) - 2,
+                (1 << unit_type.degree) - 2,
             )
-            frozen[rank] = [binary_field_multiply(domain, value, inverse) for value in frozen[rank]]
+            frozen[rank] = [
+                binary_field_multiply(unit_type, value, inverse) for value in frozen[rank]
+            ]
         for row in range(len(frozen)):
             factor = frozen[row][column]
             if row == rank or not factor:
                 continue
-            if isinstance(domain, Bit):
+            if isinstance(unit_type, Bit):
                 frozen[row] = [left ^ right for left, right in zip(frozen[row], frozen[rank])]
             else:
                 frozen[row] = [
-                    left ^ binary_field_multiply(domain, factor, right)
+                    left ^ binary_field_multiply(unit_type, factor, right)
                     for left, right in zip(frozen[row], frozen[rank])
                 ]
         rank += 1

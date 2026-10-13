@@ -7,11 +7,11 @@ or analyze it.
 The typed graph
 ---------------
 
-Domains define scalar semantics such as a bit, a fixed-width word, an element
-of :math:`GF(2^w)`, or an element of :math:`GF(p)`. ``ValueType`` adds a
-homogeneous shape. Ports and selections connect components using logical
-units, so a permutation is reusable without assuming that every unit is a
-bit.
+Unit types define the semantics of one logical unit, such as a bit, a
+fixed-width word, an element of :math:`GF(2^w)`, or an element of
+:math:`GF(p)`. ``UnitArrayType`` adds a homogeneous shape. ``UnitArray`` and
+``Selection`` connect components using logical units, so a permutation is
+reusable without assuming that every unit is a bit.
 
 Components are immutable operation descriptions. They do not evaluate
 themselves and do not contain MiniSat-, Z3-, MILP-, or computer-algebra-system
@@ -21,8 +21,8 @@ The corresponding source packages have deliberately concrete names:
 
 .. code-block:: text
 
-   graph/       Primitive, Component, Port, Round, and ValueType structure
-   domains/     Bit, Word, GF(2^w), and GF(p) scalar units
+   graph/       Primitive, Component, UnitArray, Round, and UnitArrayType structure
+   unit_types/  Bit, Word, GF(2^w), and GF(p) logical unit types
    components/  Operations connecting graph values
    primitives/  Concrete block-cipher and permutation descriptions
    semantics/   What flowing values mean and how transitions behave
@@ -83,13 +83,13 @@ representation. Exporting only serializes an already lowered model.
 For example, a word-level ``ModularAdd`` remains a single component in a
 Speck graph. Boolean lowering expands it into sum and carry constraints; SMT
 export writes the resulting assertions as SMT-LIB. Users normally invoke the
-complete pipeline through ``primitive.analyze()`` and do not call these stages.
+complete pipeline through ``primitive.analysis`` and do not call these stages.
 
 Annotations, traces, and trails
 -------------------------------
 
 Concrete execution, cryptanalytic propagation, simulated leakage, and
-visualization all attach information to ports and components of the same
+visualization all attach information to unit arrays and components of the same
 primitive graph. They therefore share an immutable graph-annotation foundation.
 Their public semantic types remain distinct: an ``ExecutionTrace`` records
 concrete values, a cryptanalytic ``Trail`` records transitions and weights,

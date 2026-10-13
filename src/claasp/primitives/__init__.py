@@ -11,7 +11,7 @@ from claasp.primitives.block_ciphers import (
     Speck,
 )
 from claasp.primitives.block_functions import Trivium
-from claasp.primitives.permutations.chacha import ChaCha
+from claasp.primitives.permutations.chacha import ChaChaPermutation
 from claasp.primitives.permutations.mimc import MiMC
 from claasp.primitives.permutations.poseidon import Poseidon
 from claasp.primitives.permutations.salsa import Salsa
@@ -20,7 +20,7 @@ from claasp.primitives.toy_primitives import ToySpeck
 __all__ = [
     "AES",
     "AES128",
-    "ChaCha",
+    "ChaChaPermutation",
     "CustomAES",
     "MiMC",
     "Poseidon",

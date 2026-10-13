@@ -10,7 +10,7 @@ ROOT = next(
     parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file()
 )
 SCRIPT = ROOT / "tools" / "legacy_inventory.py"
-INVENTORY = ROOT / "migration" / "legacy_inventory.json"
+INVENTORY = ROOT / "tools" / "data" / "legacy_inventory.json"
 
 
 def _module():

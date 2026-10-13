@@ -30,7 +30,9 @@ def test_graph_annotations_are_typed_validated_and_immutable():
         CONCRETE,
         (
             AnnotationEntry("plaintext", AnnotationRole.INPUT, 0),
-            AnnotationEntry(primitive.components[0].component_id, AnnotationRole.COMPONENT, 1),
+            AnnotationEntry(
+                primitive.graph.components[0].component_id, AnnotationRole.COMPONENT, 1
+            ),
             AnnotationEntry("primitive_output", AnnotationRole.OUTPUT, 2),
         ),
     )
@@ -101,7 +103,7 @@ def test_representation_artifact_can_retain_typed_result_provenance():
 
 def test_cryptanalytic_trail_uses_the_same_annotation_foundation():
     primitive = Present(number_of_rounds=1)
-    component = next(item for item in primitive.components if item.component_id == "sbox_1_0")
+    component = next(item for item in primitive.graph.components if item.component_id == "sbox_1_0")
     transition = SBoxTransitionSemantics(PRESENT_SBOX).xor_differential(1, 3)
     trail = Trail(
         TrailKind.XOR_DIFFERENTIAL,

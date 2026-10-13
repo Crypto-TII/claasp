@@ -9,12 +9,12 @@ REPOSITORY_ROOT = NEXT_ROOT
 
 def test_every_presentation_obligation_has_owned_existing_destinations_and_evidence():
     payload = json.loads(
-        (NEXT_ROOT / "migration/m10_14_presentation_obligations.json").read_text(encoding="utf-8")
+        (NEXT_ROOT / "tools/data/presentation_inventory.json").read_text(encoding="utf-8")
     )
     assert payload["milestone"] == "M10.14"
     assert len(payload["obligations"]) == 8
     inventory = json.loads(
-        (NEXT_ROOT / "migration/legacy_inventory.json").read_text(encoding="utf-8")
+        (NEXT_ROOT / "tools/data/legacy_inventory.json").read_text(encoding="utf-8")
     )
     legacy_paths = {item["path"] for item in inventory["records"]}
     for item in payload["obligations"]:
@@ -31,7 +31,7 @@ def test_every_presentation_obligation_has_owned_existing_destinations_and_evide
 
 def test_four_report_records_have_explicit_m10_14_ownership():
     inventory = json.loads(
-        (NEXT_ROOT / "migration/legacy_inventory.json").read_text(encoding="utf-8")
+        (NEXT_ROOT / "tools/data/legacy_inventory.json").read_text(encoding="utf-8")
     )
     records = {item["path"]: item for item in inventory["records"]}
     paths = {

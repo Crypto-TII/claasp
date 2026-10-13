@@ -28,25 +28,26 @@ walk a ``Primitive`` independently or invoke an analysis backend.
    >>> {node.kind for node in diagram.nodes} >= {'input', 'output'}
    True
 
-The convenient ``Primitive.diagram()`` method accepts a ``GraphAnnotation``, an
-``ExecutionTrace``, a ``SideChannelTrace``, or a trail object exposing
-``annotate(primitive)``. ``Primitive.draw()`` then selects a serializer.
+Diagram compilation and serialization remain explicit developer operations.
+They are not exposed as ``Primitive.draw()`` while the user-facing
+visualization design is a release TODO.
 
 .. doctest::
 
    >>> trace = primitive.evaluate_with_trace(5).trace
-   >>> annotated = primitive.diagram(trace)
+   >>> annotated = DiagramCompiler().compile(primitive, trace)
    >>> all(node.annotation is not None for node in annotated.nodes)
    True
-   >>> text = primitive.draw("ascii", trace)
+   >>> from claasp.representations.diagrams import ASCIIArtSerializer, TikZSerializer
+   >>> text = ASCIIArtSerializer().serialize(annotated)
    >>> "round 0" in text and "--+-->" in text and "#" in text
    True
-   >>> latex = primitive.draw("tikz", trace)
+   >>> latex = TikZSerializer().serialize(annotated)
    >>> latex.startswith(r"\documentclass{article}")
    True
 
-PDF rendering is deliberately optional. ``primitive.draw("pdf")`` passes the
-TikZ document to ``LaTeXDriver`` and returns PDF bytes. It raises
+PDF rendering is deliberately optional. ``LaTeXDriver`` accepts the serialized
+TikZ document and returns a result containing PDF bytes. It raises
 ``FileNotFoundError`` when ``pdflatex`` is unavailable. The core, ASCII, and
 TikZ paths remain dependency-free; a dedicated integration test exercises the
 external renderer.

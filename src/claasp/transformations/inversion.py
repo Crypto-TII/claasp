@@ -5,16 +5,15 @@ from collections.abc import Mapping, Sequence
 from copy import copy
 
 from claasp.components import Add, LinearMap, Rotate, Xor
-from claasp.domains import BinaryExtensionField, Bit, Word
 from claasp.graph import (
     BindingKind,
-    Port,
-    PortLike,
     Primitive,
     PrimitiveInput,
     PrimitiveKind,
     Selection,
-    ValueType,
+    UnitArray,
+    UnitArrayLike,
+    UnitArrayType,
     as_selection,
 )
 from claasp.provenance import TransformationRecord
@@ -32,6 +31,7 @@ from claasp.transformations.inverse_rules import (
     ComponentInverseRegistry,
 )
 from claasp.transformations.traversal import DependencyIndex
+from claasp.unit_types import BinaryExtensionField, Bit, Word
 
 Atom = tuple[str, int]
 
@@ -41,33 +41,33 @@ def _qualified_primitive_type(primitive):
 
 
 def _as_selections(value) -> tuple[Selection, ...]:
-    if isinstance(value, (Port, Selection)):
+    if isinstance(value, (UnitArray, Selection)):
         return (as_selection(value),)
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
         selections = tuple(as_selection(item) for item in value)
         if selections:
             return selections
-    raise TypeError("an inversion boundary must be a port, selection, or non-empty sequence")
+    raise TypeError("an inversion boundary must be a unit_array, selection, or non-empty sequence")
 
 
 def _atoms(selection: Selection) -> tuple[Atom, ...]:
-    return tuple((selection.source.owner_id, position) for position in selection.positions)
+    return tuple((selection.source.source_id, position) for position in selection.positions)
 
 
 def _validate_boundary(primitive: Primitive, selection: Selection) -> None:
     try:
-        source = primitive.port(selection.source.owner_id)
+        source = primitive.graph.unit_array(selection.source.source_id)
     except KeyError as error:
         raise TransformationError(
             TransformationFailureReason.DISCONNECTED_DEPENDENCY,
             "inversion boundary source is not in the primitive",
-            source_ids=(selection.source.owner_id,),
+            source_ids=(selection.source.source_id,),
         ) from error
     if source != selection.source:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "inversion boundary type does not match its graph source",
-            source_ids=(selection.source.owner_id,),
+            source_ids=(selection.source.source_id,),
         )
 
 
@@ -83,12 +83,12 @@ def _normalize_known(primitive: Primitive, known):
         pieces = _as_selections(value)
         for piece in pieces:
             _validate_boundary(primitive, piece)
-        domain = pieces[0].value_type.domain
-        if any(piece.value_type.domain != domain for piece in pieces):
+        unit_type = pieces[0].array_type.unit_type
+        if any(piece.array_type.unit_type != unit_type for piece in pieces):
             raise TransformationError(
                 TransformationFailureReason.AMBIGUOUS_BOUNDARY,
-                "one known boundary must use one scalar domain",
-                source_ids=tuple(piece.source.owner_id for piece in pieces),
+                "one known boundary must use one scalar unit_type",
+                source_ids=tuple(piece.source.source_id for piece in pieces),
             )
         piece_atoms = tuple(atom for piece in pieces for atom in _atoms(piece))
         duplicates = occupied.intersection(piece_atoms)
@@ -101,14 +101,14 @@ def _normalize_known(primitive: Primitive, known):
         occupied.update(piece_atoms)
         exact_input = (
             len(pieces) == 1
-            and pieces[0].source.owner_id in primitive.input_ports
-            and pieces[0].positions == tuple(range(pieces[0].source.value_type.unit_count))
-            and name == pieces[0].source.owner_id
+            and pieces[0].source.source_id in primitive.graph.input_arrays
+            and pieces[0].positions == tuple(range(pieces[0].source.array_type.unit_count))
+            and name == pieces[0].source.source_id
         )
         descriptors[name] = (
-            primitive.input_descriptor(name)
+            primitive.graph.input_descriptor(name)
             if exact_input
-            else PrimitiveInput(ValueType(domain, (len(piece_atoms),)), role=name)
+            else PrimitiveInput(UnitArrayType(unit_type, (len(piece_atoms),)), role=name)
         )
         boundaries[name] = piece_atoms
     return descriptors, boundaries
@@ -120,7 +120,7 @@ def _assembled(derived: Primitive, equivalents: Mapping[Atom, Selection], atoms:
     current_source = None
     current_positions = []
     for piece in pieces:
-        if piece.value_type.unit_count != 1:
+        if piece.array_type.unit_count != 1:
             raise AssertionError("wire equivalents must be scalar selections")
         if piece.source == current_source:
             current_positions.append(piece.positions[0])
@@ -131,18 +131,18 @@ def _assembled(derived: Primitive, equivalents: Mapping[Atom, Selection], atoms:
             current_positions = [piece.positions[0]]
     if current_source is not None:
         groups.append(current_source[tuple(current_positions)])
-    return as_selection(derived.join(*groups))
+    return as_selection(derived._builder.join(*groups))
 
 
 def _assign(
     equivalents: dict[Atom, Selection],
     atoms: tuple[Atom, ...],
-    value: PortLike,
+    value: UnitArrayLike,
     *,
     changed_atoms: list[Atom] | None = None,
 ) -> bool:
     selection = as_selection(value)
-    if selection.value_type.unit_count != len(atoms):
+    if selection.array_type.unit_count != len(atoms):
         raise AssertionError("equivalent wire width mismatch")
     changed = False
     for atom, position in zip(atoms, selection.positions):
@@ -180,15 +180,17 @@ def _propagate_binding(binding, derived, equivalents, *, changed_atoms=None):
         for index, output_atom in enumerate(output_atoms):
             group = input_atoms[index * width : (index + 1) * width]
             if output_atom in equivalents and not all(atom in equivalents for atom in group):
-                bits = derived.unpack_bits(equivalents[output_atom])
+                bits = derived._builder.unpack_bits(equivalents[output_atom])
                 changed |= _assign(equivalents, group, bits, changed_atoms=changed_atoms)
             elif output_atom not in equivalents and all(atom in equivalents for atom in group):
                 bits = _assembled(derived, equivalents, group)
-                domain = binding.output_type.domain
-                packed = derived.pack_bits(
+                unit_type = binding.output_type.unit_type
+                packed = derived._builder.pack_bits(
                     bits,
                     width,
-                    output_domain=domain if isinstance(domain, BinaryExtensionField) else None,
+                    output_unit_type=unit_type
+                    if isinstance(unit_type, BinaryExtensionField)
+                    else None,
                 )
                 equivalents[output_atom] = packed[0]
                 if changed_atoms is not None:
@@ -198,15 +200,17 @@ def _propagate_binding(binding, derived, equivalents, *, changed_atoms=None):
         for index, input_atom in enumerate(input_atoms):
             group = output_atoms[index * width : (index + 1) * width]
             if input_atom in equivalents and not all(atom in equivalents for atom in group):
-                bits = derived.unpack_bits(equivalents[input_atom])
+                bits = derived._builder.unpack_bits(equivalents[input_atom])
                 changed |= _assign(equivalents, group, bits, changed_atoms=changed_atoms)
             elif input_atom not in equivalents and all(atom in equivalents for atom in group):
                 bits = _assembled(derived, equivalents, group)
-                domain = binding.inputs[0].value_type.domain
-                packed = derived.pack_bits(
+                unit_type = binding.inputs[0].array_type.unit_type
+                packed = derived._builder.pack_bits(
                     bits,
                     width,
-                    output_domain=domain if isinstance(domain, BinaryExtensionField) else None,
+                    output_unit_type=unit_type
+                    if isinstance(unit_type, BinaryExtensionField)
+                    else None,
                 )
                 equivalents[input_atom] = packed[0]
                 if changed_atoms is not None:
@@ -217,7 +221,7 @@ def _propagate_binding(binding, derived, equivalents, *, changed_atoms=None):
 
 def _propagate_bindings(primitive, derived, equivalents):
     changed = False
-    for binding in primitive.bindings:
+    for binding in primitive.graph.bindings:
         changed |= _propagate_binding(binding, derived, equivalents)
     return changed
 
@@ -232,23 +236,23 @@ def _recover_xor_region(
 ):
     """Recover units isolated by exact bit-level elimination of XOR regions."""
 
-    def width(domain):
-        if isinstance(domain, Bit):
+    def width(unit_type):
+        if isinstance(unit_type, Bit):
             return 1
-        if isinstance(domain, Word):
-            return domain.width
-        if isinstance(domain, BinaryExtensionField):
-            return domain.degree
+        if isinstance(unit_type, Word):
+            return unit_type.width
+        if isinstance(unit_type, BinaryExtensionField):
+            return unit_type.degree
         return None
 
     def virtual_bits(selection):
-        domain_width = width(selection.value_type.domain)
-        if domain_width is None:
+        unit_width = width(selection.array_type.unit_type)
+        if unit_width is None:
             return ()
         return tuple(
-            (selection.source.owner_id, position, bit)
+            (selection.source.source_id, position, bit)
             for position in selection.positions
-            for bit in range(domain_width)
+            for bit in range(unit_width)
         )
 
     if "groups" not in region_cache:
@@ -264,8 +268,8 @@ def _recover_xor_region(
             if coefficients:
                 raw_equations.append(frozenset(coefficients))
 
-        for binding in primitive.bindings:
-            output = primitive.port(binding.binding_id).select_all()
+        for binding in primitive.graph.bindings:
+            output = primitive.graph.unit_array(binding.binding_id).select_all()
             output_bits = virtual_bits(output)
             input_bits = tuple(
                 bit for selection in binding.inputs for bit in virtual_bits(selection)
@@ -275,32 +279,32 @@ def _recover_xor_region(
                     add_equation(output_bit, input_bit)
 
         for component in components:
-            output = primitive.port(component.component_id).select_all()
+            output = primitive.graph.unit_array(component.component_id).select_all()
             output_bits = virtual_bits(output)
             input_bits = tuple(virtual_bits(item) for item in component.inputs)
             if type(component) is Xor or (
                 type(component) is Add
-                and isinstance(component.output_type.domain, (Bit, BinaryExtensionField))
+                and isinstance(component.output_type.unit_type, (Bit, BinaryExtensionField))
             ):
                 if any(len(bits) != len(output_bits) for bits in input_bits):
                     continue  # pragma: no cover - component validation owns this
                 for index, output_bit in enumerate(output_bits):
                     add_equation(output_bit, *(bits[index] for bits in input_bits))
             elif type(component) is Rotate:
-                domain_width = component.output_type.domain.width
+                unit_width = component.output_type.unit_type.width
                 amount = component.amount
                 for unit in range(component.output_type.unit_count):
-                    for bit in range(domain_width):
+                    for bit in range(unit_width):
                         input_bit = (
-                            (bit + amount) % domain_width
+                            (bit + amount) % unit_width
                             if component.direction == "left"
-                            else (bit - amount) % domain_width
+                            else (bit - amount) % unit_width
                         )
                         add_equation(
-                            output_bits[unit * domain_width + bit],
-                            input_bits[0][unit * domain_width + input_bit],
+                            output_bits[unit * unit_width + bit],
+                            input_bits[0][unit * unit_width + input_bit],
                         )
-            elif type(component) is LinearMap and isinstance(component.output_type.domain, Bit):
+            elif type(component) is LinearMap and isinstance(component.output_type.unit_type, Bit):
                 for output_bit, row in zip(output_bits, component.matrix):
                     add_equation(
                         output_bit,
@@ -340,12 +344,12 @@ def _recover_xor_region(
         if atom in bit_cache:
             return bit_cache[atom]
         selection = equivalents[atom]
-        domain = selection.value_type.domain
-        if isinstance(domain, Bit):
+        unit_type = selection.array_type.unit_type
+        if isinstance(unit_type, Bit):
             bits = (selection,)
-        elif isinstance(domain, (Word, BinaryExtensionField)):
-            unpacked = derived.unpack_bits(selection)
-            bits = tuple(unpacked[index] for index in range(unpacked.value_type.unit_count))
+        elif isinstance(unit_type, (Word, BinaryExtensionField)):
+            unpacked = derived._builder.unpack_bits(selection)
+            bits = tuple(unpacked[index] for index in range(unpacked.array_type.unit_count))
         else:
             return None
         bit_cache[atom] = bits
@@ -358,7 +362,7 @@ def _recover_xor_region(
             continue
         for bit, selection in enumerate(bits):
             known[(atom[0], atom[1], bit)] = (
-                selection.source.owner_id,
+                selection.source.source_id,
                 selection.positions[0],
             )
 
@@ -423,28 +427,30 @@ def _recover_xor_region(
     for atom, expressions in solved_units.items():
         if atom in equivalents:
             continue
-        port = primitive.port(atom[0])
-        domain_width = width(port.value_type.domain)
-        if domain_width is None or set(expressions) != set(range(domain_width)):
+        unit_array = primitive.graph.unit_array(atom[0])
+        unit_width = width(unit_array.array_type.unit_type)
+        if unit_width is None or set(expressions) != set(range(unit_width)):
             continue
         bits = []
-        for bit in range(domain_width):
+        for bit in range(unit_width):
             selections = tuple(
-                derived.port(source_id)[position]
+                derived.graph.unit_array(source_id)[position]
                 for source_id, position in sorted(expressions[bit])
             )
             bits.append(
-                selections[0] if len(selections) == 1 else derived.add_component(Add(selections))
+                selections[0]
+                if len(selections) == 1
+                else derived._builder.add_component(Add(selections))
             )
-        if isinstance(port.value_type.domain, Bit):
+        if isinstance(unit_array.array_type.unit_type, Bit):
             value = bits[0]
         else:
-            value = derived.pack_bits(
-                derived.join(*bits),
-                domain_width,
-                output_domain=(
-                    port.value_type.domain
-                    if isinstance(port.value_type.domain, BinaryExtensionField)
+            value = derived._builder.pack_bits(
+                derived._builder.join(*bits),
+                unit_width,
+                output_unit_type=(
+                    unit_array.array_type.unit_type
+                    if isinstance(unit_array.array_type.unit_type, BinaryExtensionField)
                     else None
                 ),
             )
@@ -454,9 +460,9 @@ def _recover_xor_region(
 
 def partial_inverse(
     primitive: Primitive,
-    target: PortLike,
+    target: UnitArrayLike,
     *,
-    known: Mapping[str, PortLike | Sequence[PortLike]],
+    known: Mapping[str, UnitArrayLike | Sequence[UnitArrayLike]],
     family_name: str | None = None,
     registry: ComponentInverseRegistry = DEFAULT_INVERSE_REGISTRY,
 ) -> TransformationResult:
@@ -468,13 +474,14 @@ def partial_inverse(
 
     EXAMPLES::
 
-        >>> from claasp import Primitive, ValueType, Word
+        >>> from claasp import PrimitiveBuilder, UnitArrayType
+        >>> from claasp.unit_types import Word
         >>> from claasp.components import Xor
-        >>> graph = Primitive("xor", {"left": ValueType(Word(4), (1,)), "right": ValueType(Word(4), (1,))})
-        >>> _ = graph.add_round()
-        >>> mixed = graph.add_component(Xor(graph.inputs()))
-        >>> graph.set_output(mixed)
-        >>> recovered = partial_inverse(graph, graph.input("left"), known={"output": graph.output, "right": graph.input("right")}).primitive
+        >>> builder = PrimitiveBuilder("xor", {"left": UnitArrayType(Word(4), (1,)), "right": UnitArrayType(Word(4), (1,))})
+        >>> _ = builder.add_round()
+        >>> mixed = builder.add_component(Xor(builder.inputs()))
+        >>> graph = builder.build(mixed)
+        >>> recovered = partial_inverse(graph, graph.graph.input("left"), known={"output": graph.graph.output, "right": graph.graph.input("right")}).primitive
         >>> recovered.evaluate(0x9, 0x3)
         10
     """
@@ -493,16 +500,18 @@ def partial_inverse(
         provenance=primitive.provenance,
     )
     derived.realization = primitive.realization
-    derived.add_round()
+    derived._builder.add_round()
     equivalents: dict[Atom, Selection] = {}
     bit_cache = {}
     region_cache = {}
     for name, atoms in boundaries.items():
-        _assign(equivalents, atoms, derived.input(name))
+        _assign(equivalents, atoms, derived.graph.input(name))
 
-    components = tuple(primitive.components)
-    bindings_to_process = tuple(primitive.bindings)
-    relevant_sources = set(DependencyIndex(primitive).descendants(target_selection.source.owner_id))
+    components = tuple(primitive.graph.components)
+    bindings_to_process = tuple(primitive.graph.bindings)
+    relevant_sources = set(
+        DependencyIndex(primitive).descendants(target_selection.source.source_id)
+    )
     produced = set()
     stalled_errors = {}
     target_atoms = _atoms(target_selection)
@@ -586,7 +595,7 @@ def partial_inverse(
                 "inputs",
                 tuple(_assembled(derived, equivalents, atoms) for atoms in input_atoms),
             )
-            result = derived.add_component(clone)
+            result = derived._builder.add_component(clone)
             _assign(equivalents, output_atoms, result, changed_atoms=changed_atoms)
             produced.add(component_id)
             schedule(changed_atoms)
@@ -609,7 +618,7 @@ def partial_inverse(
             stalled_errors[operation_index] = TransformationError(
                 TransformationFailureReason.AMBIGUOUS_BOUNDARY,
                 "only part of a component predecessor is known",
-                source_ids=(component.inputs[recover].source.owner_id,),
+                source_ids=(component.inputs[recover].source.source_id,),
             )
             continue
         auxiliaries = {
@@ -627,7 +636,7 @@ def partial_inverse(
         except TransformationError as error:
             stalled_errors[operation_index] = error
             continue
-        result = derived.add_component(inverse)
+        result = derived._builder.add_component(inverse)
         _assign(
             equivalents,
             input_atoms[recover],
@@ -665,10 +674,10 @@ def partial_inverse(
             source_ids=missing,
         )
 
-    derived.set_output(_assembled(derived, equivalents, target_atoms))
+    derived._builder.set_output(_assembled(derived, equivalents, target_atoms))
     record = TransformationRecord(
         "partial_inverse",
-        (("target", target_selection.source.owner_id), ("known", ",".join(boundaries))),
+        (("target", target_selection.source.source_id), ("known", ",".join(boundaries))),
         primitive.realization_identity,
     )
     object.__setattr__(
@@ -712,18 +721,18 @@ def invert_primitive(
 
     if not isinstance(primitive, Primitive):
         raise TypeError("invert_primitive requires a Primitive")
-    if primitive.output is None:
+    if primitive.graph.output is None:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "primitive has no declared output",
         )
-    if not primitive.input_ports:
+    if not primitive.graph.input_arrays:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "primitive has no input to recover",
         )
-    source_recovered = primitive.input(recover_input)
-    if source_recovered.owner_id == "plaintext" and retained_inputs is None:
+    source_recovered = primitive.graph.input(recover_input)
+    if source_recovered.source_id == "plaintext" and retained_inputs is None:
         direct, direct_contract = direct_inversion_equivalent(primitive, output_name)
         if direct is not None:
             direct.realization = primitive.realization
@@ -738,13 +747,13 @@ def invert_primitive(
             inverse_record = TransformationRecord(
                 "inverse",
                 (
-                    ("recover", source_recovered.owner_id),
+                    ("recover", source_recovered.source_id),
                     (
                         "retained",
                         ",".join(
-                            port.owner_id
-                            for port in primitive.inputs()
-                            if port.owner_id != source_recovered.owner_id
+                            unit_array.source_id
+                            for unit_array in primitive.graph.inputs()
+                            if unit_array.source_id != source_recovered.source_id
                         ),
                     ),
                 ),
@@ -758,38 +767,43 @@ def invert_primitive(
             return TransformationResult(
                 direct,
                 (
-                    (primitive.output.source.owner_id, output_name),
+                    (primitive.graph.output.source.source_id, output_name),
                     *(
-                        (port.owner_id, port.owner_id)
-                        for port in primitive.inputs()
-                        if port.owner_id != source_recovered.owner_id
+                        (unit_array.source_id, unit_array.source_id)
+                        for unit_array in primitive.graph.inputs()
+                        if unit_array.source_id != source_recovered.source_id
                     ),
                 ),
             )
     working, equivalent_contract = inversion_equivalent(primitive)
     if working is None:
         working = primitive
-    recovered = working.input(source_recovered.owner_id)
+    recovered = working.graph.input(source_recovered.source_id)
     retained = (
-        tuple(port for port in working.inputs() if port.owner_id != recovered.owner_id)
+        tuple(
+            unit_array
+            for unit_array in working.graph.inputs()
+            if unit_array.source_id != recovered.source_id
+        )
         if retained_inputs is None
         else tuple(
-            working.input(primitive.input(selector).owner_id) for selector in retained_inputs
+            working.graph.input(primitive.graph.input(selector).source_id)
+            for selector in retained_inputs
         )
     )
-    if any(port.owner_id == recovered.owner_id for port in retained):
+    if any(unit_array.source_id == recovered.source_id for unit_array in retained):
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "the recovered input cannot also be retained",
-            source_ids=(recovered.owner_id,),
+            source_ids=(recovered.source_id,),
         )
-    if len({port.owner_id for port in retained}) != len(retained):
+    if len({unit_array.source_id for unit_array in retained}) != len(retained):
         raise TransformationError(
             TransformationFailureReason.MULTIPLE_PREDECESSORS,
             "retained primitive inputs must be unique",
         )
-    known = {output_name: working.output}
-    known.update((port.owner_id, port) for port in retained)
+    known = {output_name: working.graph.output}
+    known.update((unit_array.source_id, unit_array) for unit_array in retained)
     result = partial_inverse(
         working,
         recovered,
@@ -799,8 +813,9 @@ def invert_primitive(
     )
     derived = result.primitive
     complete = (
-        set(port.owner_id for port in retained) == set(working.input_ports) - {recovered.owner_id}
-        and working.output.value_type == recovered.value_type
+        set(unit_array.source_id for unit_array in retained)
+        == set(working.graph.input_arrays) - {recovered.source_id}
+        and working.graph.output.array_type == recovered.array_type
     )
     if complete and primitive.kind in (
         PrimitiveKind.BLOCK_CIPHER,
@@ -812,8 +827,8 @@ def invert_primitive(
     record = TransformationRecord(
         "inverse",
         (
-            ("recover", recovered.owner_id),
-            ("retained", ",".join(port.owner_id for port in retained)),
+            ("recover", recovered.source_id),
+            ("retained", ",".join(unit_array.source_id for unit_array in retained)),
         ),
         primitive.realization_identity,
     )

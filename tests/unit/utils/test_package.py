@@ -2,7 +2,7 @@
 
 import pytest
 
-from claasp import BinaryExtensionField, Bit
+from claasp.unit_types import BinaryExtensionField, Bit
 from claasp.utils import (
     bitmask,
     bits_little_endian,

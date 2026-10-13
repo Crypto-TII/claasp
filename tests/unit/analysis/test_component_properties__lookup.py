@@ -71,7 +71,9 @@ def test_component_dispatch_rejects_wrong_domain_without_fabricated_value():
     from claasp.primitives import Present
 
     component = next(
-        item for item in Present(number_of_rounds=1).components if isinstance(item, BitVectorSBox)
+        item
+        for item in Present(number_of_rounds=1).graph.components
+        if isinstance(item, BitVectorSBox)
     )
     result = analyze_component_property(
         component,

@@ -8,7 +8,7 @@ ROOT = next(
 
 
 def test_every_m10_9d8_source_has_its_typed_public_class():
-    inventory = json.loads((ROOT / "migration/legacy_inventory.json").read_text(encoding="utf-8"))
+    inventory = json.loads((ROOT / "tools/data/legacy_inventory.json").read_text(encoding="utf-8"))
     records = [
         record
         for record in inventory["records"]

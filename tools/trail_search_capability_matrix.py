@@ -15,7 +15,7 @@ from claasp.primitives._catalogue_exports import ALL_EXPORTS, load_export
 from claasp.representations.constraints.sat import WordDifferentialSATModel, WordLinearSATModel
 from claasp.semantics.cryptanalysis import TrailKind
 
-OUTPUT = Path("docs/architecture/audits/data/trail-search-capability-matrix.json")
+OUTPUT = Path("tests/fixtures/analysis/trail_search_capability_matrix.json")
 
 _CONFIGURATION_OVERRIDES = {
     # These constructors reject an arbitrary one-round request.  Use their
@@ -102,12 +102,12 @@ def generate():
         "schema": 3,
         "meaning": {
             "supported_and_tested": (
-                "the reduced/default graph passed the exact component/domain contract; "
+                "the reduced/default graph passed the exact component/unit_type contract; "
                 "the encodings are covered by focused construction and solver tests"
             ),
             "unsupported": (
                 "the graph cannot enter the exact optimizer for the recorded component, "
-                "weight-domain, output, or constructor reason"
+                "weight-unit_type, output, or constructor reason"
             ),
         },
         "rows": rows,

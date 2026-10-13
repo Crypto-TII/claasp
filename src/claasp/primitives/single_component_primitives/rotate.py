@@ -1,8 +1,8 @@
 """Single-component fixed-rotation primitive implementation."""
 
 from claasp.components import Rotate as RotateComponent
-from claasp.domains import Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
+from claasp.unit_types import Word
 
 from ._base import positive
 
@@ -23,7 +23,7 @@ class Rotate(Primitive):
     EXAMPLES::
 
         >>> primitive = Rotate()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -38,11 +38,15 @@ class Rotate(Primitive):
         bit_size = positive(bit_size, "bit_size")
         super().__init__(
             "rotate",
-            {"input": ValueType(Word(bit_size), (1,))},
+            {"input": UnitArrayType(Word(bit_size), (1,))},
             kind=PrimitiveKind.PERMUTATION,
         )
-        self.add_round()
-        self.set_output(self.add_component(RotateComponent(self.input("input"), amount, direction)))
+        self._builder.add_round()
+        self._builder.set_output(
+            self._builder.add_component(
+                RotateComponent(self.graph.input("input"), amount, direction)
+            )
+        )
 
 
 __all__ = ["Rotate"]

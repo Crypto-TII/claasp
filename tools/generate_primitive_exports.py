@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
-INVENTORY = ROOT / "migration/legacy_inventory.json"
-SINGLE_COMPONENT_CATALOGUE = ROOT / "migration/single_component_catalogue.json"
+INVENTORY = ROOT / "tools/data/legacy_inventory.json"
+SINGLE_COMPONENT_CATALOGUE = ROOT / "tools/data/single_component_catalogue.json"
 DESTINATION = ROOT / "src/claasp/primitives/_catalogue_exports.py"
 
 

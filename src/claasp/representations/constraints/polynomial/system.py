@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
-from claasp.domains import PrimeField
 from claasp.representations.constraints.polynomial.expression import Polynomial
+from claasp.unit_types import PrimeField
 
 
 @dataclass(frozen=True, slots=True)

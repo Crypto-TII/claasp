@@ -12,10 +12,11 @@ class ExecutionTrace:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, Primitive, ValueType
+        >>> from claasp import Primitive, UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.annotations import AnnotationEntry, AnnotationRole
         >>> from claasp.semantics import CONCRETE
-        >>> primitive = Primitive("identity", {"state": ValueType(Bit(), (1,))})
+        >>> primitive = Primitive("identity", {"state": UnitArrayType(Bit(), (1,))})
         >>> trace = ExecutionTrace(GraphAnnotation(primitive, CONCRETE, (
         ...     AnnotationEntry("state", AnnotationRole.INPUT, 1),
         ... )))
@@ -62,9 +63,10 @@ class SideChannelTrace:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, Primitive, ValueType
+        >>> from claasp import Primitive, UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.semantics import LEAKAGE
-        >>> primitive = Primitive("leakage", {"state": ValueType(Bit(), (1,))})
+        >>> primitive = Primitive("leakage", {"state": UnitArrayType(Bit(), (1,))})
         >>> annotation = GraphAnnotation(primitive, LEAKAGE, ())
         >>> trace = SideChannelTrace(annotation, (LeakageSample("input", 1.0, 0),))
         >>> trace.samples[0].value

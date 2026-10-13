@@ -55,15 +55,17 @@ def test_selected_realizations_have_identical_contracts_and_seeded_outputs(
     for graph, descriptor in zip(graphs, descriptors):
         assert graph.realization is descriptor
         assert graph.realization_identity == f"{reference.family_name}:{descriptor.name}"
-        assert tuple(graph.input_descriptors.items()) == tuple(reference.input_descriptors.items())
-        assert graph.output.value_type == reference.output.value_type
+        assert tuple(graph.graph.input_descriptors.items()) == tuple(
+            reference.graph.input_descriptors.items()
+        )
+        assert graph.graph.output.array_type == reference.graph.output.array_type
         assert graph.kind is reference.kind
 
     generator = random.Random(f"M10.9e:{primitive_class.__name__}")
     for _ in range(3):
         inputs = {
-            name: generator.getrandbits(item.value_type.encoded_bit_size)
-            for name, item in reference.input_descriptors.items()
+            name: generator.getrandbits(item.array_type.encoded_bit_size)
+            for name, item in reference.graph.input_descriptors.items()
         }
         assert len({graph.evaluate(**inputs) for graph in graphs}) == 1
 
@@ -94,8 +96,8 @@ def test_boundary_normalized_realizations_preserve_published_fixed_vectors(
 
 def test_every_audited_family_and_realization_has_existing_fixed_evidence():
     records = []
-    for name in ("m10_9d6_fixed_vectors.json", "m10_9d7_fixed_vectors.json"):
-        records.extend(json.loads((ROOT / "migration" / name).read_text()))
+    for name in ("substitution_fixed_vectors.json", "permutation_fixed_vectors.json"):
+        records.extend(json.loads((ROOT / "tests/fixtures/catalogue" / name).read_text()))
     evidenced = {record["class"] for record in records}
     assert {
         "Gift",

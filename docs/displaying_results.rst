@@ -6,18 +6,71 @@ an analysis, solver, statistical program, or neural-training framework. The
 returned ``ReportData`` is immutable and keeps evidence, applicability,
 citations, realization identity, and execution metadata separate.
 
+Present a result
+----------------
+
+Start with an analysis result, adapt it into report data with ``present()``,
+then render that report for a terminal or another supported destination:
+
+.. doctest::
+
+   >>> from claasp.presentation import present, render_report
+   >>> from claasp.primitives import Speck
+   >>> result = Speck(number_of_rounds=2).analysis.find_optimal_trail(
+   ...     kind="xor_differential", backend="dependency_free"
+   ... )
+   >>> report = present(result)
+   >>> report.title, report.sections[0].title
+   ('Trail', 'Trail')
+   >>> rendered = render_report(report)
+   >>> "Round | Difference | Relative probability | Cumulative probability" in rendered
+   True
+   >>> "Proved optimal." in rendered
+   True
+
+``ReportData`` can be rendered, exported, combined with other report sections,
+or passed to an application without parsing terminal text.
+
 Trail and trace summaries
 -------------------------
 
-A trail report retains its kind, boundary patterns, total weight, proof bound,
-ordered transitions, and method provenance. Graph locations are labelled as
-optional evidence references rather than report identity:
+For quick interactive inspection, ``show()`` is a convenience that presents
+and renders the trail directly. By default it shows only the input and each
+round difference, together with the relative and cumulative probability:
+
+.. doctest::
+
+   >>> result.show()  # doctest: +ELLIPSIS
+   Trail
+   ...
+
+Use ``result.show(details=True)`` when debugging a model or inspecting every
+intermediate component. The detailed report also includes the proof bound,
+search method, solver, runtime, memory measurement when available, and the
+primitive component responsible for each transition. The explicit
+presentation API below provides immutable report data and selectable output
+formats for tools and exports.
+
+``show()`` can write either terminal text or Markdown to any text stream:
+
+.. code-block:: python
+
+   result.show(details=True)
+   result.show(format="markdown")
+
+   with open("trail.md", "w", encoding="utf-8") as output:
+       result.show(details=True, format="markdown", file=output)
+
+The default searches use a zero key difference. Their reports include every
+data-state component but omit the resulting all-zero key schedule. A
+related-key result must retain its key-schedule propagation as well.
 
 .. doctest::
 
    >>> from claasp.presentation import render_section, trail_section
    >>> from claasp.semantics.cryptanalysis import (
-   ...     Trail, TrailKind, TrailSearchResult, TrailStep, Transition, XorDifference,
+   ...     Trail, TrailKind, TrailSearchMetadata, TrailSearchResult, TrailStep,
+   ...     Transition, XorDifference,
    ... )
    >>> transition = Transition(
    ...     TrailKind.XOR_DIFFERENTIAL,
@@ -28,15 +81,15 @@ optional evidence references rather than report identity:
    ...     XorDifference(1, 4), XorDifference(3, 4),
    ...     (TrailStep("sbox_0_0", transition),),
    ... )
-   >>> section = trail_section(TrailSearchResult(trail, 2.0, "fixed PRESENT evidence"))
+   >>> metadata = TrailSearchMetadata("fixed PRESENT evidence")
+   >>> section = trail_section(TrailSearchResult(trail, 2.0, metadata), details=True)
    >>> "total weight" in render_section(section, format="terminal")
    True
    >>> section.tables[1].rows[0].cells[-1].text
    'sbox_0_0'
 
-``trace_section(execution_trace)`` similarly follows the immutable annotation
-order and labels source ids as graph-location evidence. It does not assume
-that different realizations have corresponding internal component ids.
+``trace_section(execution_trace)`` similarly lists intermediate values in
+execution order and names the component that produced each value.
 
 Exact, bounded, and unavailable properties
 ------------------------------------------
@@ -96,8 +149,8 @@ Text and report-data export
 ---------------------------
 
 Terminal, Markdown, and CSV consume the same immutable table. ``report_data``
-returns ordinary JSON-compatible dictionaries and lists; it is a presentation
-export, not the versioned graph/result serialization owned by M10.15.
+returns ordinary JSON-compatible dictionaries and lists. It is a presentation
+export, not the versioned graph/result serialization format.
 
 .. doctest::
 

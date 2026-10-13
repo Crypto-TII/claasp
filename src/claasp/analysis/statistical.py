@@ -94,7 +94,7 @@ def run_statistical_campaign(
         True
     """
 
-    total_rounds = len(primitive.rounds)
+    total_rounds = len(primitive.graph.rounds)
     selected_end = total_rounds if round_end is None else round_end
     if not isinstance(round_start, int) or isinstance(round_start, bool):
         raise TypeError("round_start must be an integer")
@@ -112,7 +112,7 @@ def run_statistical_campaign(
         reduced = (
             primitive
             if round_number == total_rounds
-            else primitive.reduced_rounds(round_number).primitive
+            else primitive.edit.reduce_rounds(round_number).primitive
         )
         dataset = _dataset(
             reduced,

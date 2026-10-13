@@ -9,7 +9,7 @@ from claasp.primitives import (
     CHAM,
     SPARX,
     Ascon,
-    ChaCha,
+    ChaChaPermutation,
     Present,
     Salsa,
     Simeck,
@@ -31,7 +31,7 @@ from claasp.semantics.cryptanalysis import TrailKind
         Speck(number_of_rounds=1),
         SPARX(number_of_rounds=1),
         Threefish(number_of_rounds=1),
-        ChaCha(number_of_rounds=1),
+        ChaChaPermutation(number_of_rounds=1),
         Salsa(number_of_rounds=1),
     ),
 )
@@ -82,6 +82,8 @@ def test_public_enums_and_default_kind_are_exposed():
         "dependency_free",
     }
     assert (
-        Present(number_of_rounds=2).analysis.find_optimal_trail().trail.kind
+        Present(number_of_rounds=2)
+        .analysis.find_optimal_trail(backend="dependency_free")
+        .trail.kind
         is TrailKind.XOR_DIFFERENTIAL
     )

@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
-CATALOGUE = ROOT / "migration/realization_catalogue.json"
+CATALOGUE = ROOT / "tools/data/realization_catalogue.json"
 
 
 def check() -> tuple[int, int]:
@@ -26,14 +26,14 @@ def check() -> tuple[int, int]:
             graphs = tuple(primitive_class.realize(name) for name in names)
             reference = graphs[0]
             contract = (
-                tuple(reference.input_descriptors.items()),
-                reference.output.value_type,
+                tuple(reference.graph.input_descriptors.items()),
+                reference.graph.output.array_type,
                 reference.kind,
             )
             assert all(
                 (
-                    tuple(graph.input_descriptors.items()),
-                    graph.output.value_type,
+                    tuple(graph.graph.input_descriptors.items()),
+                    graph.graph.output.array_type,
                     graph.kind,
                 )
                 == contract

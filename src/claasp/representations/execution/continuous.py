@@ -23,7 +23,6 @@ from claasp.components.word import (
     VariableShift,
     Xor,
 )
-from claasp.domains import BinaryExtensionField, Bit
 from claasp.graph import Primitive
 from claasp.semantics.cryptanalysis.continuous import (
     continuous_and,
@@ -39,6 +38,7 @@ from claasp.semantics.cryptanalysis.continuous import (
     continuous_variable_shift,
     continuous_xor,
 )
+from claasp.unit_types import BinaryExtensionField, Bit
 from claasp.utils import binary_field_multiply
 
 CorrelationBits = tuple[float, ...]
@@ -106,21 +106,21 @@ class ContinuousExecutionDriver:
             (1.0, -1.0)
         """
 
-        if set(inputs) != set(primitive.input_ports):
+        if set(inputs) != set(primitive.graph.input_arrays):
             raise ValueError(
-                f"continuous inputs must contain exactly {sorted(primitive.input_ports)!r}"
+                f"continuous inputs must contain exactly {sorted(primitive.graph.input_arrays)!r}"
             )
         if tolerance <= 0:
             raise ValueError("tolerance must be positive")
 
         values: dict[str, CorrelationValue] = {}
-        for name, port in primitive.input_ports.items():
-            values[name] = _pack(port.value_type, inputs[name], name)
+        for name, unit_array in primitive.graph.input_arrays.items():
+            values[name] = _pack(unit_array.array_type, inputs[name], name)
 
         binding_cache: dict[str, CorrelationValue] = {}
-        for component in primitive.components:
+        for component in primitive.graph.components:
             selected = tuple(
-                primitive.resolve_selection(item, values, binding_cache)
+                primitive.graph.resolve_selection(item, values, binding_cache)
                 for item in component.inputs
             )
             if component.component_id is None:
@@ -128,8 +128,10 @@ class ContinuousExecutionDriver:
             values[component.component_id] = self._component(primitive, component, selected)
 
         output = None
-        if primitive.output is not None:
-            output = _flatten(primitive.resolve_selection(primitive.output, values, binding_cache))
+        if primitive.graph.output is not None:
+            output = _flatten(
+                primitive.graph.resolve_selection(primitive.graph.output, values, binding_cache)
+            )
         flattened = {name: _flatten(value) for name, value in (values | binding_cache).items()}
         return ContinuousEvaluationResult(
             flattened,
@@ -140,7 +142,7 @@ class ContinuousExecutionDriver:
 
     def _component(self, primitive, component, inputs):
         if isinstance(component, Constant):
-            width = component.output_type.domain.encoded_bit_size
+            width = component.output_type.unit_type.encoded_bit_size
             return tuple(_constant_bits(value, width) for value in component.values)
         if isinstance(component, Identity):
             return inputs[0]
@@ -149,7 +151,7 @@ class ContinuousExecutionDriver:
         if isinstance(component, Xor):
             return _fold_units(inputs, continuous_xor)
         if isinstance(component, Add) and isinstance(
-            component.output_type.domain, (Bit, BinaryExtensionField)
+            component.output_type.unit_type, (Bit, BinaryExtensionField)
         ):
             return _fold_units(inputs, continuous_xor)
         if isinstance(component, BitwiseAnd):
@@ -194,8 +196,8 @@ class ContinuousExecutionDriver:
         raise self._unsupported(primitive, component, "no continuous semantic rule")
 
     def _linear_map(self, primitive, component, vector):
-        domain = component.output_type.domain
-        if isinstance(domain, Bit):
+        unit_type = component.output_type.unit_type
+        if isinstance(unit_type, Bit):
             return tuple(
                 (
                     _xor_many(
@@ -206,20 +208,20 @@ class ContinuousExecutionDriver:
                 )
                 for row in component.matrix
             )
-        if isinstance(domain, BinaryExtensionField):
+        if isinstance(unit_type, BinaryExtensionField):
             output = []
             for row in component.matrix:
                 terms = []
                 for coefficient, unit in zip(row, vector):
                     if coefficient:
                         table = tuple(
-                            binary_field_multiply(domain, coefficient, value)
-                            for value in range(1 << domain.degree)
+                            binary_field_multiply(unit_type, coefficient, value)
+                            for value in range(1 << unit_type.degree)
                         )
                         terms.append(continuous_sbox(unit, table))
-                output.append(_xor_bit_vectors(tuple(terms), domain.degree))
+                output.append(_xor_bit_vectors(tuple(terms), unit_type.degree))
             return tuple(output)
-        raise self._unsupported(primitive, component, f"linear map over {type(domain).__name__}")
+        raise self._unsupported(primitive, component, f"linear map over {type(unit_type).__name__}")
 
     @staticmethod
     def _unsupported(primitive, component, reason):
@@ -230,12 +232,12 @@ class ContinuousExecutionDriver:
         )
 
 
-def _pack(value_type, values, name):
-    width = value_type.domain.encoded_bit_size
+def _pack(array_type, values, name):
+    width = array_type.unit_type.encoded_bit_size
     if width is None:
         raise NotImplementedError(f"continuous input {name!r} has no canonical binary encoding")
     flat = tuple(float(value) for value in values)
-    expected = value_type.unit_count * width
+    expected = array_type.unit_count * width
     if len(flat) != expected:
         raise ValueError(f"continuous input {name!r} requires {expected} correlations")
     if any(not -1.0 <= value <= 1.0 for value in flat):

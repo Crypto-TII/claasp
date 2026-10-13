@@ -59,10 +59,8 @@ def test_avalanche_summary_and_input_validation():
 
 
 def test_primitive_analysis_facade_exposes_avalanche():
-    result = (
-        Speck(number_of_rounds=1)
-        .analyze()
-        .avalanche("plaintext", 2, seed=9, fixed_inputs={"key": 0})
+    result = Speck(number_of_rounds=1).analysis.avalanche(
+        "plaintext", 2, seed=9, fixed_inputs={"key": 0}
     )
     assert result.sample_count == 2
     assert result.input_name == "plaintext"

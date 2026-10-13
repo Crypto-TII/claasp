@@ -2,7 +2,6 @@ from itertools import combinations, product
 
 import pytest
 
-from claasp.domains import BinaryExtensionField
 from claasp.primitives.toy_primitives import (
     CipherFour,
     Fancy,
@@ -13,6 +12,7 @@ from claasp.primitives.toy_primitives import (
     ToySPN2,
 )
 from claasp.primitives.toy_primitives.toyaes import MIX_COLUMN_MATRICES
+from claasp.unit_types import BinaryExtensionField
 from claasp.utils import binary_field_multiply
 
 
@@ -142,3 +142,11 @@ def test_reduced_and_custom_toy_parameters():
     )
     table = tuple(range(1, 16)) + (0,)
     assert ToySPN1(8, 8, -2, table, 10).evaluate(0xFF, 0xFE) == 0x6C
+
+
+def test_toy_aes_publishes_each_round_state_for_validated_slicing():
+    primitive = ToyAES(number_of_rounds=3, word_size=4, state_size=2)
+
+    assert len(primitive.graph.round_outputs) == 3
+    assert primitive.graph.output is not None
+    assert primitive.graph.round_outputs[-1] == primitive.graph.output.source

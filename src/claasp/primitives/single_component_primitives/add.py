@@ -1,4 +1,4 @@
-"""Primitive consisting of one domain-polymorphic addition."""
+"""Primitive consisting of one unit_type-polymorphic addition."""
 
 from claasp.components import Add as AddComponent
 from claasp.graph import Primitive, PrimitiveKind
@@ -9,15 +9,15 @@ from ._base import algebraic_inputs
 class Add(Primitive):
     """Add corresponding units in two or more inputs.
 
-    The default domain is GF(2), where addition is XOR.
+    The default unit_type is GF(2), where addition is XOR.
 
     >>> Add().evaluate(1, 1)
     0
 
-    Select another domain explicitly when needed:
+    Select another unit_type explicitly when needed:
 
-    >>> from claasp import PrimeField
-    >>> Add(domain=PrimeField(17)).evaluate(5, 14)
+    >>> from claasp.unit_types import PrimeField
+    >>> Add(unit_type=PrimeField(17)).evaluate(5, 14)
     2
 
     ``unit_count`` applies addition component-wise to vectors, while
@@ -31,21 +31,21 @@ class Add(Primitive):
     EXAMPLES::
 
         >>> primitive = Add()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
     """
 
-    def __init__(self, domain=None, unit_count: int = 1, number_of_inputs: int = 2) -> None:
+    def __init__(self, unit_type=None, unit_count: int = 1, number_of_inputs: int = 2) -> None:
         super().__init__(
             "add",
-            algebraic_inputs(domain, unit_count, number_of_inputs),
+            algebraic_inputs(unit_type, unit_count, number_of_inputs),
             kind=PrimitiveKind.FUNCTION,
         )
-        self.add_round()
-        output = self.add_component(AddComponent(self.inputs()))
-        self.set_output(output)
+        self._builder.add_round()
+        output = self._builder.add_component(AddComponent(self.graph.inputs()))
+        self._builder.set_output(output)
 
 
 __all__ = ["Add"]

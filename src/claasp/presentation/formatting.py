@@ -66,6 +66,8 @@ def _number(value: object, precision: int) -> str:
         raise TypeError("numeric cells require an integer or float")
     if isinstance(value, float) and not isfinite(value):
         return "infinity" if value > 0 else "-infinity"
+    if value == 0:
+        value = 0
     return format(value, f".{precision}g")
 
 

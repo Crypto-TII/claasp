@@ -5,17 +5,17 @@ from functools import lru_cache
 
 from claasp.components.algebraic import LinearMap
 from claasp.components.structural import Permutation
-from claasp.domains import Bit
-from claasp.graph import PortLike
-from claasp.graph.port import as_selection
+from claasp.graph import UnitArrayLike
+from claasp.graph.unit_array import as_selection
+from claasp.unit_types import Bit
 
 BitState = tuple[int, ...]
 
 
-def _bit_selection(component_input: PortLike, operation: str):
+def _bit_selection(component_input: UnitArrayLike, operation: str):
     selection = as_selection(component_input)
-    if not isinstance(selection.value_type.domain, Bit):
-        raise ValueError(f"{operation} requires the Bit domain")
+    if not isinstance(selection.array_type.unit_type, Bit):
+        raise ValueError(f"{operation} requires the Bit unit_type")
     return selection
 
 
@@ -30,14 +30,14 @@ def _binary_matrix(size: int, transform: Callable[[BitState], BitState]):
         basis = (0,) * column + (1,) + (0,) * (size - column - 1)
         output = transform(basis)
         if len(output) != size or any(value not in (0, 1) for value in output):
-            raise ValueError("binary transform must preserve the state size and Bit domain")
+            raise ValueError("binary transform must preserve the state size and Bit unit_type")
         for row, value in enumerate(output):
             rows[row][column] = value
     return tuple(tuple(row) for row in rows)
 
 
 def shift_rows(
-    component_input: PortLike,
+    component_input: UnitArrayLike,
     row_width: int,
     offsets: Iterable[int],
     component_id: str | None = None,
@@ -46,10 +46,11 @@ def shift_rows(
 
     EXAMPLES::
 
-        >>> from claasp import Primitive, ValueType, Word
+        >>> from claasp import Primitive, UnitArrayType
+        >>> from claasp.unit_types import Word
         >>> from claasp.components import shift_rows
-        >>> graph = Primitive("rows", {"state": ValueType(Word(8), (8,))})
-        >>> shift_rows(graph.input("state"), 4, (1, 2)).mapping
+        >>> graph = Primitive("rows", {"state": UnitArrayType(Word(8), (8,))})
+        >>> shift_rows(graph.graph.input("state"), 4, (1, 2)).mapping
         (3, 0, 1, 2, 6, 7, 4, 5)
     """
 
@@ -61,7 +62,7 @@ def shift_rows(
         not isinstance(offset, int) or isinstance(offset, bool) for offset in frozen_offsets
     ):
         raise ValueError("row offsets must be a non-empty iterable of integers")
-    if row_width * len(frozen_offsets) != selection.value_type.unit_count:
+    if row_width * len(frozen_offsets) != selection.array_type.unit_count:
         raise ValueError("row dimensions must cover every selected unit exactly")
     mapping = tuple(
         row * row_width + (column - offset) % row_width
@@ -72,7 +73,7 @@ def shift_rows(
 
 
 def sigma(
-    component_input: PortLike,
+    component_input: UnitArrayLike,
     rotation_amounts: Iterable[int],
     component_id: str | None = None,
 ) -> LinearMap:
@@ -80,15 +81,16 @@ def sigma(
 
     EXAMPLES::
 
-        >>> from claasp import Bit, Primitive, ValueType
+        >>> from claasp import Primitive, UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.components import sigma
-        >>> graph = Primitive("sigma", {"x": ValueType(Bit(), (4,))})
-        >>> sigma(graph.input("x"), (1, 3)).matrix[0]
+        >>> graph = Primitive("sigma", {"x": UnitArrayType(Bit(), (4,))})
+        >>> sigma(graph.graph.input("x"), (1, 3)).matrix[0]
         (1, 1, 0, 1)
     """
 
     selection = _bit_selection(component_input, "sigma")
-    width = selection.value_type.unit_count
+    width = selection.array_type.unit_count
     rotations = tuple(rotation_amounts)
     if any(not isinstance(amount, int) or isinstance(amount, bool) for amount in rotations):
         raise TypeError("sigma rotation amounts must be integers")
@@ -130,20 +132,21 @@ def _keccak_values(state: BitState, lane_width: int) -> BitState:
     )
 
 
-def keccak_theta(component_input: PortLike, component_id: str | None = None) -> LinearMap:
+def keccak_theta(component_input: UnitArrayLike, component_id: str | None = None) -> LinearMap:
     """Construct the Keccak theta map for any positive lane width.
 
     EXAMPLES::
 
-        >>> from claasp import Bit, Primitive, ValueType
+        >>> from claasp import Primitive, UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.components import keccak_theta
-        >>> graph = Primitive("theta", {"x": ValueType(Bit(), (25,))})
-        >>> len(keccak_theta(graph.input("x")).matrix)
+        >>> graph = Primitive("theta", {"x": UnitArrayType(Bit(), (25,))})
+        >>> len(keccak_theta(graph.graph.input("x")).matrix)
         25
     """
 
     selection = _bit_selection(component_input, "Keccak theta")
-    size = selection.value_type.unit_count
+    size = selection.array_type.unit_count
     if size % 25:
         raise ValueError("Keccak theta state size must be divisible by 25")
     return LinearMap(selection, _keccak_matrix(size), component_id=component_id)
@@ -168,20 +171,21 @@ def _xoodoo_values(state: BitState, lane_width: int) -> BitState:
     return tuple(value ^ effect[index % plane_size] for index, value in enumerate(state))
 
 
-def xoodoo_theta(component_input: PortLike, component_id: str | None = None) -> LinearMap:
+def xoodoo_theta(component_input: UnitArrayLike, component_id: str | None = None) -> LinearMap:
     """Construct the Xoodoo theta map for three planes of four lanes.
 
     EXAMPLES::
 
-        >>> from claasp import Bit, Primitive, ValueType
+        >>> from claasp import Primitive, UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.components import xoodoo_theta
-        >>> graph = Primitive("theta", {"x": ValueType(Bit(), (12,))})
-        >>> len(xoodoo_theta(graph.input("x")).matrix)
+        >>> graph = Primitive("theta", {"x": UnitArrayType(Bit(), (12,))})
+        >>> len(xoodoo_theta(graph.graph.input("x")).matrix)
         12
     """
 
     selection = _bit_selection(component_input, "Xoodoo theta")
-    size = selection.value_type.unit_count
+    size = selection.array_type.unit_count
     if size % 12:
         raise ValueError("Xoodoo theta state size must be divisible by 12")
     return LinearMap(selection, _xoodoo_matrix(size), component_id=component_id)
@@ -214,7 +218,7 @@ def _gaston_values(state: BitState, rotations: tuple[int, ...]) -> BitState:
 
 
 def gaston_theta(
-    component_input: PortLike,
+    component_input: UnitArrayLike,
     rotation_amounts: Iterable[int] = (1, 18, 23, 25, 32, 52, 60, 63),
     component_id: str | None = None,
 ) -> LinearMap:
@@ -222,15 +226,16 @@ def gaston_theta(
 
     EXAMPLES::
 
-        >>> from claasp import Bit, Primitive, ValueType
+        >>> from claasp import Primitive, UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.components import gaston_theta
-        >>> graph = Primitive("theta", {"x": ValueType(Bit(), (320,))})
-        >>> len(gaston_theta(graph.input("x")).matrix)
+        >>> graph = Primitive("theta", {"x": UnitArrayType(Bit(), (320,))})
+        >>> len(gaston_theta(graph.graph.input("x")).matrix)
         320
     """
 
     selection = _bit_selection(component_input, "Gaston theta")
-    size = selection.value_type.unit_count
+    size = selection.array_type.unit_count
     rotations = tuple(rotation_amounts)
     if len(rotations) != 8 or any(
         not isinstance(amount, int) or isinstance(amount, bool) for amount in rotations

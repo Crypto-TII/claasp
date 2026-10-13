@@ -1,0 +1,58 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "results": [
+    {
+      "assignment_valid": true,
+      "clauses": 829,
+      "construction_seconds_median": 0.0012459164999967243,
+      "literals": 3440,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported",
+      "repeats": 10,
+      "solver": "MinisatSolver",
+      "solver_seconds_median": 0.000935208000001353,
+      "solver_status": "satisfiable",
+      "solver_version": "1:2.2.1-8build1",
+      "trail_valid": true,
+      "variables": 200
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 829,
+      "construction_seconds_median": 0.0012607505000019614,
+      "literals": 3440,
+      "peak_memory_bytes_median": 29237248.0,
+      "peak_memory_status": "measured",
+      "repeats": 10,
+      "solver": "KissatSolver",
+      "solver_seconds_median": 0.00044424999999392867,
+      "solver_status": "satisfiable",
+      "solver_version": "4.0.4",
+      "trail_valid": true,
+      "variables": 200
+    },
+    {
+      "assignment_valid": true,
+      "clauses": 829,
+      "construction_seconds_median": 0.0013055000000008476,
+      "literals": 3440,
+      "peak_memory_bytes_median": null,
+      "peak_memory_status": "not_reported",
+      "repeats": 10,
+      "solver": "CryptoMiniSatSolver",
+      "solver_seconds_median": 0.0009439790000058679,
+      "solver_status": "satisfiable",
+      "solver_version": "CryptoMiniSat version 5.11.15",
+      "trail_valid": true,
+      "variables": 200
+    }
+  ],
+  "schema_version": 1,
+  "workload": {
+    "description": "ToySpeck-2 deterministic-truncated propagation from plaintext 00000001 with zero key to output ???0????",
+    "timeout_seconds": 30
+  }
+}

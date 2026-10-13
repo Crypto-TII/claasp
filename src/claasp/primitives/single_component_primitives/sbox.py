@@ -4,8 +4,8 @@ from collections.abc import Sequence
 
 from claasp.components import LookupTable
 from claasp.components import SBox as SBoxComponent
-from claasp.domains import Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
+from claasp.unit_types import Word
 
 from ._base import positive
 
@@ -16,15 +16,15 @@ class SBox(Primitive):
     This example splits ``0001`` into two two-bit units, ``00`` and ``01``.
     The table maps them independently to ``11`` and ``10``, yielding ``1110``.
 
-    >>> layer = SBox(lookup_table=[3, 2, 1, 0], domain=Word(2), unit_count=2)
+    >>> layer = SBox(lookup_table=[3, 2, 1, 0], unit_type=Word(2), unit_count=2)
     >>> result = layer.evaluate(0b0001)
     >>> f"{result:04b}"
     '1110'
 
-    Omit the table for the identity lookup, or select another finite domain
+    Omit the table for the identity lookup, or select another finite unit_type
     and number of units explicitly:
 
-    >>> identity_layer = SBox(domain=Word(8), unit_count=2)
+    >>> identity_layer = SBox(unit_type=Word(8), unit_count=2)
     >>> hex(identity_layer.evaluate(0x12AB))
     '0x12ab'
 
@@ -32,7 +32,7 @@ class SBox(Primitive):
     EXAMPLES::
 
         >>> primitive = SBox()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -41,21 +41,21 @@ class SBox(Primitive):
     def __init__(
         self,
         lookup_table: Sequence[int] | None = None,
-        domain=None,
+        unit_type=None,
         unit_count: int = 1,
     ) -> None:
         unit_count = positive(unit_count, "unit_count")
-        domain = Word(4) if domain is None else domain
+        unit_type = Word(4) if unit_type is None else unit_type
         table = (
-            LookupTable.identity(domain.encoded_bit_size)
+            LookupTable.identity(unit_type.encoded_bit_size)
             if lookup_table is None
-            else LookupTable(lookup_table, domain.encoded_bit_size)
+            else LookupTable(lookup_table, unit_type.encoded_bit_size)
         )
         kind = PrimitiveKind.PERMUTATION if table.is_bijective() else PrimitiveKind.FUNCTION
-        super().__init__("sbox", {"input": ValueType(domain, (unit_count,))}, kind=kind)
-        self.add_round()
-        output = self.add_component(SBoxComponent(self.input("input"), table))
-        self.set_output(output)
+        super().__init__("sbox", {"input": UnitArrayType(unit_type, (unit_count,))}, kind=kind)
+        self._builder.add_round()
+        output = self._builder.add_component(SBoxComponent(self.graph.input("input"), table))
+        self._builder.set_output(output)
 
 
 __all__ = ["SBox"]

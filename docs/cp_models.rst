@@ -1,10 +1,33 @@
 Constraint-programming representations
 ======================================
 
-M10.6a introduces the Sage-independent CP foundation. ``MiniZincModel`` is a
+``MiniZincModel`` is a
 small immutable representation that owns MiniZinc language items; external
 process execution belongs to ``MiniZincSolver`` under ``drivers``. Neither the
 core graph nor the representation imports the MiniZinc Python package.
+
+Generic weighted Word trails
+----------------------------
+
+``WordDifferentialCPModel`` and ``WordLinearCPModel`` provide portable generic
+MiniZinc searches for the reviewed Word-graph subset. They translate the exact
+Boolean relations, retain stable logical names, and independently recheck the
+decoded characteristic.
+
+.. doctest::
+
+   >>> from claasp.primitives import ToySpeck
+   >>> from claasp.representations.constraints.cp import WordDifferentialCPModel
+   >>> model = WordDifferentialCPModel(
+   ...     ToySpeck(2), fixed_weight=1,
+   ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
+   ... )
+   >>> query = model.cp_model()
+   >>> (len(query.declarations), len(query.constraints))
+   (187, 501)
+
+This portable formulation is the compatibility baseline. It does not claim to
+be equivalent in size or speed to the legacy ARX-specialized MiniZinc builder.
 
 Fixed Speck differential boundaries
 -----------------------------------
@@ -104,7 +127,7 @@ the ordinary analysis API works unchanged:
    primitive = Speck(number_of_rounds=1)
    plaintext = 0x6574694C
    ciphertext = primitive.evaluate(plaintext, 0x1918111009080100)
-   result = primitive.analyze().recover_input(
+   result = primitive.analysis.recover_input(
        "key",
        known_inputs={"plaintext": plaintext},
        output=ciphertext,
@@ -132,8 +155,7 @@ and permutation boundary.
 ``PresentLinearCPModel`` applies the same design to signed LAT semantics. The
 PRESENT-3 regression proves the legacy weight-4 optimum, reconstructs the
 sign of each of its 48 correlations, and independently checks all transitions
-and graph boundaries. Deterministic-truncated and impossible propagation form
-the final M10.6c checkpoint.
+and graph boundaries.
 
 Truncated and impossible propagation
 ------------------------------------
@@ -151,23 +173,20 @@ selected by ``PropagationProblem``. A real MiniZinc solver proves PRESENT
 transition ``1 -> 1`` impossible and ``1 -> 3`` feasible; the latter's weight
 is independently obtained from the exhaustive DDT semantics.
 
-These are the reviewed M10.6c slices. Multi-round bidirectional impossible
-search and the legacy wordwise, probabilistic-truncated, and ARX-specialized models
-remain explicitly in M10.6d.
+Advanced CP models
+------------------
 
-Advanced-suite migration
-------------------------
-
-M10.6d is organized by cryptanalytic semantics rather than by the legacy class
-hierarchy. Its complete model-and-fixture inventory is maintained in
-``docs/architecture/cp-advanced-migration.md``. Exact ARX differential
-optimization is the first implementation checkpoint, followed by generalized
-truncated domains, multi-round impossible search, composed attacks, and
-continuous heuristics.
+Advanced models are organized by cryptanalytic semantics rather than by a
+solver-specific class hierarchy. They cover exact ARX differential
+optimization, generalized truncated domains, multi-round impossible search,
+composed attacks, and continuous heuristics.
 
 Composed attacks use backend-neutral result contracts before they acquire a CP
 lowering. ``BoomerangTrail`` joins two XOR-differential trails through an
-explicit four-difference ``BoomerangSwitchBoundary``. A
+explicit four-difference ``BoomerangSwitchBoundary``. Its ``total_weight`` is
+the probability exponent ``2 * w_upper + w_switch + 2 * w_lower``; CP search
+results keep the cheaper one-pass objective ``w_upper + w_lower`` separately
+as ``search_weight``. A
 ``DifferentialLinearTrail`` keeps its differential prefix,
 probabilistic-truncated connector, and linear suffix separate and reports the
 legacy exact objective rather than the cheaper search approximation. Solver
@@ -183,7 +202,7 @@ its decoder recomputes the selected entry independently.
    >>> from claasp.primitives import Present
    >>> from claasp.semantics.cryptanalysis import SBoxBoomerangSemantics
    >>> primitive = Present(number_of_rounds=1)
-   >>> sbox = next(item for item in primitive.components if item.component_id == "sbox_1_0")
+   >>> sbox = next(item for item in primitive.graph.components if item.component_id == "sbox_1_0")
    >>> bct = SBoxBoomerangSemantics(sbox.table)
    >>> bct.connectivity(1, 1).is_possible
    False
@@ -235,6 +254,40 @@ The external regression uses Chuffed to prove weight 8 unsatisfiable and
 weight 9 satisfiable for five rounds, reproducing the legacy optimized-CP
 result. The decoded five additions are then recounted with independent
 paired-carry semantics; no solver-reported probability is trusted.
+
+Generic deterministic-truncated CP
+----------------------------------
+
+``ModularAddDeterministicTruncatedCPModel`` translates the recovered two-bit
+paired-carry relation exactly into MiniZinc Boolean constraints. Complete Word
+graphs use ``WordDeterministicTruncatedCPModel``:
+
+.. doctest::
+
+   >>> from claasp.primitives import ToySpeck
+   >>> from claasp.representations.constraints.cp import (
+   ...     WordDeterministicTruncatedCPModel,
+   ... )
+   >>> truncated = WordDeterministicTruncatedCPModel(
+   ...     ToySpeck(2),
+   ...     fixed_input_patterns={"plaintext": "00000001", "key": "0" * 16},
+   ...     output_pattern="???0????",
+   ... )
+   >>> query = truncated.cp_model()
+   >>> (len(query.declarations), len(query.constraints))
+   (200, 829)
+
+The generic model complements the specialized ``SpeckTruncatedCPModel``. It
+supports typed Word graphs and fixed boundary searches while retaining direct
+CP provenance. Decoding replays the ternary graph semantics and rejects a
+solver assignment that violates the paired-carry relation.
+
+The ten-run ARM64 benchmark in
+``tools/benchmark_cp_deterministic_truncated.py`` uses
+the same ToySpeck-2 fixture as the SAT and SMT comparisons. Median MiniZinc
+construction and Chuffed solve times were 1.646 and 39.042 milliseconds. The
+query has the same 200 variables and 829 Boolean constraints; the result
+establishes backend parity, not a cross-solver performance ranking.
 
 Probabilistic truncated addition
 --------------------------------
@@ -316,16 +369,15 @@ Docker then projects this fixed semantic result through
 ``WordwiseDifferenceCPModel`` and checks that the solver cannot change any
 typed boundary value.
 
-Impossible-suite migration
---------------------------
+Impossible trails
+-----------------
 
 The legacy result inventory retains the seven-round Speck UNSAT search and
 the exact Simon-32/64 eleven-round input, output, and two middle-boundary
-patterns. The latter requires a typed Simon primitive before its model can be
-migrated honestly. Generated declaration counts are excluded. The next
-checkpoint introduces a typed forward/backward contradiction boundary and
-independent checker; hybrid models will use component semantic overrides
-rather than a separate solver-class hierarchy.
+patterns. Generated declaration counts are excluded. A typed
+forward/backward contradiction boundary and independent checker represent the
+semantic result; hybrid models use component semantic overrides rather than a
+separate solver-class hierarchy.
 
 ``ImpossiblePropagationBoundary`` holds the two partial patterns and reports
 only positions fixed to opposite Boolean differences; unknown values never

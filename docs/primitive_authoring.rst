@@ -1,47 +1,49 @@
 Implementing a primitive
 =========================
 
-Primitive code should resemble the primitive's pseudocode. Whole ports can be
+Primitive code should resemble the primitive's pseudocode. Whole unit arrays can be
 passed directly to components, indexing selects logical units, and component
 identifiers are optional.
 
-``input(name_or_position)`` returns one graph input port. ``inputs()`` returns
-all input ports in declaration order, while selectors can request a subset in
+``input(name_or_position)`` returns one graph input array. ``inputs()`` returns
+all input arrays in declaration order, while selectors can request a subset in
 an explicit order. These methods expose graph references, not runtime values,
 and deliberately leave the collection representation unspecified. The
-``input_ports`` mapping is reserved for representations and other consumers
-that need names and ports together.
+``input_arrays`` mapping is reserved for representations and other consumers
+that need names and arrays together.
 
 .. doctest::
 
-   >>> from claasp import Primitive, PrimeField, ValueType
+   >>> from claasp import PrimitiveBuilder, UnitArrayType
    >>> from claasp.components import Add, Permutation
-   >>> field_vector = ValueType(PrimeField(17), (3,))
-   >>> primitive = Primitive("small_permutation", {"state": field_vector})
-   >>> state = primitive.input("state")
-   >>> primitive.input(0) is state
+   >>> from claasp.unit_types import PrimeField
+   >>> field_vector = UnitArrayType(PrimeField(17), (3,))
+   >>> builder = PrimitiveBuilder("small_permutation", {"state": field_vector})
+   >>> state = builder.input("state")
+   >>> builder.input(0) is state
    True
-   >>> list(primitive.inputs("state")) == [state]
+   >>> list(builder.inputs("state")) == [state]
    True
    >>> state[2, 0].positions
    (2, 0)
-   >>> primitive.add_round()
+   >>> builder.add_round()
    Round(number=0)
-   >>> shuffled = primitive.add_component(Permutation(state, (2, 0, 1)))
-   >>> shuffled.owner_id
+   >>> shuffled = builder.add_component(Permutation(state, (2, 0, 1)))
+   >>> shuffled.source_id
    'permutation_0_0'
-   >>> output = primitive.add_component(Add((shuffled, state)))
-   >>> output.owner_id
+   >>> output = builder.add_component(Add((shuffled, state)))
+   >>> output.source_id
    'add_0_1'
-   >>> primitive.set_output(output)
+   >>> primitive = builder.build(output)
 
 Automatic identifiers combine the component kind, round number, and position,
 so rebuilding the same graph produces the same names.  Normal primitive source
-should omit identifiers and retain semantic ports instead, for example
-round states or round keys. Publish precomputed collections through
-``set_round_states()`` and ``set_round_keys()``, or record them incrementally
-with ``add_round_state()`` and ``add_round_key()``. Named operation landmarks
-similarly use ``add_round_operations()``. Primitive source therefore does not
+should omit identifiers and retain the returned unit arrays instead. Mark a value for
+inspection with ``builder.set_intermediate_output(value, name=...)`` and mark
+the current round boundary with ``builder.set_round_output(value)``. The latter
+is shorthand for an intermediate output named ``round_output``. Round keys use
+``builder.set_round_keys()`` or incremental ``builder.add_round_key()`` calls.
+Primitive source therefore does not
 assign a particular container to public attributes. This keeps analysis code
 stable when an implementation or the library's collection representation
 changes. Explicit identifiers remain available for exceptional interchange
@@ -49,15 +51,15 @@ contracts; duplicates are rejected.
 
 ``Primitive.select_configuration``, ``validate_number_of_rounds``, and
 ``validate_positive_integer`` centralize the common parameter checks.  See the
-direct ``AES``, ``Speck``, and ``ChaCha`` sources for full reference examples:
+direct ``AES``, ``Speck``, and ``ChaChaPermutation`` sources for full reference examples:
 their local variables follow the specification pseudocode (``state``;
 ``x``/``y``; and ``a``/``b``/``c``/``d``), while ``CustomAES`` demonstrates
 the reusable-block style. Composite outputs are ordered, so a key schedule can
 be read naturally as ``key_schedule.output[round_number]``; named lookup is
 also available for self-documenting boundaries.
 
-Use ``primitive.join(left, right)`` when several homogeneous ports form one
-state for a later operation, or simply ``primitive.set_output((left, right))``
+Use ``builder.join(left, right)`` when several homogeneous unit arrays form one
+state for a later operation, or simply ``builder.build((left, right))``
 at the boundary. This creates an addressable typed binding, not a semantic
 component, so component queries contain only actual operations.
 
@@ -83,7 +85,7 @@ Reusable component catalogue
 ``claasp.components`` is the central public catalogue. Components are
 immutable graph descriptions; evaluators and solver representations remain
 separate execution engines. The single authoring path is
-``Primitive.add_component``, which validates graph ownership and assigns a
+``PrimitiveBuilder.add_component``, which validates graph ownership and assigns a
 deterministic identifier when one is omitted.
 
 The catalogue includes structural operations, conversions, lookup
@@ -94,32 +96,34 @@ arithmetic is distinct from ordinary field arithmetic.
 
 .. doctest::
 
-   >>> from claasp import Primitive, ValueType, Word
+   >>> from claasp import PrimitiveBuilder, UnitArrayType
    >>> from claasp.components import ModularSubtract, Shift
-   >>> words = ValueType(Word(8), (1,))
-   >>> arx = Primitive("word_example", {"left": words, "right": words})
-   >>> arx.add_round()
+   >>> from claasp.unit_types import Word
+   >>> words = UnitArrayType(Word(8), (1,))
+   >>> builder = PrimitiveBuilder("word_example", {"left": words, "right": words})
+   >>> builder.add_round()
    Round(number=0)
-   >>> difference = arx.add_component(ModularSubtract((arx.input("left"), arx.input("right"))))
-   >>> shifted = arx.add_component(Shift(difference, 1, "right"))
-   >>> arx.set_output(shifted)
+   >>> difference = builder.add_component(
+   ...     ModularSubtract((builder.input("left"), builder.input("right"))))
+   >>> shifted = builder.add_component(Shift(difference, 1, "right"))
+   >>> arx = builder.build(shifted)
    >>> arx.evaluate(3, 5)
    127
 
 Feedback is described by typed terms rather than nested unlabelled lists. A
-binary-extension-field domain similarly makes word-register multiplication
+binary-extension-field unit type similarly makes word-register multiplication
 unambiguous.
 
 .. doctest::
 
-   >>> from claasp import Bit
+   >>> from claasp.unit_types import Bit
    >>> from claasp.components import FeedbackRegister, FeedbackRegisterSpec, FeedbackTerm
-   >>> lfsr = Primitive("lfsr", {"state": ValueType(Bit(), (4,))})
-   >>> lfsr.add_round()
+   >>> builder = PrimitiveBuilder("lfsr", {"state": UnitArrayType(Bit(), (4,))})
+   >>> builder.add_round()
    Round(number=0)
    >>> spec = FeedbackRegisterSpec(4, (FeedbackTerm((0,)), FeedbackTerm((1,))))
-   >>> next_state = lfsr.add_component(FeedbackRegister(lfsr.input("state"), (spec,)))
-   >>> lfsr.set_output(next_state)
+   >>> next_state = builder.add_component(FeedbackRegister(builder.input("state"), (spec,)))
+   >>> lfsr = builder.build(next_state)
    >>> lfsr.evaluate(0b1011)
    7
 
@@ -135,50 +139,36 @@ unambiguous scalar, batch, diagram, and model semantics.
 
 .. doctest::
 
-   >>> from claasp import Bit, Primitive, ValueType
-   >>> conversion = Primitive("conversion", {"bits": ValueType(Bit(), (16,))})
-   >>> conversion.add_round()
+   >>> from claasp import PrimitiveBuilder, UnitArrayType
+   >>> from claasp.unit_types import Bit
+   >>> builder = PrimitiveBuilder("conversion", {"bits": UnitArrayType(Bit(), (16,))})
+   >>> builder.add_round()
    Round(number=0)
-   >>> words = conversion.pack_bits(conversion.input("bits"), 8)
-   >>> bits = conversion.unpack_bits(words)
-   >>> conversion.set_output(bits)
+   >>> words = builder.pack_bits(builder.input("bits"), 8)
+   >>> bits = builder.unpack_bits(words)
+   >>> conversion = builder.build(bits)
    >>> conversion.evaluate(0x1234)
    4660
 
-Catalogue categories
---------------------
-
-The public catalogue classifies fixed-length maps by their mathematical
-interface.  Unkeyed maps belong to ``permutations`` when bijectivity is an
-obligation and to ``functions`` otherwise.  Keyed maps use ``block_ciphers``
-or ``block_functions``; an explicit tweak promotes those categories to
-``tweakable_block_ciphers`` or ``tweakable_block_functions``.  Execution
-engines and graph realizations do not change this classification.
-
-``single_component_primitives`` and ``toy_primitives`` are orthogonal fixture
-folders.  Hash, MAC, and stream constructions are not catalogue categories:
-only a fixed-length core is catalogued, with the higher-level construction
-recorded as provenance.  A catalogue record also states its external input
-roles and whether bijectivity must eventually be demonstrated by the migrated
-implementation.  Helpers and documentation modules receive an explicit
-outside-scope disposition instead of being silently counted as primitives.
+Single-component primitive modules
+----------------------------------
 
 Each module under ``single_component_primitives`` contains the public class it
 advertises. For example, ``single_component_primitives.bitwise_and.BitwiseAnd`` directly
-shows the complete reference sequence: initialize ``Primitive``, call
-``add_round()``, construct the operation, call ``add_component()``, and bind it
-with ``set_output()``. Shared private code is limited to validation and
+shows the complete reference sequence: initialize ``PrimitiveBuilder``, call
+``add_round()``, construct the operation, call ``add_component()``, and finish
+with ``build()``. Shared private code is limited to validation and
 finite-field/matrix helpers, so following an import path always reaches the
 primitive definition rather than a forwarding shim or hidden graph builder.
 
 Primitive authors supply mathematical parameters using ordinary lists. The
-component and utility layers validate shape, orientation, domains, and stable
+component and utility layers validate shape, orientation, unit types, and stable
 internal storage. Matrix comprehensions and container freezing therefore do
 not belong in primitive definitions.
 
 .. doctest::
 
-   >>> from claasp import BinaryExtensionField
+   >>> from claasp.unit_types import BinaryExtensionField
    >>> from claasp.components import FeedbackRegisterParameters
    >>> from claasp.primitives.single_component_primitives import FeedbackRegister, LinearMap
    >>> linear = LinearMap([[1, 0], [1, 1]])
@@ -193,18 +183,18 @@ not belong in primitive definitions.
    5
 
 ``LinearMap`` accepts one row-major matrix and infers the input size from its
-columns. Its domain distinguishes an ordinary binary linear layer from a
+columns. Its unit type distinguishes an ordinary binary linear layer from a
 MixColumn-style finite-field matrix; these are not separate operations.
 ``FeedbackRegister`` accepts typed feedback parameters. Use ``from_taps()`` for a
 simple Fibonacci register, or construct ``FeedbackRegisterSpec`` and
 ``FeedbackTerm`` values for multiple, nonlinear, or clocked registers.
 
 The folder is a one-to-one view of the public base-component classes, including
-v5 additions such as ``Add``, ``Multiply``, ``Power``, and ``BinaryAffineMap``.
+``Add``, ``Multiply``, ``Power``, and ``BinaryAffineMap``.
 Structural joins and bit/word views are deliberately absent. Every wrapper has exactly one round and one
-component, and its class docstring contains a runnable minimal example. Legacy
-names such as ``Modadd``, ``Sbox``, and ``Fsr`` are deliberately not aliases in
-the unreleased v5 API.
+component, and its class docstring contains a runnable minimal example.
+Component class names use consistent Python capitalization, such as
+``ModularAdd``, ``SBox``, and ``FeedbackRegister``.
 
 Lookup tables are immutable validated values rather than loose lists once they
 enter the component layer. ``LookupTable`` owns input/output widths, entry
@@ -227,8 +217,7 @@ choosing its kind or constructing the component.
 
 Other one-component primitives follow the same rule: pass the mathematical
 parameter directly. A permutation uses ``output[i] = input[mapping[i]]`` and
-rotation direction is an explicit word, so there are no alternate legacy
-encodings to learn.
+rotation direction is an explicit word.
 
 .. doctest::
 

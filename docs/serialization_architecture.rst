@@ -13,11 +13,11 @@ Graph encoding and validation
 -----------------------------
 
 The payload encodes primitive identity, kind, ordered input descriptors,
-domains and shapes, rounds, components, ordered selections, bindings, output,
+unit types and shapes, rounds, components, ordered selections, bindings, output,
 composite scopes, realization identity, and transformation provenance.
 Deserialization constructs through the public graph invariants and then
-checks identities, references, domains, widths, binding dependencies, scope
-membership, and output compatibility.  The domain and component registries
+checks identities, references, unit types, widths, binding dependencies, scope
+membership, and output compatibility.  The unit-type and component registries
 are closed.  To extend them, add an encoder/decoder pair, a stable name, strict
 field validation, round-trip and malformed-input evidence, and only then
 register the pair.  Never import a type named by input data.
@@ -26,7 +26,7 @@ Execution traces and evaluation results have their own schema identifiers.
 They carry the primitive digest and exact realization/transformation/driver
 provenance, and validate values against the supplied graph.  Unsupported
 analysis results and annotations fail with ``unsupported_artifact``.  This is
-deliberately independent of the M10.14 presentation export, whose job is
+deliberately independent of presentation export, whose job is
 human-facing interchange rather than graph reconstruction.
 
 Source compilers and drivers

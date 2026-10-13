@@ -1,4 +1,4 @@
-"""Validate the complete M10.16 documentation and static-quality authority."""
+"""Validate the documentation and static-quality authority."""
 
 from __future__ import annotations
 
@@ -16,9 +16,9 @@ else:
 
 ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY = ROOT
-MANIFEST = ROOT / "migration" / "m10_16_quality.json"
-PUBLIC_API = ROOT / "migration" / "m10_16_public_api.json"
-TYPING = ROOT / "migration" / "m10_16_typing_baseline.json"
+MANIFEST = ROOT / "tools" / "baselines" / "documentation_quality.json"
+PUBLIC_API = ROOT / "tools" / "baselines" / "public_api.json"
+TYPING = ROOT / "tools" / "baselines" / "typing.json"
 EXPECTED_SCOPE = ["src/claasp", "tests", "tools", "docs/conf.py"]
 EXPECTED_TYPING_BOUNDARIES = [
     "matplotlib",
@@ -56,7 +56,7 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
     """Return deterministic closure violations for one manifest value."""
 
     errors = []
-    if manifest.get("schema_version") != 1 or manifest.get("milestone") != "M10.16":
+    if manifest.get("schema_version") != 1 or manifest.get("name") != "documentation-quality":
         errors.append("manifest identity or schema is invalid")
     if manifest.get("quality_scope") != EXPECTED_SCOPE:
         errors.append("quality scope is stale")
@@ -147,7 +147,7 @@ def main(argv: list[str] | None = None) -> int:
     documentation = manifest["documentation"]
     typing = manifest["typing"]
     print(
-        "M10.16 closure passes: "
+        "documentation quality closure passes: "
         f"{documentation['public_api_entries']} API entries, "
         f"{documentation['example_exceptions']} example exceptions, "
         f"{typing['diagnostics']} reviewed typing diagnostics"

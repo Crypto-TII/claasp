@@ -1,0 +1,50 @@
+{
+  "environment": {
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "repeats": 10,
+  "results": [
+    {
+      "best_probability": "1/4",
+      "best_weight": 2.0,
+      "expected_trail_weight": 2.0,
+      "family": "DES",
+      "peak_memory_bytes_median": 191427,
+      "runtime_seconds_median": 0.10257585400000835,
+      "scope": "local Matsui bound plus the two-round Feistel activity proof; not a generic DES adapter",
+      "validation": true,
+      "workload": "DES-2 nonlinear-round bound over all eight rectangular 6-to-4 S-boxes"
+    },
+    {
+      "best_weight": 4.0,
+      "family": "SPN",
+      "peak_memory_bytes_median": 88348,
+      "runtime_seconds_median": 0.2844947080000111,
+      "scope": "existing exact SPN baseline used to cross-check the Matsui program",
+      "validation": true,
+      "workload": "PRESENT-2 exact dependency-free XOR-differential search"
+    },
+    {
+      "best_weight": 1.0,
+      "family": "ARX",
+      "peak_memory_bytes_median": 37396,
+      "runtime_seconds_median": 0.029713771000047018,
+      "scope": "full reviewed dependency-free trail search",
+      "technique": "exact Matsui branch-and-bound with monotone partial xdp+ bounds (4 round nodes; nested partial-carry pruning)",
+      "validation": true,
+      "workload": "Speck32/64-2 exact Matsui XOR-differential search"
+    },
+    {
+      "best_probability": "3/8",
+      "best_weight": 1.415037499278844,
+      "family": "bitsliced",
+      "peak_memory_bytes_median": 19992,
+      "runtime_seconds_median": 0.0016481039999689528,
+      "scope": "macro transition; dependent internal AND/OR probabilities are not multiplied",
+      "validation": true,
+      "workload": "GIFT64-1 grouped four-bit S-box transition search"
+    }
+  ],
+  "schema_version": 1
+}

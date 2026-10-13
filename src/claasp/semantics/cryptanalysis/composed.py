@@ -325,8 +325,8 @@ class BoomerangTrail:
 
     @property
     def total_weight(self) -> float:
-        """Return the combined upper, switch, and lower weight."""
-        return self.upper.total_weight + self.switch.weight + self.lower.total_weight
+        """Return the boomerang probability exponent ``2p + r + 2q``."""
+        return 2 * self.upper.total_weight + self.switch.weight + 2 * self.lower.total_weight
 
 
 @dataclass(frozen=True, slots=True)

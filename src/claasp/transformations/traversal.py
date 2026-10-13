@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from types import MappingProxyType
 
-from claasp.graph import Primitive, ValueType
+from claasp.graph import Primitive, UnitArrayType
 from claasp.transformations.contracts import (
     TransformationError,
     TransformationFailureReason,
@@ -33,16 +33,17 @@ class GraphSource:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, ValueType
+        >>> from claasp import UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.transformations import GraphSource, GraphSourceKind
-        >>> source = GraphSource("state", GraphSourceKind.INPUT, ValueType(Bit(), (4,)))
-        >>> (source.source_id, source.value_type.unit_count)
+        >>> source = GraphSource("state", GraphSourceKind.INPUT, UnitArrayType(Bit(), (4,)))
+        >>> (source.source_id, source.array_type.unit_count)
         ('state', 4)
     """
 
     source_id: str
     kind: GraphSourceKind
-    value_type: ValueType
+    array_type: UnitArrayType
     round_number: int | None = None
     scopes: tuple[str, ...] = ()
 
@@ -55,13 +56,14 @@ class DependencyIndex:
 
     EXAMPLES::
 
-        >>> from claasp import Bit, Primitive, ValueType
+        >>> from claasp import PrimitiveBuilder, UnitArrayType
+        >>> from claasp.unit_types import Bit
         >>> from claasp.components import Identity
-        >>> primitive = Primitive("walk", {"state": ValueType(Bit(), (2,))})
-        >>> primitive.add_round()
+        >>> builder = PrimitiveBuilder("walk", {"state": UnitArrayType(Bit(), (2,))})
+        >>> builder.add_round()
         Round(number=0)
-        >>> copied = primitive.add_component(Identity(primitive.input("state")))
-        >>> primitive.set_output(copied)
+        >>> copied = builder.add_component(Identity(builder.input("state")))
+        >>> primitive = builder.build(copied)
         >>> index = DependencyIndex(primitive)
         >>> index.topological_ids
         ('state', 'identity_0_0')
@@ -75,22 +77,22 @@ class DependencyIndex:
         self._primitive = primitive
         round_by_component = {
             component.component_id: primitive_round.number
-            for primitive_round in primitive.rounds
+            for primitive_round in primitive.graph.rounds
             for component in primitive_round.components
         }
         scope_by_component: dict[str, list[str]] = {}
-        for scope in primitive.scopes:
+        for scope in primitive.graph.scopes:
             for component_id in scope.component_ids:
                 scope_by_component.setdefault(component_id, []).append(scope.path)
 
         sources: dict[str, GraphSource] = {}
         dependencies: dict[str, tuple[str, ...]] = {}
         order: list[str] = []
-        for name, port in primitive.input_ports.items():
-            sources[name] = GraphSource(name, GraphSourceKind.INPUT, port.value_type)
+        for name, unit_array in primitive.graph.input_arrays.items():
+            sources[name] = GraphSource(name, GraphSourceKind.INPUT, unit_array.array_type)
             dependencies[name] = ()
             order.append(name)
-        for binding in primitive.bindings:
+        for binding in primitive.graph.bindings:
             source_id = binding.binding_id
             sources[source_id] = GraphSource(
                 source_id,
@@ -100,9 +102,9 @@ class DependencyIndex:
                     path for path in primitive._scopes if source_id.startswith(f"{path}/")
                 ),
             )
-            dependencies[source_id] = self._unique(item.source.owner_id for item in binding.inputs)
+            dependencies[source_id] = self._unique(item.source.source_id for item in binding.inputs)
             order.append(source_id)
-        for component in primitive.components:
+        for component in primitive.graph.components:
             source_id = component.component_id
             sources[source_id] = GraphSource(
                 source_id,
@@ -112,7 +114,7 @@ class DependencyIndex:
                 tuple(scope_by_component.get(source_id, ())),
             )
             dependencies[source_id] = self._unique(
-                item.source.owner_id for item in component.inputs
+                item.source.source_id for item in component.inputs
             )
             order.append(source_id)
 

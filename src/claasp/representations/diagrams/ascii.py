@@ -10,8 +10,10 @@ class ASCIIArtSerializer:
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> from claasp.representations.diagrams import ASCIIArtSerializer
-        >>> ASCIIArtSerializer().serialize(Speck(number_of_rounds=1).diagram()).startswith("primitive speck\\n")
+        >>> from claasp.representations.diagrams import ASCIIArtSerializer, DiagramCompiler
+        >>> primitive = Speck(number_of_rounds=1)
+        >>> diagram = DiagramCompiler().compile(primitive)
+        >>> ASCIIArtSerializer().serialize(diagram).startswith("primitive speck\\n")
         True
     """
 

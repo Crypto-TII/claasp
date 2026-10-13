@@ -71,7 +71,6 @@ from claasp.components import (
 from claasp.components import (
     Xor as XorComponent,
 )
-from claasp.domains import BinaryExtensionField, PrimeField, Word
 from claasp.graph import PrimitiveKind
 from claasp.primitives._catalogue_exports import CATEGORY_EXPORTS
 from claasp.primitives.single_component_primitives import (
@@ -99,6 +98,7 @@ from claasp.primitives.single_component_primitives import (
     VariableShift,
     Xor,
 )
+from claasp.unit_types import BinaryExtensionField, PrimeField, Word
 
 CLASSES = (
     Add,
@@ -160,7 +160,8 @@ def test_catalogue_is_one_to_one_with_public_base_components():
     assert {primitive.__name__ for primitive in CLASSES} == expected
     assert all(primitive().__class__.__name__ == primitive.__name__ for primitive in CLASSES)
     assert all(
-        type(primitive().components[0]).__name__ == primitive.__name__ for primitive in CLASSES
+        type(primitive().graph.components[0]).__name__ == primitive.__name__
+        for primitive in CLASSES
     )
 
 
@@ -171,7 +172,8 @@ def test_machine_catalogue_matches_generated_exports():
             for parent in Path(__file__).resolve().parents
             if (parent / "pyproject.toml").is_file()
         )
-        / "migration"
+        / "tools"
+        / "data"
         / "single_component_catalogue.json"
     )
     assert json.loads(path.read_text()) == CATEGORY_EXPORTS["single_component_primitives"]
@@ -217,14 +219,14 @@ def test_each_wrapper_is_a_documented_one_round_one_component_example():
     advertised = CATEGORY_EXPORTS["single_component_primitives"]
     for primitive_class in CLASSES:
         primitive = primitive_class()
-        assert len(primitive.rounds) == 1
-        assert len(primitive.components) == 1
+        assert len(primitive.graph.rounds) == 1
+        assert len(primitive.graph.components) == 1
         assert primitive_class.__module__ == advertised[primitive_class.__name__]
         assert ">>>" in inspect.getdoc(primitive_class)
         source = inspect.getsource(primitive_class)
-        assert "self.add_round()" in source
-        assert "self.add_component(" in source
-        assert "self.set_output(" in source
+        assert "self._builder.add_round()" in source
+        assert "self._builder.add_component(" in source
+        assert "self._builder.set_output(" in source
 
 
 def test_each_wrapper_docstring_covers_its_public_parameters():

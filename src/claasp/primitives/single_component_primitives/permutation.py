@@ -1,8 +1,8 @@
 """Single-component logical-unit permutation primitive implementation."""
 
 from claasp.components import Permutation as PermutationComponent
-from claasp.domains import Bit, Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
+from claasp.unit_types import Bit, Word
 
 from ._base import positive
 
@@ -29,7 +29,7 @@ class Permutation(Primitive):
     EXAMPLES::
 
         >>> primitive = Permutation()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -39,17 +39,17 @@ class Permutation(Primitive):
         word_size = positive(word_size, "word_size")
         mapping = list(reversed(range(8))) if mapping is None else list(mapping)
         count = len(mapping)
-        domain = Bit() if word_size == 1 else Word(word_size)
+        unit_type = Bit() if word_size == 1 else Word(word_size)
         super().__init__(
             "permutation",
-            {"input": ValueType(domain, (count,))},
+            {"input": UnitArrayType(unit_type, (count,))},
             kind=PrimitiveKind.PERMUTATION,
         )
-        self.add_round()
-        self.set_output(
-            self.add_component(
+        self._builder.add_round()
+        self._builder.set_output(
+            self._builder.add_component(
                 PermutationComponent(
-                    self.input("input"),
+                    self.graph.input("input"),
                     mapping,
                 )
             )

@@ -6,7 +6,9 @@ from claasp.semantics.cryptanalysis import ComponentMonomialSemantics
 
 def _component(primitive, component_id):
     return next(
-        component for component in primitive.components if component.component_id == component_id
+        component
+        for component in primitive.graph.components
+        if component.component_id == component_id
     )
 
 
@@ -34,8 +36,10 @@ def test_structural_join_is_wiring_and_constants_have_exact_semantics():
     primitive = Present(number_of_rounds=1)
     counter = _component(primitive, "key_counter_1")
 
-    joined = next(binding for binding in primitive.bindings if binding.output_type.unit_count == 64)
+    joined = next(
+        binding for binding in primitive.graph.bindings if binding.output_type.unit_count == 64
+    )
     assert joined.kind.value == "join"
-    assert len(primitive.selection_bit_sources(joined.output.select_all())) == 64
+    assert len(primitive.graph.selection_bit_sources(joined.output.select_all())) == 64
     assert ComponentMonomialSemantics.is_possible(counter, (), 1)
     assert not ComponentMonomialSemantics.is_possible(counter, (), 2)

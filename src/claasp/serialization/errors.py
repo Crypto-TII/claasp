@@ -20,7 +20,7 @@ class SerializationFailure(str, Enum):
     UNKNOWN_VERSION = "unknown_version"
     UNKNOWN_ARTIFACT = "unknown_artifact"
     MALFORMED_VALUE = "malformed_value"
-    UNKNOWN_DOMAIN = "unknown_domain"
+    UNKNOWN_UNIT_TYPE = "unknown_unit_type"
     UNKNOWN_COMPONENT = "unknown_component"
     DUPLICATE_IDENTITY = "duplicate_identity"
     INVALID_REFERENCE = "invalid_reference"

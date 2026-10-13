@@ -12,8 +12,10 @@ class TikZSerializer:
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> from claasp.representations.diagrams import TikZSerializer
-        >>> TikZSerializer().serialize(Speck(number_of_rounds=1).diagram()).startswith("\\\\documentclass")
+        >>> from claasp.representations.diagrams import DiagramCompiler, TikZSerializer
+        >>> primitive = Speck(number_of_rounds=1)
+        >>> diagram = DiagramCompiler().compile(primitive)
+        >>> TikZSerializer().serialize(diagram).startswith("\\\\documentclass")
         True
     """
 

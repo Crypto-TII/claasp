@@ -15,8 +15,15 @@ from claasp.graph.metadata import (
     public_input,
     secret_input,
 )
-from claasp.graph.port import Port, PortLike, Selection, as_selection
-from claasp.graph.primitive import Primitive
+from claasp.graph.primitive import (
+    Primitive,
+    PrimitiveBuilder,
+    PrimitiveDetails,
+    PrimitiveEditor,
+    PrimitiveGraph,
+    PrimitiveInputDetails,
+    PublishedValues,
+)
 from claasp.graph.realization import (
     AmbiguousRealizationError,
     RealizationDescriptor,
@@ -28,22 +35,31 @@ from claasp.graph.realization import (
     select_realization,
 )
 from claasp.graph.round import Round
-from claasp.graph.value_type import ValueType
+from claasp.graph.unit_array import Selection, UnitArray, UnitArrayLike, as_selection
+from claasp.graph.unit_array_type import BitWord, UnitArrayType
 
 __all__ = [
     "AmbiguousRealizationError",
+    "UnitArrayType",
     "BindingKind",
+    "BitWord",
     "Component",
     "CompositeBuilder",
     "CompositeDefinition",
     "CompositeInstance",
     "CompositeOutputs",
     "InputVisibility",
-    "Port",
-    "PortLike",
+    "UnitArray",
+    "UnitArrayLike",
     "Primitive",
+    "PrimitiveBuilder",
+    "PrimitiveDetails",
+    "PrimitiveEditor",
+    "PrimitiveGraph",
     "PrimitiveInput",
+    "PrimitiveInputDetails",
     "PrimitiveKind",
+    "PublishedValues",
     "RealizationDescriptor",
     "RealizationMaturity",
     "RealizationSelectionError",
@@ -52,7 +68,6 @@ __all__ = [
     "Selection",
     "UnsupportedRealizationError",
     "ValueBinding",
-    "ValueType",
     "as_selection",
     "normalize_realization_contract",
     "public_input",

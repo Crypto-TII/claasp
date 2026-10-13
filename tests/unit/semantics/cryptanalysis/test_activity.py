@@ -42,7 +42,7 @@ def test_legacy_two_step_aes_differential_results_are_derived_exactly():
     primitive = AES(number_of_rounds=1)
     table = next(
         component.table
-        for component in primitive.components
+        for component in primitive.graph.components
         if hasattr(component, "table") and len(component.table) == 256
     )
 

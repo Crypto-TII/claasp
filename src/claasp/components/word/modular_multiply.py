@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from claasp.components.word._validation import require_word_inputs
-from claasp.graph import Component, PortLike
+from claasp.graph import Component, UnitArrayLike
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -20,7 +20,7 @@ class ModularMultiply(Component):
 
     def __init__(
         self,
-        component_inputs: Iterable[PortLike],
+        component_inputs: Iterable[UnitArrayLike],
         modulus: int | None = None,
         component_id: str | None = None,
     ) -> None:
@@ -28,7 +28,7 @@ class ModularMultiply(Component):
         if len(inputs) < 2:
             raise ValueError("modular multiplication requires at least two inputs")
         inputs, output_type = require_word_inputs(inputs, "modular multiplication")
-        word_modulus = 1 << output_type.domain.width
+        word_modulus = 1 << output_type.unit_type.width
         if modulus is None:
             modulus = word_modulus
         if not isinstance(modulus, int) or isinstance(modulus, bool):

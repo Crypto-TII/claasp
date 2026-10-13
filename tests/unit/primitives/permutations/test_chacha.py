@@ -1,7 +1,7 @@
 import pytest
 
 from claasp.encoding import units_from_int
-from claasp.primitives.permutations.chacha import ChaCha
+from claasp.primitives.permutations.chacha import ChaChaPermutation
 from claasp.representations.execution import BatchEvaluator
 
 
@@ -21,7 +21,7 @@ def test_retained_standard_chacha20_vector():
         16,
     )
 
-    assert ChaCha().evaluate(state) == expected
+    assert ChaChaPermutation().evaluate(state) == expected
 
 
 @pytest.mark.parametrize(
@@ -33,7 +33,7 @@ def test_retained_standard_chacha20_vector():
 )
 def test_retained_toy_chacha_vectors(rounds, expected):
     state = 1 << 120
-    permutation = ChaCha(
+    permutation = ChaChaPermutation(
         number_of_rounds=rounds,
         word_size=8,
         rotations=(4, 3, 2, 1),
@@ -43,7 +43,7 @@ def test_retained_toy_chacha_vectors(rounds, expected):
 
 
 def test_retained_toy_vector_uses_batch_execution_too():
-    permutation = ChaCha(number_of_rounds=4, word_size=8, rotations=(4, 3, 2, 1))
+    permutation = ChaChaPermutation(number_of_rounds=4, word_size=8, rotations=(4, 3, 2, 1))
     state = units_from_int(1 << 120, 8, 16)
 
     result = BatchEvaluator().evaluate(permutation, {"state": (state, state)})
@@ -54,13 +54,13 @@ def test_retained_toy_vector_uses_batch_execution_too():
 
 def test_rounds_and_parameters_are_validated():
     with pytest.raises(ValueError, match="positive"):
-        ChaCha(number_of_rounds=0)
+        ChaChaPermutation(number_of_rounds=0)
     with pytest.raises(ValueError, match="four integers"):
-        ChaCha(word_size=8, rotations=(4, 3, 2, 8))
+        ChaChaPermutation(word_size=8, rotations=(4, 3, 2, 8))
 
 
 def test_graph_exposes_standard_round_boundaries():
-    permutation = ChaCha(number_of_rounds=2)
+    permutation = ChaChaPermutation(number_of_rounds=2)
 
-    assert len(permutation.rounds) == 2
-    assert len(permutation.components) == 2 * 4 * 12
+    assert len(permutation.graph.rounds) == 2
+    assert len(permutation.graph.components) == 2 * 4 * 12

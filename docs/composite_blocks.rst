@@ -7,6 +7,55 @@ lowering ordinary leaf components into the canonical graph.  Consequently the
 same block can be evaluated alone, reused many times, or passed to an existing
 analysis or constraint representation.
 
+Define and reuse a small block
+------------------------------
+
+Start with a block that XORs two 8-bit words and rotates the result one bit to
+the left. ``CompositeBuilder`` uses the same component vocabulary as an
+ordinary primitive builder:
+
+.. doctest::
+
+   >>> from claasp import CompositeBuilder, PrimitiveBuilder, UnitArrayType
+   >>> from claasp.components import Rotate, Xor
+   >>> from claasp.unit_types import Word
+   >>> byte = UnitArrayType(Word(8), (1,))
+   >>> block_builder = CompositeBuilder("XorRotate", {"left": byte, "right": byte})
+   >>> block_builder.add_round()
+   Round(number=0)
+   >>> mixed = block_builder.add_component(
+   ...     Xor(block_builder.input("left"), block_builder.input("right"))
+   ... )
+   >>> rotated = block_builder.add_component(Rotate(mixed, 1, "left"))
+   >>> block_builder.set_output("output", rotated)
+   >>> xor_rotate = block_builder.build()
+   >>> hex(xor_rotate.evaluate(0x80, 0x01))
+   '0x3'
+
+The definition can now be inserted more than once. Each insertion gets a
+named scope, while its XOR and rotation remain ordinary graph components:
+
+.. doctest::
+
+   >>> builder = PrimitiveBuilder("two_xor_rotates", {name: byte for name in "abc"})
+   >>> builder.add_round()
+   Round(number=0)
+   >>> first = builder.add_composite(
+   ...     xor_rotate,
+   ...     {"left": builder.input("a"), "right": builder.input("b")},
+   ...     scope_id="first",
+   ... )
+   >>> second = builder.add_composite(
+   ...     xor_rotate,
+   ...     {"left": first.output(), "right": builder.input("c")},
+   ...     scope_id="second",
+   ... )
+   >>> two_steps = builder.build(second.output())
+   >>> hex(two_steps.evaluate(0x80, 0x01, 0x03))
+   '0x0'
+   >>> tuple(scope.path for scope in two_steps.graph.scopes)
+   ('first', 'second')
+
 Building AES from blocks
 ------------------------
 
@@ -17,41 +66,39 @@ shows the alternative reusable-block style used by ``CustomAES``.
 
 .. doctest::
 
-   >>> from claasp import Primitive
    >>> from claasp.components import Add
    >>> from claasp.composites import AESKeySchedule, AESRound
    >>> def block_aes128():
    ...     schedule_definition = AESKeySchedule(128, 10)
    ...     middle_round = AESRound(mix_columns=True)
    ...     final_round = AESRound(mix_columns=False)
-   ...     primitive = Primitive("aes_from_blocks", {
+   ...     builder = PrimitiveBuilder("aes_from_blocks", {
    ...         "plaintext": middle_round.inputs["state"],
    ...         "key": schedule_definition.inputs["key"],
    ...     })
-   ...     primitive.add_round()
-   ...     key_schedule = primitive.add_composite(
-   ...         schedule_definition, {"key": primitive.input("key")},
+   ...     builder.add_round()
+   ...     key_schedule = builder.add_composite(
+   ...         schedule_definition, {"key": builder.input("key")},
    ...         scope_id="key_schedule")
-   ...     state = primitive.add_component(Add((
-   ...         primitive.input("plaintext"), key_schedule.output[0])))
+   ...     state = builder.add_component(Add((
+   ...         builder.input("plaintext"), key_schedule.output[0])))
    ...     for number in range(1, 11):
-   ...         primitive.add_round()
+   ...         builder.add_round()
    ...         definition = final_round if number == 10 else middle_round
-   ...         block = primitive.add_composite(definition, {
+   ...         block = builder.add_composite(definition, {
    ...             "state": state,
    ...             "round_key": key_schedule.output[number],
    ...         }, scope_id=f"round_{number}")
    ...         state = block.output()
-   ...     primitive.set_output(state)
-   ...     return primitive
+   ...     return builder.build(state)
    >>> built = block_aes128()
    >>> plaintext = 0x00112233445566778899AABBCCDDEEFF
    >>> key = 0x000102030405060708090A0B0C0D0E0F
    >>> f"{built.evaluate(plaintext, key):032x}"
    '69c4e0d86a7b0430d8cdb78070b4c55a'
-   >>> built.scope("round_1").definition.name
+   >>> built.graph.scope("round_1").definition.name
    'AESRound'
-   >>> built.scope("key_schedule/sub_word_1").definition.name
+   >>> built.graph.scope("key_schedule/sub_word_1").definition.name
    'ParallelSBoxLayer'
 
 Experimental changes use ``CustomAES`` so results cannot be mistaken for
@@ -68,7 +115,7 @@ exhaustive-analysis instances.
    ('custom_aes', 'custom_aes')
    >>> dict(no_mix.provenance)
    {'derived_from': 'AES', 'modifications': 'removed MixColumns'}
-   >>> any(component.component_id.endswith("/mix_columns") for component in no_mix.components)
+   >>> any(component.component_id.endswith("/mix_columns") for component in no_mix.graph.components)
    False
    >>> no_mix.evaluate(plaintext, key) != AES(number_of_rounds=2).evaluate(plaintext, key)
    True

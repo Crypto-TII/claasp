@@ -1,8 +1,8 @@
 """One-component data-dependent rotation function."""
 
 from claasp.components import VariableRotate as VariableRotateComponent
-from claasp.domains import Word
-from claasp.graph import Primitive, PrimitiveKind, ValueType
+from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
+from claasp.unit_types import Word
 
 from ._base import positive
 
@@ -26,7 +26,7 @@ class VariableRotate(Primitive):
     EXAMPLES::
 
         >>> primitive = VariableRotate()
-        >>> inputs = {name: 0 for name in primitive.input_ports}
+        >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
@@ -43,17 +43,17 @@ class VariableRotate(Primitive):
         super().__init__(
             "variable_rotate",
             {
-                "input": ValueType(Word(bit_size), (1,)),
-                "amount": ValueType(Word(amount_bit_size), (1,)),
+                "input": UnitArrayType(Word(bit_size), (1,)),
+                "amount": UnitArrayType(Word(amount_bit_size), (1,)),
             },
             kind=PrimitiveKind.FUNCTION,
         )
-        self.add_round()
-        self.set_output(
-            self.add_component(
+        self._builder.add_round()
+        self._builder.set_output(
+            self._builder.add_component(
                 VariableRotateComponent(
-                    self.input("input"),
-                    self.input("amount"),
+                    self.graph.input("input"),
+                    self.graph.input("amount"),
                     direction,
                 )
             )

@@ -156,7 +156,7 @@ class GrainCore(BitGraphPrimitive):
         state_id = INPUT_STATE
         state_positions = list(range(self.state_bit_size))
         for _ in range(rounds):
-            self.add_round()
+            self._builder.add_round()
             state_id = self.add_fsr_component(
                 [state_id],
                 [state_positions],

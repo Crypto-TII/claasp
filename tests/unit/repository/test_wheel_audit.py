@@ -31,7 +31,7 @@ def test_wheel_audit_rejects_cache_baseline_config_and_native_artifacts():
         wheel_audit.REQUIRED
         | {
             "claasp/__pycache__/module.pyc",
-            "claasp/migration/m10_16_typing_baseline.json",
+            "claasp/tools/baselines/typing.json",
             "claasp/pyproject.toml",
             "claasp/generated.c",
             "claasp/native.so",

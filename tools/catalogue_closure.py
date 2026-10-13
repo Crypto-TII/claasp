@@ -11,9 +11,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
 CATALOGUE = ROOT / "src/claasp/catalogue/data/catalogue.json"
-INVENTORY = ROOT / "migration/legacy_inventory.json"
-REALIZATIONS = ROOT / "migration/realization_catalogue.json"
-SINGLE_COMPONENTS = ROOT / "migration/single_component_catalogue.json"
+INVENTORY = ROOT / "tools/data/legacy_inventory.json"
+REALIZATIONS = ROOT / "tools/data/realization_catalogue.json"
+SINGLE_COMPONENTS = ROOT / "tools/data/single_component_catalogue.json"
 
 
 def check() -> tuple[int, int, int, int, int]:
@@ -30,7 +30,7 @@ def check() -> tuple[int, int, int, int, int]:
     assert {name: item["module"] for name, item in by_name.items()} == ALL_EXPORTS
     assert {item["name"]: item["module"] for item in catalogue["components"]} == single_components
     assert len(catalogue["components"]) == 23
-    assert len({item["name"] for item in catalogue["drivers"]}) == len(catalogue["drivers"]) == 24
+    assert len({item["name"] for item in catalogue["drivers"]}) == len(catalogue["drivers"]) == 26
     representations = catalogue["representations"]
     analyses = catalogue["analyses"]
     representation_names = {item["name"] for item in representations}

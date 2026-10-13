@@ -47,6 +47,7 @@ from claasp.presentation import (
 from claasp.semantics.cryptanalysis import (
     Trail,
     TrailKind,
+    TrailSearchMetadata,
     TrailSearchResult,
     TrailStep,
     Transition,
@@ -71,17 +72,40 @@ def fixed_trail():
     )
 
 
-def test_trail_adapter_preserves_weight_order_and_graph_reference():
+def test_trail_adapter_preserves_weight_order_and_component():
     section = trail_section(
-        TrailSearchResult(fixed_trail(), 2.0, "fixed PRESENT evidence; z3 4.14")
+        TrailSearchResult(
+            fixed_trail(),
+            2.0,
+            TrailSearchMetadata("fixed PRESENT evidence", "z3", "4.14"),
+        ),
+        details=True,
     )
     summary, steps = section.tables
     assert summary.rows[3].cells[1].text == "2"
     assert summary.rows[4].cells[1].text == "2"
+    assert summary.rows[5].cells[1].text == "proved optimal"
+    assert steps.columns[-1].heading == "Component ID"
     assert steps.rows[0].cells[-1].text == "sbox_0_0"
-    assert steps.notes == (
-        "Graph locations are evidence references, not semantic report identity.",
+    assert steps.notes == ()
+
+
+def test_trail_adapter_reduces_exact_ratios():
+    transition = Transition(
+        TrailKind.XOR_DIFFERENTIAL,
+        XorDifference(0, 1),
+        XorDifference(0, 1),
+        1 << 32,
+        1 << 32,
     )
+    trail = Trail(
+        TrailKind.XOR_DIFFERENTIAL,
+        XorDifference(0, 1),
+        XorDifference(0, 1),
+        (TrailStep("identity_0", transition),),
+    )
+    steps = trail_section(trail, details=True).tables[1]
+    assert steps.rows[0].cells[4].text == "1/1"
 
 
 def test_component_results_keep_exact_bound_and_unavailable_distinct():

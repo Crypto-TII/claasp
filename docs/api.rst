@@ -1,13 +1,13 @@
 API reference
 =============
 
-Domains
--------
+Unit types
+----------
 
-.. autoclass:: claasp.domains.base.Domain
+.. autoclass:: claasp.unit_types.base.UnitType
    :members:
 
-.. automodule:: claasp.domains
+.. automodule:: claasp.unit_types
    :members:
 
 Primitive graph
@@ -85,7 +85,7 @@ Analysis
 
 .. automodule:: claasp.analysis
    :members:
-   :exclude-members: BitPattern,ModularAddLinearSemantics,ModularAddTransitionSemantics,SBoxTransitionSemantics,Trail,TrailComponentTransition,TrailKind,TrailRoundTransition,TrailSearchMetadata,TrailSearchResult,TrailStep,Transition,TruncatedBit,TruncatedXorDifference,XorDifference,XorMask,propagate_two_word_speck_round,truncated_modular_add
+   :exclude-members: BitPattern,ModularAddLinearSemantics,ModularAddTransitionSemantics,SBoxTransitionSemantics,Trail,TrailKind,TrailRoundTransition,TrailSearchResult,TrailStep,Transition,TruncatedBit,TruncatedXorDifference,XorDifference,XorMask,propagate_two_word_speck_round,truncated_modular_add
 
 .. automodule:: claasp.drivers.analysis
    :members:
@@ -114,6 +114,12 @@ Presentation
 .. automodule:: claasp.presentation
    :members:
 
+Constraint model provenance
+---------------------------
+
+.. automodule:: claasp.representations.constraints
+   :members:
+
 Polynomial models
 -----------------
 
@@ -134,6 +140,7 @@ Boolean models
 
 .. automodule:: claasp.representations.constraints.sat.exporters
    :members:
+   :no-index:
 
 .. automodule:: claasp.drivers.solvers
    :members:
@@ -154,7 +161,7 @@ Complete public namespace index
 -------------------------------
 
 Every module that explicitly declares the public API is listed below. This
-index is generated from the same mechanical authority used by the M10.16
+index is generated from the same mechanical authority used by the public API
 closure gate.
 
 .. include:: public_api_namespaces.rst

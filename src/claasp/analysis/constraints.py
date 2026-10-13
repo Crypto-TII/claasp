@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from claasp.graph import PortLike, Selection, as_selection
+from claasp.graph import Selection, UnitArrayLike, as_selection
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -19,7 +19,7 @@ class FixedValue:
     target: Selection
     value: object
 
-    def __init__(self, target: PortLike, value: object) -> None:
+    def __init__(self, target: UnitArrayLike, value: object) -> None:
         object.__setattr__(self, "target", as_selection(target))
         object.__setattr__(self, "value", value)
 
@@ -38,10 +38,10 @@ class Equal:
     left: Selection
     right: Selection
 
-    def __init__(self, left: PortLike, right: PortLike) -> None:
+    def __init__(self, left: UnitArrayLike, right: UnitArrayLike) -> None:
         left, right = as_selection(left), as_selection(right)
-        if left.value_type != right.value_type:
-            raise ValueError("equality operands must have identical value types")
+        if left.array_type != right.array_type:
+            raise ValueError("equality operands must have identical array types")
         object.__setattr__(self, "left", left)
         object.__setattr__(self, "right", right)
 
@@ -71,7 +71,7 @@ class Nonzero:
 
     target: Selection
 
-    def __init__(self, target: PortLike) -> None:
+    def __init__(self, target: UnitArrayLike) -> None:
         object.__setattr__(self, "target", as_selection(target))
 
 
@@ -90,10 +90,10 @@ class HammingWeight:
     minimum: int
     maximum: int
 
-    def __init__(self, target: PortLike, minimum: int = 0, maximum: int | None = None) -> None:
+    def __init__(self, target: UnitArrayLike, minimum: int = 0, maximum: int | None = None) -> None:
         target = as_selection(target)
-        maximum = target.value_type.unit_count if maximum is None else maximum
-        if not 0 <= minimum <= maximum <= target.value_type.unit_count:
+        maximum = target.array_type.unit_count if maximum is None else maximum
+        if not 0 <= minimum <= maximum <= target.array_type.unit_count:
             raise ValueError("weight bounds must satisfy 0 <= minimum <= maximum <= size")
         object.__setattr__(self, "target", target)
         object.__setattr__(self, "minimum", minimum)

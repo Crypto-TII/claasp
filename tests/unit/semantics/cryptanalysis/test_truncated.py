@@ -64,8 +64,8 @@ def test_speck_mixed_exact_truncated_sat_boundaries_are_preserved():
 def test_graph_level_impossible_sbox_transition_is_exhaustively_refuted():
     primitive = Present(number_of_rounds=1)
 
-    assert not primitive.analyze().is_xor_differential_transition_possible("sbox_1_0", 0x1, 0x1)
-    assert primitive.analyze().is_xor_differential_transition_possible("sbox_1_0", 0x1, 0x3)
+    assert not primitive.analysis.is_xor_differential_transition_possible("sbox_1_0", 0x1, 0x1)
+    assert primitive.analysis.is_xor_differential_transition_possible("sbox_1_0", 0x1, 0x3)
 
 
 def test_probabilistic_truncated_transition_rejects_an_invalid_carry_boundary():

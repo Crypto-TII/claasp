@@ -24,7 +24,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOT = ROOT / "src" / "claasp"
-AUTHORITY = ROOT / "migration" / "m10_16_public_api.json"
+AUTHORITY = ROOT / "tools" / "baselines" / "public_api.json"
 SCHEMA_VERSION = 1
 SECTION_ORDER = (
     "Parameters",

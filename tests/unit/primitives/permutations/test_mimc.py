@@ -15,5 +15,5 @@ def test_toy_mimc_matches_direct_computation():
     result = ScalarEvaluator().evaluate(primitive, {"state": (5,)})
 
     assert result.output == (expected,)
-    assert len(primitive.rounds) == len(constants)
-    assert len(primitive.components) == 3 * len(constants)
+    assert len(primitive.graph.rounds) == len(constants)
+    assert len(primitive.graph.components) == 3 * len(constants)

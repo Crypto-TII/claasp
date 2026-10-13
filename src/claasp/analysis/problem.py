@@ -4,7 +4,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
 from claasp.analysis.constraints import Equal, FixedValue, HammingWeight, Nonzero, NotEqual
-from claasp.graph import PortLike, Primitive, Selection, as_selection
+from claasp.graph import Primitive, Selection, UnitArrayLike, as_selection
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -20,7 +20,7 @@ class MinimizeWeight:
 
     target: Selection
 
-    def __init__(self, target: PortLike) -> None:
+    def __init__(self, target: UnitArrayLike) -> None:
         object.__setattr__(self, "target", as_selection(target))
 
 
@@ -44,7 +44,7 @@ class AnalysisProblem:
         self,
         primitive: Primitive,
         constraints: Iterable[object] = (),
-        projections: Mapping[str, PortLike] | None = None,
+        projections: Mapping[str, UnitArrayLike] | None = None,
         objective: MinimizeWeight | None = None,
     ) -> None:
         if not isinstance(primitive, Primitive):

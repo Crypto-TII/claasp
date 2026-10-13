@@ -113,6 +113,25 @@ class RealizationDescriptor:
 
         return _names(requirements, "capability requirements") <= self.capabilities
 
+    def __str__(self) -> str:
+        def readable(values: Iterable[str]) -> str:
+            return ", ".join(value.replace("_", " ") for value in sorted(values)) or "none"
+
+        provenance = "; ".join(self.provenance) or "not specified"
+        return "\n".join(
+            (
+                f"Realization: {self.name}",
+                f"  Description: {self.description}",
+                f"  Maturity: {self.maturity.value.replace('_', ' ')}",
+                f"  Capabilities: {readable(self.capabilities)}",
+                f"  Graph structure: {readable(self.structure)}",
+                f"  Provenance: {provenance}",
+            )
+        )
+
+    def __repr__(self) -> str:
+        return str(self)
+
 
 def select_realization(
     descriptors: Iterable[RealizationDescriptor],
@@ -179,48 +198,50 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
 
     from copy import copy
 
-    from claasp.domains import BinaryExtensionField, Bit, Word
-    from claasp.graph.port import as_selection
     from claasp.graph.primitive import Primitive
+    from claasp.graph.unit_array import as_selection
+    from claasp.unit_types import BinaryExtensionField, Bit, Word
 
     if not isinstance(reference, Primitive) or not isinstance(candidate, Primitive):
         raise TypeError("realization contract normalization requires Primitive graphs")
     if reference.kind != candidate.kind:
         raise ValueError("equivalent realizations must have the same primitive kind")
-    if set(reference.input_descriptors) != set(candidate.input_descriptors):
+    if set(reference.graph.input_descriptors) != set(candidate.graph.input_descriptors):
         raise ValueError("equivalent realizations must have the same named inputs")
-    if reference.output is None or candidate.output is None:
+    if reference.graph.output is None or candidate.graph.output is None:
         raise ValueError("equivalent realizations require declared outputs")
 
-    def encoded_size(value_type):
-        if value_type.encoded_bit_size is None:
+    def encoded_size(array_type):
+        if array_type.encoded_bit_size is None:
             raise ValueError("realization boundary normalization requires fixed-width types")
-        return value_type.encoded_bit_size
+        return array_type.encoded_bit_size
 
-    for name, expected in reference.input_descriptors.items():
-        actual = candidate.input_descriptor(name)
-        if encoded_size(expected.value_type) != encoded_size(actual.value_type):
+    for name, expected in reference.graph.input_descriptors.items():
+        actual = candidate.graph.input_descriptor(name)
+        if encoded_size(expected.array_type) != encoded_size(actual.array_type):
             raise ValueError(f"realization input {name!r} has a different encoded width")
         if expected.role != actual.role or expected.visibility != actual.visibility:
             raise ValueError(
                 f"realization input {name!r} has different role or visibility metadata"
             )
-    if encoded_size(reference.output.value_type) != encoded_size(candidate.output.value_type):
+    if encoded_size(reference.graph.output.array_type) != encoded_size(
+        candidate.graph.output.array_type
+    ):
         raise ValueError("equivalent realizations have different output widths")
 
-    exact_inputs = tuple(reference.input_descriptors.items()) == tuple(
-        candidate.input_descriptors.items()
+    exact_inputs = tuple(reference.graph.input_descriptors.items()) == tuple(
+        candidate.graph.input_descriptors.items()
     )
-    if exact_inputs and reference.output.value_type == candidate.output.value_type:
+    if exact_inputs and reference.graph.output.array_type == candidate.graph.output.array_type:
         candidate._family_name = reference.family_name
         candidate.realization = descriptor
         return candidate
-    if candidate.scopes:
+    if candidate.graph.scopes:
         raise ValueError("boundary normalization of hierarchical realizations is not supported")
 
     normalized = Primitive(
         reference.family_name,
-        reference.input_descriptors,
+        reference.graph.input_descriptors,
         kind=reference.kind,
         provenance=reference.provenance + candidate.provenance,
     )
@@ -229,33 +250,33 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
 
     def convert(selection, target_type, component_id):
         selection = as_selection(selection)
-        if selection.value_type == target_type:
+        if selection.array_type == target_type:
             return selection
-        source_domain = selection.value_type.domain
-        target_domain = target_type.domain
+        source_unit_type = selection.array_type.unit_type
+        target_unit_type = target_type.unit_type
         value = selection
-        if not isinstance(source_domain, Bit):
-            value = normalized.unpack_bits(value)
-        if isinstance(target_domain, Bit):
+        if not isinstance(source_unit_type, Bit):
+            value = normalized._builder.unpack_bits(value)
+        if isinstance(target_unit_type, Bit):
             converted = value
-        elif isinstance(target_domain, Word):
-            converted = normalized.pack_bits(value, target_domain.width)
-        elif isinstance(target_domain, BinaryExtensionField):
-            converted = normalized.pack_bits(
+        elif isinstance(target_unit_type, Word):
+            converted = normalized._builder.pack_bits(value, target_unit_type.width)
+        elif isinstance(target_unit_type, BinaryExtensionField):
+            converted = normalized._builder.pack_bits(
                 value,
-                target_domain.degree,
-                output_domain=target_domain,
+                target_unit_type.degree,
+                output_unit_type=target_unit_type,
             )
         else:
             raise ValueError(
-                f"cannot normalize realization boundary to {type(target_domain).__name__}"
+                f"cannot normalize realization boundary to {type(target_unit_type).__name__}"
             )
-        if converted.value_type != target_type:
+        if converted.array_type != target_type:
             raise ValueError("realization boundary conversion produced the wrong typed shape")
         return converted
 
-    candidate_rounds = candidate.rounds or ((),)
-    pending_bindings = list(candidate.bindings)
+    candidate_rounds = candidate.graph.rounds or ((),)
+    pending_bindings = list(candidate.graph.bindings)
 
     def drain_bindings():
         from claasp.graph.binding import BindingKind
@@ -264,37 +285,41 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
         while changed:
             changed = False
             for binding in tuple(pending_bindings):
-                if not all(item.source.owner_id in remapped for item in binding.inputs):
+                if not all(item.source.source_id in remapped for item in binding.inputs):
                     continue
                 inputs = tuple(
-                    remapped[item.source.owner_id][item.positions] for item in binding.inputs
+                    remapped[item.source.source_id][item.positions] for item in binding.inputs
                 )
                 if binding.kind is BindingKind.JOIN:
-                    output = normalized.join(*inputs)
+                    output = normalized._builder.join(*inputs)
                 elif binding.kind is BindingKind.VIEW:
-                    output = normalized.view(inputs[0])
+                    output = normalized._builder.view(inputs[0])
                 elif binding.kind is BindingKind.PACK_BITS:
-                    output = normalized.pack_bits(
+                    output = normalized._builder.pack_bits(
                         inputs[0],
                         binding.word_width,
-                        output_domain=(
-                            binding.output_type.domain
-                            if isinstance(binding.output_type.domain, BinaryExtensionField)
+                        output_unit_type=(
+                            binding.output_type.unit_type
+                            if isinstance(binding.output_type.unit_type, BinaryExtensionField)
                             else None
                         ),
                     )
                 else:
-                    output = normalized.unpack_bits(inputs[0])
+                    output = normalized._builder.unpack_bits(inputs[0])
                 remapped[binding.binding_id] = as_selection(output)
                 pending_bindings.remove(binding)
                 changed = True
 
     for round_index, candidate_round in enumerate(candidate_rounds):
-        normalized.add_round()
+        normalized._builder.add_round()
         if round_index == 0:
-            for name, port in candidate.input_ports.items():
+            for name, unit_array in candidate.graph.input_arrays.items():
                 remapped[name] = as_selection(
-                    convert(normalized.input(name), port.value_type, f"__realization_input_{name}")
+                    convert(
+                        normalized.graph.input(name),
+                        unit_array.array_type,
+                        f"__realization_input_{name}",
+                    )
                 )
             drain_bindings()
         for component in getattr(candidate_round, "components", ()):
@@ -303,15 +328,19 @@ def normalize_realization_contract(reference, candidate, descriptor: Realization
             object.__setattr__(
                 cloned,
                 "inputs",
-                tuple(remapped[item.source.owner_id][item.positions] for item in component.inputs),
+                tuple(remapped[item.source.source_id][item.positions] for item in component.inputs),
             )
-            remapped[component.component_id] = normalized.add_component(cloned).select_all()
+            remapped[component.component_id] = normalized._builder.add_component(
+                cloned
+            ).select_all()
     drain_bindings()
     if pending_bindings:
         raise ValueError("realization contains unresolved structural bindings")
 
-    candidate_output = remapped[candidate.output.source.owner_id][candidate.output.positions]
-    normalized.set_output(
-        convert(candidate_output, reference.output.value_type, "__realization_output")
+    candidate_output = remapped[candidate.graph.output.source.source_id][
+        candidate.graph.output.positions
+    ]
+    normalized._builder.set_output(
+        convert(candidate_output, reference.graph.output.array_type, "__realization_output")
     )
     return normalized

@@ -13,9 +13,9 @@ from claasp.components import (
     Shift,
     Xor,
 )
-from claasp.domains import Bit, Word
 from claasp.graph import Primitive
 from claasp.representations.constraints.polynomial import BooleanPolynomial
+from claasp.unit_types import Bit, Word
 
 SymbolicUnit = BooleanPolynomial | tuple[BooleanPolynomial, ...]
 
@@ -55,21 +55,21 @@ class BooleanSymbolicEvaluator:
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a typed graph")
         values = {}
-        for name, port in primitive.input_ports.items():
+        for name, unit_array in primitive.graph.input_arrays.items():
             prefix = {"plaintext": "p", "key": "k", "state": "s"}.get(name, name[:1])
-            domain = port.value_type.domain
-            if isinstance(domain, Bit):
+            unit_type = unit_array.array_type.unit_type
+            if isinstance(unit_type, Bit):
                 values[name] = tuple(
                     BooleanPolynomial.variable(f"{prefix}{index}")
-                    for index in range(port.value_type.unit_count)
+                    for index in range(unit_array.array_type.unit_count)
                 )
-            elif isinstance(domain, Word):
+            elif isinstance(unit_type, Word):
                 values[name] = tuple(
                     tuple(
-                        BooleanPolynomial.variable(f"{prefix}{unit * domain.width + bit}")
-                        for bit in range(domain.width)
+                        BooleanPolynomial.variable(f"{prefix}{unit * unit_type.width + bit}")
+                        for bit in range(unit_type.width)
                     )
-                    for unit in range(port.value_type.unit_count)
+                    for unit in range(unit_array.array_type.unit_count)
                 )
             else:
                 raise NotImplementedError(
@@ -77,15 +77,15 @@ class BooleanSymbolicEvaluator:
                 )
 
         binding_cache = {}
-        for component in primitive.components:
+        for component in primitive.graph.components:
             inputs = tuple(
-                primitive.resolve_selection(selection, values, binding_cache)
+                primitive.graph.resolve_selection(selection, values, binding_cache)
                 for selection in component.inputs
             )
             values[component.component_id] = self._component(component, inputs)
-        if primitive.output is None:
+        if primitive.graph.output is None:
             return BooleanSymbolicResult((), values)
-        selected = primitive.resolve_selection(primitive.output, values, binding_cache)
+        selected = primitive.graph.resolve_selection(primitive.graph.output, values, binding_cache)
         flattened = tuple(
             polynomial
             for unit in selected
@@ -102,22 +102,22 @@ class BooleanSymbolicEvaluator:
 
         symbolic_inputs = []
         for operand_index, selection in enumerate(component.inputs):
-            domain = selection.value_type.domain
-            if isinstance(domain, Bit):
+            unit_type = selection.array_type.unit_type
+            if isinstance(unit_type, Bit):
                 symbolic_inputs.append(
                     tuple(
                         BooleanPolynomial.variable(f"x{operand_index}_{unit_index}")
-                        for unit_index in range(selection.value_type.unit_count)
+                        for unit_index in range(selection.array_type.unit_count)
                     )
                 )
-            elif isinstance(domain, Word):
+            elif isinstance(unit_type, Word):
                 symbolic_inputs.append(
                     tuple(
                         tuple(
                             BooleanPolynomial.variable(f"x{operand_index}_{unit_index}_{bit_index}")
-                            for bit_index in range(domain.width)
+                            for bit_index in range(unit_type.width)
                         )
-                        for unit_index in range(selection.value_type.unit_count)
+                        for unit_index in range(selection.array_type.unit_count)
                     )
                 )
             else:
@@ -131,19 +131,19 @@ class BooleanSymbolicEvaluator:
 
     def _component(self, component, inputs):
         if isinstance(component, Constant):
-            domain = component.output_type.domain
-            if isinstance(domain, Bit):
+            unit_type = component.output_type.unit_type
+            if isinstance(unit_type, Bit):
                 return tuple(
                     BooleanPolynomial.one() if value else BooleanPolynomial.zero()
                     for value in component.values
                 )
-            if isinstance(domain, Word):
+            if isinstance(unit_type, Word):
                 return tuple(
                     tuple(
                         BooleanPolynomial.one()
-                        if value & (1 << (domain.width - 1 - bit))
+                        if value & (1 << (unit_type.width - 1 - bit))
                         else BooleanPolynomial.zero()
-                        for bit in range(domain.width)
+                        for bit in range(unit_type.width)
                     )
                     for value in component.values
                 )

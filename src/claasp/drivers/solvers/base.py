@@ -26,7 +26,7 @@ class SatResult:
 
         >>> from dataclasses import fields
         >>> (SatResult.__dataclass_params__.frozen, tuple(field.name for field in fields(SatResult)))
-        (True, ('status', 'assignment', 'runtime_seconds', 'stdout', 'stderr'))
+        (True, ('status', 'assignment', 'runtime_seconds', 'stdout', 'stderr', 'peak_memory_bytes'))
     """
 
     status: SatStatus
@@ -34,6 +34,7 @@ class SatResult:
     runtime_seconds: float
     stdout: str
     stderr: str
+    peak_memory_bytes: int | None = None
 
     @property
     def is_satisfiable(self) -> bool:

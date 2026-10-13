@@ -1,4 +1,4 @@
-"""Complete legacy wordwise domain/XOR/MDS abstraction evidence."""
+"""Complete legacy wordwise unit_type/XOR/MDS abstraction evidence."""
 
 import hashlib
 from functools import reduce

@@ -33,7 +33,7 @@ class ModularAdd(Component):
             not isinstance(modulus, int)
             or isinstance(modulus, bool)
             or modulus <= 1
-            or modulus > 1 << output_type.domain.width
+            or modulus > 1 << output_type.unit_type.width
         ):
             raise ValueError("modulus must be an integer in (1, 2^width]")
         object.__setattr__(self, "component_id", component_id)

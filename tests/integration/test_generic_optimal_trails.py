@@ -5,7 +5,7 @@ from io import StringIO
 import pytest
 
 from claasp.drivers.solvers import MinisatSolver
-from claasp.primitives import AES, CHAM, Ascon, ChaCha, Present, Simeck, Simon, Speck
+from claasp.primitives import AES, CHAM, Ascon, ChaChaPermutation, Present, Simeck, Simon, Speck
 from claasp.primitives.single_component_primitives import (
     BitwiseNot,
     BitwiseOr,
@@ -35,7 +35,7 @@ def test_three_round_andrx_optima_and_reporting(primitive_type):
     summary, details = StringIO(), StringIO()
     differential.show(file=summary)
     differential.show(details=True, file=details)
-    assert "round 3" in summary.getvalue()
+    assert "    3 |" in summary.getvalue()
     assert "BitwiseAnd" in details.getvalue()
 
 
@@ -62,7 +62,7 @@ def test_typed_kind_custom_solver_and_input_policy_overrides():
 
 def test_other_modadd_family_and_state_input_permutation():
     cham = CHAM(number_of_rounds=1).analysis.find_optimal_trail(backend="sat")
-    chacha = ChaCha(number_of_rounds=1).analysis.find_optimal_trail(backend="sat")
+    chacha = ChaChaPermutation(number_of_rounds=1).analysis.find_optimal_trail(backend="sat")
     assert cham.is_optimal and chacha.is_optimal
     assert chacha.trail.input_pattern.width == 512
 
@@ -96,8 +96,8 @@ def test_specialized_results_remain_available():
 )
 @pytest.mark.parametrize("kind", tuple(TrailKind))
 def test_recovered_basic_word_component_semantics(primitive, kind):
-    active = next(iter(primitive.input_ports))
-    fixed = {name: 0 for name in primitive.input_ports if name != active}
+    active = next(iter(primitive.graph.input_arrays))
+    fixed = {name: 0 for name in primitive.graph.input_arrays if name != active}
     options = (
         {"fixed_input_differences": fixed}
         if kind is TrailKind.XOR_DIFFERENTIAL

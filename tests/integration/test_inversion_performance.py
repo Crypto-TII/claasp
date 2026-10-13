@@ -13,7 +13,7 @@ def katan64_inversion_result() -> tuple[int, int, float]:
     primitive = KatanFSR(block_bit_size=64, key_bit_size=80, number_of_rounds=254)
 
     started = perf_counter()
-    inverse = primitive.inverse().primitive
+    inverse = primitive.edit.inverse().primitive
     elapsed = perf_counter() - started
 
     plaintext = 0x0123456789ABCDEF
@@ -28,7 +28,7 @@ def gimli_inversion_result() -> tuple[int, int, float]:
     primitive = Gimli()
 
     started = perf_counter()
-    inverse = primitive.inverse().primitive
+    inverse = primitive.edit.inverse().primitive
     elapsed = perf_counter() - started
 
     state = 0x0123456789ABCDEF
@@ -42,7 +42,7 @@ def norx_inversion_result() -> tuple[int, int, float]:
     primitive = Norx(word_size=32)
 
     started = perf_counter()
-    inverse = primitive.inverse().primitive
+    inverse = primitive.edit.inverse().primitive
     elapsed = perf_counter() - started
 
     state = 0x0123456789ABCDEF

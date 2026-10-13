@@ -146,10 +146,9 @@ dependency into the core package.
 
 The exact table can be compiled to a portable one-hot MILP representation
 with ``MonomialTransitionMILPModel``. GLPK is the open-source reference driver;
-Gurobi may later consume the same representation as an optional accelerator.
-This initial baseline is intended for small component tables. Whole-primitive
-division-property composition and scalable encodings are subsequent M10.8
-checkpoints.
+Gurobi may consume the same representation as an optional accelerator. This
+baseline is intended for small component tables; whole-primitive
+division-property composition and scalable encodings are separate extensions.
 
 Graph composition asks ``ComponentMonomialSemantics`` for the local relation
 of each typed component. The initial exact providers cover bit-vector S-boxes,
