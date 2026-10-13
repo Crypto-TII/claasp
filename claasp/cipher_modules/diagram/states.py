@@ -107,7 +107,7 @@ def _word_snapshots(ir, word_bits, columns, order, values, comparison, granulari
     selected = history
     if granularity == 'round':
         selected = [history[0]]
-        for stage in sorted({node['round'] for node in ir['nodes']}):
+        for stage in range(ir['rounds']):
             frame = next(frame for frame in reversed(history) if frame['stage'] <= stage)
             selected.append(dict(frame, stage=stage))
     widths = {node['id']: node['bits'] for node in ir['inputs']+ir['nodes']}

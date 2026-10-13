@@ -132,3 +132,29 @@ def test_round_boundaries_with_no_word_operation_carry_state_explicitly():
     frames = state_snapshots(from_cipher(cipher), mode='word', word_bits=None)
     assert [frame['stage'] for frame in frames] == [-1,0,1]
     assert all(frame['words'][0]['positions'] == [('data',bit) for bit in range(4)] for frame in frames)
+
+
+@pytest.mark.parametrize('output_round', [0, 1, 2])
+def test_empty_declared_round_boundaries_preserve_carried_state(output_round):
+    cipher = Cipher('empty_rounds', 'permutation', ['data'], [4], 4)
+    for stage in range(3):
+        cipher.add_round()
+        if stage == output_round:
+            cipher.add_cipher_output_component(['data'], [list(range(4))], 4)
+    ir = from_cipher(cipher)
+    assert ir['rounds'] == 3
+    frames = state_snapshots(ir, mode='word', word_bits=None, values={'data': 10})
+    assert [frame['stage'] for frame in frames] == [-1, 0, 1, 2]
+    assert [frame['id'] for frame in frames] == ['initial', 'round-0-end', 'round-1-end', 'round-2-end']
+    assert all(frame['coverage'] == 'all-round-boundaries' for frame in frames)
+    assert all(frame['words'][0]['value'] == 10 for frame in frames)
+    assert all(frame['words'][0]['positions'] == [('data', bit) for bit in range(4)] for frame in frames)
+
+
+def test_two_round_cipher_with_empty_initial_round_has_both_boundaries():
+    cipher = Cipher('empty_initial', 'permutation', ['data'], [4], 4)
+    cipher.add_round()
+    cipher.add_round()
+    cipher.add_cipher_output_component(['data'], [list(range(4))], 4)
+    frames = state_snapshots(from_cipher(cipher), mode='word', word_bits=None)
+    assert [frame['stage'] for frame in frames] == [-1, 0, 1]
