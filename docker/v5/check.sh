@@ -24,6 +24,28 @@ done
 
 claasp-release-smoke
 
+case "${CLAASP_RELEASE_CHECK_PROFILE:-full}" in
+    architecture-smoke)
+        python -m pytest \
+            tests/unit/unit_types \
+            tests/unit/representations/execution \
+            tests/unit/serialization \
+            tests/unit/representations/source/test_c.py \
+            tests/unit/primitives/block_ciphers/aes/test_package.py \
+            tests/unit/primitives/permutations/test_chacha.py \
+            -p no:cacheprovider
+        python -m build
+        python tools/wheel_audit.py dist/*.whl
+        exit 0
+        ;;
+    full)
+        ;;
+    *)
+        echo "unknown CLAASP_RELEASE_CHECK_PROFILE: ${CLAASP_RELEASE_CHECK_PROFILE}" >&2
+        exit 2
+        ;;
+esac
+
 ruff format --check src tests tools docs/conf.py
 ruff check src tests tools docs/conf.py
 python tools/typecheck_closure.py --check

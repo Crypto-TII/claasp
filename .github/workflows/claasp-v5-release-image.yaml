@@ -42,12 +42,15 @@ jobs:
       matrix:
         include:
           - platform: linux/amd64
+            check_profile: full
             dependency_free_expression: not external
             external_expression: external
           - platform: linux/arm64
-            # QEMU preserves correctness but not meaningful native wall-clock budgets.
-            dependency_free_expression: not external and not performance
-            external_expression: external and not emulation_sensitive
+            # QEMU verifies the image and representative execution paths. The
+            # complete suite runs above on amd64 and in the Python CI matrix.
+            check_profile: architecture-smoke
+            dependency_free_expression: ""
+            external_expression: ""
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -64,11 +67,12 @@ jobs:
           push: false
           tags: claasp-v5-release:ci
           cache-from: type=gha,scope=claasp-v5-release
-      - name: Run complete release matrix
+      - name: Run release validation
         run: |
           docker run --rm --platform "${{ matrix.platform }}" \
             -e PYTHONDONTWRITEBYTECODE=1 \
             -e PYTHONPATH=/workspace/src \
+            -e "CLAASP_RELEASE_CHECK_PROFILE=${{ matrix.check_profile }}" \
             -e "CLAASP_DEPENDENCY_FREE_EXPRESSION=${{ matrix.dependency_free_expression }}" \
             -e "CLAASP_EXTERNAL_EXPRESSION=${{ matrix.external_expression }}" \
             -v "$GITHUB_WORKSPACE:/workspace" \
