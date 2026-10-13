@@ -43,12 +43,20 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
     The constructor's ``sbox_encoding`` flag picks the small-S-box encoder:
     ``"onehot"`` (default), ``"convexhull"``, or ``"espresso"`` (S-boxes over 5 bits
     always use Espresso). Besides the SPN-style components, the bitwise AND and OR
-    (:meth:`add_and_constraints`, :meth:`add_or_constraints`) and the modular addition
-    (:meth:`add_modadd_constraints`) have their two-subset rules, and constants are
-    transparent (:meth:`add_constant_constraints`); the components without a 2SDP rule yet
-    (NOT, MODMUL, FSR) raise :class:`NotImplementedError` until an override is added.
+    (:meth:`add_and_constraints`, :meth:`add_or_constraints`), the modular addition
+    (:meth:`add_modadd_constraints`) and ``NOT`` (:meth:`add_not_constraints`, transparent)
+    have their two-subset rules, and constants are transparent
+    (:meth:`add_constant_constraints`); the components without a 2SDP rule yet
+    (MODMUL, FSR) raise :class:`NotImplementedError` until an override is added.
     Requires a Gurobi license.
     """
+
+    # Two trail-table caches, deliberately at different scopes. The full-adder table depends
+    # on nothing but the full-adder ANF, so it is shared by every instance and derived once per
+    # process; deriving it builds a PolyBoRi ring, which is what we want to keep out of the
+    # per-model path. The S-box table varies with the S-box, so it is cached per instance and
+    # keyed by the component description (``_sbox_2sdp_cache`` below).
+    _FULL_ADDER_TABLE = None
 
     def __init__(self, cipher, sbox_encoding="onehot"):
         super().__init__(cipher)
@@ -204,19 +212,21 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
     def _unsupported(self, name):
         raise NotImplementedError(
             f"The two-subset division property model currently supports SPN-style components "
-            f"(S-box, linear layer / bit-permutation, XOR, ROTATE, SHIFT, constant, output), AND, OR and MODADD. "
+            f"(S-box, linear layer / bit-permutation, XOR, ROTATE, SHIFT, NOT, constant, output), AND, OR and MODADD. "
             f"Component '{name}' has a two-subset rule that is not yet implemented; use the exact "
             f"MilpMonomialPredictionModel, or add the corresponding 2SDP override to this class."
         )
 
     def add_and_constraints(self, component):
         r"""
-        Two-subset division trail of the bitwise AND (Xiang et al., ASIACRYPT 2016, model (2)):
-        for ``y = x_0 & ... & x_{k-1}`` with input exponents ``a_i`` and output exponent ``b``,
+        Two-subset division trail of the bitwise AND (Xiang et al., ASIACRYPT 2016, model (2),
+        from their Prop. 2 ``k = max{k_0, k_1}``): for ``y = x_0 & ... & x_{k-1}`` with input
+        exponents ``a_i`` and output exponent ``b``,
 
         ``b >= a_i`` for every ``i`` and ``b <= a_0 + ... + a_{k-1}``,
 
-        i.e. the trails ``(0,...,0) -> 0`` and ``a -> 1`` for every nonzero ``a``.
+        i.e. the trails ``(0,...,0) -> 0`` and ``a -> 1`` for every nonzero ``a``. For two
+        operands these are the four trails the paper lists after model (2).
         """
         self._add_max_rule_constraints(component, padded_output=True)
 
@@ -250,11 +260,27 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
         self._model.update()
 
     def add_not_constraints(self, component):
-        self._unsupported("NOT")
+        r"""
+        Two-subset rule for ``NOT``: transparent, ``b == a`` bit by bit.
 
-    # ---- modular addition ---------------------------------------------------------------------
+        ``NOT x = x + 1`` is an XOR with the constant 1, and the two-subset division property
+        is invariant under XOR with a constant (Sun et al., ePrint 2016/1101), so the trail is
+        the identity. This is the same reasoning as :meth:`_add_xor_bit_constraint`, where a
+        constant operand is dropped whatever its value.
 
-    _FULL_ADDER_TABLE = None
+        The parent's exact model instead uses ``b >= a``, because ``x + 1`` has the monomial
+        ``1`` and so the output can also be reached from no input at all; that slack is
+        precisely what the two-subset property discards. The only trail this rule drops is
+        therefore ``u = 0``, the constant monomial, which no cube ever asks about.
+        """
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
+        self._model.update()
+
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
+            self._model.addConstr(output_vars[index] == input_vars_concat[bit_pos])
+            self.set_as_used_variables([input_vars_concat[bit_pos]])
+        self._model.update()
 
     @classmethod
     def full_adder_two_subset_table(cls):
@@ -268,10 +294,13 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
         ``000 -> 00``; a single active input ``-> 01`` or ``-> 10``; two active inputs ``-> 10``
         (the carry only); ``111 -> 11``.
 
-        Chaining the slices is at least as tight as the COPY/AND/XOR decomposition of
-        Sun et al. (ePrint 2016/1101, Sect. 3.1), whose trails are these up to non-minimal
-        ones. A constant (or dropped) operand is handled by the same table with its bit fixed
-        to 0, which is their Sect. 3.3.
+        Chaining the slices is at least as tight as the COPY/AND/XOR decomposition of the
+        modular addition used by Sun et al. (ePrint 2016/1101), whose trails are these up to
+        non-minimal ones. A constant (or dropped) operand is handled by the same table with
+        its bit fixed to 0.
+
+        A classmethod cached on :attr:`_FULL_ADDER_TABLE`, because the table depends only on
+        the full-adder ANF, never on the cipher or the instance.
         """
         if cls._FULL_ADDER_TABLE is None:
             ring = BooleanPolynomialRing(3, "x")
@@ -351,14 +380,12 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
             carry = carry_out
         self._model.update()
 
-    # ---- constants ----------------------------------------------------------------------------
-
     def add_constant_constraints(self, component):
         """
         Constants carry no weight in the two-subset property: every constant bit is fixed to
         0, which makes XOR, AND, OR and modular addition with a constant transparent (Sun et
-        al., ePrint 2016/1101, Prop. 1-2 and Sect. 3.3). The exact model instead leaves the
-        1-bits free, since ``x + 1`` has the monomial ``1``.
+        al., ePrint 2016/1101). The exact model instead leaves the 1-bits free, since
+        ``x + 1`` has the monomial ``1``.
         """
         self._constants[component.id] = {}
         output_vars = self.get_output_vars(component)
@@ -392,7 +419,7 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
         wire, which is not a valid model; refuse, and point to the independent-round-key model.
         """
         with_round_keys = self._cipher.remove_key_schedule(keep_round_key_injection=True)
-        for component in with_round_keys.get_all_components():
+        for component in with_round_keys.all_components():
             takes_key = any(link == "key" or link.startswith("key_") for link in component.input_id_links)
             is_xor = component.type == "word_operation" and component.description[0] == "XOR"
             if takes_key and not is_xor and component.type != "intermediate_output":
