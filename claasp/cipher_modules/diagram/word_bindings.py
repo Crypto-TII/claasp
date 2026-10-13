@@ -11,11 +11,8 @@ from .validation import validate, validate_native_component
 
 
 def export_bindings(ir, *, key_side='right'):
-    # A transparent observation cannot secretly become a computational alias.
-    # Such nodes need a future actual-route alias annotation, not source repair.
     observed_ids = {node['id'] for node in ir['nodes'] if node['type'] == 'intermediate_output'}
-    if any(edge['source'] in observed_ids for node in ir['nodes'] for edge in node['operands']):
-        raise ValueError('Consumed observation aliases need explicit route-local flow bindings')
+    consumed = {edge['source'] for node in ir['nodes'] for edge in node['operands']} & observed_ids
     model = word_visual.build(ir, key_side=key_side)
     body = word_visual.render(model)
     parsed = word_visual.parse(body)
@@ -40,13 +37,39 @@ def export_bindings(ir, *, key_side='right'):
         definition = observation['definition']
         observations.append({'definition': {field: copy.deepcopy(definition[field]) for field in fields},
                              'ordinal': definition['ordinal'], 'positions': definition['positions'],
-                             'operand_positions': copy.deepcopy(definition['operand_positions']), 'flow': 'observe',
+                             'operand_positions': copy.deepcopy(definition['operand_positions']),
+                             'flow': 'alias' if definition['id'] in consumed else 'observe', 'port': 'bottom',
                              'at': [origins[token] for token in observation['words']]})
+    # The initial flow contract supports a uniform alias on one actual producer
+    # output. A direct and aliased use of that same physical word needs a future
+    # explicit branch-specific cut, so reject rather than choose from old edges.
+    alias_atoms = {}
+    alias_anchors = set()
+    for observation in observations:
+        if observation['flow'] != 'alias':
+            continue
+        for anchor in observation['at']:
+            coordinate = tuple(anchor)
+            if coordinate in alias_anchors:
+                raise ValueError('Overlapping alias output ownership needs explicit branch-specific cuts')
+            alias_anchors.add(coordinate)
+            source = next((binding for record, binding in zip(parsed['inputs'], model['input_bindings']) if list(record) == anchor), None)
+            if source is not None:
+                identity, positions = source['id'], source['positions']
+            else:
+                local = next(record for record in locals_ if record['at'] == anchor)['definition']
+                identity, positions = local['id'], list(range(model['bits']))
+            for bit in positions:
+                alias_atoms[(identity, bit)] = observation['definition']['id']
+    for node in ir['nodes']:
+        for edge in node['operands']:
+            if any((edge['source'], bit) in alias_atoms and alias_atoms[(edge['source'], bit)] != node['id'] for bit in edge['positions']):
+                raise ValueError('Mixed direct and alias uses need explicit branch-specific flow cuts')
     final = next(node for node in reversed(ir['nodes']) if node['type'] == 'cipher_output')
     masks, offset = [], 0
     for edge in final['operands']:
         masks.append(list(range(offset, offset+len(edge['positions'])))); offset += len(edge['positions'])
-    bindings = {'schema': 'claasp-word-view-bindings/experimental-2', 'word_bits': model['bits'],
+    bindings = {'schema': 'claasp-word-view-bindings/experimental-3', 'word_bits': model['bits'],
                 'header': {key: copy.deepcopy(value) for key, value in ir.items() if key not in ('inputs', 'nodes')},
                 'native_inputs': copy.deepcopy(ir['inputs']),
                 'inputs': [{'at': list(key), 'binding': copy.deepcopy(binding)}
@@ -64,9 +87,9 @@ def trace_bindings(body, bindings):
     """Expose actual routed producers with distinct cipher/display/observer bindings.
 
     Tracing alone does not claim exact native reconstruction. decode_bindings
-    separately validates and reconstructs supported observe-only native boundaries.
+    separately validates and reconstructs supported observe and uniform-alias boundaries.
     """
-    if bindings.get('schema') != 'claasp-word-view-bindings/experimental-2':
+    if bindings.get('schema') != 'claasp-word-view-bindings/experimental-3':
         raise ValueError('Unsupported experimental word binding schema')
     required = {'schema', 'word_bits', 'header', 'native_inputs', 'inputs', 'operations', 'observations', 'cipher_output', 'display_terminals'}
     if set(bindings) != required:
@@ -87,7 +110,7 @@ def trace_bindings(body, bindings):
             raise ValueError('Input metadata binding is not an input')
     fields = set(word_visual.manual_blocks.NODE_FIELDS)
     for record in bindings['observations']:
-        if set(record) != {'definition', 'ordinal', 'positions', 'operand_positions', 'flow', 'at'} or set(record['definition']) != fields:
+        if set(record) != {'definition', 'ordinal', 'positions', 'operand_positions', 'flow', 'port', 'at'} or set(record['definition']) != fields:
             raise ValueError('Unexpected observation metadata field; source links are forbidden')
     if set(bindings['cipher_output']) != {'definition', 'at', 'ordinal', 'operand_positions'} or set(bindings['cipher_output']['definition']) != fields:
         raise ValueError('Unexpected cipher output metadata field; source links are forbidden')
@@ -159,6 +182,8 @@ def trace_bindings(body, bindings):
             raise ValueError('Native operation width contradicts actual word ports')
     observations = []
     for record in bindings['observations']:
+        if record['flow'] not in ('observe', 'alias') or record['port'] != 'bottom':
+            raise ValueError('Invalid local observation flow/output port')
         anchors = coordinates(record['at'])
         if any(key not in actual and key not in inputs for key in anchors):
             raise ValueError('Observation anchor is not an actual visible producer')
@@ -181,8 +206,8 @@ def _observation_slots(width, covered):
 def decode_bindings(body, bindings):
     """Reconstruct supported native IR from actual pixel routes and local bindings.
 
-    Observe-only boundaries are retained with their native identity and round.
-    Consumed aliases are explicitly unsupported, never inferred from expected IR.
+    Boundaries retain their native identity and round. Uniform aliases attach
+    to actual producer output ports; overlapping or mixed uses reject explicitly.
     """
     trace = trace_bindings(body, bindings)
     parsed = word_visual.parse(body)
@@ -210,7 +235,7 @@ def decode_bindings(body, bindings):
     if len(set(operation_coordinates)) != len(operation_coordinates):
         raise ValueError('Duplicate operation coordinate ownership')
     operations = {tuple(record['at']): record for record in bindings['operations']}
-    def stream(key):
+    def raw_stream(key):
         if key in atoms:
             return atoms[key]
         if key not in operations:
@@ -218,6 +243,20 @@ def decode_bindings(body, bindings):
         definition = operations[key]['definition']
         atoms[key] = [(definition['id'], bit) for bit in range(bits)]
         return atoms[key]
+    alias_outputs = {}
+    for observation in trace['observations']:
+        if observation['flow'] != 'alias':
+            continue
+        positions = observation['positions']
+        for index, anchor in enumerate(observation['at']):
+            if anchor in alias_outputs:
+                raise ValueError('Overlapping alias output ownership needs explicit branch-specific cuts')
+            # The alias is attached to the actual producer bottom connector;
+            # physical routes still determine whether a consumer reaches it.
+            alias_outputs[anchor] = [(observation['definition']['id'], bit)
+                                     for bit in positions[index*bits:(index+1)*bits]]
+    def stream(key):
+        return alias_outputs[key] if key in alias_outputs else raw_stream(key)
     def pack(flat, masks, width):
         if (not isinstance(masks, list) or any(not isinstance(mask, list) or not mask for mask in masks)
                 or len(flat) != width
@@ -243,8 +282,6 @@ def decode_bindings(body, bindings):
         nodes[ordinal] = definition
     groups = {}
     for record in trace['observations']:
-        if record.get('flow') != 'observe':
-            raise ValueError('Consumed observation aliases need explicit route-local flow bindings')
         groups.setdefault(record['ordinal'], []).append(record)
     for ordinal, records in groups.items():
         first = records[0]
@@ -257,7 +294,7 @@ def decode_bindings(body, bindings):
         for record in records:
             if record['definition'] != definition or record['operand_positions'] != first['operand_positions']:
                 raise ValueError('Observation fragments disagree about local native definition')
-            incoming = [atom for anchor in record['at'] for atom in stream(anchor)]
+            incoming = [atom for anchor in record['at'] for atom in (raw_stream(anchor) if record['flow'] == 'alias' else stream(anchor))]
             for position, atom in zip(record['positions'], incoming):
                 if type(position) is not int or not 0 <= position < len(flat) or flat[position] is not None:
                     raise ValueError('Observation fragments overlap or select invalid positions')
@@ -280,7 +317,7 @@ def decode_bindings(body, bindings):
     return validate(result)
 
 
-MARKER = '\n# CLAASP-WORD-VIEW-BINDINGS experimental-2\n'
+MARKER = '\n# CLAASP-WORD-VIEW-BINDINGS experimental-3\n'
 
 
 def encode(ir, *, key_side='right'):
