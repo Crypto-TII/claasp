@@ -89,6 +89,17 @@ RUN set -eux; \
     tar -xzf msolve.tar.gz; \
     cd "msolve-${MSOLVE_VERSION}"; \
     ./autogen.sh; \
+    if [ "${TARGETARCH}" = amd64 ]; then \
+        for extension in \
+            rdrnd bmi1 bmi2 adx prefetchwt1 abm \
+            sse3 ssse3 sse41 sse42 sse4a sha aes \
+            avx fma3 fma4 xop avx2 \
+            avx512f avx512cd avx512pf avx512er \
+            avx512vl avx512bw avx512dq avx512ifma avx512vbmi; \
+        do \
+            eval "export ax_cv_have_${extension}_cpu_ext=no"; \
+        done; \
+    fi; \
     ./configure --prefix=/usr/local; \
     make --jobs="$(nproc)"; \
     make install; \
