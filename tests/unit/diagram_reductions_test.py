@@ -63,10 +63,10 @@ def test_detailed_tikz_members_show_operation_width_and_group_step():
     ir = tree()
     tikz = to_tikz(ir, layoutSource='human', view='wires', word_bits=4,
                    associative_reductions=True)
-    members = [line for line in tikz.splitlines() if 'group 0 step ' in line]
+    members = [line for line in tikz.splitlines() if ' G0.R' in line]
     assert len(members) == 3
     for step in range(3):
-        line = next(line for line in members if 'group 0 step '+str(step) in line)
+        line = next(line for line in members if ' G0.R'+str(step) in line)
         assert 'XOR/4(2)' in line
 
 

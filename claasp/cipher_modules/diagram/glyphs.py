@@ -707,10 +707,11 @@ def _native_label(definition, registry):
 
 def _reduction_label(definition, registry):
     # A visible member is binary; the group metadata retains native arity.
+    from .manual_blocks import _base36
     local = dict(definition, description=list(definition['description']))
     local['description'][1] = 2
-    return (_native_label(local, registry)+r'\\'+'group '+str(definition['ordinal'])
-            +' step '+str(definition['step']))
+    reference = 'G'+_base36(definition['ordinal'])+'.R'+_base36(definition['step'])
+    return _native_label(local, registry)+' '+reference
 
 
 def _input_cell_label(cell, definition):

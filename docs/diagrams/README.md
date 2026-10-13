@@ -335,7 +335,16 @@ outside their group. The root may be reused or observed. Explicit-modulus and
 non-associative reductions reject. The option requires whole projection and a
 builder supporting the R1 parser; it remains off by default.
 Detailed TikZ members show the binary operation and width with their group and
-step; the native group metadata retains the original operation arity.
+step compactly on one line, followed by the local coordinate reference. This
+keeps the default wire-view row spacing clear of operand labels; the native
+group metadata retains the original operation arity.
+
+An optional rendered regression uses ordinary TeX and Poppler installations:
+`python tests/render/diagram_reductions_tikz.py --output /tmp/r1-render-check`.
+It compiles default-spacing XOR/AND/OR/MODADD wire views, checks actual PDF
+operand/reference rectangles and rendered node bounds, and saves PDFs and PNGs.
+Run it with this checkout on `PYTHONPATH` and `pdflatex`, `pdftotext` and
+`pdftoppm` on `PATH`. It is separate from the Python unit-test suite.
 
 The native exporter may combine this capability with parameter legends and
 native bundles. The frozen v9 builder rejects graphs containing both P1
