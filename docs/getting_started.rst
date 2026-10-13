@@ -80,7 +80,7 @@ no better trail exists:
 
    >>> from claasp.primitives import Speck
    >>> speck = Speck(number_of_rounds=3)
-   >>> result = speck.analysis.find_optimal_trail()
+   >>> result = speck.analysis.find_optimal_trail(backend="dependency_free")
    >>> (result.trail.total_weight, result.is_optimal)
    (3.0, True)
 

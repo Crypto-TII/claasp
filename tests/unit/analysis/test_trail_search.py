@@ -82,6 +82,8 @@ def test_public_enums_and_default_kind_are_exposed():
         "dependency_free",
     }
     assert (
-        Present(number_of_rounds=2).analysis.find_optimal_trail().trail.kind
+        Present(number_of_rounds=2)
+        .analysis.find_optimal_trail(backend="dependency_free")
+        .trail.kind
         is TrailKind.XOR_DIFFERENTIAL
     )

@@ -47,3 +47,11 @@ def test_kissat_is_the_default_speck_trail_solver():
     assert dependency_free.trail.total_weight == result.trail.total_weight
     assert dependency_free.lower_bound == result.lower_bound
     assert dependency_free.metadata.solver is None
+
+
+def test_kissat_supports_generic_four_round_speck_search():
+    result = Speck(number_of_rounds=4).analysis.find_lowest_weight_xor_differential_trail()
+
+    assert result.is_optimal
+    assert result.trail.total_weight == 5
+    assert result.metadata.solver == "Kissat"

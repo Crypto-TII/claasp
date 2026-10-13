@@ -116,8 +116,9 @@ For two-round Speck32/64 XOR-differential search, the explicit
 ``backend="dependency_free"`` selection runs an exact Matsui-style
 branch-and-bound search. It uses rational transition probabilities and a
 monotone partial-carry bound, and independently checks the returned weight-one
-trail. The default ``backend="auto"`` selects this dependency-free
-implementation, so the search requires no external solver.
+trail. The default ``backend="auto"`` uses the reviewed solver-backed Speck
+search with Kissat; select ``backend="dependency_free"`` when no external
+solver should be required.
 
 .. doctest::
 
@@ -154,7 +155,7 @@ Generic exact trail search
 --------------------------
 
 ``primitive.analysis.find_optimal_trail()`` defaults to XOR-differential
-search.  The facade inspects domains and components and uses the generic exact
+search.  The facade inspects unit types and components and uses the generic exact
 SAT optimizer for supported Word graphs; it never sends an unrelated graph to
 a PRESENT- or Speck-specific validator.  String and typed kinds are accepted:
 
@@ -179,10 +180,12 @@ The result separates the trail from the evidence used to prove it:
 * ``result.metadata`` records the search method, solver, version, runtime, and
   memory measurement when available.
 
-``backend="auto"`` selects deliberately optimized dependency-free PRESENT
-and Speck slices and otherwise selects generic SAT when the graph is supported.
-``backend="sat"`` accepts a custom solver.  ``backend="dependency_free"``
-raises a capability error when no specialized implementation exists.
+``backend="auto"`` selects an exact SAT search with Kissat when the graph is
+supported, including a specialized solver-backed path for reviewed Speck
+configurations. ``backend="sat"`` selects the generic SAT representation and
+accepts a custom solver. ``backend="dependency_free"`` explicitly selects a
+reviewed implementation that needs no external solver and raises a capability
+error when none exists.
 
 The default input policy activates ``plaintext`` for a keyed block cipher,
 the sole input of a permutation or function, and fixes key/tweak differences
@@ -214,11 +217,11 @@ The ten reported transitions cover every rotation, modular addition, and XOR
 on the two-round data-state path. The default search fixes the key difference
 to zero, so its all-zero key schedule is omitted. An independent checker
 recomputes both modular-add probabilities and the rotations/XOR wiring.
-The explicit dependency-free method uses exact Matsui branch-and-bound and is
-also the automatic choice for this reviewed Speck configuration. Selecting
-``backend="sat"`` uses MiniSat and binary search over the maximum permitted
-weight. Either backend may return a different representative when several
-trails have the same minimum weight.
+The explicit dependency-free method uses exact Matsui branch-and-bound.
+Automatic selection uses the reviewed Speck SAT adapter with Kissat; explicit
+SAT selection uses the generic SAT representation. Both solver-backed paths
+use binary search over the maximum permitted weight. Either backend may return
+a different representative when several trails have the same minimum weight.
 
 Truncated and impossible differences
 ------------------------------------
@@ -281,7 +284,9 @@ sign. For three-round PRESENT, the minimum trail weight is 4:
 .. doctest::
 
    >>> from claasp.primitives import Present
-   >>> result = Present(number_of_rounds=3).analysis.find_optimal_trail(kind="xor_linear")
+   >>> result = Present(number_of_rounds=3).analysis.find_optimal_trail(
+   ...     kind="xor_linear", backend="dependency_free"
+   ... )
    >>> (result.trail.total_weight, result.is_optimal)
    (4.0, True)
    >>> any(step.transition.sign == -1 for step in result.trail.steps)
@@ -293,7 +298,9 @@ call finds a minimum-weight characteristic for four-round Speck32/64:
 .. doctest::
 
    >>> from claasp.primitives import Speck
-   >>> result = Speck(number_of_rounds=4).analysis.find_optimal_trail(kind="xor_linear")
+   >>> result = Speck(number_of_rounds=4).analysis.find_optimal_trail(
+   ...     kind="xor_linear", backend="dependency_free"
+   ... )
    >>> (result.trail.total_weight, result.is_optimal)
    (3.0, True)
    >>> (hex(result.trail.input_pattern.value), hex(result.trail.output_pattern.value))

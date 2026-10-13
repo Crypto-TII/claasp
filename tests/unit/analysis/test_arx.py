@@ -141,7 +141,7 @@ def test_related_key_component_propagation_retains_the_key_schedule():
 def test_four_round_speck_returns_verified_linear_optimum():
     primitive = Speck(number_of_rounds=4)
 
-    result = primitive.analysis.find_lowest_weight_xor_linear_trail()
+    result = primitive.analysis.find_optimal_trail("xor_linear", backend="dependency_free")
 
     assert result.trail.total_weight == 3.0
     assert result.is_optimal

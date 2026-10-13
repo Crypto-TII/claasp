@@ -22,7 +22,7 @@ from claasp.components import (
     Shift,
     Xor,
 )
-from claasp.drivers.solvers import MinisatSolver, SatStatus
+from claasp.drivers.solvers import KissatSolver, SatStatus
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
@@ -261,6 +261,7 @@ def optimize_word_characteristic(
         raise TypeError("solver must provide a solve(formula) method")
     started = perf_counter()
     runtime = 0.0
+    peak_memory = None
 
     def build(bound):
         if kind is TrailKind.XOR_DIFFERENTIAL:
@@ -280,11 +281,14 @@ def optimize_word_characteristic(
         return WordLinearSATModel(primitive, **options)
 
     def solve(bound):
-        nonlocal runtime
+        nonlocal peak_memory, runtime
         model = build(bound)
         formula = model.cnf_formula()
         result = selected_solver.solve(formula)
         runtime += result.runtime_seconds
+        result_peak_memory = getattr(result, "peak_memory_bytes", None)
+        if result_peak_memory is not None:
+            peak_memory = max(peak_memory or 0, result_peak_memory)
         return model, formula, result
 
     best_model, best_formula, feasible = solve(None)
@@ -327,23 +331,24 @@ def optimize_word_characteristic(
     metadata = TrailSearchMetadata(
         f"exact {technique_backend.upper()} optimization by binary search; "
         "immediate lower bound proved UNSAT",
-        type(selected_solver).__name__,
+        "Kissat" if isinstance(selected_solver, KissatSolver) else type(selected_solver).__name__,
         version() if callable(version) else None,
         max(runtime, perf_counter() - started),
+        peak_memory,
     )
     return TrailSearchResult(
         trail,
         float(upper),
         metadata,
         components,
-        _constraint_models(primitive, best_formula.constraint_models, backend, kind),
+        _constraint_models(best_formula.constraint_models, backend, kind),
         rounds,
     )
 
 
 def _solver_for_backend(backend):
     if backend in ("auto", "sat"):
-        return MinisatSolver()
+        return KissatSolver()
     if backend == "smt":
         from claasp.drivers.solvers import Z3Solver
 
@@ -371,7 +376,7 @@ def _status(result):
     return None
 
 
-def _constraint_models(primitive, sat_models, backend, kind):
+def _constraint_models(sat_models, backend, kind):
     if backend in ("auto", "sat"):
         return sat_models
     selected = ConstraintBackend(backend)
@@ -385,14 +390,7 @@ def _constraint_models(primitive, sat_models, backend, kind):
     )
     return (
         *sat_models,
-        ConstraintModelApplication(
-            translated,
-            tuple(
-                component.component_id
-                for component in primitive.graph.components
-                if component.component_id is not None
-            ),
-        ),
+        ConstraintModelApplication(translated),
     )
 
 

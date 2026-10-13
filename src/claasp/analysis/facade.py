@@ -267,13 +267,9 @@ class Analysis:
                     "backend 'dependency_free': no specialized exact implementation exists"
                 )
             return specialized()
-        if (
-            selected_backend is TrailSearchBackend.AUTO
-            and solver is None
-            and specialized is not None
-        ):
-            return specialized()
-
+        automatic = self._automatic_trail_search(selected_kind)
+        if selected_backend is TrailSearchBackend.AUTO and solver is None and automatic is not None:
+            return automatic()
         from claasp.analysis.trail_search import optimize_word_characteristic
 
         return optimize_word_characteristic(
@@ -286,6 +282,18 @@ class Analysis:
             fixed_input_masks=fixed_input_masks,
             fixed_inputs=fixed_inputs,
         )
+
+    def _automatic_trail_search(self, kind):
+        rounds = len(self.primitive.graph.rounds)
+        if (
+            self.primitive.family_name == "speck"
+            and kind is TrailKind.XOR_DIFFERENTIAL
+            and rounds in (2, 3)
+        ):
+            from claasp.analysis.arx import find_speck_xor_differential
+
+            return lambda: find_speck_xor_differential(self.primitive)
+        return None
 
     def _dependency_free_trail_search(self, kind):
         rounds = len(self.primitive.graph.rounds)

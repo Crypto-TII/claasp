@@ -40,7 +40,9 @@ same:
 .. doctest::
 
    >>> speck = Speck(number_of_rounds=4)
-   >>> linear = speck.analysis.find_optimal_trail(kind="xor_linear")
+   >>> linear = speck.analysis.find_optimal_trail(
+   ...     kind="xor_linear", backend="dependency_free"
+   ... )
    >>> linear.show()  # doctest: +ELLIPSIS
    Trail
    ...
