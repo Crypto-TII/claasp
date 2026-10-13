@@ -1,7 +1,7 @@
 # Native Python diagrams and state progression
 
 `claasp.cipher_modules.diagram` contains the implementation; `claasp.diagrams`
-retains the public compatibility imports. It extracts typed CLAASP component graphs, generates editable ASCII
+retains the public functional imports and the `Diagrams(cipher)` object interface. It extracts typed CLAASP component graphs, generates editable ASCII
 circuits, reparses their visible wires, reconstructs working primitive classes,
 and emits TikZ and generic state views. The contribution contains no JavaScript,
 Node bridge, downloaded runtime or ELK dependency. Python's standard library
@@ -16,7 +16,7 @@ print(to_ascii(ir))  # human presentation is the default
 text = to_audit_ascii(ir)  # explicit lossless editor/import encoding
 assert from_ascii(text) == ir
 restored = to_cipher(from_ascii(text))
-figure = to_tikz(ir, rowsPerPanel=16, columnsPerPanel=6, columnSpacing=3)
+print(to_tikz(ir))  # validated persistent cells/routes; diagnostic audit is explicit
 ```
 
 Annotated ASCII round trips preserve the representation's identifiers. Executable
@@ -206,7 +206,10 @@ use the area limit as a bound on input and component records. Bounds reject work
 they never silently omit components. These are work/output limits, not wall
 clock guarantees. Wider native graphs may require a revised representation.
 
-TikZ now defaults to `view='overview-detail'`: a generic round dependency
+Default TikZ uses the validated persistent word layout, matching `to_ascii`.
+Unsupported shapes fail explicitly. `layoutSource='audit'` selects the diagnostic
+typed path described below; it defaults within that explicit path to
+`view='overview-detail'`: a generic round dependency
 overview, a complete cross-stage dependency table, hyperlinked readable
 native-member/input-fragment tables, and shared
 parameter definitions. Adjacent-stage edges are drawn in the summary; longer dependencies stay explicit
@@ -247,11 +250,11 @@ view. Typed ASCII remains the complete independent audit source. Long constant
 values use shared references, with their complete values in the readable parameter tables.
 
 ```python
-readable = to_tikz(ir)  # overview + every native member + parameter tables
-compact = to_tikz(ir, view='overview', stageMode='layer')
-wires = to_tikz(ir, view='wires', legend='none', rowsPerPanel=18,
+readable = to_tikz(ir, layoutSource='audit')  # complete diagnostic tables
+compact = to_tikz(ir, layoutSource='audit', view='overview', stageMode='layer')
+wires = to_tikz(ir, layoutSource='audit', view='wires', legend='none', rowsPerPanel=18,
                 columnsPerPanel=10, columnSpacing=3, anchorPrefix='example')
-with_audit = to_tikz(ir, audit=True)
+with_audit = to_tikz(ir, layoutSource='audit', audit=True)
 ```
 
 Every vector export reparses its actual generated ASCII before presentation.
@@ -394,8 +397,12 @@ rows; this is a tested geometry property, not reader-study evidence.
 
 `to_tikz(ir, layoutSource="human", strategy="semantic-layer", view="wires")`
 reuses the selected manual synthesis cells after fresh ASCII verification. The
-existing `layoutSource="audit"` remains the default and selectable baseline.
-Column/row spacing, panel and crop controls apply to both paths. Crossings have
+default `layoutSource="persistent"` reuses admitted ordinary word cells/routes;
+`layoutSource="audit"` is an explicit diagnostic baseline, and `"human"`
+selects the historical manual serializer.
+Spacing and panel controls apply to these explicit historical paths. Persistent
+spacing/panels are documented in [persistent word examples](persistent_word_examples.rst);
+persistent layouts do not support row/column crops. Crossings have
 no junction dot; forks have a dot, and exchanges use crossed directed curves.
 
 `state_snapshots(ir, word_bits=None)` infers the same conservative common word
@@ -419,3 +426,30 @@ On the small AES case, shared-linear removes three JOINs with slightly fewer
 rows/crossings; balanced shortens height but greatly increases crossings.
 Neither experimental mode is an automatic replacement. Native widths and
 ordered selections are unchanged.
+
+
+## Explicit routed words and real primitive examples
+
+`routed_words=False` retains the accepted persistent defaults. An explicit
+`routed_words=True` permits visible fan-out into temporary lanes and three-port
+XOR/AND/OR operations of one uniform native word width. Actual forks, bends and
+crossings carry every operand. Three-port arithmetic, nonaligned selections,
+mixed widths and oversized inline constants remain rejected. There is no
+cipher-name dispatch, implicit fallback, or injected permutation operation.
+
+Native cipher words can finish on existing physical lanes in a different order.
+Local annotations bind their actual terminals in native order; TikZ labels them
+`C0`, `C1`, etc., in that order. `D` terminals carry display values and are not
+additional native cipher outputs. Plain ASCII alone still cannot recover native
+packing, roles and observation identity. Use `annotations=True` for exact native
+round trips. Use declared observation state mode when judging a Feistel round;
+primary-lane word mode intentionally includes temporary/carried-lane semantics.
+
+The additional handout uses `SimonBlockCipher(block_bit_size=32,key_bit_size=64,
+number_of_rounds=1)` and the same constructor parameters for `SimeckBlockCipher`,
+with the explicit routed-word option. Their defaults still reject. Chaskey
+`ChaskeyPiPermutation(number_of_rounds=1)` is admitted by the existing default:
+four 32-bit lanes, 14 compute operations and two native half-round boundaries.
+Alzette's standard 32-bit constant exceeds the seven-character inline label
+capacity and remains unsupported by this persistent view; it is not truncated
+or silently replaced with metadata.

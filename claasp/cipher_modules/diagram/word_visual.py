@@ -16,8 +16,10 @@ class UnsupportedProjection(ValueError):
     pass
 
 
-def project(ir, word_bits=None, *, max_calls=20000, max_cells=1000000):
+def project(ir, word_bits=None, *, max_calls=20000, max_cells=1000000, routed_words=False):
     validate(ir)
+    if type(routed_words) is not bool:
+        raise ValueError('routed_words must be a boolean')
     if len(ir['nodes']) > max_calls:
         raise ValueError('Native calls exceed max_calls')
     bits = manual_blocks.infer_word_bits(ir) if word_bits is None else word_bits
@@ -55,7 +57,8 @@ def project(ir, word_bits=None, *, max_calls=20000, max_cells=1000000):
                 raise UnsupportedProjection('Mixed-width operation ports need a width-aware visual projection')
             if definition['type'] == 'constant':
                 constants[token] = definition
-            elif definition['type'] == 'word_operation' and len(args) <= 2:
+            elif definition['type'] == 'word_operation' and (len(args) <= 2 or
+                    routed_words and len(args) == 3 and definition['description'][0] in ('XOR', 'AND', 'OR')):
                 operations[token] = dict(call, args=args)
             else:
                 raise UnsupportedProjection('This operation needs a genuine multi-port or permutation projection')
@@ -68,7 +71,7 @@ def project(ir, word_bits=None, *, max_calls=20000, max_cells=1000000):
 
 
 def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=1000000,
-          max_grid_area=2000000, capture_states=False, parallel_unary=1):
+          max_grid_area=2000000, capture_states=False, parallel_unary=1, routed_words=False):
     r"""
     Infer a persistent word-state layout from native dependencies and roles.
 
@@ -80,6 +83,10 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
     - ``max_calls`` -- positive **integer** (default: ``20000``); native/projected operation limit
     - ``max_cells`` -- positive **integer** (default: ``1000000``); occupied-cell limit
     - ``max_grid_area`` -- positive **integer** (default: ``2000000``); rectangular-grid limit
+    - ``routed_words`` -- **boolean** (default: ``False``); explicit uniform-word fan-out/temporary
+      routing, three-port XOR/AND/OR and native output selection from actual visible terminals. Native
+      cipher order is labelled C0,C1,... in TikZ; D marks carried display values. Local annotations are
+      required for native packing in ASCII. Widths, ordered masks and actual sources remain checked.
     - ``parallel_unary`` -- positive **integer** (default: ``1``); maximum compatible independent
       unary operations coalesced per row after the dependency-aware route schedule;1preserves existing bytes
     - ``capture_states`` -- **boolean** (default: ``False``); record initial/every-operation primary lane banks;
@@ -104,11 +111,13 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
         sage: (model['bits'], model['columns'], len(model['cipher_columns']))
         (16, 6, 2)
     """
+    if type(routed_words) is not bool:
+        raise ValueError('routed_words must be a boolean')
     if type(parallel_unary) is not int or parallel_unary < 1:
         raise ValueError('parallel_unary must be a positive integer')
     if key_side not in ('right', 'left'):
         raise ValueError('Choose key_side right or left')
-    model = project(ir, word_bits, max_calls=max_calls, max_cells=max_cells)
+    model = project(ir, word_bits, max_calls=max_calls, max_cells=max_cells, routed_words=routed_words)
     ops, constants = model['operations'], model['constants']
     if len(ops)+len(constants) > max_calls:
         raise ValueError('Visual operations exceed max_calls')
@@ -143,6 +152,7 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
     remaining = Counter(arg for call in ops.values() for arg in call['args'])
     remaining.update(model['outputs'])
     cells, records, row = {}, [], 0
+    extent = len(primary)
     if type(capture_states) is not bool:
         raise ValueError('capture_states must be a boolean')
     state_frames = []
@@ -168,13 +178,23 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
     def vertical():
         return {column: {'kind': 'wire', 'ports': {'top': 'in', 'bottom': 'out'}, 'invisible': True} for column in state}
     def append(line):
-        nonlocal row
+        nonlocal row, extent
+        if routed_words:
+            if len(cells)+len(line) > max_cells:
+                raise ValueError('Visual cells exceed max_cells before routed-row allocation')
+            extent = max(extent, max(line, default=-1)+1)
+            if (row+2)*extent > max_grid_area:
+                raise ValueError('Visual grid bound exceeded before routed-row allocation')
         row += 1
         cells.update({(row, column): cell for column, cell in line.items()})
     def location(value):
         return next(column for column, current in state.items() if current == value)
-    def auxiliary():
-        return next(column for column in range(len(primary), len(primary)+len(ops)+len(constants)+2) if column not in state)
+    def auxiliary(after=-1):
+        capacity = len(primary)+len(ops)*(3 if routed_words else 1)+len(constants)+(3 if routed_words else 2)
+        column = next((column for column in range(max(len(primary), after+1), capacity) if column not in state), None)
+        if column is None:
+            raise UnsupportedProjection('Bounded temporary-lane capacity cannot route this word graph')
+        return column
     def constant(value):
         if value in state.values():
             return
@@ -197,6 +217,15 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
             if column in state:
                 ports.update(top='in', bottom='out')
             line[column] = {'kind': 'cross' if column in state else 'wire', 'ports': ports, 'invisible': True}
+    def copy_word(value, after=-1):
+        source, destination = location(value), auxiliary(after)
+        line = vertical()
+        horizontal(line, source, destination, True)
+        side = 'left' if source < destination else 'right'
+        line[destination] = {'kind': 'wire', 'ports': {side: 'in', 'bottom': 'out'}, 'invisible': True}
+        append(line)
+        state[destination] = value
+        return destination
     pending = set(ops)
     while pending:
         ready = [value for value in pending if all(arg in available for arg in ops[value]['args'])]
@@ -221,10 +250,24 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
             selected = max(candidates, key=lambda arg: (births.get(arg, -1), -location(arg)))
             destination = location(selected)
         else:
-            destination = auxiliary()
-            raise UnsupportedProjection('A live-operand spill needs an explicit wire-preserving placement')
+            if not routed_words:
+                raise UnsupportedProjection('A live-operand spill needs an explicit wire-preserving placement')
+            destination = copy_word(args[0])
         argument_columns = [location(arg) for arg in args]
-        if len(args) == 2 and args[0] == args[1]:
+        if routed_words:
+            # Pin one actual argument above the operation. A ternary Boolean
+            # gate needs one distinct stream on each horizontal side; fork
+            # copies create those streams without adding semantic operations.
+            if len(args) == 3:
+                destination = copy_word(args[0], after=max(state))
+                argument_columns = [destination, location(args[1]), copy_word(args[2], after=max(state))]
+            else:
+                if destination not in argument_columns:
+                    argument_columns[0] = destination
+                for index in range(1, len(args)):
+                    if argument_columns[index] in argument_columns[:index]:
+                        argument_columns[index] = copy_word(args[index])
+        if not routed_words and len(args) == 2 and args[0] == args[1]:
             duplicate = auxiliary()
             source = argument_columns[0]
             line = vertical()
@@ -234,7 +277,7 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
             append(line)
             state[duplicate] = args[0]
             argument_columns[1] = duplicate
-        if destination not in [location(arg) for arg in args]:
+        if destination not in argument_columns:
             raise UnsupportedProjection('Operation needs an explicit incoming wire route')
         line = vertical()
         ports = {'top': 'in', 'bottom': 'out'}
@@ -261,9 +304,20 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
         records.append({'row': row, 'column': destination, 'kind': 'operation', 'definition': definition})
         record_state(definition['round'], definition['id'])
     data_columns = [homes[value] for value in data]
-    if [state[column] for column in data_columns] != model['outputs']:
-        raise UnsupportedProjection('Final output ordering needs an explicit permutation wire route')
-    final_row = {column: {'kind': 'output', 'ports': {'top': 'in'}, 'unindexed': True} for column in range(len(primary))}
+    if routed_words:
+        data_columns = []
+        for value in model['outputs']:
+            matches = [column for column in state if state[column] == value and column not in data_columns]
+            data_columns.append(matches[0] if matches else copy_word(value))
+        final_columns = sorted(state)
+    else:
+        if [state[column] for column in data_columns] != model['outputs']:
+            raise UnsupportedProjection('Final output ordering needs an explicit permutation wire route')
+        final_columns = range(len(primary))
+    final_row = {column: {'kind': 'output', 'ports': {'top': 'in'}, 'unindexed': True} for column in final_columns}
+    if routed_words:
+        for column, cell in final_row.items():
+            cell['endpoint_label'] = 'C'+str(data_columns.index(column)) if column in data_columns else 'D'
     append(final_row)
     columns = max(column for _, column in cells)+1
     if (row+1)*columns > max_grid_area:
@@ -447,12 +501,17 @@ def evaluate(text, input_words, bits, cipher_columns):
             if args:
                 raise ValueError('Constant source has unexpected inputs')
             result = int(label[1:], 16)
-        elif label in ('^', '+', '&', '|', '-', '*'):
+        elif label in ('^', '&', '|'):
+            if len(args) not in (2, 3):
+                raise ValueError('Boolean glyph needs two or three actual inputs')
+            from functools import reduce
+            from operator import xor, and_, or_
+            result = reduce({'^': xor, '&': and_, '|': or_}[label], args)
+        elif label in ('+', '-', '*'):
             if len(args) != 2:
                 raise ValueError('Binary glyph needs two actual inputs')
             a, b = args
-            result = {'^': lambda: a ^ b, '+': lambda: a+b, '&': lambda: a & b,
-                      '|': lambda: a | b, '-': lambda: a-b, '*': lambda: a*b}[label]()
+            result = {'+': lambda: a+b, '-': lambda: a-b, '*': lambda: a*b}[label]()
         elif label == '!':
             if len(args) != 1:
                 raise ValueError('Unary glyph needs one actual input')

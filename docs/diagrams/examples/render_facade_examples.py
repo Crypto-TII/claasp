@@ -45,20 +45,34 @@ def export(name, cipher, constructor, inputs, views=True):
             'rotation_cohorts':[{'row':row,'count':sum(r['row']==row for r in rotations)} for row in cohort_rows],
             'output':hex(diagram.to_cipher().evaluate(inputs)),'exact_fresh_native_ir':True}
     results.append(result)
-    caption=(r'\textbf{'+name.replace('-',' ')+r'}\par\begin{verbatim}'
-             +'\n'+constructor+'\nfrom claasp.diagrams import Diagrams\ndiagram = Diagrams(cipher)\n'
-             +'diagram.to_tikz(parallel_unary=4, fitToPage=(25,30))\n'
-             +r'\end{verbatim}'
-             +f"Native stages: {ir['rounds']}; compute operations: {len(model['records'])}; "
-             +f"word lanes: {model['columns']}. Original inputs and direct routes are retained; no presentation permutation nodes.")
-    render(name+'-overview',diagram.to_tikz(parallel_unary=4,fitToPage=(25,30)),caption, height=21 if not views else 42)
+    def caption(call, note=''):
+        source=constructor+'\nfrom claasp.diagrams import Diagrams\ndiagram = Diagrams(cipher)\n'+call
+        return (r'\textbf{'+name.replace('-',' ')+r'}\par\begin{verbatim}'+'\n'+source+'\n'
+                +r'\end{verbatim}'
+                +f"Native stages: {ir['rounds']}; compute operations: {len(model['records'])}; "
+                +f"word lanes: {model['columns']}. Original input bindings and direct routes are retained. "+note)
+    overview=diagram.to_tikz(parallel_unary=4,fitToPage=(25,30))
+    scale=min(1,25/(model['columns']*1.4+.98),30/(model['rows']+.65))
+    overview_note=f"Zoomable complete overview; text is uniformly reduced to approximately {9*scale:.2f} points. Use the detail pages for reading." if views else ''
+    render(name+'-overview',overview,
+           caption('print(diagram.to_tikz(parallel_unary=4, fitToPage=(25,30)))',overview_note),
+           height=21 if not views else 42)
     if views:
-        render(name+'-detail',diagram.to_tikz(parallel_unary=4,pageBreaks=True),caption)
+        render(name+'-detail',diagram.to_tikz(parallel_unary=4,pageBreaks=True),
+               caption('print(diagram.to_tikz(parallel_unary=4, pageBreaks=True))'))
         values=diagram.evaluate_state_values(inputs)
         states=diagram.state_snapshots(mode='word',word_bits=None,values=values,columns=4)
         (root/(name+'-states.json')).write_text(json.dumps(states,indent=2))
-        render(name+'-states',diagram.state_tikz(mode='word',word_bits=None,values=values,columns=4,columns_per_panel=4,cell_width=1.8,page_breaks=False),
-               r'\textbf{All native half-round boundaries}\par Round summary; intra-round operations omitted. Four columns are an explicit display annotation; no matrix is inferred.',width=21,height=29.7)
+        state_call=("inputs = [int(''.join(f'{i:08x}' for i in range(16)),16)]\n"
+                    "values = diagram.evaluate_state_values(inputs)\n"
+                    "print(diagram.state_tikz(\n"
+                    "    mode='word', word_bits=None, values=values,\n"
+                    "    columns=4, columns_per_panel=4, cell_width=1.8,\n"
+                    "    page_breaks=False))")
+        render(name+'-states',diagram.state_tikz(mode='word',word_bits=None,values=values,columns=4,
+               columns_per_panel=4,cell_width=1.8,page_breaks=False),
+               caption(state_call,'All native half-round boundaries; intra-round operations omitted. Four columns are explicit; no matrix is inferred.'),
+               height=42)
     return diagram
 
 quarter_inputs=[int('11111111010203049b8d6f4301234567',16)]
@@ -75,8 +89,11 @@ for cipher,constructor in [(RotateCipher(bit_size=32,rotation_amount=7),'RotateC
                            (NotCipher(bit_size=32),'NotCipher(bit_size=32)')]:
     diagram=Diagrams(cipher)
     assert from_ascii(diagram.to_ascii(annotations=True))==diagram.ir
-    fragments.append(r'\begin{verbatim}'+constructor+r'\end{verbatim}'+diagram.to_tikz()+r'\par\bigskip')
-render('additional-primitives','\n'.join(fragments),r'\textbf{Admitted single-component primitives}\par Native Rotate, Shift and Not examples. These are primitive controls, not full-cipher coverage.',height=21)
+    module_name=type(cipher).__module__
+    source=(f'from {module_name} import {type(cipher).__name__}\nfrom claasp.diagrams import Diagrams\n'
+            +'cipher = '+constructor+'\ndiagram = Diagrams(cipher)\nprint(diagram.to_tikz())')
+    fragments.append(r'\begin{verbatim}'+source+r'\end{verbatim}'+diagram.to_tikz()+r'\par\bigskip')
+render('additional-primitives','\n'.join(fragments),r'\textbf{Admitted single-component primitives}\par Native Rotate, Shift and Not examples. These are primitive controls, not full-cipher coverage.',height=29.7)
 (root/'results.json').write_text(json.dumps(results,indent=2))
 subprocess.run(['pdfunite',*[str(root/(name+'.pdf')) for name in ('quarter-round-overview','chacha-two-full-rounds-overview','chacha-two-full-rounds-detail','chacha-two-full-rounds-states','additional-primitives')],str(root/'facade-review.pdf')],check=True,timeout=30)
 print(json.dumps(results,indent=2))

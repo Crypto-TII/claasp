@@ -103,7 +103,7 @@ def render_model(model, *, operator_style='symbols', wire_borders=False,
             ports = cell['ports']
             if cell['kind'] in ('box', 'input', 'output'):
                 height = boxHeight if cell['kind'] == 'box' else .25
-                label = _label(cell, operator_style) if cell['kind'] == 'box' else ''
+                label = _label(cell, operator_style) if cell['kind'] == 'box' else cell.get('endpoint_label', '')
                 label = escape(label).replace('>', r'\textgreater{}').replace('<', r'\textless{}')
                 output.append(rf'\node[draw,minimum width={boxWidth}cm,minimum height={height}cm,inner sep=.5mm,outer sep=0pt] ({name}) at {center} {{{label}}};')
                 if cell.get('secret'):
@@ -186,7 +186,7 @@ def to_tikz(ir, **options):
     maximum_text = options.pop('max_text_bytes', 64000000)
     if type(maximum_text) is not int or maximum_text < 1:
         raise ValueError('max_text_bytes must be a positive integer')
-    keys = ('key_side', 'word_bits', 'max_calls', 'max_cells', 'max_grid_area', 'parallel_unary')
+    keys = ('key_side', 'word_bits', 'max_calls', 'max_cells', 'max_grid_area', 'parallel_unary', 'routed_words')
     layout = {key: options.pop(key) for key in keys if key in options}
     body, bindings = word_bindings.export_bindings(ir, **layout)
     if word_bindings.decode_bindings(body, bindings) != ir:

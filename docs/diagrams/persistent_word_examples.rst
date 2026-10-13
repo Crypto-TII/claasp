@@ -139,10 +139,10 @@ Object interface and compatible unary rows
     from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
     cipher = SpeckBlockCipher(number_of_rounds=1)
     diagram = Diagrams(cipher)
-    ascii_body = diagram.to_ascii()
-    tikz = diagram.to_tikz(fitToPage=(25,30))
+    print(diagram.to_ascii())
+    print(diagram.to_tikz(fitToPage=(25,30)))
     values = diagram.evaluate_state_values([0x6574694c,0x1918111009080100])
-    states = diagram.state_tikz(mode='word',word_bits=None,values=values)
+    print(diagram.state_tikz(mode='word',word_bits=None,values=values))
 
 ``Diagrams`` captures native semantics at construction. Later edits to the
 original cipher and edits to the independent ``diagram.ir`` dictionary do not
@@ -171,3 +171,22 @@ in ``examples/quarter_round.py``; it is not ``ChachaPermutation(number_of_rounds
 Its rotations are 16, 12, 8, 7. Example construction stays outside the generic
 renderer. ``examples/render_facade_examples.py`` produces the quarter-round,
 two-full-round overview/detail and native Rotate/Shift/Not primitive controls.
+
+
+Routed uniform-word examples
+----------------------------
+
+``routed_words=True`` is an explicit persistent-only option. It adds actual
+fork/bend/cross routes for live operand copies and admits three-port XOR/AND/OR
+of the same native word width. Arity, widths, ordered masks and actual routes
+remain checked. Three-port arithmetic and oversized inline constants reject.
+Native compute nodes are not added for layout. All active values end at visible
+bars; TikZ labels native cipher word order as C0,C1,... and carried display
+values as D. The annotated output terminal coordinates preserve native packing;
+bare ASCII does not promise native output-order recovery.
+
+The additional examples show default Chaskey and one-round Simon/Simeck with
+explicit routed words. Their declared state views use original observation
+packing, including the native round-key view. The primary-lane word state is a
+register/temporary bank and is not an inferred Feistel matrix. No default
+admission or accepted Speck/ChaCha diagram changes are made by this option.

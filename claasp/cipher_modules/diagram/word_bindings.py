@@ -12,7 +12,7 @@ from .validation import validate, validate_native_component
 
 
 def export_bindings(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=1000000,
-                    max_grid_area=2000000, parallel_unary=1):
+                    max_grid_area=2000000, parallel_unary=1, routed_words=False):
     r"""
     Bind local native identities and interfaces to the unchanged word picture.
 
@@ -30,7 +30,8 @@ def export_bindings(ir, *, key_side='right', word_bits=None, max_calls=20000, ma
     observed_ids = {node['id'] for node in ir['nodes'] if node['type'] == 'intermediate_output'}
     consumed = {edge['source'] for node in ir['nodes'] for edge in node['operands']} & observed_ids
     model = word_visual.build(ir, key_side=key_side, word_bits=word_bits, max_calls=max_calls,
-                              max_cells=max_cells, max_grid_area=max_grid_area, parallel_unary=parallel_unary)
+                              max_cells=max_cells, max_grid_area=max_grid_area, parallel_unary=parallel_unary,
+                              routed_words=routed_words)
     body = word_visual.render(model)
     parsed = word_visual.parse(body)
     fields = ('id', 'type', 'bits', 'input_bits', 'round', 'description')
@@ -97,6 +98,8 @@ def export_bindings(ir, *, key_side='right', word_bits=None, max_calls=20000, ma
                                   'ordinal': ir['nodes'].index(final), 'operand_positions': masks},
                 'display_terminals': [{'at': list(key), 'cipher': key[1] in model['cipher_columns']}
                                       for key in parsed['outputs']]}
+    if routed_words and decode_bindings(body, bindings) != ir:
+        raise word_visual.UnsupportedProjection('Routed actual wires do not preserve native semantics')
     return body, bindings
 
 
