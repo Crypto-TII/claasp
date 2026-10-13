@@ -325,6 +325,24 @@ builder must support the P1 legend grammar, including its Library-format metadat
 merge correction. The two options may be combined. Human TikZ forwards them;
 audit output rejects these human presentation options.
 
+## Optional associative groups
+
+`associative_reductions=True` lowers wider XOR/AND/OR and implicit-modulus
+MODADD through visible binary reduction groups. Group/step anchors identify the
+original native operation, while its actual routed leaves retain ordered bits
+and original edge segmentation. Non-root members cannot be observed or consumed
+outside their group. The root may be reused or observed. Explicit-modulus and
+non-associative reductions reject. The option requires whole projection and a
+builder supporting the R1 parser; it remains off by default.
+
+The native exporter may combine this capability with parameter legends and
+native bundles. The frozen v9 builder explicitly rejects graphs containing
+both P1 references and R1 groups pending their combined schema gate. Native import and executable export do not imply that the builder can rebuild
+every large drawing within its existing bounds: the fresh full-default Simon
+rebuild timed out at 120 seconds, and fresh SHA1 reached a cell bound in the frozen
+v9 review. Imported drawings and classes passed their separate checks. Caps and
+layout defaults remain unchanged; shared packet gathering is not included here.
+
 ## Aligned mixed-width projection
 
 Generic lane granularity is inferred from native output widths and selected
