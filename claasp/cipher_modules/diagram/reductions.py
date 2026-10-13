@@ -1,4 +1,5 @@
 """Reconstruct strict binary reduction trees from actual visible routes."""
+
 from collections import Counter, namedtuple
 from . import parser
 
@@ -24,7 +25,10 @@ def groups(cells, dependencies, node_fields, fields):
         return {}
     for cell in cells.values():
         definition = cell.get('definition', {})
-        if definition.get('kind') in ('native', 'native_fragment', 'native_boundary') and definition['ordinal'] in result:
+        if (
+            definition.get('kind') in ('native', 'native_fragment', 'native_boundary')
+            and definition['ordinal'] in result
+        ):
             raise ValueError('Reduction group collides with another native kind')
 
     def producer(token):
@@ -66,7 +70,12 @@ def groups(cells, dependencies, node_fields, fields):
         if description[0] == 'MODADD' and description[2] is not None:
             raise ValueError('R1 reductions require an implicit modulus')
         arity = description[1]
-        if type(arity) is not int or arity < 3 or first['input_bits'] != arity * first['bits'] or sorted(members) != list(range(arity - 1)):
+        if (
+            type(arity) is not int
+            or arity < 3
+            or first['input_bits'] != arity * first['bits']
+            or sorted(members) != list(range(arity - 1))
+        ):
             raise ValueError('Reduction membership disagrees with original arity and width')
         for key, definition in members.values():
             if any(definition.get(field) != first.get(field) for field in (*node_fields, 'operand_positions')):

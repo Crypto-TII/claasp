@@ -1,4 +1,5 @@
 """Validation of local native transforms and ordered graph connectivity."""
+
 import re
 import copy
 import operator
@@ -17,7 +18,7 @@ def _ordered_native_value(value, depth=0):
         pass
     unordered = isinstance(value, (dict, set, frozenset, bytes))
     if not unordered and hasattr(value, '__len__') and hasattr(value, '__getitem__'):
-        return [_ordered_native_value(entry, depth+1) for entry in value]
+        return [_ordered_native_value(entry, depth + 1) for entry in value]
     return copy.deepcopy(value)
 
 
@@ -49,13 +50,19 @@ def _word_operation(node):
         return False
     name = description[0]
     validators = {
-        'XOR': _logical_word, 'AND': _logical_word, 'OR': _logical_word,
-        'MODADD': _modular_word, 'MODSUB': _modular_word, 'MODMUL': _modular_word,
+        'XOR': _logical_word,
+        'AND': _logical_word,
+        'OR': _logical_word,
+        'MODADD': _modular_word,
+        'MODSUB': _modular_word,
+        'MODMUL': _modular_word,
         'IDEA_MODMUL': _idea_word,
-        'ROTATE': _fixed_parameter_word, 'SHIFT': _fixed_parameter_word,
+        'ROTATE': _fixed_parameter_word,
+        'SHIFT': _fixed_parameter_word,
         'ROTATE_BY_VARIABLE_AMOUNT': _variable_parameter_word,
         'SHIFT_BY_VARIABLE_AMOUNT': _variable_parameter_word,
-        'NOT': _unary_word, 'REVERSE': _unary_word,
+        'NOT': _unary_word,
+        'REVERSE': _unary_word,
     }
     validator = validators.get(name)
     return validator is not None and validator(node)
@@ -63,8 +70,12 @@ def _word_operation(node):
 
 def _arity(node, length):
     description = node['description']
-    return (len(description) == length and _integer(description[1])
-            and description[1] >= 1 and node['input_bits'] == description[1]*node['bits'])
+    return (
+        len(description) == length
+        and _integer(description[1])
+        and description[1] >= 1
+        and node['input_bits'] == description[1] * node['bits']
+    )
 
 
 def _logical_word(node):
@@ -84,7 +95,7 @@ def _idea_word(node):
     modulus = node['description'][2]
     if not _integer(modulus) or modulus <= 0:
         return False
-    return node['bits'] >= 53 or modulus <= 2**node['bits']+1
+    return node['bits'] >= 53 or modulus <= 2 ** node['bits'] + 1
 
 
 def _variable_parameter_word(node):
@@ -99,8 +110,12 @@ def _fixed_parameter_word(node):
 
 def _unary_word(node):
     description = node['description']
-    return (len(description) == 2 and type(description[1]) is int
-            and description[1] == 0 and node['input_bits'] == node['bits'])
+    return (
+        len(description) == 2
+        and type(description[1]) is int
+        and description[1] == 0
+        and node['input_bits'] == node['bits']
+    )
 
 
 def _constant(node):
@@ -122,8 +137,9 @@ def _sbox(node):
     if node['input_bits'] > 20:
         return False
     description = node['description']
-    return (len(description) == 2**node['input_bits']
-            and all(_integer(value) and 0 <= value < 2**node['bits'] for value in description))
+    return len(description) == 2 ** node['input_bits'] and all(
+        _integer(value) and 0 <= value < 2 ** node['bits'] for value in description
+    )
 
 
 def _permutation(node):
@@ -133,10 +149,13 @@ def _permutation(node):
     positions, width = description
     if not _integer(width) or width <= 0:
         return False
-    return (node['input_bits'] == node['bits'] and node['bits'] % width == 0
-            and len(positions) == node['bits']//width
-            and all(_integer(value) for value in positions)
-            and sorted(positions) == list(range(len(positions))))
+    return (
+        node['input_bits'] == node['bits']
+        and node['bits'] % width == 0
+        and len(positions) == node['bits'] // width
+        and all(_integer(value) for value in positions)
+        and sorted(positions) == list(range(len(positions)))
+    )
 
 
 def _binary_row(row, bits):
@@ -144,7 +163,9 @@ def _binary_row(row, bits):
 
 
 def _linear_layer(node):
-    return len(node['description']) == node['input_bits'] and all(_binary_row(row, node['bits']) for row in node['description'])
+    return len(node['description']) == node['input_bits'] and all(
+        _binary_row(row, node['bits']) for row in node['description']
+    )
 
 
 def _field_parameters(polynomial, width):
@@ -152,7 +173,7 @@ def _field_parameters(polynomial, width):
         return False
     if not _integer(polynomial) or polynomial < 0:
         return False
-    return polynomial == 0 or 2**width <= polynomial < 2**(width + 1)
+    return polynomial == 0 or 2**width <= polynomial < 2 ** (width + 1)
 
 
 def _field_row(row, columns, polynomial, width):
@@ -170,14 +191,17 @@ def _mix_column(node):
         return False
     if node['input_bits'] % width or node['bits'] % width:
         return False
-    return (isinstance(matrix, list) and len(matrix) == node['bits']//width
-            and all(_field_row(row, node['input_bits']//width, polynomial, width) for row in matrix))
+    return (
+        isinstance(matrix, list)
+        and len(matrix) == node['bits'] // width
+        and all(_field_row(row, node['input_bits'] // width, polynomial, width) for row in matrix)
+    )
 
 
 def _binary_polynomial(expression, bits):
     return isinstance(expression, list) and all(
-        isinstance(term, list) and all(_integer(index) and 0 <= index < bits for index in term)
-        for term in expression)
+        isinstance(term, list) and all(_integer(index) and 0 <= index < bits for index in term) for term in expression
+    )
 
 
 def _binary_register(register, bits):
@@ -202,15 +226,22 @@ def _fsr(node):
     if not _integer(clocks) or not 1 <= clocks <= 100000:
         return False
     registers = description[0]
-    return (all(_binary_register(register, node['bits']) for register in registers)
-            and sum(register[0] for register in registers) == node['bits'])
+    return (
+        all(_binary_register(register, node['bits']) for register in registers)
+        and sum(register[0] for register in registers) == node['bits']
+    )
 
 
 _TRANSFORMS = {
-    'word_operation': _word_operation, 'constant': _constant,
-    'intermediate_output': _output, 'cipher_output': _output,
-    'sbox': _sbox, 'permutation': _permutation,
-    'linear_layer': _linear_layer, 'mix_column': _mix_column, 'fsr': _fsr,
+    'word_operation': _word_operation,
+    'constant': _constant,
+    'intermediate_output': _output,
+    'cipher_output': _output,
+    'sbox': _sbox,
+    'permutation': _permutation,
+    'linear_layer': _linear_layer,
+    'mix_column': _mix_column,
+    'fsr': _fsr,
 }
 
 
@@ -218,7 +249,7 @@ def validate_native_component(node):
     """Reject unsupported or inconsistent local operation descriptions."""
     validator = _TRANSFORMS.get(node['type'])
     if validator is None or not validator(node):
-        raise ValueError(f"Invalid or unsupported native {node['type']} description/width: {node['id']}")
+        raise ValueError(f'Invalid or unsupported native {node["type"]} description/width: {node["id"]}')
 
 
 def _input_widths(inputs):
@@ -234,7 +265,13 @@ def _node_header(node, known, last_round):
     positive_width = type(node['bits']) is int and node['bits'] > 0
     ordered_round = type(node['round']) is int and node['round'] >= 0 and node['round'] >= last_round
     input_width = type(node['input_bits']) is int and node['input_bits'] >= 0
-    if node['id'] in known or not positive_width or not ordered_round or not input_width or not isinstance(node['description'], list):
+    if (
+        node['id'] in known
+        or not positive_width
+        or not ordered_round
+        or not input_width
+        or not isinstance(node['description'], list)
+    ):
         raise ValueError('Invalid node identity, width or round order')
 
 

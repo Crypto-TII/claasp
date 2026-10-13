@@ -1,4 +1,5 @@
 """Object interface for the functional diagram API."""
+
 import copy
 from . import api
 

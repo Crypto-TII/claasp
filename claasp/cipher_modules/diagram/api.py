@@ -4,11 +4,16 @@ Bit positions follow CLAASP's MSB-first convention. Native descriptions are
 retained verbatim; unsupported executable operations fail explicitly. No cipher
 names or reference diagrams participate in layout or state inference.
 """
+
 import copy
 import json
 from claasp.cipher import Cipher
 
-from claasp.cipher_modules.diagram.validation import SCHEMA, validate as _validate, validate_native_component as _validate_native_component
+from claasp.cipher_modules.diagram.validation import (
+    SCHEMA,
+    validate as _validate,
+    validate_native_component as _validate_native_component,
+)
 from claasp.cipher_modules.diagram.validation import _native_description
 from claasp.cipher_modules.diagram import states as diagram_states
 
@@ -28,7 +33,6 @@ def validate(ir):
     The same validated **dictionary**.
 
     RAISES:
-
     ``ValueError`` for invalid widths, selections, output declarations, dependency order or unsupported transforms.
 
     EXAMPLES::
@@ -58,7 +62,6 @@ def validate_native_component(node):
     ``None`` after successful validation.
 
     RAISES:
-
     ``ValueError`` for unsupported transforms or inconsistent local parameters.
 
     EXAMPLES::
@@ -84,7 +87,8 @@ def from_cipher(cipher, *, roles=None):
     Binary-field entries are converted only when they are exactly zero or one in a binary linear layer.
     Conversion preserves entries and their order without changing the native source.
 
-    This reduced-round Speck example teaches the API; it is not the full-round cipher. Names never select layout or state shape.
+    This reduced-round Speck example teaches the API; it is not the full-round cipher. Names never select layout or
+    state shape.
 
     Rendering options are separate from extraction: pass this result to
     ``to_ascii(ir, operator_style='symbols', wire_borders=False, alignment='left',
@@ -100,14 +104,16 @@ def from_cipher(cipher, *, roles=None):
     INPUT:
 
     - ``cipher`` -- **Cipher**; primitive whose complete component graph is extracted
-    - ``roles`` -- **dictionary** (default: ``None``); explicit input roles, such as data/key; omitted roles reuse annotations and CLAASP block-cipher INPUT_KEY/INPUT_PLAINTEXT interface conventions; explicit dictionaries override both
+    - ``roles`` -- **dictionary** (default: ``None``); explicit input roles, such as data/key; omitted roles reuse
+      annotations and CLAASP block-cipher INPUT_KEY/INPUT_PLAINTEXT interface conventions; explicit dictionaries
+      override both
 
     OUTPUT:
 
-    A typed **dictionary** containing ordered input fragments, complete native descriptions, widths and numeric rounds. Missing roles are ``unspecified``.
+    A typed **dictionary** containing ordered input fragments, complete native descriptions, widths and numeric rounds.
+    Missing roles are ``unspecified``.
 
     RAISES:
-
     ``ValueError`` if native descriptions or graph widths/order are unsupported or inconsistent.
 
     EXAMPLES::
@@ -125,32 +131,65 @@ def from_cipher(cipher, *, roles=None):
     d = cipher.as_python_dictionary()
     if roles is None:
         from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+
         roles = {}
         # CLAASP block-cipher input designations are native interface semantics.
         # No component identity or family name participates in role extraction.
         if d['cipher_type'] == BLOCK_CIPHER:
             roles = {INPUT_KEY: 'key', INPUT_PLAINTEXT: 'data'}
         roles.update(dict(getattr(cipher, 'diagram_input_roles', {})))
-    ir = {'schema': SCHEMA, 'name': cipher.family_name, 'cipher_type': d['cipher_type'],
-          'inputs': [{'id': name, 'bits': bits, 'role': roles.get(name, 'unspecified')}
-                     for name, bits in zip(d['cipher_inputs'], d['cipher_inputs_bit_size'])],
-          'output_bits': d['cipher_output_bit_size'], 'rounds': d['cipher_number_of_rounds'], 'nodes': []}
+    ir = {
+        'schema': SCHEMA,
+        'name': cipher.family_name,
+        'cipher_type': d['cipher_type'],
+        'inputs': [
+            {'id': name, 'bits': bits, 'role': roles.get(name, 'unspecified')}
+            for name, bits in zip(d['cipher_inputs'], d['cipher_inputs_bit_size'])
+        ],
+        'output_bits': d['cipher_output_bit_size'],
+        'rounds': d['cipher_number_of_rounds'],
+        'nodes': [],
+    }
     for r, components in enumerate(d['cipher_rounds']):
         for c in components:
-            ir['nodes'].append({'id': c['id'], 'type': c['type'], 'bits': c['output_bit_size'],
-                                'round': r, 'input_bits': c['input_bit_size'],
-                                'operands': [{'source': a, 'positions': copy.deepcopy(b)} for a,b in
-                                             zip(c['input_id_link'], c['input_bit_positions']) if b],
-                                'description': _native_description(c['type'], c['description'])})
+            ir['nodes'].append(
+                {
+                    'id': c['id'],
+                    'type': c['type'],
+                    'bits': c['output_bit_size'],
+                    'round': r,
+                    'input_bits': c['input_bit_size'],
+                    'operands': [
+                        {'source': a, 'positions': copy.deepcopy(b)}
+                        for a, b in zip(c['input_id_link'], c['input_bit_positions'])
+                        if b
+                    ],
+                    'description': _native_description(c['type'], c['description']),
+                }
+            )
     return validate(ir)
 
 
 def _word_component(cipher, ids, positions, node):
     description = node['description']
-    name = {'ROTATE_BY_VARIABLE_AMOUNT': 'variable_rotate',
-            'SHIFT_BY_VARIABLE_AMOUNT': 'variable_shift'}.get(description[0], description[0].lower())
-    allowed = {'xor', 'and', 'or', 'not', 'modadd', 'modsub', 'modmul',
-               'rotate', 'shift', 'reverse', 'variable_rotate', 'variable_shift', 'idea_modmul'}
+    name = {'ROTATE_BY_VARIABLE_AMOUNT': 'variable_rotate', 'SHIFT_BY_VARIABLE_AMOUNT': 'variable_shift'}.get(
+        description[0], description[0].lower()
+    )
+    allowed = {
+        'xor',
+        'and',
+        'or',
+        'not',
+        'modadd',
+        'modsub',
+        'modmul',
+        'rotate',
+        'shift',
+        'reverse',
+        'variable_rotate',
+        'variable_shift',
+        'idea_modmul',
+    }
     if name not in allowed:
         raise ValueError(f'Unsupported executable word operation: {name}')
     arguments = [ids, positions, node['bits']]
@@ -184,11 +223,18 @@ def _append_component(cipher, node, links):
 def _runtime_input_names(inputs):
     """Keep usable input names and allocate collision-safe evaluator aliases."""
     import keyword
+
     reserved = {item['id'] for item in inputs}
     input_names = []
     for index, item in enumerate(inputs):
         name = item['id']
-        if not isinstance(name, str) or not name.isascii() or not name.isidentifier() or keyword.iskeyword(name) or name in {'intermediate', 'cipher'}:
+        if (
+            not isinstance(name, str)
+            or not name.isascii()
+            or not name.isidentifier()
+            or keyword.iskeyword(name)
+            or name in {'intermediate', 'cipher'}
+        ):
             name = f'diagram_input_{index}'
             while name in reserved:
                 name += '_'
@@ -209,7 +255,8 @@ def to_cipher(ir):
 
     OUTPUT:
 
-    An executable **Cipher**, with ``diagram_source_ids`` mapping original identifiers to reconstructed identifiers and ``diagram_input_roles`` retaining roles.
+    An executable **Cipher**, with ``diagram_source_ids`` mapping original identifiers to reconstructed identifiers and
+    ``diagram_input_roles`` retaining roles.
 
     The mapping is bijective over inputs and components. Safe ASCII Python input
     identifiers are retained unless reserved by the evaluator; other input names receive runtime aliases.
@@ -218,7 +265,6 @@ def to_cipher(ir):
     ``evaluate_state_values`` returns values under the original identifiers.
 
     RAISES:
-
     ``ValueError`` if validation or executable-component support fails.
 
     EXAMPLES::
@@ -236,8 +282,9 @@ def to_cipher(ir):
     """
     validate(ir)
     input_names = _runtime_input_names(ir['inputs'])
-    cipher = Cipher(ir['name'], ir['cipher_type'], input_names,
-                    [item['bits'] for item in ir['inputs']], ir['output_bits'])
+    cipher = Cipher(
+        ir['name'], ir['cipher_type'], input_names, [item['bits'] for item in ir['inputs']], ir['output_bits']
+    )
     cipher.diagram_input_roles = {name: item['role'] for name, item in zip(input_names, ir['inputs'])}
     links = {item['id']: name for name, item in zip(input_names, ir['inputs'])}
     runtime_ids = set(input_names)
@@ -255,14 +302,13 @@ def to_cipher(ir):
                 suffix += 1
         runtime_ids.add(component.id)
         links[node['id']] = component.id
-    while current_round < ir['rounds']-1:
+    while current_round < ir['rounds'] - 1:
         cipher.add_round()
         current_round += 1
     cipher.diagram_source_ids = links
     if len(set(links.values())) != len(links):
         raise ValueError('Reconstructed runtime identifiers must be unique')
     return cipher
-
 
 
 def to_records(ir):
@@ -275,7 +321,8 @@ def to_records(ir):
 
     OUTPUT:
 
-    A **string** of primitive/input/node records. This diagnostic format explicitly contains dependencies and is distinct from the visible-wire glyph format.
+    A **string** of primitive/input/node records. This diagnostic format explicitly contains dependencies and is
+    distinct from the visible-wire glyph format.
 
     EXAMPLES::
 
@@ -291,12 +338,12 @@ def to_records(ir):
         + END +
     """
     validate(ir)
-    header = {k: v for k,v in ir.items() if k not in {'inputs','nodes'}}
-    lines = [RECORD_HEADER, '| primitive '+json.dumps(header,sort_keys=True)]
-    lines += ['| input '+json.dumps(i,sort_keys=True) for i in ir['inputs']]
+    header = {k: v for k, v in ir.items() if k not in {'inputs', 'nodes'}}
+    lines = [RECORD_HEADER, '| primitive ' + json.dumps(header, sort_keys=True)]
+    lines += ['| input ' + json.dumps(i, sort_keys=True) for i in ir['inputs']]
     for n in ir['nodes']:
-        lines += ['+ node '+json.dumps(n,sort_keys=True)]
-    return '\n'.join(lines)+'\n+ END +\n'
+        lines += ['+ node ' + json.dumps(n, sort_keys=True)]
+    return '\n'.join(lines) + '\n+ END +\n'
 
 
 def from_records(text):
@@ -312,7 +359,6 @@ def from_records(text):
     A validated typed **dictionary**.
 
     RAISES:
-
     ``ValueError`` for invalid framing, missing/duplicate primitive records or unsupported native semantics.
 
     EXAMPLES::
@@ -329,14 +375,22 @@ def from_records(text):
     lines = text.splitlines()
     if not lines or lines[0] != RECORD_HEADER or lines[-1] != '+ END +':
         raise ValueError('Invalid typed ASCII framing')
-    ir = None; inputs = []; nodes = []
+    ir = None
+    inputs = []
+    nodes = []
     for line in lines[1:-1]:
-        if line.startswith('| primitive ') and ir is None: ir = json.loads(line[12:])
-        elif line.startswith('| input '): inputs.append(json.loads(line[8:]))
-        elif line.startswith('+ node '): nodes.append(json.loads(line[7:]))
-        else: raise ValueError('Unknown or duplicate ASCII record')
-    if ir is None: raise ValueError('Missing primitive record')
-    ir['inputs'] = inputs; ir['nodes'] = nodes
+        if line.startswith('| primitive ') and ir is None:
+            ir = json.loads(line[12:])
+        elif line.startswith('| input '):
+            inputs.append(json.loads(line[8:]))
+        elif line.startswith('+ node '):
+            nodes.append(json.loads(line[7:]))
+        else:
+            raise ValueError('Unknown or duplicate ASCII record')
+    if ir is None:
+        raise ValueError('Missing primitive record')
+    ir['inputs'] = inputs
+    ir['nodes'] = nodes
     return validate(ir)
 
 
@@ -350,7 +404,8 @@ def layout(ir):
 
     OUTPUT:
 
-    A **dictionary** mapping each input/native identity to ``layer`` and ``slot``. This is a generic DAG placement, not inversion of an original drawing.
+    A **dictionary** mapping each input/native identity to ``layer`` and ``slot``. This is a generic DAG placement, not
+    inversion of an original drawing.
 
     EXAMPLES::
 
@@ -366,11 +421,15 @@ def layout(ir):
         {'layer': 1, 'slot': 0}
     """
     validate(ir)
-    depth = {i['id']: 0 for i in ir['inputs']}; rows = {}
+    depth = {i['id']: 0 for i in ir['inputs']}
+    rows = {}
     for n in ir['nodes']:
-        depth[n['id']] = 1+max([depth[e['source']] for e in n['operands']] or [0])
-    for identity, layer in depth.items(): rows.setdefault(layer, []).append(identity)
-    return {identity: {'layer': layer, 'slot': slot} for layer, ids in rows.items() for slot, identity in enumerate(ids)}
+        depth[n['id']] = 1 + max([depth[e['source']] for e in n['operands']] or [0])
+    for identity, layer in depth.items():
+        rows.setdefault(layer, []).append(identity)
+    return {
+        identity: {'layer': layer, 'slot': slot} for layer, ids in rows.items() for slot, identity in enumerate(ids)
+    }
 
 
 def to_layered_tikz(ir, *, layer_spacing=2, slot_spacing=3):
@@ -398,17 +457,44 @@ def to_layered_tikz(ir, *, layer_spacing=2, slot_spacing=3):
         sage: print(picture.splitlines()[1])
         \node (n0) at (0,0) {plaintext};
     """
-    positions = layout(ir); aliases = {identity: f'n{i}' for i, identity in enumerate(positions)}
+    positions = layout(ir)
+    aliases = {identity: f'n{i}' for i, identity in enumerate(positions)}
+
     def escape(s):
-        return ''.join({'_':r'\_', '%':r'\%', '&':r'\&', '#':r'\#', '{':r'\{', '}':r'\}', '\\':r'\textbackslash{}', '$':r'\$', '^':r'\textasciicircum{}', '~':r'\textasciitilde{}'}.get(c,c) for c in str(s))
+        return ''.join(
+            {
+                '_': r'\_',
+                '%': r'\%',
+                '&': r'\&',
+                '#': r'\#',
+                '{': r'\{',
+                '}': r'\}',
+                '\\': r'\textbackslash{}',
+                '$': r'\$',
+                '^': r'\textasciicircum{}',
+                '~': r'\textasciitilde{}',
+            }.get(c, c)
+            for c in str(s)
+        )
+
     lines = [r'\begin{tikzpicture}[>=stealth, every node/.style={draw,align=center}]']
-    for identity,p in positions.items():
-        lines.append(fr'\node ({aliases[identity]}) at ({p["slot"]*slot_spacing},{-p["layer"]*layer_spacing}) {{{escape(identity)}}};')
+    for identity, p in positions.items():
+        lines.append(
+            (
+                rf'\node ({aliases[identity]}) at ({p["slot"] * slot_spacing},{-p["layer"] * layer_spacing}) {{'
+                rf'{escape(identity)}}};'
+            )
+        )
     for n in ir['nodes']:
-        for index,e in enumerate(n['operands']):
+        for index, e in enumerate(n['operands']):
             label = escape(f'{index}: {e["positions"]}')
-            lines.append(fr'\draw[->] ({aliases[e["source"]]}) -- node[draw=none,fill=white,font=\tiny] {{{label}}} ({aliases[n["id"]]});')
-    return '\n'.join(lines+[r'\end{tikzpicture}'])
+            lines.append(
+                (
+                    rf'\draw[->] ({aliases[e["source"]]}) -- node[draw=none,fill=white,font=\tiny] {{{label}}} ('
+                    rf'{aliases[n["id"]]});'
+                )
+            )
+    return '\n'.join(lines + [r'\end{tikzpicture}'])
 
 
 def _validate_state_shape(shape, bits):
@@ -416,7 +502,7 @@ def _validate_state_shape(shape, bits):
         return
     if len(shape) != 2 or any(type(x) is not int or x <= 0 for x in shape):
         raise ValueError('Explicit shape must cover all selected state bits')
-    if shape[0]*shape[1] != bits:
+    if shape[0] * shape[1] != bits:
         raise ValueError('Explicit shape must cover all selected state bits')
 
 
@@ -427,14 +513,15 @@ def state_view(ir, *, shape=None):
     INPUT:
 
     - ``ir`` -- **dictionary**; supported graph
-    - ``shape`` -- **pair of integers** (default: ``None``); explicit bit-level row/column counts covering every observation
+    - ``shape`` -- **pair of integers** (default: ``None``); explicit bit-level row/column counts covering every
+      observation
 
     OUTPUT:
 
-    A **list of dictionaries** with source-bit positions, tags, rounds and geometry. Omitted shape is ``ambiguous-flat-fallback``.
+    A **list of dictionaries** with source-bit positions, tags, rounds and geometry. Omitted shape is
+    ``ambiguous-flat-fallback``.
 
     RAISES:
-
     ``ValueError`` if an explicit shape does not cover all selected bits.
 
     EXAMPLES::
@@ -455,20 +542,48 @@ def state_view(ir, *, shape=None):
     validate(ir)
     stages = []
     for n in ir['nodes']:
-        if n['type'] not in {'intermediate_output','cipher_output'}: continue
-        positions = [(e['source'],b) for e in n['operands'] for b in e['positions']]
+        if n['type'] not in {'intermediate_output', 'cipher_output'}:
+            continue
+        positions = [(e['source'], b) for e in n['operands'] for b in e['positions']]
         _validate_state_shape(shape, len(positions))
-        stages.append({'id':n['id'],'round':n['round'],'tag':n['description'],
-                       'shape':list(shape) if shape else [1,len(positions)],
-                       'geometry':'explicit' if shape else 'ambiguous-flat-fallback', 'ordered_bits':positions})
+        stages.append(
+            {
+                'id': n['id'],
+                'round': n['round'],
+                'tag': n['description'],
+                'shape': list(shape) if shape else [1, len(positions)],
+                'geometry': 'explicit' if shape else 'ambiguous-flat-fallback',
+                'ordered_bits': positions,
+            }
+        )
     return stages
 
 
-def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
-             operator_style='symbols', wire_borders=False, alignment='left',
-             layout_preference='balanced', strategy='semantic-auto', gathering='linear',
-             lane_policy='compact', projection='whole', native_bundles=False, parameter_refs=False, associative_reductions=False, max_cells=1000000, max_calls=20000, max_grid_area=2000000,
-             max_text_bytes=64000000, key_side='right', parallel_unary=1, routed_words=False):
+def to_ascii(
+    ir,
+    *,
+    format='human',
+    annotations=False,
+    word_bits=None,
+    operator_style='symbols',
+    wire_borders=False,
+    alignment='left',
+    layout_preference='balanced',
+    strategy='semantic-auto',
+    gathering='linear',
+    lane_policy='compact',
+    projection='whole',
+    native_bundles=False,
+    parameter_refs=False,
+    associative_reductions=False,
+    max_cells=1000000,
+    max_calls=20000,
+    max_grid_area=2000000,
+    max_text_bytes=64000000,
+    key_side='right',
+    parallel_unary=1,
+    routed_words=False,
+):
     r"""
     Draw persistent word lanes when their generic state shape is identifiable.
 
@@ -483,7 +598,8 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     A graph without an admitted persistent word shape fails with an actionable
     diagnostic rather than emitting old helper boxes. Request ``human-legacy``
     explicitly where needed. ``synthesis_report`` identifies the unsupported
-    shape and required format; malformed graphs and exceeded bounds fail. Nonuniform selections, mixed widths, output permutations and
+    shape and required format; malformed graphs and exceeded bounds fail. Nonuniform selections, mixed widths, output
+    permutations and
     branch-specific aliases remain explicit compatibility cases. ``key_side``
     is supported only for admitted persistent shapes.
 
@@ -499,25 +615,44 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     - ``ir`` -- **dictionary** or **Cipher**; supported native computation
     - ``format`` -- **string**; ``'human'`` (default), explicit ``'human-legacy'``, or ``'audit'``
     - ``annotations`` -- **boolean** (default: ``False``); append lossless local human metadata
-    - ``key_side`` -- **string** (default: ``'right'``); place key-role word lanes on the right or left. First-use key ordering can vary across round counts; native bit bindings remain explicit.
-    - ``word_bits`` -- positive **integer** or ``None``; infer the GCD of native output widths and selected-fragment lengths, with output width as a generic fallback
-    - ``operator_style`` -- ``'symbols'`` (default) or ``'labels'``; numeric rotation/shift arrows remain explicit in both
-    - ``wire_borders`` -- **boolean** (default: ``False``); draw routing-cell frames; operation frames follow the manual vocabulary
+    - ``key_side`` -- **string** (default: ``'right'``); place key-role word lanes on the right or left. First-use key
+      ordering can vary across round counts; native bit bindings remain explicit.
+    - ``word_bits`` -- positive **integer** or ``None``; infer the GCD of native output widths and selected-fragment
+      lengths, with output width as a generic fallback
+    - ``operator_style`` -- ``'symbols'`` (default) or ``'labels'``; numeric rotation/shift arrows remain explicit in
+      both
+    - ``wire_borders`` -- **boolean** (default: ``False``); draw routing-cell frames; operation frames follow the manual
+      vocabulary
     - ``routed_words`` -- **boolean** (default: ``False``); explicit uniform-word fan-out/temporary
       routing, three-port XOR/AND/OR and native output selection from actual visible terminals. Native
       cipher order is labelled C0,C1,... in TikZ; D marks carried display values. Local annotations are
       required for native packing in ASCII. Widths, ordered masks and actual sources remain checked.
     - ``parallel_unary`` -- positive **integer** (default: ``1``); persistent-only maximum compatible
       independent vertical unary boxes per row. ``1`` retains accepted placement; ``4`` can align four rotations.
-    - ``gathering`` -- ``'linear'`` (default); ``'shared-linear'`` reuses identical ordered JOIN pairs, while experimental ``'balanced'`` gathers through a balanced tree; neither alternative is selected automatically
-    - ``projection`` -- ``'whole'`` (default) or opt-in ``'wordwise'``; split independent XOR/AND/OR/NOT into word gates, retaining native semantics through visible subordinate group/word references
-    - ``native_bundles`` -- **boolean** (default: ``False``); experimental whole native input/boundary values with demand-driven SEL/JOIN helpers and heterogeneous widths. Requires compact lanes, whole projection and no fixed word_bits; all existing caps and operation-signature limits remain active. No new local record kinds are introduced.
-    - ``parameter_refs`` -- **boolean** (default: ``False``); experimental visible parameter legend for long hexadecimal/binary literals and explicit moduli up to ``2^53-1``. Exact native reconstruction requires local annotations; requires a builder with the P1 parameter-legend parser.
-    - ``associative_reductions`` -- **boolean** (default: ``False``); experimental whole-projection binary trees for XOR/AND/OR and implicit-modulus MODADD. Visible group/step anchors and ordered bindings recover one original native node. Explicit moduli and non-associative lowering reject; requires a builder with the R1 reduction parser.
-    - ``lane_policy`` -- ``'compact'`` (default) or opt-in ``'state'``; prefer contiguous explicit key/data input banks and place matching-width final output words under the data bank; ambiguous banks use the generic compact output fallback
-    - ``alignment`` -- ``'left'`` (default) or ``'right'``; prefer an expired operand lane, subject to liveness and ordered arithmetic
-    - ``layout_preference`` -- ``'balanced'`` (default), ``'crossings'``, ``'depth'`` or ``'width'``; select among measured generic candidate layouts
-    - ``strategy`` -- ``'semantic-auto'`` (default); human candidates are ``semantic-legacy``, ``semantic-ports``, ``semantic-round``, ``semantic-width``, ``semantic-depth`` and ``semantic-crossings``; ``semantic-layer`` aligns generic native dependency layers; ``direct-bus`` is an explicit baseline
+    - ``gathering`` -- ``'linear'`` (default); ``'shared-linear'`` reuses identical ordered JOIN pairs, while
+      experimental ``'balanced'`` gathers through a balanced tree; neither alternative is selected automatically
+    - ``projection`` -- ``'whole'`` (default) or opt-in ``'wordwise'``; split independent XOR/AND/OR/NOT into word
+      gates, retaining native semantics through visible subordinate group/word references
+    - ``native_bundles`` -- **boolean** (default: ``False``); experimental whole native input/boundary values with
+      demand-driven SEL/JOIN helpers and heterogeneous widths. Requires compact lanes, whole projection and no fixed
+      word_bits; all existing caps and operation-signature limits remain active. No new local record kinds are
+      introduced.
+    - ``parameter_refs`` -- **boolean** (default: ``False``); experimental visible parameter legend for long
+      hexadecimal/binary literals and explicit moduli up to ``2^53-1``. Exact native reconstruction requires local
+      annotations; requires a builder with the P1 parameter-legend parser.
+    - ``associative_reductions`` -- **boolean** (default: ``False``); experimental whole-projection binary trees for
+      XOR/AND/OR and implicit-modulus MODADD. Visible group/step anchors and ordered bindings recover one original
+      native node. Explicit moduli and non-associative lowering reject; requires a builder with the R1 reduction parser.
+    - ``lane_policy`` -- ``'compact'`` (default) or opt-in ``'state'``; prefer contiguous explicit key/data input banks
+      and place matching-width final output words under the data bank; ambiguous banks use the generic compact output
+      fallback
+    - ``alignment`` -- ``'left'`` (default) or ``'right'``; prefer an expired operand lane, subject to liveness and
+      ordered arithmetic
+    - ``layout_preference`` -- ``'balanced'`` (default), ``'crossings'``, ``'depth'`` or ``'width'``; select among
+      measured generic candidate layouts
+    - ``strategy`` -- ``'semantic-auto'`` (default); human candidates are ``semantic-legacy``, ``semantic-ports``,
+      ``semantic-round``, ``semantic-width``, ``semantic-depth`` and ``semantic-crossings``; ``semantic-layer`` aligns
+      generic native dependency layers; ``direct-bus`` is an explicit baseline
     - ``max_cells`` -- positive **integer** (default: ``1000000``); occupied block limit
     - ``max_calls`` -- positive **integer** (default: ``20000``); native/helper word-expansion limit
     - ``max_grid_area`` -- positive **integer** (default: ``2000000``); rectangular block limit
@@ -561,11 +696,11 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     guarantees. ``synthesis_report`` exposes costs and the selected candidate.
 
     RAISES:
-
     ``ValueError`` for invalid options/bounds, unsupported projection or a
     fresh exported-body parse that changes native semantics. The persistent
     default rejects unsupported shapes and requests an explicit legacy choice.
-    Legacy projection supports aligned mixed native widths with explicit partial-bit selection helpers, unary/binary word operations,
+    Legacy projection supports aligned mixed native widths with explicit partial-bit selection helpers, unary/binary
+    word operations,
     three-port XOR/AND/OR, constants, S-box/linear/mix-column/permutation operations and
     boundary fragments through explicit JOIN/SEL helpers. Unsupported shapes, oversized labels and custom
     moduli require the explicit audit view. Lanes have fixed manual width;
@@ -596,7 +731,9 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         sage: drawing = to_ascii(ir, format='human-legacy')
         sage: from_ascii(to_ascii(ir, annotations=True)) == ir
         True
-        sage: from_ascii(to_ascii(ir, format='human-legacy', annotations=True, word_bits=int(8), projection='wordwise', lane_policy='state')) == ir
+        sage: from_ascii(to_ascii(
+        ....:     ir, format='human-legacy', annotations=True, word_bits=int(8),
+        ....:     projection='wordwise', lane_policy='state')) == ir
         True
 
     Complete tested default one/two-round scripts and actual results are in
@@ -652,7 +789,9 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         sage: f = c.add_not_component([r.id], [list(range(int(4)))], int(4))
         sage: x = c.add_xor_component(['left', f.id], [list(range(int(4)))]*int(2), int(4))
         sage: output = c.add_cipher_output_component(['right', x.id], [list(range(int(4)))]*int(2), int(8))
-        sage: print('\n'.join(('| '+line.rstrip()).rstrip() for line in to_ascii(from_cipher(c), format='human-legacy').splitlines()))
+        sage: print('\n'.join(
+        ....:     ('| '+line.rstrip()).rstrip()
+        ....:     for line in to_ascii(from_cipher(c), format='human-legacy').splitlines()))
         |
         |   _______    _______
         |  |  I1   |  |  I2   |
@@ -691,8 +830,12 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     """
     if format not in ('human', 'human-legacy', 'audit'):
         raise ValueError("format must be 'human', 'human-legacy' or 'audit'")
-    bounds = {'max_cells': max_cells, 'max_calls': max_calls,
-              'max_grid_area': max_grid_area, 'max_text_bytes': max_text_bytes}
+    bounds = {
+        'max_cells': max_cells,
+        'max_calls': max_calls,
+        'max_grid_area': max_grid_area,
+        'max_text_bytes': max_text_bytes,
+    }
     if any(type(value) is not int or value < 1 for value in bounds.values()):
         raise ValueError('Work and output bounds must be positive integers')
     if type(annotations) is not bool:
@@ -702,25 +845,65 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     if type(parallel_unary) is not int or parallel_unary < 1:
         raise ValueError('parallel_unary must be a positive integer')
     if format == 'audit':
-        if routed_words or parallel_unary != 1 or annotations or word_bits is not None or operator_style != 'symbols' or wire_borders or alignment != 'left' or layout_preference != 'balanced' or gathering != 'linear' or lane_policy != 'compact' or projection != 'whole' or native_bundles or parameter_refs or associative_reductions or key_side != 'right':
+        if (
+            routed_words
+            or parallel_unary != 1
+            or annotations
+            or word_bits is not None
+            or operator_style != 'symbols'
+            or wire_borders
+            or alignment != 'left'
+            or layout_preference != 'balanced'
+            or gathering != 'linear'
+            or lane_policy != 'compact'
+            or projection != 'whole'
+            or native_bundles
+            or parameter_refs
+            or associative_reductions
+            or key_side != 'right'
+        ):
             raise ValueError('Human rendering/layout options do not apply to the audit format')
         return to_audit_ascii(ir, strategy=strategy, **bounds)
     if not isinstance(ir, dict):
         ir = from_cipher(ir)
-    if (format == 'human' and native_bundles is False and parameter_refs is False and associative_reductions is False
-            and operator_style == 'symbols' and wire_borders is False and alignment == 'left'
-            and layout_preference == 'balanced' and strategy == 'semantic-auto' and gathering == 'linear'
-            and lane_policy == 'compact' and projection == 'whole'):
+    if (
+        format == 'human'
+        and native_bundles is False
+        and parameter_refs is False
+        and associative_reductions is False
+        and operator_style == 'symbols'
+        and wire_borders is False
+        and alignment == 'left'
+        and layout_preference == 'balanced'
+        and strategy == 'semantic-auto'
+        and gathering == 'linear'
+        and lane_policy == 'compact'
+        and projection == 'whole'
+    ):
         from .word_visual import UnsupportedProjection
         from .word_bindings import export_bindings, MARKER as word_marker
+
         try:
-            body, bindings = export_bindings(ir, key_side=key_side, word_bits=word_bits,
-                                            max_calls=max_calls, max_cells=max_cells, max_grid_area=max_grid_area,
-                                            parallel_unary=parallel_unary, routed_words=routed_words)
+            body, bindings = export_bindings(
+                ir,
+                key_side=key_side,
+                word_bits=word_bits,
+                max_calls=max_calls,
+                max_cells=max_cells,
+                max_grid_area=max_grid_area,
+                parallel_unary=parallel_unary,
+                routed_words=routed_words,
+            )
         except UnsupportedProjection as error:
-            raise UnsupportedProjection(str(error)+"; request format='human-legacy' explicitly for the old serializer") from error
+            raise UnsupportedProjection(
+                str(error) + "; request format='human-legacy' explicitly for the old serializer"
+            ) from error
         else:
-            text = body + word_marker + json.dumps(bindings, sort_keys=True, separators=(',', ':'))+'\n' if annotations else body
+            text = (
+                body + word_marker + json.dumps(bindings, sort_keys=True, separators=(',', ':')) + '\n'
+                if annotations
+                else body
+            )
             if len(text.encode('utf8')) > max_text_bytes:
                 raise ValueError('Visual text exceeds max_text_bytes')
             return text
@@ -731,15 +914,44 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     if key_side != 'right':
         raise ValueError('key_side relocation is supported only by the persistent-word view')
     from .manual_blocks import encode
-    return encode(ir, annotations=annotations, word_bits=word_bits,
-                  operator_style=operator_style, wire_borders=wire_borders,
-                  alignment=alignment, layout_preference=layout_preference, gathering=gathering,
-                  lane_policy=lane_policy, projection=projection, native_bundles=native_bundles, parameter_refs=parameter_refs, associative_reductions=associative_reductions, strategy=strategy, **bounds)
+
+    return encode(
+        ir,
+        annotations=annotations,
+        word_bits=word_bits,
+        operator_style=operator_style,
+        wire_borders=wire_borders,
+        alignment=alignment,
+        layout_preference=layout_preference,
+        gathering=gathering,
+        lane_policy=lane_policy,
+        projection=projection,
+        native_bundles=native_bundles,
+        parameter_refs=parameter_refs,
+        associative_reductions=associative_reductions,
+        strategy=strategy,
+        **bounds,
+    )
 
 
-def synthesis_report(ir, *, format='human', key_side='right', word_bits=None, strategy='semantic-auto', gathering='linear', native_bundles=False, parameter_refs=False, associative_reductions=False,
-                     alignment='left', layout_preference='balanced', lane_policy='compact', projection='whole',
-                     max_cells=1000000, max_calls=20000):
+def synthesis_report(
+    ir,
+    *,
+    format='human',
+    key_side='right',
+    word_bits=None,
+    strategy='semantic-auto',
+    gathering='linear',
+    native_bundles=False,
+    parameter_refs=False,
+    associative_reductions=False,
+    alignment='left',
+    layout_preference='balanced',
+    lane_policy='compact',
+    projection='whole',
+    max_cells=1000000,
+    max_calls=20000,
+):
     r"""
     Report measured costs and the selected generic human layout.
 
@@ -771,46 +983,83 @@ def synthesis_report(ir, *, format='human', key_side='right', word_bits=None, st
     if format not in ('human', 'human-legacy'):
         raise ValueError('Synthesis report format must be human or human-legacy')
     fallback = None
-    if (format == 'human' and strategy == 'semantic-auto' and gathering == 'linear'
-            and native_bundles is False and parameter_refs is False and associative_reductions is False
-            and alignment == 'left' and layout_preference == 'balanced' and lane_policy == 'compact' and projection == 'whole'):
+    if (
+        format == 'human'
+        and strategy == 'semantic-auto'
+        and gathering == 'linear'
+        and native_bundles is False
+        and parameter_refs is False
+        and associative_reductions is False
+        and alignment == 'left'
+        and layout_preference == 'balanced'
+        and lane_policy == 'compact'
+        and projection == 'whole'
+    ):
         from .word_bindings import export_bindings
         from .word_visual import build as build_words, UnsupportedProjection
+
         try:
             export_bindings(ir, key_side=key_side, word_bits=word_bits, max_cells=max_cells, max_calls=max_calls)
             model = build_words(ir, key_side=key_side, word_bits=word_bits, max_cells=max_cells, max_calls=max_calls)
         except UnsupportedProjection as error:
-            return {'view': 'unsupported-persistent', 'fallback_reason': str(error),
-                    'required_format': 'human-legacy'}
+            return {'view': 'unsupported-persistent', 'fallback_reason': str(error), 'required_format': 'human-legacy'}
         else:
-            return {'view': 'persistent-word', 'fallback_reason': None, 'selected_variant': 'persistent-word',
-                    'word_bits': model['bits'], 'packing_policy': 'persistent-word', 'alignment': alignment,
-                    'layout_preference': layout_preference, 'key_side': key_side,
-                    'metrics': {'cells': len(model['cells']), 'crossings': sum(cell['kind'] == 'cross' for cell in model['cells'].values()),
-                                'depth': model['rows'], 'width': model['columns']}}
+            return {
+                'view': 'persistent-word',
+                'fallback_reason': None,
+                'selected_variant': 'persistent-word',
+                'word_bits': model['bits'],
+                'packing_policy': 'persistent-word',
+                'alignment': alignment,
+                'layout_preference': layout_preference,
+                'key_side': key_side,
+                'metrics': {
+                    'cells': len(model['cells']),
+                    'crossings': sum(cell['kind'] == 'cross' for cell in model['cells'].values()),
+                    'depth': model['rows'],
+                    'width': model['columns'],
+                },
+            }
     elif format == 'human':
         fallback = 'Explicit interchange rendering/layout controls requested'
     if key_side != 'right':
         raise ValueError('key_side requires a supported persistent-word view')
     from .manual_blocks import build
-    _, report = build(ir, word_bits=word_bits, strategy=strategy, gathering=gathering,
-                      alignment=alignment, layout_preference=layout_preference, lane_policy=lane_policy, projection=projection,
-                      max_cells=max_cells, max_calls=max_calls, native_bundles=native_bundles, parameter_refs=parameter_refs, associative_reductions=associative_reductions)
+
+    _, report = build(
+        ir,
+        word_bits=word_bits,
+        strategy=strategy,
+        gathering=gathering,
+        alignment=alignment,
+        layout_preference=layout_preference,
+        lane_policy=lane_policy,
+        projection=projection,
+        max_cells=max_cells,
+        max_calls=max_calls,
+        native_bundles=native_bundles,
+        parameter_refs=parameter_refs,
+        associative_reductions=associative_reductions,
+    )
     report.update(view='human-legacy', fallback_reason=fallback)
     return report
 
 
-def to_audit_ascii(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000,
-             max_grid_area=2000000, max_text_bytes=64000000):
+def to_audit_ascii(
+    ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000, max_grid_area=2000000, max_text_bytes=64000000
+):
     r"""
     Synthesize an editable typed ASCII circuit and verify its visible-wire round trip.
 
-    Manual reference diagrams and primitive names do not participate in synthesis. Bounds reject work rather than omit components.
+    Manual reference diagrams and primitive names do not participate in synthesis. Bounds reject work rather than omit
+    components.
 
     INPUT:
 
     - ``ir`` -- **dictionary** or **Cipher**; complete supported computation
-    - ``strategy`` -- **string** (default: ``'semantic-auto'``); deterministic choice among legacy, local-port, independent-parallel and round candidates; explicit values are ``semantic-legacy``, ``semantic-ports``, ``semantic-parallel``, ``semantic-round`` and ``direct-bus``
+    - ``strategy`` -- **string** (default: ``'semantic-auto'``); deterministic choice among legacy, local-port,
+      independent-parallel and round candidates; explicit values are ``semantic-legacy``, ``semantic-ports``,
+      ``semantic-parallel``, ``semantic-round`` and ``direct-bus``
     - ``max_cells`` -- **integer** (default: ``1000000``); occupied-cell bound
     - ``max_calls`` -- **integer** (default: ``20000``); native/helper-call bound
     - ``max_grid_area`` -- **integer** (default: ``2000000``); full rectangular cell bound
@@ -818,11 +1067,12 @@ def to_audit_ascii(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls
 
     OUTPUT:
 
-    A **string** containing visible 5-by-11 glyph cells and local definitions. Incoming sources are recovered from wires, not copied into the footer.
+    A **string** containing visible 5-by-11 glyph cells and local definitions. Incoming sources are recovered from
+    wires, not copied into the footer.
 
     RAISES:
-
-    ``ValueError`` for invalid strategy, exceeded bounds or an exported diagram that fails exact semantic reconstruction.
+    ``ValueError`` for invalid strategy, exceeded bounds or an exported diagram that fails exact semantic
+    reconstruction.
 
     EXAMPLES::
 
@@ -842,11 +1092,20 @@ def to_audit_ascii(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls
         ''
     """
     from claasp.cipher_modules.diagram.glyphs import encode, decode
-    if not isinstance(ir, dict): ir=from_cipher(ir)
+
+    if not isinstance(ir, dict):
+        ir = from_cipher(ir)
     validate(ir)
-    text=encode(ir,strategy=strategy,max_cells=max_cells,max_calls=max_calls,
-                max_grid_area=max_grid_area,max_text_bytes=max_text_bytes)
-    if validate(decode(text,max_grid_area=max_grid_area,max_text_bytes=max_text_bytes))!=ir: raise ValueError('Native glyph round trip changed semantics')
+    text = encode(
+        ir,
+        strategy=strategy,
+        max_cells=max_cells,
+        max_calls=max_calls,
+        max_grid_area=max_grid_area,
+        max_text_bytes=max_text_bytes,
+    )
+    if validate(decode(text, max_grid_area=max_grid_area, max_text_bytes=max_text_bytes)) != ir:
+        raise ValueError('Native glyph round trip changed semantics')
     return text
 
 
@@ -854,7 +1113,8 @@ def from_ascii(text, *, max_text_bytes=64000000, max_grid_area=2000000):
     r"""
     Parse a typed ASCII drawing by tracing its actual directed ports and bit streams.
 
-    Unannotated legacy art cannot supply missing native tables/widths. Ambiguous, malformed, hidden-dependency and circular routes fail explicitly.
+    Unannotated legacy art cannot supply missing native tables/widths. Ambiguous, malformed, hidden-dependency and
+    circular routes fail explicitly.
 
     Persistent word bindings preserve packed input positions, ordered local
     operands and distinct cipher/display terminals. This experimental footer
@@ -877,7 +1137,6 @@ def from_ascii(text, *, max_text_bytes=64000000, max_grid_area=2000000):
     A validated typed **dictionary** with ordered operands and local operation descriptions.
 
     RAISES:
-
     ``ValueError`` for malformed framing/routing, ambiguity, incompatible local definitions or exceeded work bounds.
 
     EXAMPLES::
@@ -895,31 +1154,40 @@ def from_ascii(text, *, max_text_bytes=64000000, max_grid_area=2000000):
         sage: parsed['nodes'][0]['operands'][0]['positions']
         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     """
-    if not isinstance(text,str) or any(type(v) is not int or v<=0 for v in (max_text_bytes,max_grid_area)):
+    if not isinstance(text, str) or any(type(v) is not int or v <= 0 for v in (max_text_bytes, max_grid_area)):
         raise ValueError('Invalid diagram input or work bounds')
-    if len(text.encode('utf8'))>max_text_bytes:raise ValueError('Diagram text exceeds max_text_bytes')
+    if len(text.encode('utf8')) > max_text_bytes:
+        raise ValueError('Diagram text exceeds max_text_bytes')
     if text.startswith(RECORD_HEADER):
-        ir=from_records(text)
-        if len(ir['inputs'])+len(ir['nodes'])>max_grid_area:raise ValueError('Record elements exceed max_grid_area')
+        ir = from_records(text)
+        if len(ir['inputs']) + len(ir['nodes']) > max_grid_area:
+            raise ValueError('Record elements exceed max_grid_area')
         return ir
     from .word_bindings import MARKER as word_marker, decode as decode_words
+
     if word_marker in text:
         return decode_words(text, max_text_bytes=max_text_bytes, max_grid_area=max_grid_area)
     from .manual_blocks import MARKER as human_marker, decode as decode_human
+
     if human_marker in text:
-        return validate(decode_human(text, max_grid_area=max_grid_area,
-                                     max_text_bytes=max_text_bytes))
+        return validate(decode_human(text, max_grid_area=max_grid_area, max_text_bytes=max_text_bytes))
     from claasp.cipher_modules.diagram.glyphs import decode
-    return validate(decode(text,max_text_bytes=max_text_bytes,max_grid_area=max_grid_area))
+
+    return validate(decode(text, max_text_bytes=max_text_bytes, max_grid_area=max_grid_area))
 
 
 def to_tikz(ir, **options):
     r"""
     Produce the verified persistent word placement as a vector diagram by default.
 
-    Default ``layoutSource='persistent'`` reparses the ordinary word ASCII and renders its exact cells/routes. MODSUB input ports are visibly numbered. ``fitToPage=(width,height)`` uniformly scales one complete figure to the usable size in centimetres; default panels balance rows. Unsupported shapes fail explicitly.
+    Default ``layoutSource='persistent'`` reparses the ordinary word ASCII and renders its exact cells/routes. MODSUB
+    input ports are visibly numbered. ``fitToPage=(width,height)`` uniformly scales one complete figure to the usable
+    size in centimetres; default panels balance rows. Unsupported shapes fail explicitly.
 
-    The following overview/detail/table options apply only to explicit ``layoutSource='audit'``. Every export reparses its generated ASCII before presentation. Member/input-fragment/parameter tables retain all native operations and tags. ``audit=True`` adds complete local JSON; ``legend='none'`` omits member tables. ``anchorPrefix`` must be unique alphanumeric/hyphen text when combining diagrams.
+    The following overview/detail/table options apply only to explicit ``layoutSource='audit'``. Every export reparses
+    its generated ASCII before presentation. Member/input-fragment/parameter tables retain all native operations and
+    tags. ``audit=True`` adds complete local JSON; ``legend='none'`` omits member tables. ``anchorPrefix`` must be
+    unique alphanumeric/hyphen text when combining diagrams.
 
     Persistent options: ``key_side='right'`` or ``'left'``, ``word_bits=None`` for admitted uniform-word
     inference, ``operator_style='symbols'`` or ``'labels'``, and ``wire_borders=False`` (routing-cell frames
@@ -943,19 +1211,27 @@ def to_tikz(ir, **options):
     and can differ between round counts. Nonuniform selections, mixed widths and output permutations
     requiring another route fail explicitly. See ``word_tikz.render_model`` for presentation validation.
 
-    Wire options: ``rowsPerPanel=16``, ``columnsPerPanel=6``, ``maxPanels=256``, positive ``columnSpacing=3``/``rowSpacing=1``, and half-open ``rowRange``/``columnRange`` crops. Table options: ``tableLineBudget=42`` fixed 11-point baselines and ``maxPages=2048``; ``overviewStagesPerPanel=6`` limits summaries. ``pageBreaks=False`` lets the caller manage page separation. Crops affect wires, not the complete semantic tables.
+    Wire options: ``rowsPerPanel=16``, ``columnsPerPanel=6``, ``maxPanels=256``, positive
+    ``columnSpacing=3``/``rowSpacing=1``, and half-open ``rowRange``/``columnRange`` crops. Table options:
+    ``tableLineBudget=42`` fixed 11-point baselines and ``maxPages=2048``; ``overviewStagesPerPanel=6`` limits
+    summaries. ``pageBreaks=False`` lets the caller manage page separation. Crops affect wires, not the complete
+    semantic tables.
 
     INPUT:
 
     - ``ir`` -- **dictionary** or **Cipher**; supported computation
-    - ``options`` -- **keyword options**; in audit mode ``view`` selects ``overview-detail`` (default), ``overview``, ``detail`` or ``wires``; ``stageMode`` chooses generic ``round`` or ``layer`` summaries; ``strategy`` chooses the ASCII planner; ``layoutSource='human'`` reuses consolidated manual synthesis cells, while ``'audit'`` explicitly selects the diagnostic typed path; default ``'persistent'`` renders the exact validated ordinary word-view cells and routes, with ``key_side`` and explicit label/border/spacing controls
+    - ``options`` -- **keyword options**; in audit mode ``view`` selects ``overview-detail`` (default), ``overview``,
+      ``detail`` or ``wires``; ``stageMode`` chooses generic ``round`` or ``layer`` summaries; ``strategy`` chooses the
+      ASCII planner; ``layoutSource='human'`` reuses consolidated manual synthesis cells, while ``'audit'`` explicitly
+      selects the diagnostic typed path; default ``'persistent'`` renders the exact validated ordinary word-view cells
+      and routes, with ``key_side`` and explicit label/border/spacing controls
 
     OUTPUT:
 
-    A **string** inserted into a LaTeX document body with ``tikz``. Load ``hyperref`` for navigation; fallback commands work without it.
+    A **string** inserted into a LaTeX document body with ``tikz``. Load ``hyperref`` for navigation; fallback commands
+    work without it.
 
     RAISES:
-
     ``ValueError`` for invalid presentation options, unsupported semantics or exceeded panel/page bounds.
 
     EXAMPLES::
@@ -976,37 +1252,73 @@ def to_tikz(ir, **options):
         \begin{tikzpicture}[>=stealth]
     """
     from claasp.cipher_modules.diagram.glyphs import _encode_layout, _present_grid, decode
-    if not isinstance(ir, dict): ir=from_cipher(ir)
+
+    if not isinstance(ir, dict):
+        ir = from_cipher(ir)
     validate(ir)
     source = options.get('layoutSource', 'persistent')
     if source not in ('audit', 'human', 'persistent'):
         raise ValueError('Choose audit, human or persistent TikZ layoutSource')
     if source == 'persistent':
         from .word_tikz import to_tikz as persistent_tikz
+
         persistent_options = dict(options)
         persistent_options.pop('layoutSource', None)
         if persistent_options.pop('view', 'wires') != 'wires' or persistent_options.pop('legend', 'none') != 'none':
-            raise ValueError("Default persistent TikZ supports wires only; request layoutSource='audit' explicitly for diagnostic views/tables")
+            raise ValueError(
+                (
+                    "Default persistent TikZ supports wires only; request layoutSource='audit' explicitly for "
+                    "diagnostic views/tables"
+                )
+            )
         try:
             return persistent_tikz(ir, **persistent_options)
         except ValueError as error:
-            raise ValueError(f"Persistent TikZ unavailable: {error}; request layoutSource='audit' explicitly for a diagnostic graph") from error
+            raise ValueError(
+                f"Persistent TikZ unavailable: {error}; request layoutSource='audit' explicitly for a diagnostic graph"
+            ) from error
     if source == 'human':
         from claasp.cipher_modules.diagram.manual_blocks import _encode_layout as manual_layout
-        keys = ('word_bits', 'gathering', 'projection', 'lane_policy', 'native_bundles', 'parameter_refs', 'associative_reductions', 'alignment', 'layout_preference', 'operator_style', 'wire_borders',
-                'max_cells', 'max_calls', 'max_grid_area', 'max_text_bytes')
-        text, cells, dimensions = manual_layout(ir, strategy=options.get('strategy', 'semantic-auto'),
-            **{key: options[key] for key in keys if key in options})
+
+        keys = (
+            'word_bits',
+            'gathering',
+            'projection',
+            'lane_policy',
+            'native_bundles',
+            'parameter_refs',
+            'associative_reductions',
+            'alignment',
+            'layout_preference',
+            'operator_style',
+            'wire_borders',
+            'max_cells',
+            'max_calls',
+            'max_grid_area',
+            'max_text_bytes',
+        )
+        text, cells, dimensions = manual_layout(
+            ir,
+            strategy=options.get('strategy', 'semantic-auto'),
+            **{key: options[key] for key in keys if key in options},
+        )
         # The manual encoder already reparsed and compared its actual text.
         return _present_grid(ir, cells, dimensions, options)
     else:
-        if options.get('native_bundles', False) or options.get('parameter_refs', False) or options.get('associative_reductions', False):
-            raise ValueError('native_bundles, parameter_refs and associative_reductions require human TikZ layoutSource')
+        if (
+            options.get('native_bundles', False)
+            or options.get('parameter_refs', False)
+            or options.get('associative_reductions', False)
+        ):
+            raise ValueError(
+                'native_bundles, parameter_refs and associative_reductions require human TikZ layoutSource'
+            )
         text, cells, dimensions = _encode_layout(ir, strategy=options.get('strategy', 'semantic-auto'))
     recovered = validate(decode(text))
     if recovered != ir:
         raise ValueError('Vector source glyphs changed native IR')
     return _present_grid(recovered, cells, dimensions, options)
+
 
 def evaluate_state_values(cipher, inputs):
     r"""
@@ -1019,10 +1331,10 @@ def evaluate_state_values(cipher, inputs):
 
     OUTPUT:
 
-    A **dictionary** of input/component integer values. Reconstructed ciphers use their source-ID mapping; no cipher-specific state adapter is used.
+    A **dictionary** of input/component integer values. Reconstructed ciphers use their source-ID mapping; no
+    cipher-specific state adapter is used.
 
     RAISES:
-
     ``ValueError`` if the native evaluator does not expose component traces.
 
     EXAMPLES::
@@ -1039,32 +1351,48 @@ def evaluate_state_values(cipher, inputs):
     evaluated = cipher.evaluate(inputs, intermediate_output=True)
     if not isinstance(evaluated, tuple) or len(evaluated) != 3:
         raise ValueError('Native evaluator did not expose component traces')
-    native={**dict(zip(cipher.inputs, inputs)), **{identity: pair[1] for identity,pair in evaluated[2].items()}}
-    links=getattr(cipher, 'diagram_source_ids', None)
-    return {original:native[generated] for original,generated in links.items()} if links else native
+    native = {**dict(zip(cipher.inputs, inputs)), **{identity: pair[1] for identity, pair in evaluated[2].items()}}
+    links = getattr(cipher, 'diagram_source_ids', None)
+    return {original: native[generated] for original, generated in links.items()} if links else native
 
 
-def state_snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='source', values=None, comparison=None, granularity='round', key_side='right'):
+def state_snapshots(
+    ir,
+    *,
+    mode='declared',
+    word_bits=1,
+    columns=None,
+    order='source',
+    values=None,
+    comparison=None,
+    granularity='round',
+    key_side='right',
+):
     r"""
     Build observations, dependency frontiers, or a persistent generic word bank.
 
-    A frontier comprises values with future uses, not a guessed AES/Speck/etc. matrix. Bit selections are MSB-first. The example explicitly supplies a word grouping.
+    A frontier comprises values with future uses, not a guessed AES/Speck/etc. matrix. Bit selections are MSB-first. The
+    example explicitly supplies a word grouping.
 
     INPUT:
 
     - ``ir`` -- **dictionary**; supported graph
-    - ``mode`` -- **string** (default: ``'declared'``); ``declared``, ``round``, ``layer`` or ``word`` (persistent lanes)
+    - ``mode`` -- **string** (default: ``'declared'``); ``declared``, ``round``, ``layer`` or ``word`` (persistent
+      lanes)
     - ``word_bits`` -- positive **integer** (default: ``1``), or ``None`` to infer native/selection granularity;
       use ``None`` explicitly for automatic word mode. Other modes require a group width dividing each state.
     - ``columns`` -- positive **integer** (default: ``None``); explicit row-major display columns;
       with ``None`` use a flat bank and report shape ambiguity, never an inferred algorithmic matrix
-    - ``order`` -- **string** (default: ``'source'``); ``source`` or ``reverse`` source-bit order; word mode reverses whole words
-    - ``values`` -- **dictionary** (default: ``None``); evaluated values from ``evaluate_state_values``; absent values stay unknown
+    - ``order`` -- **string** (default: ``'source'``); ``source`` or ``reverse`` source-bit order; word mode reverses
+      whole words
+    - ``values`` -- **dictionary** (default: ``None``); evaluated values from ``evaluate_state_values``; absent values
+      stay unknown
     - ``granularity`` -- **string** (default: ``'round'``; word mode only); ``'round'`` shows initial/all
       native round boundaries with an intra-round omission label; ``'operation'`` includes every word operation
     - ``key_side`` -- **string** (default: ``'right'``; word mode only); persistent bank ordering, ``'right'``
       or ``'left'``. Key-word order follows first use and can differ between round counts.
-    - ``comparison`` -- **dictionary** (default: ``None``); second evaluated values; words show XOR differences when both dictionaries are supplied
+    - ``comparison`` -- **dictionary** (default: ``None``); second evaluated values; words show XOR differences when
+      both dictionaries are supplied
 
     OUTPUT:
 
@@ -1077,7 +1405,6 @@ def state_snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='so
     value, not a change from the previous snapshot. Mixed-width and selected-bit persistent shapes reject.
 
     RAISES:
-
     ``ValueError`` for invalid modes, shape/order parameters, indivisible words or missing/out-of-range values.
 
     EXAMPLES::
@@ -1095,22 +1422,35 @@ def state_snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='so
         sage: ir = from_cipher(small)
         sage: values = evaluate_state_values(small, list(map(int, [9, 3])))
         sage: from claasp.diagrams import state_snapshots
-        sage: [[word['value'] for word in frame['words']] for frame in state_snapshots(ir, word_bits=width, values=values)]
+        sage: [[word['value'] for word in frame['words']]
+        ....:  for frame in state_snapshots(ir, word_bits=width, values=values)]
         [[10], [5]]
-        sage: [[word['value'] for word in frame['words']] for frame in state_snapshots(ir, mode='round', word_bits=width, values=values)]
+        sage: [[word['value'] for word in frame['words']]
+        ....:  for frame in state_snapshots(ir, mode='round', word_bits=width, values=values)]
         [[9, 3], [10], [5]]
-        sage: [[word['value'] for word in frame['words']] for frame in state_snapshots(ir, mode='layer', word_bits=width, values=values)]
+        sage: [[word['value'] for word in frame['words']]
+        ....:  for frame in state_snapshots(ir, mode='layer', word_bits=width, values=values)]
         [[9, 3], [10], [5], [5]]
 
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-        sage: bank = state_snapshots(from_cipher(SpeckBlockCipher(number_of_rounds=int(1))), mode='word', word_bits=None)
+        sage: bank = state_snapshots(
+        ....:     from_cipher(SpeckBlockCipher(number_of_rounds=int(1))), mode='word', word_bits=None)
         sage: [len(frame['words']) for frame in bank]
         [6, 6]
         sage: bank[0]['shape_ambiguous'], bank[-1]['omitted_intra_round_steps']
         (True, True)
     """
-    return diagram_states.snapshots(ir, mode=mode, word_bits=word_bits, columns=columns,
-                                   order=order, values=values, comparison=comparison, granularity=granularity, key_side=key_side)
+    return diagram_states.snapshots(
+        ir,
+        mode=mode,
+        word_bits=word_bits,
+        columns=columns,
+        order=order,
+        values=values,
+        comparison=comparison,
+        granularity=granularity,
+        key_side=key_side,
+    )
 
 
 def state_ascii(ir, **options):
@@ -1120,7 +1460,8 @@ def state_ascii(ir, **options):
     INPUT:
 
     - ``ir`` -- **dictionary**; supported graph
-    - ``options`` -- **keyword options**; the same mode, word grouping, columns, order and value/comparison dictionaries as ``state_snapshots``
+    - ``options`` -- **keyword options**; the same mode, word grouping, columns, order and value/comparison dictionaries
+      as ``state_snapshots``
 
     OUTPUT:
 
@@ -1154,9 +1495,19 @@ def state_ascii(ir, **options):
     return diagram_states.ascii_states(ir, **options)
 
 
-def state_tikz(ir, *, cell_width=1, cell_height=.5, rows_per_panel=24,
-               columns_per_panel=12, frame_range=None, page_breaks=True,
-               max_panels=256, row_gap=.25, **options):
+def state_tikz(
+    ir,
+    *,
+    cell_width=1,
+    cell_height=0.5,
+    rows_per_panel=24,
+    columns_per_panel=12,
+    frame_range=None,
+    page_breaks=True,
+    max_panels=256,
+    row_gap=0.25,
+    **options,
+):
     r"""
     Render paginated generic state cells with separate index-label lanes.
 
@@ -1175,10 +1526,10 @@ def state_tikz(ir, *, cell_width=1, cell_height=.5, rows_per_panel=24,
 
     OUTPUT:
 
-    A **string** of TikZ pictures, retaining original cell indices across panels. Insert it in the document body, not in one float.
+    A **string** of TikZ pictures, retaining original cell indices across panels. Insert it in the document body, not in
+    one float.
 
     RAISES:
-
     ``ValueError`` for invalid spacing/ranges, incompatible states or excessive panels.
 
     EXAMPLES::
@@ -1202,7 +1553,15 @@ def state_tikz(ir, *, cell_width=1, cell_height=.5, rows_per_panel=24,
         sage: print(next(line for line in picture.splitlines() if 'fill=orange' in line))
         \node[draw,fill=orange!25,minimum width=1cm,minimum height=0.5cm] at (0,0.0) {a};
     """
-    return diagram_states.tikz_states(ir, cell_width=cell_width, cell_height=cell_height,
-                                     rows_per_panel=rows_per_panel, columns_per_panel=columns_per_panel,
-                                     frame_range=frame_range, page_breaks=page_breaks,
-                                     max_panels=max_panels, row_gap=row_gap, **options)
+    return diagram_states.tikz_states(
+        ir,
+        cell_width=cell_width,
+        cell_height=cell_height,
+        rows_per_panel=rows_per_panel,
+        columns_per_panel=columns_per_panel,
+        frame_range=frame_range,
+        page_breaks=page_breaks,
+        max_panels=max_panels,
+        row_gap=row_gap,
+        **options,
+    )

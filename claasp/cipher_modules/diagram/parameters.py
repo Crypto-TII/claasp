@@ -1,4 +1,5 @@
 """Visible parameter-only legends; no source IDs or dependency records."""
+
 import re
 
 START = '\n# CLAASP-HUMAN-PARAMETERS 1\n'
@@ -12,7 +13,11 @@ def facts(definition):
             raise ValueError('Parameter legend v1 requires an explicit hexadecimal or binary literal')
         return 'CONST', definition['bits'], 'literal', definition['description'][0]
     description = definition.get('description', [])
-    if definition.get('type') == 'word_operation' and description[0] in ('MODADD', 'MODSUB', 'MODMUL') and description[2] is not None:
+    if (
+        definition.get('type') == 'word_operation'
+        and description[0] in ('MODADD', 'MODSUB', 'MODMUL')
+        and description[2] is not None
+    ):
         if description[2] > 9007199254740991:
             raise ValueError('Parameter legend v1 modulus exceeds the interoperable exact integer range')
         return description[0], definition['bits'], 'modulus', description[2]
@@ -45,7 +50,11 @@ def assignments(ir):
     for ordinal, node in enumerate(ir['nodes']):
         description = node['description']
         long_constant = node['type'] == 'constant' and len('x' + format(int(description[0], 0), 'X')) > 14
-        explicit_modulus = node['type'] == 'word_operation' and description[0] in ('MODADD', 'MODSUB', 'MODMUL') and description[2] is not None
+        explicit_modulus = (
+            node['type'] == 'word_operation'
+            and description[0] in ('MODADD', 'MODSUB', 'MODMUL')
+            and description[2] is not None
+        )
         if long_constant or explicit_modulus:
             parameter = facts(node)
             if parameter not in by_facts:
@@ -67,8 +76,10 @@ def serialize(records):
         definitions[tag] = parameter
     if not definitions:
         return ''
-    lines = [f'{tag} {op} bits={bits} {field}={value}'
-             for tag, (op, bits, field, value) in sorted(definitions.items(), key=lambda item: int(item[0][1:], 36))]
+    lines = [
+        f'{tag} {op} bits={bits} {field}={value}'
+        for tag, (op, bits, field, value) in sorted(definitions.items(), key=lambda item: int(item[0][1:], 36))
+    ]
     return START + '\n'.join(lines) + END
 
 
@@ -79,8 +90,15 @@ def _entry(line):
         raise ValueError('Invalid visible parameter definition')
     tag, operation, encoded_width, encoded_value = tokens
     width_match = re.fullmatch(r'bits=([1-9]\d*)', encoded_width, flags=re.ASCII)
-    value_match = re.fullmatch(r'literal=(?:0[xX][\da-fA-F]+|0[bB][01]+)|modulus=[1-9]\d*', encoded_value, flags=re.ASCII)
-    if not re.fullmatch(r'P[0-9A-Z]{1,6}', tag) or operation not in ('CONST','MODADD','MODSUB','MODMUL') or not width_match or not value_match:
+    value_match = re.fullmatch(
+        r'literal=(?:0[xX][\da-fA-F]+|0[bB][01]+)|modulus=[1-9]\d*', encoded_value, flags=re.ASCII
+    )
+    if (
+        not re.fullmatch(r'P[0-9A-Z]{1,6}', tag)
+        or operation not in ('CONST', 'MODADD', 'MODSUB', 'MODMUL')
+        or not width_match
+        or not value_match
+    ):
         raise ValueError('Invalid visible parameter definition')
     valid_reference(tag)
     return tag, operation, width_match.group(1), encoded_value
@@ -113,7 +131,7 @@ def split(body):
         raise ValueError('Malformed parameter legend framing')
     grid, text = body.split(START)
     definitions = {}
-    for line in text[:-len(END)].split('\n'):
+    for line in text[: -len(END)].split('\n'):
         tag, operation, width, encoded_value = _entry(line)
         if tag in definitions:
             raise ValueError('Duplicate visible parameter definition')

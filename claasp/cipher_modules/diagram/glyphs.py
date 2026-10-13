@@ -3,6 +3,7 @@
 The 5-by-11 cell grammar is shared with the web editor. Placement never uses
 primitive names. This module has no external process or JavaScript dependency.
 """
+
 import copy
 import heapq
 import json
@@ -11,18 +12,19 @@ from collections import Counter
 
 MARKER = '\n# CLAASP-TYPED-GLYPH 1\n'
 SIDES = ('left', 'top', 'right', 'bottom')
-DELTA = {'left': (0,-1), 'right': (0,1), 'top': (-1,0), 'bottom': (1,0)}
-OPPOSITE = {'left':'right','right':'left','top':'bottom','bottom':'top'}
+DELTA = {'left': (0, -1), 'right': (0, 1), 'top': (-1, 0), 'bottom': (1, 0)}
+OPPOSITE = {'left': 'right', 'right': 'left', 'top': 'bottom', 'bottom': 'top'}
 
 
 def _center(text):
-    if len(text)>7: raise ValueError('Glyph label exceeds seven characters')
-    left=(7-len(text))//2
-    return ' '*left+text+' '*(7-len(text)-left)
+    if len(text) > 7:
+        raise ValueError('Glyph label exceeds seven characters')
+    left = (7 - len(text)) // 2
+    return ' ' * left + text + ' ' * (7 - len(text) - left)
 
 
 def _pipe(active):
-    return '     |     ' if active else ' '*11
+    return '     |     ' if active else ' ' * 11
 
 
 def _border(active):
@@ -33,19 +35,29 @@ def _input_art(cell):
     ports = cell['ports']
     label = '_______'
     if cell['kind'] == 'input' and not cell.get('unindexed'):
-        label = _center('I'+str(cell['index']+1))
+        label = _center('I' + str(cell['index'] + 1))
     marker = 'S' if cell.get('secret') else '|'
-    return [_pipe('top' in ports), _border('top' in ports),
-            ' '+marker+label+'| ', _pipe('bottom' in ports), _pipe('bottom' in ports)]
+    return [
+        _pipe('top' in ports),
+        _border('top' in ports),
+        ' ' + marker + label + '| ',
+        _pipe('bottom' in ports),
+        _pipe('bottom' in ports),
+    ]
 
 
 def _box_art(cell):
     ports = cell['ports']
-    binding = _center('@21') if cell.get('reverse') else ' '*7
+    binding = _center('@21') if cell.get('reverse') else ' ' * 7
     left = '>' if ports.get('left') == 'in' else ' '
     right = '<' if ports.get('right') == 'in' else ' '
-    return [_border('top' in ports), ' |'+binding+'| ',
-            left+'('+_center(cell['tag'])+')'+right, ' |_______| ', _pipe('bottom' in ports)]
+    return [
+        _border('top' in ports),
+        ' |' + binding + '| ',
+        left + '(' + _center(cell['tag']) + ')' + right,
+        ' |_______| ',
+        _pipe('bottom' in ports),
+    ]
 
 
 def _horizontal_span(middle, indices):
@@ -74,12 +86,16 @@ def _route_shape(cell, middle, horizontal_range):
     return middle
 
 
-
 def _invisible_art(cell):
-    middle = _route_shape(cell, list(' '*11), range(0, 11))
+    middle = _route_shape(cell, list(' ' * 11), range(0, 11))
     ports = cell['ports']
-    return [_pipe('top' in ports), _pipe('top' in ports), ''.join(middle),
-            _pipe('bottom' in ports), _pipe('bottom' in ports)]
+    return [
+        _pipe('top' in ports),
+        _pipe('top' in ports),
+        ''.join(middle),
+        _pipe('bottom' in ports),
+        _pipe('bottom' in ports),
+    ]
 
 
 def _arrow(side, direction):
@@ -97,9 +113,14 @@ def _visible_wire_art(cell):
     bottom = list(' |_______| ')
     if 'bottom' in ports:
         bottom[5] = '|'
-    top_connection = '   |   ' if 'top' in ports else ' '*7
-    return [_border('top' in ports), ' |'+top_connection+'| ',
-            ''.join(middle), ''.join(bottom), _pipe('bottom' in ports)]
+    top_connection = '   |   ' if 'top' in ports else ' ' * 7
+    return [
+        _border('top' in ports),
+        ' |' + top_connection + '| ',
+        ''.join(middle),
+        ''.join(bottom),
+        _pipe('bottom' in ports),
+    ]
 
 
 def _art(cell):
@@ -110,7 +131,6 @@ def _art(cell):
     if cell.get('invisible'):
         return _invisible_art(cell)
     return _visible_wire_art(cell)
-
 
 
 class _GlyphGraph:
@@ -134,15 +154,21 @@ class _GlyphGraph:
         alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         number, digits = self.serial, ''
         for _ in range(3):
-            digits = alphabet[number % 36]+digits
+            digits = alphabet[number % 36] + digits
             number //= 36
         if number:
             raise ValueError('Typed glyph alias capacity exceeded')
         self.serial += 1
-        tag = prefix+digits
+        tag = prefix + digits
         index = len(self.calls)
-        self.calls.append({'args': arguments, 'definition': dict(copy.deepcopy(definition), tag=tag),
-                           'tag': tag, 'bits': definition['bits']})
+        self.calls.append(
+            {
+                'args': arguments,
+                'definition': dict(copy.deepcopy(definition), tag=tag),
+                'tag': tag,
+                'bits': definition['bits'],
+            }
+        )
         return ('call', index)
 
     def width(self, value):
@@ -153,12 +179,12 @@ class _GlyphGraph:
     def join(self, parts):
         if len(parts) == 1:
             return parts[0]
-        middle = (len(parts)+1)//2
+        middle = (len(parts) + 1) // 2
         left, right = self.join(parts[:middle]), self.join(parts[middle:])
         key = (left, right)
         if self.port_selections and key in self.joined:
             return self.joined[key]
-        result = self.call('JN', [left, right], {'kind': 'join', 'bits': self.width(left)+self.width(right)})
+        result = self.call('JN', [left, right], {'kind': 'join', 'bits': self.width(left) + self.width(right)})
         if self.port_selections:
             self.joined[key] = result
         return result
@@ -189,7 +215,9 @@ class _GlyphGraph:
             return value
         key = (value, tuple(positions))
         if key not in self.selections:
-            self.selections[key] = self.call('BS', [value], {'kind': 'selection', 'bits': len(positions), 'positions': positions})
+            self.selections[key] = self.call(
+                'BS', [value], {'kind': 'selection', 'bits': len(positions), 'positions': positions}
+            )
         return self.selections[key]
 
     def port_positions(self, edge, arguments, offsets):
@@ -198,8 +226,8 @@ class _GlyphGraph:
             offsets[value] = self.argument_width
             self.argument_width += self.width(value)
             arguments.append(value)
-        offset = offsets[value]+self.source_offsets.get(edge['source'], 0)
-        return [offset+position for position in edge['positions']]
+        offset = offsets[value] + self.source_offsets.get(edge['source'], 0)
+        return [offset + position for position in edge['positions']]
 
     def member_definition(self, ordinal, node, arguments, offsets):
         local_positions = []
@@ -219,7 +247,7 @@ class _GlyphGraph:
         self.argument_width = 0
         definitions = [self.member_definition(ordinal, node, arguments, offsets) for ordinal, node in members]
         if len(arguments) > 2:
-            middle = (len(arguments)+1)//2
+            middle = (len(arguments) + 1) // 2
             arguments = [self.join(arguments[:middle]), self.join(arguments[middle:])]
         node = members[-1][1]
         name = node['type']
@@ -227,8 +255,15 @@ class _GlyphGraph:
             name = node['description'][0]
         prefix = re.sub('[^A-Za-z]', '', name)[:2].upper().ljust(2, 'N')
         if len(definitions) > 1:
-            value = self.call('G'+prefix[0], arguments, {'kind': 'parallel',
-                              'bits': sum(definition['bits'] for definition in definitions), 'members': definitions})
+            value = self.call(
+                'G' + prefix[0],
+                arguments,
+                {
+                    'kind': 'parallel',
+                    'bits': sum(definition['bits'] for definition in definitions),
+                    'members': definitions,
+                },
+            )
         else:
             value = self.call(prefix, arguments, dict(definitions[0], kind='native'))
         self.register_members(value, members)
@@ -250,7 +285,7 @@ class _GlyphGraph:
         while self.cursor < len(self.ir['nodes']):
             self.emit_members(self.next_members())
         consumed = {value for call in self.calls for value in call['args']}
-        for value in self.inputs+[('call', index) for index in range(len(self.calls))]:
+        for value in self.inputs + [('call', index) for index in range(len(self.calls))]:
             if value not in consumed and value not in self.targets:
                 self.targets.append(value)
         return self.inputs, self.calls, self.targets
@@ -258,7 +293,6 @@ class _GlyphGraph:
 
 def _graph(ir, *, port_selections=False, parallel=False):
     return _GlyphGraph(ir, port_selections, parallel).build()
-
 
 
 def _graph_limits(ir, strategy, max_cells, max_calls):
@@ -270,7 +304,7 @@ def _graph_limits(ir, strategy, max_cells, max_calls):
     if len(ir['nodes']) > max_calls:
         raise ValueError('Native component count exceeds max_calls')
     bits = sum(item['bits'] for item in ir['inputs'])
-    bits += sum(node['bits']+sum(len(edge['positions']) for edge in node['operands']) for node in ir['nodes'])
+    bits += sum(node['bits'] + sum(len(edge['positions']) for edge in node['operands']) for node in ir['nodes'])
     if bits > 2000000:
         raise ValueError('Native explicit bit expansion exceeds bound')
 
@@ -303,7 +337,7 @@ class _ReadyCalls:
     def __init__(self, calls, consumers, available, pending, observers, priority):
         self.calls, self.consumers, self.pending = calls, consumers, pending
         self.observers, self.priority = observers, priority
-        self.missing = [set(call['args'])-available for call in calls]
+        self.missing = [set(call['args']) - available for call in calls]
         self.ready, self.usable, self.eligible = [], [], set()
         for index, missing in enumerate(self.missing):
             if not missing:
@@ -311,8 +345,9 @@ class _ReadyCalls:
 
     def _constant_usable(self, index):
         value = ('call', index)
-        return any(consumer in self.pending and self.missing[consumer] == {value}
-                   for consumer in self.consumers.get(value, []))
+        return any(
+            consumer in self.pending and self.missing[consumer] == {value} for consumer in self.consumers.get(value, [])
+        )
 
     def _make_usable(self, index):
         if index not in self.eligible:
@@ -368,11 +403,12 @@ class _RegisterScheduler:
         self.active = set(self.slots.values())
         self.cells = {}
         self.row = 0
-        self.maximum = len(inputs)-1
+        self.maximum = len(inputs) - 1
         self.pending = set(range(len(calls)))
         self.observers = set(targets)
-        self.ready_calls = _ReadyCalls(calls, self.consumers, set(self.slots), self.pending,
-                                      self.observers, self.priority)
+        self.ready_calls = _ReadyCalls(
+            calls, self.consumers, set(self.slots), self.pending, self.observers, self.priority
+        )
 
     def place(self, col, kind, ports, **data):
         key = (self.row, col)
@@ -383,15 +419,15 @@ class _RegisterScheduler:
         self.cells[key] = dict(kind=kind, ports=ports, **data)
 
     def fill(self, occupied):
-        for col in sorted(self.active-occupied):
+        for col in sorted(self.active - occupied):
             self.place(col, 'wire', {'top': 'in', 'bottom': 'out'})
 
     def free(self, near=0):
-        candidates = [col for col in range(self.maximum+2) if col not in self.active]
+        candidates = [col for col in range(self.maximum + 2) if col not in self.active]
         if self.strategy == 'direct-bus':
-            col = self.maximum+1
+            col = self.maximum + 1
         else:
-            col = min(candidates, key=lambda candidate: (abs(candidate-near), candidate))
+            col = min(candidates, key=lambda candidate: (abs(candidate - near), candidate))
         self.maximum = max(self.maximum, col)
         return col
 
@@ -401,7 +437,7 @@ class _RegisterScheduler:
         if keep:
             ports['bottom'] = 'out'
         self.place(source, 'fork' if keep else 'wire', ports)
-        for col in range(min(source, target)+1, max(source, target)):
+        for col in range(min(source, target) + 1, max(source, target)):
             ports = {'left': 'in', 'right': 'out'} if side == 'right' else {'right': 'in', 'left': 'out'}
             if col in self.active:
                 ports.update(top='in', bottom='out')
@@ -411,8 +447,14 @@ class _RegisterScheduler:
     def seed_inputs(self):
         for value in self.inputs:
             item = self.ir['inputs'][value[1]]
-            self.place(self.slots[value], 'input', {'bottom': 'out'}, index=value[1], secret=item['role'] == 'key',
-                       definition=dict(item, kind='input', index=value[1]))
+            self.place(
+                self.slots[value],
+                'input',
+                {'bottom': 'out'},
+                index=value[1],
+                secret=item['role'] == 'key',
+                definition=dict(item, kind='input', index=value[1]),
+            )
         self.row += 1
 
     def next_call(self):
@@ -429,7 +471,7 @@ class _RegisterScheduler:
         keep = self.uses[arguments[0]] > 1
         side = self.horizontal(old[0], target, keep)
         self.place(target, 'wire', {side: 'in', 'bottom': 'out'})
-        self.fill(set(range(min(old[0], target), max(old[0], target)+1)))
+        self.fill(set(range(min(old[0], target), max(old[0], target) + 1)))
         self.row += 1
         if not keep:
             self.active.discard(old[0])
@@ -447,13 +489,19 @@ class _RegisterScheduler:
         return self.copy_first(arguments, old), 0
 
     def binary_box(self, call, arguments, old, target, replacement):
-        source = old[1-replacement]
-        value = arguments[1-replacement]
+        source = old[1 - replacement]
+        value = arguments[1 - replacement]
         side = self.horizontal(source, target, self.uses[value] > arguments.count(value))
-        physical = [1-replacement, replacement] if side == 'left' else [replacement, 1-replacement]
-        self.place(target, 'box', {'top': 'in', side: 'in', 'bottom': 'out'},
-                   tag=call['tag'], definition=call['definition'], reverse=physical != [0, 1])
-        self.fill(set(range(min(source, target), max(source, target)+1)))
+        physical = [1 - replacement, replacement] if side == 'left' else [replacement, 1 - replacement]
+        self.place(
+            target,
+            'box',
+            {'top': 'in', side: 'in', 'bottom': 'out'},
+            tag=call['tag'],
+            definition=call['definition'],
+            reverse=physical != [0, 1],
+        )
+        self.fill(set(range(min(source, target), max(source, target) + 1)))
 
     def emit_box(self, call, arguments, old, target, replacement):
         if len(arguments) == 2:
@@ -517,30 +565,38 @@ class _RegisterScheduler:
         cells = self.cells
         if self.strategy != 'direct-bus':
             cells = compact_tracks(cells, max_cells=self.max_cells)
-        report = {'rows': max(row for row, col in cells)+1, 'cols': max(col for row, col in cells)+1,
-                  'blocks': len(cells), 'pattern': 'live-register-program', 'strategy': self.strategy}
+        report = {
+            'rows': max(row for row, col in cells) + 1,
+            'cols': max(col for row, col in cells) + 1,
+            'blocks': len(cells),
+            'pattern': 'live-register-program',
+            'strategy': self.strategy,
+        }
         return cells, report
 
 
 def _build_grid(ir, *, strategy='semantic-legacy', max_cells=1000000, max_calls=20000):
     _graph_limits(ir, strategy, max_cells, max_calls)
-    inputs, calls, targets = _graph(ir, port_selections=strategy in ('semantic-ports', 'semantic-parallel', 'semantic-round'),
-                                   parallel=strategy in ('semantic-parallel', 'semantic-round'))
+    inputs, calls, targets = _graph(
+        ir,
+        port_selections=strategy in ('semantic-ports', 'semantic-parallel', 'semantic-round'),
+        parallel=strategy in ('semantic-parallel', 'semantic-round'),
+    )
     if len(calls) > max_calls:
         raise ValueError('Native operation expansion exceeds max_calls')
     return _RegisterScheduler(ir, inputs, calls, targets, strategy, max_cells).build()
 
 
-
 def build_grid(ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000):
-    if strategy!='semantic-auto':return _build_grid(ir,strategy=strategy,max_cells=max_cells,max_calls=max_calls)
+    if strategy != 'semantic-auto':
+        return _build_grid(ir, strategy=strategy, max_cells=max_cells, max_calls=max_calls)
     best = None
     errors = []
     for index, variant in enumerate(('semantic-legacy', 'semantic-ports', 'semantic-parallel', 'semantic-round')):
         try:
             cells, report = _build_grid(ir, strategy=variant, max_cells=max_cells, max_calls=max_calls)
-            area = report['rows']*report['cols']
-            candidate = ((area+report['blocks'], area, report['blocks']), index, cells, report)
+            area = report['rows'] * report['cols']
+            candidate = ((area + report['blocks'], area, report['blocks']), index, cells, report)
             if best is None or candidate[:2] < best[:2]:
                 best = candidate
             # Retain only the winner before constructing another full grid.
@@ -567,7 +623,7 @@ def _horizontal_groups(items):
     groups = []
     for col, cell in items:
         previous = groups[-1][-1] if groups else None
-        connected = previous and previous[0]+1 == col
+        connected = previous and previous[0] + 1 == col
         shared_ports = previous and ('right' in previous[1]['ports'] or 'left' in cell['ports'])
         if connected and shared_ports:
             groups[-1].append((col, cell))
@@ -581,12 +637,12 @@ def _vertical_gap(output, col, cell, prior, target):
         return
     if prior[1]['ports'].get('bottom') != 'out' or cell['ports'].get('top') != 'in':
         return
-    for row in range(prior[0]+1, target):
+    for row in range(prior[0] + 1, target):
         output[(row, col)] = {'kind': 'wire', 'ports': {'top': 'in', 'bottom': 'out'}}
 
 
 def _compact_group(group, output, last, maximum):
-    target = max((last.get(col, (-1, None))[0]+1 for col, cell in group), default=0)
+    target = max((last.get(col, (-1, None))[0] + 1 for col, cell in group), default=0)
     for col, cell in group:
         _vertical_gap(output, col, cell, last.get(col), target)
         output[(target, col)] = copy.deepcopy(cell)
@@ -604,60 +660,77 @@ def compact_tracks(cells, *, max_cells=1000000):
     return output
 
 
-
-def render_grid(cells,dimensions):
-    records=[];lines=[]
+def render_grid(cells, dimensions):
+    records = []
+    lines = []
     for r in range(dimensions['rows']):
-        art=[_art(cells[(r,c)]) if (r,c) in cells else [' '*11]*5 for c in range(dimensions['cols'])]
+        art = [_art(cells[(r, c)]) if (r, c) in cells else [' ' * 11] * 5 for c in range(dimensions['cols'])]
         lines.extend(''.join(a[y] for a in art) for y in range(5))
-    for (r,c),cell in sorted(cells.items()):
-        if 'definition' in cell:records.append({'row':r,'col':c,'definition':copy.deepcopy(cell['definition'])})
-    return '\n'.join(lines),records
+    for (r, c), cell in sorted(cells.items()):
+        if 'definition' in cell:
+            records.append({'row': r, 'col': c, 'definition': copy.deepcopy(cell['definition'])})
+    return '\n'.join(lines), records
 
 
-def _encode_layout(ir, *, strategy='semantic-auto', max_cells=1000000,
-           max_calls=20000, max_grid_area=2000000, max_text_bytes=64000000):
-    if any(type(v) is not int or v<=0 for v in (max_grid_area,max_text_bytes)):
+def _encode_layout(
+    ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000, max_grid_area=2000000, max_text_bytes=64000000
+):
+    if any(type(v) is not int or v <= 0 for v in (max_grid_area, max_text_bytes)):
         raise ValueError('Invalid native output bounds')
-    cells,dimensions=build_grid(ir,strategy=strategy,max_cells=max_cells,max_calls=max_calls)
-    area=dimensions['rows']*dimensions['cols']
-    if area>max_grid_area:raise ValueError('Native rectangular grid exceeds max_grid_area')
-    records=[{'row':r,'col':c,'definition':copy.deepcopy(cell['definition'])}
-             for (r,c),cell in sorted(cells.items()) if 'definition' in cell]
-    primitive={k:copy.deepcopy(v) for k,v in ir.items() if k not in ('inputs','nodes')}
-    footer=json.dumps({'primitive':primitive,'records':records},separators=(',',':'))
+    cells, dimensions = build_grid(ir, strategy=strategy, max_cells=max_cells, max_calls=max_calls)
+    area = dimensions['rows'] * dimensions['cols']
+    if area > max_grid_area:
+        raise ValueError('Native rectangular grid exceeds max_grid_area')
+    records = [
+        {'row': r, 'col': c, 'definition': copy.deepcopy(cell['definition'])}
+        for (r, c), cell in sorted(cells.items())
+        if 'definition' in cell
+    ]
+    primitive = {k: copy.deepcopy(v) for k, v in ir.items() if k not in ('inputs', 'nodes')}
+    footer = json.dumps({'primitive': primitive, 'records': records}, separators=(',', ':'))
     # The full rectangle includes blank cells, not just occupied glyphs.
-    estimated_bytes=area*55+dimensions['rows']*5-1+len(MARKER)+len(footer.encode('utf8'))+1
-    if estimated_bytes>max_text_bytes:raise ValueError('Native glyph export exceeds max_text_bytes')
-    text,_=render_grid(cells,dimensions)
-    return text+MARKER+footer+'\n', cells, dimensions
+    estimated_bytes = area * 55 + dimensions['rows'] * 5 - 1 + len(MARKER) + len(footer.encode('utf8')) + 1
+    if estimated_bytes > max_text_bytes:
+        raise ValueError('Native glyph export exceeds max_text_bytes')
+    text, _ = render_grid(cells, dimensions)
+    return text + MARKER + footer + '\n', cells, dimensions
 
 
-def encode(ir, *, strategy='semantic-auto', max_cells=1000000,
-           max_calls=20000, max_grid_area=2000000, max_text_bytes=64000000):
-    text, _, _ = _encode_layout(ir, strategy=strategy, max_cells=max_cells,
-                               max_calls=max_calls, max_grid_area=max_grid_area,
-                               max_text_bytes=max_text_bytes)
+def encode(
+    ir, *, strategy='semantic-auto', max_cells=1000000, max_calls=20000, max_grid_area=2000000, max_text_bytes=64000000
+):
+    text, _, _ = _encode_layout(
+        ir,
+        strategy=strategy,
+        max_cells=max_cells,
+        max_calls=max_calls,
+        max_grid_area=max_grid_area,
+        max_text_bytes=max_text_bytes,
+    )
     return text
 
 
 def _wire_templates():
-    result={}
-    routes=[{'top':'in','bottom':'out'},{'left':'in','right':'out'},{'right':'in','left':'out'}]
-    for side in ('left','right'):
-        routes.extend([{'top':'in',side:'out'},{side:'in','bottom':'out'},{'top':'in',side:'out','bottom':'out'}])
-    for side in ('left','right'):routes.append({'top':'in','bottom':'out',side:'in',OPPOSITE[side]:'out'})
+    result = {}
+    routes = [{'top': 'in', 'bottom': 'out'}, {'left': 'in', 'right': 'out'}, {'right': 'in', 'left': 'out'}]
+    for side in ('left', 'right'):
+        routes.extend(
+            [{'top': 'in', side: 'out'}, {side: 'in', 'bottom': 'out'}, {'top': 'in', side: 'out', 'bottom': 'out'}]
+        )
+    for side in ('left', 'right'):
+        routes.append({'top': 'in', 'bottom': 'out', side: 'in', OPPOSITE[side]: 'out'})
     for ports in routes:
-        kind={4:'cross',3:'fork'}.get(len(ports),'wire')
-        for invisible in (False,True):
-            cell={'kind':kind,'ports':ports,'invisible':invisible};result.setdefault(tuple(_art(cell)),[]).append(cell)
+        kind = {4: 'cross', 3: 'fork'}.get(len(ports), 'wire')
+        for invisible in (False, True):
+            cell = {'kind': kind, 'ports': ports, 'invisible': invisible}
+            result.setdefault(tuple(_art(cell)), []).append(cell)
     return result
 
 
 def decode(text, *, max_text_bytes=64000000, max_grid_area=2000000):
     from claasp.cipher_modules.diagram.parser import decode as parse_visible_glyphs
-    return parse_visible_glyphs(text, max_text_bytes=max_text_bytes, max_grid_area=max_grid_area)
 
+    return parse_visible_glyphs(text, max_text_bytes=max_text_bytes, max_grid_area=max_grid_area)
 
 
 _BOX_KINDS = ('input', 'box', 'output', 'tap', 'note')
@@ -678,40 +751,55 @@ def _wire_options(options, dimensions):
     xs, ys = options.get('columnSpacing', 3), options.get('rowSpacing', 1)
     if not isinstance(xs, (int, float)) or xs <= 0 or not isinstance(ys, (int, float)) or ys <= 0:
         raise ValueError('Invalid TikZ spacing')
-    rows, columns, maximum = options.get('rowsPerPanel', 16), options.get('columnsPerPanel', 6), options.get('maxPanels', 256)
+    rows, columns, maximum = (
+        options.get('rowsPerPanel', 16),
+        options.get('columnsPerPanel', 6),
+        options.get('maxPanels', 256),
+    )
     if any(type(value) is not int or value <= 0 for value in (rows, columns, maximum)):
         raise ValueError('Invalid TikZ pagination')
     top, bottom = _crop(options, 'rowRange', dimensions['rows'])
     left, right = _crop(options, 'columnRange', dimensions['cols'])
-    return {'xs': xs, 'ys': ys, 'rows': rows, 'columns': columns, 'maximum': maximum,
-            'top': top, 'bottom': bottom, 'left': left, 'right': right}
+    return {
+        'xs': xs,
+        'ys': ys,
+        'rows': rows,
+        'columns': columns,
+        'maximum': maximum,
+        'top': top,
+        'bottom': bottom,
+        'left': left,
+        'right': right,
+    }
 
 
 def _panel_groups(cells, options):
     groups = {}
     for (row, col), cell in sorted(cells.items()):
         if options['top'] <= row < options['bottom'] and options['left'] <= col < options['right']:
-            panel = ((row-options['top'])//options['rows'], (col-options['left'])//options['columns'])
+            panel = ((row - options['top']) // options['rows'], (col - options['left']) // options['columns'])
             groups.setdefault(panel, []).append((row, col, cell))
     return groups
 
 
 def _native_label(definition, registry):
     from claasp.cipher_modules.diagram.presentation import operation
+
     kind = definition.get('type')
     if kind in ('cipher_output', 'intermediate_output'):
         name = {'cipher_output': 'OUT', 'intermediate_output': 'OBSERVE'}[kind]
-        return name+'/'+str(definition.get('bits', '?'))
+        return name + '/' + str(definition.get('bits', '?'))
     return operation(definition, registry, short=True)
 
 
 def _reduction_label(definition, registry):
     # A visible member is binary; the group metadata retains native arity.
     from .manual_blocks import _base36
+
     local = dict(definition, description=list(definition['description']))
     local['description'][1] = 2
-    reference = 'G'+_base36(definition['ordinal'])+'.R'+_base36(definition['step'])
-    return _native_label(local, registry)+' '+reference
+    reference = 'G' + _base36(definition['ordinal']) + '.R' + _base36(definition['step'])
+    return _native_label(local, registry) + ' ' + reference
 
 
 def _input_cell_label(cell, definition):
@@ -719,11 +807,12 @@ def _input_cell_label(cell, definition):
     bits = len(definition['positions']) if 'positions' in definition else definition.get('bits', '?')
     if bits == 0:
         name, bits = 'UNUSED', definition['bits']
-    index = 'I'+str(definition['native_index'])+' ' if 'native_index' in definition else ''
-    label = index+name+'/'+str(bits)
+    index = 'I' + str(definition['native_index']) + ' ' if 'native_index' in definition else ''
+    label = index + name + '/' + str(bits)
     if definition.get('positions') and len(definition['positions']) != definition['bits']:
         from claasp.cipher_modules.diagram.presentation import selections as bit_positions
-        label += r'\\'+bit_positions(definition['positions'])
+
+        label += r'\\' + bit_positions(definition['positions'])
     return label
 
 
@@ -731,12 +820,13 @@ def _label_with_binding(label, cell, key, definition):
     if cell.get('reverse') and 'operand_ports' not in definition:
         label += r'\\@21'
     if 'definition' in cell:
-        label += r'\\'+key
+        label += r'\\' + key
     return label
 
 
 def _cell_label(cell, key, registry):
     from claasp.cipher_modules.diagram.presentation import operation
+
     definition = cell.get('definition', {})
     kind = definition.get('kind')
     if cell['kind'] == 'note':
@@ -744,21 +834,22 @@ def _cell_label(cell, key, registry):
     if cell['kind'] == 'input':
         label = _input_cell_label(cell, definition)
     elif kind == 'parallel':
-        label = operation(definition['members'][0], registry, short=True)+' x'+str(len(definition['members']))
+        label = operation(definition['members'][0], registry, short=True) + ' x' + str(len(definition['members']))
     elif kind == 'native':
         label = _native_label(definition, registry)
     elif kind == 'native_reduce':
         label = _reduction_label(definition, registry)
     elif kind == 'native_fragment':
         from claasp.cipher_modules.diagram.presentation import selections
+
         local = dict(definition, bits=len(definition['positions']))
-        label = _native_label(local, registry)+r'\\'+'word '+selections(definition['positions'])
+        label = _native_label(local, registry) + r'\\' + 'word ' + selections(definition['positions'])
     elif kind == 'native_boundary':
-        label = ('OUT' if definition['type'] == 'cipher_output' else 'OBS')+'/'+str(len(definition['positions']))
+        label = ('OUT' if definition['type'] == 'cipher_output' else 'OBS') + '/' + str(len(definition['positions']))
     elif kind == 'discard':
-        label = 'DEAD/'+str(definition['bits'])
+        label = 'DEAD/' + str(definition['bits'])
     elif kind in ('join', 'selection'):
-        label = {'join': 'PACK', 'selection': 'SELECT'}[kind]+'/'+str(definition['bits'])
+        label = {'join': 'PACK', 'selection': 'SELECT'}[kind] + '/' + str(definition['bits'])
     else:
         label = cell['kind']
     return _label_with_binding(label, cell, key, definition)
@@ -766,9 +857,13 @@ def _cell_label(cell, key, registry):
 
 def _box_node(row, col, cell, x, y, registry):
     from claasp.cipher_modules.diagram.presentation import escape
+
     label = _cell_label(cell, f'D{row}:{col}', registry)
-    escaped = escape(label).replace(escape(chr(92)*2), chr(92)*2)
-    return fr'\node[draw,align=center,minimum width=12mm,minimum height=4mm,font=\scriptsize] (N{row}x{col}) at ({x},{y}) {{{escaped}}};'
+    escaped = escape(label).replace(escape(chr(92) * 2), chr(92) * 2)
+    return (
+        rf'\node[draw,align=center,minimum width=12mm,minimum height=4mm,font=\scriptsize] (N{row}x{col}) at ({x},{y}) '
+        rf'{{{escaped}}};'
+    )
 
 
 def _numbered_ports(row, col, cell):
@@ -776,35 +871,45 @@ def _numbered_ports(row, col, cell):
     ordered = local_order if local_order is not None else [side for side in SIDES if cell['ports'].get(side) == 'in']
     if local_order is None and cell.get('reverse'):
         ordered.reverse()
-    return [fr'\node[font=\scriptsize,inner sep=2pt,anchor={_LABEL_ANCHORS[side]}] at (N{row}x{col}.{_PORT_ANCHORS[side]}) {{{number}}};'
-            for number, side in enumerate(ordered, 1)]
+    return [
+        (
+            rf'\node[font=\scriptsize,inner sep=2pt,anchor={_LABEL_ANCHORS[side]}] at (N{row}x{col}.'
+            rf'{_PORT_ANCHORS[side]}) {{{number}}};'
+        )
+        for number, side in enumerate(ordered, 1)
+    ]
 
 
 def _inside_panel(row, col, top, left, options):
-    return (top <= row < min(top+options['rows'], options['bottom'])
-            and left <= col < min(left+options['columns'], options['right']))
+    return top <= row < min(top + options['rows'], options['bottom']) and left <= col < min(
+        left + options['columns'], options['right']
+    )
 
 
 def _segment(cells, row, col, cell, side, x, y, top, left, options):
     dr, dc = DELTA[side]
-    nx, ny = x+dc*options['xs'], y-dr*options['ys']
+    nx, ny = x + dc * options['xs'], y - dr * options['ys']
     source = f'({x},{y})'
     if cell['kind'] in _BOX_KINDS:
         source = f'(N{row}x{col}.{_PORT_ANCHORS[side]})'
-    neighbor = cells.get((row+dr, col+dc), {})
+    neighbor = cells.get((row + dr, col + dc), {})
     target = f'({nx},{ny})'
-    if _inside_panel(row+dr, col+dc, top, left, options) and neighbor.get('kind') in _BOX_KINDS:
-        target = f'(N{row+dr}x{col+dc}.{_PORT_ANCHORS[OPPOSITE[side]]})'
-    return fr'\draw[->] {source} -- {target};'
+    if _inside_panel(row + dr, col + dc, top, left, options) and neighbor.get('kind') in _BOX_KINDS:
+        target = f'(N{row + dr}x{col + dc}.{_PORT_ANCHORS[OPPOSITE[side]]})'
+    return rf'\draw[->] {source} -- {target};'
 
 
 def _cell_segments(cells, row, col, cell, x, y, top, left, options):
     if cell['kind'] == 'swap':
         partner = cell['partner']
-        nx, ny = (partner-left)*options['xs'], y-options['ys']
-        neighbor = cells.get((row+1, partner), {})
-        target = f'(N{row+1}x{partner}.north)' if _inside_panel(row+1, partner, top, left, options) and neighbor.get('kind') in _BOX_KINDS else f'({nx},{ny})'
-        return [fr'\draw[->,preaction={{draw=white,line width=2pt}}] ({x},{y}) to[out=-90,in=90] {target};']
+        nx, ny = (partner - left) * options['xs'], y - options['ys']
+        neighbor = cells.get((row + 1, partner), {})
+        target = (
+            f'(N{row + 1}x{partner}.north)'
+            if _inside_panel(row + 1, partner, top, left, options) and neighbor.get('kind') in _BOX_KINDS
+            else f'({nx},{ny})'
+        )
+        return [rf'\draw[->,preaction={{draw=white,line width=2pt}}] ({x},{y}) to[out=-90,in=90] {target};']
     outgoing = [side for side, direction in cell['ports'].items() if direction == 'out']
     if cell['kind'] == 'cross':
         outgoing.sort(key=lambda side: side in ('left', 'right'))
@@ -815,16 +920,16 @@ def _cell_segments(cells, row, col, cell, x, y, top, left, options):
             segment = segment.replace(r'\draw[->]', r'\draw[->,preaction={draw=white,line width=2pt}]')
         segments.append(segment)
     if cell['kind'] == 'fork':
-        segments.append(fr'\fill ({x},{y}) circle (0.7pt);')
+        segments.append(rf'\fill ({x},{y}) circle (0.7pt);')
     return segments
 
 
 def _wire_panel(cells, panel, items, options, registry):
-    top = options['top']+panel[0]*options['rows']
-    left = options['left']+panel[1]*options['columns']
+    top = options['top'] + panel[0] * options['rows']
+    left = options['left'] + panel[1] * options['columns']
     lines, drawings = [r'\begin{tikzpicture}[>=stealth]'], []
     for row, col, cell in items:
-        x, y = (col-left)*options['xs'], -(row-top)*options['ys']
+        x, y = (col - left) * options['xs'], -(row - top) * options['ys']
         if cell['kind'] in _BOX_KINDS:
             lines.append(_box_node(row, col, cell, x, y, registry))
         if cell['kind'] == 'box':
@@ -837,6 +942,7 @@ def _wire_panel(cells, panel, items, options, registry):
 
 def _present_grid(ir, cells, dimensions, options):
     from claasp.cipher_modules.diagram.presentation import parameter_registry, present
+
     view, legend = options.get('view', 'overview-detail'), options.get('legend', 'readable')
     if view not in ('overview', 'detail', 'overview-detail', 'wires') or legend not in ('readable', 'audit', 'none'):
         raise ValueError('Invalid TikZ presentation mode')
@@ -846,7 +952,7 @@ def _present_grid(ir, cells, dimensions, options):
         registry = {key: value[0] for key, value in parameter_registry(ir).items()}
         groups = _panel_groups(cells, wire_options)
         if len(groups) > wire_options['maximum']:
-            raise ValueError(f"TikZ needs {len(groups)} panels; crop or increase maxPanels")
+            raise ValueError(f'TikZ needs {len(groups)} panels; crop or increase maxPanels')
         panels = [_wire_panel(cells, panel, items, wire_options, registry) for panel, items in sorted(groups.items())]
     return present(ir, cells, panels, options)
 

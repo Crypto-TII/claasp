@@ -7,13 +7,14 @@ def _unary_row(cells):
         return None
     column, cell = boxes[0]
     definition = cell['definition']
-    if (definition['type'] != 'word_operation'
-            or definition['description'][0] not in ('ROTATE', 'SHIFT', 'NOT')
-            or cell['ports'] != {'top': 'in', 'bottom': 'out'}):
+    if (
+        definition['type'] != 'word_operation'
+        or definition['description'][0] not in ('ROTATE', 'SHIFT', 'NOT')
+        or cell['ports'] != {'top': 'in', 'bottom': 'out'}
+    ):
         return None
     for other_column, other in cells.items():
-        if other_column != column and (other['kind'] != 'wire'
-                or other['ports'] != {'top': 'in', 'bottom': 'out'}):
+        if other_column != column and (other['kind'] != 'wire' or other['ports'] != {'top': 'in', 'bottom': 'out'}):
             return None
     return column, (definition['round'], definition['bits'], tuple(definition['description']))
 
@@ -34,13 +35,23 @@ def compact(model, maximum):
     groups = []
     for row in range(model['rows']):
         candidate = _unary_row(rows.get(row, {}))
-        if (candidate and groups and groups[-1]['signature'] == candidate[1]
-                and candidate[0] not in groups[-1]['columns'] and len(groups[-1]['rows']) < maximum):
+        if (
+            candidate
+            and groups
+            and groups[-1]['signature'] == candidate[1]
+            and candidate[0] not in groups[-1]['columns']
+            and len(groups[-1]['rows']) < maximum
+        ):
             groups[-1]['rows'].append(row)
             groups[-1]['columns'].add(candidate[0])
         else:
-            groups.append({'rows': [row], 'columns': {candidate[0]} if candidate else set(),
-                           'signature': candidate[1] if candidate else None})
+            groups.append(
+                {
+                    'rows': [row],
+                    'columns': {candidate[0]} if candidate else set(),
+                    'signature': candidate[1] if candidate else None,
+                }
+            )
     mapping = {old: new for new, group in enumerate(groups) for old in group['rows']}
     cells = {}
     for (row, column), cell in sorted(model['cells'].items()):

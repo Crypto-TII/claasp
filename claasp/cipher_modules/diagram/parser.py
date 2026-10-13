@@ -1,4 +1,5 @@
 """Recover ordered bit streams from visible glyphs and local definitions."""
+
 import copy
 import json
 from collections import deque
@@ -6,7 +7,18 @@ from claasp.cipher_modules.diagram.glyphs import MARKER, SIDES, DELTA, OPPOSITE,
 
 _RECORD_FIELDS = {
     'input': {'kind', 'index', 'id', 'bits', 'role'},
-    'native': {'kind', 'ordinal', 'id', 'type', 'bits', 'input_bits', 'round', 'description', 'tag', 'operand_positions'},
+    'native': {
+        'kind',
+        'ordinal',
+        'id',
+        'type',
+        'bits',
+        'input_bits',
+        'round',
+        'description',
+        'tag',
+        'operand_positions',
+    },
     'parallel': {'kind', 'bits', 'tag', 'members'},
     'selection': {'kind', 'bits', 'positions', 'tag'},
     'join': {'kind', 'bits', 'tag'},
@@ -32,7 +44,7 @@ def _member_expansion(member):
         raise ValueError('Invalid native bit expansion')
     if any(type(member.get(field)) is not int or member[field] < 0 for field in ('bits', 'input_bits')):
         raise ValueError('Invalid native bit expansion')
-    return member['bits']+member['input_bits']
+    return member['bits'] + member['input_bits']
 
 
 def _aggregate_bounds(records):
@@ -59,7 +71,7 @@ def _record_map(records):
             raise ValueError('Invalid glyph anchor')
         if type(definition.get('bits')) is not int or not 0 < definition['bits'] <= 2000000:
             raise ValueError('Local bit width exceeds work bound')
-        if key in result or set(definition)-_RECORD_FIELDS.get(definition.get('kind'), set()):
+        if key in result or set(definition) - _RECORD_FIELDS.get(definition.get('kind'), set()):
             raise ValueError('Duplicate or hidden dependency record')
         result[key] = definition
     return result
@@ -79,22 +91,27 @@ def _framing(text, maximum_bytes, maximum_area):
     _aggregate_bounds(manifest['records'])
     records = _record_map(manifest['records'])
     lines = drawing.split('\n')
-    rows, cols = (len(lines)+4)//5, (max(map(len, lines), default=0)+10)//11
+    rows, cols = (len(lines) + 4) // 5, (max(map(len, lines), default=0) + 10) // 11
     if len(lines) % 5:
         raise ValueError('Glyph line count must be a multiple of five')
-    if rows*cols > maximum_area:
+    if rows * cols > maximum_area:
         raise ValueError('Glyph grid exceeds max_grid_area')
     return manifest, records, lines, rows, cols
 
 
 def _cell_art(lines, row, col, cols):
-    return tuple(lines[row*5+index].ljust(cols*11)[col*11:(col+1)*11] for index in range(5))
+    return tuple(lines[row * 5 + index].ljust(cols * 11)[col * 11: (col + 1) * 11] for index in range(5))
 
 
 def _input_cell(definition, art):
-    return {'kind': 'input', 'ports': {'bottom': 'out'}, 'index': definition['index'],
-            'secret': definition['role'] == 'key', 'definition': definition,
-            'unindexed': art[2][2:9] == '_______'}
+    return {
+        'kind': 'input',
+        'ports': {'bottom': 'out'},
+        'index': definition['index'],
+        'secret': definition['role'] == 'key',
+        'definition': definition,
+        'unindexed': art[2][2:9] == '_______',
+    }
 
 
 def _operation_cell(definition, art):
@@ -109,7 +126,13 @@ def _operation_cell(definition, art):
     binding = art[1][2:9].strip()
     if binding not in ('', '@21'):
         raise ValueError('Malformed operand binding')
-    return {'kind': 'box', 'ports': ports, 'tag': definition['tag'], 'reverse': binding == '@21', 'definition': definition}
+    return {
+        'kind': 'box',
+        'ports': ports,
+        'tag': definition['tag'],
+        'reverse': binding == '@21',
+        'definition': definition,
+    }
 
 
 def _sink_cell(art, row, col):
@@ -152,15 +175,14 @@ def _read_cells(records, lines, rows, cols):
                 continue
             key = (row, col)
             cells[key] = _recognize_cell(key, art, records.get(key), templates, choices)
-    if set(records)-set(cells):
+    if set(records) - set(cells):
         raise ValueError('Local definition lacks a visible box')
     return cells, choices
 
 
-
 def _adjacent(key, side):
     dr, dc = DELTA[side]
-    return (key[0]+dr, key[1]+dc), OPPOSITE[side]
+    return (key[0] + dr, key[1] + dc), OPPOSITE[side]
 
 
 def _opposite_direction(direction):
@@ -272,8 +294,10 @@ def _native_definitions(definition):
     definitions = definition['members'] if definition['kind'] == 'parallel' else [definition]
     if not isinstance(definitions, list) or not definitions or len(definitions) > 20000:
         raise ValueError('Invalid parallel members')
-    valid_widths = all(isinstance(item, dict) and type(item.get('bits')) is int
-                       and 0 < item['bits'] <= definition['bits'] for item in definitions)
+    valid_widths = all(
+        isinstance(item, dict) and type(item.get('bits')) is int and 0 < item['bits'] <= definition['bits']
+        for item in definitions
+    )
     if not valid_widths:
         raise ValueError('Invalid parallel member width')
     if sum(item['bits'] for item in definitions) != definition['bits']:
@@ -282,7 +306,11 @@ def _native_definitions(definition):
 
 
 def _local_operand(positions, flat):
-    if not isinstance(positions, list) or not positions or any(type(index) is not int or not 0 <= index < len(flat) for index in positions):
+    if (
+        not isinstance(positions, list)
+        or not positions
+        or any(type(index) is not int or not 0 <= index < len(flat) for index in positions)
+    ):
         raise ValueError('Invalid local operand positions')
     selected = [flat[index] for index in positions]
     if len({source for source, bit in selected}) != 1:
@@ -303,7 +331,7 @@ def _local_operands(definition, arguments, flat):
 
 
 def _native_node(definition, group, arguments, flat, native):
-    if group['kind'] == 'parallel' and set(definition)-_MEMBER_FIELDS:
+    if group['kind'] == 'parallel' and set(definition) - _MEMBER_FIELDS:
         raise ValueError('Hidden dependency in parallel operation')
     node = {key: copy.deepcopy(definition[key]) for key in _NODE_FIELDS}
     node['operands'] = _local_operands(definition, arguments, flat)
@@ -373,8 +401,11 @@ def _execution_order(manifest, records, native):
         raise ValueError('Invalid input ordering')
     if sorted(native) != list(range(len(native))):
         raise ValueError('Missing native execution ordinal')
-    return dict(manifest['primitive'], inputs=[{key: definition[key] for key in ('id', 'bits', 'role')} for definition in inputs],
-                nodes=[native[index] for index in sorted(native)])
+    return dict(
+        manifest['primitive'],
+        inputs=[{key: definition[key] for key in ('id', 'bits', 'role')} for definition in inputs],
+        nodes=[native[index] for index in sorted(native)],
+    )
 
 
 def decode(text, *, max_text_bytes=64000000, max_grid_area=2000000):
