@@ -1,13 +1,19 @@
 """Unkeyed fixed-length primitive functions."""
 
 from claasp.primitives._catalogue_exports import CATEGORY_EXPORTS, load_export
-from claasp.primitives.functions.blake import Blake as Blake
-from claasp.primitives.functions.blake2 import Blake2 as Blake2
-from claasp.primitives.functions.bluetooth_e0 import BluetoothE0 as BluetoothE0
-from claasp.primitives.functions.md5 import MD5 as MD5
-from claasp.primitives.functions.sha1 import SHA1 as SHA1
-from claasp.primitives.functions.sha2 import SHA2 as SHA2
-from claasp.primitives.functions.whirlpool import Whirlpool as Whirlpool
+from claasp.primitives.functions.blake import BlakeCompressionFunction as BlakeCompressionFunction
+from claasp.primitives.functions.blake2 import (
+    Blake2CompressionFunction as Blake2CompressionFunction,
+)
+from claasp.primitives.functions.bluetooth_e0 import (
+    BluetoothE0KeystreamFunction as BluetoothE0KeystreamFunction,
+)
+from claasp.primitives.functions.md5 import MD5SingleBlockFunction as MD5SingleBlockFunction
+from claasp.primitives.functions.sha1 import SHA1SingleBlockFunction as SHA1SingleBlockFunction
+from claasp.primitives.functions.sha2 import SHA2SingleBlockFunction as SHA2SingleBlockFunction
+from claasp.primitives.functions.whirlpool import (
+    WhirlpoolSingleBlockFunction as WhirlpoolSingleBlockFunction,
+)
 
 _PUBLIC = CATEGORY_EXPORTS["functions"]
 __all__ = sorted(_PUBLIC)

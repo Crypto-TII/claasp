@@ -8,7 +8,7 @@ _COLUMNS = ((0, 4, 8, 12), (5, 9, 13, 1), (10, 14, 2, 6), (15, 3, 7, 11))
 _ROWS = ((0, 1, 2, 3), (5, 6, 7, 4), (10, 11, 8, 9), (15, 12, 13, 14))
 
 
-class Salsa(Primitive):
+class SalsaPermutation(Primitive):
     """Build the word-oriented Salsa permutation.
 
     One round applies four complete quarter rounds. Column and row rounds
@@ -19,15 +19,15 @@ class Salsa(Primitive):
     CLAASP vectors.
 
     EXAMPLES::
-        >>> from claasp.primitives.permutations.salsa import Salsa
+        >>> from claasp.primitives.permutations.salsa import SalsaPermutation
         >>> state = 1 << (15 * 32)
-        >>> hex(Salsa(number_of_rounds=2).evaluate(state))
+        >>> hex(SalsaPermutation(number_of_rounds=2).evaluate(state))
         '0x8186a22d0040a2848247921006929051080000900240220000004000008000000001020020400000080081040000000020500000a00000400008180a612a8020'
 
 
     EXAMPLES::
 
-        >>> primitive = Salsa()
+        >>> primitive = SalsaPermutation()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())

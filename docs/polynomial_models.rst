@@ -272,7 +272,8 @@ provide an equivalent completeness guarantee.
 Reduced Trivium evidence
 ------------------------
 
-The same machinery applies unchanged to the fixed-length ``Trivium`` keystream
+The same machinery applies unchanged to the fixed-length
+``TriviumKeystreamFunction`` graph
 function, whose reduced instances are parameterized by initialization clocks
 instead of rounds. After 200 clocks the first keystream bit still has a small
 exact ANF, so the cube coefficient of the single IV variable ``i53`` is an
@@ -281,8 +282,8 @@ exact superpoly rather than a bound:
 .. doctest::
 
    >>> from claasp.analysis import analyze_boolean_algebra
-   >>> from claasp.primitives import Trivium
-   >>> trivium = Trivium(number_of_initialization_clocks=200, keystream_bit_size=1)
+   >>> from claasp.primitives import TriviumKeystreamFunction
+   >>> trivium = TriviumKeystreamFunction(number_of_initialization_clocks=200, keystream_bit_size=1)
    >>> evidence = analyze_boolean_algebra(
    ...     trivium, cube=("i53",),
    ...     fixed_variables={f"i{index}": 0 for index in range(80) if index != 53},

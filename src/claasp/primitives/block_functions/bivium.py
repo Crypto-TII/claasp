@@ -44,9 +44,9 @@ NLFSR_DESCR = [
 ]
 
 
-class Bivium(BitGraphPrimitive):
+class BiviumKeystreamFunction(BitGraphPrimitive):
     """
-    Return a primitive object of Bivium Stream Primitive.
+    Return the fixed-length Bivium keystream function.
 
     INPUT:
 
@@ -56,7 +56,7 @@ class Bivium(BitGraphPrimitive):
 
     EXAMPLES::
 
-        >>> primitive = Bivium()
+        >>> primitive = BiviumKeystreamFunction()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())

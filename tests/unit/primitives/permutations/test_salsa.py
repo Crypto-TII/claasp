@@ -1,5 +1,5 @@
 from claasp.encoding import units_from_int
-from claasp.primitives.permutations.salsa import Salsa
+from claasp.primitives.permutations.salsa import SalsaPermutation
 from claasp.representations.execution import BatchEvaluator
 
 
@@ -13,7 +13,7 @@ def test_retained_sparse_salsa_vector():
         16,
     )
 
-    assert Salsa(number_of_rounds=2).evaluate(state) == expected
+    assert SalsaPermutation(number_of_rounds=2).evaluate(state) == expected
 
 
 def test_retained_dense_salsa_vector_and_batch_execution():
@@ -31,7 +31,7 @@ def test_retained_dense_salsa_vector_and_batch_execution():
         "a74b2ad6bc331c5c1dda24c7ee928277",
         16,
     )
-    permutation = Salsa(number_of_rounds=2)
+    permutation = SalsaPermutation(number_of_rounds=2)
 
     assert permutation.evaluate(state) == expected
     result = BatchEvaluator().evaluate(
@@ -42,7 +42,7 @@ def test_retained_dense_salsa_vector_and_batch_execution():
 
 
 def test_parameters_and_standard_round_boundaries():
-    permutation = Salsa(number_of_rounds=2)
+    permutation = SalsaPermutation(number_of_rounds=2)
 
     assert len(permutation.graph.rounds) == 2
     assert len(permutation.graph.components) == 2 * 4 * 12
@@ -51,7 +51,7 @@ def test_parameters_and_standard_round_boundaries():
 def test_invalid_parameters_are_rejected():
     for invalid in (0, -1):
         try:
-            Salsa(number_of_rounds=invalid)
+            SalsaPermutation(number_of_rounds=invalid)
         except ValueError as error:
             assert "positive" in str(error)
         else:

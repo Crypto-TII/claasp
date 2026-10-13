@@ -1,7 +1,7 @@
-"""Evaluation evidence for the fixed-length Trivium keystream function.
+"""Evaluation evidence for the fixed-length TriviumKeystreamFunction keystream function.
 
 Two independent oracles are used.  ``_reference_trivium`` below is a direct
-array transcription of the published Trivium pseudocode, written independently
+array transcription of the published TriviumKeystreamFunction pseudocode, written independently
 of the typed graph and of legacy CLAASP, and is the oracle for arbitrary
 reduced parameters.  The fixed vectors are the published eSTREAM 80/80 test
 vectors, which pin the boundary bit order that a self-consistent reference
@@ -12,11 +12,11 @@ import pytest
 
 from claasp.components import BitwiseAnd, Constant, Xor
 from claasp.encoding import units_from_int
-from claasp.primitives import Trivium
+from claasp.primitives import TriviumKeystreamFunction
 from claasp.primitives.block_functions.trivium import estream_bytes_to_bit_sequence
 from claasp.representations.execution import BatchEvaluator
 
-#: eSTREAM/ECRYPT ``Trivium`` 80-bit key, 80-bit IV test vectors, quoted as
+#: eSTREAM/ECRYPT ``TriviumKeystreamFunction`` 80-bit key, 80-bit IV test vectors, quoted as
 #: published byte strings: ``(set, vector, key, iv, stream[0..15])``.
 ESTREAM_VECTORS = (
     (1, 0, 0x80000000000000000000, 0, 0x38EB86FF730D7A9CAF8DF13A4420540D),
@@ -34,7 +34,7 @@ LEGACY_ALL_ZERO_KEYSTREAM = 0xDF07FD641A9AA0D88A5E7472C4F993FE6A4CC06898E0F3B4E7
 
 
 def _reference_trivium(key_bits, iv_bits, clocks, keystream_bits):
-    """Transcribe the published Trivium pseudocode over ``s[1] .. s[288]``.
+    """Transcribe the published TriviumKeystreamFunction pseudocode over ``s[1] .. s[288]``.
 
     ``key_bits[m]`` and ``iv_bits[m]`` are the eSTREAM bit sequences, loaded at
     ``s(80 - m)`` and ``s(173 - m)``.  Returns ``(keystream_bits, state)``.
@@ -74,7 +74,7 @@ def _unpack(value, width):
 
 @pytest.fixture(scope="module")
 def standard_trivium():
-    return Trivium(keystream_bit_size=128)
+    return TriviumKeystreamFunction(keystream_bit_size=128)
 
 
 @pytest.mark.parametrize(
@@ -92,7 +92,7 @@ def test_published_estream_vectors(standard_trivium, vector_set, vector, key, iv
 
 
 def test_legacy_all_zero_keystream_is_reproduced():
-    primitive = Trivium(keystream_bit_size=256)
+    primitive = TriviumKeystreamFunction(keystream_bit_size=256)
 
     assert primitive.evaluate(key=0, iv=0) == LEGACY_ALL_ZERO_KEYSTREAM
 
@@ -108,7 +108,9 @@ def test_legacy_all_zero_keystream_is_reproduced():
     ),
 )
 def test_reduced_keystream_matches_the_independent_reference(clocks, keystream_bits, key, iv):
-    primitive = Trivium(number_of_initialization_clocks=clocks, keystream_bit_size=keystream_bits)
+    primitive = TriviumKeystreamFunction(
+        number_of_initialization_clocks=clocks, keystream_bit_size=keystream_bits
+    )
     expected, _ = _reference_trivium(_unpack(key, 80), _unpack(iv, 80), clocks, keystream_bits)
 
     assert primitive.evaluate(key=key, iv=iv) == _pack(expected)
@@ -117,7 +119,9 @@ def test_reduced_keystream_matches_the_independent_reference(clocks, keystream_b
 @pytest.mark.parametrize("clocks", (0, 1, 13, 200))
 def test_state_output_matches_the_independent_reference(clocks):
     key, iv = 0x0123456789ABCDEF0123, 0xFEDCBA98765432100FED
-    primitive = Trivium(number_of_initialization_clocks=clocks, keystream_bit_size=0)
+    primitive = TriviumKeystreamFunction(
+        number_of_initialization_clocks=clocks, keystream_bit_size=0
+    )
     _, expected = _reference_trivium(_unpack(key, 80), _unpack(iv, 80), clocks, 0)
 
     assert primitive.graph.output.array_type.encoded_bit_size == 288
@@ -125,7 +129,7 @@ def test_state_output_matches_the_independent_reference(clocks):
 
 
 def test_scalar_and_batch_evaluation_agree():
-    primitive = Trivium(number_of_initialization_clocks=200, keystream_bit_size=8)
+    primitive = TriviumKeystreamFunction(number_of_initialization_clocks=200, keystream_bit_size=8)
     keys = (0x0123456789ABCDEF0123, 0)
     ivs = (0xFEDCBA98765432100FED, 1 << 79)
 
@@ -143,7 +147,7 @@ def test_scalar_and_batch_evaluation_agree():
 
 
 def test_graph_shape_and_reused_components():
-    primitive = Trivium(number_of_initialization_clocks=13, keystream_bit_size=1)
+    primitive = TriviumKeystreamFunction(number_of_initialization_clocks=13, keystream_bit_size=1)
 
     assert primitive.family_name == "trivium"
     assert primitive.graph.input_arrays["key"].array_type.unit_count == 80
@@ -178,10 +182,14 @@ def test_estream_conversion_is_an_involution_and_validates_inputs():
 )
 def test_invalid_parameters_are_rejected(clocks, keystream_bits, message):
     with pytest.raises(ValueError, match=message):
-        Trivium(number_of_initialization_clocks=clocks, keystream_bit_size=keystream_bits)
+        TriviumKeystreamFunction(
+            number_of_initialization_clocks=clocks, keystream_bit_size=keystream_bits
+        )
 
 
 @pytest.mark.parametrize("clocks, keystream_bits", ((True, 1), (1.0, 1), (1, True)))
 def test_non_integer_parameters_are_rejected(clocks, keystream_bits):
     with pytest.raises(TypeError, match="must be an integer"):
-        Trivium(number_of_initialization_clocks=clocks, keystream_bit_size=keystream_bits)
+        TriviumKeystreamFunction(
+            number_of_initialization_clocks=clocks, keystream_bit_size=keystream_bits
+        )

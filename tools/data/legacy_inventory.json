@@ -6019,10 +6019,10 @@
           "message",
           "state"
         ],
-        "official_name": "Blake2",
+        "official_name": "Blake2CompressionFunction",
         "outside_scope_reason": null,
         "primitive_category": "functions",
-        "proposed_class": "Blake2",
+        "proposed_class": "Blake2CompressionFunction",
         "proposed_module": "claasp.primitives.functions.blake2"
       },
       "public_entry_points": [
@@ -6059,10 +6059,10 @@
           "message",
           "state"
         ],
-        "official_name": "Blake",
+        "official_name": "BlakeCompressionFunction",
         "outside_scope_reason": null,
         "primitive_category": "functions",
-        "proposed_class": "Blake",
+        "proposed_class": "BlakeCompressionFunction",
         "proposed_module": "claasp.primitives.functions.blake"
       },
       "public_entry_points": [
@@ -6097,10 +6097,10 @@
         "input_roles": [
           "message"
         ],
-        "official_name": "MD5",
+        "official_name": "MD5SingleBlockFunction",
         "outside_scope_reason": null,
         "primitive_category": "functions",
-        "proposed_class": "MD5",
+        "proposed_class": "MD5SingleBlockFunction",
         "proposed_module": "claasp.primitives.functions.md5"
       },
       "public_entry_points": [
@@ -6135,10 +6135,10 @@
         "input_roles": [
           "message"
         ],
-        "official_name": "SHA1",
+        "official_name": "SHA1SingleBlockFunction",
         "outside_scope_reason": null,
         "primitive_category": "functions",
-        "proposed_class": "SHA1",
+        "proposed_class": "SHA1SingleBlockFunction",
         "proposed_module": "claasp.primitives.functions.sha1"
       },
       "public_entry_points": [
@@ -6173,10 +6173,10 @@
         "input_roles": [
           "message"
         ],
-        "official_name": "SHA2",
+        "official_name": "SHA2SingleBlockFunction",
         "outside_scope_reason": null,
         "primitive_category": "functions",
-        "proposed_class": "SHA2",
+        "proposed_class": "SHA2SingleBlockFunction",
         "proposed_module": "claasp.primitives.functions.sha2"
       },
       "public_entry_points": [
@@ -6211,10 +6211,10 @@
         "input_roles": [
           "message"
         ],
-        "official_name": "Whirlpool",
+        "official_name": "WhirlpoolSingleBlockFunction",
         "outside_scope_reason": null,
         "primitive_category": "functions",
-        "proposed_class": "Whirlpool",
+        "proposed_class": "WhirlpoolSingleBlockFunction",
         "proposed_module": "claasp.primitives.functions.whirlpool"
       },
       "public_entry_points": [
@@ -7016,10 +7016,10 @@
         "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
         "higher_level_parent": null,
         "input_roles": [],
-        "official_name": "Salsa",
+        "official_name": "SalsaPermutation",
         "outside_scope_reason": null,
         "primitive_category": "permutations",
-        "proposed_class": "Salsa",
+        "proposed_class": "SalsaPermutation",
         "proposed_module": "claasp.primitives.permutations.salsa"
       },
       "public_entry_points": [
@@ -8651,10 +8651,10 @@
           "frame",
           "key"
         ],
-        "official_name": "A51",
+        "official_name": "A51KeystreamFunction",
         "outside_scope_reason": null,
         "primitive_category": "block_functions",
-        "proposed_class": "A51",
+        "proposed_class": "A51KeystreamFunction",
         "proposed_module": "claasp.primitives.block_functions.a5_1"
       },
       "public_entry_points": [
@@ -8690,10 +8690,10 @@
           "frame",
           "key"
         ],
-        "official_name": "A52",
+        "official_name": "A52KeystreamFunction",
         "outside_scope_reason": null,
         "primitive_category": "block_functions",
-        "proposed_class": "A52",
+        "proposed_class": "A52KeystreamFunction",
         "proposed_module": "claasp.primitives.block_functions.a5_2"
       },
       "public_entry_points": [
@@ -8729,10 +8729,10 @@
           "initialization_vector",
           "key"
         ],
-        "official_name": "Bivium",
+        "official_name": "BiviumKeystreamFunction",
         "outside_scope_reason": null,
         "primitive_category": "block_functions",
-        "proposed_class": "Bivium",
+        "proposed_class": "BiviumKeystreamFunction",
         "proposed_module": "claasp.primitives.block_functions.bivium"
       },
       "public_entry_points": [
@@ -8767,10 +8767,10 @@
         "input_roles": [
           "state"
         ],
-        "official_name": "BluetoothE0",
+        "official_name": "BluetoothE0KeystreamFunction",
         "outside_scope_reason": null,
         "primitive_category": "functions",
-        "proposed_class": "BluetoothE0",
+        "proposed_class": "BluetoothE0KeystreamFunction",
         "proposed_module": "claasp.primitives.functions.bluetooth_e0"
       },
       "public_entry_points": [
@@ -8847,10 +8847,10 @@
           "initialization_vector",
           "key"
         ],
-        "official_name": "Snow3G",
+        "official_name": "Snow3GKeystreamFunction",
         "outside_scope_reason": null,
         "primitive_category": "block_functions",
-        "proposed_class": "Snow3G",
+        "proposed_class": "Snow3GKeystreamFunction",
         "proposed_module": "claasp.primitives.block_functions.snow3g"
       },
       "public_entry_points": [
@@ -8886,10 +8886,10 @@
           "initialization_vector",
           "key"
         ],
-        "official_name": "Trivium",
+        "official_name": "TriviumKeystreamFunction",
         "outside_scope_reason": null,
         "primitive_category": "block_functions",
-        "proposed_class": "Trivium",
+        "proposed_class": "TriviumKeystreamFunction",
         "proposed_module": "claasp.primitives.block_functions.trivium"
       },
       "public_entry_points": [
@@ -8925,10 +8925,10 @@
           "initialization_vector",
           "key"
         ],
-        "official_name": "Zuc",
+        "official_name": "ZucKeystreamFunction",
         "outside_scope_reason": null,
         "primitive_category": "block_functions",
-        "proposed_class": "Zuc",
+        "proposed_class": "ZucKeystreamFunction",
         "proposed_module": "claasp.primitives.block_functions.zuc"
       },
       "public_entry_points": [

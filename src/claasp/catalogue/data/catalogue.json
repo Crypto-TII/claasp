@@ -5928,8 +5928,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/stream_ciphers/a5_1_stream_cipher.py",
       "module": "claasp.primitives.block_functions.a5_1",
-      "name": "A51",
-      "official_name": "A51",
+      "name": "A51KeystreamFunction",
+      "official_name": "A51KeystreamFunction",
       "parameter_sets": [
         {
           "name": "standard-1",
@@ -6004,8 +6004,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/stream_ciphers/a5_2_stream_cipher.py",
       "module": "claasp.primitives.block_functions.a5_2",
-      "name": "A52",
-      "official_name": "A52",
+      "name": "A52KeystreamFunction",
+      "official_name": "A52KeystreamFunction",
       "parameter_sets": [
         {
           "name": "standard-1",
@@ -6078,8 +6078,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/stream_ciphers/bivium_stream_cipher.py",
       "module": "claasp.primitives.block_functions.bivium",
-      "name": "Bivium",
-      "official_name": "Bivium",
+      "name": "BiviumKeystreamFunction",
+      "official_name": "BiviumKeystreamFunction",
       "parameter_sets": [
         {
           "name": "standard-1",
@@ -6168,6 +6168,82 @@
           "values": {
             "block_bit_size": 512,
             "key_bit_size": 256,
+            "number_of_rounds": 20
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "arx",
+        "block_functions"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": false,
+      "category": "block_functions",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
+        "Constant",
+        "ModularAdd",
+        "Rotate",
+        "Xor"
+      ],
+      "domains": [
+        "Word"
+      ],
+      "family": "salsa_block_function",
+      "fixed_evidence": [
+        "tests/unit/primitives/block_functions/test_salsa.py"
+      ],
+      "input_roles": [
+        "key",
+        "nonce",
+        "counter"
+      ],
+      "inputs": [
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        },
+        {
+          "name": "nonce",
+          "role": "nonce",
+          "visibility": "public"
+        },
+        {
+          "name": "counter",
+          "role": "counter",
+          "visibility": "public"
+        }
+      ],
+      "kind": "block_function",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.block_functions.salsa",
+      "name": "SalsaBlockFunction",
+      "official_name": "SalsaBlockFunction",
+      "parameter_sets": [
+        {
+          "name": "standard-1",
+          "values": {
             "number_of_rounds": 20
           }
         }
@@ -6311,8 +6387,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/stream_ciphers/snow3g_stream_cipher.py",
       "module": "claasp.primitives.block_functions.snow3g",
-      "name": "Snow3G",
-      "official_name": "Snow3G",
+      "name": "Snow3GKeystreamFunction",
+      "official_name": "Snow3GKeystreamFunction",
       "parameter_sets": [
         {
           "name": "standard-1",
@@ -6385,8 +6461,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/stream_ciphers/trivium_stream_cipher.py",
       "module": "claasp.primitives.block_functions.trivium",
-      "name": "Trivium",
-      "official_name": "Trivium",
+      "name": "TriviumKeystreamFunction",
+      "official_name": "TriviumKeystreamFunction",
       "parameter_sets": [
         {
           "name": "default",
@@ -6459,8 +6535,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/stream_ciphers/zuc_stream_cipher.py",
       "module": "claasp.primitives.block_functions.zuc",
-      "name": "Zuc",
-      "official_name": "Zuc",
+      "name": "ZucKeystreamFunction",
+      "official_name": "ZucKeystreamFunction",
       "parameter_sets": [
         {
           "name": "standard-1",
@@ -6492,6 +6568,80 @@
       "tags": [
         "block_functions",
         "sbox_based"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": false,
+      "category": "functions",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
+        "ModularAdd",
+        "Rotate",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "family": "blake2",
+      "fixed_evidence": [
+        "tests/integration/test_function_catalogue_evidence.py",
+        "tests/unit/repository/test_function_catalogue.py"
+      ],
+      "input_roles": [
+        "message",
+        "state"
+      ],
+      "inputs": [
+        {
+          "name": "input_message",
+          "role": "input_message",
+          "visibility": "public"
+        },
+        {
+          "name": "input_state",
+          "role": "input_state",
+          "visibility": "public"
+        }
+      ],
+      "kind": "function",
+      "labels": [],
+      "legacy_source": "claasp/ciphers/hash_functions/blake2_hash_function.py",
+      "module": "claasp.primitives.functions.blake2",
+      "name": "Blake2CompressionFunction",
+      "official_name": "Blake2CompressionFunction",
+      "parameter_sets": [
+        {
+          "name": "standard-1",
+          "values": {
+            "block_bit_size": 1024,
+            "number_of_rounds": 12,
+            "state_bit_size": 1024
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "arx",
+        "functions",
+        "purearx"
       ]
     },
     {
@@ -6534,8 +6684,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/hash_functions/blake_hash_function.py",
       "module": "claasp.primitives.functions.blake",
-      "name": "Blake",
-      "official_name": "Blake",
+      "name": "BlakeCompressionFunction",
+      "official_name": "BlakeCompressionFunction",
       "parameter_sets": [
         {
           "name": "standard-1",
@@ -6583,80 +6733,6 @@
       "category": "functions",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
-        "ModularAdd",
-        "Rotate",
-        "Xor"
-      ],
-      "domains": [
-        "Bit",
-        "Word"
-      ],
-      "family": "blake2",
-      "fixed_evidence": [
-        "tests/integration/test_function_catalogue_evidence.py",
-        "tests/unit/repository/test_function_catalogue.py"
-      ],
-      "input_roles": [
-        "message",
-        "state"
-      ],
-      "inputs": [
-        {
-          "name": "input_message",
-          "role": "input_message",
-          "visibility": "public"
-        },
-        {
-          "name": "input_state",
-          "role": "input_state",
-          "visibility": "public"
-        }
-      ],
-      "kind": "function",
-      "labels": [],
-      "legacy_source": "claasp/ciphers/hash_functions/blake2_hash_function.py",
-      "module": "claasp.primitives.functions.blake2",
-      "name": "Blake2",
-      "official_name": "Blake2",
-      "parameter_sets": [
-        {
-          "name": "standard-1",
-          "values": {
-            "block_bit_size": 1024,
-            "number_of_rounds": 12,
-            "state_bit_size": 1024
-          }
-        }
-      ],
-      "realizations": [
-        {
-          "capabilities": [
-            "batch_evaluation",
-            "scalar_evaluation"
-          ],
-          "maturity": "stable",
-          "name": "default",
-          "priority": 0,
-          "provenance": [
-            "native CLAASP v5 source"
-          ],
-          "structure": [
-            "typed_graph"
-          ]
-        }
-      ],
-      "tags": [
-        "arx",
-        "functions",
-        "purearx"
-      ]
-    },
-    {
-      "authenticity": "canonical",
-      "bijectivity_obligation": false,
-      "category": "functions",
-      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
-      "components": [
         "BitwiseAnd",
         "FeedbackRegister",
         "Xor"
@@ -6684,8 +6760,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/stream_ciphers/bluetooth_stream_cipher_e0.py",
       "module": "claasp.primitives.functions.bluetooth_e0",
-      "name": "BluetoothE0",
-      "official_name": "BluetoothE0",
+      "name": "BluetoothE0KeystreamFunction",
+      "official_name": "BluetoothE0KeystreamFunction",
       "parameter_sets": [
         {
           "name": "standard-1",
@@ -6756,8 +6832,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/hash_functions/md5_hash_function.py",
       "module": "claasp.primitives.functions.md5",
-      "name": "MD5",
-      "official_name": "MD5",
+      "name": "MD5SingleBlockFunction",
+      "official_name": "MD5SingleBlockFunction",
       "parameter_sets": [
         {
           "name": "standard-1",
@@ -6825,8 +6901,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/hash_functions/sha1_hash_function.py",
       "module": "claasp.primitives.functions.sha1",
-      "name": "SHA1",
-      "official_name": "SHA1",
+      "name": "SHA1SingleBlockFunction",
+      "official_name": "SHA1SingleBlockFunction",
       "parameter_sets": [
         {
           "name": "standard-1",
@@ -6894,8 +6970,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/hash_functions/sha2_hash_function.py",
       "module": "claasp.primitives.functions.sha2",
-      "name": "SHA2",
-      "official_name": "SHA2",
+      "name": "SHA2SingleBlockFunction",
+      "official_name": "SHA2SingleBlockFunction",
       "parameter_sets": [
         {
           "name": "standard-1",
@@ -6982,8 +7058,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/hash_functions/whirlpool_hash_function.py",
       "module": "claasp.primitives.functions.whirlpool",
-      "name": "Whirlpool",
-      "official_name": "Whirlpool",
+      "name": "WhirlpoolSingleBlockFunction",
+      "official_name": "WhirlpoolSingleBlockFunction",
       "parameter_sets": [
         {
           "name": "standard-1",
@@ -8430,8 +8506,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/permutations/salsa_permutation.py",
       "module": "claasp.primitives.permutations.salsa",
-      "name": "Salsa",
-      "official_name": "Salsa",
+      "name": "SalsaPermutation",
+      "official_name": "SalsaPermutation",
       "parameter_sets": [
         {
           "name": "default",

@@ -9289,21 +9289,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -9324,7 +9325,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -9451,21 +9452,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -9486,7 +9488,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -9613,21 +9615,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -9648,7 +9651,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -9775,21 +9778,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -9810,7 +9814,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -9937,21 +9941,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -9972,7 +9977,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -10099,21 +10104,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -10134,7 +10140,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -10261,21 +10267,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -10296,7 +10303,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -10423,21 +10430,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -10458,7 +10466,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -10585,21 +10593,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -10620,7 +10629,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -10747,21 +10756,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -10782,7 +10792,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -10909,21 +10919,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -10944,7 +10955,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -11071,21 +11082,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -11106,7 +11118,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -11233,21 +11245,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -11268,7 +11281,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -11395,21 +11408,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -11430,7 +11444,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -11557,21 +11571,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -11592,7 +11607,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -11719,21 +11734,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -11754,7 +11770,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -11881,21 +11897,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -11916,7 +11933,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -12043,21 +12060,22 @@
         "claasp.primitives.block_ciphers.uknit.UKNIT",
         "claasp.primitives.block_ciphers.warp.Warp",
         "claasp.primitives.block_ciphers.xtea.XTEA",
-        "claasp.primitives.block_functions.a5_1.A51",
-        "claasp.primitives.block_functions.a5_2.A52",
-        "claasp.primitives.block_functions.bivium.Bivium",
+        "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
+        "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
+        "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
         "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
+        "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
         "claasp.primitives.block_functions.siphash.SiphashMAC",
-        "claasp.primitives.block_functions.snow3g.Snow3G",
-        "claasp.primitives.block_functions.trivium.Trivium",
-        "claasp.primitives.block_functions.zuc.Zuc",
-        "claasp.primitives.functions.blake.Blake",
-        "claasp.primitives.functions.blake2.Blake2",
-        "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
-        "claasp.primitives.functions.md5.MD5",
-        "claasp.primitives.functions.sha1.SHA1",
-        "claasp.primitives.functions.sha2.SHA2",
-        "claasp.primitives.functions.whirlpool.Whirlpool",
+        "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
+        "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
+        "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
+        "claasp.primitives.functions.blake.BlakeCompressionFunction",
+        "claasp.primitives.functions.blake2.Blake2CompressionFunction",
+        "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
+        "claasp.primitives.functions.md5.MD5SingleBlockFunction",
+        "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
+        "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
+        "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -12078,7 +12096,7 @@
         "claasp.primitives.permutations.norx.Norx",
         "claasp.primitives.permutations.photon.Photon",
         "claasp.primitives.permutations.poseidon.primitive.Poseidon",
-        "claasp.primitives.permutations.salsa.Salsa",
+        "claasp.primitives.permutations.salsa.SalsaPermutation",
         "claasp.primitives.permutations.sparkle.Sparkle",
         "claasp.primitives.permutations.speckey.Speckey",
         "claasp.primitives.permutations.spongent_pi.fsr.SpongentPiFSR",
@@ -14080,16 +14098,16 @@
       "qualified_name": "claasp.primitives"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.a5_1.A51",
+      "canonical_name": "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
       "defined_in": "claasp.primitives.block_functions.a5_1",
       "kind": "class",
-      "qualified_name": "claasp.primitives.A51"
+      "qualified_name": "claasp.primitives.A51KeystreamFunction"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.a5_2.A52",
+      "canonical_name": "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
       "defined_in": "claasp.primitives.block_functions.a5_2",
       "kind": "class",
-      "qualified_name": "claasp.primitives.A52"
+      "qualified_name": "claasp.primitives.A52KeystreamFunction"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.aes.primitive.AES",
@@ -14200,22 +14218,22 @@
       "qualified_name": "claasp.primitives.BitwiseOr"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.bivium.Bivium",
+      "canonical_name": "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
       "defined_in": "claasp.primitives.block_functions.bivium",
       "kind": "class",
-      "qualified_name": "claasp.primitives.Bivium"
+      "qualified_name": "claasp.primitives.BiviumKeystreamFunction"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake.Blake",
-      "defined_in": "claasp.primitives.functions.blake",
-      "kind": "class",
-      "qualified_name": "claasp.primitives.Blake"
-    },
-    {
-      "canonical_name": "claasp.primitives.functions.blake2.Blake2",
+      "canonical_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction",
       "defined_in": "claasp.primitives.functions.blake2",
       "kind": "class",
-      "qualified_name": "claasp.primitives.Blake2"
+      "qualified_name": "claasp.primitives.Blake2CompressionFunction"
+    },
+    {
+      "canonical_name": "claasp.primitives.functions.blake.BlakeCompressionFunction",
+      "defined_in": "claasp.primitives.functions.blake",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.BlakeCompressionFunction"
     },
     {
       "canonical_name": "claasp.primitives.tweakable_block_ciphers.blink.Blink",
@@ -14224,10 +14242,10 @@
       "qualified_name": "claasp.primitives.Blink"
     },
     {
-      "canonical_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
+      "canonical_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
       "defined_in": "claasp.primitives.functions.bluetooth_e0",
       "kind": "class",
-      "qualified_name": "claasp.primitives.BluetoothE0"
+      "qualified_name": "claasp.primitives.BluetoothE0KeystreamFunction"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.cham.CHAM",
@@ -14488,10 +14506,10 @@
       "qualified_name": "claasp.primitives.LowMC"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "class",
-      "qualified_name": "claasp.primitives.MD5"
+      "qualified_name": "claasp.primitives.MD5SingleBlockFunction"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.msx.MSX",
@@ -14656,16 +14674,16 @@
       "qualified_name": "claasp.primitives.SCARF"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha1.SHA1",
+      "canonical_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
       "defined_in": "claasp.primitives.functions.sha1",
       "kind": "class",
-      "qualified_name": "claasp.primitives.SHA1"
+      "qualified_name": "claasp.primitives.SHA1SingleBlockFunction"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
       "defined_in": "claasp.primitives.functions.sha2",
       "kind": "class",
-      "qualified_name": "claasp.primitives.SHA2"
+      "qualified_name": "claasp.primitives.SHA2SingleBlockFunction"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.sm4.SM4",
@@ -14686,10 +14704,16 @@
       "qualified_name": "claasp.primitives.Saecham"
     },
     {
-      "canonical_name": "claasp.primitives.permutations.salsa.Salsa",
+      "canonical_name": "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
+      "defined_in": "claasp.primitives.block_functions.salsa",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.SalsaBlockFunction"
+    },
+    {
+      "canonical_name": "claasp.primitives.permutations.salsa.SalsaPermutation",
       "defined_in": "claasp.primitives.permutations.salsa",
       "kind": "class",
-      "qualified_name": "claasp.primitives.Salsa"
+      "qualified_name": "claasp.primitives.SalsaPermutation"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.serpent.Serpent",
@@ -14746,10 +14770,10 @@
       "qualified_name": "claasp.primitives.Skipjack"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "class",
-      "qualified_name": "claasp.primitives.Snow3G"
+      "qualified_name": "claasp.primitives.Snow3GKeystreamFunction"
     },
     {
       "canonical_name": "claasp.primitives.permutations.sparkle.Sparkle",
@@ -14872,10 +14896,10 @@
       "qualified_name": "claasp.primitives.Trax"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.trivium.Trivium",
+      "canonical_name": "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
       "defined_in": "claasp.primitives.block_functions.trivium",
       "kind": "class",
-      "qualified_name": "claasp.primitives.Trivium"
+      "qualified_name": "claasp.primitives.TriviumKeystreamFunction"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.twine.Twine",
@@ -14926,10 +14950,10 @@
       "qualified_name": "claasp.primitives.Warp"
     },
     {
-      "canonical_name": "claasp.primitives.functions.whirlpool.Whirlpool",
+      "canonical_name": "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
       "defined_in": "claasp.primitives.functions.whirlpool",
       "kind": "class",
-      "qualified_name": "claasp.primitives.Whirlpool"
+      "qualified_name": "claasp.primitives.WhirlpoolSingleBlockFunction"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.xtea.XTEA",
@@ -14962,10 +14986,10 @@
       "qualified_name": "claasp.primitives.Xor"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "class",
-      "qualified_name": "claasp.primitives.Zuc"
+      "qualified_name": "claasp.primitives.ZucKeystreamFunction"
     },
     {
       "canonical_name": "claasp.primitives._catalogue_exports",
@@ -16756,22 +16780,22 @@
       "qualified_name": "claasp.primitives.block_functions"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.a5_1.A51",
+      "canonical_name": "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
       "defined_in": "claasp.primitives.block_functions.a5_1",
       "kind": "class",
-      "qualified_name": "claasp.primitives.block_functions.A51"
+      "qualified_name": "claasp.primitives.block_functions.A51KeystreamFunction"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.a5_2.A52",
+      "canonical_name": "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
       "defined_in": "claasp.primitives.block_functions.a5_2",
       "kind": "class",
-      "qualified_name": "claasp.primitives.block_functions.A52"
+      "qualified_name": "claasp.primitives.block_functions.A52KeystreamFunction"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.bivium.Bivium",
+      "canonical_name": "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
       "defined_in": "claasp.primitives.block_functions.bivium",
       "kind": "class",
-      "qualified_name": "claasp.primitives.block_functions.Bivium"
+      "qualified_name": "claasp.primitives.block_functions.BiviumKeystreamFunction"
     },
     {
       "canonical_name": "claasp.primitives.block_functions.chacha.ChaChaBlockFunction",
@@ -16780,73 +16804,79 @@
       "qualified_name": "claasp.primitives.block_functions.ChaChaBlockFunction"
     },
     {
+      "canonical_name": "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
+      "defined_in": "claasp.primitives.block_functions.salsa",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.block_functions.SalsaBlockFunction"
+    },
+    {
       "canonical_name": "claasp.primitives.block_functions.siphash.SiphashMAC",
       "defined_in": "claasp.primitives.block_functions.siphash",
       "kind": "class",
       "qualified_name": "claasp.primitives.block_functions.SiphashMAC"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "class",
-      "qualified_name": "claasp.primitives.block_functions.Snow3G"
+      "qualified_name": "claasp.primitives.block_functions.Snow3GKeystreamFunction"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.trivium.Trivium",
+      "canonical_name": "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
       "defined_in": "claasp.primitives.block_functions.trivium",
       "kind": "class",
-      "qualified_name": "claasp.primitives.block_functions.Trivium"
+      "qualified_name": "claasp.primitives.block_functions.TriviumKeystreamFunction"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "class",
-      "qualified_name": "claasp.primitives.block_functions.Zuc"
+      "qualified_name": "claasp.primitives.block_functions.ZucKeystreamFunction"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.a5_1.A51.__init__",
+      "canonical_name": "claasp.primitives.block_functions.a5_1.A51KeystreamFunction.__init__",
       "defined_in": "claasp.primitives.block_functions.a5_1",
-      "documented_by": "claasp.primitives.block_functions.a5_1.A51",
+      "documented_by": "claasp.primitives.block_functions.a5_1.A51KeystreamFunction",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.block_functions.a5_1.A51.__init__"
+      "qualified_name": "claasp.primitives.block_functions.a5_1.A51KeystreamFunction.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.a5_1.A51.regs_initialization",
+      "canonical_name": "claasp.primitives.block_functions.a5_1.A51KeystreamFunction.regs_initialization",
       "defined_in": "claasp.primitives.block_functions.a5_1",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.a5_1.A51.regs_initialization"
+      "qualified_name": "claasp.primitives.block_functions.a5_1.A51KeystreamFunction.regs_initialization"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.a5_1.A51.round_function",
+      "canonical_name": "claasp.primitives.block_functions.a5_1.A51KeystreamFunction.round_function",
       "defined_in": "claasp.primitives.block_functions.a5_1",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.a5_1.A51.round_function"
+      "qualified_name": "claasp.primitives.block_functions.a5_1.A51KeystreamFunction.round_function"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.a5_2.A52.__init__",
+      "canonical_name": "claasp.primitives.block_functions.a5_2.A52KeystreamFunction.__init__",
       "defined_in": "claasp.primitives.block_functions.a5_2",
-      "documented_by": "claasp.primitives.block_functions.a5_2.A52",
+      "documented_by": "claasp.primitives.block_functions.a5_2.A52KeystreamFunction",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.block_functions.a5_2.A52.__init__"
+      "qualified_name": "claasp.primitives.block_functions.a5_2.A52KeystreamFunction.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.bivium.Bivium.__init__",
+      "canonical_name": "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction.__init__",
       "defined_in": "claasp.primitives.block_functions.bivium",
-      "documented_by": "claasp.primitives.block_functions.bivium.Bivium",
+      "documented_by": "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.block_functions.bivium.Bivium.__init__"
+      "qualified_name": "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.bivium.Bivium.bivium_key_stream",
+      "canonical_name": "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction.bivium_key_stream",
       "defined_in": "claasp.primitives.block_functions.bivium",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.bivium.Bivium.bivium_key_stream"
+      "qualified_name": "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction.bivium_key_stream"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.bivium.Bivium.bivium_state_initialization",
+      "canonical_name": "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction.bivium_state_initialization",
       "defined_in": "claasp.primitives.block_functions.bivium",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.bivium.Bivium.bivium_state_initialization"
+      "qualified_name": "claasp.primitives.block_functions.bivium.BiviumKeystreamFunction.bivium_state_initialization"
     },
     {
       "canonical_name": "claasp.primitives.block_functions.chacha",
@@ -16874,6 +16904,31 @@
       "qualified_name": "claasp.primitives.block_functions.chacha.PARAMETERS_CONFIGURATION_LIST"
     },
     {
+      "canonical_name": "claasp.primitives.block_functions.salsa",
+      "defined_in": "claasp.primitives.block_functions.salsa",
+      "kind": "module",
+      "qualified_name": "claasp.primitives.block_functions.salsa"
+    },
+    {
+      "canonical_name": "claasp.primitives.block_functions.salsa.PARAMETERS_CONFIGURATION_LIST",
+      "defined_in": "claasp.primitives.block_functions.salsa",
+      "kind": "data",
+      "qualified_name": "claasp.primitives.block_functions.salsa.PARAMETERS_CONFIGURATION_LIST"
+    },
+    {
+      "canonical_name": "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
+      "defined_in": "claasp.primitives.block_functions.salsa",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.block_functions.salsa.SalsaBlockFunction"
+    },
+    {
+      "canonical_name": "claasp.primitives.block_functions.salsa.SalsaBlockFunction.__init__",
+      "defined_in": "claasp.primitives.block_functions.salsa",
+      "documented_by": "claasp.primitives.block_functions.salsa.SalsaBlockFunction",
+      "kind": "constructor",
+      "qualified_name": "claasp.primitives.block_functions.salsa.SalsaBlockFunction.__init__"
+    },
+    {
       "canonical_name": "claasp.primitives.block_functions.siphash.SiphashMAC.__init__",
       "defined_in": "claasp.primitives.block_functions.siphash",
       "documented_by": "claasp.primitives.block_functions.siphash.SiphashMAC",
@@ -16881,175 +16936,175 @@
       "qualified_name": "claasp.primitives.block_functions.siphash.SiphashMAC.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.DIValpha",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.DIValpha",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.DIValpha"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.DIValpha"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.MULalpha",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.MULalpha",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.MULalpha"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.MULalpha"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.MULx",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.MULx",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.MULx"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.MULx"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.MULxPOW",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.MULxPOW",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.MULxPOW"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.MULxPOW"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.S1",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.S1",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.S1"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.S1"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.S2",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.S2",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.S2"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.S2"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.__init__",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.__init__",
       "defined_in": "claasp.primitives.block_functions.snow3g",
-      "documented_by": "claasp.primitives.block_functions.snow3g.Snow3G",
+      "documented_by": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.__init__"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.clock_fsm",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.clock_fsm",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.clock_fsm"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.clock_fsm"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.clock_lfsr",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.clock_lfsr",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.clock_lfsr"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.clock_lfsr"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.clock_lfsr_initialization_mode",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.clock_lfsr_initialization_mode",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.clock_lfsr_initialization_mode"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.clock_lfsr_initialization_mode"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.create_alpha_state",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.create_alpha_state",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.create_alpha_state"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.create_alpha_state"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.initial_filling_lfsr_fsm",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.initial_filling_lfsr_fsm",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.initial_filling_lfsr_fsm"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.initial_filling_lfsr_fsm"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.snow3g_key_stream",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.snow3g_key_stream",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.snow3g_key_stream"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.snow3g_key_stream"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3G.snow3g_state_initialization",
+      "canonical_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.snow3g_state_initialization",
       "defined_in": "claasp.primitives.block_functions.snow3g",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3G.snow3g_state_initialization"
+      "qualified_name": "claasp.primitives.block_functions.snow3g.Snow3GKeystreamFunction.snow3g_state_initialization"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.trivium.Trivium.__init__",
+      "canonical_name": "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction.__init__",
       "defined_in": "claasp.primitives.block_functions.trivium",
-      "documented_by": "claasp.primitives.block_functions.trivium.Trivium",
+      "documented_by": "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.block_functions.trivium.Trivium.__init__"
+      "qualified_name": "claasp.primitives.block_functions.trivium.TriviumKeystreamFunction.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc.__init__",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.__init__",
       "defined_in": "claasp.primitives.block_functions.zuc",
-      "documented_by": "claasp.primitives.block_functions.zuc.Zuc",
+      "documented_by": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.block_functions.zuc.Zuc.__init__"
+      "qualified_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc.clocking_lfsr",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.clocking_lfsr",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.zuc.Zuc.clocking_lfsr"
+      "qualified_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.clocking_lfsr"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc.key_loading_to_lfsr",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.key_loading_to_lfsr",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.zuc.Zuc.key_loading_to_lfsr"
+      "qualified_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.key_loading_to_lfsr"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc.key_stream",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.key_stream",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.zuc.Zuc.key_stream"
+      "qualified_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.key_stream"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc.lfsr_S_high_16bits",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.lfsr_S_high_16bits",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.zuc.Zuc.lfsr_S_high_16bits"
+      "qualified_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.lfsr_S_high_16bits"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc.lfsr_S_low_16bits",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.lfsr_S_low_16bits",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.zuc.Zuc.lfsr_S_low_16bits"
+      "qualified_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.lfsr_S_low_16bits"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc.lfsr_with_initialization_mode",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.lfsr_with_initialization_mode",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.zuc.Zuc.lfsr_with_initialization_mode"
+      "qualified_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.lfsr_with_initialization_mode"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc.linear_layer_rotation",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.linear_layer_rotation",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.zuc.Zuc.linear_layer_rotation"
+      "qualified_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.linear_layer_rotation"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc.linear_transform_L1",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.linear_transform_L1",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.zuc.Zuc.linear_transform_L1"
+      "qualified_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.linear_transform_L1"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc.linear_transform_L2",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.linear_transform_L2",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.zuc.Zuc.linear_transform_L2"
+      "qualified_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.linear_transform_L2"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc.s_box_layer",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.s_box_layer",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.zuc.Zuc.s_box_layer"
+      "qualified_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.s_box_layer"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc.state_initialization",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.state_initialization",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.zuc.Zuc.state_initialization"
+      "qualified_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.state_initialization"
     },
     {
-      "canonical_name": "claasp.primitives.block_functions.zuc.Zuc.zuc_nonlinear_F",
+      "canonical_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.zuc_nonlinear_F",
       "defined_in": "claasp.primitives.block_functions.zuc",
       "kind": "method",
-      "qualified_name": "claasp.primitives.block_functions.zuc.Zuc.zuc_nonlinear_F"
+      "qualified_name": "claasp.primitives.block_functions.zuc.ZucKeystreamFunction.zuc_nonlinear_F"
     },
     {
       "canonical_name": "claasp.primitives.functions",
@@ -17058,407 +17113,407 @@
       "qualified_name": "claasp.primitives.functions"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake.Blake",
-      "defined_in": "claasp.primitives.functions.blake",
-      "kind": "class",
-      "qualified_name": "claasp.primitives.functions.Blake"
-    },
-    {
-      "canonical_name": "claasp.primitives.functions.blake2.Blake2",
+      "canonical_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction",
       "defined_in": "claasp.primitives.functions.blake2",
       "kind": "class",
-      "qualified_name": "claasp.primitives.functions.Blake2"
+      "qualified_name": "claasp.primitives.functions.Blake2CompressionFunction"
     },
     {
-      "canonical_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
+      "canonical_name": "claasp.primitives.functions.blake.BlakeCompressionFunction",
+      "defined_in": "claasp.primitives.functions.blake",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.functions.BlakeCompressionFunction"
+    },
+    {
+      "canonical_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
       "defined_in": "claasp.primitives.functions.bluetooth_e0",
       "kind": "class",
-      "qualified_name": "claasp.primitives.functions.BluetoothE0"
+      "qualified_name": "claasp.primitives.functions.BluetoothE0KeystreamFunction"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "class",
-      "qualified_name": "claasp.primitives.functions.MD5"
+      "qualified_name": "claasp.primitives.functions.MD5SingleBlockFunction"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha1.SHA1",
+      "canonical_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
       "defined_in": "claasp.primitives.functions.sha1",
       "kind": "class",
-      "qualified_name": "claasp.primitives.functions.SHA1"
+      "qualified_name": "claasp.primitives.functions.SHA1SingleBlockFunction"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
       "defined_in": "claasp.primitives.functions.sha2",
       "kind": "class",
-      "qualified_name": "claasp.primitives.functions.SHA2"
+      "qualified_name": "claasp.primitives.functions.SHA2SingleBlockFunction"
     },
     {
-      "canonical_name": "claasp.primitives.functions.whirlpool.Whirlpool",
+      "canonical_name": "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
       "defined_in": "claasp.primitives.functions.whirlpool",
       "kind": "class",
-      "qualified_name": "claasp.primitives.functions.Whirlpool"
+      "qualified_name": "claasp.primitives.functions.WhirlpoolSingleBlockFunction"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake.Blake.__init__",
+      "canonical_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.__init__",
       "defined_in": "claasp.primitives.functions.blake",
-      "documented_by": "claasp.primitives.functions.blake.Blake",
+      "documented_by": "claasp.primitives.functions.blake.BlakeCompressionFunction",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.functions.blake.Blake.__init__"
+      "qualified_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake.Blake.column_step",
+      "canonical_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.column_step",
       "defined_in": "claasp.primitives.functions.blake",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.blake.Blake.column_step"
+      "qualified_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.column_step"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake.Blake.define_constants",
+      "canonical_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.define_constants",
       "defined_in": "claasp.primitives.functions.blake",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.blake.Blake.define_constants"
+      "qualified_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.define_constants"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake.Blake.define_number_of_rounds",
+      "canonical_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.define_number_of_rounds",
       "defined_in": "claasp.primitives.functions.blake",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.blake.Blake.define_number_of_rounds"
+      "qualified_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.define_number_of_rounds"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake.Blake.define_permutations",
+      "canonical_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.define_permutations",
       "defined_in": "claasp.primitives.functions.blake",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.blake.Blake.define_permutations"
+      "qualified_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.define_permutations"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake.Blake.define_rotation_amounts",
+      "canonical_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.define_rotation_amounts",
       "defined_in": "claasp.primitives.functions.blake",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.blake.Blake.define_rotation_amounts"
+      "qualified_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.define_rotation_amounts"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake.Blake.diagonal_step",
+      "canonical_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.diagonal_step",
       "defined_in": "claasp.primitives.functions.blake",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.blake.Blake.diagonal_step"
+      "qualified_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.diagonal_step"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake.Blake.state_transformation",
+      "canonical_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.state_transformation",
       "defined_in": "claasp.primitives.functions.blake",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.blake.Blake.state_transformation"
+      "qualified_name": "claasp.primitives.functions.blake.BlakeCompressionFunction.state_transformation"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake2.Blake2.__init__",
+      "canonical_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.__init__",
       "defined_in": "claasp.primitives.functions.blake2",
-      "documented_by": "claasp.primitives.functions.blake2.Blake2",
+      "documented_by": "claasp.primitives.functions.blake2.Blake2CompressionFunction",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.functions.blake2.Blake2.__init__"
+      "qualified_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake2.Blake2.column_step",
+      "canonical_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.column_step",
       "defined_in": "claasp.primitives.functions.blake2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.blake2.Blake2.column_step"
+      "qualified_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.column_step"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake2.Blake2.define_number_of_rounds",
+      "canonical_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.define_number_of_rounds",
       "defined_in": "claasp.primitives.functions.blake2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.blake2.Blake2.define_number_of_rounds"
+      "qualified_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.define_number_of_rounds"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake2.Blake2.define_permutations",
+      "canonical_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.define_permutations",
       "defined_in": "claasp.primitives.functions.blake2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.blake2.Blake2.define_permutations"
+      "qualified_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.define_permutations"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake2.Blake2.define_rotation_amounts",
+      "canonical_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.define_rotation_amounts",
       "defined_in": "claasp.primitives.functions.blake2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.blake2.Blake2.define_rotation_amounts"
+      "qualified_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.define_rotation_amounts"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake2.Blake2.diagonal_step",
+      "canonical_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.diagonal_step",
       "defined_in": "claasp.primitives.functions.blake2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.blake2.Blake2.diagonal_step"
+      "qualified_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.diagonal_step"
     },
     {
-      "canonical_name": "claasp.primitives.functions.blake2.Blake2.state_transformation",
+      "canonical_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.state_transformation",
       "defined_in": "claasp.primitives.functions.blake2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.blake2.Blake2.state_transformation"
+      "qualified_name": "claasp.primitives.functions.blake2.Blake2CompressionFunction.state_transformation"
     },
     {
-      "canonical_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0.__init__",
+      "canonical_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction.__init__",
       "defined_in": "claasp.primitives.functions.bluetooth_e0",
-      "documented_by": "claasp.primitives.functions.bluetooth_e0.BluetoothE0",
+      "documented_by": "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0.__init__"
+      "qualified_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0.e0_keystream",
-      "defined_in": "claasp.primitives.functions.bluetooth_e0",
-      "kind": "method",
-      "qualified_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0.e0_keystream"
-    },
-    {
-      "canonical_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0.e0_nonlinear_function",
+      "canonical_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction.e0_keystream",
       "defined_in": "claasp.primitives.functions.bluetooth_e0",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0.e0_nonlinear_function"
+      "qualified_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction.e0_keystream"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.F",
+      "canonical_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction.e0_nonlinear_function",
+      "defined_in": "claasp.primitives.functions.bluetooth_e0",
+      "kind": "method",
+      "qualified_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction.e0_nonlinear_function"
+    },
+    {
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.F",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.F"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.F"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.G",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.G",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.G"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.G"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.H",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.H",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.H"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.H"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.I",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.I",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.I"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.I"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.__init__",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.__init__",
       "defined_in": "claasp.primitives.functions.md5",
-      "documented_by": "claasp.primitives.functions.md5.MD5",
+      "documented_by": "claasp.primitives.functions.md5.MD5SingleBlockFunction",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.__init__"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.add_and_component_in_md5",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_and_component_in_md5",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.add_and_component_in_md5"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_and_component_in_md5"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.add_modadd_component_in_md5",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_modadd_component_in_md5",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.add_modadd_component_in_md5"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_modadd_component_in_md5"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.add_modadd_component_in_md5_for_x",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_modadd_component_in_md5_for_x",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.add_modadd_component_in_md5_for_x"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_modadd_component_in_md5_for_x"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.add_not_component_in_md5",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_not_component_in_md5",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.add_not_component_in_md5"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_not_component_in_md5"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.add_or_component_in_md5",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_or_component_in_md5",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.add_or_component_in_md5"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_or_component_in_md5"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.add_rotate_component_in_md5",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_rotate_component_in_md5",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.add_rotate_component_in_md5"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_rotate_component_in_md5"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.add_round_output_component_in_md5",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_round_output_component_in_md5",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.add_round_output_component_in_md5"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_round_output_component_in_md5"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.add_xor_component_in_md5",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_xor_component_in_md5",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.add_xor_component_in_md5"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.add_xor_component_in_md5"
     },
     {
-      "canonical_name": "claasp.primitives.functions.md5.MD5.md5_step",
+      "canonical_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.md5_step",
       "defined_in": "claasp.primitives.functions.md5",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.md5.MD5.md5_step"
+      "qualified_name": "claasp.primitives.functions.md5.MD5SingleBlockFunction.md5_step"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha1.SHA1.__init__",
+      "canonical_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.__init__",
       "defined_in": "claasp.primitives.functions.sha1",
-      "documented_by": "claasp.primitives.functions.sha1.SHA1",
+      "documented_by": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.functions.sha1.SHA1.__init__"
+      "qualified_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha1.SHA1.add_and_component_in_sha1",
+      "canonical_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.add_and_component_in_sha1",
       "defined_in": "claasp.primitives.functions.sha1",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha1.SHA1.add_and_component_in_sha1"
+      "qualified_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.add_and_component_in_sha1"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha1.SHA1.add_modadd_component_in_sha1",
+      "canonical_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.add_modadd_component_in_sha1",
       "defined_in": "claasp.primitives.functions.sha1",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha1.SHA1.add_modadd_component_in_sha1"
+      "qualified_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.add_modadd_component_in_sha1"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha1.SHA1.add_rotate_component_in_sha1",
+      "canonical_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.add_rotate_component_in_sha1",
       "defined_in": "claasp.primitives.functions.sha1",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha1.SHA1.add_rotate_component_in_sha1"
+      "qualified_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.add_rotate_component_in_sha1"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha1.SHA1.add_round_output_component_in_sha1",
+      "canonical_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.add_round_output_component_in_sha1",
       "defined_in": "claasp.primitives.functions.sha1",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha1.SHA1.add_round_output_component_in_sha1"
+      "qualified_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.add_round_output_component_in_sha1"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha1.SHA1.compute_temp_and_s_30_b",
+      "canonical_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.compute_temp_and_s_30_b",
       "defined_in": "claasp.primitives.functions.sha1",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha1.SHA1.compute_temp_and_s_30_b"
+      "qualified_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.compute_temp_and_s_30_b"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha1.SHA1.rounds_0_19",
+      "canonical_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.rounds_0_19",
       "defined_in": "claasp.primitives.functions.sha1",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha1.SHA1.rounds_0_19"
+      "qualified_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.rounds_0_19"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha1.SHA1.rounds_20_39",
+      "canonical_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.rounds_20_39",
       "defined_in": "claasp.primitives.functions.sha1",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha1.SHA1.rounds_20_39"
+      "qualified_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.rounds_20_39"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha1.SHA1.rounds_40_59",
+      "canonical_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.rounds_40_59",
       "defined_in": "claasp.primitives.functions.sha1",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha1.SHA1.rounds_40_59"
+      "qualified_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.rounds_40_59"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha1.SHA1.schedule",
+      "canonical_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.schedule",
       "defined_in": "claasp.primitives.functions.sha1",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha1.SHA1.schedule"
+      "qualified_name": "claasp.primitives.functions.sha1.SHA1SingleBlockFunction.schedule"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2.__init__",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.__init__",
       "defined_in": "claasp.primitives.functions.sha2",
-      "documented_by": "claasp.primitives.functions.sha2.SHA2",
+      "documented_by": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.functions.sha2.SHA2.__init__"
+      "qualified_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2.add_and_component_sha2",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.add_and_component_sha2",
       "defined_in": "claasp.primitives.functions.sha2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha2.SHA2.add_and_component_sha2"
+      "qualified_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.add_and_component_sha2"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2.add_modadd_component_sha2",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.add_modadd_component_sha2",
       "defined_in": "claasp.primitives.functions.sha2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha2.SHA2.add_modadd_component_sha2"
+      "qualified_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.add_modadd_component_sha2"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2.add_rotate_component_sha2",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.add_rotate_component_sha2",
       "defined_in": "claasp.primitives.functions.sha2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha2.SHA2.add_rotate_component_sha2"
+      "qualified_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.add_rotate_component_sha2"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2.add_round_output_component_sha2",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.add_round_output_component_sha2",
       "defined_in": "claasp.primitives.functions.sha2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha2.SHA2.add_round_output_component_sha2"
+      "qualified_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.add_round_output_component_sha2"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2.add_xor_component_sha2",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.add_xor_component_sha2",
       "defined_in": "claasp.primitives.functions.sha2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha2.SHA2.add_xor_component_sha2"
+      "qualified_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.add_xor_component_sha2"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2.compute_bsig0_bsig1",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.compute_bsig0_bsig1",
       "defined_in": "claasp.primitives.functions.sha2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha2.SHA2.compute_bsig0_bsig1"
+      "qualified_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.compute_bsig0_bsig1"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2.compute_ch",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.compute_ch",
       "defined_in": "claasp.primitives.functions.sha2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha2.SHA2.compute_ch"
+      "qualified_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.compute_ch"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2.compute_maj",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.compute_maj",
       "defined_in": "claasp.primitives.functions.sha2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha2.SHA2.compute_maj"
+      "qualified_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.compute_maj"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2.compute_ssig0_ssig1",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.compute_ssig0_ssig1",
       "defined_in": "claasp.primitives.functions.sha2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha2.SHA2.compute_ssig0_ssig1"
+      "qualified_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.compute_ssig0_ssig1"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2.round_function",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.round_function",
       "defined_in": "claasp.primitives.functions.sha2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha2.SHA2.round_function"
+      "qualified_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.round_function"
     },
     {
-      "canonical_name": "claasp.primitives.functions.sha2.SHA2.schedule",
+      "canonical_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.schedule",
       "defined_in": "claasp.primitives.functions.sha2",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.sha2.SHA2.schedule"
+      "qualified_name": "claasp.primitives.functions.sha2.SHA2SingleBlockFunction.schedule"
     },
     {
-      "canonical_name": "claasp.primitives.functions.whirlpool.Whirlpool.__init__",
+      "canonical_name": "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction.__init__",
       "defined_in": "claasp.primitives.functions.whirlpool",
-      "documented_by": "claasp.primitives.functions.whirlpool.Whirlpool",
+      "documented_by": "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.functions.whirlpool.Whirlpool.__init__"
+      "qualified_name": "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.functions.whirlpool.Whirlpool.create_mix_row_components",
+      "canonical_name": "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction.create_mix_row_components",
       "defined_in": "claasp.primitives.functions.whirlpool",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.whirlpool.Whirlpool.create_mix_row_components"
+      "qualified_name": "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction.create_mix_row_components"
     },
     {
-      "canonical_name": "claasp.primitives.functions.whirlpool.Whirlpool.create_round_constant_component",
+      "canonical_name": "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction.create_round_constant_component",
       "defined_in": "claasp.primitives.functions.whirlpool",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.whirlpool.Whirlpool.create_round_constant_component"
+      "qualified_name": "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction.create_round_constant_component"
     },
     {
-      "canonical_name": "claasp.primitives.functions.whirlpool.Whirlpool.create_sbox_component",
+      "canonical_name": "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction.create_sbox_component",
       "defined_in": "claasp.primitives.functions.whirlpool",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.whirlpool.Whirlpool.create_sbox_component"
+      "qualified_name": "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction.create_sbox_component"
     },
     {
-      "canonical_name": "claasp.primitives.functions.whirlpool.Whirlpool.create_shift_column_components",
+      "canonical_name": "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction.create_shift_column_components",
       "defined_in": "claasp.primitives.functions.whirlpool",
       "kind": "method",
-      "qualified_name": "claasp.primitives.functions.whirlpool.Whirlpool.create_shift_column_components"
+      "qualified_name": "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction.create_shift_column_components"
     },
     {
       "canonical_name": "claasp.primitives.permutations",
@@ -17575,10 +17630,10 @@
       "qualified_name": "claasp.primitives.permutations.Photon"
     },
     {
-      "canonical_name": "claasp.primitives.permutations.salsa.Salsa",
+      "canonical_name": "claasp.primitives.permutations.salsa.SalsaPermutation",
       "defined_in": "claasp.primitives.permutations.salsa",
       "kind": "class",
-      "qualified_name": "claasp.primitives.permutations.Salsa"
+      "qualified_name": "claasp.primitives.permutations.SalsaPermutation"
     },
     {
       "canonical_name": "claasp.primitives.permutations.sparkle.Sparkle",
@@ -18408,11 +18463,11 @@
       "qualified_name": "claasp.primitives.permutations.poseidon.primitive.Poseidon.__init__"
     },
     {
-      "canonical_name": "claasp.primitives.permutations.salsa.Salsa.__init__",
+      "canonical_name": "claasp.primitives.permutations.salsa.SalsaPermutation.__init__",
       "defined_in": "claasp.primitives.permutations.salsa",
-      "documented_by": "claasp.primitives.permutations.salsa.Salsa",
+      "documented_by": "claasp.primitives.permutations.salsa.SalsaPermutation",
       "kind": "constructor",
-      "qualified_name": "claasp.primitives.permutations.salsa.Salsa.__init__"
+      "qualified_name": "claasp.primitives.permutations.salsa.SalsaPermutation.__init__"
     },
     {
       "canonical_name": "claasp.primitives.permutations.sparkle.Sparkle.__init__",

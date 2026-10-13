@@ -11,7 +11,7 @@ from claasp.primitives import (
     Ascon,
     ChaChaPermutation,
     Present,
-    Salsa,
+    SalsaPermutation,
     Simeck,
     Simon,
     Speck,
@@ -32,7 +32,7 @@ from claasp.semantics.cryptanalysis import TrailKind
         SPARX(number_of_rounds=1),
         Threefish(number_of_rounds=1),
         ChaChaPermutation(number_of_rounds=1),
-        Salsa(number_of_rounds=1),
+        SalsaPermutation(number_of_rounds=1),
     ),
 )
 @pytest.mark.parametrize("kind", tuple(TrailKind))

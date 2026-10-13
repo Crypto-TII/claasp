@@ -1,9 +1,9 @@
-"""Exact algebraic evidence for the reduced Trivium keystream function.
+"""Exact algebraic evidence for the reduced TriviumKeystreamFunction keystream function.
 
 Every polynomial asserted here is newly derived in v5 by exact sparse ANF
 expansion and is then re-checked by concrete evaluation of the same typed
 graph, which shares no code with the symbolic evaluator.  The legacy Gurobi
-suite stated comparable Trivium expectations, but each of its tests carries
+suite stated comparable TriviumKeystreamFunction expectations, but each of its tests carries
 ``@pytest.mark.skip(reason="Requires Gurobi license")`` and therefore never ran,
 so those literals are treated as claims to be confirmed, never as oracles.
 """
@@ -13,13 +13,13 @@ from random import Random
 import pytest
 
 from claasp.analysis import analyze_boolean_algebra, evaluate_cube_sum
-from claasp.primitives import Trivium
+from claasp.primitives import TriviumKeystreamFunction
 from claasp.representations.execution import (
     BooleanDegreeEvaluator,
     BooleanSymbolicEvaluator,
 )
 
-#: Exact IV-only monomials of maximal IV degree in the Trivium-200 keystream
+#: Exact IV-only monomials of maximal IV degree in the TriviumKeystreamFunction-200 keystream
 #: bit; each has cube coefficient ``1``.
 TRIVIUM_200_TOP_IV_CUBES = (
     (20, 22, 23),
@@ -35,13 +35,13 @@ def _bit(value, position, width=80):
 
 @pytest.fixture(scope="module")
 def trivium_13_anf():
-    primitive = Trivium(number_of_initialization_clocks=13, keystream_bit_size=1)
+    primitive = TriviumKeystreamFunction(number_of_initialization_clocks=13, keystream_bit_size=1)
     return primitive, BooleanSymbolicEvaluator().evaluate(primitive).output_anfs[0]
 
 
 @pytest.fixture(scope="module")
 def trivium_200():
-    return Trivium(number_of_initialization_clocks=200, keystream_bit_size=1)
+    return TriviumKeystreamFunction(number_of_initialization_clocks=200, keystream_bit_size=1)
 
 
 @pytest.fixture(scope="module")

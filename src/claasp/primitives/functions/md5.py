@@ -16,12 +16,12 @@
 # ****************************************************************************
 
 """
-MD5 primitive.
+Single-block MD5 function.
 
 This module has been coded following the original RFC 1321. Every variable name
 has been chosen to strictly adhere to the RFC.
 
-The input is named *key* because the hash function MD5 can be seen like a
+The input is named *key* because the MD5 function can be seen like a
 symmetric primitive whose plaintext is the initial state and key is the input.
 """
 
@@ -31,9 +31,9 @@ from claasp.primitive_inputs import HASH_FUNCTION, INPUT_MESSAGE
 PARAMETERS_CONFIGURATION_LIST = [{"word_size": 32, "number_of_rounds": 64}]
 
 
-class MD5(BitGraphPrimitive):
+class MD5SingleBlockFunction(BitGraphPrimitive):
     """
-    Returns a primitive object of MD5.
+    Return the MD5 function applied to one unpadded input block.
 
     .. WARNING::
 
@@ -47,7 +47,7 @@ class MD5(BitGraphPrimitive):
 
     EXAMPLES::
 
-        >>> primitive = MD5()
+        >>> primitive = MD5SingleBlockFunction()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())

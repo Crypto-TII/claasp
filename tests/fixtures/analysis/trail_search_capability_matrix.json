@@ -8,7 +8,7 @@
       "configuration": {
         "number_of_rounds": 1
       },
-      "primitive": "A51",
+      "primitive": "A51KeystreamFunction",
       "xor_differential": "unsupported",
       "xor_differential_limitation": "exact_semantics",
       "xor_differential_reason": "component 'fsr_0_4' (FeedbackRegister)",
@@ -20,7 +20,7 @@
       "configuration": {
         "number_of_rounds": 1
       },
-      "primitive": "A52",
+      "primitive": "A52KeystreamFunction",
       "xor_differential": "unsupported",
       "xor_differential_limitation": "exact_semantics",
       "xor_differential_reason": "component 'fsr_0_5' (FeedbackRegister)",
@@ -220,7 +220,7 @@
     },
     {
       "configuration": "default",
-      "primitive": "Bivium",
+      "primitive": "BiviumKeystreamFunction",
       "xor_differential": "unsupported",
       "xor_differential_limitation": "exact_semantics",
       "xor_differential_reason": "component 'fsr_0_1' (FeedbackRegister)",
@@ -232,25 +232,25 @@
       "configuration": {
         "number_of_rounds": 1
       },
-      "primitive": "Blake",
-      "xor_differential": "supported_and_tested",
-      "xor_differential_limitation": null,
-      "xor_differential_reason": null,
-      "xor_linear": "supported_and_tested",
-      "xor_linear_limitation": null,
-      "xor_linear_reason": null
-    },
-    {
-      "configuration": {
-        "number_of_rounds": 1
-      },
-      "primitive": "Blake2",
+      "primitive": "Blake2CompressionFunction",
       "xor_differential": "unsupported",
       "xor_differential_limitation": "exact_semantics",
       "xor_differential_reason": "component 'modadd_0_0' (ModularAdd) arity 3",
       "xor_linear": "unsupported",
       "xor_linear_limitation": "exact_semantics",
       "xor_linear_reason": "component 'modadd_0_0' (ModularAdd) arity 3"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "BlakeCompressionFunction",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
     },
     {
       "configuration": "default",
@@ -264,7 +264,7 @@
     },
     {
       "configuration": "default",
-      "primitive": "BluetoothE0",
+      "primitive": "BluetoothE0KeystreamFunction",
       "xor_differential": "unsupported",
       "xor_differential_limitation": "exact_semantics",
       "xor_differential_reason": "component 'and_0_8' (BitwiseAnd) arity 4",
@@ -764,7 +764,7 @@
       "configuration": {
         "number_of_rounds": 1
       },
-      "primitive": "MD5",
+      "primitive": "MD5SingleBlockFunction",
       "xor_differential": "supported_and_tested",
       "xor_differential_limitation": null,
       "xor_differential_reason": null,
@@ -1048,7 +1048,7 @@
       "configuration": {
         "number_of_rounds": 1
       },
-      "primitive": "SHA1",
+      "primitive": "SHA1SingleBlockFunction",
       "xor_differential": "unsupported",
       "xor_differential_limitation": "exact_semantics",
       "xor_differential_reason": "component 'modadd_0_11' (ModularAdd) arity 5",
@@ -1060,7 +1060,7 @@
       "configuration": {
         "number_of_rounds": 1
       },
-      "primitive": "SHA2",
+      "primitive": "SHA2SingleBlockFunction",
       "xor_differential": "unsupported",
       "xor_differential_limitation": "exact_semantics",
       "xor_differential_reason": "component 'modadd_0_21' (ModularAdd) arity 5",
@@ -1108,7 +1108,19 @@
       "configuration": {
         "number_of_rounds": 1
       },
-      "primitive": "Salsa",
+      "primitive": "SalsaBlockFunction",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "SalsaPermutation",
       "xor_differential": "supported_and_tested",
       "xor_differential_limitation": null,
       "xor_differential_reason": null,
@@ -1224,7 +1236,7 @@
       "configuration": {
         "number_of_initialization_clocks": 1
       },
-      "primitive": "Snow3G",
+      "primitive": "Snow3GKeystreamFunction",
       "xor_differential": "unsupported",
       "xor_differential_limitation": "exact_semantics",
       "xor_differential_reason": "component 'sbox_0_16' (BitVectorSBox): xor_differential lookup transition count 6/256 has a non-integral exact weight",
@@ -1463,7 +1475,7 @@
         "keystream_bit_size": 1,
         "number_of_initialization_clocks": 1
       },
-      "primitive": "Trivium",
+      "primitive": "TriviumKeystreamFunction",
       "xor_differential": "supported_and_tested",
       "xor_differential_limitation": null,
       "xor_differential_reason": null,
@@ -1567,7 +1579,7 @@
       "configuration": {
         "number_of_rounds": 1
       },
-      "primitive": "Whirlpool",
+      "primitive": "WhirlpoolSingleBlockFunction",
       "xor_differential": "unsupported",
       "xor_differential_limitation": "exact_semantics",
       "xor_differential_reason": "component 'sbox_0_2' (BitVectorSBox): xor_differential lookup transition count 6/256 has a non-integral exact weight",
@@ -1637,7 +1649,7 @@
       "configuration": {
         "number_of_initialization_clocks": 1
       },
-      "primitive": "Zuc",
+      "primitive": "ZucKeystreamFunction",
       "xor_differential": "unsupported",
       "xor_differential_limitation": "exact_semantics",
       "xor_differential_reason": "component 'sbox_0_27' (BitVectorSBox): xor_differential lookup transition count 6/256 has a non-integral exact weight",
