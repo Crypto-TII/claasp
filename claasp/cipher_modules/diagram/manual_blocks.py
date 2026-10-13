@@ -50,7 +50,10 @@ def label(definition, style='symbols'):
         if operation in ('ROTATE', 'SHIFT'):
             amount = description[1]
             # Both styles retain numeric arrows because bare words omit amounts.
-            token = ('<<<' if amount < 0 else '>>>') if operation == 'ROTATE' else ('<<' if amount < 0 else '>>')
+            if operation == 'ROTATE':
+                token = '<<<' if amount < 0 else '>>>'
+            else:
+                token = '<<' if amount < 0 else '>>'
             text = token+str(abs(amount))
         else:
             text = (SYMBOLS if style == 'symbols' else WORDS).get(operation)
@@ -111,7 +114,12 @@ def art(cell, style='symbols'):
     if cell['kind'] in ('output', 'tap'):
         result = glyphs._art(cell)
         definition = cell.get('definition', {})
-        text = 'OUT' if definition.get('type') == 'cipher_output' else 'OBS' if definition.get('type') == 'intermediate_output' else 'DEAD'
+        if definition.get('type') == 'cipher_output':
+            text = 'OUT'
+        elif definition.get('type') == 'intermediate_output':
+            text = 'OBS'
+        else:
+            text = 'DEAD'
         result[2] = ' |'+glyphs._center(text)+'| '
         return result
     if cell['kind'] != 'box':
@@ -335,7 +343,12 @@ class _Scheduler(glyphs._RegisterScheduler):
         self.value_roles = {value: self.original_inputs[value[1]]['role'] for value in self.inputs}
         for index, call in enumerate(self.calls):
             roles = {self.value_roles.get(value, 'unspecified') for value in call['args']}
-            role = 'data' if 'data' in roles else 'key' if roles == {'key'} else 'unspecified'
+            if 'data' in roles:
+                role = 'data'
+            elif roles == {'key'}:
+                role = 'key'
+            else:
+                role = 'unspecified'
             self.value_roles[('call', index)] = role
         for index in reversed(range(len(self.calls))):
             definition = self.calls[index]['definition']
@@ -798,7 +811,12 @@ def build(ir, *, word_bits=None, strategy='semantic-auto', alignment='left', gat
     if alignment not in ('left', 'right') or layout_preference not in ('balanced', 'crossings', 'depth', 'width'):
         raise ValueError('Choose left/right alignment and balanced/crossings/depth/width layout preference')
     glyphs._graph_limits(ir, 'semantic-legacy', max_cells, max_calls)
-    bits = 1 if native_bundles else infer_word_bits(ir) if word_bits is None else word_bits
+    if native_bundles:
+        bits = 1
+    elif word_bits is None:
+        bits = infer_word_bits(ir)
+    else:
+        bits = word_bits
     if type(bits) is not int or bits < 1 or any(item['bits'] % bits for item in ir['inputs']):
         raise ValueError('Supply uniform aligned positive word_bits')
     variants = STRATEGIES if strategy == 'semantic-auto' else (strategy,)
@@ -1064,7 +1082,12 @@ def _verify_notes(cells, records):
             match = re.fullmatch(r'(DATA|KEY|I)(\d+)(?:-(\d+))?', text)
             start, stop = int(match[2]), int(match[3] or match[2])
             declared = set(range(start, stop+1))
-            pool = unused if match[1] == 'I' else roles['data' if match[1] == 'DATA' else 'key']
+            if match[1] == 'I':
+                pool = unused
+            elif match[1] == 'DATA':
+                pool = roles['data']
+            else:
+                pool = roles['key']
             valid = start <= stop and declared <= pool
         if not valid:
             raise ValueError('Readable legend/stage cue disagrees with local native definitions')
