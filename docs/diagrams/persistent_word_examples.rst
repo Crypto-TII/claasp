@@ -61,7 +61,7 @@ view. These are explicit compatibility choices, not default substitutes.
 
 
 Persistent vector defaults and overview
---------------------------------------
+---------------------------------------
 
 Bare ``to_tikz(ir)`` uses the reparsed persistent word placement. Diagnostic
 views/tables require explicit ``layoutSource='audit'``. Unsupported persistent
@@ -131,7 +131,7 @@ activity against a second evaluation, not against the preceding snapshot.
 
 
 Object interface and compatible unary rows
------------------------------------------
+------------------------------------------
 
 .. code-block:: python
 
