@@ -46,8 +46,8 @@ source files or import every implementation module:
    [True, True, True, True]
    >>> catalogue.primitive("Shift").bijectivity_obligation
    False
-   >>> [item.name for item in catalogue.primitives(filters="pure-arx") if item.name in {"ChaCha", "Salsa"}]
-   ['ChaCha', 'Salsa']
+   >>> [item.name for item in catalogue.primitives(filters="pure-arx") if item.name in {"ChaChaPermutation", "Salsa"}]
+   ['ChaChaPermutation', 'Salsa']
    >>> all("Xor" in item.components for item in catalogue.primitives(components="xor"))
    True
 

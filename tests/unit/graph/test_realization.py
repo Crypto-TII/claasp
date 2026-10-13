@@ -21,7 +21,7 @@ ROOT = next(
 
 
 def test_realization_audit_covers_every_packaged_multi_module_family():
-    catalogue = json.loads((ROOT / "migration/realization_catalogue.json").read_text())
+    catalogue = json.loads((ROOT / "tools/data/realization_catalogue.json").read_text())
     audited = {
         item["canonical"].split(":", 1)[0].rsplit(".", 1)[0] for item in catalogue["families"]
     }
@@ -42,7 +42,7 @@ def test_realization_audit_covers_every_packaged_multi_module_family():
 
 
 def test_realization_audit_has_unique_names_and_explicit_exclusions():
-    catalogue = json.loads((ROOT / "migration/realization_catalogue.json").read_text())
+    catalogue = json.loads((ROOT / "tools/data/realization_catalogue.json").read_text())
     names = [item["family"] for item in catalogue["families"]]
     assert len(names) == len(set(names))
     for item in catalogue["families"]:

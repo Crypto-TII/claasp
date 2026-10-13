@@ -1,7 +1,7 @@
 Constraint-programming representations
 ======================================
 
-M10.6a introduces the Sage-independent CP foundation. ``MiniZincModel`` is a
+``MiniZincModel`` is a
 small immutable representation that owns MiniZinc language items; external
 process execution belongs to ``MiniZincSolver`` under ``drivers``. Neither the
 core graph nor the representation imports the MiniZinc Python package.
@@ -155,8 +155,7 @@ and permutation boundary.
 ``PresentLinearCPModel`` applies the same design to signed LAT semantics. The
 PRESENT-3 regression proves the legacy weight-4 optimum, reconstructs the
 sign of each of its 48 correlations, and independently checks all transitions
-and graph boundaries. Deterministic-truncated and impossible propagation form
-the final M10.6c checkpoint.
+and graph boundaries.
 
 Truncated and impossible propagation
 ------------------------------------
@@ -174,19 +173,13 @@ selected by ``PropagationProblem``. A real MiniZinc solver proves PRESENT
 transition ``1 -> 1`` impossible and ``1 -> 3`` feasible; the latter's weight
 is independently obtained from the exhaustive DDT semantics.
 
-These are the reviewed M10.6c slices. Multi-round bidirectional impossible
-search and the legacy wordwise, probabilistic-truncated, and ARX-specialized models
-remain explicitly in M10.6d.
+Advanced CP models
+------------------
 
-Advanced-suite migration
-------------------------
-
-M10.6d is organized by cryptanalytic semantics rather than by the legacy class
-hierarchy. Its complete model-and-fixture inventory is maintained in
-``docs/architecture/cp-advanced-migration.md``. Exact ARX differential
-optimization is the first implementation checkpoint, followed by generalized
-truncated domains, multi-round impossible search, composed attacks, and
-continuous heuristics.
+Advanced models are organized by cryptanalytic semantics rather than by a
+solver-specific class hierarchy. They cover exact ARX differential
+optimization, generalized truncated domains, multi-round impossible search,
+composed attacks, and continuous heuristics.
 
 Composed attacks use backend-neutral result contracts before they acquire a CP
 lowering. ``BoomerangTrail`` joins two XOR-differential trails through an
@@ -290,7 +283,7 @@ CP provenance. Decoding replays the ternary graph semantics and rejects a
 solver assignment that violates the paired-carry relation.
 
 The ten-run ARM64 benchmark in
-``architecture/audits/data/cp_deterministic_truncated_benchmark.json`` uses
+``tools/benchmark_cp_deterministic_truncated.py`` uses
 the same ToySpeck-2 fixture as the SAT and SMT comparisons. Median MiniZinc
 construction and Chuffed solve times were 1.646 and 39.042 milliseconds. The
 query has the same 200 variables and 829 Boolean constraints; the result
@@ -376,16 +369,15 @@ Docker then projects this fixed semantic result through
 ``WordwiseDifferenceCPModel`` and checks that the solver cannot change any
 typed boundary value.
 
-Impossible-suite migration
---------------------------
+Impossible trails
+-----------------
 
 The legacy result inventory retains the seven-round Speck UNSAT search and
 the exact Simon-32/64 eleven-round input, output, and two middle-boundary
-patterns. The latter requires a typed Simon primitive before its model can be
-migrated honestly. Generated declaration counts are excluded. The next
-checkpoint introduces a typed forward/backward contradiction boundary and
-independent checker; hybrid models will use component semantic overrides
-rather than a separate solver-class hierarchy.
+patterns. Generated declaration counts are excluded. A typed
+forward/backward contradiction boundary and independent checker represent the
+semantic result; hybrid models use component semantic overrides rather than a
+separate solver-class hierarchy.
 
 ``ImpossiblePropagationBoundary`` holds the two partial patterns and reports
 only positions fixed to opposite Boolean differences; unknown values never

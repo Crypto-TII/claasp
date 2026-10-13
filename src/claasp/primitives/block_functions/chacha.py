@@ -2,7 +2,7 @@
 
 from claasp.components import Constant, ModularAdd, Rotate, Xor
 from claasp.encoding import bits_from_int
-from claasp.graph import Primitive, UnitArrayType
+from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 from claasp.unit_types import Bit
 
 ROUND_MODE_HALF = "half"
@@ -19,7 +19,7 @@ def _little_endian_word_positions(word: int) -> tuple[int, ...]:
     return tuple(start + byte * 8 + bit for byte in (3, 2, 1, 0) for bit in range(8))
 
 
-class ChaChaKeystreamBlock(Primitive):
+class ChaChaBlockFunction(Primitive):
     """Build one ChaCha block from key, nonce, and an explicit block counter.
 
     The retained fixed-length mapping permutes ``plaintext`` and then adds the
@@ -29,7 +29,7 @@ class ChaChaKeystreamBlock(Primitive):
 
     EXAMPLES::
 
-        >>> primitive = ChaChaKeystreamBlock()
+        >>> primitive = ChaChaBlockFunction()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
@@ -56,6 +56,7 @@ class ChaChaKeystreamBlock(Primitive):
         super().__init__(
             "chacha_stream_cipher",
             {"plaintext": bit_vector(512), "key": bit_vector(256), "nonce": bit_vector(96)},
+            kind=PrimitiveKind.BLOCK_FUNCTION,
             provenance=(("identity", "ChaCha keystream block"),),
         )
         self._builder.add_round()
@@ -125,4 +126,4 @@ class ChaChaKeystreamBlock(Primitive):
         return self._builder.add_component(Rotate(mixed, amount, "left", component_id=component_id))
 
 
-__all__ = ["PARAMETERS_CONFIGURATION_LIST", "ChaChaKeystreamBlock"]
+__all__ = ["PARAMETERS_CONFIGURATION_LIST", "ChaChaBlockFunction"]

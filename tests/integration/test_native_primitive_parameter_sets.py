@@ -9,7 +9,9 @@ import pytest
 from claasp.graph import Primitive, PrimitiveKind
 
 PARAMETER_SETS = json.loads(
-    (Path(__file__).parents[2] / "migration/m10_9d_parameter_sets.json").read_text(encoding="utf-8")
+    (
+        Path(__file__).parents[2] / "tests/fixtures/catalogue/primitive_parameter_sets.json"
+    ).read_text(encoding="utf-8")
 )
 
 

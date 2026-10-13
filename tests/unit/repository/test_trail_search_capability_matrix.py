@@ -8,7 +8,7 @@ from pathlib import Path
 
 from claasp.primitives._catalogue_exports import ALL_EXPORTS
 
-OUTPUT = Path("docs/architecture/audits/data/trail-search-capability-matrix.json")
+OUTPUT = Path("tests/fixtures/analysis/trail_search_capability_matrix.json")
 
 
 def test_trail_search_capability_matrix_is_complete_and_current():

@@ -66,19 +66,13 @@ Ruff is the single formatter and linter because its formatter and integrated
 rules avoid overlapping tools. Mypy is the single static type checker. Exact
 versions live in the ``quality`` dependency group in ``pyproject.toml``.
 Quality checks cover ``src/claasp``, ``tests``, ``tools``, and
-``docs/conf.py``; they do not reformat the legacy v4 tree. Generated build
+``docs/conf.py``. Generated build
 directories, caches, reports, wheel staging directories, and primitive-owned
 data are explicit non-source artifacts rather than silent per-tool exclusions.
 
-The M10.16a baseline records 394 v5 Python source files, 123 modules declaring
-``__all__``, 1,179 resolved qualified exports, 671 distinct exported objects,
-and 1,224 canonical public class members. The initial audit found 530 members
-without docstrings, only seven member-level ``EXAMPLES::`` sections, 663 Sage
-prompts in v5 source docstrings, 701 findings under the proposed broad Ruff
-rule set, 470 files needing Ruff formatting, and 370 default-mypy diagnostics
-in ``src/claasp``. These are adoption measurements, not accepted permanent
-exclusions. Each later slice must reduce its owned findings and the closure gate
-must reject regression or stale baseline entries.
+The committed public-API and typing baselines make changes reviewable. The
+closure gates reject missing documentation, new typing diagnostics, duplicate
+entries, and stale baseline records rather than relying on broad exclusions.
 
 The dependency-free core-import boundary remains unchanged: quality and
 documentation collection must not import Sage, NumPy, pandas, Matplotlib,
@@ -90,7 +84,7 @@ Static typing adoption
 
 Pinned mypy checks ``src/claasp``, ``tests``, ``tools``, and
 ``docs/conf.py`` with untyped function bodies checked, implicit optionals
-rejected, and unused ignores reported. The M10.16g authority is an exact
+rejected, and unused ignores reported. The typing authority is an exact
 regression baseline, not a set of module exclusions: every diagnostic retains
 its path, position, error code, and message, and the closure command rejects
 new, stale, duplicate, or out-of-scope entries. Inline suppressions are not

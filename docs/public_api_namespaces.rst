@@ -331,6 +331,12 @@ claasp.primitives.permutations.ascon
 .. automodule:: claasp.primitives.permutations.ascon
    :no-index:
 
+claasp.primitives.permutations.chacha
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.primitives.permutations.chacha
+   :no-index:
+
 claasp.primitives.permutations.gaston
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

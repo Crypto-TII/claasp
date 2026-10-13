@@ -51,7 +51,7 @@ contracts; duplicates are rejected.
 
 ``Primitive.select_configuration``, ``validate_number_of_rounds``, and
 ``validate_positive_integer`` centralize the common parameter checks.  See the
-direct ``AES``, ``Speck``, and ``ChaCha`` sources for full reference examples:
+direct ``AES``, ``Speck``, and ``ChaChaPermutation`` sources for full reference examples:
 their local variables follow the specification pseudocode (``state``;
 ``x``/``y``; and ``a``/``b``/``c``/``d``), while ``CustomAES`` demonstrates
 the reusable-block style. Composite outputs are ordered, so a key schedule can

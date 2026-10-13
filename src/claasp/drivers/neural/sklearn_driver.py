@@ -1,7 +1,7 @@
 """Optional scikit-learn training driver for neural distinguisher experiments.
 
 CLAASP v5 keeps machine-learning frameworks optional and out of ordinary
-imports (see ``docs/architecture/v5-plan.md`` M10.13). Legacy CLAASP
+imports. Legacy CLAASP
 (``claasp/cipher_modules/neural_network_tests.py``) trained its distinguishers
 with TensorFlow/Keras -- ``docker/Dockerfile`` pins ``tensorflow==2.13.0`` --
 which is a multi-hundred-megabyte, GPU-toolchain-aware dependency. For v5's

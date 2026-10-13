@@ -311,7 +311,7 @@ Z3 execution without claiming a distinct mathematical encoding. Decoding
 independently propagates the typed ternary semantics across the graph.
 
 The ten-run ARM64 Z3 benchmark in
-``architecture/audits/data/smt_deterministic_truncated_benchmark.json`` uses
+``tools/benchmark_smt_deterministic_truncated.py`` uses
 the same ToySpeck-2 fixture as the SAT benchmark. Median construction and solve
 times were 1.414 and 8.519 milliseconds. The formula has the same 200 variables
 and 829 Boolean assertions; the result establishes executable SMT parity, not

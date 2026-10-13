@@ -3,7 +3,7 @@
 CLAASP v5 renamed the generic graph abstraction ``Cipher`` to ``Primitive``
 and the public catalogue package ``ciphers`` to ``primitives`` (see the
 "Primitive terminology and catalogue taxonomy" section of
-``docs/architecture/v5-plan.md``). This test wires
+``tools/terminology_guard.py``). This test wires
 :mod:`tools.terminology_guard` into the routine fast unit-test run so a
 regression to the transitional vocabulary fails CI immediately, without a
 separate job.

@@ -75,7 +75,7 @@ def main():
         "workload": {
             "description": "fixed-weight differential and bounded-weight linear ToySpeck-2 trails",
             "timeout_seconds": 30,
-            "sat_comparison": "docs/architecture/audits/data/sat_trail_assembly_benchmark.json",
+            "sat_comparison": "tests/fixtures/analysis/sat_trail_assembly_benchmark.json",
         },
         "environment": {"platform": platform.platform(), "python": sys.version.split()[0]},
         "results": rows,

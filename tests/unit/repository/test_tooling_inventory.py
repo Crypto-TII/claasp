@@ -9,7 +9,7 @@ REPOSITORY_ROOT = NEXT_ROOT
 
 def test_m10_15_inventory_assigns_python_native_mixed_and_diagram_surfaces():
     manifest = json.loads(
-        (NEXT_ROOT / "migration/m10_15_tooling_obligations.json").read_text(encoding="utf-8")
+        (NEXT_ROOT / "tools/data/tooling_inventory.json").read_text(encoding="utf-8")
     )
     assert manifest["milestone"] == "M10.15"
     assert manifest["compatibility_policy"]["canonical_schema"] == "org.claasp.primitive"
@@ -38,7 +38,7 @@ def test_m10_15_inventory_assigns_python_native_mixed_and_diagram_surfaces():
 
 def test_m10_15_python_records_have_explicit_ownership_and_rationales():
     inventory = json.loads(
-        (NEXT_ROOT / "migration/legacy_inventory.json").read_text(encoding="utf-8")
+        (NEXT_ROOT / "tools/data/legacy_inventory.json").read_text(encoding="utf-8")
     )
     owned = [item for item in inventory["records"] if item.get("milestone_owner") == "M10.15a"]
     assert len(owned) == 11
@@ -55,7 +55,7 @@ def test_m10_15_python_records_have_explicit_ownership_and_rationales():
 
 def test_evaluation_and_continuous_helpers_have_final_nonduplicating_dispositions():
     inventory = json.loads(
-        (NEXT_ROOT / "migration/legacy_inventory.json").read_text(encoding="utf-8")
+        (NEXT_ROOT / "tools/data/legacy_inventory.json").read_text(encoding="utf-8")
     )
     records = {item["path"]: item for item in inventory["records"]}
     m10_15_helpers = {

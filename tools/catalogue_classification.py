@@ -21,7 +21,7 @@ REVIEWED_RETAINED_INPUT_OBLIGATIONS = {
     "BitwiseAnd": False,
     "BitwiseNot": True,
     "BitwiseOr": False,
-    "ChaChaKeystreamBlock": True,
+    "ChaChaBlockFunction": True,
     "CipherFour": True,
     "Constant": False,
     "Fancy": False,

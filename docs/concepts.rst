@@ -42,19 +42,24 @@ and validates those values.
 
    >>> from claasp.unit_types import BinaryExtensionField, PrimeField, Word
    >>> aes_field = BinaryExtensionField(8, 0x11B)
+   >>> gfp = PrimeField(257)
+   >>> ring_mod_256 = Word(8)
    >>> aes_field.encoded_bit_size
    8
-   >>> PrimeField(257).contains(256)
+   >>> gfp.contains(256)
    True
-   >>> PrimeField(257).contains(257)
+   >>> gfp.contains(257)
    False
-   >>> Word(8).contains(0x57)
+   >>> ring_mod_256.contains(0x57)
    True
 
 ``Word(8)`` and ``BinaryExtensionField(8, 0x11B)`` both use eight bits when
 encoded, but they do not have the same algebra. A word supports operations
 such as integer addition modulo :math:`2^8` and rotation. A field element
-supports polynomial-basis field arithmetic.
+supports polynomial-basis field arithmetic. The integer ``0x11B`` has binary
+digits ``1_0001_1011``. Reading each set bit at position :math:`i` as the term
+:math:`x^i` gives
+:math:`x^8+x^4+x^3+x+1`, the polynomial used for the AES field.
 
 The difference is visible when the same two 8-bit encodings are added using
 three unit types:
@@ -62,22 +67,22 @@ three unit types:
 .. doctest::
 
    >>> from claasp.primitives.single_component_primitives import Add, ModularAdd
-   >>> word_addition = ModularAdd(word_bit_size=8)
-   >>> prime_field_addition = Add(unit_type=PrimeField(251))
-   >>> binary_field_addition = Add(unit_type=BinaryExtensionField(8, 0x11B))
+   >>> word_addition = ModularAdd(word_bit_size=ring_mod_256.encoded_bit_size)
+   >>> prime_field_addition = Add(unit_type=gfp)
+   >>> binary_field_addition = Add(unit_type=aes_field)
    >>> hex(word_addition.evaluate(0xF0, 0x30))
    '0x20'
    >>> hex(prime_field_addition.evaluate(0xF0, 0x30))
-   '0x25'
+   '0x1f'
    >>> hex(binary_field_addition.evaluate(0xF0, 0x30))
    '0xc0'
 
-All three unit types have an 8-bit encoding, but they reduce the sum differently.
-The word result is :math:`240 + 48 \bmod 256`; the prime-field result is
-:math:`240 + 48 \bmod 251`; and addition in :math:`GF(2^8)` adds polynomial
-coefficients modulo two, which is bitwise XOR. The polynomial ``0x11B`` defines
-the binary extension field; it affects multiplication, while field addition
-remains XOR.
+The word and binary-field units have 8-bit encodings. The 257-element prime
+field needs 9 bits because it includes the value 256. The word result is
+:math:`240 + 48 \bmod 256`; the prime-field result is
+:math:`240 + 48 \bmod 257`; and addition in :math:`GF(2^8)` adds polynomial
+coefficients modulo two, which is bitwise XOR. The polynomial ``0x11B`` affects
+field multiplication, while field addition remains XOR.
 
 Unit-array types
 ----------------
@@ -159,6 +164,22 @@ The reusable and inline construction forms are equivalent:
 
 Primitive authors normally receive these arrays from ``builder.input()`` or a
 component operation, so CLAASP assigns and validates ``source_id`` for them.
+For example, the value returned when an XOR component is added is the
+``UnitArray`` produced by that component:
+
+.. doctest::
+
+   >>> from claasp import BitWord, PrimitiveBuilder
+   >>> from claasp.components import Xor
+   >>> builder = PrimitiveBuilder("xor_example", {"left": BitWord(8), "right": BitWord(8)})
+   >>> builder.add_round()
+   Round(number=0)
+   >>> mixed = builder.add_component(Xor((builder.input("left"), builder.input("right"))))
+   >>> (mixed.source_id, mixed.shape)
+   ('xor_0_0', (8,))
+
+Here ``mixed.source_id`` is also the identifier of the XOR component that
+produces the array. A later component can consume ``mixed`` directly.
 
 Components and rounds
 ---------------------

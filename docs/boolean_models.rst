@@ -110,7 +110,7 @@ accepts a count only after the solver reaches terminal UNSAT; hitting the caller
 limit is explicitly incomplete.
 
 The ten-run canonical ARM64 benchmark in
-``architecture/audits/data/sat_trail_assembly_benchmark.json`` uses identical
+``tools/benchmark_sat_trail_assembly.py`` uses identical
 formulas and restrictions for every solver. Times below are medians in
 milliseconds. MiniSat and CryptoMiniSat do not report peak memory through their
 current drivers; no claim of a generally faster solver follows from these toy
@@ -205,7 +205,7 @@ Components outside the documented ARX/structural subset are rejected instead
 of receiving an approximate encoding.
 
 The reproducible ten-run ARM64 benchmark in
-``architecture/audits/data/sat_truncated_trail_benchmark.json`` uses the same
+``tools/benchmark_sat_truncated_trails.py`` uses the same
 fixed ToySpeck-2 propagation for all three solvers. It establishes solver
 parity for this workload, not a general performance ranking.
 
@@ -272,7 +272,7 @@ incompatibility. Optional ``input_pattern`` and ``output_pattern`` arguments
 fix either external difference when reproducing a particular search.
 
 The ten-run ARM64 benchmark in
-``architecture/audits/data/sat_impossible_trail_benchmark.json`` uses the same
+``tools/benchmark_sat_impossible_trails.py`` uses the same
 Speck32/64-3 formula for all three solvers. Median build times are 10.96,
 10.71, and 10.70 milliseconds for MiniSat, Kissat, and CryptoMiniSat;
 corresponding solve times are 2.85, 1.14, and 2.10 milliseconds. These results
@@ -314,7 +314,7 @@ the independent counter-based semantics and checks the round rotations and XOR
 wiring again.
 
 The ten-run ARM64 benchmark in
-``architecture/audits/data/sat_probabilistic_trail_benchmark.json`` records the
+``tools/benchmark_sat_probabilistic_trails.py`` records the
 same bounded formula under all three canonical SAT solvers. The formulation is
 large—554,782 variables and 1,327,845 clauses—and Kissat reported a median
 692.6 MiB peak. The data establishes correctness and a concrete optimization
@@ -345,7 +345,7 @@ two-bit unknown representation to canonical trits, checks rotations and XOR
 wiring independently, and reports the sum of the recovered per-bit costs.
 
 The like-for-like ten-run ARM64 benchmark in
-``architecture/audits/data/sat_semi_deterministic_trail_benchmark.json`` found
+``tools/benchmark_sat_semi_deterministic_trails.py`` found
 median solve times of 0.258, 0.308, and 0.251 seconds for the recovered model
 under MiniSat, Kissat, and CryptoMiniSat. The portable model took 3.139, 0.564,
 and 0.640 seconds respectively. These results justify retaining the recovered
@@ -386,7 +386,7 @@ graph change cannot silently leave one unconstrained. Optional
 full windows.
 
 The ten-run ARM64 comparison in
-``architecture/audits/data/sat_n_window_benchmark.json`` uses the same
+``tools/benchmark_sat_n_window.py`` uses the same
 ToySpeck-4 boundaries and maximum weight for every row. The heuristic adds
 21--42 variables and 189--224 clauses on this small workload. Median solve
 times vary by strategy and solver, so these data do not establish a generally
@@ -454,7 +454,7 @@ ordinary DIMACS cannot silently ignore parity records. Use the ordinary model
 or explicitly call ``expanded_cnf()`` for another solver.
 
 The ten-run ARM64 benchmark in
-``architecture/audits/data/native_xor_trail_benchmark.json`` compares both
+``tools/benchmark_native_xor_trails.py`` compares both
 formulations through the same CryptoMiniSat 5.11.15 driver and identical
 boundaries. Native XOR reduced median solving time on these two toy workloads,
 but construction took longer and the sample is too small to establish a
@@ -515,7 +515,7 @@ The legacy CryptoMiniSat subclass only printed a warning and reused ordinary
 CNF unchanged. The v5 strategy finds complete parity groups in graph wiring
 and proves equivalence by expanding every native record back to the ordinary
 formula. The ten-run ARM64 comparison in
-``architecture/audits/data/native_xor_truncated_trail_benchmark.json`` uses
+``tools/benchmark_native_xor_truncated_trails.py`` uses
 the same fixed ToySpeck-2 propagation and CryptoMiniSat 5.11.15. Native XOR
 reduced 829 ordinary clauses to 733 plus 48 parity records; median solve time
 was 0.948 ms instead of 1.219 ms, while median construction time increased
@@ -547,7 +547,7 @@ The decoded result contains both independently checked characteristics and
 their summed weight. The legacy exclusion rule remains ``TBD`` for literature
 provenance and is not described as an exact four-evaluation probability model.
 The ten-run comparison in
-``architecture/audits/data/sat_shared_difference_paired_benchmark.json`` uses
+``tools/benchmark_sat_shared_difference_paired.py`` uses
 the same fixed-weight ToySpeck-2 formula with and without the exclusion layer.
 
 The paired-input strategy can also be joined directly to an XOR-linear suffix.
@@ -628,7 +628,7 @@ provenance remains ``TBD`` until a primary source is matched to these exact SAT
 clauses.
 
 The ten-run ARM64 comparison in
-``architecture/audits/data/sat_differential_linear_boundary_benchmark.json``
+``tools/benchmark_sat_differential_linear_boundaries.py``
 uses the same 32-bit truth tables, assignments, and three canonical SAT
 solvers. The direct upper connector uses 96 clauses and 160 literals instead
 of 192 and 576 for exhaustive forbidden assignments; the direct lower
@@ -663,7 +663,7 @@ the legacy deterministic-middle SAT objective: differential weight plus twice
 the linear weight. It does not assign a probability to the truncated middle.
 
 The complete Speck32/64-3 benchmark in
-``architecture/audits/data/sat_differential_linear_trail_benchmark.json`` uses
+``tools/benchmark_sat_differential_linear_trails.py`` uses
 the identical 2,543-variable, 7,151-clause formula for MiniSat, Kissat, and
 CryptoMiniSat. Median solve times were 2.593, 1.150, and 2.013 milliseconds.
 This is a reproducibility fixture, not a solver ranking or a claim about

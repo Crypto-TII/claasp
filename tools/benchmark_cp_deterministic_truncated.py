@@ -61,7 +61,7 @@ def main():
         "workload": {
             "description": "fixed ToySpeck-2 deterministic-truncated trail",
             "timeout_seconds": 30,
-            "sat_comparison": "docs/architecture/audits/data/sat_truncated_trail_benchmark.json",
+            "sat_comparison": "tests/fixtures/analysis/sat_truncated_trail_benchmark.json",
         },
         "environment": {"platform": platform.platform(), "python": sys.version.split()[0]},
         "result": {

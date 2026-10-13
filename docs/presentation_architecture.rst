@@ -7,8 +7,8 @@ Contracts and boundaries
 ``claasp.presentation`` replaces the legacy mutable ``Report`` dispatcher
 with frozen contracts. ``TableColumn``, ``TableCell``, ``TableRow``, ``Table``,
 ``ReportSection``, and ``ReportData`` contain ordered presentation data. Result
-adapters consume typed trails, traces, M10.11 component results, M10.12
-avalanche/statistical results, M10.13 neural experiments, continuous
+adapters consume typed trails, traces, component results,
+avalanche/statistical results, neural experiments, continuous
 heuristics, and catalogue records. They never invoke the producing analysis.
 
 ``PresentationEvidence`` distinguishes ``exact``, ``proved_bound``,
@@ -52,8 +52,8 @@ Export is not serialization
 ``report_data`` returns recursively JSON-compatible report data, and
 ``write_report`` may encode it as JSON for report interchange. These functions
 do not define a versioned graph or result schema and do not promise round-trip
-reconstruction. M10.15 owns versioned serialization, diagram compilation, code
-generation, native helpers, and evaluator artifacts.
+reconstruction. Separate layers own versioned serialization, diagram
+compilation, code generation, native helpers, and evaluator artifacts.
 
 File output is distinct from adaptation and rendering. Callers provide the
 complete path, explicit format, matching extension, parent-creation policy,

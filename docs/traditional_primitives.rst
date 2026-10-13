@@ -1,5 +1,5 @@
-Traditional primitives
-========================
+Primitives
+==========
 
 Words as logical units
 ----------------------
@@ -147,24 +147,58 @@ MSB-first units and rejects values that would be truncated. The graph contains
 all 31 substitution-permutation rounds, the 80-bit key schedule, and final
 whitening.
 
-ChaCha
-------
+ChaCha permutation and block function
+-------------------------------------
 
-``ChaCha`` represents the fixed-length unkeyed permutation, not the
+``ChaChaPermutation`` represents the fixed-length unkeyed permutation, not the
 variable-length stream-cipher mode. Its round parameter follows the standard
 terminology: one round applies four quarter rounds, alternating columns and
 diagonals.
 
 .. doctest::
 
-   >>> from claasp.primitives import ChaCha
-   >>> toy = ChaCha(number_of_rounds=1, word_size=8, rotations=(4, 3, 2, 1))
+   >>> from claasp.primitives import ChaChaPermutation
+   >>> permutation = ChaChaPermutation()
+   >>> permutation.details()
+   Primitive details
+     Type: permutation
+     Instance: ChaChaPermutation
+     Inputs:
+       state: 512 bits (public)
+     Output: 512 bits
+     Rounds: 20
+     Realization: default
+   >>> toy = ChaChaPermutation(number_of_rounds=1, word_size=8, rotations=(4, 3, 2, 1))
    >>> f"{toy.evaluate(1 << 120):032x}"
    '81000000ad0000005600000046000000'
 
 The implementation is a typed word graph built only from modular addition,
 XOR, rotation, and concatenation. The round count uses the standard convention
 and fixed tests cover the ChaCha20 permutation plus reduced toy instances.
+
+CLAASP separately names the fixed-length keyed construction
+``ChaChaBlockFunction``. It accepts a data block, a secret key, and a nonce; it
+is therefore a block function, not a block cipher or the stateful ChaCha20
+stream cipher:
+
+.. doctest::
+
+   >>> from claasp.primitives import ChaChaBlockFunction
+   >>> block_function = ChaChaBlockFunction(number_of_rounds=1)
+   >>> block_function.details()
+   Primitive details
+     Type: block function
+     Instance: ChaChaBlockFunction
+     Inputs:
+       plaintext: 512 bits (public)
+       key: 256 bits (secret)
+       nonce: 96 bits (public)
+     Output: 512 bits
+     Rounds: 3
+     Realization: default
+
+The three graph rounds in this reduced example are the two half-round stages
+and the final feed-forward addition.
 
 Salsa
 -----
@@ -187,7 +221,8 @@ Trivium
 
 Trivium is published as a stream cipher, and a stream cipher is a stateful
 variable-length construction rather than a CLAASP primitive. ``Trivium`` is
-therefore the fixed-length function that its initialization and keystream
+therefore not represented as that complete mode. Trivium in CLAASP is the
+fixed-length function that its initialization and keystream
 generation define: an 80-bit key and an 80-bit IV produce the first
 ``keystream_bit_size`` keystream bits after a chosen number of initialization
 clocks. The key is the secret input, the IV is the public fixed-length data

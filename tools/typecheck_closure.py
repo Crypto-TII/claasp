@@ -11,7 +11,7 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-BASELINE = ROOT / "migration" / "m10_16_typing_baseline.json"
+BASELINE = ROOT / "tools" / "baselines" / "typing.json"
 PINNED_VERSION = "2.3.1"
 SCOPES = ("src/claasp", "tests", "tools", "docs/conf.py")
 DIAGNOSTIC = re.compile(

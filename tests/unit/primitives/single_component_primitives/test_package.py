@@ -172,7 +172,8 @@ def test_machine_catalogue_matches_generated_exports():
             for parent in Path(__file__).resolve().parents
             if (parent / "pyproject.toml").is_file()
         )
-        / "migration"
+        / "tools"
+        / "data"
         / "single_component_catalogue.json"
     )
     assert json.loads(path.read_text()) == CATEGORY_EXPORTS["single_component_primitives"]

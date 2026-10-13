@@ -63,7 +63,7 @@ def test_sklearn_mlp_driver_trains_a_trivially_separable_distinguisher():
     assert result.deterministic is True
     assert len(result.validation_accuracy) == experiment.epochs
     # Tolerance/threshold-based experimental evidence only -- never an exact
-    # accuracy value (docs/architecture/v5-plan.md M10.13).
+    # Accuracy value for the deterministic training setup.
     assert result.validation_accuracy[-1] > 0.9
 
 

@@ -82,10 +82,10 @@ The entry pages are then:
    docs/_build/user/user_guide.html
    docs/_build/developer/developer_guide.html
 
-User-guide prose should describe the current public behavior. Historical
-plans, one-time migration evidence, and generated audits belong under
-``docs/architecture`` and must not be linked as prerequisites for using the
-library. Add executable examples for stable behavior where practical.
+User-guide prose should describe the current public behavior. Temporary plans,
+one-time migration evidence, and generated audits belong in their original
+pull requests or release records, not in the published guides. Add executable
+examples for stable behavior where practical.
 
 Formatting, linting, and typing
 -------------------------------

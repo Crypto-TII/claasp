@@ -104,7 +104,7 @@ def test_reviewed_retained_input_bijectivity_obligations():
     }
     assert observed_toys == expected_toys
     assert not by_name["Fancy"]["bijectivity_obligation"]
-    assert by_name["ChaChaKeystreamBlock"]["bijectivity_obligation"]
+    assert by_name["ChaChaBlockFunction"]["bijectivity_obligation"]
 
 
 def test_legacy_sbox_forms_are_explicitly_noncanonical():

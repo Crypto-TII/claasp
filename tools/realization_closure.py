@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
-CATALOGUE = ROOT / "migration/realization_catalogue.json"
+CATALOGUE = ROOT / "tools/data/realization_catalogue.json"
 
 
 def check() -> tuple[int, int]:

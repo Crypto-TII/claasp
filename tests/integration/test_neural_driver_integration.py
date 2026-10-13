@@ -37,5 +37,5 @@ def test_sklearn_driver_trains_a_bounded_reduced_round_differential_distinguishe
     assert result.driver == "sklearn-mlp"
     assert len(result.validation_accuracy) == experiment.epochs
     # Tolerance/threshold-based experimental evidence, not an exact
-    # cross-platform accuracy fixture (docs/architecture/v5-plan.md M10.13).
+    # Cross-platform accuracy fixture for the deterministic training setup.
     assert result.validation_accuracy[-1] > 0.8

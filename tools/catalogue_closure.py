@@ -11,9 +11,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
 CATALOGUE = ROOT / "src/claasp/catalogue/data/catalogue.json"
-INVENTORY = ROOT / "migration/legacy_inventory.json"
-REALIZATIONS = ROOT / "migration/realization_catalogue.json"
-SINGLE_COMPONENTS = ROOT / "migration/single_component_catalogue.json"
+INVENTORY = ROOT / "tools/data/legacy_inventory.json"
+REALIZATIONS = ROOT / "tools/data/realization_catalogue.json"
+SINGLE_COMPONENTS = ROOT / "tools/data/single_component_catalogue.json"
 
 
 def check() -> tuple[int, int, int, int, int]:

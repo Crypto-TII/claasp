@@ -19,13 +19,12 @@ FORBIDDEN_PARTS = {
     ".mypy_cache",
     ".pytest_cache",
     ".ruff_cache",
-    "migration",
     "tests",
     "tools",
 }
 FORBIDDEN_NAMES = {
-    "m10_16_public_api.json",
-    "m10_16_typing_baseline.json",
+    "public_api.json",
+    "typing.json",
     "pyproject.toml",
 }
 FORBIDDEN_SUFFIXES = {".a", ".c", ".dll", ".dylib", ".h", ".o", ".pyc", ".so"}

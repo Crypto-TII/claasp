@@ -25,7 +25,7 @@ REVIEWED_RETAINED_INPUT_PRIMITIVES = (
     "BinaryAffineMap",
     "BitVectorSBox",
     "BitwiseNot",
-    "ChaChaKeystreamBlock",
+    "ChaChaBlockFunction",
     "CipherFour",
     "FeedbackRegister",
     "Heys",

@@ -7,9 +7,9 @@ import pytest
 from claasp.representations.execution import BatchEvaluator
 
 FIXED_VECTORS = json.loads(
-    (Path(__file__).parents[2] / "migration" / "m10_9d7_fixed_vectors.json").read_text(
-        encoding="utf-8"
-    )
+    (
+        Path(__file__).parents[2] / "tests/fixtures/catalogue/permutation_fixed_vectors.json"
+    ).read_text(encoding="utf-8")
 )
 PARITY_VECTORS = tuple({record["class"]: record for record in FIXED_VECTORS}.values())
 

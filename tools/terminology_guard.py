@@ -1,8 +1,7 @@
 """Guard against reintroducing generic ``cipher``/``ciphers`` vocabulary.
 
-CLAASP v5 uses ``primitive`` as its generic public term (see the "Primitive
-terminology and catalogue taxonomy" section of ``docs/architecture/v5-plan.md``
-and milestone M10.9a). The word ``cipher`` remains correct only where it names
+CLAASP v5 uses ``primitive`` as its generic public term. The word ``cipher``
+remains correct only where it names
 a real mathematical category (``block_cipher(s)``, ``tweakable_block_cipher(s)``,
 and their prose equivalents such as "block cipher") or is part of an
 established cryptographic term such as ``ciphertext`` or "stream cipher" used
@@ -75,8 +74,7 @@ _ALLOWED_PATTERN = re.compile(
 )
 #: Legacy CLAASP 4 module/path citations such as ``claasp.cipher_modules...``
 #: or ``claasp/ciphers/stream_ciphers/trivium_stream_cipher.py``. Legacy paths
-#: and evidence are explicitly allowed to keep their real spelling (see
-#: "Primitive terminology and catalogue taxonomy" in v5-plan.md); the legacy
+#: and evidence are explicitly allowed to keep their real spelling; the legacy
 #: top-level package is always spelled ``claasp`` followed immediately by a
 #: dot or slash, which never collides with the v5 package ``claasp``.
 _LEGACY_PATH_PATTERN = re.compile(r"\bclaasp[./][\w./]*")
@@ -152,9 +150,7 @@ def main() -> int:
         "\nUse 'primitive' for the generic graph abstraction and catalogue "
         "vocabulary; 'cipher' remains correct only for the real "
         "block_cipher(s)/tweakable_block_cipher(s) category, 'ciphertext', "
-        "or a named legacy construction such as 'stream cipher'. See the "
-        "'Primitive terminology and catalogue taxonomy' section of "
-        "docs/architecture/v5-plan.md.",
+        "or a named legacy construction such as 'stream cipher'.",
         file=sys.stderr,
     )
     return 1

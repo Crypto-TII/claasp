@@ -10,9 +10,9 @@ When one source module needs more than one focused suite, additional files use
 mechanically discoverable without forcing unrelated cross-module behavior into
 an arbitrarily named test file.
 
-`repository/` is the deliberate exception. It contains checks for migration
-authorities, generated inventories, CI policy, packaging, release closure, and
-other repository-level contracts that are not owned by one runtime package.
+`repository/` is the deliberate exception. It contains checks for generated
+inventories, CI policy, packaging, and other repository-level contracts that
+are not owned by one runtime package.
 
 When adding a test, choose the narrowest source module that owns its primary
 contract. Cross-module end-to-end behavior belongs in `tests/integration`.

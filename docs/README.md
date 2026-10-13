@@ -14,9 +14,8 @@ Keeping public page filenames stable preserves documentation URLs and existing
 cross-references. Generated HTML and doctest output live under `_build/` and
 are not source documentation.
 
-Historical design notes, release plans, and generated audit reports live in
-`architecture/`. They are engineering records rather than user-guide pages.
-Open review findings that are intentionally split across later pull requests
-are tracked in `architecture/v5-follow-up-backlog.md`.
+Stable design explanations live in `architecture/`. Completed migration
+plans, generated audits, and temporary review notes are kept in their original
+pull requests or release records rather than in the published documentation.
 
 Build and contribution commands are documented in `development.rst`.

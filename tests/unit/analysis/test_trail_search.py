@@ -9,7 +9,7 @@ from claasp.primitives import (
     CHAM,
     SPARX,
     Ascon,
-    ChaCha,
+    ChaChaPermutation,
     Present,
     Salsa,
     Simeck,
@@ -31,7 +31,7 @@ from claasp.semantics.cryptanalysis import TrailKind
         Speck(number_of_rounds=1),
         SPARX(number_of_rounds=1),
         Threefish(number_of_rounds=1),
-        ChaCha(number_of_rounds=1),
+        ChaChaPermutation(number_of_rounds=1),
         Salsa(number_of_rounds=1),
     ),
 )

@@ -26,7 +26,7 @@ Execution traces and evaluation results have their own schema identifiers.
 They carry the primitive digest and exact realization/transformation/driver
 provenance, and validate values against the supplied graph.  Unsupported
 analysis results and annotations fail with ``unsupported_artifact``.  This is
-deliberately independent of the M10.14 presentation export, whose job is
+deliberately independent of presentation export, whose job is
 human-facing interchange rather than graph reconstruction.
 
 Source compilers and drivers

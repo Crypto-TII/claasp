@@ -96,8 +96,8 @@ def test_boundary_normalized_realizations_preserve_published_fixed_vectors(
 
 def test_every_audited_family_and_realization_has_existing_fixed_evidence():
     records = []
-    for name in ("m10_9d6_fixed_vectors.json", "m10_9d7_fixed_vectors.json"):
-        records.extend(json.loads((ROOT / "migration" / name).read_text()))
+    for name in ("substitution_fixed_vectors.json", "permutation_fixed_vectors.json"):
+        records.extend(json.loads((ROOT / "tests/fixtures/catalogue" / name).read_text()))
     evidenced = {record["class"] for record in records}
     assert {
         "Gift",

@@ -12,9 +12,9 @@ from pathlib import Path
 from catalogue_classification import classify_bijectivity
 
 ROOT = Path(__file__).parents[1]
-INVENTORY = ROOT / "migration/legacy_inventory.json"
-REALIZATIONS = ROOT / "migration/realization_catalogue.json"
-SINGLE_COMPONENTS = ROOT / "migration/single_component_catalogue.json"
+INVENTORY = ROOT / "tools/data/legacy_inventory.json"
+REALIZATIONS = ROOT / "tools/data/realization_catalogue.json"
+SINGLE_COMPONENTS = ROOT / "tools/data/single_component_catalogue.json"
 DESTINATION = ROOT / "src/claasp/catalogue/data/catalogue.json"
 
 LEGACY_REGRESSIONS = frozenset({"GimliSbox", "SimeckSbox", "SimonSbox"})
@@ -868,9 +868,9 @@ def build_catalogue() -> dict:
         "schema_version": 2,
         "milestone": "M10.15g",
         "sources": {
-            "classification": "migration/legacy_inventory.json",
-            "components": "migration/single_component_catalogue.json",
-            "realizations": "migration/realization_catalogue.json",
+            "classification": "tools/data/legacy_inventory.json",
+            "components": "tools/data/single_component_catalogue.json",
+            "realizations": "tools/data/realization_catalogue.json",
         },
         "primitives": primitives,
         "components": components,

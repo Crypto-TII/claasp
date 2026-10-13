@@ -6156,12 +6156,12 @@
           "visibility": "public"
         }
       ],
-      "kind": "block_cipher",
+      "kind": "block_function",
       "labels": [],
       "legacy_source": "claasp/ciphers/stream_ciphers/chacha_stream_cipher.py",
       "module": "claasp.primitives.block_functions.chacha",
-      "name": "ChaChaKeystreamBlock",
-      "official_name": "ChaChaKeystreamBlock",
+      "name": "ChaChaBlockFunction",
+      "official_name": "ChaChaBlockFunction",
       "parameter_sets": [
         {
           "name": "standard-1",
@@ -7291,8 +7291,8 @@
       "labels": [],
       "legacy_source": "claasp/ciphers/permutations/chacha_permutation.py",
       "module": "claasp.primitives.permutations.chacha",
-      "name": "ChaCha",
-      "official_name": "ChaCha",
+      "name": "ChaChaPermutation",
+      "official_name": "ChaChaPermutation",
       "parameter_sets": [
         {
           "name": "default",
@@ -12508,8 +12508,8 @@
   ],
   "schema_version": 2,
   "sources": {
-    "classification": "migration/legacy_inventory.json",
-    "components": "migration/single_component_catalogue.json",
-    "realizations": "migration/realization_catalogue.json"
+    "classification": "tools/data/legacy_inventory.json",
+    "components": "tools/data/single_component_catalogue.json",
+    "realizations": "tools/data/realization_catalogue.json"
   }
 }

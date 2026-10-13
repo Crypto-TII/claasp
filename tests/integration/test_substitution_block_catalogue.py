@@ -7,14 +7,14 @@ import pytest
 from claasp.representations.execution import BatchEvaluator
 
 VECTORS = json.loads(
-    (Path(__file__).parents[2] / "migration" / "m10_9d6_zero_regressions.json").read_text(
-        encoding="utf-8"
-    )
+    (
+        Path(__file__).parents[2] / "tests/fixtures/catalogue/substitution_zero_regressions.json"
+    ).read_text(encoding="utf-8")
 )
 FIXED_VECTORS = json.loads(
-    (Path(__file__).parents[2] / "migration" / "m10_9d6_fixed_vectors.json").read_text(
-        encoding="utf-8"
-    )
+    (
+        Path(__file__).parents[2] / "tests/fixtures/catalogue/substitution_fixed_vectors.json"
+    ).read_text(encoding="utf-8")
 )
 
 

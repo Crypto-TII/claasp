@@ -112,14 +112,13 @@ unit array. Characteristic-two differences are ordinary semantic XOR/addition
 components over input, published round-state, round-key, and output boundaries.
 Domains without XOR semantics fail explicitly.
 
-Validation evidence
--------------------
+Validation
+----------
 
 Transformation tests compare independently evaluated values, fixed primitive
 vectors, exhaustive small component domains, and fixed compatible/incompatible
 paired Speck constraints. Structural equality alone is not evidence of
-semantic correctness. The catalogue audit isolates every official parameter
-set, enforces a per-attempt construction deadline, and records one-round and
-full-round timings in ``docs/architecture/audits/primitive_inversion_audit.md``. Ordinary unit
-cases remain sub-second; routine integration cases remain below ten seconds;
-external solver checks are isolated and marked explicitly.
+semantic correctness. Catalogue tests isolate every official parameter set
+and enforce a per-attempt construction deadline. Ordinary unit cases remain
+sub-second; routine integration cases remain below ten seconds; external
+solver checks are isolated and marked explicitly.

@@ -23,7 +23,7 @@ if str(TOOLS_ROOT) not in sys.path:
 from catalogue_classification import classify_bijectivity
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "migration" / "legacy_inventory.json"
+OUTPUT = ROOT / "tools" / "data" / "legacy_inventory.json"
 LEGACY_ROOTS = (ROOT / "legacy-v4/claasp", ROOT / "legacy-v4/tests")
 SCHEMA_VERSION = 1
 
@@ -66,9 +66,9 @@ OFFICIAL_NAME_OVERRIDES = {
     "claasp/ciphers/block_ciphers/sparx_block_cipher.py": "SPARX",
     "claasp/ciphers/block_ciphers/tea_block_cipher.py": "TEA",
     "claasp/ciphers/block_ciphers/xtea_block_cipher.py": "XTEA",
-    "claasp/ciphers/permutations/chacha_permutation.py": "ChaCha",
+    "claasp/ciphers/permutations/chacha_permutation.py": "ChaChaPermutation",
     "claasp/ciphers/permutations/subterranean_permutation.py": "Subterranean",
-    "claasp/ciphers/stream_ciphers/chacha_stream_cipher.py": "ChaChaKeystreamBlock",
+    "claasp/ciphers/stream_ciphers/chacha_stream_cipher.py": "ChaChaBlockFunction",
     "claasp/ciphers/stream_ciphers/bluetooth_stream_cipher_e0.py": "BluetoothE0",
 }
 PROPOSED_MODULE_STEM_OVERRIDES = {
@@ -475,7 +475,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The test's 19,768 constraints, first/last Sage expressions and arbitrary feasible/minimum-count statuses are not fixed cryptanalytic results.",
     },
     "claasp/cipher_modules/models/milp/milp_models/milp_xor_differential_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; docs/architecture/audits/data/trail-search-capability-matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -507,7 +507,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Building time, Sage solver name and model tag are not scientific results. uBlock's one-round value follows directly from a required nonzero input and one bijective S-box layer; broader uBlock evidence is audited separately.",
     },
     "claasp/cipher_modules/models/milp/milp_models/milp_xor_linear_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; docs/architecture/audits/data/trail-search-capability-matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -699,7 +699,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The legacy base mixes encodings and result parsing through inheritance. v5 makes the claim kind explicit and shares no mutable SAT model state between them.",
     },
     "claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_differential.py; docs/architecture/audits/data/trail-search-capability-matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -715,7 +715,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Window constraints are optional search heuristics over otherwise exact trails; requested-weight existence does not make literal counter placement a contract. File-output formatting and arbitrary witnesses are removed. The separate uBlock aggregate remains owned by the typed-primitive prerequisite audit.",
     },
     "claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_linear.py; docs/architecture/audits/data/trail-search-capability-matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -907,7 +907,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Assertions on nSolutions>1, arbitrary weights>1 and internal probability-variable names are not scientific fixtures. Every exact numeric result is retained by generic graph models.",
     },
     "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; docs/architecture/audits/data/trail-search-capability-matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -915,7 +915,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The legacy model duplicates search modes, parsing and component dispatch. v5 separates one semantic problem from CP/SMT representations and explicit solver drivers.",
     },
     "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; docs/architecture/audits/data/trail-search-capability-matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -1283,12 +1283,12 @@ _SMT_SOURCE_DESTINATIONS = {
     "claasp/cipher_modules/models/smt/smt_models/smt_xor_differential_model.py": (
         "src/claasp/analysis/trail_search.py; "
         "src/claasp/representations/constraints/smt/word_differential.py; "
-        "docs/architecture/audits/data/trail-search-capability-matrix.json"
+        "tests/fixtures/analysis/trail_search_capability_matrix.json"
     ),
     "claasp/cipher_modules/models/smt/smt_models/smt_xor_linear_model.py": (
         "src/claasp/analysis/trail_search.py; "
         "src/claasp/representations/constraints/smt/word_linear.py; "
-        "docs/architecture/audits/data/trail-search-capability-matrix.json"
+        "tests/fixtures/analysis/trail_search_capability_matrix.json"
     ),
     "claasp/cipher_modules/models/smt/solvers.py": ("src/claasp/drivers/solvers/z3.py"),
     "claasp/cipher_modules/models/smt/utils/constants.py": ("src/claasp/drivers/solvers/z3.py"),
@@ -2553,7 +2553,7 @@ def component_catalogue_audit_status(payload: dict[str, Any]) -> dict[str, Any]:
             if destination.startswith(("removed:", "inapplicable:")):
                 continue
             if (
-                not destination.startswith(("src/", "tests/", "docs/", "migration/", "tools/"))
+                not destination.startswith(("src/", "tests/", "docs/", "tools/"))
                 or not (ROOT / destination).exists()
             ):
                 destination_errors.append(f"{item['path']}: {destination}")
@@ -2771,7 +2771,7 @@ def component_analysis_closure_status(payload: dict[str, Any]) -> dict[str, Any]
         for destination in item.get("v5_destination", "").split(";"):
             destination = destination.strip()
             if (
-                destination.startswith(("src/", "tests/", "docs/", "migration/", "tools/"))
+                destination.startswith(("src/", "tests/", "docs/", "tools/"))
                 and not (ROOT / destination).exists()
             ):
                 errors.append(f"{path}: missing destination {destination}")
@@ -2815,12 +2815,12 @@ def presentation_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
         for destination in item.get("v5_destination", "").split(";"):
             destination = destination.strip()
             if (
-                destination.startswith(("src/", "tests/", "docs/", "migration/", "tools/"))
+                destination.startswith(("src/", "tests/", "docs/", "tools/"))
                 and not (ROOT / destination).exists()
             ):
                 errors.append(f"{path}: missing destination {destination}")
 
-    manifest_path = ROOT / "migration/m10_14_presentation_obligations.json"
+    manifest_path = ROOT / "tools/data/presentation_inventory.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     obligations = manifest.get("obligations", ())
     for item in obligations:
@@ -2866,7 +2866,7 @@ def tooling_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
         for destination in item.get("v5_destination", "").split(";"):
             destination = destination.strip()
             if (
-                destination.startswith(("src/", "tests/", "docs/", "migration/", "tools/"))
+                destination.startswith(("src/", "tests/", "docs/", "tools/"))
                 and not (ROOT / destination).exists()
             ):
                 errors.append(f"{path}: missing destination {destination}")
@@ -2883,7 +2883,7 @@ def tooling_closure_status(payload: dict[str, Any]) -> dict[str, Any]:
         ):
             errors.append(f"{path}: achieved M10.6d6 ownership was reopened")
 
-    manifest_path = ROOT / "migration/m10_15_tooling_obligations.json"
+    manifest_path = ROOT / "tools/data/tooling_inventory.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("status") != "achieved":
         errors.append("M10.15 manifest is not achieved")

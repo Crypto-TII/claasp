@@ -8,7 +8,7 @@ _COLUMNS = ((0, 4, 8, 12), (1, 5, 9, 13), (2, 6, 10, 14), (3, 7, 11, 15))
 _DIAGONALS = ((0, 5, 10, 15), (1, 6, 11, 12), (2, 7, 8, 13), (3, 4, 9, 14))
 
 
-class ChaCha(Primitive):
+class ChaChaPermutation(Primitive):
     """Build ChaCha using the variables and assignments in its pseudocode.
 
     ``number_of_rounds`` uses the standard ChaCha convention: one round
@@ -28,7 +28,7 @@ class ChaCha(Primitive):
         ...             "03020100070605040b0a09080f0e0d0c"
         ...             "13121110171615141b1a19181f1e1d1c"
         ...             "00000001090000004a00000000000000", 16)
-        >>> hex(ChaCha().evaluate(state))
+        >>> hex(ChaChaPermutation().evaluate(state))
         '0x837778abe238d763a67ae21e5950bb2fc4f2d0c7fc62bb2f8fa018fc3f5ec7b7335271c2f29489f3eabda8fc82e46ebdd19c12b4b04e16de9e83d0cb4e3c50a2'
     """
 
@@ -85,3 +85,6 @@ class ChaCha(Primitive):
             self._builder.set_round_output(*state)
 
         self._builder.set_output(state)
+
+
+__all__ = ["ChaChaPermutation"]

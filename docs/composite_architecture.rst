@@ -87,7 +87,6 @@ lowered in that round, including nested paths. A scope provides its bound
 identity or derivation, which is why ``AES`` and ``CustomAES`` cannot silently
 share a catalogue identity.
 
-Editing remains outside this milestone: definitions and instances are frozen,
-and graph transformations create a new graph rather than rewiring an existing
-scope. M10.10 owns the general editor, inversion, traversal, splitting, and
-compound-XOR transformations.
+Definitions and instances are frozen, and graph transformations create a new
+graph rather than rewiring an existing scope. The transformation layer owns
+editing, inversion, traversal, splitting, and compound-XOR transformations.

@@ -5,7 +5,7 @@ from io import StringIO
 import pytest
 
 from claasp.drivers.solvers import MinisatSolver
-from claasp.primitives import AES, CHAM, Ascon, ChaCha, Present, Simeck, Simon, Speck
+from claasp.primitives import AES, CHAM, Ascon, ChaChaPermutation, Present, Simeck, Simon, Speck
 from claasp.primitives.single_component_primitives import (
     BitwiseNot,
     BitwiseOr,
@@ -62,7 +62,7 @@ def test_typed_kind_custom_solver_and_input_policy_overrides():
 
 def test_other_modadd_family_and_state_input_permutation():
     cham = CHAM(number_of_rounds=1).analysis.find_optimal_trail(backend="sat")
-    chacha = ChaCha(number_of_rounds=1).analysis.find_optimal_trail(backend="sat")
+    chacha = ChaChaPermutation(number_of_rounds=1).analysis.find_optimal_trail(backend="sat")
     assert cham.is_optimal and chacha.is_optimal
     assert chacha.trail.input_pattern.width == 512
 

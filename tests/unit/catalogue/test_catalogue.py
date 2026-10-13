@@ -32,7 +32,7 @@ def test_primitive_lookup_preserves_classification_and_typed_contract():
     ("filter_name", "included", "excluded"),
     (
         ("arx", "Speck", "Zuc"),
-        ("pure-arx", "ChaCha", "Speck"),
+        ("pure-arx", "ChaChaPermutation", "Speck"),
         ("andrx", "Simon", "AES"),
         ("sbox-based", "AES", "Speck"),
         ("fsr-based", "A51", "AES"),

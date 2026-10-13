@@ -65,7 +65,7 @@ The first optional adapter invokes the open-source ``glpsol`` command:
 
 Every returned assignment is checked against the portable model and its
 objective is recomputed. Primitive trail lowering is layered on top of this
-representation in the next M10.5 checkpoint.
+representation.
 
 Weighted PRESENT trails
 -----------------------
@@ -190,7 +190,7 @@ weights, and signed linear transitions. Decoding independently rechecks the
 result instead of trusting solver feasibility alone.
 
 The ten-run ARM64 benchmark in
-``architecture/audits/data/milp_bitwise_and_benchmark.json`` fixes the same
+``tools/benchmark_milp_bitwise_and.py`` fixes the same
 supported 32-bit transition for both strategies. The recovered differential
 model uses 128 variables and 224 constraints versus 352 and 256 for one-hot;
 the recovered linear model uses 96 and 160 versus 256 and 224. Median GLPK
@@ -220,7 +220,7 @@ indicator formulation:
 
 All nine one-bit ternary input pairs are checked through GLPK and independently
 decoded as ``TruncatedXorDifference`` values. The ten-run ARM64 benchmark in
-``architecture/audits/data/milp_truncated_and_benchmark.json`` fixes the same
+``tools/benchmark_milp_truncated_and.py`` fixes the same
 32-bit transition for both strategies. The recovered model uses 128 variables
 and 192 constraints versus 384 and 224 for one-hot; median GLPK solve times
 were 0.737 and 1.399 milliseconds respectively. This workload does not select
@@ -272,7 +272,7 @@ exhaustive tests independently verify the exact relation and the established
 minimum cardinalities.
 
 The reproducible GLPK benchmark in
-``architecture/audits/data/sbox_milp_strategy_benchmark.json`` used ten runs
+``tools/benchmark_sbox_milp_strategies.py`` used ten runs
 of one optimized PRESENT S-box transition in the canonical ARM64 Docker
 image. Times below are medians in milliseconds; memory is the maximum reported
 by GLPK. This deliberately small workload establishes a controlled comparison,
@@ -386,7 +386,7 @@ Regenerate the committed AES data with::
        --output src/claasp/representations/constraints/milp/data/aes_sbox_milp_inequalities.json
 
 The five-run canonical-Docker benchmark is recorded in
-``architecture/audits/data/aes_sbox_milp_strategy_benchmark.json``. Construction
+``tools/benchmark_large_sbox_milp_strategies.py``. Construction
 medians below use the immutable bundle cache; ``Cold ms`` includes the first
 exhaustive bundle validation. Memory is the maximum reported by GLPK.
 
@@ -506,6 +506,5 @@ until a typed uBlock catalogue primitive can independently reproduce it:
    >>> (cluster.trail_count, cluster.aggregate_weight, cluster.claim_kind)
    (8, 25.7146, 'legacy-solver-regression')
 
-Permanently license-skipped proprietary expectations are not evidence.  They
-remain in the migration matrix for provenance but are not promoted to v5
-oracle values.
+Permanently license-skipped proprietary expectations are not promoted to test
+oracles.

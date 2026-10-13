@@ -15,7 +15,7 @@ from claasp.primitives._catalogue_exports import ALL_EXPORTS, load_export
 from claasp.representations.constraints.sat import WordDifferentialSATModel, WordLinearSATModel
 from claasp.semantics.cryptanalysis import TrailKind
 
-OUTPUT = Path("docs/architecture/audits/data/trail-search-capability-matrix.json")
+OUTPUT = Path("tests/fixtures/analysis/trail_search_capability_matrix.json")
 
 _CONFIGURATION_OVERRIDES = {
     # These constructors reject an arbitrary one-round request.  Use their
