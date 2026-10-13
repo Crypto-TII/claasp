@@ -51,7 +51,7 @@ def test_actual_glyph_roundtrip():
     assert '+ CLAASP-DIAGRAMS 1 +' not in text
     assert from_ascii(text)==ir
     assert to_cipher(from_ascii(text)).evaluate([0xa5,7],intermediate_output=True)==source.evaluate([0xa5,7],intermediate_output=True)
-    assert '\\begin{tikzpicture}' in to_tikz(ir,columnSpacing=2,wireStyle='smooth')
+    assert '\\begin{tikzpicture}' in to_tikz(ir, layoutSource='audit',columnSpacing=2,wireStyle='smooth')
 
 
 def test_unsupported_contract_fails_before_export():
@@ -117,11 +117,11 @@ def test_integer_mix_column_zero_polynomial():
 
 def test_bounded_paginated_diagrams():
     ir=from_cipher(circuit())
-    text=to_tikz(ir, view="wires", rowsPerPanel=4, columnsPerPanel=2)
+    text=to_tikz(ir, layoutSource='audit', view="wires", rowsPerPanel=4, columnsPerPanel=2)
     assert text.count(r'\begin{tikzpicture}')>1
     assert r'\clearpage' in text
     with pytest.raises(ValueError, match='panels'):
-        to_tikz(ir, view="wires", rowsPerPanel=1, columnsPerPanel=1, maxPanels=1)
+        to_tikz(ir, layoutSource='audit', view="wires", rowsPerPanel=1, columnsPerPanel=1, maxPanels=1)
     frames=state_snapshots(ir, mode='declared', word_bits=4)
     state=state_tikz(ir, mode='declared', word_bits=4, columns_per_panel=1)
     assert state.count(r'\begin{tikzpicture}') == sum(len(f['words']) for f in frames)
@@ -135,7 +135,7 @@ def test_bounded_paginated_diagrams():
 def test_precise_legends_for_large_labels_and_values():
     c=Cipher('long_probe','permutation',['identifier_without_breaks_'*8],[128],128);c.add_round()
     source=c.inputs[0];c.add_cipher_output_component([source],[list(range(128))],128)
-    ir=from_cipher(c);text=to_tikz(ir, view="wires", legend="audit", rowsPerPanel=8, columnsPerPanel=3)
+    ir=from_cipher(c);text=to_tikz(ir, layoutSource='audit', view="wires", legend="audit", rowsPerPanel=8, columnsPerPanel=3)
     assert 'D0:0' in text
     assert 'Optional audit' in text
     assert '\\mbox{' in text
@@ -161,7 +161,7 @@ def test_native_runtime_needs_no_external_process(monkeypatch):
     monkeypatch.setattr(subprocess,'Popen',forbidden)
     ir=from_cipher(circuit(),roles={'control':'key'})
     assert from_ascii(to_audit_ascii(ir))==ir
-    assert r'\begin{tikzpicture}' in to_tikz(ir)
+    assert r'\begin{tikzpicture}' in to_tikz(ir, layoutSource='audit')
 
 
 def test_compact_native_register_program_with_mixed_widths_and_constant_observers():
@@ -259,13 +259,13 @@ def test_tikz_exposes_reversed_order_and_numbered_ports():
     c.add_cipher_output_component([sub.id],[list(range(4))],4)
     ir=from_cipher(c)
     assert '@21' in to_audit_ascii(ir)
-    vector=to_tikz(ir,view="wires")
+    vector=to_tikz(ir, layoutSource='audit',view="wires")
     assert '@21' in vector
     assert '{1};' in vector
     assert '{2};' in vector
     ir2=from_cipher(circuit())
-    assert '{1};' in to_tikz(ir2, view='wires')
-    assert '{2};' in to_tikz(ir2, view='wires')
+    assert '{1};' in to_tikz(ir2, layoutSource='audit', view='wires')
+    assert '{2};' in to_tikz(ir2, layoutSource='audit', view='wires')
 
 
 def test_record_import_and_rectangular_export_bounds_precede_render(monkeypatch):
@@ -369,7 +369,7 @@ def test_aggregate_group_limits_precede_visible_stream_allocation():
 
 def test_readable_public_api_has_all_members_and_optional_audit():
     ir=from_cipher(circuit())
-    text=to_tikz(ir)
+    text=to_tikz(ir, layoutSource='audit')
     assert 'Ordered input fragments' in text
     assert 'Operation / parameters' in _table_text(text)
     assert 'Computation overview' in text
@@ -379,16 +379,16 @@ def test_readable_public_api_has_all_members_and_optional_audit():
         assert f'diagram-member-{index}' in text
     assert 'operand_positions' not in text
     assert '\\mbox{' in text
-    audit=to_tikz(ir,audit=True)
+    audit=to_tikz(ir, layoutSource='audit',audit=True)
     assert 'Optional audit' in audit
     assert 'operand' in audit
-    assert 'round 0' in to_tikz(ir,view='overview')
-    assert 'Round 0:' in to_tikz(ir,view='detail')
+    assert 'round 0' in to_tikz(ir, layoutSource='audit',view='overview')
+    assert 'Round 0:' in to_tikz(ir, layoutSource='audit',view='detail')
     with pytest.raises(ValueError,match='pages'):
-        to_tikz(ir,maxPages=1)
+        to_tikz(ir, layoutSource='audit',maxPages=1)
     for options in ({'view':'template'},{'legend':'hidden'},{'tableLineBudget':0},
                     {'anchorPrefix':'bad\\input'},{'stageMode':'cipher-name'}):
-        with pytest.raises(ValueError):to_tikz(ir,**options)
+        with pytest.raises(ValueError):to_tikz(ir, layoutSource='audit',**options)
 
 
 def test_vector_api_rejects_changed_actual_source_glyph(monkeypatch):
@@ -403,7 +403,7 @@ def test_vector_api_rejects_changed_actual_source_glyph(monkeypatch):
         return changed_text, cells, dimensions
     monkeypatch.setattr(glyphs, '_encode_layout', changed_export)
     with pytest.raises(ValueError,match='changed native IR'):
-        diagrams.to_tikz(ir)
+        diagrams.to_tikz(ir, layoutSource='audit')
 
 
 def test_readable_stride_and_member_compression_preserve_order_and_repeats():
@@ -431,7 +431,7 @@ def test_readable_group_rotation_parameters_and_member_counts():
     nodes=[c.add_rotate_component(['value'],[[0,1,2,3]],4,-1),
            c.add_rotate_component(['value'],[[4,5,6,7]],4,-1)]
     c.add_cipher_output_component([n.id for n in nodes],[list(range(4))]*2,8)
-    ir=from_cipher(c);text=to_tikz(ir,view='wires')
+    ir=from_cipher(c);text=to_tikz(ir, layoutSource='audit',view='wires')
     assert 'ROTATE/4(-1) x2' in text
     assert text.count('diagram-member-')==len(ir['nodes'])
     assert from_ascii(to_audit_ascii(ir))==ir
@@ -444,7 +444,7 @@ def test_readable_long_constants_are_complete_without_audit_and_empty_rounds_hav
     c.add_cipher_output_component([constant.id], [list(range(128))], 128)
     c.add_round()
     ir = from_cipher(c)
-    text = to_tikz(ir).replace(r'\allowbreak{}', '')
+    text = to_tikz(ir, layoutSource='audit').replace(r'\allowbreak{}', '')
     assert 'CONST/128=P1' in text
     assert '0x123456789abcdef0123456789abcdef0' in text
     assert 'Optional audit' not in text
@@ -491,7 +491,7 @@ def test_readable_observation_and_final_output_tags_survive_escaping_and_wrappin
     final_tag = 'FINAL_TAG_$^~' + 'final_long_' * 10
     ir['nodes'][-1]['description'] = [final_tag]
     for view in ('overview-detail', 'detail'):
-        text = _table_text(to_tikz(ir, view=view))
+        text = _table_text(to_tikz(ir, layoutSource='audit', view=view))
         for tag in tags + [final_tag]:
             assert escape(tag) in text
         assert 'OBSERVE/4 tag=P1' in text
@@ -522,7 +522,7 @@ def test_readable_serial_arithmetic_wraps_all_columns_and_retains_every_member()
     for _ in range(34):
         source = c.add_modadd_component([source, 'data'], [list(range(32))]*2, 32).id
     c.add_cipher_output_component([source], [list(range(32))], 32)
-    text = to_tikz(from_cipher(c), view='detail')
+    text = to_tikz(from_cipher(c), layoutSource='audit', view='detail')
     visible = _table_text(text)
     for ordinal in range(34):
         assert f'{ordinal}: modadd\\_0\\_{ordinal}' in visible
@@ -547,7 +547,7 @@ def test_default_vector_export_searches_once_parses_actual_text_once_and_skips_w
     monkeypatch.setattr(glyphs, 'build_grid', counted_layout)
     monkeypatch.setattr(glyphs, 'decode', counted_decode)
     monkeypatch.setattr(glyphs, '_wire_panel', unwanted_panel)
-    text = to_tikz(from_cipher(circuit()))
+    text = to_tikz(from_cipher(circuit()), layoutSource='audit')
     assert 'Computation overview:' in text
     assert counts['layouts'] == 1
     assert counts['parses'] == 1
@@ -702,7 +702,7 @@ def test_variable_amount_operations_match_independent_arithmetic(width, directio
                 amount = (control % width)*direction
                 expected = value >> amount if amount >= 0 else (value << -amount) & mask
             assert restored.evaluate([value, control]) == expected
-    text = _table_text(to_tikz(ir, view='detail'))
+    text = _table_text(to_tikz(ir, layoutSource='audit', view='detail'))
     assert f'direction={direction}' in text
 
 
@@ -855,7 +855,7 @@ def test_public_small_budget_identity_matrix_wraps_parameter_continuations():
     matrix = [[int(i == j) for j in range(16)] for i in range(16)]
     node = c.add_linear_layer_component(['data'], [list(range(16))], 16, matrix)
     c.add_cipher_output_component([node.id], [list(range(16))], 16)
-    text = to_tikz(from_cipher(c), tableLineBudget=8)
+    text = to_tikz(from_cipher(c), layoutSource='audit', tableLineBudget=8)
     assert r'\mbox{(continued)}' not in text
     assert '(continued)' in _table_text(text)
     assert 'LINEAR' in _table_text(text)

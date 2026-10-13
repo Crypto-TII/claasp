@@ -900,16 +900,18 @@ def from_ascii(text, *, max_text_bytes=64000000, max_grid_area=2000000):
 
 def to_tikz(ir, **options):
     r"""
-    Produce a readable vector overview/detail of the verified native computation.
+    Produce the verified persistent word placement as a vector diagram by default.
 
-    Every export reparses its generated ASCII before presentation. Member/input-fragment/parameter tables retain all native operations and tags. ``audit=True`` adds complete local JSON; ``legend='none'`` omits member tables. ``anchorPrefix`` must be unique alphanumeric/hyphen text when combining diagrams.
+    Default ``layoutSource='persistent'`` reparses the ordinary word ASCII and renders its exact cells/routes. MODSUB input ports are visibly numbered. ``fitToPage=(width,height)`` uniformly scales one complete figure to the usable size in centimetres; default panels balance rows. Unsupported shapes fail explicitly.
+
+    The following overview/detail/table options apply only to explicit ``layoutSource='audit'``. Every export reparses its generated ASCII before presentation. Member/input-fragment/parameter tables retain all native operations and tags. ``audit=True`` adds complete local JSON; ``legend='none'`` omits member tables. ``anchorPrefix`` must be unique alphanumeric/hyphen text when combining diagrams.
 
     Wire options: ``rowsPerPanel=16``, ``columnsPerPanel=6``, ``maxPanels=256``, positive ``columnSpacing=3``/``rowSpacing=1``, and half-open ``rowRange``/``columnRange`` crops. Table options: ``tableLineBudget=42`` fixed 11-point baselines and ``maxPages=2048``; ``overviewStagesPerPanel=6`` limits summaries. ``pageBreaks=False`` lets the caller manage page separation. Crops affect wires, not the complete semantic tables.
 
     INPUT:
 
     - ``ir`` -- **dictionary** or **Cipher**; supported computation
-    - ``options`` -- **keyword options**; ``view`` selects ``overview-detail`` (default), ``overview``, ``detail`` or ``wires``; ``stageMode`` chooses generic ``round`` or ``layer`` summaries; ``strategy`` chooses the ASCII planner; ``layoutSource='human'`` reuses consolidated manual synthesis cells, while ``'audit'`` retains the default typed path; ``'persistent'`` renders the exact validated ordinary word-view cells and routes, with ``key_side`` and explicit label/border/spacing controls
+    - ``options`` -- **keyword options**; in audit mode ``view`` selects ``overview-detail`` (default), ``overview``, ``detail`` or ``wires``; ``stageMode`` chooses generic ``round`` or ``layer`` summaries; ``strategy`` chooses the ASCII planner; ``layoutSource='human'`` reuses consolidated manual synthesis cells, while ``'audit'`` explicitly selects the diagnostic typed path; default ``'persistent'`` renders the exact validated ordinary word-view cells and routes, with ``key_side`` and explicit label/border/spacing controls
 
     OUTPUT:
 
@@ -926,20 +928,20 @@ def to_tikz(ir, **options):
         sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
         sage: ir = from_cipher(speck)
         sage: from claasp.diagrams import to_tikz
-        sage: overview = to_tikz(ir, view='overview', stageMode='layer')
+        sage: overview = to_tikz(ir, layoutSource='audit', view='overview', stageMode='layer')
         sage: print(next(line for line in overview.splitlines() if 'Computation overview:' in line))
         \par\noindent\textbf{Computation overview: 7 native operations}
-        sage: details = to_tikz(ir, view='detail')
+        sage: details = to_tikz(ir, layoutSource='audit', view='detail')
         sage: print(next(line for line in details.splitlines() if 'Round 0:' in line))
         \hypertarget{diagram-round-0}{}\par\noindent\textbf{Round 0: 7 native operations (1/1)}
-        sage: wires = to_tikz(ir, view='wires', legend='none')
+        sage: wires = to_tikz(ir, layoutSource='audit', view='wires', legend='none')
         sage: print(next(line for line in wires.splitlines() if 'begin{tikzpicture}' in line))
         \begin{tikzpicture}[>=stealth]
     """
     from claasp.cipher_modules.diagram.glyphs import _encode_layout, _present_grid, decode
     if not isinstance(ir, dict): ir=from_cipher(ir)
     validate(ir)
-    source = options.get('layoutSource', 'audit')
+    source = options.get('layoutSource', 'persistent')
     if source not in ('audit', 'human', 'persistent'):
         raise ValueError('Choose audit, human or persistent TikZ layoutSource')
     if source == 'persistent':
@@ -947,8 +949,11 @@ def to_tikz(ir, **options):
         persistent_options = dict(options)
         persistent_options.pop('layoutSource', None)
         if persistent_options.pop('view', 'wires') != 'wires' or persistent_options.pop('legend', 'none') != 'none':
-            raise ValueError('Persistent TikZ currently supports wires with no helper tables')
-        return persistent_tikz(ir, **persistent_options)
+            raise ValueError("Default persistent TikZ supports wires only; request layoutSource='audit' explicitly for diagnostic views/tables")
+        try:
+            return persistent_tikz(ir, **persistent_options)
+        except ValueError as error:
+            raise ValueError(f"Persistent TikZ unavailable: {error}; request layoutSource='audit' explicitly for a diagnostic graph") from error
     if source == 'human':
         from claasp.cipher_modules.diagram.manual_blocks import _encode_layout as manual_layout
         keys = ('word_bits', 'gathering', 'projection', 'lane_policy', 'native_bundles', 'parameter_refs', 'associative_reductions', 'alignment', 'layout_preference', 'operator_style', 'wire_borders',
@@ -1002,20 +1007,22 @@ def evaluate_state_values(cipher, inputs):
     return {original:native[generated] for original,generated in links.items()} if links else native
 
 
-def state_snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='source', values=None, comparison=None):
+def state_snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='source', values=None, comparison=None, granularity='round', key_side='right'):
     r"""
-    Build declared observations or generic live-value cuts by round/dependency layer.
+    Build observations, dependency frontiers, or a persistent generic word bank.
 
     A frontier comprises values with future uses, not a guessed AES/Speck/etc. matrix. Bit selections are MSB-first. The example explicitly supplies a word grouping.
 
     INPUT:
 
     - ``ir`` -- **dictionary**; supported graph
-    - ``mode`` -- **string** (default: ``'declared'``); ``declared``, ``round`` or ``layer``
+    - ``mode`` -- **string** (default: ``'declared'``); ``declared``, ``round``, ``layer`` or ``word`` (persistent lanes)
     - ``word_bits`` -- **integer** (default: ``1``), or ``None`` to infer common native/selection granularity while retaining shape ambiguity; explicit group width dividing every selected state
     - ``columns`` -- **integer** (default: ``None``); explicit display columns, not inferred algorithmic geometry
-    - ``order`` -- **string** (default: ``'source'``); ``source`` or ``reverse`` source-bit order
+    - ``order`` -- **string** (default: ``'source'``); ``source`` or ``reverse`` source-bit order; word mode reverses whole words
     - ``values`` -- **dictionary** (default: ``None``); evaluated values from ``evaluate_state_values``; absent values stay unknown
+    - ``granularity`` -- **string** (word mode); ``round`` shows initial/round boundaries with omission label; ``operation`` includes every word operation
+    - ``key_side`` -- **string** (word mode); persistent bank ordering, ``right`` or ``left``
     - ``comparison`` -- **dictionary** (default: ``None``); second evaluated values; words show XOR differences when both dictionaries are supplied
 
     OUTPUT:
@@ -1047,9 +1054,16 @@ def state_snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='so
         [[9, 3], [10], [5]]
         sage: [[word['value'] for word in frame['words']] for frame in state_snapshots(ir, mode='layer', word_bits=width, values=values)]
         [[9, 3], [10], [5], [5]]
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: bank = state_snapshots(from_cipher(SpeckBlockCipher(number_of_rounds=int(1))), mode='word', word_bits=None)
+        sage: [len(frame['words']) for frame in bank]
+        [6, 6]
+        sage: bank[0]['shape_ambiguous'], bank[-1]['omitted_intra_round_steps']
+        (True, True)
     """
     return diagram_states.snapshots(ir, mode=mode, word_bits=word_bits, columns=columns,
-                                   order=order, values=values, comparison=comparison)
+                                   order=order, values=values, comparison=comparison, granularity=granularity, key_side=key_side)
 
 
 def state_ascii(ir, **options):

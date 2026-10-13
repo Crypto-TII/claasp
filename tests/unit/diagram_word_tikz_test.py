@@ -42,4 +42,5 @@ def test_persistent_vector_bounds_and_incompatible_tables_reject(options):
 
 def test_panels_use_paired_actual_edge_references():
     text = to_tikz(from_cipher(SpeckBlockCipher(number_of_rounds=1)), layoutSource='persistent', rowsPerPanel=3)
-    assert text.count('{V3:0}') == 2
+    refs = re.findall(r'\{(V[0-9]+:[0-9]+)\}', text)
+    assert refs and all(refs.count(ref) == 2 for ref in set(refs))

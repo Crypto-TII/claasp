@@ -22,7 +22,7 @@ for cls in [SpeckBlockCipher,AESBlockCipher,SimonBlockCipher,PresentBlockCipher,
         c=cls(**({'number_of_rounds':2} if 'number_of_rounds' in inspect.signature(cls).parameters else {})); ir=from_cipher(c)
         text=to_audit_ascii(ir); assert from_ascii(text)==ir
         (out/(cls.__name__+'.asciiart')).write_text(text)
-        (out/(cls.__name__+'.tex')).write_text(to_tikz(ir,maxPanels=10000))
+        (out/(cls.__name__+'.tex')).write_text(to_tikz(ir,layoutSource='audit',maxPanels=10000))
         rebuilt=to_cipher(from_ascii(text))
         checks=0
         for val in [0,1,0x123456789abcdef]:

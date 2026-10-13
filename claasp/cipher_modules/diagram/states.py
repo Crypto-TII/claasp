@@ -94,9 +94,46 @@ def _snapshot(identity, stage, positions, widths, mode, order, word_bits, column
             'geometry': geometry, 'words': words}
 
 
-def snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='source', values=None, comparison=None):
+
+def _word_snapshots(ir, word_bits, columns, order, values, comparison, granularity, key_side):
+    if granularity not in ('round', 'operation'):
+        raise ValueError('Word-state granularity must be round or operation')
+    from .word_visual import build
+    from .word_bindings import export_bindings
+    # Admit exactly the same generic shape/identity contract as ordinary words.
+    export_bindings(ir, word_bits=word_bits, key_side=key_side)
+    model = build(ir, word_bits=word_bits, key_side=key_side, capture_states=True)
+    history = model['state_frames']
+    selected = history
+    if granularity == 'round':
+        selected = [history[0]]
+        for stage in sorted({node['round'] for node in ir['nodes']}):
+            frame = next(frame for frame in reversed(history) if frame['stage'] <= stage)
+            selected.append(dict(frame, stage=stage))
+    widths = {node['id']: node['bits'] for node in ir['inputs']+ir['nodes']}
+    frames = []
+    for index, source in enumerate(selected):
+        ordered_words = list(reversed(source['words'])) if order == 'reverse' else source['words']
+        positions = [position for word in ordered_words for position in word['positions']]
+        identity = 'initial' if index == 0 else f'round-{source["stage"]}-end' if granularity == 'round' else f'word-step-{index}'
+        frame = _snapshot(identity, source['stage'], positions, widths, 'word', 'source', model['bits'], columns, values, comparison)
+        frame['order'] = order
+        frame.update(geometry='explicit-columns' if columns else 'ambiguous-flat-word-bank',
+                     shape_ambiguous=columns is None, word_bits_source='explicit' if word_bits is not None else 'inferred-native-word',
+                     granularity=granularity, coverage='all-round-boundaries' if granularity == 'round' else 'all-word-state-updates',
+                     omitted_intra_round_steps=granularity == 'round', operation=source['operation'],
+                     native_state_updates=len(history)-1, key_side=key_side)
+        roles = [word['role'] for word in ordered_words]
+        for word, role in zip(frame['words'], roles):
+            word['role'] = role
+        frames.append(frame)
+    return frames
+
+def snapshots(ir, *, mode='declared', word_bits=1, columns=None, order='source', values=None, comparison=None, granularity='round', key_side='right'):
     validate(ir)
-    _state_options(mode, order, 1 if word_bits is None else word_bits, columns)
+    _state_options('declared' if mode == 'word' else mode, order, 1 if word_bits is None else word_bits, columns)
+    if mode == 'word':
+        return _word_snapshots(ir, word_bits, columns, order, values, comparison, granularity, key_side)
     widths = {node['id']: node['bits'] for node in ir['inputs']+ir['nodes']}
     groups = _declared_groups(ir) if mode == 'declared' else _frontier_groups(ir, mode)
     inferred = word_bits is None
@@ -140,6 +177,8 @@ def _ascii_row(frame, row, digits, size):
 
 def _ascii_frame(frame):
     lines = [f"{frame['id']} ({frame['mode']}, {frame['geometry']}, order={frame['order']}, word_bits={frame['word_bits']})"]
+    if frame['mode'] == 'word':
+        lines.append('coverage='+frame['coverage']+'; intra-round steps omitted='+str(frame['omitted_intra_round_steps']))
     digits = (frame['word_bits']+3)//4
     size = max(5, digits+3)
     border = '+'+'+'.join('-'*size for _ in range(frame['columns']))+'+'
@@ -204,19 +243,21 @@ def _panel_words(frame, top, bottom, left, right):
 def _word_nodes(frame, index, word, row, col, top, left, cell_width, cell_height, row_gap, legend):
     value = _display_value(word)
     text = '?' if value is None else f"{value:0{(frame['word_bits']+3)//4}x}"
-    if len(text) > 6:
+    if len(text) > max(1, int((cell_width*28.45-6)/3.5)):
         key = f'V{index}'
         legend.append((key, text))
         text = key
     fill = 'orange!25' if word['active'] else 'white'
     x, y = (col-left)*cell_width, -(row-top)*(cell_height+row_gap)
     return [fr"\node[draw,fill={fill},minimum width={cell_width}cm,minimum height={cell_height}cm] at ({x},{y}) {{{text}}};",
-            fr"\node[font=\tiny,anchor=south] at ({x},{y+cell_height/2}) {{{index}}};"]
+            fr"\node[font=\tiny,anchor=south] at ({x},{y+cell_height/2}) {{{index}{': '+word['role'] if 'role' in word else ''}}};"]
 
 
 def _state_panel(frame, top, left, rows, columns, cell_width, cell_height, row_gap):
     bottom, right = min(frame['rows'], top+rows), min(frame['columns'], left+columns)
     title = f"{frame['id']}: {frame['geometry']}, {frame['word_bits']} bits/word, order {frame['order']}"
+    if frame['mode'] == 'word':
+        title += '; '+frame['coverage']+(' (intra-round steps omitted)' if frame['omitted_intra_round_steps'] else '')
     lines = [r'\begin{tikzpicture}[font=\scriptsize]',
              fr"\node[anchor=south west,align=left,text width={columns*cell_width}cm] at (0,{cell_height/2+row_gap+.45}) {{{_tex_wrapped(title)}}};",
              fr"\node[anchor=west,font=\tiny] at (0,{cell_height/2+row_gap+.1}) {{original cell rows {top}--{bottom-1}, columns {left}--{right-1}; indices retained}};"]

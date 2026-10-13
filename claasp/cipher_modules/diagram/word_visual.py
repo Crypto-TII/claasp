@@ -67,7 +67,7 @@ def project(ir, word_bits=None, *, max_calls=20000, max_cells=1000000):
             'observations': observations}
 
 
-def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=1000000, max_grid_area=2000000):
+def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=1000000, max_grid_area=2000000, capture_states=False):
     r"""
     Infer a persistent word-state layout from native dependencies and roles.
 
@@ -129,10 +129,28 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
     remaining = Counter(arg for call in ops.values() for arg in call['args'])
     remaining.update(model['outputs'])
     cells, records, row = {}, [], 0
+    if type(capture_states) is not bool:
+        raise ValueError('capture_states must be a boolean')
+    state_frames = []
     for column, value in enumerate(primary):
         definition = model['input_definitions'][value[1]]
         cells[(0, column)] = {'kind': 'input', 'ports': {'bottom': 'out'}, 'unindexed': True,
                               'secret': roles[value] == 'key'}
+    def record_state(stage, operation=None):
+        if not capture_states:
+            return
+        snapshot = []
+        for column, initial in enumerate(primary):
+            value = state[column]
+            if value[0] == 'input':
+                definition = model['input_definitions'][value[1]]
+                positions = [(definition['id'], bit) for bit in definition['positions']]
+            else:
+                definition = ops[value]['definition'] if value in ops else constants[value]
+                positions = [(definition['id'], bit) for bit in range(model['bits'])]
+            snapshot.append({'column': column, 'role': roles[initial], 'positions': positions})
+        state_frames.append({'stage': stage, 'operation': operation, 'words': snapshot})
+    record_state(-1)
     def vertical():
         return {column: {'kind': 'wire', 'ports': {'top': 'in', 'bottom': 'out'}, 'invisible': True} for column in state}
     def append(line):
@@ -227,6 +245,7 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
         available.add(value)
         pending.remove(value)
         records.append({'row': row, 'column': destination, 'kind': 'operation', 'definition': definition})
+        record_state(definition['round'], definition['id'])
     data_columns = [homes[value] for value in data]
     if [state[column] for column in data_columns] != model['outputs']:
         raise UnsupportedProjection('Final output ordering needs an explicit permutation wire route')
@@ -239,7 +258,7 @@ def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=10
         raise ValueError('Visual cells exceed max_cells')
     model.update(primary=primary, input_bindings=[model['input_definitions'][value[1]] for value in primary],
                  cipher_columns=data_columns, records=records, cells=cells, rows=row+1, columns=columns,
-                 key_side=key_side)
+                 key_side=key_side, state_frames=state_frames)
     return model
 
 

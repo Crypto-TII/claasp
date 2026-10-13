@@ -20,7 +20,7 @@ def _point(column, row, dx=0, dy=0):
 def render_model(model, *, operator_style='symbols', wire_borders=False,
                  columnSpacing=1.4, rowSpacing=1.0, boxWidth=.98, boxHeight=.65,
                  anchorPrefix='word', rowsPerPanel=24, columnsPerPanel=16,
-                 maxPanels=256, pageBreaks=False):
+                 maxPanels=256, pageBreaks=False, fitToPage=None):
     r"""
     Render the exact word-view cells without choosing another placement.
 
@@ -50,20 +50,37 @@ def render_model(model, *, operator_style='symbols', wire_borders=False,
         raise ValueError('Persistent TikZ panel bounds must be positive integers')
     if type(pageBreaks) is not bool:
         raise ValueError('pageBreaks must be a boolean')
-    panels = [(r, c) for r in range(0, model['rows'], rowsPerPanel)
-              for c in range(0, model['columns'], columnsPerPanel)]
+    scale = 1
+    if fitToPage is not None:
+        if (not isinstance(fitToPage, (tuple, list)) or len(fitToPage) != 2
+                or any(type(v) not in (int, float) or not isfinite(v) or v <= 0 for v in fitToPage)):
+            raise ValueError('fitToPage must give positive finite usable width/height in centimetres')
+        # Uniform scaling preserves actual coordinates, fonts and route topology.
+        scale = min(1, fitToPage[0]/(model['columns']*columnSpacing+boxWidth),
+                    fitToPage[1]/(model['rows']*rowSpacing+boxHeight))
+        rowsPerPanel, columnsPerPanel = model['rows'], model['columns']
+    # Balance the same global rows across bounded panels, avoiding a nearly
+    # empty last page without dropping any state/operation cell.
+    count = (model['rows']+rowsPerPanel-1)//rowsPerPanel
+    size, extra = divmod(model['rows'], count)
+    ranges, start = [], 0
+    for index in range(count):
+        end = start+size+(index < extra)
+        ranges.append((start, end))
+        start = end
+    panels = [(r, end, c) for r, end in ranges for c in range(0, model['columns'], columnsPerPanel)]
     if len(panels) > maxPanels:
         raise ValueError('Persistent TikZ exceeds maxPanels')
     sides = {'top': (0, .5), 'bottom': (0, -.5), 'left': (-.5, 0), 'right': (.5, 0)}
     anchors = {'top': 'north', 'bottom': 'south', 'left': 'west', 'right': 'east'}
     output = []
-    for panel_index, (first_row, first_column) in enumerate(panels):
+    for panel_index, (first_row, last_row, first_column) in enumerate(panels):
         if panel_index:
             output.append(r'\clearpage' if pageBreaks else r'\par\bigskip')
-        output += [f'% word-view panel {panel_index}: rows {first_row}:{min(first_row+rowsPerPanel,model["rows"])} columns {first_column}:{min(first_column+columnsPerPanel,model["columns"])}',
-                   rf'\begin{{tikzpicture}}[x={columnSpacing}cm,y={rowSpacing}cm,>=stealth,font=\small\ttfamily,line width=.4pt]']
+        output += [f'% word-view panel {panel_index}: rows {first_row}:{last_row} columns {first_column}:{min(first_column+columnsPerPanel,model["columns"])}',
+                   rf'\begin{{tikzpicture}}[x={columnSpacing}cm,y={rowSpacing}cm,>=stealth,font=\small\ttfamily,line width=.4pt,scale={scale:.8f},transform shape]']
         for (row, column), cell in sorted(model['cells'].items()):
-            if not first_row <= row < first_row+rowsPerPanel or not first_column <= column < first_column+columnsPerPanel:
+            if not first_row <= row < last_row or not first_column <= column < first_column+columnsPerPanel:
                 continue
             x, y = column-first_column, row-first_row
             center = _point(x, y)
@@ -81,6 +98,16 @@ def render_model(model, *, operator_style='symbols', wire_borders=False,
                     boundary = _point(x, y, dx, dy)
                     node = f'({name}.{anchors[side]})'
                     output.append(rf'\draw[->] {boundary} -- {node};' if direction == 'in' else rf'\draw {node} -- {boundary};')
+                if cell['kind'] == 'box' and cell['definition']['type'] == 'word_operation' and cell['definition']['description'][0] == 'MODSUB':
+                    for index, side in enumerate(cell['definition']['operand_ports'], 1):
+                        dx, dy = sides[side]
+                        dx, dy = dx*.85, dy*.85
+                        if side in ('left', 'right'):
+                            dy += .12
+                        else:
+                            dx += .12
+                        output.append(rf'\node[font=\tiny,inner sep=.1mm] at {_point(x,y,dx,dy)} {{{index}}};')
+                        output.append('% word-operand '+json.dumps({'row': row, 'column': column, 'side': side, 'operand': index}, sort_keys=True))
                 if cell['kind'] == 'box':
                     record = {'row': row, 'column': column, 'definition': cell['definition']}
                     output.append('% word-native '+json.dumps(record, sort_keys=True, separators=(',', ':')))
@@ -99,7 +126,7 @@ def render_model(model, *, operator_style='symbols', wire_borders=False,
             # A cropped route is labelled as a continuation, never as a fake IO.
             for side in ports:
                 crosses = (side == 'top' and row == first_row and row > 0
-                           or side == 'bottom' and row == first_row+rowsPerPanel-1 and row < model['rows']-1
+                           or side == 'bottom' and row == last_row-1 and row < model['rows']-1
                            or side == 'left' and column == first_column and column > 0
                            or side == 'right' and column == first_column+columnsPerPanel-1 and column < model['columns']-1)
                 if crosses:
@@ -127,7 +154,7 @@ def to_tikz(ir, **options):
 
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: from claasp.diagrams import from_cipher, to_tikz
-        sage: text = to_tikz(from_cipher(SpeckBlockCipher(number_of_rounds=int(1))), layoutSource='persistent')
+        sage: text = to_tikz(from_cipher(SpeckBlockCipher(number_of_rounds=int(1))))
         sage: text.count('% word-native ')
         5
     """
