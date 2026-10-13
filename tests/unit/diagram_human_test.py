@@ -44,7 +44,7 @@ def test_real_render_options_preserve_annotated_native_semantics():
 
 def test_noncontiguous_selection_is_visible_and_reconstructs():
     ir = toy(); ir['nodes'][0]['operands'][0]['positions'] = [0,2,1,3]
-    text = to_ascii(ir, annotations=True)
+    text = to_ascii(ir, format='human-legacy', annotations=True)
     assert 'SEL' in text
     assert from_ascii(text) == ir
 
@@ -84,7 +84,7 @@ def test_permuted_and_repeated_outputs_share_declared_bottom_anchors():
     for ids in (['right','left'],['left','left']):
         c = Cipher('generic_order','permutation',['left','right'],[4,4],8);c.add_round()
         c.add_cipher_output_component(ids,[list(range(4))]*2,8)
-        ir = from_cipher(c);text = to_ascii(ir,word_bits=4,annotations=True)
+        ir = from_cipher(c);text = to_ascii(ir, format='human-legacy',word_bits=4,annotations=True)
         boundaries = [r for r in manifest(text)['records'] if r['definition'].get('type')=='cipher_output']
         assert len({r['row'] for r in boundaries})==1
         assert all(r['col']==r['definition']['positions'][0]//4 for r in boundaries)
@@ -95,7 +95,7 @@ def test_noncommutative_operands_keep_actual_visible_order():
     c = Cipher('generic_sub','permutation',['a','b'],[4,4],4);c.add_round()
     n = c.add_modsub_component(['b','a'],[list(range(4))]*2,4)
     c.add_cipher_output_component([n.id],[list(range(4))],4)
-    ir=from_cipher(c);text=to_ascii(ir,annotations=True)
+    ir=from_cipher(c);text=to_ascii(ir, format='human-legacy',annotations=True)
     assert from_ascii(text) == ir
     assert to_cipher(from_ascii(text)).evaluate([3, 7]) == 4
 
@@ -124,7 +124,7 @@ def test_generic_feistel_f_chain_and_exchange_independent_oracle():
     f=c.add_not_component([r.id],[list(range(4))],4)
     x=c.add_xor_component(['left',f.id],[list(range(4))]*2,4)
     c.add_cipher_output_component(['right',x.id],[list(range(4))]*2,8)
-    text=to_ascii(c,annotations=True);rebuilt=to_cipher(from_ascii(text))
+    text=to_ascii(c, format='human-legacy',annotations=True);rebuilt=to_cipher(from_ascii(text))
     assert '>>>1' in text
     assert '!' in text
     assert '^' in text
@@ -178,7 +178,7 @@ def test_manual_tikz_exchange_is_visible_as_two_crossed_routes():
     x=c.add_xor_component(['a','b'],[list(range(4))]*2,4)
     c.add_cipher_output_component(['b',x.id],[list(range(4))]*2,8)
     ir=from_cipher(c)
-    text=to_ascii(ir,annotations=True)
+    text=to_ascii(ir, format='human-legacy',annotations=True)
     assert '<---------->' in text
     tikz=to_tikz(ir,layoutSource='human',view='wires',legend='none',rowsPerPanel=30,columnsPerPanel=10)
     assert tikz.count('to[out=-90,in=90]')==2
@@ -226,9 +226,9 @@ def test_human_vector_partial_unused_note_uses_native_input_and_bit_range():
     c=Cipher('anonymous_partial','permutation',['a'],[8],4);c.add_round()
     c.add_cipher_output_component(['a'],[[0,1,2,3]],4)
     ir=from_cipher(c)
-    plain=to_ascii(ir,word_bits=4)
+    plain=to_ascii(ir, format='human-legacy',word_bits=4)
     assert '(  I2   )' in plain
-    assert from_ascii(to_ascii(ir,word_bits=4,annotations=True))==ir
+    assert from_ascii(to_ascii(ir, format='human-legacy',word_bits=4,annotations=True))==ir
     vector=to_tikz(ir,layoutSource='human',word_bits=4,view='wires')
     assert 'I0 bits 4:1:7' in vector
     assert '{I2}' not in vector

@@ -1,6 +1,7 @@
 """Private coordinate-local binding experiment for the persistent-word view.
 
-This experimental bridge is separate from the public decoder. Metadata supplies local
+This experimental implementation is dispatched by the public from_ascii decoder
+on the review branch; shared builder/UI admission remains open. Metadata supplies local
 widths, identities, rounds and observation names; connectivity is always parsed
 from the unchanged body. It contains no operation operand/source links.
 """

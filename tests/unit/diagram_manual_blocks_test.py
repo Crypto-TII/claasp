@@ -278,7 +278,7 @@ def test_visible_constant_value_is_independent_of_native_radix(literal, width, e
     from claasp.diagrams import to_ascii
     ir = literal_ir(literal, width)
     for style in ('symbols', 'labels'):
-        body = to_ascii(ir, operator_style=style)
+        body = to_ascii(ir, format='human-legacy', operator_style=style)
         # Decode the visible hexadecimal token independently, rather than
         # calling the native label formatter or using metadata as an oracle.
         tokens = re.findall(r'\|\s*x([0-9A-F]+)\s*\|', body)
@@ -286,7 +286,7 @@ def test_visible_constant_value_is_independent_of_native_radix(literal, width, e
         assert int(tokens[0], 16) == expected
         assert 'xB101' not in body
         assert 'xB10001' not in body
-        recovered = decode(to_ascii(ir, operator_style=style, annotations=True))
+        recovered = decode(to_ascii(ir, format='human-legacy', operator_style=style, annotations=True))
         assert recovered['nodes'][0]['description'] == [literal]
         assert to_cipher(recovered).evaluate([]) == expected
 

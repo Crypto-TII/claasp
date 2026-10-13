@@ -1,7 +1,7 @@
 """Generic diagram synthesis, human presentation and typed audit serialization.
 
-Use ``to_ascii`` for admitted persistent word views and their documented generic
-fallback. ``annotations=True`` preserves the ordinary picture and adds local
+Use ``to_ascii`` for admitted persistent word views; unsupported shapes require
+an explicit legacy choice. ``annotations=True`` preserves the ordinary picture and adds local
 native metadata. ``format='human-legacy'`` retains the old exact manual serializer;
 ``to_audit_ascii`` retains the audit encoding. The implementation lives in this package;
 ``claasp.diagrams`` remains a supported public import path.

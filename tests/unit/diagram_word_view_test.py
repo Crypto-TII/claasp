@@ -40,16 +40,18 @@ def test_explicit_legacy_serializer_retains_exact_old_bytes(annotated):
     assert to_ascii(ir, format='human-legacy', annotations=annotated) == legacy_encode(ir, annotations=annotated)
 
 
-def test_fallback_is_independent_of_annotations_and_is_reported():
+def test_unsupported_default_shape_requires_explicit_legacy_choice():
     cipher = Cipher('shape_probe', 'permutation', ['a'], [8], 4)
     cipher.add_round()
     cipher.add_cipher_output_component(['a'], [[0, 1, 2, 3]], 4)
     ir = from_cipher(cipher)
-    assert to_ascii(ir, word_bits=4) == legacy_encode(ir, word_bits=4)
-    assert to_ascii(ir, word_bits=4, annotations=True) == legacy_encode(ir, word_bits=4, annotations=True)
-    assert from_ascii(to_ascii(ir, word_bits=4, annotations=True)) == ir
+    for annotated in (False, True):
+        with pytest.raises(ValueError, match="request format='human-legacy' explicitly"):
+            to_ascii(ir, word_bits=4, annotations=annotated)
+        assert to_ascii(ir, format='human-legacy', word_bits=4, annotations=annotated) == legacy_encode(ir, word_bits=4, annotations=annotated)
     report = synthesis_report(ir, word_bits=4)
-    assert report['view'] == 'human-legacy'
+    assert report['view'] == 'unsupported-persistent'
+    assert report['required_format'] == 'human-legacy'
     assert 'unequal shape' in report['fallback_reason']
 
 
@@ -72,3 +74,11 @@ def test_persistent_parser_rejects_broken_interior_glyph():
     lines[12] = lines[12][:13]+' '+lines[12][14:]
     with pytest.raises(ValueError, match='complete glyph'):
         parse('\n'.join(lines)+'\n')
+
+
+@pytest.mark.parametrize('rounds', [1, 2])
+def test_linked_default_documentation_is_actual_public_output(rounds):
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[2]
+    reference = root/'docs'/'diagrams'/'examples'/f'speck{rounds}-persistent.asciiart'
+    assert reference.read_text() == to_ascii(from_cipher(SpeckBlockCipher(number_of_rounds=rounds)))

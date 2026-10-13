@@ -480,10 +480,10 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
 
     ``format='human-legacy'`` explicitly retains the old exact manual serializer.
     Existing interchange-only rendering controls also retain that serializer.
-    A graph without an admitted persistent word shape uses the same generic
-    legacy fallback with or without annotations. ``synthesis_report`` identifies
-    the selected view and reason; malformed graphs and exceeded bounds do not
-    fall back. Nonuniform selections, mixed widths, output permutations and
+    A graph without an admitted persistent word shape fails with an actionable
+    diagnostic rather than emitting old helper boxes. Request ``human-legacy``
+    explicitly where needed. ``synthesis_report`` identifies the unsupported
+    shape and required format; malformed graphs and exceeded bounds fail. Nonuniform selections, mixed widths, output permutations and
     branch-specific aliases remain explicit compatibility cases. ``key_side``
     is supported only for admitted persistent shapes.
 
@@ -530,7 +530,11 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     details and validates every selection against the actually traced stream.
     Pseudocode alone does not recover arbitrary original placement.
 
-    Opt-in wordwise projection keeps rotations, additions and other operations
+    The following wordwise/bank/candidate-cost controls describe the explicit
+    legacy serializer and interchange-only rendering paths. Persistent default
+    shapes use their validated word model instead.
+
+    Opt-in legacy wordwise projection keeps rotations, additions and other operations
     whole; only independent XOR/AND/OR/NOT words split into parallel gates.
     Their subordinate ``G<group>.W<word>`` references use zero-based base36
     indexes and a seven-character bound. The opcode remains the primary label.
@@ -539,13 +543,13 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     ranges. Ambiguous legacy references or footer-only word/port reassignments
     reject. Plain bodies describe scalar word gates, not original native IDs.
 
-    State lane policy prefers contiguous data/key banks declared by the IR.
+    Legacy state lane policy prefers contiguous data/key banks declared by the IR.
     A matching-width final state is placed beneath its data input bank; other
     shapes report a generic compact fallback. Temporaries may use auxiliary
     lanes. This is a role/liveness preference, not an inferred state matrix.
     ``synthesis_report`` reports ``banks``, ``output_bank`` and ``bank_reason``.
 
-    Balanced minimizes rectangular area plus occupied cells. Other preferences
+    Legacy balanced layout minimizes rectangular area plus occupied cells. Other preferences
     prioritize actual crossing-cell count, block-row depth or lane width, with
     deterministic ties. These are heuristic choices, not global optimality
     guarantees. ``synthesis_report`` exposes costs and the selected candidate.
@@ -553,8 +557,9 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     RAISES:
 
     ``ValueError`` for invalid options/bounds, unsupported projection or a
-    fresh exported-body parse that changes native semantics. Current human
-    projection supports aligned mixed native widths with explicit partial-bit selection helpers, unary/binary word operations,
+    fresh exported-body parse that changes native semantics. The persistent
+    default rejects unsupported shapes and requests an explicit legacy choice.
+    Legacy projection supports aligned mixed native widths with explicit partial-bit selection helpers, unary/binary word operations,
     three-port XOR/AND/OR, constants, S-box/linear/mix-column/permutation operations and
     boundary fragments through explicit JOIN/SEL helpers. Unsupported shapes, oversized labels and custom
     moduli require the explicit audit view. Lanes have fixed manual width;
@@ -587,6 +592,10 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         True
         sage: from_ascii(to_ascii(ir, format='human-legacy', annotations=True, word_bits=int(8), projection='wordwise', lane_policy='state')) == ir
         True
+
+    Complete tested default one/two-round scripts and actual results are in
+    ``docs/diagrams/persistent_word_examples.rst``. No user-facing default
+    printout is replaced by a legacy picture.
 
     Complete legacy printouts follow. A left margin prevents the doctest
     parser from interpreting a visible ``>>>`` rotation as a Python prompt::
@@ -637,7 +646,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         sage: f = c.add_not_component([r.id], [list(range(int(4)))], int(4))
         sage: x = c.add_xor_component(['left', f.id], [list(range(int(4)))]*int(2), int(4))
         sage: output = c.add_cipher_output_component(['right', x.id], [list(range(int(4)))]*int(2), int(8))
-        sage: print('\n'.join(('| '+line.rstrip()).rstrip() for line in to_ascii(from_cipher(c)).splitlines()))
+        sage: print('\n'.join(('| '+line.rstrip()).rstrip() for line in to_ascii(from_cipher(c), format='human-legacy').splitlines()))
         |
         |   _______    _______
         |  |  I1   |  |  I2   |
@@ -697,11 +706,8 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         try:
             body, bindings = export_bindings(ir, key_side=key_side, word_bits=word_bits,
                                             max_calls=max_calls, max_cells=max_cells, max_grid_area=max_grid_area)
-        except UnsupportedProjection:
-            # Generic compatibility fallback; the same decision applies whether
-            # annotations are present or absent. Invalid graphs/bounds never fall back.
-            if key_side != 'right':
-                raise
+        except UnsupportedProjection as error:
+            raise UnsupportedProjection(str(error)+"; request format='human-legacy' explicitly for the old serializer") from error
         else:
             text = body + word_marker + json.dumps(bindings, sort_keys=True, separators=(',', ':'))+'\n' if annotations else body
             if len(text.encode('utf8')) > max_text_bytes:
@@ -731,7 +737,9 @@ def synthesis_report(ir, *, format='human', key_side='right', word_bits=None, st
 
     A **dictionary** containing ``view``, ``fallback_reason``, ``selected_variant``, ``metrics`` (crossings,
     depth in block rows, width in lanes, occupied cells), candidate costs and
-    the applied alignment/preference. No original dependency graph is stored.
+    the applied alignment/preference. Unsupported persistent shapes return a
+    reason and ``required_format='human-legacy'`` without drawing a fallback.
+    No original dependency graph is stored.
 
     EXAMPLES::
 
@@ -757,9 +765,8 @@ def synthesis_report(ir, *, format='human', key_side='right', word_bits=None, st
             export_bindings(ir, key_side=key_side, word_bits=word_bits, max_cells=max_cells, max_calls=max_calls)
             model = build_words(ir, key_side=key_side, word_bits=word_bits, max_cells=max_cells, max_calls=max_calls)
         except UnsupportedProjection as error:
-            fallback = str(error)
-            if key_side != 'right':
-                raise
+            return {'view': 'unsupported-persistent', 'fallback_reason': str(error),
+                    'required_format': 'human-legacy'}
         else:
             return {'view': 'persistent-word', 'fallback_reason': None, 'selected_variant': 'persistent-word',
                     'word_bits': model['bits'], 'packing_policy': 'persistent-word', 'alignment': alignment,
@@ -902,7 +909,7 @@ def to_tikz(ir, **options):
     INPUT:
 
     - ``ir`` -- **dictionary** or **Cipher**; supported computation
-    - ``options`` -- **keyword options**; ``view`` selects ``overview-detail`` (default), ``overview``, ``detail`` or ``wires``; ``stageMode`` chooses generic ``round`` or ``layer`` summaries; ``strategy`` chooses the ASCII planner; ``layoutSource='human'`` reuses consolidated manual synthesis cells, while ``'audit'`` retains the default typed path
+    - ``options`` -- **keyword options**; ``view`` selects ``overview-detail`` (default), ``overview``, ``detail`` or ``wires``; ``stageMode`` chooses generic ``round`` or ``layer`` summaries; ``strategy`` chooses the ASCII planner; ``layoutSource='human'`` reuses consolidated manual synthesis cells, while ``'audit'`` retains the default typed path; ``'persistent'`` renders the exact validated ordinary word-view cells and routes, with ``key_side`` and explicit label/border/spacing controls
 
     OUTPUT:
 
@@ -933,8 +940,15 @@ def to_tikz(ir, **options):
     if not isinstance(ir, dict): ir=from_cipher(ir)
     validate(ir)
     source = options.get('layoutSource', 'audit')
-    if source not in ('audit', 'human'):
-        raise ValueError('Choose audit or human TikZ layoutSource')
+    if source not in ('audit', 'human', 'persistent'):
+        raise ValueError('Choose audit, human or persistent TikZ layoutSource')
+    if source == 'persistent':
+        from .word_tikz import to_tikz as persistent_tikz
+        persistent_options = dict(options)
+        persistent_options.pop('layoutSource', None)
+        if persistent_options.pop('view', 'wires') != 'wires' or persistent_options.pop('legend', 'none') != 'none':
+            raise ValueError('Persistent TikZ currently supports wires with no helper tables')
+        return persistent_tikz(ir, **persistent_options)
     if source == 'human':
         from claasp.cipher_modules.diagram.manual_blocks import _encode_layout as manual_layout
         keys = ('word_bits', 'gathering', 'projection', 'lane_policy', 'native_bundles', 'parameter_refs', 'associative_reductions', 'alignment', 'layout_preference', 'operator_style', 'wire_borders',
