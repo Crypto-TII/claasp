@@ -369,7 +369,12 @@ def _art(cell):
     result = manual_blocks.art(local)
     if definition['type'] == 'constant':
         text = 'x'+format(int(definition['description'][0], 0), '02X')
-        result[2] = ' |'+glyphs._center(text)+'| '
+        # Retain the established short spelling, and the manual library's
+        # upper-prefix/middle-suffix glyph when the literal needs two lines.
+        if len(text) > 14:
+            raise ValueError('Constant exceeds two-line inline label capacity')
+        result[1] = ' |'+glyphs._center(text[:7] if len(text) > 7 else '')+'| '
+        result[2] = ' |'+glyphs._center(text[7:] if len(text) > 7 else text)+'| '
     elif definition['description'][0] == 'MODSUB':
         physical = [side for side in glyphs.SIDES if cell['ports'].get(side) == 'in']
         binding = [physical.index(side)+1 for side in definition['operand_ports']]
@@ -462,6 +467,15 @@ def parse(text):
                 expected = glyphs._art(dict(cell, ports=directions, invisible=True))
             if art != tuple(expected):
                 raise ValueError('Broken or directionally invalid complete glyph at '+str((row, column)))
+            if cell['kind'] == 'operation':
+                literal = (cell['binding']+cell['label'] if cell['binding'].startswith('x')
+                           else cell['label'] if cell['label'].startswith('x') else None)
+                if literal is not None:
+                    if (not 2 <= len(literal) <= 14 or
+                            any(char not in '0123456789ABCDEF' for char in literal[1:]) or
+                            (cell['binding'] and (len(cell['binding']) != 7 or len(literal) <= 7))):
+                        raise ValueError('Invalid visible inline constant literal')
+                    cell['constant_literal'] = literal
             cells[(row, column)] = cell
     def adjacent(key, side):
         dr, dc = glyphs.DELTA[side]
@@ -525,6 +539,9 @@ def evaluate(text, input_words, bits, cipher_columns):
         cell = parsed['cells'][key]
         args = [value(source) for source in parsed['sources'][key]]
         label = cell.get('label')
+        # Both pieces come from the fully validated visible glyph; native
+        # metadata is neither needed nor consulted for evaluation.
+        label = cell.get('constant_literal', label)
         if cell['kind'] == 'output':
             result = args[0]
         elif label.startswith('x'):

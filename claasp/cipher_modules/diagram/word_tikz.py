@@ -104,7 +104,11 @@ def render_model(model, *, operator_style='symbols', wire_borders=False,
             if cell['kind'] in ('box', 'input', 'output'):
                 height = boxHeight if cell['kind'] == 'box' else .25
                 label = _label(cell, operator_style) if cell['kind'] == 'box' else cell.get('endpoint_label', '')
+                continued = (cell['kind'] == 'box' and cell['definition']['type'] == 'constant' and len(label) > 7)
+                prefix, suffix = label[:7], label[7:]
                 label = escape(label).replace('>', r'\textgreater{}').replace('<', r'\textless{}')
+                if continued:
+                    label = r'\shortstack{'+escape(prefix)+r'\\'+escape(suffix)+'}'
                 output.append(rf'\node[draw,minimum width={boxWidth}cm,minimum height={height}cm,inner sep=.5mm,outer sep=0pt] ({name}) at {center} {{{label}}};')
                 if cell.get('secret'):
                     output.append(rf'\node[anchor=east,inner sep=.3mm] at ({name}.west) {{S}};')

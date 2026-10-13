@@ -198,6 +198,8 @@ def trace_bindings(body, bindings):
                                'ports': {side: ('out' if side == 'bottom' else 'in') for side in cell['ports']}})
         if cell['label'] != art[2][2:9].strip() or cell['binding'] != art[1][2:9].strip():
             raise ValueError('Native operation metadata contradicts actual visible glyph')
+        if definition['type'] == 'constant' and int(cell['constant_literal'][1:], 16) != int(definition['description'][0], 0):
+            raise ValueError('Native constant metadata contradicts actual visible literal')
         if definition['bits'] != bits or definition['input_bits'] != len(parsed['sources'][key])*bits:
             raise ValueError('Native operation width contradicts actual word ports')
     observations = []
