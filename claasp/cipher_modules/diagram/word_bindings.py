@@ -76,6 +76,15 @@ def trace_bindings(body, bindings):
             raise ValueError('Unexpected operation metadata field; source links are forbidden')
         if set(record['definition']) != set(word_visual.manual_blocks.NODE_FIELDS):
             raise ValueError('Unexpected native definition field; source links are forbidden')
+    if set(bindings['header']) != {'schema', 'name', 'cipher_type', 'output_bits', 'rounds'}:
+        raise ValueError('Unexpected native header metadata field')
+    if any(set(native) != {'id', 'bits', 'role'} for native in bindings['native_inputs']):
+        raise ValueError('Unexpected native input declaration field')
+    for record in bindings['inputs']:
+        if set(record) != {'at', 'binding'} or set(record['binding']) != {'id', 'bits', 'role', 'kind', 'index', 'native_index', 'positions'}:
+            raise ValueError('Unexpected input binding metadata field')
+        if record['binding']['kind'] != 'input':
+            raise ValueError('Input metadata binding is not an input')
     fields = set(word_visual.manual_blocks.NODE_FIELDS)
     for record in bindings['observations']:
         if set(record) != {'definition', 'ordinal', 'positions', 'operand_positions', 'flow', 'at'} or set(record['definition']) != fields:
@@ -87,6 +96,9 @@ def trace_bindings(body, bindings):
     inputs = coordinates(record['at'] for record in bindings['inputs'])
     if inputs != parsed['inputs']:
         raise ValueError('Input bindings disagree with actual visible endpoints')
+    operation_coordinates = [tuple(record['at']) for record in bindings['operations']]
+    if len(set(operation_coordinates)) != len(operation_coordinates):
+        raise ValueError('Duplicate operation coordinate ownership')
     operations = {tuple(record['at']): record for record in bindings['operations']}
     actual = {key for key, cell in parsed['cells'].items() if cell['kind'] == 'operation'}
     if set(operations) != actual:
@@ -101,8 +113,31 @@ def trace_bindings(body, bindings):
     if any(record['cipher'] != (tuple(record['at']) in cipher) for record in bindings['display_terminals']):
         raise ValueError('Display terminal roles disagree with explicit cipher endpoint binding')
     operation_sources = {}
+    # Cardinalities of explicit local fragments bound numeric declarations before
+    # any width-derived allocation or native transform validation.
+    if any(not isinstance(record['binding'].get('positions'), list) or len(record['binding']['positions']) != bits
+           for record in bindings['inputs']):
+        raise ValueError('Word width exceeds actual input fragment cardinality')
+    for native_index, native in enumerate(bindings['native_inputs']):
+        count = sum(len(record['binding']['positions']) for record in bindings['inputs']
+                    if record['binding']['native_index'] == native_index)
+        if type(native['bits']) is not int or native['bits'] <= 0 or native['bits'] != count:
+            raise ValueError('Native input width disagrees with actual fragment coverage cardinality')
+    observation_groups = {}
+    for record in bindings['observations']:
+        observation_groups.setdefault(record['ordinal'], []).append(record)
+    for records in observation_groups.values():
+        definition = records[0]['definition']
+        count = sum(len(record['positions']) for record in records)
+        if type(definition['bits']) is not int or definition['bits'] <= 0 or definition['bits'] != count or definition['input_bits'] != count:
+            raise ValueError('Observation width disagrees with actual fragment coverage cardinality')
+    rounds = bindings['header']['rounds']
+    if type(rounds) is not int or rounds <= 0 or rounds > len(operations)+len(observation_groups)+1:
+        raise ValueError('Declared rounds exceed explicit native record capacity')
     for key, record in operations.items():
         definition = record['definition']
+        if definition['type'] not in ('word_operation', 'constant') or definition['bits'] != bits:
+            raise ValueError('Local operation type/width is unsupported by actual word glyph')
         validate_native_component(definition)
         cell = parsed['cells'][key]
         ordered = [side for side in glyphs.SIDES if side in cell['ports'] and side != 'bottom']
@@ -136,6 +171,13 @@ def trace_bindings(body, bindings):
             'observations': observations, 'exact_native_reconstruction': False}
 
 
+def _observation_slots(width, covered):
+    # Keep the capacity check at the allocation boundary as well as framing.
+    if type(width) is not int or width <= 0 or width != covered:
+        raise ValueError('Observation allocation exceeds explicit fragment capacity')
+    return [None]*covered
+
+
 def decode_bindings(body, bindings):
     """Reconstruct supported native IR from actual pixel routes and local bindings.
 
@@ -162,8 +204,11 @@ def decode_bindings(body, bindings):
             raise ValueError('Invalid packed input word positions')
         atoms[key] = [(native['id'], bit) for bit in positions]
         coverage[native['id']].extend(positions)
-    if any(sorted(coverage[item['id']]) != list(range(item['bits'])) for item in bindings['native_inputs']):
+    if any(len(coverage[item['id']]) != item['bits'] or any(bit != index for index, bit in enumerate(sorted(coverage[item['id']]))) for item in bindings['native_inputs']):
         raise ValueError('Packed input words must cover each original bit exactly once')
+    operation_coordinates = [tuple(record['at']) for record in bindings['operations']]
+    if len(set(operation_coordinates)) != len(operation_coordinates):
+        raise ValueError('Duplicate operation coordinate ownership')
     operations = {tuple(record['at']): record for record in bindings['operations']}
     def stream(key):
         if key in atoms:
@@ -175,7 +220,9 @@ def decode_bindings(body, bindings):
         return atoms[key]
     def pack(flat, masks, width):
         if (not isinstance(masks, list) or any(not isinstance(mask, list) or not mask for mask in masks)
-                or [bit for mask in masks for bit in mask] != list(range(width)) or len(flat) != width):
+                or len(flat) != width
+                or any(bit != index for index, bit in enumerate([bit for mask in masks for bit in mask]))
+                or sum(map(len, masks)) != len(flat)):
             raise ValueError('Original edge masks must partition the exact ordered actual stream')
         edges = []
         for mask in masks:
@@ -204,7 +251,9 @@ def decode_bindings(body, bindings):
         definition = copy.deepcopy(first['definition'])
         if ordinal in nodes or definition['type'] != 'intermediate_output':
             raise ValueError('Invalid or colliding native observation')
-        flat = [None]*definition['bits']
+        if definition['bits'] != sum(len(record['positions']) for record in records):
+            raise ValueError('Observation allocation exceeds explicit fragment capacity')
+        flat = _observation_slots(definition['bits'], sum(len(record['positions']) for record in records))
         for record in records:
             if record['definition'] != definition or record['operand_positions'] != first['operand_positions']:
                 raise ValueError('Observation fragments disagree about local native definition')
