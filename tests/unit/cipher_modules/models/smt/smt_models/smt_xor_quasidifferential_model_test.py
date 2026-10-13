@@ -526,3 +526,31 @@ def test_fixed_key_probability_on_a_key_alternating_cipher():
     assert not result["truncated"]
     assert result["num_trails"] == 2
     assert result["estimated_probability"] == 2.0**-15 + 2.0**-17
+
+
+def _speck8_one_round():
+    speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=1)
+    return speck, SmtXorQuasidifferentialModel(speck)
+
+
+def test_find_one_trail_honours_fixed_masks():
+    _, smt = _speck8_one_round()
+    trail = smt.find_one_xor_quasidifferential_trail(fixed_masks=smt.boundary_masks())
+    assert int(trail["components_values"][INPUT_PLAINTEXT]["mask"], 16) == 0
+    assert int(trail["components_values"]["cipher_output_0_6"]["mask"], 16) == 0
+
+
+def test_find_all_trails_at_a_weight_honour_fixed_masks():
+    _, smt = _speck8_one_round()
+    assert len(smt.find_all_xor_quasidifferential_trails_with_fixed_weight(0)) == 96
+    assert len(
+        smt.find_all_xor_quasidifferential_trails_with_fixed_weight(0, fixed_masks=smt.boundary_masks())
+    ) == 3
+
+
+def test_find_all_trails_up_to_a_weight_pass_fixed_masks_through():
+    _, smt = _speck8_one_round()
+    assert len(smt.find_all_xor_quasidifferential_trails_with_weight_at_most(0)) == 96
+    assert len(
+        smt.find_all_xor_quasidifferential_trails_with_weight_at_most(0, fixed_masks=smt.boundary_masks())
+    ) == 3

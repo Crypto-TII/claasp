@@ -1150,10 +1150,14 @@ class SmtXorQuasidifferentialModel(SmtModel):
     def find_one_xor_quasidifferential_trail(
         self,
         fixed_values=[],
+        fixed_masks=None,
         solver_name=solvers.SOLVER_DEFAULT,
     ):
         """
         Find one XOR quasidifferential trail.
+
+        ``fixed_masks`` sets mask bits, which ``fixed_values`` cannot express; see
+        ``boundary_masks``.
 
         EXAMPLES::
 
@@ -1175,6 +1179,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         start_building_time = time.time()
 
         self.build_xor_quasidifferential_trail_model(fixed_variables=fixed_values)
+        self._apply_fixed_masks(fixed_masks)
 
         end_building_time = time.time()
 
@@ -1200,10 +1205,8 @@ class SmtXorQuasidifferentialModel(SmtModel):
         Find one XOR quasidifferential trail with a fixed total
         weight loss.
 
-        ``fixed_masks`` sets mask bits, which ``fixed_values`` cannot express.
-        If it is not given, any trail of that weight may be returned, including
-        one whose input or output mask is non-zero. ``boundary_masks()`` gives
-        the usual list.
+        ``fixed_masks`` sets mask bits, which ``fixed_values`` cannot express; see
+        ``boundary_masks``.
 
         EXAMPLES::
 
@@ -1243,6 +1246,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
     def find_lowest_weight_xor_quasidifferential_trail(
         self,
         fixed_values=[],
+        fixed_masks=None,
         solver_name=solvers.SOLVER_DEFAULT,
     ):
         """
@@ -1251,6 +1255,9 @@ class SmtXorQuasidifferentialModel(SmtModel):
 
         Mirrors SmtXorDifferentialModel.find_lowest_weight_xor_differential_trail:
         increases the weight bound from 0 until a solution is found.
+
+        ``fixed_masks`` sets mask bits, which ``fixed_values`` cannot express; see
+        ``boundary_masks``.
 
 
         EXAMPLES::
@@ -1274,6 +1281,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
 
         start_building_time = time.time()
         self.build_xor_quasidifferential_trail_model(weight=current_weight, fixed_variables=fixed_values)
+        self._apply_fixed_masks(fixed_masks)
         end_building_time = time.time()
 
         solution = self.solve(XOR_QUASIDIFFERENTIAL, solver_name=solver_name)
@@ -1287,6 +1295,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
 
             start_building_time = time.time()
             self.build_xor_quasidifferential_trail_model(weight=current_weight, fixed_variables=fixed_values)
+            self._apply_fixed_masks(fixed_masks)
             end_building_time = time.time()
 
             solution = self.solve(XOR_QUASIDIFFERENTIAL, solver_name=solver_name)
@@ -1474,12 +1483,16 @@ class SmtXorQuasidifferentialModel(SmtModel):
         self,
         fixed_weight,
         fixed_values=[],
+        fixed_masks=None,
         solver_name=solvers.SOLVER_DEFAULT,
     ):
         """
         Return a list of solutions containing all the XOR
         quasidifferential trails having the ``fixed_weight`` total
         weight loss.
+
+        ``fixed_masks`` sets mask bits, which ``fixed_values`` cannot express; see
+        ``boundary_masks``.
 
         Mirrors SmtXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight.
         A quasidifferential trail is fully determined by its
@@ -1508,7 +1521,9 @@ class SmtXorQuasidifferentialModel(SmtModel):
 
         """
 
-        solutions, _ = self._solutions_at_weight(fixed_weight, fixed_values, [], solver_name, None, None)
+        solutions, _ = self._solutions_at_weight(
+            fixed_weight, fixed_values, fixed_masks or [], solver_name, None, None
+        )
 
         for solution in solutions:
             solution["test_name"] = "find_all_xor_quasidifferential_trails_with_fixed_weight"
@@ -1520,6 +1535,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         max_weight,
         min_weight=0,
         fixed_values=[],
+        fixed_masks=None,
         solver_name=solvers.SOLVER_DEFAULT,
     ):
         """
@@ -1528,6 +1544,9 @@ class SmtXorQuasidifferentialModel(SmtModel):
         ``[min_weight, max_weight]``.
 
         Mirrors SmtXorDifferentialModel.find_all_xor_differential_trails_with_weight_at_most.
+
+        ``fixed_masks`` sets mask bits, which ``fixed_values`` cannot express; see
+        ``boundary_masks``.
 
         EXAMPLES::
 
@@ -1545,7 +1564,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
 
         for weight in range(min_weight, max_weight + 1):
             solutions = self.find_all_xor_quasidifferential_trails_with_fixed_weight(
-                weight, fixed_values=fixed_values, solver_name=solver_name
+                weight, fixed_values=fixed_values, fixed_masks=fixed_masks, solver_name=solver_name
             )
 
             for solution in solutions:
