@@ -336,12 +336,22 @@ non-associative reductions reject. The option requires whole projection and a
 builder supporting the R1 parser; it remains off by default.
 
 The native exporter may combine this capability with parameter legends and
-native bundles. The frozen v9 builder explicitly rejects graphs containing
-both P1 references and R1 groups pending their combined schema gate. Native import and executable export do not imply that the builder can rebuild
+native bundles. The frozen v9 builder rejects graphs containing both P1
+references and R1 groups. The separately frozen v11 builder passes their
+combined schema gate, including an unrelated explicit-modulus binary operation
+beside a reduction group. This certifies that frozen runtime; a differing live
+parser or application requires its own validation. Native import and executable
+export do not imply that the builder can rebuild
 every large drawing within its existing bounds: the fresh full-default Simon
 rebuild timed out at 120 seconds, and fresh SHA1 reached a cell bound in the frozen
 v9 review. Imported drawings and classes passed their separate checks. Caps and
 layout defaults remain unchanged; shared packet gathering is not included here.
+
+The representation-admission planner remains separate and inactive. Automatic
+admission, if introduced later, must pass exact per-node parameter/reduction
+selections to the renderer and retain its structural checks and bounds. It must
+not implement a plan by enabling a global policy that also lowers already
+fitting nodes. This explicit boolean option is not automatic admission.
 
 ## Aligned mixed-width projection
 

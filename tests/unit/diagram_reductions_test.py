@@ -28,9 +28,12 @@ def test_actual_ordered_tree_recovers_one_native_node_and_independent_arithmetic
     with pytest.raises(ValueError, match='port arity'):
         to_ascii(ir, annotations=True, word_bits=4)
     text = to_ascii(ir, annotations=True, word_bits=4, associative_reductions=True)
-    assert '.R0' in text and '.R1' in text and '.R2' in text
+    assert '.R0' in text
+    assert '.R1' in text
+    assert '.R2' in text
     actual = from_ascii(text)
-    assert actual == ir and len(actual['nodes']) == 2
+    assert actual == ir
+    assert len(actual['nodes']) == 2
     restored = to_cipher(actual)
     for a in range(16):
         for b in (0, 7, 15):
@@ -67,20 +70,23 @@ def test_reduction_records_and_glyphs_cannot_conceal_changes():
     for field, value in [('bits', 8), ('step', 99), ('ordinal', 1), ('description', ['MODSUB', 4, None])]:
         edited = copy.deepcopy(metadata)
         next(record['definition'] for record in edited['records'] if record['definition']['kind'] == 'native_reduce')[field] = value
+        malformed_text = body+MARKER+json.dumps(edited)
         with pytest.raises(ValueError):
-            from_ascii(body+MARKER+json.dumps(edited))
+            from_ascii(malformed_text)
     assert all(set(item) == {'kind','ordinal','id','type','bits','input_bits','round','description','operand_positions','operand_ports','step'} for item in definitions)
 
 
 def test_subtraction_and_explicit_modulus_are_not_associatively_lowered():
+    candidate_ir = tree('modsub')
     with pytest.raises(ValueError, match='R1 excludes'):
-        to_ascii(tree('modsub'), annotations=True, word_bits=4, associative_reductions=True)
+        to_ascii(candidate_ir, annotations=True, word_bits=4, associative_reductions=True)
     ir = tree('modadd')
     ir['nodes'][0]['description'][2] = 13
     with pytest.raises(ValueError, match='R1 excludes'):
         to_ascii(ir, annotations=True, word_bits=4, associative_reductions=True)
+    candidate_ir = tree()
     with pytest.raises(ValueError, match='whole projection'):
-        to_ascii(tree(), annotations=True, word_bits=4, associative_reductions=True, projection='wordwise')
+        to_ascii(candidate_ir, annotations=True, word_bits=4, associative_reductions=True, projection='wordwise')
 
 
 def test_consistent_identifier_renaming_leaves_actual_tree_body_unchanged():
@@ -125,8 +131,9 @@ def test_actual_visible_nonroot_observation_is_rejected():
     for record in metadata['records']:
         if record['row'] >= inserted: record['row'] += 1
     metadata['records'].append({'row': inserted, 'col': col, 'definition': definition})
+    malformed_text = '\n'.join(lines)+MARKER+json.dumps(metadata)
     with pytest.raises(ValueError, match='one actual routed root|Nonroot reduction result'):
-        from_ascii('\n'.join(lines)+MARKER+json.dumps(metadata))
+        from_ascii(malformed_text)
 
 
 def test_actual_selection_helpers_preserve_noncontiguous_repeated_bits():
@@ -137,7 +144,8 @@ def test_actual_selection_helpers_preserve_noncontiguous_repeated_bits():
     c.add_cipher_output_component([x.id], [list(range(4))], 4)
     ir = from_cipher(c)
     text = to_ascii(ir, annotations=True, word_bits=4, associative_reductions=True)
-    assert 'SEL' in text and from_ascii(text) == ir
+    assert 'SEL' in text
+    assert from_ascii(text) == ir
     restored = to_cipher(from_ascii(text))
     for a in range(256):
         reverse_low = sum(((a >> index)&1) << (3-index) for index in range(4))

@@ -53,14 +53,18 @@ def test_reduction_bundles_parameters_and_runtime_identity_work_together():
         node['id']=mapping[node['id']]
         for edge in node['operands']:edge['source']=mapping.get(edge['source'],edge['source'])
     options=dict(annotations=True,native_bundles=True,parameter_refs=True,associative_reductions=True)
-    text=to_ascii(ir,**options);assert 'P0 CONST bits=128' in text and '.R0' in text
+    text=to_ascii(ir,**options)
+    assert 'P0 CONST bits=128' in text
+    assert '.R0' in text
     for _ in range(3):
-        assert from_ascii(text)==ir and to_ascii(from_ascii(text),**options)==text
+        assert from_ascii(text) == ir
+        assert to_ascii(from_ascii(text), **options) == text
     rebuilt=to_cipher(from_ascii(text));rng=Random(982451653)
     for _ in range(32):
         a,b,d=[rng.getrandbits(128) for _ in range(3)];root=a^b^d^((1<<127)|17)
         result=rebuilt.evaluate([a,b,d],intermediate_output=True)
-        assert result[0]==(a-root)&((1<<128)-1) and result[1]['trace']==[root]
+        assert result[0] == (a-root)&((1<<128)-1)
+        assert result[1]['trace'] == [root]
     assert [component.round for component in rebuilt.all_components()]==[0,0,0,1,1]
     assert len(set(rebuilt.diagram_source_ids.values()))==len(rebuilt.diagram_source_ids)
     assert r'\begin{tikzpicture}' in to_tikz(ir,layoutSource='human',native_bundles=True,parameter_refs=True,associative_reductions=True)
