@@ -468,7 +468,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
              operator_style='symbols', wire_borders=False, alignment='left',
              layout_preference='balanced', strategy='semantic-auto', gathering='linear',
              lane_policy='compact', projection='whole', native_bundles=False, parameter_refs=False, associative_reductions=False, max_cells=1000000, max_calls=20000, max_grid_area=2000000,
-             max_text_bytes=64000000):
+             max_text_bytes=64000000, key_side='right'):
     r"""
     Draw a readable, builder-importable manual block body by default.
 
@@ -653,6 +653,18 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         return to_audit_ascii(ir, strategy=strategy, **bounds)
     if not isinstance(ir, dict):
         ir = from_cipher(ir)
+    if (annotations is False and native_bundles is False and parameter_refs is False and associative_reductions is False
+            and operator_style == 'symbols' and wire_borders is False and alignment == 'left'
+            and layout_preference == 'balanced' and strategy == 'semantic-auto' and gathering == 'linear'
+            and lane_policy == 'compact' and projection == 'whole'):
+        from .word_visual import to_ascii as visual_ascii
+        text = visual_ascii(ir, key_side=key_side, word_bits=word_bits,
+                            max_calls=max_calls, max_cells=max_cells, max_grid_area=max_grid_area)
+        if len(text.encode()) > max_text_bytes:
+            raise ValueError('Visual text exceeds max_text_bytes')
+        return text
+    if key_side != 'right':
+        raise ValueError('key_side relocation is available only for the persistent-word visual prototype')
     from .manual_blocks import encode
     return encode(ir, annotations=annotations, word_bits=word_bits,
                   operator_style=operator_style, wire_borders=wire_borders,
