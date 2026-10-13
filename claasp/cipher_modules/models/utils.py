@@ -564,7 +564,7 @@ def to_correlation_for_xor_linear_trail(cipher, solution):
         sage: milp = MilpXorLinearModel(speck)
         sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not equal',
         ....: bit_positions=range(32), bit_values=integer_to_bit_list(0x0, 32, 'big'))
-        sage: trail = milp.find_lowest_weight_xor_linear_trail([plaintext])
+        sage: trail = milp.find_lowest_weight_xor_linear_trail([plaintext], solver_name='GLPK')
         sage: to_correlation_for_xor_linear_trail(speck, trail) # random
         {'building_time_seconds': 0.10187196731567383,
          'cipher_id': 'speck_p32_k64_o32_r4',
@@ -638,7 +638,7 @@ def find_sign_for_one_xor_linear_trail(cipher, solution):
         sage: milp = MilpXorLinearModel(speck)
         sage: fixed_variables = [set_fixed_variables('plaintext', 'not equal', list(range(32)),
         ....: integer_to_bit_list(0, 32, 'little'))]
-        sage: trail = milp.find_lowest_weight_xor_linear_trail(fixed_variables)
+        sage: trail = milp.find_lowest_weight_xor_linear_trail(fixed_variables, solver_name='GLPK')
         sage: trail_with_sign = find_sign_for_one_xor_linear_trail(speck, trail)
         sage: abs(trail_with_sign['final_sign'])
         1
@@ -685,7 +685,7 @@ def find_sign_for_xor_linear_trails(cipher, solutions):
         sage: plaintext = set_fixed_variables(
         ....: component_id='plaintext', constraint_type='not equal',
         ....: bit_positions=range(8), bit_values=integer_to_bit_list(0x0, 8, 'big'))
-        sage: trails = milp.find_all_xor_linear_trails_with_fixed_weight(1, fixed_values = [plaintext])
+        sage: trails = milp.find_all_xor_linear_trails_with_fixed_weight(1, fixed_values = [plaintext], solver_name='GLPK')
         sage: trails_with_sign = find_sign_for_xor_linear_trails(speck, trails)
         sage: abs(trails_with_sign[0]['final_sign'])
         1
