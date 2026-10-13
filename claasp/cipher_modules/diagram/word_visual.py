@@ -12,15 +12,22 @@ from .validation import validate
 
 
 class UnsupportedProjection(ValueError):
+    """The validated graph needs a different explicit visual representation."""
     pass
 
 
-def project(ir, word_bits=None):
+def project(ir, word_bits=None, *, max_calls=20000, max_cells=1000000):
     validate(ir)
+    if len(ir['nodes']) > max_calls:
+        raise ValueError('Native calls exceed max_calls')
     bits = manual_blocks.infer_word_bits(ir) if word_bits is None else word_bits
     if type(bits) is not int or bits <= 0 or any(i['bits'] % bits for i in ir['inputs']):
         raise UnsupportedProjection('Word alignment is ambiguous; a width-aware projection is required')
+    if sum(item['bits']//bits for item in ir['inputs']) > max_cells:
+        raise ValueError('Input word cells exceed max_cells before projection')
     graph = manual_blocks._WordGraph(ir, bits)
+    if len(graph.calls) > max_calls:
+        raise ValueError('Projected calls exceed max_calls')
     words = {value: [value] for value in graph.inputs}
     operations, constants, observations = {}, {}, []
     for index, call in enumerate(graph.calls):
@@ -61,9 +68,33 @@ def project(ir, word_bits=None):
 
 
 def build(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=1000000, max_grid_area=2000000):
+    r"""
+    Infer a persistent word-state layout from native dependencies and roles.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary**; validated native graph
+    - ``key_side`` -- **string**; ``'right'`` or ``'left'``
+    - ``word_bits`` -- **integer** or ``None``; explicit or inferred word width
+    - remaining bounds limit native/projected calls, cells and grid area
+
+    OUTPUT:
+
+    A **dictionary** containing actual cells, native input bindings and explicit
+    cipher endpoint columns. Other primary terminals carry display state.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: from claasp.cipher_modules.diagram.word_visual import build
+        sage: model = build(from_cipher(SpeckBlockCipher(number_of_rounds=int(1))))
+        sage: (model['bits'], model['columns'], len(model['cipher_columns']))
+        (16, 6, 2)
+    """
     if key_side not in ('right', 'left'):
         raise ValueError('Choose key_side right or left')
-    model = project(ir, word_bits)
+    model = project(ir, word_bits, max_calls=max_calls, max_cells=max_cells)
     ops, constants = model['operations'], model['constants']
     if len(ops)+len(constants) > max_calls:
         raise ValueError('Visual operations exceed max_calls')
@@ -239,6 +270,19 @@ def render(model):
 
 
 def to_ascii(ir, **options):
+    r"""
+    Render the admitted word-state view using actual manual glyphs and routes.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary**; native graph
+    - ``options`` -- keyword controls accepted by ``build``
+
+    OUTPUT:
+
+    A plain ASCII **string**; native widths and interface packing require the
+    separate annotated bridge. No primitive name chooses a layout.
+    """
     return render(build(ir, **options))
 
 

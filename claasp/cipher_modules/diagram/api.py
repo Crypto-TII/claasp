@@ -470,19 +470,36 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
              lane_policy='compact', projection='whole', native_bundles=False, parameter_refs=False, associative_reductions=False, max_cells=1000000, max_calls=20000, max_grid_area=2000000,
              max_text_bytes=64000000, key_side='right'):
     r"""
-    Draw a readable, builder-importable manual block body by default.
+    Draw persistent word lanes when their generic state shape is identifiable.
 
-    ``annotations=True`` appends coordinate-local native metadata for exact
-    ``from_ascii`` reconstruction. Dependencies are traced from exported
-    glyphs and wires; annotations contain no original graph or source links.
+    ``annotations=True`` appends local metadata to the same ordinary picture.
+    ``from_ascii`` traces actual glyphs and wires to recover native source links.
+    The footer stores widths, bit packing, rounds and local operand port order,
+    not an original dependency graph. Cipher terminals remain distinct from
+    carried key display terminals.
+
+    ``format='human-legacy'`` explicitly retains the old exact manual serializer.
+    Existing interchange-only rendering controls also retain that serializer.
+    A graph without an admitted persistent word shape uses the same generic
+    legacy fallback with or without annotations. ``synthesis_report`` identifies
+    the selected view and reason; malformed graphs and exceeded bounds do not
+    fall back. Nonuniform selections, mixed widths, output permutations and
+    branch-specific aliases remain explicit compatibility cases. ``key_side``
+    is supported only for admitted persistent shapes.
+
+    Bare pictures do not supply native widths, tables or arbitrary original
+    placement. No exact native or layout inversion is promised without the
+    required annotations. The persistent footer is not yet admitted by the
+    existing builder native-import UI; the plain body uses its ordinary glyphs.
     ``to_audit_ascii`` and ``format='audit'`` retain the explicit audit grammar.
     Primitive names and manual references never select a layout.
 
     INPUT:
 
     - ``ir`` -- **dictionary** or **Cipher**; supported native computation
-    - ``format`` -- ``'human'`` (default) or ``'audit'``
+    - ``format`` -- **string**; ``'human'`` (default), explicit ``'human-legacy'``, or ``'audit'``
     - ``annotations`` -- **boolean** (default: ``False``); append lossless local human metadata
+    - ``key_side`` -- **string** (default: ``'right'``); place key-role word lanes on the right or left. First-use key ordering can vary across round counts; native bit bindings remain explicit.
     - ``word_bits`` -- positive **integer** or ``None``; infer the GCD of native output widths and selected-fragment lengths, with output width as a generic fallback
     - ``operator_style`` -- ``'symbols'`` (default) or ``'labels'``; numeric rotation/shift arrows remain explicit in both
     - ``wire_borders`` -- **boolean** (default: ``False``); draw routing-cell frames; operation frames follow the manual vocabulary
@@ -546,16 +563,32 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
     EXAMPLES::
 
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-        sage: from claasp.diagrams import from_cipher, to_ascii, from_ascii
+        sage: from claasp.diagrams import from_cipher, to_ascii, from_ascii, to_cipher
         sage: speck = SpeckBlockCipher(number_of_rounds=int(1))
         sage: ir = from_cipher(speck)
         sage: drawing = to_ascii(ir)
+        sage: annotated = to_ascii(ir, annotations=True)
+        sage: annotated.startswith(drawing)
+        True
+        sage: drawing.count('S_______|')
+        4
+        sage: to_cipher(from_ascii(annotated)).output_bit_size
+        32
+        sage: ir2 = from_cipher(SpeckBlockCipher(number_of_rounds=int(2)))
+        sage: from_ascii(to_ascii(ir2, annotations=True)) == ir2
+        True
+        sage: left = to_ascii(ir2, key_side='left')
+        sage: left.splitlines()[2].startswith(' S')
+        True
+        sage: from_ascii(to_ascii(ir2, key_side='left', annotations=True)) == ir2
+        True
+        sage: drawing = to_ascii(ir, format='human-legacy')
         sage: from_ascii(to_ascii(ir, annotations=True)) == ir
         True
-        sage: from_ascii(to_ascii(ir, annotations=True, word_bits=int(8), projection='wordwise', lane_policy='state')) == ir
+        sage: from_ascii(to_ascii(ir, format='human-legacy', annotations=True, word_bits=int(8), projection='wordwise', lane_policy='state')) == ir
         True
 
-    Complete default printouts follow. A left margin prevents the doctest
+    Complete legacy printouts follow. A left margin prevents the doctest
     parser from interpreting a visible ``>>>`` rotation as a Python prompt::
 
         sage: print('\n'.join(('| '+line.rstrip()).rstrip() for line in drawing.splitlines()))
@@ -641,30 +674,41 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
         |
         |
     """
-    if format not in ('human', 'audit'):
-        raise ValueError("format must be 'human' or 'audit'")
+    if format not in ('human', 'human-legacy', 'audit'):
+        raise ValueError("format must be 'human', 'human-legacy' or 'audit'")
     bounds = {'max_cells': max_cells, 'max_calls': max_calls,
               'max_grid_area': max_grid_area, 'max_text_bytes': max_text_bytes}
     if any(type(value) is not int or value < 1 for value in bounds.values()):
         raise ValueError('Work and output bounds must be positive integers')
+    if type(annotations) is not bool:
+        raise ValueError('annotations must be a boolean')
     if format == 'audit':
-        if annotations or word_bits is not None or operator_style != 'symbols' or wire_borders or alignment != 'left' or layout_preference != 'balanced' or gathering != 'linear' or lane_policy != 'compact' or projection != 'whole' or native_bundles or parameter_refs or associative_reductions:
+        if annotations or word_bits is not None or operator_style != 'symbols' or wire_borders or alignment != 'left' or layout_preference != 'balanced' or gathering != 'linear' or lane_policy != 'compact' or projection != 'whole' or native_bundles or parameter_refs or associative_reductions or key_side != 'right':
             raise ValueError('Human rendering/layout options do not apply to the audit format')
         return to_audit_ascii(ir, strategy=strategy, **bounds)
     if not isinstance(ir, dict):
         ir = from_cipher(ir)
-    if (annotations is False and native_bundles is False and parameter_refs is False and associative_reductions is False
+    if (format == 'human' and native_bundles is False and parameter_refs is False and associative_reductions is False
             and operator_style == 'symbols' and wire_borders is False and alignment == 'left'
             and layout_preference == 'balanced' and strategy == 'semantic-auto' and gathering == 'linear'
             and lane_policy == 'compact' and projection == 'whole'):
-        from .word_visual import to_ascii as visual_ascii
-        text = visual_ascii(ir, key_side=key_side, word_bits=word_bits,
-                            max_calls=max_calls, max_cells=max_cells, max_grid_area=max_grid_area)
-        if len(text.encode()) > max_text_bytes:
-            raise ValueError('Visual text exceeds max_text_bytes')
-        return text
+        from .word_visual import UnsupportedProjection
+        from .word_bindings import export_bindings, MARKER as word_marker
+        try:
+            body, bindings = export_bindings(ir, key_side=key_side, word_bits=word_bits,
+                                            max_calls=max_calls, max_cells=max_cells, max_grid_area=max_grid_area)
+        except UnsupportedProjection:
+            # Generic compatibility fallback; the same decision applies whether
+            # annotations are present or absent. Invalid graphs/bounds never fall back.
+            if key_side != 'right':
+                raise
+        else:
+            text = body + word_marker + json.dumps(bindings, sort_keys=True, separators=(',', ':'))+'\n' if annotations else body
+            if len(text.encode('utf8')) > max_text_bytes:
+                raise ValueError('Visual text exceeds max_text_bytes')
+            return text
     if key_side != 'right':
-        raise ValueError('key_side relocation is available only for the persistent-word visual prototype')
+        raise ValueError('key_side relocation is supported only by the persistent-word view')
     from .manual_blocks import encode
     return encode(ir, annotations=annotations, word_bits=word_bits,
                   operator_style=operator_style, wire_borders=wire_borders,
@@ -672,7 +716,7 @@ def to_ascii(ir, *, format='human', annotations=False, word_bits=None,
                   lane_policy=lane_policy, projection=projection, native_bundles=native_bundles, parameter_refs=parameter_refs, associative_reductions=associative_reductions, strategy=strategy, **bounds)
 
 
-def synthesis_report(ir, *, word_bits=None, strategy='semantic-auto', gathering='linear', native_bundles=False, parameter_refs=False, associative_reductions=False,
+def synthesis_report(ir, *, format='human', key_side='right', word_bits=None, strategy='semantic-auto', gathering='linear', native_bundles=False, parameter_refs=False, associative_reductions=False,
                      alignment='left', layout_preference='balanced', lane_policy='compact', projection='whole',
                      max_cells=1000000, max_calls=20000):
     r"""
@@ -685,7 +729,7 @@ def synthesis_report(ir, *, word_bits=None, strategy='semantic-auto', gathering=
 
     OUTPUT:
 
-    A **dictionary** containing ``selected_variant``, ``metrics`` (crossings,
+    A **dictionary** containing ``view``, ``fallback_reason``, ``selected_variant``, ``metrics`` (crossings,
     depth in block rows, width in lanes, occupied cells), candidate costs and
     the applied alignment/preference. No original dependency graph is stored.
 
@@ -701,10 +745,36 @@ def synthesis_report(ir, *, word_bits=None, strategy='semantic-auto', gathering=
     """
     if not isinstance(ir, dict):
         ir = from_cipher(ir)
+    if format not in ('human', 'human-legacy'):
+        raise ValueError('Synthesis report format must be human or human-legacy')
+    fallback = None
+    if (format == 'human' and strategy == 'semantic-auto' and gathering == 'linear'
+            and native_bundles is False and parameter_refs is False and associative_reductions is False
+            and alignment == 'left' and layout_preference == 'balanced' and lane_policy == 'compact' and projection == 'whole'):
+        from .word_bindings import export_bindings
+        from .word_visual import build as build_words, UnsupportedProjection
+        try:
+            export_bindings(ir, key_side=key_side, word_bits=word_bits, max_cells=max_cells, max_calls=max_calls)
+            model = build_words(ir, key_side=key_side, word_bits=word_bits, max_cells=max_cells, max_calls=max_calls)
+        except UnsupportedProjection as error:
+            fallback = str(error)
+            if key_side != 'right':
+                raise
+        else:
+            return {'view': 'persistent-word', 'fallback_reason': None, 'selected_variant': 'persistent-word',
+                    'word_bits': model['bits'], 'packing_policy': 'persistent-word', 'alignment': alignment,
+                    'layout_preference': layout_preference, 'key_side': key_side,
+                    'metrics': {'cells': len(model['cells']), 'crossings': sum(cell['kind'] == 'cross' for cell in model['cells'].values()),
+                                'depth': model['rows'], 'width': model['columns']}}
+    elif format == 'human':
+        fallback = 'Explicit interchange rendering/layout controls requested'
+    if key_side != 'right':
+        raise ValueError('key_side requires a supported persistent-word view')
     from .manual_blocks import build
     _, report = build(ir, word_bits=word_bits, strategy=strategy, gathering=gathering,
                       alignment=alignment, layout_preference=layout_preference, lane_policy=lane_policy, projection=projection,
                       max_cells=max_cells, max_calls=max_calls, native_bundles=native_bundles, parameter_refs=parameter_refs, associative_reductions=associative_reductions)
+    report.update(view='human-legacy', fallback_reason=fallback)
     return report
 
 
@@ -764,6 +834,10 @@ def from_ascii(text, *, max_text_bytes=64000000, max_grid_area=2000000):
 
     Unannotated legacy art cannot supply missing native tables/widths. Ambiguous, malformed, hidden-dependency and circular routes fail explicitly.
 
+    Persistent word bindings preserve packed input positions, ordered local
+    operands and distinct cipher/display terminals. This experimental footer
+    follows the actual body; it contains no original operation source links.
+
     Annotated manual blocks with ``# CLAASP-HUMAN-BLOCKS 1`` are also
     accepted. Their local native definitions attach to actual readable glyphs;
     fresh routing determines all source links. A plain manual body has no
@@ -806,6 +880,9 @@ def from_ascii(text, *, max_text_bytes=64000000, max_grid_area=2000000):
         ir=from_records(text)
         if len(ir['inputs'])+len(ir['nodes'])>max_grid_area:raise ValueError('Record elements exceed max_grid_area')
         return ir
+    from .word_bindings import MARKER as word_marker, decode as decode_words
+    if word_marker in text:
+        return decode_words(text, max_text_bytes=max_text_bytes, max_grid_area=max_grid_area)
     from .manual_blocks import MARKER as human_marker, decode as decode_human
     if human_marker in text:
         return validate(decode_human(text, max_grid_area=max_grid_area,

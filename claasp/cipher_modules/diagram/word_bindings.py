@@ -10,10 +10,24 @@ from . import word_visual, glyphs
 from .validation import validate, validate_native_component
 
 
-def export_bindings(ir, *, key_side='right'):
+def export_bindings(ir, *, key_side='right', word_bits=None, max_calls=20000, max_cells=1000000, max_grid_area=2000000):
+    r"""
+    Bind local native identities and interfaces to the unchanged word picture.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary**; validated native graph
+    - remaining keywords match the word-view layout and work bounds
+
+    OUTPUT:
+
+    A **tuple** ``(body, bindings)``. Bindings include widths, round identities,
+    actual coordinate-local port order and cipher/display endpoint roles;
+    operation source links are recovered exclusively from the body.
+    """
     observed_ids = {node['id'] for node in ir['nodes'] if node['type'] == 'intermediate_output'}
     consumed = {edge['source'] for node in ir['nodes'] for edge in node['operands']} & observed_ids
-    model = word_visual.build(ir, key_side=key_side)
+    model = word_visual.build(ir, key_side=key_side, word_bits=word_bits, max_calls=max_calls, max_cells=max_cells, max_grid_area=max_grid_area)
     body = word_visual.render(model)
     parsed = word_visual.parse(body)
     fields = ('id', 'type', 'bits', 'input_bits', 'round', 'description')
@@ -51,7 +65,7 @@ def export_bindings(ir, *, key_side='right'):
         for anchor in observation['at']:
             coordinate = tuple(anchor)
             if coordinate in alias_anchors:
-                raise ValueError('Overlapping alias output ownership needs explicit branch-specific cuts')
+                raise word_visual.UnsupportedProjection('Overlapping alias output ownership needs explicit branch-specific cuts')
             alias_anchors.add(coordinate)
             source = next((binding for record, binding in zip(parsed['inputs'], model['input_bindings']) if list(record) == anchor), None)
             if source is not None:
@@ -64,7 +78,7 @@ def export_bindings(ir, *, key_side='right'):
     for node in ir['nodes']:
         for edge in node['operands']:
             if any((edge['source'], bit) in alias_atoms and alias_atoms[(edge['source'], bit)] != node['id'] for bit in edge['positions']):
-                raise ValueError('Mixed direct and alias uses need explicit branch-specific flow cuts')
+                raise word_visual.UnsupportedProjection('Mixed direct and alias uses need explicit branch-specific flow cuts')
     final = next(node for node in reversed(ir['nodes']) if node['type'] == 'cipher_output')
     masks, offset = [], 0
     for edge in final['operands']:
@@ -321,7 +335,27 @@ MARKER = '\n# CLAASP-WORD-VIEW-BINDINGS experimental-3\n'
 
 
 def encode(ir, *, key_side='right'):
-    """Private annotated text; ordinary body stays byte-identical."""
+    r"""
+    Append experimental word bindings without changing the ordinary picture.
+
+    INPUT:
+
+    - ``ir`` -- **dictionary**; admitted native word graph
+    - ``key_side`` -- **string**; placement of key-role word lanes
+
+    OUTPUT:
+
+    An annotated ASCII **string**.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.diagrams import from_cipher
+        sage: from claasp.cipher_modules.diagram.word_bindings import encode, decode
+        sage: graph = from_cipher(SpeckBlockCipher(number_of_rounds=int(2)))
+        sage: decode(encode(graph, key_side='left')) == graph
+        True
+    """
     body, bindings = export_bindings(ir, key_side=key_side)
     return body+MARKER+json.dumps(bindings, sort_keys=True, separators=(',', ':'))+'\n'
 

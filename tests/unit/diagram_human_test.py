@@ -100,10 +100,10 @@ def test_noncommutative_operands_keep_actual_visible_order():
     assert to_cipher(from_ascii(text)).evaluate([3, 7]) == 4
 
 
-def test_speck_observations_unused_legend_and_expanded_key_rounds():
+def test_legacy_speck_observations_unused_legend_and_expanded_key_rounds():
     from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-    one = to_ascii(SpeckBlockCipher(number_of_rounds=1))
-    five = to_ascii(SpeckBlockCipher(number_of_rounds=5))
+    one = to_ascii(SpeckBlockCipher(number_of_rounds=1), format='human-legacy')
+    five = to_ascii(SpeckBlockCipher(number_of_rounds=5), format='human-legacy')
     assert 'KEY6' in one
     assert 'UNUSED' in one
     assert 'I3-5' in one
