@@ -36,6 +36,7 @@ jobs:
 
   architecture-validation:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    needs: multiarch-build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
