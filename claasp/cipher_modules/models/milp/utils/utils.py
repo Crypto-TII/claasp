@@ -64,11 +64,17 @@ def _get_data(data_keywords, lines):
 
 
 def _get_variables_value(internal_variables, read_file):
+    # the variables are integer, hence their values are rounded: solvers may write them with a numerical error and in
+    # scientific notation (e.g. HiGHS writes "1e-13" or "-2e-13" for 0), whose sign and exponent are part of the number
+    number = r"[-+]?(?:[0-9]+[.]?[0-9]*|[.][0-9]+)(?:[eE][-+]?[0-9]+)?"
+    # the solution is read once, keeping the first value written for each index
+    values = {}
+    for index, value in re.findall(r"[xyz]_([0-9]+)[\s]+[\*]?[\s]*(%s)" % number, read_file):
+        values.setdefault(int(index), float(round(float(value))))
     variables_value = {}
     for key in internal_variables.keys():
         index = int(re.search(r"\d+", str(internal_variables[key])).group()) + 1
-        match = re.search(r"[xyz]_%s[\s]+[\*]?[\s]*([0-9]*[.]?[0-9]+)" % index, read_file)
-        variables_value[key] = float(match.group(1)) if match else 0.0
+        variables_value[key] = values.get(index, 0.0)
     return variables_value
 
 
@@ -774,8 +780,8 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
             i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i
         ][0]
         inconsistent_component_id = "_".join(inconsistent_component_var.split("_")[:-3])
-        full_cipher_components = model._cipher.get_all_components_ids()
-        backward_components = model._backward_cipher.get_all_components_ids() + model._backward_cipher.inputs
+        full_cipher_components = model._cipher.all_components_ids()
+        backward_components = model._backward_cipher.all_components_ids() + model._backward_cipher.inputs
         index = full_cipher_components.index(inconsistent_component_id)
         updated_cipher_components = full_cipher_components[: index + 1] + [
             c + MILP_BACKWARD_SUFFIX if c + MILP_BACKWARD_SUFFIX in backward_components else c
@@ -783,8 +789,8 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
         ]
         list_component_ids = model._forward_cipher.inputs + updated_cipher_components
     elif model._incompatible_components is not None:
-        full_cipher_components = model._cipher.get_all_components_ids()
-        backward_components = model._backward_cipher.get_all_components_ids() + model._backward_cipher.inputs
+        full_cipher_components = model._cipher.all_components_ids()
+        backward_components = model._backward_cipher.all_components_ids() + model._backward_cipher.inputs
 
         indices = []
         for id in model._incompatible_components:
@@ -802,8 +808,8 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
         ]
         list_component_ids = model._forward_cipher.inputs + updated_cipher_components
     else:
-        full_cipher_components = model._cipher.get_all_components_ids()
-        backward_components = model._backward_cipher.get_all_components_ids()
+        full_cipher_components = model._cipher.all_components_ids()
+        backward_components = model._backward_cipher.all_components_ids()
         incompatible_value = backward_components[-1]
 
         incompatible_component_id = "_".join(incompatible_value.split("_")[:-1])

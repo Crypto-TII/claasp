@@ -86,7 +86,7 @@ class AvalancheTests:
         all_avalanche_probability_vectors = self.avalanche_probability_vectors(number_of_samples)
         criterion = self.compute_criterion_from_avalanche_probability_vectors(all_avalanche_probability_vectors,
                                                                          avalanche_dependence_uniform_bias)
-        intermediate_output_names = self._add_intermediate_output_components_id_to_dictionary(self._cipher.get_all_components())
+        intermediate_output_names = self._add_intermediate_output_components_id_to_dictionary(self._cipher.all_components())
         diffusion_tests = {"input_parameters": {
             "cipher": self._cipher,
             "test_name": "avalanche_tests",
@@ -280,7 +280,7 @@ class AvalancheTests:
         """
 
         intermediate_output_names = {}
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if self._is_output(component):
                 if component.description[0] not in list(intermediate_output_names.keys()):
                     intermediate_output_names[component.description[0]] = [0, component.output_bit_size]

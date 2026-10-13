@@ -407,7 +407,7 @@ class MznXorDifferentialFixingNumberOfActiveSboxesModel(
         construction and broke doctests throughout the codebase.
         """
         key_schedule_component_ids = get_key_schedule_component_ids(self._cipher)
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if (
                 component.id in key_schedule_component_ids
                 and component.type == WORD_OPERATION

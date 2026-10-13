@@ -37,6 +37,7 @@ from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.ciphers.permutations.chaskeypi_permutation import ChaskeyPiPermutation
 from claasp.ciphers.block_ciphers.gift_sbox_block_cipher import GiftSboxBlockCipher
 from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
+from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
 from claasp.ciphers.permutations.photon_permutation import PhotonPermutation
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 from claasp.ciphers.permutations.sparkle_permutation import SparklePermutation
@@ -157,12 +158,12 @@ def test_evaluate_with_intermediate_outputs_continuous_diffusion_analysis():
     assert output[0][0] == Decimal('-1.000000000')
 
 
-def test_get_model():
+def test_model():
     speck = SpeckBlockCipher(number_of_rounds=1)
-    assert speck.get_model("cp", "xor_differential").__class__.__name__ == "MznXorDifferentialModel"
-    assert speck.get_model("sat", "xor_differential").__class__.__name__ == "SatXorDifferentialModel"
-    assert speck.get_model("smt", "xor_linear").__class__.__name__ == "SmtXorLinearModel"
-    assert speck.get_model("milp", "xor_linear").__class__.__name__ == "MilpXorLinearModel"
+    assert speck.model("cp", "xor_differential").__class__.__name__ == "MznXorDifferentialModel"
+    assert speck.model("sat", "xor_differential").__class__.__name__ == "SatXorDifferentialModel"
+    assert speck.model("smt", "xor_linear").__class__.__name__ == "SmtXorLinearModel"
+    assert speck.model("milp", "xor_linear").__class__.__name__ == "MilpXorLinearModel"
 
 
 def test_generate_bit_based_c_code():
@@ -199,17 +200,17 @@ def test_get_current_component_id():
     assert cipher.get_current_component_id() == 'constant_1_0'
 
 
-def test_get_round_from_component_id():
+def test_round_from_component_id():
     fancy = FancyBlockCipher(number_of_rounds=2)
-    assert fancy.get_round_from_component_id('xor_1_14') == 1
+    assert fancy.round_from_component_id('xor_1_14') == 1
 
 
 def _find_dangling_input_links(cipher):
-    component_ids = {c.id for c in cipher.get_all_components()}
+    component_ids = {c.id for c in cipher.all_components()}
     declared_inputs = set(cipher.inputs)
 
     dangling = []
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         for link in component.input_id_links:
             if link and link not in component_ids and link not in declared_inputs:
                 dangling.append((component.id, link))
@@ -252,7 +253,7 @@ def test_get_partial_cipher_removes_expected_components_for_chacha_6_rounds():
         keep_key_schedule=False,
     )
 
-    partial_component_ids = {component.id for component in partial_cipher.get_all_components()}
+    partial_component_ids = {component.id for component in partial_cipher.all_components()}
     assert expected_removed_ids.isdisjoint(partial_component_ids)
 
 
@@ -315,7 +316,7 @@ def test_get_partial_cipher_removes_picture_component_subset_for_speck():
     }
 
     partial_cipher = cipher.get_partial_cipher(start_round=0, end_round=1, keep_key_schedule=False)
-    partial_component_ids = {component.id for component in partial_cipher.get_all_components()}
+    partial_component_ids = {component.id for component in partial_cipher.all_components()}
     expected_partial_component_ids = {'rot_0_3', 'xor_0_2', 'rot_1_6', 'modadd_1_7', 'xor_0_4', 'xor_1_10', 'intermediate_output_1_12', 'rot_0_0', 'intermediate_output_0_6', 'modadd_0_1', 'rot_1_9', 'xor_1_8'}
     assert picture_component_ids.isdisjoint(partial_component_ids)
     assert expected_partial_component_ids == partial_component_ids
@@ -589,6 +590,56 @@ def test_zero_correlation_linear_search():
     speck6 = SpeckBlockCipher(number_of_rounds=6)
     zero_correlation_linear_approximations = speck6.zero_correlation_linear_search("smt", "YICES_EXT")
     assert len(zero_correlation_linear_approximations) > 0
+
+
+def test_find_impossible_property_keyed_scenarios_without_key_raise():
+    # a keyless permutation has no key: the keyed scenarios must be refused, not silently remapped
+    keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
+    for scenario in ("single-key", "variable-key", "related-key"):
+        with pytest.raises(ValueError, match=scenario):
+            keccak.find_impossible_property(type="differential", scenario=scenario)
+    with pytest.raises(ValueError, match="single-key"):
+        keccak.impossible_differential_search("sat", "KISSAT_EXT")
+
+
+def test_find_impossible_property_unknown_scenario_raises():
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    with pytest.raises(ValueError, match="unknown scenario"):
+        speck.find_impossible_property(type="differential", scenario="non-key")
+
+
+def test_impossible_differential_search_on_keyless_permutation():
+    keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
+    impossible_differentials = keccak.impossible_differential_search("sat", "KISSAT_EXT", scenario="no-key")
+    assert isinstance(impossible_differentials, list)
+
+
+def test_zero_correlation_linear_search_on_keyless_permutation():
+    keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
+    zero_correlation_linear_approximations = keccak.zero_correlation_linear_search("sat", "KISSAT_EXT", scenario="no-key")
+    assert isinstance(zero_correlation_linear_approximations, list)
+
+
+def test_find_impossible_property_no_key_scenario_on_keyed_cipher():
+    # "no-key" on a keyed cipher leaves the key unconstrained, so it must not crash and must return a list
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    result = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="no-key")
+    assert isinstance(result, list)
+
+
+def test_find_impossible_property_variable_key_and_related_key():
+    # variable-key: zero plaintext difference, 1-bit key difference
+    # related-key: every combination of <= 1-bit plaintext and key differences (except both zero), so it
+    # contains the single-key and variable-key results, plus cases with both a plaintext and a key bit active
+    speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
+    single_key = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="single-key")
+    variable_key = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="variable-key")
+    related_key = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="related-key")
+    assert all(p == 0 and bin(k).count("1") == 1 for p, k, _ in variable_key)
+    assert all(p or k for p, k, _ in related_key)
+    assert [(p, o) for p, k, o in related_key if k == 0] == sorted(single_key)
+    assert sorted(t for t in related_key if t[0] == 0) == sorted(variable_key)
+
 
 def test_cipher_inverse():
     key = 0xabcdef01abcdef01

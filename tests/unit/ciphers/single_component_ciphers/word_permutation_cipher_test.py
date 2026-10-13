@@ -28,7 +28,7 @@ def test_word_permutation_cipher_sat_xor_differential_trail_search_matches_evalu
     assert trail["status"] == "SATISFIABLE"
     assert trail["total_weight"] == 0.0
 
-    cipher_output_id = cipher.get_all_components_ids()[-1]
+    cipher_output_id = cipher.all_components_ids()[-1]
     plaintext = int(trail["components_values"]["plaintext"]["value"], 16)
     ciphertext = int(trail["components_values"][cipher_output_id]["value"], 16)
 

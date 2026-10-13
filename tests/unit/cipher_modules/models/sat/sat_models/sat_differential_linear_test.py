@@ -24,9 +24,9 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2, 3):
-        middle_part_components.append(speck.get_components_in_round(round_number))
+        middle_part_components.append(speck.components_in_round(round_number))
     for round_number in range(3, 6):
-        bottom_part_components.append(speck.get_components_in_round(round_number))
+        bottom_part_components.append(speck.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -71,9 +71,9 @@ def test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2, 3):
-        middle_part_components.append(speck.get_components_in_round(round_number))
+        middle_part_components.append(speck.components_in_round(round_number))
     for round_number in range(3, 6):
-        bottom_part_components.append(speck.get_components_in_round(round_number))
+        bottom_part_components.append(speck.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -113,11 +113,11 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(1):
-        top_part_components.append(chacha.get_components_in_round(round_number))
+        top_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(1, 3):
-        middle_part_components.append(chacha.get_components_in_round(round_number))
+        middle_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(3, 6):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
+        bottom_part_components.append(chacha.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -175,11 +175,11 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(1):
-        top_part_components.append(aradi.get_components_in_round(round_number))
+        top_part_components.append(aradi.components_in_round(round_number))
     for round_number in range(1, 3):
-        middle_part_components.append(aradi.get_components_in_round(round_number))
+        middle_part_components.append(aradi.components_in_round(round_number))
     for round_number in range(3, 4):
-        bottom_part_components.append(aradi.get_components_in_round(round_number))
+        bottom_part_components.append(aradi.components_in_round(round_number))
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
 
@@ -232,11 +232,11 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2):
-        top_part_components.append(chacha.get_components_in_round(round_number))
+        top_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(2, 4):
-        middle_part_components.append(chacha.get_components_in_round(round_number))
+        middle_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(4, 8):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
+        bottom_part_components.append(chacha.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -280,11 +280,11 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_second_case
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2):
-        top_part_components.append(chacha.get_components_in_round(round_number))
+        top_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(2, 4):
-        middle_part_components.append(chacha.get_components_in_round(round_number))
+        middle_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(4, 8):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
+        bottom_part_components.append(chacha.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -330,11 +330,11 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2):
-        top_part_components.append(chacha.get_components_in_round(round_number))
+        top_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(2, 3):
-        middle_part_components.append(chacha.get_components_in_round(round_number))
+        middle_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(3, 8):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
+        bottom_part_components.append(chacha.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -419,11 +419,11 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2):
-        top_part_components.append(chacha.get_components_in_round(round_number))
+        top_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(2, 4):
-        middle_part_components.append(chacha.get_components_in_round(round_number))
+        middle_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(4, 8):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
+        bottom_part_components.append(chacha.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))

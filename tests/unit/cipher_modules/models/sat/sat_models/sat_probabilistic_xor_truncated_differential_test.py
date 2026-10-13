@@ -359,7 +359,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
     aradi = AradiBlockCipherSBox(number_of_rounds=4)
     bottom_part_components = []
     for round_number in range(2, 4):
-        bottom_part_components.append(aradi.get_components_in_round(round_number))
+        bottom_part_components.append(aradi.components_in_round(round_number))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
     bottom_part_components = [component.id for component in bottom_part_components]
 
@@ -396,7 +396,7 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     chacha = ChachaPermutation(number_of_rounds=3, round_mode=ROUND_MODE_HALF)
     bottom_part_components = []
     for round_number in range(2, 3):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
+        bottom_part_components.append(chacha.components_in_round(round_number))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
     bottom_part_components = [component.id for component in bottom_part_components]
     initial_state_positions = integer_to_bit_list(

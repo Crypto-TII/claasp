@@ -441,7 +441,7 @@ def to_bias_for_correlation_measure(cipher, solution):
     solution_with_bias = deepcopy(solution)
     solution_with_bias["measure"] = "bias"
     solution_with_bias["total_weight"] += 1
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_bias["components_values"][component.id + suffix]["weight"]:
@@ -454,7 +454,7 @@ def to_bias_for_probability_measure(cipher, solution):
     solution_with_bias = deepcopy(solution)
     solution_with_bias["measure"] = "bias"
     solution_with_bias["total_weight"] = round(-math.log(2 ** (-solution_with_bias["total_weight"]) - 1 / 2.0, 2), 1)
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_bias["components_values"][component.id + suffix]["weight"]:
@@ -513,7 +513,7 @@ def to_probability_for_correlation_measure(cipher, solution):
     solution_with_proba["total_weight"] = round(
         -math.log((2 ** (-solution_with_proba["total_weight"]) + 1) / 2.0, 2), 3
     )
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_proba["components_values"][component.id + suffix]["weight"]:
@@ -531,7 +531,7 @@ def to_probability_for_bias_measure(cipher, solution):
     solution_with_proba = deepcopy(solution)
     solution_with_proba["measure"] = "probability"
     solution_with_proba["total_weight"] = round(-math.log(2 ** (-solution_with_proba["total_weight"]) + 1 / 2.0, 2), 3)
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_proba["components_values"][component.id + suffix]["weight"]:
@@ -564,7 +564,7 @@ def to_correlation_for_xor_linear_trail(cipher, solution):
         sage: milp = MilpXorLinearModel(speck)
         sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not equal',
         ....: bit_positions=range(32), bit_values=integer_to_bit_list(0x0, 32, 'big'))
-        sage: trail = milp.find_lowest_weight_xor_linear_trail([plaintext])
+        sage: trail = milp.find_lowest_weight_xor_linear_trail([plaintext], solver_name='GLPK')
         sage: to_correlation_for_xor_linear_trail(speck, trail) # random
         {'building_time_seconds': 0.10187196731567383,
          'cipher_id': 'speck_p32_k64_o32_r4',
@@ -591,7 +591,7 @@ def to_correlation_for_bias_measure(cipher, solution):
     solution_with_correlation = deepcopy(solution)
     solution_with_correlation["measure"] = "correlation"
     solution_with_correlation["total_weight"] -= 1
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_correlation["components_values"][component.id + suffix]["weight"]:
@@ -606,7 +606,7 @@ def to_correlation_for_probability_measure(cipher, solution):
     solution_with_correlation["total_weight"] = round(
         -math.log(2 * 2 ** (-solution_with_correlation["total_weight"]) - 1, 2), 1
     )
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_correlation["components_values"][component.id + suffix]["weight"]:
@@ -638,14 +638,14 @@ def find_sign_for_one_xor_linear_trail(cipher, solution):
         sage: milp = MilpXorLinearModel(speck)
         sage: fixed_variables = [set_fixed_variables('plaintext', 'not equal', list(range(32)),
         ....: integer_to_bit_list(0, 32, 'little'))]
-        sage: trail = milp.find_lowest_weight_xor_linear_trail(fixed_variables)
+        sage: trail = milp.find_lowest_weight_xor_linear_trail(fixed_variables, solver_name='GLPK')
         sage: trail_with_sign = find_sign_for_one_xor_linear_trail(speck, trail)
         sage: abs(trail_with_sign['final_sign'])
         1
     """
     constants = {}
     sign = +1
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         output_id_link = component.id
         if "sbox" in component.type:
             input_int = int(solution["components_values"][f"{output_id_link}_i"]["value"], 16)
@@ -685,7 +685,7 @@ def find_sign_for_xor_linear_trails(cipher, solutions):
         sage: plaintext = set_fixed_variables(
         ....: component_id='plaintext', constraint_type='not equal',
         ....: bit_positions=range(8), bit_values=integer_to_bit_list(0x0, 8, 'big'))
-        sage: trails = milp.find_all_xor_linear_trails_with_fixed_weight(1, fixed_values = [plaintext])
+        sage: trails = milp.find_all_xor_linear_trails_with_fixed_weight(1, fixed_values = [plaintext], solver_name='GLPK')
         sage: trails_with_sign = find_sign_for_xor_linear_trails(speck, trails)
         sage: abs(trails_with_sign[0]['final_sign'])
         1
@@ -732,9 +732,9 @@ def get_bit_bindings(cipher, format_func=(lambda x: x)):
     """
     arcs = {}
     intermediate_output_arcs = {
-        component.id: {} for component in cipher.get_all_components() if INTERMEDIATE_OUTPUT in component.type
+        component.id: {} for component in cipher.all_components() if INTERMEDIATE_OUTPUT in component.type
     }
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         if component.type == CONSTANT:
             continue
         input_bit_size = component.input_bit_size
@@ -869,11 +869,18 @@ def _w_linear_sk(args):
     rng = np.random.default_rng(seed)
     fk = _repeat_input_difference(fixed_key, chunk_size, key_num_bytes)
     plaintext = rng.integers(0, 256, size=(state_num_bytes, chunk_size), dtype=np.uint8)
-    ciphertext = cipher.evaluate_vectorized([plaintext, fk])[0]
+    return _linear_parity_count(cipher, [plaintext, fk], input_mask, output_mask)
+
+
+def _linear_parity_count(cipher, inputs, input_mask, output_mask):
+    """Number of samples on which ``input_mask . inputs[0]`` and ``output_mask . cipher(inputs)`` have the same parity."""
+    plaintext = inputs[0]
+    number_of_samples = plaintext.shape[1]
+    output = cipher.evaluate_vectorized(inputs)[0]
     in_pos = _extract_bit_positions_msb(input_mask, ("1",))
     out_pos = _extract_bit_positions_msb(output_mask, ("1",))
-    in_par = np.bitwise_xor.reduce(_extract_bits_msb(plaintext, in_pos), axis=0) if len(in_pos) > 0 else np.zeros(chunk_size, dtype=np.uint8)
-    out_par = np.bitwise_xor.reduce(_extract_bits_msb(ciphertext.T, out_pos), axis=0) if len(out_pos) > 0 else np.zeros(chunk_size, dtype=np.uint8)
+    in_par = np.bitwise_xor.reduce(_extract_bits_msb(plaintext, in_pos), axis=0) if len(in_pos) > 0 else np.zeros(number_of_samples, dtype=np.uint8)
+    out_par = np.bitwise_xor.reduce(_extract_bits_msb(output.T, out_pos), axis=0) if len(out_pos) > 0 else np.zeros(number_of_samples, dtype=np.uint8)
     return int(np.count_nonzero((in_par ^ out_par) == 0))
 
 
@@ -1102,27 +1109,91 @@ def linear_checker_for_block_cipher_single_key(
     rng = np.random.default_rng(seed)
     fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
     plaintext = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
-    ciphertext = cipher.evaluate_vectorized([plaintext, fixed_key_data])[0]
+    count = _linear_parity_count(cipher, [plaintext, fixed_key_data], input_mask, output_mask)
+    return 2 * count / number_of_samples - 1.0
 
-    input_positions = _extract_bit_positions_msb(input_mask, ("1",))
-    output_positions = _extract_bit_positions_msb(output_mask, ("1",))
 
-    if input_positions:
-        input_bits = _extract_bits_msb(plaintext, input_positions)
-        input_parity = np.bitwise_xor.reduce(input_bits, axis=0)
-    else:
-        input_parity = np.zeros(number_of_samples, dtype=np.uint8)
+def linear_checker_permutation(
+    cipher, input_mask, output_mask, number_of_samples, state_size, seed=None, num_workers=1
+):
+    """
+    Verify experimentally linear approximations of permutations using the vectorized evaluator.
 
-    if output_positions:
-        output_bits = _extract_bits_msb(ciphertext.T, output_positions)
-        output_parity = np.bitwise_xor.reduce(output_bits, axis=0)
-    else:
-        output_parity = np.zeros(number_of_samples, dtype=np.uint8)
+    Keyless counterpart of ``linear_checker_for_block_cipher_single_key``: the cipher must have a single input (the
+    state). The correlation of ``input_mask . x + output_mask . P(x)`` is estimated on random states ``x``.
 
-    total_parity = input_parity ^ output_parity
-    count = np.count_nonzero(total_parity == 0)
-    corr = 2 * count / number_of_samples * 1.0 - 1
-    return corr
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_mask`` -- **integer** or **string**; input linear mask, as an integer or as a bitstring of length ``state_size``
+    - ``output_mask`` -- **integer** or **string**; output linear mask, as an integer or as a bitstring of length ``state_size``
+    - ``number_of_samples`` -- **integer**; number of random state samples
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
+        sage: from claasp.cipher_modules.models.utils import linear_checker_permutation
+        sage: keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=8)
+        sage: input_mask = 0x404040c0404040404000222222222200020000008181818181
+        sage: output_mask = 0x101
+        sage: correlation = linear_checker_permutation(keccak, input_mask, output_mask, 1 << 12, 200, seed=1)
+        sage: abs(abs(correlation) - 0.5) < 0.05
+        True
+    """
+    # Sage doctests pass Sage Integers; numpy's generator and shapes need Python ints.
+    number_of_samples, state_size, num_workers = int(number_of_samples), int(state_size), int(num_workers)
+    seed = None if seed is None else int(seed)
+    if state_size % 8 != 0:
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
+    if len(cipher.inputs) != 1:
+        raise ValueError("linear_checker_permutation needs a cipher with a single input; use "
+                         "linear_checker_for_block_cipher_single_key for keyed ciphers.")
+    if cipher.inputs_bit_size[0] != state_size:
+        raise ValueError("state_size must be equal to the cipher input size.")
+    input_mask = _mask_as_binary_string(input_mask, state_size, "Input")
+    output_mask = _mask_as_binary_string(output_mask, state_size, "Output")
+
+    state_num_bytes = int(state_size / 8)
+
+    if num_workers > 1:
+        count, total = _parallel_dispatch(
+            _w_linear_perm,
+            (cipher, input_mask, output_mask, state_num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        return 2 * count / total - 1.0
+
+    rng = np.random.default_rng(seed)
+    state = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
+    count = _linear_parity_count(cipher, [state], input_mask, output_mask)
+    return 2 * count / number_of_samples - 1.0
+
+
+def _mask_as_binary_string(mask, size, label):
+    if isinstance(mask, str):
+        if len(mask) != size:
+            raise ValueError(f"{label} mask length must be equal to state_size.")
+        if set(mask) - {"0", "1"}:
+            raise ValueError(f"{label} mask must be a bitstring of 0s and 1s.")
+        return mask
+    mask = int(mask)
+    if mask < 0 or mask >= (1 << size):
+        raise ValueError(f"{label} mask must fit in state_size bits.")
+    return _number_to_n_bit_binary_string(mask, size)
+
+
+def _w_linear_perm(args):
+    cipher, input_mask, output_mask, state_num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    state = rng.integers(0, 256, size=(state_num_bytes, chunk_size), dtype=np.uint8)
+    return _linear_parity_count(cipher, [state], input_mask, output_mask)
 
 
 def _w_boomerang_sk(args):

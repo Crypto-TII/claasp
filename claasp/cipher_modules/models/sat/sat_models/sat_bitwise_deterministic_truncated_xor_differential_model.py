@@ -83,7 +83,7 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDiffer
         )
         operation_types = ("AND", "MODADD", "MODMUL", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
-        component_list = component_list or self._cipher.get_all_components()
+        component_list = component_list or self._cipher.all_components()
         for component in component_list:
             operation = component.description[0]
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
@@ -231,7 +231,7 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDiffer
               '-cipher_output_2_12_30_0 -dummy_hw_0_61_3',
               '-cipher_output_2_12_31_0 -dummy_hw_0_62_3'])
         """
-        cipher_output_id = self._cipher.get_all_components_ids()[-1]
+        cipher_output_id = self._cipher.all_components_ids()[-1]
         set_to_be_minimized = [
             f"{INPUT_PLAINTEXT}_{i}_0"
             for i in range(self._cipher.inputs_bit_size[self._cipher.inputs.index(INPUT_PLAINTEXT)])
@@ -244,7 +244,7 @@ class SatBitwiseDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDiffer
 
     def _parse_solver_output(self, variable2value):
         components_solutions = self._get_cipher_inputs_components_solutions_double_ids(variable2value)
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             value = self._get_component_value_double_ids(component, variable2value)
             component_solution = set_component_solution(value)
             components_solutions[f"{component.id}"] = component_solution

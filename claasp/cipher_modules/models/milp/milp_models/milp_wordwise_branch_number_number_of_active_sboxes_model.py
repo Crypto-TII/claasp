@@ -26,7 +26,7 @@ from claasp.cipher_modules.component_analysis_tests import (
     instantiate_matrix_over_correct_field,
 )
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
-from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT, SOLVER_INTERNAL_DEFAULT
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
 from claasp.name_mappings import MIX_COLUMN, SBOX
 
@@ -90,7 +90,7 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
         self._word_size = self._compute_word_size()
 
     def _compute_word_size(self):
-        word_sizes = {component.input_bit_size for component in self._cipher.get_all_components() if component.type == SBOX}
+        word_sizes = {component.input_bit_size for component in self._cipher.all_components() if component.type == SBOX}
         if len(word_sizes) != 1:
             raise ValueError("cipher must have exactly one, uniform S-box input size to determine the word size")
         return word_sizes.pop()
@@ -201,7 +201,7 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
             sage: ublock = UblockSingleLinearLayerBlockCipher(number_of_rounds=1, use_mix_column=False)
             sage: milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(ublock)
             sage: milp.init_model_in_sage_milp_class()
-            sage: linear_layer = [c for c in ublock.get_all_components() if c.type == 'linear_layer'][0]
+            sage: linear_layer = [c for c in ublock.all_components() if c.type == 'linear_layer'][0]
             sage: shutil.which("minizinc") is None or milp._word_branch_number(linear_layer) == 8
             True
 
@@ -209,7 +209,7 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
             sage: aes = AESBlockCipher(number_of_rounds=2)
             sage: milp_aes = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(aes)
             sage: milp_aes.init_model_in_sage_milp_class()
-            sage: mix_column = [c for c in aes.get_all_components() if c.type == 'mix_column'][0]
+            sage: mix_column = [c for c in aes.all_components() if c.type == 'mix_column'][0]
             sage: shutil.which("minizinc") is None or milp_aes._word_branch_number(mix_column) == 5
             True
         """
@@ -280,7 +280,7 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
             self._add_fixed_variable_constraint(fixed_variable)
 
         sbox_active_terms = []
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             for constraint in component.milp_wordwise_branch_number_number_of_active_sboxes_constraints(self):
                 mip.add_constraint(constraint)
             if component.type == SBOX:
@@ -292,7 +292,7 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
 
         return sbox_active_terms
 
-    def find_lowest_number_of_active_sboxes(self, fixed_values=[], solver_name=SOLVER_DEFAULT):
+    def find_lowest_number_of_active_sboxes(self, fixed_values=[], solver_name=SOLVER_INTERNAL_DEFAULT):
         """
         Return the solution representing the minimum number of active S-boxes.
 
@@ -301,7 +301,8 @@ class MilpWordwiseBranchNumberNumberOfActiveSboxesModel(MilpModel):
         - ``fixed_values`` -- *list of dict*, the variables to be fixed in standard format (see
           :py:meth:`~cipher_modules.models.utils.set_fixed_variables`); typically
           :py:meth:`~cipher_modules.models.utils.get_single_key_scenario_format_for_fixed_values`
-        - ``solver_name`` -- *str*, the solver to call
+        - ``solver_name`` -- *str* (default: `GLPK`), the solver of Sage to call; the model is always solved inside
+          Sage, hence an external solver (whose name ends with ``_EXT``) is replaced by ``SOLVER_INTERNAL_DEFAULT``
 
         EXAMPLE::
 

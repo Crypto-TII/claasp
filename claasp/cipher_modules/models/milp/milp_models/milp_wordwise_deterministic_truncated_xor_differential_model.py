@@ -54,7 +54,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         self._trunc_wordvar = None
         self._word_size = 4
         if self._cipher.is_spn():
-            for component in self._cipher.get_all_components():
+            for component in self._cipher.all_components():
                 if SBOX in component.type:
                     self._word_size = int(component.output_bit_size)
                     break
@@ -114,7 +114,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         x = self._binary_variable
         p = self._integer_variable
 
-        components = self._cipher.get_all_components()
+        components = self._cipher.all_components()
         last_component = components[-1]
 
         self.build_wordwise_deterministic_truncated_xor_differential_trail_model(fixed_bits, fixed_words)
@@ -162,7 +162,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         self._variables_list = []
         cipher_list = cipher_list or [self._cipher]
         component_list = [
-            c for cipher_component in [cipher.get_all_components() for cipher in cipher_list] for c in cipher_component
+            c for cipher_component in [cipher.all_components() for cipher in cipher_list] for c in cipher_component
         ]
         variables, constraints = self.input_wordwise_deterministic_truncated_xor_differential_constraints(
             component_list
@@ -303,7 +303,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         variables = []
         constraints = []
 
-        component_list = component_list or self._cipher.get_all_components()
+        component_list = component_list or self._cipher.all_components()
 
         update_dictionary_that_contains_wordwise_truncated_input_inequalities(self._word_size)
         dict_inequalities = output_dictionary_that_contains_wordwise_truncated_input_inequalities()
@@ -434,7 +434,7 @@ class MilpWordwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
     def _get_component_values(self, objective_variables, components_variables):
         components_values = {}
-        list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
+        list_component_ids = self._cipher.inputs + self._cipher.all_components_ids()
         for component_id in list_component_ids:
             dict_tmp = self._get_component_value_weight(component_id, components_variables)
             components_values[component_id] = dict_tmp

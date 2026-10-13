@@ -1,12 +1,17 @@
+import os
+import time
+
 import pytest
 
 from claasp.cipher_modules.models.milp.milp_model import (
     MilpModel,
+    _run_and_stream_output,
     get_independent_input_output_variables,
     get_input_output_variables,
 )
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
+from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -102,17 +107,17 @@ def test_fix_variables_value_constraints():
 
     speck = SpeckBlockCipher(number_of_rounds=3)
     milp = MilpXorDifferentialModel(speck)
-    fixed_values = [set_fixed_variables('plaintext','equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))])]
+    fixed_values = [set_fixed_variables('plaintext','equal',range(32),[(speck.all_components_ids()[-1],list(range(32)))])]
     trail = milp.find_one_xor_differential_trail(fixed_values=fixed_values)
-    assert trail['components_values']['plaintext']['value'] == trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+    assert trail['components_values']['plaintext']['value'] == trail['components_values'][speck.all_components_ids()[-1]]['value']
 
-    fixed_values = [set_fixed_variables('plaintext','not_equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))])]
+    fixed_values = [set_fixed_variables('plaintext','not_equal',range(32),[(speck.all_components_ids()[-1],list(range(32)))])]
     trail = milp.find_one_xor_differential_trail(fixed_values=fixed_values, solver_name='SCIP_EXT')
-    assert trail['components_values']['plaintext']['value'] != trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+    assert trail['components_values']['plaintext']['value'] != trail['components_values'][speck.all_components_ids()[-1]]['value']
 
     fixed_values = [set_fixed_variables('plaintext','equal',range(32),[0]*31+[1])]
-    fixed_values.append(set_fixed_variables(speck.get_all_components_ids()[-1],'equal',range(32),[0]*31+[1]))
-    fixed_values.append(set_fixed_variables('plaintext','not_equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))]))
+    fixed_values.append(set_fixed_variables(speck.all_components_ids()[-1],'equal',range(32),[0]*31+[1]))
+    fixed_values.append(set_fixed_variables('plaintext','not_equal',range(32),[(speck.all_components_ids()[-1],list(range(32)))]))
     trail = milp.find_one_xor_differential_trail(fixed_values=fixed_values)
     assert trail['status'] == 'UNSATISFIABLE'
 
@@ -135,7 +140,7 @@ def test_solve():
     assert differential_solution["model_type"] == "xor_differential"
     assert differential_solution["components_values"]["key"]["weight"] == 0
     assert differential_solution["components_values"]["modadd_0_1"]["weight"] >= 0
-    assert differential_solution["solver_name"] == "GLPK"
+    assert differential_solution["solver_name"] == SOLVER_DEFAULT
     assert differential_solution["total_weight"] >= 0.0
 
     milp = MilpXorLinearModel(speck)
@@ -147,5 +152,30 @@ def test_solve():
     assert linear_solution["model_type"] == XOR_LINEAR
     assert differential_solution["components_values"]["key"]["weight"] == 0
     assert linear_solution["components_values"]["modadd_1_7_i"]["weight"] >= 0
-    assert linear_solution["solver_name"] == "GLPK"
+    assert linear_solution["solver_name"] == SOLVER_DEFAULT
     assert linear_solution["total_weight"] >= 0.0
+
+
+def _is_running(process_id):
+    # a killed process not yet removed by its parent is a zombie, which no longer runs
+    try:
+        with open(f"/proc/{process_id}/stat") as stat_file:
+            return stat_file.read().rsplit(")", 1)[1].split()[0] != "Z"
+    except FileNotFoundError:
+        return False
+
+
+def test_run_and_stream_output_stops_the_solver_when_interrupted():
+    process_ids = []
+
+    def interrupt(line):
+        process_ids.append(int(line))
+        raise KeyboardInterrupt
+
+    # as for a solver, the shell starts a long-running process, whose process id it prints
+    with pytest.raises(KeyboardInterrupt):
+        _run_and_stream_output("sleep 30 & echo $!; wait", interrupt)
+    deadline = time.time() + 5
+    while _is_running(process_ids[0]) and time.time() < deadline:
+        time.sleep(0.1)
+    assert not _is_running(process_ids[0])

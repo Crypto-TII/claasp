@@ -42,7 +42,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
             for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
         ]
         cipher = self._cipher
-        for component in cipher.get_all_components():
+        for component in cipher.all_components():
             output_id_link = component.id
             output_size = int(component.output_bit_size)
             if CIPHER_OUTPUT in component.type:
@@ -63,7 +63,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         component_and_model_types = []
         allowed_component_types, allowed_operations = self._allowed_component_and_operations()
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             is_supported_word_op = component.type != WORD_OPERATION or operation in allowed_operations
             if component.type in allowed_component_types and is_supported_word_op:
@@ -133,7 +133,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         cipher = self._cipher
         cp_constraints = []
 
-        for component_id in cipher.get_all_components_ids():
+        for component_id in cipher.all_components_ids():
             # at least one of the outputs bit difference should be active for the output cipher
             if "cipher_output" in component_id:
                 cp_constraints.append(f"constraint count({component_id}, 1) > 0;")
@@ -144,7 +144,7 @@ class MznSemiDeterministicTruncatedXorDifferentialModel(MznModel):
         new_constraint = "output["
         for element in cipher_inputs:
             new_constraint += f'"{element} = "++ show({element}) ++ "\\n" ++'
-        for component_id in cipher.get_all_components_ids():
+        for component_id in cipher.all_components_ids():
             new_constraint += f'"{component_id} = "++ show({component_id})++ "\\n" ++'
             probability_var = self.component_probability_var.get(component_id)
             if probability_var:
