@@ -2,10 +2,14 @@ from unittest import mock
 
 import numpy as np
 import pytest
+import tensorflow as tf
 
 from claasp.cipher_modules import neural_network_tests
 from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+
+DBITNET_64_TRAINABLE_PARAMETERS = 296065
+DBITNET_64_PARAMETERS = 298113
 
 
 def test_find_good_input_difference_for_neural_distinguisher():
@@ -164,3 +168,53 @@ def test_get_differential_dataset_uses_one_based_round_numbers():
     assert y.shape == (4,)
     with pytest.raises(ValueError):
         tester.get_differential_dataset([0x400000, 0], 0, samples=4)
+
+
+def _dbitnet(input_size=64):
+    return NeuralNetworkTests(None).get_neural_network('dbitnet', input_size=input_size, word_size=1)
+
+
+def _trainable_parameters(model):
+    return int(sum(np.prod(weight.shape) for weight in model.trainable_weights))
+
+
+def test_dbitnet_construction_uses_a_rescaling_layer():
+    model = _dbitnet()
+    layer_types = [type(layer).__name__ for layer in model.layers]
+    assert 'TFOpLambda' not in layer_types
+    assert 'Lambda' not in layer_types
+    assert layer_types.count('Rescaling') == 1
+    assert model.input_shape == (None, 64, 1)
+    assert model.output_shape == (None, 1)
+    assert _trainable_parameters(model) == DBITNET_64_TRAINABLE_PARAMETERS
+    assert model.count_params() == DBITNET_64_PARAMETERS
+
+
+def test_dbitnet_rescaling_maps_bits_to_plus_minus_one():
+    rescaling = next(layer for layer in _dbitnet().layers if type(layer).__name__ == 'Rescaling')
+    bits = np.array([[[0.0], [1.0]]], dtype=np.float32)
+    np.testing.assert_array_equal(np.asarray(rescaling(bits)), [[[-1.0], [1.0]]])
+    values = np.random.default_rng(0).random((1, 64, 1), dtype=np.float32)
+    expected = (values - np.float32(0.5)) / np.float32(0.5)
+    np.testing.assert_array_equal(np.asarray(rescaling(values)), expected)
+
+
+def test_dbitnet_forward_pass_on_differential_dataset():
+    x, _ = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2)).get_differential_dataset([0x400000, 0], 2,
+                                                                                               samples=3)
+    predictions = _dbitnet().predict(x, verbose=0)
+    assert predictions.shape == (3, 1)
+    assert np.all((predictions >= 0) & (predictions <= 1))
+
+
+# Keras 3 cannot restore the compile configuration of legacy HDF5 files, so only the architecture and weights are
+# reloaded from them.
+@pytest.mark.parametrize('extension, compile_model', [('keras', True), ('h5', False)])
+def test_dbitnet_save_and_load(tmp_path, extension, compile_model):
+    model = _dbitnet()
+    x = np.random.default_rng(0).integers(0, 2, (3, 64, 1)).astype(np.float32)
+    path = str(tmp_path / f'dbitnet.{extension}')
+    model.save(path)
+    loaded = tf.keras.models.load_model(path, compile=compile_model)
+    assert [type(layer).__name__ for layer in loaded.layers] == [type(layer).__name__ for layer in model.layers]
+    np.testing.assert_allclose(loaded.predict(x, verbose=0), model.predict(x, verbose=0), rtol=1e-6)

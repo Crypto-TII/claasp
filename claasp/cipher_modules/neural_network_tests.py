@@ -16,6 +16,7 @@ from tensorflow.keras.layers import (
     Conv1D,
     Dense,
     Input,
+    Rescaling,
 )
 from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
@@ -798,9 +799,8 @@ class NeuralNetworkTests:
         inputs = Input(shape=(input_size, 1))
         x = inputs
 
-        # normalize the input data to a range of [-1, 1]:
-        x = tf.subtract(x, 0.5)
-        x = tf.divide(x, 0.5)
+        # normalize the input data to a range of [-1, 1], i.e. (x - 0.5) / 0.5:
+        x = Rescaling(scale=2.0, offset=-1.0)(x)
 
         for dilation_rate in dilation_rates:
             ### wide-narrow blocks
