@@ -301,7 +301,7 @@ def _panel_words(frame, top, bottom, left, right):
 
 def _word_nodes(frame, index, word, row, col, top, left, cell_width, cell_height, row_gap, legend):
     value = _display_value(word)
-    text = '?' if value is None else f'{value:0{(frame['word_bits'] + 3) // 4}x}'
+    text = '?' if value is None else f'{value:0{(frame["word_bits"] + 3) // 4}x}'
     if len(text) > max(1, int((cell_width * 28.45 - 6) / 3.5)):
         key = f'V{index}'
         legend.append((key, text))
