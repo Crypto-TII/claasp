@@ -1,5 +1,8 @@
+from unittest import mock
+
 import pytest
 
+from claasp.cipher_modules import neural_network_tests
 from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 
@@ -71,3 +74,16 @@ def test_neural_network_differential_distinguisher_tests():
             'number_of_epochs': 1,
             'plaintext_input_bit_size': 32,
             'key_input_bit_size': 64}
+
+
+@pytest.mark.parametrize('test_method', ['neural_network_blackbox_distinguisher_tests',
+                                         'neural_network_differential_distinguisher_tests'])
+def test_distinguisher_tests_forward_number_of_epochs(test_method):
+    sequential = mock.MagicMock()
+    sequential.return_value.fit.return_value.history = {'val_binary_accuracy': [0.5]}
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    with mock.patch.object(neural_network_tests, 'Sequential', sequential):
+        getattr(tester, test_method)(nb_samples=8, number_of_epochs=7, hidden_layers=[4])
+    fit_calls = sequential.return_value.fit.call_args_list
+    assert fit_calls
+    assert all(fit_call.kwargs['epochs'] == 7 for fit_call in fit_calls)

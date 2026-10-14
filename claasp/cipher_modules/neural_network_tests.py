@@ -141,9 +141,8 @@ class NeuralNetworkTests:
                 m.add(Dense(1, activation='sigmoid'))
                 m.compile(loss='binary_crossentropy', optimizer="adam", metrics=['binary_accuracy'])
 
-                history = m.fit(np.array(ds[k][1][i]), labels, validation_split=0.1, shuffle=1, verbose=0) if blackbox \
-                    else m.fit(np.array(ds[k][1][i]), labels, epochs=number_of_epochs,
-                               validation_split=0.1, shuffle=1, verbose=0)
+                history = m.fit(np.array(ds[k][1][i]), labels, epochs=number_of_epochs,
+                                validation_split=0.1, shuffle=1, verbose=0)
 
                 tmp_dict["accuracies"].append(history.history['val_binary_accuracy'][-1])
                 tmp_dict["component_ids"].append(component_output_ids[k][i])
