@@ -85,7 +85,7 @@ def test_upstream_identical_branches_follow_downstream_semantics_not_ids_or_orde
 def test_layout_and_annotations_match_across_two_fresh_hash_seed_processes():
     source=Path(__file__).read_text()
     begin=source.index('def duplicate_branches():');end=source.index('\n\ndef test_',begin)
-    program=('import hashlib,json\nfrom claasp.cipher import Cipher\nfrom claasp.diagrams import Diagrams\n'
+    program=('import sage.all\nimport hashlib,json\nfrom claasp.cipher import Cipher\nfrom claasp.diagrams import Diagrams\n'
              +source[begin:end]+"\ndiagram=Diagrams(duplicate_branches())\n"
              +"print(json.dumps([hashlib.sha256(diagram.to_ascii(routed_words=True,annotations=value).encode()).hexdigest() for value in (False,True)]))")
     outputs=[]

@@ -17,7 +17,8 @@ def test_diagram_source_compiles_on_test_interpreter():
 
 
 def test_fresh_process_imports_public_diagram_api():
-    program = ('from claasp.diagrams import Diagrams\n'
+    program = ('import sage.all\n'
+               'from claasp.diagrams import Diagrams\n'
                'from claasp.cipher_modules.diagram import Diagrams as implementation\n'
                'assert Diagrams is implementation\n')
     subprocess.run([sys.executable, '-c', program], cwd=ROOT, check=True, timeout=30)
