@@ -953,7 +953,7 @@ class NeuralNetworkTests:
         return diffs, scores, highest_round
 
     def _evolutionary_algorithm(self, previous_generation, initial_population, number_of_generations, verbose,
-                                difference_evaluation_function, difference_bits):
+                                difference_evaluation_function, difference_bits, seed=None):
         if isinstance(difference_bits, bool) or not isinstance(difference_bits, Integral) or difference_bits < 1:
             raise ValueError(f'difference_bits must be a positive integer, got {difference_bits!r}')
         mut_prob = 0.1
@@ -973,7 +973,7 @@ class NeuralNetworkTests:
 
         scores = scores[best_differences]
         cpt = initial_population ** 2
-        rng = np.random.default_rng()
+        rng = np.random.default_rng(seed)
         for i in range(number_of_generations):
             # New generation
             kids = np.array([a ^ b for a in generation for b in generation if a != b], dtype=object)

@@ -340,7 +340,8 @@ def test_evolutionary_algorithm_mutates_the_highest_bit():
 
 
 def test_evolutionary_algorithm_one_bit_space():
-    generation, scores, _ = NeuralNetworkTests(None)._evolutionary_algorithm(None, 4, 2, False, _no_score, 1)
+    generation, scores, _ = NeuralNetworkTests(None)._evolutionary_algorithm(None, 4, 2, False, _no_score, 1,
+                                                                             seed=0)
     assert list(generation) == [1, 1, 1, 1]
     assert len(scores) == 4
 
