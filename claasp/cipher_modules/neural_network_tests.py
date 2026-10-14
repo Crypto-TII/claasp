@@ -1,5 +1,4 @@
 import os
-import random
 import secrets
 from math import sqrt
 from numbers import Integral
@@ -959,12 +958,8 @@ class NeuralNetworkTests:
             raise ValueError(f'difference_bits must be a positive integer, got {difference_bits!r}')
         mut_prob = 0.1
         if previous_generation is None:
-            generation = np.array([random.randint(1, (1 << difference_bits) - 1)
+            generation = np.array([secrets.randbelow((1 << difference_bits) - 1) + 1
                                    for _ in range(initial_population)], dtype=object)
-            # Restored randint instead of secrets. secrets.choice has a bound on max value,
-            # while randint does not, and we sometimes need 64+ bit integers here
-            # generation = np.array([secrets.choice(range(1, 1 << difference_bits))
-            #                       for _ in range(initial_population ** 2)], dtype=object)
         else:
             generation = np.array([self._validated_difference(difference, difference_bits)
                                    for difference in previous_generation], dtype=object)
@@ -978,15 +973,16 @@ class NeuralNetworkTests:
 
         scores = scores[best_differences]
         cpt = initial_population ** 2
+        rng = np.random.default_rng()
         for i in range(number_of_generations):
             # New generation
             kids = np.array([a ^ b for a in generation for b in generation if a != b], dtype=object)
             # Mutation: selecting mutating kids
-            selected_for_mutation = np.random.randint(0, 100, len(kids))
+            selected_for_mutation = rng.integers(0, 100, len(kids))
             number_to_mutate = np.sum(selected_for_mutation >= 100 * (1 - mut_prob))
             # Selected kids are XORed with 1<<r (r random)
             kids[selected_for_mutation >= 100 * (1 - mut_prob)] ^= \
-                (np.array(1, dtype=object) << np.random.randint(0, difference_bits, number_to_mutate))
+                (np.array(1, dtype=object) << rng.integers(0, difference_bits, number_to_mutate))
             # Removing kids that have been explored before, duplicates, and 0 values
             kids = np.unique(np.setdiff1d(kids, explored))
 

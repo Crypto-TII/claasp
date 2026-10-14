@@ -1,6 +1,5 @@
 import contextlib
 import io
-import random
 from unittest import mock
 
 import numpy as np
@@ -282,11 +281,11 @@ def test_scored_round_outputs(cipher, expected):
 
 @pytest.mark.parametrize('number_of_rounds', [1, 2])
 def test_find_good_input_difference_for_short_primitives(number_of_rounds):
-    random.seed(0)
     np.random.seed(0)
     tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=number_of_rounds))
     diff, scores, highest_round = tester.find_good_input_difference_for_neural_distinguisher(
-        [True, False], initial_population=4, number_of_generations=1, nb_samples=64)
+        [True, False], initial_population=4, number_of_generations=1, nb_samples=64,
+        previous_generation=[0x400000, 0x8000, 0x40, 0x1])
     assert highest_round == number_of_rounds
     assert np.max(scores) > 0
     assert all(0 < d < 1 << 32 for d in diff)
@@ -311,18 +310,17 @@ def _no_score(generation):
 
 
 def test_evolutionary_algorithm_initial_differences_stay_within_width():
-    with mock.patch.object(neural_network_tests.random, 'randint', side_effect=lambda low, high: high) as randint:
+    with mock.patch.object(neural_network_tests.secrets, 'randbelow', side_effect=lambda upper: upper - 1) as randbelow:
         generation, _, _ = NeuralNetworkTests(None)._evolutionary_algorithm(None, 4, 0, False, _no_score, 3)
-    assert {randint_call.args for randint_call in randint.call_args_list} == {(1, 7)}
+    assert {randbelow_call.args for randbelow_call in randbelow.call_args_list} == {(7,)}
     assert list(generation) == [7, 7, 7, 7]
 
 
 def test_evolutionary_algorithm_mutates_the_highest_bit():
-    real_randint = np.random.randint
     bit_position_bounds = []
     evaluated = []
 
-    def controlled_randint(low, high, size):
+    def controlled_integers(low, high, size):
         if high == 100:
             return np.full(size, 99)
         bit_position_bounds.append((low, high))
@@ -332,17 +330,16 @@ def test_evolutionary_algorithm_mutates_the_highest_bit():
         evaluated.append(list(generation))
         return np.zeros(len(generation)), 0
 
-    with mock.patch.object(neural_network_tests.np.random, 'randint', side_effect=controlled_randint):
+    generator = mock.Mock()
+    generator.integers.side_effect = controlled_integers
+    with mock.patch.object(neural_network_tests.np.random, 'default_rng', return_value=generator):
         NeuralNetworkTests(None)._evolutionary_algorithm(np.array([1, 2], dtype=object), 2, 1, False,
                                                          record_score, 3)
-    assert np.random.randint is real_randint
     assert bit_position_bounds == [(0, 3)]
     assert evaluated[-1] == [0b111]
 
 
 def test_evolutionary_algorithm_one_bit_space():
-    random.seed(0)
-    np.random.seed(0)
     generation, scores, _ = NeuralNetworkTests(None)._evolutionary_algorithm(None, 4, 2, False, _no_score, 1)
     assert list(generation) == [1, 1, 1, 1]
     assert len(scores) == 4
@@ -350,14 +347,16 @@ def test_evolutionary_algorithm_one_bit_space():
 
 @pytest.mark.parametrize('difference_bits', [0, -1, 1.5, True])
 def test_evolutionary_algorithm_rejects_invalid_width(difference_bits):
+    tester = NeuralNetworkTests(None)
     with pytest.raises(ValueError):
-        NeuralNetworkTests(None)._evolutionary_algorithm(None, 4, 0, False, _no_score, difference_bits)
+        tester._evolutionary_algorithm(None, 4, 0, False, _no_score, difference_bits)
 
 
 @pytest.mark.parametrize('previous_generation', [[0], [8], [-1], [1.5], [True], [1, 9], []])
 def test_evolutionary_algorithm_rejects_invalid_previous_generation(previous_generation):
+    tester = NeuralNetworkTests(None)
     with pytest.raises(ValueError):
-        NeuralNetworkTests(None)._evolutionary_algorithm(previous_generation, 4, 0, False, _no_score, 3)
+        tester._evolutionary_algorithm(previous_generation, 4, 0, False, _no_score, 3)
 
 
 def test_evolutionary_algorithm_accepts_numpy_previous_generation():
@@ -368,7 +367,6 @@ def test_evolutionary_algorithm_accepts_numpy_previous_generation():
 
 
 def test_find_good_input_difference_verbose_with_fewer_than_ten_differences():
-    random.seed(0)
     np.random.seed(0)
     tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=1))
     output = io.StringIO()
