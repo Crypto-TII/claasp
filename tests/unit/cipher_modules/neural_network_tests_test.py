@@ -302,3 +302,51 @@ def test_run_autond_pipeline_starts_training_from_highest_round(highest_round, r
                                             testing_samples=4, number_of_epochs=1)
     assert train.call_args.args[1] == round_start
     assert result['test_results']['round_start'] == round_start
+
+
+def _no_score(generation):
+    return np.zeros(len(generation)), 0
+
+
+def test_evolutionary_algorithm_initial_differences_stay_within_width():
+    with mock.patch.object(neural_network_tests.random, 'randint', side_effect=lambda low, high: high) as randint:
+        generation, _, _ = NeuralNetworkTests(None)._evolutionary_algorithm(None, 4, 0, False, _no_score, 3)
+    assert {randint_call.args for randint_call in randint.call_args_list} == {(1, 7)}
+    assert list(generation) == [7, 7, 7, 7]
+
+
+def test_evolutionary_algorithm_mutates_the_highest_bit():
+    real_randint = np.random.randint
+    bit_position_bounds = []
+    evaluated = []
+
+    def controlled_randint(low, high, size):
+        if high == 100:
+            return np.full(size, 99)
+        bit_position_bounds.append((low, high))
+        return np.full(size, high - 1)
+
+    def record_score(generation):
+        evaluated.append(list(generation))
+        return np.zeros(len(generation)), 0
+
+    with mock.patch.object(neural_network_tests.np.random, 'randint', side_effect=controlled_randint):
+        NeuralNetworkTests(None)._evolutionary_algorithm(np.array([1, 2], dtype=object), 2, 1, False,
+                                                         record_score, 3)
+    assert np.random.randint is real_randint
+    assert bit_position_bounds == [(0, 3)]
+    assert evaluated[-1] == [0b111]
+
+
+def test_evolutionary_algorithm_one_bit_space():
+    random.seed(0)
+    np.random.seed(0)
+    generation, scores, _ = NeuralNetworkTests(None)._evolutionary_algorithm(None, 4, 2, False, _no_score, 1)
+    assert list(generation) == [1, 1, 1, 1]
+    assert len(scores) == 4
+
+
+@pytest.mark.parametrize('difference_bits', [0, -1, 1.5, True])
+def test_evolutionary_algorithm_rejects_invalid_width(difference_bits):
+    with pytest.raises(ValueError):
+        NeuralNetworkTests(None)._evolutionary_algorithm(None, 4, 0, False, _no_score, difference_bits)

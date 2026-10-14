@@ -924,9 +924,11 @@ class NeuralNetworkTests:
 
     def _evolutionary_algorithm(self, previous_generation, initial_population, number_of_generations, verbose,
                                 difference_evaluation_function, difference_bits):
+        if isinstance(difference_bits, bool) or not isinstance(difference_bits, Integral) or difference_bits < 1:
+            raise ValueError(f'difference_bits must be a positive integer, got {difference_bits!r}')
         mut_prob = 0.1
         if previous_generation is None:
-            generation = np.array([random.randint(1, 1 << difference_bits)
+            generation = np.array([random.randint(1, (1 << difference_bits) - 1)
                                    for _ in range(initial_population)], dtype=object)
             # Restored randint instead of secrets. secrets.choice has a bound on max value,
             # while randint does not, and we sometimes need 64+ bit integers here
@@ -950,7 +952,7 @@ class NeuralNetworkTests:
             number_to_mutate = np.sum(selected_for_mutation >= 100 * (1 - mut_prob))
             # Selected kids are XORed with 1<<r (r random)
             kids[selected_for_mutation >= 100 * (1 - mut_prob)] ^= \
-                (np.array(1, dtype=object) << np.random.randint(0, difference_bits - 1, number_to_mutate))
+                (np.array(1, dtype=object) << np.random.randint(0, difference_bits, number_to_mutate))
             # Removing kids that have been explored before, duplicates, and 0 values
             kids = np.unique(np.setdiff1d(kids, explored))
 
