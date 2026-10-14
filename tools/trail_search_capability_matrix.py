@@ -20,7 +20,7 @@ OUTPUT = Path("tests/fixtures/analysis/trail_search_capability_matrix.json")
 _CONFIGURATION_OVERRIDES = {
     # These constructors reject an arbitrary one-round request.  Use their
     # smallest vetted/default graph instead of recording a false constructor gap.
-    "Bivium": {},
+    "BiviumKeystreamFunction": {},
     "CipherFour": {},
     "Kalyna": {},
     "Led": {"number_of_rounds": 4},

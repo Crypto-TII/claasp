@@ -142,12 +142,12 @@ class Catalogue:
         >>> (aes.name, aes.category, aes.kind)
         ('AES', 'block_ciphers', 'block_cipher')
         >>> len(catalogue.primitives())
-        142
+        143
 
         >>> # Category, design, and component filters compose.
         >>> [item.name for item in catalogue.primitives(
         ...     category="permutations", filters="pure-arx", components="xor")]
-        ['ChaChaPermutation', 'ChaskeyPi', 'Forro', 'Salsa', 'Speckey']
+        ['ChaChaPermutation', 'ChaskeyPi', 'Forro', 'SalsaPermutation', 'Speckey']
 
         >>> # Realizations, parameter sets, and drivers remain distinct records.
         >>> [item.name for item in catalogue.realizations(

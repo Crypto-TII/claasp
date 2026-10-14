@@ -78,7 +78,7 @@ PARAMETERS_CONFIGURATION_LIST = [
 ]
 
 
-class Snow3G(BitGraphPrimitive):
+class Snow3GKeystreamFunction(BitGraphPrimitive):
     """
     Return a primitive object of SNOW3G stream primitive.
 
@@ -86,7 +86,7 @@ class Snow3G(BitGraphPrimitive):
 
     EXAMPLES::
 
-        >>> primitive = Snow3G()
+        >>> primitive = Snow3GKeystreamFunction()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())

@@ -313,6 +313,12 @@ claasp.primitives.block_functions.chacha
 .. automodule:: claasp.primitives.block_functions.chacha
    :no-index:
 
+claasp.primitives.block_functions.salsa
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.primitives.block_functions.salsa
+   :no-index:
+
 claasp.primitives.functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

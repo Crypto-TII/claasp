@@ -37,7 +37,7 @@ LFSR_DESCR = [
 ]
 
 
-class BluetoothE0(BitGraphPrimitive):
+class BluetoothE0KeystreamFunction(BitGraphPrimitive):
     """
     Return a primitive object of bluetooth encryption/decryption keystream generator E0.
 
@@ -59,7 +59,7 @@ class BluetoothE0(BitGraphPrimitive):
 
     EXAMPLES::
 
-        >>> primitive = BluetoothE0()
+        >>> primitive = BluetoothE0KeystreamFunction()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())

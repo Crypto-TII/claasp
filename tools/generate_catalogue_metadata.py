@@ -16,6 +16,9 @@ INVENTORY = ROOT / "tools/data/legacy_inventory.json"
 REALIZATIONS = ROOT / "tools/data/realization_catalogue.json"
 SINGLE_COMPONENTS = ROOT / "tools/data/single_component_catalogue.json"
 DESTINATION = ROOT / "src/claasp/catalogue/data/catalogue.json"
+NATIVE_EVIDENCE = {
+    "SalsaBlockFunction": ["tests/unit/primitives/block_functions/test_salsa.py"],
+}
 
 LEGACY_REGRESSIONS = frozenset({"GimliSbox", "SimeckSbox", "SimonSbox"})
 EQUIVALENT_EXPORTS = frozenset(
@@ -760,7 +763,10 @@ def build_catalogue() -> dict:
             evidence = (
                 sorted(test_evidence.get(source.get("milestone_owner"), ()))
                 if source is not None
-                else ["tests/unit/primitives/single_component_primitives/test_package.py"]
+                else NATIVE_EVIDENCE.get(
+                    name,
+                    ["tests/unit/primitives/single_component_primitives/test_package.py"],
+                )
             )
             primitives.append(
                 {

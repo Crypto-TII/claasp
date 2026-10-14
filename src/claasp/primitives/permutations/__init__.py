@@ -4,7 +4,7 @@ from claasp.primitives._catalogue_exports import CATEGORY_EXPORTS, load_export
 from claasp.primitives.permutations.chacha import ChaChaPermutation as ChaChaPermutation
 from claasp.primitives.permutations.mimc import MiMC as MiMC
 from claasp.primitives.permutations.poseidon import Poseidon as Poseidon
-from claasp.primitives.permutations.salsa import Salsa as Salsa
+from claasp.primitives.permutations.salsa import SalsaPermutation as SalsaPermutation
 
 _PUBLIC = CATEGORY_EXPORTS["permutations"]
 __all__ = sorted(_PUBLIC)

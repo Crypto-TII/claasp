@@ -1,7 +1,7 @@
 [
   {
     "claim": "legacy-fixed-vector",
-    "class": "Blake2",
+    "class": "Blake2CompressionFunction",
     "legacy_id": "blake2_m1024_s1024_o1024_r12",
     "module": "claasp.primitives.functions.blake2",
     "parameters": {},
@@ -17,7 +17,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "Blake2",
+    "class": "Blake2CompressionFunction",
     "legacy_id": "blake2_m512_s512_o512_r12",
     "module": "claasp.primitives.functions.blake2",
     "parameters": {
@@ -38,7 +38,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "Blake",
+    "class": "BlakeCompressionFunction",
     "legacy_id": "blake_m512_s512_o512_r28",
     "module": "claasp.primitives.functions.blake",
     "parameters": {},
@@ -54,7 +54,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "Blake",
+    "class": "BlakeCompressionFunction",
     "legacy_id": "blake_m1024_s1024_o1024_r32",
     "module": "claasp.primitives.functions.blake",
     "parameters": {
@@ -74,7 +74,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "MD5",
+    "class": "MD5SingleBlockFunction",
     "legacy_id": "MD5_m512_o64_r64",
     "module": "claasp.primitives.functions.md5",
     "parameters": {},
@@ -119,7 +119,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "SHA1",
+    "class": "SHA1SingleBlockFunction",
     "legacy_id": "SHA1_m512_o160_r80",
     "module": "claasp.primitives.functions.sha1",
     "parameters": {},
@@ -164,7 +164,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "SHA2",
+    "class": "SHA2SingleBlockFunction",
     "legacy_id": "SHA2_family_m512_o256_r65",
     "module": "claasp.primitives.functions.sha2",
     "parameters": {},
@@ -185,7 +185,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "SHA2",
+    "class": "SHA2SingleBlockFunction",
     "legacy_id": "SHA2_family_m512_o224_r65",
     "module": "claasp.primitives.functions.sha2",
     "parameters": {
@@ -202,7 +202,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "SHA2",
+    "class": "SHA2SingleBlockFunction",
     "legacy_id": "SHA2_family_m1024_o512_r81",
     "module": "claasp.primitives.functions.sha2",
     "parameters": {
@@ -220,7 +220,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "SHA2",
+    "class": "SHA2SingleBlockFunction",
     "legacy_id": "SHA2_family_m1024_o384_r81",
     "module": "claasp.primitives.functions.sha2",
     "parameters": {
@@ -238,7 +238,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "Whirlpool",
+    "class": "WhirlpoolSingleBlockFunction",
     "legacy_id": "whirlpool_hash_function_m512_o512_r10",
     "module": "claasp.primitives.functions.whirlpool",
     "parameters": {},
@@ -362,7 +362,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "A51",
+    "class": "A51KeystreamFunction",
     "legacy_id": "a51_k64_f22_o228_r229",
     "module": "claasp.primitives.block_functions.a5_1",
     "parameters": {},
@@ -378,7 +378,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "A52",
+    "class": "A52KeystreamFunction",
     "legacy_id": "a52_k64_f22_o228_r229",
     "module": "claasp.primitives.block_functions.a5_2",
     "parameters": {},
@@ -394,7 +394,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "Bivium",
+    "class": "BiviumKeystreamFunction",
     "legacy_id": "bivium_stream_cipher_k80_i80_o256_r257",
     "module": "claasp.primitives.block_functions.bivium",
     "parameters": {},
@@ -417,7 +417,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "BluetoothE0",
+    "class": "BluetoothE0KeystreamFunction",
     "legacy_id": "bluetooth_E0_stream_cipher_s132_o125_r125",
     "module": "claasp.primitives.functions.bluetooth_e0",
     "parameters": {},
@@ -455,7 +455,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "Snow3G",
+    "class": "Snow3GKeystreamFunction",
     "legacy_id": "snow3g_stream_cipher_k128_i128_o2_r5",
     "module": "claasp.primitives.block_functions.snow3g",
     "parameters": {
@@ -474,7 +474,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "Trivium",
+    "class": "TriviumKeystreamFunction",
     "legacy_id": "trivium_stream_cipher_k80_i80_o256_r257",
     "module": "claasp.primitives.block_functions.trivium",
     "parameters": {
@@ -492,7 +492,7 @@
   },
   {
     "claim": "legacy-fixed-vector",
-    "class": "Zuc",
+    "class": "ZucKeystreamFunction",
     "legacy_id": "zuc_stream_cipher_k128_i128_o2_r3",
     "module": "claasp.primitives.block_functions.zuc",
     "parameters": {},

@@ -1982,7 +1982,7 @@
     "parameters": {}
   },
   {
-    "class": "A51",
+    "class": "A51KeystreamFunction",
     "module": "claasp.primitives.block_functions.a5_1",
     "parameters": {
       "frame_bit_size": 22,
@@ -1992,12 +1992,12 @@
     }
   },
   {
-    "class": "A51",
+    "class": "A51KeystreamFunction",
     "module": "claasp.primitives.block_functions.a5_1",
     "parameters": {}
   },
   {
-    "class": "A52",
+    "class": "A52KeystreamFunction",
     "module": "claasp.primitives.block_functions.a5_2",
     "parameters": {
       "frame_bit_size": 22,
@@ -2007,12 +2007,12 @@
     }
   },
   {
-    "class": "A52",
+    "class": "A52KeystreamFunction",
     "module": "claasp.primitives.block_functions.a5_2",
     "parameters": {}
   },
   {
-    "class": "Bivium",
+    "class": "BiviumKeystreamFunction",
     "module": "claasp.primitives.block_functions.bivium",
     "parameters": {
       "iv_bit_size": 80,
@@ -2023,7 +2023,7 @@
     }
   },
   {
-    "class": "Bivium",
+    "class": "BiviumKeystreamFunction",
     "module": "claasp.primitives.block_functions.bivium",
     "parameters": {}
   },
@@ -2107,7 +2107,7 @@
     "parameters": {}
   },
   {
-    "class": "Snow3G",
+    "class": "Snow3GKeystreamFunction",
     "module": "claasp.primitives.block_functions.snow3g",
     "parameters": {
       "iv_bit_size": 128,
@@ -2117,7 +2117,7 @@
     }
   },
   {
-    "class": "Snow3G",
+    "class": "Snow3GKeystreamFunction",
     "module": "claasp.primitives.block_functions.snow3g",
     "parameters": {
       "keystream_word_size": 2,
@@ -2125,12 +2125,12 @@
     }
   },
   {
-    "class": "Snow3G",
+    "class": "Snow3GKeystreamFunction",
     "module": "claasp.primitives.block_functions.snow3g",
     "parameters": {}
   },
   {
-    "class": "Zuc",
+    "class": "ZucKeystreamFunction",
     "module": "claasp.primitives.block_functions.zuc",
     "parameters": {
       "iv_bit_size": 128,
@@ -2140,19 +2140,19 @@
     }
   },
   {
-    "class": "Zuc",
+    "class": "ZucKeystreamFunction",
     "module": "claasp.primitives.block_functions.zuc",
     "parameters": {
       "len_keystream_word": 2
     }
   },
   {
-    "class": "Zuc",
+    "class": "ZucKeystreamFunction",
     "module": "claasp.primitives.block_functions.zuc",
     "parameters": {}
   },
   {
-    "class": "Blake",
+    "class": "BlakeCompressionFunction",
     "module": "claasp.primitives.functions.blake",
     "parameters": {
       "block_bit_size": 1024,
@@ -2162,7 +2162,7 @@
     }
   },
   {
-    "class": "Blake",
+    "class": "BlakeCompressionFunction",
     "module": "claasp.primitives.functions.blake",
     "parameters": {
       "block_bit_size": 1024,
@@ -2171,7 +2171,7 @@
     }
   },
   {
-    "class": "Blake",
+    "class": "BlakeCompressionFunction",
     "module": "claasp.primitives.functions.blake",
     "parameters": {
       "block_bit_size": 512,
@@ -2180,19 +2180,19 @@
     }
   },
   {
-    "class": "Blake",
+    "class": "BlakeCompressionFunction",
     "module": "claasp.primitives.functions.blake",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
-    "class": "Blake",
+    "class": "BlakeCompressionFunction",
     "module": "claasp.primitives.functions.blake",
     "parameters": {}
   },
   {
-    "class": "Blake2",
+    "class": "Blake2CompressionFunction",
     "module": "claasp.primitives.functions.blake2",
     "parameters": {
       "block_bit_size": 1024,
@@ -2201,7 +2201,7 @@
     }
   },
   {
-    "class": "Blake2",
+    "class": "Blake2CompressionFunction",
     "module": "claasp.primitives.functions.blake2",
     "parameters": {
       "block_bit_size": 512,
@@ -2211,19 +2211,19 @@
     }
   },
   {
-    "class": "Blake2",
+    "class": "Blake2CompressionFunction",
     "module": "claasp.primitives.functions.blake2",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
-    "class": "Blake2",
+    "class": "Blake2CompressionFunction",
     "module": "claasp.primitives.functions.blake2",
     "parameters": {}
   },
   {
-    "class": "BluetoothE0",
+    "class": "BluetoothE0KeystreamFunction",
     "module": "claasp.primitives.functions.bluetooth_e0",
     "parameters": {
       "fsm_bit_size": 4,
@@ -2233,26 +2233,26 @@
     }
   },
   {
-    "class": "BluetoothE0",
+    "class": "BluetoothE0KeystreamFunction",
     "module": "claasp.primitives.functions.bluetooth_e0",
     "parameters": {
       "keystream_bit_len": 125
     }
   },
   {
-    "class": "BluetoothE0",
+    "class": "BluetoothE0KeystreamFunction",
     "module": "claasp.primitives.functions.bluetooth_e0",
     "parameters": {}
   },
   {
-    "class": "MD5",
+    "class": "MD5SingleBlockFunction",
     "module": "claasp.primitives.functions.md5",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
-    "class": "MD5",
+    "class": "MD5SingleBlockFunction",
     "module": "claasp.primitives.functions.md5",
     "parameters": {
       "number_of_rounds": 64,
@@ -2260,19 +2260,19 @@
     }
   },
   {
-    "class": "MD5",
+    "class": "MD5SingleBlockFunction",
     "module": "claasp.primitives.functions.md5",
     "parameters": {}
   },
   {
-    "class": "SHA1",
+    "class": "SHA1SingleBlockFunction",
     "module": "claasp.primitives.functions.sha1",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
-    "class": "SHA1",
+    "class": "SHA1SingleBlockFunction",
     "module": "claasp.primitives.functions.sha1",
     "parameters": {
       "number_of_rounds": 80,
@@ -2280,19 +2280,19 @@
     }
   },
   {
-    "class": "SHA1",
+    "class": "SHA1SingleBlockFunction",
     "module": "claasp.primitives.functions.sha1",
     "parameters": {}
   },
   {
-    "class": "SHA2",
+    "class": "SHA2SingleBlockFunction",
     "module": "claasp.primitives.functions.sha2",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
-    "class": "SHA2",
+    "class": "SHA2SingleBlockFunction",
     "module": "claasp.primitives.functions.sha2",
     "parameters": {
       "number_of_rounds": 64,
@@ -2300,7 +2300,7 @@
     }
   },
   {
-    "class": "SHA2",
+    "class": "SHA2SingleBlockFunction",
     "module": "claasp.primitives.functions.sha2",
     "parameters": {
       "number_of_rounds": 64,
@@ -2308,7 +2308,7 @@
     }
   },
   {
-    "class": "SHA2",
+    "class": "SHA2SingleBlockFunction",
     "module": "claasp.primitives.functions.sha2",
     "parameters": {
       "number_of_rounds": 80,
@@ -2316,7 +2316,7 @@
     }
   },
   {
-    "class": "SHA2",
+    "class": "SHA2SingleBlockFunction",
     "module": "claasp.primitives.functions.sha2",
     "parameters": {
       "number_of_rounds": 80,
@@ -2324,19 +2324,19 @@
     }
   },
   {
-    "class": "SHA2",
+    "class": "SHA2SingleBlockFunction",
     "module": "claasp.primitives.functions.sha2",
     "parameters": {
       "output_bit_size": 224
     }
   },
   {
-    "class": "SHA2",
+    "class": "SHA2SingleBlockFunction",
     "module": "claasp.primitives.functions.sha2",
     "parameters": {}
   },
   {
-    "class": "Whirlpool",
+    "class": "WhirlpoolSingleBlockFunction",
     "module": "claasp.primitives.functions.whirlpool",
     "parameters": {
       "number_of_rounds": 10,
@@ -2345,14 +2345,14 @@
     }
   },
   {
-    "class": "Whirlpool",
+    "class": "WhirlpoolSingleBlockFunction",
     "module": "claasp.primitives.functions.whirlpool",
     "parameters": {
       "number_of_rounds": 4
     }
   },
   {
-    "class": "Whirlpool",
+    "class": "WhirlpoolSingleBlockFunction",
     "module": "claasp.primitives.functions.whirlpool",
     "parameters": {}
   },

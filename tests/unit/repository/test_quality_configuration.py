@@ -52,7 +52,7 @@ def test_generated_primitive_exports_are_not_stale():
     generator = _load_tool("generate_primitive_exports")
 
     source, count = generator.render_exports()
-    assert count == 142
+    assert count == 143
     assert source == generator.DESTINATION.read_text(encoding="utf-8")
 
 

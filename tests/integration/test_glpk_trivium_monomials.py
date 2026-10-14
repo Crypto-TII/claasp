@@ -1,4 +1,4 @@
-"""Scalable Trivium IV-degree bounds and complete parity through real GLPK.
+"""Scalable TriviumKeystreamFunction IV-degree bounds and complete parity through real GLPK.
 
 The optimal monomial-reachability objective is a sound upper bound only.  Each
 test therefore compares it with the exact ANF recovered independently by the
@@ -10,7 +10,7 @@ import pytest
 
 from claasp.analysis import enumerate_optimal_monomial_parity
 from claasp.drivers.solvers import GLPKSolver, MILPStatus
-from claasp.primitives import Trivium
+from claasp.primitives import TriviumKeystreamFunction
 from claasp.representations.constraints.milp import BooleanMonomialGraphMILPModel
 from claasp.representations.execution import BooleanSymbolicEvaluator
 
@@ -35,7 +35,9 @@ def _exact_iv_monomials(primitive):
 
 @pytest.mark.parametrize("clocks, expected_degree", ((160, 2), (200, 3)))
 def test_glpk_monomial_reachability_bounds_the_exact_iv_degree(clocks, expected_degree):
-    primitive = Trivium(number_of_initialization_clocks=clocks, keystream_bit_size=1)
+    primitive = TriviumKeystreamFunction(
+        number_of_initialization_clocks=clocks, keystream_bit_size=1
+    )
     model = BooleanMonomialGraphMILPModel(primitive, 0, "iv").milp_model()
     exact_degree, _ = _exact_iv_monomials(primitive)
 
@@ -48,7 +50,9 @@ def test_glpk_monomial_reachability_bounds_the_exact_iv_degree(clocks, expected_
 
 @pytest.mark.parametrize("clocks, expected_degree", ((160, 2), (200, 3)))
 def test_glpk_complete_parity_matches_the_exact_trivium_anf(clocks, expected_degree):
-    primitive = Trivium(number_of_initialization_clocks=clocks, keystream_bit_size=1)
+    primitive = TriviumKeystreamFunction(
+        number_of_initialization_clocks=clocks, keystream_bit_size=1
+    )
     compilation = BooleanMonomialGraphMILPModel(primitive, 0, "iv")
     exact_degree, exact_masks = _exact_iv_monomials(primitive)
 
@@ -63,7 +67,7 @@ def test_glpk_complete_parity_matches_the_exact_trivium_anf(clocks, expected_deg
 
 def test_trivium_parity_path_limit_is_not_a_complete_proof():
     compilation = BooleanMonomialGraphMILPModel(
-        Trivium(number_of_initialization_clocks=160, keystream_bit_size=1), 0, "iv"
+        TriviumKeystreamFunction(number_of_initialization_clocks=160, keystream_bit_size=1), 0, "iv"
     )
 
     result = enumerate_optimal_monomial_parity(

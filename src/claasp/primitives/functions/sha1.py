@@ -31,9 +31,9 @@ from claasp.primitive_inputs import HASH_FUNCTION, INPUT_MESSAGE
 PARAMETERS_CONFIGURATION_LIST = [{"word_size": 32, "number_of_rounds": 80}]
 
 
-class SHA1(BitGraphPrimitive):
+class SHA1SingleBlockFunction(BitGraphPrimitive):
     """
-    Returns a primitive object of SHA1.
+    Return the SHA-1 function applied to one unpadded input block.
 
     .. WARNING::
 
@@ -46,7 +46,7 @@ class SHA1(BitGraphPrimitive):
 
     EXAMPLES::
 
-        >>> primitive = SHA1()
+        >>> primitive = SHA1SingleBlockFunction()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())

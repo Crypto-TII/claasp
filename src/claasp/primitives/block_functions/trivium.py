@@ -10,7 +10,7 @@ It is keyed by the 80-bit key, takes the public 80-bit initialization vector as
 its fixed-length data input, and its output width is unrelated to its input
 width, so it is a ``block_function`` and not a ``block_cipher``.  The M10.7
 catalogue inventory records the same ``block_functions`` classification and the
-class name ``Trivium`` for
+class name ``TriviumKeystreamFunction`` for
 ``claasp/ciphers/stream_ciphers/trivium_stream_cipher.py``; M10.9b confirms it
 against the final catalogue invariants.
 
@@ -87,7 +87,7 @@ def estream_bytes_to_bit_sequence(value: int, byte_length: int) -> int:
     return result
 
 
-class Trivium(Primitive):
+class TriviumKeystreamFunction(Primitive):
     """Build the fixed-length Trivium keystream function as a typed bit graph.
 
     ``number_of_initialization_clocks`` is the number of state updates applied
@@ -99,10 +99,10 @@ class Trivium(Primitive):
     evidence.
 
     EXAMPLES::
-        >>> from claasp.primitives import Trivium
+        >>> from claasp.primitives import TriviumKeystreamFunction
         >>> from claasp.primitives.block_functions.trivium import (
         ...     estream_bytes_to_bit_sequence)
-        >>> trivium = Trivium(keystream_bit_size=32)
+        >>> trivium = TriviumKeystreamFunction(keystream_bit_size=32)
         >>> key = estream_bytes_to_bit_sequence(0x80000000000000000000, 10)
         >>> keystream = trivium.evaluate(key=key, iv=0)
         >>> hex(estream_bytes_to_bit_sequence(keystream, 4))
@@ -110,14 +110,14 @@ class Trivium(Primitive):
 
     A reduced instance exposes the same graph with fewer clocks:
 
-        >>> reduced = Trivium(number_of_initialization_clocks=13, keystream_bit_size=1)
+        >>> reduced = TriviumKeystreamFunction(number_of_initialization_clocks=13, keystream_bit_size=1)
         >>> len(reduced.graph.rounds), reduced.evaluate(key=1 << 79, iv=0)
         (15, 1)
 
 
     EXAMPLES::
 
-        >>> primitive = Trivium()
+        >>> primitive = TriviumKeystreamFunction()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())

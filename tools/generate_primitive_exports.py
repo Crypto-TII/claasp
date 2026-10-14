@@ -9,6 +9,9 @@ ROOT = Path(__file__).parents[1]
 INVENTORY = ROOT / "tools/data/legacy_inventory.json"
 SINGLE_COMPONENT_CATALOGUE = ROOT / "tools/data/single_component_catalogue.json"
 DESTINATION = ROOT / "src/claasp/primitives/_catalogue_exports.py"
+NATIVE_EXPORTS = (
+    ("block_functions", "SalsaBlockFunction", "claasp.primitives.block_functions.salsa"),
+)
 
 
 def render_exports() -> tuple[str, int]:
@@ -25,6 +28,7 @@ def render_exports() -> tuple[str, int]:
         if "primitive" in item and item["primitive"]["primitive_category"] != "outside_scope"
     )
     rows = [row for row in rows if row[0] != "single_component_primitives"]
+    rows.extend(NATIVE_EXPORTS)
     component_catalogue = json.loads(SINGLE_COMPONENT_CATALOGUE.read_text(encoding="utf-8"))
     rows.extend(
         ("single_component_primitives", name, module)

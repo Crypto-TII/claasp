@@ -8,7 +8,7 @@ from claasp.catalogue import Catalogue, PrimitiveRecord, RepresentationRecord, c
 
 def test_catalogue_returns_sorted_immutable_records():
     records = catalogue.primitives()
-    assert len(records) == 142
+    assert len(records) == 143
     assert isinstance(records, tuple)
     assert records == tuple(sorted(records, key=lambda item: (item.category, item.name)))
     assert isinstance(records[0], PrimitiveRecord)
@@ -31,11 +31,11 @@ def test_primitive_lookup_preserves_classification_and_typed_contract():
 @pytest.mark.parametrize(
     ("filter_name", "included", "excluded"),
     (
-        ("arx", "Speck", "Zuc"),
+        ("arx", "Speck", "ZucKeystreamFunction"),
         ("pure-arx", "ChaChaPermutation", "Speck"),
         ("andrx", "Simon", "AES"),
         ("sbox-based", "AES", "Speck"),
-        ("fsr-based", "A51", "AES"),
+        ("fsr-based", "A51KeystreamFunction", "AES"),
         ("tweakable_block_cipher", "Mantis", "AES"),
     ),
 )

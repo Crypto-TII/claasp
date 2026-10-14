@@ -58,9 +58,9 @@ PARAMETERS_CONFIGURATION_LIST = [
 ]
 
 
-class A52(BitGraphPrimitive):
+class A52KeystreamFunction(BitGraphPrimitive):
     """
-    Construct an instance of the A52 class.
+    Construct an instance of the A52KeystreamFunction class.
 
     This class is used to store compact representations of a primitive, used to generate the corresponding primitive.
 
@@ -71,7 +71,7 @@ class A52(BitGraphPrimitive):
 
     EXAMPLES::
 
-        >>> primitive = A52()
+        >>> primitive = A52KeystreamFunction()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())

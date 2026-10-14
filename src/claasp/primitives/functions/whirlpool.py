@@ -22,9 +22,9 @@ from claasp.primitive_inputs import HASH_FUNCTION, INPUT_MESSAGE, INTERMEDIATE_O
 PARAMETERS_CONFIGURATION_LIST = [{"word_size": 8, "state_size": 8, "number_of_rounds": 10}]
 
 
-class Whirlpool(BitGraphPrimitive):
+class WhirlpoolSingleBlockFunction(BitGraphPrimitive):
     """
-    Returns a primitive object of Whirlpool hash function.
+    Return the Whirlpool function applied to one unpadded input block.
 
      .. WARNING::
 
@@ -38,7 +38,7 @@ class Whirlpool(BitGraphPrimitive):
 
     EXAMPLES::
 
-        >>> primitive = Whirlpool()
+        >>> primitive = WhirlpoolSingleBlockFunction()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
@@ -57,7 +57,7 @@ class Whirlpool(BitGraphPrimitive):
         self.row_size = self.column_size
         self.irreducible_polynomial = 0x11D
 
-        # This is the transpose of the actual Whirlpool matrix. We use this instead of the regular matrix
+        # This is the transpose of the actual WhirlpoolSingleBlockFunction matrix. We use this instead of the regular matrix
         # due to the use of MixColumn components to replicate the MixRow operation
 
         # fmt: off

@@ -97,7 +97,7 @@ PARAMETERS_CONFIGURATION_LIST = [
 ]
 
 
-class Zuc(BitGraphPrimitive):
+class ZucKeystreamFunction(BitGraphPrimitive):
     """
     Return a primitive object of ZUC stream primitive.
 
@@ -105,7 +105,7 @@ class Zuc(BitGraphPrimitive):
 
     EXAMPLES::
 
-        >>> primitive = Zuc()
+        >>> primitive = ZucKeystreamFunction()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())

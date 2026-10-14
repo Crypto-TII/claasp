@@ -139,9 +139,9 @@ def blake2_encrypt(plaintext, state):
 """
 
 
-class Blake2(BitGraphPrimitive):
+class Blake2CompressionFunction(BitGraphPrimitive):
     """
-    Construct an instance of the Blake2 class.
+    Construct an instance of the Blake2CompressionFunction class.
 
     This class is used to store compact representations of a primitive,
     used to generate the corresponding primitive.
@@ -160,7 +160,7 @@ class Blake2(BitGraphPrimitive):
 
     EXAMPLES::
 
-        >>> primitive = Blake2()
+        >>> primitive = Blake2CompressionFunction()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())

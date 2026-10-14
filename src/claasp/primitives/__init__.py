@@ -10,11 +10,11 @@ from claasp.primitives.block_ciphers import (
     Simon,
     Speck,
 )
-from claasp.primitives.block_functions import Trivium
+from claasp.primitives.block_functions import TriviumKeystreamFunction
 from claasp.primitives.permutations.chacha import ChaChaPermutation
 from claasp.primitives.permutations.mimc import MiMC
 from claasp.primitives.permutations.poseidon import Poseidon
-from claasp.primitives.permutations.salsa import Salsa
+from claasp.primitives.permutations.salsa import SalsaPermutation
 from claasp.primitives.toy_primitives import ToySpeck
 
 __all__ = [
@@ -26,11 +26,11 @@ __all__ = [
     "Poseidon",
     "Present",
     "Present80",
-    "Salsa",
+    "SalsaPermutation",
     "Simon",
     "Speck",
     "ToySpeck",
-    "Trivium",
+    "TriviumKeystreamFunction",
 ]
 
 __all__ = sorted(set(__all__) | set(ALL_EXPORTS))

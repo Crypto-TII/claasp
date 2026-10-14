@@ -37,7 +37,7 @@ PARAMETERS_CONFIGURATION_LIST = [
 ]
 
 
-class SHA2(BitGraphPrimitive):
+class SHA2SingleBlockFunction(BitGraphPrimitive):
     """
     Returns a primitive object of SHA-224, SHA-256, SHA-384 or SHA-512.
 
@@ -53,7 +53,7 @@ class SHA2(BitGraphPrimitive):
 
     EXAMPLES::
 
-        >>> primitive = SHA2()
+        >>> primitive = SHA2SingleBlockFunction()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())

@@ -203,27 +203,50 @@ and the final feed-forward addition.
 Salsa
 -----
 
-``Salsa`` is likewise the fixed-length unkeyed word permutation. Column and
+``SalsaPermutation`` is the fixed-length unkeyed word permutation. Column and
 row rounds alternate, and the public count uses standard full rounds.
 
 .. doctest::
 
-   >>> from claasp.primitives import Salsa
-   >>> output = Salsa(number_of_rounds=2).evaluate(1 << (15 * 32))
+   >>> from claasp.primitives import SalsaPermutation
+   >>> output = SalsaPermutation(number_of_rounds=2).evaluate(1 << (15 * 32))
    >>> f"{output:0128x}"[:32]
    '8186a22d0040a2848247921006929051'
 
 Sparse and dense test vectors and batch evaluation use the same typed modular
 addition, rotation, XOR, and concatenation components as other ARX primitives.
 
+``SalsaBlockFunction`` is the separate keyed construction that produces one
+512-bit Salsa20 keystream block. Its fixed boundary contains a 256-bit key, a
+64-bit nonce, and a 64-bit block counter; it is not the stateful Salsa20 stream
+construction.
+
+.. doctest::
+
+   >>> from claasp.primitives import SalsaBlockFunction
+   >>> block_function = SalsaBlockFunction()
+   >>> block_function.details()
+   Primitive details
+     Type: block function
+     Instance: SalsaBlockFunction
+     Inputs:
+       key: 256 bits (secret)
+       nonce: 64 bits (public)
+       counter: 64 bits (public)
+     Output: 512 bits
+     Rounds: 21
+     Realization: default
+   >>> f"{block_function.evaluate(key=0, nonce=0, counter=0):0128x}"[:16]
+   '5bf6979a1b724c9b'
+
 Trivium
 -------
 
 Trivium is published as a stream cipher, and a stream cipher is a stateful
-variable-length construction rather than a CLAASP primitive. ``Trivium`` is
-therefore not represented as that complete mode. Trivium in CLAASP is the
-fixed-length function that its initialization and keystream
-generation define: an 80-bit key and an 80-bit IV produce the first
+variable-length construction rather than a CLAASP primitive.
+``TriviumKeystreamFunction`` is therefore named differently from that complete
+mode. It is the fixed-length function that Trivium's initialization and
+keystream generation define: an 80-bit key and an 80-bit IV produce the first
 ``keystream_bit_size`` keystream bits after a chosen number of initialization
 clocks. The key is the secret input, the IV is the public fixed-length data
 input, and the output width is unrelated to the input width, so the primitive
@@ -236,11 +259,11 @@ each byte are numbered from its least significant bit.
 
 .. doctest::
 
-   >>> from claasp.primitives import Trivium
+   >>> from claasp.primitives import TriviumKeystreamFunction
    >>> from claasp.primitives.block_functions.trivium import (
    ...     estream_bytes_to_bit_sequence)
    >>> key = estream_bytes_to_bit_sequence(0x80000000000000000000, 10)
-   >>> keystream = Trivium(keystream_bit_size=32).evaluate(key=key, iv=0)
+   >>> keystream = TriviumKeystreamFunction(keystream_bit_size=32).evaluate(key=key, iv=0)
    >>> f"{estream_bytes_to_bit_sequence(keystream, 4):08x}"
    '38eb86ff'
 

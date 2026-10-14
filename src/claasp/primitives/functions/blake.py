@@ -157,18 +157,18 @@ def blake_encrypt(plaintext, state):
 
 
 # blake256 -> 512, 512, 28
-class Blake(BitGraphPrimitive):
+class BlakeCompressionFunction(BitGraphPrimitive):
     """
-    Construct an instance of the Blake class.
+    Construct an instance of the BlakeCompressionFunction class.
 
     This class is used to store compact representations of a primitive,
     used to generate the corresponding primitive.
 
     .. NOTE::
 
-        In this primitive we are considering 0.5 rounds. So, if you need to run the first round according Blake
+        In this primitive we are considering 0.5 rounds. So, if you need to run the first round according BLAKE
         specifications you need to set ``number_of_rounds`` equal to 2.
-        If you need to run the first two rounds according Blake specifications you need to set ``number_of_rounds``
+        If you need to run the first two rounds according to the BLAKE specification you need to set ``number_of_rounds``
         equal to 4, and so on.
 
     INPUT:
@@ -188,7 +188,7 @@ class Blake(BitGraphPrimitive):
 
     EXAMPLES::
 
-        >>> primitive = Blake()
+        >>> primitive = BlakeCompressionFunction()
         >>> inputs = {name: 0 for name in primitive.graph.input_arrays}
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())

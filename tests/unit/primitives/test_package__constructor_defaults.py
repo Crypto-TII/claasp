@@ -13,8 +13,8 @@ from claasp.primitives import (
     TEA,
     XTEA,
     Ballet,
-    Blake,
-    Blake2,
+    Blake2CompressionFunction,
+    BlakeCompressionFunction,
     LowMC,
     Midori,
     Raiden,
@@ -24,8 +24,8 @@ from claasp.primitives import (
 
 ROUND_CONFIGURED_PRIMITIVES = (
     Ballet,
-    Blake,
-    Blake2,
+    BlakeCompressionFunction,
+    Blake2CompressionFunction,
     CHAM,
     HIGHT,
     LEA,
