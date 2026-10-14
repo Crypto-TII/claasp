@@ -890,7 +890,9 @@ class NeuralNetworkTests:
         - ``initial_population`` -- **integer** (default: `32`); parameter of the evolutionary algorithm
         - ``number_of_generations`` -- **integer** (default: `50`); number of iterations of the evolutionary algorithm
         - ``nb_samples`` -- **integer** (default: `10`); number of samples for testing each input difference
-        - ``previous_generation`` -- (default: `None`); optional: initial table of differences to try
+        - ``previous_generation`` -- (default: `None`); optional: initial table of differences to try; each one must
+          be an integer between 1 and ``2**n - 1``, where ``n`` is the total bit size of the inputs set to True in
+          ``difference_positions``
         - ``verbose`` -- **boolean** (default: `False`); verbosity
 
         EXAMPLES::
@@ -964,7 +966,10 @@ class NeuralNetworkTests:
             # generation = np.array([secrets.choice(range(1, 1 << difference_bits))
             #                       for _ in range(initial_population ** 2)], dtype=object)
         else:
-            generation = previous_generation
+            generation = np.array([self._validated_difference(difference, difference_bits)
+                                   for difference in previous_generation], dtype=object)
+            if len(generation) == 0:
+                raise ValueError('previous_generation must contain at least one difference')
         scores, highest_round = difference_evaluation_function(generation)
         idx = np.arange(len(generation))
         explored = np.copy(generation)
@@ -1008,6 +1013,13 @@ class NeuralNetworkTests:
                     flush=True)
 
         return generation, scores, highest_round
+
+    def _validated_difference(self, difference, difference_bits):
+        if isinstance(difference, bool) or not isinstance(difference, Integral):
+            raise ValueError(f'differences must be integers, got {difference!r}')
+        if not 1 <= difference < 1 << difference_bits:
+            raise ValueError(f'differences must be between 1 and 2**{difference_bits} - 1, got {difference}')
+        return int(difference)
 
     def _evaluate_multiple_differences(self, input_lengths, difference_positions, encrypt, candidate_differences,
                                        inputs0, c0,

@@ -352,6 +352,19 @@ def test_evolutionary_algorithm_rejects_invalid_width(difference_bits):
         NeuralNetworkTests(None)._evolutionary_algorithm(None, 4, 0, False, _no_score, difference_bits)
 
 
+@pytest.mark.parametrize('previous_generation', [[0], [8], [-1], [1.5], [True], [1, 9], []])
+def test_evolutionary_algorithm_rejects_invalid_previous_generation(previous_generation):
+    with pytest.raises(ValueError):
+        NeuralNetworkTests(None)._evolutionary_algorithm(previous_generation, 4, 0, False, _no_score, 3)
+
+
+def test_evolutionary_algorithm_accepts_numpy_previous_generation():
+    generation, _, _ = NeuralNetworkTests(None)._evolutionary_algorithm(np.array([1, 7], dtype=np.int64), 2, 0,
+                                                                        False, _no_score, 3)
+    assert sorted(generation) == [1, 7]
+    assert all(type(difference) is int for difference in generation)
+
+
 def test_find_good_input_difference_verbose_with_fewer_than_ten_differences(capsys):
     random.seed(0)
     np.random.seed(0)
