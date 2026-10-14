@@ -1126,6 +1126,20 @@ def build(
     )
 
 
+def _append_manual_records(cells, records):
+    """Append sorted coordinate-local definitions without changing source cells."""
+    for (row, col), cell in sorted(cells.items()):
+        if 'definition' not in cell:
+            continue
+        definition = copy.deepcopy(cell['definition'])
+        if cell['kind'] == 'box':
+            physical = [side for side in glyphs.SIDES if cell['ports'].get(side) == 'in']
+            definition['operand_ports'] = list(reversed(physical)) if cell.get('reverse') else physical
+        elif definition['kind'] == 'native_boundary':
+            definition['operand_ports'] = ['top']
+        records.append({'row': row, 'col': col, 'definition': definition})
+
+
 def _encode_layout(
     ir,
     *,
@@ -1184,16 +1198,7 @@ def _encode_layout(
             for col in range(report['cols'])
         ]
         lines.extend(''.join(cell[index] for cell in rendered) for index in range(5))
-    for (row, col), cell in sorted(cells.items()):
-        if 'definition' not in cell:
-            continue
-        definition = copy.deepcopy(cell['definition'])
-        if cell['kind'] == 'box':
-            physical = [side for side in glyphs.SIDES if cell['ports'].get(side) == 'in']
-            definition['operand_ports'] = list(reversed(physical)) if cell.get('reverse') else physical
-        elif definition['kind'] == 'native_boundary':
-            definition['operand_ports'] = ['top']
-        records.append({'row': row, 'col': col, 'definition': definition})
+    _append_manual_records(cells, records)
     body = '\n'.join(lines) + parameters.serialize(record['definition'] for record in records)
     primitive = {key: copy.deepcopy(ir[key]) for key in ('schema', 'name', 'cipher_type', 'output_bits', 'rounds')}
     text = (
