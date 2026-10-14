@@ -8,12 +8,22 @@ EXCLUDED_FILES = ["__init__.py", "constants.py", ".DS_Store", "name_mappings.py"
 EXCLUDED_EXTENSIONS = [".md"]
 ROOT_FOLDER = "../claasp/"
 SOURCE_ROOT_FOLDER = "./source/"
+DIAGRAM_GUIDE_FILES = (
+    "index.rst",
+    "persistent_word_examples.rst",
+    "examples/speck1-persistent.asciiart",
+    "examples/speck2-persistent.asciiart",
+)
 Path(SOURCE_ROOT_FOLDER).mkdir(exist_ok=True)
 
 IS_HTML = sys.argv[1] == "html"
 REFERENCES_EXTENSION = "rst" if IS_HTML else "bib"
 copyfile("conf.py", Path("source", "conf.py"))
 copyfile("references.rst", Path("source", f"references.{REFERENCES_EXTENSION}"))
+for guide_file in DIAGRAM_GUIDE_FILES:
+    destination = Path(SOURCE_ROOT_FOLDER, "diagrams", guide_file)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    copyfile(Path("diagrams", guide_file), destination)
 
 
 def header_style(section, level):
@@ -74,6 +84,12 @@ with Path(SOURCE_ROOT_FOLDER, "index.rst").open(mode="w") as index_rst_file:
                             "   :show-inheritance:\n\n"
                         )
             index_rst_file.write("\n")
+
+    index_rst_file.write(
+        f"{header_style('Diagram guides', 1)}\n"
+        ".. toctree::\n\n"
+        "    diagrams/index\n\n"
+    )
 
     if IS_HTML:
         index_rst_file.write(
