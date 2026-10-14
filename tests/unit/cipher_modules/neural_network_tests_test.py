@@ -1,3 +1,5 @@
+import contextlib
+import io
 import random
 from unittest import mock
 
@@ -365,14 +367,16 @@ def test_evolutionary_algorithm_accepts_numpy_previous_generation():
     assert all(type(difference) is int for difference in generation)
 
 
-def test_find_good_input_difference_verbose_with_fewer_than_ten_differences(capsys):
+def test_find_good_input_difference_verbose_with_fewer_than_ten_differences():
     random.seed(0)
     np.random.seed(0)
     tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=1))
-    diff, _, _ = tester.find_good_input_difference_for_neural_distinguisher(
-        [True, False], initial_population=3, number_of_generations=0, nb_samples=8, verbose=True)
+    output = io.StringIO()
+    with contextlib.redirect_stdout(output):
+        diff, _, _ = tester.find_good_input_difference_for_neural_distinguisher(
+            [True, False], initial_population=3, number_of_generations=0, nb_samples=8, verbose=True)
     assert len(diff) == 3
-    assert capsys.readouterr().out.count(', with score') == 3
+    assert output.getvalue().count(', with score') == 3
 
 
 @pytest.mark.parametrize('keras_version, extension', [('2.13.1', '.h5'), ('3.15.1', '.keras')])
