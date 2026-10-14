@@ -5,7 +5,10 @@ Install CLAASP
 --------------
 
 CLAASP requires Python 3.11 or later. From the repository root, create a
-virtual environment and install the package:
+virtual environment and install the package using the commands for your
+shell.
+
+On Linux, macOS, or another POSIX shell:
 
 .. code-block:: console
 
@@ -13,8 +16,16 @@ virtual environment and install the package:
    source .venv/bin/activate
    python -m pip install -e .
 
-On Windows PowerShell, activate the environment with
-``.venv\Scripts\Activate.ps1``. Confirm that the installation works with:
+On Windows PowerShell:
+
+.. code-block:: powershell
+
+   py -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   python -m pip install -e .
+
+``source`` belongs to POSIX shells; PowerShell runs the activation script
+directly. On either platform, confirm that the installation works with:
 
 .. code-block:: console
 
