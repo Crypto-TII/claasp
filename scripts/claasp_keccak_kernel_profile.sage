@@ -4,6 +4,7 @@
 Run the fair Keccak-f[800] reproduction with MiniZinc CP-SAT:
 
     sage claasp_keccak_kernel_profile.sage \
+        --rounds 3 \
         --profile KN --a-round 1 --upper-bound 32 \
         --core-weight-upper-bound 16 --processes 2 --time-limit 300
 
@@ -291,6 +292,7 @@ def serializable_solution(solution):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--rounds", type=int, default=3)
     parser.add_argument("--profile", default="KN")
     parser.add_argument("--a-round", type=int, default=1)
     parser.add_argument("--upper-bound", type=int, default=32)
@@ -301,7 +303,7 @@ def main():
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
 
-    cipher = KeccakSboxPermutation(number_of_rounds=3, word_size=32)
+    cipher = KeccakSboxPermutation(number_of_rounds=args.rounds, word_size=32)
     model = KeccakKernelProfileModel(cipher)
 
     wall_start = time.perf_counter()

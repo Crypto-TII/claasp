@@ -146,6 +146,7 @@ Then run the fair reproduction from the `scripts/` directory:
 cd /home/sage/tii-claasp/scripts
 mkdir -p results
 sage claasp_keccak_kernel_profile.sage \
+    --rounds 3 \
     --profile KN \
     --a-round 1 \
     --upper-bound 32 \
@@ -164,6 +165,7 @@ For the faster guided check, additionally prescribe the known split:
 
 ```bash
 sage claasp_keccak_kernel_profile.sage \
+    --rounds 3 \
     --profile KN \
     --a-round 1 \
     --upper-bound 32 \
@@ -174,7 +176,31 @@ sage claasp_keccak_kernel_profile.sage \
     --output results/keccak800-w32-kn-guided.json
 ```
 
+### Guided four-round Keccak-f[800] trail
+
+The following command reproduces the weight-104 trail reported by Mella et al. It places the selected
+two-round core in rounds 2 and 3, fixes its profile to `KN`, and supplies the published round-weight
+split `20 + 9 + 8 + 67`. It does not supply a bit-level trail witness.
+
+```bash
+sage claasp_keccak_kernel_profile.sage \
+    --rounds 4 \
+    --profile KN \
+    --a-round 2 \
+    --upper-bound 104 \
+    --core-weight-upper-bound 17 \
+    --round-weight-split 20,9,8,67 \
+    --processes 4 \
+    --time-limit 3600 \
+    --output results/keccak800-4r-w104-guided.json
+```
+
+A successful run reports total weight 104 and round weights `[20, 9, 8, 67]`. The reproduced trail has
+the full `NKN` parity profile across the first three round outputs; only its middle `KN` pair is imposed
+by `--profile KN --a-round 2`.
+
 Here `--a-round 1` is one-based: `a` is the output of round 1 and `c` is the output of round 2. Profiles
 may be `KK`, `KN`, `NK` or `NN`; `K` requires zero column parity and `N` requires at least one nonzero
-column parity. `--processes` controls the number of CP-SAT workers. Run
+column parity. `--rounds` selects the number of Keccak-f[800] rounds and `--processes` controls the
+number of CP-SAT workers. Run
 `sage claasp_keccak_kernel_profile.sage --help` for the complete option list.
