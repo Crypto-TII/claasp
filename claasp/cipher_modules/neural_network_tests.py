@@ -2,6 +2,7 @@ import os
 import random
 import secrets
 from math import sqrt
+from numbers import Integral
 
 import numpy as np
 import tensorflow as tf
@@ -362,6 +363,8 @@ class NeuralNetworkTests:
     def get_differential_dataset(self, input_differences, number_of_rounds, samples=10 ** 7):
         class RoundNumberTooHigh(Exception):
             pass
+        if number_of_rounds < 1:
+            raise ValueError(f'number_of_rounds must be at least 1, got {number_of_rounds}')
         from os import urandom
         inputs_0 = []
         inputs_1 = []
@@ -428,9 +431,11 @@ class NeuralNetworkTests:
         - ``data_generator`` -- **function**; A dataset generation function, taking as input a cipher (usually self), a number of rounds,
         and a number of samples, an returns a dataset X, Y, where X is a numpy matrix with one row per sample, and Y is a label veector.
         To reproduce classical neural distinguisher results, on would use the example below.
-        - ``starting_round`` -- **integer**; number of rounds to analyze
-        - ``neural_network`` -- **(compiled) keras model** (default: `None`); the neural network to use for distinguishing, either a custom one or one
-        returned by the get_neural_network function of neural_network_tests.
+        - ``starting_round`` -- **integer**; number of rounds of the first trained distinguisher, between 1 and the
+          number of rounds of the cipher (rounds are counted from 1, so the full cipher is
+          ``self.cipher.number_of_rounds``)
+        - ``neural_network`` -- **(compiled) keras model**; the neural network to use for distinguishing, either a
+          custom one or one returned by the get_neural_network function of neural_network_tests.
         - ``training_samples`` -- **integer**; (default: `10**7`) number samples used for training
         - ``testing_samples`` -- **integer**; (default: `10**6`) number samples used for testing
         - ``pipeline`` -- **boolean**; (default: `True`) If False, only trains for starting_round. If True, increments starting_round and retrain
@@ -500,11 +505,17 @@ class NeuralNetworkTests:
                 {5: 0.7035999894142151, 6: 0.613099992275238, 7: 0.4957999885082245}
 
         """
+        if isinstance(starting_round, bool) or not isinstance(starting_round, Integral):
+            raise TypeError(f'starting_round must be an integer, got {starting_round!r}')
+        if not 1 <= starting_round <= self.cipher.number_of_rounds:
+            raise ValueError(f'starting_round must be between 1 and {self.cipher.number_of_rounds} (the number '
+                             f'of rounds of the cipher), got {starting_round}')
         acc = {}
         bs = 5000
         nr = starting_round
         threshold = 0.5 + 10 * sqrt(testing_samples // 4) / testing_samples
-        while ((nr == starting_round) or (pipeline and (acc[nr-1]  >= threshold))) and (nr < self.cipher.number_of_rounds):
+        while (((nr == starting_round) or (pipeline and (acc[nr-1] >= threshold)))
+               and (nr <= self.cipher.number_of_rounds)):
             x, y = data_generator(samples=training_samples, nr=nr)
             x_eval, y_eval = data_generator(samples=testing_samples, nr=nr)
             if save_prefix is None:
@@ -529,7 +540,8 @@ class NeuralNetworkTests:
 
         - ``input_difference`` -- **list of integers**; The input difference, expressed as a list with one value per
         input to the cipher.
-        - ``number_of_rounds`` -- **integer**; number of rounds to analyze
+        - ``number_of_rounds`` -- **integer**; number of rounds to analyze, between 1 and the number of rounds of the
+          cipher
         - ``depth`` -- **integer**; (default: `1`) the depth of the neural network, as defined in Gohr's paper
         - ``word_size`` -- **integer**; the word size of the cipher, determines the shape of the neural network.
         Defaults to output_bit_size when unspecified (may reduce the accuracy of the obtained distinguisher).

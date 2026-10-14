@@ -1,5 +1,6 @@
 from unittest import mock
 
+import numpy as np
 import pytest
 
 from claasp.cipher_modules import neural_network_tests
@@ -87,3 +88,79 @@ def test_distinguisher_tests_forward_number_of_epochs(test_method):
     fit_calls = sequential.return_value.fit.call_args_list
     assert fit_calls
     assert all(fit_call.kwargs['epochs'] == 7 for fit_call in fit_calls)
+
+
+def _mocked_training(validation_accuracies):
+    neural_network = mock.Mock()
+    neural_network.fit.return_value.history = {'val_acc': validation_accuracies}
+    data_generator = mock.Mock(return_value=(np.zeros((4, 64), dtype=np.uint8), np.zeros(4, dtype=np.uint8)))
+    return neural_network, data_generator
+
+
+def _generated_rounds(data_generator):
+    return sorted({generator_call.kwargs['nr'] for generator_call in data_generator.call_args_list})
+
+
+def test_train_neural_distinguisher_trains_the_final_round():
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    neural_network, data_generator = _mocked_training([0.6, 0.9, 0.7])
+    result = tester.train_neural_distinguisher(data_generator, starting_round=2, neural_network=neural_network,
+                                               training_samples=4, testing_samples=10 ** 6, epochs=3, pipeline=False)
+    assert result == {2: 0.9}
+    assert _generated_rounds(data_generator) == [2]
+    assert neural_network.fit.call_args.kwargs['epochs'] == 3
+
+
+def test_train_neural_distinguisher_pipeline_advances_into_the_final_round():
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    neural_network, data_generator = _mocked_training([1.0])
+    result = tester.train_neural_distinguisher(data_generator, starting_round=1, neural_network=neural_network,
+                                               training_samples=4, testing_samples=10 ** 6, epochs=1, pipeline=True)
+    assert result == {1: 1.0, 2: 1.0}
+    assert _generated_rounds(data_generator) == [1, 2]
+
+
+def test_train_neural_distinguisher_pipeline_stops_below_threshold():
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    neural_network, data_generator = _mocked_training([0.5])
+    result = tester.train_neural_distinguisher(data_generator, starting_round=1, neural_network=neural_network,
+                                               training_samples=4, testing_samples=10 ** 6, epochs=1, pipeline=True)
+    assert result == {1: 0.5}
+
+
+def test_train_neural_distinguisher_single_round_primitive():
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=1))
+    neural_network, data_generator = _mocked_training([1.0])
+    result = tester.train_neural_distinguisher(data_generator, starting_round=1, neural_network=neural_network,
+                                               training_samples=4, testing_samples=10 ** 6, epochs=1, pipeline=True)
+    assert result == {1: 1.0}
+    assert _generated_rounds(data_generator) == [1]
+
+
+@pytest.mark.parametrize('starting_round, error', [(0, ValueError), (-1, ValueError), (3, ValueError),
+                                                   (1.5, TypeError), (True, TypeError), ('1', TypeError)])
+def test_train_neural_distinguisher_rejects_invalid_starting_round(starting_round, error):
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    neural_network, data_generator = _mocked_training([1.0])
+    with pytest.raises(error):
+        tester.train_neural_distinguisher(data_generator, starting_round=starting_round,
+                                          neural_network=neural_network, training_samples=4, testing_samples=4)
+    data_generator.assert_not_called()
+
+
+def test_train_gohr_neural_distinguisher_trains_the_final_round():
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    neural_network, _ = _mocked_training([0.8])
+    with mock.patch.object(tester, 'get_neural_network', return_value=neural_network):
+        result = tester.train_gohr_neural_distinguisher([0x400000, 0], 2, word_size=16, number_of_epochs=1,
+                                                        training_samples=4, testing_samples=4)
+    assert result == {2: 0.8}
+
+
+def test_get_differential_dataset_uses_one_based_round_numbers():
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    x, y = tester.get_differential_dataset([0x400000, 0], 2, samples=4)
+    assert x.shape == (4, 64)
+    assert y.shape == (4,)
+    with pytest.raises(ValueError):
+        tester.get_differential_dataset([0x400000, 0], 0, samples=4)
