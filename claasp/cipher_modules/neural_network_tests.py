@@ -947,7 +947,7 @@ class NeuralNetworkTests:
         if verbose:
             print("The highest reached round was", highest_round)
             print("The best differences found by the optimizer are...")
-            for i in range(1, 11):
+            for i in range(1, min(10, len(diffs)) + 1):
                 print(hex(diffs[-i]), ", with score", scores[-i])
         return diffs, scores, highest_round
 

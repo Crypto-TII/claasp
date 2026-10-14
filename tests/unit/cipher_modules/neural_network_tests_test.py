@@ -352,6 +352,16 @@ def test_evolutionary_algorithm_rejects_invalid_width(difference_bits):
         NeuralNetworkTests(None)._evolutionary_algorithm(None, 4, 0, False, _no_score, difference_bits)
 
 
+def test_find_good_input_difference_verbose_with_fewer_than_ten_differences(capsys):
+    random.seed(0)
+    np.random.seed(0)
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=1))
+    diff, _, _ = tester.find_good_input_difference_for_neural_distinguisher(
+        [True, False], initial_population=3, number_of_generations=0, nb_samples=8, verbose=True)
+    assert len(diff) == 3
+    assert capsys.readouterr().out.count(', with score') == 3
+
+
 @pytest.mark.parametrize('keras_version, extension', [('2.13.1', '.h5'), ('3.15.1', '.keras')])
 def test_checkpoint_file_name_matches_keras_version(keras_version, extension):
     with mock.patch.object(neural_network_tests.keras, '__version__', keras_version):
