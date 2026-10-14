@@ -19,6 +19,35 @@ def _unary_row(cells):
     return column, (definition['round'], definition['bits'], tuple(definition['description']))
 
 
+def _can_extend(group, candidate, maximum):
+    """Check the semantic signature, distinct destination and cohort bound."""
+    return (
+        candidate is not None
+        and group['signature'] == candidate[1]
+        and candidate[0] not in group['columns']
+        and len(group['rows']) < maximum
+    )
+
+
+def _row_groups(rows, row_count, maximum):
+    """Partition consecutive rows without crossing a non-unary boundary."""
+    groups = []
+    for row in range(row_count):
+        candidate = _unary_row(rows.get(row, {}))
+        if groups and _can_extend(groups[-1], candidate, maximum):
+            groups[-1]['rows'].append(row)
+            groups[-1]['columns'].add(candidate[0])
+        else:
+            groups.append(
+                {
+                    'rows': [row],
+                    'columns': {candidate[0]} if candidate else set(),
+                    'signature': candidate[1] if candidate else None,
+                }
+            )
+    return groups
+
+
 def compact(model, maximum):
     """Merge adjacent compatible unary rows on disjoint vertical streams.
 
@@ -32,26 +61,7 @@ def compact(model, maximum):
     rows = {}
     for (row, column), cell in model['cells'].items():
         rows.setdefault(row, {})[column] = cell
-    groups = []
-    for row in range(model['rows']):
-        candidate = _unary_row(rows.get(row, {}))
-        if (
-            candidate
-            and groups
-            and groups[-1]['signature'] == candidate[1]
-            and candidate[0] not in groups[-1]['columns']
-            and len(groups[-1]['rows']) < maximum
-        ):
-            groups[-1]['rows'].append(row)
-            groups[-1]['columns'].add(candidate[0])
-        else:
-            groups.append(
-                {
-                    'rows': [row],
-                    'columns': {candidate[0]} if candidate else set(),
-                    'signature': candidate[1] if candidate else None,
-                }
-            )
+    groups = _row_groups(rows, model['rows'], maximum)
     mapping = {old: new for new, group in enumerate(groups) for old in group['rows']}
     cells = {}
     for (row, column), cell in sorted(model['cells'].items()):

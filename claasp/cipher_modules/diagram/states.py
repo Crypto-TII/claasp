@@ -109,6 +109,26 @@ def _snapshot(identity, stage, positions, widths, mode, order, word_bits, column
     }
 
 
+def _selected_word_frames(history, rounds, granularity):
+    """Retain operation updates or carry the last update over each round cut."""
+    if granularity == 'operation':
+        return history
+    selected = [history[0]]
+    for stage in range(rounds):
+        frame = next(frame for frame in reversed(history) if frame['stage'] <= stage)
+        selected.append(dict(frame, stage=stage))
+    return selected
+
+
+def _word_frame_identity(index, stage, granularity):
+    """Name a visible initial frame, round boundary or operation update."""
+    if index == 0:
+        return 'initial'
+    if granularity == 'round':
+        return f'round-{stage}-end'
+    return f'word-step-{index}'
+
+
 def _word_snapshots(ir, word_bits, columns, order, values, comparison, granularity, key_side):
     if granularity not in ('round', 'operation'):
         raise ValueError('Word-state granularity must be round or operation')
@@ -119,24 +139,13 @@ def _word_snapshots(ir, word_bits, columns, order, values, comparison, granulari
     export_bindings(ir, word_bits=word_bits, key_side=key_side)
     model = build(ir, word_bits=word_bits, key_side=key_side, capture_states=True)
     history = model['state_frames']
-    selected = history
-    if granularity == 'round':
-        selected = [history[0]]
-        for stage in range(ir['rounds']):
-            frame = next(frame for frame in reversed(history) if frame['stage'] <= stage)
-            selected.append(dict(frame, stage=stage))
+    selected = _selected_word_frames(history, ir['rounds'], granularity)
     widths = {node['id']: node['bits'] for node in ir['inputs'] + ir['nodes']}
     frames = []
     for index, source in enumerate(selected):
         ordered_words = list(reversed(source['words'])) if order == 'reverse' else source['words']
         positions = [position for word in ordered_words for position in word['positions']]
-        identity = (
-            'initial'
-            if index == 0
-            else f'round-{source["stage"]}-end'
-            if granularity == 'round'
-            else f'word-step-{index}'
-        )
+        identity = _word_frame_identity(index, source['stage'], granularity)
         frame = _snapshot(
             identity, source['stage'], positions, widths, 'word', 'source', model['bits'], columns, values, comparison
         )
