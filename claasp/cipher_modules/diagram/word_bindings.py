@@ -160,12 +160,8 @@ def export_bindings(
     return body, bindings
 
 
-def trace_bindings(body, bindings):
-    """Expose actual routed producers with distinct cipher/display/observer bindings.
-
-    Tracing alone does not claim exact native reconstruction. decode_bindings
-    separately validates and reconstructs supported observe and uniform-alias boundaries.
-    """
+def _validate_binding_schema(bindings):
+    """Reject unknown schemas or top-level fields before reading records."""
     if bindings.get('schema') != 'claasp-word-view-bindings/experimental-3':
         raise ValueError('Unsupported experimental word binding schema')
     required = {
@@ -181,11 +177,19 @@ def trace_bindings(body, bindings):
     }
     if set(bindings) != required:
         raise ValueError('Unexpected or missing binding metadata field')
+
+
+def _validate_operation_fields(bindings):
+    """Permit only local operation metadata without source links."""
     for record in bindings['operations']:
         if set(record) != {'at', 'definition', 'ordinal', 'operand_ports', 'operand_positions'}:
             raise ValueError('Unexpected operation metadata field; source links are forbidden')
         if set(record['definition']) != set(word_visual.manual_blocks.NODE_FIELDS):
             raise ValueError('Unexpected native definition field; source links are forbidden')
+
+
+def _validate_interface_fields(bindings):
+    """Check header and input declarations before boundary metadata."""
     if set(bindings['header']) != {'schema', 'name', 'cipher_type', 'output_bits', 'rounds'}:
         raise ValueError('Unexpected native header metadata field')
     if any(set(native) != {'id', 'bits', 'role'} for native in bindings['native_inputs']):
@@ -203,6 +207,10 @@ def trace_bindings(body, bindings):
             raise ValueError('Unexpected input binding metadata field')
         if record['binding']['kind'] != 'input':
             raise ValueError('Input metadata binding is not an input')
+
+
+def _validate_boundary_fields(bindings):
+    """Check observation and cipher-output field ownership."""
     fields = set(word_visual.manual_blocks.NODE_FIELDS)
     for record in bindings['observations']:
         if (
@@ -215,12 +223,16 @@ def trace_bindings(body, bindings):
         or set(bindings['cipher_output']['definition']) != fields
     ):
         raise ValueError('Unexpected cipher output metadata field; source links are forbidden')
-    parsed = word_visual.parse(body)
 
-    def coordinates(values):
-        return [tuple(value) for value in values]
 
-    inputs = coordinates(record['at'] for record in bindings['inputs'])
+def _binding_coordinates(values):
+    """Preserve declaration order when reading actual coordinates."""
+    return [tuple(value) for value in values]
+
+
+def _validate_coordinate_ownership(parsed, bindings):
+    """Match local coordinates, widths and roles to actual visible endpoints."""
+    inputs = _binding_coordinates(record['at'] for record in bindings['inputs'])
     if inputs != parsed['inputs']:
         raise ValueError('Input bindings disagree with actual visible endpoints')
     operation_coordinates = [tuple(record['at']) for record in bindings['operations']]
@@ -230,8 +242,8 @@ def trace_bindings(body, bindings):
     actual = {key for key, cell in parsed['cells'].items() if cell['kind'] == 'operation'}
     if set(operations) != actual:
         raise ValueError('Local operation annotations do not cover actual glyphs exactly')
-    cipher = coordinates(bindings['cipher_output']['at'])
-    display = coordinates(record['at'] for record in bindings['display_terminals'])
+    cipher = _binding_coordinates(bindings['cipher_output']['at'])
+    display = _binding_coordinates(record['at'] for record in bindings['display_terminals'])
     if display != parsed['outputs'] or len(set(cipher)) != len(cipher) or any(key not in display for key in cipher):
         raise ValueError('Cipher/display terminal bindings disagree with visible terminals')
     bits = bindings['word_bits']
@@ -239,7 +251,11 @@ def trace_bindings(body, bindings):
         raise ValueError('Cipher width disagrees with its selected actual terminal words')
     if any(record['cipher'] != (tuple(record['at']) in cipher) for record in bindings['display_terminals']):
         raise ValueError('Display terminal roles disagree with explicit cipher endpoint binding')
-    operation_sources = {}
+    return inputs, operations, actual, cipher, display, bits
+
+
+def _validate_input_capacity(bindings, bits):
+    """Bound widths by explicit input fragments before native validation."""
     # Cardinalities of explicit local fragments bound numeric declarations before
     # any width-derived allocation or native transform validation.
     if any(
@@ -255,6 +271,10 @@ def trace_bindings(body, bindings):
         )
         if type(native['bits']) is not int or native['bits'] <= 0 or native['bits'] != count:
             raise ValueError('Native input width disagrees with actual fragment coverage cardinality')
+
+
+def _validate_observation_capacity(bindings):
+    """Bound observation widths by explicit fragment cardinalities."""
     observation_groups = {}
     for record in bindings['observations']:
         observation_groups.setdefault(record['ordinal'], []).append(record)
@@ -268,51 +288,90 @@ def trace_bindings(body, bindings):
             or definition['input_bits'] != count
         ):
             raise ValueError('Observation width disagrees with actual fragment coverage cardinality')
+    return observation_groups
+
+
+def _validate_round_capacity(bindings, operations, observation_groups):
+    """Bound declared rounds by explicit local native record capacity."""
     rounds = bindings['header']['rounds']
     if type(rounds) is not int or rounds <= 0 or rounds > len(operations) + len(observation_groups) + 1:
         raise ValueError('Declared rounds exceed explicit native record capacity')
-    for key, record in operations.items():
-        definition = record['definition']
-        if definition['type'] not in ('word_operation', 'constant') or definition['bits'] != bits:
-            raise ValueError('Local operation type/width is unsupported by actual word glyph')
-        validate_native_component(definition)
-        cell = parsed['cells'][key]
-        ordered = [side for side in glyphs.SIDES if side in cell['ports'] and side != 'bottom']
-        if cell['binding'].startswith('@'):
-            ordered = [ordered[int(value) - 1] for value in cell['binding'][1:]]
-        declared = record['operand_ports']
-        if len(declared) != len(ordered) or sorted(declared) != sorted(ordered):
-            raise ValueError('Local ordered port binding disagrees with actual visible ports')
-        if cell['binding'] and declared != ordered:
-            raise ValueError('Local ordered port binding contradicts visible operand binding')
-        by_port = dict(zip(ordered, parsed['sources'][key]))
-        operation_sources[key] = [by_port[port] for port in declared]
-        local = dict(definition, kind='native', operand_ports=declared)
-        art = word_visual._art(
-            {
-                'kind': 'box',
-                'definition': local,
-                'ports': {side: ('out' if side == 'bottom' else 'in') for side in cell['ports']},
-            }
-        )
-        if cell['label'] != art[2][2:9].strip() or cell['binding'] != art[1][2:9].strip():
-            raise ValueError('Native operation metadata contradicts actual visible glyph')
-        if definition['type'] == 'constant' and int(cell['constant_literal'][1:], 16) != int(
-            definition['description'][0], 0
-        ):
-            raise ValueError('Native constant metadata contradicts actual visible literal')
-        if definition['bits'] != bits or definition['input_bits'] != len(parsed['sources'][key]) * bits:
-            raise ValueError('Native operation width contradicts actual word ports')
+
+
+def _validate_operation_glyph(definition, cell, declared):
+    """Check native presentation and literal equality before final port widths."""
+    local = dict(definition, kind='native', operand_ports=declared)
+    art = word_visual._art(
+        {
+            'kind': 'box',
+            'definition': local,
+            'ports': {side: ('out' if side == 'bottom' else 'in') for side in cell['ports']},
+        }
+    )
+    if cell['label'] != art[2][2:9].strip() or cell['binding'] != art[1][2:9].strip():
+        raise ValueError('Native operation metadata contradicts actual visible glyph')
+    if definition['type'] == 'constant' and int(cell['constant_literal'][1:], 16) != int(
+        definition['description'][0], 0
+    ):
+        raise ValueError('Native constant metadata contradicts actual visible literal')
+
+
+def _trace_operation(key, record, parsed, bits, operation_sources):
+    """Trace ordered ports before checking the native glyph and its width."""
+    definition = record['definition']
+    if definition['type'] not in ('word_operation', 'constant') or definition['bits'] != bits:
+        raise ValueError('Local operation type/width is unsupported by actual word glyph')
+    validate_native_component(definition)
+    cell = parsed['cells'][key]
+    ordered = [side for side in glyphs.SIDES if side in cell['ports'] and side != 'bottom']
+    if cell['binding'].startswith('@'):
+        ordered = [ordered[int(value) - 1] for value in cell['binding'][1:]]
+    declared = record['operand_ports']
+    if len(declared) != len(ordered) or sorted(declared) != sorted(ordered):
+        raise ValueError('Local ordered port binding disagrees with actual visible ports')
+    if cell['binding'] and declared != ordered:
+        raise ValueError('Local ordered port binding contradicts visible operand binding')
+    by_port = dict(zip(ordered, parsed['sources'][key]))
+    operation_sources[key] = [by_port[port] for port in declared]
+    _validate_operation_glyph(definition, cell, declared)
+    if definition['bits'] != bits or definition['input_bits'] != len(parsed['sources'][key]) * bits:
+        raise ValueError('Native operation width contradicts actual word ports')
+
+
+def _trace_observations(bindings, actual, inputs):
+    """Validate local observation flow against actual producer anchors."""
     observations = []
     for record in bindings['observations']:
         if record['flow'] not in ('observe', 'alias') or record['port'] != 'bottom':
             raise ValueError('Invalid local observation flow/output port')
-        anchors = coordinates(record['at'])
+        anchors = _binding_coordinates(record['at'])
         if any(key not in actual and key not in inputs for key in anchors):
             raise ValueError('Observation anchor is not an actual visible producer')
         if len(anchors) * bindings['word_bits'] != len(record['positions']):
             raise ValueError('Observation widths disagree with actual word anchors')
         observations.append(dict(record, at=anchors))
+    return observations
+
+
+def trace_bindings(body, bindings):
+    """Expose actual routed producers with distinct cipher/display/observer bindings.
+
+    Tracing alone does not claim exact native reconstruction. decode_bindings
+    separately validates and reconstructs supported observe and uniform-alias boundaries.
+    """
+    _validate_binding_schema(bindings)
+    _validate_operation_fields(bindings)
+    _validate_interface_fields(bindings)
+    _validate_boundary_fields(bindings)
+    parsed = word_visual.parse(body)
+    inputs, operations, actual, cipher, display, bits = _validate_coordinate_ownership(parsed, bindings)
+    operation_sources = {}
+    _validate_input_capacity(bindings, bits)
+    observation_groups = _validate_observation_capacity(bindings)
+    _validate_round_capacity(bindings, operations, observation_groups)
+    for key, record in operations.items():
+        _trace_operation(key, record, parsed, bits, operation_sources)
+    observations = _trace_observations(bindings, actual, inputs)
     return {
         'operation_sources': operation_sources,
         'cipher_sources': [parsed['sources'][key][0] for key in cipher],
