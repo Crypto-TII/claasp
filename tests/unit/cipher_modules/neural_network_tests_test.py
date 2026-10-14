@@ -1,3 +1,4 @@
+import random
 from unittest import mock
 
 import numpy as np
@@ -6,10 +7,13 @@ import tensorflow as tf
 
 from claasp.cipher_modules import neural_network_tests
 from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 
 DBITNET_64_TRAINABLE_PARAMETERS = 296065
 DBITNET_64_PARAMETERS = 298113
+SYNTHETIC_SAMPLES = 4
+SYNTHETIC_OUTPUT_BYTES = 2
 
 
 def test_find_good_input_difference_for_neural_distinguisher():
@@ -218,3 +222,83 @@ def test_dbitnet_save_and_load(tmp_path, extension, compile_model):
     loaded = tf.keras.models.load_model(path, compile=compile_model)
     assert [type(layer).__name__ for layer in loaded.layers] == [type(layer).__name__ for layer in model.layers]
     np.testing.assert_allclose(loaded.predict(x, verbose=0), model.predict(x, verbose=0), rtol=1e-6)
+
+
+def _synthetic_output_differences(biased):
+    if biased:
+        return np.full((SYNTHETIC_SAMPLES, SYNTHETIC_OUTPUT_BYTES), 0xFF, dtype=np.uint8)
+    return np.array([[0x00] * SYNTHETIC_OUTPUT_BYTES, [0xFF] * SYNTHETIC_OUTPUT_BYTES] * (SYNTHETIC_SAMPLES // 2),
+                    dtype=np.uint8)
+
+
+def _synthetic_scores(biased_rounds_per_candidate, number_of_rounds, threshold):
+    rounds = range(1, number_of_rounds + 1)
+    c0 = {r: np.zeros((SYNTHETIC_SAMPLES, SYNTHETIC_OUTPUT_BYTES), dtype=np.uint8) for r in rounds}
+    c1 = {r: np.concatenate([_synthetic_output_differences(r in biased_rounds)
+                             for biased_rounds in biased_rounds_per_candidate]) for r in rounds}
+    candidates = np.array(range(1, len(biased_rounds_per_candidate) + 1), dtype=object)
+    inputs0 = [np.zeros((1, SYNTHETIC_SAMPLES), dtype=np.uint8)]
+    return NeuralNetworkTests(None)._evaluate_multiple_differences([8], [True], lambda _: c1, candidates, inputs0,
+                                                                   c0, threshold)
+
+
+@pytest.mark.parametrize('biased_round', [1, 2, 3, 4])
+def test_evaluate_multiple_differences_weights_each_round(biased_round):
+    scores, highest_round = _synthetic_scores([{biased_round}], number_of_rounds=4, threshold=0)
+    np.testing.assert_array_equal(scores, [0.5 * biased_round])
+    assert highest_round == 4
+
+
+def test_evaluate_multiple_differences_covers_the_terminal_rounds():
+    scores, highest_round = _synthetic_scores([{1, 2, 3, 4}, {1, 2, 3}, {1, 2, 4}], number_of_rounds=4,
+                                              threshold=0.05)
+    np.testing.assert_array_equal(scores, [5.0, 3.0, 3.5])
+    assert highest_round == 4
+
+
+def test_evaluate_multiple_differences_stops_at_the_first_unbiased_round():
+    scores, highest_round = _synthetic_scores([{1, 2, 4}, {1}], number_of_rounds=4, threshold=0.05)
+    np.testing.assert_array_equal(scores, [1.5, 0.5])
+    assert highest_round == 2
+
+
+def test_evaluate_multiple_differences_without_biased_round():
+    scores, highest_round = _synthetic_scores([set(), {2}], number_of_rounds=2, threshold=0.05)
+    np.testing.assert_array_equal(scores, [0.0, 0.0])
+    assert highest_round == 0
+
+
+@pytest.mark.parametrize('cipher, expected', [
+    (SpeckBlockCipher(number_of_rounds=1), {1: ('cipher_output', 0)}),
+    (SpeckBlockCipher(number_of_rounds=4), {1: ('round_output', 0), 2: ('round_output', 1),
+                                            3: ('round_output', 2), 4: ('cipher_output', 0)}),
+    (SimonBlockCipher(number_of_rounds=2), {1: ('round_output', 0), 2: ('cipher_output', 0)}),
+])
+def test_scored_round_outputs(cipher, expected):
+    assert NeuralNetworkTests(cipher)._scored_round_outputs() == expected
+
+
+@pytest.mark.parametrize('number_of_rounds', [1, 2])
+def test_find_good_input_difference_for_short_primitives(number_of_rounds):
+    random.seed(0)
+    np.random.seed(0)
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=number_of_rounds))
+    diff, scores, highest_round = tester.find_good_input_difference_for_neural_distinguisher(
+        [True, False], initial_population=4, number_of_generations=1, nb_samples=64)
+    assert highest_round == number_of_rounds
+    assert np.max(scores) > 0
+    assert all(0 < d < 1 << 32 for d in diff)
+
+
+@pytest.mark.parametrize('highest_round, round_start', [(0, 1), (2, 1), (5, 2)])
+def test_run_autond_pipeline_starts_training_from_highest_round(highest_round, round_start):
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=5))
+    search_result = (np.array([0x400000], dtype=object), np.array([1.0]), highest_round)
+    with mock.patch.object(tester, 'find_good_input_difference_for_neural_distinguisher',
+                           return_value=search_result), \
+            mock.patch.object(tester, 'get_neural_network'), \
+            mock.patch.object(tester, 'train_neural_distinguisher', return_value={round_start: 0.9}) as train:
+        result = tester.run_autond_pipeline(optimizer_samples=4, optimizer_generations=1, training_samples=4,
+                                            testing_samples=4, number_of_epochs=1)
+    assert train.call_args.args[1] == round_start
+    assert result['test_results']['round_start'] == round_start

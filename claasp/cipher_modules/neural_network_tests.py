@@ -844,6 +844,16 @@ class NeuralNetworkTests:
         """
         Return good neural distinguisher input differences for a cipher, based on the AutoND pipeline ([BGHR2023]).
 
+        Return a tuple ``(differences, scores, highest_round)``, where the differences are sorted by increasing score.
+        For each round ``r`` (counted from 1), the output difference is taken at the last round or cipher output of
+        that round, so the final round uses the cipher output; rounds without such an output are skipped. The bias
+        of a round is the average over the output bits of ``|0.5 - p|``, where ``p`` is the probability that the bit
+        difference is 1, and the score of a difference is the sum of ``r`` times its bias at round ``r``. Rounds are
+        evaluated in increasing order and the evaluation stops after the first round at which no candidate
+        difference has a bias of at least 0.05 (that round still contributes to the scores). ``highest_round`` is
+        the deepest round at which some candidate difference had a bias of at least 0.05, or 0 if there is no such
+        round.
+
         INPUT:
 
         - ``difference_positions`` -- **table of booleans**; one for each input to the cipher. True in positions where
@@ -884,7 +894,9 @@ class NeuralNetworkTests:
         # Initialisation
         input_lengths = self.cipher.inputs_bit_size
         input_tags = self.cipher.inputs
-        evaluate = lambda x: self.cipher.evaluate_vectorized(x, intermediate_output=True)
+        scored_outputs = self._scored_round_outputs()
+        evaluate = lambda x: self._select_scored_round_outputs(
+            self.cipher.evaluate_vectorized(x, intermediate_output=True), scored_outputs)
         threshold = 0.05
         # Generation of the baseline ciphertexts
         inputs0 = []
@@ -893,7 +905,7 @@ class NeuralNetworkTests:
             inputs0.append(np.random.randint(256, size=(input_lengths[i] // 8, nb_samples), dtype=np.uint8))
             if difference_positions[i]:
                 num_input_bits += input_lengths[i]
-        C0 = evaluate(inputs0)['round_output']
+        C0 = evaluate(inputs0)
         diffs, scores, highest_round = self._evolutionary_algorithm(previous_generation, initial_population,
                                                                     number_of_generations, verbose,
                                                                     difference_evaluation_function=lambda
@@ -980,21 +992,47 @@ class NeuralNetworkTests:
                     .reshape(inputs0[input_index].shape[0], -1)
             else:
                 inputs1[input_index] = np.tile(inputs0[input_index], number_of_differences)
-        round_outputs = encrypt(inputs1)['round_output']
+        round_outputs = encrypt(inputs1)
         scores = np.zeros(number_of_differences)
-        i = 1
-        for i in range(1, len(round_outputs)):
-            nr = i - 1
-            C1 = round_outputs[nr]
-            differences_in_output = C1.reshape(number_of_differences, c0[nr].shape[0], c0[nr].shape[1]) ^ c0[nr]
+        highest_round = 0
+        for round_number, c1 in round_outputs.items():
+            c0_round = c0[round_number]
+            differences_in_output = c1.reshape(number_of_differences, c0_round.shape[0], c0_round.shape[1]) ^ c0_round
             binary_differences = np.unpackbits(differences_in_output, axis=2)
             bit_scores_per_diff = np.abs(0.5 - np.average(binary_differences, axis=1))
             round_scores = np.average(bit_scores_per_diff, axis=1)
-            scores += i * round_scores
+            scores += round_number * round_scores
             if np.max(round_scores) < threshold:
                 break
+            highest_round = round_number
 
-        return scores, i
+        return scores, highest_round
+
+    def _scored_round_outputs(self):
+        """
+        Return ``{round_number: (output_tag, index)}`` locating the output scored for each round by the optimizer.
+
+        ``round_number`` is one-based, ``output_tag`` is ``'round_output'`` or ``'cipher_output'`` and ``index`` is
+        the position of the output in the corresponding list returned by ``evaluate_vectorized`` with
+        ``intermediate_output=True``. When a round contains several such outputs, the last one is used, so the final
+        round is represented by the cipher output. Rounds without any such output are not scored.
+        """
+        scored_outputs = {}
+        number_of_outputs = {'round_output': 0, 'cipher_output': 0}
+        for round_number, cipher_round in enumerate(self.cipher.rounds_as_list, start=1):
+            for component in cipher_round.components:
+                if component.type not in ('intermediate_output', 'cipher_output'):
+                    continue
+                output_tag = component.description[0]
+                if output_tag in number_of_outputs:
+                    scored_outputs[round_number] = (output_tag, number_of_outputs[output_tag])
+                    number_of_outputs[output_tag] += 1
+
+        return scored_outputs
+
+    def _select_scored_round_outputs(self, intermediate_outputs, scored_outputs):
+        return {round_number: intermediate_outputs[output_tag][index]
+                for round_number, (output_tag, index) in sorted(scored_outputs.items())}
 
     def _int_difference_to_input_differences(self, diff, difference_positions, input_bit_sizes):
         formated = []
