@@ -29,6 +29,7 @@ from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
     MILP_XOR_DIFFERENTIAL,
     MILP_XOR_DIFFERENTIAL_OBJECTIVE,
 )
+from claasp.cipher_modules.models.milp.utils.milp_progress_log import create_progress_log
 from claasp.cipher_modules.models.milp.utils.utils import (
     _filter_fixed_variables,
     _get_variables_values_as_string,
@@ -191,7 +192,7 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); each dictionary contains variables values whose output
           need to be fixed
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
+        - ``solver_name`` -- **string** (default: `HIGHS_EXT`); the name of the solver (if needed)
 
         EXAMPLES::
 
@@ -399,7 +400,7 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); each dictionary contains variables values whose output need to
           be fixed
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
+        - ``solver_name`` -- **string** (default: `HIGHS_EXT`); the name of the solver (if needed)
         - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLES::
@@ -477,6 +478,7 @@ class MilpXorDifferentialModel(MilpModel):
         weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
         solver_name=SOLVER_DEFAULT,
         external_solver_name=False,
+        log=False,
     ):
         """
         Return a XOR differential trail with the lowest weight in standard format, i.e. the solver solution.
@@ -491,8 +493,16 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); each dictionary contains variables values whose output need
           to be fixed
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
+        - ``solver_name`` -- **string** (default: `HIGHS_EXT`); the name of the solver (if needed)
         - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
+        - ``log`` -- **boolean** (default: `False`); if ``True``, while the solver runs, append to the file
+          ``<cipher_id>__milp_find_lowest_weight_xor_differential_trail__<solver_name>solver.log`` the lower and
+          upper bounds proved so far on the weight of the trail and the trails found (see
+          :py:class:`~claasp.cipher_modules.models.milp.utils.milp_progress_log.MilpProgressLog`). Only available
+          with the solvers ``CPLEX_EXT``, ``GLPK``, ``GLPK_EXT``, ``GUROBI_EXT``, ``HIGHS_EXT`` and ``SCIP_EXT``,
+          which log different information (e.g. only some of them log the intermediate trails or the exploration of
+          the branch-and-bound tree, see the linked class); with other solvers, an error is raised before the model is
+          built
 
         EXAMPLES::
 
@@ -519,6 +529,12 @@ class MilpXorDifferentialModel(MilpModel):
             1.0
         """
         start = time.time()
+        progress_log = None
+        if log:
+            solver = external_solver_name or solver_name
+            progress_log = create_progress_log(
+                self, "find_lowest_weight_xor_differential_trail", solver, weight_precision, start
+            )
         self.init_model_in_sage_milp_class(solver_name)
         self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
@@ -528,7 +544,9 @@ class MilpXorDifferentialModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name, progress_log)
+        if progress_log is not None:
+            progress_log.write_final(solution)
         solution["building_time"] = building_time
         solution["test_name"] = "find_lowest_weight_xor_differential_trail"
 
@@ -550,7 +568,7 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
             format
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
+        - ``solver_name`` -- **string** (default: `HIGHS_EXT`); the solver to call
         - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         .. SEEALSO::
@@ -614,7 +632,7 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
             format
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
+        - ``solver_name`` -- **string** (default: `HIGHS_EXT`); the solver to call
         - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         .. SEEALSO::
@@ -666,7 +684,7 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
             format
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
+        - ``solver_name`` -- **string** (default: `HIGHS_EXT`); the solver to call
         - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         .. SEEALSO::

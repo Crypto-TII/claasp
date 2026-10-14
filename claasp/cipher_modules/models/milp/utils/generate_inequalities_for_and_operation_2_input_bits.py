@@ -18,7 +18,7 @@
 
 """The target of this module is to generate MILP inequalities for a AND operation between 2 input bits."""
 
-from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.solvers import SOLVER_INTERNAL_DEFAULT
 
 
 def and_inequalities():
@@ -123,7 +123,7 @@ def cutting_off_milp(valid_points, number_of_ineqs=None):
 
     # precompute which inequality removes which impossible point
     precomputation = matrix([[int(not (ineq.contains(p))) for p in impossible] for ineq in ineqs])
-    milp = MixedIntegerLinearProgram(maximization=False, solver=SOLVER_DEFAULT)
+    milp = MixedIntegerLinearProgram(maximization=False, solver=SOLVER_INTERNAL_DEFAULT)
     var_ineqs = milp.new_variable(binary=True, name="ineqs")
 
     # either use the minimal number of inequalities for the representation

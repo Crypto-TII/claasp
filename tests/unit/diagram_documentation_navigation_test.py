@@ -38,6 +38,10 @@ def test_public_diagram_navigation_and_deterministic_generation(tmp_path, mode):
     assert '    cipher_modules/diagram/api\n' in index
     assert '    cipher_modules/diagram/facade\n' in index
     assert '    diagrams/index\n' in index
+    # Match the existing top-level Utils/Components/General Information
+    # sections: an equals underline, with no overline introducing a new level.
+    assert '\nDiagram guides\n==============\n\n.. toctree::' in index
+    assert '\n--------------\nDiagram guides' not in index
     assert first['diagrams/index.rst'] == (ROOT / 'docs/diagrams/index.rst').read_bytes()
     assert first['diagrams/persistent_word_examples.rst'] == (
         ROOT / 'docs/diagrams/persistent_word_examples.rst').read_bytes()
