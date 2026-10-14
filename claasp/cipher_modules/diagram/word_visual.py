@@ -482,12 +482,114 @@ def to_ascii(ir, **options):
     return render(build(ir, **options))
 
 
-def parse(text):
-    """Read actual glyphs/wires; no original graph or generated calls are used."""
-    lines = text.replace('\r\n', '\n').splitlines()
-    if not lines or len(lines) % 5:
-        raise ValueError('Visual diagram requires complete five-line rows')
-    columns = (max(map(len, lines)) + 10) // 11
+def _endpoint_kind(ports):
+    """Recognize only a directed input or output bar."""
+    if ports == {'bottom'}:
+        return 'input'
+    if ports == {'top'}:
+        return 'output'
+    return None
+
+
+def _wire_cell(middle, ports):
+    """Recognize a wire, branch or crossing before its pixel validation."""
+    marker = middle[5]
+    if marker == 'o':
+        kind = 'fork'
+    elif marker == '+' and len(ports) == 4:
+        kind = 'cross'
+    elif marker == '+' and len(ports) == 3:
+        raise ValueError('Ambiguous three-way plus; a true branch requires o')
+    else:
+        kind = 'wire'
+    if len(ports) < 2:
+        raise ValueError('Dangling visual wire')
+    cell = {'kind': kind, 'ports': ports}
+    return cell
+
+
+def _recognize_cell(art):
+    """Read glyph kind, visible ports and literal/binding text."""
+    middle = art[2]
+    ports = set()
+    if art[0][5] in ('|', 'v'):
+        ports.add('top')
+    if art[4][5] == '|':
+        ports.add('bottom')
+    if middle[0] in ('-', '>', '<'):
+        ports.add('left')
+    if middle[10] in ('-', '>', '<'):
+        ports.add('right')
+    if middle[2:9] == '_______':
+        kind = _endpoint_kind(ports)
+        if kind is None:
+            raise ValueError('Invalid visual endpoint')
+        cell = {'kind': kind, 'ports': ports, 'secret': middle[1] == 'S'}
+    elif art[3][1:10] == '|_______|' and middle[1] == '|' and middle[9] == '|':
+        cell = {
+            'kind': 'operation',
+            'ports': ports,
+            'label': middle[2:9].strip(),
+            'binding': art[1][2:9].strip(),
+        }
+    else:
+        cell = _wire_cell(middle, ports)
+    return cell
+
+
+def _expected_glyph(cell):
+    """Construct the complete directed glyph before accepting its pixels."""
+    ports = cell['ports']
+    directions = {side: ('out' if side == 'bottom' else 'in') for side in ports}
+    if cell['kind'] in ('input', 'output'):
+        expected = glyphs._art(dict(cell, ports=directions, unindexed=True))
+    elif cell['kind'] == 'operation':
+        expected = [
+            glyphs._border('top' in ports),
+            ' |' + glyphs._center(cell['binding']) + '| ',
+            ('>' if 'left' in ports else ' ')
+            + '|'
+            + glyphs._center(cell['label'])
+            + '|'
+            + ('<' if 'right' in ports else ' '),
+            ' |_______| ',
+            glyphs._pipe('bottom' in ports),
+        ]
+        if 'bottom' not in ports:
+            raise ValueError('Operation requires its directed output connector')
+    else:
+        expected = glyphs._art(dict(cell, ports=directions, invisible=True))
+    return expected
+
+
+def _inline_literal(binding, label):
+    """Read a continued or single-row literal without changing its order."""
+    if binding.startswith('x'):
+        return binding + label
+    if label.startswith('x'):
+        return label
+    return None
+
+
+def _validate_glyph(art, cell, row, column):
+    """Check complete pixels before validating and recording a literal."""
+    expected = _expected_glyph(cell)
+    if art != tuple(expected):
+        raise ValueError('Broken or directionally invalid complete glyph at ' + str((row, column)))
+    if cell['kind'] == 'operation':
+        literal = _inline_literal(cell['binding'], cell['label'])
+        if literal is not None:
+            if (
+                not 2 <= len(literal) <= 14
+                or any(char not in '0123456789ABCDEF' for char in literal[1:])
+                or (cell['binding'] and (len(cell['binding']) != 7 or len(literal) <= 7))
+            ):
+                raise ValueError('Invalid visible inline constant literal')
+            cell['constant_literal'] = literal
+
+
+def _read_cells(lines, columns):
+    """Recognize and validate cells in the original row-major order."""
     cells = {}
     for row in range(len(lines) // 5):
         for column in range(columns):
@@ -496,125 +598,82 @@ def parse(text):
             )
             if not any(line.strip() for line in art):
                 continue
-            middle = art[2]
-            ports = set()
-            if art[0][5] in ('|', 'v'):
-                ports.add('top')
-            if art[4][5] == '|':
-                ports.add('bottom')
-            if middle[0] in ('-', '>', '<'):
-                ports.add('left')
-            if middle[10] in ('-', '>', '<'):
-                ports.add('right')
-            if middle[2:9] == '_______':
-                kind = 'input' if ports == {'bottom'} else 'output' if ports == {'top'} else None
-                if kind is None:
-                    raise ValueError('Invalid visual endpoint')
-                cell = {'kind': kind, 'ports': ports, 'secret': middle[1] == 'S'}
-            elif art[3][1:10] == '|_______|' and middle[1] == '|' and middle[9] == '|':
-                cell = {
-                    'kind': 'operation',
-                    'ports': ports,
-                    'label': middle[2:9].strip(),
-                    'binding': art[1][2:9].strip(),
-                }
-            else:
-                marker = middle[5]
-                if marker == 'o':
-                    kind = 'fork'
-                elif marker == '+' and len(ports) == 4:
-                    kind = 'cross'
-                elif marker == '+' and len(ports) == 3:
-                    raise ValueError('Ambiguous three-way plus; a true branch requires o')
-                else:
-                    kind = 'wire'
-                if len(ports) < 2:
-                    raise ValueError('Dangling visual wire')
-                cell = {'kind': kind, 'ports': ports}
-            # Validate all 55 pixels before accepting connectivity. Border sampling
-            # alone accepts broken interior strokes and reversed receiving arrows.
-            directions = {side: ('out' if side == 'bottom' else 'in') for side in ports}
-            if cell['kind'] in ('input', 'output'):
-                expected = glyphs._art(dict(cell, ports=directions, unindexed=True))
-            elif cell['kind'] == 'operation':
-                expected = [
-                    glyphs._border('top' in ports),
-                    ' |' + glyphs._center(cell['binding']) + '| ',
-                    ('>' if 'left' in ports else ' ')
-                    + '|'
-                    + glyphs._center(cell['label'])
-                    + '|'
-                    + ('<' if 'right' in ports else ' '),
-                    ' |_______| ',
-                    glyphs._pipe('bottom' in ports),
-                ]
-                if 'bottom' not in ports:
-                    raise ValueError('Operation requires its directed output connector')
-            else:
-                expected = glyphs._art(dict(cell, ports=directions, invisible=True))
-            if art != tuple(expected):
-                raise ValueError('Broken or directionally invalid complete glyph at ' + str((row, column)))
-            if cell['kind'] == 'operation':
-                literal = (
-                    cell['binding'] + cell['label']
-                    if cell['binding'].startswith('x')
-                    else cell['label']
-                    if cell['label'].startswith('x')
-                    else None
-                )
-                if literal is not None:
-                    if (
-                        not 2 <= len(literal) <= 14
-                        or any(char not in '0123456789ABCDEF' for char in literal[1:])
-                        or (cell['binding'] and (len(cell['binding']) != 7 or len(literal) <= 7))
-                    ):
-                        raise ValueError('Invalid visible inline constant literal')
-                    cell['constant_literal'] = literal
+            cell = _recognize_cell(art)
+            _validate_glyph(art, cell, row, column)
             cells[(row, column)] = cell
+    return cells
 
-    def adjacent(key, side):
-        dr, dc = glyphs.DELTA[side]
-        return key[0] + dr, key[1] + dc
 
+def _adjacent(key, side):
+    """Step to the actual neighbouring glyph coordinate."""
+    dr, dc = glyphs.DELTA[side]
+    return key[0] + dr, key[1] + dc
+
+
+def _validate_neighbors(cells):
+    """Reject disconnected connectors before resolving any producer."""
     for key, cell in cells.items():
         for side in cell['ports']:
-            neighbor = cells.get(adjacent(key, side))
+            neighbor = cells.get(_adjacent(key, side))
             if not neighbor or glyphs.OPPOSITE[side] not in neighbor['ports']:
                 raise ValueError('Disconnected visual connector at ' + str((key, side)))
 
-    def producers(key, entered, visited):
-        state = key, entered
-        if state in visited:
-            return set()
-        visited = visited | {state}
-        cell = cells[key]
-        if cell['kind'] in ('input', 'operation'):
-            return {key} if entered == 'bottom' else set()
-        if cell['kind'] == 'output':
-            return set()
-        exits = {glyphs.OPPOSITE[entered]} if cell['kind'] == 'cross' else cell['ports'] - {entered}
-        result = set()
-        for side in exits:
-            result.update(producers(adjacent(key, side), glyphs.OPPOSITE[side], visited))
-        return result
 
+def _producers(cells, key, entered, visited):
+    """Trace actual sources while keeping crossing streams independent."""
+    state = key, entered
+    if state in visited:
+        return set()
+    visited = visited | {state}
+    cell = cells[key]
+    if cell['kind'] in ('input', 'operation'):
+        return {key} if entered == 'bottom' else set()
+    if cell['kind'] == 'output':
+        return set()
+    exits = {glyphs.OPPOSITE[entered]} if cell['kind'] == 'cross' else cell['ports'] - {entered}
+    result = set()
+    for side in exits:
+        result.update(_producers(cells, _adjacent(key, side), glyphs.OPPOSITE[side], visited))
+    return result
+
+
+def _incoming_sides(cell):
+    """Validate the visible binding before ordering actual incoming sides."""
+    incoming = [side for side in glyphs.SIDES if side in cell['ports'] and side != 'bottom']
+    if cell.get('binding', '').startswith('@'):
+        binding = [int(number) - 1 for number in cell['binding'][1:]]
+        if sorted(binding) != list(range(len(incoming))):
+            raise ValueError('Invalid visual operand binding')
+        incoming = [incoming[index] for index in binding]
+    return incoming
+
+
+def _resolve_sources(cells):
+    """Resolve ordered incoming sides through actual validated routes."""
     sources = {}
     for key, cell in cells.items():
         if cell['kind'] not in ('operation', 'output'):
             continue
-        incoming = [side for side in glyphs.SIDES if side in cell['ports'] and side != 'bottom']
-        if cell.get('binding', '').startswith('@'):
-            binding = [int(number) - 1 for number in cell['binding'][1:]]
-            if sorted(binding) != list(range(len(incoming))):
-                raise ValueError('Invalid visual operand binding')
-            incoming = [incoming[index] for index in binding]
+        incoming = _incoming_sides(cell)
         origins = []
         for side in incoming:
-            found = producers(adjacent(key, side), glyphs.OPPOSITE[side], set())
+            found = _producers(cells, _adjacent(key, side), glyphs.OPPOSITE[side], set())
             if len(found) != 1:
                 raise ValueError('Visual wire has missing or multiple producers')
             origins.append(found.pop())
         sources[key] = origins
+    return sources
+
+
+def parse(text):
+    """Read actual glyphs/wires; no original graph or generated calls are used."""
+    lines = text.replace('\r\n', '\n').splitlines()
+    if not lines or len(lines) % 5:
+        raise ValueError('Visual diagram requires complete five-line rows')
+    columns = (max(map(len, lines)) + 10) // 11
+    cells = _read_cells(lines, columns)
+    _validate_neighbors(cells)
+    sources = _resolve_sources(cells)
     return {
         'cells': cells,
         'sources': sources,
