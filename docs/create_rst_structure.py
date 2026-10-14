@@ -86,7 +86,7 @@ with Path(SOURCE_ROOT_FOLDER, "index.rst").open(mode="w") as index_rst_file:
             index_rst_file.write("\n")
 
     index_rst_file.write(
-        f"{header_style('Diagram guides', 1)}\n"
+        f"{header_style('Diagram guides', 2)}\n"
         ".. toctree::\n\n"
         "    diagrams/index\n\n"
     )
