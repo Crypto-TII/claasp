@@ -111,6 +111,7 @@ def search_round(rounds, args, time_limit):
     """Sweep one round count; returns (summary, None, whole_run_stopped)."""
     import sage.all  # noqa: F401 -- load Sage before CLAASP: with some Sage versions (9.5) importing CLAASP
     # first fails with "ImportError: cannot import name ZZ"
+    install_signal_handlers()  # importing Sage replaces the SIGALRM handler (cysignals): put ours back
     from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
     from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
 

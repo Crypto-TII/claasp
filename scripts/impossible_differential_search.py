@@ -247,6 +247,7 @@ def search_round(rounds, args, time_limit):
     """Run the search for one round count; returns (summary, solution, whole_run_stopped)."""
     import sage.all  # noqa: F401 -- load Sage before CLAASP: with some Sage versions (9.5) importing CLAASP
     # first fails with "ImportError: cannot import name ZZ"
+    install_signal_handlers()  # importing Sage replaces the SIGALRM handler (cysignals): put ours back
     summary = {"technique": "impossible_differential", "rounds": rounds, "method": args.method,
                "backend": args.backend, "status": None}
     progress = {"checked": 0, "found": [], "finished_inputs": 0}
