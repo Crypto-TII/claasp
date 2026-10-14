@@ -350,3 +350,29 @@ def test_evolutionary_algorithm_one_bit_space():
 def test_evolutionary_algorithm_rejects_invalid_width(difference_bits):
     with pytest.raises(ValueError):
         NeuralNetworkTests(None)._evolutionary_algorithm(None, 4, 0, False, _no_score, difference_bits)
+
+
+@pytest.mark.parametrize('keras_version, extension', [('2.13.1', '.h5'), ('3.15.1', '.keras')])
+def test_checkpoint_file_name_matches_keras_version(keras_version, extension):
+    with mock.patch.object(neural_network_tests.keras, '__version__', keras_version):
+        file_name = NeuralNetworkTests(None)._checkpoint_file_name('/tmp/speck_', 2)
+    assert file_name == f'/tmp/speck_2{extension}'
+
+
+def test_train_neural_distinguisher_checkpoint_can_resume_training(tmp_path):
+    cipher = SpeckBlockCipher(number_of_rounds=2)
+    tester = NeuralNetworkTests(cipher)
+
+    def data_generator(nr, samples):
+        return tester.get_differential_dataset([0x400000, 0], number_of_rounds=nr, samples=samples)
+
+    neural_network = tester.get_neural_network('gohr_resnet', input_size=64, word_size=16)
+    save_prefix = str(tmp_path / 'speck_')
+    tester.train_neural_distinguisher(data_generator, starting_round=2, neural_network=neural_network,
+                                      training_samples=32, testing_samples=32, epochs=1, pipeline=False,
+                                      save_prefix=save_prefix)
+    checkpoint = tester._checkpoint_file_name(save_prefix, 2)
+    loaded = tf.keras.models.load_model(checkpoint)
+    x, y = data_generator(2, 32)
+    history = loaded.fit(x, y, epochs=1, validation_data=(x, y), verbose=0)
+    assert 'val_acc' in history.history

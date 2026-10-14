@@ -5,6 +5,7 @@ from math import sqrt
 from numbers import Integral
 
 import numpy as np
+import keras
 import tensorflow as tf
 from keras.callbacks import ModelCheckpoint
 from keras.layers import BatchNormalization, Dense, LeakyReLU
@@ -422,6 +423,11 @@ class NeuralNetworkTests:
         res = ModelCheckpoint(datei, monitor='val_loss', save_best_only=True)
         return res
 
+    def _checkpoint_file_name(self, save_prefix, number_of_rounds):
+        # Keras 3 cannot resume training from legacy HDF5 files, and Keras 2 cannot checkpoint to the native format.
+        extension = '.keras' if int(keras.__version__.split('.')[0]) >= 3 else '.h5'
+        return f'{save_prefix}{number_of_rounds}{extension}'
+
 
     def train_neural_distinguisher(self, data_generator, starting_round, neural_network, training_samples=10 ** 7,
                                    testing_samples=10 ** 6, epochs=5, pipeline=True, save_prefix=None):
@@ -455,7 +461,8 @@ class NeuralNetworkTests:
         - ``pipeline`` -- **boolean**; (default: `True`) If False, only trains for starting_round. If True, increments
           starting_round and retrains the model as long as the maximum validation accuracy is above the threshold
         - ``save_prefix`` -- **string** (default: `None`); the folder and file name to store the trained neural distinguishers; they will be saved
-        under f'save_prefix{nr}.h5', where nr is the number of rounds; if None, then the trained neural networks are not saved.
+        under f'save_prefix{nr}.h5' with Keras 2, or f'save_prefix{nr}.keras' with Keras 3, where nr is the number of
+        rounds; if None, then the trained neural networks are not saved.
 
         EXAMPLES::
 
@@ -537,7 +544,8 @@ class NeuralNetworkTests:
             else:
                 h = neural_network.fit(x, y, epochs=int(epochs), batch_size=bs,
                                                validation_data=(x_eval, y_eval),
-                                               callbacks=[self._make_checkpoint(save_prefix + str(nr)+'.h5')], verbose=2)
+                                               callbacks=[self._make_checkpoint(
+                                                   self._checkpoint_file_name(save_prefix, nr))], verbose=2)
             acc[nr] = np.max(h.history["val_acc"])
             print(f'Maximum validation accuracy at {nr} rounds :{acc[nr]}')
             nr +=1
