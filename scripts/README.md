@@ -1,7 +1,9 @@
 # Keccak-p[800] search scripts
 
 Standalone scripts that run CLAASP's differential, linear, zero-correlation and impossible-differential
-searches on Keccak-p[800] (32-bit lanes). Each technique has two files:
+searches on Keccak-p[800] (32-bit lanes). The folder also contains the standalone kernel-profile
+reproduction described in [Section 7](#7-reproduce-the-3-round-keccak-f800-kn-kernel-profile-trail).
+Each general search technique has two files:
 
 | technique | one round count | several round counts |
 |---|---|---|
@@ -124,3 +126,55 @@ each pair as soon as it is found and a `progress:` line on stderr every minute.
 - **ParKissat retries.** Multi-threaded ParKissat sometimes crashes or garbles its output on very quick
   instances; the scripts retry such a run up to 3 times (backend `sat` with ParKissat only) and record
   each retry in the summary.
+
+## 7. Reproduce the 3-round Keccak-f[800] KN kernel-profile trail
+
+`claasp_keccak_kernel_profile.sage` extends `MznXorDifferentialModel` at runtime; it does not modify the
+installed CLAASP package. It constructs a 3-round Keccak-f[800] model, enforces the selected kernel
+profile on states `a` and `c`, and always solves it with MiniZinc's OR-Tools CP-SAT backend.
+
+First start the CLAASP container as described in [Section 1](#1-start-the-claasp-container). Inside the
+container, verify that MiniZinc can see CP-SAT:
+
+```bash
+minizinc --solvers | grep -i cp-sat
+```
+
+Then run the fair reproduction from the `scripts/` directory:
+
+```bash
+cd /home/sage/tii-claasp/scripts
+mkdir -p results
+sage claasp_keccak_kernel_profile.sage \
+    --profile KN \
+    --a-round 1 \
+    --upper-bound 32 \
+    --core-weight-upper-bound 16 \
+    --processes 2 \
+    --time-limit 300 \
+    --output results/keccak800-w32-kn-profile-only.json
+```
+
+This is the fair search: it supplies neither a trail witness nor the per-round weight split. A
+satisfiable reproduction reports total weight 32 and the discovered round weights in the JSON summary;
+the reproduced trail has split `4 + 4 + 24`. The full CLAASP solution is written to the path passed to
+`--output`.
+
+For the faster guided check, additionally prescribe the known split:
+
+```bash
+sage claasp_keccak_kernel_profile.sage \
+    --profile KN \
+    --a-round 1 \
+    --upper-bound 32 \
+    --core-weight-upper-bound 16 \
+    --round-weight-split 4,4,24 \
+    --processes 2 \
+    --time-limit 300 \
+    --output results/keccak800-w32-kn-guided.json
+```
+
+Here `--a-round 1` is one-based: `a` is the output of round 1 and `c` is the output of round 2. Profiles
+may be `KK`, `KN`, `NK` or `NN`; `K` requires zero column parity and `N` requires at least one nonzero
+column parity. `--processes` controls the number of CP-SAT workers. Run
+`sage claasp_keccak_kernel_profile.sage --help` for the complete option list.
