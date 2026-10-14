@@ -41,8 +41,8 @@ def test_normal_multiround_ciphers_native_glyph_and_integer_agreement(factory,ro
     assert from_ascii(annotated)==ir
     assert diagram.to_ascii(routed_words=True,annotations=True)==annotated
     body=diagram.to_ascii(routed_words=True);model=build(ir,routed_words=True)
-    assert diagram.to_tikz(routed_words=True)==diagram.to_tikz(routed_words=True)
     restored=to_cipher(from_ascii(annotated))
+    assert diagram.to_tikz(routed_words=True)==Diagrams(restored).to_tikz(routed_words=True)
     for plaintext,key in [(0,0),(0xffffffff,0xffffffffffffffff),(0x6574694c,0x1918111009080100)]:
         by_name={'plaintext':plaintext,'key':key};inputs=[by_name[n['id']] for n in ir['inputs']]
         expected=reference_feistel(plaintext,key,rounds,factory is SimeckBlockCipher)

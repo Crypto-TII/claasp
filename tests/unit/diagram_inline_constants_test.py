@@ -79,7 +79,8 @@ def test_each_ordinary_two_line_capacity(digits, routed):
         for edge in node.get('operands', []):
             edge['source'] = names[edge['source']]
     assert to_ascii(renamed, routed_words=routed) == body
-    assert diagram.to_tikz(routed_words=routed) == diagram.to_tikz(routed_words=routed)
+    restored_diagram = Diagrams(to_cipher(from_ascii(annotated)))
+    assert diagram.to_tikz(routed_words=routed) == restored_diagram.to_tikz(routed_words=routed)
 
 
 @pytest.mark.parametrize('factory', [AlzettePermutation, lambda: GimliPermutation(number_of_rounds=1)])
