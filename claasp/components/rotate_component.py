@@ -64,6 +64,13 @@ class Rotate(Component):
         component_input = Input(output_bit_size, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
 
+
+    def _rotation_amount(self):
+        """
+        Return the rotation amount reduced modulo the component width, in ``[0, output_bit_size)``.
+        """
+        return self.description[1] % self.output_bit_size
+
     def algebraic_polynomials(self, model):
         """
         Return a list of polynomials for bitwise ROTATION.
@@ -76,7 +83,7 @@ class Rotate(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: cipher = RotateCipher(bit_size=2, parameter=1)
+            sage: cipher = RotateCipher(bit_size=2, rotation_amount=1)
             sage: rotate_component = cipher.component_from_id('rot_0_0')
             sage: algebraic = AlgebraicModel(cipher)
             sage: rotate_component.algebraic_polynomials(algebraic)
@@ -404,7 +411,7 @@ class Rotate(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: cipher = RotateCipher(bit_size=2, parameter=1)
+            sage: cipher = RotateCipher(bit_size=2, rotation_amount=1)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: rotate_component = cipher.component_from_id('rot_0_0')
@@ -416,8 +423,8 @@ class Rotate(Component):
         """
         x = model.binary_variable
         rotation_step = self.description[1]
-        abs_rotation_step = abs(rotation_step)
         input_vars, output_vars = self._get_input_output_variables()
+        abs_rotation_step = abs(rotation_step) % self.output_bit_size
         variables = [(f"x[{var}]", x[var]) for var in input_vars + output_vars]
         constraints = []
 
@@ -445,7 +452,7 @@ class Rotate(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
-            sage: cipher = RotateCipher(bit_size=4, parameter=4)
+            sage: cipher = RotateCipher(bit_size=4, rotation_amount=4)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
@@ -459,10 +466,10 @@ class Rotate(Component):
         x_class = model.trunc_wordvar
 
         rotation_step = self.description[1]
-        abs_rotation_word_step = abs(rotation_step) // model.word_size
         constraints = []
 
         input_class_vars, output_class_vars = self._get_wordwise_input_output_linked_class(model)
+        abs_rotation_word_step = (abs(rotation_step) % self.output_bit_size) // model.word_size
         class_variables = [(f"x_class[{var}]", x_class[var]) for var in input_class_vars + output_class_vars]
 
         output_word_size = self.output_bit_size // model.word_size
@@ -493,7 +500,7 @@ class Rotate(Component):
         EXAMPLES::
 
             sage: from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
-            sage: cipher = RotateCipher(bit_size=2, parameter=1)
+            sage: cipher = RotateCipher(bit_size=2, rotation_amount=1)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
@@ -507,8 +514,8 @@ class Rotate(Component):
         x_class = model.trunc_binvar
 
         rotation_step = self.description[1]
-        abs_rotation_step = abs(rotation_step)
         input_class_vars, output_class_vars = self._get_input_output_variables()
+        abs_rotation_step = abs(rotation_step) % self.output_bit_size
         class_variables = [(f"x_class[{var}]", x_class[var]) for var in input_class_vars + output_class_vars]
         constraints = []
 
@@ -526,6 +533,19 @@ class Rotate(Component):
     def milp_xor_differential_propagation_constraints(self, model):
         return self.milp_constraints(model)
 
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+        rotation_amount = abs(self.description[1])
+        input_len = self.output_bit_size
+        if self.description[1] == rotation_amount:
+            bit_perm = [(i - rotation_amount) % input_len for i in range(input_len)]
+        else:
+            bit_perm = [(i + rotation_amount) % input_len for i in range(input_len)]
+
+        return self._milp_wordwise_branch_number_active_sboxes_exact_permutation_constraints(
+            model, output_ids, bit_perm
+        )
+
     def milp_xor_linear_mask_propagation_constraints(self, model):
         """
         Return a list of variables and a list of constraints for ROTATE operation in MILP XOR LINEAR model.
@@ -538,7 +558,7 @@ class Rotate(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: cipher = RotateCipher(bit_size=2, parameter=1)
+            sage: cipher = RotateCipher(bit_size=2, rotation_amount=1)
             sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
             sage: rotate_component = cipher.component_from_id('rot_0_0')
@@ -550,8 +570,8 @@ class Rotate(Component):
         """
         x = model.binary_variable
         rotation_step = self.description[1]
-        abs_rotation_step = abs(rotation_step)
         input_vars, output_vars = self._get_independent_input_output_variables()
+        abs_rotation_step = abs(rotation_step) % self.output_bit_size
         variables = [(f"x[{var}]", x[var]) for var in input_vars + output_vars]
         constraints = []
         if rotation_step < 0:
@@ -577,7 +597,7 @@ class Rotate(Component):
 
             sage: from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: cipher = RotateCipher(bit_size=2, parameter=1)
+            sage: cipher = RotateCipher(bit_size=2, rotation_amount=1)
             sage: minizinc = MznModel(cipher)
             sage: rotate_component = cipher.component_from_id('rot_0_0')
             sage: _, rotate_mzn_constraints = rotate_component.minizinc_constraints(minizinc)
@@ -640,12 +660,12 @@ class Rotate(Component):
             (['rot_0_0_0', 'rot_0_0_1'], ['rot_0_0_0 -input_1', 'input_1 -rot_0_0_0', 'rot_0_0_1 -input_0', 'input_0 -rot_0_0_1'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        rotation = self.description[1]
+        output_bit_ids = self._generate_output_ids()
+        rotation = self._rotation_amount()
         input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids_rotated[i]]))
+        for output_bit_id, input_bit_id_rotated in zip(output_bit_ids, input_bit_ids_rotated):
+            constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id_rotated]))
 
         return output_bit_ids, constraints
 
@@ -673,8 +693,8 @@ class Rotate(Component):
             (['rot_0_0_0_0', 'rot_0_0_1_0', 'rot_0_0_0_1', 'rot_0_0_1_1'], ['rot_0_0_0_0 -input_1_0', 'input_1_0 -rot_0_0_0_0', 'rot_0_0_1_0 -input_0_0', 'input_0_0 -rot_0_0_1_0', 'rot_0_0_0_1 -input_1_1', 'input_1_1 -rot_0_0_0_1', 'rot_0_0_1_1 -input_0_1', 'input_0_1 -rot_0_0_1_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
-        rotation = self.description[1]
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        rotation = self._rotation_amount()
         in_ids_0_rotated = in_ids_0[-rotation:] + in_ids_0[:-rotation]
         in_ids_1_rotated = in_ids_1[-rotation:] + in_ids_1[:-rotation]
         constraints = []
@@ -733,17 +753,15 @@ class Rotate(Component):
             sage: rotate_component.sat_xor_linear_mask_propagation_constraints()
             (['rot_0_0_0_i', 'rot_0_0_1_i', 'rot_0_0_0_o', 'rot_0_0_1_o'], ['rot_0_0_0_o -rot_0_0_1_i', 'rot_0_0_1_i -rot_0_0_0_o', 'rot_0_0_1_o -rot_0_0_0_i', 'rot_0_0_0_i -rot_0_0_1_o'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(out_suffix)
-        rotation = self.description[1]
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        rotation = self._rotation_amount()
         input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids_rotated[i]]))
-        result = input_bit_ids + output_bit_ids, constraints
+        for output_bit_id, input_bit_id_rotated in zip(output_bit_ids, input_bit_ids_rotated):
+            constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id_rotated]))
 
-        return result
+        return input_bit_ids + output_bit_ids, constraints
 
     def smt_constraints(self):
         """
@@ -765,12 +783,12 @@ class Rotate(Component):
             (['rot_0_0_0', 'rot_0_0_1'], ['(assert (= rot_0_0_0 input_1))', '(assert (= rot_0_0_1 input_0))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        rotation = self.description[1]
+        output_bit_ids = self._generate_output_ids()
+        rotation = self._rotation_amount()
         input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids_rotated[i]])
+        for output_bit_id, input_bit_id_rotated in zip(output_bit_ids, input_bit_ids_rotated):
+            equation = smt_utils.smt_equivalent([output_bit_id, input_bit_id_rotated])
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
@@ -818,15 +836,13 @@ class Rotate(Component):
             sage: rotate_component.smt_xor_linear_mask_propagation_constraints()
             (['rot_0_0_0_i', 'rot_0_0_1_i', 'rot_0_0_0_o', 'rot_0_0_1_o'], ['(assert (= rot_0_0_0_o rot_0_0_1_i))', '(assert (= rot_0_0_1_o rot_0_0_0_i))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(out_suffix)
-        rotation = self.description[1]
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        rotation = self._rotation_amount()
         input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids_rotated[i]])
+        for output_bit_id, input_bit_id_rotated in zip(output_bit_ids, input_bit_ids_rotated):
+            equation = smt_utils.smt_equivalent([output_bit_id, input_bit_id_rotated])
             constraints.append(smt_utils.smt_assert(equation))
-        result = input_bit_ids + output_bit_ids, constraints
 
-        return result
+        return input_bit_ids + output_bit_ids, constraints

@@ -78,7 +78,7 @@ class AlgebraicModel:
         """
         polynomials = []
 
-        for component in self._cipher.get_components_in_round(r):
+        for component in self._cipher.components_in_round(r):
             if component.type == "constant":
                 continue
             input_vars, prev_input_vars = self._input_vars_previous_input_vars(component)
@@ -100,17 +100,17 @@ class AlgebraicModel:
             sage: from claasp.ciphers.toys.toyspn1 import ToySPN1
             sage: toyspn = ToySPN1()
             sage: algebraic = AlgebraicModel(toyspn)
-            sage: algebraic.is_algebraically_secure(30)
+            sage: algebraic.is_algebraically_secure(60)
             False
         """
-        from cysignals.alarm import alarm, cancel_alarm
+        from cysignals.alarm import AlarmInterrupt, alarm, cancel_alarm
 
         try:
             alarm(timeout)
             self.polynomial_system().groebner_basis()
             cancel_alarm()
             result = False
-        except InterruptedError:
+        except AlarmInterrupt:
             result = True
 
         return result
@@ -179,9 +179,9 @@ class AlgebraicModel:
             sage: AlgebraicModel(tea).polynomial_system()
             Polynomial Sequence with 288 Polynomials in 384 Variables
 
-            sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
+            sage: from claasp.ciphers.block_ciphers.gift_block_cipher import GiftBlockCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: gift = GiftPermutation(number_of_rounds=1)
+            sage: gift = GiftBlockCipher(number_of_rounds=1)
             sage: AlgebraicModel(gift).polynomial_system()
             Polynomial Sequence with 448 Polynomials in 640 Variables
 
@@ -202,7 +202,7 @@ class AlgebraicModel:
 
     def _substitute_cipher_output_vars_dict_vars(self, dict_vars, round_number):
         cipher_dict = {}
-        cipher_component = self._cipher.get_components_in_round(round_number)[-1]
+        cipher_component = self._cipher.components_in_round(round_number)[-1]
         input_vars, prev_input_vars = self._input_vars_previous_input_vars(cipher_component)
         cipher_dict.update({y: x for x, y in zip(input_vars, prev_input_vars)})
         sub_dict_vars = {}
@@ -234,7 +234,7 @@ class AlgebraicModel:
 
         polynomials = []
 
-        for component in self._cipher.get_components_in_round(r):
+        for component in self._cipher.components_in_round(r):
             component_type = component.type
             operation = component.description[0]
             component_types = ["sbox", "linear_layer", "mix_column", "constant"]
@@ -263,7 +263,7 @@ class AlgebraicModel:
             return polys
 
         variable_substitution_dict = {}
-        for component in self._cipher.get_components_in_round(r):
+        for component in self._cipher.components_in_round(r):
             if component.type == "constant":
                 continue
             input_vars, prev_input_vars = self._input_vars_previous_input_vars(component)
@@ -292,7 +292,7 @@ class AlgebraicModel:
 
         dict_vars = {}
         word_operation = ["ROTATE", "SHIFT", "NOT"]
-        for component in self._cipher.get_components_in_round(round_number):
+        for component in self._cipher.components_in_round(round_number):
             if component.type == "constant" or (
                     component.type == "word_operation" and component.description[0] in word_operation):
                 x = [component.id + "_" + self.output_postfix + str(i) for i in
@@ -378,7 +378,7 @@ class AlgebraicModel:
         """
         var_names = []
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             component_id = component.id
             input_size = component.input_bit_size
             output_size = component.output_bit_size

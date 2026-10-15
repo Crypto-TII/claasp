@@ -1549,7 +1549,9 @@ def add_word_permutation_component(
     - ``input_id_links`` -- **list**; the list of input_id links
     - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
     - ``output_bit_size`` -- **integer**; the output bits of the component
-    - ``permutation_description`` -- **list**; the description of the permutation (word_based)
+    - ``permutation_description`` -- **list**; permutation mapping from source word position to
+      destination word position: ``permutation_description[i]`` is the destination word index for
+      source word ``i``
     - ``word_size`` -- **integer**; define the size of each word
 
     EXAMPLES::
@@ -1568,13 +1570,13 @@ def add_word_permutation_component(
         cipher_number_of_rounds = 1
         <BLANKLINE>
             # round = 0 - round component = 0
-            id = mix_column_0_0
-            type = mix_column
+            id = permutation_0_0
+            type = permutation
             input_bit_size = 4
             input_id_link = ['input']
             input_bit_positions = [[0, 1, 2, 3]]
             output_bit_size = 4
-            description = [[[0, 1], [1, 0]], 0, 2]
+            description = [[1, 0], 2]
         cipher_reference_code = None
     """
     if cipher.current_round_number is None:
@@ -1848,7 +1850,7 @@ def get_key_schedule_component_ids(cipher):
          'intermediate_output_1_11']
     """
     key_schedule_ids = [cid for cid in cipher.inputs if INPUT_KEY in cid or INPUT_TWEAK in cid]
-    for c in cipher.get_all_components():
+    for c in cipher.all_components():
         if c.type == CONSTANT or all(link in key_schedule_ids for link in c.input_id_links):
             key_schedule_ids.append(c.id)
     return key_schedule_ids
@@ -2045,9 +2047,9 @@ def remove_components(cipher, components):
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: from claasp.editor import remove_components
         sage: speck = SpeckBlockCipher(number_of_rounds=2)
-        sage: target = speck.get_all_components()[0]
+        sage: target = speck.all_components()[0]
         sage: remove_components(speck, [target])
-        sage: target.id in speck.get_all_components_ids()
+        sage: target.id in speck.all_components_ids()
         False
     """
     component_set = set(components)
@@ -2194,7 +2196,7 @@ def get_output_bit_size_from_id(cipher_list, component_id):
         for cipher in cipher_list:
             if component_id in cipher.inputs:
                 return cipher.inputs_bit_size[cipher.inputs.index(component_id)]
-            elif component_id in cipher.get_all_components_ids():
+            elif component_id in cipher.all_components_ids():
                 return cipher.component_from_id(component_id).output_bit_size
         raise ValueError(f"{component_id} not found.")
     except ValueError as e:

@@ -16,7 +16,7 @@ def make_shift_component(bit_size=32, parameter=4):
 
 
 def test_algebraic_polynomials():
-    cipher = ShiftCipher(bit_size=6, parameter=3)
+    cipher = ShiftCipher(bit_size=6, shift_amount=3)
     shift_component = cipher.component_from(0, 0)
     algebraic = AlgebraicModel(cipher)
     algebraic_polynomials = shift_component.algebraic_polynomials(algebraic)
@@ -94,7 +94,7 @@ def test_cp_xor_linear_mask_propagation_constraints():
 
 
 def test_milp_constraints():
-    cipher = ShiftCipher(bit_size=8, parameter=4)
+    cipher = ShiftCipher(bit_size=8, shift_amount=4)
     milp = MilpModel(cipher)
     milp.init_model_in_sage_milp_class()
     shift_component = cipher.component_from_id('shift_0_0')
@@ -107,7 +107,7 @@ def test_milp_constraints():
 
 
 def test_milp_xor_linear_mask_propagation_constraints():
-    cipher = ShiftCipher(bit_size=8, parameter=4)
+    cipher = ShiftCipher(bit_size=8, shift_amount=4)
     milp = MilpModel(cipher)
     milp.init_model_in_sage_milp_class()
     shift_component = cipher.component_from_id('shift_0_0')
@@ -120,7 +120,7 @@ def test_milp_xor_linear_mask_propagation_constraints():
 
 
 def test_minizinc_constraints():
-    cipher = ShiftCipher(bit_size=32, parameter=4)
+    cipher = ShiftCipher(bit_size=32, shift_amount=4)
     minizinc = MznModel(cipher)
     shift_component = cipher.component_from_id('shift_0_0')
     _, shift_mzn_constraints = shift_component.minizinc_constraints(minizinc)
@@ -193,7 +193,7 @@ def test_smt_xor_linear_mask_propagation_constraints():
 
 
 def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
-    cipher = ShiftCipher(bit_size=8, parameter=4)
+    cipher = ShiftCipher(bit_size=8, shift_amount=4)
     milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     shift_component = cipher.component_from_id('shift_0_0')
@@ -205,7 +205,7 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
 
 
 def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
-    cipher = ShiftCipher(bit_size=32, parameter=-8)
+    cipher = ShiftCipher(bit_size=32, shift_amount=-8)
     milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
     milp.init_model_in_sage_milp_class()
     shift_component = Shift(0, 18, ['in0', 'in1', 'in2', 'in3'],

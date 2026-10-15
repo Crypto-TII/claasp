@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run-doctest:
+  run-doctest_x86_64:
     runs-on: self-hosted
     steps:
     - name: Checkout
@@ -35,5 +35,24 @@ jobs:
       run: |
             cd /home/runner/_work/claasp
             make test
+      env:
+        GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
+
+  run-doctest-arm64:
+    if: ${{ !github.event.repository.fork }}
+    runs-on: arm64
+    container:
+      image: tiicrc/claasp-lib:develop-arm64
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Run doctest
+      run: |
+        uname -a
+        make test
       env:
         GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}

@@ -22,6 +22,7 @@ import time
 from collections import Counter
 from copy import deepcopy
 
+import numpy as np
 from gurobipy import GRB, Env, Model
 from sage.all import GF, Polyhedron
 from sage.crypto.sbox import SBox
@@ -30,8 +31,8 @@ from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
 from claasp.cipher_modules.graph_generator import _get_predecessors_subgraph, create_networkx_graph_from_input_ids
 from claasp.cipher_modules.models.milp.utils.generate_sbox_inequalities_for_trail_search import cutting_off_milp
+from claasp.cipher_modules.models.milp.utils.utils import generate_product_of_sum_from_espresso
 from claasp.name_mappings import INTERMEDIATE_OUTPUT
-
 verbosity = False
 
 MODEL_INFEASIBLE_MSG = "[INFO] Model is infeasible"
@@ -43,7 +44,7 @@ class MilpMonomialPredictionModel:
     Given a number of rounds of a chosen cipher and a chosen output bit, this module produces a model that can either:
     - find the ANF of this chosen output bit,
     - find an upper bound of this ANF,
-    - find the exact degree of this ANF (slower),
+    - find a tight upper bound on the algebraic degree via parity (slower),
     - find the superpoly of this ANF given a chosen cube.
 
     This module can only be used if the user possesses a Gurobi license.
@@ -62,6 +63,8 @@ class MilpMonomialPredictionModel:
         self._constants = {}
         self._sbox_valid_cache = {}
         self._sbox_ineq_cache = {}
+        self._sbox_espresso_cache = {}
+        self._gurobi_params = {}
 
     def build_gurobi_model(self):
         if os.getenv("GUROBI_COMPUTE_SERVER") is not None:
@@ -73,6 +76,8 @@ class MilpMonomialPredictionModel:
             model = Model()
         model.Params.LogToConsole = 0
         self._model = model
+        for param, value in self._gurobi_params.items():
+            self._model.setParam(param, value)
 
     def get_all_variables_as_list(self):
         for component_id in list(self._variables.keys())[:-1]:
@@ -291,6 +296,102 @@ class MilpMonomialPredictionModel:
         self._sbox_ineq_cache[desc] = (chosen, n, m)
         return self._sbox_ineq_cache[desc]
 
+    def _espresso_clause_to_inequality(self, clause, dim):
+        """
+        Convert one Espresso product-of-sum clause (string over ``{'0', '1', '-'}``) into the
+        ``(b, a_0, ..., a_{dim-1})`` inequality ``b + sum_k a_k z_k >= 0``: ``a_k = -1`` for ``'1'``,
+        ``+1`` for ``'0'``, ``0`` for ``'-'``, and ``b = (number of '1' chars) - 1``.
+        """
+        a = [0] * dim
+        ones = 0
+        for k, char in enumerate(clause):
+            if char == "1":
+                a[k] = -1
+                ones += 1
+            elif char == "0":
+                a[k] = 1
+        return tuple([ones - 1] + a)
+
+    def _tightness_check_for_inequalities(self, chosen, valid, dim, chunk=1 << 13):
+        """
+        Sweep every point of ``{0,1}^dim`` and classify those the inequalities ``chosen`` admit,
+        returning ``(admitted_invalid, admitted_valid_count)``. The inequalities are tight.
+        """
+        A = np.array([[ie[1 + k] for k in range(dim)] for ie in chosen], dtype=np.int32)
+        b = np.array([ie[0] for ie in chosen], dtype=np.int32)
+        bit_shifts = np.arange(dim)
+        admitted_invalid = []
+        admitted_valid_count = 0
+        total = 1 << dim
+        for start in range(0, total, chunk):
+            idx = np.arange(start, min(start + chunk, total))
+            points = ((idx[:, None] >> bit_shifts[None, :]) & 1).astype(np.int32)
+            satisfied = ((points @ A.T) + b >= 0).all(axis=1)
+            for local in np.nonzero(satisfied)[0]:
+                point = tuple(int((idx[local] >> k) & 1) for k in range(dim))
+                if point in valid:
+                    admitted_valid_count += 1
+                else:
+                    admitted_invalid.append(point)
+        return admitted_invalid, admitted_valid_count
+
+    def get_sbox_inequalities_espresso(self, component):
+        """
+        Espresso variant of :meth:`get_sbox_inequalities` for large S-boxes (n + m > 10, where the
+        convex hull becomes impractical to build). The valid monomial-trail points form the ON-set of a boolean
+        function that ``espresso -epos`` minimises to a product-of-sum; a tightness check
+        (:meth:`_tightness_check_for_inequalities`) then adds a no-good cut for any invalid point
+        still admitted, so the result is exact for any S-box. Raises ``RuntimeError`` if the clauses
+        reject a valid trail.
+        """
+        desc = tuple(component.description)
+        if desc in self._sbox_espresso_cache:
+            return self._sbox_espresso_cache[desc]
+        table, n, m = self.get_valid_monomial_exponents_table(component)
+        dim = n + m
+        valid = set()
+        valid_points = []
+        for v_mask, us in table.items():
+            v_bits = [(v_mask >> q) & 1 for q in range(m)]
+            for u in us:
+                point = tuple([(u >> j) & 1 for j in range(n)] + v_bits)
+                valid.add(point)
+                valid_points.append("".join(str(bit) for bit in point))
+
+        clauses = generate_product_of_sum_from_espresso(valid_points)
+        chosen = [self._espresso_clause_to_inequality(clause, dim) for clause in clauses]
+
+        admitted_invalid, admitted_valid_count = self._tightness_check_for_inequalities(chosen, valid, dim)
+        if admitted_valid_count != len(valid):
+            raise RuntimeError(
+                f"Espresso encoding of S-box {component.id} rejects "
+                f"{len(valid) - admitted_valid_count} of {len(valid)} valid monomial trails"
+            )
+        for point in admitted_invalid:
+            b = sum(point) - 1
+            chosen.append(tuple([b] + [(-1 if point[k] == 1 else 1) for k in range(dim)]))
+
+        self._sbox_espresso_cache[desc] = (chosen, n, m)
+        return self._sbox_espresso_cache[desc]
+
+    def add_sbox_constraints_espresso(self, component):
+        """
+        Exact S-box model for large S-boxes via the Espresso inequalities of
+        :meth:`get_sbox_inequalities_espresso`. Falls back to the (looser) ANF-circuit model
+        :meth:`add_sbox_constraints_anf_circuit` if the ``espresso`` binary is unavailable.
+        """
+        try:
+            ineqs, n, m = self.get_sbox_inequalities_espresso(component)
+        except FileNotFoundError:
+            if verbosity:
+                print(
+                    f"[INFO] espresso binary not found; falling back to the (non-tight) ANF-circuit "
+                    f"model for S-box {component.id}"
+                )
+            return self.add_sbox_constraints_anf_circuit(component)
+
+        self._apply_sbox_inequalities(component, ineqs, n, m)
+
     def _map_sbox_output_vars(self, component, output_vars, m):
         needed = sorted(self._occurences[component.id].keys())  # matches output_vars order
         out_all = [None] * m
@@ -305,22 +406,27 @@ class MilpMonomialPredictionModel:
 
     def add_sbox_constraints(self, component):
         """
-        Constrain the S-box's input variables (the exponents u) and output-bit variables
-        (the exponents v) to the exact monomial-trail relation.
-
-        Large S-boxes (e.g. 8-bit AES): the (u, v) point set lives in {0,1}^(n+m), and
-        building its convex hull becomes infeasible once n+m > 12, so fall back to the
-        ANF-circuit model. That fallback is exact for single-output-bit queries
-        (|v| = 1).
+        Constrain the S-box's input (u) and output-bit (v) variables to the exact monomial-trail
+        relation, using the convex-hull inequalities for small S-boxes and the Espresso ones
+        (:meth:`add_sbox_constraints_espresso`) once ``n + m > 10``, where the convex hull becomes
+        too slow to build (both encodings are tight -- their feasible region is exactly the valid points).
         """
-        if (1 << (component.input_bit_size + component.output_bit_size)) > 4096:
-            return self.add_sbox_constraints_anf_circuit(component)
+        if (1 << (component.input_bit_size + component.output_bit_size)) > 1024:
+            return self.add_sbox_constraints_espresso(component)
 
+        ineqs, n, m = self.get_sbox_inequalities(component)
+        self._apply_sbox_inequalities(component, ineqs, n, m)
+
+    def _apply_sbox_inequalities(self, component, ineqs, n, m):
+        """
+        Add the S-box inequalities ``ineqs`` to the model, mapping ``z`` positions ``0..n-1`` to
+        the input-exponent variables and ``n..n+m-1`` to the output-bit variables. Shared by the
+        convex-hull and Espresso encodings.
+        """
         output_vars = self.get_output_vars(component)
         input_vars = self.get_input_vars(component)
         self._model.update()
 
-        ineqs, n, m = self.get_sbox_inequalities(component)
         out_all = self._map_sbox_output_vars(component, output_vars, m)
         self._model.update()
 
@@ -881,7 +987,7 @@ class MilpMonomialPredictionModel:
         self._model.update()
 
     def get_cipher_output_component_id(self):
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.type == "cipher_output":
                 return component.id
 
@@ -912,7 +1018,7 @@ class MilpMonomialPredictionModel:
             self.add_fsr_constraints(component)
         elif component.type == "constant":
             self.add_constant_constraints(component)
-        elif component.type in ["linear_layer", "mix_column"]:
+        elif component.type in ["linear_layer", "mix_column", "permutation"]:
             self.add_linear_layer_constraints(component)
         elif component.type in ["cipher_output", "intermediate_output"]:
             self.add_intermediate_output_constraints(component)
@@ -1212,6 +1318,8 @@ class MilpMonomialPredictionModel:
         return name[:1].lower()
 
     def get_solutions(self):
+        if not self._verify_pool_completeness("ANF/solution collection"):
+            return self.get_boolean_polynomial_ring()(0)
         start = time.time()
         sol_count = self._model.SolCount
         inputs = []
@@ -1249,6 +1357,12 @@ class MilpMonomialPredictionModel:
         self._model.optimize()
         end = time.time()
         solving_time = end - start
+        
+        if self._model.Status != GRB.OPTIMAL:
+            if self._model.Status == GRB.SUBOPTIMAL:
+                print("[ERROR] Gurobi returned SUBOPTIMAL status. Result is unreliable.")
+            raise ValueError(f"MILP model optimization failed with status {self._model.Status}")
+
         if verbosity:
             print(self._model)
             print(f"########## solving_time : {solving_time}")
@@ -1370,11 +1484,11 @@ class MilpMonomialPredictionModel:
         EXAMPLES::
 
             # Example 1: Compute the ANF of the first ciphertext bit in SIMON (round 1)
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(number_of_rounds=1)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=1) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
-            sage: milp.find_anf_of_specific_output_bit(0) # doctest: +SKIP
+            sage: anf = milp.find_anf_of_specific_output_bit(0) # doctest: +SKIP
             sage: R = milp.get_boolean_polynomial_ring() # doctest: +SKIP
             sage: anf == R("p1*p8 + p2 + p16 + k48") # doctest: +SKIP
             ...
@@ -1393,7 +1507,7 @@ class MilpMonomialPredictionModel:
         self.build_generic_model_for_specific_output_bit(
             output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output
         )
-        self._model.setParam("PoolSolutions", 200000000)
+        self._model.setParam("PoolSolutions", 2000000000)
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
 
         self.optimize_model()
@@ -1438,9 +1552,9 @@ class MilpMonomialPredictionModel:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(number_of_rounds=2)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=2) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
             sage: milp.check_anf_correctness(0, endian="msb") # doctest: +SKIP
             ...
@@ -1492,25 +1606,23 @@ class MilpMonomialPredictionModel:
                 return False
         return True
 
-    def find_superpoly_of_specific_output_bit(self, output_bit_index, cube, chosen_cipher_output=None):
+    def find_partial_anf_at_cube_of_specific_output_bit(self, output_bit_index, cube, chosen_cipher_output=None):
         """
-        Compute the superpoly of a specific cipher output bit under a given cube.
+        Compute the partial ANF (symbolic cube coefficient) of a specific cipher output bit under a given cube.
+        Leaves non-cube public variables symbolic.
 
         INPUT:
 
+        - ``output_bit_index`` -- **integer**; index of the cipher output bit.
+
         - ``cube`` -- **list of strings**; variable names forming the cube.
-          Each variable follows the convention:
-            * ``"i"`` prefix for IV bits
-            * ``"p"`` prefix for plaintext bits
           Example: ``["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]``.
-        - ``output_bit_index`` -- **integer**; index (0-based, counting from the most significant bit)
-          of the cipher output bit for which the superpoly is computed.
-        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
-          ID if the computation targets an intermediate output instead of the final cipher output.
+
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); intermediate component ID.
 
         OUTPUT:
 
-        - **BooleanPolynomial**; the resulting superpoly polynomial in the Boolean ring.
+        - **BooleanPolynomial**; the resulting partial ANF.
 
         EXAMPLES::
 
@@ -1519,18 +1631,17 @@ class MilpMonomialPredictionModel:
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
             sage: cube = ["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"]
-            sage: superpoly = milp.find_superpoly_of_specific_output_bit(output_bit_index=0, cube) # doctest: +SKIP
+            sage: partial_anf = milp.find_partial_anf_at_cube_of_specific_output_bit(output_bit_index=0, cube=cube) # doctest: +SKIP
             sage: R = milp.get_boolean_polynomial_ring() # doctest: +SKIP
-            sage: superpoly == R("k20*i60*i61 + k20*i60*i74 + k20*i60 + k20*i73 + i8*i60*i61 + i8*i60*i74 + i8*i60 + i8*i73 + i60*i61*i71 + i60*i61*i72*i73 + i60*i71*i74 + i60*i71 + i60*i72*i73*i74 + i60*i72*i73 + i71*i73 + i72*i73") # doctest: +SKIP
+            sage: partial_anf == R("k20*i60*i61 + k20*i60*i74 + k20*i60 + k20*i73 + i8*i60*i61 + i8*i60*i74 + i8*i60 + i8*i73 + i60*i61*i71 + i60*i61*i72*i73 + i60*i71*i74 + i60*i71 + i60*i72*i73*i74 + i60*i72*i73 + i71*i73 + i72*i73") # doctest: +SKIP
             ...
         """
-
         fixed_degree = None
         which_var_degree = None
         self.build_generic_model_for_specific_output_bit(
             output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output
         )
-        self._model.setParam("PoolSolutions", 200000000)
+        self._model.setParam("PoolSolutions", 2000000000)
         self._model.setParam(GRB.Param.PoolSearchMode, 2)
 
         # Convert compact cube names like "i9" -> ("initialisation_vector", 9)
@@ -1549,7 +1660,7 @@ class MilpMonomialPredictionModel:
         poly_sub = poly.subs(assignments)
 
         self._log_experiment(
-            "superpoly",
+            "partial_anf",
             {
                 "output_bit_index": output_bit_index,
                 "chosen_cipher_output": chosen_cipher_output,
@@ -1560,29 +1671,40 @@ class MilpMonomialPredictionModel:
 
         return poly_sub
 
-    def find_exact_degree_of_superpoly_of_specific_output_bit(self, output_bit_index, cube, chosen_cipher_output=None):
+    def find_tight_upper_bound_degree_via_parity_of_partial_anf_at_cube_of_specific_output_bit(
+        self, output_bit_index, cube, chosen_cipher_output=None
+    ):
         """
-        Compute the exact algebraic degree of the superpoly
-        corresponding to a specific cipher output bit under a given cube.
+        Compute a tight upper bound on the algebraic degree of the partial ANF
+        corresponding to a specific output bit under a given cube.
+
+        If the highest degree monomials have even parity, it returns d-1 as the bound.
 
         INPUT:
 
-        - ``cube`` -- list[str]; variable names forming the cube (e.g. ["i9", "i19", ...])
-        - ``output_bit_index`` -- int; index (0-based, MSB-first) of the cipher output bit.
-        - ``chosen_cipher_output`` -- str | None; specify a cipher component ID if
-          targeting an intermediate output.
+        - ``output_bit_index`` -- **integer**; index of the cipher output bit.
+
+        - ``cube`` -- **list of strings**; variable names forming the cube.
+
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); intermediate component ID.
 
         OUTPUT:
-        - integer; exact algebraic degree of the superpoly (with respect to key variables).
+
+        - **integer**; tight upper bound on the algebraic degree.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher # doctest: +SKIP
+            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=590) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: cube = ["i9", "i19", "i29", "i39", "i49", "i59", "i69", "i79"] # doctest: +SKIP
+            sage: milp.find_tight_upper_bound_degree_via_parity_of_partial_anf_at_cube_of_specific_output_bit(0, cube) # doctest: +SKIP
+            ...
         """
-
-        # === 1. Build generic model for the chosen output bit
-        fixed_degree = None
-        which_var_degree = None
         self.build_generic_model_for_specific_output_bit(
-            output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output
+            output_bit_index, None, None, chosen_cipher_output
         )
-
         m = self._model
         self._set_pool_enumeration_params()
 
@@ -1594,32 +1716,134 @@ class MilpMonomialPredictionModel:
         m.update()
 
         key_vars = self._resolve_key_vars()
+        m.setObjective(sum(key_vars), GRB.MAXIMIZE)
+        m.update()
+        m.optimize()
+
+        if m.Status == GRB.OPTIMAL:
+            d = int(round(m.ObjVal))
+            tight_degree = self._tight_upper_bound_degree_from_solution_pool(key_vars, d)
+        elif m.Status == GRB.INFEASIBLE:
+            tight_degree = -1
+        else:
+            raise RuntimeError(
+                f"Gurobi failed to find a guaranteed optimal solution (Status: {m.Status}). "
+                "A guaranteed optimal solution is required for parity-based results."
+            )
+        
+        self._log_experiment(
+            "tight upper bound degree partial anf",
+            {"output_bit_index": output_bit_index, "cube": cube},
+            tight_degree,
+        )
+        return tight_degree
+
+    def find_tight_upper_bound_degree_via_parity_of_partial_anf_at_cube_of_all_output_bits(
+        self, cube, chosen_cipher_output=None
+    ):
+        """
+        Compute a tight upper bound on the algebraic degree of the partial ANF
+        for all output bits under a given cube.
+        If the highest degree monomials have even parity, it returns d-1 as the bound.
+
+        INPUT:
+        - ``cube`` -- **list of strings**; variable names forming the cube.
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); intermediate component ID.
+
+        OUTPUT:
+        - **list[int]**; tight upper bounds for each output bit.
+        """
+        output_vars = self._init_master_for_all_output_bits(chosen_cipher_output)
+        m = self._model
+        for term in self.var_list_to_input_positions(cube):
+            var_term = m.getVarByName(f"{term[0]}[{term[1]}]")
+            if var_term is not None:
+                m.addConstr(var_term == 1)
+
+        key_vars = self._resolve_key_vars()
+        m.setObjective(sum(key_vars), GRB.MAXIMIZE)
+        self._set_pool_enumeration_params()
+        m.update()
+
+        degrees = self._run_tight_upper_bound_degree_per_bit_loop(output_vars, key_vars)
+        self._log_experiment(
+            "all bits tight upper bound degree partial anf",
+            {"cube": cube},
+            degrees,
+        )
+        return degrees
+
+    def find_tight_upper_bound_degree_via_parity_of_superpoly_of_specific_output_bit(self, output_bit_index, cube, chosen_cipher_output=None):
+        """
+        Compute a tight upper bound on the algebraic degree of the superpoly
+        corresponding to a specific output bit under a given cube.
+        Fixes all non-cube public variables to zero.
+
+        If the highest degree monomials have even parity, it returns d-1 as the bound.
+
+        INPUT:
+
+        - ``output_bit_index`` -- **integer**; index (0-based, counting from the most
+          significant bit) of the cipher output bit.
+
+        - ``cube`` -- **list of strings**; variable names forming the cube.
+
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
+          ID if targeting an intermediate output.
+
+        OUTPUT:
+
+        - **integer**; tight upper bound on the algebraic degree of the superpoly.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher # doctest: +SKIP
+            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=200) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: cube = ["i53"] # doctest: +SKIP
+            sage: milp.find_tight_upper_bound_degree_via_parity_of_superpoly_of_specific_output_bit(0, cube) # doctest: +SKIP
+            ...
+        """
+        self.build_generic_model_for_specific_output_bit(
+            output_bit_index, None, None, chosen_cipher_output
+        )
+
+        m = self._model
+        self._set_pool_enumeration_params()
+
+        self._constrain_cube_and_public_vars(cube, None)
+        m.update()
+
+        key_vars = self._resolve_key_vars()
 
         m.setObjective(sum(key_vars), GRB.MAXIMIZE)
         m.update()
         m.optimize()
 
-        degree_drop = False
-        if m.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
-            print(MODEL_INFEASIBLE_MSG) if verbosity else None
-            exact_degree = -1
-        else:
+        if m.Status == GRB.OPTIMAL:
             d = int(round(m.ObjVal))
-            exact_degree = self._exact_degree_from_solution_pool(key_vars, d)
-            degree_drop = exact_degree < d
+            tight_degree = self._tight_upper_bound_degree_from_solution_pool(key_vars, d)
+        elif m.Status == GRB.INFEASIBLE:
+            print(MODEL_INFEASIBLE_MSG) if verbosity else None
+            tight_degree = -1
+        else:
+            raise RuntimeError(
+                f"Gurobi failed to find a guaranteed optimal solution (Status: {m.Status}). "
+                "A guaranteed optimal solution is required for parity-based results."
+            )
 
         self._log_experiment(
-            "exact degree superpoly",
+            "tight upper bound degree superpoly",
             {
                 "output_bit_index": output_bit_index,
                 "chosen_cipher_output": chosen_cipher_output,
                 "cube": cube,
-                "degree_drop": degree_drop,
             },
-            exact_degree,
+            tight_degree,
         )
 
-        return exact_degree
+        return tight_degree
 
     def _init_master_for_all_output_bits(self, chosen_cipher_output):
         """Build the MILP master used by the three ``find_*_of_all_output_bits``
@@ -1640,7 +1864,7 @@ class MilpMonomialPredictionModel:
     def _resolve_input_group_vars(self, which_var_degree):
         """Return the binary variables of the chosen input group, used as
         the objective by ``find_upper_bound_degree_of_all_output_bits`` and
-        ``find_exact_degree_of_all_output_bits``.
+        ``find_tight_upper_bound_degree_via_parity_of_all_output_bits``.
         """
         if which_var_degree is None:
             target_inputs = [(self._cipher.inputs[0], self._cipher.inputs_bit_size[0])]
@@ -1678,30 +1902,86 @@ class MilpMonomialPredictionModel:
         m = self._model
         m.Params.OutputFlag = 0
         m.setParam(GRB.Param.PoolSearchMode, 2)
-        m.setParam(GRB.Param.PoolSolutions, 200000000)
+        m.setParam(GRB.Param.PoolSolutions, 2000000000)
         m.setParam(GRB.Param.PoolGap, 0.0)
 
-    def _exact_degree_from_solution_pool(self, target_vars, candidate_degree):
+    def _verify_pool_completeness(self, experiment_name="computation", model=None):
+        """
+        Verify that the solver status is optimal and the solution pool was not
+        truncated. Missing trails can flip parity results, leading to incorrect
+        ANF or degree reports. ``model`` defaults to ``self._model`` but may be a
+        sub-model (e.g. a divide-and-conquer core model).
+        """
+        m = model if model is not None else self._model
+        if m.Status == GRB.SUBOPTIMAL:
+            msg = f"[ERROR] Gurobi returned SUBOPTIMAL status for {experiment_name}. Result is unreliable."
+            print(msg)
+            return False
+
+        if m.SolCount >= m.Params.PoolSolutions:
+            msg = (f"[ERROR] Solution pool reached limit ({m.Params.PoolSolutions}) during {experiment_name}. "
+                   "Some trails were likely missed, making parity-based results incorrect.")
+            print(msg)
+            return False
+        return True
+
+    def _collect_input_vars_info(self):
+        """Return ``[(prefix, idx, gurobi_var), ...]`` for every symbolic input bit,
+        in a fixed order so that identical monomials always stringify identically.
+        """
+        inputs_info = []
+        for inp_name in self._cipher.inputs:
+            if inp_name not in self._variables:
+                continue
+            prefix = self._prefix_for_input(inp_name)
+            for idx, var_d in self._variables[inp_name].items():
+                inputs_info.append((prefix, idx, var_d["original"]))
+        return inputs_info
+
+    def _solution_full_monomial(self, inputs_info, target_vars_set):
+        """For the currently selected pool solution, return
+        ``(full_monomial_string, degree_in_target_vars)``. The monomial string is
+        built over the complete input support so distinct monomials are not merged.
+        """
+        toks = []
+        deg = 0
+        for prefix, idx, var in inputs_info:
+            if var.Xn > 0.5:
+                toks.append(f"{prefix}{idx}")
+                if var in target_vars_set:
+                    deg += 1
+        mono = "1" if not toks else "".join(toks)
+        return mono, deg
+
+    def _tight_upper_bound_degree_from_solution_pool(self, target_vars, candidate_degree):
         """Walk the current Gurobi solution pool and apply the parity /
-        degree-drop rule. Returns ``candidate_degree`` if at least one
-        degree-``candidate_degree`` monomial has odd multiplicity, otherwise
-        ``candidate_degree - 1``.
+        degree-drop rule. If the highest degree monomials have even parity, it returns d-1 as the bound.
+
+        Aggregates parity over the complete input monomial (all symbolic inputs)
+        to avoid incorrect cancellations.
         """
         m = self._model
+        # Reject suboptimal or truncated pools
+        if m.Status != GRB.OPTIMAL:
+            return -1
+        if not self._verify_pool_completeness("tight upper bound degree"):
+            return -1
+
+        target_vars_set = set(target_vars)
+        inputs_info = self._collect_input_vars_info()
+
         monomial_parity = {}
         for s in range(m.SolCount):
             m.Params.SolutionNumber = s
-            active_indices = tuple(j for j, v in enumerate(target_vars) if v.Xn > 0.5)
-            if len(active_indices) == candidate_degree:
-                monomial_parity[active_indices] = monomial_parity.get(active_indices, 0) ^ 1
+            mono, deg = self._solution_full_monomial(inputs_info, target_vars_set)
+            if deg == candidate_degree:
+                monomial_parity[mono] = monomial_parity.get(mono, 0) ^ 1
+
         return candidate_degree if any(val == 1 for val in monomial_parity.values()) else candidate_degree - 1
 
-    def _run_exact_degree_per_bit_loop(self, output_vars, target_vars):
+    def _run_tight_upper_bound_degree_per_bit_loop(self, output_vars, target_vars):
         """Per-output-bit loop with parity enumeration.
-
-        For each output bit i, add ``output_vars[i] == 1`` to the master,
-        solve, derive the exact degree from the solution pool, then remove
-        the constraint. Returns the list of per-bit exact degrees.
+        If the highest degree monomials have even parity, it returns d-1 as the bound.
         """
         m = self._model
         degrees = []
@@ -1709,30 +1989,27 @@ class MilpMonomialPredictionModel:
             c = m.addConstr(output_vars[i] == 1)
             m.update()
             m.optimize()
-            if m.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
-                print(f"[INFO] Model is infeasible for output bit {i}") if verbosity else None
+            if m.Status == GRB.OPTIMAL:
+                degrees.append(self._tight_upper_bound_degree_from_solution_pool(target_vars, int(round(m.ObjVal))))
+            elif m.Status == GRB.INFEASIBLE:
+                print(f"[INFO] Model infeasible for output bit {i}") if verbosity else None
                 degrees.append(-1)
             else:
-                degrees.append(self._exact_degree_from_solution_pool(target_vars, int(round(m.ObjVal))))
+                raise RuntimeError(
+                    f"Gurobi failed to find a guaranteed optimal solution for bit {i} (Status: {m.Status}). "
+                    "A guaranteed optimal solution is required for parity-based results."
+                )
             m.remove(c)
             m.update()
         return degrees
 
-    def find_exact_degree_of_superpoly_of_all_output_bits(self, cube, chosen_cipher_output=None):
+    def find_tight_upper_bound_degree_via_parity_of_superpoly_of_all_output_bits(self, cube, chosen_cipher_output=None):
         """
-        Compute the exact algebraic degree of the superpoly
-        for all output bits of the cipher under a given cube.
-
-        INPUT:
-
-        - ``cube`` -- list[str]; variable names forming the cube (e.g. ["i9", "i19", ...])
-        - ``chosen_cipher_output`` -- str | None; specify a cipher component ID if
-          the computation targets an intermediate output instead of the final cipher output.
-
-        OUTPUT:
-        - list[int]; exact algebraic degrees of the superpoly for each output bit.
+        Compute a tight upper bound on the algebraic degree of the superpoly
+        for all output bits under a given cube.
+        Fixes all non-cube public variables to zero.
+        If the highest degree monomials have even parity, it returns d-1 as the bound.
         """
-
         global verbosity
         old_verbosity = verbosity
         verbosity = False
@@ -1740,28 +2017,18 @@ class MilpMonomialPredictionModel:
         output_vars = self._init_master_for_all_output_bits(chosen_cipher_output)
         m = self._model
 
-        for term in self.var_list_to_input_positions(cube):
-            var_term = m.getVarByName(f"{term[0]}[{term[1]}]")
-            if var_term is not None:
-                m.addConstr(var_term == 1)
+        self._constrain_cube_and_public_vars(cube, None)
 
-        key_input_index = next(
-            (i for i, inp in enumerate(self._cipher.inputs) if inp.startswith("k")),
-            None,
-        )
-        if key_input_index is None:
-            raise ValueError("No key input found in cipher definition.")
-        key_size = self._cipher.inputs_bit_size[key_input_index]
-        key_vars = [m.getVarByName(f"key[{i}]") for i in range(key_size) if m.getVarByName(f"key[{i}]") is not None]
+        key_vars = self._resolve_key_vars()
         m.setObjective(sum(key_vars), GRB.MAXIMIZE)
         self._set_pool_enumeration_params()
         m.update()
 
-        degrees = self._run_exact_degree_per_bit_loop(output_vars, key_vars)
+        degrees = self._run_tight_upper_bound_degree_per_bit_loop(output_vars, key_vars)
 
         verbosity = old_verbosity
         self._log_experiment(
-            "all output bits exact degree superpoly",
+            "all output bits tight upper bound degree superpoly",
             {"chosen_cipher_output": chosen_cipher_output, "cube": cube},
             degrees,
         )
@@ -1795,9 +2062,9 @@ class MilpMonomialPredictionModel:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=508)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher # doctest: +SKIP
+            sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=508) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
             sage: milp.find_upper_bound_degree_of_specific_output_bit(0, which_var_degree="i") # doctest: +SKIP
             ...
@@ -1872,9 +2139,9 @@ class MilpMonomialPredictionModel:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(number_of_rounds=4)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=4) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
             sage: milp.find_upper_bound_degree_of_all_output_bits(which_var_degree="p") # doctest: +SKIP
             ...
@@ -1918,35 +2185,33 @@ class MilpMonomialPredictionModel:
 
         return degrees
 
-    def find_exact_degree_of_specific_output_bit(
+    def find_tight_upper_bound_degree_via_parity_of_specific_output_bit(
         self, output_bit_index, which_var_degree=None, chosen_cipher_output=None
     ):
         """
-        Compute the exact algebraic degree of a specific cipher output bit
-        with respect to a chosen input variable group (e.g., key, IV, or plaintext).
+        Compute a tight upper bound on the algebraic degree of the ANF
+        for a specific cipher output bit with respect to a chosen input variable group.
 
-        Unlike the upper-bound computation, this method enumerates all optimal MILP
-        solutions corresponding to maximal-degree monomials and checks their parity
-        (mod 2). The exact algebraic degree is the highest degree for which the number
-        of monomials with that degree is odd.
+        If the highest degree monomials have even parity, it returns d-1 as the bound.
 
         INPUT:
 
-        - ``output_bit_index`` -- **integer**; index (0-based, counting from the most significant bit)
-          of the cipher output bit to analyze.
+        - ``output_bit_index`` -- **integer**; index (0-based, counting from the most
+          significant bit) of the cipher output bit to analyze.
+
         - ``which_var_degree`` -- **string** (default: ``None``); prefix identifying which
           input group the algebraic degree should be computed over:
             * ``"k"`` → degree with respect to key bits
             * ``"p"`` → degree with respect to plaintext bits
             * ``"i"`` → degree with respect to IV bits
           If ``None`` (default), the first input listed in ``self._cipher.inputs`` is used.
+
         - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
           ID if the computation targets an intermediate output instead of the final cipher output.
 
         OUTPUT:
 
-        - **integer**; exact algebraic degree of the selected output bit with respect to
-          the chosen input variable group.
+        - **integer**; tight upper bound on the algebraic degree of the selected output bit.
 
         EXAMPLES::
 
@@ -1954,17 +2219,16 @@ class MilpMonomialPredictionModel:
             sage: cipher = TriviumStreamCipher(keystream_bit_len=1, number_of_initialization_clocks=508)
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
-            sage: milp.find_exact_degree_of_specific_output_bit(0, which_var_degree="i") # doctest: +SKIP
+            sage: milp.find_tight_upper_bound_degree_via_parity_of_specific_output_bit(0, which_var_degree="i") # doctest: +SKIP
             ...
         """
-
         fixed_degree = None
         self.build_generic_model_for_specific_output_bit(
             output_bit_index, fixed_degree, which_var_degree, chosen_cipher_output
         )
 
         m = self._model
-        self._set_pool_enumeration_params()  # enumerate all optimal solutions
+        self._set_pool_enumeration_params()
 
         vars_target = self._resolve_input_group_vars(which_var_degree)
 
@@ -1972,32 +2236,35 @@ class MilpMonomialPredictionModel:
         m.update()
         m.optimize()
 
-        degree_drop = False
-        if self._model.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
-            print(MODEL_INFEASIBLE_MSG) if verbosity else None
-            exact_degree = -1
-        else:
+        if m.Status == GRB.OPTIMAL:
             d = int(round(m.ObjVal))
-            # Gather all distinct monomials of degree d and compute parity (mod 2)
-            exact_degree = self._exact_degree_from_solution_pool(vars_target, d)
-            degree_drop = exact_degree < d
+            tight_degree = self._tight_upper_bound_degree_from_solution_pool(vars_target, d)
+        elif m.Status == GRB.INFEASIBLE:
+            print(MODEL_INFEASIBLE_MSG) if verbosity else None
+            tight_degree = -1
+        else:
+            raise RuntimeError(
+                f"Gurobi failed to find a guaranteed optimal solution (Status: {m.Status}). "
+                "A guaranteed optimal solution is required for parity-based results."
+            )
 
         self._log_experiment(
-            "exact degree",
+            "tight upper bound degree",
             {
                 "output_bit_index": output_bit_index,
                 "chosen_cipher_output": chosen_cipher_output,
                 "which_var_degree": which_var_degree,
-                "degree_drop": degree_drop,
             },
-            exact_degree,
+            tight_degree,
         )
 
-        return exact_degree
+        return tight_degree
 
-    def find_exact_degree_of_all_output_bits(self, which_var_degree=None, chosen_cipher_output=None):
+    def find_tight_upper_bound_degree_via_parity_of_all_output_bits(self, which_var_degree=None, chosen_cipher_output=None):
         """
-        Compute the exact algebraic degree for all cipher output bits.
+        Compute a tight upper bound on the algebraic degree for all cipher output bits.
+
+        If the highest degree monomials have even parity, it returns d-1 as the bound.
 
         INPUT:
 
@@ -2008,12 +2275,13 @@ class MilpMonomialPredictionModel:
             * ``"i"`` → IV bits
           If ``None`` (default), the degree is computed with respect to the first input
           listed in ``self._cipher.inputs``.
+
         - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher
           component ID if the computation targets an intermediate output instead of the final cipher output.
 
         OUTPUT:
 
-        - **list of integers**; exact algebraic degrees of all cipher output bits.
+        - **list of integers**; tight upper bound on the algebraic degrees of all cipher output bits.
 
         EXAMPLES::
 
@@ -2021,7 +2289,7 @@ class MilpMonomialPredictionModel:
             sage: cipher = SimonBlockCipher(number_of_rounds=4)
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
-            sage: milp.find_exact_degree_of_all_output_bits(which_var_degree="p") # doctest: +SKIP
+            sage: milp.find_tight_upper_bound_degree_via_parity_of_all_output_bits(which_var_degree="p") # doctest: +SKIP
             ...
         """
         global verbosity
@@ -2034,12 +2302,12 @@ class MilpMonomialPredictionModel:
         self._set_pool_enumeration_params()
         self._model.update()
 
-        degrees = self._run_exact_degree_per_bit_loop(output_vars, target_vars)
+        degrees = self._run_tight_upper_bound_degree_per_bit_loop(output_vars, target_vars)
 
         verbosity = old_verbosity
 
         self._log_experiment(
-            "all output bits exact degree",
+            "all output bits tight upper bound degree",
             {
                 "chosen_cipher_output": chosen_cipher_output,
                 "which_var_degree": which_var_degree,
@@ -2049,7 +2317,7 @@ class MilpMonomialPredictionModel:
 
         return degrees
 
-    def find_degree_in_cube_vars_of_specific_output_bit(
+    def find_upper_bound_degree_in_cube_vars_of_specific_output_bit(
         self,
         output_bit_index,
         cube,
@@ -2078,12 +2346,12 @@ class MilpMonomialPredictionModel:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(number_of_rounds=13)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=13) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher)  # doctest: +SKIP
-            sage: cube = [f"p{i}" for i in range(1, 32)]
-            sage: d = milp.find_degree_in_cube_vars_of_specific_output_bit(16, cube)  # doctest: +SKIP
+            sage: cube = [f"p{i}" for i in range(1, 32)] # doctest: +SKIP
+            sage: d = milp.find_upper_bound_degree_in_cube_vars_of_specific_output_bit(16, cube)  # doctest: +SKIP
             ...
         """
         self.build_generic_model_for_specific_output_bit(
@@ -2103,22 +2371,14 @@ class MilpMonomialPredictionModel:
         m.setObjective(sum(cube_vars), GRB.MAXIMIZE)
 
         # Fix all other non-cube public input bits to 0
-        for inp, sz in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-            pref = inp[0]
-            if pref in {"p", "i"}:
-                for i in range(sz):
-                    if (inp, i) in cube_set:
-                        continue
-                    v = m.getVarByName(f"{inp}[{i}]")
-                    if v is not None:
-                        m.addConstr(v == 0)
+        self._fix_non_cube_public_bits_to_zero(cube_set)
 
         m.update()
         m.optimize()
 
-        if m.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL]:
+        if m.Status != GRB.OPTIMAL:
             if verbosity:
-                print(f"[INFO] Model infeasible for output bit {output_bit_index}")
+                print(f"[INFO] Model not optimal for output bit {output_bit_index}")
             return -1
 
         degree_in_cube_vars = int(round(m.ObjVal))
@@ -2130,6 +2390,64 @@ class MilpMonomialPredictionModel:
         )
 
         return degree_in_cube_vars
+
+    def find_upper_bound_degree_of_specific_output_bit_with_independent_round_keys(
+        self, output_bit_index, which_var_degree=None, chosen_cipher_output=None
+    ):
+        r"""
+        Same as :meth:`find_upper_bound_degree_of_specific_output_bit` on the independent-round-keys model (sound upper bound).
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=4) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: milp.find_upper_bound_degree_of_specific_output_bit_with_independent_round_keys(0, which_var_degree="p") # doctest: +SKIP
+            ...
+        """
+        return MilpMonomialPredictionModel(
+            self._cipher.remove_key_schedule(keep_round_key_injection=True)
+        ).find_upper_bound_degree_of_specific_output_bit(output_bit_index, which_var_degree, chosen_cipher_output)
+
+    def find_upper_bound_degree_of_all_output_bits_with_independent_round_keys(
+        self, which_var_degree=None, chosen_cipher_output=None
+    ):
+        r"""
+        Same as :meth:`find_upper_bound_degree_of_all_output_bits` on the independent-round-keys model (sound upper bound).
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=4) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: milp.find_upper_bound_degree_of_all_output_bits_with_independent_round_keys(which_var_degree="p") # doctest: +SKIP
+            ...
+        """
+        return MilpMonomialPredictionModel(
+            self._cipher.remove_key_schedule(keep_round_key_injection=True)
+        ).find_upper_bound_degree_of_all_output_bits(which_var_degree, chosen_cipher_output)
+
+    def find_upper_bound_degree_in_cube_vars_of_specific_output_bit_with_independent_round_keys(
+        self, output_bit_index, cube, chosen_cipher_output=None
+    ):
+        r"""
+        Same as :meth:`find_upper_bound_degree_in_cube_vars_of_specific_output_bit` on the independent-round-keys model (sound upper bound).
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=13) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: cube = [f"p{i}" for i in range(1, 32)] # doctest: +SKIP
+            sage: milp.find_upper_bound_degree_in_cube_vars_of_specific_output_bit_with_independent_round_keys(16, cube) # doctest: +SKIP
+            ...
+        """
+        return MilpMonomialPredictionModel(
+            self._cipher.remove_key_schedule(keep_round_key_injection=True)
+        ).find_upper_bound_degree_in_cube_vars_of_specific_output_bit(output_bit_index, cube, chosen_cipher_output)
 
     def find_upper_bound_degree_of_cube_monomial_of_specific_output_bit(
         self,
@@ -2160,11 +2478,11 @@ class MilpMonomialPredictionModel:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(number_of_rounds=13)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=13) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
             sage: milp = MilpMonomialPredictionModel(cipher)  # doctest: +SKIP
-            sage: cube = [f"p{i}" for i in range(1, 32)]
+            sage: cube = [f"p{i}" for i in range(1, 32)] # doctest: +SKIP
             sage: d = milp.find_upper_bound_degree_of_cube_monomial_of_specific_output_bit(16, cube)  # doctest: +SKIP
             ...
         """
@@ -2203,33 +2521,174 @@ class MilpMonomialPredictionModel:
 
         return degree_upper_bound
 
-    def find_keycoeff_of_cube_monomial_of_specific_output_bit(
+    def _fix_non_cube_public_bits_to_zero(self, cube_set):
+        """Constrain every public (plaintext/IV) input bit not in the cube to 0.
+
+        ``cube_set`` is a set of ``(input_name, bit_index)`` tuples.
+        """
+        m = self._model
+        for inp, sz in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
+            if inp[0] not in ("p", "i"):
+                continue
+            for i in range(sz):
+                if (inp, i) in cube_set:
+                    continue
+                v = m.getVarByName(f"{inp}[{i}]")
+                if v is not None:
+                    m.addConstr(v == 0)
+
+    def is_balanced_at_specific_output_bit_over_cube(
         self,
         output_bit_index,
         cube,
         chosen_cipher_output=None,
     ):
         r"""
-        Compute the coefficient of the given cube monomial over key varables only, of a given cipher output bit.
+        Feasibility-based integral distinguisher check.
+
+        Fixes cube bits to 1 and non-cube public bits to 0. If the model is INFEASIBLE,
+        the output bit is provably balanced over the cube (zero-sum).
+
+        INPUT:
+        - ``output_bit_index`` -- **integer**
+        - ``cube`` -- **list of strings**
+        - ``chosen_cipher_output`` -- **string** (default: ``None``)
+
+        OUTPUT:
+        - **bool**; ``True`` if balanced, ``False`` if not proved.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=4) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher)  # doctest: +SKIP
+            sage: cube = ["p1", "p2"] # doctest: +SKIP
+            sage: milp.is_balanced_at_specific_output_bit_over_cube(0, cube)  # doctest: +SKIP
+            ...
+        """
+        self.build_generic_model_for_specific_output_bit(
+            output_bit_index, fixed_degree=None, which_var_degree=None, chosen_cipher_output=chosen_cipher_output
+        )
+        m = self._model
+        m.Params.OutputFlag = 0
+        m.setParam(GRB.Param.PoolSearchMode, 0)
+
+        cube_verbose = self.var_list_to_input_positions(cube)
+        cube_set = set(cube_verbose)
+
+        # public non-cube input bits (plaintext / IV) -> 0
+        self._fix_non_cube_public_bits_to_zero(cube_set)
+        # active cube bits -> 1
+        for inp_name, idx in cube_verbose:
+            v = m.getVarByName(f"{inp_name}[{idx}]")
+            if v is not None:
+                m.addConstr(v == 1)
+
+        m.setObjective(0, GRB.MINIMIZE)
+        m.update()
+        m.optimize()
+
+        balanced = (m.Status == GRB.INFEASIBLE)
+        self._log_experiment(
+            "balanced for cube",
+            {
+                "output_bit_index": output_bit_index,
+                "chosen_cipher_output": chosen_cipher_output,
+                "cube": cube,
+            },
+            balanced,
+        )
+        return balanced
+
+    def is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless(
+        self, output_bit_index, cube, chosen_cipher_output=None
+    ):
+        r"""
+        Feasibility filter on the *keyless* cipher (key schedule **and** round-key injection removed,
+        via ``remove_key_schedule(keep_round_key_injection=False)``). If the cube monomial is feasible
+        here, the real cipher is feasible too and balance cannot be proven, an infeasible result marks a candidate to confirm with
+        :meth:`is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys`.
+
+        INPUT:
+        - ``output_bit_index`` -- **integer**
+        - ``cube`` -- **list of strings**
+        - ``chosen_cipher_output`` -- **string** (default: ``None``)
+
+        OUTPUT:
+        - **bool**; ``True`` if the cube monomial is feasible (reachable) in the keyless model, else ``False``.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher # doctest: +SKIP
+            sage: cipher = UblockBlockCipher(number_of_rounds=6) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: cube = [f"p{i}" for i in range(36, 64)] + [f"p{i}" for i in range(100, 128)]  # 56-dim cube # doctest: +SKIP
+            sage: milp.is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless(1, cube) # doctest: +SKIP
+            ...
+        """
+        keyless_cipher = self._cipher.remove_key_schedule(keep_round_key_injection=False)
+        sub_model = MilpMonomialPredictionModel(keyless_cipher)
+        return not sub_model.is_balanced_at_specific_output_bit_over_cube(output_bit_index, cube, chosen_cipher_output)
+
+    def is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(
+        self, output_bit_index, cube, chosen_cipher_output=None
+    ):
+        r"""
+        Feasibility-based balance check on the cipher with the key schedule removed but the independent round-key
+        injections kept.
+
+        This monomial-trail set is a superset of the real cipher's, so an INFEASIBLE (balanced) result
+        here **proves** the real cipher's bit is balanced over the cube . A FEASIBLE result is inconclusive (unknown).
+        INPUT:
+        - ``output_bit_index`` -- **integer**
+        - ``cube`` -- **list of strings**
+        - ``chosen_cipher_output`` -- **string** (default: ``None``)
+
+        OUTPUT:
+        - **bool**; ``True`` if balanced (infeasible), ``False`` if unknown.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher # doctest: +SKIP
+            sage: cipher = SimonBlockCipher(number_of_rounds=4) # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
+            sage: cube = ["p1", "p2"] # doctest: +SKIP
+            sage: milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(0, cube)  # bit 0 balanced # doctest: +SKIP
+            ... 
+            sage: milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(4, cube)  # bit 4 unknown # doctest: +SKIP
+            ...
+        """
+        independent_keys_cipher = self._cipher.remove_key_schedule(keep_round_key_injection=True)
+        sub_model = MilpMonomialPredictionModel(independent_keys_cipher)
+        return sub_model.is_balanced_at_specific_output_bit_over_cube(output_bit_index, cube, chosen_cipher_output)
+
+    def find_superpoly_of_specific_output_bit(
+        self,
+        output_bit_index,
+        cube,
+        chosen_cipher_output=None,
+    ):
+        """
+        Compute the superpoly of a specific cipher output bit under a given cube.
+        Fixes all non-cube public variables to zero.
 
         INPUT:
 
-        - ``output_bit_index`` -- **integer**
-          Index (0-based, counting from the most significant bit)
+        - ``output_bit_index`` -- **integer**; index (0-based, counting from the most
+          significant bit) of the cipher output bit.
 
-        - ``cube`` -- **list of strings**
-          List of cube variable names (e.g. ``["p1", "p3", "p8"]``) representing the cube variables fixed to 1.
+        - ``cube`` -- **list of strings**; variable names forming the cube.
+          Example: ``["i53"]``.
 
-        - ``chosen_cipher_output`` -- **string** (default: ``None``)
-          Optional component ID if the computation targets an intermediate output
-          instead of the final cipher output.
+        - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
+          ID if targeting an intermediate output.
 
         OUTPUT:
 
-        - **Sage BooleanPolynomial**
-          Boolean polynomial over key variables corresponding to the coefficient
-          of the given cube.
-          Returns ``0`` if the model is infeasible or no valid solutions are found.
+        - **Sage BooleanPolynomial**; Boolean polynomial over key variables.
 
         EXAMPLES::
 
@@ -2238,15 +2697,8 @@ class MilpMonomialPredictionModel:
             sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
             sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
             sage: cube = ["i53"]
-            sage: coeff = milp.find_keycoeff_of_cube_monomial_of_specific_output_bit(0, cube) # doctest: +SKIP
-            ...
-
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(number_of_rounds=13)
-            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
-            sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
-            sage: cube = [f"p{i}" for i in range(1, 32)]
-            sage: coeff = milp.find_keycoeff_of_cube_monomial_of_specific_output_bit(15, cube) # doctest: +SKIP
+            sage: superpoly = milp.find_superpoly_of_specific_output_bit(0, cube) # doctest: +SKIP
+            sage: superpoly # doctest: +SKIP
             ...
         """
         self.build_generic_model_for_specific_output_bit(
@@ -2255,7 +2707,7 @@ class MilpMonomialPredictionModel:
         m = self._model
         m.Params.OutputFlag = 0
         m.setParam(GRB.Param.PoolSearchMode, 2)
-        m.setParam(GRB.Param.PoolSolutions, 200000000)
+        m.setParam(GRB.Param.PoolSolutions, 2000000000)
         m.setParam(GRB.Param.PoolGap, 0.0)
 
         cube_verbose = self.var_list_to_input_positions(cube)
@@ -2269,25 +2721,29 @@ class MilpMonomialPredictionModel:
         cube_vars = [m.getVarByName(f"{a}[{b}]") for (a, b) in cube_verbose]
         m.addConstr(sum(cube_vars) == len(cube))
 
-        # Fix all other non-key input bits to 0
-        for inp, sz in zip(self._cipher.inputs, self._cipher.inputs_bit_size):
-            pref = inp[0]
-            if pref in {"p", "i"}:
-                for i in range(sz):
-                    if (inp, i) in cube_set:
-                        continue
-                    v = m.getVarByName(f"{inp}[{i}]")
-                    if v is not None:
-                        m.addConstr(v == 0)
+        # Fix all other non-cube public input bits to 0
+        self._fix_non_cube_public_bits_to_zero(cube_set)
 
         m.setObjective(0.0, GRB.MAXIMIZE)
         m.update()
         m.optimize()
 
-        if m.Status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL] or m.SolCount == 0:
+        # Only an infeasible model proves a zero superpoly; an unfinished solve must not return one.
+        if m.Status in (GRB.INFEASIBLE, GRB.INF_OR_UNBD):
             if verbosity:
-                print(f"[INFO] Model infeasible or no valid solutions for output bit {output_bit_index}")
+                print(f"[INFO] Model infeasible for output bit {output_bit_index}, superpoly is zero")
             return self.get_boolean_polynomial_ring()(0)
+
+        if m.Status != GRB.OPTIMAL or m.SolCount == 0:
+            raise RuntimeError(
+                f"Superpoly of output bit {output_bit_index} is unreliable: Gurobi stopped with "
+                f"status {m.Status} and {m.SolCount} solutions."
+            )
+
+        if not self._verify_pool_completeness(f"superpoly of output bit {output_bit_index}"):
+            raise RuntimeError(
+                f"Superpoly of output bit {output_bit_index} is unreliable: solution pool truncated."
+            )
 
         poly_full = self.get_solutions()
 
@@ -2296,7 +2752,7 @@ class MilpMonomialPredictionModel:
         key_coef_poly = poly_full.subs(subs_map)
 
         self._log_experiment(
-            "key coefficient of cube monomial",
+            "superpoly",
             {"output_bit_index": output_bit_index, "chosen_cipher_output": chosen_cipher_output, "cube": cube},
             key_coef_poly,
         )
@@ -2405,20 +2861,31 @@ class MilpMonomialPredictionModel:
         cube_verbose = self.var_list_to_input_positions(cube)
         cube_vars_set = {f"{term[0]}[{term[1]}]" for term in cube_verbose}
 
+        # If no key_input_indices provided, identify all key inputs
+        if key_input_indices is None:
+            key_input_indices = [i for i, inp in enumerate(self._cipher.inputs) if "key" in inp.lower()]
+
         for var_name in cube_vars_set:
             var_term = self._model.getVarByName(var_name)
             if var_term is not None:
                 self._model.addConstr(var_term == 1)
 
+        self._fix_non_key_non_cube_bits_to_zero(cube_vars_set, key_input_indices)
+
+    def _fix_non_key_non_cube_bits_to_zero(self, cube_vars_set, key_input_indices):
+        """Constrain every non-key input bit whose Gurobi name is not in
+        ``cube_vars_set`` to 0. ``cube_vars_set`` holds ``"input[bit]"`` names.
+        """
         for i, inp in enumerate(self._cipher.inputs):
             if i in key_input_indices:
                 continue
             for bit in range(self._cipher.inputs_bit_size[i]):
                 var_name = f"{inp}[{bit}]"
-                if var_name not in cube_vars_set:
-                    var_term = self._model.getVarByName(var_name)
-                    if var_term is not None:
-                        self._model.addConstr(var_term == 0)
+                if var_name in cube_vars_set:
+                    continue
+                var_term = self._model.getVarByName(var_name)
+                if var_term is not None:
+                    self._model.addConstr(var_term == 0)
 
     def _get_escape_idx(self, link_id, middle_round, skip_for_enum):
         used_predecessors = []
@@ -2500,6 +2967,11 @@ class MilpMonomialPredictionModel:
         return feasible_states
 
     def _get_input_masks(self, active_model, wrapper_model, sub_cipher):
+        if not self._verify_pool_completeness("divide-and-conquer enumeration", model=active_model):
+            raise RuntimeError(
+                "Divide-and-conquer pool enumeration is incomplete (suboptimal status or pool "
+                "cap reached); the parity-based coefficient would be unreliable."
+            )
         inputs = []
         for inp_name in sub_cipher.inputs:
             if not inp_name.startswith("intermediate_output") and inp_name in wrapper_model._variables:
@@ -2754,7 +3226,7 @@ def _eval_boolean_poly(poly, valuation):
 def _build_trial_assignment(cipher, needed_prefixes, public_assign_bits):
     """Build one input assignment for a correctness trial: random key bits and
     fixed/zero public bits. Extracted from
-    ``check_correctness_of_keycoeff_of_cube_monomial_or_superpoly``; logic unchanged.
+    ``check_correctness_of_partial_anf_or_superpoly``; logic unchanged.
     """
     assign = {}
     for name, size in zip(cipher.inputs, cipher.inputs_bit_size):
@@ -2791,7 +3263,7 @@ def _cube_sum_parity(cipher, assign, cube_pos, size_map, output_bit_index):
     return acc
 
 
-def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(
+def check_correctness_of_partial_anf_or_superpoly(
     cipher, output_bit_index, cube, poly, public_assign_bits=None, trials=16
 ):
     """
@@ -2841,8 +3313,8 @@ def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(
         sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import *
         sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
         sage: cube = ["i53"]
-        sage: coef_poly = milp.find_keycoeff_of_cube_monomial_of_specific_output_bit(0, cube) # doctest: +SKIP
-        sage: check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, coef_poly) # doctest: +SKIP
+        sage: coef_poly = milp.find_superpoly_of_specific_output_bit(0, cube) # doctest: +SKIP
+        sage: check_correctness_of_partial_anf_or_superpoly(cipher, 0, cube, coef_poly) # doctest: +SKIP
         ...
 
         sage: from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
@@ -2851,7 +3323,7 @@ def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(
         sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
         sage: cube = ['i9', 'i19', 'i29', 'i39', 'i49', 'i59', 'i69', 'i79']
         sage: superpoly = milp.find_superpoly_of_specific_output_bit(0, cube) # doctest: +SKIP
-        sage: check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, superpoly) # doctest: +SKIP
+        sage: check_correctness_of_partial_anf_or_superpoly(cipher, 0, cube, superpoly) # doctest: +SKIP
         ...
 
         # by defult non-cube public variables assign to zero but that can be assigned
@@ -2859,7 +3331,7 @@ def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(
         # From the following dictionary 'pub' all non-cube public vars will be set to constant 1.
 
         sage: pub = {"initialization_vector": (1 << 80) - 1} # Every non cube vars set to 1.
-        sage: check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, superpoly, public_assign_bits= pub) # doctest: +SKIP
+        sage: check_correctness_of_partial_anf_or_superpoly(cipher, 0, cube, superpoly, public_assign_bits= pub) # doctest: +SKIP
         ...
 
         #  A short example
@@ -2869,10 +3341,10 @@ def check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(
         sage: milp = MilpMonomialPredictionModel(cipher) # doctest: +SKIP
         sage: cube = ['p2', 'p3']
         sage: superpoly = milp.find_superpoly_of_specific_output_bit(0, cube) # doctest: +SKIP
-        sage: check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, superpoly) # doctest: +SKIP
+        sage: check_correctness_of_partial_anf_or_superpoly(cipher, 0, cube, superpoly) # doctest: +SKIP
         ...
         sage: pub = {"plaintext": 0xfda120472589641} # Set to 1 or 0 the plaintext vars according to the given pattern.
-        sage: check_correctness_of_keycoeff_of_cube_monomial_or_superpoly(cipher, 0, cube, superpoly, public_assign_bits= pub) # doctest: +SKIP
+        sage: check_correctness_of_partial_anf_or_superpoly(cipher, 0, cube, superpoly, public_assign_bits= pub) # doctest: +SKIP
         ...
 
     """

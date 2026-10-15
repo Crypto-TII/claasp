@@ -33,6 +33,21 @@ class ToyAESBlockCipher(Cipher):
     - ``state_size`` -- **integer** (default: `4`); number of rows of the state represented as a matrix.
       Must be equal to 2, 3 or 4
 
+    .. NOTE::
+
+        For ``word_size=2`` combined with ``state_size=4``, the MixColumn matrix used by this
+        parametrization is demonstrably **not MDS** (its word-wise differential branch number is 3,
+        below the optimal value of ``state_size + 1 = 5``). This is not a fixable bug: GF(2^2) = GF(4)
+        only has 4 elements, and it is a well-known fact from coding theory (the MDS conjecture / the
+        maximal-arc bound for projective spaces of dimension >= 3) that no 4x4 MDS matrix can exist
+        over a field as small as GF(4) at all -- an exhaustive search over circulant and random
+        candidate matrices over GF(4) confirms none are MDS either. This is therefore an inherent
+        mathematical limitation of using ``word_size=2`` with ``state_size=4`` in this toy
+        parametrization, not a defect to be corrected by choosing different matrix constants. See
+        ``tests/unit/ciphers/toys/toyaes_block_cipher_test.py::test_aes_matrix_mds_status`` for a
+        computational pin of the true MDS/branch-number status of every ``(word_size, state_size)``
+        MixColumn matrix used by this cipher.
+
     EXAMPLES::
 
         sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher

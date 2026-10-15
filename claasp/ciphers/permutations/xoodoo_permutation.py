@@ -61,6 +61,7 @@ class XoodooPermutation(Cipher):
     Construct an instance of the XoodooPermutation class.
 
     This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
+    The standard 6- and 12-round instances are implemented by the designers' XKCP reference package [XKCPREF]_.
 
     INPUT:
 
@@ -193,7 +194,7 @@ class XoodooPermutation(Cipher):
         if rotz != 0:
             for j in range(LANE_NUM):
                 lanej = ComponentState([new_plane.id[j]], [new_plane.input_bit_positions[j]])
-                self.add_rotate_component(lanej.id, lanej.input_bit_positions, LANE_SIZE, rotz)
+                self.add_rotate_component(lanej.id, lanej.input_bit_positions, LANE_SIZE, -rotz)
                 new_plane.id[j] = self.get_current_component_id()
                 new_plane.input_bit_positions[j] = list(range(LANE_SIZE))
 

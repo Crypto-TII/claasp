@@ -4,7 +4,23 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_
 from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
+
+PRESENT_SBOX = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
+
+
+def test_build_deterministic_truncated_xor_differential_trail_model_sbox_cache():
+    # A cipher made of a single S-box component exercises the SBOX branch of
+    # propagate_deterministically(), which threads self.sbox_cache through
+    # component.cp_deterministic_truncated_xor_differential_trail_constraints(...).
+    cipher = SboxCipher(bit_size=4, lookup_table=PRESENT_SBOX)
+    mzn = MznDeterministicTruncatedXorDifferentialModel(cipher)
+    mzn.build_deterministic_truncated_xor_differential_trail_model()
+
+    assert mzn.sbox_cache
+    assert mzn.sbox_cache[0][1] == "sbox_0_0"
+    assert any("table_sbox_0_0" in declaration for declaration in mzn.model_variables)
 
 
 def test_build_deterministic_truncated_xor_differential_trail_model():

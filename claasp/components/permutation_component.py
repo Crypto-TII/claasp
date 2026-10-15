@@ -212,12 +212,11 @@ class Permutation(Component):
              'permutation_0_0_3 -input_1', 'input_1 -permutation_0_0_3']
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        bit_perm = self._bit_perm()
-        input_bit_ids_permuted = [input_bit_ids[bit_perm[i]] for i in range(output_bit_len)]
+        output_bit_ids = self._generate_output_ids()
+        input_bit_ids_permuted = [input_bit_ids[new_position] for new_position in self._bit_perm()]
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids_permuted[i]]))
+        for output_bit_id, input_bit_id_permuted in zip(output_bit_ids, input_bit_ids_permuted):
+            constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id_permuted]))
 
         return output_bit_ids, constraints
 
@@ -275,7 +274,7 @@ class Permutation(Component):
              'input_1_1 -permutation_0_0_3_1']
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        _, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
         bit_perm = self._bit_perm()
         constraints = []
         for i in range(len(out_ids_0)):
@@ -317,12 +316,11 @@ class Permutation(Component):
              '(assert (= permutation_0_0_3 input_1))']
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        bit_perm = self._bit_perm()
-        input_bit_ids_permuted = [input_bit_ids[bit_perm[i]] for i in range(output_bit_len)]
+        output_bit_ids = self._generate_output_ids()
+        input_bit_ids_permuted = [input_bit_ids[new_position] for new_position in self._bit_perm()]
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids_permuted[i]])
+        for output_bit_id, input_bit_id_permuted in zip(output_bit_ids, input_bit_ids_permuted):
+            equation = smt_utils.smt_equivalent([output_bit_id, input_bit_id_permuted])
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
@@ -380,13 +378,12 @@ class Permutation(Component):
              '(assert (= permutation_0_0_2_o permutation_0_0_2_i))',
              '(assert (= permutation_0_0_3_o permutation_0_0_1_i))']
         """
-        input_bit_len, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
-        bit_perm = self._bit_perm()
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        input_bit_ids_permuted = [input_bit_ids[new_position] for new_position in self._bit_perm()]
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], input_bit_ids[bit_perm[i]]])
+        for output_bit_id, input_bit_id_permuted in zip(output_bit_ids, input_bit_ids_permuted):
+            equation = smt_utils.smt_equivalent([output_bit_id, input_bit_id_permuted])
             constraints.append(smt_utils.smt_assert(equation))
 
         return input_bit_ids + output_bit_ids, constraints
@@ -482,8 +479,7 @@ class Permutation(Component):
 
             sage: from claasp.components.permutation_component import Permutation
             sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
-            sage: component.cp_semi_deterministic_truncated_xor_differential_constraints() == \
-            ...       component.cp_deterministic_truncated_xor_differential_trail_constraints()
+            sage: component.cp_semi_deterministic_truncated_xor_differential_constraints() == component.cp_deterministic_truncated_xor_differential_trail_constraints()
             True
         """
         return self.cp_deterministic_truncated_xor_differential_trail_constraints()
@@ -549,6 +545,59 @@ class Permutation(Component):
         # TODO: keep the model argument for API parity with LinearLayer;
         # remove this unused parameter in a later cleanup PR after harmonizing call sites.
         return self.cp_constraints()
+
+    def cp_xor_differential_propagation_first_step_constraints(self, model):
+        """
+        Return word-level activity declarations and constraints for PERMUTATION in the first-step
+        active S-box count model.
+
+        Each output word is active iff at least one of the input words whose bits contribute to it
+        is active (logical OR / max over binary activity variables).
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance with a ``word_size`` attribute
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import MznXorDifferentialNumberOfActiveSboxesModel
+            sage: cipher = PermutationCipher(bit_size=4, permutation_description=[1, 3, 2, 0])
+            sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(cipher)
+            sage: cp.initialise_model()
+            sage: perm = cipher.component_from_id('permutation_0_0')
+            sage: declarations, constraints = perm.cp_xor_differential_propagation_first_step_constraints(cp)
+            sage: len(constraints) == cipher.output_bit_size // cp.word_size
+            True
+        """
+        output_id = self.id
+        model_word_size = model.word_size
+        output_num_words = self.output_bit_size // model_word_size
+
+        all_inputs = []
+        for id_link, bit_positions in zip(self.input_id_links, self.input_bit_positions):
+            all_inputs.extend([
+                f"{id_link}[{bit_positions[j * model_word_size] // model_word_size}]"
+                for j in range(len(bit_positions) // model_word_size)
+            ])
+
+        cp_declarations = [f"array[0..{output_num_words - 1}] of var 0..1: {output_id};"]
+
+        bit_perm = self._bit_perm()
+        cp_constraints = []
+        for j in range(output_num_words):
+            contributing = sorted({
+                bit_perm[j * model_word_size + off] // model_word_size
+                for off in range(model_word_size)
+            })
+            contributing_refs = [all_inputs[k] for k in contributing]
+            if len(contributing_refs) == 1:
+                cp_constraints.append(f"constraint {output_id}[{j}] = {contributing_refs[0]};")
+            else:
+                refs_str = ", ".join(contributing_refs)
+                cp_constraints.append(f"constraint {output_id}[{j}] = max([{refs_str}]);")
+
+        return cp_declarations, cp_constraints
 
     def cp_xor_linear_mask_propagation_constraints(self, model=None):
         """
@@ -629,6 +678,13 @@ class Permutation(Component):
 
     def milp_xor_linear_mask_propagation_constraints(self, model):
         return self.milp_constraints(model)
+
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+
+        return self._milp_wordwise_branch_number_active_sboxes_exact_permutation_constraints(
+            model, output_ids, self._bit_perm()
+        )
 
     def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, model):
         """

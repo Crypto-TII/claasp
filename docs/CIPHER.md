@@ -470,24 +470,6 @@ sage: from claasp.ciphers.permutations.chacha_permutation import ChachaPermutati
 sage: chacha = ChachaPermutation(number_of_rounds=2)
 ```
 
-##### 1.2.3.5 gift
-- ``number_of_rounds``: number of rounds of the permutation. Default value is 40.
-
-Example:
-```
-sage: from claasp.ciphers.permutations.gift_permutation import GiftPermutation
-sage: gift = GiftPermutation()
-```
-
-##### 1.2.3.6 gift sbox
-- ``number_of_rounds``: number of rounds of the permutation. Default value is 40.
-
-Example:
-```
-sage: from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
-sage: gift = GiftSboxPermutation()
-```
-
 ##### 1.2.3.7 gimli
 - ``number_of_rounds``: number of rounds of the permutation. Default value is 24.
 - ``word_size``: *int*, the size of the word. Default value is 32.

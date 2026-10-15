@@ -39,6 +39,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
 )
@@ -112,7 +113,7 @@ class CipherComponentsAnalysis:
 
         """
         tmp_cipher_operations = {}
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             self._collect_component_operations(component, tmp_cipher_operations)
 
         for operation in list(tmp_cipher_operations.keys()):
@@ -479,7 +480,7 @@ class CipherComponentsAnalysis:
             sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
             sage: from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
             sage: midori = MidoriBlockCipher()
-            sage: mix_column_component = midori.component_from_id('mix_column_0_20')
+            sage: mix_column_component = midori.component_from_id('mix_column_0_21')
             sage: CipherComponentsAnalysis(midori)._is_mds(mix_column_component)
             False
 
@@ -1041,9 +1042,37 @@ def binary_matrix_of_linear_component(component):
         )
     elif component.type == LINEAR_LAYER:
         return matrix(GF(2), component.input_bit_size, component.description)
+    elif component.type == PERMUTATION_COMPONENT:
+        return permutation_to_binary_matrix(component)
     else:
         print("TODO : {}".format(component.id))
         return False
+
+
+def permutation_to_binary_matrix(component):
+    """
+    Return the binary matrix of a permutation component.
+
+    INPUT:
+
+    - ``component`` -- **Component object**; a permutation component from the cipher
+
+    EXAMPLES::
+
+        sage: from claasp.components.permutation_component import Permutation
+        sage: from claasp.cipher_modules.component_analysis_tests import permutation_to_binary_matrix
+        sage: from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
+        sage: from sage.modules.free_module_element import vector
+        sage: component = Permutation(0, 0, ['input'], [[0, 1, 2, 3]], 4, [1, 3, 2, 0])
+        sage: R = BooleanPolynomialRing(4, 'p')
+        sage: permutation_to_binary_matrix(component) * vector(R, list(R.gens()))
+        (p3, p0, p2, p1)
+    """
+    binary_matrix = matrix(GF(2), component.output_bit_size, component.input_bit_size)
+    for output_bit, input_bit in enumerate(component._bit_perm()):
+        binary_matrix[output_bit, input_bit] = 1
+
+    return binary_matrix
 
 
 def branch_number(component, type, format):
@@ -1099,10 +1128,10 @@ def get_inverse_matrix_in_integer_representation(component):
         sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import get_inverse_matrix_in_integer_representation
         sage: midori = MidoriBlockCipher(number_of_rounds=3)
-        sage: mix_column_component = midori.component_from_id('mix_column_0_20')
+        sage: mix_column_component = midori.component_from_id('mix_column_0_21')
         sage: m = get_inverse_matrix_in_integer_representation(mix_column_component)
         sage: m.dimensions()
-        (16, 16)
+        (4, 4)
 
     """
     if component.type != MIX_COLUMN:
@@ -1140,7 +1169,7 @@ def has_maximal_branch_number(component):
         sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import has_maximal_branch_number
         sage: midori = MidoriBlockCipher()
-        sage: mix_column_component = midori.component_from_id('mix_column_0_20')
+        sage: mix_column_component = midori.component_from_id('mix_column_0_21')
         sage: has_maximal_branch_number(mix_column_component)
         False
 
@@ -1949,7 +1978,7 @@ def instantiate_matrix_over_correct_field(matrix, polynomial_as_int, word_size, 
         sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
         sage: from claasp.cipher_modules.component_analysis_tests import instantiate_matrix_over_correct_field
         sage: midori = MidoriBlockCipher(number_of_rounds=2)
-        sage: mix_column_component = midori.component_from_id('mix_column_0_20')
+        sage: mix_column_component = midori.component_from_id('mix_column_0_22')
         sage: description = mix_column_component.description
         sage: mc_matrix, _ = instantiate_matrix_over_correct_field(description[0], int(description[1]), int(description[2]),
         ....: mix_column_component.input_bit_size, mix_column_component.output_bit_size)
@@ -2191,6 +2220,90 @@ def compute_branch_number_from_binary_matrix_with_minizinc(
     return _compute_branch_number_from_expanded_binary_matrix_with_minizinc(
         binary_matrix=normalized,
         original_word_size=1,
+        solver=solver,
+        minizinc_bin=minizinc_bin,
+        timeout_seconds=timeout_seconds,
+        threads=threads,
+    )
+
+
+def compute_word_branch_number_from_binary_matrix_with_minizinc(
+    binary_matrix,
+    word_size,
+    type="differential",
+    solver="ortools",
+    minizinc_bin="minizinc",
+    timeout_seconds=None,
+    threads=2,
+):
+    """
+    Compute the exact *word-level* branch number of an arbitrary GF(2) binary matrix using MiniZinc: the
+    minimum, over all nonzero inputs, of (number of nonzero ``word_size``-bit input words) + (number of
+    nonzero ``word_size``-bit output words) -- where a word is "nonzero" (active) iff at least one of its
+    bits is, per the truncated-differential convention of e.g. [MWGP2011]_.
+
+    How this differs from the other branch-number functions in this module:
+
+    - :py:func:`compute_branch_number_from_binary_matrix_with_minizinc` (and its ``"sage"``/``"bounded"``
+      siblings) computes the *bit*-level branch number of a binary matrix -- i.e. word_size=1, every bit its
+      own word. That is a different, coarser-grained quantity: it is the right notion for a component with no
+      internal word structure, but for e.g. a cipher's whole-round diffusion layer compiled into a single bit
+      matrix (a linear_layer component, such as ``UblockSingleLinearLayerBlockCipher``'s consolidated
+      rotate+XOR+permutation layer), what a *word-oriented* active-S-box-counting model needs is the number of
+      active *S-box-sized words*, not active bits.
+    - :py:func:`compute_branch_number_from_field_matrix_with_minizinc` computes the same word-level notion, but
+      requires the matrix to already be expressed as GF(2^word_size) field elements (e.g. an AES-style
+      MixColumn matrix multiplying whole bytes together algebraically). Many linear components have no such
+      field structure at all -- their word_size grouping is purely a modelling choice about how the cipher's
+      S-boxes partition the state, imposed on top of an otherwise arbitrary GF(2) bit matrix. This function is
+      for exactly that case: it takes the matrix already expanded to GF(2) and only imposes word grouping in
+      the MiniZinc objective, via the same ``original_word_size`` parameter of the shared solving machinery
+      that the field-matrix path uses internally after expanding *its* input to GF(2).
+    - :py:func:`compute_branch_number_from_binary_matrix_with_bounded_enumeration` (bit-level) has no
+      word-level counterpart in this module; unlike the bit-level case, a bounded-weight-in-*words* search
+      still has to try every value within each candidate active word (not just "on/off" per bit), which is
+      usually too expensive in pure Python for a computation this function gets exactly and quickly by
+      delegating to a real constraint solver instead.
+
+    INPUT:
+
+    - ``binary_matrix`` -- Sage matrix over GF(2) or Python list of lists with entries in {0,1}; its dimension
+      must be a multiple of ``word_size``
+    - ``word_size`` -- **integer**; number of bits per word (e.g. the cipher's S-box input size)
+    - ``type`` -- **string** (default: ``"differential"``); ``"linear"`` uses the transpose
+    - ``solver`` -- **string** (default: ``"ortools"``); preferred MiniZinc solver
+    - ``minizinc_bin`` -- **string** (default: ``"minizinc"``); MiniZinc executable
+    - ``timeout_seconds`` -- **integer** or ``None``; timeout for each solver attempt
+    - ``threads`` -- **integer** (default: ``2``); thread count for supported solvers
+
+    OUTPUT:
+
+    - **integer** -- the exact word-level branch number
+
+    EXAMPLES::
+
+        sage: import shutil
+        sage: from sage.all import GF, Matrix
+        sage: from claasp.cipher_modules.component_analysis_tests import (
+        ....:     compute_word_branch_number_from_binary_matrix_with_minizinc, _expand_field_matrix_to_binary_matrix)
+        sage: if shutil.which("minizinc") is None:
+        ....:     print("MiniZinc not available")
+        ....: else:
+        ....:     # GF(4) matrix with known field branch number 3 (see
+        ....:     # compute_branch_number_from_field_matrix_with_minizinc's own docstring example); expanding it
+        ....:     # to GF(2) and asking for the word-level branch number at word_size=2 must recover the same 3,
+        ....:     # since word activity under this expansion is exactly field-element non-zero-ness.
+        ....:     bit_matrix = _expand_field_matrix_to_binary_matrix([[1, 1], [1, 2]], word_size=2, irreducible_polynomial=0b111)
+        ....:     compute_word_branch_number_from_binary_matrix_with_minizinc(bit_matrix, word_size=2)
+        3
+    """
+    matrix, n = _prepare_binary_matrix(binary_matrix, type)
+    if n % word_size != 0:
+        raise ValueError(f"matrix dimension {n} is not a multiple of word_size {word_size}")
+    normalized = [[int(matrix[i][j]) for j in range(n)] for i in range(n)]
+    return _compute_branch_number_from_expanded_binary_matrix_with_minizinc(
+        binary_matrix=normalized,
+        original_word_size=word_size,
         solver=solver,
         minizinc_bin=minizinc_bin,
         timeout_seconds=timeout_seconds,

@@ -35,7 +35,7 @@ def evaluate(cipher, cipher_input, intermediate_output=False, verbosity=False):
 
 def evaluate_using_c(cipher, inputs, intermediate_output, verbosity):
     cipher.generate_evaluate_c_code_shared_library(intermediate_output, verbosity)
-    name = cipher.id + "_evaluate"
+    name = code_generator.evaluate_c_name(cipher)
     c_cipher_inputs = [hex(value) for value in inputs]
     process = Popen(
         [code_generator.TII_C_LIB_PATH + name + ".o"] + c_cipher_inputs, stdout=PIPE

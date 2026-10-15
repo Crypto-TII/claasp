@@ -52,7 +52,7 @@ def test_find_lowest_weight_xor_linear_trail():
     assert math.isfinite(empirical_weight)
     # With only 4096 samples this is noisy; enforce a soft upper bound vs. theory.
     assert empirical_weight <= theoretical_weight + 2.0
-    
+
 
 def test_find_one_xor_linear_trail():
     speck = SpeckBlockCipher(number_of_rounds=4)
@@ -67,7 +67,7 @@ def test_find_one_xor_linear_trail():
 def test_find_one_xor_linear_trail_with_fixed_weight():
     speck = SpeckBlockCipher(number_of_rounds=3)
     sat = SatXorLinearModel(speck)
-    result = sat.find_one_xor_linear_trail_with_fixed_weight(7)
+    result = sat.find_one_xor_linear_trail(lower_bound=7, upper_bound=7)
 
     assert result["total_weight"] == 7.0
 

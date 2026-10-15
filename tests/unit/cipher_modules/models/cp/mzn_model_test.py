@@ -16,6 +16,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_o
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
 from claasp.cipher_modules.models.utils import get_bit_bindings, integer_to_bit_list, set_fixed_variables
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
+from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
@@ -112,6 +113,29 @@ def test_solver_names():
     assert len(external_solvers) > 0
 
 
+def test_model_uses_sbox_word_size_for_two_step_friendly_cipher():
+    mzn = MznModel(PresentBlockCipher(number_of_rounds=1))
+
+    assert mzn.word_size == 4
+
+
+def test_first_step_fixed_variables_use_two_step_friendly_check():
+    present = PresentBlockCipher(number_of_rounds=1)
+    mzn = MznModel(present)
+    fixed_variables = [
+        set_fixed_variables("plaintext", "equal", list(range(4)), integer_to_bit_list(0, 4, "big"))
+    ]
+
+    constraints = mzn.fix_variables_value_constraints(fixed_variables, step="first_step")
+
+    assert constraints == ["constraint plaintext[0] = 0;"]
+
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    mzn = MznModel(speck)
+    with pytest.raises(ValueError, match="Cipher not compatible with the two-step trail search"):
+        mzn.fix_variables_value_constraints(fixed_variables, step="first_step")
+
+
 @pytest.mark.filterwarnings("ignore::DeprecationWarning:")
 def test_build_mix_column_truncated_table():
     aes = ToyAESBlockCipher(number_of_rounds=3)
@@ -194,19 +218,19 @@ def test_fix_variables_value_constraints():
 
     speck = SpeckBlockCipher(number_of_rounds=3)
     mzn = MznXorDifferentialModel(speck)
-    fixed_values = [set_fixed_variables('plaintext','equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))])]
+    fixed_values = [set_fixed_variables('plaintext','equal',range(32),[(speck.all_components_ids()[-1],list(range(32)))])]
     trail = mzn.find_one_xor_differential_trail(fixed_values=fixed_values)
-    assert trail['components_values']['plaintext']['value'] == trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+    assert trail['components_values']['plaintext']['value'] == trail['components_values'][speck.all_components_ids()[-1]]['value']
 
     mzn.initialise_model()
-    fixed_values = [set_fixed_variables('plaintext','not_equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))])]
+    fixed_values = [set_fixed_variables('plaintext','not_equal',range(32),[(speck.all_components_ids()[-1],list(range(32)))])]
     trail = mzn.find_one_xor_differential_trail(fixed_values=fixed_values)
-    assert trail['components_values']['plaintext']['value'] != trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+    assert trail['components_values']['plaintext']['value'] != trail['components_values'][speck.all_components_ids()[-1]]['value']
 
     mzn.initialise_model()
     fixed_values = [set_fixed_variables('plaintext','equal',range(32),[0]*31+[1])]
-    fixed_values.append(set_fixed_variables(speck.get_all_components_ids()[-1],'equal',range(32),[0]*31+[1]))
-    fixed_values.append(set_fixed_variables('plaintext','not_equal',range(32),[(speck.get_all_components_ids()[-1],list(range(32)))]))
+    fixed_values.append(set_fixed_variables(speck.all_components_ids()[-1],'equal',range(32),[0]*31+[1]))
+    fixed_values.append(set_fixed_variables('plaintext','not_equal',range(32),[(speck.all_components_ids()[-1],list(range(32)))]))
     trail = mzn.find_one_xor_differential_trail(fixed_values=fixed_values)
     assert trail['status'] == 'UNSATISFIABLE'
 
@@ -251,7 +275,7 @@ def test_build_generic_cp_model_from_dictionary_xor_differential():
         )
     )
 
-    for component in speck.get_all_components():
+    for component in speck.all_components():
         component_and_model_types.append({
             "component_object": component,
             "model_type": "minizinc_xor_differential_propagation_constraints"
@@ -330,7 +354,7 @@ def test_build_generic_cp_model_from_dictionary_xor_linear():
     )
 
     component_and_model_types = []
-    for component in model._cipher.get_all_components():
+    for component in model._cipher.all_components():
         component_and_model_types.append({
             "component_object": component,
             "model_type": "cp_xor_linear_mask_propagation_constraints"
@@ -370,7 +394,7 @@ def test_build_generic_cp_model_with_unknown_component_type():
     cipher = SpeckBlockCipher(number_of_rounds=1)
     model = MznXorDifferentialModel(cipher)
 
-    component = cipher.get_all_components()[0]
+    component = cipher.all_components()[0]
     component._type = "UNKNOWN_COMPONENT_TYPE"
 
     component_and_model_types = [{
@@ -454,7 +478,7 @@ def test_build_generic_cp_model_with_fixed_variables_non_arx():
             "component_object": component,
             "model_type": "cp_xor_differential_propagation_constraints",
         }
-        for component in cipher.get_all_components()
+        for component in cipher.all_components()
     ]
 
     model.build_generic_cp_model_from_dictionary(

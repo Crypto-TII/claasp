@@ -57,8 +57,94 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
             })
 
         self.build_generic_mzn_model_from_dictionary(self.dict_of_components)
-        self.extend_model_constraints(
-            MznBoomerangModelARXOptimized.objective_generator(self)
+        self.extend_model_constraints(MznBoomerangModelARXOptimized.objective_generator(self))
+
+        
+    @staticmethod
+    def remove_components_not_in_graph(new_cipher, original_cipher, round_number, graph):
+        round_object = original_cipher.rounds.round_at(round_number)
+        for component in round_object.components:
+            if component.id not in graph.nodes:
+                MznBoomerangModelARXOptimized.remove_component(new_cipher, component)
+
+    @staticmethod
+    def remove_component(new_cipher, component):
+        component_to_remove = new_cipher.component_from_id(component.id)
+        round_number = new_cipher.round_from_component_id(component.id)
+        new_cipher.remove_round_component(round_number, component_to_remove)
+
+    @staticmethod
+    def initialize_bottom_cipher(original_cipher):
+        bottom_cipher = deepcopy(original_cipher)
+        bottom_cipher._id = f"{original_cipher.id}_bottom"
+        return bottom_cipher
+
+    def setup_bottom_cipher_inputs(self, bottom_cipher, original_cipher):
+        initial_nodes = [node for node in self.bottom_graph if self.bottom_graph.has_edge(node, node)]
+        new_input_bit_positions = {}
+        bottom_cipher._inputs_bit_size = []
+        bottom_cipher._inputs = []
+        self.update_bottom_cipher_inputs(bottom_cipher, original_cipher, initial_nodes, new_input_bit_positions)
+
+        for middle_id in self.sboxes_ids:
+            bottom_cipher._inputs.append(middle_id)
+            bottom_cipher._inputs_bit_size.append(original_cipher.component_from_id(middle_id).output_bit_size)
+
+    def update_bottom_cipher_inputs(self, bottom_cipher, original_cipher, initial_nodes, new_input_bit_positions):
+        for node_id in initial_nodes:
+            if node_id in original_cipher.inputs:
+                bottom_cipher._inputs.append(node_id)
+                index_node_id = original_cipher._inputs.index(node_id)
+                bottom_cipher._inputs_bit_size.append(original_cipher._inputs_bit_size[index_node_id])
+                index_input_to_delete = self.top_cipher._inputs.index(node_id)
+                del self.top_cipher._inputs[index_input_to_delete]
+                del self.top_cipher._inputs_bit_size[index_input_to_delete]
+            else:
+                old_component = original_cipher.component_from_id(node_id)
+                new_input_id_links = self.get_new_input_id_links(old_component, bottom_cipher)
+                bottom_cipher.update_input_id_links_from_component_id(old_component.id, new_input_id_links)
+                new_input_bit_positions[old_component.id] = old_component.input_bit_positions
+
+    def get_new_input_id_links(self, component, bottom_cipher):
+        new_input_id_links = deepcopy(component.input_id_links)
+        for input_id_link in self.top_end_ids:
+            if input_id_link in component.input_id_links:
+                index = component.input_id_links.index(input_id_link)
+                new_input_id_links[index] = "new_" + input_id_link
+                bottom_cipher.inputs.append("new_" + input_id_link)
+                output_bit_size = component.output_bit_size
+                bottom_cipher.inputs_bit_size.append(output_bit_size)
+        return new_input_id_links
+
+    def create_top_and_bottom_ciphers_from_subgraphs(self):
+        self.top_cipher = self.create_top_cipher(self.original_cipher)
+        self.bottom_cipher = self.create_bottom_cipher(self.original_cipher)
+
+    def create_bottom_cipher(self, original_cipher):
+        bottom_cipher = MznBoomerangModelARXOptimized.initialize_bottom_cipher(original_cipher)
+        self.setup_bottom_cipher_inputs(bottom_cipher, original_cipher)
+        MznBoomerangModelARXOptimized.reduce_cipher(bottom_cipher, original_cipher, self.bottom_graph)
+        MznBoomerangModelARXOptimized.remove_empty_rounds(bottom_cipher)
+        MznBoomerangModelARXOptimized.reset_round_ids(bottom_cipher)
+        return bottom_cipher
+
+    def create_top_cipher(self, original_cipher):
+        top_cipher = deepcopy(original_cipher)
+        top_cipher._id = f"{original_cipher.id}_top"
+        MznBoomerangModelARXOptimized.reduce_cipher(top_cipher, original_cipher, self.top_graph)
+        MznBoomerangModelARXOptimized.remove_empty_rounds(top_cipher)
+        return top_cipher
+
+    @staticmethod
+    def reset_round_ids(cipher):
+        for round_number in range(cipher.number_of_rounds):
+            cipher.rounds.round_at(round_number)._id = round_number
+
+    @staticmethod
+    def objective_generator(mzn_top_cipher, mzn_bottom_cipher):
+        objective_string = []
+        modular_addition_concatenation = (
+            "++".join(mzn_top_cipher.probability_vars) + "++" + "++".join(mzn_bottom_cipher.probability_vars)
         )
         self.extend_model_constraints(
             self.weight_constraints(max_weight=max_weight, weight=weight, operator=">=")

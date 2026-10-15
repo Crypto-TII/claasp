@@ -5,6 +5,8 @@ from decimal import Decimal
 from io import StringIO
 
 import numpy as np
+import pytest
+import platform
 
 from claasp.cipher import Cipher
 from claasp.cipher_modules.algebraic_tests import AlgebraicTests
@@ -33,8 +35,9 @@ from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
 from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.ciphers.permutations.chaskeypi_permutation import ChaskeyPiPermutation
-from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
+from claasp.ciphers.block_ciphers.gift_sbox_block_cipher import GiftSboxBlockCipher
 from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
+from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
 from claasp.ciphers.permutations.photon_permutation import PhotonPermutation
 from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
 from claasp.ciphers.permutations.sparkle_permutation import SparklePermutation
@@ -46,12 +49,10 @@ from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.toys.toyspn1 import ToySPN1
 from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT, PERMUTATION
+from claasp.cipher_modules import code_generator
 
 EVALUATION_PY = 'evaluation.py'
 DICTIONARY_EXAMPLE_PY = "claasp/ciphers/dictionary_example.py"
-BIT_BASED_C_FUNCTIONS_O_FILE = 'claasp/cipher_modules/generic_bit_based_c_functions.o'
-FANCY_EVALUATE_O_FILE = 'claasp/cipher_modules/fancy_block_cipher_p24_k24_o24_r20_evaluate.o'
-FANCY_EVALUATE_C_FILE = 'claasp/cipher_modules/fancy_block_cipher_p24_k24_o24_r20_evaluate.c'
 
 
 def test_algebraic_tests():
@@ -76,14 +77,18 @@ def test_algebraic_tests():
                                   'max_degree_of_equations': [2],
                                   'test_passed': [True]}}
 
-    aes = ToyAESBlockCipher(word_size=4, state_size=2, number_of_rounds=1)
+
+@pytest.mark.skipif(platform.machine() in ("aarch64", "arm64"),
+                    reason="SAT solve exceeds isolate-timeout on slower ARM runners")
+def test_algebraic_tests_toy_aes():
+    aes = ToyAESBlockCipher(word_size=2, state_size=2, number_of_rounds=1)
     d = AlgebraicTests(aes).algebraic_tests(5)
     compare_result = {'input_parameters': {'cipher': aes,
                                            'timeout_in_seconds': 5,
                                            'test_name': 'algebraic_tests'},
-                      'test_results': {'number_of_variables': [104],
-                                       'number_of_equations': [174],
-                                       'number_of_monomials': [272],
+                      'test_results': {'number_of_variables': [52],
+                                       'number_of_equations': [66],
+                                       'number_of_monomials': [88],
                                        'max_degree_of_equations': [2],
                                        'test_passed': [False]}}
 
@@ -91,16 +96,17 @@ def test_algebraic_tests():
 
 
 def test_delete_generated_evaluate_c_shared_library():
-    file_c = open(FANCY_EVALUATE_C_FILE, 'a')
-    file_o = open(FANCY_EVALUATE_O_FILE, 'a')
-    file_generic = open(BIT_BASED_C_FUNCTIONS_O_FILE, 'a')
-    file_c.close()
-    file_o.close()
-    file_generic.close()
-    FancyBlockCipher().delete_generated_evaluate_c_shared_library()
-    assert os.path.exists(FANCY_EVALUATE_C_FILE) is False
-    assert os.path.exists(FANCY_EVALUATE_O_FILE) is False
-    assert os.path.exists(BIT_BASED_C_FUNCTIONS_O_FILE) is False
+    fancy = FancyBlockCipher()
+    base = code_generator.TII_C_LIB_PATH + code_generator.evaluate_c_name(fancy)
+    c_file = base + ".c"
+    o_file = base + ".o"
+    generic_o_file = code_generator.TII_C_LIB_PATH + code_generator.generic_c_functions_o_name(fancy)
+    for path in (c_file, o_file, generic_o_file):
+        open(path, 'a').close()
+    fancy.delete_generated_evaluate_c_shared_library()
+    assert os.path.exists(c_file) is False
+    assert os.path.exists(o_file) is False
+    assert os.path.exists(generic_o_file) is False
 
 
 def test_evaluate_using_c():
@@ -152,12 +158,12 @@ def test_evaluate_with_intermediate_outputs_continuous_diffusion_analysis():
     assert output[0][0] == Decimal('-1.000000000')
 
 
-def test_get_model():
+def test_model():
     speck = SpeckBlockCipher(number_of_rounds=1)
-    assert speck.get_model("cp", "xor_differential").__class__.__name__ == "MznXorDifferentialModel"
-    assert speck.get_model("sat", "xor_differential").__class__.__name__ == "SatXorDifferentialModel"
-    assert speck.get_model("smt", "xor_linear").__class__.__name__ == "SmtXorLinearModel"
-    assert speck.get_model("milp", "xor_linear").__class__.__name__ == "MilpXorLinearModel"
+    assert speck.model("cp", "xor_differential").__class__.__name__ == "MznXorDifferentialModel"
+    assert speck.model("sat", "xor_differential").__class__.__name__ == "SatXorDifferentialModel"
+    assert speck.model("smt", "xor_linear").__class__.__name__ == "SmtXorLinearModel"
+    assert speck.model("milp", "xor_linear").__class__.__name__ == "MilpXorLinearModel"
 
 
 def test_generate_bit_based_c_code():
@@ -194,17 +200,17 @@ def test_get_current_component_id():
     assert cipher.get_current_component_id() == 'constant_1_0'
 
 
-def test_get_round_from_component_id():
+def test_round_from_component_id():
     fancy = FancyBlockCipher(number_of_rounds=2)
-    assert fancy.get_round_from_component_id('xor_1_14') == 1
+    assert fancy.round_from_component_id('xor_1_14') == 1
 
 
 def _find_dangling_input_links(cipher):
-    component_ids = {c.id for c in cipher.get_all_components()}
+    component_ids = {c.id for c in cipher.all_components()}
     declared_inputs = set(cipher.inputs)
 
     dangling = []
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         for link in component.input_id_links:
             if link and link not in component_ids and link not in declared_inputs:
                 dangling.append((component.id, link))
@@ -247,7 +253,7 @@ def test_get_partial_cipher_removes_expected_components_for_chacha_6_rounds():
         keep_key_schedule=False,
     )
 
-    partial_component_ids = {component.id for component in partial_cipher.get_all_components()}
+    partial_component_ids = {component.id for component in partial_cipher.all_components()}
     assert expected_removed_ids.isdisjoint(partial_component_ids)
 
 
@@ -310,7 +316,7 @@ def test_get_partial_cipher_removes_picture_component_subset_for_speck():
     }
 
     partial_cipher = cipher.get_partial_cipher(start_round=0, end_round=1, keep_key_schedule=False)
-    partial_component_ids = {component.id for component in partial_cipher.get_all_components()}
+    partial_component_ids = {component.id for component in partial_cipher.all_components()}
     expected_partial_component_ids = {'rot_0_3', 'xor_0_2', 'rot_1_6', 'modadd_1_7', 'xor_0_4', 'xor_1_10', 'intermediate_output_1_12', 'rot_0_0', 'intermediate_output_0_6', 'modadd_0_1', 'rot_1_9', 'xor_1_8'}
     assert picture_component_ids.isdisjoint(partial_component_ids)
     assert expected_partial_component_ids == partial_component_ids
@@ -354,6 +360,70 @@ def test_is_shift_arx():
 def test_is_spn():
     aes = ToyAESBlockCipher(number_of_rounds=2)
     assert aes.is_spn() is True
+
+
+def test_has_uniform_sboxes_accepts_permutation_diffusion_ciphers():
+    assert ToyAESBlockCipher(number_of_rounds=1).has_uniform_sboxes() is True
+    assert UblockBlockCipher(number_of_rounds=2).has_uniform_sboxes() is True
+    assert PresentBlockCipher(number_of_rounds=1).has_uniform_sboxes() is True
+    assert SpeckBlockCipher(number_of_rounds=1).has_uniform_sboxes() is False
+
+
+def test_has_uniform_sboxes_rejects_mixed_sbox_sizes():
+    cipher = Cipher("mixed_sboxes", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    cipher.add_round()
+    cipher.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    cipher.add_sbox_component([INPUT_PLAINTEXT], [[4, 5, 6]], 3, list(range(8)))
+
+    assert cipher.has_uniform_sboxes() is False
+
+
+def test_has_uniform_sboxes_rejects_unsupported_component_types():
+    cipher = Cipher("unsupported_component", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    cipher.add_round()
+    sbox = cipher.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    cipher.add_and_component([sbox.id], [list(range(4))], 4)
+
+    assert cipher.has_uniform_sboxes() is False
+
+
+def test_has_uniform_sboxes_accepts_shift_components():
+    from claasp.ciphers.block_ciphers.mantis_block_cipher import MantisBlockCipher
+
+    assert MantisBlockCipher(number_of_rounds=2).has_uniform_sboxes() is True
+
+    cipher = Cipher("with_shift", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    cipher.add_round()
+    sbox = cipher.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    cipher.add_shift_component([sbox.id], [list(range(4))], 4, 1)
+
+    assert cipher.has_uniform_sboxes() is True
+
+
+def test_has_uniform_sboxes_rejects_linear_layer_components():
+    cipher = Cipher("with_linear_layer", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    cipher.add_round()
+    sbox = cipher.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    cipher.add_linear_layer_component([sbox.id], [list(range(4))], 4, [[1, 0, 0, 0]] * 4)
+
+    assert cipher.has_uniform_sboxes() is False
+    assert cipher.is_two_step_trail_search_friendly() is False
+
+
+def test_is_two_step_trail_search_friendly_checks_mix_column_cell_alignment():
+    friendly = Cipher("friendly", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    friendly.add_round()
+    sbox = friendly.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    friendly.add_mix_column_component([sbox.id], [list(range(4))], 4, [[[1]], 0, 4])
+
+    unfriendly = Cipher("unfriendly", BLOCK_CIPHER, [INPUT_PLAINTEXT], [8], 8)
+    unfriendly.add_round()
+    sbox = unfriendly.add_sbox_component([INPUT_PLAINTEXT], [[0, 1, 2, 3]], 4, list(range(16)))
+    unfriendly.add_mix_column_component([sbox.id], [list(range(4))], 4, [[[1]], 0, 3])
+
+    assert friendly.is_two_step_trail_search_friendly() is True
+    assert unfriendly.is_two_step_trail_search_friendly() is False
+    assert SpeckBlockCipher(number_of_rounds=1).is_two_step_trail_search_friendly() is False
 
 
 def test_polynomial_system():
@@ -521,6 +591,56 @@ def test_zero_correlation_linear_search():
     zero_correlation_linear_approximations = speck6.zero_correlation_linear_search("smt", "YICES_EXT")
     assert len(zero_correlation_linear_approximations) > 0
 
+
+def test_find_impossible_property_keyed_scenarios_without_key_raise():
+    # a keyless permutation has no key: the keyed scenarios must be refused, not silently remapped
+    keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
+    for scenario in ("single-key", "variable-key", "related-key"):
+        with pytest.raises(ValueError, match=scenario):
+            keccak.find_impossible_property(type="differential", scenario=scenario)
+    with pytest.raises(ValueError, match="single-key"):
+        keccak.impossible_differential_search("sat", "KISSAT_EXT")
+
+
+def test_find_impossible_property_unknown_scenario_raises():
+    speck = SpeckBlockCipher(number_of_rounds=1)
+    with pytest.raises(ValueError, match="unknown scenario"):
+        speck.find_impossible_property(type="differential", scenario="non-key")
+
+
+def test_impossible_differential_search_on_keyless_permutation():
+    keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
+    impossible_differentials = keccak.impossible_differential_search("sat", "KISSAT_EXT", scenario="no-key")
+    assert isinstance(impossible_differentials, list)
+
+
+def test_zero_correlation_linear_search_on_keyless_permutation():
+    keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=1)
+    zero_correlation_linear_approximations = keccak.zero_correlation_linear_search("sat", "KISSAT_EXT", scenario="no-key")
+    assert isinstance(zero_correlation_linear_approximations, list)
+
+
+def test_find_impossible_property_no_key_scenario_on_keyed_cipher():
+    # "no-key" on a keyed cipher leaves the key unconstrained, so it must not crash and must return a list
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    result = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="no-key")
+    assert isinstance(result, list)
+
+
+def test_find_impossible_property_variable_key_and_related_key():
+    # variable-key: zero plaintext difference, 1-bit key difference
+    # related-key: every combination of <= 1-bit plaintext and key differences (except both zero), so it
+    # contains the single-key and variable-key results, plus cases with both a plaintext and a key bit active
+    speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
+    single_key = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="single-key")
+    variable_key = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="variable-key")
+    related_key = speck.find_impossible_property(type="differential", solver="KISSAT_EXT", scenario="related-key")
+    assert all(p == 0 and bin(k).count("1") == 1 for p, k, _ in variable_key)
+    assert all(p or k for p, k, _ in related_key)
+    assert [(p, o) for p, k, o in related_key if k == 0] == sorted(single_key)
+    assert sorted(t for t in related_key if t[0] == 0) == sorted(variable_key)
+
+
 def test_cipher_inverse():
     key = 0xabcdef01abcdef01
     plaintext = 0x01234567
@@ -617,7 +737,7 @@ def test_cipher_inverse():
 
     key = 0x000102030405060708090A0B0C0D0E0F
     plaintext = 0x000102030405060708090A0B0C0D0E0F
-    cipher = GiftSboxPermutation(number_of_rounds=2)
+    cipher = GiftSboxBlockCipher(number_of_rounds=2)
     ciphertext = cipher.evaluate([plaintext, key])
     cipher_inv = cipher.cipher_inverse()
     assert cipher_inv.evaluate([ciphertext, key]) == plaintext

@@ -50,7 +50,7 @@ class MznDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
         self._variables_declarations = []
         self._model_constraints = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION]
             operation = component.description[0]
             operation_types = ["ROTATE", "SHIFT"]
