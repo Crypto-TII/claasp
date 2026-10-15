@@ -1,7 +1,10 @@
+from contextlib import redirect_stdout
+from io import StringIO
+
 from claasp.ciphers.toys.toyfeistel import ToyFeistel
 
 
-def test_toyfeistel(capsys):
+def test_toyfeistel():
     toyfeistel = ToyFeistel()
     assert toyfeistel.number_of_rounds == 5
 
@@ -129,10 +132,11 @@ intermediate_output_4_9_output = 0xb2
 cipher_output_4_10_input = 0x20
 cipher_output_4_10_output = 0x20
 """
-    capsys.readouterr()
-    evaluation = hex(toyfeistel.evaluate([0x3F, 0x3E], verbosity=True))
+    result = StringIO()
+    with redirect_stdout(result):
+        evaluation = hex(toyfeistel.evaluate([0x3F, 0x3E], verbosity=True))
     assert evaluation == '0x20'
-    assert capsys.readouterr().out == expected_evaluation
+    assert result.getvalue() == expected_evaluation
 
 
 def test_toyfeistel_parallel_sboxes():
