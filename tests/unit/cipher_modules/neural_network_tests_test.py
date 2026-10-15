@@ -5,6 +5,7 @@ from unittest import mock
 import numpy as np
 import pytest
 import tensorflow as tf
+from sage.all import Integer
 
 from claasp.cipher_modules import neural_network_tests
 from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
@@ -281,11 +282,10 @@ def test_scored_round_outputs(cipher, expected):
 
 @pytest.mark.parametrize('number_of_rounds', [1, 2])
 def test_find_good_input_difference_for_short_primitives(number_of_rounds):
-    np.random.seed(0)
     tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=number_of_rounds))
     diff, scores, highest_round = tester.find_good_input_difference_for_neural_distinguisher(
         [True, False], initial_population=4, number_of_generations=1, nb_samples=64,
-        previous_generation=[0x400000, 0x8000, 0x40, 0x1])
+        previous_generation=[0x400000, 0x8000, 0x40, 0x1], seed=0)
     assert highest_round == number_of_rounds
     assert np.max(scores) > 0
     assert all(0 < d < 1 << 32 for d in diff)
@@ -296,11 +296,12 @@ def test_run_autond_pipeline_starts_training_from_highest_round(highest_round, r
     tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=5))
     search_result = (np.array([0x400000], dtype=object), np.array([1.0]), highest_round)
     with mock.patch.object(tester, 'find_good_input_difference_for_neural_distinguisher',
-                           return_value=search_result), \
+                           return_value=search_result) as search, \
             mock.patch.object(tester, 'get_neural_network'), \
             mock.patch.object(tester, 'train_neural_distinguisher', return_value={round_start: 0.9}) as train:
         result = tester.run_autond_pipeline(optimizer_samples=4, optimizer_generations=1, training_samples=4,
-                                            testing_samples=4, number_of_epochs=1)
+                                            testing_samples=4, number_of_epochs=1, seed=5)
+    assert search.call_args.kwargs['seed'] == 5
     assert train.call_args.args[1] == round_start
     assert result['test_results']['round_start'] == round_start
 
@@ -309,11 +310,30 @@ def _no_score(generation):
     return np.zeros(len(generation)), 0
 
 
+def test_random_difference_stays_within_width():
+    generator = mock.Mock()
+    generator.bytes.return_value = b'\xff'
+    assert NeuralNetworkTests(None)._random_difference(generator, 3) == 7
+    generator.bytes.assert_called_once_with(1)
+
+
+def test_random_difference_rejects_zero():
+    generator = mock.Mock()
+    generator.bytes.side_effect = [b'\x00', b'\x08', b'\x05']
+    assert NeuralNetworkTests(None)._random_difference(generator, 3) == 5
+    assert generator.bytes.call_count == 3
+
+
+def test_random_difference_covers_the_legal_range():
+    generator = np.random.default_rng(0)
+    tester = NeuralNetworkTests(None)
+    assert {tester._random_difference(generator, 3) for _ in range(200)} == set(range(1, 8))
+    assert all(0 < tester._random_difference(generator, 70) < 1 << 70 for _ in range(50))
+
+
 def test_evolutionary_algorithm_initial_differences_stay_within_width():
-    with mock.patch.object(neural_network_tests.secrets, 'randbelow', side_effect=lambda upper: upper - 1) as randbelow:
-        generation, _, _ = NeuralNetworkTests(None)._evolutionary_algorithm(None, 4, 0, False, _no_score, 3)
-    assert {randbelow_call.args for randbelow_call in randbelow.call_args_list} == {(7,)}
-    assert list(generation) == [7, 7, 7, 7]
+    generation, _, _ = NeuralNetworkTests(None)._evolutionary_algorithm(None, 64, 0, False, _no_score, 3, seed=0)
+    assert set(generation) <= set(range(1, 8))
 
 
 def test_evolutionary_algorithm_mutates_the_highest_bit():
@@ -368,12 +388,11 @@ def test_evolutionary_algorithm_accepts_numpy_previous_generation():
 
 
 def test_find_good_input_difference_verbose_with_fewer_than_ten_differences():
-    np.random.seed(0)
     tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=1))
     output = io.StringIO()
     with contextlib.redirect_stdout(output):
         diff, _, _ = tester.find_good_input_difference_for_neural_distinguisher(
-            [True, False], initial_population=3, number_of_generations=0, nb_samples=8, verbose=True)
+            [True, False], initial_population=3, number_of_generations=0, nb_samples=8, verbose=True, seed=0)
     assert len(diff) == 3
     assert output.getvalue().count(', with score') == 3
 
@@ -402,3 +421,24 @@ def test_train_neural_distinguisher_checkpoint_can_resume_training(tmp_path):
     x, y = data_generator(2, 32)
     history = loaded.fit(x, y, epochs=1, validation_data=(x, y), verbose=0)
     assert 'val_acc' in history.history
+
+
+def _seeded_search(seed):
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=3))
+    return tester.find_good_input_difference_for_neural_distinguisher(
+        [True, False], initial_population=4, number_of_generations=2, nb_samples=32, seed=seed)
+
+
+def test_find_good_input_difference_is_reproducible_with_a_seed():
+    first_differences, first_scores, first_highest_round = _seeded_search(3)
+    second_differences, second_scores, second_highest_round = _seeded_search(3)
+    assert list(first_differences) == list(second_differences)
+    np.testing.assert_array_equal(first_scores, second_scores)
+    assert first_highest_round == second_highest_round
+    other_differences, _, _ = _seeded_search(4)
+    assert list(other_differences) != list(first_differences)
+
+
+def test_random_generator_accepts_sage_integers():
+    tester = NeuralNetworkTests(None)
+    assert tester._random_generator(Integer(7)).integers(1 << 30) == tester._random_generator(7).integers(1 << 30)

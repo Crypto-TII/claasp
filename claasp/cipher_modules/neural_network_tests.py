@@ -595,7 +595,8 @@ class NeuralNetworkTests:
                                           testing_samples, epochs=number_of_epochs, pipeline = False)
 
     def run_autond_pipeline(self, difference_positions=None, optimizer_samples=10 ** 4, optimizer_generations=50,
-                            training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=40, verbose=False, neural_net = 'dbitnet', save_prefix=None):
+                            training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=40, verbose=False, neural_net = 'dbitnet', save_prefix=None,
+                            seed=None):
         """
         Runs the AutoND pipeline ([BGHR2023]):
         - Find an input difference for the inputs set to True in difference_positions using an optimizer
@@ -623,6 +624,10 @@ class NeuralNetworkTests:
         - ``number_of_epochs`` -- **integer**; (default: `40`) number of training epochs
         - ``verbose`` -- **boolean**; (default: `False`) verbosity of the optimizer
         - ``neural_net`` -- **string**; (default: `dbitnet`) the neural network architecture to use; supports 'dbitnet' and 'gohr_resnet'
+        - ``save_prefix`` -- **string** (default: `None`); prefix of the files storing the trained neural
+          distinguishers, see :meth:`train_neural_distinguisher`
+        - ``seed`` -- **integer** (default: `None`); seed of the input difference search, see
+          :meth:`find_good_input_difference_for_neural_distinguisher`; the neural network training is not seeded
 
 
         EXAMPLES::
@@ -742,7 +747,7 @@ class NeuralNetworkTests:
         diff, scores, highest_round = self.find_good_input_difference_for_neural_distinguisher(difference_positions,
                                                                                                number_of_generations=optimizer_generations,
                                                                                                nb_samples=optimizer_samples,
-                                                                                               verbose=verbose)
+                                                                                               verbose=verbose, seed=seed)
         input_difference = self._int_difference_to_input_differences(diff[-1], difference_positions, self.cipher.inputs_bit_size)
         input_size = self.cipher.output_bit_size * 2
         neural_network = self.get_neural_network(neural_net, input_size = input_size)
@@ -868,7 +873,7 @@ class NeuralNetworkTests:
     def find_good_input_difference_for_neural_distinguisher(self, difference_positions,
                                                             initial_population=32, number_of_generations=15,
                                                             nb_samples=10 ** 3, previous_generation=None,
-                                                            verbose=False):
+                                                            verbose=False, seed=None):
         """
         Return good neural distinguisher input differences for a cipher, based on the AutoND pipeline ([BGHR2023]).
 
@@ -893,6 +898,9 @@ class NeuralNetworkTests:
           be an integer between 1 and ``2**n - 1``, where ``n`` is the total bit size of the inputs set to True in
           ``difference_positions``
         - ``verbose`` -- **boolean** (default: `False`); verbosity
+        - ``seed`` -- **integer** (default: `None`); seed of the random generator drawing the input samples, the
+          initial differences and the mutations; with the same seed and parameters, the search returns the same
+          differences, scores and highest round. If None, fresh entropy is used
 
         EXAMPLES::
 
@@ -919,6 +927,15 @@ class NeuralNetworkTests:
             0x40 , with score 1.7469375
             0x2 , with score 1.7279375000000001
 
+        With a seed, the search is reproducible::
+
+            sage: first = tester.find_good_input_difference_for_neural_distinguisher([True, False],
+            ....:     number_of_generations=2, nb_samples=100, seed=1)
+            sage: second = tester.find_good_input_difference_for_neural_distinguisher([True, False],
+            ....:     number_of_generations=2, nb_samples=100, seed=1)
+            sage: list(first[0]) == list(second[0]), all(first[1] == second[1]), first[2] == second[2]
+            (True, True, True)
+
         """
 
         # Initialisation
@@ -928,11 +945,12 @@ class NeuralNetworkTests:
         evaluate = lambda x: self._select_scored_round_outputs(
             self.cipher.evaluate_vectorized(x, intermediate_output=True), scored_outputs)
         threshold = 0.05
+        rng = self._random_generator(seed)
         # Generation of the baseline ciphertexts
         inputs0 = []
         num_input_bits = 0
         for i in range(len(input_tags)):
-            inputs0.append(np.random.randint(256, size=(input_lengths[i] // 8, nb_samples), dtype=np.uint8))
+            inputs0.append(rng.integers(256, size=(input_lengths[i] // 8, nb_samples), dtype=np.uint8))
             if difference_positions[i]:
                 num_input_bits += input_lengths[i]
         C0 = evaluate(inputs0)
@@ -944,7 +962,7 @@ class NeuralNetworkTests:
                                                                        difference_positions,
                                                                        evaluate, x, inputs0, C0,
                                                                        threshold),
-                                                                    difference_bits=num_input_bits)
+                                                                    difference_bits=num_input_bits, seed=rng)
         if verbose:
             print("The highest reached round was", highest_round)
             print("The best differences found by the optimizer are...")
@@ -957,8 +975,9 @@ class NeuralNetworkTests:
         if isinstance(difference_bits, bool) or not isinstance(difference_bits, Integral) or difference_bits < 1:
             raise ValueError(f'difference_bits must be a positive integer, got {difference_bits!r}')
         mut_prob = 0.1
+        rng = self._random_generator(seed)
         if previous_generation is None:
-            generation = np.array([secrets.randbelow((1 << difference_bits) - 1) + 1
+            generation = np.array([self._random_difference(rng, difference_bits)
                                    for _ in range(initial_population)], dtype=object)
         else:
             generation = np.array([self._validated_difference(difference, difference_bits)
@@ -973,7 +992,6 @@ class NeuralNetworkTests:
 
         scores = scores[best_differences]
         cpt = initial_population ** 2
-        rng = np.random.default_rng(seed)
         for i in range(number_of_generations):
             # New generation
             kids = np.array([a ^ b for a in generation for b in generation if a != b], dtype=object)
@@ -1009,6 +1027,18 @@ class NeuralNetworkTests:
                     flush=True)
 
         return generation, scores, highest_round
+
+    def _random_generator(self, seed):
+        # numpy only accepts Python integers as seeds, not e.g. Sage integers
+        return np.random.default_rng(int(seed) if isinstance(seed, Integral) else seed)
+
+    def _random_difference(self, rng, difference_bits):
+        number_of_bytes = (difference_bits + 7) // 8
+        mask = (1 << difference_bits) - 1
+        difference = 0
+        while difference == 0:
+            difference = int.from_bytes(rng.bytes(number_of_bytes), byteorder='big') & mask
+        return difference
 
     def _validated_difference(self, difference, difference_bits):
         if isinstance(difference, bool) or not isinstance(difference, Integral):
