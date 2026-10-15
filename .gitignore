@@ -59,7 +59,7 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
+# *.log
 local_settings.py
 
 # Flask stuff:
@@ -122,10 +122,9 @@ local/
 upstream/
 
 SAGE_BIN_PATH
-<<<<<<< HEAD
-z_start_exp/constraint_no_constraint/grbnodes0/
-z_start_exp/constraint_no_constraint/grbnodes0/
-=======
+
+# Generated solver node directories, at any depth
+**/grbnodes*/
 
 # experiments codes
 diff_ca_kalyna.py
@@ -135,4 +134,3 @@ output_kalyna.txt
 
 # Generated LowMC constants
 claasp/ciphers/block_ciphers/lowmc_constants_p*_k*_r*.dat
->>>>>>> develop
