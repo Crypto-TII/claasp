@@ -146,6 +146,13 @@ class Fsr(Component):
             sage: word = fsr_component.algebraic_polynomials(algebraic)
             sage: [str(p) for p in word]
             ['fsr_0_0_y0 + fsr_0_0_x2', 'fsr_0_0_y1 + fsr_0_0_x3', 'fsr_0_0_y2 + fsr_0_0_x2 + fsr_0_0_x0', 'fsr_0_0_y3 + fsr_0_0_x3 + fsr_0_0_x1']
+
+        Coupled registers read the same state before each clock::
+
+            sage: coupled = FsrCipher(register_size=2, description=[[[1, [[1]]], [1, [[0]]]], 1])
+            sage: component = coupled.component_from_id("fsr_0_0")
+            sage: list(component.algebraic_polynomials(AlgebraicModel(coupled)))
+            [fsr_0_0_y0 + fsr_0_0_x1, fsr_0_0_y1 + fsr_0_0_x0]
         """
         bits_inside_word = self.description[1]
         if bits_inside_word == 1:
@@ -185,10 +192,11 @@ class Fsr(Component):
                 )
 
         for _ in range(clocks):
+            previous_state = list(x)
             for i in range(number_of_registers):
-                feedback_bit = registers_polynomial[i](*x)
+                feedback_bit = registers_polynomial[i](*previous_state)
                 if clock_polynomials[i] is not None:
-                    clock_bit = clock_polynomials[i](*x)
+                    clock_bit = clock_polynomials[i](*previous_state)
                     for k in range(registers_start[i], registers_update_bit[i]):
                         x[k] = clock_bit * x[k + 1] + (clock_bit + 1) * x[k]
                     x[registers_update_bit[i]] = clock_bit * feedback_bit + (clock_bit + 1) * x[registers_update_bit[i]]
