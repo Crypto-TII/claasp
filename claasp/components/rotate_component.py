@@ -64,6 +64,13 @@ class Rotate(Component):
         component_input = Input(output_bit_size, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
 
+
+    def _rotation_amount(self):
+        """
+        Return the rotation amount reduced modulo the component width, in ``[0, output_bit_size)``.
+        """
+        return self.description[1] % self.output_bit_size
+
     def algebraic_polynomials(self, model):
         """
         Return a list of polynomials for bitwise ROTATION.
@@ -410,8 +417,8 @@ class Rotate(Component):
         """
         x = model.binary_variable
         rotation_step = self.description[1]
-        abs_rotation_step = abs(rotation_step)
         input_vars, output_vars = self._get_input_output_variables()
+        abs_rotation_step = abs(rotation_step) % self.output_bit_size
         variables = [(f"x[{var}]", x[var]) for var in input_vars + output_vars]
         constraints = []
 
@@ -453,10 +460,10 @@ class Rotate(Component):
         x_class = model.trunc_wordvar
 
         rotation_step = self.description[1]
-        abs_rotation_word_step = abs(rotation_step) // model.word_size
         constraints = []
 
         input_class_vars, output_class_vars = self._get_wordwise_input_output_linked_class(model)
+        abs_rotation_word_step = (abs(rotation_step) % self.output_bit_size) // model.word_size
         class_variables = [(f"x_class[{var}]", x_class[var]) for var in input_class_vars + output_class_vars]
 
         output_word_size = self.output_bit_size // model.word_size
@@ -501,8 +508,8 @@ class Rotate(Component):
         x_class = model.trunc_binvar
 
         rotation_step = self.description[1]
-        abs_rotation_step = abs(rotation_step)
         input_class_vars, output_class_vars = self._get_input_output_variables()
+        abs_rotation_step = abs(rotation_step) % self.output_bit_size
         class_variables = [(f"x_class[{var}]", x_class[var]) for var in input_class_vars + output_class_vars]
         constraints = []
 
@@ -557,8 +564,8 @@ class Rotate(Component):
         """
         x = model.binary_variable
         rotation_step = self.description[1]
-        abs_rotation_step = abs(rotation_step)
         input_vars, output_vars = self._get_independent_input_output_variables()
+        abs_rotation_step = abs(rotation_step) % self.output_bit_size
         variables = [(f"x[{var}]", x[var]) for var in input_vars + output_vars]
         constraints = []
         if rotation_step < 0:
@@ -648,7 +655,7 @@ class Rotate(Component):
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_ids = self._generate_output_ids()
-        rotation = self.description[1]
+        rotation = self._rotation_amount()
         input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
         constraints = []
         for output_bit_id, input_bit_id_rotated in zip(output_bit_ids, input_bit_ids_rotated):
@@ -681,7 +688,7 @@ class Rotate(Component):
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
         out_ids_0, out_ids_1 = self._generate_output_double_ids()
-        rotation = self.description[1]
+        rotation = self._rotation_amount()
         in_ids_0_rotated = in_ids_0[-rotation:] + in_ids_0[:-rotation]
         in_ids_1_rotated = in_ids_1[-rotation:] + in_ids_1[:-rotation]
         constraints = []
@@ -742,7 +749,7 @@ class Rotate(Component):
         """
         input_bit_ids = self._generate_component_input_ids()
         output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
-        rotation = self.description[1]
+        rotation = self._rotation_amount()
         input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
         constraints = []
         for output_bit_id, input_bit_id_rotated in zip(output_bit_ids, input_bit_ids_rotated):
@@ -771,7 +778,7 @@ class Rotate(Component):
         """
         input_bit_ids = self._generate_input_ids()
         output_bit_ids = self._generate_output_ids()
-        rotation = self.description[1]
+        rotation = self._rotation_amount()
         input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
         constraints = []
         for output_bit_id, input_bit_id_rotated in zip(output_bit_ids, input_bit_ids_rotated):
@@ -825,7 +832,7 @@ class Rotate(Component):
         """
         input_bit_ids = self._generate_component_input_ids()
         output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
-        rotation = self.description[1]
+        rotation = self._rotation_amount()
         input_bit_ids_rotated = input_bit_ids[-rotation:] + input_bit_ids[:-rotation]
         constraints = []
         for output_bit_id, input_bit_id_rotated in zip(output_bit_ids, input_bit_ids_rotated):
