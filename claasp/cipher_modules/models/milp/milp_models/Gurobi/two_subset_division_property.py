@@ -16,7 +16,6 @@
 # ****************************************************************************
 
 from gurobipy import GRB
-from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 
 from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
 
@@ -42,7 +41,10 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
 
     The constructor's ``sbox_encoding`` flag picks the small-S-box encoder:
     ``"onehot"`` (default), ``"convexhull"``, or ``"espresso"`` (S-boxes over 5 bits
-    always use Espresso). Besides the SPN-style components, the bitwise AND and OR
+    always use Espresso). The flag applies to S-boxes only: the modular addition is encoded
+    by the two inequalities that are the convex hull of its full-adder slice, which is
+    already exact, so it has no encoding choice.
+    Besides the SPN-style components, the bitwise AND and OR
     (:meth:`add_and_constraints`, :meth:`add_or_constraints`), the modular addition
     (:meth:`add_modadd_constraints`) and ``NOT`` (:meth:`add_not_constraints`, transparent)
     have their two-subset rules, and constants are transparent
@@ -56,7 +58,6 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
     # process; deriving it builds a PolyBoRi ring, which is what we want to keep out of the
     # per-model path. The S-box table varies with the S-box, so it is cached per instance and
     # keyed by the component description (``_sbox_2sdp_cache`` below).
-    _FULL_ADDER_TABLE = None
 
     def __init__(self, cipher, sbox_encoding="onehot"):
         super().__init__(cipher)
@@ -264,14 +265,9 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
         Two-subset rule for ``NOT``: transparent, ``b == a`` bit by bit.
 
         ``NOT x = x + 1`` is an XOR with the constant 1, and the two-subset division property
-        is invariant under XOR with a constant (Sun et al., ePrint 2016/1101), so the trail is
-        the identity. This is the same reasoning as :meth:`_add_xor_bit_constraint`, where a
-        constant operand is dropped whatever its value.
-
-        The parent's exact model instead uses ``b >= a``, because ``x + 1`` has the monomial
-        ``1`` and so the output can also be reached from no input at all; that slack is
-        precisely what the two-subset property discards. The only trail this rule drops is
-        therefore ``u = 0``, the constant monomial, which no cube ever asks about.
+        is invariant under that (Sun et al., ePrint 2016/1101). Todo's rule leaves two trails,
+        ``0 -> 0`` and ``1 -> 1``: from ``a = 0`` the constant monomial also reaches ``b = 1``,
+        but SizeReduce keeps the minimal ``b = 0``.
         """
         output_vars = self.get_output_vars(component)
         input_vars_concat = self.get_input_vars(component)
@@ -282,56 +278,38 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
             self.set_as_used_variables([input_vars_concat[bit_pos]])
         self._model.update()
 
-    @classmethod
-    def full_adder_two_subset_table(cls):
-        r"""
-        Two-subset division trails of one bit slice of the modular addition, the full adder
-        ``(x, y, c) -> (s, c')`` with ``s = x + y + c`` and ``c' = xy + xc + yc``, derived from
-        its ANF exactly as for an S-box (``u -> v`` iff some monomial of ``prod_{q: v_q=1} f_q``
-        dominates ``u``, then SizeReduce). Input bits are ``(x, y, c) = (bit 0, bit 1, bit 2)``
-        of ``u`` and output bits ``(s, c') = (bit 0, bit 1)`` of ``v``. The table has 11 trails:
-
-        ``000 -> 00``; a single active input ``-> 01`` or ``-> 10``; two active inputs ``-> 10``
-        (the carry only); ``111 -> 11``.
-
-        Chaining the slices is at least as tight as the COPY/AND/XOR decomposition of the
-        modular addition used by Sun et al. (ePrint 2016/1101), whose trails are these up to
-        non-minimal ones. A constant (or dropped) operand is handled by the same table with
-        its bit fixed to 0.
-
-        A classmethod cached on :attr:`_FULL_ADDER_TABLE`, because the table depends only on
-        the full-adder ANF, never on the cipher or the instance.
+    def _add_two_subset_adder(self, tag, a_bits, b_bits, z_bits):
         """
-        if cls._FULL_ADDER_TABLE is None:
-            ring = BooleanPolynomialRing(3, "x")
-            x, y, c = ring.gens()
-            anfs = [x + y + c, x * y + x * c + y * c]
-            names = [str(v) for v in ring.gens()]
-            table = []
-            for u in range(8):
-                reachable = []
-                for v in range(4):
-                    product = ring(1)
-                    for q in range(2):
-                        if (v >> q) & 1:
-                            product *= anfs[q]
-                    monomials = [sum(1 << names.index(str(var)) for var in mon.variables()) for mon in product.monomials()]
-                    if any((w & u) == u for w in monomials):
-                        reachable.append(v)
-                for v in reachable:
-                    if not any(v2 != v and (v2 & v) == v2 for v2 in reachable):
-                        table.append((u, v))
-            cls._FULL_ADDER_TABLE = table
-        return cls._FULL_ADDER_TABLE
+        Ripple-carry adder ``z = a + b mod 2^n`` on MSB-first variable lists. The carry into
+        the least significant slice and out of the most significant one are both fixed to 0.
+        """
+        carry = self._model.addVar(vtype=GRB.BINARY, lb=0, ub=0, name=f"modadd_{tag}_carry_in")
+        self._model.update()
+        for i in reversed(range(len(z_bits))):                # i = n-1 is the least significant bit
+            carry_out = self._model.addVar(
+                vtype=GRB.BINARY, lb=0, ub=0 if i == 0 else 1, name=f"modadd_{tag}_carry_{i}"
+            )
+            self._model.update()
+            x, y, c, s, c_out = a_bits[i], b_bits[i], carry, z_bits[i], carry_out
+            # Todo's rule (Xiang et al., ASIACRYPT 2016, Algorithm 2) on the full adder
+            # s = x+y+c, c' = xy+xc+yc gives 11 trails, and their convex hull is this pair.
+            self._model.addConstr(s + 2 * c_out >= x + y + c)        
+            self._model.addConstr(2 * (s + c_out) <= 1 + x + y + c) 
+            carry = carry_out
+        self._model.update()
 
     def add_modadd_constraints(self, component):
         r"""
         Two-subset model of ``z = x_0 + x_1 + ... + x_{k-1} mod 2^n``: a ripple-carry chain of
-        full-adder slices (:meth:`full_adder_two_subset_table`), one-hot encoded, from the
-        least significant bit (carry-in fixed to 0) to the most significant one (carry-out
-        dropped, i.e. fixed to 0). More than two operands are added one after the other
-        through intermediate sums. Operands are the ``k`` consecutive ``n``-bit blocks of the
-        concatenated input, most significant bit first, like the output.
+        full-adder slices (:meth:`_add_two_subset_adder`), with more than two operands added
+        one after the other through intermediate sums. Operands are the ``k`` consecutive
+        ``n``-bit blocks of the concatenated input, most significant bit first, like the output.
+
+        For ``k == 2`` the chain reproduces Todo's rule applied to the whole addition exactly,
+        checked for ``n = 2..7``. For ``k >= 3`` the pairwise chaining is only a conservative
+        over-approximation: ``(x_0 + x_1) + x_2`` on three 3-bit operands admits 46 trails
+        where the rule gives 45. Verdicts stay sound, a balanced bit is still balanced, but a
+        distinguisher may be missed.
         """
         output_vars = self.get_output_vars(component)
         input_vars_concat = self.get_input_vars(component)
@@ -356,28 +334,6 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
             acc = result
 
         self.set_as_used_variables(input_vars_concat + list(output_vars))
-        self._model.update()
-
-    def _add_two_subset_adder(self, tag, a_bits, b_bits, z_bits):
-        """One-hot ripple-carry adder ``z = a + b mod 2^n`` on MSB-first variable lists."""
-        n = len(z_bits)
-        table = self.full_adder_two_subset_table()
-        carry = self._model.addVar(vtype=GRB.BINARY, lb=0, ub=0, name=f"modadd_{tag}_carry_in")
-        self._model.update()
-        for i in reversed(range(n)):                          # i = n-1 is the least significant bit
-            carry_out = self._model.addVar(
-                vtype=GRB.BINARY, lb=0, ub=0 if i == 0 else 1, name=f"modadd_{tag}_carry_{i}"
-            )
-            selectors = [
-                self._model.addVar(vtype=GRB.BINARY, name=f"modadd_{tag}_trail_{i}_{t}") for t in range(len(table))
-            ]
-            self._model.update()
-            self._model.addConstr(sum(selectors) == 1)
-            for p, var in enumerate((a_bits[i], b_bits[i], carry)):
-                self._model.addConstr(var == sum(selectors[t] for t, (u, v) in enumerate(table) if (u >> p) & 1))
-            for q, var in enumerate((z_bits[i], carry_out)):
-                self._model.addConstr(var == sum(selectors[t] for t, (u, v) in enumerate(table) if (v >> q) & 1))
-            carry = carry_out
         self._model.update()
 
     def add_constant_constraints(self, component):

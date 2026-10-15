@@ -153,16 +153,6 @@ def test_is_balanced_over_cube_scan_simon32_13():
     assert milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(16, cube) is False
 
 
-def test_full_adder_two_subset_table_has_11_trails():
-    # one bit slice of the modular addition, (x, y, c) -> (s, c'); no solve
-    table = MilpTwoSubsetDivisionPropertyModel.full_adder_two_subset_table()
-    assert len(table) == 11
-    assert (0b000, 0b00) in table and (0b111, 0b11) in table
-    # two active inputs reach the carry only, a single one reaches either output
-    assert {v for u, v in table if u == 0b110} == {0b10}
-    assert {v for u, v in table if u == 0b001} == {0b01, 0b10}
-
-
 def test_keyless_model_refused_when_round_keys_are_added():
     # HIGHT adds its subkeys modularly: dropping them is not sound, the independent-key model must be used
     milp = MilpTwoSubsetDivisionPropertyModel(HightBlockCipher(number_of_rounds=2))
@@ -215,13 +205,12 @@ def test_xor_two_subset_trails():
 def test_modadd_two_subset_trails():
     # z = a + b mod 4. Bits 0,1 of u are a's MSB,LSB and bits 2,3 are b's; output bit 1 is the LSB.
     cipher = ModaddCipher(word_bit_size=2, number_of_inputs=2)
-    admitted = _admitted_trails(cipher)
-    both_low = 0b1010
-    # the low output bit is a plain XOR of the two low inputs, so it refuses both at once
-    assert {t for t in admitted if t[1] == 1} == {(0b0010, 1), (0b1000, 1)}
-    assert (both_low, 1) not in admitted
-    # the high output bit does reach them, through the carry monomial a_lsb * b_lsb
-    assert (both_low, 0) in admitted
+    # the low output bit is a plain XOR, so it refuses both low inputs at once (0b1010);
+    # the high bit does reach them, through the carry monomial a_lsb * b_lsb
+    assert _admitted_trails(cipher) == {
+        (0b0001, 0), (0b0010, 0), (0b0100, 0), (0b1000, 0), (0b1010, 0),
+        (0b0010, 1), (0b1000, 1),
+    }
 
 
 @pytest.mark.skip(reason="Requires Gurobi license")
