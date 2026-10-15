@@ -25,9 +25,7 @@ from claasp.input import Input
 
 
 def _get_polynomial_from_binary_polynomial_index_list(polynomial_index_list, R):
-    if polynomial_index_list == []:
-        return R(1)
-    p = 0
+    p = R(0)
     x = R.gens()
     for _ in polynomial_index_list:
         m = 1
@@ -146,6 +144,13 @@ class Fsr(Component):
             sage: word = fsr_component.algebraic_polynomials(algebraic)
             sage: [str(p) for p in word]
             ['fsr_0_0_y0 + fsr_0_0_x2', 'fsr_0_0_y1 + fsr_0_0_x3', 'fsr_0_0_y2 + fsr_0_0_x2 + fsr_0_0_x0', 'fsr_0_0_y3 + fsr_0_0_x3 + fsr_0_0_x1']
+
+        Empty feedback inserts zero, while an empty clock enables every step::
+
+            sage: zero_cipher = FsrCipher(register_size=2, description=[[[2, [], []]], 1])
+            sage: component = zero_cipher.component_from_id("fsr_0_0")
+            sage: list(component.algebraic_polynomials(AlgebraicModel(zero_cipher)))
+            [fsr_0_0_y0 + fsr_0_0_x1, fsr_0_0_y1]
         """
         bits_inside_word = self.description[1]
         if bits_inside_word == 1:
@@ -179,7 +184,7 @@ class Fsr(Component):
             registers_start[i] = end
             end += self.description[0][i][0]
             registers_update_bit[i] = end - 1
-            if len(self.description[0][i]) > 2:
+            if len(self.description[0][i]) > 2 and self.description[0][i][2] != []:
                 clock_polynomials[i] = _get_polynomial_from_binary_polynomial_index_list(
                     self.description[0][i][2], x_polynomial_ring
                 )
