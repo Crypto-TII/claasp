@@ -39,6 +39,25 @@ def test_fsr_algebraic_polynomials():
     ]
 
 
+@pytest.mark.parametrize("feedback, expected", [([], 0), ([[]], 1), ([[], []], 0)])
+@pytest.mark.parametrize("clock", [None, [], [[]], [[], []]])
+def test_fsr_algebraic_polynomials_binary_constants(feedback, expected, clock):
+    register = [2, feedback]
+    if clock is not None:
+        register.append(clock)
+    cipher = FsrCipher(register_size=2, description=[[register], 1])
+    component = cipher.component_from_id("fsr_0_0")
+    model = AlgebraicModel(cipher)
+    ring = model.ring()
+    polynomials = component.algebraic_polynomials(model)
+    for value in range(4):
+        output = value if clock == [[], []] else ((value & 1) << 1) | expected
+        assert cipher.evaluate([value]) == output
+        assignment = {ring(f"fsr_0_0_{postfix}{i}"): (state >> (1 - i)) & 1
+                      for postfix, state in [("x", value), ("y", output)] for i in range(2)}
+        assert all(polynomial.subs(assignment) == 0 for polynomial in polynomials)
+
+
 @pytest.mark.parametrize("registers", [
     [[1, [[1]]], [1, [[0]]]],
     [[2, [[2], [3]]], [2, [[0], [1]]]],
