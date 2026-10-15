@@ -90,7 +90,8 @@ class LinearLayer(Component):
     - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
     - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
     - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
-    - ``description`` -- **list**; component-specific metadata used by the implementation.
+    - ``description`` -- **list**; binary matrix indexed by input bit, then output bit.
+      Output bit ``j`` is the XOR of input bits ``i`` for which ``description[i][j]`` is one.
 
     EXAMPLES::
 
@@ -125,6 +126,9 @@ class LinearLayer(Component):
         """
         Return a list of polynomials for LINEAR LAYER.
 
+        The descriptor stores input bits in rows and output bits in columns,
+        so the equations are ``y - x * M`` for row vectors ``x`` and ``y``.
+
         INPUT:
 
         - ``model`` -- **model object**; a model instance
@@ -145,11 +149,11 @@ class LinearLayer(Component):
         noutputs = self.output_bit_size
         ninputs = self.input_bit_size
         ring_R = model.ring()
-        M = Matrix(ring_R, self.description, nrows=noutputs, ncols=ninputs)
+        M = Matrix(ring_R, self.description, nrows=ninputs, ncols=noutputs)
         x = vector(ring_R, (map(ring_R, [f"{self.id}_{model.input_postfix}{i}" for i in range(ninputs)])))
         y = vector(ring_R, list(map(ring_R, [f"{self.id}_{model.output_postfix}{i}" for i in range(noutputs)])))
 
-        return (y - M * x).list()
+        return (y - x * M).list()
 
     def cms_constraints(self):
         """

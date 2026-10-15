@@ -1,3 +1,8 @@
+from itertools import product
+
+import pytest
+
+from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import (
     MilpBitwiseDeterministicTruncatedXorDifferentialModel,
@@ -275,3 +280,24 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     assert str(constraints[1]) == "1 <= 1 + x_1 + x_4 + x_5 - x_9"
     assert str(constraints[-2]) == "1 <= 1 + x_5 - x_6"
     assert str(constraints[-1]) == "1 <= 1 + x_1 - x_2"
+
+
+@pytest.mark.parametrize("description", [[[1, 1], [0, 1]], [[1, 0], [1, 1]]])
+def test_algebraic_polynomials_nonsymmetric_matrix(description):
+    cipher = LinearLayerCipher(bit_size=2, description=description)
+    component = cipher.component_from_id("linear_layer_0_0")
+    model = AlgebraicModel(cipher)
+    ring = model.ring()
+    polynomials = component.algebraic_polynomials(model)
+
+    # Check the complete input/output relation, not just one satisfying assignment.
+    for input_bits, output_bits in product(product(range(2), repeat=2), repeat=2):
+        input_value = 2 * input_bits[0] + input_bits[1]
+        output_value = 2 * output_bits[0] + output_bits[1]
+        assignment = {
+            ring(f"{component.id}_{postfix}{i}"): bit
+            for postfix, bits in ((model.input_postfix, input_bits), (model.output_postfix, output_bits))
+            for i, bit in enumerate(bits)
+        }
+        satisfies_polynomials = all(polynomial.subs(assignment) == 0 for polynomial in polynomials)
+        assert satisfies_polynomials == (output_value == cipher.evaluate([input_value]))
