@@ -139,3 +139,9 @@ cipher_output_4_10_output = 0x20
     sys.stdout = old_stdout
     assert evaluation == '0x20'
     assert result.getvalue() == expected_evaluation
+
+
+def test_toyfeistel_parallel_sboxes():
+    toyfeistel = ToyFeistel(block_bit_size=16, key_bit_size=16)
+    assert toyfeistel.number_of_sboxes == 2
+    assert toyfeistel.evaluate([0x1234, 0x5678]) == 0xD83

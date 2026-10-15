@@ -19,7 +19,7 @@
 from claasp.cipher import Cipher
 from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
-PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 8, "self.key_bit_size": 8, "number_of_rounds": 5}]
+PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 8, "key_bit_size": 8, "number_of_rounds": 5}]
 
 
 class ToyFeistel(Cipher):
@@ -31,7 +31,7 @@ class ToyFeistel(Cipher):
     INPUT:
 
     - ``block_bit_size`` -- **integer** (default: `8`); cipher input and output block bit size of the cipher
-    - ``self.key_bit_size`` -- **integer** (default: `8`); cipher key bit size of the cipher
+    - ``key_bit_size`` -- **integer** (default: `8`); cipher key bit size of the cipher
     - ``sbox`` -- **integer list** (default: [14, 9, 15, 0, 13, 4, 10, 11, 1, 2, 8, 3, 7, 6, 12, 5]); lookup table of the S-box. The default is the 4-bit S-box S_0 from LBlock.
     - ``number_of_rounds`` -- **integer** (default: `5`); number of rounds of the cipher.
 
@@ -47,6 +47,9 @@ class ToyFeistel(Cipher):
         True
         sage: hex(toyfeistel.evaluate([plaintext, key]))
         '0x8e'
+        sage: toyfeistel16 = ToyFeistel(block_bit_size=16, key_bit_size=16)
+        sage: hex(toyfeistel16.evaluate([0x1234, 0x5678]))
+        '0xd83'
     """
 
     def __init__(
@@ -58,7 +61,7 @@ class ToyFeistel(Cipher):
     ):
         self.sbox = sbox
         self.sbox_bit_size = len(bin(len(sbox))) - 3
-        self.number_of_sboxes = block_bit_size // self.sbox_bit_size
+        self.number_of_sboxes = (block_bit_size // 2) // self.sbox_bit_size
         self.key_bit_size = key_bit_size
         self.block_bit_size = block_bit_size
 
@@ -110,12 +113,18 @@ class ToyFeistel(Cipher):
         after_key_add = self.add_xor_component(
             [state, key], [right_half_positions, list(range(self.block_bit_size // 2))], self.block_bit_size // 2
         ).id
-        sb_output = self.add_sbox_component(
-            [after_key_add], [list(range(self.block_bit_size // 2))], self.block_bit_size // 2, self.sbox
-        ).id
+        sb_outputs = [
+            self.add_sbox_component(
+                [after_key_add],
+                [list(range(i * self.sbox_bit_size, (i + 1) * self.sbox_bit_size))],
+                self.sbox_bit_size,
+                self.sbox,
+            ).id
+            for i in range(self.number_of_sboxes)
+        ]
         new_right_word = self.add_xor_component(
-            [sb_output, state],
-            [list(range(self.block_bit_size // 2))] + [list(range(self.block_bit_size // 2))],
+            sb_outputs + [state],
+            [list(range(self.sbox_bit_size))] * self.number_of_sboxes + [list(range(self.block_bit_size // 2))],
             self.block_bit_size // 2,
         ).id
         round_output = self.add_round_output_component(
