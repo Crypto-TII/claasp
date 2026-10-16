@@ -409,6 +409,10 @@ class Permutation(Component):
         where ``output_mask[i] = input_mask[bit_perm[i]]`` -- the same
         ``bit_perm`` used for the ordinary difference).
 
+        INPUT:
+
+        - ``model`` -- **model object**; a ``SmtXorQuasidifferentialModel`` instance
+
         EXAMPLES::
 
             sage: from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher

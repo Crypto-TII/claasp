@@ -1180,6 +1180,10 @@ class LinearLayer(Component):
           the ``_i``/``_o`` suffix convention used by the ordinary
           linear model).
 
+        INPUT:
+
+        - ``model`` -- **model object**; a ``SmtXorQuasidifferentialModel`` instance
+
         EXAMPLES::
 
             sage: from claasp.ciphers.single_component_ciphers.linear_layer_cipher import LinearLayerCipher

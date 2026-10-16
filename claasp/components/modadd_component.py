@@ -59,6 +59,17 @@ def smt_quasidifferential_modadd(
     (a,b,c,u,v,w) combinations: 6728 valid transitions, 0 false
     positives, 0 false negatives, 0 wrong weights.
 
+    INPUT:
+
+    - ``component`` -- **Component object**; the modular addition or subtraction component
+    - ``name_prefix`` -- **string**; the prefix of the auxiliary variables, ``'modadd_'`` or ``'modsub_'``
+    - ``a_ids`` -- **list**; the difference variables of the first addend
+    - ``b_ids`` -- **list**; the difference variables of the second addend
+    - ``c_ids`` -- **list**; the difference variables of the sum
+    - ``u_ids`` -- **list**; the mask variables of the first addend
+    - ``v_ids`` -- **list**; the mask variables of the second addend
+    - ``w_ids`` -- **list**; the mask variables of the sum
+
     EXAMPLES::
 
         sage: from claasp.ciphers.single_component_ciphers.modadd_cipher import ModaddCipher

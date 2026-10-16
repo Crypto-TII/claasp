@@ -2537,6 +2537,10 @@ class Sbox(Component):
         A transition is allowed if the corresponding QDT coefficient is
         non-zero.
 
+        INPUT:
+
+        - ``model`` -- **model object**; a ``SmtXorQuasidifferentialModel`` instance
+
         EXAMPLES::
 
             sage: from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher

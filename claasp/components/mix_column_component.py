@@ -1271,6 +1271,10 @@ class MixColumn(LinearLayer):
         difference, u = L^T(v) for the mask), and restore the original
         description afterwards.
 
+        INPUT:
+
+        - ``model`` -- **model object**; a ``SmtXorQuasidifferentialModel`` instance
+
         EXAMPLES::
 
             sage: from claasp.ciphers.single_component_ciphers.mix_column_cipher import MixColumnCipher
