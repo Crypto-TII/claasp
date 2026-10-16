@@ -56,3 +56,24 @@ def test_fsr_algebraic_polynomials_binary_constants(feedback, expected, clock):
         assignment = {ring(f"fsr_0_0_{postfix}{i}"): (state >> (1 - i)) & 1
                       for postfix, state in [("x", value), ("y", output)] for i in range(2)}
         assert all(polynomial.subs(assignment) == 0 for polynomial in polynomials)
+
+
+@pytest.mark.parametrize("registers", [
+    [[1, [[1]]], [1, [[0]]]],
+    [[2, [[2], [3]]], [2, [[0], [1]]]],
+    [[2, [[2]], [[3]]], [2, [[0]], [[0]]]],
+    [[1, [[1]], [[1]]], [1, [[0]], [[0]]]],
+])
+@pytest.mark.parametrize("clocks", [0, 1, 2, 3])
+def test_fsr_algebraic_polynomials_binary_synchronous_registers(registers, clocks):
+    size = sum(register[0] for register in registers)
+    cipher = FsrCipher(register_size=size, description=[registers, 1, clocks])
+    component = cipher.component_from_id("fsr_0_0")
+    model = AlgebraicModel(cipher)
+    ring = model.ring()
+    polynomials = component.algebraic_polynomials(model)
+    for value in range(1 << size):
+        output = cipher.evaluate([value])
+        assignment = {ring(f"fsr_0_0_{postfix}{i}"): (state >> (size - 1 - i)) & 1
+                      for postfix, state in [("x", value), ("y", output)] for i in range(size)}
+        assert all(polynomial.subs(assignment) == 0 for polynomial in polynomials)
