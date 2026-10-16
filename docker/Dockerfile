@@ -369,6 +369,9 @@ RUN sage -python -m pip install sage-numerical-backends-coin==9.0b12
 # Building with an absolute build directory lets Mallob find its sub-process
 # executables from any working directory. The sed widens the per-thread clause
 # producer bit (an int "1 << id") so that thread ids >= 31 are handled correctly.
+# Mallob fetches YalSAT with a bare "curl -L" (no retry, no checksum) and skips
+# the fetch when the sources are already in lib/yalsat, so YalSAT 03v is fetched
+# here with bounded retries, verified against a pinned SHA-256 and extracted.
 RUN apt-get -q update \
     && apt-get install --no-install-recommends -y libopenmpi-dev openmpi-bin gdb
 
@@ -380,6 +383,15 @@ RUN wget -O /opt/mallob.tar.gz https://github.com/domschrei/mallob/archive/aa168
     && sed -i 's/1 << \(c\.producerId\|localId\)/(cls_producers_bitset) 1 << \1/' \
         src/app/sat/sharing/filter/produced_clause_filter_commons.hpp \
         src/app/sat/sharing/filter/exact_clause_filter.hpp src/app/sat/sharing/filter/importing_solver.hpp \
+    && curl -fsSL --retry 5 --retry-all-errors --retry-delay 10 --retry-max-time 600 \
+        --connect-timeout 30 --max-time 300 \
+        -o lib/yalsat/yalsat.zip https://fmv.jku.at/yalsat/yalsat-03v.zip \
+    && echo "596ad9eb729ddfd67c2256adb20ff8d4d9d7018004d838f6b4e449b8b5be426a  lib/yalsat/yalsat.zip" \
+        | sha256sum -c - \
+    && unzip -q lib/yalsat/yalsat.zip -d lib/yalsat \
+    && mv lib/yalsat/yalsat-03v/* lib/yalsat/ \
+    && rmdir lib/yalsat/yalsat-03v \
+    && rm lib/yalsat/yalsat.zip \
     && MALLOB_MINIMAL=1 bash scripts/setup/cmake-make.sh /opt/mallob/build \
         -DMALLOB_APP_SATWITHPRE=1 -DMALLOB_USE_SATSUMA=0 -DMALLOB_USE_JEMALLOC=1 \
         -DMALLOB_USE_CADICAL=1 -DMALLOB_USE_KISSAT=1 -DMALLOB_USE_LINGELING=1 \
