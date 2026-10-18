@@ -28,10 +28,10 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
     propagation rules where the two-subset property parts from the exact
     monomial-prediction model: the weight-preserving COPY (:meth:`create_all_copies`,
     :meth:`create_copies_for_linear_layer`) and the 2SDP S-box trail table
-    (:meth:`get_valid_monomial_exponents_table`, :meth:`add_sbox_constraints`), plus the
-    XOR with a constant, which is transparent here (:meth:`_add_xor_bit_constraint`). The
-    other linear components (ROTATE, SHIFT, permutation, constant, output) and the driver
-    are inherited unchanged.
+    (:meth:`get_valid_monomial_exponents_table`, which the parent's S-box encoders of
+    :meth:`add_sbox_constraints` then encode), plus the XOR with a constant, which is
+    transparent here (:meth:`_add_xor_bit_constraint`). The other linear components (ROTATE,
+    SHIFT, permutation, constant, output) and the driver are inherited unchanged.
 
     An INFEASIBLE model proves the output bit balanced (an integral distinguisher).
     It is sound but coarser than the exact model (it certifies only a subset of its
@@ -60,9 +60,8 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
     # keyed by the component description (``_sbox_2sdp_cache`` below).
 
     def __init__(self, cipher, sbox_encoding="onehot"):
-        super().__init__(cipher)
+        super().__init__(cipher, sbox_encoding)
         self._sbox_2sdp_cache = {}
-        self._sbox_encoding = sbox_encoding
 
     def create_all_copies(self):
         """Weight-preserving COPY for per-wire fan-out: ``sum(copies) == original``."""
@@ -137,70 +136,6 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
 
         self._sbox_2sdp_cache[desc] = (table, n, m)
         return self._sbox_2sdp_cache[desc]
-
-    def add_sbox_constraints(self, component):
-        r"""
-        Encode the S-box using the 2SDP trail table. Dispatches to one of three
-        encoders of that *same* table, chosen by the ``sbox_encoding`` flag:
-
-        - ``"onehot"`` -> :meth:`add_sbox_constraints_onehot` (default, tight, fast);
-        - ``"convexhull"`` -> the parent's Xiang et al. inequalities
-          (:meth:`get_sbox_inequalities` + :meth:`_apply_sbox_inequalities`);
-        - ``"espresso"`` -> the parent's Espresso encoder
-          (:meth:`add_sbox_constraints_espresso`).
-
-        Any S-box of more than 5 bits (``2^(n+m) > 1024``) always uses Espresso,
-        whatever the flag is: convex hull is too slow to build and one-hot too large.
-        For a large S-box with no ``espresso`` binary the parent would fall back to
-        the exact ANF-circuit, which is unsound here, so that path is refused in
-        :meth:`add_sbox_constraints_anf_circuit`.
-        """
-        n = component.input_bit_size
-        m = component.output_bit_size
-        if (1 << (n + m)) > 1024:                       # > 5-bit S-box: Espresso only
-            return self.add_sbox_constraints_espresso(component)
-        if self._sbox_encoding == "onehot":
-            return self.add_sbox_constraints_onehot(component)
-        if self._sbox_encoding == "convexhull":
-            ineqs, n, m = self.get_sbox_inequalities(component)
-            return self._apply_sbox_inequalities(component, ineqs, n, m)
-        if self._sbox_encoding == "espresso":
-            return self.add_sbox_constraints_espresso(component)
-        raise ValueError(
-            f"unknown sbox_encoding {self._sbox_encoding!r}; "
-            "use 'onehot', 'convexhull', or 'espresso'"
-        )
-
-    def add_sbox_constraints_onehot(self, component):
-        r"""
-        One-hot encoding of the 2SDP S-box trails: one binary selector ``z_t`` per
-        ``(u, v)`` trail, with ``sum z_t == 1``, ``in[p] == sum_{u_p=1} z_t`` and
-        ``out[q] == sum_{v_q=1} z_t``.
-        """
-        table, n, m = self.get_valid_monomial_exponents_table(component)
-        trails = [(u, v) for v, us in table.items() for u in us]
-
-        input_vars = self.get_input_vars(component)
-        output_vars = self.get_output_vars(component)
-        out_all = self._map_sbox_output_vars(component, output_vars, m)
-        self._model.update()
-
-        selectors = [
-            self._model.addVar(vtype=GRB.BINARY, name=f"sbtrail_{component.id}_{k}")
-            for k in range(len(trails))
-        ]
-        self._model.update()
-        self._model.addConstr(sum(selectors) == 1)
-        for p in range(n):
-            self._model.addConstr(
-                input_vars[p] == sum(selectors[k] for k, (u, v) in enumerate(trails) if (u >> p) & 1)
-            )
-        for q in range(m):
-            self._model.addConstr(
-                out_all[q] == sum(selectors[k] for k, (u, v) in enumerate(trails) if (v >> q) & 1)
-            )
-        self.set_as_used_variables(list(input_vars) + list(output_vars))
-        self._model.update()
 
     def add_sbox_constraints_anf_circuit(self, component):
         """Refuse the exact ANF-circuit S-box: unsound mixed with the 2SDP weight-preserving COPY."""
@@ -487,26 +422,9 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
             sub = self._keyless_submodel(keep_round_key_injection=True)
             return sub.is_balanced_over_cube_scan(output_bit_indices, cube, chosen_cipher_output)
 
-        self.build_generic_model_for_specific_output_bit(
-            output_bit_indices[0], fixed_degree=None, which_var_degree=None, chosen_cipher_output=chosen_cipher_output
-        )
+        # build once, without the target-fix (output[first] == 1), so the target can be toggled; shared cube fixed once
+        self._build_balance_model(output_bit_indices[0], cube, chosen_cipher_output, any_output_bit=True)
         m = self._model
-        m.Params.OutputFlag = 0
-        m.setParam(GRB.Param.PoolSearchMode, 0)
-
-        # remove the target-fix (output[first] == 1) the build adds, so the target can be toggled
-        self._remove_output_target_fix(output_bit_indices[0])
-
-        # fix the shared cube once
-        cube_verbose = self.var_list_to_input_positions(cube)
-        cube_set = set(cube_verbose)
-        self._fix_non_cube_public_bits_to_zero(cube_set)
-        for inp_name, idx in cube_verbose:
-            v = m.getVarByName(f"{inp_name}[{idx}]")
-            if v is not None:
-                m.addConstr(v == 1)
-        m.setObjective(0, GRB.MINIMIZE)
-        m.update()
 
         results = {}
         for j in output_bit_indices:
@@ -518,20 +436,3 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
             m.remove(target)
             m.update()
         return results
-
-    def _remove_output_target_fix(self, bit_index):
-        """Remove the single ``output[bit_index] == 1`` constraint that the build adds."""
-        m = self._model
-        name = f"output[{bit_index}]"
-        for con in m.getConstrs():
-            row = m.getRow(con)
-            if (
-                row.size() == 1
-                and row.getVar(0).VarName == name
-                and abs(row.getCoeff(0) - 1.0) < 1e-9
-                and con.Sense == "="
-                and abs(con.RHS - 1.0) < 1e-9
-            ):
-                m.remove(con)
-                m.update()
-                return

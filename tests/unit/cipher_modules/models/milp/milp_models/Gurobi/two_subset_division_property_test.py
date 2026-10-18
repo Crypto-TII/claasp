@@ -16,6 +16,7 @@ from claasp.ciphers.single_component_ciphers.constant_cipher import ConstantCiph
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
 from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
+from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
 
 """
 
@@ -99,6 +100,15 @@ def test_is_balanced_over_cube_scan_ublock_5():
     milp = MilpTwoSubsetDivisionPropertyModel(cipher)
     cube = [f"p{i}" for i in list(range(48, 64)) + list(range(112, 128))]
     assert milp.is_balanced_over_cube_scan([0, 3], cube) == {0: False, 3: True}
+
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_is_balanced_at_all_output_bits_over_cube_keccak_100_3():
+    # Keccak-f[100], 3 rounds: a 7-bit cube (a column + 2 bits) is balanced, below the degree bound 9.
+    cipher = KeccakSboxPermutation(number_of_rounds=3, word_size=4)
+    milp = MilpTwoSubsetDivisionPropertyModel(cipher)
+    assert milp.is_balanced_at_all_output_bits_over_cube([f"p{i}" for i in (0, 4, 8, 12, 16, 20, 24)]) is True
+    assert milp.is_balanced_at_all_output_bits_over_cube([f"p{i}" for i in range(7)]) is False
 
 
 @pytest.mark.skip(reason="Requires Gurobi license")
