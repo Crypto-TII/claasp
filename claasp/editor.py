@@ -1923,7 +1923,7 @@ def remove_key_schedule(cipher, keep_round_key_injection=True):
     if not keep_round_key_injection:
         components_to_remove = {}
         for round_ in cipher_without_key_schedule.rounds_as_list:
-            for component in list(round_.components):  # copy: components may be removed while iterating
+            for component in round_.components[:]:  # copy: components may be removed while iterating
                 key_indices = [
                     i
                     for i, link in enumerate(component.input_id_links)

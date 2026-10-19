@@ -226,7 +226,7 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
             )
             self._model.update()
             x, y, c, s, c_out = a_bits[i], b_bits[i], carry, z_bits[i], carry_out
-            # Todo's rule (Xiang et al., ASIACRYPT 2016, Algorithm 2) on the full adder
+            # The two-subset rule (Xiang et al., ASIACRYPT 2016, Algorithm 2) on the full adder
             # s = x+y+c, c' = xy+xc+yc gives 11 trails, and their convex hull is this pair.
             self._model.addConstr(s + 2 * c_out >= x + y + c)        
             self._model.addConstr(2 * (s + c_out) <= 1 + x + y + c) 
