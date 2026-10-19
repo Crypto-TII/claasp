@@ -26,6 +26,7 @@ from claasp.cipher_modules.models.utils import (
     get_single_key_scenario_format_for_fixed_values,
     hex_to_bitlist,
     join_and_sanitize_strings,
+    save_trail_lower_bounds_and_time_estimates,
     set_component_solution,
     set_fixed_variables,
 )
@@ -511,7 +512,7 @@ class SatXorDifferentialModel(SatModel):
         return weight, solutions_list
 
     def find_lowest_weight_xor_differential_trail(
-        self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+        self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None, start_weight=0, log=False
     ):
         """
         Return the solution representing a trail with the lowest weight.
@@ -527,6 +528,14 @@ class SatXorDifferentialModel(SatModel):
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
         - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
+        - ``options`` -- **list of strings** (default: `None`); additional settings for the chosen solver
+        - ``start_weight`` -- **integer** (default: `0`); the first weight to be searched. Use it to resume a search
+          from a known lower bound: if a trail is found at ``start_weight`` itself, it is only guaranteed to have weight
+          at most ``start_weight``
+        - ``log`` -- **boolean** (default: `False`); if ``True``, after each searched weight, append to the file
+          ``<cipher_id>__sat_find_lowest_weight_xor_differential_trail_from_below__<solver_name>solver[_<options>].log``
+          the lower bound proved so far, the time spent and an estimate of the time needed by the next weights
+          (see :py:func:`~claasp.cipher_modules.models.utils.save_trail_lower_bounds_and_time_estimates`)
 
         .. SEEALSO::
 
@@ -559,23 +568,30 @@ class SatXorDifferentialModel(SatModel):
             sage: trail['total_weight']
             1.0
         """
-        current_weight = 0
-        start_building_time = time.time()
-        self.build_xor_differential_trail_model(weight=current_weight, fixed_variables=fixed_values)
-        end_building_time = time.time()
-        solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-        solution["building_time_seconds"] = end_building_time - start_building_time
-        total_time = solution["solving_time_seconds"]
-        max_memory = solution["memory_megabytes"]
-        while solution["total_weight"] is None:
-            current_weight += 1
+        log_file_name = (
+            f"{self._cipher}__sat_find_lowest_weight_xor_differential_trail_from_below"
+            f"__{solver_name}solver{join_and_sanitize_strings(options)}.log"
+        )
+        searched_weights, search_times = [], []
+        current_weight = start_weight
+        total_time = 0
+        max_memory = 0
+        while True:
             start_building_time = time.time()
             self.build_xor_differential_trail_model(weight=current_weight, fixed_variables=fixed_values)
             end_building_time = time.time()
             solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
+            end_solving_time = time.time()
             solution["building_time_seconds"] = end_building_time - start_building_time
             total_time += solution["solving_time_seconds"]
             max_memory = max((max_memory, solution["memory_megabytes"]))
+            if log:
+                searched_weights.append(current_weight)
+                search_times.append(end_solving_time - end_building_time)
+                save_trail_lower_bounds_and_time_estimates(log_file_name, solution, searched_weights, search_times)
+            if solution["total_weight"] is not None:
+                break
+            current_weight += 1
         solution["solving_time_seconds"] = total_time
         solution["memory_megabytes"] = max_memory
         solution["test_name"] = "find_lowest_weight_xor_differential_trail"
