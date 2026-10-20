@@ -12,7 +12,7 @@ Define and reuse a small block
 
 Start with a block that XORs two 8-bit words and rotates the result one bit to
 the left. ``CompositeBuilder`` uses the same component vocabulary as an
-ordinary primitive builder. Both definitions below use PascalCase names:
+ordinary primitive builder. Both definitions below use snake_case names:
 
 .. doctest::
 
@@ -20,7 +20,7 @@ ordinary primitive builder. Both definitions below use PascalCase names:
    >>> from claasp.components import Rotate, Xor
    >>> from claasp.unit_types import Word
    >>> byte = UnitArrayType(Word(8), (1,))
-   >>> block_builder = CompositeBuilder("XorRotate", {"left": byte, "right": byte})
+   >>> block_builder = CompositeBuilder("xor_rotate", {"left": byte, "right": byte})
    >>> block_builder.add_round()
    Round(number=0)
    >>> mixed = block_builder.add_component(
@@ -37,7 +37,7 @@ named scope, while its XOR and rotation remain ordinary graph components:
 
 .. doctest::
 
-   >>> builder = PrimitiveBuilder("TwoXorRotates", {name: byte for name in "abc"})
+   >>> builder = PrimitiveBuilder("two_xor_rotates", {name: byte for name in "abc"})
    >>> builder.add_round()
    Round(number=0)
    >>> first = builder.add_composite(
