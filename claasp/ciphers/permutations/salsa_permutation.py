@@ -66,7 +66,6 @@ class SalsaPermutation(Cipher):
     ):
         init_latin_dances_cipher(
             self,
-            super(),
             INPUT_PLAINTEXT,
             state_of_components,
             number_of_rounds,

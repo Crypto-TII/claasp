@@ -56,19 +56,19 @@ ENV PATH="/opt/gurobi/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/gurobi/lib:${LD_LIBRARY_PATH}"
 
 # Installing Soplex (for SCIP)
-RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-603.tar.gz \
-    && tar -xf release-603.tar.gz \
-    && rm release-603.tar.gz \
-    && cd soplex-release-603 \
+RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-716.tar.gz \
+    && tar -xf release-716.tar.gz \
+    && rm release-716.tar.gz \
+    && cd soplex-release-716 \
     && mkdir build \
     && cd build \
     && cmake .. \
     && make
 
-ENV SOPLEX_HOME="/opt/soplex-release-603/build"
+ENV SOPLEX_HOME="/opt/soplex-release-716/build"
 
 # Installing HiGHS
-RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.10.0/source-archive.tar.gz \
+RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.15.1/source-archive.tar.gz \
     && tar -xf source-archive.tar.gz \
     && rm source-archive.tar.gz \
     && cd HiGHS \
@@ -89,17 +89,17 @@ RUN git clone --depth 1 https://github.com/tinycthread/tinycthread.git \
     && ldconfig
 
 # Installing SCIP with TPI support for parallel solving using TinyCThread
-RUN wget https://github.com/scipopt/scip/archive/refs/tags/v803.tar.gz \
-    && tar -xf v803.tar.gz \
-    && rm v803.tar.gz \
-    && cd scip-803 \
+RUN wget https://github.com/scipopt/scip/archive/refs/tags/v924.tar.gz \
+    && tar -xf v924.tar.gz \
+    && rm v924.tar.gz \
+    && cd scip-924 \
     && mkdir build \
     && cd build \
     && cmake .. -DAUTOBUILD=on -DSOPLEX_DIR=${SOPLEX_HOME} -DTPI=tny -DCMAKE_PREFIX_PATH=/usr/local \
     && make -j$(nproc)
 
-ENV PATH="${PATH}:/opt/scip-803/build/bin"
-ENV LD_LIBRARY_PATH="/opt/scip-803/build/lib:/usr/local/lib:${LD_LIBRARY_PATH}"
+ENV PATH="${PATH}:/opt/scip-924/build/bin"
+ENV LD_LIBRARY_PATH="/opt/scip-924/build/lib:/usr/local/lib:${LD_LIBRARY_PATH}"
 
 # Installing SageMath tools
 RUN sage -pip install bitstring==4.0.1 \
@@ -167,7 +167,7 @@ RUN mkdir -p /usr/local/share/minizinc && cp -r /MiniZinc/share/minizinc/* /usr/
 RUN printf '%s\n' \
   '#!/bin/sh' \
   'export LD_LIBRARY_PATH=/MiniZinc/lib:"$LD_LIBRARY_PATH"' \
-  'export SCIPOPTDIR=/opt/scip-803/build' \
+  'export SCIPOPTDIR=/opt/scip-924/build' \
   'export PATH="$SCIPOPTDIR/bin:$PATH"' \
   'export LD_LIBRARY_PATH="$SCIPOPTDIR/lib:$LD_LIBRARY_PATH"' \
   'exec /MiniZinc/bin/minizinc "$@"' \
@@ -369,6 +369,9 @@ RUN sage -python -m pip install sage-numerical-backends-coin==9.0b12
 # Building with an absolute build directory lets Mallob find its sub-process
 # executables from any working directory. The sed widens the per-thread clause
 # producer bit (an int "1 << id") so that thread ids >= 31 are handled correctly.
+# Mallob fetches YalSAT with a bare "curl -L" (no retry, no checksum) and skips
+# the fetch when the sources are already in lib/yalsat, so YalSAT 03v is fetched
+# here with bounded retries, verified against a pinned SHA-256 and extracted.
 RUN apt-get -q update \
     && apt-get install --no-install-recommends -y libopenmpi-dev openmpi-bin gdb
 
@@ -380,6 +383,15 @@ RUN wget -O /opt/mallob.tar.gz https://github.com/domschrei/mallob/archive/aa168
     && sed -i 's/1 << \(c\.producerId\|localId\)/(cls_producers_bitset) 1 << \1/' \
         src/app/sat/sharing/filter/produced_clause_filter_commons.hpp \
         src/app/sat/sharing/filter/exact_clause_filter.hpp src/app/sat/sharing/filter/importing_solver.hpp \
+    && curl -fsSL --retry 5 --retry-all-errors --retry-delay 10 --retry-max-time 600 \
+        --connect-timeout 30 --max-time 300 \
+        -o lib/yalsat/yalsat.zip https://fmv.jku.at/yalsat/yalsat-03v.zip \
+    && echo "596ad9eb729ddfd67c2256adb20ff8d4d9d7018004d838f6b4e449b8b5be426a  lib/yalsat/yalsat.zip" \
+        | sha256sum -c - \
+    && unzip -q lib/yalsat/yalsat.zip -d lib/yalsat \
+    && mv lib/yalsat/yalsat-03v/* lib/yalsat/ \
+    && rmdir lib/yalsat/yalsat-03v \
+    && rm lib/yalsat/yalsat.zip \
     && MALLOB_MINIMAL=1 bash scripts/setup/cmake-make.sh /opt/mallob/build \
         -DMALLOB_APP_SATWITHPRE=1 -DMALLOB_USE_SATSUMA=0 -DMALLOB_USE_JEMALLOC=1 \
         -DMALLOB_USE_CADICAL=1 -DMALLOB_USE_KISSAT=1 -DMALLOB_USE_LINGELING=1 \

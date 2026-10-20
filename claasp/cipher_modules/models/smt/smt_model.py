@@ -170,7 +170,7 @@ class SmtModel:
             for i in range(bit_length_of_hw)
         )
 
-        return variables, constraints, bit_length_of_hw
+        return variables, constraints
 
     def _sequential_counter_algorithm(self, hw_list, weight, dummy_id, greater_or_equal=False):
         n = len(hw_list)

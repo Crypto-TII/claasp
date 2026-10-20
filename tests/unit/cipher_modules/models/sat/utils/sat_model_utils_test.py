@@ -53,3 +53,33 @@ def test_run_mallob_without_status_line(tmp_path):
         run_mallob(specs, [], "p cnf 3 0\n", input_file)
 
     assert not os.path.exists(input_file)
+
+
+def test_parse_parkissat_output_keeps_only_the_model_after_the_status_line():
+    from claasp.cipher_modules.models.sat.utils.utils import parse_parkissat_output
+
+    output = ["c thread 3 model fragment", "v -1 2", "s SATISFIABLE", "v 1 -2 3", "c thread 1", "v -4 0", "v 5 0"]
+    status, values = parse_parkissat_output(output)
+    assert status == "SATISFIABLE"
+    assert values == ["1", "-2", "3", "-4"]
+
+
+def test_parse_parkissat_output_orders_literals_by_variable_and_tolerates_duplicates():
+    from claasp.cipher_modules.models.sat.utils.utils import parse_parkissat_output
+
+    output = ["s SATISFIABLE", "v 3 -1", "v 2 3 -1 0"]
+    assert parse_parkissat_output(output) == ("SATISFIABLE", ["-1", "2", "3"])
+
+
+def test_parse_parkissat_output_rejects_mixed_models():
+    import pytest
+    from claasp.cipher_modules.models.sat.utils.utils import parse_parkissat_output
+
+    with pytest.raises(RuntimeError):
+        parse_parkissat_output(["s SATISFIABLE", "v 1 -2", "v -1 2 0"])
+
+
+def test_parse_parkissat_output_unsat():
+    from claasp.cipher_modules.models.sat.utils.utils import parse_parkissat_output
+
+    assert parse_parkissat_output(["c x", "s UNSATISFIABLE"]) == ("UNSATISFIABLE", "")
