@@ -12,7 +12,7 @@ Define and reuse a small block
 
 Start with a block that XORs two 8-bit words and rotates the result one bit to
 the left. ``CompositeBuilder`` uses the same component vocabulary as an
-ordinary primitive builder:
+ordinary primitive builder. Both definitions below use PascalCase names:
 
 .. doctest::
 
@@ -37,7 +37,7 @@ named scope, while its XOR and rotation remain ordinary graph components:
 
 .. doctest::
 
-   >>> builder = PrimitiveBuilder("two_xor_rotates", {name: byte for name in "abc"})
+   >>> builder = PrimitiveBuilder("TwoXorRotates", {name: byte for name in "abc"})
    >>> builder.add_round()
    Round(number=0)
    >>> first = builder.add_composite(
@@ -80,8 +80,8 @@ shows the alternative reusable-block style used by ``CustomAES``.
    ...     key_schedule = builder.add_composite(
    ...         schedule_definition, {"key": builder.input("key")},
    ...         scope_id="key_schedule")
-   ...     state = builder.add_component(Add((
-   ...         builder.input("plaintext"), key_schedule.output[0])))
+   ...     state = builder.add_component(Add(
+   ...         builder.input("plaintext"), key_schedule.output[0]))
    ...     for number in range(1, 11):
    ...         builder.add_round()
    ...         definition = final_round if number == 10 else middle_round
