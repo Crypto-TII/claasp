@@ -793,6 +793,10 @@ class Constant(Component):
           generic_with_constant_sign_linear_constraints in
           xor_component.py, and Section 4.4 of the paper).
 
+        INPUT:
+
+        - ``model`` -- **model object**; a ``SmtXorQuasidifferentialModel`` instance
+
         EXAMPLES::
 
             sage: from claasp.ciphers.single_component_ciphers.constant_cipher import ConstantCipher

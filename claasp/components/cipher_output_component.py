@@ -754,12 +754,16 @@ class CipherOutput(Component):
 
         NOTE: if this component's input wire is also consumed
         elsewhere (a "fork" in the cipher's data-flow graph), the
-        correct mask-propagation rule is NOT plain equality but an
+        mask-propagation rule is NOT plain equality but an
         XOR-combination of all the branches' masks (the dual of the
-        XOR-of-differences rule at a join point) -- see
-        Xor.smt_xor_quasidifferential_propagation_constraints for
-        that rule. This plain-identity version is only correct when
-        there is no such fork on this wire.
+        XOR-of-differences rule at a join point). The input mask read
+        here is then this component's own branch mask, given by
+        ``model._qdt_input_bit_ids``, and the model ties the branches to
+        the source in ``SmtXorQuasidifferentialModel._fork_constraints``.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a ``SmtXorQuasidifferentialModel`` instance
 
         EXAMPLES::
 

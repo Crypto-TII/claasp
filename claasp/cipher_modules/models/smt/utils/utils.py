@@ -183,9 +183,9 @@ def smt_carry(x, y, previous_carry):
     """
     Return a list of strings.
 
-    The list represents the Boolean equality ``carry = Or(And(x, y), And(x, previous_carry), And(y, previous_carry))``
-    in SMT-LIB standard. It represents the general form of a carry when performing modular addition between two
-    bitvectors.
+    The list represents the Boolean equality
+    ``carry = Or(And(x, y), And(x, previous_carry), And(y, previous_carry))`` in SMT-LIB standard. It
+    represents the general form of a carry when performing modular addition between two bitvectors.
 
     INPUT:
 
@@ -249,6 +249,12 @@ def interleave_bits(x, y, n):
     """
     Interleave the bits of x and y.
 
+    INPUT:
+
+    - ``x`` -- **integer**; the value whose bits land on the even positions
+    - ``y`` -- **integer**; the value whose bits land on the odd positions
+    - ``n`` -- **integer**; the bit size of ``x`` and ``y``
+
     EXAMPLES::
 
         sage: from claasp.cipher_modules.models.smt.utils.utils import interleave_bits
@@ -268,6 +274,10 @@ def interleave_bits(x, y, n):
 def to_quasidifferential_basis(x):
     """
     Transform x into the quasidifferential basis.
+
+    INPUT:
+
+    - ``x`` -- **NumPy array**; a vector whose length is a power of 4
 
     EXAMPLES::
 
@@ -293,14 +303,7 @@ def to_quasidifferential_basis(x):
     x_10 = to_quasidifferential_basis(x[2 * block_length : 3 * block_length])
     x_11 = to_quasidifferential_basis(x[3 * block_length :])
 
-    return np.concatenate(
-        [
-            x_00 + x_11,
-            x_01 + x_10,
-            x_00 - x_11,
-            x_01 - x_10,
-        ]
-    )
+    return np.concatenate([x_00 + x_11, x_01 + x_10, x_00 - x_11, x_01 - x_10])
 
 
 def interleaved_transition_matrix(sbox_function, n, m):
@@ -308,6 +311,12 @@ def interleaved_transition_matrix(sbox_function, n, m):
     Build the interleaved transition matrix of ``sbox_function``.
 
     This is the NumPy equivalent of the Sage implementation.
+
+    INPUT:
+
+    - ``sbox_function`` -- **function**; the S-box, from integer to integer
+    - ``n`` -- **integer**; the input bit size of the S-box
+    - ``m`` -- **integer**; the output bit size of the S-box
 
     EXAMPLES::
 
@@ -318,10 +327,7 @@ def interleaved_transition_matrix(sbox_function, n, m):
     size_rows = 2 ** (2 * m)
     size_cols = 2 ** (2 * n)
 
-    transition_matrix = np.zeros(
-        (size_rows, size_cols),
-        dtype=np.float64,
-    )
+    transition_matrix = np.zeros((size_rows, size_cols), dtype=np.float64)
 
     for x in range(2**n):
         for y in range(2**n):
@@ -333,13 +339,15 @@ def interleaved_transition_matrix(sbox_function, n, m):
     return transition_matrix
 
 
-def quasidifferential_transition_matrix(
-    sbox_function,
-    n,
-    m,
-):
+def quasidifferential_transition_matrix(sbox_function, n, m):
     """
     Compute the quasidifferential transition matrix of ``sbox_function``.
+
+    INPUT:
+
+    - ``sbox_function`` -- **function**; the S-box, from integer to integer
+    - ``n`` -- **integer**; the input bit size of the S-box
+    - ``m`` -- **integer**; the output bit size of the S-box
 
     EXAMPLES::
 
@@ -362,16 +370,18 @@ def quasidifferential_transition_matrix(
     return quasidifferential_matrix / (2**n)
 
 
-def _diff_target_indices(
-    n,
-    m,
-    a,
-    b,
-    u,
-    v,
-):
+def _diff_target_indices(n, m, a, b, u, v):
     """
     Target position with the DIFFERENCE as the major index.
+
+    INPUT:
+
+    - ``n`` -- **integer**; the input bit size of the S-box
+    - ``m`` -- **integer**; the output bit size of the S-box
+    - ``a`` -- **integer**; the input difference
+    - ``b`` -- **integer**; the output difference
+    - ``u`` -- **integer**; the input mask
+    - ``v`` -- **integer**; the output mask
 
     EXAMPLES::
 
@@ -382,16 +392,18 @@ def _diff_target_indices(
     return 2**m * b + v, 2**n * a + u
 
 
-def _mask_target_indices(
-    n,
-    m,
-    a,
-    b,
-    u,
-    v,
-):
+def _mask_target_indices(n, m, a, b, u, v):
     """
     Target position with the MASK as the major index.
+
+    INPUT:
+
+    - ``n`` -- **integer**; the input bit size of the S-box
+    - ``m`` -- **integer**; the output bit size of the S-box
+    - ``a`` -- **integer**; the input difference
+    - ``b`` -- **integer**; the output difference
+    - ``u`` -- **integer**; the input mask
+    - ``v`` -- **integer**; the output mask
 
     EXAMPLES::
 
@@ -402,19 +414,23 @@ def _mask_target_indices(
     return 2**m * v + b, 2**n * u + a
 
 
-def _fill_deinterleaved_block(
-    deinterleaved_matrix,
-    qdt_matrix,
-    n,
-    m,
-    u,
-    v,
-    target_indices,
-):
+def _fill_deinterleaved_block(deinterleaved_matrix, qdt_matrix, n, m, u, v, target_indices):
     """
-    Copy into ``deinterleaved_matrix`` the block of ``qdt_matrix``
-    selected by the input mask ``u`` and the output mask ``v``, placing
-    each entry at the position given by ``target_indices``.
+    Copy into ``deinterleaved_matrix`` the block of ``qdt_matrix`` selected by ``u`` and ``v``.
+
+    ``u`` is the input mask and ``v`` the output mask; each entry is placed at the position given by
+    ``target_indices``.
+
+    INPUT:
+
+    - ``deinterleaved_matrix`` -- **NumPy array**; the matrix to fill, updated in place
+    - ``qdt_matrix`` -- **NumPy array**; the interleaved quasidifferential transition matrix
+    - ``n`` -- **integer**; the input bit size of the S-box
+    - ``m`` -- **integer**; the output bit size of the S-box
+    - ``u`` -- **integer**; the input mask
+    - ``v`` -- **integer**; the output mask
+    - ``target_indices`` -- **function**; either ``_diff_target_indices`` or
+      ``_mask_target_indices``
 
     EXAMPLES::
 
@@ -434,24 +450,23 @@ def _fill_deinterleaved_block(
             source_row = interleave_bits(b, v, m)
             target_row, target_col = target_indices(n, m, a, b, u, v)
 
-            deinterleaved_matrix[target_row, target_col] = qdt_matrix[
-                source_row,
-                source_col,
-            ]
+            deinterleaved_matrix[target_row, target_col] = qdt_matrix[source_row, source_col]
 
 
-def deinterleave_qdt_matrix(
-    qdt_matrix,
-    n,
-    m,
-    primary: str = "diff",
-):
+def deinterleave_qdt_matrix(qdt_matrix, n, m, primary: str = "diff"):
     """
     Convert an interleaved QDT matrix to the requested ordering.
 
-    ``primary`` selects which of the two quantities is used as the
-    major index of the result: ``"diff"`` (the default, expected by the
-    quasidifferential SMT model) or ``"mask"``.
+    ``primary`` selects which of the two quantities is used as the major index of the result:
+    ``"diff"`` (the default, expected by the quasidifferential SMT model) or ``"mask"``.
+
+    INPUT:
+
+    - ``qdt_matrix`` -- **NumPy array**; the interleaved quasidifferential transition matrix
+    - ``n`` -- **integer**; the input bit size of the S-box
+    - ``m`` -- **integer**; the output bit size of the S-box
+    - ``primary`` -- **string** (default: `diff`); the major index of the result, either ``'diff'``
+      or ``'mask'``
 
     EXAMPLES::
 
@@ -466,8 +481,8 @@ def deinterleave_qdt_matrix(
         ...
         ValueError: primary must be either 'diff' or 'mask'.
 
-    With the difference as the major index, the one-bit NOT has coefficient
-    ``-1`` exactly where the output mask is 1: the sign factor ``(-1)^v``.
+    With the difference as the major index, the one-bit NOT has coefficient ``-1`` exactly where the
+    output mask is 1: the sign factor ``(-1)^v``.
     """
     if primary == "diff":
         target_indices = _diff_target_indices
@@ -480,38 +495,25 @@ def deinterleave_qdt_matrix(
 
     for u in range(2**n):
         for v in range(2**m):
-            _fill_deinterleaved_block(
-                deinterleaved_matrix,
-                qdt_matrix,
-                n,
-                m,
-                u,
-                v,
-                target_indices,
-            )
+            _fill_deinterleaved_block(deinterleaved_matrix, qdt_matrix, n, m, u, v, target_indices)
 
     return deinterleaved_matrix
 
 
 def check_qdt_feasibility(qdt_matrix):
     """
-    Check that every non-zero coefficient of a quasidifferential
-    transition matrix is a power of two.
+    Check that the non-zero coefficients of a quasidifferential transition matrix are powers of two.
 
-    The weight of a transition is ``-log2|coefficient|``, and the SMT
-    model encodes it as a thermometer of Boolean indicators, so it must
-    be an integer. A coefficient of 3/8 has weight 1.415 and would be
-    recorded as 1 -- a silently optimistic weight, pooled with the
-    genuine weight-1 transitions, and a correlation of 2^-1 instead of
-    3/8 in the sum of Theorem 4.1.
+    The weight of a transition is ``-log2|coefficient|``, and the SMT model encodes it as a
+    thermometer of Boolean indicators, so it must be an integer. A coefficient of 3/8 has weight
+    1.415 and would be recorded as 1 -- a silently optimistic weight, pooled with the genuine
+    weight-1 transitions, and a correlation of 2^-1 instead of 3/8 in the sum of Theorem 4.1.
 
-    This mirrors ``claasp.components.sbox_component.check_table_feasibility``,
-    which already refuses a DDT with a non-power-of-two entry for the
-    SAT, SMT and MILP differential models. The two checks are NOT
-    equivalent: a power-of-two DDT can still yield a non-power-of-two
-    QDT, since a mask-carrying cell sums +-1 over a power-of-two number
-    of terms and may land anywhere in between. Of 31 random 4-bit
-    permutations whose DDT is all powers of two, 14 had a QDT cell that
+    This mirrors ``claasp.components.sbox_component.check_table_feasibility``, which already refuses
+    a DDT with a non-power-of-two entry for the SAT, SMT and MILP differential models. The two
+    checks are NOT equivalent: a power-of-two DDT can still yield a non-power-of-two QDT, since a
+    mask-carrying cell sums +-1 over a power-of-two number of terms and may land anywhere in
+    between. Of 31 random 4-bit permutations whose DDT is all powers of two, 14 had a QDT cell that
     is not.
 
     INPUT:
@@ -520,8 +522,7 @@ def check_qdt_feasibility(qdt_matrix):
 
     OUTPUT:
 
-    - None; raises ``ValueError`` when a non-zero coefficient is not a
-      power of two
+    - None; raises ``ValueError`` when a non-zero coefficient is not a power of two
 
     EXAMPLES::
 
@@ -544,20 +545,21 @@ def check_qdt_feasibility(qdt_matrix):
         )
 
 
-def _weight_table_for_differential(
-    qdt_matrix,
-    n,
-    m,
-    b,
-    a,
-):
+def _weight_table_for_differential(qdt_matrix, n, m, b, a):
     """
-    Return the weight table of a single differential transition
-    (``a`` -> ``b``) of the quasidifferential transition matrix.
+    Return the weight table of a single differential transition (``a`` -> ``b``) of the QDT.
 
-    The result maps each weight loss to the list of ``(v, u)`` mask
-    pairs achieving it. An empty dictionary means the differential
-    admits no valid quasidifferential transition.
+    The result maps each weight loss to the list of ``(v, u)`` mask pairs achieving it. An empty
+    dictionary means the differential admits no valid quasidifferential transition.
+
+    INPUT:
+
+    - ``qdt_matrix`` -- **NumPy array**; the quasidifferential transition matrix, deinterleaved with
+      the difference as the major index
+    - ``n`` -- **integer**; the input bit size of the S-box
+    - ``m`` -- **integer**; the output bit size of the S-box
+    - ``b`` -- **integer**; the output difference
+    - ``a`` -- **integer**; the input difference
 
     EXAMPLES::
 
@@ -573,10 +575,7 @@ def _weight_table_for_differential(
 
     for v in range(2**m):
         for u in range(2**n):
-            coefficient = qdt_matrix[
-                2**m * b + v,
-                2**n * a + u,
-            ]
+            coefficient = qdt_matrix[2**m * b + v, 2**n * a + u]
 
             if coefficient == 0:
                 continue
@@ -587,19 +586,23 @@ def _weight_table_for_differential(
     return table
 
 
-def generate_weight_tables(
-    qdt_matrix,
-    n,
-    m,
-):
+def generate_weight_tables(qdt_matrix, n, m):
     """
-    Return the weight tables of the quasidifferential transition matrix,
-    indexed by differential transition:
+    Return the weight tables of the quasidifferential transition matrix.
+
+    They are indexed by differential transition:
 
         {(b, a): {weight_loss: [(v, u), ...], ...}, ...}
 
-    Every ``(b, a)`` pair is present, mapping to an empty dictionary
-    when the differential admits no valid transition.
+    Every ``(b, a)`` pair is present, mapping to an empty dictionary when the differential admits no
+    valid transition.
+
+    INPUT:
+
+    - ``qdt_matrix`` -- **NumPy array**; the quasidifferential transition matrix, deinterleaved with
+      the difference as the major index
+    - ``n`` -- **integer**; the input bit size of the S-box
+    - ``m`` -- **integer**; the output bit size of the S-box
 
     EXAMPLES::
 
