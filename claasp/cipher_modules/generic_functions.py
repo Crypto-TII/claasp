@@ -1132,7 +1132,8 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
     - ``registers_info`` -- **list**; a list of [register_bit_length, update_expression, clock_condition (optional)],
        register_bit_length is an integer to indicate the length of the register. update_expression and clock_condition
        are lists of index groups, represented as integer lists. For example [[0], [1], [2, 3]] represents
-       x0 + x1 + x2*x3. [] represents a constant 1.
+       x0 + x1 + x2*x3. An empty feedback sum [] represents zero; [[]] represents one.
+       An omitted or empty clock_condition enables clocking unconditionally.
     - ``number_of_clocks`` -- **integer**; indicates how many loops this FSR component would operate, this is optional
         by default it is 1.
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output

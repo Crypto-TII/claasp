@@ -47,12 +47,17 @@ class MilpMonomialPredictionModel:
     - find a tight upper bound on the algebraic degree via parity (slower),
     - find the superpoly of this ANF given a chosen cube.
 
+    The constructor's ``sbox_encoding`` flag picks the encoder of S-boxes of up to 5 bits:
+    ``"convexhull"`` (default), ``"onehot"`` or ``"espresso"``; larger S-boxes always use Espresso
+    (see :meth:`add_sbox_constraints`).
+
     This module can only be used if the user possesses a Gurobi license.
 
     """
 
-    def __init__(self, cipher):
+    def __init__(self, cipher, sbox_encoding="convexhull"):
         self._cipher = cipher
+        self._sbox_encoding = sbox_encoding
         self._variables = None
         self._model = None
         self._occurences = None
@@ -65,6 +70,10 @@ class MilpMonomialPredictionModel:
         self._sbox_ineq_cache = {}
         self._sbox_espresso_cache = {}
         self._gurobi_params = {}
+
+    def _submodel(self, cipher):
+        """A monomial-prediction model of ``cipher`` (e.g. a keyless variant) with the same S-box encoding."""
+        return MilpMonomialPredictionModel(cipher, sbox_encoding=self._sbox_encoding)
 
     def build_gurobi_model(self):
         if os.getenv("GUROBI_COMPUTE_SERVER") is not None:
@@ -406,16 +415,63 @@ class MilpMonomialPredictionModel:
 
     def add_sbox_constraints(self, component):
         """
-        Constrain the S-box's input (u) and output-bit (v) variables to the exact monomial-trail
-        relation, using the convex-hull inequalities for small S-boxes and the Espresso ones
-        (:meth:`add_sbox_constraints_espresso`) once ``n + m > 10``, where the convex hull becomes
-        too slow to build (both encodings are tight -- their feasible region is exactly the valid points).
+        Constrain the S-box's input (u) and output-bit (v) variables to its valid (u, v) points, those of
+        :meth:`get_valid_monomial_exponents_table` (the exact monomial-trail relation here; a subclass may
+        return a coarser table). The encoder of S-boxes of up to 5 bits is chosen by ``sbox_encoding``:
+
+        - ``"convexhull"`` (default) -> the convex-hull inequalities (:meth:`get_sbox_inequalities` +
+          :meth:`_apply_sbox_inequalities`);
+        - ``"onehot"`` -> one selector per valid point (:meth:`add_sbox_constraints_onehot`);
+        - ``"espresso"`` -> the Espresso inequalities (:meth:`add_sbox_constraints_espresso`).
+
+        Once ``n + m > 10`` the S-box always uses Espresso, whatever the flag: the convex hull becomes too
+        slow to build and one-hot too large. All three encodings are tight: their feasible region is
+        exactly the valid points.
         """
         if (1 << (component.input_bit_size + component.output_bit_size)) > 1024:
             return self.add_sbox_constraints_espresso(component)
+        if self._sbox_encoding == "convexhull":
+            ineqs, n, m = self.get_sbox_inequalities(component)
+            return self._apply_sbox_inequalities(component, ineqs, n, m)
+        if self._sbox_encoding == "onehot":
+            return self.add_sbox_constraints_onehot(component)
+        if self._sbox_encoding == "espresso":
+            return self.add_sbox_constraints_espresso(component)
+        raise ValueError(
+            f"unknown sbox_encoding {self._sbox_encoding!r}; "
+            "use 'onehot', 'convexhull', or 'espresso'"
+        )
 
-        ineqs, n, m = self.get_sbox_inequalities(component)
-        self._apply_sbox_inequalities(component, ineqs, n, m)
+    def add_sbox_constraints_onehot(self, component):
+        r"""
+        One-hot encoding of the S-box's valid points (:meth:`get_valid_monomial_exponents_table`): one
+        binary selector ``z_t`` per ``(u, v)`` point, with ``sum z_t == 1``, ``in[p] == sum_{u_p=1} z_t``
+        and ``out[q] == sum_{v_q=1} z_t``.
+        """
+        table, n, m = self.get_valid_monomial_exponents_table(component)
+        trails = [(u, v) for v, us in table.items() for u in us]
+
+        input_vars = self.get_input_vars(component)
+        output_vars = self.get_output_vars(component)
+        out_all = self._map_sbox_output_vars(component, output_vars, m)
+        self._model.update()
+
+        selectors = [
+            self._model.addVar(vtype=GRB.BINARY, name=f"sbtrail_{component.id}_{k}")
+            for k in range(len(trails))
+        ]
+        self._model.update()
+        self._model.addConstr(sum(selectors) == 1)
+        for p in range(n):
+            self._model.addConstr(
+                input_vars[p] == sum(selectors[k] for k, (u, v) in enumerate(trails) if (u >> p) & 1)
+            )
+        for q in range(m):
+            self._model.addConstr(
+                out_all[q] == sum(selectors[k] for k, (u, v) in enumerate(trails) if (v >> q) & 1)
+            )
+        self.set_as_used_variables(list(input_vars) + list(output_vars))
+        self._model.update()
 
     def _apply_sbox_inequalities(self, component, ineqs, n, m):
         """
@@ -459,7 +515,7 @@ class MilpMonomialPredictionModel:
 
         copy_monomials_deg = self.create_gurobi_vars_sbox(component, input_vars_concat)
 
-        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
             constr = 0
             equality = True
             monomials = anfs[bit_pos].monomials()
@@ -539,7 +595,7 @@ class MilpMonomialPredictionModel:
         self._model.update()
 
         rotate_offset = component.description[1]
-        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
             self._model.addConstr(
                 output_vars[index] == input_vars_concat[(bit_pos - rotate_offset) % component.output_bit_size]
             )
@@ -553,7 +609,7 @@ class MilpMonomialPredictionModel:
 
         shift_offset = component.description[1]
 
-        for index, bit_pos in enumerate(self._occurences[component.id].keys()):
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
             target = bit_pos - shift_offset
 
             if target < 0 or target >= component.output_bit_size:
@@ -562,6 +618,29 @@ class MilpMonomialPredictionModel:
                 self._model.addConstr(output_vars[index] == input_vars_concat[target])
                 self.set_as_used_variables([input_vars_concat[target]])
 
+        self._model.update()
+
+    def add_permutation_constraints(self, component):
+        """
+        Bit/word permutation as plain wire equalities (weight preserving, so identical in the
+        exact and the two-subset models). CLAASP's convention: ``description = [perm, word_size]``
+        with ``output word perm[i] = input word i`` (``word_size = 1`` for a bitwise permutation).
+        """
+        output_vars = self.get_output_vars(component)
+        input_vars_concat = self.get_input_vars(component)
+        self._model.update()
+
+        perm, word_size = component.description[0], component.description[1]
+        # source bit feeding each output bit
+        source_of_output = [None] * component.output_bit_size
+        for src_word, dst_word in enumerate(perm):
+            for b in range(word_size):
+                source_of_output[dst_word * word_size + b] = src_word * word_size + b
+
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
+            src = source_of_output[bit_pos]
+            self._model.addConstr(output_vars[index] == input_vars_concat[src])
+            self.set_as_used_variables([input_vars_concat[src]])
         self._model.update()
 
     def add_xor_constraints(self, component):
@@ -595,11 +674,15 @@ class MilpMonomialPredictionModel:
             for v in var_inputs_per_bit[bit_idx]:
                 self.set_as_used_variables([v])
             const_val = sum(const_bits_per_bit[bit_idx]) % 2
-            if const_val == 0:
-                self._model.addConstr(output_vars[bit_idx] == vars_sum)
-            else:
-                self._model.addConstr(output_vars[bit_idx] >= vars_sum)
+            self._add_xor_bit_constraint(output_vars[bit_idx], vars_sum, const_val)
         self._model.update()
+
+    def _add_xor_bit_constraint(self, output_var, vars_sum, const_val):
+        # exact model: y = x (+) 1 has the monomials 1 and x, so the output may also be reached with no input
+        if const_val == 0:
+            self._model.addConstr(output_var == vars_sum)
+        else:
+            self._model.addConstr(output_var >= vars_sum)
 
     def get_output_vars(self, component):
         output_vars = []
@@ -806,10 +889,10 @@ class MilpMonomialPredictionModel:
         self._model.update()
 
         block_size = int(len(input_vars_concat) // component.description[1])
-        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
-            self._model.addConstr(output_vars[index] == input_vars_concat[index])
-            self._model.addConstr(output_vars[index] == input_vars_concat[index + block_size])
-            self.set_as_used_variables([input_vars_concat[index], input_vars_concat[index + block_size]])
+        for bit_pos in sorted(self._occurences[component.id].keys()):  # padded outputs: index by position
+            self._model.addConstr(output_vars[bit_pos] == input_vars_concat[bit_pos])
+            self._model.addConstr(output_vars[bit_pos] == input_vars_concat[bit_pos + block_size])
+            self.set_as_used_variables([input_vars_concat[bit_pos], input_vars_concat[bit_pos + block_size]])
         self._model.update()
 
     def add_fsr_constraints(self, component):
@@ -913,9 +996,9 @@ class MilpMonomialPredictionModel:
         input_vars_concat = self.get_input_vars(component)
         self._model.update()
 
-        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
-            self._model.addConstr(output_vars[index] >= input_vars_concat[index])
-            self.set_as_used_variables([input_vars_concat[index]])
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
+            self._model.addConstr(output_vars[index] >= input_vars_concat[bit_pos])
+            self.set_as_used_variables([input_vars_concat[bit_pos]])
         self._model.update()
 
     def add_constant_constraints(self, component):
@@ -929,12 +1012,12 @@ class MilpMonomialPredictionModel:
         else:
             raise ValueError("Unknown format: must start with 0b or 0x")
 
-        for i, bit_pos in enumerate(list(self._occurences[component.id].keys())):
-            if (const >> (component.output_bit_size - 1 - i)) & 1 == 0:
+        for i, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
+            if (const >> (component.output_bit_size - 1 - bit_pos)) & 1 == 0:
                 self._model.addConstr(output_vars[i] == 0)
-                self._constants[component.id][i] = 0
+                self._constants[component.id][bit_pos] = 0
             else:
-                self._constants[component.id][i] = 1
+                self._constants[component.id][bit_pos] = 1
         self._model.update()
 
     def add_or_constraints(self, component):
@@ -981,7 +1064,7 @@ class MilpMonomialPredictionModel:
         input_vars_concat = self.get_input_vars(component)
         self._model.update()
 
-        for index, bit_pos in enumerate(list(self._occurences[component.id].keys())):
+        for index, bit_pos in enumerate(sorted(self._occurences[component.id].keys())):
             self._model.addConstr(output_vars[index] == input_vars_concat[bit_pos])
             self.set_as_used_variables([input_vars_concat[bit_pos], output_vars[index]])
         self._model.update()
@@ -1020,6 +1103,8 @@ class MilpMonomialPredictionModel:
             self.add_constant_constraints(component)
         elif component.type in ["linear_layer", "mix_column", "permutation"]:
             self.add_linear_layer_constraints(component)
+        elif component.type == "permutation":
+            self.add_permutation_constraints(component)
         elif component.type in ["cipher_output", "intermediate_output"]:
             self.add_intermediate_output_constraints(component)
         elif component.type == "word_operation":
@@ -2406,7 +2491,7 @@ class MilpMonomialPredictionModel:
             sage: milp.find_upper_bound_degree_of_specific_output_bit_with_independent_round_keys(0, which_var_degree="p") # doctest: +SKIP
             ...
         """
-        return MilpMonomialPredictionModel(
+        return self._submodel(
             self._cipher.remove_key_schedule(keep_round_key_injection=True)
         ).find_upper_bound_degree_of_specific_output_bit(output_bit_index, which_var_degree, chosen_cipher_output)
 
@@ -2425,7 +2510,7 @@ class MilpMonomialPredictionModel:
             sage: milp.find_upper_bound_degree_of_all_output_bits_with_independent_round_keys(which_var_degree="p") # doctest: +SKIP
             ...
         """
-        return MilpMonomialPredictionModel(
+        return self._submodel(
             self._cipher.remove_key_schedule(keep_round_key_injection=True)
         ).find_upper_bound_degree_of_all_output_bits(which_var_degree, chosen_cipher_output)
 
@@ -2445,7 +2530,7 @@ class MilpMonomialPredictionModel:
             sage: milp.find_upper_bound_degree_in_cube_vars_of_specific_output_bit_with_independent_round_keys(16, cube) # doctest: +SKIP
             ...
         """
-        return MilpMonomialPredictionModel(
+        return self._submodel(
             self._cipher.remove_key_schedule(keep_round_key_injection=True)
         ).find_upper_bound_degree_in_cube_vars_of_specific_output_bit(output_bit_index, cube, chosen_cipher_output)
 
@@ -2537,6 +2622,48 @@ class MilpMonomialPredictionModel:
                 if v is not None:
                     m.addConstr(v == 0)
 
+    def _remove_output_target_fix(self, bit_index):
+        """Remove the single ``output[bit_index] == 1`` constraint that the build adds."""
+        m = self._model
+        name = f"output[{bit_index}]"
+        for con in m.getConstrs():
+            row = m.getRow(con)
+            if (
+                row.size() == 1
+                and row.getVar(0).VarName == name
+                and abs(row.getCoeff(0) - 1.0) < 1e-9
+                and con.Sense == "="
+                and abs(con.RHS - 1.0) < 1e-9
+            ):
+                m.remove(con)
+                m.update()
+                return
+
+    def _build_balance_model(self, output_bit_index, cube, chosen_cipher_output=None, any_output_bit=False):
+        """
+        Build the feasibility model of a balance check: the model for ``output_bit_index`` (with
+        ``any_output_bit``, its ``output[output_bit_index] == 1`` is removed, so the trail may end in any
+        output bit), cube bits fixed to 1, non-cube public bits (plaintext / IV) to 0, constant objective.
+        """
+        self.build_generic_model_for_specific_output_bit(
+            output_bit_index, fixed_degree=None, which_var_degree=None, chosen_cipher_output=chosen_cipher_output
+        )
+        m = self._model
+        m.Params.OutputFlag = 0
+        m.setParam(GRB.Param.PoolSearchMode, 0)
+        if any_output_bit:
+            self._remove_output_target_fix(output_bit_index)
+
+        cube_verbose = self.var_list_to_input_positions(cube)
+        self._fix_non_cube_public_bits_to_zero(set(cube_verbose))
+        for inp_name, idx in cube_verbose:
+            v = m.getVarByName(f"{inp_name}[{idx}]")
+            if v is not None:
+                m.addConstr(v == 1)
+
+        m.setObjective(0, GRB.MINIMIZE)
+        m.update()
+
     def is_balanced_at_specific_output_bit_over_cube(
         self,
         output_bit_index,
@@ -2567,29 +2694,10 @@ class MilpMonomialPredictionModel:
             sage: milp.is_balanced_at_specific_output_bit_over_cube(0, cube)  # doctest: +SKIP
             ...
         """
-        self.build_generic_model_for_specific_output_bit(
-            output_bit_index, fixed_degree=None, which_var_degree=None, chosen_cipher_output=chosen_cipher_output
-        )
-        m = self._model
-        m.Params.OutputFlag = 0
-        m.setParam(GRB.Param.PoolSearchMode, 0)
+        self._build_balance_model(output_bit_index, cube, chosen_cipher_output)
+        self._model.optimize()
 
-        cube_verbose = self.var_list_to_input_positions(cube)
-        cube_set = set(cube_verbose)
-
-        # public non-cube input bits (plaintext / IV) -> 0
-        self._fix_non_cube_public_bits_to_zero(cube_set)
-        # active cube bits -> 1
-        for inp_name, idx in cube_verbose:
-            v = m.getVarByName(f"{inp_name}[{idx}]")
-            if v is not None:
-                m.addConstr(v == 1)
-
-        m.setObjective(0, GRB.MINIMIZE)
-        m.update()
-        m.optimize()
-
-        balanced = (m.Status == GRB.INFEASIBLE)
+        balanced = (self._model.Status == GRB.INFEASIBLE)
         self._log_experiment(
             "balanced for cube",
             {
@@ -2597,6 +2705,47 @@ class MilpMonomialPredictionModel:
                 "chosen_cipher_output": chosen_cipher_output,
                 "cube": cube,
             },
+            balanced,
+        )
+        return balanced
+
+    def is_balanced_at_all_output_bits_over_cube(self, cube, chosen_cipher_output=None):
+        r"""
+        Feasibility-based integral distinguisher check for all output bits at once, with a single MILP.
+
+        The build for one output bit adds ``sum(output) == 1`` (the trail ends in exactly one output bit)
+        and ``output[0] == 1``; removing the second constraint lets the trail end in any output bit. Cube
+        bits are fixed to 1 and non-cube public bits to 0, as in
+        :meth:`is_balanced_at_specific_output_bit_over_cube`. If the model is INFEASIBLE, no output bit
+        can be reached from the cube, so every output bit is provably balanced over the cube; this is
+        one solve instead of one per output bit. If it is feasible, at least one output bit is not proved
+        balanced (the solution shows which).
+
+        INPUT:
+        - ``cube`` -- **list of strings**
+        - ``chosen_cipher_output`` -- **string** (default: ``None``)
+
+        OUTPUT:
+        - **bool**; ``True`` if every output bit is balanced, ``False`` if some output bit is not proved.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation # doctest: +SKIP
+            sage: from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel # doctest: +SKIP
+            sage: cipher = KeccakSboxPermutation(number_of_rounds=3, word_size=4) # doctest: +SKIP
+            sage: milp = MilpMonomialPredictionModel(cipher)  # doctest: +SKIP
+            sage: milp.is_balanced_at_all_output_bits_over_cube([f"p{i}" for i in (0, 4, 8, 12, 16, 20, 24)])  # doctest: +SKIP
+            True
+            sage: milp.is_balanced_at_all_output_bits_over_cube([f"p{i}" for i in range(7)])  # doctest: +SKIP
+            False
+        """
+        self._build_balance_model(0, cube, chosen_cipher_output, any_output_bit=True)
+        self._model.optimize()
+
+        balanced = (self._model.Status == GRB.INFEASIBLE)
+        self._log_experiment(
+            "balanced at all output bits for cube",
+            {"chosen_cipher_output": chosen_cipher_output, "cube": cube},
             balanced,
         )
         return balanced
@@ -2629,7 +2778,7 @@ class MilpMonomialPredictionModel:
             ...
         """
         keyless_cipher = self._cipher.remove_key_schedule(keep_round_key_injection=False)
-        sub_model = MilpMonomialPredictionModel(keyless_cipher)
+        sub_model = self._submodel(keyless_cipher)
         return not sub_model.is_balanced_at_specific_output_bit_over_cube(output_bit_index, cube, chosen_cipher_output)
 
     def is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(
@@ -2662,7 +2811,7 @@ class MilpMonomialPredictionModel:
             ...
         """
         independent_keys_cipher = self._cipher.remove_key_schedule(keep_round_key_injection=True)
-        sub_model = MilpMonomialPredictionModel(independent_keys_cipher)
+        sub_model = self._submodel(independent_keys_cipher)
         return sub_model.is_balanced_at_specific_output_bit_over_cube(output_bit_index, cube, chosen_cipher_output)
 
     def find_superpoly_of_specific_output_bit(
@@ -3134,10 +3283,8 @@ class MilpMonomialPredictionModel:
         key_input_indices, has_key, B, k_vars = self._setup_key_variables_and_ring()
         cipher1, cipher2 = self._get_split_ciphers(middle_round, verbosity)
 
-        from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import MilpMonomialPredictionModel
-
-        model1 = MilpMonomialPredictionModel(cipher1)
-        model2 = MilpMonomialPredictionModel(cipher2)
+        model1 = self._submodel(cipher1)
+        model2 = self._submodel(cipher2)
 
         round_output_comp = self._get_round_output_comp(middle_round)
         skip_for_enum = self._get_skip_for_enum()
