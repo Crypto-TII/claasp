@@ -222,7 +222,7 @@ def _solve_speck8_with_masks(input_mask, output_mask, weight):
 def _simon_six_round_characteristic():
     cipher = SimonBlockCipher(number_of_rounds=6)
     differences = [0x00400110, 0x00100040, 0x00000010, 0x00100000, 0x00400010, 0x01100040, 0x01100040]
-    taps = [c.id for c in cipher.get_all_components()
+    taps = [c.id for c in cipher.all_components()
             if c.description[0] in ("round_output", "cipher_output")]
 
     fixed_values = [
@@ -472,14 +472,14 @@ def test_sbox_differences_are_derived_from_the_characteristic():
 
     smt.build_xor_quasidifferential_trail_model(fixed_variables=fixed_values)
 
-    sboxes = [component.id for component in rectangle.get_all_components() if component.type == "sbox"]
+    sboxes = [component.id for component in rectangle.all_components() if component.type == "sbox"]
     assert len(sboxes) == 48
     assert sorted(smt.sbox_differences) == sorted(sboxes)
 
 
 def test_sbox_constraints_are_restricted_to_the_derived_differences():
     rectangle, fixed_values = _rectangle_three_round_key_alternating()
-    sbox = next(component for component in rectangle.get_all_components() if component.type == "sbox")
+    sbox = next(component for component in rectangle.all_components() if component.type == "sbox")
 
     unrestricted = SmtXorQuasidifferentialModel(rectangle)
     _, before = sbox.smt_xor_quasidifferential_propagation_constraints(unrestricted)

@@ -99,11 +99,14 @@ def _cached_speck_neural_network_results():
 
 
 def _cached_speck_algebraic_results():
+    # A system whose Groebner basis completes well within the timeout: when the
+    # alarm fires instead, PolyBoRi may only honour it minutes later, which made
+    # this fixture randomly exceed the per-test timeout on CI.
     def _generate():
-        cipher = SpeckBlockCipher(number_of_rounds=2)
-        return AlgebraicTests(cipher).algebraic_tests(timeout_in_seconds=1)
+        cipher = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=1)
+        return AlgebraicTests(cipher).algebraic_tests(timeout_in_seconds=60)
 
-    return _get_cached_result('speck_r2_algebraic_tests', _generate)
+    return _get_cached_result('speck_b8_r1_algebraic_tests', _generate)
 
 
 def _cached_speck_component_analysis():

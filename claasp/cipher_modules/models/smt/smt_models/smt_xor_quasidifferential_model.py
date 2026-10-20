@@ -103,7 +103,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         self._wire_consumers = defaultdict(list)
         self._consumed_component_ids = set()
 
-        for component in cipher.get_all_components():
+        for component in cipher.all_components():
             for source_id, position, read_index in self._component_wire_reads(component):
                 self._consumed_component_ids.add(source_id)
                 self._wire_consumers[(source_id, position)].append((component.id, read_index))
@@ -161,7 +161,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         )
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
 
             if component.type not in component_types or (
@@ -556,7 +556,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
             [1, 0]
         """
         known = {}
-        cipher_ids = set(self._cipher.inputs) | {component.id for component in self._cipher.get_all_components()}
+        cipher_ids = set(self._cipher.inputs) | {component.id for component in self._cipher.all_components()}
 
         for fixed in fixed_variables:
             if fixed.get("constraint_type") != "equal" or fixed["component_id"] not in cipher_ids:
@@ -571,7 +571,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         while changed:
             changed = False
 
-            for component in self._cipher.get_all_components():
+            for component in self._cipher.all_components():
                 changed |= self._propagate_forward(component, known)
                 changed |= self._propagate_backward(component, known)
 
@@ -605,7 +605,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         """
         differences = {}
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.type != SBOX:
                 continue
 
@@ -974,7 +974,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         """
         constraints = []
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.type != INTERMEDIATE_OUTPUT:
                 continue
 
@@ -1401,7 +1401,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         """
         operands = self._qdt_get_operands(solution)
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if self._is_nonlinear_component(component):
                 operands.extend(
                     self._excluding_literals(
@@ -1723,7 +1723,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         # "round_key_output".
         state_outputs = [
             component.id
-            for component in self._cipher.get_all_components()
+            for component in self._cipher.all_components()
             if component.description[0] in ("round_output", "cipher_output")
             and component.output_bit_size == block_bit_size
         ]
@@ -2038,7 +2038,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
 
         total_weight = 0
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             hex_value = utils.get_component_hex_value(component, out_suffix, variable2value)
             mask_hex_value = self._mask_hex_value(component.id, component.output_bit_size, variable2value)
             weight = self.calculate_component_weight(component, out_suffix, variable2value)
@@ -2158,7 +2158,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         components_solutions = solution["components_values"]
         sign = 1
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             local_sign = self._local_sign_rule(component)
 
             if local_sign is not None:
@@ -2242,7 +2242,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
             if input_id == id_:
                 return input_bit_size
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.id == id_:
                 return component.output_bit_size
 
