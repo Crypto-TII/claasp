@@ -44,6 +44,8 @@ class MznHadipourBoomerangModel(MznModel):
         # print(f'Cipher number of rounds: {cipher.number_of_rounds}')
         # cipher.print_as_python_dictionary()
         
+        print(f'Total number of rounds: {total_number_of_rounds}')
+        print(f'Cipher number of rounds: {cipher.number_of_rounds}')
         assert total_number_of_rounds == cipher.number_of_rounds
 
         cipher.print_as_python_dictionary()
@@ -120,7 +122,7 @@ class MznHadipourBoomerangModel(MznModel):
         component_with_output_bit_size = {}
         component_with_input_id_links = {}
         
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if CONSTANT not in component.type:
                 output_id_link = component.id
                 app = f'array[0..{int(component.output_bit_size) - 1}] of var 0..1: {output_id_link};'
@@ -419,7 +421,7 @@ class MznHadipourBoomerangModel(MznModel):
         new_constraint = 'output['
         for element in cipher_inputs:
             new_constraint = new_constraint + f'\"{element} = \"++ show({element}) ++ \"\\n\" ++'
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if SBOX in component.type:
                 new_constraint = new_constraint + \
                     f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ ' \
@@ -757,7 +759,7 @@ class MznHadipourBoomerangModel(MznModel):
         self._model_constraints.extend(self.final_xor_differential_constraints(weight))
 
         ### JUST FOR MODULAR ADDITION OPERATOR
-        if any('MODADD' in component.description[0] for component in self._cipher.get_all_components()):
+        if any('MODADD' in component.description[0] for component in self._cipher.all_components()):
             if self.middle_part_number_of_rounds == 1:
                 self._model_constraints.extend([get_bct_operations()])
                 self._model_constraints.extend([get_evaluation_bct_operations(self.branch_size)])

@@ -11,7 +11,8 @@ from claasp.ciphers.permutations.chaskeypi_permutation import ChaskeyPiPermutati
 
 
 def test_build_boomerang_model_chacha():
-    # cipher = ChachaPermutation(number_of_rounds=7)
+    ### with half_half i have to consider one round has 4 half-half-rounds so the number of half-half-rounds is 4 times the number of rounds
+    cipher = ChachaPermutation(number_of_rounds=20, round_mode='half_half')
     # cipher = SpeckBlockCipher(number_of_rounds=10)
     # cipher = SpeckBlockCipher(block_bit_size=48, key_bit_size=72, number_of_rounds=12)
     # cipher = LeaBlockCipher(number_of_rounds=16)
@@ -19,11 +20,11 @@ def test_build_boomerang_model_chacha():
     # cipher = SimonBlockCipher(block_bit_size=48, key_bit_size=72, number_of_rounds=16)
     # cipher = KatanBlockCipher(number_of_rounds=86)
     # cipher = KatanBlockCipher(block_bit_size=48, number_of_rounds=83)
-    cipher = ChaskeyPiPermutation(number_of_rounds=7, word_size=16)
+    # cipher = ChaskeyPiPermutation(number_of_rounds=7, word_size=16)
 
-    top_part_number_of_rounds = 6
-    middle_part_number_of_rounds = 3
-    bottom_part_number_of_rounds = 5
+    top_part_number_of_rounds = 9
+    middle_part_number_of_rounds = 2
+    bottom_part_number_of_rounds = 9
 
     component_dict = {
         "top_part_number_of_rounds": top_part_number_of_rounds,
