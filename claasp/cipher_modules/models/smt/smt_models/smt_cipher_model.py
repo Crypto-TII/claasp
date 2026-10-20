@@ -45,14 +45,8 @@ class SmtCipherModel(SmtModel):
 
         INPUT:
 
-        - ``fixed_variables`` -- **list** (default: `[]`); dictionaries contain name, bit_size, value (as integer) for
-          the variables that need to be fixed to a certain value
-          | {
-          |     'component_id': 'plaintext',
-          |     'constraint_type': 'equal'/'not_equal'
-          |     'bit_positions': [0, 1, 2, 3],
-          |     'binary_value': '[0, 0, 0, 0]'
-          | }
+        - ``fixed_variables`` -- **list** (default: `[]`); the variables to be fixed in standard format, as
+          returned by :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
 
         EXAMPLES::
 
@@ -78,7 +72,7 @@ class SmtCipherModel(SmtModel):
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR")
         self._model_constraints = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types
@@ -102,12 +96,10 @@ class SmtCipherModel(SmtModel):
 
         INPUT:
 
-        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
-        - ``solver_name`` -- **string** (default: `z3`); the name of the solver
-
-        .. SEEALSO::
-
-            :ref:`smt-solvers`
+        - ``fixed_values`` -- **list** (default: `[]`); the variables to be fixed in standard format, as returned
+          by :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
+        - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver, one of those listed in
+          :ref:`smt-solvers`
 
         EXAMPLES::
 
@@ -117,7 +109,7 @@ class SmtCipherModel(SmtModel):
             sage: smt = SmtCipherModel(speck)
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: ciphertext = set_fixed_variables(
-            ....:         component_id=speck.get_all_components_ids()[-1],
+            ....:         component_id=speck.all_components_ids()[-1],
             ....:         constraint_type='equal',
             ....:         bit_positions=range(32),
             ....:         bit_values=integer_to_bit_list(endianness='big', list_length=32, int_value=0xaffec7ed))
@@ -141,7 +133,7 @@ class SmtCipherModel(SmtModel):
     def _parse_solver_output(self, variable2value):
         out_suffix = ""
         components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             hex_value = get_component_hex_value(component, out_suffix, variable2value)
             component_solution = set_component_solution(hex_value)
             components_solutions[component.id] = component_solution

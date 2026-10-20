@@ -48,6 +48,7 @@ MATHSAT_EXT = "MATHSAT_EXT"
 MINISAT_EXT = "MINISAT_EXT"
 KISSAT_EXT = "KISSAT_EXT"
 PARKISSAT_EXT = "PARKISSAT_EXT"
+MALLOB_EXT = "MALLOB_EXT"
 YICES_SAT_EXT = "YICES_SAT_EXT"
 
 
@@ -184,6 +185,25 @@ SAT_SOLVERS_EXTERNAL = [
                 "format": ["executable", "options", "input_file"],
             },
             "time": None,
+            "memory": None,
+            "is_dimacs_compliant": False,
+            "unsat_condition": "s UNSATISFIABLE",
+        },
+    },
+    {
+        "solver_brand_name": "Mallob (MallobSat)",
+        "solver_name": MALLOB_EXT,
+        "keywords": {
+            "command": {
+                "executable": "mallob",
+                "options": ["-t=4", "-satsolver=k"],
+                "input_file": "",
+                "solve": "",
+                "output_file": "",
+                "end": "",
+                "format": ["executable", "options", "input_file"],
+            },
+            "time": "RESPONSE_TIME",
             "memory": None,
             "is_dimacs_compliant": False,
             "unsat_condition": "s UNSATISFIABLE",

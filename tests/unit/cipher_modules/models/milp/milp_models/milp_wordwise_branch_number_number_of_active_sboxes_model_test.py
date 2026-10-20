@@ -220,7 +220,7 @@ def test_word_branch_number_is_cached(monkeypatch):
     cipher = AESBlockCipher(number_of_rounds=2)
     milp = MilpWordwiseBranchNumberNumberOfActiveSboxesModel(cipher)
     milp.init_model_in_sage_milp_class()
-    mix_column = [component for component in cipher.get_all_components() if component.type == MIX_COLUMN][0]
+    mix_column = [component for component in cipher.all_components() if component.type == MIX_COLUMN][0]
     calls = []
 
     def fake_branch_number(matrix):
@@ -244,6 +244,6 @@ def test_build_model_delegates_wordwise_constraints_to_components(monkeypatch):
         get_single_key_scenario_format_for_fixed_values(cipher)
     )
 
-    expected_sboxes = [component for component in cipher.get_all_components() if component.type == SBOX]
+    expected_sboxes = [component for component in cipher.all_components() if component.type == SBOX]
 
     assert len(sbox_active_terms) == len(expected_sboxes)

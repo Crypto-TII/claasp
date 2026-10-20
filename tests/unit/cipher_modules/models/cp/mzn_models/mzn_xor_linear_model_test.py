@@ -86,24 +86,26 @@ def test_find_one_xor_linear_trail():
 def test_find_one_xor_linear_trail_with_fixed_weight():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
     mzn = MznXorLinearModel(speck)
-    trail = mzn.find_one_xor_linear_trail_with_fixed_weight(3, solve_external=False)
+    trail = mzn.find_one_xor_linear_trail(lower_bound=3, upper_bound=3, solve_external=False)
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r4"
     assert trail["model_type"] == "xor_linear_one_solution"
     assert trail["total_weight"] == "3.0"
 
-    trail = mzn.find_one_xor_linear_trail_with_fixed_weight(3, solver_name=CHUFFED, solve_external=False)
+    trail = mzn.find_one_xor_linear_trail(lower_bound=3, upper_bound=3, solver_name=CHUFFED, solve_external=False)
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r4"
     assert trail["model_type"] == "xor_linear_one_solution"
     assert trail["total_weight"] == "3.0"
+
 
 def test_find_one_xor_linear_trail_with_fixed_weight_solve_with_api():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
     mzn = MznXorLinearModel(speck)
-    trail = mzn.find_one_xor_linear_trail_with_fixed_weight(3, solve_external=False, solve_with_API=True)
+    trail = mzn.find_one_xor_linear_trail(lower_bound=3, upper_bound=3, solve_external=False, solve_with_API=True)
 
     assert isinstance(trail.statistics, dict)
+
 
 def test_fix_variables_value_xor_linear_constraints():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)

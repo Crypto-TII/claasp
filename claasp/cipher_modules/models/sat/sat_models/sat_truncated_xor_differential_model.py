@@ -114,7 +114,7 @@ class SatTruncatedXorDifferentialModel(SatModel):
         variables = []
         constraints = []
         for component_id in list(number_of_unknowns_per_component.keys()):
-            if component_id in self._cipher.get_all_components_ids():
+            if component_id in self._cipher.all_components_ids():
                 set_to_be_minimized = []
                 set_to_be_minimized.extend(
                     [

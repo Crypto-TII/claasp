@@ -111,7 +111,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
 
         for r in range(self._cipher.number_of_rounds):
             self.sboxes_component_number_list[r] = []
-        for component in filter(lambda c: c.type == SBOX, self.cipher.get_all_components()):
+        for component in filter(lambda c: c.type == SBOX, self.cipher.all_components()):
             round_num, component_num = map(int, component.id.split("_")[-2:])
             self.sboxes_component_number_list[round_num] += [component_num]
 
@@ -122,10 +122,10 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
 
         forward_components = []
         for r in range(middle_round):
-            forward_components.extend(self._cipher.get_components_in_round(r))
+            forward_components.extend(self._cipher.components_in_round(r))
         backward_components = []
         for r in range(number_of_rounds - middle_round + 1):
-            backward_components.extend(inverse_cipher.get_components_in_round(r))
+            backward_components.extend(inverse_cipher.components_in_round(r))
 
         if probabilistic:
             direct_variables, direct_constraints = self.build_improbable_forward_model(forward_components)
@@ -284,7 +284,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
 
     def _generate_wordwise_incompatibility_constraint(self, component):
         if self.sbox_size:
-            current_round = self._cipher.get_round_from_component_id(component.id)
+            current_round = self._cipher.round_from_component_id(component.id)
             wordwise_incompatibility_constraint = ""
 
             single_round = self._cipher.remove_key_schedule().rounds.components_in_round(current_round)
@@ -356,7 +356,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             self._cipher.inputs
             if initial_round == 1
             else ["key"]
-            + [comp.id for comp in self._cipher.get_components_in_round(initial_round - 2) if "output" in comp.id]
+            + [comp.id for comp in self._cipher.components_in_round(initial_round - 2) if "output" in comp.id]
         )
         cipher = self._cipher
         cipher_outputs = (
@@ -365,7 +365,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             else ["key"]
             + [
                 comp.id
-                for comp in self.inverse_cipher.get_components_in_round(self._cipher.number_of_rounds - final_round)
+                for comp in self.inverse_cipher.components_in_round(self._cipher.number_of_rounds - final_round)
                 if "output" in comp.id
             ]
         )
@@ -384,7 +384,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
             new_constraint += '"Trail weight = " ++ show(weight) ++ "\\n" ++ "0" ++ "\\n" ++ '
 
         if intermediate_components:
-            for component in cipher.get_components_in_round(middle_round - 1):
+            for component in cipher.components_in_round(middle_round - 1):
                 if component.type != CONSTANT:
                     component_id = component.id
                     input_id_links = component.input_id_links
@@ -412,7 +412,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
                         )
 
         else:
-            for component in cipher.get_all_components():
+            for component in cipher.all_components():
                 extra_condition = (
                     (component.id in key_schedule_components_ids and component.description == ["round_key_output"])
                     if probabilistic
@@ -620,7 +620,7 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
         )
 
     def _get_sbox_max(self):
-        nb_sbox = len([c for c in self._cipher.get_all_components() if c.type == SBOX])
+        nb_sbox = len([c for c in self._cipher.all_components() if c.type == SBOX])
         return 100 * self._cipher.number_of_rounds + nb_sbox * 10
 
     def input_constraints(self, number_of_rounds=None, middle_round=None, probabilistic=False):
@@ -639,10 +639,10 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
         inverse_cipher = self.inverse_cipher
         forward_components = []
         for r in range(middle_round):
-            forward_components.extend(self._cipher.get_components_in_round(r))
+            forward_components.extend(self._cipher.components_in_round(r))
         backward_components = []
         for r in range(number_of_rounds - middle_round + 1):
-            backward_components.extend(inverse_cipher.get_components_in_round(r))
+            backward_components.extend(inverse_cipher.components_in_round(r))
 
         cp_declarations.extend(
             [
@@ -783,12 +783,12 @@ class MznHybridImpossibleXorDifferentialModel(MznImpossibleXorDifferentialModel)
 
         all_components = [*self._cipher.inputs]
         for r in list(range(initial_round - 1, middle_round)) + list(range(final_round, number_of_rounds)):
-            all_components.extend([component.id for component in [*self._cipher.get_components_in_round(r)]])
+            all_components.extend([component.id for component in [*self._cipher.components_in_round(r)]])
         for r in list(range(initial_round - 1)) + list(range(middle_round - 1, final_round)):
             all_components.extend(
                 [
                     "inverse_" + component.id
-                    for component in [*self.inverse_cipher.get_components_in_round(number_of_rounds - r - 1)]
+                    for component in [*self.inverse_cipher.components_in_round(number_of_rounds - r - 1)]
                 ]
             )
         all_components.extend(["inverse_" + id_link for id_link in [*self.inverse_cipher.inputs]])

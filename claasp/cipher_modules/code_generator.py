@@ -177,7 +177,7 @@ def get_cipher_output_component_bit_based_c_code(component, index, intermediate_
 
         list_index = [0] * number_of_descriptions
 
-        for cipher_component in cipher.get_all_components():
+        for cipher_component in cipher.all_components():
             if cipher_component.type == 'intermediate_output':
                 i = string_dictionary[cipher_component.description[0]]
                 cipher_output_code.append(
@@ -283,7 +283,7 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
             'from time import time \n'
             'def evaluate(input, store_intermediate_outputs):', '  intermediateOutputs={}']
     code.extend([f'  {cipher.inputs[i]}=input[{i}]' for i in range(len(cipher.inputs))])
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         params = prepare_input_bit_based_vectorized_python_code_string(component)
         component_types_allowed = ['constant', 'linear_layer', 'mix_column', 'permutation',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
@@ -351,9 +351,9 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
         code.append(f'  {cipher.inputs[i]}=input[{i}]')
         output_bit_sizes[cipher.inputs[i]] = cipher.inputs_bit_size[i]
     cipher_descriptions = []
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         cipher_descriptions.append(component.description)
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         formatted_component_inputs = prepare_input_byte_based_vectorized_python_code_string(output_bit_sizes, component)
         output_bit_sizes[component.id] = component.output_bit_size
         component_types_allowed = ['constant', 'linear_layer', 'mix_column', 'permutation',
@@ -467,12 +467,23 @@ def get_number_of_inputs(component):
     return number_of_inputs
 
 
+def _needs_recompile(object_path, source_path):
+    """Whether ``object_path`` is missing or older than ``source_path``.
+
+    A leftover generic ``.o`` from a previous (e.g. crashed, or PID-reused,
+    see ``process_tag``) process must not be silently reused once its source
+    ``.c`` file has changed since it was compiled -- that would link a stale
+    binary against fresh cipher-specific code.
+    """
+    return not os.path.exists(object_path) or os.path.getmtime(object_path) < os.path.getmtime(source_path)
+
+
 def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosity):
     name = evaluate_c_name(cipher)
     generic_o = generic_c_functions_o_name(cipher)
     cipher_word_size = cipher.is_power_of_2_word_based()
     if cipher_word_size:
-        if not os.path.exists(TII_C_LIB_PATH + generic_o):
+        if _needs_recompile(TII_C_LIB_PATH + generic_o, TII_C_LIB_PATH + "generic_word_based_c_functions.c"):
             call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_c_functions.c", "-o",
                   TII_C_LIB_PATH + generic_o, "-D", f"word_size={cipher_word_size}"])
 
@@ -490,7 +501,7 @@ def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosi
               f"word_size={cipher_word_size}"])
 
     else:
-        if not os.path.exists(TII_C_LIB_PATH + generic_o):
+        if _needs_recompile(TII_C_LIB_PATH + generic_o, TII_C_LIB_PATH + "generic_bit_based_c_functions.c"):
             call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_bit_based_c_functions.c",
                   "-o", TII_C_LIB_PATH + generic_o])
 
@@ -722,7 +733,7 @@ def generate_python_code_string_for_continuous_diffusion_analysis(cipher, verbos
     cipher_code_string += "    intermediate_output = {}\n"
     intermediate_output = set()
 
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         if component.type in (INTERMEDIATE_OUTPUT, CIPHER_OUTPUT):
             intermediate_output.add(component.description[0])
     cipher_code_string += "".join(f"    intermediate_output['{int_out}'] = []\n" for int_out in intermediate_output)

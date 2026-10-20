@@ -1,7 +1,21 @@
-import pytest
+import contextlib
+import io
+from unittest import mock
 
+import numpy as np
+import pytest
+import tensorflow as tf
+from sage.all import Integer
+
+from claasp.cipher_modules import neural_network_tests
 from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+
+DBITNET_64_TRAINABLE_PARAMETERS = 296065
+DBITNET_64_PARAMETERS = 298113
+SYNTHETIC_SAMPLES = 4
+SYNTHETIC_OUTPUT_BYTES = 2
 
 
 def test_find_good_input_difference_for_neural_distinguisher():
@@ -71,3 +85,360 @@ def test_neural_network_differential_distinguisher_tests():
             'number_of_epochs': 1,
             'plaintext_input_bit_size': 32,
             'key_input_bit_size': 64}
+
+
+@pytest.mark.parametrize('test_method', ['neural_network_blackbox_distinguisher_tests',
+                                         'neural_network_differential_distinguisher_tests'])
+def test_distinguisher_tests_forward_number_of_epochs(test_method):
+    sequential = mock.MagicMock()
+    sequential.return_value.fit.return_value.history = {'val_binary_accuracy': [0.5]}
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    with mock.patch.object(neural_network_tests, 'Sequential', sequential):
+        getattr(tester, test_method)(nb_samples=8, number_of_epochs=7, hidden_layers=[4])
+    fit_calls = sequential.return_value.fit.call_args_list
+    assert fit_calls
+    assert all(fit_call.kwargs['epochs'] == 7 for fit_call in fit_calls)
+
+
+def _mocked_training(validation_accuracies):
+    neural_network = mock.Mock()
+    neural_network.fit.return_value.history = {'val_acc': validation_accuracies}
+    data_generator = mock.Mock(return_value=(np.zeros((4, 64), dtype=np.uint8), np.zeros(4, dtype=np.uint8)))
+    return neural_network, data_generator
+
+
+def _generated_rounds(data_generator):
+    return sorted({generator_call.kwargs['nr'] for generator_call in data_generator.call_args_list})
+
+
+def test_train_neural_distinguisher_trains_the_final_round():
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    neural_network, data_generator = _mocked_training([0.6, 0.9, 0.7])
+    result = tester.train_neural_distinguisher(data_generator, starting_round=2, neural_network=neural_network,
+                                               training_samples=4, testing_samples=10 ** 6, epochs=3, pipeline=False)
+    assert result == {2: 0.9}
+    assert _generated_rounds(data_generator) == [2]
+    assert neural_network.fit.call_args.kwargs['epochs'] == 3
+
+
+def test_train_neural_distinguisher_pipeline_advances_into_the_final_round():
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    neural_network, data_generator = _mocked_training([1.0])
+    result = tester.train_neural_distinguisher(data_generator, starting_round=1, neural_network=neural_network,
+                                               training_samples=4, testing_samples=10 ** 6, epochs=1, pipeline=True)
+    assert result == {1: 1.0, 2: 1.0}
+    assert _generated_rounds(data_generator) == [1, 2]
+
+
+def test_train_neural_distinguisher_pipeline_stops_below_threshold():
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    neural_network, data_generator = _mocked_training([0.5])
+    result = tester.train_neural_distinguisher(data_generator, starting_round=1, neural_network=neural_network,
+                                               training_samples=4, testing_samples=10 ** 6, epochs=1, pipeline=True)
+    assert result == {1: 0.5}
+
+
+def test_train_neural_distinguisher_single_round_primitive():
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=1))
+    neural_network, data_generator = _mocked_training([1.0])
+    result = tester.train_neural_distinguisher(data_generator, starting_round=1, neural_network=neural_network,
+                                               training_samples=4, testing_samples=10 ** 6, epochs=1, pipeline=True)
+    assert result == {1: 1.0}
+    assert _generated_rounds(data_generator) == [1]
+
+
+@pytest.mark.parametrize('starting_round, error', [(0, ValueError), (-1, ValueError), (3, ValueError),
+                                                   (1.5, TypeError), (True, TypeError), ('1', TypeError)])
+def test_train_neural_distinguisher_rejects_invalid_starting_round(starting_round, error):
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    neural_network, data_generator = _mocked_training([1.0])
+    with pytest.raises(error):
+        tester.train_neural_distinguisher(data_generator, starting_round=starting_round,
+                                          neural_network=neural_network, training_samples=4, testing_samples=4)
+    data_generator.assert_not_called()
+
+
+def test_train_gohr_neural_distinguisher_trains_the_final_round():
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    neural_network, _ = _mocked_training([0.8])
+    with mock.patch.object(tester, 'get_neural_network', return_value=neural_network):
+        result = tester.train_gohr_neural_distinguisher([0x400000, 0], 2, word_size=16, number_of_epochs=1,
+                                                        training_samples=4, testing_samples=4)
+    assert result == {2: 0.8}
+
+
+def test_get_differential_dataset_uses_one_based_round_numbers():
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2))
+    x, y = tester.get_differential_dataset([0x400000, 0], 2, samples=4)
+    assert x.shape == (4, 64)
+    assert y.shape == (4,)
+    with pytest.raises(ValueError):
+        tester.get_differential_dataset([0x400000, 0], 0, samples=4)
+
+
+def _dbitnet(input_size=64):
+    return NeuralNetworkTests(None).get_neural_network('dbitnet', input_size=input_size, word_size=1)
+
+
+def _trainable_parameters(model):
+    return int(sum(np.prod(weight.shape) for weight in model.trainable_weights))
+
+
+def test_dbitnet_construction_uses_a_rescaling_layer():
+    model = _dbitnet()
+    layer_types = [type(layer).__name__ for layer in model.layers]
+    assert 'TFOpLambda' not in layer_types
+    assert 'Lambda' not in layer_types
+    assert layer_types.count('Rescaling') == 1
+    assert model.input_shape == (None, 64, 1)
+    assert model.output_shape == (None, 1)
+    assert _trainable_parameters(model) == DBITNET_64_TRAINABLE_PARAMETERS
+    assert model.count_params() == DBITNET_64_PARAMETERS
+
+
+def test_dbitnet_rescaling_maps_bits_to_plus_minus_one():
+    rescaling = next(layer for layer in _dbitnet().layers if type(layer).__name__ == 'Rescaling')
+    bits = np.array([[[0.0], [1.0]]], dtype=np.float32)
+    np.testing.assert_array_equal(np.asarray(rescaling(bits)), [[[-1.0], [1.0]]])
+    values = np.random.default_rng(0).random((1, 64, 1), dtype=np.float32)
+    expected = (values - np.float32(0.5)) / np.float32(0.5)
+    np.testing.assert_array_equal(np.asarray(rescaling(values)), expected)
+
+
+def test_dbitnet_forward_pass_on_differential_dataset():
+    x, _ = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=2)).get_differential_dataset([0x400000, 0], 2,
+                                                                                               samples=3)
+    predictions = _dbitnet().predict(x, verbose=0)
+    assert predictions.shape == (3, 1)
+    assert np.all((predictions >= 0) & (predictions <= 1))
+
+
+# Keras 3 cannot restore the compile configuration of legacy HDF5 files, so only the architecture and weights are
+# reloaded from them.
+@pytest.mark.parametrize('extension, compile_model', [('keras', True), ('h5', False)])
+def test_dbitnet_save_and_load(tmp_path, extension, compile_model):
+    model = _dbitnet()
+    x = np.random.default_rng(0).integers(0, 2, (3, 64, 1)).astype(np.float32)
+    path = str(tmp_path / f'dbitnet.{extension}')
+    model.save(path)
+    loaded = tf.keras.models.load_model(path, compile=compile_model)
+    assert [type(layer).__name__ for layer in loaded.layers] == [type(layer).__name__ for layer in model.layers]
+    np.testing.assert_allclose(loaded.predict(x, verbose=0), model.predict(x, verbose=0), rtol=1e-6)
+
+
+def _synthetic_output_differences(biased):
+    if biased:
+        return np.full((SYNTHETIC_SAMPLES, SYNTHETIC_OUTPUT_BYTES), 0xFF, dtype=np.uint8)
+    return np.array([[0x00] * SYNTHETIC_OUTPUT_BYTES, [0xFF] * SYNTHETIC_OUTPUT_BYTES] * (SYNTHETIC_SAMPLES // 2),
+                    dtype=np.uint8)
+
+
+def _synthetic_scores(biased_rounds_per_candidate, number_of_rounds, threshold):
+    rounds = range(1, number_of_rounds + 1)
+    c0 = {r: np.zeros((SYNTHETIC_SAMPLES, SYNTHETIC_OUTPUT_BYTES), dtype=np.uint8) for r in rounds}
+    c1 = {r: np.concatenate([_synthetic_output_differences(r in biased_rounds)
+                             for biased_rounds in biased_rounds_per_candidate]) for r in rounds}
+    candidates = np.array(range(1, len(biased_rounds_per_candidate) + 1), dtype=object)
+    inputs0 = [np.zeros((1, SYNTHETIC_SAMPLES), dtype=np.uint8)]
+    return NeuralNetworkTests(None)._evaluate_multiple_differences([8], [True], lambda _: c1, candidates, inputs0,
+                                                                   c0, threshold)
+
+
+@pytest.mark.parametrize('biased_round', [1, 2, 3, 4])
+def test_evaluate_multiple_differences_weights_each_round(biased_round):
+    scores, highest_round = _synthetic_scores([{biased_round}], number_of_rounds=4, threshold=0)
+    np.testing.assert_array_equal(scores, [0.5 * biased_round])
+    assert highest_round == 4
+
+
+def test_evaluate_multiple_differences_covers_the_terminal_rounds():
+    scores, highest_round = _synthetic_scores([{1, 2, 3, 4}, {1, 2, 3}, {1, 2, 4}], number_of_rounds=4,
+                                              threshold=0.05)
+    np.testing.assert_array_equal(scores, [5.0, 3.0, 3.5])
+    assert highest_round == 4
+
+
+def test_evaluate_multiple_differences_stops_at_the_first_unbiased_round():
+    scores, highest_round = _synthetic_scores([{1, 2, 4}, {1}], number_of_rounds=4, threshold=0.05)
+    np.testing.assert_array_equal(scores, [1.5, 0.5])
+    assert highest_round == 2
+
+
+def test_evaluate_multiple_differences_without_biased_round():
+    scores, highest_round = _synthetic_scores([set(), {2}], number_of_rounds=2, threshold=0.05)
+    np.testing.assert_array_equal(scores, [0.0, 0.0])
+    assert highest_round == 0
+
+
+@pytest.mark.parametrize('cipher, expected', [
+    (SpeckBlockCipher(number_of_rounds=1), {1: ('cipher_output', 0)}),
+    (SpeckBlockCipher(number_of_rounds=4), {1: ('round_output', 0), 2: ('round_output', 1),
+                                            3: ('round_output', 2), 4: ('cipher_output', 0)}),
+    (SimonBlockCipher(number_of_rounds=2), {1: ('round_output', 0), 2: ('cipher_output', 0)}),
+])
+def test_scored_round_outputs(cipher, expected):
+    assert NeuralNetworkTests(cipher)._scored_round_outputs() == expected
+
+
+@pytest.mark.parametrize('number_of_rounds', [1, 2])
+def test_find_good_input_difference_for_short_primitives(number_of_rounds):
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=number_of_rounds))
+    diff, scores, highest_round = tester.find_good_input_difference_for_neural_distinguisher(
+        [True, False], initial_population=4, number_of_generations=1, nb_samples=64,
+        previous_generation=[0x400000, 0x8000, 0x40, 0x1], seed=0)
+    assert highest_round == number_of_rounds
+    assert np.max(scores) > 0
+    assert all(0 < d < 1 << 32 for d in diff)
+
+
+@pytest.mark.parametrize('highest_round, round_start', [(0, 1), (2, 1), (5, 2)])
+def test_run_autond_pipeline_starts_training_from_highest_round(highest_round, round_start):
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=5))
+    search_result = (np.array([0x400000], dtype=object), np.array([1.0]), highest_round)
+    with mock.patch.object(tester, 'find_good_input_difference_for_neural_distinguisher',
+                           return_value=search_result) as search, \
+            mock.patch.object(tester, 'get_neural_network'), \
+            mock.patch.object(tester, 'train_neural_distinguisher', return_value={round_start: 0.9}) as train:
+        result = tester.run_autond_pipeline(optimizer_samples=4, optimizer_generations=1, training_samples=4,
+                                            testing_samples=4, number_of_epochs=1, seed=5)
+    assert search.call_args.kwargs['seed'] == 5
+    assert train.call_args.args[1] == round_start
+    assert result['test_results']['round_start'] == round_start
+
+
+def _no_score(generation):
+    return np.zeros(len(generation)), 0
+
+
+def test_random_difference_stays_within_width():
+    generator = mock.Mock()
+    generator.bytes.return_value = b'\xff'
+    assert NeuralNetworkTests(None)._random_difference(generator, 3) == 7
+    generator.bytes.assert_called_once_with(1)
+
+
+def test_random_difference_rejects_zero():
+    generator = mock.Mock()
+    generator.bytes.side_effect = [b'\x00', b'\x08', b'\x05']
+    assert NeuralNetworkTests(None)._random_difference(generator, 3) == 5
+    assert generator.bytes.call_count == 3
+
+
+def test_random_difference_covers_the_legal_range():
+    generator = np.random.default_rng(0)
+    tester = NeuralNetworkTests(None)
+    assert {tester._random_difference(generator, 3) for _ in range(200)} == set(range(1, 8))
+    assert all(0 < tester._random_difference(generator, 70) < 1 << 70 for _ in range(50))
+
+
+def test_evolutionary_algorithm_initial_differences_stay_within_width():
+    generation, _, _ = NeuralNetworkTests(None)._evolutionary_algorithm(None, 64, 0, False, _no_score, 3, seed=0)
+    assert set(generation) <= set(range(1, 8))
+
+
+def test_evolutionary_algorithm_mutates_the_highest_bit():
+    bit_position_bounds = []
+    evaluated = []
+
+    def controlled_integers(low, high, size):
+        if high == 100:
+            return np.full(size, 99)
+        bit_position_bounds.append((low, high))
+        return np.full(size, high - 1)
+
+    def record_score(generation):
+        evaluated.append(list(generation))
+        return np.zeros(len(generation)), 0
+
+    generator = mock.Mock()
+    generator.integers.side_effect = controlled_integers
+    with mock.patch.object(neural_network_tests.np.random, 'default_rng', return_value=generator):
+        NeuralNetworkTests(None)._evolutionary_algorithm(np.array([1, 2], dtype=object), 2, 1, False,
+                                                         record_score, 3)
+    assert bit_position_bounds == [(0, 3)]
+    assert evaluated[-1] == [0b111]
+
+
+def test_evolutionary_algorithm_one_bit_space():
+    generation, scores, _ = NeuralNetworkTests(None)._evolutionary_algorithm(None, 4, 2, False, _no_score, 1,
+                                                                             seed=0)
+    assert list(generation) == [1, 1, 1, 1]
+    assert len(scores) == 4
+
+
+@pytest.mark.parametrize('difference_bits', [0, -1, 1.5, True])
+def test_evolutionary_algorithm_rejects_invalid_width(difference_bits):
+    tester = NeuralNetworkTests(None)
+    with pytest.raises(ValueError):
+        tester._evolutionary_algorithm(None, 4, 0, False, _no_score, difference_bits)
+
+
+@pytest.mark.parametrize('previous_generation', [[0], [8], [-1], [1.5], [True], [1, 9], []])
+def test_evolutionary_algorithm_rejects_invalid_previous_generation(previous_generation):
+    tester = NeuralNetworkTests(None)
+    with pytest.raises(ValueError):
+        tester._evolutionary_algorithm(previous_generation, 4, 0, False, _no_score, 3)
+
+
+def test_evolutionary_algorithm_accepts_numpy_previous_generation():
+    generation, _, _ = NeuralNetworkTests(None)._evolutionary_algorithm(np.array([1, 7], dtype=np.int64), 2, 0,
+                                                                        False, _no_score, 3)
+    assert sorted(generation) == [1, 7]
+    assert all(type(difference) is int for difference in generation)
+
+
+def test_find_good_input_difference_verbose_with_fewer_than_ten_differences():
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=1))
+    output = io.StringIO()
+    with contextlib.redirect_stdout(output):
+        diff, _, _ = tester.find_good_input_difference_for_neural_distinguisher(
+            [True, False], initial_population=3, number_of_generations=0, nb_samples=8, verbose=True, seed=0)
+    assert len(diff) == 3
+    assert output.getvalue().count(', with score') == 3
+
+
+@pytest.mark.parametrize('keras_version, extension', [('2.13.1', '.h5'), ('3.15.1', '.keras')])
+def test_checkpoint_file_name_matches_keras_version(keras_version, extension):
+    with mock.patch.object(neural_network_tests.keras, '__version__', keras_version):
+        file_name = NeuralNetworkTests(None)._checkpoint_file_name('/tmp/speck_', 2)
+    assert file_name == f'/tmp/speck_2{extension}'
+
+
+def test_train_neural_distinguisher_checkpoint_can_resume_training(tmp_path):
+    cipher = SpeckBlockCipher(number_of_rounds=2)
+    tester = NeuralNetworkTests(cipher)
+
+    def data_generator(nr, samples):
+        return tester.get_differential_dataset([0x400000, 0], number_of_rounds=nr, samples=samples)
+
+    neural_network = tester.get_neural_network('gohr_resnet', input_size=64, word_size=16)
+    save_prefix = str(tmp_path / 'speck_')
+    tester.train_neural_distinguisher(data_generator, starting_round=2, neural_network=neural_network,
+                                      training_samples=32, testing_samples=32, epochs=1, pipeline=False,
+                                      save_prefix=save_prefix)
+    checkpoint = tester._checkpoint_file_name(save_prefix, 2)
+    loaded = tf.keras.models.load_model(checkpoint)
+    x, y = data_generator(2, 32)
+    history = loaded.fit(x, y, epochs=1, validation_data=(x, y), verbose=0)
+    assert 'val_acc' in history.history
+
+
+def _seeded_search(seed):
+    tester = NeuralNetworkTests(SpeckBlockCipher(number_of_rounds=3))
+    return tester.find_good_input_difference_for_neural_distinguisher(
+        [True, False], initial_population=4, number_of_generations=2, nb_samples=32, seed=seed)
+
+
+def test_find_good_input_difference_is_reproducible_with_a_seed():
+    first_differences, first_scores, first_highest_round = _seeded_search(3)
+    second_differences, second_scores, second_highest_round = _seeded_search(3)
+    assert list(first_differences) == list(second_differences)
+    np.testing.assert_array_equal(first_scores, second_scores)
+    assert first_highest_round == second_highest_round
+    other_differences, _, _ = _seeded_search(4)
+    assert list(other_differences) != list(first_differences)
+
+
+def test_random_generator_accepts_sage_integers():
+    tester = NeuralNetworkTests(None)
+    assert tester._random_generator(Integer(7)).integers(1 << 30) == tester._random_generator(7).integers(1 << 30)

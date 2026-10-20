@@ -8,10 +8,12 @@ from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
 from claasp.ciphers.permutations.gimli_permutation import GimliPermutation
 from claasp.ciphers.permutations.gaston_permutation import GastonPermutation
+from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
 from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
 from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.kasumi_block_cipher import SBox7 as KASUMI_S7
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
+from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
 from claasp.name_mappings import BLOCK_CIPHER
 from sage.crypto.sboxes import APN_6
 
@@ -131,6 +133,24 @@ def test_is_balanced_at_specific_output_bit_over_cube():
     # Bit 4 is not proved balanced (at least one trail exists)
     is_balanced = milp.is_balanced_at_specific_output_bit_over_cube(4, cube)
     assert is_balanced is False
+
+
+def test_sbox_encoding_flag_defaults_to_convexhull():
+    # The S-box encoder is the convex hull by default and stores whatever flag is passed (no solve).
+    cipher = SboxCipher(bit_size=4, lookup_table=list(range(16)))
+    assert MilpMonomialPredictionModel(cipher)._sbox_encoding == "convexhull"
+    assert MilpMonomialPredictionModel(cipher, sbox_encoding="onehot")._sbox_encoding == "onehot"
+    assert MilpMonomialPredictionModel(cipher, sbox_encoding="espresso")._sbox_encoding == "espresso"
+
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_is_balanced_at_all_output_bits_over_cube_keccak_100_3():
+    # Keccak-f[100], 3 rounds, one-hot: a 7-bit cube (a column + 2 bits) is balanced, below the degree bound 9.
+    cipher = KeccakSboxPermutation(number_of_rounds=3, word_size=4)
+    milp = MilpMonomialPredictionModel(cipher, sbox_encoding="onehot")
+    assert milp.is_balanced_at_all_output_bits_over_cube([f"p{i}" for i in (0, 4, 8, 12, 16, 20, 24)]) is True
+    assert milp.is_balanced_at_all_output_bits_over_cube([f"p{i}" for i in range(7)]) is False
+
 
 @pytest.mark.skip(reason="Requires Gurobi license")
 def test_is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless_ublock_6():
@@ -417,3 +437,13 @@ def _check_sbox_anf(name, n, sbox):
 def test_sbox_milp_modeling_correctness():
     for name, n, sbox in SBOXES_UNDER_TEST:
         _check_sbox_anf(name, n, sbox)
+
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_permutation_component_orientation():
+    perm = [3, 0, 5, 7, 1, 6, 2, 4]
+    cipher = PermutationCipher(bit_size=8, permutation_description=perm)
+    source_of = {target: source for source, target in enumerate(perm)}
+    for target_bit in range(len(perm)):
+        anf = MilpMonomialPredictionModel(cipher).find_anf_of_specific_output_bit(target_bit)
+        assert str(anf) == f"p{source_of[target_bit]}"

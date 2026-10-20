@@ -1850,7 +1850,7 @@ def get_key_schedule_component_ids(cipher):
          'intermediate_output_1_11']
     """
     key_schedule_ids = [cid for cid in cipher.inputs if INPUT_KEY in cid or INPUT_TWEAK in cid]
-    for c in cipher.get_all_components():
+    for c in cipher.all_components():
         if c.type == CONSTANT or all(link in key_schedule_ids for link in c.input_id_links):
             key_schedule_ids.append(c.id)
     return key_schedule_ids
@@ -1923,7 +1923,7 @@ def remove_key_schedule(cipher, keep_round_key_injection=True):
     if not keep_round_key_injection:
         components_to_remove = {}
         for round_ in cipher_without_key_schedule.rounds_as_list:
-            for component in round_.components:
+            for component in round_.components[:]:  # copy: components may be removed while iterating
                 key_indices = [
                     i
                     for i, link in enumerate(component.input_id_links)
@@ -1937,15 +1937,25 @@ def remove_key_schedule(cipher, keep_round_key_injection=True):
                     component._input._bit_size = sum(len(positions) for positions in component.input_bit_positions)
 
                     if len(component.input_bit_positions) == 1:
-                        components_to_remove[component.id] = component.input_id_links[0]
+                        # the XOR is now a plain wire: output bit j = source bit positions[j]
+                        components_to_remove[component.id] = (
+                            component.input_id_links[0],
+                            list(component.input_bit_positions[0]),
+                        )
                         cipher_without_key_schedule.remove_round_component_from_id(round_.id, component.id)
 
         for round_ in cipher_without_key_schedule.rounds_as_list:
             for component in round_.components:
                 for i, input_id in enumerate(component.input_id_links):
+                    positions = list(component.input_bit_positions[i])
                     while input_id in components_to_remove:
-                        input_id = components_to_remove[input_id]
+                        # consumers read the removed wire's OUTPUT bits: map them back to the source bits
+                        # (identity only when the wire read its source as [0, 1, ..., n-1])
+                        source_id, source_positions = components_to_remove[input_id]
+                        positions = [source_positions[position] for position in positions]
+                        input_id = source_id
                     component.input_id_links[i] = input_id
+                    component.input_bit_positions[i] = positions
 
                 component._input._bit_size = sum(len(positions) for positions in component.input_bit_positions)
 
@@ -2047,9 +2057,9 @@ def remove_components(cipher, components):
         sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
         sage: from claasp.editor import remove_components
         sage: speck = SpeckBlockCipher(number_of_rounds=2)
-        sage: target = speck.get_all_components()[0]
+        sage: target = speck.all_components()[0]
         sage: remove_components(speck, [target])
-        sage: target.id in speck.get_all_components_ids()
+        sage: target.id in speck.all_components_ids()
         False
     """
     component_set = set(components)
@@ -2196,7 +2206,7 @@ def get_output_bit_size_from_id(cipher_list, component_id):
         for cipher in cipher_list:
             if component_id in cipher.inputs:
                 return cipher.inputs_bit_size[cipher.inputs.index(component_id)]
-            elif component_id in cipher.get_all_components_ids():
+            elif component_id in cipher.all_components_ids():
                 return cipher.component_from_id(component_id).output_bit_size
         raise ValueError(f"{component_id} not found.")
     except ValueError as e:

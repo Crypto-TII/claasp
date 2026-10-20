@@ -21,7 +21,7 @@ def test_skipjack_block_cipher():
     assert skipjack.output_bit_size == 64
     
     # Test component structure
-    components = skipjack.get_all_components()
+    components = skipjack.all_components()
     assert len(components) == 496
     first_comp = skipjack.component_from(0, 0)
     assert first_comp is not None

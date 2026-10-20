@@ -43,7 +43,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
             else:
                 fixed_constraints = self.fix_variables_value_constraints(fixed_values)
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types
@@ -81,7 +81,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
 
     def connect_components(self):
         constraints = []
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             for idx, link_id in enumerate(component.input_id_links):
                 input_array = f"x{idx + 1}_{component.id}"
 
@@ -99,7 +99,7 @@ class MznDifferentialLinearContinuousModel(MznModel):
         return self._parse_result(result, solver_name)
 
     def _get_cipher_output_id(self):
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.type == CIPHER_OUTPUT:
                 return component.id
         raise ValueError("cipher_output component not found")

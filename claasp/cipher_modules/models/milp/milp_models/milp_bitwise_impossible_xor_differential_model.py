@@ -62,12 +62,12 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             sage: milp.init_model_in_sage_milp_class()
             sage: milp._forward_cipher = speck.get_partial_cipher(0, 1, keep_key_schedule=True)
             sage: backward_cipher = milp._cipher.cipher_partial_inverse(1, 1, keep_key_schedule=False)
-            sage: milp._backward_cipher = backward_cipher.add_suffix_to_components("_backward", [backward_cipher.get_all_components_ids()[-1]])
+            sage: milp._backward_cipher = backward_cipher.add_suffix_to_components("_backward", [backward_cipher.all_components_ids()[-1]])
             sage: milp.build_bitwise_impossible_xor_differential_trail_model()
             ...
         """
 
-        component_list = self._forward_cipher.get_all_components() + self._backward_cipher.get_all_components()
+        component_list = self._forward_cipher.all_components() + self._backward_cipher.all_components()
         return self.build_bitwise_deterministic_truncated_xor_differential_trail_model(fixed_variables, component_list)
 
     def add_constraints_to_build_in_sage_milp_class(self, middle_round=None, fixed_variables=[]):
@@ -110,7 +110,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             middle_round, self._cipher.number_of_rounds - 1, keep_key_schedule=False
         )
         self._backward_cipher = backward_cipher.add_suffix_to_components(
-            MILP_BACKWARD_SUFFIX, [backward_cipher.get_all_components_ids()[-1]]
+            MILP_BACKWARD_SUFFIX, [backward_cipher.all_components_ids()[-1]]
         )
 
         self.build_bitwise_impossible_xor_differential_trail_model(fixed_variables)
@@ -119,7 +119,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
 
         # finding incompatibility
         constraints = []
-        forward_output = [c for c in self._forward_cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
+        forward_output = [c for c in self._forward_cipher.all_components() if c.type == CIPHER_OUTPUT][0]
         output_bit_size = forward_output.output_bit_size
         _, output_ids = forward_output._get_input_output_variables()
 
@@ -182,11 +182,11 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
 
         if component_id_list is None:
             return self.add_constraints_to_build_in_sage_milp_class(fixed_variables=fixed_variables)
-        assert set(component_id_list) <= set(self._cipher.get_all_components_ids()) - set(
+        assert set(component_id_list) <= set(self._cipher.all_components_ids()) - set(
             get_key_schedule_component_ids(self._cipher)
         )
 
-        middle_round_numbers = [self._cipher.get_round_from_component_id(id) for id in component_id_list]
+        middle_round_numbers = [self._cipher.round_from_component_id(id) for id in component_id_list]
 
         assert len(set(middle_round_numbers)) == 1
 
@@ -207,19 +207,19 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         backward_last_round_components = set(
             backward_cipher._rounds.round_at(
                 self._cipher.number_of_rounds - 1 - middle_round_number
-            ).get_components_ids()
-            + [backward_cipher.get_all_components_ids()[-1]]
+            ).components_ids()
+            + [backward_cipher.all_components_ids()[-1]]
         )
         input_id_links_of_chosen_components = [
             _ for c in [backward_cipher.component_from_id(id) for id in component_id_list] for _ in c.input_id_links
         ]
         round_input_id_links_of_chosen_components = [
-            backward_cipher.get_round_from_component_id(id) for id in input_id_links_of_chosen_components
+            backward_cipher.round_from_component_id(id) for id in input_id_links_of_chosen_components
         ]
         links_round = [
             _
             for r in round_input_id_links_of_chosen_components
-            for _ in backward_cipher._rounds.round_at(r).get_components_ids()
+            for _ in backward_cipher._rounds.round_at(r).components_ids()
         ]
         self._backward_cipher = backward_cipher.add_suffix_to_components(
             MILP_BACKWARD_SUFFIX, backward_last_round_components | set(links_round)
@@ -321,7 +321,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
         for constraint in constraints:
             mip.add_constraint(constraint)
 
-        forward_output = [c for c in self._forward_cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
+        forward_output = [c for c in self._forward_cipher.all_components() if c.type == CIPHER_OUTPUT][0]
         _, forward_output_id_tuples = forward_output._get_input_output_variables_tuples()
         mip.add_constraint(
             p["number_of_unknown_patterns"]
@@ -353,7 +353,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=[0]*31 + [1])
             sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0]*64)
             sage: ciphertext = set_fixed_variables(component_id='cipher_output_10_13', constraint_type='equal', bit_positions=range(32), bit_values=[0]*6 + [2,0,2] + [0]*23)
-            sage: trail = milp.find_one_bitwise_impossible_xor_differential_trail(6, fixed_values=[plaintext, key, ciphertext])
+            sage: trail = milp.find_one_bitwise_impossible_xor_differential_trail(6, fixed_values=[plaintext, key, ciphertext], solver_name='GLPK')
 
             # table 10 from https://eprint.iacr.org/2014/761.pdf
             sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
@@ -404,7 +404,7 @@ class MilpBitwiseImpossibleXorDifferentialModel(MilpBitwiseDeterministicTruncate
             sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=range(32), bit_values=[0]*31 + [1])
             sage: key = set_fixed_variables(component_id='key', constraint_type='equal', bit_positions=range(64), bit_values=[0]*64)
             sage: ciphertext = set_fixed_variables(component_id='cipher_output_10_13', constraint_type='equal', bit_positions=range(32), bit_values=[0]*6 + [2,0,2] + [0]*23)
-            sage: trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components(['intermediate_output_5_12'], fixed_values=[plaintext, key, ciphertext])
+            sage: trail = milp.find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components(['intermediate_output_5_12'], fixed_values=[plaintext, key, ciphertext], solver_name='GLPK')
 
 
             sage: from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
