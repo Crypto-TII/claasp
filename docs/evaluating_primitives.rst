@@ -50,18 +50,20 @@ element. The output preserves that logical-unit structure:
 
 .. doctest::
 
-   >>> from claasp import PrimitiveBuilder, UnitArrayType
-   >>> from claasp.components import Add
-   >>> from claasp.unit_types import PrimeField
-   >>> vector = UnitArrayType(unit_type=PrimeField(17), shape=(3,))
-   >>> builder = PrimitiveBuilder("field_add", {"left": vector, "right": vector})
-   >>> builder.add_round()
-   Round(number=0)
-   >>> result = builder.add_component(Add(builder.inputs()))
-   >>> field_add = builder.build(result)
-   >>> field_add.evaluate(left=(1, 2, 3), right=(4, 5, 16))
-   (5, 7, 2)
+   >>> from claasp.primitives import Poseidon
+   >>> poseidon = Poseidon(
+   ...     modulus=17,
+   ...     exponent=3,
+   ...     full_rounds=2,
+   ...     partial_rounds=1,
+   ...     round_constants=((1, 2), (3, 4), (5, 6)),
+   ...     linear_layer=((1, 1), (1, 2)),
+   ... )
+   >>> poseidon.evaluate(state=(0, 1))
+   (4, 15)
 
-The final coordinate is ``3 + 16 = 2`` modulo 17. See :doc:`concepts` for
-``UnitArrayType`` and the available unit types. For direct access to
+These are teaching parameters for the existing ``Poseidon`` permutation,
+not a secure parameter set. Each input and output coordinate is an element
+of the field modulo 17. See :doc:`concepts` for ``UnitArrayType`` and the
+available unit types. For direct access to
 batch execution strategies, see :doc:`batch_evaluation`.

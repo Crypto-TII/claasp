@@ -1,6 +1,10 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
 
-from claasp.components.algebraic._validation import normalize_inputs, require_homogeneous_inputs
+from claasp.components.algebraic._validation import (
+    normalize_operand_arguments,
+    require_homogeneous_inputs,
+)
 from claasp.graph import Component, UnitArrayLike
 from claasp.unit_types import Bit, Word
 
@@ -9,6 +13,9 @@ from claasp.unit_types import Bit, Word
 class Xor(Component):
     """XOR word vectors component-wise.
 
+    Pass inputs as separate arguments, or as one iterable.
+    ``component_id`` can be supplied by keyword.
+
     EXAMPLES::
 
         >>> from claasp.primitives.single_component_primitives import Xor as XorPrimitive
@@ -16,14 +23,12 @@ class Xor(Component):
         9
     """
 
-    def __init__(self, *component_inputs: UnitArrayLike, component_id: str | None = None) -> None:
-        if component_inputs and isinstance(component_inputs[-1], str):
-            if component_id is not None:
-                raise TypeError("component_id was supplied twice")
-            *component_inputs, component_id = component_inputs
-        if len(component_inputs) == 1 and not isinstance(component_inputs[0], UnitArrayLike):
-            component_inputs = tuple(component_inputs[0])
-        inputs = normalize_inputs(tuple(component_inputs))
+    def __init__(
+        self,
+        *component_inputs: UnitArrayLike | Iterable[UnitArrayLike] | str,
+        component_id: str | None = None,
+    ) -> None:
+        inputs, component_id = normalize_operand_arguments(component_inputs, component_id)
         if len(inputs) < 2:
             raise ValueError("word XOR requires at least two inputs")
         output_type = require_homogeneous_inputs(inputs, "XOR")

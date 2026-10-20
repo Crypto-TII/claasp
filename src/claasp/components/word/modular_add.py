@@ -1,13 +1,17 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
+from claasp.components.algebraic._validation import normalize_operand_arguments
 from claasp.components.word._validation import require_word_inputs
-from claasp.graph import Component, Selection
+from claasp.graph import Component, UnitArrayLike
 
 
 @dataclass(frozen=True, slots=True, init=False)
 class ModularAdd(Component):
     """Add word vectors component-wise modulo an explicit or power-of-two modulus.
+
+    Pass inputs as separate arguments, or as one iterable.
+    ``component_id`` can be supplied by keyword.
 
     EXAMPLES::
 
@@ -20,12 +24,11 @@ class ModularAdd(Component):
 
     def __init__(
         self,
-        component_inputs: Iterable[Selection],
+        *component_inputs: UnitArrayLike | Iterable[UnitArrayLike] | str,
         component_id: str | None = None,
-        *,
         modulus: int | None = None,
     ) -> None:
-        inputs = tuple(component_inputs)
+        inputs, component_id = normalize_operand_arguments(component_inputs, component_id)
         if len(inputs) < 2:
             raise ValueError("modular addition requires at least two inputs")
         inputs, output_type = require_word_inputs(inputs, "modular addition")

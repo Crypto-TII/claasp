@@ -31,10 +31,14 @@ that need names and arrays together.
    >>> shuffled = builder.add_component(Permutation(state, (2, 0, 1)))
    >>> shuffled.source_id
    'permutation_0_0'
-   >>> output = builder.add_component(Add((shuffled, state)))
+   >>> output = builder.add_component(Add(shuffled, state))
    >>> output.source_id
    'add_0_1'
    >>> primitive = builder.build(output)
+
+``Add(a, b)``, ``ModularAdd(a, b)``, and ``Xor(a, b)`` accept operands as
+separate arguments. They also accept one iterable, such as ``Add(builder.inputs())``.
+Supply an explicit identifier with ``component_id="name"`` when needed.
 
 Automatic identifiers combine the component kind, round number, and position,
 so rebuilding the same graph produces the same names.  Normal primitive source

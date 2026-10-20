@@ -1,6 +1,6 @@
 {
   "counts_by_code": {
-    "arg-type": 190,
+    "arg-type": 109,
     "assignment": 75,
     "attr-defined": 141,
     "call-arg": 7,
@@ -9,7 +9,7 @@
     "has-type": 22,
     "index": 63,
     "list-item": 4,
-    "misc": 29,
+    "misc": 28,
     "no-redef": 1,
     "operator": 79,
     "return-value": 4,
@@ -19,11 +19,11 @@
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 730,
-    "tests": 164,
-    "tools": 37
+    "src/claasp": 680,
+    "tests": 133,
+    "tools": 36
   },
-  "diagnostic_count": 931,
+  "diagnostic_count": 849,
   "diagnostics": [
     {
       "code": "operator",
@@ -195,59 +195,10 @@
     },
     {
       "code": "arg-type",
-      "column": 21,
-      "line": 145,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Any, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/composites/aes.py"
-    },
-    {
-      "code": "arg-type",
       "column": 22,
       "line": 162,
       "message": "Argument 1 to \"append\" of \"list\" has incompatible type \"UnitArray\"; expected \"Selection\"",
       "path": "src/claasp/composites/aes.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 13,
-      "line": 212,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/composites/aes.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 43,
-      "line": 39,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/composites/arx.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 42,
-      "line": 44,
-      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/composites/arx.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 42,
-      "line": 46,
-      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[UnitArray, Any]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/composites/arx.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 42,
-      "line": 48,
-      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[UnitArray, Any]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/composites/arx.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 42,
-      "line": 50,
-      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[UnitArray, Any]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/composites/arx.py"
     },
     {
       "code": "assignment",
@@ -440,23 +391,9 @@
     },
     {
       "code": "arg-type",
-      "column": 54,
-      "line": 427,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[UnitArray]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/graph/bit_builder.py"
-    },
-    {
-      "code": "arg-type",
       "column": 61,
       "line": 429,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/graph/bit_builder.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 28,
-      "line": 436,
-      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[UnitArray]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/graph/bit_builder.py"
     },
     {
@@ -513,13 +450,6 @@
       "column": 36,
       "line": 709,
       "message": "Incompatible types in assignment (expression has type \"UnitArray\", variable has type \"Selection\")",
-      "path": "src/claasp/graph/bit_builder.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 33,
-      "line": 711,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[UnitArray, ...]\"; expected \"UnitArray | Selection\"",
       "path": "src/claasp/graph/bit_builder.py"
     },
     {
@@ -742,29 +672,15 @@
     {
       "code": "arg-type",
       "column": 49,
-      "line": 59,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, ...]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/block_ciphers/_word_graph.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 17,
-      "line": 75,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, Any]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/block_ciphers/aes/custom.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 49,
       "line": 161,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, object]\"; expected \"Iterable[Selection]\"",
+      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, object]\"; expected \"UnitArray | Selection | Iterable[UnitArray | Selection] | str\"",
       "path": "src/claasp/primitives/block_ciphers/aes/primitive.py"
     },
     {
       "code": "arg-type",
       "column": 53,
       "line": 175,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, object]\"; expected \"Iterable[Selection]\"",
+      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, object]\"; expected \"UnitArray | Selection | Iterable[UnitArray | Selection] | str\"",
       "path": "src/claasp/primitives/block_ciphers/aes/primitive.py"
     },
     {
@@ -1496,27 +1412,6 @@
       "path": "src/claasp/primitives/block_ciphers/msx.py"
     },
     {
-      "code": "arg-type",
-      "column": 21,
-      "line": 54,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, Selection]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/block_ciphers/present.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 17,
-      "line": 76,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, Selection]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/block_ciphers/present.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 17,
-      "line": 115,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Selection, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/block_ciphers/present.py"
-    },
-    {
       "code": "return-value",
       "column": 16,
       "line": 119,
@@ -1560,37 +1455,9 @@
     },
     {
       "code": "arg-type",
-      "column": 65,
-      "line": 87,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[UnitArray, Any]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 29,
-      "line": 95,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[UnitArray, Any, UnitArray, UnitArray]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
-    },
-    {
-      "code": "arg-type",
       "column": 60,
       "line": 106,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 52,
-      "line": 108,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 17,
-      "line": 110,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, UnitArray, Any]\"; expected \"UnitArray | Selection\"",
       "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
     },
     {
@@ -1599,20 +1466,6 @@
       "line": 178,
       "message": "Need type annotation for \"key\"",
       "path": "src/claasp/primitives/block_ciphers/skinny.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 49,
-      "line": 98,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/block_ciphers/speck.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 49,
-      "line": 100,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/block_ciphers/speck.py"
     },
     {
       "code": "arg-type",
@@ -1916,20 +1769,6 @@
       "path": "src/claasp/primitives/block_functions/chacha.py"
     },
     {
-      "code": "arg-type",
-      "column": 28,
-      "line": 110,
-      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/block_functions/chacha.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 49,
-      "line": 125,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/block_functions/chacha.py"
-    },
-    {
       "code": "var-annotated",
       "column": 9,
       "line": 126,
@@ -2168,20 +2007,6 @@
       "path": "src/claasp/primitives/block_functions/trivium.py"
     },
     {
-      "code": "arg-type",
-      "column": 21,
-      "line": 185,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"list[Any]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/block_functions/trivium.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 25,
-      "line": 195,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any, UnitArray, Any]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/block_functions/trivium.py"
-    },
-    {
       "code": "var-annotated",
       "column": 9,
       "line": 141,
@@ -2355,34 +2180,6 @@
       "line": 158,
       "message": "Argument 1 to \"BitState\" has incompatible type \"str\"; expected \"list[str]\"",
       "path": "src/claasp/primitives/functions/sha2.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 49,
-      "line": 62,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/permutations/chacha.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 49,
-      "line": 65,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/permutations/chacha.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 49,
-      "line": 68,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/permutations/chacha.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 49,
-      "line": 71,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/permutations/chacha.py"
     },
     {
       "code": "call-overload",
@@ -2980,13 +2777,6 @@
       "path": "src/claasp/primitives/permutations/knot.py"
     },
     {
-      "code": "arg-type",
-      "column": 28,
-      "line": 41,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/permutations/mimc.py"
-    },
-    {
       "code": "var-annotated",
       "column": 13,
       "line": 90,
@@ -3001,32 +2791,11 @@
       "path": "src/claasp/primitives/permutations/norx.py"
     },
     {
-      "code": "arg-type",
-      "column": 28,
-      "line": 83,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/permutations/poseidon/primitive.py"
-    },
-    {
       "code": "return-value",
       "column": 16,
       "line": 126,
       "message": "Incompatible return value type (got \"UnitArray | Selection\", expected \"UnitArray\")",
       "path": "src/claasp/primitives/permutations/poseidon/primitive.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 56,
-      "line": 97,
-      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[UnitArray | Selection, UnitArray | Selection]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/permutations/salsa.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 17,
-      "line": 102,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[UnitArray | Selection, UnitArray]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/permutations/salsa.py"
     },
     {
       "code": "var-annotated",
@@ -3100,24 +2869,10 @@
     },
     {
       "code": "arg-type",
-      "column": 59,
-      "line": 47,
-      "message": "Argument 1 to \"Add\" has incompatible type \"Sequence[UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/single_component_primitives/add.py"
-    },
-    {
-      "code": "arg-type",
       "column": 66,
       "line": 39,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"Sequence[UnitArray]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/single_component_primitives/bitwise_and.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 66,
-      "line": 39,
-      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"Sequence[UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/single_component_primitives/modular_add.py"
     },
     {
       "code": "arg-type",
@@ -3127,46 +2882,11 @@
       "path": "src/claasp/primitives/single_component_primitives/multiply.py"
     },
     {
-      "code": "arg-type",
-      "column": 59,
-      "line": 37,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[UnitArray]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/single_component_primitives/xor.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 51,
-      "line": 39,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, ...]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/toy_primitives/_bit_graph.py"
-    },
-    {
       "code": "assignment",
       "column": 25,
       "line": 77,
       "message": "Incompatible types in assignment (expression has type \"UnitArray\", variable has type \"Selection\")",
       "path": "src/claasp/primitives/toy_primitives/fancy.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 49,
-      "line": 43,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/toy_primitives/speck.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 49,
-      "line": 45,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/primitives/toy_primitives/speck.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 17,
-      "line": 79,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/toy_primitives/toyaes.py"
     },
     {
       "code": "assignment",
@@ -3176,31 +2896,10 @@
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
     },
     {
-      "code": "arg-type",
-      "column": 56,
-      "line": 117,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray, Selection]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/toy_primitives/toyaes.py"
-    },
-    {
       "code": "attr-defined",
       "column": 17,
       "line": 119,
       "message": "\"tuple[UnitArray, ...]\" has no attribute \"append\"",
-      "path": "src/claasp/primitives/toy_primitives/toyaes.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 64,
-      "line": 119,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, Selection]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/primitives/toy_primitives/toyaes.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 53,
-      "line": 121,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, Any]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
     },
     {
@@ -4590,13 +4289,6 @@
       "path": "src/claasp/serialization/execution.py"
     },
     {
-      "code": "arg-type",
-      "column": 28,
-      "line": 458,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, ...]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/serialization/primitive.py"
-    },
-    {
       "code": "assignment",
       "column": 44,
       "line": 1010,
@@ -4654,27 +4346,6 @@
     },
     {
       "code": "arg-type",
-      "column": 48,
-      "line": 377,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Selection, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/transformations/_inverse_realizations.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 57,
-      "line": 379,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Selection, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/transformations/_inverse_realizations.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 58,
-      "line": 384,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Any, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "src/claasp/transformations/_inverse_realizations.py"
-    },
-    {
-      "code": "arg-type",
       "column": 26,
       "line": 386,
       "message": "Argument 1 to \"Multiply\" has incompatible type \"tuple[Any, UnitArray]\"; expected \"Iterable[Selection]\"",
@@ -4685,13 +4356,6 @@
       "column": 13,
       "line": 388,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"Any\", \"UnitArray\"",
-      "path": "src/claasp/transformations/_inverse_realizations.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 67,
-      "line": 388,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[Any, UnitArray]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/transformations/_inverse_realizations.py"
     },
     {
@@ -4770,13 +4434,6 @@
       "line": 436,
       "message": "\"object\" has no attribute \"component_ids\"",
       "path": "src/claasp/transformations/editing.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 16,
-      "line": 417,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, ...]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/transformations/inverse_rules.py"
     },
     {
       "code": "var-annotated",
@@ -4982,13 +4639,6 @@
       "path": "src/claasp/transformations/paired.py"
     },
     {
-      "code": "arg-type",
-      "column": 20,
-      "line": 104,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Selection, Selection]\"; expected \"UnitArray | Selection\"",
-      "path": "src/claasp/transformations/paired.py"
-    },
-    {
       "code": "var-annotated",
       "column": 5,
       "line": 109,
@@ -5164,20 +4814,6 @@
       "path": "tests/integration/test_minisat_integration.py"
     },
     {
-      "code": "arg-type",
-      "column": 13,
-      "line": 91,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/integration/test_minisat_integration.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 28,
-      "line": 104,
-      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/integration/test_minizinc_integration.py"
-    },
-    {
       "code": "index",
       "column": 18,
       "line": 254,
@@ -5262,13 +4898,6 @@
       "path": "tests/unit/analysis/test_algebraic__trivium.py"
     },
     {
-      "code": "arg-type",
-      "column": 15,
-      "line": 36,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Any, Any]\"; expected \"UnitArray | Selection\"",
-      "path": "tests/unit/analysis/test_component_properties__boolean_feedback.py"
-    },
-    {
       "code": "index",
       "column": 12,
       "line": 76,
@@ -5337,13 +4966,6 @@
       "line": 98,
       "message": "\"Component\" has no attribute \"table\"",
       "path": "tests/unit/analysis/test_composed.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 13,
-      "line": 27,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/analysis/test_constraints.py"
     },
     {
       "code": "misc",
@@ -5502,22 +5124,8 @@
     {
       "code": "arg-type",
       "column": 9,
-      "line": 14,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/components/algebraic/test_package.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 9,
       "line": 18,
       "message": "Argument 1 to \"Multiply\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/components/algebraic/test_package.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 13,
-      "line": 55,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/components/algebraic/test_package.py"
     },
     {
@@ -5556,27 +5164,6 @@
       "path": "tests/unit/components/substitution/test_bit_vector_sbox.py"
     },
     {
-      "code": "arg-type",
-      "column": 13,
-      "line": 14,
-      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/components/word/test_package.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 13,
-      "line": 19,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"UnitArray | Selection\"",
-      "path": "tests/unit/components/word/test_package.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 20,
-      "line": 36,
-      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/components/word/test_package.py"
-    },
-    {
       "code": "assignment",
       "column": 28,
       "line": 99,
@@ -5588,13 +5175,6 @@
       "column": 20,
       "line": 20,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/components/word/test_package__logical.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 54,
-      "line": 22,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"UnitArray | Selection\"",
       "path": "tests/unit/components/word/test_package__logical.py"
     },
     {
@@ -5655,38 +5235,10 @@
     },
     {
       "code": "arg-type",
-      "column": 15,
-      "line": 312,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[UnitArray]\"; expected \"UnitArray | Selection\"",
-      "path": "tests/unit/graph/test_component__inverse_semantics.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 38,
-      "line": 312,
-      "message": "Argument 2 to \"Xor\" has incompatible type \"str\"; expected \"UnitArray | Selection\"",
-      "path": "tests/unit/graph/test_component__inverse_semantics.py"
-    },
-    {
-      "code": "arg-type",
       "column": 30,
       "line": 314,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"Sequence[UnitArray]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/graph/test_component__inverse_semantics.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 41,
-      "line": 13,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/graph/test_composite.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 40,
-      "line": 14,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/graph/test_composite.py"
     },
     {
       "code": "index",
@@ -5852,13 +5404,6 @@
     {
       "code": "arg-type",
       "column": 24,
-      "line": 48,
-      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/representations/constraints/cp/test_trails.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 24,
       "line": 60,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/representations/constraints/milp/test_monomial.py"
@@ -5869,27 +5414,6 @@
       "line": 96,
       "message": "Argument 2 to \"equality_polynomials\" has incompatible type \"tuple[int, int]\"; expected \"Sequence[BooleanPolynomial]\"",
       "path": "tests/unit/representations/constraints/polynomial/test_boolean.py"
-    },
-    {
-      "code": "misc",
-      "column": 19,
-      "line": 33,
-      "message": "Generator has incompatible item type \"UnitArray\"; expected \"Selection\"",
-      "path": "tests/unit/representations/constraints/sat/test_package.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 17,
-      "line": 16,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/representations/constraints/smt/test_package.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 13,
-      "line": 20,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"UnitArray | Selection\"",
-      "path": "tests/unit/representations/constraints/smt/test_word_linear.py"
     },
     {
       "code": "arg-type",
@@ -5955,34 +5479,6 @@
       "path": "tests/unit/semantics/cryptanalysis/test_problem.py"
     },
     {
-      "code": "arg-type",
-      "column": 13,
-      "line": 86,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/test_package.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 51,
-      "line": 88,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/test_package.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 13,
-      "line": 90,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/test_package.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 46,
-      "line": 99,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/test_package.py"
-    },
-    {
       "code": "attr-defined",
       "column": 27,
       "line": 126,
@@ -6004,32 +5500,11 @@
       "path": "tests/unit/transformations/test_editing.py"
     },
     {
-      "code": "arg-type",
-      "column": 13,
-      "line": 76,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[UnitArray]\"; expected \"UnitArray | Selection\"",
-      "path": "tests/unit/transformations/test_editing.py"
-    },
-    {
       "code": "attr-defined",
       "column": 12,
       "line": 85,
       "message": "\"object\" has no attribute \"operation\"",
       "path": "tests/unit/transformations/test_editing.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 46,
-      "line": 131,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[UnitArray]\"; expected \"UnitArray | Selection\"",
-      "path": "tests/unit/transformations/test_inversion.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 47,
-      "line": 132,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"UnitArray | Selection\"",
-      "path": "tests/unit/transformations/test_inversion.py"
     },
     {
       "code": "dict-item",
@@ -6039,45 +5514,10 @@
       "path": "tests/unit/transformations/test_inversion.py"
     },
     {
-      "code": "arg-type",
-      "column": 46,
-      "line": 152,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"Sequence[UnitArray]\"; expected \"UnitArray | Selection\"",
-      "path": "tests/unit/transformations/test_inversion.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 48,
-      "line": 153,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"UnitArray | Selection\"",
-      "path": "tests/unit/transformations/test_inversion.py"
-    },
-    {
       "code": "dict-item",
       "column": 16,
       "line": 159,
       "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"UnitArray | Selection | Sequence[UnitArray | Selection]\"",
-      "path": "tests/unit/transformations/test_inversion.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 42,
-      "line": 174,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Selection, Selection]\"; expected \"UnitArray | Selection\"",
-      "path": "tests/unit/transformations/test_inversion.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 42,
-      "line": 175,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Selection, Selection]\"; expected \"UnitArray | Selection\"",
-      "path": "tests/unit/transformations/test_inversion.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 42,
-      "line": 176,
-      "message": "Argument 1 to \"Xor\" has incompatible type \"tuple[Selection, Selection, Selection]\"; expected \"UnitArray | Selection\"",
       "path": "tests/unit/transformations/test_inversion.py"
     },
     {
@@ -6270,13 +5710,6 @@
       "path": "tests/unit/transformations/test_slicing.py"
     },
     {
-      "code": "arg-type",
-      "column": 50,
-      "line": 23,
-      "message": "Argument 1 to \"Add\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/transformations/test_traversal.py"
-    },
-    {
       "code": "misc",
       "column": 12,
       "line": 50,
@@ -6324,13 +5757,6 @@
       "line": 41,
       "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
       "path": "tools/benchmark_cp_active_sboxes.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 47,
-      "line": 44,
-      "message": "Argument 1 to \"ModularAdd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tools/benchmark_cp_boomerang_trails.py"
     },
     {
       "code": "union-attr",

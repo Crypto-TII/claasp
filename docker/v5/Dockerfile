@@ -31,7 +31,7 @@ RUN apt-get -q update \
         ca-certificates=20260601~24.04.1 \
         cmake=3.28.3-1build7 \
         cryptominisat=5.11.15+dfsg1-1.1build1 \
-        curl=8.5.0-2ubuntu10.15 \
+        curl=8.5.0-2ubuntu10.16 \
         dieharder=3.31.1.4-1.1build1 \
         git=1:2.43.0-1ubuntu7.3 \
         glpk-utils=5.0-1build2 \

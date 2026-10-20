@@ -12,7 +12,7 @@ Define and reuse a small block
 
 Start with a block that XORs two 8-bit words and rotates the result one bit to
 the left. ``CompositeBuilder`` uses the same component vocabulary as an
-ordinary primitive builder:
+ordinary primitive builder. Both definitions below use snake_case names:
 
 .. doctest::
 
@@ -20,7 +20,7 @@ ordinary primitive builder:
    >>> from claasp.components import Rotate, Xor
    >>> from claasp.unit_types import Word
    >>> byte = UnitArrayType(Word(8), (1,))
-   >>> block_builder = CompositeBuilder("XorRotate", {"left": byte, "right": byte})
+   >>> block_builder = CompositeBuilder("xor_rotate", {"left": byte, "right": byte})
    >>> block_builder.add_round()
    Round(number=0)
    >>> mixed = block_builder.add_component(
@@ -80,8 +80,8 @@ shows the alternative reusable-block style used by ``CustomAES``.
    ...     key_schedule = builder.add_composite(
    ...         schedule_definition, {"key": builder.input("key")},
    ...         scope_id="key_schedule")
-   ...     state = builder.add_component(Add((
-   ...         builder.input("plaintext"), key_schedule.output[0])))
+   ...     state = builder.add_component(Add(
+   ...         builder.input("plaintext"), key_schedule.output[0]))
    ...     for number in range(1, 11):
    ...         builder.add_round()
    ...         definition = final_round if number == 10 else middle_round
