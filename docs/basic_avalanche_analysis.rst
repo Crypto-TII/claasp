@@ -5,9 +5,8 @@ How quickly does a one-bit input change spread through a primitive? CLAASP can
 estimate the probability that each output bit changes, then display how that
 behavior develops over successive rounds.
 
-This example revisits the legacy ``did_you_know_that/avalanche_tests.ipynb``
-notebook using the v5 API. It includes Speck32/64 entropy plots and 3D avalanche
-weight views for Speck and the ChaCha permutation.
+This example includes Speck32/64 entropy plots and 3D avalanche weight views
+for Speck and the ChaCha permutation.
 
 Measure and display
 -------------------
@@ -41,9 +40,8 @@ the following views:
 
 Speck uses 22 rounds, with 16 samples per flipped input bit. ChaCha uses five
 v5 rounds, with four samples per flipped state bit. These deliberately small
-sample counts make this a runnable demonstration; they replace the notebook's
-10,000 Speck samples and 100 ChaCha samples. Increase ``speck_samples`` and
-``chacha_samples`` in ``run_example()`` for an actual experiment.
+sample counts make this a runnable demonstration. Increase ``speck_samples``
+and ``chacha_samples`` in ``run_example()`` for an actual experiment.
 
 Reading the plots
 -----------------

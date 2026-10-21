@@ -1,4 +1,4 @@
-"""Reproduce the avalanche notebook with v5 results and Matplotlib.
+"""Display round-by-round avalanche measurements with Matplotlib.
 
 Run with ``python docs/examples/avalanche.py`` after installing ``.[presentation]``.
 The documentation and CI execute this same file. Increase the sample counts
@@ -31,7 +31,7 @@ def output_profile(result, *, entropy=False):
     """Average over flipped input bits, preserving each output-bit position.
 
     Entropy is computed for each probability before averaging, as in the
-    legacy notebook. Entropy of the average would hide deterministic flips.
+    entropy heatmap. Entropy of the average would hide deterministic flips.
     """
     return tuple(
         sum(binary_entropy(p) if entropy else p for p in column) / result.input_bit_count
@@ -61,7 +61,7 @@ def entropy_plot(results, label):
 
 
 def weight_plot(results, label):
-    """Show the notebook's 3D mean flip-probability view."""
+    """Show a 3D mean flip-probability view."""
     figure = plt.figure(figsize=(10, 5), layout="constrained")
     axis = figure.add_subplot(projection="3d")
     for round_number, result in enumerate(results, start=1):
