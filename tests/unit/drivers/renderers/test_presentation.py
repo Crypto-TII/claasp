@@ -211,7 +211,7 @@ def test_avalanche_plot_defaults_to_display_and_can_save_headlessly(monkeypatch,
         assert pyplot.gcf().axes[0].images[0].get_clim() == (0, 1)
         image = pyplot.gcf().axes[0].images[0]
         assert image.to_rgba(0.0) == (1.0, 0.0, 0.0, 1.0)
-        assert image.to_rgba(0.5) == (0.0, 1.0, 0.0, 1.0)
+        assert image.to_rgba(0.5) == pyplot.get_cmap("RdYlGn")(1.0)
         assert image.to_rgba(1.0) == (1.0, 0.0, 0.0, 1.0)
         assert image.to_rgba(0.25) == image.to_rgba(0.75)
         path = tmp_path / "avalanche.png"

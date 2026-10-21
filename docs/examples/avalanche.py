@@ -71,7 +71,7 @@ def weight_plot(results, label):
         rounds.extend([round_number] * result.output_bit_count)
         values.extend(output_profile(result))
     colors = LinearSegmentedColormap.from_list(
-        "AvalancheProbability", [(1, 0, 0), (0, 1, 0), (1, 0, 0)], N=257
+        "AvalancheProbability", ["red", plt.get_cmap("RdYlGn")(1.0), "red"], N=257
     )
     points = axis.scatter(
         output_bits,
