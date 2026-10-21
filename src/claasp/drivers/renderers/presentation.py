@@ -184,13 +184,18 @@ class MatplotlibPresentationDriver:
 
         pyplot = _matplotlib()
         figure, axis = pyplot.subplots()
-        image = axis.imshow(result.probabilities, vmin=0.0, vmax=1.0, aspect="auto", cmap="RdYlGn")
+        from matplotlib.colors import LinearSegmentedColormap
+
+        colors = LinearSegmentedColormap.from_list(
+            "AvalancheProbability", [(1, 0, 0), (0, 1, 0), (1, 0, 0)], N=257
+        )
+        image = axis.imshow(result.probabilities, vmin=0.0, vmax=1.0, aspect="auto", cmap=colors)
         axis.set_xlabel("output bit (MSB first)")
         axis.set_ylabel("input bit (MSB first)")
         axis.set_title(
             f"{result.primitive_family} avalanche; n={result.sample_count}; seed={result.seed}; empirical"
         )
-        figure.colorbar(image, ax=axis, label="observed flip probability")
+        figure.colorbar(image, ax=axis, label="observed flip probability (ideal 0.5)")
         return FigureArtifact(
             figure,
             "avalanche_matrix",

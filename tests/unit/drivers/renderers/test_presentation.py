@@ -209,7 +209,11 @@ def test_avalanche_plot_defaults_to_display_and_can_save_headlessly(monkeypatch,
         assert artifact.series == (("input_bit_0", (0.0, 0.5)), ("input_bit_1", (1.0, 0.5)))
         assert pyplot.gcf() is artifact.figure
         assert pyplot.gcf().axes[0].images[0].get_clim() == (0, 1)
-        assert pyplot.gcf().axes[0].images[0].get_cmap().name == "RdYlGn"
+        image = pyplot.gcf().axes[0].images[0]
+        assert image.to_rgba(0.0) == (1.0, 0.0, 0.0, 1.0)
+        assert image.to_rgba(0.5) == (0.0, 1.0, 0.0, 1.0)
+        assert image.to_rgba(1.0) == (1.0, 0.0, 0.0, 1.0)
+        assert image.to_rgba(0.25) == image.to_rgba(0.75)
         path = tmp_path / "avalanche.png"
         saved = result.plot(show=False, save_to=path)
         assert calls == ["display"]

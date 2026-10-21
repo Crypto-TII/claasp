@@ -74,7 +74,9 @@ def test_documentation_example_renders_all_views(tmp_path):
             points = figure.axes[0].collections[0]
             assert points.get_clim() == (0, 1)
             assert points.to_rgba(0.0) == (1.0, 0.0, 0.0, 1.0)
-            assert points.to_rgba(1.0) == (0.0, 1.0, 0.0, 1.0)
+            assert points.to_rgba(0.5) == (0.0, 1.0, 0.0, 1.0)
+            assert points.to_rgba(1.0) == (1.0, 0.0, 0.0, 1.0)
+            assert points.to_rgba(0.25) == points.to_rgba(0.75)
             assert list(points.get_array()) == [
                 value for result in group for value in example.output_profile(result)
             ]

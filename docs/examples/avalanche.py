@@ -70,7 +70,9 @@ def weight_plot(results, label):
         output_bits.extend(range(result.output_bit_count))
         rounds.extend([round_number] * result.output_bit_count)
         values.extend(output_profile(result))
-    colors = LinearSegmentedColormap.from_list("RedGreen", [(1, 0, 0), (0, 1, 0)])
+    colors = LinearSegmentedColormap.from_list(
+        "AvalancheProbability", [(1, 0, 0), (0, 1, 0), (1, 0, 0)], N=257
+    )
     points = axis.scatter(
         output_bits,
         rounds,
@@ -83,7 +85,9 @@ def weight_plot(results, label):
         s=8,
         depthshade=False,
     )
-    figure.colorbar(points, ax=axis, label="Mean flip probability", shrink=0.7, pad=0.12)
+    figure.colorbar(
+        points, ax=axis, label="Mean flip probability (ideal 0.5)", shrink=0.7, pad=0.12
+    )
     axis.set_xlabel("Output bit (MSB first)")
     axis.set_ylabel("Rounds")
     axis.set_zlabel("Mean flip probability")

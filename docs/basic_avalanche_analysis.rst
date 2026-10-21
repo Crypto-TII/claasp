@@ -66,11 +66,13 @@ the output-bit and round axes. The legacy name for this quantity is
 individual input/output-bit biases. Inspect the full probability matrix when
 investigating those biases.
 
-Colors encode measured values consistently: red denotes zero and green denotes
-one. Entropy heatmaps use the red-yellow-green scale; the 3D views interpolate
-from red to green, with the same fixed zero-to-one scale across rounds and
-primitives. For flip probabilities, green means a higher probability, not
-better security: the strict-avalanche target is one half.
+Probability plots use red at zero, green at the strict-avalanche target of
+one half, and red again at one. Equal deviations above and below one half have
+the same color. The 3D height and colorbar retain the actual probability on a
+fixed zero-to-one scale across rounds and primitives.
+
+Entropy heatmaps use a red-yellow-green scale from entropy zero to entropy one.
+Green at entropy one corresponds to flip probabilities near one half.
 
 All plots are empirical estimates. Small samples are noisy and entropy estimates
 are biased; these plots do not prove the strict avalanche criterion or establish
