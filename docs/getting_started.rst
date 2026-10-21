@@ -6,7 +6,8 @@ Install CLAASP
 
 CLAASP requires Python 3.11 or later. From the repository root, create a
 virtual environment and install the package using the commands for your
-shell.
+shell. The installation below includes all optional Python dependencies for
+plotting, tables, and neural training (scikit-learn and TensorFlow).
 
 On Linux, macOS, or another POSIX shell:
 
@@ -14,7 +15,7 @@ On Linux, macOS, or another POSIX shell:
 
    python -m venv .venv
    source .venv/bin/activate
-   python -m pip install -e .
+   python -m pip install -e '.[presentation,ml,ml-tensorflow]'
 
 On Windows PowerShell:
 
@@ -22,7 +23,7 @@ On Windows PowerShell:
 
    py -m venv .venv
    .\.venv\Scripts\Activate.ps1
-   python -m pip install -e .
+   python -m pip install -e '.[presentation,ml,ml-tensorflow]'
 
 ``source`` belongs to POSIX shells; PowerShell runs the activation script
 directly. On either platform, confirm that the installation works with:
@@ -30,6 +31,51 @@ directly. On either platform, confirm that the installation works with:
 .. code-block:: console
 
    python -c "import claasp; print('CLAASP import OK')"
+
+Choose a smaller installation
+-----------------------------
+
+Experienced users can install just the dependency-free core from the repository
+root, inside an activated virtual environment:
+
+.. code-block:: console
+
+   python -m pip install -e .
+
+Select optional dependencies according to your needs. For example, add plotting
+and tables to a core installation with:
+
+.. code-block:: console
+
+   python -m pip install -e '.[presentation]'
+
+Available extras can be combined inside the brackets, as in the full installation
+above:
+
+.. list-table:: Optional Python dependencies
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Extra
+     - Purpose
+   * - ``presentation``
+     - Matplotlib plots and pandas tables.
+   * - ``ml``
+     - NumPy and scikit-learn neural training.
+   * - ``ml-tensorflow``
+     - NumPy and TensorFlow neural training.
+   * - ``docs``
+     - Build the HTML documentation and its plots.
+   * - ``dev``
+     - Run tests and build distributions.
+   * - ``quality``
+     - Run linting and static type checks.
+
+TensorFlow requires a supported Python version and platform. If you do not need
+TensorFlow training, use ``python -m pip install -e '.[presentation,ml]'``.
+External executables such as SAT solvers, NIST STS, and LaTeX are installed
+separately when required by the selected analysis or export; the corresponding
+advanced guides describe those requirements.
 
 Choose a primitive
 ------------------

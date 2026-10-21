@@ -1,5 +1,5 @@
-Avalanche tests in a few lines
-==============================
+Avalanche tests
+===============
 
 How quickly does a one-bit input change spread through a primitive? CLAASP can
 estimate the probability that each output bit changes, then display how that
@@ -11,7 +11,7 @@ for Speck and the ChaCha permutation.
 Measure and display
 -------------------
 
-Install the plotting dependencies with ``pip install 'claasp[presentation]'``.
+The installation in :doc:`getting_started` includes the plotting dependencies.
 For a single round count, the analysis itself takes only a few lines:
 
 .. code-block:: python
