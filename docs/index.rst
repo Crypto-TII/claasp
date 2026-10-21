@@ -29,6 +29,12 @@ systems and solvers are optional backends.
 
 .. toctree::
    :maxdepth: 2
+   :caption: Basic Primitive Analysis
+
+   basic_avalanche_analysis
+
+.. toctree::
+   :maxdepth: 2
    :caption: Advanced primitive manipulation
 
    customizing_aes

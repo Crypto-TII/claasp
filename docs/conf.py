@@ -22,6 +22,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
+    "matplotlib.sphinxext.plot_directive",
 ]
 
 templates_path = ["_templates"]
@@ -55,6 +56,7 @@ else:
     exclude_patterns.extend(
         [
             "user_guide.rst",
+            "basic_avalanche_analysis.rst",
             "about_claasp.rst",
             "getting_started.rst",
             "evaluating_primitives.rst",
@@ -99,3 +101,8 @@ autodoc_typehints = "description"
 autodoc_preserve_defaults = True
 doctest_test_doctest_blocks = "default"
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
+
+# Build notebook-style figures from the same script exercised by CI.
+plot_include_source = False
+plot_html_show_source_link = False
+plot_formats = [("png", 120)]

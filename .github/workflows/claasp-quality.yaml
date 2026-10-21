@@ -88,8 +88,8 @@ jobs:
 
       - name: Check formatting and linting
         run: |
-          ruff format --check src tests tools docs/conf.py
-          ruff check src tests tools docs/conf.py
+          ruff format --check src tests tools docs/conf.py docs/examples
+          ruff check src tests tools docs/conf.py docs/examples
 
       - name: Check static typing and public documentation
         run: |
@@ -145,7 +145,7 @@ jobs:
       - name: Run headless plots and dataframe parity
         env:
           MPLBACKEND: Agg
-        run: python -m pytest tests/unit/drivers/renderers/test_presentation.py tests/unit/presentation/test_files.py -q
+        run: python -m pytest tests/unit/drivers/renderers/test_presentation.py tests/unit/presentation/test_files.py tests/examples/test_avalanche_example.py -q
 
   singular-export:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
