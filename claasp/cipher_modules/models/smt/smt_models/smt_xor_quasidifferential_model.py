@@ -1555,7 +1555,8 @@ class SmtXorQuasidifferentialModel(SmtModel):
           Theorem 4.1 requires the BOUNDARY masks to be zero (u_1 = u_{r+1} = 0) for the sum to
           equal the fixed-key probability of a specific differential -- pass those here, typically
           for the primary cipher inputs and the cipher output component; ``boundary_masks`` builds
-          them.
+          them. With ``None`` the masks come from ``boundary_masks``, because the sum is not a
+          probability without them. Pass ``[]`` to set no masks.
         - ``solver_name`` -- **string** (default: `Z3_EXT`); the name of the solver
         - ``key`` -- **integer** (default: `None`); the key whose fixed-key probability is returned,
           or ``None`` for the average over all keys
@@ -1645,7 +1646,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
         Both values are exact: counting over all 64 plaintexts gives 0.25 for key 0 and 0 for key 2.
         """
         if fixed_masks is None:
-            fixed_masks = []
+            fixed_masks = self.boundary_masks()
 
         key_input_names = self._key_inputs()
         trails = []
