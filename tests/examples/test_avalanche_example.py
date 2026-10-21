@@ -73,10 +73,14 @@ def test_documentation_example_renders_all_views(tmp_path):
         for figure, group in zip(figures[2:], (results[0], results[2]), strict=True):
             points = figure.axes[0].collections[0]
             assert points.get_clim() == (0, 1)
-            assert points.to_rgba(0.0) == (1.0, 0.0, 0.0, 1.0)
+            assert points.to_rgba(0.0) == plt.get_cmap("RdYlGn")(0.0)
             assert points.to_rgba(0.5) == figures[0].axes[0].images[0].to_rgba(1.0)
-            assert points.to_rgba(1.0) == (1.0, 0.0, 0.0, 1.0)
+            assert points.to_rgba(1.0) == plt.get_cmap("RdYlGn")(0.0)
             assert points.to_rgba(0.25) == points.to_rgba(0.75)
+            for probability in (0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0):
+                assert points.to_rgba(probability) == plt.get_cmap("RdYlGn")(
+                    1 - abs(2 * probability - 1)
+                )
             assert list(points.get_array()) == [
                 value for result in group for value in example.output_profile(result)
             ]

@@ -72,7 +72,9 @@ the same color. The 3D height and colorbar retain the actual probability on a
 fixed zero-to-one scale across rounds and primitives.
 
 Entropy heatmaps use a red-yellow-green scale from entropy zero to entropy one.
-The same dark green marks entropy one and flip probability one half.
+The same dark green marks entropy one and flip probability one half. Probability
+colors follow the full red-orange-yellow-green palette toward one half and
+reverse it above one half.
 
 All plots are empirical estimates. Small samples are noisy and entropy estimates
 are biased; these plots do not prove the strict avalanche criterion or establish

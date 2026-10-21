@@ -187,7 +187,9 @@ class MatplotlibPresentationDriver:
         from matplotlib.colors import LinearSegmentedColormap
 
         colors = LinearSegmentedColormap.from_list(
-            "AvalancheProbability", ["red", pyplot.get_cmap("RdYlGn")(1.0), "red"], N=257
+            "AvalancheProbability",
+            [pyplot.get_cmap("RdYlGn")(1 - abs(2 * index / 256 - 1)) for index in range(257)],
+            N=257,
         )
         image = axis.imshow(result.probabilities, vmin=0.0, vmax=1.0, aspect="auto", cmap=colors)
         axis.set_xlabel("output bit (MSB first)")
