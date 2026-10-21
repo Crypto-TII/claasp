@@ -8,6 +8,7 @@ for experiments; the defaults keep the documentation demonstration affordable.
 from math import log2
 
 from matplotlib import pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 
 from claasp.primitives import ChaChaPermutation, Speck
 
@@ -49,7 +50,7 @@ def entropy_plot(results, label):
         extent=(-0.5, results[0].output_bit_count - 0.5, 0.5, len(results) + 0.5),
         vmin=0,
         vmax=1,
-        cmap="viridis",
+        cmap="RdYlGn",
     )
     axis.set_xlabel("Output bit (MSB first)")
     axis.set_ylabel("Rounds")
@@ -64,13 +65,25 @@ def weight_plot(results, label):
     """Show a 3D mean flip-probability view."""
     figure = plt.figure(figsize=(10, 5), layout="constrained")
     axis = figure.add_subplot(projection="3d")
+    output_bits, rounds, values = [], [], []
     for round_number, result in enumerate(results, start=1):
-        axis.plot(
-            range(result.output_bit_count),
-            [round_number] * result.output_bit_count,
-            output_profile(result),
-            linewidth=0.8,
-        )
+        output_bits.extend(range(result.output_bit_count))
+        rounds.extend([round_number] * result.output_bit_count)
+        values.extend(output_profile(result))
+    colors = LinearSegmentedColormap.from_list("RedGreen", [(1, 0, 0), (0, 1, 0)])
+    points = axis.scatter(
+        output_bits,
+        rounds,
+        values,
+        c=values,
+        cmap=colors,
+        vmin=0,
+        vmax=1,
+        marker=".",
+        s=8,
+        depthshade=False,
+    )
+    figure.colorbar(points, ax=axis, label="Mean flip probability", shrink=0.7, pad=0.12)
     axis.set_xlabel("Output bit (MSB first)")
     axis.set_ylabel("Rounds")
     axis.set_zlabel("Mean flip probability")

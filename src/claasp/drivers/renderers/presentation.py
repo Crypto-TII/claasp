@@ -184,7 +184,7 @@ class MatplotlibPresentationDriver:
 
         pyplot = _matplotlib()
         figure, axis = pyplot.subplots()
-        image = axis.imshow(result.probabilities, vmin=0.0, vmax=1.0, aspect="auto", cmap="viridis")
+        image = axis.imshow(result.probabilities, vmin=0.0, vmax=1.0, aspect="auto", cmap="RdYlGn")
         axis.set_xlabel("output bit (MSB first)")
         axis.set_ylabel("input bit (MSB first)")
         axis.set_title(

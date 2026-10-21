@@ -68,5 +68,15 @@ def test_documentation_example_renders_all_views(tmp_path):
             assert path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
         assert figures[0].axes[0].images[0].get_clim() == (0, 1)
         assert figures[2].axes[0].get_zlim() == (0, 1)
+        for figure in figures[:2]:
+            assert figure.axes[0].images[0].get_cmap().name == "RdYlGn"
+        for figure, group in zip(figures[2:], (results[0], results[2]), strict=True):
+            points = figure.axes[0].collections[0]
+            assert points.get_clim() == (0, 1)
+            assert points.to_rgba(0.0) == (1.0, 0.0, 0.0, 1.0)
+            assert points.to_rgba(1.0) == (0.0, 1.0, 0.0, 1.0)
+            assert list(points.get_array()) == [
+                value for result in group for value in example.output_profile(result)
+            ]
     finally:
         plt.close("all")

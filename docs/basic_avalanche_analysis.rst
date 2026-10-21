@@ -66,6 +66,12 @@ the output-bit and round axes. The legacy name for this quantity is
 individual input/output-bit biases. Inspect the full probability matrix when
 investigating those biases.
 
+Colors encode measured values consistently: red denotes zero and green denotes
+one. Entropy heatmaps use the red-yellow-green scale; the 3D views interpolate
+from red to green, with the same fixed zero-to-one scale across rounds and
+primitives. For flip probabilities, green means a higher probability, not
+better security: the strict-avalanche target is one half.
+
 All plots are empirical estimates. Small samples are noisy and entropy estimates
 are biased; these plots do not prove the strict avalanche criterion or establish
 security. V5 ChaCha counts each complete column or diagonal round as one round;
