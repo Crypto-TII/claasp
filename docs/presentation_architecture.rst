@@ -18,6 +18,21 @@ evidence must be unavailable; non-success states require a typed diagnostic.
 This prevents a missing p-value, bounded branch number, heuristic correlation,
 or failed training run from appearing successful.
 
+Result convenience methods
+--------------------------
+
+``TrailSearchResult.to_terminal()`` and ``AvalancheResult.to_terminal()``
+delegate to the presentation adapters and terminal renderer. They print to
+standard output unless a text stream is supplied. Trail reports accept
+``details=True`` for component-level evidence. Markdown and other formats
+remain available through the explicit presentation API.
+
+``AvalancheResult.plot()`` delegates to the optional Matplotlib driver, which
+owns figure creation, saving, and display. It displays by default, accepts
+``show=False`` and ``save_to``, and returns a ``FigureArtifact``. The result
+class does not import Matplotlib at module load, select a backend, or rerun an
+analysis. Trail plotting is not exposed because it has no implemented renderer.
+
 Provenance and citations
 ------------------------
 

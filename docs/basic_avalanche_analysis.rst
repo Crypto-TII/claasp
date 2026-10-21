@@ -16,11 +16,19 @@ For a single round count, the analysis itself takes only a few lines:
 .. code-block:: python
 
    from claasp.primitives import Speck
-   from claasp.drivers.renderers import MatplotlibPresentationDriver
 
    result = Speck(number_of_rounds=22).analysis.avalanche("plaintext", 16, seed=9)
-   artifact = MatplotlibPresentationDriver().avalanche_matrix(result)
-   artifact.figure.show()
+   result.to_terminal()
+   result.plot()
+
+``to_terminal()`` prints the measurement report; ``plot()`` displays the
+probability heatmap. No separate Matplotlib import is needed. You can also save
+the plot, or obtain its figure artifact without displaying it:
+
+.. code-block:: python
+
+   result.plot(save_to="speck_avalanche.png")
+   artifact = result.plot(show=False)
 
 Each matrix entry estimates the chance that one output bit flips when one
 selected input bit is flipped. Bit positions follow MSB-first packed order.

@@ -64,3 +64,40 @@ def test_primitive_analysis_facade_exposes_avalanche():
     )
     assert result.sample_count == 2
     assert result.input_name == "plaintext"
+
+
+def test_terminal_report_uses_current_stdout_or_explicit_stream(capsys):
+    from io import StringIO
+
+    from claasp.analysis.avalanche import AvalancheResult
+    from claasp.presentation import avalanche_section, render_section
+
+    result = AvalancheResult("fixture", "plaintext", 2, 9, ((0.0, 0.5), (1.0, 0.5)))
+    expected = render_section(avalanche_section(result), format="terminal")
+    result.to_terminal()
+    assert capsys.readouterr().out == expected
+    output = StringIO()
+    result.to_terminal(file=output)
+    assert output.getvalue() == expected
+    assert capsys.readouterr().out == ""
+
+
+def test_result_terminal_output_does_not_import_optional_dependencies():
+    import os
+    import subprocess
+    import sys
+
+    environment = {**os.environ, "PYTHONPATH": "src"}
+    subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import sys; from io import StringIO; "
+            "from claasp.analysis.avalanche import AvalancheResult; "
+            "AvalancheResult('example', 'plaintext', 2, 9, ((0.5,),)).to_terminal(file=StringIO()); "
+            "assert not any(name in sys.modules for name in "
+            "('matplotlib', 'numpy', 'pandas', 'tensorflow'))",
+        ],
+        env=environment,
+        check=True,
+    )

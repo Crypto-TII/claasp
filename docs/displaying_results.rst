@@ -34,32 +34,34 @@ or passed to an application without parsing terminal text.
 Trail and trace summaries
 -------------------------
 
-For quick interactive inspection, ``show()`` is a convenience that presents
+For quick interactive inspection, ``to_terminal()`` is a convenience that presents
 and renders the trail directly. By default it shows only the input and each
 round difference, together with the relative and cumulative probability:
 
 .. doctest::
 
-   >>> result.show()  # doctest: +ELLIPSIS
+   >>> result.to_terminal()  # doctest: +ELLIPSIS
    Trail
    ...
 
-Use ``result.show(details=True)`` when debugging a model or inspecting every
+Use ``result.to_terminal(details=True)`` when debugging a model or inspecting every
 intermediate component. The detailed report also includes the proof bound,
 search method, solver, runtime, memory measurement when available, and the
 primitive component responsible for each transition. The explicit
 presentation API below provides immutable report data and selectable output
 formats for tools and exports.
 
-``show()`` can write either terminal text or Markdown to any text stream:
+``to_terminal()`` writes terminal text to standard output or a supplied text
+stream. For Markdown output, use the explicit presentation API:
 
 .. code-block:: python
 
-   result.show(details=True)
-   result.show(format="markdown")
+   result.to_terminal(details=True)
 
-   with open("trail.md", "w", encoding="utf-8") as output:
-       result.show(details=True, format="markdown", file=output)
+   with open("trail.txt", "w", encoding="utf-8") as output:
+       result.to_terminal(details=True, file=output)
+
+   markdown = render_report(present(result), format="markdown")
 
 The default searches use a zero key difference. Their reports include every
 data-state component but omit the resulting all-zero key schedule. A
@@ -187,10 +189,14 @@ programs::
 
    import matplotlib
    matplotlib.use("Agg")
-   from claasp.drivers.renderers import MatplotlibPresentationDriver
 
-   artifact = MatplotlibPresentationDriver().avalanche_matrix(avalanche)
-   artifact.figure.savefig("avalanche.png")
+   avalanche.to_terminal()
+   artifact = avalanche.plot(show=False, save_to="avalanche.png")
+
+``avalanche.plot()`` displays a heatmap by default. ``show=False`` creates it
+without displaying it, and ``save_to`` saves it before display. The returned
+``FigureArtifact`` retains the figure, plotted series, and renderer identity.
+These conveniences consume existing results and never repeat the analysis.
 
 Radar charts additionally require one ``RadarScale`` per included property.
 Each scale states its mathematical domain, finite range, and whether higher or

@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from math import pi
+from pathlib import Path
 
 from claasp.analysis.avalanche import AvalancheResult
 from claasp.analysis.component_properties import (
@@ -98,7 +99,9 @@ def _matplotlib():
     try:
         from matplotlib import pyplot
     except ImportError as error:  # pragma: no cover - depends on optional environment
-        raise ImportError("Matplotlib rendering requires the optional 'plot' dependency") from error
+        raise ImportError(
+            "Matplotlib rendering requires the optional 'presentation' dependency"
+        ) from error
     return pyplot
 
 
@@ -239,3 +242,19 @@ class MatplotlibPresentationDriver:
             self.identity,
             omitted=omitted,
         )
+
+
+def _finish_figure(figure, *, show, save_to):
+    """Keep figure display and file output inside the optional renderer."""
+    if save_to is not None:
+        figure.savefig(save_to)
+    if show:
+        _matplotlib().show()
+
+
+def _plot_avalanche(
+    result: AvalancheResult, *, show: bool, save_to: str | Path | None
+) -> FigureArtifact:
+    artifact = MatplotlibPresentationDriver().avalanche_matrix(result)
+    _finish_figure(artifact.figure, show=show, save_to=save_to)
+    return artifact

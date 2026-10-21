@@ -196,3 +196,41 @@ def test_renderer_module_import_is_lazy_about_matplotlib():
         [sys.executable, "-c", code], text=True, capture_output=True, check=True, env=environment
     )
     assert completed.stdout.strip() == "False"
+
+
+def test_avalanche_plot_defaults_to_display_and_can_save_headlessly(monkeypatch, tmp_path):
+    result = AvalancheResult("fixture", "plaintext", 2, 9, ((0.0, 0.5), (1.0, 0.5)))
+    calls = []
+    monkeypatch.setattr(pyplot, "show", lambda: calls.append("display"))
+    try:
+        artifact = result.plot()
+        assert calls == ["display"]
+        assert artifact.kind == "avalanche_matrix"
+        assert artifact.series == (("input_bit_0", (0.0, 0.5)), ("input_bit_1", (1.0, 0.5)))
+        assert pyplot.gcf() is artifact.figure
+        assert pyplot.gcf().axes[0].images[0].get_clim() == (0, 1)
+        path = tmp_path / "avalanche.png"
+        saved = result.plot(show=False, save_to=path)
+        assert calls == ["display"]
+        assert path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+        assert saved.series == artifact.series
+        result.plot(save_to=tmp_path / "displayed.png")
+        assert calls == ["display", "display"]
+    finally:
+        pyplot.close("all")
+
+
+def test_avalanche_plot_explains_missing_optional_dependency(monkeypatch):
+    import builtins
+
+    original_import = builtins.__import__
+
+    def without_matplotlib(name, *args, **kwargs):
+        if name == "matplotlib":
+            raise ImportError("not installed")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", without_matplotlib)
+    result = AvalancheResult("fixture", "plaintext", 2, 9, ((0.5,),))
+    with pytest.raises(ImportError, match="presentation"):
+        result.plot(show=False)

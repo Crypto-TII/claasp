@@ -19,14 +19,14 @@ probability represented by the model.
    >>> differential = speck.analysis.find_optimal_trail(
    ...     kind="xor_differential", backend="dependency_free"
    ... )
-   >>> differential.show()  # doctest: +ELLIPSIS
+   >>> differential.to_terminal()  # doctest: +ELLIPSIS
    Trail
    ...
 
 The report shows one difference per round, each round's probability, and the
 cumulative probability. Its total weight is 1 and the matching lower bound is
 1, so this is a proved optimum rather than merely the best trail encountered
-so far. Use ``differential.show(details=True)`` to inspect every component and
+so far. Use ``differential.to_terminal(details=True)`` to inspect every component and
 the search metadata. Another exact backend may choose a different trail with
 the same optimal weight. See :doc:`analysis` for constraints, enumeration,
 and solver-backed searches.
@@ -43,7 +43,7 @@ same:
    >>> linear = speck.analysis.find_optimal_trail(
    ...     kind="xor_linear", backend="dependency_free"
    ... )
-   >>> linear.show()  # doctest: +ELLIPSIS
+   >>> linear.to_terminal()  # doctest: +ELLIPSIS
    Trail
    ...
 

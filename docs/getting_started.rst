@@ -148,12 +148,12 @@ selection, result fields, probabilities, and supported primitive structures.
 Display the trail
 -----------------
 
-``show()`` prints only the round boundaries and their relative and cumulative
+``to_terminal()`` prints only the round boundaries and their relative and cumulative
 probabilities by default:
 
 .. doctest::
 
-   >>> result.show()
+   >>> result.to_terminal()
    Trail
    <BLANKLINE>
    Round trail
@@ -170,7 +170,7 @@ probabilities by default:
    Total weight: 3.
 
 :doc:`Want to know more about displaying a trail? <displaying_results>`
-That guide covers ``show(details=True)``, structured report data, and terminal,
+That guide covers ``to_terminal(details=True)``, structured report data, and terminal,
 Markdown, and CSV output.
 
 Implement your own primitive

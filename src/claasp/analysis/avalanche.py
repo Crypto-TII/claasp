@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+import pathlib
 from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import TYPE_CHECKING, TextIO
 
 from claasp.analysis.datasets import generate_avalanche_dataset
 from claasp.graph import Primitive
+
+if TYPE_CHECKING:
+    from claasp.drivers.renderers.presentation import FigureArtifact
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,6 +37,43 @@ class AvalancheResult:
     probabilities: tuple[tuple[float, ...], ...]
     method: str = "empirical_paired_evaluation"
     complete: bool = False
+
+    def to_terminal(self, *, file: TextIO | None = None) -> None:
+        """Print the empirical metadata and probability matrix to a text stream.
+
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> result = AvalancheResult("example", "plaintext", 2, 9, ((0.5,),))
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> "Avalanche summary" in output.getvalue()
+            True
+        """
+        from claasp.presentation import avalanche_section
+        from claasp.presentation._terminal import to_terminal
+
+        to_terminal(avalanche_section(self), file=file)
+
+    def plot(
+        self, *, show: bool = True, save_to: str | pathlib.Path | None = None
+    ) -> FigureArtifact:
+        """Display a probability heatmap and return its figure artifact.
+
+        ``show=False`` creates the plot without displaying it. ``save_to``
+        saves the figure before display. Matplotlib is imported on demand;
+        install the ``presentation`` extra to use this method. Analysis is
+        never repeated, and no Matplotlib backend is selected here.
+
+        EXAMPLES::
+
+            >>> result = AvalancheResult("example", "plaintext", 2, 9, ((0.5,),))
+            >>> callable(result.plot)
+            True
+        """
+        from claasp.drivers.renderers.presentation import _plot_avalanche
+
+        return _plot_avalanche(self, show=show, save_to=save_to)
 
     @property
     def input_bit_count(self) -> int:
