@@ -31,6 +31,7 @@ systems and solvers are optional backends.
    :maxdepth: 2
    :caption: Basic Primitive Analysis
 
+   basic_primitive_analysis
    basic_avalanche_analysis
 
 .. toctree::

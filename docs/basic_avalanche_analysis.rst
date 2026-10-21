@@ -11,7 +11,6 @@ for Speck and the ChaCha permutation.
 Measure and display
 -------------------
 
-The installation in :doc:`getting_started` includes the plotting dependencies.
 For a single round count, the analysis itself takes only a few lines:
 
 .. code-block:: python
