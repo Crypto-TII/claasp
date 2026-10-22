@@ -1,88 +1,83 @@
 Component analysis tests: properties and composite blocks
 =========================================================
 
-Start with :doc:`basic_component_analysis` for automatic discovery and reporting.
-Here we select properties explicitly, inspect an S-box's differential table,
-and analyze the linear diffusion operation inside a reusable AES round.
-These calculations use exact finite tables and finite-field arithmetic; there
-are no sample counts or random seeds.
+Start with :doc:`basic_component_analysis` for an automatic inventory. Here we
+select a component, request properties by name and inspect its differential
+table. The same commands work inside reusable composite blocks.
+These calculations use exact finite tables and finite-field arithmetic;
+there are no sample counts or random seeds.
 
-Discover repeated operations
-----------------------------
+Select a component
+------------------
 
 .. plot::
    :context: reset
    :nofigs:
    :include-source:
 
-   from claasp.analysis import ComponentProperty, PropertyDomain, PropertyRequest
-   from claasp.components import BitVectorSBox
    from claasp.primitives import Present
 
    primitive = Present(number_of_rounds=2)
-   groups = primitive.analysis.component_groups(PropertyDomain.LOOKUP_TABLE)
-   group = next(group for group in groups
-                if isinstance(group.representative, BitVectorSBox))
-   sbox = group.representative
+   sbox = primitive.analysis.component("sbox")
 
-``group.count`` is 34. Groups distinguish operation parameters and input/output
-types, but ignore graph identifiers. The two permutation groups in the basic
-report operate on different widths (64-bit state and 80-bit key). Passing a
-domain to ``component_groups`` sets the grouping context; it does not filter
-out operations that cannot be analyzed in that domain. Select the operation
-type explicitly, as above.
+This selects the one distinct S-box operation. ``sbox.count`` is 34, including
+its uses in the key schedule. Equivalent occurrences form one semantic group;
+selection does not compute properties yet.
 
-Default discovery retains every operation in the inventory, but does not make
-property requests for unsupported operations, lookup tables larger than 256
-entries, or modular additions wider than eight bits. The latter can have very
-large exact ANFs. Use explicit property requests when exploring such cases;
-reporting never silently launches a solver or expands the analysis budget.
+A selector must identify one group. For example, PRESENT contains both a
+64-bit state permutation and an 80-bit key permutation. Select the state
+permutation explicitly:
+
+.. code-block:: python
+
+   permutation = primitive.analysis.component("permutation", bit_size=64)
+
+``bit_size`` is the total encoded output width. When several distinct groups
+still match, use a zero-based ``index`` within the matching groups. CLAASP
+raises an informative error for missing or ambiguous matches instead of
+silently choosing the first. Use ``primitive.analysis.component_analysis().to_terminal()``
+to inspect the inventory and parameter previews.
 
 Inspect one S-box
 -----------------
 
+Request named properties and retain a reportable result:
+
 .. plot::
    :context:
    :nofigs:
    :include-source:
 
-   sbox_results = primitive.analysis.component_properties(
-       sbox,
-       tuple(PropertyRequest(property_, PropertyDomain.LOOKUP_TABLE)
-             for property_ in (
-                 ComponentProperty.DIFFERENTIAL_UNIFORMITY,
-                 ComponentProperty.NONLINEARITY,
-                 ComponentProperty.ALGEBRAIC_DEGREE,
-                 ComponentProperty.BALANCED,
-                 ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
-                 ComponentProperty.LINEAR_BRANCH_NUMBER,
-                 ComponentProperty.BOOMERANG_UNIFORMITY,
-             )),
+   properties = sbox.properties(
+       "differential_uniformity", "nonlinearity", "algebraic_degree", "balanced",
+       "differential_branch_number", "linear_branch_number", "boomerang_uniformity",
    )
 
-Use CLAASP's presentation layer to format the retained property results:
+.. code-block:: python
 
-.. plot::
-   :context:
-   :nofigs:
-   :include-source:
-
-   from claasp.presentation import component_property_section, render_section
-
-   print(render_section(component_property_section(sbox_results, details=False)))
+   properties.to_terminal()
 
 .. plot::
    :context:
    :nofigs:
    :include-source: false
 
+   from io import StringIO
    from pathlib import Path
 
-   Path("_build/component_sbox_terminal.txt").write_text(
-       render_section(component_property_section(sbox_results, details=False)), encoding="utf-8")
+   def capture(result, name):
+       output = StringIO()
+       result.to_terminal(file=output)
+       Path("_build").mkdir(exist_ok=True)
+       Path("_build/" + name).write_text(output.getvalue(), encoding="utf-8")
+
+   capture(properties, "component_sbox_terminal.txt")
 
 .. literalinclude:: _build/component_sbox_terminal.txt
    :language: text
+
+With no property names, ``sbox.properties()`` uses the same defaults as the
+basic inventory. The lookup-table domain is inferred from the S-box type.
 
 Differential uniformity is the maximum differential-distribution-table (DDT)
 entry over nonzero input differences. Four means no such transition occurs
@@ -94,76 +89,68 @@ that also makes the S-box bijective.
 
 Differential branch number minimizes the sum of active input and output bits
 among possible nonzero-input XOR transitions. Linear branch number uses
-nonzero output masks with nonzero Walsh correlation. These are different
-questions, so the two values need not coincide. Boomerang uniformity is the
-maximum nontrivial boomerang-connectivity-table entry; its value is not a
-round-trail probability or an overall security score.
+nonzero output masks with nonzero Walsh correlation. The values need not
+coincide. Boomerang uniformity is the maximum nontrivial
+boomerang-connectivity-table entry; it is not a round-trail probability.
 
-An exact differential heatmap
------------------------------
+Plot the differential table
+---------------------------
 
-The heatmap explains where the differential-uniformity value comes from.
-The all-zero input-difference row is omitted because its trivial count of
-sixteen would obscure the nontrivial transitions.
+Compute and retain the exact DDT, then display it:
 
 .. plot::
    :context: close-figs
    :include-source:
 
-   from claasp.semantics.cryptanalysis import SBoxTransitionSemantics
-   from matplotlib import pyplot as plt
+   ddt = sbox.ddt()
+   ddt.plot()
 
-   ddt = SBoxTransitionSemantics(sbox.table).difference_distribution_table()
-   figure, axis = plt.subplots(figsize=(7, 4), layout="constrained")
-   image = axis.imshow(ddt[1:], origin="lower", extent=(-0.5, 15.5, 0.5, 15.5),
-                       interpolation="nearest", vmin=0, vmax=4, cmap="YlOrRd")
-   axis.set(xlabel="Output XOR difference (decimal)",
-            ylabel="Input XOR difference (decimal)",
-            title="PRESENT S-box: exact differential counts")
-   axis.set_xticks(range(16))
-   axis.set_yticks(range(1, 16))
-   figure.colorbar(image, ax=axis, label="Count out of 16 inputs", ticks=range(5))
-   plt.show()
+CLAASP sets the axes, integer counts and color scale. The trivial zero-input
+row is omitted by default so its count of sixteen does not obscure the
+nontrivial transitions. Each retained row sums to sixteen. A zero cell is an
+impossible transition; a count of four means probability 4/16.
 
-Each row sums to sixteen. A zero cell is an impossible transition; a cell with
-count four has probability 4/16. Colors encode exact counts, rather than the
-empirical probabilities used in avalanche plots.
+To display probabilities instead of counts, reuse that result:
+
+.. code-block:: python
+
+   ddt.plot(scale="probability")
+
+``ddt.plot(include_zero=True)`` includes the trivial row.
+``ddt.to_terminal()`` prints the table and ``ddt.counts`` exposes the full
+immutable matrix, including the zero row. Saving and headless rendering follow
+the other analysis results:
+
+.. code-block:: python
+
+   ddt.plot(show=False, save_to="present_ddt.png")
 
 Analyze a component inside a composite
 --------------------------------------
 
 ``AESRound`` is a reusable composite definition. Its ``analyze()`` method
-projects it to an ordinary primitive, so the same component APIs apply:
+provides the same component-selection API:
 
 .. plot::
    :context:
    :nofigs:
    :include-source:
 
-   from claasp.components import LinearMap
    from claasp.composites import AESRound
 
-   round_analysis = AESRound().analyze()
-   mix = next(item for item in round_analysis.primitive.graph.components
-              if isinstance(item, LinearMap))
-   linear_results = round_analysis.component_properties(
-       mix,
-       tuple(PropertyRequest(property_, PropertyDomain.WORD_LINEAR)
-             for property_ in (
-                 ComponentProperty.RANK,
-                 ComponentProperty.INVERTIBLE,
-                 ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
-             )),
-   )
-   print(render_section(component_property_section(linear_results, details=False)))
+   mix = AESRound().analyze().component("linear_map")
+   linear = mix.properties("rank", "invertible", "differential_branch_number")
+
+.. code-block:: python
+
+   linear.to_terminal()
 
 .. plot::
    :context:
    :nofigs:
    :include-source: false
 
-   Path("_build/component_linear_terminal.txt").write_text(
-       render_section(component_property_section(linear_results, details=False)), encoding="utf-8")
+   capture(linear, "component_linear_terminal.txt")
 
 .. literalinclude:: _build/component_linear_terminal.txt
    :language: text
@@ -175,86 +162,82 @@ round, which also includes substitution, permutation and a round-key input.
 A function of both state and independent round key cannot be inverted uniquely
 from its state output alone; fixed-key invertibility is a different question.
 
-``WORD_LINEAR`` counts nonzero field elements, here bytes. ``BIT_LINEAR`` would
-expand the map into binary coordinates: rank would become 128 and branch
-weights would count bits. Always state the domain when comparing properties.
+CLAASP infers the ``word_linear`` domain for a finite-field linear map, so
+weights count nonzero field elements, here bytes. To inspect its binary rank,
+request the bit domain explicitly:
 
-A bounded search is not an exact answer
----------------------------------------
+.. code-block:: python
+
+   mix.properties("rank", domain="bit_linear").to_terminal()
+
+The binary rank is 128. Bit-domain branch weights would count bits rather than
+bytes, so those branch numbers answer a different question.
+
+Request a bounded search
+-------------------------
 
 The full 16-byte branch search exceeds the core enumeration budget. The
 unavailable row above is neither zero nor a failed diffusion criterion.
-An explicit driver can search only input vectors of weight one:
+Restrict the search to input vectors of weight one:
 
 .. plot::
    :context:
    :nofigs:
    :include-source:
 
-   from claasp.drivers.analysis import BoundedBranchNumberDriver
+   bounded = mix.properties("differential_branch_number", maximum_input_weight=1)
 
-   bounded = round_analysis.component_property(
-       mix, ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
-       PropertyDomain.WORD_LINEAR,
-       driver=BoundedBranchNumberDriver(maximum_input_weight=1),
-   )
-   print(render_section(component_property_section((bounded,), details=False)))
+.. code-block:: python
+
+   bounded.to_terminal()
 
 .. plot::
    :context:
    :nofigs:
    :include-source: false
 
-   Path("_build/component_bounded_terminal.txt").write_text(
-       render_section(component_property_section((bounded,), details=False)), encoding="utf-8")
+   capture(bounded, "component_bounded_terminal.txt")
 
 .. literalinclude:: _build/component_bounded_terminal.txt
    :language: text
 
 An observed input/output weight sum of five proves that the minimum is **at
-most five**. The driver has not excluded a lower value among unsearched inputs.
-``bounded.claim`` and ``bounded.complete`` retain this distinction for code
-consuming the result.
+most five**. The search has not excluded a lower value among unsearched inputs.
+The retained results preserve the bound and incomplete coverage; printing
+never turns it into an exact answer.
+
+For exact searches, ``maximum_vectors`` controls the branch-enumeration budget
+and ``maximum_steps`` controls the matrix-order budget. These limits are
+explicit parameters of ``properties()``; no solver is selected implicitly.
 
 Prove the single-column result
 ------------------------------
 
-Inspect the four-byte map separately. The byte field uses the AES polynomial
-modulus ``0x11B``; using integer arithmetic or a different field would ask a
-different question.
+``AESMixColumn`` provides the standard four-byte building block, including the
+AES field and matrix. There is no need to construct a matrix or graph input:
 
 .. plot::
    :context:
    :nofigs:
    :include-source:
 
-   from claasp.analysis import analyze_component_property
-   from claasp.composites.aes import AES_FIELD
-   from claasp.graph import UnitArray, UnitArrayType
+   from claasp.composites import AESMixColumn
 
-   column = LinearMap(
-       UnitArray("column", UnitArrayType(AES_FIELD, (4,))),
-       ((2, 3, 1, 1), (1, 2, 3, 1), (1, 1, 2, 3), (3, 1, 1, 2)),
+   column = AESMixColumn().analyze().component("linear_map")
+   column_properties = column.properties(
+       "rank", "invertible", "mds", "differential_branch_number", "linear_branch_number",
    )
-   column_results = tuple(
-       analyze_component_property(column, PropertyRequest(property_, PropertyDomain.WORD_LINEAR))
-       for property_ in (
-           ComponentProperty.RANK,
-           ComponentProperty.INVERTIBLE,
-           ComponentProperty.MDS,
-           ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
-           ComponentProperty.LINEAR_BRANCH_NUMBER,
-       )
-   )
-   print(render_section(component_property_section(column_results, details=False)))
+
+.. code-block:: python
+
+   column_properties.to_terminal()
 
 .. plot::
    :context:
    :nofigs:
    :include-source: false
 
-   Path("_build/component_column_terminal.txt").write_text(
-       render_section(component_property_section(column_results, details=False)), encoding="utf-8")
+   capture(column_properties, "component_column_terminal.txt")
 
 .. literalinclude:: _build/component_column_terminal.txt
    :language: text
@@ -262,23 +245,27 @@ different question.
 All square minors of this matrix are nonsingular. This MDS proof establishes
 the optimal four-byte differential branch number, five, without enumerating
 all :math:`256^4-1` nonzero input vectors. The transpose is also MDS, giving
-linear branch number five. Since the full MixColumns matrix is block diagonal
-with four identical four-byte blocks, its byte branch number is also five: each active
-column contributes at least five, and one active column attains five.
-The generic bounded driver does not claim that structural proof automatically.
+linear branch number five. The full MixColumns matrix is block diagonal with
+four identical four-byte blocks, so its byte branch number is also five:
+each active column contributes at least five, and one active column attains
+five. The generic bounded search does not claim that structural proof
+automatically.
 
-Reporting and reuse
--------------------
+Reporting and lower-level access
+--------------------------------
 
-``result.to_terminal(details=True)`` on the basic grouped result includes
-full indexed S-box tables, permutation mappings and constant values, together
-with semantic identities, graph references, applicability and analysis methods.
-For explicitly selected property tuples, omit ``details=False`` from
-``component_property_section`` to retain the same provenance columns. Reports
-reuse computed values. ``present(result)`` and ``render_report`` support the
-grouped result for report composition and exports; see
-:doc:`displaying_results`.
+``properties.to_terminal(details=True)`` adds semantic identities, graph
+references, applicability and methods. ``properties.results`` retains the
+typed property results for programmatic inspection. ``present(properties)``
+and ``present(ddt)`` support report composition and export through
+:doc:`displaying_results`. Reports and plots reuse stored results.
+
+The grouped result from the basic page also supports ``to_terminal(details=True)``
+for full indexed S-box tables, permutation mappings, constants and provenance.
+Default inventory requests avoid unsupported operations, lookup tables larger
+than 256 entries and modular additions wider than eight bits, whose exact
+ANFs can grow very large. Explicit requests remain available.
 
 Download :download:`the complete script <examples/component_analysis.py>`.
-For supported domains, request options and optional solver drivers, see
-:doc:`component_properties`.
+The typed ``PropertyRequest`` and optional-driver interfaces remain available
+for integrations; see :doc:`component_properties`.

@@ -469,6 +469,12 @@
       "qualified_name": "claasp.analysis.CPCharacteristicResult"
     },
     {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ComponentAnalysis"
+    },
+    {
       "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisProvenance",
       "defined_in": "claasp.analysis.component_properties",
       "kind": "dataclass",
@@ -493,6 +499,12 @@
       "qualified_name": "claasp.analysis.ComponentOccurrence"
     },
     {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentPropertiesResult",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ComponentPropertiesResult"
+    },
+    {
       "canonical_name": "claasp.analysis.component_properties.ComponentProperty",
       "defined_in": "claasp.analysis.component_properties",
       "kind": "enum",
@@ -509,6 +521,12 @@
       "defined_in": "claasp.analysis.component_properties",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.ComponentSemanticKey"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ComponentTableResult"
     },
     {
       "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
@@ -1325,6 +1343,163 @@
       "defined_in": "claasp.analysis.composed",
       "kind": "function",
       "qualified_name": "claasp.analysis.check_speck32_differential_linear_fixture"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.component_inspection"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.__init__",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentAnalysis",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.count",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.count"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.ddt",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.ddt"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.group",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentAnalysis",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.group"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.primitive_family",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentAnalysis",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.primitive_family"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.properties",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.properties"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.realization",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentAnalysis",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.realization"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentPropertiesResult",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentPropertiesResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.__init__",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentPropertiesResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.component_name",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentPropertiesResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.component_name"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.results",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentPropertiesResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.results"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.to_terminal",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.__init__",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentTableResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.claim",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.claim"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.component_name",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentTableResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.component_name"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.counts",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentTableResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.counts"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.input_bit_size",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentTableResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.input_bit_size"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.output_bit_size",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentTableResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.output_bit_size"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.plot",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.plot"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.provenance",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentTableResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.provenance"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.to_terminal",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.to_terminal"
     },
     {
       "canonical_name": "claasp.analysis.neural.component_output_dataset",
@@ -2567,6 +2742,12 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.avalanche"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.component",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.component"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.component_analysis",
@@ -6953,6 +7134,12 @@
       "defined_in": "claasp.composites.aes",
       "kind": "function",
       "qualified_name": "claasp.composites.AESKeySchedule"
+    },
+    {
+      "canonical_name": "claasp.composites.aes.AESMixColumn",
+      "defined_in": "claasp.composites.aes",
+      "kind": "function",
+      "qualified_name": "claasp.composites.AESMixColumn"
     },
     {
       "canonical_name": "claasp.composites.aes.AESRound",

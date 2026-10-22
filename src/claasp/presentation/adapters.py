@@ -12,6 +12,7 @@ from fractions import Fraction
 from math import isinf
 
 from claasp.analysis.avalanche import AvalancheCriteriaResult, AvalancheResult
+from claasp.analysis.component_inspection import ComponentPropertiesResult, ComponentTableResult
 from claasp.analysis.component_properties import (
     ComponentAnalysisResult,
     ComponentPropertyResult,
@@ -1031,6 +1032,10 @@ def adapt_result(result: object) -> AdaptationResult:
         required arguments rejected
     """
 
+    if isinstance(result, ComponentPropertiesResult):
+        return AdaptationResult(section=_component_properties_section(result))
+    if isinstance(result, ComponentTableResult):
+        return AdaptationResult(section=_component_table_section(result))
     if isinstance(result, ComponentAnalysisResult):
         return AdaptationResult(section=_component_analysis_section(result))
     dispatch = (
@@ -1149,3 +1154,34 @@ def _component_analysis_section(result: ComponentAnalysisResult, *, details=Fals
             )
         )
     return ReportSection("Component analysis", tables=tuple(tables))
+
+
+def _component_properties_section(
+    result: ComponentPropertiesResult, *, details=False
+) -> ReportSection:
+    section = component_property_section(result.results, details=details)
+    tables = tuple(Table(table.columns, table.rows) for table in section.tables)
+    return ReportSection(f"{result.component_name} properties", tables=tables)
+
+
+def _component_table_section(result: ComponentTableResult, *, include_zero=False) -> ReportSection:
+    start = 0 if include_zero else 1
+    evidence = PresentationEvidence(EvidenceClass.EXACT)
+    table = Table(
+        (TableColumn("input", "Input XOR"),)
+        + tuple(
+            TableColumn(f"output_{index}", str(index), Alignment.RIGHT)
+            for index in range(1 << result.output_bit_size)
+        ),
+        tuple(
+            TableRow(
+                (_integer(index),)
+                + tuple(_integer(value, evidence) for value in result.counts[index])
+            )
+            for index in range(start, len(result.counts))
+        ),
+    )
+    return ReportSection(
+        f"{result.component_name} differential counts (exact; out of {1 << result.input_bit_size})",
+        tables=(table,),
+    )

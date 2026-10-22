@@ -496,6 +496,26 @@ class Analysis:
 
         return find_sbox_boomerang_transition(self.primitive, component, **options)
 
+    def component(self, kind: str, *, index: int | None = None, bit_size: int | None = None):
+        """Select one semantic group by operation name without computing properties.
+
+        Names include ``sbox``, ``permutation`` and ``linear_map``. Ambiguous
+        matches require an output ``bit_size`` or a zero-based group ``index``.
+        Repeated equivalent occurrences form one group, not an ambiguity.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Present
+            >>> primitive = Present(number_of_rounds=2)
+            >>> primitive.analysis.component("sbox").count
+            34
+            >>> primitive.analysis.component("permutation", bit_size=64).count
+            2
+        """
+        from claasp.analysis.component_inspection import _select_component
+
+        return _select_component(self.primitive, kind, index=index, bit_size=bit_size)
+
     def component_analysis(self):
         """Discover semantic component groups and analyze their default properties.
 

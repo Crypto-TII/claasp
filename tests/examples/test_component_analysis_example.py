@@ -7,7 +7,6 @@ from pathlib import Path
 import pytest
 
 from claasp.analysis import PropertyClaim
-from claasp.presentation import component_property_section, render_section
 
 ROOT = Path(__file__).resolve().parents[2] / "docs" / "examples"
 
@@ -51,23 +50,27 @@ def test_advanced_script_exact_ddt_bounded_search_and_composite_leaf(tmp_path):
     pytest.importorskip("matplotlib").use("Agg")
     pyplot = pytest.importorskip("matplotlib.pyplot")
     example = _script("component_analysis")
-    group, sbox, linear, bounded, column, ddt = example.run_example()
-    assert group.count == 34
+    selected, sbox, linear, bounded, column, ddt = example.run_example()
+    assert selected.count == 34
     assert [item.value for item in sbox] == [4, 4, 3, True, 3, 2, 16]
-    assert all(sum(row) == 16 for row in ddt)
-    assert max(max(row) for row in ddt[1:]) == sbox[0].value
+    assert all(sum(row) == 16 for row in ddt.counts)
+    assert max(max(row) for row in ddt.counts[1:]) == sbox[0].value
     assert [item.value for item in linear] == [16, True, None]
     assert linear[-1].diagnostic.code.value == "budget_exhausted"
-    assert bounded.value == 5
-    assert bounded.claim is PropertyClaim.PROVED_UPPER_BOUND
-    assert not bounded.complete
+    assert bounded[0].value == 5
+    assert bounded[0].claim is PropertyClaim.PROVED_UPPER_BOUND
+    assert not bounded[0].complete
     assert [item.value for item in column] == [4, True, True, 5, 5]
     assert all(item.claim is PropertyClaim.EXACT and item.complete for item in column)
-    assert "≤5" in render_section(component_property_section((bounded,), details=False))
+    output = StringIO()
+    bounded.to_terminal(file=output)
+    assert "≤5" in output.getvalue()
     try:
-        figure = example.plot_ddt(ddt)
-        figure.savefig(tmp_path / "ddt.png")
-        assert figure.axes[0].images[0].get_array().tolist() == [list(row) for row in ddt[1:]]
+        artifact = ddt.plot(show=False, save_to=tmp_path / "ddt.png")
+        figure = pyplot.figure(artifact.figure)
+        assert figure.axes[0].images[0].get_array().tolist() == [
+            list(row) for row in ddt.counts[1:]
+        ]
         assert (tmp_path / "ddt.png").read_bytes().startswith(b"\x89PNG")
     finally:
         pyplot.close("all")

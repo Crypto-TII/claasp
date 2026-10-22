@@ -18,6 +18,11 @@ from claasp.analysis.boomerang import (
     BoomerangExperimentResult,
     run_speck32_boomerang_experiment,
 )
+from claasp.analysis.component_inspection import (
+    ComponentAnalysis,
+    ComponentPropertiesResult,
+    ComponentTableResult,
+)
 from claasp.analysis.component_properties import (
     ComponentAnalysisProvenance,
     ComponentAnalysisResult,
@@ -179,6 +184,9 @@ __all__ = [
     "BooleanAlgebraicEvidence",
     "BoomerangExperimentResult",
     "CPCharacteristicResult",
+    "ComponentAnalysis",
+    "ComponentPropertiesResult",
+    "ComponentTableResult",
     "ComponentAnalysisProvenance",
     "ComponentAnalysisResult",
     "ComponentGroup",

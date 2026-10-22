@@ -13,6 +13,12 @@ claasp.analysis
 .. automodule:: claasp.analysis
    :no-index:
 
+claasp.analysis.component_inspection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.component_inspection
+   :no-index:
+
 claasp.analysis.component_properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

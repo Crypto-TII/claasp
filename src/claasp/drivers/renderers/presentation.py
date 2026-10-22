@@ -542,3 +542,57 @@ def _avalanche_figure(result, *, view, metric, style):
     return FigureArtifact(
         figure, f"avalanche_{view}", series, MatplotlibPresentationDriver.identity
     )
+
+
+def _plot_component_ddt(result, *, include_zero, scale, show, save_to):
+    if scale not in {"counts", "probability"}:
+        raise ValueError("DDT scale must be counts or probability")
+    pyplot = _matplotlib()
+    start = 0 if include_zero else 1
+    denominator = 1 if scale == "counts" else 1 << result.input_bit_size
+    values = tuple(tuple(value / denominator for value in row) for row in result.counts[start:])
+    figure, axis = pyplot.subplots(figsize=(7, 4), layout="constrained")
+    image = axis.imshow(
+        values,
+        origin="lower",
+        aspect="auto",
+        interpolation="nearest",
+        extent=(
+            -0.5,
+            (1 << result.output_bit_size) - 0.5,
+            start - 0.5,
+            (1 << result.input_bit_size) - 0.5,
+        ),
+        vmin=0,
+        vmax=max(max(row) for row in values),
+        cmap="YlOrRd",
+    )
+    axis.set(
+        xlabel="Output XOR difference (decimal)",
+        ylabel="Input XOR difference (decimal)",
+        title=f"{result.component_name}: exact differential {'counts' if scale == 'counts' else 'probabilities'}",
+    )
+    from matplotlib.ticker import MaxNLocator
+
+    if result.output_bit_size <= 4:
+        axis.set_xticks(range(1 << result.output_bit_size))
+    else:
+        axis.xaxis.set_major_locator(MaxNLocator(nbins=16, integer=True))
+    if result.input_bit_size <= 4:
+        axis.set_yticks(range(start, 1 << result.input_bit_size))
+    else:
+        axis.yaxis.set_major_locator(MaxNLocator(nbins=16, integer=True))
+    label = (
+        f"Count out of {1 << result.input_bit_size} inputs" if scale == "counts" else "Probability"
+    )
+    colorbar = figure.colorbar(image, ax=axis, label=label)
+    if scale == "counts":
+        colorbar.locator = MaxNLocator(integer=True)
+        colorbar.update_ticks()
+    _finish_figure(figure, show=show, save_to=save_to)
+    return FigureArtifact(
+        figure,
+        "component_ddt",
+        tuple((f"input_{index}", row) for index, row in enumerate(values, start)),
+        MatplotlibPresentationDriver.identity,
+    )
