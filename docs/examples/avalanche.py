@@ -1,6 +1,6 @@
 """Measure once and present reproducible round-by-round avalanche results.
 
-Run with ``python docs/examples/avalanche.py`` after installing ``.[presentation]``.
+Run with ``python docs/examples/avalanche.py`` after installing ``.[analysis,presentation]``.
 The guide executes the same public calls; CI uses smaller sample budgets.
 """
 
@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from claasp.primitives import ChaChaPermutation, Speck
 
 
-def measure_examples(*, speck_rounds=7, speck_samples=1000, chacha_rounds=5, chacha_samples=4):
+def measure_examples(*, speck_rounds=7, speck_samples=1000, chacha_rounds=5, chacha_samples=100):
     """Return the Speck plaintext/key and ChaCha results without rendering."""
     primitive = Speck(number_of_rounds=speck_rounds)
     result = primitive.analysis.avalanche("plaintext", speck_samples, seed=9, threshold=0.01)
@@ -17,6 +17,11 @@ def measure_examples(*, speck_rounds=7, speck_samples=1000, chacha_rounds=5, cha
     chacha_result = ChaChaPermutation(number_of_rounds=chacha_rounds).analysis.avalanche(
         "state", chacha_samples, seed=9, threshold=0.01
     )
+    result.dependence()
+    result.weight()
+    result.entropy()
+    result.vectors("dependence")
+    result.check_criteria(dependence_threshold=0, weight_threshold=0.32, entropy_threshold=0.32)
     return result, key_result, chacha_result
 
 

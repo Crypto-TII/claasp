@@ -49,6 +49,8 @@ systems and solvers are optional backends.
    :maxdepth: 2
    :caption: Advanced primitive analysis
 
+   advanced_primitive_analysis
+   advanced_avalanche_analysis
    analysis
    component_properties
    displaying_results

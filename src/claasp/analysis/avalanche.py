@@ -1,4 +1,4 @@
-"""Dependency-free strict-avalanche measurements for typed primitives."""
+"""Sample-parallel avalanche measurements and dependency-free derived metrics."""
 
 from __future__ import annotations
 
@@ -6,9 +6,10 @@ import pathlib
 from collections.abc import Mapping
 from dataclasses import dataclass
 from math import isfinite, log2
+from random import Random
 from typing import TYPE_CHECKING, TextIO
 
-from claasp.analysis.datasets import generate_random_dataset, packed_bit_width
+from claasp.analysis.datasets import packed_bit_width
 from claasp.graph import Primitive
 
 if TYPE_CHECKING:
@@ -107,7 +108,8 @@ class AvalancheResult:
         """Display round statistics, a heatmap, or opaque 3D round profiles.
 
         ``view`` is ``"summary"`` (default), ``"heatmap"``, or ``"3d"``.
-        ``metric`` selects ``"probability"``, ``"entropy"``, or legacy ``"weight"``.
+        ``metric`` selects ``"probability"``, ``"dependence"``, ``"entropy"``,
+        or ``"weight"`` (per-bit probability contributions to weight).
         For ``view="3d"``, ``style="planes"`` draws opaque filled profiles and
         ``style="dots"`` draws dots with a faint baseline for each round.
         ``show=False`` creates the plot without displaying it. ``save_to``
@@ -125,6 +127,89 @@ class AvalancheResult:
 
         return _plot_avalanche(
             self, view=view, metric=metric, style=style, show=show, save_to=save_to
+        )
+
+    def vectors(self, metric: str = "probability") -> tuple[tuple[tuple[float, ...], ...], ...]:
+        """Return round × flipped-input-bit × output-bit metric vectors.
+
+        EXAMPLES::
+
+            >>> result = AvalancheResult("demo", "state", 2, 0, ((0.0, 0.5),))
+            >>> result.vectors("dependence")
+            (((0.0, 1.0),),)
+        """
+        return tuple(_metric_matrix(matrix, metric) for _, matrix in _round_data(self))
+
+    def dependence(self) -> tuple[tuple[float, ...], ...]:
+        """Count observed dependent output bits per input flip, for every round.
+
+        EXAMPLES::
+
+            >>> AvalancheResult("demo", "state", 2, 0, ((0.0, 0.5),)).dependence()
+            ((1.0,),)
+        """
+        return tuple(tuple(sum(row) for row in matrix) for matrix in self.vectors("dependence"))
+
+    def weight(self) -> tuple[tuple[float, ...], ...]:
+        """Return expected output-difference Hamming weights per round/input flip.
+
+        EXAMPLES::
+
+            >>> AvalancheResult("demo", "state", 2, 0, ((0.0, 0.5),)).weight()
+            ((0.5,),)
+        """
+        return tuple(tuple(sum(row) for row in matrix) for matrix in self.vectors())
+
+    def entropy(self) -> tuple[tuple[float, ...], ...]:
+        """Sum binary output-bit entropies per round/input flip, in bits.
+
+        EXAMPLES::
+
+            >>> AvalancheResult("demo", "state", 2, 0, ((0.0, 0.5),)).entropy()
+            ((1.0,),)
+        """
+        return tuple(tuple(sum(row) for row in matrix) for matrix in self.vectors("entropy"))
+
+    def check_criteria(
+        self,
+        *,
+        dependence_threshold: float = 0.0,
+        weight_threshold: float = 0.01,
+        entropy_threshold: float = 0.01,
+    ) -> tuple[dict[str, int | float | bool | None], ...]:
+        """Check full diffusion, avalanche and strict avalanche for every round.
+
+        Tolerances are absolute output-bit counts (entropy uses bits). Every
+        input flip must pass. Decisions concern finite-sample estimates only.
+
+        EXAMPLES::
+
+            >>> result = AvalancheResult("demo", "state", 2, 0, ((0.5, 0.5),))
+            >>> result.check_criteria()[0]["strict_avalanche"]
+            True
+        """
+        for value in (dependence_threshold, weight_threshold, entropy_threshold):
+            if isinstance(value, bool) or not isfinite(value) or value < 0:
+                raise ValueError("criterion tolerances must be finite and nonnegative")
+        return tuple(
+            {
+                "round": number,
+                "full_diffusion": all(
+                    value >= len(matrix[0]) - dependence_threshold for value in dependence
+                ),
+                "avalanche": all(
+                    abs(value - len(matrix[0]) / 2) <= weight_threshold for value in weight
+                ),
+                "strict_avalanche": all(
+                    value >= len(matrix[0]) - entropy_threshold for value in entropy
+                ),
+                "dependence_threshold": dependence_threshold,
+                "weight_threshold": weight_threshold,
+                "entropy_threshold": entropy_threshold,
+            }
+            for (number, matrix), dependence, weight, entropy in zip(
+                _round_data(self), self.dependence(), self.weight(), self.entropy(), strict=True
+            )
         )
 
     @property
@@ -154,20 +239,25 @@ class AvalancheResult:
 
 def avalanche_probabilities(
     primitive: Primitive,
-    input_name: str,
-    number_of_samples: int,
+    input_name: str | None = None,
+    number_of_samples: int = 1000,
     *,
     seed: int = 0,
     fixed_inputs: Mapping[str, int] | None = None,
     metric: str = "probability",
     threshold: float = 0.01,
+    engine: str = "numpy",
 ) -> AvalancheResult:
     """Estimate a primitive's strict-avalanche probability matrix.
 
-    For each sampled input, the function evaluates a baseline and then flips
+    By default the first declared input is varied, using 1,000 samples and
+    seed zero. For each sampled input, the function evaluates a baseline and then flips
     each bit of ``input_name`` independently.  Randomness is reproducible and
-    published round boundaries are read from
-    :meth:`~claasp.graph.Primitive.evaluate_with_trace`.
+    NumPy evaluates samples in parallel by default (``analysis`` extra).
+    ``engine="scalar"`` selects the dependency-free reference evaluator.
+    Other component types use scalar handlers per lane within NumPy execution;
+    ``method`` reports hybrid execution when applicable. Published graph round
+    boundaries supply intermediate outputs.
     ``probabilities`` retains the final-output matrix; ``round_probabilities``
     retains all measured round matrices, numbered by ``round_numbers``.
 
@@ -184,11 +274,35 @@ def avalanche_probabilities(
     _validate_metric(metric)
     if isinstance(threshold, bool) or not isfinite(threshold) or not 0 <= threshold <= 1:
         raise ValueError("threshold must be a finite tolerance between zero and one")
+    if input_name is None:
+        input_name = next(iter(primitive.graph.input_arrays))
+    if engine not in {"numpy", "scalar"}:
+        raise ValueError("engine must be numpy or scalar")
+    if not isinstance(number_of_samples, int) or isinstance(number_of_samples, bool):
+        raise TypeError("number_of_samples must be an integer")
+    if number_of_samples <= 0:
+        raise ValueError("number_of_samples must be positive")
+    if not isinstance(seed, int) or isinstance(seed, bool):
+        raise TypeError("seed must be an integer")
+    fixed = dict(fixed_inputs or {})
+    if set(fixed) - set(primitive.graph.input_arrays):
+        raise ValueError("unknown fixed inputs")
+    for name, value in fixed.items():
+        width = packed_bit_width(primitive, name)
+        if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < (1 << width):
+            raise ValueError(f"invalid packed value for {name}")
+    random = Random(seed)
     input_width = packed_bit_width(primitive, input_name)
     packed_bit_width(primitive)  # Reject non-binary output encodings.
-    samples = generate_random_dataset(
-        primitive, number_of_samples, seed=seed, fixed_inputs=fixed_inputs
-    )
+    sample_inputs = [
+        {
+            name: fixed[name]
+            if name in fixed
+            else random.getrandbits(packed_bit_width(primitive, name))
+            for name in primitive.graph.input_arrays
+        }
+        for _ in range(number_of_samples)
+    ]
     final_number = primitive.details().number_of_rounds
     setup_rounds = max(0, len(primitive.graph.rounds) - final_number)
     outputs = [
@@ -225,21 +339,49 @@ def avalanche_probabilities(
             packed.append(value)
         return packed
 
-    for sample in samples.samples:
-        inputs = dict(sample.inputs)
-        baseline = packed_outputs(primitive.evaluate_with_trace(inputs))
-        for input_bit in range(input_width):
-            changed = dict(inputs)
-            changed[input_name] ^= 1 << (input_width - input_bit - 1)
-            changed_outputs = packed_outputs(primitive.evaluate_with_trace(changed))
-            for round_index, (left, right, width) in enumerate(
-                zip(baseline, changed_outputs, widths, strict=True)
-            ):
-                difference = left ^ right
-                for output_bit in range(width):
-                    counts[round_index][input_bit][output_bit] += (
-                        difference >> (width - output_bit - 1)
-                    ) & 1
+    method = "scalar_paired_evaluation"
+    if engine == "numpy":
+        try:
+            import numpy as np
+        except ImportError as error:
+            raise ImportError(
+                "NumPy avalanche evaluation requires: pip install 'claasp[analysis]' (or use engine='scalar')"
+            ) from error
+        from claasp.representations.execution._numpy import _evaluate_samples
+
+        method = "numpy_paired_evaluation"
+        # Bound trace memory independently of the requested sample budget.
+        for start in range(0, number_of_samples, 256):
+            batch = sample_inputs[start : start + 256]
+            inputs = {name: [item[name] for item in batch] for name in primitive.graph.input_arrays}
+            baseline, hybrid = _evaluate_samples(primitive, inputs, [items for _, items in outputs])
+            if hybrid:
+                method = "numpy_hybrid_paired_evaluation"
+            for input_bit in range(input_width):
+                changed = dict(inputs)
+                changed[input_name] = [
+                    value ^ (1 << (input_width - input_bit - 1)) for value in inputs[input_name]
+                ]
+                measured, _ = _evaluate_samples(primitive, changed, [items for _, items in outputs])
+                for index, (left, right) in enumerate(zip(baseline, measured, strict=True)):
+                    totals = np.sum(left ^ right, axis=1)
+                    for bit, count in enumerate(totals):
+                        counts[index][input_bit][bit] += int(count)
+    else:
+        for scalar_inputs in sample_inputs:
+            baseline = packed_outputs(primitive.evaluate_with_trace(scalar_inputs))
+            for input_bit in range(input_width):
+                changed_sample = dict(scalar_inputs)
+                changed_sample[input_name] ^= 1 << (input_width - input_bit - 1)
+                changed_outputs = packed_outputs(primitive.evaluate_with_trace(changed_sample))
+                for round_index, (left, right, width) in enumerate(
+                    zip(baseline, changed_outputs, widths, strict=True)
+                ):
+                    difference = left ^ right
+                    for output_bit in range(width):
+                        counts[round_index][input_bit][output_bit] += (
+                            difference >> (width - output_bit - 1)
+                        ) & 1
     matrices = tuple(
         tuple(tuple(count / number_of_samples for count in row) for row in matrix)
         for matrix in counts
@@ -250,6 +392,7 @@ def avalanche_probabilities(
         number_of_samples,
         seed,
         matrices[-1],
+        method=method,
         round_probabilities=matrices if final_number else (),
         round_numbers=tuple(number for number, _ in outputs) if final_number else (),
         metric=metric,
@@ -258,13 +401,15 @@ def avalanche_probabilities(
 
 
 def _validate_metric(metric: str) -> str:
-    if metric not in {"probability", "entropy", "weight"}:
-        raise ValueError("metric must be probability, entropy, or weight")
+    if metric not in {"probability", "entropy", "weight", "dependence"}:
+        raise ValueError("metric must be probability, dependence, entropy, or weight")
     return metric
 
 
 def _metric_matrix(matrix, metric):
     _validate_metric(metric)
+    if metric == "dependence":
+        return tuple(tuple(float(value > 0) for value in row) for row in matrix)
     if metric != "entropy":
         return matrix
     return tuple(
@@ -295,7 +440,7 @@ class _RoundStatistics:
 
 def _criterion_bounds(metric, threshold):
     _validate_metric(metric)
-    target = 1.0 if metric == "entropy" else 0.5
+    target = 1.0 if metric in {"entropy", "dependence"} else 0.5
     return max(0.0, target - threshold), min(1.0, target + threshold)
 
 

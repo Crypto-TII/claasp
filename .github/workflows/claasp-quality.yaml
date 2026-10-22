@@ -41,7 +41,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install isolated development package
-        run: python -m pip install -e '.[dev,docs]'
+        run: python -m pip install -e '.[dev,analysis,docs]'
 
       - name: Verify Sage is not installed
         run: python -c "import importlib.util; assert importlib.util.find_spec('sage') is None"
@@ -77,7 +77,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install pinned documentation and quality tools
-        run: python -m pip install -e '.[dev,docs,quality]'
+        run: python -m pip install -e '.[dev,analysis,docs,quality]'
 
       - name: Verify pinned environment
         run: |
@@ -140,7 +140,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install presentation dependencies
-        run: python -m pip install -e '.[dev,presentation]'
+        run: python -m pip install -e '.[dev,analysis,presentation]'
 
       - name: Run headless plots and dataframe parity
         env:

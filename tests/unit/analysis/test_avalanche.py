@@ -45,7 +45,7 @@ def test_one_round_speck_avalanche_fixture_is_reproducible():
         0.0,
     )
     assert result.complete is False
-    assert result.method == "empirical_paired_evaluation"
+    assert result.method == "numpy_paired_evaluation"
 
 
 def test_avalanche_summary_and_input_validation():
@@ -257,3 +257,73 @@ def test_final_aes_matrix_matches_the_dataset_contract():
     )
     assert result.probabilities == expected
     assert result.round_numbers == (1, 2)
+
+
+@pytest.mark.parametrize(
+    "family,samples", [("speck", 3), ("speck", 257), ("chacha", 3), ("aes", 3)]
+)
+def test_numpy_and_scalar_match_round_vectors(family, samples):
+    from claasp.primitives import AES, ChaChaPermutation
+
+    primitive = {"speck": Speck, "chacha": ChaChaPermutation, "aes": AES}[family](
+        number_of_rounds=1
+    )
+    reference = primitive.analysis.avalanche(number_of_samples=samples, seed=19, engine="scalar")
+    actual = primitive.analysis.avalanche(number_of_samples=samples, seed=19)
+    assert actual.round_probabilities == reference.round_probabilities
+    assert actual.probabilities == reference.probabilities
+    assert actual.method == (
+        "numpy_hybrid_paired_evaluation" if family == "aes" else "numpy_paired_evaluation"
+    )
+
+
+def test_derived_metrics_and_criteria_do_not_hide_biased_pairs():
+    from claasp.analysis.avalanche import AvalancheResult
+
+    biased = ((0.0, 1.0), (1.0, 0.0))
+    ideal = ((0.5, 0.5), (0.5, 0.5))
+    result = AvalancheResult(
+        "demo", "state", 2, 0, ideal, round_probabilities=(biased, ideal), round_numbers=(1, 2)
+    )
+    assert result.dependence() == ((1.0, 1.0), (2.0, 2.0))
+    assert result.weight() == ((1.0, 1.0), (1.0, 1.0))
+    assert result.entropy() == ((0.0, 0.0), (2.0, 2.0))
+    checks = result.check_criteria()
+    assert [c["full_diffusion"] for c in checks] == [False, True]
+    assert [c["avalanche"] for c in checks] == [True, True]
+    assert [c["strict_avalanche"] for c in checks] == [False, True]
+    for keyword in ("dependence_threshold", "weight_threshold", "entropy_threshold"):
+        for invalid in (-1, float("nan"), True):
+            with pytest.raises(ValueError, match="tolerances"):
+                result.check_criteria(**{keyword: invalid})
+
+
+def test_numpy_engine_does_not_evaluate_samples_with_scalar_driver(monkeypatch):
+    from claasp.representations.execution.scalar import ScalarExecutionDriver
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("scalar sample evaluation used")
+
+    monkeypatch.setattr(ScalarExecutionDriver, "evaluate", forbidden)
+    result = Speck(number_of_rounds=2).analysis.avalanche(number_of_samples=8)
+    assert result.method == "numpy_paired_evaluation"
+
+
+def test_explicit_numpy_dependency_error_and_scalar_alternative(monkeypatch):
+    import builtins
+
+    original = builtins.__import__
+
+    def without_numpy(name, *args, **kwargs):
+        if name == "numpy":
+            raise ImportError("deliberately unavailable")
+        return original(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", without_numpy)
+    primitive = Speck(number_of_rounds=1)
+    with pytest.raises(ImportError, match="analysis"):
+        primitive.analysis.avalanche(number_of_samples=1)
+    assert (
+        primitive.analysis.avalanche(number_of_samples=1, engine="scalar").method
+        == "scalar_paired_evaluation"
+    )

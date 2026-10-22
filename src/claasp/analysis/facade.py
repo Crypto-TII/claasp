@@ -319,13 +319,14 @@ class Analysis:
 
     def avalanche(
         self,
-        input_name: str,
-        number_of_samples: int,
+        input_name: str | None = None,
+        number_of_samples: int = 1000,
         *,
         seed: int = 0,
         fixed_inputs=None,
         metric: str = "probability",
         threshold: float = 0.01,
+        engine: str = "numpy",
     ):
         """Measure avalanche probabilities at published round outputs."""
 
@@ -339,6 +340,7 @@ class Analysis:
             fixed_inputs=fixed_inputs,
             metric=metric,
             threshold=threshold,
+            engine=engine,
         )
 
     def run_statistical_tests(

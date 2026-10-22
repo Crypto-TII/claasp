@@ -20,8 +20,8 @@ pull requests or release records rather than in the published documentation.
 
 Build and contribution commands are documented in `development.rst`.
 
-`examples/avalanche.py` is the downloadable companion to the basic avalanche
-page. Inline Matplotlib Sphinx directives execute the displayed commands in a
+`examples/basic_avalanche.py` and `examples/avalanche.py` accompany the basic
+and advanced avalanche pages. Inline Matplotlib Sphinx directives execute the displayed commands in a
 shared context, retaining each analysis result for all of its plot views. The
 basic terminal output is generated during the build and included next to its
 command. `tests/examples/test_avalanche_example.py` exercises the companion

@@ -272,7 +272,7 @@ def _avalanche_colors(metric):
 
     pyplot = _matplotlib()
     base = pyplot.get_cmap("RdYlGn")
-    if metric == "entropy":
+    if metric in {"entropy", "dependence"}:
         return base
     return LinearSegmentedColormap.from_list(
         "AvalancheProbability",

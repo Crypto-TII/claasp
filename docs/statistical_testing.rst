@@ -29,7 +29,7 @@ output bits in MSB-first order:
    >>> result.probabilities[0]
    (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
    >>> result.complete, result.method
-   (False, 'empirical_paired_evaluation')
+   (False, 'numpy_paired_evaluation')
 
 The probability matrix is empirical evidence, never a proof of the strict
 avalanche criterion. NIST STS and Dieharder are available through optional

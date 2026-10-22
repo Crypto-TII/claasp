@@ -49,3 +49,24 @@ def test_documentation_example_renders_all_views(tmp_path):
                 assert len(figure.axes[0].lines) == 2
     finally:
         plt.close("all")
+
+
+def test_basic_script_runs_with_its_documented_defaults(capsys):
+    basic_spec = importlib.util.spec_from_file_location(
+        "basic_avalanche", SCRIPT.with_name("basic_avalanche.py")
+    )
+    assert basic_spec is not None and basic_spec.loader is not None
+    basic = importlib.util.module_from_spec(basic_spec)
+    basic_spec.loader.exec_module(basic)
+    result = basic.run_example()
+    try:
+        result.to_terminal()
+        artifact = result.plot(show=False)
+        assert result.sample_count == 1000
+        assert result.round_numbers == tuple(range(1, 8))
+        assert result.metric == "probability"
+        assert result.method == "numpy_paired_evaluation"
+        assert "avalanche_probability" in capsys.readouterr().out
+        assert artifact.figure.axes[0].get_ylabel() == "Avalanche probability"
+    finally:
+        plt.close("all")

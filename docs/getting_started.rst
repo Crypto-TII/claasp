@@ -15,7 +15,7 @@ On Linux, macOS, or another POSIX shell:
 
    python -m venv .venv
    source .venv/bin/activate
-   python -m pip install -e '.[presentation,ml,ml-tensorflow]'
+   python -m pip install -e '.[analysis,presentation,ml,ml-tensorflow]'
 
 On Windows PowerShell:
 
@@ -23,7 +23,7 @@ On Windows PowerShell:
 
    py -m venv .venv
    .\.venv\Scripts\Activate.ps1
-   python -m pip install -e '.[presentation,ml,ml-tensorflow]'
+   python -m pip install -e '.[analysis,presentation,ml,ml-tensorflow]'
 
 ``source`` belongs to POSIX shells; PowerShell runs the activation script
 directly. On either platform, confirm that the installation works with:
@@ -58,6 +58,8 @@ above:
 
    * - Extra
      - Purpose
+   * - ``analysis``
+     - NumPy sample-parallel avalanche evaluation (the default engine).
    * - ``presentation``
      - Matplotlib plots and pandas tables.
    * - ``ml``
@@ -72,7 +74,7 @@ above:
      - Run linting and static type checks.
 
 TensorFlow requires a supported Python version and platform. If you do not need
-TensorFlow training, use ``python -m pip install -e '.[presentation,ml]'``.
+TensorFlow training, use ``python -m pip install -e '.[analysis,presentation,ml]'``.
 External executables such as SAT solvers, NIST STS, and LaTeX are installed
 separately when required by the selected analysis or export; the corresponding
 advanced guides describe those requirements.

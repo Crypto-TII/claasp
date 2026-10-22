@@ -58,6 +58,8 @@ else:
             "user_guide.rst",
             "basic_primitive_analysis.rst",
             "basic_avalanche_analysis.rst",
+            "advanced_primitive_analysis.rst",
+            "advanced_avalanche_analysis.rst",
             "about_claasp.rst",
             "getting_started.rst",
             "evaluating_primitives.rst",
