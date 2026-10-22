@@ -1,7 +1,7 @@
 """Inspect S-boxes and reusable AES diffusion blocks through the public API."""
 
 from claasp.composites import AESMixColumn, AESRound
-from claasp.primitives import Present, Serpent
+from claasp.primitives import DES, Present
 
 
 def run_example():
@@ -34,15 +34,16 @@ def run_example():
     return sbox, sbox_results, linear_results, bounded, column_results, ddt
 
 
-def run_serpent_example():
-    """Select two distinct S-box groups explicitly in standard SERPENT."""
-    serpent = Serpent()
-    first_sbox = serpent.analysis.component("sbox", index=0)
-    second_sbox = serpent.analysis.component("sbox", index=1)
-    first_properties = first_sbox.properties()
-    second_properties = second_sbox.properties()
+def run_des_example():
+    """Select two distinct S-box groups explicitly in standard DES."""
+    des = DES()
+    first_sbox = des.analysis.component("sbox", index=0)
+    second_sbox = des.analysis.component("sbox", index=1)
+    first_properties = first_sbox.properties("balanced", "invertible", "differential_uniformity")
+    second_properties = second_sbox.properties("balanced", "invertible", "differential_uniformity")
+    boomerang = first_sbox.properties("boomerang_uniformity")
     ddt = first_sbox.ddt()
-    return serpent, first_sbox, second_sbox, first_properties, second_properties, ddt
+    return des, first_sbox, second_sbox, first_properties, second_properties, boomerang, ddt
 
 
 if __name__ == "__main__":
@@ -53,9 +54,10 @@ if __name__ == "__main__":
     bounded.to_terminal()
     column_results.to_terminal()
 
-    serpent, first_sbox, second_sbox, first_properties, second_properties, serpent_ddt = (
-        run_serpent_example()
+    des, first_sbox, second_sbox, first_properties, second_properties, boomerang, des_ddt = (
+        run_des_example()
     )
     first_properties.to_terminal()
     second_properties.to_terminal()
-    serpent_ddt.plot()
+    boomerang.to_terminal()
+    des_ddt.plot()

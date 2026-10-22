@@ -80,7 +80,12 @@ Request named properties and retain a reportable result:
    :language: text
 
 With no property names, ``sbox.properties()`` uses the same defaults as the
-basic inventory. The lookup-table domain is inferred from the S-box type.
+basic inventory. The Domain column describes the mathematical input and output
+spaces: here, four-bit vectors to four-bit vectors. Bit weights count active
+bits when computing branch numbers. ``lookup_table`` is an internal analyzer
+category, not the displayed mathematical domain; the computation method is
+available in the detailed report. A parallel S-box layer is described per
+individual lookup rather than as one larger truth table.
 
 Differential uniformity is the maximum differential-distribution-table (DDT)
 entry over nonzero input differences. Four means no such transition occurs
@@ -128,39 +133,39 @@ the other analysis results:
 
    ddt.plot(show=False, save_to="present_ddt.png")
 
-Multiple distinct S-boxes: SERPENT
-----------------------------------
+Multiple non-bijective S-boxes: DES
+-----------------------------------
 
 Repeated occurrences of one table do not make a selector ambiguous. Different
-tables do. Standard SERPENT uses eight distinct four-bit S-boxes, so an
-unqualified selector refuses to choose one:
+tables do. Standard DES uses eight distinct S-boxes, each mapping six input
+bits to four output bits. An unqualified selector refuses to choose one:
 
 .. doctest::
 
-   >>> from claasp.primitives import Serpent
-   >>> serpent = Serpent()
-   >>> serpent.analysis.component("sbox")
+   >>> from claasp.primitives import DES
+   >>> des = DES()
+   >>> des.analysis.component("sbox")
    Traceback (most recent call last):
        ...
    ValueError: 8 component groups match 'sbox'; specify bit_size or index
 
-The summary from ``serpent.analysis.component_analysis().to_terminal()`` prints
-each S-box's ``Selector index`` next to its table preview.
-All eight groups have the same width, so ``bit_size=4`` alone cannot resolve
-the ambiguity. Select a zero-based index among the matching S-box groups:
+The summary from ``des.analysis.component_analysis().to_terminal()`` prints
+each S-box's ``Selector index`` next to its table preview. All eight groups
+have the same four-bit output width, so ``bit_size=4`` alone cannot resolve
+the ambiguity. Select two groups explicitly:
 
 .. plot::
    :context: close-figs
    :nofigs:
    :include-source:
 
-   from claasp.primitives import Serpent
+   from claasp.primitives import DES
 
-   serpent = Serpent()
-   first_sbox = serpent.analysis.component("sbox", index=0)
-   second_sbox = serpent.analysis.component("sbox", index=1)
-   first_properties = first_sbox.properties()
-   second_properties = second_sbox.properties()
+   des = DES()
+   first_sbox = des.analysis.component("sbox", index=0)
+   second_sbox = des.analysis.component("sbox", index=1)
+   first_properties = first_sbox.properties("balanced", "invertible", "differential_uniformity")
+   second_properties = second_sbox.properties("balanced", "invertible", "differential_uniformity")
 
 .. code-block:: python
 
@@ -171,12 +176,12 @@ the ambiguity. Select a zero-based index among the matching S-box groups:
    :nofigs:
    :include-source: false
 
-   capture(first_properties, "component_serpent_first_terminal.txt")
+   capture(first_properties, "component_des_first_terminal.txt")
 
-.. literalinclude:: _build/component_serpent_first_terminal.txt
+.. literalinclude:: _build/component_des_first_terminal.txt
    :language: text
 
-The other table has its own result, even when these scalar properties coincide:
+The second table has its own result:
 
 .. code-block:: python
 
@@ -187,65 +192,76 @@ The other table has its own result, even when these scalar properties coincide:
    :nofigs:
    :include-source: false
 
-   capture(second_properties, "component_serpent_second_terminal.txt")
+   capture(second_properties, "component_des_second_terminal.txt")
 
-.. literalinclude:: _build/component_serpent_second_terminal.txt
+.. literalinclude:: _build/component_des_second_terminal.txt
    :language: text
 
-Indices follow the first occurrence of each distinct operation in the graph;
-they are neither the group numbers in the full inventory nor SERPENT's S-box
-numbers. The default ``Serpent()`` graph builds its key schedule first, giving
-this order:
+The domain is **6-bit vectors → 4-bit vectors**, with bit weights. There are
+64 possible inputs and only 16 outputs, so the function cannot be bijective.
+Both S-boxes are balanced: every output has exactly four preimages. Thus
+``balanced=True`` does not imply ``invertible=True`` for a rectangular table.
+The invertibility property means a two-sided inverse; its exact value is false.
+With its key fixed, DES's Feistel construction remains invertible even though
+its S-boxes are not.
 
-.. list-table:: S-box groups in the default SERPENT graph
-   :header-rows: 1
-   :widths: 15 20 30
+In the default ``DES()`` graph, selector indices 0–7 correspond to the standard
+S-boxes S1–S8, each used once in each of the sixteen rounds. For example,
+``des.analysis.component("sbox", index=3)`` selects S4. Indices follow graph
+discovery order and differ from the full inventory's ``Group`` numbers.
+Recheck the inventory when changing the primitive parameters or realization.
 
-   * - Selector index
-     - SERPENT table
-     - Occurrences
-   * - 0
-     - S3
-     - 288
-   * - 1
-     - S2
-     - 256
-   * - 2
-     - S1
-     - 256
-   * - 3
-     - S0
-     - 256
-   * - 4
-     - S7
-     - 256
-   * - 5
-     - S6
-     - 256
-   * - 6
-     - S5
-     - 256
-   * - 7
-     - S4
-     - 256
+CLAASP indexes each lookup table by the packed six-bit input. Published DES
+tables often use the outer two bits to choose a row and the middle four to
+choose a column; CLAASP performs that conversion in its primitive definition.
 
-For example, ``serpent.analysis.component("sbox", index=3)`` selects S0 in
-this graph. Counts include both encryption and key-schedule uses. Inspect the
-inventory previews, or its full tables with ``details=True``, when changing
-the primitive parameters or realization rather than assuming an index always
-names the same table.
+When a property does not apply
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Plot the selected table with the same API as PRESENT:
+The implemented boomerang-uniformity definition requires a square bijective
+S-box. Ask for it explicitly to see a qualified unavailable result:
+
+.. plot::
+   :context:
+   :nofigs:
+   :include-source:
+
+   boomerang = first_sbox.properties("boomerang_uniformity")
+
+.. code-block:: python
+
+   boomerang.to_terminal()
+
+.. plot::
+   :context:
+   :nofigs:
+   :include-source: false
+
+   capture(boomerang, "component_des_boomerang_terminal.txt")
+
+.. literalinclude:: _build/component_des_boomerang_terminal.txt
+   :language: text
+
+This reports an inapplicable definition, not a zero or an approximate value.
+
+Plot the rectangular differential table
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. plot::
    :context: close-figs
    :include-source:
 
-   serpent_ddt = first_sbox.ddt()
-   serpent_ddt.plot()
+   des_ddt = first_sbox.ddt()
+   des_ddt.plot()
 
-Both S-boxes have differential uniformity four, but identical maxima do not
-imply identical transition tables. Each heatmap belongs to its selected group.
+The full DDT has 64 input-difference rows and 16 output-difference columns.
+The plot omits the trivial zero-input row and shows counts out of 64 inputs.
+For S1 the largest nontrivial count is sixteen, corresponding to probability
+16/64 = 1/4. ``des_ddt.plot(scale="probability")`` displays those probabilities
+directly. PRESENT's maximum count was four out of sixteen: both maxima have
+probability 1/4, despite different raw counts and input widths.
+Distinct tables can share differential uniformity while having
+different transition patterns.
 
 Analyze a component inside a composite
 --------------------------------------
@@ -284,9 +300,10 @@ round, which also includes substitution, permutation and a round-key input.
 A function of both state and independent round key cannot be inverted uniquely
 from its state output alone; fixed-key invertibility is a different question.
 
-CLAASP infers the ``word_linear`` domain for a finite-field linear map, so
-weights count nonzero field elements, here bytes. To inspect its binary rank,
-request the bit domain explicitly:
+The Domain column shows ``GF(2^8)^16 → GF(2^8)^16; byte weights``: both
+the scalar field and the vector sizes are explicit. Branch weights count
+active bytes. The detailed report also records the field's defining modulus.
+To inspect the binary expansion instead, request bit interpretation:
 
 .. code-block:: python
 
@@ -377,7 +394,7 @@ Reporting and lower-level access
 --------------------------------
 
 ``properties.to_terminal(details=True)`` adds semantic identities, graph
-references, applicability and methods. ``properties.results`` retains the
+references, applicability, methods and defining field moduli. ``properties.results`` retains the
 typed property results for programmatic inspection. ``present(properties)``
 and ``present(ddt)`` support report composition and export through
 :doc:`displaying_results`. Reports and plots reuse stored results.

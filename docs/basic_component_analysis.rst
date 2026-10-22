@@ -58,6 +58,6 @@ remain visible in the inventory. Their absence from the property tables does
 not mean they passed a test.
 
 Download :download:`the script <examples/basic_component_analysis.py>`.
-Continue to :doc:`advanced_component_analysis` for selecting SERPENT's distinct
+Continue to :doc:`advanced_component_analysis` for selecting DES's non-bijective
 S-boxes, differential tables,
 composite blocks, linear diffusion, and bounded searches.

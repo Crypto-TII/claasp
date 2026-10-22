@@ -419,6 +419,7 @@ _LOOKUP_PROPERTIES = frozenset(
         ComponentProperty.NONLINEARITY,
         ComponentProperty.ALGEBRAIC_DEGREE,
         ComponentProperty.BALANCED,
+        ComponentProperty.INVERTIBLE,
         ComponentProperty.APN,
         ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
         ComponentProperty.LINEAR_BRANCH_NUMBER,
@@ -610,7 +611,7 @@ def _exact_lookup_facts(table, input_width, output_width):
     LookupTable(table, input_width, output_width)
     input_size, output_size = 1 << input_width, 1 << output_width
     if input_width == output_width:
-        transitions = SBoxTransitionSemantics(table)
+        transitions = SBoxTransitionSemantics(table, output_width=output_width)
         ddt = transitions.difference_distribution_table()
         walsh = transitions.walsh_correlation_table()
     else:
@@ -665,6 +666,8 @@ def _exact_lookup_facts(table, input_width, output_width):
             ComponentProperty.NONLINEARITY: nonlinearity,
             ComponentProperty.ALGEBRAIC_DEGREE: algebraic_degree,
             ComponentProperty.BALANCED: balanced,
+            ComponentProperty.INVERTIBLE: input_width == output_width
+            and len(set(table)) == input_size,
             ComponentProperty.APN: differential_uniformity == 2,
             ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER: differential_branch,
             ComponentProperty.LINEAR_BRANCH_NUMBER: linear_branch,

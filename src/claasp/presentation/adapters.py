@@ -430,11 +430,14 @@ def component_property_section(
     results: tuple[ComponentPropertyResult, ...] | list[ComponentPropertyResult],
     *,
     details: bool = True,
+    component=None,
 ) -> ReportSection:
     """Present component properties in caller-supplied semantic order.
 
     Use ``details=False`` for a compact table after selecting one component;
     the default retains component identities, graph references and methods.
+    ``component`` supplies dimensions and field semantics for domain labels;
+    without it the label describes the mathematical space without dimensions.
 
     EXAMPLES::
 
@@ -456,7 +459,11 @@ def component_property_section(
                 (
                     _text(result.provenance.semantic_identity),
                     _text(result.request.property.value),
-                    _text(result.request.domain.value),
+                    _text(
+                        _component_domain_description(
+                            result.request.domain, component, details=details
+                        )
+                    ),
                     value,
                     _text(evidence.classification.value),
                     _text(evidence.applicability.value),
@@ -469,7 +476,7 @@ def component_property_section(
         (
             TableColumn("component", "Semantic component"),
             TableColumn("property", "Property"),
-            TableColumn("unit_type", "UnitType"),
+            TableColumn("domain", "Domain"),
             TableColumn("value", "Value", Alignment.RIGHT),
             TableColumn("evidence", "Evidence"),
             TableColumn("applicability", "Applicability"),
@@ -483,7 +490,7 @@ def component_property_section(
         columns = (1, 2, 3, 4)
         table = Table(
             tuple(
-                TableColumn("unit_type", "Domain") if index == 2 else table.columns[index]
+                TableColumn("domain", "Domain") if index == 2 else table.columns[index]
                 for index in columns
             ),
             tuple(TableRow(tuple(row.cells[index] for index in columns)) for row in table.rows),
@@ -1137,7 +1144,9 @@ def _component_analysis_section(result: ComponentAnalysisResult, *, details=Fals
                     )
                 )
             if properties:
-                tables.extend(component_property_section(properties).tables)
+                tables.extend(
+                    component_property_section(properties, component=group.representative).tables
+                )
             continue
         if not properties:
             continue
@@ -1160,7 +1169,7 @@ def _component_analysis_section(result: ComponentAnalysisResult, *, details=Fals
                     )
                     for item in properties
                 ),
-                f"Group {index}: {type(group.representative).__name__} ({properties[0].request.domain.value})",
+                f"Group {index}: {type(group.representative).__name__} ({_component_domain_description(properties[0].request.domain, group.representative)})",
             )
         )
     return ReportSection("Component analysis", tables=tuple(tables))
@@ -1169,7 +1178,8 @@ def _component_analysis_section(result: ComponentAnalysisResult, *, details=Fals
 def _component_properties_section(
     result: ComponentPropertiesResult, *, details=False
 ) -> ReportSection:
-    section = component_property_section(result.results, details=details)
+    component = result.group.representative if result.group is not None else None
+    section = component_property_section(result.results, details=details, component=component)
     tables = tuple(Table(table.columns, table.rows) for table in section.tables)
     return ReportSection(f"{result.component_name} properties", tables=tables)
 
@@ -1195,3 +1205,55 @@ def _component_table_section(result: ComponentTableResult, *, include_zero=False
         f"{result.component_name} differential counts (exact; out of {1 << result.input_bit_size})",
         tables=(table,),
     )
+
+
+def _component_domain_description(domain, component=None, *, details=False):
+    from claasp.components import BinaryAffineMap, SBox
+    from claasp.unit_types import BinaryExtensionField, PrimeField
+
+    category = domain.value
+    inputs: int | None
+    outputs: int | None
+    if component is None:
+        if category in {"word_linear", "finite_field_linear"}:
+            return "Finite-field vectors; element weights"
+        if category == "feedback_register":
+            return "Register state vectors"
+        return "Binary vectors; bit weights"
+
+    input_types = tuple(selection.array_type for selection in component.inputs)
+    output_type = component.output_type
+    if isinstance(component, BinaryAffineMap):
+        inputs, outputs = len(component.matrix[0]), len(component.matrix)
+        scope = " (per unit)" if output_type.unit_count > 1 else ""
+        return f"{inputs}-bit vectors → {outputs}-bit vectors; bit weights{scope}"
+    if category == "feedback_register":
+        return "Register state vectors"
+    if category in {"word_linear", "finite_field_linear"}:
+        if not input_types:
+            return "Finite-field vectors; element weights"
+        scalar = input_types[0].unit_type
+        if isinstance(scalar, BinaryExtensionField):
+            field = f"GF(2^{scalar.degree})"
+            weights = "byte weights" if scalar.degree == 8 else "element weights"
+            suffix = f"; modulus=0x{scalar.modulus:x}" if details else ""
+        elif isinstance(scalar, PrimeField):
+            field, weights, suffix = f"GF({scalar.modulus})", "element weights", ""
+        else:
+            return "Finite-field vectors; element weights"
+        inputs = sum(array.unit_count for array in input_types)
+        return f"{field}^{inputs} → {field}^{output_type.unit_count}; {weights}{suffix}"
+
+    if category in {"lookup_table", "boolean"} and isinstance(component, SBox):
+        inputs = input_types[0].unit_type.encoded_bit_size
+        outputs = output_type.unit_type.encoded_bit_size
+    else:
+        widths = tuple(array.encoded_bit_size for array in input_types)
+        if any(width is None for width in widths):
+            return "State vectors with the declared unit types"
+        inputs = sum(width for width in widths if width is not None)
+        outputs = output_type.encoded_bit_size
+    if inputs is None or outputs is None:
+        return "Binary vectors; bit weights"
+    scope = " (per lookup)" if isinstance(component, SBox) and output_type.unit_count > 1 else ""
+    return f"{inputs}-bit vectors → {outputs}-bit vectors; bit weights{scope}"

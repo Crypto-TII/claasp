@@ -30,6 +30,8 @@ if TYPE_CHECKING:
 class ComponentPropertiesResult:
     """Selected properties with compact terminal reporting and retained evidence.
 
+    ``group`` retains source semantics for mathematical domain descriptions.
+
     EXAMPLES::
 
         >>> from claasp.primitives import Present
@@ -40,6 +42,7 @@ class ComponentPropertiesResult:
 
     component_name: str
     results: tuple[ComponentPropertyResult, ...]
+    group: ComponentGroup | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "results", tuple(self.results))
@@ -248,7 +251,7 @@ class ComponentAnalysis:
                     ),
                 )
             results.append(result)
-        return ComponentPropertiesResult(type(component).__name__, tuple(results))
+        return ComponentPropertiesResult(type(component).__name__, tuple(results), self.group)
 
     def ddt(self) -> ComponentTableResult:
         """Count all S-box XOR differential transitions exactly.
