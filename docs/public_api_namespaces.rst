@@ -31,6 +31,12 @@ claasp.analysis.linear_properties
 .. automodule:: claasp.analysis.linear_properties
    :no-index:
 
+claasp.analysis.neural_distinguisher
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.neural_distinguisher
+   :no-index:
+
 claasp.analysis.trail_search
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

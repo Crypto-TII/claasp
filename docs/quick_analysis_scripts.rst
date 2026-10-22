@@ -90,7 +90,7 @@ machine-learning framework:
    >>> dataset.sample_count, dataset.feature_width, dataset.labels
    (4, 64, (0, 1, 1, 0))
 
-See :doc:`neural_distinguishers` for dataset partitions and the optional
+See :doc:`advanced_neural_differential` for dataset partitions and the optional
 training driver.
 
 Inspect AES round values

@@ -65,6 +65,13 @@ class NeuralDifferenceSearchResult:
             raise RuntimeError("difference search produced no nonzero candidates")
         return self.candidates[-1]
 
+    def to_terminal(self, *, file=None) -> None:
+        """Print ranked input differences and empirical bias scores."""
+        from claasp.presentation._terminal import to_terminal
+        from claasp.presentation.adapters import _neural_difference_section
+
+        to_terminal(_neural_difference_section(self), file=file)
+
 
 @dataclass(frozen=True, slots=True)
 class NeuralRoundTrainingResult:
@@ -93,6 +100,26 @@ class NeuralStagedTrainingResult:
     input_differences: tuple[tuple[str, int], ...]
     rounds: tuple[NeuralRoundTrainingResult, ...]
     threshold: float
+
+    def to_terminal(self, *, file=None) -> None:
+        """Print trained rounds and the heuristic validation stopping threshold."""
+        from claasp.presentation._terminal import to_terminal
+        from claasp.presentation.adapters import _neural_staged_section
+
+        to_terminal(_neural_staged_section(self), file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot stored final and peak validation accuracies by trained round."""
+        from claasp.drivers.renderers.presentation import _plot_neural_histories
+
+        return _plot_neural_histories(
+            tuple((row.round_number, row.result.validation_accuracy) for row in self.rounds),
+            title="Staged neural training",
+            view="rounds",
+            threshold=self.threshold,
+            show=show,
+            save_to=save_to,
+        )
 
 
 @dataclass(frozen=True, slots=True)

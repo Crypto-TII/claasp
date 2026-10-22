@@ -36,6 +36,12 @@ class SklearnMLPDriver:
         if not hidden_layer_sizes or any(size <= 0 for size in hidden_layer_sizes):
             raise ValueError("hidden_layer_sizes must contain positive integers")
         self.hidden_layer_sizes = tuple(hidden_layer_sizes)
+        self._model = None
+
+    @property
+    def model(self):
+        """Return the fitted classifier for held-out scoring or explicit export."""
+        return self._model
 
     def train(self, dataset: NeuralDataset, experiment: NeuralExperiment) -> NeuralExperimentResult:
         """Train a small MLP and report per-epoch validation accuracy.
@@ -89,6 +95,7 @@ class SklearnMLPDriver:
             classifier.partial_fit(features_train, labels_train, classes=classes)
             accuracies.append(float(classifier.score(features_validation, labels_validation)))
 
+        self._model = classifier
         return NeuralExperimentResult(
             validation_accuracy=tuple(accuracies),
             driver="sklearn-mlp",

@@ -414,7 +414,10 @@ jobs:
           python-version: "3.11"
 
       - name: Install test dependencies with the optional ML extras
-        run: python -m pip install -e '.[dev,ml,ml-tensorflow]'
+        run: python -m pip install -e '.[dev,ml,ml-tensorflow,presentation]'
 
       - name: Execute neural distinguisher ML integration
-        run: python -m pytest -m external tests/integration/test_neural_driver_integration.py tests/integration/test_tensorflow_neural_driver.py -q
+        run: python -m pytest -m external tests/integration/test_neural_driver_integration.py tests/integration/test_tensorflow_neural_driver.py tests/examples/test_neural_examples.py -q
+
+      - name: Execute downloadable neural guide scripts
+        run: MPLBACKEND=Agg OPENBLAS_NUM_THREADS=1 python -m pytest tests/examples/test_neural_examples.py -q

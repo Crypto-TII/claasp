@@ -4,7 +4,9 @@ Introduction to advanced primitive analysis
 Each analysis introduced in :doc:`basic_primitive_analysis` has a corresponding
 advanced guide. Choose :doc:`advanced_avalanche_analysis`,
 :doc:`advanced_continuous_diffusion`, or :doc:`advanced_component_analysis`
-for parameter and reporting examples.
+for parameter and reporting examples. Neural experiments are covered in
+:doc:`advanced_neural_blackbox`, :doc:`advanced_neural_differential`,
+and :doc:`advanced_neural_autond`.
 
 The basic pages answer one question with a short script using defaults. Here,
 we explore analysis and test parameters, explain the measured quantities and

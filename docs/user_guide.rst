@@ -35,6 +35,9 @@ analysis guides for your own work.
    basic_avalanche_analysis
    basic_continuous_diffusion
    basic_component_analysis
+   basic_neural_blackbox
+   basic_neural_differential
+   basic_neural_autond
 
 .. toctree::
    :maxdepth: 2
@@ -56,6 +59,9 @@ analysis guides for your own work.
    advanced_avalanche_analysis
    advanced_continuous_diffusion
    advanced_component_analysis
+   advanced_neural_blackbox
+   advanced_neural_differential
+   advanced_neural_autond
 
 .. toctree::
    :maxdepth: 2
@@ -66,4 +72,3 @@ analysis guides for your own work.
    displaying_results
    serialization_and_source
    statistical_testing
-   neural_distinguishers

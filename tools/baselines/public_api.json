@@ -673,6 +673,12 @@
       "qualified_name": "claasp.analysis.NISTSummaryRow"
     },
     {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.NeuralAnalysisResult"
+    },
+    {
       "canonical_name": "claasp.analysis.neural.NeuralDataset",
       "defined_in": "claasp.analysis.neural",
       "kind": "dataclass",
@@ -2745,6 +2751,12 @@
       "qualified_name": "claasp.analysis.facade.Analysis.__init__"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.autond",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.autond"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.avalanche",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -2857,6 +2869,18 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.is_xor_differential_transition_possible"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.neural_blackbox",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.neural_blackbox"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.neural_differential",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.neural_differential"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.propagate_truncated_xor_difference",
@@ -3600,6 +3624,18 @@
       "qualified_name": "claasp.analysis.neural.NeuralExperimentResult.driver"
     },
     {
+      "canonical_name": "claasp.analysis.neural.NeuralExperimentResult.plot",
+      "defined_in": "claasp.analysis.neural",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural.NeuralExperimentResult.plot"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural.NeuralExperimentResult.to_terminal",
+      "defined_in": "claasp.analysis.neural",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural.NeuralExperimentResult.to_terminal"
+    },
+    {
       "canonical_name": "claasp.analysis.neural.NeuralExperimentResult.validation_accuracy",
       "defined_in": "claasp.analysis.neural",
       "documented_by": "claasp.analysis.neural.NeuralExperimentResult",
@@ -3618,6 +3654,121 @@
       "defined_in": "claasp.analysis.neural",
       "kind": "method",
       "qualified_name": "claasp.analysis.neural.NeuralTrainingDriver.train"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.neural_distinguisher"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.__init__",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.dataset_digests",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.dataset_digests"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.dataset_seed",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.dataset_seed"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.difference_search",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.difference_search"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.experiment",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.experiment"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.fixed_inputs",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.fixed_inputs"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.input_differences",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.input_differences"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.kind",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.kind"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.plot",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.plot"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.primitive_family",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.primitive_family"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.rounds",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.rounds"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.sample_count",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.sample_count"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.threshold",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.threshold"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.to_terminal",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.varied_input",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.varied_input"
     },
     {
       "canonical_name": "claasp.analysis.neural_experiments.DatasetPartition.__init__",
@@ -3868,6 +4019,12 @@
       "qualified_name": "claasp.analysis.neural_workflows.NeuralDifferenceSearchResult.seed"
     },
     {
+      "canonical_name": "claasp.analysis.neural_workflows.NeuralDifferenceSearchResult.to_terminal",
+      "defined_in": "claasp.analysis.neural_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural_workflows.NeuralDifferenceSearchResult.to_terminal"
+    },
+    {
       "canonical_name": "claasp.analysis.neural_workflows.NeuralRoundTrainingResult.__init__",
       "defined_in": "claasp.analysis.neural_workflows",
       "documented_by": "claasp.analysis.neural_workflows.NeuralRoundTrainingResult",
@@ -3903,6 +4060,12 @@
       "qualified_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.input_differences"
     },
     {
+      "canonical_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.plot",
+      "defined_in": "claasp.analysis.neural_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.plot"
+    },
+    {
       "canonical_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.rounds",
       "defined_in": "claasp.analysis.neural_workflows",
       "documented_by": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult",
@@ -3915,6 +4078,12 @@
       "documented_by": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.threshold"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.to_terminal",
+      "defined_in": "claasp.analysis.neural_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.to_terminal"
     },
     {
       "canonical_name": "claasp.analysis.problem.AnalysisProblem.__init__",
@@ -7826,6 +7995,12 @@
       "documented_by": "claasp.drivers.neural.sklearn_driver.SklearnMLPDriver",
       "kind": "constructor",
       "qualified_name": "claasp.drivers.neural.sklearn_driver.SklearnMLPDriver.__init__"
+    },
+    {
+      "canonical_name": "claasp.drivers.neural.sklearn_driver.SklearnMLPDriver.model",
+      "defined_in": "claasp.drivers.neural.sklearn_driver",
+      "kind": "property",
+      "qualified_name": "claasp.drivers.neural.sklearn_driver.SklearnMLPDriver.model"
     },
     {
       "canonical_name": "claasp.drivers.neural.sklearn_driver.SklearnMLPDriver.train",

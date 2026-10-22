@@ -7,7 +7,7 @@ framework-specific models belong in optional drivers, not in CLAASP's core.
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from random import Random
-from typing import Protocol
+from typing import Protocol, TextIO
 
 from claasp.encoding import bits_from_int
 from claasp.graph import Primitive
@@ -181,6 +181,25 @@ class NeuralExperimentResult:
         if any(not 0.0 <= accuracy <= 1.0 for accuracy in self.validation_accuracy):
             raise ValueError("validation accuracies must be between zero and one")
 
+    def to_terminal(self, *, file: TextIO | None = None) -> None:
+        """Print the retained per-epoch validation accuracy without retraining."""
+        from claasp.presentation._terminal import to_terminal
+        from claasp.presentation.adapters import _neural_training_section
+
+        to_terminal(_neural_training_section(self), file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot the retained validation history and balanced-label chance line."""
+        from claasp.drivers.renderers.presentation import _plot_neural_histories
+
+        return _plot_neural_histories(
+            ((1, self.validation_accuracy),),
+            title="Neural validation accuracy",
+            view="epochs",
+            show=show,
+            save_to=save_to,
+        )
+
 
 class NeuralTrainingDriver(Protocol):
     """Structural interface implemented by optional ML integrations."""
@@ -197,6 +216,7 @@ def black_box_dataset(
     *,
     samples: int,
     seed: int = 0,
+    fixed_inputs: Mapping[str, int] | None = None,
 ) -> NeuralDataset:
     """Generate the legacy ``L || real-or-random-output`` experiment.
 
@@ -217,9 +237,13 @@ def black_box_dataset(
     widths = _widths(primitive)
     if varied_input not in widths:
         raise ValueError(f"unknown primitive input {varied_input!r}")
+    explicit = _fixed_values(widths, fixed_inputs)
+    if varied_input in explicit:
+        raise ValueError("the varied input cannot also be fixed")
     output_width = _output_width(primitive)
     random = Random(seed)
     fixed = {name: random.getrandbits(width) for name, width in widths.items()}
+    fixed.update(explicit)
     rows: list[tuple[int, ...]] = []
     labels: list[int] = []
     for _ in range(samples):
@@ -245,6 +269,7 @@ def xor_differential_dataset(
     *,
     samples: int,
     seed: int = 0,
+    fixed_inputs: Mapping[str, int] | None = None,
 ) -> NeuralDataset:
     """Generate output pairs from an XOR difference or the random class.
 
@@ -271,6 +296,9 @@ def xor_differential_dataset(
             raise TypeError(f"difference for {name!r} must be an integer")
         if not 0 <= difference < (1 << widths[name]):
             raise ValueError(f"difference for {name!r} does not fit its input width")
+    fixed = _fixed_values(widths, fixed_inputs)
+    if any(input_differences[name] for name in fixed):
+        raise ValueError("fixed inputs must have zero input difference")
     output_width = _output_width(primitive)
     random = Random(seed)
     rows: list[tuple[int, ...]] = []
@@ -278,10 +306,12 @@ def xor_differential_dataset(
     for _ in range(samples):
         label = random.getrandbits(1)
         first = {name: random.getrandbits(width) for name, width in widths.items()}
+        first.update(fixed)
         if label:
             second = {name: value ^ input_differences[name] for name, value in first.items()}
         else:
             second = {name: random.getrandbits(width) for name, width in widths.items()}
+        second.update(fixed)
         first_output = primitive.evaluate(first)
         second_output = primitive.evaluate(second)
         if not isinstance(first_output, int) or not isinstance(second_output, int):
@@ -451,3 +481,17 @@ def xor_differential_component_dataset(
         + [f"{target_name}_1[{index}]" for index in range(target_width)]
     )
     return NeuralDataset(tuple(rows), tuple(labels), "xor_differential", seed, names)
+
+
+def _fixed_values(widths, requested):
+    values = dict(requested or {})
+    for name, value in values.items():
+        if name not in widths:
+            raise ValueError(f"unknown fixed input {name!r}")
+        if (
+            not isinstance(value, int)
+            or isinstance(value, bool)
+            or not 0 <= value < 1 << widths[name]
+        ):
+            raise ValueError(f"fixed value for {name!r} must fit its input width")
+    return values

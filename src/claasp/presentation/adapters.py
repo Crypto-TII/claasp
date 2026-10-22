@@ -20,7 +20,12 @@ from claasp.analysis.component_properties import (
 )
 from claasp.analysis.continuous_diffusion import ContinuousDiffusionResult
 from claasp.analysis.neural import NeuralExperimentResult
+from claasp.analysis.neural_distinguisher import NeuralAnalysisResult
 from claasp.analysis.neural_experiments import NeuralRun
+from claasp.analysis.neural_workflows import (
+    NeuralDifferenceSearchResult,
+    NeuralStagedTrainingResult,
+)
 from claasp.analysis.statistical_results import (
     DieharderReport,
     NISTFinalReport,
@@ -1039,6 +1044,14 @@ def adapt_result(result: object) -> AdaptationResult:
         required arguments rejected
     """
 
+    if isinstance(result, NeuralAnalysisResult):
+        return AdaptationResult(section=_neural_analysis_section(result))
+    if isinstance(result, NeuralExperimentResult):
+        return AdaptationResult(section=_neural_training_section(result))
+    if isinstance(result, NeuralDifferenceSearchResult):
+        return AdaptationResult(section=_neural_difference_section(result))
+    if isinstance(result, NeuralStagedTrainingResult):
+        return AdaptationResult(section=_neural_staged_section(result))
     if isinstance(result, ComponentPropertiesResult):
         return AdaptationResult(section=_component_properties_section(result))
     if isinstance(result, ComponentTableResult):
@@ -1257,3 +1270,142 @@ def _component_domain_description(domain, component=None, *, details=False):
         return "Binary vectors; bit weights"
     scope = " (per lookup)" if isinstance(component, SBox) and output_type.unit_count > 1 else ""
     return f"{inputs}-bit vectors → {outputs}-bit vectors; bit weights{scope}"
+
+
+def _neural_training_section(result: NeuralExperimentResult) -> ReportSection:
+    evidence = PresentationEvidence(EvidenceClass.EMPIRICAL)
+    table = Table(
+        (
+            TableColumn("epoch", "Epoch"),
+            TableColumn("accuracy", "Validation accuracy", Alignment.RIGHT),
+        ),
+        tuple(
+            TableRow((_integer(epoch), _number(value, ValueKind.PROBABILITY, evidence)))
+            for epoch, value in enumerate(result.validation_accuracy, 1)
+        ),
+    )
+    return ReportSection(
+        "Neural training — empirical validation",
+        paragraphs=(f"driver: {result.driver}",),
+        tables=(table,),
+    )
+
+
+def _neural_round_table(rounds, threshold=None):
+    evidence = PresentationEvidence(EvidenceClass.EMPIRICAL)
+    rows = []
+    for row in rounds:
+        history = row.result.validation_accuracy
+        if not history:
+            continue
+        cells: tuple[TableCell, ...] = (
+            _integer(row.round_number),
+            _number(history[-1], ValueKind.PROBABILITY, evidence),
+            _number(max(history), ValueKind.PROBABILITY, evidence),
+        )
+        if threshold is not None:
+            cells += (_text("continue" if max(history) >= threshold else "stop"),)
+        rows.append(TableRow(cells))
+    columns: tuple[TableColumn, ...] = (
+        TableColumn("round", "Round"),
+        TableColumn("final", "Final validation accuracy", Alignment.RIGHT),
+        TableColumn("peak", "Peak validation accuracy", Alignment.RIGHT),
+    )
+    if threshold is not None:
+        columns += (TableColumn("decision", "Heuristic rule"),)
+    return Table(columns, tuple(rows), "Validation by round")
+
+
+def _neural_analysis_section(result: NeuralAnalysisResult, *, details=False) -> ReportSection:
+    settings = [
+        ("primitive", result.primitive_family),
+        ("experiment", result.kind),
+        ("samples per round", str(result.sample_count)),
+        ("dataset seed", str(result.dataset_seed)),
+        ("architecture", result.experiment.architecture),
+        ("training driver", ", ".join(dict.fromkeys(row.result.driver for row in result.rounds))),
+        ("epochs", str(result.experiment.epochs)),
+        ("batch size", str(result.experiment.batch_size)),
+        ("validation fraction", str(result.experiment.validation_fraction)),
+        ("partition/training seed", str(result.experiment.seed)),
+        ("accuracy evidence", "empirical validation; not an independent test"),
+    ]
+    if result.varied_input:
+        settings.append(("input", result.varied_input))
+    if result.input_differences:
+        settings.append(
+            (
+                "XOR differences",
+                ", ".join(f"{name}={value:#x}" for name, value in result.input_differences),
+            )
+        )
+    if result.fixed_inputs:
+        settings.append(
+            ("fixed inputs", ", ".join(f"{name}={value:#x}" for name, value in result.fixed_inputs))
+        )
+    if result.threshold is not None:
+        settings.append(("heuristic stopping threshold", f"{result.threshold:.6g}"))
+    if result.difference_search is not None:
+        settings.append(
+            (
+                "search population / generations / samples",
+                f"{len(result.difference_search.candidates)} / {result.difference_search.generations} / {result.difference_search.samples}",
+            )
+        )
+    tables = [
+        Table(
+            (TableColumn("setting", "Setting"), TableColumn("value", "Value")),
+            tuple(TableRow.of(name, value) for name, value in settings),
+        ),
+        _neural_round_table(result.rounds, result.threshold),
+    ]
+    if details:
+        for row in result.rounds:
+            for table in _neural_training_section(row.result).tables:
+                tables.append(
+                    Table(table.columns, table.rows, f"Round {row.round_number} — epochs")
+                )
+        if result.dataset_digests:
+            tables.append(
+                Table(
+                    (TableColumn("digest", "Dataset SHA-256"),),
+                    tuple(TableRow.of(value) for value in result.dataset_digests),
+                )
+            )
+    return ReportSection("Neural distinguisher", tables=tuple(tables))
+
+
+def _neural_difference_section(result: NeuralDifferenceSearchResult) -> ReportSection:
+    table = Table(
+        (
+            TableColumn("rank", "Rank (best first)"),
+            TableColumn("difference", "XOR differences"),
+            TableColumn("score", "Empirical bias score", Alignment.RIGHT),
+            TableColumn("round", "Highest sampled round", Alignment.RIGHT),
+        ),
+        tuple(
+            TableRow.of(
+                str(index),
+                ", ".join(f"{name}={value:#x}" for name, value in row.input_differences),
+                f"{row.score:.6g}",
+                str(row.highest_round),
+            )
+            for index, row in enumerate(reversed(result.candidates), 1)
+        ),
+    )
+    return ReportSection(
+        "Input-difference search",
+        paragraphs=(
+            f"seed={result.seed}; samples={result.samples}; generations={result.generations}",
+            "Bias scores rank sampled candidates; they are not neural accuracies or optimality proofs.",
+        ),
+        tables=(table,),
+    )
+
+
+def _neural_staged_section(result: NeuralStagedTrainingResult) -> ReportSection:
+    return ReportSection(
+        "Staged neural training",
+        paragraphs=(f"Heuristic stopping threshold: {result.threshold:.6g}",),
+        tables=(_neural_round_table(result.rounds, result.threshold),),
+    )

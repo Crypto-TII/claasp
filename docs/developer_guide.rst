@@ -21,7 +21,6 @@ renderers.
    diagram_representations
    concepts
    extending_analysis
-   neural_distinguishers
    statistical_testing
    documentation_quality
    development

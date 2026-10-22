@@ -596,3 +596,55 @@ def _plot_component_ddt(result, *, include_zero, scale, show, save_to):
         tuple((f"input_{index}", row) for index, row in enumerate(values, start)),
         MatplotlibPresentationDriver.identity,
     )
+
+
+def _plot_neural_analysis(result, *, view, show, save_to):
+    view = view or ("rounds" if result.kind == "autond" else "epochs")
+    return _plot_neural_histories(
+        tuple((row.round_number, row.result.validation_accuracy) for row in result.rounds),
+        title=f"{result.primitive_family} — {result.kind}",
+        view=view,
+        threshold=result.threshold,
+        show=show,
+        save_to=save_to,
+    )
+
+
+def _plot_neural_histories(histories, *, title, view, show, save_to, threshold=None):
+    if view not in {"epochs", "rounds"}:
+        raise ValueError("neural plot view must be epochs or rounds")
+    if not histories or any(not values for _, values in histories):
+        raise ValueError("no validation history is available")
+    pyplot = _matplotlib()
+    figure, axis = pyplot.subplots(figsize=(8, 4), layout="constrained")
+    series = []
+    if view == "epochs":
+        for number, history in histories:
+            label = f"round {number}" if len(histories) > 1 else "validation accuracy"
+            axis.plot(range(1, len(history) + 1), history, marker="o", markersize=3, label=label)
+            series.append((label, history))
+        axis.set_xlabel("Epoch")
+    else:
+        numbers = tuple(number for number, _ in histories)
+        for label, values in (
+            ("final validation", tuple(history[-1] for _, history in histories)),
+            ("peak validation", tuple(max(history) for _, history in histories)),
+        ):
+            axis.plot(numbers, values, marker="o", label=label)
+            series.append((label, values))
+        if threshold is not None:
+            axis.axhline(
+                threshold, color="#a33", linestyle=":", label="heuristic stopping threshold"
+            )
+        axis.set_xlabel("Rounds")
+    axis.axhline(0.5, color="#555", linestyle="--", label="balanced-label chance (0.5)")
+    from matplotlib.ticker import MaxNLocator
+
+    axis.xaxis.set_major_locator(MaxNLocator(integer=True))
+    axis.set(ylabel="Validation accuracy", title=title, ylim=(0, max(1.0, (threshold or 0) + 0.02)))
+    axis.grid(alpha=0.2)
+    axis.legend()
+    _finish_figure(figure, show=show, save_to=save_to)
+    return FigureArtifact(
+        figure, "neural_validation", tuple(series), MatplotlibPresentationDriver.identity
+    )

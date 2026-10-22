@@ -50,3 +50,15 @@ are exercised in CI; outputs and figures appear next to their generating calls.
 Start with :doc:`basic_avalanche_analysis`, :doc:`basic_continuous_diffusion`,
 or :doc:`basic_component_analysis`,
 then follow its link to the corresponding advanced version.
+
+Neural experiments
+------------------
+
+:doc:`basic_neural_blackbox`, :doc:`basic_neural_differential`, and
+:doc:`basic_neural_autond` follow the same construct, analyze, report pattern.
+The Getting started installation includes scikit-learn and plotting support.
+The basic examples use a CPU multilayer perceptron. TensorFlow architectures
+are explored in the advanced guides and require the ``ml-tensorflow`` extra.
+Training retains empirical validation accuracy, rather than an exact
+cryptographic property. Seeds make dataset generation and partitioning
+repeatable; numerical training results can vary across library versions.

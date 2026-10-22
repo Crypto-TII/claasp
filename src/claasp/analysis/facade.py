@@ -379,6 +379,53 @@ class Analysis:
             driver_options=driver_options,
         )
 
+    def neural_blackbox(self, input_name=None, **options):
+        """Train a real-versus-random-output MLP with fixed other inputs.
+
+        Options include samples, epochs, seed, architecture and a custom driver.
+        The returned result reports empirical validation accuracy.
+
+        EXAMPLES::
+
+            >>> callable(Analysis.neural_blackbox)
+            True
+        """
+        from claasp.analysis.neural_distinguisher import _train_neural
+
+        return _train_neural(self.primitive, "black_box", input_name, **options)
+
+    def neural_differential(self, input_name=None, input_difference=0, **options):
+        """Train a related-input-pair distinguisher with explicit XOR differences.
+
+        Unspecified input differences are zero. ``fixed_inputs`` optionally
+        fixes inputs across the entire dataset, including both label classes.
+
+        EXAMPLES::
+
+            >>> callable(Analysis.neural_differential)
+            True
+        """
+        from claasp.analysis.neural_distinguisher import _train_neural
+
+        return _train_neural(
+            self.primitive, "xor_differential", input_name, input_difference, **options
+        )
+
+    def autond(self, **options):
+        """Search input differences and train a bounded AutoND-style workflow.
+
+        Defaults use one-bit candidate seeds, a small evolutionary search and
+        an MLP. TensorFlow architectures and search budgets are explicit options.
+
+        EXAMPLES::
+
+            >>> callable(Analysis.autond)
+            True
+        """
+        from claasp.analysis.neural_distinguisher import _autond
+
+        return _autond(self.primitive, **options)
+
     def find_good_neural_input_difference(self, **options):
         """Run the deterministic AutoND-style evolutionary difference search."""
 
