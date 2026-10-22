@@ -47,5 +47,6 @@ to ask their question. Configuration, alternative reports, thresholds and
 parameter comparisons belong in the matching advanced page. Runnable scripts
 are exercised in CI; outputs and figures appear next to their generating calls.
 
-Start with :doc:`basic_avalanche_analysis` or :doc:`basic_continuous_diffusion`,
+Start with :doc:`basic_avalanche_analysis`, :doc:`basic_continuous_diffusion`,
+or :doc:`basic_component_analysis`,
 then follow its link to the corresponding advanced version.

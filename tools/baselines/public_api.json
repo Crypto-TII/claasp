@@ -475,6 +475,12 @@
       "qualified_name": "claasp.analysis.ComponentAnalysisProvenance"
     },
     {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult",
+      "defined_in": "claasp.analysis.component_properties",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ComponentAnalysisResult"
+    },
+    {
       "canonical_name": "claasp.analysis.component_properties.ComponentGroup",
       "defined_in": "claasp.analysis.component_properties",
       "kind": "dataclass",
@@ -1386,6 +1392,46 @@
       "documented_by": "claasp.analysis.component_properties.ComponentAnalysisProvenance",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisProvenance.semantic_identity"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult",
+      "defined_in": "claasp.analysis.component_properties",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult.__init__",
+      "defined_in": "claasp.analysis.component_properties",
+      "documented_by": "claasp.analysis.component_properties.ComponentAnalysisResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult.groups",
+      "defined_in": "claasp.analysis.component_properties",
+      "documented_by": "claasp.analysis.component_properties.ComponentAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisResult.groups"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult.primitive_family",
+      "defined_in": "claasp.analysis.component_properties",
+      "documented_by": "claasp.analysis.component_properties.ComponentAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisResult.primitive_family"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult.properties",
+      "defined_in": "claasp.analysis.component_properties",
+      "documented_by": "claasp.analysis.component_properties.ComponentAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisResult.properties"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult.to_terminal",
+      "defined_in": "claasp.analysis.component_properties",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisResult.to_terminal"
     },
     {
       "canonical_name": "claasp.analysis.component_properties.ComponentGroup",
@@ -2521,6 +2567,12 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.avalanche"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.component_analysis",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.component_analysis"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.component_groups",

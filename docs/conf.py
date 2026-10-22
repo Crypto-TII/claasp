@@ -59,6 +59,8 @@ else:
             "basic_primitive_analysis.rst",
             "basic_avalanche_analysis.rst",
             "basic_continuous_diffusion.rst",
+            "basic_component_analysis.rst",
+            "advanced_component_analysis.rst",
             "advanced_continuous_diffusion.rst",
             "advanced_primitive_analysis.rst",
             "advanced_avalanche_analysis.rst",

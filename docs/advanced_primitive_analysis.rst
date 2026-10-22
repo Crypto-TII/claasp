@@ -2,8 +2,9 @@ Introduction to advanced primitive analysis
 ===========================================
 
 Each analysis introduced in :doc:`basic_primitive_analysis` has a corresponding
-advanced guide. Choose :doc:`advanced_avalanche_analysis` or
-:doc:`advanced_continuous_diffusion` for parameter and reporting examples.
+advanced guide. Choose :doc:`advanced_avalanche_analysis`,
+:doc:`advanced_continuous_diffusion`, or :doc:`advanced_component_analysis`
+for parameter and reporting examples.
 
 The basic pages answer one question with a short script using defaults. Here,
 we explore analysis and test parameters, explain the measured quantities and

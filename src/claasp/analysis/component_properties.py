@@ -10,7 +10,7 @@ from enum import Enum
 from functools import lru_cache
 from hashlib import sha256
 from types import MappingProxyType
-from typing import Protocol
+from typing import Protocol, TextIO
 
 from claasp.provenance import DriverIdentity
 
@@ -1058,8 +1058,135 @@ def unavailable_result(
     )
 
 
+@dataclass(frozen=True, slots=True)
+class ComponentAnalysisResult:
+    """Grouped component inventory and default property results.
+
+    Groups retain every graph operation, including those without a default
+    analyzer. Property tuples align with groups; an empty tuple means no
+    default requests were made, rather than a successful property check.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Present
+        >>> result = Present(number_of_rounds=2).analysis.component_analysis()
+        >>> next(group.count for group in result.groups
+        ...      if type(group.representative).__name__ == "BitVectorSBox")
+        34
+    """
+
+    primitive_family: str
+    groups: tuple[ComponentGroup, ...]
+    properties: tuple[tuple[ComponentPropertyResult, ...], ...]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "groups", tuple(self.groups))
+        object.__setattr__(self, "properties", tuple(tuple(items) for items in self.properties))
+        if len(self.groups) != len(self.properties):
+            raise ValueError("property rows must align with component groups")
+
+    def to_terminal(self, *, details: bool = False, file: TextIO | None = None) -> None:
+        """Print inventory and properties, with optional provenance details.
+
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> from claasp.primitives import Present
+            >>> output = StringIO()
+            >>> Present(number_of_rounds=1).analysis.component_analysis().to_terminal(file=output)
+            >>> "differential_uniformity" in output.getvalue()
+            True
+        """
+        from claasp.presentation._terminal import to_terminal
+        from claasp.presentation.adapters import _component_analysis_section
+
+        to_terminal(_component_analysis_section(self, details=details), file=file)
+
+
+def _default_component_requests(component):
+    from claasp.components import (
+        BinaryAffineMap,
+        BitVectorSBox,
+        FeedbackRegister,
+        LinearMap,
+        Permutation,
+        SBox,
+    )
+    from claasp.components.word import (
+        BitwiseAnd,
+        BitwiseNot,
+        BitwiseOr,
+        ModularAdd,
+        Rotate,
+        Shift,
+        Xor,
+    )
+    from claasp.unit_types import Bit, Word
+
+    if isinstance(component, ModularAdd):
+        unit_type = component.output_type.unit_type
+        if not isinstance(unit_type, Word) or unit_type.width > 8:
+            return ()
+    properties: tuple[ComponentProperty, ...]
+    if isinstance(component, (BitVectorSBox, SBox)):
+        if len(component.table) > 256:
+            return ()
+        domain = PropertyDomain.LOOKUP_TABLE
+        properties = (
+            ComponentProperty.DIFFERENTIAL_UNIFORMITY,
+            ComponentProperty.NONLINEARITY,
+            ComponentProperty.ALGEBRAIC_DEGREE,
+            ComponentProperty.BALANCED,
+        )
+    elif isinstance(component, (LinearMap, BinaryAffineMap, Permutation)):
+        domain = (
+            PropertyDomain.BIT_LINEAR
+            if isinstance(component, BinaryAffineMap)
+            or isinstance(component.inputs[0].array_type.unit_type, Bit)
+            else PropertyDomain.WORD_LINEAR
+        )
+        properties = (
+            ComponentProperty.RANK,
+            ComponentProperty.INVERTIBLE,
+            ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
+            ComponentProperty.LINEAR_BRANCH_NUMBER,
+        )
+    elif isinstance(component, (BitwiseAnd, BitwiseNot, BitwiseOr, ModularAdd, Rotate, Shift, Xor)):
+        domain = PropertyDomain.WORD_OPERATION
+        properties = (ComponentProperty.ALGEBRAIC_DEGREE, ComponentProperty.LINEAR)
+    elif isinstance(component, FeedbackRegister):
+        domain = PropertyDomain.FEEDBACK_REGISTER
+        properties = (ComponentProperty.ALGEBRAIC_DEGREE, ComponentProperty.LINEAR)
+    else:
+        return ()
+    return tuple(PropertyRequest(property_, domain) for property_ in properties)
+
+
+def _component_analysis(primitive):
+    groups = semantic_component_groups(primitive, PropertyDomain.BOOLEAN)
+    properties = tuple(
+        tuple(
+            analyze_component_property(
+                group.representative,
+                request,
+                graph_locations=tuple(
+                    item.graph_location
+                    for item in group.occurrences
+                    if item.graph_location is not None
+                ),
+                primitive=primitive.family_name,
+                realization=primitive.realization.name,
+            )
+            for request in _default_component_requests(group.representative)
+        )
+        for group in groups
+    )
+    return ComponentAnalysisResult(primitive.family_name, groups, properties)
+
+
 __all__ = [
     "ComponentAnalysisProvenance",
+    "ComponentAnalysisResult",
     "ComponentGroup",
     "ComponentOccurrence",
     "ComponentProperty",

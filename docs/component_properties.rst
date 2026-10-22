@@ -1,6 +1,9 @@
 Component properties
 ====================
 
+For short discovery and reporting examples, start with
+:doc:`basic_component_analysis` and :doc:`advanced_component_analysis`.
+
 Component-property analysis answers small specification questions without
 constructing a report or choosing a solver. Every request names both a
 property and its mathematical domain. Every immutable result says whether its
@@ -102,4 +105,6 @@ executable produces a typed ``driver_unavailable`` result; it is never a core
 import requirement.
 
 Presentation, tables, plots, and radar charts consume these results in a
-separate layer and are intentionally absent from this API.
+separate layer. The grouped ``component_analysis()`` convenience delegates
+terminal formatting to that layer; individual property requests retain their
+immutable evidence-qualified results.

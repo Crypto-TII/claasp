@@ -12,7 +12,11 @@ from fractions import Fraction
 from math import isinf
 
 from claasp.analysis.avalanche import AvalancheCriteriaResult, AvalancheResult
-from claasp.analysis.component_properties import ComponentPropertyResult, PropertyClaim
+from claasp.analysis.component_properties import (
+    ComponentAnalysisResult,
+    ComponentPropertyResult,
+    PropertyClaim,
+)
 from claasp.analysis.continuous_diffusion import ContinuousDiffusionResult
 from claasp.analysis.neural import NeuralExperimentResult
 from claasp.analysis.neural_experiments import NeuralRun
@@ -423,8 +427,13 @@ def trace_section(trace: ExecutionTrace) -> ReportSection:
 
 def component_property_section(
     results: tuple[ComponentPropertyResult, ...] | list[ComponentPropertyResult],
+    *,
+    details: bool = True,
 ) -> ReportSection:
     """Present component properties in caller-supplied semantic order.
+
+    Use ``details=False`` for a compact table after selecting one component;
+    the default retains component identities, graph references and methods.
 
     EXAMPLES::
 
@@ -469,6 +478,16 @@ def component_property_section(
         tuple(rows),
         "Component properties",
     )
+    if not details:
+        columns = (1, 2, 3, 4)
+        table = Table(
+            tuple(
+                TableColumn("unit_type", "Domain") if index == 2 else table.columns[index]
+                for index in columns
+            ),
+            tuple(TableRow(tuple(row.cells[index] for index in columns)) for row in table.rows),
+            table.title,
+        )
     return ReportSection("Component properties", tables=(table,))
 
 
@@ -1012,6 +1031,8 @@ def adapt_result(result: object) -> AdaptationResult:
         required arguments rejected
     """
 
+    if isinstance(result, ComponentAnalysisResult):
+        return AdaptationResult(section=_component_analysis_section(result))
     dispatch = (
         ((Trail, TrailSearchResult), trail_section),
         ((ExecutionTrace,), trace_section),
@@ -1030,3 +1051,58 @@ def adapt_result(result: object) -> AdaptationResult:
             (("type", f"{type(result).__module__}.{type(result).__qualname__}"),),
         )
     )
+
+
+def _component_analysis_section(result: ComponentAnalysisResult, *, details=False) -> ReportSection:
+    inventory = Table(
+        (
+            TableColumn("group", "Group"),
+            TableColumn("component", "Component"),
+            TableColumn("count", "Occurrences", Alignment.RIGHT),
+            TableColumn("analysis", "Analysis"),
+        ),
+        tuple(
+            TableRow.of(
+                str(index),
+                type(group.representative).__name__,
+                str(group.count),
+                "properties below" if properties else "no default requests",
+            )
+            for index, (group, properties) in enumerate(
+                zip(result.groups, result.properties, strict=True), 1
+            )
+        ),
+        f"{result.primitive_family} — component inventory",
+    )
+    tables = [inventory]
+    for index, (group, properties) in enumerate(
+        zip(result.groups, result.properties, strict=True), 1
+    ):
+        if not properties:
+            continue
+        if details:
+            tables.extend(component_property_section(properties).tables)
+            continue
+        tables.append(
+            Table(
+                (
+                    TableColumn("property", "Property"),
+                    TableColumn("value", "Value", Alignment.RIGHT),
+                    TableColumn("evidence", "Evidence"),
+                ),
+                tuple(
+                    TableRow(
+                        (
+                            _text(item.request.property.value),
+                            TableCell(evidence=_property_evidence(item))
+                            if item.value is None
+                            else _text(item.value, _property_evidence(item)),
+                            _text(_property_evidence(item).classification.value),
+                        )
+                    )
+                    for item in properties
+                ),
+                f"Group {index}: {type(group.representative).__name__} ({properties[0].request.domain.value})",
+            )
+        )
+    return ReportSection("Component analysis", tables=tuple(tables))

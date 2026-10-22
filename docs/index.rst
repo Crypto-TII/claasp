@@ -34,6 +34,7 @@ systems and solvers are optional backends.
    basic_primitive_analysis
    basic_avalanche_analysis
    basic_continuous_diffusion
+   basic_component_analysis
 
 .. toctree::
    :maxdepth: 2
@@ -54,6 +55,7 @@ systems and solvers are optional backends.
    advanced_primitive_analysis
    advanced_avalanche_analysis
    advanced_continuous_diffusion
+   advanced_component_analysis
 
 .. toctree::
    :maxdepth: 2

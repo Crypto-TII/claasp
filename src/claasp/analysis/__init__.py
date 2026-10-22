@@ -20,6 +20,7 @@ from claasp.analysis.boomerang import (
 )
 from claasp.analysis.component_properties import (
     ComponentAnalysisProvenance,
+    ComponentAnalysisResult,
     ComponentGroup,
     ComponentOccurrence,
     ComponentProperty,
@@ -179,6 +180,7 @@ __all__ = [
     "BoomerangExperimentResult",
     "CPCharacteristicResult",
     "ComponentAnalysisProvenance",
+    "ComponentAnalysisResult",
     "ComponentGroup",
     "ComponentOccurrence",
     "ComponentProperty",

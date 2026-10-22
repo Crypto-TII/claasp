@@ -496,6 +496,26 @@ class Analysis:
 
         return find_sbox_boomerang_transition(self.primitive, component, **options)
 
+    def component_analysis(self):
+        """Discover semantic component groups and analyze their default properties.
+
+        Equivalent occurrences are analyzed once. Unsupported operations remain
+        in the inventory without fabricated property values. Core analyzers
+        retain their exact-enumeration budgets and evidence qualifications.
+        Default lookup requests are limited to tables of at most 256 entries;
+        modular-addition ANFs are requested only for widths up to eight bits.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Present
+            >>> result = Present(number_of_rounds=2).analysis.component_analysis()
+            >>> result.primitive_family
+            'present'
+        """
+        from claasp.analysis.component_properties import _component_analysis
+
+        return _component_analysis(self.primitive)
+
     def component_groups(self, domain):
         """Return immutable semantic groups, never structural bindings.
 
