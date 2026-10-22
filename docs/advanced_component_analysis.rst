@@ -36,7 +36,10 @@ permutation explicitly:
 still match, use a zero-based ``index`` within the matching groups. CLAASP
 raises an informative error for missing or ambiguous matches instead of
 silently choosing the first. Use ``primitive.analysis.component_analysis().to_terminal()``
-to inspect the inventory and parameter previews.
+to inspect the inventory and parameter previews. Its ``Component`` and
+``Selector index`` columns map directly to ``component(kind, index=...)``
+without a width filter. The separate ``Group`` column numbers the full inventory;
+adding a ``bit_size`` filter narrows the matches before indexing.
 
 Inspect one S-box
 -----------------
@@ -124,6 +127,125 @@ the other analysis results:
 .. code-block:: python
 
    ddt.plot(show=False, save_to="present_ddt.png")
+
+Multiple distinct S-boxes: SERPENT
+----------------------------------
+
+Repeated occurrences of one table do not make a selector ambiguous. Different
+tables do. Standard SERPENT uses eight distinct four-bit S-boxes, so an
+unqualified selector refuses to choose one:
+
+.. doctest::
+
+   >>> from claasp.primitives import Serpent
+   >>> serpent = Serpent()
+   >>> serpent.analysis.component("sbox")
+   Traceback (most recent call last):
+       ...
+   ValueError: 8 component groups match 'sbox'; specify bit_size or index
+
+The summary from ``serpent.analysis.component_analysis().to_terminal()`` prints
+each S-box's ``Selector index`` next to its table preview.
+All eight groups have the same width, so ``bit_size=4`` alone cannot resolve
+the ambiguity. Select a zero-based index among the matching S-box groups:
+
+.. plot::
+   :context: close-figs
+   :nofigs:
+   :include-source:
+
+   from claasp.primitives import Serpent
+
+   serpent = Serpent()
+   first_sbox = serpent.analysis.component("sbox", index=0)
+   second_sbox = serpent.analysis.component("sbox", index=1)
+   first_properties = first_sbox.properties()
+   second_properties = second_sbox.properties()
+
+.. code-block:: python
+
+   first_properties.to_terminal()
+
+.. plot::
+   :context:
+   :nofigs:
+   :include-source: false
+
+   capture(first_properties, "component_serpent_first_terminal.txt")
+
+.. literalinclude:: _build/component_serpent_first_terminal.txt
+   :language: text
+
+The other table has its own result, even when these scalar properties coincide:
+
+.. code-block:: python
+
+   second_properties.to_terminal()
+
+.. plot::
+   :context:
+   :nofigs:
+   :include-source: false
+
+   capture(second_properties, "component_serpent_second_terminal.txt")
+
+.. literalinclude:: _build/component_serpent_second_terminal.txt
+   :language: text
+
+Indices follow the first occurrence of each distinct operation in the graph;
+they are neither the group numbers in the full inventory nor SERPENT's S-box
+numbers. The default ``Serpent()`` graph builds its key schedule first, giving
+this order:
+
+.. list-table:: S-box groups in the default SERPENT graph
+   :header-rows: 1
+   :widths: 15 20 30
+
+   * - Selector index
+     - SERPENT table
+     - Occurrences
+   * - 0
+     - S3
+     - 288
+   * - 1
+     - S2
+     - 256
+   * - 2
+     - S1
+     - 256
+   * - 3
+     - S0
+     - 256
+   * - 4
+     - S7
+     - 256
+   * - 5
+     - S6
+     - 256
+   * - 6
+     - S5
+     - 256
+   * - 7
+     - S4
+     - 256
+
+For example, ``serpent.analysis.component("sbox", index=3)`` selects S0 in
+this graph. Counts include both encryption and key-schedule uses. Inspect the
+inventory previews, or its full tables with ``details=True``, when changing
+the primitive parameters or realization rather than assuming an index always
+names the same table.
+
+Plot the selected table with the same API as PRESENT:
+
+.. plot::
+   :context: close-figs
+   :include-source:
+
+   serpent_ddt = first_sbox.ddt()
+   serpent_ddt.plot()
+
+Both S-boxes have differential uniformity four, but identical maxima do not
+imply identical transition tables. Each heatmap belongs to its selected group.
 
 Analyze a component inside a composite
 --------------------------------------

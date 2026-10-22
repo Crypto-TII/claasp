@@ -160,3 +160,16 @@ def test_single_column_composite_has_known_aes_output_and_exact_branch_number():
     )
     assert [result.value for result in properties] == [True, 5]
     assert all(result.claim is PropertyClaim.EXACT for result in properties)
+
+
+def test_inventory_selector_indices_round_trip_for_every_component_kind():
+    from claasp.presentation.adapters import _component_analysis_section
+
+    primitive = Present(number_of_rounds=2)
+    result = primitive.analysis.component_analysis()
+    table = _component_analysis_section(result).tables[0]
+    assert table.columns[2].heading == "Selector index"
+    for row, group in zip(table.rows, result.groups, strict=True):
+        kind, index = row.cells[1].text, int(row.cells[2].text)
+        selected = primitive.analysis.component(kind, index=index)
+        assert selected.group.representative is group.representative

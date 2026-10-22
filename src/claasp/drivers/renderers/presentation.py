@@ -570,7 +570,7 @@ def _plot_component_ddt(result, *, include_zero, scale, show, save_to):
     axis.set(
         xlabel="Output XOR difference (decimal)",
         ylabel="Input XOR difference (decimal)",
-        title=f"{result.component_name}: exact differential {'counts' if scale == 'counts' else 'probabilities'}",
+        title=f"{result.provenance.primitive or result.component_name} — S-box: exact differential {'counts' if scale == 'counts' else 'probabilities'}",
     )
     from matplotlib.ticker import MaxNLocator
 

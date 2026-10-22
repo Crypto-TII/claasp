@@ -1080,26 +1080,36 @@ def _component_parameters(component):
 
 
 def _component_analysis_section(result: ComponentAnalysisResult, *, details=False) -> ReportSection:
-    inventory = Table(
-        (
-            TableColumn("group", "Group"),
-            TableColumn("component", "Component"),
-            TableColumn("parameters", "Parameters"),
-            TableColumn("count", "Occurrences", Alignment.RIGHT),
-            TableColumn("analysis", "Analysis"),
-        ),
-        tuple(
+    from claasp.analysis.component_inspection import _component_kind
+
+    selector_counts: dict[str, int] = {}
+    rows = []
+    for group_number, (group, properties) in enumerate(
+        zip(result.groups, result.properties, strict=True), 1
+    ):
+        kind = _component_kind(group.representative)
+        selector_index = selector_counts.get(kind, 0)
+        selector_counts[kind] = selector_index + 1
+        rows.append(
             TableRow.of(
-                str(index),
-                type(group.representative).__name__,
+                str(group_number),
+                kind,
+                str(selector_index),
                 _component_parameters(group.representative),
                 str(group.count),
                 "properties below" if properties else "no default requests",
             )
-            for index, (group, properties) in enumerate(
-                zip(result.groups, result.properties, strict=True), 1
-            )
+        )
+    inventory = Table(
+        (
+            TableColumn("group", "Group"),
+            TableColumn("component", "Component"),
+            TableColumn("selector_index", "Selector index", Alignment.RIGHT),
+            TableColumn("parameters", "Parameters"),
+            TableColumn("count", "Occurrences", Alignment.RIGHT),
+            TableColumn("analysis", "Analysis"),
         ),
+        tuple(rows),
         f"{result.primitive_family} — component inventory",
     )
     tables = [inventory]

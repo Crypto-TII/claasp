@@ -36,7 +36,10 @@ Print the inventory and default properties:
 .. literalinclude:: _build/component_basic_terminal.txt
    :language: text
 
-Rows describe distinct semantic groups, not just operation names. Parameters
+Rows describe distinct semantic groups, not just operation names. ``Component``
+and the zero-based ``Selector index`` identify the arguments to
+``primitive.analysis.component("permutation", index=1)``, for example.
+The separate ``Group`` number labels rows in the full inventory. Parameters
 show their widths and a short lookup-table or permutation preview. The two
 permutations act on the 64-bit state and the 80-bit key; the constants are
 five-bit encodings of round values one and two. ``Occurrences`` counts uses of
@@ -55,5 +58,6 @@ remain visible in the inventory. Their absence from the property tables does
 not mean they passed a test.
 
 Download :download:`the script <examples/basic_component_analysis.py>`.
-Continue to :doc:`advanced_component_analysis` for S-box differential tables,
+Continue to :doc:`advanced_component_analysis` for selecting SERPENT's distinct
+S-boxes, differential tables,
 composite blocks, linear diffusion, and bounded searches.

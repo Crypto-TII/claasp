@@ -74,3 +74,39 @@ def test_advanced_script_exact_ddt_bounded_search_and_composite_leaf(tmp_path):
         assert (tmp_path / "ddt.png").read_bytes().startswith(b"\x89PNG")
     finally:
         pyplot.close("all")
+
+
+def test_serpent_example_disambiguates_eight_distinct_tables_and_plots(tmp_path):
+    pytest.importorskip("matplotlib").use("Agg")
+    pyplot = pytest.importorskip("matplotlib.pyplot")
+    example = _script("component_analysis")
+    serpent, first, second, first_properties, second_properties, ddt = example.run_serpent_example()
+    with pytest.raises(ValueError, match="8 component groups"):
+        serpent.analysis.component("sbox")
+    with pytest.raises(ValueError, match="8 component groups"):
+        serpent.analysis.component("sbox", bit_size=4)
+    from claasp.primitives.block_ciphers.serpent import SBOXES
+
+    expected_order = (3, 2, 1, 0, 7, 6, 5, 4)
+    for index, table_number in enumerate(expected_order):
+        selected = serpent.analysis.component("sbox", index=index)
+        assert selected.group.representative.table == tuple(SBOXES[table_number])
+        assert selected.count == (288 if index == 0 else 256)
+    from claasp.presentation.adapters import _component_analysis_section
+
+    inventory = _component_analysis_section(serpent.analysis.component_analysis()).tables[0]
+    sbox_rows = [row for row in inventory.rows if row.cells[1].text == "sbox"]
+    assert [row.cells[2].text for row in sbox_rows] == [str(index) for index in range(8)]
+    assert first.group.key != second.group.key
+    assert [result.value for result in first_properties] == [4, 4, 3, True]
+    assert [result.value for result in second_properties] == [4, 4, 3, True]
+    assert first.ddt().counts != second.ddt().counts
+    assert all(sum(row) == 16 for row in ddt.counts)
+    try:
+        artifact = ddt.plot(show=False, save_to=tmp_path / "serpent_ddt.png")
+        axis = pyplot.figure(artifact.figure).axes[0]
+        assert axis.images[0].get_clim() == (0, 4)
+        assert "serpent" in axis.get_title()
+        assert (tmp_path / "serpent_ddt.png").read_bytes().startswith(b"\x89PNG")
+    finally:
+        pyplot.close("all")

@@ -1,5 +1,6 @@
 """Convenient selection and reporting over exact component-property contracts."""
 
+import re
 from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -329,6 +330,15 @@ def _component_domain(component):
     raise ValueError("cannot infer a property domain; specify domain explicitly")
 
 
+def _component_kind(component):
+    from claasp.components import BitVectorSBox, SBox
+
+    if isinstance(component, (BitVectorSBox, SBox)):
+        return "sbox"
+    name = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", type(component).__name__)
+    return re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name).lower()
+
+
 def _select_component(primitive, kind, *, index=None, bit_size=None):
     if not isinstance(kind, str) or not kind:
         raise ValueError("component kind must be a nonempty name, such as 'sbox'")
@@ -340,11 +350,13 @@ def _select_component(primitive, kind, *, index=None, bit_size=None):
         ):
             raise ValueError(f"{name} must be {'nonnegative' if name == 'index' else 'positive'}")
     normalized = kind.replace("_", "").lower()
-    names = {"sbox", "bitvectorsbox"} if normalized == "sbox" else {normalized}
     groups = tuple(
         group
         for group in semantic_component_groups(primitive, PropertyDomain.BOOLEAN)
-        if type(group.representative).__name__.lower() in names
+        if (
+            _component_kind(group.representative).replace("_", "") == normalized
+            or type(group.representative).__name__.lower() == normalized
+        )
         and (bit_size is None or group.representative.output_type.encoded_bit_size == bit_size)
     )
     if not groups:
