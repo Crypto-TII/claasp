@@ -71,6 +71,60 @@ For the continuous model, signed distance, and CAF, see Coutinho, de Sousa
 Júnior and Borges, `Continuous Diffusion Analysis (2020), Definitions 13–14
 <https://doi.org/10.1109/ACCESS.2020.3005504>`_.
 
+Per-output contribution vectors
+--------------------------------
+
+Each round also retains a CAF contribution vector, indexed by output bit in
+MSB-first order:
+
+.. math::
+
+   c_{r,j}=\frac{1}{N}\sum_{k=1}^{N}
+   |\operatorname{sgn}(u^{(k)}_{r,j})-\operatorname{sgn}(v^{(k)}_{r,j})|.
+
+``result.vectors[round_index][output_bit]`` exposes these values. Averaging a
+round's vector gives its CAF. In the default sampler, the input coordinate is
+selected at random, so the vector averages over those choices. A full matrix
+conditioned on each individual input coordinate would require an experiment
+for each coordinate.
+
+This is the per-output analogue of the averaged avalanche probability profiles.
+Its units are signed-distance contributions in [0, 2]. Where neither output is
+zero, half the contribution is the empirical sign-reversal probability. It is
+not the probability of flipping a Boolean cipher output.
+
+Use the same plot selections as the avalanche example. All views reuse the
+retained experiment:
+
+.. plot::
+   :context: close-figs
+   :include-source:
+
+   result.plot(view="heatmap")
+
+.. plot::
+   :context: close-figs
+   :include-source:
+
+   result.plot(view="3d", style="dots")
+
+.. plot::
+   :context: close-figs
+   :include-source:
+
+   result.plot(view="3d", style="planes")
+
+Heatmap and 3D colors use the same red-orange-yellow-dark-green shades as the
+avalanche plots, with the random-sign reference at **one**. The scale runs from
+zero to two. Dots include faint round baselines; opaque profiles use the same
+value colors and camera-aware round ordering.
+
+For per-output vectors in the terminal, request details:
+
+.. code-block:: python
+
+   result.to_terminal(details=True)
+
 Sampling and perturbations
 ---------------------------
 
@@ -98,8 +152,11 @@ report or saving a figure reuses its retained result.
 Uniform continuous pairs
 -------------------------
 
-Definition 14 also motivates uniform continuous input pairs conditioned on
-Euclidean distance at most lambda. Select that experiment explicitly:
+Definition 14 (Continuous Avalanche Factor) in Coutinho, de Sousa Júnior and
+Borges's `Continuous Diffusion Analysis (2020)
+<https://doi.org/10.1109/ACCESS.2020.3005504>`_ uses continuous input pairs
+conditioned on Euclidean distance at most lambda. Select uniform close-pair
+sampling explicitly:
 
 .. plot::
    :context: close-figs

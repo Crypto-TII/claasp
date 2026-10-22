@@ -52,4 +52,5 @@ A value near one is the random-sign reference, rather than a security criterion.
 
 Download :download:`the script <examples/basic_continuous_diffusion.py>`.
 Continue to :doc:`advanced_continuous_diffusion` for the sampling convention,
-ToyAES, perturbation choices, precision, and alternative experiments.
+ToyAES, perturbation choices, precision, and heatmap/3D views of per-output
+CAF contributions.

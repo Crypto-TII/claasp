@@ -17,8 +17,23 @@ def run_example(*, samples=64):
     return result, smaller, key, uniform
 
 
+def plot_views(result):
+    """Return the summary, heatmap, and both 3D styles without displaying them."""
+    return (
+        result.plot(show=False),
+        result.plot(view="heatmap", show=False),
+        result.plot(view="3d", style="dots", show=False),
+        result.plot(view="3d", style="planes", show=False),
+    )
+
+
 if __name__ == "__main__":
     results = run_example()
-    for result in results:
+    plot_views(results[0])
+    for index, result in enumerate(results):
         result.to_terminal()
-        result.plot()
+        if index:
+            result.plot(show=False)
+    from matplotlib import pyplot
+
+    pyplot.show()

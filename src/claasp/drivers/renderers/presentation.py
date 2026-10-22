@@ -267,30 +267,157 @@ def _plot_avalanche(
     return artifact
 
 
-def _plot_continuous_diffusion(result, *, show, save_to):
+def _plot_continuous_diffusion(result, *, view, style, show, save_to):
+    if view not in {"summary", "heatmap", "3d"}:
+        raise ValueError("view must be summary, heatmap, or 3d")
+    if style not in {"planes", "dots"}:
+        raise ValueError("style must be planes or dots")
+    if view != "summary" and not result.vectors:
+        raise ValueError("per-output CAF vectors are not available for this result")
     pyplot = _matplotlib()
-    figure, axis = pyplot.subplots(figsize=(9, 4), layout="constrained")
-    axis.plot(result.round_numbers, result.factors, marker="o", markersize=4, label="CAF")
-    axis.axhline(1, color="#555555", linestyle="--", label="random-sign reference (1)")
-    from matplotlib.ticker import MaxNLocator
+    figure = pyplot.figure(figsize=(10, 5) if view == "3d" else (9, 4), layout="constrained")
+    title = f"{result.primitive_family} — {result.input_name}; λ={result.lambda_value:g}; n={len(result.samples[0])}"
+    if view == "summary":
+        axis = figure.add_subplot()
+        axis.plot(result.round_numbers, result.factors, marker="o", markersize=4, label="CAF")
+        axis.axhline(1, color="#555555", linestyle="--", label="random-sign reference (1)")
+        from matplotlib.ticker import MaxNLocator
 
-    axis.xaxis.set_major_locator(MaxNLocator(integer=True))
-    axis.set(
-        xlabel="Rounds",
-        ylabel="Continuous avalanche factor",
-        ylim=(0, 2),
-        title=f"{result.primitive_family} — {result.input_name}; λ={result.lambda_value:g}; n={len(result.samples[0])}",
-    )
-    axis.grid(alpha=0.2)
-    axis.legend()
+        axis.xaxis.set_major_locator(MaxNLocator(integer=True))
+        axis.set(xlabel="Rounds", ylabel="Continuous avalanche factor", ylim=(0, 2), title=title)
+        axis.grid(alpha=0.2)
+        axis.legend()
+        series: tuple[tuple[str, tuple[float, ...]], ...] = (("CAF", result.factors),)
+    else:
+        colors = _avalanche_colors("probability")
+        if view == "heatmap":
+            if len({len(row) for row in result.vectors}) != 1:
+                raise ValueError("round heatmaps require equal output widths")
+            axis = figure.add_subplot()
+            image = axis.imshow(
+                result.vectors,
+                origin="lower",
+                aspect="auto",
+                cmap=colors,
+                vmin=0,
+                vmax=2,
+                extent=(-0.5, len(result.vectors[0]) - 0.5, 0.5, len(result.vectors) + 0.5),
+            )
+            axis.set_yticks(
+                range(1, len(result.round_numbers) + 1),
+                labels=[str(n) for n in result.round_numbers],
+            )
+            axis.set(xlabel="Output bit (MSB first)", ylabel="Rounds", title=title)
+            figure.colorbar(image, ax=axis, label="Mean signed-distance contribution")
+        else:
+            _round_profile_axis(
+                figure,
+                result.round_numbers,
+                result.vectors,
+                colors,
+                style=style,
+                title=title,
+                label="Mean CAF contribution",
+                maximum=2,
+            )
+        series = tuple(
+            (f"round_{number}", vector)
+            for number, vector in zip(result.round_numbers, result.vectors, strict=True)
+        )
     artifact = FigureArtifact(
         figure,
-        "continuous_diffusion",
-        (("CAF", result.factors),),
+        "continuous_diffusion" if view == "summary" else f"continuous_diffusion_{view}",
+        series,
         DriverIdentity("matplotlib", DriverKind.RENDERER),
     )
     _finish_figure(figure, show=show, save_to=save_to)
     return artifact
+
+
+def _round_profile_axis(figure, numbers, profiles, colors, *, style, title, label, maximum):
+    from math import cos, radians, sin
+
+    from matplotlib.cm import ScalarMappable
+    from matplotlib.colors import Normalize
+    from mpl_toolkits.mplot3d import Axes3D
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+    class _RoundAxes(Axes3D):
+        def draw(self, renderer):
+            # Parallel y-planes have an exact back-to-front order. The
+            # default collection depth heuristic can hide shorter, nearer
+            # rounds behind taller, farther ones. Reorder before every
+            # draw so this also stays correct during interactive rotation.
+            far_first = sorted(
+                getattr(self, "_round_artists", ()),
+                key=lambda entry: entry[0],
+                reverse=sin(radians(self.azim)) * cos(radians(self.elev)) < 0,
+            )
+            for index, (_, base, points) in enumerate(far_first):
+                base.set_zorder(2 * index + 2)
+                points.set_zorder(2 * index + 3)
+            super().draw(renderer)
+
+    axis = figure.add_subplot(axes_class=_RoundAxes, computed_zorder=False)
+    axis._round_artists = []
+    for number, profile in zip(numbers, profiles, strict=True):
+        if style == "planes":
+            faces, face_colors = [], []
+            for bit, value in enumerate(profile):
+                faces.append(
+                    [
+                        (bit - 0.5, number, 0),
+                        (bit - 0.5, number, value),
+                        (bit + 0.5, number, value),
+                        (bit + 0.5, number, 0),
+                    ]
+                )
+                face_colors.append(colors(value / maximum))
+            base = Poly3DCollection(
+                faces, facecolors=face_colors, edgecolors="none", alpha=1, antialiaseds=False
+            )
+            axis.add_collection3d(base)
+        else:
+            (base,) = axis.plot(
+                [-0.5, len(profile) - 0.5],
+                [number, number],
+                [0, 0],
+                color="#bcc3c9",
+                linewidth=0.65,
+            )
+        points = axis.scatter(
+            range(len(profile)),
+            [number] * len(profile),
+            profile,
+            c=profile,
+            cmap=colors,
+            vmin=0,
+            vmax=maximum,
+            s=3,
+            depthshade=False,
+        )
+        axis._round_artists.append((number, base, points))
+    axis.set(
+        xlabel="Output bit (MSB first)",
+        ylabel="Rounds",
+        zlabel=label,
+        zlim=(0, maximum),
+        xlim=(-0.5, max(map(len, profiles)) - 0.5),
+        ylim=(min(numbers) - 0.5, max(numbers) + 0.5),
+        title=title,
+    )
+    ticks = numbers[:: max(1, (len(numbers) + 7) // 8)]
+    if ticks[-1] != numbers[-1]:
+        ticks += (numbers[-1],)
+    axis.set_yticks(ticks)
+    figure.colorbar(
+        ScalarMappable(norm=Normalize(0, maximum), cmap=colors),
+        ax=axis,
+        label=label,
+        shrink=0.7,
+        pad=0.12,
+    )
+    return axis
 
 
 def _avalanche_colors(metric):
@@ -392,87 +519,15 @@ def _avalanche_figure(result, *, view, metric, style):
             (f"round_{number}", profile) for number, profile in zip(numbers, profiles, strict=True)
         )
     else:
-        from math import cos, radians, sin
-
-        from matplotlib.cm import ScalarMappable
-        from matplotlib.colors import Normalize
-        from mpl_toolkits.mplot3d import Axes3D
-        from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-
-        class _RoundAxes(Axes3D):
-            def draw(self, renderer):
-                # Parallel y-planes have an exact back-to-front order. The
-                # default collection depth heuristic can hide shorter, nearer
-                # rounds behind taller, farther ones. Reorder before every
-                # draw so this also stays correct during interactive rotation.
-                far_first = sorted(
-                    getattr(self, "_round_artists", ()),
-                    key=lambda entry: entry[0],
-                    reverse=sin(radians(self.azim)) * cos(radians(self.elev)) < 0,
-                )
-                for index, (_, base, points) in enumerate(far_first):
-                    base.set_zorder(2 * index + 2)
-                    points.set_zorder(2 * index + 3)
-                super().draw(renderer)
-
-        axis = figure.add_subplot(axes_class=_RoundAxes, computed_zorder=False)
-        axis._round_artists = []
-        for number, profile in zip(numbers, profiles, strict=True):
-            if style == "planes":
-                faces, face_colors = [], []
-                for bit, value in enumerate(profile):
-                    faces.append(
-                        [
-                            (bit - 0.5, number, 0),
-                            (bit - 0.5, number, value),
-                            (bit + 0.5, number, value),
-                            (bit + 0.5, number, 0),
-                        ]
-                    )
-                    face_colors.append(colors(value))
-                base = Poly3DCollection(
-                    faces, facecolors=face_colors, edgecolors="none", alpha=1, antialiaseds=False
-                )
-                axis.add_collection3d(base)
-            else:
-                (base,) = axis.plot(
-                    [-0.5, len(profile) - 0.5],
-                    [number, number],
-                    [0, 0],
-                    color="#bcc3c9",
-                    linewidth=0.65,
-                )
-            points = axis.scatter(
-                range(len(profile)),
-                [number] * len(profile),
-                profile,
-                c=profile,
-                cmap=colors,
-                vmin=0,
-                vmax=1,
-                s=3,
-                depthshade=False,
-            )
-            axis._round_artists.append((number, base, points))
-        axis.set(
-            xlabel="Output bit (MSB first)",
-            ylabel="Rounds",
-            zlabel=f"Mean {selected}",
-            zlim=(0, 1),
-            xlim=(-0.5, max(map(len, profiles)) - 0.5),
-            ylim=(min(numbers) - 0.5, max(numbers) + 0.5),
+        axis = _round_profile_axis(
+            figure,
+            numbers,
+            profiles,
+            colors,
+            style=style,
             title=title,
-        )
-        ticks = numbers[:: max(1, (len(numbers) + 7) // 8)]
-        if ticks[-1] != numbers[-1]:
-            ticks += (numbers[-1],)
-        axis.set_yticks(ticks)
-        figure.colorbar(
-            ScalarMappable(norm=Normalize(0, 1), cmap=colors),
-            ax=axis,
             label=f"Mean avalanche {selected}",
-            shrink=0.7,
-            pad=0.12,
+            maximum=1,
         )
         series = tuple(
             (f"round_{number}", profile) for number, profile in zip(numbers, profiles, strict=True)

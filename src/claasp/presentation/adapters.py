@@ -472,7 +472,9 @@ def component_property_section(
     return ReportSection("Component properties", tables=(table,))
 
 
-def _continuous_diffusion_section(result: ContinuousDiffusionResult) -> ReportSection:
+def _continuous_diffusion_section(
+    result: ContinuousDiffusionResult, *, details: bool = False
+) -> ReportSection:
     metadata = Table(
         (TableColumn("setting", "Setting"), TableColumn("value", "Value")),
         tuple(
@@ -497,9 +499,25 @@ def _continuous_diffusion_section(result: ContinuousDiffusionResult) -> ReportSe
             for number, value in zip(result.round_numbers, result.factors, strict=True)
         ),
     )
-    return ReportSection(
-        "Continuous diffusion — continuous avalanche factor", tables=(metadata, table)
-    )
+    tables = [metadata, table]
+    if details:
+        if not result.vectors:
+            raise ValueError("per-output CAF vectors are not available for this result")
+        for number, vector in zip(result.round_numbers, result.vectors, strict=True):
+            tables.append(
+                Table(
+                    (
+                        TableColumn("bit", "Output bit (MSB first)"),
+                        TableColumn("contribution", "Mean signed distance"),
+                    ),
+                    tuple(
+                        TableRow((_integer(bit), _text(f"{value:.6g}", empirical)))
+                        for bit, value in enumerate(vector)
+                    ),
+                    f"CAF contributions — round {number}",
+                )
+            )
+    return ReportSection("Continuous diffusion — continuous avalanche factor", tables=tuple(tables))
 
 
 def _avalanche_criteria_section(result: AvalancheCriteriaResult) -> ReportSection:

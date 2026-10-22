@@ -35,7 +35,8 @@ def test_basic_script_uses_actual_aes_defaults_and_reports(tmp_path):
 
 
 def test_advanced_script_runs_all_experiments_and_plots():
-    results = _script("continuous_diffusion").run_example(samples=4)
+    example = _script("continuous_diffusion")
+    results = example.run_example(samples=4)
     try:
         assert [result.input_name for result in results] == [
             "plaintext",
@@ -51,5 +52,20 @@ def test_advanced_script_runs_all_experiments_and_plots():
             assert result.round_numbers == tuple(range(1, 9))
             assert all(0 <= value <= 2 for value in result.factors)
             assert pyplot.gcf().axes[0].get_ylabel() == "Continuous avalanche factor"
+        views = example.plot_views(results[0])
+        assert len(views) == 4
+        assert views[1].kind == "continuous_diffusion_heatmap"
+        image = pyplot.figure(views[1].figure).axes[0].images[0]
+        assert image.get_clim() == (0, 2)
+        assert image.get_array().tolist() == [list(row) for row in results[0].vectors]
+        assert image.get_cmap()(0.5) == pytest.approx(pyplot.get_cmap("RdYlGn")(1.0))
+        for artifact, expected_planes in zip(views[2:], (0, 8), strict=True):
+            axis = pyplot.figure(artifact.figure).axes[0]
+            assert axis.get_zlim() == (0, 2)
+            planes = [
+                item for item in axis.collections if type(item).__name__ == "Poly3DCollection"
+            ]
+            assert len(planes) == expected_planes
+            assert all(plane.get_alpha() == 1 for plane in planes)
     finally:
         pyplot.close("all")

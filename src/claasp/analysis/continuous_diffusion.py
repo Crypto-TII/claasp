@@ -5,7 +5,7 @@ from __future__ import annotations
 import pathlib
 from dataclasses import dataclass
 from importlib import import_module
-from math import isfinite, prod, sqrt
+from math import isclose, isfinite, prod, sqrt
 from random import Random
 from typing import TYPE_CHECKING, TextIO
 
@@ -18,7 +18,10 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True, slots=True)
 class ContinuousDiffusionResult:
-    """Per-round CAF samples and reproducibility settings; no security claim.
+    """Per-round CAF samples, output-coordinate vectors, and reproducibility settings.
+
+    ``vectors`` contains mean signed-distance contributions in [0, 2], with
+    each vector averaging to its round CAF. These are heuristic model results.
 
     EXAMPLES::
 
@@ -36,6 +39,7 @@ class ContinuousDiffusionResult:
     samples: tuple[tuple[float, ...], ...]
     method: str = "boolean_neighborhood"
     claim_kind: str = "heuristic"
+    vectors: tuple[tuple[float, ...], ...] = ()
 
     def __post_init__(self) -> None:
         if not self.samples or any(not row for row in self.samples):
@@ -52,6 +56,19 @@ class ContinuousDiffusionResult:
         if self.claim_kind != "heuristic":
             raise ValueError("continuous diffusion results must remain heuristic")
 
+        if self.vectors:
+            if len(self.vectors) != len(self.round_numbers) or any(not row for row in self.vectors):
+                raise ValueError("CAF vectors must match the retained rounds and be nonempty")
+            if any(
+                not isfinite(value) or not 0 <= value <= 2 for row in self.vectors for value in row
+            ):
+                raise ValueError("CAF vector contributions must be finite and in [0, 2]")
+            if any(
+                not isclose(sum(vector) / len(vector), factor, abs_tol=1e-12)
+                for vector, factor in zip(self.vectors, self.factors, strict=True)
+            ):
+                raise ValueError("CAF vector means must match round CAF values")
+
     @property
     def factors(self) -> tuple[float, ...]:
         """Return the mean normalized signed distance for each round.
@@ -63,8 +80,10 @@ class ContinuousDiffusionResult:
         """
         return tuple(sum(row) / len(row) for row in self.samples)
 
-    def to_terminal(self, *, file: TextIO | None = None) -> None:
+    def to_terminal(self, *, details: bool = False, file: TextIO | None = None) -> None:
         """Print settings and the round-by-round CAF table.
+
+        ``details=True`` includes each round's per-output contribution vector.
 
         EXAMPLES::
 
@@ -78,12 +97,21 @@ class ContinuousDiffusionResult:
         from claasp.presentation._terminal import to_terminal
         from claasp.presentation.adapters import _continuous_diffusion_section
 
-        to_terminal(_continuous_diffusion_section(self), file=file)
+        to_terminal(_continuous_diffusion_section(self, details=details), file=file)
 
     def plot(
-        self, *, show: bool = True, save_to: str | pathlib.Path | None = None
+        self,
+        *,
+        view: str = "summary",
+        style: str = "planes",
+        show: bool = True,
+        save_to: str | pathlib.Path | None = None,
     ) -> FigureArtifact:
-        """Plot retained per-round CAF means, without repeating the experiment.
+        """Plot retained CAF means or per-output-coordinate contributions.
+
+        ``view`` is ``"summary"`` (default), ``"heatmap"`` or ``"3d"``.
+        The 3D ``style`` is ``"planes"`` or ``"dots"``. Vector values are
+        signed-distance contributions in [0, 2], rather than probabilities.
 
         EXAMPLES::
 
@@ -92,7 +120,7 @@ class ContinuousDiffusionResult:
         """
         from claasp.drivers.renderers.presentation import _plot_continuous_diffusion
 
-        return _plot_continuous_diffusion(self, show=show, save_to=save_to)
+        return _plot_continuous_diffusion(self, view=view, style=style, show=show, save_to=save_to)
 
 
 def _near_pair(random, context, width, distance):
@@ -191,6 +219,7 @@ def continuous_diffusion(
     else:
         outputs.append((final, (final_output,)))
     scores: list[list[float]] = [[] for _ in outputs]
+    totals: list[list[float]] = [[] for _ in outputs]
     from claasp.representations.execution._continuous_precision import _continuous_outputs
 
     for _ in range(number_of_samples):
@@ -207,13 +236,15 @@ def continuous_diffusion(
         first = _continuous_outputs(primitive, inputs, [selections for _, selections in outputs])
         inputs[input_name] = right
         second = _continuous_outputs(primitive, inputs, [selections for _, selections in outputs])
-        for row, x, y in zip(scores, first, second, strict=True):
-            row.append(
-                float(
-                    sum(abs(context.sign(a) - context.sign(b)) for a, b in zip(x, y, strict=True))
-                    / len(x)
-                )
-            )
+        for row, total, x, y in zip(scores, totals, first, second, strict=True):
+            contributions = [
+                float(abs(context.sign(a) - context.sign(b))) for a, b in zip(x, y, strict=True)
+            ]
+            if not total:
+                total.extend([0.0] * len(contributions))
+            for bit, contribution in enumerate(contributions):
+                total[bit] += contribution
+            row.append(sum(contributions) / len(contributions))
     return ContinuousDiffusionResult(
         primitive.family_name,
         input_name,
@@ -223,4 +254,5 @@ def continuous_diffusion(
         tuple(number for number, _ in outputs),
         tuple(tuple(row) for row in scores),
         method=sampling,
+        vectors=tuple(tuple(value / number_of_samples for value in row) for row in totals),
     )

@@ -112,3 +112,58 @@ def test_report_accepts_caf_above_one_and_does_not_repeat_measurement(monkeypatc
     result.to_terminal(file=output)
     assert output.getvalue() == printed
     assert "1.375" in printed and "heuristic" in printed
+
+
+def test_per_output_vectors_reproduce_caf_and_detailed_reporting():
+    primitive = ToyAES(word_size=3, state_size=3, number_of_rounds=8)
+    result = primitive.analysis.continuous_diffusion(seed=9)
+    assert len(result.vectors) == 8
+    for vector, factor in zip(result.vectors, result.factors, strict=True):
+        assert len(vector) == 27
+        assert all(0 <= value <= 2 for value in vector)
+        assert sum(vector) / len(vector) == pytest.approx(factor)
+    output = StringIO()
+    result.to_terminal(details=True, file=output)
+    assert "CAF contributions — round 8" in output.getvalue()
+    assert "Output bit (MSB first)" in output.getvalue()
+
+
+def test_vector_scores_are_signed_distances_not_boolean_probabilities():
+    # Across zero, a signed-distance contribution can be 2, while CAF is
+    # the average over output bits. The immutable result must preserve this.
+    result = ContinuousDiffusionResult(
+        "identity", "state", 0, 0.001, 80, (1,), ((1.0,),), vectors=((0.0, 2.0),)
+    )
+    assert result.factors == (1.0,)
+    assert result.vectors == ((0.0, 2.0),)
+    with pytest.raises(ValueError, match="means"):
+        ContinuousDiffusionResult(
+            "identity", "state", 0, 0.001, 80, (1,), ((0.0,),), vectors=((0.0, 2.0),)
+        )
+    with pytest.raises(ValueError, match="contributions"):
+        ContinuousDiffusionResult(
+            "identity", "state", 0, 0.001, 80, (1,), ((0.0,),), vectors=((3.0,),)
+        )
+
+
+def test_measured_vectors_preserve_output_order_sign_reversal_and_zero(monkeypatch):
+    from importlib import import_module
+
+    from claasp.primitives.single_component_primitives import Identity
+
+    module = import_module("claasp.analysis.continuous_diffusion")
+
+    def fixed_pair(random, context, width, distance):
+        assert width == 3
+        return (
+            (context.mpf("-.0001"), context.mpf(".0001"), context.mpf(".4")),
+            (context.mpf(".0001"), context.mpf("0"), context.mpf(".4")),
+        )
+
+    monkeypatch.setattr(module, "_near_pair", fixed_pair)
+    result = Identity(3).analysis.continuous_diffusion(
+        number_of_samples=1, sampling="uniform_near_pairs"
+    )
+    assert result.vectors == ((2.0, 1.0, 0.0),)
+    assert result.samples == ((1.0,),)
+    assert result.factors == (1.0,)
