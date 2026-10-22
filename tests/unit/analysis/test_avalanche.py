@@ -166,15 +166,15 @@ def test_terminal_basic_and_detailed_reports(capsys):
     text = capsys.readouterr().out
     assert "avalanche_probability" in text
     assert "maximum SAC bias (final round 2)" in text
-    assert "[0.49, 0.51]" in text and "tolerance" in text and "0.01" in text
+    assert "[0, 1]" in text and "simultaneous confidence" in text and "95.0%" in text
     assert "positions" not in text
-    assert "not met" in text
+    assert "inconclusive" in text
     assert "Input bit |" not in text
     result.to_terminal(details=True, metric="entropy")
     details = capsys.readouterr().out
     assert "Min positions" in details and "Max positions" in details
     assert "avalanche_entropy" in details
-    assert "[0.99, 1]" in details
+    assert "[0, 1]" in details
     assert "Empirical avalanche entropy — round 1" in details
     assert "Empirical avalanche entropy — round 2" in details
     assert "Output 31" in details
@@ -327,3 +327,90 @@ def test_explicit_numpy_dependency_error_and_scalar_alternative(monkeypatch):
         primitive.analysis.avalanche(number_of_samples=1, engine="scalar").method
         == "scalar_paired_evaluation"
     )
+
+
+def test_sample_dependent_band_scales_with_samples_and_comparisons():
+    from dataclasses import replace
+    from math import log, sqrt
+
+    from claasp.analysis.avalanche import AvalancheResult, _report_bounds
+
+    result = AvalancheResult("fixture", "state", 1000, 0, ((0.5, 0.5),) * 2)
+    low, high = _report_bounds(result, "probability")
+    radius = sqrt(log(2 * 4 / 0.05) / (2 * 1000))
+    assert low == pytest.approx(0.5 - radius)
+    assert high == pytest.approx(0.5 + radius)
+    # Four times the independent samples halve the radius.
+    assert _report_bounds(replace(result, sample_count=4000), "probability")[
+        1
+    ] - 0.5 == pytest.approx(radius / 2)
+    # More comparisons, including across rounds, widen the simultaneous band.
+    more_pairs = replace(result, probabilities=((0.5, 0.5),) * 4)
+    assert _report_bounds(more_pairs, "probability")[1] > high
+    more_rounds = replace(
+        result, round_probabilities=(result.probabilities,) * 2, round_numbers=(1, 2)
+    )
+    assert (
+        _report_bounds(more_rounds, "probability")[1]
+        == _report_bounds(more_pairs, "probability")[1]
+    )
+    assert _report_bounds(replace(result, confidence=0.99), "probability")[1] > high
+
+
+def test_speck_default_sac_check_detects_early_rounds_and_accepts_seventh(capsys):
+    from claasp.analysis.avalanche import _round_statistics
+
+    result = Speck(number_of_rounds=7).analysis.avalanche()
+    probability = _round_statistics(result, "probability")
+    entropy = _round_statistics(result, "entropy")
+    assert [row.satisfied for row in probability] == [False] * 6 + [True]
+    assert [row.satisfied for row in entropy] == [row.satisfied for row in probability]
+    result.to_terminal()
+    report = capsys.readouterr().out
+    assert "95.0%" in report and "7168 pairs across all retained rounds" in report
+    assert report.count("deviation detected") == 6
+    assert "consistent" in report
+
+
+@pytest.mark.parametrize("confidence", [0, 1, -0.1, 1.1, float("nan"), float("inf"), True])
+def test_invalid_confidence_rejected_before_evaluation(confidence):
+    with pytest.raises(ValueError, match="confidence"):
+        Speck(number_of_rounds=1).analysis.avalanche(number_of_samples=1, confidence=confidence)
+
+
+def test_fixed_tolerance_override_is_explicit_in_terminal(capsys):
+    result = Speck(number_of_rounds=1).analysis.avalanche(number_of_samples=2, threshold=0.01)
+    result.to_terminal()
+    text = capsys.readouterr().out
+    assert "Tolerance check" in text and "fixed tolerance" in text
+    assert "[0.49, 0.51]" in text
+    assert "simultaneous confidence" not in text
+
+
+def test_no_sampling_power_is_reported_as_inconclusive(capsys):
+    from claasp.analysis.avalanche import AvalancheResult
+
+    result = AvalancheResult("fixture", "state", 1, 0, ((0.0, 1.0),))
+    result.to_terminal()
+    assert "inconclusive" in capsys.readouterr().out
+    result.to_terminal(metric="dependence")
+    text = capsys.readouterr().out
+    assert "Observed diffusion" in text and "missing flips" in text
+    assert "SAC check" not in text
+
+
+def test_statistical_band_respects_exact_binomial_false_detection_budget():
+    from math import comb
+
+    from claasp.analysis.avalanche import AvalancheResult, _comparison_count, _report_bounds
+
+    result = AvalancheResult("fixture", "state", 100, 0, ((0.5, 0.5),) * 2)
+    lower, upper = _report_bounds(result, "probability")
+    # Independently enumerate the binomial distribution under an ideal pair,
+    # rather than simulating a noisy test or assuming pairs are independent.
+    false_detection = sum(
+        comb(100, successes) / 2**100
+        for successes in range(101)
+        if not lower <= successes / 100 <= upper
+    )
+    assert _comparison_count(result) * false_detection <= 1 - result.confidence

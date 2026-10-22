@@ -325,7 +325,8 @@ class Analysis:
         seed: int = 0,
         fixed_inputs=None,
         metric: str = "probability",
-        threshold: float = 0.01,
+        threshold: float | None = None,
+        confidence: float = 0.95,
         engine: str = "numpy",
     ):
         """Measure avalanche probabilities at published round outputs."""
@@ -340,6 +341,7 @@ class Analysis:
             fixed_inputs=fixed_inputs,
             metric=metric,
             threshold=threshold,
+            confidence=confidence,
             engine=engine,
         )
 

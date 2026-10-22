@@ -12,10 +12,10 @@ from claasp.primitives import ChaChaPermutation, Speck
 def measure_examples(*, speck_rounds=7, speck_samples=1000, chacha_rounds=5, chacha_samples=100):
     """Return the Speck plaintext/key and ChaCha results without rendering."""
     primitive = Speck(number_of_rounds=speck_rounds)
-    result = primitive.analysis.avalanche("plaintext", speck_samples, seed=9, threshold=0.01)
-    key_result = primitive.analysis.avalanche("key", speck_samples, seed=9, threshold=0.01)
+    result = primitive.analysis.avalanche("plaintext", speck_samples, seed=9)
+    key_result = primitive.analysis.avalanche("key", speck_samples, seed=9)
     chacha_result = ChaChaPermutation(number_of_rounds=chacha_rounds).analysis.avalanche(
-        "state", chacha_samples, seed=9, threshold=0.01
+        "state", chacha_samples, seed=9
     )
     result.dependence()
     result.weight()

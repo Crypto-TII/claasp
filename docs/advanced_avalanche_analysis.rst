@@ -24,11 +24,10 @@ smoke test, while keeping the demonstration practical.
    rounds = 7
    samples = 1000
    seed = 9
-   threshold = 0.01
 
    primitive = Speck(number_of_rounds=rounds)
    result = primitive.analysis.avalanche(
-       "plaintext", samples, seed=seed, threshold=threshold
+       "plaintext", samples, seed=seed
    )
 
 Each selected input bit is flipped independently. This plaintext experiment
@@ -66,8 +65,8 @@ Basic terminal report
 .. literalinclude:: _build/avalanche_advanced_terminal.txt
    :language: text
 
-The basic table contains each round's minimum, maximum, average, and empirical
-criterion decision. The SAC bias is explicitly labelled as a final-round
+The basic table contains each round's minimum, maximum, average, and sample-dependent
+SAC compatibility decision. The SAC bias is explicitly labelled as a final-round
 measurement. The method identifies the selected avalanche metric; the
 evaluation method records how the probabilities were obtained.
 
@@ -169,7 +168,7 @@ primitive and sampling configuration, and retain the new analysis result:
    :include-source:
 
    key_result = primitive.analysis.avalanche(
-       "key", samples, seed=seed, threshold=threshold
+       "key", samples, seed=seed
    )
    key_result.plot(view="heatmap", metric="entropy")
 
@@ -186,7 +185,7 @@ diagonal rounds and 100 samples per flipped state bit to keep its cost small:
    from claasp.primitives import ChaChaPermutation
 
    chacha = ChaChaPermutation(number_of_rounds=5)
-   chacha_result = chacha.analysis.avalanche("state", 100, seed=seed, threshold=threshold)
+   chacha_result = chacha.analysis.avalanche("state", 100, seed=seed)
    chacha_result.plot(view="3d", style="dots")
 
 The identical result can be shown as opaque profiles:
@@ -257,11 +256,57 @@ allows that many bits below :math:`n`. For Speck's 32-bit output, 0.32 is one
 percent of its width. Defaults are 0, 0.01 and 0.01 respectively. Bounds are
 inclusive. The tolerance values are retained in every returned check.
 
-The terminal/plot ``threshold`` is a separate **per-bit** tolerance, default
-0.01: probability/weight vectors use [0.49, 0.51], entropy vectors use
-[0.99, 1], and dependence vectors use [0.99, 1]. Their report's all-pair
-condition checks individual vector entries; it is distinct from the aggregate
-weight or entropy criterion above. An average of 0.5 alone cannot establish SAC.
+Sample-dependent SAC check
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, the terminal report and summary plot check whether the measured
+probabilities are statistically compatible with 0.5. Let :math:`N` be the
+sample count, :math:`M` the total number of input/output-bit pairs across all
+retained rounds, and :math:`\alpha=1-\text{confidence}`. The band is
+
+.. math::
+
+   [0.5-\epsilon, 0.5+\epsilon], \qquad
+   \epsilon=\sqrt{\frac{\ln(2M/\alpha)}{2N}},
+
+clipped to [0, 1]. This follows from the two-sided Hoeffding bound and a union
+bound; see `these probability-bound notes <https://stanford.edu/~jduchi/projects/probability_bounds.pdf>`_.
+Independent samples are required; independence between bit pairs or rounds is
+not required. The correction covers all retained rounds together, rather than
+only the pairs in one round.
+
+With probability at least ``confidence``, the check will not flag any truly
+unbiased pair among those comparisons. This controls false detections; it does
+not give the probability that SAC is true. The bound is conservative.
+
+The seven-round basic example has 1,000 samples and 7,168 comparisons, giving
+approximately [0.421, 0.579]. Round 7 is consistent with 0.5; earlier rounds
+contain detectable deviations. Larger sample budgets narrow the band, making
+smaller biases detectable. If the band covers [0, 1], the report explicitly says
+``inconclusive`` rather than reporting success.
+
+Change confidence without choosing a fixed tolerance:
+
+.. code-block:: python
+
+   result = primitive.analysis.avalanche("plaintext", 1000, seed=9, confidence=0.99)
+
+For entropy vectors, the same probability band is transformed through binary
+entropy. This gives the same SAC decision. Dependence vectors instead report
+whether flips were observed for every pair; they do not receive a statistical
+SAC label.
+
+A manually chosen per-bit tolerance remains available as an advanced option:
+
+.. code-block:: python
+
+   result = primitive.analysis.avalanche("plaintext", 1000, seed=9, threshold=0.01)
+
+This overrides the statistical band: probability/weight use [0.49, 0.51], and
+entropy uses [0.99, 1]. The report labels it ``Tolerance check`` and shows the
+fixed tolerance. It does not adjust for sampling noise or multiple comparisons.
+This reporting override is separate from the aggregate tolerances passed to
+``check_criteria()`` above. An average of 0.5 alone cannot establish SAC.
 
 ``metric="weight"`` displays the probability contributions to expected weight;
 use ``result.weight()`` for their sums. ``metric="dependence"`` displays the

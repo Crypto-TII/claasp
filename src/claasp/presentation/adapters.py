@@ -484,15 +484,18 @@ def avalanche_section(
         (2, 3)
     """
     from claasp.analysis.avalanche import (
-        _criterion_bounds,
+        _comparison_count,
         _metric_matrix,
+        _report_bounds,
+        _report_label,
+        _report_status,
         _round_data,
         _round_statistics,
         _validate_metric,
     )
 
     selected = _validate_metric(result.metric if metric is None else metric)
-    lower, upper = _criterion_bounds(selected, result.threshold)
+    lower, upper = _report_bounds(result, selected)
     empirical = PresentationEvidence(EvidenceClass.EMPIRICAL, complete=False)
     final_round = str(result.round_numbers[-1]) if result.round_numbers else "unknown"
     summary = Table(
@@ -513,15 +516,58 @@ def avalanche_section(
             ),
             TableRow(
                 (
-                    _text("empirical criterion"),
+                    _text("report check"),
                     _text(
-                        f"all pairs in [{lower:g}, {upper:g}]",
+                        f"all pairs in [{lower:.6g}, {upper:.6g}]",
                         empirical,
                     ),
                 )
             ),
-            TableRow(
-                (_text("tolerance"), _number(result.threshold, ValueKind.PROBABILITY, empirical))
+            *(
+                (
+                    TableRow(
+                        (
+                            _text("fixed tolerance"),
+                            _number(result.threshold, ValueKind.PROBABILITY, empirical),
+                        )
+                    ),
+                )
+                if result.threshold is not None
+                else (
+                    TableRow(
+                        (
+                            _text("check method"),
+                            _text(
+                                "observed dependence"
+                                if selected == "dependence"
+                                else "Hoeffding + union bound"
+                            ),
+                        )
+                    ),
+                    *(
+                        ()
+                        if selected == "dependence"
+                        else (
+                            TableRow(
+                                (
+                                    _text("simultaneous confidence"),
+                                    _text(f"{result.confidence:.1%}"),
+                                )
+                            ),
+                            TableRow(
+                                (
+                                    _text("comparison scope"),
+                                    _text(
+                                        f"{_comparison_count(result)} pairs across all retained rounds"
+                                    ),
+                                )
+                            ),
+                            TableRow(
+                                (_text("interpretation"), _text("consistent is not proof of SAC"))
+                            ),
+                        )
+                    ),
+                )
             ),
             *(
                 (
@@ -553,7 +599,7 @@ def avalanche_section(
                 ("maximum", "Max"),
                 *((("max_positions", "Max positions"),) if details else ()),
                 ("average", "Average"),
-                ("criterion", "Empirical criterion"),
+                ("criterion", _report_label(result, selected)),
             )
         ),
         tuple(
@@ -565,7 +611,7 @@ def avalanche_section(
                     _number(item.maximum, ValueKind.PROBABILITY, empirical),
                     *((_text(positions_text(item.maximum_positions)),) if details else ()),
                     _number(item.average, ValueKind.PROBABILITY, empirical),
-                    _text("met" if item.satisfied else "not met", empirical),
+                    _text(_report_status(result, selected, item.satisfied), empirical),
                 )
             )
             for item in _round_statistics(result, selected)

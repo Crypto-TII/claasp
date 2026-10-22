@@ -5,7 +5,7 @@ from __future__ import annotations
 import pathlib
 from collections.abc import Mapping
 from dataclasses import dataclass
-from math import isfinite, log2
+from math import isfinite, log, log2, sqrt
 from random import Random
 from typing import TYPE_CHECKING, TextIO
 
@@ -29,7 +29,7 @@ class AvalancheResult:
 
         >>> from dataclasses import fields
         >>> (AvalancheResult.__dataclass_params__.frozen, tuple(field.name for field in fields(AvalancheResult)))
-        (True, ('primitive_family', 'input_name', 'sample_count', 'seed', 'probabilities', 'method', 'complete', 'round_probabilities', 'round_numbers', 'metric', 'threshold'))
+        (True, ('primitive_family', 'input_name', 'sample_count', 'seed', 'probabilities', 'method', 'complete', 'round_probabilities', 'round_numbers', 'metric', 'threshold', 'confidence'))
     """
 
     primitive_family: str
@@ -43,16 +43,18 @@ class AvalancheResult:
     round_probabilities: tuple[tuple[tuple[float, ...], ...], ...] = ()
     round_numbers: tuple[int, ...] = ()
     metric: str = "probability"
-    threshold: float = 0.01
+    threshold: float | None = None
+    confidence: float = 0.95
 
     def __post_init__(self) -> None:
         _validate_metric(self.metric)
+        _validate_reporting(self.threshold, self.confidence)
         if (
-            isinstance(self.threshold, bool)
-            or not isfinite(self.threshold)
-            or not 0 <= self.threshold <= 1
+            not isinstance(self.sample_count, int)
+            or isinstance(self.sample_count, bool)
+            or self.sample_count <= 0
         ):
-            raise ValueError("threshold must be a finite tolerance between zero and one")
+            raise ValueError("sample_count must be a positive integer")
         if bool(self.round_numbers) != bool(self.round_probabilities):
             raise ValueError("round numbers and matrices must be supplied together")
         if (
@@ -81,6 +83,10 @@ class AvalancheResult:
         self, *, details: bool = False, metric: str | None = None, file: TextIO | None = None
     ) -> None:
         """Print metadata and round statistics; include bit matrices with details=True.
+
+        By default SAC compatibility uses the sample count and simultaneous
+        confidence across all retained rounds/pairs. Explicit ``threshold``
+        on the analysis result selects a fixed tolerance instead.
 
         EXAMPLES::
 
@@ -245,7 +251,8 @@ def avalanche_probabilities(
     seed: int = 0,
     fixed_inputs: Mapping[str, int] | None = None,
     metric: str = "probability",
-    threshold: float = 0.01,
+    threshold: float | None = None,
+    confidence: float = 0.95,
     engine: str = "numpy",
 ) -> AvalancheResult:
     """Estimate a primitive's strict-avalanche probability matrix.
@@ -258,6 +265,10 @@ def avalanche_probabilities(
     Other component types use scalar handlers per lane within NumPy execution;
     ``method`` reports hybrid execution when applicable. Published graph round
     boundaries supply intermediate outputs.
+    Reports default to a Hoeffding/union-bound SAC compatibility check at
+    ``confidence=0.95``, covering all retained rounds and bit pairs. The band
+    depends on sample count. Passing does not establish equality with 0.5.
+    ``threshold`` overrides this with a fixed per-metric tolerance.
     ``probabilities`` retains the final-output matrix; ``round_probabilities``
     retains all measured round matrices, numbered by ``round_numbers``.
 
@@ -272,8 +283,7 @@ def avalanche_probabilities(
     """
 
     _validate_metric(metric)
-    if isinstance(threshold, bool) or not isfinite(threshold) or not 0 <= threshold <= 1:
-        raise ValueError("threshold must be a finite tolerance between zero and one")
+    _validate_reporting(threshold, confidence)
     if input_name is None:
         input_name = next(iter(primitive.graph.input_arrays))
     if engine not in {"numpy", "scalar"}:
@@ -397,6 +407,7 @@ def avalanche_probabilities(
         round_numbers=tuple(number for number, _ in outputs) if final_number else (),
         metric=metric,
         threshold=threshold,
+        confidence=confidence,
     )
 
 
@@ -438,6 +449,57 @@ class _RoundStatistics:
     satisfied: bool
 
 
+def _validate_reporting(threshold, confidence):
+    if threshold is not None and (
+        isinstance(threshold, bool) or not isfinite(threshold) or not 0 <= threshold <= 1
+    ):
+        raise ValueError("threshold must be None or a finite tolerance between zero and one")
+    if isinstance(confidence, bool) or not isfinite(confidence) or not 0 < confidence < 1:
+        raise ValueError("confidence must be finite and strictly between zero and one")
+
+
+def _comparison_count(result):
+    return sum(len(matrix) * len(matrix[0]) for _, matrix in _round_data(result))
+
+
+def _sampling_radius(result):
+    # Hoeffding per Bernoulli mean, then a union bound over all retained
+    # round/input/output pairs. Pairs may be dependent; samples must be iid.
+    return sqrt(
+        log(2 * _comparison_count(result) / (1 - result.confidence)) / (2 * result.sample_count)
+    )
+
+
+def _report_bounds(result, metric):
+    if result.threshold is not None:
+        return _criterion_bounds(metric, result.threshold)
+    _validate_metric(metric)
+    if metric == "dependence":
+        return 1.0, 1.0
+    radius = min(0.5, _sampling_radius(result))
+    if metric == "entropy":
+        probability = 0.5 - radius
+        lower = _metric_matrix(((probability,),), "entropy")[0][0]
+        return lower, 1.0
+    return 0.5 - radius, 0.5 + radius
+
+
+def _report_label(result, metric):
+    if result.threshold is not None:
+        return "Tolerance check"
+    return "Observed diffusion" if metric == "dependence" else "SAC check"
+
+
+def _report_status(result, metric, satisfied):
+    if result.threshold is not None:
+        return "met" if satisfied else "not met"
+    if metric == "dependence":
+        return "all bits observed" if satisfied else "missing flips"
+    if _sampling_radius(result) >= 0.5:
+        return "inconclusive"
+    return "consistent" if satisfied else "deviation detected"
+
+
 def _criterion_bounds(metric, threshold):
     _validate_metric(metric)
     target = 1.0 if metric in {"entropy", "dependence"} else 0.5
@@ -445,7 +507,7 @@ def _criterion_bounds(metric, threshold):
 
 
 def _round_statistics(result, metric):
-    lower, upper = _criterion_bounds(metric, result.threshold)
+    lower, upper = _report_bounds(result, metric)
     statistics = []
     for number, probabilities in _round_data(result):
         matrix = _metric_matrix(probabilities, metric)

@@ -199,7 +199,7 @@ def test_renderer_module_import_is_lazy_about_matplotlib():
 
 
 def test_avalanche_plot_defaults_to_display_and_can_save_headlessly(monkeypatch, tmp_path):
-    result = AvalancheResult("fixture", "plaintext", 2, 9, ((0.0, 0.5), (1.0, 0.5)))
+    result = AvalancheResult("fixture", "plaintext", 2, 9, ((0.0, 0.5), (1.0, 0.5)), threshold=0.01)
     calls = []
     monkeypatch.setattr(pyplot, "show", lambda: calls.append("display"))
     try:
@@ -373,3 +373,22 @@ def test_avalanche_plot_rejects_unknown_3d_style():
     result = AvalancheResult("fixture", "plaintext", 2, 9, ((0.5,),))
     with pytest.raises(ValueError, match="style"):
         result.plot(view="3d", style="unknown", show=False)
+
+
+@pytest.mark.parametrize("samples", [2, 1000])
+def test_default_plot_band_reflects_sampling_power(samples):
+    result = AvalancheResult("fixture", "state", samples, 0, ((0.45, 0.55),))
+    try:
+        artifact = result.plot(show=False)
+        lower = artifact.series[-2][1][0]
+        upper = artifact.series[-1][1][0]
+        legend = pyplot.gcf().axes[0].get_legend_handles_labels()[1]
+        band = next(label for label in legend if "simultaneous SAC band" in label)
+        if samples == 2:
+            assert (lower, upper) == (0, 1)
+            assert "inconclusive" in band
+        else:
+            assert 0.45 < lower < 0.5 < upper < 0.55
+            assert "inconclusive" not in band
+    finally:
+        pyplot.close("all")

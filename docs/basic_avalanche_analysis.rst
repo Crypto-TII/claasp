@@ -47,7 +47,10 @@ Plot the minimum, maximum and average of those same probability vectors:
 The analysis uses NumPy and 1,000 samples by default. Each plaintext bit is
 flipped independently, with random plaintexts and keys. The default report
 and plot summarize the probability vectors across input/output-bit pairs;
-probability 0.5 is the ideal target. Measurements are empirical.
+probability 0.5 is the ideal target. The SAC check accounts for sample count
+and all measured bit pairs, using 95% simultaneous confidence. “Consistent”
+means no deviation was detected at this resolution, rather than proof of SAC.
+The plot shows the same sample-dependent band.
 
 Download :download:`the script <examples/basic_avalanche.py>`.
 For metrics, criterion checks, parameter choices, and other views, continue to

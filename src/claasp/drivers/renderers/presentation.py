@@ -283,7 +283,7 @@ def _avalanche_colors(metric):
 
 def _avalanche_figure(result, *, view, metric, style):
     from claasp.analysis.avalanche import (
-        _criterion_bounds,
+        _report_bounds,
         _round_data,
         _round_profiles,
         _round_statistics,
@@ -320,8 +320,17 @@ def _avalanche_figure(result, *, view, metric, style):
         )
         for (label, values), color in zip(series, ("#c43c39", "#7651a8", "#1764ab"), strict=True):
             axis.plot(numbers, values, marker="o", markersize=3, label=label, color=color)
-        lower, upper = _criterion_bounds(selected, result.threshold)
-        axis.axhspan(lower, upper, color="#d9efce", alpha=1, label="acceptance band")
+        lower, upper = _report_bounds(result, selected)
+        band_label = (
+            "fixed tolerance band"
+            if result.threshold is not None
+            else "observed dependence target"
+            if selected == "dependence"
+            else f"{result.confidence:.0%} simultaneous SAC band"
+        )
+        if result.threshold is None and selected != "dependence" and (lower, upper) == (0.0, 1.0):
+            band_label += " (inconclusive)"
+        axis.axhspan(lower, upper, color="#d9efce", alpha=1, label=band_label)
         axis.axhline(
             lower, color="#555555", linestyle="--", linewidth=1, label=f"lower threshold {lower:g}"
         )
