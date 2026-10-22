@@ -3,9 +3,9 @@
 from claasp.primitives import ToyAES
 
 
-def run_example(*, samples=64):
+def run_example(*, samples=1024):
     """Retain results for perturbation, key-input and sampling comparisons."""
-    primitive = ToyAES(word_size=3, state_size=3, number_of_rounds=8)
+    primitive = ToyAES(word_size=3, state_size=3, number_of_rounds=12)
     result = primitive.analysis.continuous_diffusion("plaintext", samples, seed=9)
     smaller = primitive.analysis.continuous_diffusion(
         "plaintext", samples, seed=9, lambda_value=0.00001

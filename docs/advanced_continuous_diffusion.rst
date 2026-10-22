@@ -2,7 +2,7 @@ Continuous diffusion tests: parameters and reporting
 ====================================================
 
 Start with :doc:`basic_continuous_diffusion` for the short AES example.
-Here we study an eight-round ToyAES with three-bit S-boxes and a 3-by-3-word
+Here we study a twelve-round ToyAES with three-bit S-boxes and a 3-by-3-word
 state: a 27-bit teaching primitive, distinct from standard AES.
 
 Measure and report
@@ -15,9 +15,9 @@ Measure and report
 
    from claasp.primitives import ToyAES
 
-   primitive = ToyAES(word_size=3, state_size=3, number_of_rounds=8)
+   primitive = ToyAES(word_size=3, state_size=3, number_of_rounds=12)
    result = primitive.analysis.continuous_diffusion(
-       "plaintext", 64, lambda_value=0.001, seed=9, precision=80,
+       "plaintext", 1024, lambda_value=0.001, seed=9, precision=80,
    )
 
 .. code-block:: python
@@ -45,6 +45,24 @@ Measure and report
    :include-source:
 
    result.plot()
+
+Rounds and sampling noise
+--------------------------
+
+This example uses **12 rounds and 1,024 pairs** to show the plateau after the
+transition to CAF near one. Extra rounds reveal whether that behavior persists;
+a larger sample budget reduces the noise in each per-output contribution.
+
+For a contribution taking values zero or two, near an equal split its standard
+error is approximately :math:`1/\sqrt{N}`: 0.125 with 64 pairs and 0.03125
+with 1,024. Some variation between output coordinates remains expected.
+A single coordinate's standard error is distinct from a simultaneous bound
+across all coordinates and rounds.
+
+Sampling uses a **local NumPy Generator (PCG64)** for Boolean vectors, perturbed
+coordinate selection, perturbation sizes, and uniform close-pair draws. The seed
+makes the experiment reproducible, and the terminal report names the sampling
+engine. High-precision propagation uses mpmath to retain small continuous values.
 
 What is measured?
 ------------------
@@ -142,7 +160,7 @@ A smaller perturbation can shift the rounds where sign changes become visible:
    :include-source:
 
    smaller = primitive.analysis.continuous_diffusion(
-       "plaintext", 64, lambda_value=0.00001, seed=9,
+       "plaintext", 1024, lambda_value=0.00001, seed=9,
    )
    smaller.plot()
 
@@ -163,7 +181,7 @@ sampling explicitly:
    :include-source:
 
    uniform = primitive.analysis.continuous_diffusion(
-       "plaintext", 64, seed=9, sampling="uniform_near_pairs",
+       "plaintext", 1024, seed=9, sampling="uniform_near_pairs",
    )
    uniform.plot()
 
@@ -183,7 +201,7 @@ Vary key coordinates
    :context: close-figs
    :include-source:
 
-   key_result = primitive.analysis.continuous_diffusion("key", 64, seed=9)
+   key_result = primitive.analysis.continuous_diffusion("key", 1024, seed=9)
    key_result.plot()
 
 Here the plaintext is shared within each pair and the continuous perturbation
@@ -202,7 +220,7 @@ precision computation; compare settings when investigating a result:
 .. code-block:: python
 
    higher_precision = primitive.analysis.continuous_diffusion(
-       "plaintext", 64, seed=9, precision=120,
+       "plaintext", 1024, seed=9, precision=120,
    )
    print(result.factors)
    print(higher_precision.factors)

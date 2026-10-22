@@ -45,7 +45,8 @@ Display those same measurements:
    result.plot()
 
 The default experiment uses 16 input pairs, a perturbation bound of 0.001,
-and 80 decimal digits of evaluation precision. One randomly selected plaintext
+and 80 decimal digits of evaluation precision. Sampling uses a seeded NumPy
+generator. One randomly selected plaintext
 coordinate moves slightly inward from a Boolean endpoint; the key is shared
 within each pair. CAF measures the resulting changes of output signs.
 A value near one is the random-sign reference, rather than a security criterion.

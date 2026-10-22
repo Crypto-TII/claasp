@@ -6,7 +6,6 @@ import pathlib
 from dataclasses import dataclass
 from importlib import import_module
 from math import isclose, isfinite, prod, sqrt
-from random import Random
 from typing import TYPE_CHECKING, TextIO
 
 from claasp.analysis.datasets import packed_bit_width
@@ -40,6 +39,7 @@ class ContinuousDiffusionResult:
     method: str = "boolean_neighborhood"
     claim_kind: str = "heuristic"
     vectors: tuple[tuple[float, ...], ...] = ()
+    sampling_engine: str = "numpy_PCG64"
 
     def __post_init__(self) -> None:
         if not self.samples or any(not row for row in self.samples):
@@ -127,7 +127,7 @@ def _near_pair(random, context, width, distance):
     # A uniform displacement in the ball, accepted in proportion to the
     # intersection volume, samples uniform ordered pairs conditioned on distance.
     for _ in range(100000):
-        direction = [random.gauss(0, 1) for _ in range(width)]
+        direction = random.normal(size=width).tolist()
         norm = sqrt(sum(value * value for value in direction))
         if norm == 0:
             continue
@@ -147,9 +147,9 @@ def _near_pair(random, context, width, distance):
 
 
 def _boolean_pair(random, context, width, distance):
-    left = tuple(context.mpf(1 if random.getrandbits(1) else -1) for _ in range(width))
+    left = tuple(context.mpf(2 * bit - 1) for bit in random.integers(0, 2, size=width).tolist())
     right = list(left)
-    bit = random.randrange(width)
+    bit = int(random.integers(width))
     right[bit] *= 1 - context.mpf(random.random()) * distance
     return left, tuple(right)
 
@@ -171,6 +171,7 @@ def continuous_diffusion(
     uniform ordered continuous pairs conditional on Euclidean distance at most
     lambda_value. Other inputs are independent Boolean vectors shared by each
     pair. Each round's signed output distance is divided by its output width.
+    Sampling uses a local NumPy Generator; its engine is retained in the result.
     Precision is decimal digits and is local to this experiment.
 
     EXAMPLES::
@@ -199,12 +200,13 @@ def continuous_diffusion(
         raise ValueError("lambda_value must be finite and in (0, 1]")
     try:
         context = import_module("mpmath").mp.clone()
+        numpy = import_module("numpy")
     except ImportError as error:
         raise ImportError(
             "Continuous diffusion requires: pip install 'claasp[analysis]'"
         ) from error
     context.dps = precision
-    random = Random(seed)
+    random = numpy.random.default_rng(numpy.random.PCG64(seed))
     final = primitive.details().number_of_rounds
     setup = max(0, len(primitive.graph.rounds) - final)
     outputs = [
@@ -227,8 +229,8 @@ def continuous_diffusion(
         left, right = pair(random, context, width, lambda_value)
         inputs = {
             name: tuple(
-                context.mpf(1 if random.getrandbits(1) else -1)
-                for _ in range(packed_bit_width(primitive, name))
+                context.mpf(2 * bit - 1)
+                for bit in random.integers(0, 2, size=packed_bit_width(primitive, name)).tolist()
             )
             for name in primitive.graph.input_arrays
         }
@@ -254,5 +256,6 @@ def continuous_diffusion(
         tuple(number for number, _ in outputs),
         tuple(tuple(row) for row in scores),
         method=sampling,
+        sampling_engine=f"numpy_{type(random.bit_generator).__name__}",
         vectors=tuple(tuple(value / number_of_samples for value in row) for row in totals),
     )

@@ -2,7 +2,6 @@
 
 from io import StringIO
 from math import sqrt
-from random import Random
 
 import pytest
 
@@ -15,13 +14,14 @@ from claasp.primitives import ToyAES
 from claasp.semantics.cryptanalysis import continuous_sbox
 
 mpmath = pytest.importorskip("mpmath")
+numpy = pytest.importorskip("numpy")
 
 
 def test_pairs_stay_in_domain_and_obey_distance_bound():
     context = mpmath.mp.clone()
     context.dps = 80
     for sampler in (_boolean_pair, _near_pair):
-        random = Random(9)
+        random = numpy.random.default_rng(9)
         for _ in range(20):
             left, right = sampler(random, context, 27, 0.001)
             assert all(-1 <= value <= 1 for value in (*left, *right))
@@ -35,7 +35,7 @@ def test_pairs_stay_in_domain_and_obey_distance_bound():
 def test_uniform_pairs_include_overlap_volume_weighting():
     context = mpmath.mp.clone()
     context.dps = 30
-    random = Random(17)
+    random = numpy.random.default_rng(17)
     points = [_near_pair(random, context, 1, 1) for _ in range(4000)]
     # Exact area calculation: the diagonal strip has area 3 and its
     # part with first coordinate > 1/2 has area 5/8.
@@ -167,3 +167,26 @@ def test_measured_vectors_preserve_output_order_sign_reversal_and_zero(monkeypat
     assert result.vectors == ((2.0, 1.0, 0.0),)
     assert result.samples == ((1.0,),)
     assert result.factors == (1.0,)
+
+
+def test_numpy_generator_is_local_recorded_and_prefix_reproducible(monkeypatch):
+    primitive = ToyAES(word_size=3, state_size=3, number_of_rounds=2)
+    calls = []
+    original = numpy.random.default_rng
+
+    def recording_generator(seed):
+        generator = original(seed)
+        calls.append((seed.state, generator))
+        return generator
+
+    monkeypatch.setattr(numpy.random, "default_rng", recording_generator)
+    short = primitive.analysis.continuous_diffusion(number_of_samples=3, seed=19)
+    long = primitive.analysis.continuous_diffusion(number_of_samples=5, seed=19)
+    assert [state for state, _ in calls] == [numpy.random.PCG64(19).state] * 2
+    assert all(isinstance(generator, numpy.random.Generator) for _, generator in calls)
+    assert short.sampling_engine == long.sampling_engine == "numpy_PCG64"
+    assert tuple(row[:3] for row in long.samples) == short.samples
+    output = StringIO()
+    short.to_terminal(file=output)
+    assert "sampling engine" in output.getvalue()
+    assert "numpy_PCG64" in output.getvalue()

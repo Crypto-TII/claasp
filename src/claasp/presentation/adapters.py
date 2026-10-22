@@ -487,6 +487,7 @@ def _continuous_diffusion_section(
                 ("lambda", result.lambda_value),
                 ("decimal precision", result.precision),
                 ("sampling", result.method),
+                ("sampling engine", result.sampling_engine),
                 ("claim", result.claim_kind),
             )
         ),
