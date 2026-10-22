@@ -23,7 +23,7 @@ def test_documentation_example_renders_all_views(tmp_path):
         assert [len(result.round_numbers) for result in results] == [2, 2, 2]
         assert [result.input_bit_count for result in results] == [32, 64, 512]
         assert [result.output_bit_count for result in results] == [32, 32, 512]
-        assert len(figures) == 5
+        assert len(figures) == 8
         for result in results:
             for matrix in result.round_probabilities:
                 assert all(0 <= value <= 1 for row in matrix for value in row)
@@ -32,18 +32,20 @@ def test_documentation_example_renders_all_views(tmp_path):
             figure.savefig(path)
             assert path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
         assert figures[0].axes[0].get_xlabel() == "Rounds"
-        for figure in figures[1:3]:
+        for figure in figures[2:4]:
             image = figure.axes[0].images[0]
             assert image.get_clim() == (0, 1)
             assert image.get_cmap().name == "RdYlGn"
-        for figure in figures[3:]:
+        for index, figure in enumerate(figures[4:], start=4):
             assert figure.axes[0].get_zlim() == (0, 1)
             planes = [
                 collection
                 for collection in figure.axes[0].collections
                 if type(collection).__name__ == "Poly3DCollection"
             ]
-            assert len(planes) == 2
+            assert len(planes) == (2 if index in (5, 7) else 0)
             assert all(plane.get_alpha() == 1 for plane in planes)
+            if index in (4, 6):
+                assert len(figure.axes[0].lines) == 2
     finally:
         plt.close("all")

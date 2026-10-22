@@ -319,3 +319,57 @@ def test_avalanche_plot_rejects_unknown_views_and_metrics():
         result.plot(view="unknown", show=False)
     with pytest.raises(ValueError, match="metric"):
         result.plot(metric="unknown", show=False)
+
+
+@pytest.mark.parametrize("style", ["dots", "planes"])
+def test_3d_round_order_and_heights_survive_camera_rotation(style):
+    matrices = tuple(((value, value),) for value in (0.1, 0.3, 0.4, 0.5))
+    result = AvalancheResult(
+        "fixture",
+        "plaintext",
+        10,
+        9,
+        matrices[-1],
+        round_probabilities=matrices,
+        round_numbers=(1, 2, 3, 4),
+    )
+    try:
+        artifact = result.plot(view="3d", style=style, show=False)
+        figure = pyplot.gcf()
+        axis = figure.axes[0]
+        assert artifact.series == tuple(
+            (f"round_{i}", (value, value)) for i, value in enumerate((0.1, 0.3, 0.4, 0.5), 1)
+        )
+        assert axis.get_zlim() == (0, 1)
+        points = [item for item in axis.collections if type(item).__name__ == "Path3DCollection"]
+        assert len(points) == 4
+        assert all(tuple(item.get_sizes()) == (3,) for item in points)
+        if style == "dots":
+            assert len(axis.lines) == 4
+            assert all(tuple(line.get_data_3d()[2]) == (0, 0) for line in axis.lines)
+        figure.canvas.draw()
+        # At the default camera, round 1 is nearest, so it must draw last.
+        bases = [entry[1] for entry in axis._round_artists]
+        orders = [item.get_zorder() for item in bases]
+        assert orders == sorted(orders, reverse=True)
+        assert all(
+            dot.get_zorder() == base.get_zorder() + 1
+            for base, dot in zip(bases, points, strict=True)
+        )
+        axis.view_init(azim=60)
+        figure.canvas.draw()
+        # Looking from the opposite side reverses the exact plane order.
+        orders = [item.get_zorder() for item in bases]
+        assert orders == sorted(orders)
+        axis.view_init(elev=150, azim=-60)
+        figure.canvas.draw()
+        orders = [item.get_zorder() for item in bases]
+        assert orders == sorted(orders)
+    finally:
+        pyplot.close("all")
+
+
+def test_avalanche_plot_rejects_unknown_3d_style():
+    result = AvalancheResult("fixture", "plaintext", 2, 9, ((0.5,),))
+    with pytest.raises(ValueError, match="style"):
+        result.plot(view="3d", style="unknown", show=False)

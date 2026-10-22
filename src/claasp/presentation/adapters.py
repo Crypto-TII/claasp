@@ -515,16 +515,25 @@ def avalanche_section(
                 (
                     _text("empirical criterion"),
                     _text(
-                        f"all bit pairs in [{lower:g}, {upper:g}]; tolerance {result.threshold:g}",
+                        f"all pairs in [{lower:g}, {upper:g}]",
                         empirical,
                     ),
                 )
             ),
             TableRow(
+                (_text("tolerance"), _number(result.threshold, ValueKind.PROBABILITY, empirical))
+            ),
+            *(
                 (
-                    _text("positions"),
-                    _text("(input bit, output bit), MSB first; first 8 ties shown"),
+                    TableRow(
+                        (
+                            _text("positions"),
+                            _text("(input bit, output bit), MSB first; first 8 ties shown"),
+                        )
+                    ),
                 )
+                if details
+                else ()
             ),
         ),
         "Avalanche summary",
@@ -540,9 +549,9 @@ def avalanche_section(
             for key, label in (
                 ("round", "Round"),
                 ("minimum", "Min"),
-                ("min_positions", "Min positions"),
+                *((("min_positions", "Min positions"),) if details else ()),
                 ("maximum", "Max"),
-                ("max_positions", "Max positions"),
+                *((("max_positions", "Max positions"),) if details else ()),
                 ("average", "Average"),
                 ("criterion", "Empirical criterion"),
             )
@@ -552,9 +561,9 @@ def avalanche_section(
                 (
                     _text(str(item.number) if item.number is not None else "unknown"),
                     _number(item.minimum, ValueKind.PROBABILITY, empirical),
-                    _text(positions_text(item.minimum_positions)),
+                    *((_text(positions_text(item.minimum_positions)),) if details else ()),
                     _number(item.maximum, ValueKind.PROBABILITY, empirical),
-                    _text(positions_text(item.maximum_positions)),
+                    *((_text(positions_text(item.maximum_positions)),) if details else ()),
                     _number(item.average, ValueKind.PROBABILITY, empirical),
                     _text("met" if item.satisfied else "not met", empirical),
                 )

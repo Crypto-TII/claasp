@@ -194,13 +194,14 @@ programs::
    artifact = avalanche.plot(show=False, save_to="avalanche.png")
 
 ``avalanche.to_terminal()`` prints metadata and round minima, maxima,
-positions, averages, and empirical criterion decisions. ``details=True`` adds
-full matrices. ``metric="entropy"`` selects entropy rather than probability;
+averages, and empirical criterion decisions. ``details=True`` adds tied
+positions and full matrices. ``metric="entropy"`` selects entropy rather than probability;
 ``"weight"`` retains the legacy per-bit probability meaning.
 
 ``avalanche.plot()`` displays minimum, maximum, average, and threshold by round.
 Select ``view="heatmap"`` for round/output-bit averages or ``view="3d"`` for
-opaque, value-colored round profiles. ``show=False`` creates the plot without
+opaque, value-colored round profiles. Add ``style="dots"`` for small dots
+with round baselines instead of filled profiles. ``show=False`` creates the plot without
 displaying it, and ``save_to`` saves it before display. The returned
 ``FigureArtifact`` retains the figure, plotted series, and renderer identity.
 See :doc:`basic_avalanche_analysis` for all three views and the threshold rules.

@@ -1,7 +1,7 @@
-"""Display reproducible round-by-round avalanche measurements.
+"""Measure once and present reproducible round-by-round avalanche results.
 
 Run with ``python docs/examples/avalanche.py`` after installing ``.[presentation]``.
-Documentation and CI use this same script, with smaller budgets in CI.
+The guide executes the same public calls; CI uses smaller sample budgets.
 """
 
 from matplotlib import pyplot as plt
@@ -9,27 +9,39 @@ from matplotlib import pyplot as plt
 from claasp.primitives import ChaChaPermutation, Speck
 
 
-def run_example(*, speck_rounds=22, speck_samples=16, chacha_rounds=5, chacha_samples=4):
-    """Return the measured results and five figures without displaying them."""
-    # example-start
-    speck = Speck(number_of_rounds=speck_rounds).analysis.avalanche(
-        "plaintext", speck_samples, seed=9
+def measure_examples(*, speck_rounds=7, speck_samples=1000, chacha_rounds=5, chacha_samples=4):
+    """Return the Speck plaintext/key and ChaCha results without rendering."""
+    primitive = Speck(number_of_rounds=speck_rounds)
+    result = primitive.analysis.avalanche("plaintext", speck_samples, seed=9, threshold=0.01)
+    key_result = primitive.analysis.avalanche("key", speck_samples, seed=9, threshold=0.01)
+    chacha_result = ChaChaPermutation(number_of_rounds=chacha_rounds).analysis.avalanche(
+        "state", chacha_samples, seed=9, threshold=0.01
     )
-    key = Speck(number_of_rounds=speck_rounds).analysis.avalanche("key", speck_samples, seed=9)
-    chacha = ChaChaPermutation(number_of_rounds=chacha_rounds).analysis.avalanche(
-        "state", chacha_samples, seed=9
+    return result, key_result, chacha_result
+
+
+def plot_examples(result, key_result, chacha_result):
+    """Create eight views from existing measurements without displaying them."""
+    return (
+        result.plot(show=False).figure,
+        result.plot(view="heatmap", show=False).figure,
+        result.plot(view="heatmap", metric="entropy", show=False).figure,
+        key_result.plot(view="heatmap", metric="entropy", show=False).figure,
+        result.plot(view="3d", style="dots", show=False).figure,
+        result.plot(view="3d", style="planes", show=False).figure,
+        chacha_result.plot(view="3d", style="dots", show=False).figure,
+        chacha_result.plot(view="3d", style="planes", show=False).figure,
     )
-    figures = (
-        speck.plot(show=False).figure,
-        speck.plot(view="heatmap", metric="entropy", show=False).figure,
-        key.plot(view="heatmap", metric="entropy", show=False).figure,
-        speck.plot(view="3d", show=False).figure,
-        chacha.plot(view="3d", show=False).figure,
-    )
-    # example-end
-    return (speck, key, chacha), figures
+
+
+def run_example(**parameters):
+    """Return measurements and figures for the headless CI exercise."""
+    results = measure_examples(**parameters)
+    return results, plot_examples(*results)
 
 
 if __name__ == "__main__":
-    run_example()
+    results = measure_examples()
+    results[0].to_terminal()
+    plot_examples(*results)
     plt.show()

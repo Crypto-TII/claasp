@@ -100,6 +100,7 @@ class AvalancheResult:
         *,
         view: str = "summary",
         metric: str | None = None,
+        style: str = "planes",
         show: bool = True,
         save_to: str | pathlib.Path | None = None,
     ) -> FigureArtifact:
@@ -107,6 +108,8 @@ class AvalancheResult:
 
         ``view`` is ``"summary"`` (default), ``"heatmap"``, or ``"3d"``.
         ``metric`` selects ``"probability"``, ``"entropy"``, or legacy ``"weight"``.
+        For ``view="3d"``, ``style="planes"`` draws opaque filled profiles and
+        ``style="dots"`` draws dots with a faint baseline for each round.
         ``show=False`` creates the plot without displaying it. ``save_to``
         saves the figure before display. Matplotlib is imported on demand;
         install the ``presentation`` extra to use this method. Analysis is
@@ -120,7 +123,9 @@ class AvalancheResult:
         """
         from claasp.drivers.renderers.presentation import _plot_avalanche
 
-        return _plot_avalanche(self, view=view, metric=metric, show=show, save_to=save_to)
+        return _plot_avalanche(
+            self, view=view, metric=metric, style=style, show=show, save_to=save_to
+        )
 
     @property
     def input_bit_count(self) -> int:

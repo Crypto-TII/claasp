@@ -166,12 +166,13 @@ def test_terminal_basic_and_detailed_reports(capsys):
     text = capsys.readouterr().out
     assert "avalanche_probability" in text
     assert "maximum SAC bias (final round 2)" in text
-    assert "[0.49, 0.51]" in text and "tolerance 0.01" in text
-    assert "Min positions" in text and "Max positions" in text
+    assert "[0.49, 0.51]" in text and "tolerance" in text and "0.01" in text
+    assert "positions" not in text
     assert "not met" in text
     assert "Input bit |" not in text
     result.to_terminal(details=True, metric="entropy")
     details = capsys.readouterr().out
+    assert "Min positions" in details and "Max positions" in details
     assert "avalanche_entropy" in details
     assert "[0.99, 1]" in details
     assert "Empirical avalanche entropy — round 1" in details

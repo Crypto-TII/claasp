@@ -258,10 +258,11 @@ def _plot_avalanche(
     *,
     view: str,
     metric: str | None,
+    style: str,
     show: bool,
     save_to: str | Path | None,
 ) -> FigureArtifact:
-    artifact = _avalanche_figure(result, view=view, metric=metric)
+    artifact = _avalanche_figure(result, view=view, metric=metric, style=style)
     _finish_figure(artifact.figure, show=show, save_to=save_to)
     return artifact
 
@@ -280,7 +281,7 @@ def _avalanche_colors(metric):
     )
 
 
-def _avalanche_figure(result, *, view, metric):
+def _avalanche_figure(result, *, view, metric, style):
     from claasp.analysis.avalanche import (
         _criterion_bounds,
         _round_data,
@@ -291,6 +292,8 @@ def _avalanche_figure(result, *, view, metric):
 
     if view not in {"summary", "heatmap", "3d"}:
         raise ValueError("view must be summary, heatmap, or 3d")
+    if style not in {"planes", "dots"}:
+        raise ValueError("style must be planes or dots")
     selected = _validate_metric(result.metric if metric is None else metric)
     pyplot = _matplotlib()
     round_data = _round_data(result)
@@ -354,28 +357,57 @@ def _avalanche_figure(result, *, view, metric):
             (f"round_{number}", profile) for number, profile in zip(numbers, profiles, strict=True)
         )
     else:
+        from math import cos, radians, sin
+
         from matplotlib.cm import ScalarMappable
         from matplotlib.colors import Normalize
+        from mpl_toolkits.mplot3d import Axes3D
         from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-        axis = figure.add_subplot(projection="3d")
-        for number, profile in zip(numbers, profiles, strict=True):
-            faces, face_colors = [], []
-            for bit, value in enumerate(profile):
-                faces.append(
-                    [
-                        (bit - 0.5, number, 0),
-                        (bit - 0.5, number, value),
-                        (bit + 0.5, number, value),
-                        (bit + 0.5, number, 0),
-                    ]
+        class _RoundAxes(Axes3D):
+            def draw(self, renderer):
+                # Parallel y-planes have an exact back-to-front order. The
+                # default collection depth heuristic can hide shorter, nearer
+                # rounds behind taller, farther ones. Reorder before every
+                # draw so this also stays correct during interactive rotation.
+                far_first = sorted(
+                    getattr(self, "_round_artists", ()),
+                    key=lambda entry: entry[0],
+                    reverse=sin(radians(self.azim)) * cos(radians(self.elev)) < 0,
                 )
-                face_colors.append(colors(value))
-            plane = Poly3DCollection(
-                faces, facecolors=face_colors, edgecolors="none", alpha=1, antialiaseds=False
-            )
-            axis.add_collection3d(plane)
-            axis.scatter(
+                for index, (_, base, points) in enumerate(far_first):
+                    base.set_zorder(2 * index + 2)
+                    points.set_zorder(2 * index + 3)
+                super().draw(renderer)
+
+        axis = figure.add_subplot(axes_class=_RoundAxes, computed_zorder=False)
+        axis._round_artists = []
+        for number, profile in zip(numbers, profiles, strict=True):
+            if style == "planes":
+                faces, face_colors = [], []
+                for bit, value in enumerate(profile):
+                    faces.append(
+                        [
+                            (bit - 0.5, number, 0),
+                            (bit - 0.5, number, value),
+                            (bit + 0.5, number, value),
+                            (bit + 0.5, number, 0),
+                        ]
+                    )
+                    face_colors.append(colors(value))
+                base = Poly3DCollection(
+                    faces, facecolors=face_colors, edgecolors="none", alpha=1, antialiaseds=False
+                )
+                axis.add_collection3d(base)
+            else:
+                (base,) = axis.plot(
+                    [-0.5, len(profile) - 0.5],
+                    [number, number],
+                    [0, 0],
+                    color="#bcc3c9",
+                    linewidth=0.65,
+                )
+            points = axis.scatter(
                 range(len(profile)),
                 [number] * len(profile),
                 profile,
@@ -383,9 +415,10 @@ def _avalanche_figure(result, *, view, metric):
                 cmap=colors,
                 vmin=0,
                 vmax=1,
-                s=8,
+                s=3,
                 depthshade=False,
             )
+            axis._round_artists.append((number, base, points))
         axis.set(
             xlabel="Output bit (MSB first)",
             ylabel="Rounds",
