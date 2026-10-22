@@ -234,24 +234,16 @@ These commands check all published rounds:
        weight_threshold=0.32,
        entropy_threshold=0.32,
    )
-   row_format = "{!s:<5} | {!s:<14} | {!s:<9} | {!s:<16}"
-   lines = [
-       row_format.format("Round", "Full diffusion", "Avalanche", "Strict avalanche"),
-       "------+----------------+-----------+-----------------",
-   ]
-   for check in checks:
-       lines.append(row_format.format(
-           check["round"], check["full_diffusion"],
-           check["avalanche"], check["strict_avalanche"],
-       ))
-   print("\n".join(lines))
+   checks.to_terminal()
 
 .. plot::
    :context:
    :nofigs:
    :include-source: false
 
-   Path("_build/avalanche_criteria.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+   output = StringIO()
+   checks.to_terminal(file=output)
+   Path("_build/avalanche_criteria.txt").write_text(output.getvalue(), encoding="utf-8")
 
 .. literalinclude:: _build/avalanche_criteria.txt
    :language: text
@@ -261,6 +253,8 @@ missing output bits; weight allows that deviation from :math:`n/2`; entropy
 allows that many bits below :math:`n`. For Speck's 32-bit output, 0.32 is one
 percent of its width. Defaults are 0, 0.01 and 0.01 respectively. Bounds are
 inclusive. The tolerance values are retained in every returned check.
+``checks.to_terminal()`` formats the table inside CLAASP. Iterate over ``checks``
+or access ``checks.rounds`` to inspect the underlying decisions.
 
 Sample-dependent SAC check
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

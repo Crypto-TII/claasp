@@ -9,7 +9,11 @@ from claasp.analysis.advanced_trails import (
     propagate_truncated_xor_difference,
 )
 from claasp.analysis.algebraic import BooleanAlgebraicEvidence, analyze_boolean_algebra
-from claasp.analysis.avalanche import AvalancheResult, avalanche_probabilities
+from claasp.analysis.avalanche import (
+    AvalancheCriteriaResult,
+    AvalancheResult,
+    avalanche_probabilities,
+)
 from claasp.analysis.boomerang import (
     BoomerangExperimentResult,
     run_speck32_boomerang_experiment,
@@ -164,6 +168,7 @@ __all__ = [
     "AttackTarget",
     "AutoNDResult",
     "AvalancheDataset",
+    "AvalancheCriteriaResult",
     "AvalancheResult",
     "AvalancheSample",
     "BitPattern",

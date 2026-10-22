@@ -11,7 +11,7 @@ from enum import Enum
 from fractions import Fraction
 from math import isinf
 
-from claasp.analysis.avalanche import AvalancheResult
+from claasp.analysis.avalanche import AvalancheCriteriaResult, AvalancheResult
 from claasp.analysis.component_properties import ComponentPropertyResult, PropertyClaim
 from claasp.analysis.neural import NeuralExperimentResult
 from claasp.analysis.neural_experiments import NeuralRun
@@ -471,6 +471,26 @@ def component_property_section(
     return ReportSection("Component properties", tables=(table,))
 
 
+def _avalanche_criteria_section(result: AvalancheCriteriaResult) -> ReportSection:
+    """Adapt precomputed criterion decisions without running an analysis."""
+    columns = (
+        ("round", "Round"),
+        ("full_diffusion", "Full diffusion"),
+        ("avalanche", "Avalanche"),
+        ("strict_avalanche", "Strict avalanche"),
+    )
+    table = Table(
+        tuple(TableColumn(key, title) for key, title in columns),
+        tuple(
+            TableRow(
+                tuple(_text("unknown" if row[key] is None else str(row[key])) for key, _ in columns)
+            )
+            for row in result
+        ),
+    )
+    return ReportSection("Avalanche criteria", tables=(table,))
+
+
 def avalanche_section(
     result: AvalancheResult, *, details: bool = False, metric: str | None = None
 ) -> ReportSection:
@@ -478,7 +498,7 @@ def avalanche_section(
 
     EXAMPLES::
 
-        >>> from claasp.analysis.avalanche import AvalancheResult
+        >>> from claasp.analysis.avalanche import AvalancheCriteriaResult, AvalancheResult
         >>> result = AvalancheResult("demo", "plaintext", 2, 9, ((0.5,),))
         >>> len(avalanche_section(result).tables), len(avalanche_section(result, details=True).tables)
         (2, 3)

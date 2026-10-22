@@ -42,11 +42,17 @@ def plot_examples(result, key_result, chacha_result):
 def run_example(**parameters):
     """Return measurements and figures for the headless CI exercise."""
     results = measure_examples(**parameters)
+    results[0].check_criteria(
+        dependence_threshold=0, weight_threshold=0.32, entropy_threshold=0.32
+    ).to_terminal()
     return results, plot_examples(*results)
 
 
 if __name__ == "__main__":
     results = measure_examples()
     results[0].to_terminal()
+    results[0].check_criteria(
+        dependence_threshold=0, weight_threshold=0.32, entropy_threshold=0.32
+    ).to_terminal()
     plot_examples(*results)
     plt.show()

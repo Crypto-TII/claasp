@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import pathlib
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from math import isfinite, log, log2, sqrt
 from random import Random
+from types import MappingProxyType
 from typing import TYPE_CHECKING, TextIO
 
 from claasp.analysis.datasets import packed_bit_width
@@ -14,6 +15,54 @@ from claasp.graph import Primitive
 
 if TYPE_CHECKING:
     from claasp.drivers.renderers.presentation import FigureArtifact
+
+
+@dataclass(frozen=True, slots=True)
+class AvalancheCriteriaResult:
+    """Read-only per-round criterion decisions with terminal reporting.
+
+    Iterate or index this result to inspect decisions and their tolerances.
+    Formatting delegates to the presentation layer and reuses computed data.
+
+    EXAMPLES::
+
+        >>> result = AvalancheResult("demo", "state", 2, 0, ((0.5, 0.5),))
+        >>> checks = result.check_criteria()
+        >>> checks[0]["strict_avalanche"], len(checks)
+        (True, 1)
+    """
+
+    rounds: tuple[Mapping[str, int | float | bool | None], ...]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self, "rounds", tuple(MappingProxyType(dict(row)) for row in self.rounds)
+        )
+
+    def __iter__(self) -> Iterator[Mapping[str, int | float | bool | None]]:
+        return iter(self.rounds)
+
+    def __getitem__(self, index: int) -> Mapping[str, int | float | bool | None]:
+        return self.rounds[index]
+
+    def __len__(self) -> int:
+        return len(self.rounds)
+
+    def to_terminal(self, *, file: TextIO | None = None) -> None:
+        """Print the aligned round/criterion table to stdout or a text stream.
+
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> AvalancheResult("demo", "state", 2, 0, ((0.5,),)).check_criteria().to_terminal(file=output)
+            >>> "Full diffusion" in output.getvalue()
+            True
+        """
+        from claasp.presentation._terminal import to_terminal
+        from claasp.presentation.adapters import _avalanche_criteria_section
+
+        to_terminal(_avalanche_criteria_section(self), file=file)
 
 
 @dataclass(frozen=True, slots=True)
@@ -182,7 +231,7 @@ class AvalancheResult:
         dependence_threshold: float = 0.0,
         weight_threshold: float = 0.01,
         entropy_threshold: float = 0.01,
-    ) -> tuple[dict[str, int | float | bool | None], ...]:
+    ) -> AvalancheCriteriaResult:
         """Check full diffusion, avalanche and strict avalanche for every round.
 
         Tolerances are absolute output-bit counts (entropy uses bits). Every
@@ -197,24 +246,26 @@ class AvalancheResult:
         for value in (dependence_threshold, weight_threshold, entropy_threshold):
             if isinstance(value, bool) or not isfinite(value) or value < 0:
                 raise ValueError("criterion tolerances must be finite and nonnegative")
-        return tuple(
-            {
-                "round": number,
-                "full_diffusion": all(
-                    value >= len(matrix[0]) - dependence_threshold for value in dependence
-                ),
-                "avalanche": all(
-                    abs(value - len(matrix[0]) / 2) <= weight_threshold for value in weight
-                ),
-                "strict_avalanche": all(
-                    value >= len(matrix[0]) - entropy_threshold for value in entropy
-                ),
-                "dependence_threshold": dependence_threshold,
-                "weight_threshold": weight_threshold,
-                "entropy_threshold": entropy_threshold,
-            }
-            for (number, matrix), dependence, weight, entropy in zip(
-                _round_data(self), self.dependence(), self.weight(), self.entropy(), strict=True
+        return AvalancheCriteriaResult(
+            tuple(
+                {
+                    "round": number,
+                    "full_diffusion": all(
+                        value >= len(matrix[0]) - dependence_threshold for value in dependence
+                    ),
+                    "avalanche": all(
+                        abs(value - len(matrix[0]) / 2) <= weight_threshold for value in weight
+                    ),
+                    "strict_avalanche": all(
+                        value >= len(matrix[0]) - entropy_threshold for value in entropy
+                    ),
+                    "dependence_threshold": dependence_threshold,
+                    "weight_threshold": weight_threshold,
+                    "entropy_threshold": entropy_threshold,
+                }
+                for (number, matrix), dependence, weight, entropy in zip(
+                    _round_data(self), self.dependence(), self.weight(), self.entropy(), strict=True
+                )
             )
         )
 

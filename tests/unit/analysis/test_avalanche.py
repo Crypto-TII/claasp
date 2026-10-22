@@ -414,3 +414,35 @@ def test_statistical_band_respects_exact_binomial_false_detection_budget():
         if not lower <= successes / 100 <= upper
     )
     assert _comparison_count(result) * false_detection <= 1 - result.confidence
+
+
+def test_criteria_result_formats_aligned_terminal_output_without_recomputing(monkeypatch, capsys):
+    from io import StringIO
+
+    from claasp.analysis import AvalancheCriteriaResult, AvalancheResult
+
+    result = AvalancheResult("fixture", "state", 2, 0, ((0.5, 0.5),))
+    checks = result.check_criteria()
+    assert isinstance(checks, AvalancheCriteriaResult)
+    assert len(checks) == 1 and checks[0]["strict_avalanche"] is True
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("criteria recomputed while reporting")
+
+    monkeypatch.setattr(AvalancheResult, "check_criteria", forbidden)
+    checks.to_terminal()
+    stdout = capsys.readouterr().out
+    output = StringIO()
+    checks.to_terminal(file=output)
+    assert output.getvalue() == stdout
+    rows = [line for line in stdout.splitlines() if "|" in line]
+    assert "Full diffusion" in rows[0] and "Strict avalanche" in rows[0]
+    assert "unknown" in rows[1] and rows[1].count("True") == 3
+    positions = [[i for i, value in enumerate(line) if value == "|"] for line in rows]
+    assert positions[0] == positions[1]
+    from collections.abc import MutableMapping
+    from typing import cast
+
+    mutable = cast(MutableMapping[str, int | float | bool | None], checks[0])
+    with pytest.raises(TypeError):
+        mutable["strict_avalanche"] = False
