@@ -46,6 +46,7 @@ def test_advanced_script_runs_all_experiments_and_plots():
         ]
         assert results[1].lambda_value == 0.00001
         assert results[-1].method == "uniform_near_pairs"
+        assert results[-1].lambda_value == 1.0
         for result in results:
             result.to_terminal()
             result.plot(show=False)

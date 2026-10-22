@@ -153,7 +153,9 @@ inside the continuous domain. Other primitive inputs are sampled independently
 at Boolean endpoints and held equal within each pair. No outward perturbation
 or clipping is used.
 
-A smaller perturbation can shift the rounds where sign changes become visible:
+A smaller perturbation delays the transition. Keep twelve rounds here: with
+``lambda_value=0.00001``, a plot ending at round seven would look flat near zero.
+The later rounds reveal the rise toward the random-sign reference:
 
 .. plot::
    :context: close-figs
@@ -163,6 +165,12 @@ A smaller perturbation can shift the rounds where sign changes become visible:
        "plaintext", 1024, lambda_value=0.00001, seed=9,
    )
    smaller.plot()
+
+CAF records sign crossings, not the size of a numerical change. A zero value
+means no sampled output coordinate crossed zero at that round; the coordinates
+can still have changed in magnitude. More rounds can reveal a delayed rise.
+More samples improve estimation at the existing rounds, but do not make an
+individual perturbation grow faster.
 
 This changes the experiment, so it requires new evaluations. Changing only the
 report or saving a figure reuses its retained result.
@@ -174,14 +182,15 @@ Definition 14 (Continuous Avalanche Factor) in Coutinho, de Sousa Júnior and
 Borges's `Continuous Diffusion Analysis (2020)
 <https://doi.org/10.1109/ACCESS.2020.3005504>`_ uses continuous input pairs
 conditioned on Euclidean distance at most lambda. Select uniform close-pair
-sampling explicitly:
+sampling explicitly. For this illustration, use ``lambda_value=1.0`` so that
+sign crossings are readily visible:
 
 .. plot::
    :context: close-figs
    :include-source:
 
    uniform = primitive.analysis.continuous_diffusion(
-       "plaintext", 1024, seed=9, sampling="uniform_near_pairs",
+       "plaintext", 1024, lambda_value=1.0, seed=9, sampling="uniform_near_pairs",
    )
    uniform.plot()
 
@@ -190,9 +199,25 @@ proportion to the overlapping cube volume, and samples the first point within
 that overlap. This avoids an unbounded rejection search for close independent
 points in a high-dimensional cube.
 
-This distribution differs from the default Boolean-neighborhood experiment;
-the estimates need not agree. In particular, zero observed sign changes with
-a small perturbation and a limited budget do not establish absent diffusion.
+Here lambda is an absolute Euclidean distance in the continuous input cube,
+whose side length is two; ``1.0`` is a much larger perturbation than the default
+``0.001``. This is a demonstration of the metric's response, rather than an
+infinitesimal perturbation experiment. The curve is already near one after the
+early rounds: a flat plateau there means roughly half the output signs differ,
+on average. It does not mean the cipher values stopped changing.
+
+With the default ``lambda_value=0.001``, the same uniform-pair experiment can
+instead remain flat at zero across all twelve rounds. Nearby interior points
+can retain the same output signs even as their continuous magnitudes change.
+CAF alone cannot distinguish unchanged outputs from changed outputs that stay
+on the same side of zero. Increasing the sample budget may uncover rare sign
+crossings; it does not guarantee a curve rising toward one.
+
+The uniform and Boolean-neighborhood samplers explore different regions of the
+input cube. Their curves need not agree, and these plots also use different
+perturbation sizes. To isolate the effect of the sampling distribution, compare
+both samplers at the same ``lambda_value``. Neither a zero curve nor a plateau
+near one establishes a Boolean diffusion criterion or a security claim.
 
 Vary key coordinates
 ---------------------

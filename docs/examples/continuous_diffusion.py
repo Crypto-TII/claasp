@@ -12,7 +12,7 @@ def run_example(*, samples=1024):
     )
     key = primitive.analysis.continuous_diffusion("key", samples, seed=9)
     uniform = primitive.analysis.continuous_diffusion(
-        "plaintext", samples, seed=9, sampling="uniform_near_pairs"
+        "plaintext", samples, lambda_value=1.0, seed=9, sampling="uniform_near_pairs"
     )
     return result, smaller, key, uniform
 
