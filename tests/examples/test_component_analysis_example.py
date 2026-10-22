@@ -32,11 +32,19 @@ def test_basic_script_groups_repeated_sboxes_and_reports_evidence():
     assert result.groups[sbox_index].count == 34
     assert [item.value for item in result.properties[sbox_index]] == [4, 4, 3, True]
     assert "no default requests" in output.getvalue()
+    assert "64 bits; mapping=" in output.getvalue()
+    assert "80 bits; mapping=" in output.getvalue()
+    assert "5 bits; value=0x1" in output.getvalue()
+    assert "5 bits; value=0x2" in output.getvalue()
+    assert "4 bits; table=" in output.getvalue()
     assert "exact" in output.getvalue()
     assert "round[" not in output.getvalue()
     detailed = StringIO()
     result.to_terminal(details=True, file=detailed)
     assert "round[" in detailed.getvalue()
+    assert "Output position | Input position" in detailed.getvalue()
+    assert "Group 2: BitVectorSBox — table" in detailed.getvalue()
+    assert "Group 5: Constant — values" in detailed.getvalue()
 
 
 def test_advanced_script_exact_ddt_bounded_search_and_composite_leaf(tmp_path):

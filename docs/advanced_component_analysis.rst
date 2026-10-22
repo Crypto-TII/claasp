@@ -271,7 +271,8 @@ Reporting and reuse
 -------------------
 
 ``result.to_terminal(details=True)`` on the basic grouped result includes
-semantic identities, graph references, applicability and analysis methods.
+full indexed S-box tables, permutation mappings and constant values, together
+with semantic identities, graph references, applicability and analysis methods.
 For explicitly selected property tuples, omit ``details=False`` from
 ``component_property_section`` to retain the same provenance columns. Reports
 reuse computed values. ``present(result)`` and ``render_report`` support the

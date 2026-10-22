@@ -1053,11 +1053,33 @@ def adapt_result(result: object) -> AdaptationResult:
     )
 
 
+def _component_parameters(component):
+    from claasp.components import Constant
+
+    width = component.output_type.encoded_bit_size
+    description = f"{width} bits" if width is not None else str(component.output_type)
+    if isinstance(component, Constant) and width is not None:
+        value = 0
+        unit_width = component.output_type.unit_type.encoded_bit_size
+        if unit_width is not None:
+            for unit in component.values:
+                value = (value << unit_width) | unit
+            return f"{description}; value=0x{value:x}"
+    for name in ("table", "mapping"):
+        values = getattr(component, name, None)
+        if values is not None:
+            preview = ", ".join(str(value) for value in values[:4])
+            suffix = ", …" if len(values) > 4 else ""
+            return f"{description}; {name}=[{preview}{suffix}]"
+    return description
+
+
 def _component_analysis_section(result: ComponentAnalysisResult, *, details=False) -> ReportSection:
     inventory = Table(
         (
             TableColumn("group", "Group"),
             TableColumn("component", "Component"),
+            TableColumn("parameters", "Parameters"),
             TableColumn("count", "Occurrences", Alignment.RIGHT),
             TableColumn("analysis", "Analysis"),
         ),
@@ -1065,6 +1087,7 @@ def _component_analysis_section(result: ComponentAnalysisResult, *, details=Fals
             TableRow.of(
                 str(index),
                 type(group.representative).__name__,
+                _component_parameters(group.representative),
                 str(group.count),
                 "properties below" if properties else "no default requests",
             )
@@ -1078,10 +1101,30 @@ def _component_analysis_section(result: ComponentAnalysisResult, *, details=Fals
     for index, (group, properties) in enumerate(
         zip(result.groups, result.properties, strict=True), 1
     ):
-        if not properties:
-            continue
         if details:
-            tables.extend(component_property_section(properties).tables)
+            for name in ("table", "mapping", "values"):
+                values = getattr(group.representative, name, None)
+                if values is None:
+                    continue
+                labels = {
+                    "table": ("Input", "Output"),
+                    "mapping": ("Output position", "Input position"),
+                    "values": ("Unit index", "Value"),
+                }[name]
+                tables.append(
+                    Table(
+                        (TableColumn("index", labels[0]), TableColumn("value", labels[1])),
+                        tuple(
+                            TableRow.of(str(position), str(value))
+                            for position, value in enumerate(values)
+                        ),
+                        f"Group {index}: {type(group.representative).__name__} — {name}",
+                    )
+                )
+            if properties:
+                tables.extend(component_property_section(properties).tables)
+            continue
+        if not properties:
             continue
         tables.append(
             Table(

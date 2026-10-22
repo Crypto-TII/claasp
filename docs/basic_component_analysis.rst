@@ -36,6 +36,13 @@ Print the inventory and default properties:
 .. literalinclude:: _build/component_basic_terminal.txt
    :language: text
 
+Rows describe distinct semantic groups, not just operation names. Parameters
+show their widths and a short lookup-table or permutation preview. The two
+permutations act on the 64-bit state and the 80-bit key; the constants are
+five-bit encodings of round values one and two. ``Occurrences`` counts uses of
+each exact operation. Use ``result.to_terminal(details=True)`` for the full
+indexed tables and provenance.
+
 The same four-bit S-box occurs 34 times, including its uses in the key schedule.
 CLAASP groups equivalent operations and computes their properties once. The
 S-box has differential uniformity four, nonlinearity four and algebraic degree
