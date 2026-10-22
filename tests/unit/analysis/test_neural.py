@@ -135,3 +135,36 @@ def test_short_neural_api_records_dataset_and_training_settings_without_framewor
     assert result.dataset_seed == 17
     with pytest.raises(ValueError, match="nonzero"):
         Speck(number_of_rounds=1).analysis.neural_differential(driver=driver)
+
+
+@pytest.mark.parametrize("kind", ["neural_blackbox", "neural_differential"])
+def test_round_comparison_keeps_every_history_and_dataset_digest(kind):
+    class Driver:
+        def __init__(self):
+            self.resets = 0
+
+        def reset(self):
+            self.resets += 1
+
+        def train(self, dataset, experiment):
+            return NeuralExperimentResult((0.5,), "test-driver", True)
+
+    driver = Driver()
+    primitive = Speck(number_of_rounds=3)
+    options = {"input_difference": 1} if kind == "neural_differential" else {}
+    result = getattr(primitive.analysis, kind)(
+        rounds="all", samples=8, epochs=1, driver=driver, **options
+    )
+    assert [stage.round_number for stage in result.rounds] == [1, 2, 3]
+    assert len(set(result.dataset_digests)) == 3
+    assert driver.resets == 3
+    selected = getattr(primitive.analysis, kind)(
+        rounds=(1, 3), samples=8, epochs=1, driver=driver, **options
+    )
+    assert [stage.round_number for stage in selected.rounds] == [1, 3]
+
+
+@pytest.mark.parametrize("rounds", [(), (0,), (4,), (2, 1), (1, 1), (True,), "bad", 2])
+def test_round_comparison_validates_selection_before_training(rounds):
+    with pytest.raises(ValueError, match="rounds"):
+        Speck(number_of_rounds=3).analysis.neural_blackbox(rounds=rounds)

@@ -95,3 +95,14 @@ experiments, while retaining an untouched test set. ``driver.model`` exposes
 the fitted scikit-learn classifier for scoring or explicit export.
 
 Download :download:`the script <examples/advanced_neural_blackbox.py>`.
+
+Round comparisons
+-----------------
+
+Use ``rounds="all"`` to train a fresh default classifier at each round, as in
+the basic guide. An increasing sequence such as ``rounds=(1, 3, 5, 7)`` selects
+a subset up to the constructed primitive's round count. Every round uses the
+same training budget and seeds. ``result.plot()`` then defaults to round number;
+``result.plot(view="epochs")`` compares the retained learning curves. A custom
+driver's ``reset()`` hook is called before each selected round when available;
+other custom drivers must make their ``train`` call independent themselves.

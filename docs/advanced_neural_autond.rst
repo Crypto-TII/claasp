@@ -149,3 +149,11 @@ round-reduction contracts. A custom framework adapter implements
 inside the driver. No external repository or dynamic code execution is needed.
 
 Download :download:`the script <examples/advanced_neural_autond.py>`.
+
+To inspect the eventual approach to chance, use ``primitive.analysis.autond(rounds="all")``
+as in the basic guide. This starts at round one and trains through the
+primitive's configured final round without the early-stopping rule. The
+reported curves retain all measurements and omit a stopping-threshold line.
+The lower-level staged API offers ``stop_on_threshold=False`` for the same
+purpose with explicit starting and maximum rounds. The ordinary AutoND call
+continues to use its heuristic stopping rule.

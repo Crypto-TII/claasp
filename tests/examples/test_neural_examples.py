@@ -22,19 +22,19 @@ def test_basic_neural_scripts_train_and_report_without_retraining(kind, tmp_path
     from claasp.drivers.neural import SklearnMLPDriver
 
     result = _example(f"basic_neural_{kind}")
-    assert result.sample_count == 3000
+    assert result.sample_count == (30000 if kind == "blackbox" else 3000)
     assert all(len(stage.result.validation_accuracy) == 15 for stage in result.rounds)
     assert all(
         0 <= accuracy <= 1
         for stage in result.rounds
         for accuracy in stage.result.validation_accuracy
     )
-    if kind == "differential":
-        assert result.rounds[0].result.validation_accuracy[-1] > 0.8
+    assert [stage.round_number for stage in result.rounds] == list(range(1, 8))
+    assert result.rounds[0].result.validation_accuracy[-1] > 0.8
+    assert abs(result.rounds[-1].result.validation_accuracy[-1] - 0.5) < 0.1
     if kind == "autond":
-        assert [stage.round_number for stage in result.rounds] == [1, 2, 3]
         assert result.difference_search.best.packed_difference != 0
-        assert 0.5 < result.threshold < 1
+        assert result.threshold is None
 
     def forbidden(*args, **kwargs):
         raise AssertionError("reporting must reuse the trained result")

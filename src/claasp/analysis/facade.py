@@ -382,7 +382,7 @@ class Analysis:
     def neural_blackbox(self, input_name=None, **options):
         """Train a real-versus-random-output MLP with fixed other inputs.
 
-        Options include samples, epochs, seed, architecture and a custom driver.
+        Use rounds="all" for a round comparison; samples, epochs and seed set its budget.
         The returned result reports empirical validation accuracy.
 
         EXAMPLES::
@@ -398,7 +398,7 @@ class Analysis:
         """Train a related-input-pair distinguisher with explicit XOR differences.
 
         Unspecified input differences are zero. ``fixed_inputs`` optionally
-        fixes inputs across the entire dataset, including both label classes.
+        fixes inputs in both classes. Use rounds="all" to compare every round.
 
         EXAMPLES::
 
@@ -415,7 +415,7 @@ class Analysis:
         """Search input differences and train a bounded AutoND-style workflow.
 
         Defaults use one-bit candidate seeds, a small evolutionary search and
-        an MLP. TensorFlow architectures and search budgets are explicit options.
+        an MLP. Use rounds="all" to measure beyond the early-stopping recommendation.
 
         EXAMPLES::
 
@@ -443,6 +443,7 @@ class Analysis:
         experiment,
         maximum_round=None,
         significance_samples=None,
+        stop_on_threshold=True,
     ):
         """Train successive reduced-round neural distinguishers."""
 
@@ -457,6 +458,7 @@ class Analysis:
             experiment=experiment,
             maximum_round=maximum_round,
             significance_samples=significance_samples,
+            stop_on_threshold=stop_on_threshold,
         )
 
     def run_autond(self, driver, experiment, **options):

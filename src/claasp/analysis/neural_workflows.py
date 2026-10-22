@@ -221,8 +221,9 @@ def train_staged_neural_distinguisher(
     experiment: NeuralExperiment,
     maximum_round: int | None = None,
     significance_samples: int | None = None,
+    stop_on_threshold: bool = True,
 ) -> NeuralStagedTrainingResult:
-    """Train successive reduced-round distinguishers until accuracy loses significance.
+    """Train successive rounds; optionally continue past the heuristic threshold.
 
     EXAMPLES::
 
@@ -253,7 +254,9 @@ def train_staged_neural_distinguisher(
         )
         trained = driver.train(dataset, experiment)
         results.append(NeuralRoundTrainingResult(round_number, trained))
-        if not trained.validation_accuracy or max(trained.validation_accuracy) < threshold:
+        if stop_on_threshold and (
+            not trained.validation_accuracy or max(trained.validation_accuracy) < threshold
+        ):
             break
     return NeuralStagedTrainingResult(tuple(normalized.items()), tuple(results), threshold)
 

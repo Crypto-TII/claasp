@@ -10,10 +10,10 @@ Train a classifier to distinguish output pairs produced with a chosen plaintext 
 
    from claasp.primitives import Speck
 
-   primitive = Speck(number_of_rounds=2)
-   result = primitive.analysis.neural_differential("plaintext", 0x400000)
+   primitive = Speck(number_of_rounds=7)
+   result = primitive.analysis.neural_differential("plaintext", 0x400000, rounds="all")
 
-Print the training settings and measured validation accuracy:
+Print the training settings and measured validation accuracy for every round:
 
 .. code-block:: python
 
@@ -43,8 +43,14 @@ Print the training settings and measured validation accuracy:
 
 The dashed 0.5 line is the chance accuracy for balanced labels. These are
 held-out validation measurements used during training, rather than an
-independent test or a security claim. The defaults use 3,000 randomly labeled samples,
+independent test or a security claim. This example uses 3,000 randomly labeled samples per round,
 15 epochs, a 10% validation split, and seed 9. Reporting reuses the trained result.
+
+``rounds="all"`` measures every round instead of only the final round. The
+default plot shows final and peak validation accuracy against round number.
+Accuracy near 0.5 means this model and budget no longer find a useful
+distinction; small fluctuations around 0.5 are expected. The decline is
+empirical and need not be monotonic or mark a security boundary.
 
 Download :download:`the script <examples/basic_neural_differential.py>`.
 Continue to :doc:`advanced_neural_differential` for experiment parameters and interpretation.

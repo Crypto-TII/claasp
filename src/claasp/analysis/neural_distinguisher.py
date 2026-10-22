@@ -1,6 +1,6 @@
 """Short neural-analysis workflows over framework-independent data contracts."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import TYPE_CHECKING, TextIO
 
@@ -56,8 +56,8 @@ class NeuralAnalysisResult:
     ) -> "FigureArtifact":
         """Plot stored validation accuracy by epoch or round without retraining.
 
-        The default is epochs for individual distinguishers and rounds for
-        AutoND. The 0.5 line is balanced-label chance, not a significance test.
+        The default is rounds for multi-round comparisons and AutoND,
+        and epochs for an individual distinguisher. The 0.5 line is balanced-label chance, not a significance test.
         """
         from claasp.drivers.renderers.presentation import _plot_neural_analysis
 
@@ -92,7 +92,59 @@ def _train_neural(
     driver=None,
     input_differences=None,
     fixed_inputs=None,
+    rounds=None,
 ):
+    if rounds is not None:
+        total = len(primitive.graph.rounds)
+        if isinstance(rounds, str):
+            if rounds != "all":
+                raise ValueError("rounds must be 'all' or increasing round numbers")
+            numbers = tuple(range(1, total + 1))
+        else:
+            try:
+                numbers = tuple(rounds)
+            except TypeError as error:
+                raise ValueError("rounds must be 'all' or increasing round numbers") from error
+        if (
+            not numbers
+            or any(
+                not isinstance(n, int) or isinstance(n, bool) or not 1 <= n <= total
+                for n in numbers
+            )
+            or tuple(sorted(set(numbers))) != numbers
+        ):
+            raise ValueError(f"rounds must be unique increasing integers between 1 and {total}")
+        results = []
+        for number in numbers:
+            reduced = (
+                primitive if number == total else primitive.edit.reduce_rounds(number).primitive
+            )
+            if driver is not None and callable(getattr(driver, "reset", None)):
+                driver.reset()
+            results.append(
+                _train_neural(
+                    reduced,
+                    kind,
+                    input_name,
+                    input_difference,
+                    samples=samples,
+                    epochs=epochs,
+                    batch_size=batch_size,
+                    validation_fraction=validation_fraction,
+                    seed=seed,
+                    architecture=architecture,
+                    driver=driver,
+                    input_differences=input_differences,
+                    fixed_inputs=fixed_inputs,
+                )
+            )
+        return replace(
+            results[-1],
+            rounds=tuple(stage for result in results for stage in result.rounds),
+            dataset_digests=tuple(
+                digest for result in results for digest in result.dataset_digests
+            ),
+        )
     experiment = NeuralExperiment(architecture, epochs, batch_size, validation_fraction, seed)
     selected = input_name or _active_inputs(primitive, None)[0]
     if selected not in primitive.graph.input_arrays:
@@ -144,9 +196,12 @@ def _autond(
     optimizer_samples=64,
     active_inputs=None,
     initial_candidates=None,
+    rounds=None,
 ):
     from claasp.analysis.datasets import packed_bit_width
 
+    if rounds not in (None, "all"):
+        raise ValueError("AutoND rounds must be None or 'all'")
     names = _active_inputs(primitive, active_inputs)
     if initial_candidates is None:
         width = sum(packed_bit_width(primitive, name) for name in names)
@@ -179,10 +234,11 @@ def _autond(
         primitive,
         _driver(primitive, architecture, driver),
         differences,
-        starting_round=max(1, search.best.highest_round - 3),
+        starting_round=1 if rounds == "all" else max(1, search.best.highest_round - 3),
         samples=samples,
         experiment=experiment,
         significance_samples=validation_count,
+        stop_on_threshold=rounds != "all",
     )
     return NeuralAnalysisResult(
         primitive.family_name,
@@ -192,7 +248,7 @@ def _autond(
         experiment,
         training.rounds,
         training.input_differences,
-        threshold=training.threshold,
+        threshold=training.threshold if rounds is None else None,
         difference_search=search,
     )
 

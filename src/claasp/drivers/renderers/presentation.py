@@ -599,7 +599,7 @@ def _plot_component_ddt(result, *, include_zero, scale, show, save_to):
 
 
 def _plot_neural_analysis(result, *, view, show, save_to):
-    view = view or ("rounds" if result.kind == "autond" else "epochs")
+    view = view or ("rounds" if result.kind == "autond" or len(result.rounds) > 1 else "epochs")
     return _plot_neural_histories(
         tuple((row.round_number, row.result.validation_accuracy) for row in result.rounds),
         title=f"{result.primitive_family} — {result.kind}",
