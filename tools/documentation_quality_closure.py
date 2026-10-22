@@ -101,6 +101,7 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
     expected_override = {
         "module": EXPECTED_TYPING_BOUNDARIES,
         "follow_imports": "skip",
+        "follow_imports_for_stubs": True,
         "ignore_missing_imports": True,
     }
     if overrides != [expected_override]:

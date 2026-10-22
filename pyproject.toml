@@ -131,7 +131,9 @@ module = [
   "tensorflow",
   "tensorflow.*",
 ]
+# Apply the same boundary to .pyi files shipped by optional packages.
 follow_imports = "skip"
+follow_imports_for_stubs = true
 ignore_missing_imports = true
 
 [tool.setuptools.packages.find]

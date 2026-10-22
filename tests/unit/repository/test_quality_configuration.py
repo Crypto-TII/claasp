@@ -108,3 +108,35 @@ def test_typing_baseline_identity_is_stable_across_architecture_columns():
     current = closure.build_baseline("mypy 2.3.1 (compiled: yes)", [shifted])
 
     assert closure.validate_baseline(recorded, current) == ([], [])
+
+
+def test_optional_stubs_are_skipped_even_with_newer_python_syntax(tmp_path):
+    """Optional wheels may ship stubs for a newer Python than our target."""
+    import os
+    import subprocess
+
+    pytest.importorskip("mypy")
+    package = tmp_path / "numpy"
+    package.mkdir()
+    (package / "__init__.pyi").write_text("type Array = tuple[int, ...]\n", encoding="utf-8")
+    example = tmp_path / "example.py"
+    example.write_text("import numpy\nnumpy.zeros(1)\n", encoding="utf-8")
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "mypy",
+            "--config-file",
+            str(ROOT / "pyproject.toml"),
+            "--no-incremental",
+            "--python-version",
+            "3.11",
+            str(example),
+        ],
+        cwd=ROOT,
+        env={**os.environ, "MYPYPATH": str(tmp_path)},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
