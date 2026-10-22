@@ -27,8 +27,14 @@ standard output unless a text stream is supplied. Trail reports accept
 ``details=True`` for component-level evidence. Markdown and other formats
 remain available through the explicit presentation API.
 
+Avalanche terminal reports show round statistics by default and add the
+bit-level matrices with ``details=True``. Analysis retains raw round
+probabilities; the selected metric and empirical tolerance determine summaries.
+
 ``AvalancheResult.plot()`` delegates to the optional Matplotlib driver, which
-owns figure creation, saving, and display. It displays by default, accepts
+owns figure creation, saving, and display. Its default view shows round
+minimum, maximum, average, and threshold; ``view="heatmap"`` and ``view="3d"``
+show averaged round profiles. It displays by default, accepts
 ``show=False`` and ``save_to``, and returns a ``FigureArtifact``. The result
 class does not import Matplotlib at module load, select a backend, or rerun an
 analysis. Trail plotting is not exposed because it has no implemented renderer.

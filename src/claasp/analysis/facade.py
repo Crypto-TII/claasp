@@ -324,8 +324,10 @@ class Analysis:
         *,
         seed: int = 0,
         fixed_inputs=None,
+        metric: str = "probability",
+        threshold: float = 0.01,
     ):
-        """Estimate the strict-avalanche matrix through the public evaluator."""
+        """Measure avalanche probabilities at published round outputs."""
 
         from claasp.analysis.avalanche import avalanche_probabilities
 
@@ -335,6 +337,8 @@ class Analysis:
             number_of_samples,
             seed=seed,
             fixed_inputs=fixed_inputs,
+            metric=metric,
+            threshold=threshold,
         )
 
     def run_statistical_tests(

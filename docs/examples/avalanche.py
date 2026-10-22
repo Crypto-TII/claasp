@@ -1,116 +1,30 @@
-"""Display round-by-round avalanche measurements with Matplotlib.
+"""Display reproducible round-by-round avalanche measurements.
 
 Run with ``python docs/examples/avalanche.py`` after installing ``.[presentation]``.
-The documentation and CI execute this same file. Increase the sample counts
-for experiments; the defaults keep the documentation demonstration affordable.
+Documentation and CI use this same script, with smaller budgets in CI.
 """
 
-from math import log2
-
 from matplotlib import pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
 
 from claasp.primitives import ChaChaPermutation, Speck
 
 
-def round_results(factory, input_name, rounds, samples, *, seed=9):
-    """Measure each round prefix using identical seeded input samples."""
-    return tuple(
-        factory(number_of_rounds=round_number).analysis.avalanche(input_name, samples, seed=seed)
-        for round_number in range(1, rounds + 1)
-    )
-
-
-def binary_entropy(probability):
-    """Return Bernoulli entropy in bits, including the endpoint limits."""
-    if probability in (0.0, 1.0):
-        return 0.0
-    return -probability * log2(probability) - (1 - probability) * log2(1 - probability)
-
-
-def output_profile(result, *, entropy=False):
-    """Average over flipped input bits, preserving each output-bit position.
-
-    Entropy is computed for each probability before averaging, as in the
-    entropy heatmap. Entropy of the average would hide deterministic flips.
-    """
-    return tuple(
-        sum(binary_entropy(p) if entropy else p for p in column) / result.input_bit_count
-        for column in zip(*result.probabilities, strict=True)
-    )
-
-
-def entropy_plot(results, label):
-    """Show average bit-flip entropy by round and output bit."""
-    figure, axis = plt.subplots(figsize=(9, 4), layout="constrained")
-    image = axis.imshow(
-        [output_profile(result, entropy=True) for result in results],
-        origin="lower",
-        aspect="auto",
-        extent=(-0.5, results[0].output_bit_count - 0.5, 0.5, len(results) + 0.5),
-        vmin=0,
-        vmax=1,
-        cmap="RdYlGn",
-    )
-    axis.set_xlabel("Output bit (MSB first)")
-    axis.set_ylabel("Rounds")
-    axis.set_title(
-        f"{label}: average avalanche entropy\nn={results[0].sample_count}, seed={results[0].seed}; empirical"
-    )
-    figure.colorbar(image, ax=axis, label="Mean binary entropy (bits)")
-    return figure
-
-
-def weight_plot(results, label):
-    """Show a 3D mean flip-probability view."""
-    figure = plt.figure(figsize=(10, 5), layout="constrained")
-    axis = figure.add_subplot(projection="3d")
-    output_bits, rounds, values = [], [], []
-    for round_number, result in enumerate(results, start=1):
-        output_bits.extend(range(result.output_bit_count))
-        rounds.extend([round_number] * result.output_bit_count)
-        values.extend(output_profile(result))
-    colors = LinearSegmentedColormap.from_list(
-        "AvalancheProbability",
-        [plt.get_cmap("RdYlGn")(1 - abs(2 * index / 256 - 1)) for index in range(257)],
-        N=257,
-    )
-    points = axis.scatter(
-        output_bits,
-        rounds,
-        values,
-        c=values,
-        cmap=colors,
-        vmin=0,
-        vmax=1,
-        marker=".",
-        s=8,
-        depthshade=False,
-    )
-    figure.colorbar(
-        points, ax=axis, label="Mean flip probability (ideal 0.5)", shrink=0.7, pad=0.12
-    )
-    axis.set_xlabel("Output bit (MSB first)")
-    axis.set_ylabel("Rounds")
-    axis.set_zlabel("Mean flip probability")
-    axis.set_zlim(0, 1)
-    axis.set_title(
-        f"{label}: avalanche weight\nn={results[0].sample_count}, seed={results[0].seed}; empirical"
-    )
-    return figure
-
-
 def run_example(*, speck_rounds=22, speck_samples=16, chacha_rounds=5, chacha_samples=4):
-    """Return the measured results and four figures without showing them."""
+    """Return the measured results and five figures without displaying them."""
     # example-start
-    speck = round_results(Speck, "plaintext", speck_rounds, speck_samples)
-    key = round_results(Speck, "key", speck_rounds, speck_samples)
-    chacha = round_results(ChaChaPermutation, "state", chacha_rounds, chacha_samples)
+    speck = Speck(number_of_rounds=speck_rounds).analysis.avalanche(
+        "plaintext", speck_samples, seed=9
+    )
+    key = Speck(number_of_rounds=speck_rounds).analysis.avalanche("key", speck_samples, seed=9)
+    chacha = ChaChaPermutation(number_of_rounds=chacha_rounds).analysis.avalanche(
+        "state", chacha_samples, seed=9
+    )
     figures = (
-        entropy_plot(speck, "Speck32/64 — plaintext flips"),
-        entropy_plot(key, "Speck32/64 — key flips"),
-        weight_plot(speck, "Speck32/64 — plaintext flips"),
-        weight_plot(chacha, "ChaCha permutation — state flips"),
+        speck.plot(show=False).figure,
+        speck.plot(view="heatmap", metric="entropy", show=False).figure,
+        key.plot(view="heatmap", metric="entropy", show=False).figure,
+        speck.plot(view="3d", show=False).figure,
+        chacha.plot(view="3d", show=False).figure,
     )
     # example-end
     return (speck, key, chacha), figures

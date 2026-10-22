@@ -205,19 +205,16 @@ def test_avalanche_plot_defaults_to_display_and_can_save_headlessly(monkeypatch,
     try:
         artifact = result.plot()
         assert calls == ["display"]
-        assert artifact.kind == "avalanche_matrix"
-        assert artifact.series == (("input_bit_0", (0.0, 0.5)), ("input_bit_1", (1.0, 0.5)))
+        assert artifact.kind == "avalanche_summary"
+        assert artifact.series == (
+            ("minimum", (0.0,)),
+            ("maximum", (1.0,)),
+            ("average", (0.5,)),
+            ("lower_threshold", (0.49,)),
+            ("upper_threshold", (0.51,)),
+        )
         assert pyplot.gcf() is artifact.figure
-        assert pyplot.gcf().axes[0].images[0].get_clim() == (0, 1)
-        image = pyplot.gcf().axes[0].images[0]
-        assert image.to_rgba(0.0) == pyplot.get_cmap("RdYlGn")(0.0)
-        assert image.to_rgba(0.5) == pyplot.get_cmap("RdYlGn")(1.0)
-        assert image.to_rgba(1.0) == pyplot.get_cmap("RdYlGn")(0.0)
-        assert image.to_rgba(0.25) == image.to_rgba(0.75)
-        for probability in (0.125, 0.25, 0.375, 0.625, 0.75, 0.875):
-            assert image.to_rgba(probability) == pyplot.get_cmap("RdYlGn")(
-                1 - abs(2 * probability - 1)
-            )
+        assert pyplot.gcf().axes[0].get_xlabel() == "Rounds"
         path = tmp_path / "avalanche.png"
         saved = result.plot(show=False, save_to=path)
         assert calls == ["display"]
@@ -243,3 +240,82 @@ def test_avalanche_plot_explains_missing_optional_dependency(monkeypatch):
     result = AvalancheResult("fixture", "plaintext", 2, 9, ((0.5,),))
     with pytest.raises(ImportError, match="presentation"):
         result.plot(show=False)
+
+
+@pytest.mark.parametrize("metric", ["probability", "entropy", "weight"])
+@pytest.mark.parametrize("view", ["summary", "heatmap", "3d"])
+def test_avalanche_round_views_preserve_values_colors_and_opaque_planes(view, metric):
+    from claasp.analysis.avalanche import _round_profiles
+
+    first = ((0.0, 0.5), (1.0, 0.5))
+    final = ((0.25, 0.5), (0.75, 0.5))
+    result = AvalancheResult(
+        "fixture",
+        "plaintext",
+        4,
+        9,
+        final,
+        round_probabilities=(first, final),
+        round_numbers=(1, 2),
+    )
+    try:
+        artifact = result.plot(view=view, metric=metric, show=False)
+        axis = pyplot.gcf().axes[0]
+        assert artifact.kind == f"avalanche_{view}"
+        if view == "summary":
+            expected_minimum = (
+                (0.0, 0.25) if metric != "entropy" else (0.0, pytest.approx(0.8112781244591328))
+            )
+            assert artifact.series[0][1] == expected_minimum
+            assert artifact.series[-2][0] == "lower_threshold"
+        else:
+            profiles = _round_profiles(result, metric)
+            assert artifact.series == (("round_1", profiles[0]), ("round_2", profiles[1]))
+            if view == "heatmap":
+                image = axis.images[0]
+                assert image.get_clim() == (0, 1)
+                assert image.to_rgba(1.0 if metric == "entropy" else 0.5) == pyplot.get_cmap(
+                    "RdYlGn"
+                )(1.0)
+            else:
+                planes = [
+                    item for item in axis.collections if type(item).__name__ == "Poly3DCollection"
+                ]
+                assert len(planes) == 2
+                assert all(item.get_alpha() == 1 for item in planes)
+                assert all(color[-1] == 1 for item in planes for color in item.get_facecolors())
+                for plane, profile in zip(planes, profiles, strict=True):
+                    expected_colors = sorted(
+                        tuple(
+                            pyplot.get_cmap("RdYlGn")(
+                                value if metric == "entropy" else 1 - abs(2 * value - 1)
+                            )
+                        )
+                        for value in profile
+                    )
+                    assert (
+                        sorted(tuple(color) for color in plane.get_facecolors()) == expected_colors
+                    )
+
+                points = [
+                    item for item in axis.collections if type(item).__name__ == "Path3DCollection"
+                ]
+                assert len(points) == 2
+                assert points[0].to_rgba(1.0 if metric == "entropy" else 0.5) == pyplot.get_cmap(
+                    "RdYlGn"
+                )(1.0)
+                if metric != "entropy":
+                    for probability in (0, 0.125, 0.25, 0.375, 0.5, 0.75, 1.0):
+                        assert points[0].to_rgba(float(probability)) == pyplot.get_cmap("RdYlGn")(
+                            1 - abs(2 * probability - 1)
+                        )
+    finally:
+        pyplot.close("all")
+
+
+def test_avalanche_plot_rejects_unknown_views_and_metrics():
+    result = AvalancheResult("fixture", "plaintext", 2, 9, ((0.5,),))
+    with pytest.raises(ValueError, match="view"):
+        result.plot(view="unknown", show=False)
+    with pytest.raises(ValueError, match="metric"):
+        result.plot(metric="unknown", show=False)

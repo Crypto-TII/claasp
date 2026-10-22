@@ -471,19 +471,30 @@ def component_property_section(
     return ReportSection("Component properties", tables=(table,))
 
 
-def avalanche_section(result: AvalancheResult) -> ReportSection:
-    """Present empirical avalanche metadata, summaries, and the fixed matrix.
+def avalanche_section(
+    result: AvalancheResult, *, details: bool = False, metric: str | None = None
+) -> ReportSection:
+    """Present empirical round statistics and, optionally, bit matrices.
 
     EXAMPLES::
 
-        >>> try:
-        ...     avalanche_section()
-        ... except TypeError:
-        ...     print("required arguments rejected")
-        required arguments rejected
+        >>> from claasp.analysis.avalanche import AvalancheResult
+        >>> result = AvalancheResult("demo", "plaintext", 2, 9, ((0.5,),))
+        >>> len(avalanche_section(result).tables), len(avalanche_section(result, details=True).tables)
+        (2, 3)
     """
+    from claasp.analysis.avalanche import (
+        _criterion_bounds,
+        _metric_matrix,
+        _round_data,
+        _round_statistics,
+        _validate_metric,
+    )
 
+    selected = _validate_metric(result.metric if metric is None else metric)
+    lower, upper = _criterion_bounds(selected, result.threshold)
     empirical = PresentationEvidence(EvidenceClass.EMPIRICAL, complete=False)
+    final_round = str(result.round_numbers[-1]) if result.round_numbers else "unknown"
     summary = Table(
         (TableColumn("field", "Field"), TableColumn("value", "Value", Alignment.RIGHT)),
         (
@@ -491,32 +502,91 @@ def avalanche_section(result: AvalancheResult) -> ReportSection:
             TableRow((_text("input"), _text(result.input_name))),
             TableRow((_text("samples"), _integer(result.sample_count, empirical))),
             TableRow((_text("seed"), _integer(result.seed, empirical))),
-            TableRow((_text("method"), _text(result.method, empirical))),
+            TableRow((_text("method"), _text(f"avalanche_{selected}", empirical))),
+            TableRow((_text("evaluation method"), _text(result.method, empirical))),
+            TableRow((_text("final round"), _text(final_round))),
             TableRow(
                 (
-                    _text("maximum SAC bias"),
+                    _text(f"maximum SAC bias (final round {final_round})"),
                     _number(result.maximum_sac_bias, ValueKind.PROBABILITY, empirical),
+                )
+            ),
+            TableRow(
+                (
+                    _text("empirical criterion"),
+                    _text(
+                        f"all bit pairs in [{lower:g}, {upper:g}]; tolerance {result.threshold:g}",
+                        empirical,
+                    ),
+                )
+            ),
+            TableRow(
+                (
+                    _text("positions"),
+                    _text("(input bit, output bit), MSB first; first 8 ties shown"),
                 )
             ),
         ),
         "Avalanche summary",
     )
-    matrix = Table(
-        (TableColumn("input_bit", "Input bit", Alignment.RIGHT),)
-        + tuple(
-            TableColumn(f"output_{index}", f"Output {index}", Alignment.RIGHT)
-            for index in range(result.output_bit_count)
+
+    def positions_text(positions):
+        text = ", ".join(f"({i},{o})" for i, o in positions[:8])
+        return text + (f" ... (+{len(positions) - 8})" if len(positions) > 8 else "")
+
+    statistics = Table(
+        tuple(
+            TableColumn(key, label)
+            for key, label in (
+                ("round", "Round"),
+                ("minimum", "Min"),
+                ("min_positions", "Min positions"),
+                ("maximum", "Max"),
+                ("max_positions", "Max positions"),
+                ("average", "Average"),
+                ("criterion", "Empirical criterion"),
+            )
         ),
         tuple(
             TableRow(
-                (_integer(index),)
-                + tuple(_number(value, ValueKind.PROBABILITY, empirical) for value in row)
+                (
+                    _text(str(item.number) if item.number is not None else "unknown"),
+                    _number(item.minimum, ValueKind.PROBABILITY, empirical),
+                    _text(positions_text(item.minimum_positions)),
+                    _number(item.maximum, ValueKind.PROBABILITY, empirical),
+                    _text(positions_text(item.maximum_positions)),
+                    _number(item.average, ValueKind.PROBABILITY, empirical),
+                    _text("met" if item.satisfied else "not met", empirical),
+                )
             )
-            for index, row in enumerate(result.probabilities)
+            for item in _round_statistics(result, selected)
         ),
-        "Empirical output-flip probabilities",
+        f"Round statistics — avalanche {selected}",
     )
-    return ReportSection("Avalanche", tables=(summary, matrix))
+    matrices = []
+    if details:
+        for number, probabilities in _round_data(result):
+            matrix = _metric_matrix(probabilities, selected)
+            matrices.append(
+                Table(
+                    (TableColumn("input_bit", "Input bit", Alignment.RIGHT),)
+                    + tuple(
+                        TableColumn(f"output_{index}", f"Output {index}", Alignment.RIGHT)
+                        for index in range(len(matrix[0]))
+                    ),
+                    tuple(
+                        TableRow(
+                            (_integer(index),)
+                            + tuple(
+                                _number(value, ValueKind.PROBABILITY, empirical) for value in row
+                            )
+                        )
+                        for index, row in enumerate(matrix)
+                    ),
+                    f"Empirical avalanche {selected} — round {number if number is not None else 'unknown'}",
+                )
+            )
+    return ReportSection("Avalanche", tables=(summary, statistics, *matrices))
 
 
 def _statistical_payload(result):

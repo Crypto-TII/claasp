@@ -141,7 +141,7 @@ dataset SHA-256, suite/tool version, command, and runtime.
    >>> from claasp.presentation import avalanche_section
    >>> avalanche = AvalancheResult(
    ...     "speck", "plaintext", 4, 9, ((0.0, 0.5), (1.0, 0.25)))
-   >>> summary, matrix = avalanche_section(avalanche).tables
+   >>> summary, statistics, matrix = avalanche_section(avalanche, details=True).tables
    >>> (summary.rows[2].cells[1].text, summary.rows[3].cells[1].text)
    ('4', '9')
    >>> matrix.rows[1].cells[2].text
@@ -193,9 +193,17 @@ programs::
    avalanche.to_terminal()
    artifact = avalanche.plot(show=False, save_to="avalanche.png")
 
-``avalanche.plot()`` displays a heatmap by default. ``show=False`` creates it
-without displaying it, and ``save_to`` saves it before display. The returned
+``avalanche.to_terminal()`` prints metadata and round minima, maxima,
+positions, averages, and empirical criterion decisions. ``details=True`` adds
+full matrices. ``metric="entropy"`` selects entropy rather than probability;
+``"weight"`` retains the legacy per-bit probability meaning.
+
+``avalanche.plot()`` displays minimum, maximum, average, and threshold by round.
+Select ``view="heatmap"`` for round/output-bit averages or ``view="3d"`` for
+opaque, value-colored round profiles. ``show=False`` creates the plot without
+displaying it, and ``save_to`` saves it before display. The returned
 ``FigureArtifact`` retains the figure, plotted series, and renderer identity.
+See :doc:`basic_avalanche_analysis` for all three views and the threshold rules.
 These conveniences consume existing results and never repeat the analysis.
 
 Radar charts additionally require one ``RadarScale`` per included property.

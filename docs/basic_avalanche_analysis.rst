@@ -1,43 +1,144 @@
 Avalanche tests
 ===============
 
-How quickly does a one-bit input change spread through a primitive? CLAASP can
-estimate the probability that each output bit changes, then display how that
-behavior develops over successive rounds.
+How quickly does a one-bit input change spread through a primitive? CLAASP
+measures output-bit flips at each published round boundary and at the final
+output. The same result supports a compact terminal report, detailed matrices,
+and three plot views.
 
-This example includes Speck32/64 entropy plots and 3D avalanche weight views
-for Speck and the ChaCha permutation.
-
-Measure and display
--------------------
-
-For a single round count, the analysis itself takes only a few lines:
+Measure once
+------------
 
 .. code-block:: python
 
    from claasp.primitives import Speck
 
-   result = Speck(number_of_rounds=22).analysis.avalanche("plaintext", 16, seed=9)
-   result.to_terminal()
-   result.plot()
+   speck = Speck(number_of_rounds=22)
+   result = speck.analysis.avalanche("plaintext", 16, seed=9, threshold=0.01)
 
-``to_terminal()`` prints the measurement report; ``plot()`` displays the
-probability heatmap. No separate Matplotlib import is needed. You can also save
-the plot, or obtain its figure artifact without displaying it:
+The input is varied by flipping each of its bits independently. Other inputs
+are sampled too: this plaintext experiment samples random keys. A key-flip
+experiment uses ``"key"`` instead. Bit positions use MSB-first packed order.
+A single set of paired evaluations retains every published round output;
+rendering does not rerun the analysis.
+
+Basic and detailed terminal reports
+-----------------------------------
 
 .. code-block:: python
 
-   result.plot(save_to="speck_avalanche.png")
-   artifact = result.plot(show=False)
+   result.to_terminal()
+   result.to_terminal(details=True)
 
-Each matrix entry estimates the chance that one output bit flips when one
-selected input bit is flipped. Bit positions follow MSB-first packed order.
-Other inputs are sampled too: the plaintext experiment samples random keys,
-while the key experiment samples random plaintexts.
+The basic view prints the primitive, input, sample count, seed, selected analysis
+method, and evaluation method. The maximum SAC bias is explicitly labelled with
+the final round number: it is the largest absolute deviation of a final-output
+flip probability from one half, regardless of the selected display metric.
 
-To follow diffusion through the rounds, the downloadable example measures each
-round prefix with the same seed and sample count. Its plotting helpers produce
-the following views:
+A table then gives, for every measured round:
+
+* Minimum and maximum values, with their ``(input bit, output bit)`` positions.
+* Average over all input/output-bit pairs.
+* Whether every pair meets the stated empirical threshold.
+
+Up to eight tied positions are printed, with the number of additional ties.
+The detailed view adds the full input-bit by output-bit matrix for each round,
+so the basic report remains manageable for large primitives. If a primitive
+publishes only its final output, only that output is reported; missing round
+boundaries are not reconstructed. Round labels exclude leading setup rounds
+when the primitive declares a cryptographic round count, as AES does.
+
+Choose the measurement and threshold
+------------------------------------
+
+The metrics are:
+
+* ``"probability"``: the empirical output-flip probability, with target 0.5.
+* ``"entropy"``: binary entropy :math:`h(p)=-p\log_2 p-(1-p)\log_2(1-p)`,
+  with target 1. Endpoint probabilities have entropy zero.
+* ``"weight"``: the legacy avalanche-weight name for the per-bit flip
+  probability, with the same target and units as ``"probability"``.
+
+Choose a default metric when measuring, or select a different metric when
+rendering the existing probabilities:
+
+.. code-block:: python
+
+   result = speck.analysis.avalanche(
+       "plaintext", 16, seed=9, metric="probability", threshold=0.01
+   )
+   result.to_terminal(metric="entropy")
+
+``threshold`` is an absolute tolerance in the selected metric's units.
+Probability and weight pass when **every input/output-bit pair** lies in
+``[0.5 - threshold, 0.5 + threshold]``, clipped to ``[0, 1]``. Entropy passes
+when every pair lies in ``[1 - threshold, 1]``. Endpoints are included.
+For the default tolerance 0.01, these bands are ``[0.49, 0.51]`` and
+``[0.99, 1]``, respectively. Changing the metric retains the numerical tolerance.
+
+This is an empirical acceptance criterion, not a statistical confidence interval
+or a proof of the strict avalanche criterion. Sixteen samples are intentionally
+small and noisy: even well-diffused rounds may fail this tight band. Increase
+the sample count for an actual experiment.
+
+Choose a plot view
+------------------
+
+The default plot has rounds on the horizontal axis and the minimum, maximum,
+average, and threshold bounds on the vertical axis:
+
+.. code-block:: python
+
+   result.plot()
+   result.plot(view="summary", metric="entropy")
+
+The 2D heatmap shows rounds versus output-bit positions. Each cell averages the
+selected metric over flipped input bits:
+
+.. code-block:: python
+
+   result.plot(view="heatmap")
+   result.plot(view="heatmap", metric="entropy")
+
+The 3D view shows the same round/output-bit averages as opaque filled round
+profiles. The faces use the values' color shades, and nearer profiles hide
+profiles behind them:
+
+.. code-block:: python
+
+   result.plot(view="3d")
+   result.plot(view="3d", metric="entropy")
+
+No separate Matplotlib import is needed for these calls. All views can be
+saved or created without displaying a window:
+
+.. code-block:: python
+
+   result.plot(view="summary", save_to="avalanche_summary.png")
+   artifact = result.plot(view="3d", show=False, save_to="avalanche_3d.png")
+
+The returned ``FigureArtifact`` contains the figure and plotted series. The
+explicit ``MatplotlibPresentationDriver().avalanche_matrix(result)`` also remains
+available for an input-bit by output-bit heatmap of the final output.
+
+Read the colors and averages
+----------------------------
+
+Probability and weight use the full red-orange-yellow-dark-green palette toward
+0.5, then reverse it toward 1. Equal deviations above and below 0.5 receive the
+same color. Entropy uses red at zero and dark green at one. The ideal value uses
+exactly the same dark green in all views.
+
+Entropy is computed **before** averaging. Averaging deterministic zero and one
+probabilities first would give a misleading entropy of one. Heatmap and 3D
+averages can hide individual pair biases; the basic report and default plot
+retain the pairwise extremes, and the empirical criterion checks every pair.
+
+Runnable example
+----------------
+
+The following script produces the default Speck summary, plaintext/key entropy
+heatmaps, and opaque 3D probability profiles for Speck and ChaCha:
 
 .. literalinclude:: examples/avalanche.py
    :language: python
@@ -45,55 +146,16 @@ the following views:
    :end-before: # example-end
    :dedent: 4
 
-Speck uses 22 rounds, with 16 samples per flipped input bit. ChaCha uses five
-v5 rounds, with four samples per flipped state bit. These deliberately small
-sample counts make this a runnable demonstration. Increase ``speck_samples``
-and ``chacha_samples`` in ``run_example()`` for an actual experiment.
-
-Reading the plots
------------------
-
-The entropy heatmaps average the binary entropy
-:math:`h(p)=-p\log_2 p-(1-p)\log_2(1-p)` over flipped input bits for each
-output bit and round. Endpoint probabilities have entropy zero. Entropy near
-one means observed flip probabilities near one half. The entropy is calculated
-**before** averaging: averaging deterministic zero and one probabilities first
-would give a misleading entropy of one.
-
-The 3D views show the average flip probability over flipped input bits, retaining
-the output-bit and round axes. The legacy name for this quantity is
-*avalanche weight*. Values near one half are desirable, but averaging can hide
-individual input/output-bit biases. Inspect the full probability matrix when
-investigating those biases.
-
-Probability plots use red at zero, green at the strict-avalanche target of
-one half, and red again at one. Equal deviations above and below one half have
-the same color. The 3D height and colorbar retain the actual probability on a
-fixed zero-to-one scale across rounds and primitives.
-
-Entropy heatmaps use a red-yellow-green scale from entropy zero to entropy one.
-The same dark green marks entropy one and flip probability one half. Probability
-colors follow the full red-orange-yellow-green palette toward one half and
-reverse it above one half.
-
-All plots are empirical estimates. Small samples are noisy and entropy estimates
-are biased; these plots do not prove the strict avalanche criterion or establish
-security. V5 ChaCha counts each complete column or diagonal round as one round;
-the legacy implementation used a different round convention, so its five-round
-picture should not be compared directly with this one.
+Speck uses 22 rounds with 16 samples; ChaCha uses five rounds with four samples.
+Increase ``speck_samples`` and ``chacha_samples`` in ``run_example()`` for a larger
+experiment. ChaCha counts a complete column or diagonal round as one round.
 
 .. plot:: examples/avalanche.py
-   :alt: Speck plaintext and key entropy heatmaps, followed by 3D flip-probability views for Speck and ChaCha.
-
-Run or adapt the example
-------------------------
+   :alt: Speck minimum, maximum, average and threshold by round; two entropy heatmaps; opaque colored round profiles for Speck and ChaCha.
 
 Download :download:`the complete Python script <examples/avalanche.py>` and run
-it with ``python avalanche.py``. The same script generates the figures during
-the HTML documentation build and is exercised by the presentation CI job.
-CI uses fewer rounds and samples while checking the computations against direct
-paired evaluations and verifying that every figure can be saved headlessly.
+it with ``python avalanche.py``. The same code generates these figures during
+the documentation build and is exercised by CI with smaller seeded inputs.
 
-For the probability matrix and statistical-testing interfaces, see
-:doc:`statistical_testing`. See :doc:`displaying_results` for result presentation
-and :doc:`quick_analysis_scripts` for other short analysis examples.
+See :doc:`statistical_testing` for dataset and statistical-testing interfaces,
+and :doc:`displaying_results` for presentation and exports.

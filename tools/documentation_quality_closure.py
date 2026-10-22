@@ -23,6 +23,8 @@ EXPECTED_SCOPE = ["src/claasp", "tests", "tools", "docs/conf.py"]
 EXPECTED_TYPING_BOUNDARIES = [
     "matplotlib",
     "matplotlib.*",
+    "mpl_toolkits",
+    "mpl_toolkits.*",
     "numpy",
     "numpy.*",
     "pandas",

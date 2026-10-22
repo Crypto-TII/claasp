@@ -184,13 +184,7 @@ class MatplotlibPresentationDriver:
 
         pyplot = _matplotlib()
         figure, axis = pyplot.subplots()
-        from matplotlib.colors import LinearSegmentedColormap
-
-        colors = LinearSegmentedColormap.from_list(
-            "AvalancheProbability",
-            [pyplot.get_cmap("RdYlGn")(1 - abs(2 * index / 256 - 1)) for index in range(257)],
-            N=257,
-        )
+        colors = _avalanche_colors("probability")
         image = axis.imshow(result.probabilities, vmin=0.0, vmax=1.0, aspect="auto", cmap=colors)
         axis.set_xlabel("output bit (MSB first)")
         axis.set_ylabel("input bit (MSB first)")
@@ -260,8 +254,168 @@ def _finish_figure(figure, *, show, save_to):
 
 
 def _plot_avalanche(
-    result: AvalancheResult, *, show: bool, save_to: str | Path | None
+    result: AvalancheResult,
+    *,
+    view: str,
+    metric: str | None,
+    show: bool,
+    save_to: str | Path | None,
 ) -> FigureArtifact:
-    artifact = MatplotlibPresentationDriver().avalanche_matrix(result)
+    artifact = _avalanche_figure(result, view=view, metric=metric)
     _finish_figure(artifact.figure, show=show, save_to=save_to)
     return artifact
+
+
+def _avalanche_colors(metric):
+    from matplotlib.colors import LinearSegmentedColormap
+
+    pyplot = _matplotlib()
+    base = pyplot.get_cmap("RdYlGn")
+    if metric == "entropy":
+        return base
+    return LinearSegmentedColormap.from_list(
+        "AvalancheProbability",
+        [base(1 - abs(2 * index / 256 - 1)) for index in range(257)],
+        N=257,
+    )
+
+
+def _avalanche_figure(result, *, view, metric):
+    from claasp.analysis.avalanche import (
+        _criterion_bounds,
+        _round_data,
+        _round_profiles,
+        _round_statistics,
+        _validate_metric,
+    )
+
+    if view not in {"summary", "heatmap", "3d"}:
+        raise ValueError("view must be summary, heatmap, or 3d")
+    selected = _validate_metric(result.metric if metric is None else metric)
+    pyplot = _matplotlib()
+    round_data = _round_data(result)
+    numbers = tuple(number if number is not None else 1 for number, _ in round_data)
+    profiles = _round_profiles(result, selected)
+    colors = _avalanche_colors(selected)
+    figure = pyplot.figure(figsize=(10, 5), layout="constrained")
+    title = (
+        f"{result.primitive_family} — {result.input_name}; avalanche {selected}\n"
+        f"n={result.sample_count}; seed={result.seed}; empirical"
+    )
+    if view == "summary":
+        from matplotlib.ticker import MaxNLocator
+
+        axis = figure.add_subplot()
+        statistics = _round_statistics(result, selected)
+        series = tuple(
+            (label, tuple(getattr(item, attribute) for item in statistics))
+            for label, attribute in (
+                ("minimum", "minimum"),
+                ("maximum", "maximum"),
+                ("average", "average"),
+            )
+        )
+        for (label, values), color in zip(series, ("#c43c39", "#7651a8", "#1764ab"), strict=True):
+            axis.plot(numbers, values, marker="o", markersize=3, label=label, color=color)
+        lower, upper = _criterion_bounds(selected, result.threshold)
+        axis.axhspan(lower, upper, color="#d9efce", alpha=1, label="acceptance band")
+        axis.axhline(
+            lower, color="#555555", linestyle="--", linewidth=1, label=f"lower threshold {lower:g}"
+        )
+        axis.axhline(
+            upper, color="#888888", linestyle=":", linewidth=1, label=f"upper threshold {upper:g}"
+        )
+        series += (
+            ("lower_threshold", (lower,) * len(numbers)),
+            ("upper_threshold", (upper,) * len(numbers)),
+        )
+        axis.set(xlabel="Rounds", ylabel=f"Avalanche {selected}", ylim=(-0.02, 1.02), title=title)
+        axis.xaxis.set_major_locator(MaxNLocator(integer=True))
+        axis.set_xlim(min(numbers) - 0.5, max(numbers) + 0.5)
+        axis.legend(loc="best")
+        axis.grid(alpha=0.2)
+    elif view == "heatmap":
+        if len({len(profile) for profile in profiles}) != 1:
+            raise ValueError("round heatmaps require equal output widths across rounds")
+        axis = figure.add_subplot()
+        image = axis.imshow(
+            profiles,
+            origin="lower",
+            aspect="auto",
+            cmap=colors,
+            vmin=0,
+            vmax=1,
+            extent=(-0.5, len(profiles[0]) - 0.5, 0.5, len(profiles) + 0.5),
+        )
+        axis.set_yticks(range(1, len(numbers) + 1), labels=[str(number) for number in numbers])
+        axis.set(xlabel="Output bit (MSB first)", ylabel="Rounds", title=title)
+        figure.colorbar(image, ax=axis, label=f"Mean avalanche {selected}")
+        series = tuple(
+            (f"round_{number}", profile) for number, profile in zip(numbers, profiles, strict=True)
+        )
+    else:
+        from matplotlib.cm import ScalarMappable
+        from matplotlib.colors import Normalize
+        from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+        axis = figure.add_subplot(projection="3d")
+        for number, profile in zip(numbers, profiles, strict=True):
+            faces, face_colors = [], []
+            for bit, value in enumerate(profile):
+                faces.append(
+                    [
+                        (bit - 0.5, number, 0),
+                        (bit - 0.5, number, value),
+                        (bit + 0.5, number, value),
+                        (bit + 0.5, number, 0),
+                    ]
+                )
+                face_colors.append(colors(value))
+            plane = Poly3DCollection(
+                faces, facecolors=face_colors, edgecolors="none", alpha=1, antialiaseds=False
+            )
+            axis.add_collection3d(plane)
+            axis.scatter(
+                range(len(profile)),
+                [number] * len(profile),
+                profile,
+                c=profile,
+                cmap=colors,
+                vmin=0,
+                vmax=1,
+                s=8,
+                depthshade=False,
+            )
+        axis.set(
+            xlabel="Output bit (MSB first)",
+            ylabel="Rounds",
+            zlabel=f"Mean {selected}",
+            zlim=(0, 1),
+            xlim=(-0.5, max(map(len, profiles)) - 0.5),
+            ylim=(min(numbers) - 0.5, max(numbers) + 0.5),
+            title=title,
+        )
+        ticks = numbers[:: max(1, (len(numbers) + 7) // 8)]
+        if ticks[-1] != numbers[-1]:
+            ticks += (numbers[-1],)
+        axis.set_yticks(ticks)
+        figure.colorbar(
+            ScalarMappable(norm=Normalize(0, 1), cmap=colors),
+            ax=axis,
+            label=f"Mean avalanche {selected}",
+            shrink=0.7,
+            pad=0.12,
+        )
+        series = tuple(
+            (f"round_{number}", profile) for number, profile in zip(numbers, profiles, strict=True)
+        )
+    if round_data[0][0] is None:
+        if view == "summary":
+            axis.set_xticks([1], labels=["unknown (final output)"])
+        elif view == "heatmap":
+            axis.set_yticks([1], labels=["unknown (final output)"])
+        else:
+            axis.set_yticks([1], labels=["unknown"])
+    return FigureArtifact(
+        figure, f"avalanche_{view}", series, MatplotlibPresentationDriver.identity
+    )
