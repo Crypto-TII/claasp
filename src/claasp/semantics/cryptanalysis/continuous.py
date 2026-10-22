@@ -1,6 +1,7 @@
 """Dependency-free continuous-correlation heuristics for ARX operations."""
 
 from dataclasses import dataclass
+from functools import lru_cache
 from math import log2
 
 
@@ -245,17 +246,45 @@ def continuous_sbox(values: tuple[float, ...], table: tuple[int, ...]) -> tuple[
     output_width = max(1, max(table).bit_length())
     if any(value < 0 or value >= 1 << output_width for value in table):
         raise ValueError("S-box table entries must be nonnegative and fit one width")
-    output = []
-    for output_shift in reversed(range(output_width)):
-        expectation = 0.0
-        for source, target in enumerate(table):
-            probability = 1.0
-            for index, correlation in enumerate(values):
-                bit = (source >> (len(values) - 1 - index)) & 1
-                probability *= (1.0 + correlation if bit else 1.0 - correlation) / 2.0
-            expectation += probability * (1.0 if (target >> output_shift) & 1 else -1.0)
-        output.append(expectation)
-    return tuple(output)
+    if all(value in (-1, 1) for value in values):
+        source = sum(
+            (value == 1) << shift for value, shift in zip(values, reversed(range(len(values))))
+        )
+        return tuple(
+            1.0 if (table[source] >> shift) & 1 else -1.0 for shift in reversed(range(output_width))
+        )
+    # Walsh expansion avoids subtracting nearly equal probabilities when
+    # correlations are tiny. Integer coefficients preserve balanced zeros.
+    monomials: list[float] = [1.0]
+    for value in reversed(values):
+        monomials += [term * value for term in monomials]
+    return tuple(
+        sum(coefficient * monomials[mask] for mask, coefficient in terms) / len(table)
+        for terms in _sbox_polynomials(tuple(table), output_width)
+    )
+
+
+@lru_cache(maxsize=128)
+def _sbox_polynomials(table, output_width):
+    polynomials = []
+    for shift in reversed(range(output_width)):
+        coefficients = [1 if (value >> shift) & 1 else -1 for value in table]
+        step = 1
+        while step < len(table):
+            for start in range(0, len(table), 2 * step):
+                for index in range(start, start + step):
+                    left, right = coefficients[index], coefficients[index + step]
+                    coefficients[index] = left + right
+                    coefficients[index + step] = left - right
+            step *= 2
+        polynomials.append(
+            tuple(
+                (mask, coefficient * (-1 if mask.bit_count() % 2 else 1))
+                for mask, coefficient in enumerate(coefficients)
+                if coefficient
+            )
+        )
+    return tuple(polynomials)
 
 
 def continuous_speck32(

@@ -59,7 +59,7 @@ above:
    * - Extra
      - Purpose
    * - ``analysis``
-     - NumPy sample-parallel avalanche evaluation (the default engine).
+     - NumPy avalanche evaluation and mpmath continuous-diffusion experiments.
    * - ``presentation``
      - Matplotlib plots and pandas tables.
    * - ``ml``

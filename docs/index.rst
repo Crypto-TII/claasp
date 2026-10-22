@@ -33,6 +33,7 @@ systems and solvers are optional backends.
 
    basic_primitive_analysis
    basic_avalanche_analysis
+   basic_continuous_diffusion
 
 .. toctree::
    :maxdepth: 2
@@ -41,6 +42,7 @@ systems and solvers are optional backends.
    customizing_aes
    parameters
    primitive_authoring
+   implementing_toy_spn
    composite_blocks
    transformations
    batch_evaluation
@@ -51,6 +53,12 @@ systems and solvers are optional backends.
 
    advanced_primitive_analysis
    advanced_avalanche_analysis
+   advanced_continuous_diffusion
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Temporary section
+
    analysis
    component_properties
    displaying_results
@@ -58,10 +66,6 @@ systems and solvers are optional backends.
    statistical_testing
    neural_distinguishers
 
-.. toctree::
-   :hidden:
-
-   implementing_toy_spn
 
 .. toctree::
    :maxdepth: 2

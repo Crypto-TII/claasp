@@ -50,6 +50,7 @@ from claasp.analysis.constraints import (
     Nonzero,
     NotEqual,
 )
+from claasp.analysis.continuous_diffusion import ContinuousDiffusionResult, continuous_diffusion
 from claasp.analysis.cube import CubeSumResult, evaluate_cube_sum
 from claasp.analysis.datasets import (
     AvalancheDataset,
@@ -161,6 +162,8 @@ def __getattr__(name):
 
 
 __all__ = [
+    "ContinuousDiffusionResult",
+    "continuous_diffusion",
     "Analysis",
     "AnalysisProblem",
     "AnalysisResult",

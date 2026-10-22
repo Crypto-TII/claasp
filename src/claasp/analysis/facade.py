@@ -419,6 +419,29 @@ class Analysis:
 
         return run_autond(self.primitive, driver, experiment, **options)
 
+    def continuous_diffusion(
+        self,
+        input_name: str | None = None,
+        number_of_samples: int = 16,
+        *,
+        lambda_value: float = 0.001,
+        seed: int = 0,
+        precision: int = 80,
+        sampling: str = "boolean_neighborhood",
+    ):
+        """Measure round-by-round continuous avalanche factors with local precision."""
+        from claasp.analysis.continuous_diffusion import continuous_diffusion
+
+        return continuous_diffusion(
+            self.primitive,
+            input_name,
+            number_of_samples,
+            lambda_value=lambda_value,
+            seed=seed,
+            precision=precision,
+            sampling=sampling,
+        )
+
     def continuous_evaluate(self, inputs, *, tolerance=1e-4):
         """Propagate continuous-diffusion correlations through the typed graph."""
 

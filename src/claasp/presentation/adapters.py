@@ -13,6 +13,7 @@ from math import isinf
 
 from claasp.analysis.avalanche import AvalancheCriteriaResult, AvalancheResult
 from claasp.analysis.component_properties import ComponentPropertyResult, PropertyClaim
+from claasp.analysis.continuous_diffusion import ContinuousDiffusionResult
 from claasp.analysis.neural import NeuralExperimentResult
 from claasp.analysis.neural_experiments import NeuralRun
 from claasp.analysis.statistical_results import (
@@ -469,6 +470,36 @@ def component_property_section(
         "Component properties",
     )
     return ReportSection("Component properties", tables=(table,))
+
+
+def _continuous_diffusion_section(result: ContinuousDiffusionResult) -> ReportSection:
+    metadata = Table(
+        (TableColumn("setting", "Setting"), TableColumn("value", "Value")),
+        tuple(
+            TableRow((_text(key), _text(str(value))))
+            for key, value in (
+                ("primitive", result.primitive_family),
+                ("input", result.input_name),
+                ("samples", len(result.samples[0])),
+                ("seed", result.seed),
+                ("lambda", result.lambda_value),
+                ("decimal precision", result.precision),
+                ("sampling", result.method),
+                ("claim", result.claim_kind),
+            )
+        ),
+    )
+    empirical = PresentationEvidence(EvidenceClass.EMPIRICAL, complete=False)
+    table = Table(
+        (TableColumn("round", "Round"), TableColumn("caf", "CAF")),
+        tuple(
+            TableRow((_integer(number), _text(f"{value:.6g}", empirical)))
+            for number, value in zip(result.round_numbers, result.factors, strict=True)
+        ),
+    )
+    return ReportSection(
+        "Continuous diffusion — continuous avalanche factor", tables=(metadata, table)
+    )
 
 
 def _avalanche_criteria_section(result: AvalancheCriteriaResult) -> ReportSection:

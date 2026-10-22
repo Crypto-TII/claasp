@@ -145,7 +145,7 @@ jobs:
       - name: Run headless plots and dataframe parity
         env:
           MPLBACKEND: Agg
-        run: python -m pytest tests/unit/drivers/renderers/test_presentation.py tests/unit/presentation/test_files.py tests/examples/test_avalanche_example.py -q
+        run: python -m pytest tests/unit/drivers/renderers/test_presentation.py tests/unit/presentation/test_files.py tests/examples/test_avalanche_example.py tests/examples/test_continuous_diffusion_example.py -q
 
   singular-export:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'

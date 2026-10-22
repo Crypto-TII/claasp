@@ -33,6 +33,7 @@ analysis guides for your own work.
 
    basic_primitive_analysis
    basic_avalanche_analysis
+   basic_continuous_diffusion
 
 .. toctree::
    :maxdepth: 2
@@ -41,6 +42,7 @@ analysis guides for your own work.
    customizing_aes
    parameters
    primitive_authoring
+   implementing_toy_spn
    composite_blocks
    transformations
    batch_evaluation
@@ -51,14 +53,15 @@ analysis guides for your own work.
 
    advanced_primitive_analysis
    advanced_avalanche_analysis
+   advanced_continuous_diffusion
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Temporary section
+
    analysis
    component_properties
    displaying_results
    serialization_and_source
    statistical_testing
    neural_distinguishers
-
-.. toctree::
-   :hidden:
-
-   implementing_toy_spn

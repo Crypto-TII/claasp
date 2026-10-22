@@ -267,6 +267,32 @@ def _plot_avalanche(
     return artifact
 
 
+def _plot_continuous_diffusion(result, *, show, save_to):
+    pyplot = _matplotlib()
+    figure, axis = pyplot.subplots(figsize=(9, 4), layout="constrained")
+    axis.plot(result.round_numbers, result.factors, marker="o", markersize=4, label="CAF")
+    axis.axhline(1, color="#555555", linestyle="--", label="random-sign reference (1)")
+    from matplotlib.ticker import MaxNLocator
+
+    axis.xaxis.set_major_locator(MaxNLocator(integer=True))
+    axis.set(
+        xlabel="Rounds",
+        ylabel="Continuous avalanche factor",
+        ylim=(0, 2),
+        title=f"{result.primitive_family} — {result.input_name}; λ={result.lambda_value:g}; n={len(result.samples[0])}",
+    )
+    axis.grid(alpha=0.2)
+    axis.legend()
+    artifact = FigureArtifact(
+        figure,
+        "continuous_diffusion",
+        (("CAF", result.factors),),
+        DriverIdentity("matplotlib", DriverKind.RENDERER),
+    )
+    _finish_figure(figure, show=show, save_to=save_to)
+    return artifact
+
+
 def _avalanche_colors(metric):
     from matplotlib.colors import LinearSegmentedColormap
 
