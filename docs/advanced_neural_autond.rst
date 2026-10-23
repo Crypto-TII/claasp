@@ -174,4 +174,4 @@ evidence, and the default plot shows independent tests and their chance band.
 ``result.plot(view="epochs")`` shows validation-only learning curves separately.
 The five-sigma-style validation scheduling heuristic is not the significance
 test used in ``result.tests``, ``result.to_terminal()`` or ``result.conclusion``.
-See :doc:`basic_primitive_analysis` for statistical interpretation and test reuse.
+See :doc:`basic_neural_distinguishers` for statistical interpretation and test reuse.

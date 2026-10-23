@@ -119,5 +119,5 @@ family. ``result.tests`` retains exact counts, raw and adjusted p-values,
 chance bands, seeds and dataset digests. ``result.conclusion`` summarizes the
 two-sided evidence. Statistical conclusions concern the fixed final model;
 validation peaks remain available in ``result.plot(view="epochs")`` and
-``result.to_terminal(details=True)``. See :doc:`basic_primitive_analysis` for
+``result.to_terminal(details=True)``. See :doc:`basic_neural_distinguishers` for
 independence, inversion, and multiple-comparison qualifications.

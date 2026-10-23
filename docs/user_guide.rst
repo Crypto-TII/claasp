@@ -35,9 +35,7 @@ analysis guides for your own work.
    basic_avalanche_analysis
    basic_continuous_diffusion
    basic_component_analysis
-   basic_neural_blackbox
-   basic_neural_differential
-   basic_neural_autond
+   basic_neural_distinguishers
 
 .. toctree::
    :maxdepth: 2

@@ -60,6 +60,7 @@ else:
             "basic_avalanche_analysis.rst",
             "basic_continuous_diffusion.rst",
             "basic_component_analysis.rst",
+            "basic_neural_distinguishers.rst",
             "basic_neural_blackbox.rst",
             "basic_neural_differential.rst",
             "basic_neural_autond.rst",
