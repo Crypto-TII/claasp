@@ -1,9 +1,8 @@
-Introduction to basic primitive analysis
-========================================
+Introduction to primitive analysis
+==================================
 
 Explore what CLAASP can reveal about a primitive through short, runnable
-examples. Each basic analysis has an extended counterpart in
-:doc:`advanced_primitive_analysis`.
+examples, then investigate each topic in its accompanying advanced walkthrough.
 
 Before you begin
 ----------------
@@ -43,7 +42,21 @@ to ask their question. Configuration, alternative reports, thresholds and
 parameter comparisons belong in the matching advanced page. Runnable scripts
 are exercised in CI; outputs and figures appear next to their generating calls.
 
-Explore :doc:`basic_diffusion_and_randomness`, :doc:`basic_component_analysis`,
-or :doc:`basic_neural_distinguishers`, then follow the links to their matching
-advanced guides. :doc:`basic_algebraic_analysis` and :doc:`basic_trail_search`
-are reserved for planned examples.
+Explore :doc:`component_analysis`, :doc:`diffusion_and_randomness`, or
+:doc:`neural_distinguishers`. Each topic groups its introductory and advanced
+walkthroughs together. :doc:`basic_algebraic_analysis` and
+:doc:`basic_trail_search` are reserved for planned examples.
+
+Exploring an analysis in depth
+-----------------------------
+
+The introduction answers one question with a short script using defaults.
+The matching advanced walkthrough explores parameters, measured quantities,
+criteria and alternative reports. Keep the analysis result and reuse it for
+reports, derived quantities, plots and exports wherever the analysis permits.
+
+State sample counts and seeds for randomized experiments, solver limits for
+searches, and training settings for neural experiments. Explain thresholds in
+their actual units and distinguish empirical observations from exact results.
+A graph or export task can follow this structure without inventing sampling
+parameters or terminal reports.

@@ -79,7 +79,7 @@ Below-chance accuracy can also reveal a distinguisher if the deviation is
 repeatable: reversing binary predictions changes accuracy ``a`` to ``1 - a``.
 CLAASP checks both directions and labels significant negative deviations as
 ``below chance``. A proposed inversion should be confirmed on fresh data.
-See :doc:`basic_neural_distinguishers` for the statistical interpretation.
+See :doc:`neural_distinguishers` for the statistical interpretation.
 
 Download :download:`the script <examples/basic_neural_differential.py>`.
 Continue to :doc:`advanced_neural_differential` for experiment parameters and interpretation.

@@ -28,15 +28,15 @@ analysis guides for your own work.
    quick_analysis_scripts
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Basic Primitive Analysis
+   :maxdepth: 3
+   :caption: Primitive Analysis
 
-   basic_primitive_analysis
-   basic_diffusion_and_randomness
-   basic_component_analysis
+   primitive_analysis
+   component_analysis
+   diffusion_and_randomness
    basic_algebraic_analysis
    basic_trail_search
-   basic_neural_distinguishers
+   neural_distinguishers
 
 .. toctree::
    :maxdepth: 2
@@ -49,18 +49,6 @@ analysis guides for your own work.
    composite_blocks
    transformations
    batch_evaluation
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Advanced primitive analysis
-
-   advanced_primitive_analysis
-   advanced_avalanche_analysis
-   advanced_continuous_diffusion
-   advanced_component_analysis
-   advanced_neural_blackbox
-   advanced_neural_differential
-   advanced_neural_autond
 
 .. toctree::
    :maxdepth: 2

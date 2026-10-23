@@ -6,8 +6,8 @@ properties of the generated data. The current examples cover avalanche tests
 and continuous diffusion; a NIST STS-style randomness guide is planned.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   basic_avalanche_analysis
-   basic_continuous_diffusion
+   avalanche_analysis
+   continuous_diffusion
    basic_randomness_tests

@@ -3,14 +3,14 @@ Neural distinguishers
 
 Train classifiers to distinguish primitive-generated examples from random
 examples, or automate the search for a useful input difference. These guides
-follow the common script structure in :doc:`basic_primitive_analysis`.
+follow the common script structure in :doc:`primitive_analysis`.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   basic_neural_blackbox
-   basic_neural_differential
-   basic_neural_autond
+   neural_blackbox
+   neural_differential
+   neural_autond
 
 The Getting started installation includes scikit-learn and plotting support.
 The basic examples use a CPU multilayer perceptron. TensorFlow architectures
