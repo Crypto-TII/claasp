@@ -1,7 +1,9 @@
 """Short neural-analysis workflows over framework-independent data contracts."""
 
 from dataclasses import dataclass, replace
+from hashlib import sha256
 from pathlib import Path
+from random import Random
 from typing import TYPE_CHECKING, TextIO
 
 from claasp.analysis.neural import NeuralExperiment, black_box_dataset, xor_differential_dataset
@@ -11,7 +13,6 @@ from claasp.analysis.neural_workflows import (
     NeuralRoundTrainingResult,
     _active_inputs,
     find_good_input_difference,
-    train_staged_neural_distinguisher,
 )
 
 if TYPE_CHECKING:
@@ -19,10 +20,64 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True, slots=True)
+class NeuralRoundTestResult:
+    """Independent final-model test with a two-sided, Bonferroni-corrected decision.
+
+    The chance band is a discrete null acceptance region, not a confidence
+    interval for the observed accuracy. Correction covers the planned rounds.
+
+    EXAMPLES::
+
+        >>> result = NeuralRoundTestResult(1, 50, 100, 19, "digest", 1.0, 1.0, 0.4, 0.6, 0.95, 1)
+        >>> result.accuracy, result.signal
+        (0.5, 'not detected')
+    """
+
+    round_number: int
+    successes: int
+    samples: int
+    seed: int
+    dataset_digest: str
+    pvalue: float
+    adjusted_pvalue: float
+    chance_lower: float
+    chance_upper: float
+    confidence: float
+    comparisons: int
+
+    def __post_init__(self) -> None:
+        if self.round_number < 1 or self.samples < 1 or not 0 <= self.successes <= self.samples:
+            raise ValueError("test round and sample counts must be valid")
+        if self.comparisons < 1 or not 0 < self.confidence < 1:
+            raise ValueError("test confidence and comparison count must be valid")
+        if not 0 <= self.pvalue <= self.adjusted_pvalue <= 1:
+            raise ValueError("test p-values must be ordered probabilities")
+        if not 0 <= self.chance_lower <= 0.5 <= self.chance_upper <= 1:
+            raise ValueError("chance band must contain 0.5")
+
+    @property
+    def accuracy(self) -> float:
+        """Return the raw independent-test accuracy, without folding below-chance scores."""
+        return self.successes / self.samples
+
+    @property
+    def detected(self) -> bool:
+        """Return whether the two-sided adjusted p-value meets the family-wise level."""
+        return self.adjusted_pvalue <= 1 - self.confidence
+
+    @property
+    def signal(self) -> str:
+        """Return direct, inverted, or not detected for the retained test evidence."""
+        if not self.detected:
+            return "not detected"
+        return "direct" if self.accuracy > 0.5 else "inverted"
+
+
+@dataclass(frozen=True, slots=True)
 class NeuralAnalysisResult:
     """Retained validation histories and experiment settings for a neural analysis.
 
-    Accuracy is empirical validation evidence, not independent test accuracy.
+    Validation histories and independent final-model tests are kept separate.
     ``rounds`` contains one history per trained reduced-round primitive.
 
     EXAMPLES::
@@ -43,9 +98,17 @@ class NeuralAnalysisResult:
     threshold: float | None = None
     difference_search: NeuralDifferenceSearchResult | None = None
     fixed_inputs: tuple[tuple[str, int], ...] = ()
+    tests: tuple[NeuralRoundTestResult, ...] = ()
+
+    @property
+    def conclusion(self) -> str:
+        """Return a qualified conclusion from the independent tests, or note their absence."""
+        from claasp.presentation.adapters import _neural_conclusion
+
+        return _neural_conclusion(self)
 
     def to_terminal(self, *, details: bool = False, file: TextIO | None = None) -> None:
-        """Print settings and per-round validation accuracy; details add epochs."""
+        """Print independent-test evidence; details also include validation epochs."""
         from claasp.presentation._terminal import to_terminal
         from claasp.presentation.adapters import _neural_analysis_section
 
@@ -56,8 +119,8 @@ class NeuralAnalysisResult:
     ) -> "FigureArtifact":
         """Plot stored validation accuracy by epoch or round without retraining.
 
-        The default is rounds for multi-round comparisons and AutoND,
-        and epochs for an individual distinguisher. The 0.5 line is balanced-label chance, not a significance test.
+        The default shows independent-test accuracy and a simultaneous chance
+        band. The epochs view shows validation histories used during training.
         """
         from claasp.drivers.renderers.presentation import _plot_neural_analysis
 
@@ -93,7 +156,12 @@ def _train_neural(
     input_differences=None,
     fixed_inputs=None,
     rounds=None,
+    test_samples=1000,
+    test_seed=None,
+    confidence=0.95,
+    comparisons=None,
 ):
+    _test_options(test_samples, confidence, comparisons)
     if rounds is not None:
         total = len(primitive.graph.rounds)
         if isinstance(rounds, str):
@@ -136,6 +204,10 @@ def _train_neural(
                     driver=driver,
                     input_differences=input_differences,
                     fixed_inputs=fixed_inputs,
+                    test_samples=test_samples,
+                    test_seed=test_seed,
+                    confidence=confidence,
+                    comparisons=max(len(numbers), comparisons or 1),
                 )
             )
         return replace(
@@ -144,15 +216,27 @@ def _train_neural(
             dataset_digests=tuple(
                 digest for result in results for digest in result.dataset_digests
             ),
+            tests=tuple(test for result in results for test in result.tests),
         )
     experiment = NeuralExperiment(architecture, epochs, batch_size, validation_fraction, seed)
     selected = input_name or _active_inputs(primitive, None)[0]
     if selected not in primitive.graph.input_arrays:
         raise ValueError(f"unknown primitive input {selected!r}")
     differences = {}
+    actual_fixed = dict(fixed_inputs or {})
     if kind == "black_box":
+        if selected in actual_fixed:
+            raise ValueError("the varied input cannot also be fixed")
+        from claasp.analysis.neural import _widths
+
+        # Reproduce the training generator's fixed inputs, then reuse precisely
+        # that primitive instance for independently generated test rows.
+        random = Random(seed)
+        generated = {name: random.getrandbits(width) for name, width in _widths(primitive).items()}
+        generated.update(actual_fixed)
+        actual_fixed = {name: value for name, value in generated.items() if name != selected}
         dataset = black_box_dataset(
-            primitive, selected, samples=samples, seed=seed, fixed_inputs=fixed_inputs
+            primitive, selected, samples=samples, seed=seed, fixed_inputs=actual_fixed
         )
     else:
         differences = {name: 0 for name in primitive.graph.input_arrays}
@@ -166,7 +250,40 @@ def _train_neural(
         dataset = xor_differential_dataset(
             primitive, differences, samples=samples, seed=seed, fixed_inputs=fixed_inputs
         )
-    trained = _driver(primitive, architecture, driver).train(dataset, experiment)
+    trainer = _driver(primitive, architecture, driver)
+    if test_samples and not callable(getattr(trainer, "predict", None)):
+        raise TypeError(
+            "independent testing requires driver.predict(dataset); use test_samples=0 for validation only"
+        )
+    independent_seed = _test_seed(seed, test_seed)
+    trained = trainer.train(dataset, experiment)
+    tests: tuple[NeuralRoundTestResult, ...] = ()
+    if test_samples:
+        if kind == "black_box":
+            testing = black_box_dataset(
+                primitive,
+                selected,
+                samples=test_samples,
+                seed=independent_seed,
+                fixed_inputs=actual_fixed,
+            )
+        else:
+            testing = xor_differential_dataset(
+                primitive,
+                differences,
+                samples=test_samples,
+                seed=independent_seed,
+                fixed_inputs=actual_fixed,
+            )
+        tests = (
+            _evaluate_test(
+                len(primitive.graph.rounds),
+                testing,
+                trainer.predict(testing),
+                confidence=confidence,
+                comparisons=comparisons or 1,
+            ),
+        )
     return NeuralAnalysisResult(
         primitive.family_name,
         kind,
@@ -177,7 +294,8 @@ def _train_neural(
         tuple(differences.items()),
         selected,
         (dataset_digest(dataset),),
-        fixed_inputs=tuple(sorted((fixed_inputs or {}).items())),
+        fixed_inputs=tuple(sorted(actual_fixed.items())),
+        tests=tests,
     )
 
 
@@ -197,7 +315,12 @@ def _autond(
     active_inputs=None,
     initial_candidates=None,
     rounds=None,
+    test_samples=1000,
+    test_seed=None,
+    confidence=0.95,
+    comparisons=None,
 ):
+    _test_options(test_samples, confidence, comparisons)
     from claasp.analysis.datasets import packed_bit_width
 
     if rounds not in (None, "all"):
@@ -215,7 +338,6 @@ def _autond(
         seed=seed,
         initial_candidates=initial_candidates,
     )
-    experiment = NeuralExperiment(architecture, epochs, batch_size, validation_fraction, seed)
     # Obtain the actual validation count: the generator consumes randomness
     # independently of the chosen round graph, so label counts are stable.
     differences = dict(search.best.input_differences)
@@ -230,27 +352,102 @@ def _autond(
     )
     if validation_count == 0:
         raise ValueError("samples must produce a nonempty validation partition")
-    training = train_staged_neural_distinguisher(
-        primitive,
-        _driver(primitive, architecture, driver),
-        differences,
-        starting_round=1 if rounds == "all" else max(1, search.best.highest_round - 3),
-        samples=samples,
-        experiment=experiment,
-        significance_samples=validation_count,
-        stop_on_threshold=rounds != "all",
-    )
-    return NeuralAnalysisResult(
-        primitive.family_name,
-        "autond",
-        samples,
-        seed,
-        experiment,
-        training.rounds,
-        training.input_differences,
-        threshold=training.threshold if rounds is None else None,
+    total = len(primitive.graph.rounds)
+    start = 1 if rounds == "all" else max(1, search.best.highest_round - 3)
+    trainer = _driver(primitive, architecture, driver)
+    threshold = 0.5 + 5 / validation_count**0.5
+    results = []
+    for number in range(start, total + 1):
+        reduced = primitive if number == total else primitive.edit.reduce_rounds(number).primitive
+        result = _train_neural(
+            reduced,
+            "xor_differential",
+            input_differences=differences,
+            samples=samples,
+            epochs=epochs,
+            batch_size=batch_size,
+            validation_fraction=validation_fraction,
+            seed=seed,
+            architecture=architecture,
+            driver=trainer,
+            test_samples=test_samples,
+            test_seed=test_seed,
+            confidence=confidence,
+            comparisons=max(total, comparisons or 1),
+        )
+        results.append(result)
+        history = result.rounds[0].result.validation_accuracy
+        # Schedule using validation ONLY. Independent test scores never choose
+        # an epoch, difference, orientation, or whether to continue training.
+        if rounds is None and (
+            not history or max(abs(value - 0.5) for value in history) < threshold - 0.5
+        ):
+            break
+    return replace(
+        results[-1],
+        kind="autond",
+        varied_input=None,
         difference_search=search,
+        rounds=tuple(stage for result in results for stage in result.rounds),
+        tests=tuple(test for result in results for test in result.tests),
+        dataset_digests=tuple(digest for result in results for digest in result.dataset_digests),
+        threshold=threshold if rounds is None else None,
     )
 
 
-__all__ = ["NeuralAnalysisResult"]
+def _test_options(samples, confidence, comparisons):
+    if not isinstance(samples, int) or isinstance(samples, bool) or samples < 0:
+        raise ValueError("test_samples must be a nonnegative integer")
+    if not 0 < confidence < 1:
+        raise ValueError("confidence must be between zero and one")
+    if comparisons is not None and (
+        not isinstance(comparisons, int) or isinstance(comparisons, bool) or comparisons < 1
+    ):
+        raise ValueError("comparisons must be a positive integer")
+
+
+def _test_seed(seed, requested):
+    value = (
+        int.from_bytes(sha256(f"claasp/neural/test/{seed}".encode()).digest()[:8], "big")
+        if requested is None
+        else requested
+    )
+    if not isinstance(value, int) or isinstance(value, bool) or value == seed:
+        raise ValueError("test_seed must be an integer different from the training seed")
+    return value
+
+
+def _evaluate_test(number, dataset, predictions, *, confidence, comparisons):
+    try:
+        from scipy.stats import binom, binomtest
+    except ImportError as error:
+        raise ImportError(
+            "Independent neural tests require SciPy; install claasp[ml] or claasp[ml-tensorflow]"
+        ) from error
+
+    values = tuple(predictions)
+    if len(values) != dataset.sample_count or any(value not in (0, 1) for value in values):
+        raise ValueError("driver.predict must return one binary prediction per test row")
+    n = dataset.sample_count
+    k = sum(prediction == label for prediction, label in zip(values, dataset.labels, strict=True))
+    alpha = (1 - confidence) / comparisons
+    lower = int(binom.ppf(alpha / 2, n, 0.5))
+    if 2 * binom.cdf(lower, n, 0.5) <= alpha:
+        lower += 1
+    pvalue = float(binomtest(k, n, 0.5, alternative="two-sided").pvalue)
+    return NeuralRoundTestResult(
+        number,
+        k,
+        n,
+        dataset.seed,
+        dataset_digest(dataset),
+        pvalue,
+        min(1.0, comparisons * pvalue),
+        lower / n,
+        (n - lower) / n,
+        confidence,
+        comparisons,
+    )
+
+
+__all__ = ["NeuralAnalysisResult", "NeuralRoundTestResult"]

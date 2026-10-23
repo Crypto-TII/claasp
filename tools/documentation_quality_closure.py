@@ -29,6 +29,8 @@ EXPECTED_TYPING_BOUNDARIES = [
     "numpy.*",
     "pandas",
     "pandas.*",
+    "scipy",
+    "scipy.*",
     "sklearn",
     "sklearn.*",
     "tensorflow",

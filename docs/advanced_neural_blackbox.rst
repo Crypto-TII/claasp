@@ -102,7 +102,22 @@ Round comparisons
 Use ``rounds="all"`` to train a fresh default classifier at each round, as in
 the basic guide. An increasing sequence such as ``rounds=(1, 3, 5, 7)`` selects
 a subset up to the constructed primitive's round count. Every round uses the
-same training budget and seeds. ``result.plot()`` then defaults to round number;
+same training budget and seeds. ``result.plot()`` then shows independent-test accuracy and corrected chance bands;
 ``result.plot(view="epochs")`` compares the retained learning curves. A custom
 driver's ``reset()`` hook is called before each selected round when available;
 other custom drivers must make their ``train`` call independent themselves.
+
+Statistical evidence
+--------------------
+
+The facade reserves the final model for a fresh, separately seeded test dataset.
+Set ``test_samples=10000`` to increase that budget, ``confidence=0.99`` for a
+99% family-wise level, and ``test_seed=19`` to select its independent stream.
+Test seeds must differ from the training seed. Bonferroni correction covers
+all selected rounds by default; ``comparisons`` can enlarge the predeclared
+family. ``result.tests`` retains exact counts, raw and adjusted p-values,
+chance bands, seeds and dataset digests. ``result.conclusion`` summarizes the
+two-sided evidence. Statistical conclusions concern the fixed final model;
+validation peaks remain available in ``result.plot(view="epochs")`` and
+``result.to_terminal(details=True)``. See :doc:`basic_primitive_analysis` for
+independence, inversion, and multiple-comparison qualifications.

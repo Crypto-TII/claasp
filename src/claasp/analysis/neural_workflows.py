@@ -255,7 +255,8 @@ def train_staged_neural_distinguisher(
         trained = driver.train(dataset, experiment)
         results.append(NeuralRoundTrainingResult(round_number, trained))
         if stop_on_threshold and (
-            not trained.validation_accuracy or max(trained.validation_accuracy) < threshold
+            not trained.validation_accuracy
+            or max(abs(value - 0.5) for value in trained.validation_accuracy) < threshold - 0.5
         ):
             break
     return NeuralStagedTrainingResult(tuple(normalized.items()), tuple(results), threshold)

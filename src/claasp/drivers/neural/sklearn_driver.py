@@ -101,3 +101,20 @@ class SklearnMLPDriver:
             driver="sklearn-mlp",
             deterministic=True,
         )
+
+    def predict(self, dataset: NeuralDataset) -> tuple[int, ...]:
+        """Predict independent rows with the retained final model, without training.
+
+        EXAMPLES::
+
+            >>> callable(SklearnMLPDriver.predict)
+            True
+        """
+        if self._model is None:
+            raise ValueError("train a model before predicting")
+        import numpy as np
+
+        return tuple(
+            int(value)
+            for value in self._model.predict(np.asarray(dataset.features, dtype=np.float64))
+        )

@@ -124,6 +124,7 @@ def test_short_neural_api_records_dataset_and_training_settings_without_framewor
         epochs=2,
         seed=17,
         driver=driver,
+        test_samples=0,
         fixed_inputs={"key": 5},
     )
     from claasp.analysis import dataset_digest
@@ -153,13 +154,13 @@ def test_round_comparison_keeps_every_history_and_dataset_digest(kind):
     primitive = Speck(number_of_rounds=3)
     options = {"input_difference": 1} if kind == "neural_differential" else {}
     result = getattr(primitive.analysis, kind)(
-        rounds="all", samples=8, epochs=1, driver=driver, **options
+        rounds="all", samples=8, epochs=1, driver=driver, test_samples=0, **options
     )
     assert [stage.round_number for stage in result.rounds] == [1, 2, 3]
     assert len(set(result.dataset_digests)) == 3
     assert driver.resets == 3
     selected = getattr(primitive.analysis, kind)(
-        rounds=(1, 3), samples=8, epochs=1, driver=driver, **options
+        rounds=(1, 3), samples=8, epochs=1, driver=driver, test_samples=0, **options
     )
     assert [stage.round_number for stage in selected.rounds] == [1, 3]
 

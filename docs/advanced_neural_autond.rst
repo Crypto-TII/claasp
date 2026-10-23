@@ -82,11 +82,11 @@ The retained candidates are ordered by score, with ``.best`` selecting the last.
 The lower-level ``primitive.analysis.find_good_neural_input_difference`` accepts
 explicit ``initial_candidates`` and separates search from training.
 
-Training starts at ``max(1, highest_sampled_round - 3)`` and includes the first
+For the default scheduling mode, training starts at ``max(1, highest_sampled_round - 3)`` and includes the first
 stage that fails the continuation rule. The convenience workflow uses
 ``0.5 + 5 / sqrt(n_validation)`` as a heuristic continuation threshold, with
-the actual validation count. It compares the peak epoch accuracy with that
-threshold. Repeated epochs and adaptive stage selection reuse validation
+the actual validation count. It checks whether any epoch lies at least
+``5 / sqrt(n_validation)`` away from 0.5 in either direction. Repeated epochs and adaptive stage selection reuse validation
 information, so this is not a calibrated significance test. An untouched test
 set is needed for final evaluation. Small validation sets can put the threshold
 above one; increase the sample budget rather than interpreting that as evidence
@@ -146,7 +146,9 @@ Custom primitive implementations use the normal typed primitive graph and
 round-reduction contracts. A custom framework adapter implements
 ``NeuralTrainingDriver.train(dataset, experiment)`` and returns
 ``NeuralExperimentResult``; framework tensors, devices and checkpoints belong
-inside the driver. No external repository or dynamic code execution is needed.
+inside the driver. For facade-level independent checks, also implement
+``predict(dataset)``; train-only adapters can request ``test_samples=0``.
+No external repository or dynamic code execution is needed.
 
 Download :download:`the script <examples/advanced_neural_autond.py>`.
 
@@ -157,3 +159,19 @@ reported curves retain all measurements and omit a stopping-threshold line.
 The lower-level staged API offers ``stop_on_threshold=False`` for the same
 purpose with explicit starting and maximum rounds. The ordinary AutoND call
 continues to use its heuristic stopping rule.
+
+Independent significance checks
+-------------------------------
+
+The facade also tests each final stage model on fresh rows from a separate
+recorded seed. These scores never control the difference search, epoch choice,
+weight-transfer schedule or continuation. The default test budget is 1,000
+examples per stage, controlled with ``test_samples``; ``confidence`` defaults
+to 0.95. The exact two-sided binomial check uses Bonferroni correction across
+the primitive's planned round count, including rounds not reached by early
+stopping. ``comparisons`` can enlarge that family. Both tails can provide
+evidence, and the default plot shows independent tests and their chance band.
+``result.plot(view="epochs")`` shows validation-only learning curves separately.
+The five-sigma-style validation scheduling heuristic is not the significance
+test used in ``result.tests``, ``result.to_terminal()`` or ``result.conclusion``.
+See :doc:`basic_primitive_analysis` for statistical interpretation and test reuse.

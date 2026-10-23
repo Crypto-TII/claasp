@@ -383,7 +383,7 @@ class Analysis:
         """Train a real-versus-random-output MLP with fixed other inputs.
 
         Use rounds="all" for a round comparison; samples, epochs and seed set its budget.
-        The returned result reports empirical validation accuracy.
+        The result keeps independent two-sided tests separate from validation histories.
 
         EXAMPLES::
 
@@ -398,7 +398,7 @@ class Analysis:
         """Train a related-input-pair distinguisher with explicit XOR differences.
 
         Unspecified input differences are zero. ``fixed_inputs`` optionally
-        fixes inputs in both classes. Use rounds="all" to compare every round.
+        fixes inputs in both classes. Independent tests use test_samples and confidence.
 
         EXAMPLES::
 

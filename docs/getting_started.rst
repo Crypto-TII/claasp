@@ -63,9 +63,9 @@ above:
    * - ``presentation``
      - Matplotlib plots and pandas tables.
    * - ``ml``
-     - NumPy and scikit-learn neural training.
+     - NumPy/scikit-learn neural training and SciPy independent-test statistics.
    * - ``ml-tensorflow``
-     - NumPy and TensorFlow neural training.
+     - NumPy/TensorFlow neural training and SciPy independent-test statistics.
    * - ``docs``
      - Build the HTML documentation and its plots.
    * - ``dev``

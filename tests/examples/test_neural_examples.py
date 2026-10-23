@@ -32,6 +32,11 @@ def test_basic_neural_scripts_train_and_report_without_retraining(kind, tmp_path
     assert [stage.round_number for stage in result.rounds] == list(range(1, 8))
     assert result.rounds[0].result.validation_accuracy[-1] > 0.8
     assert abs(result.rounds[-1].result.validation_accuracy[-1] - 0.5) < 0.1
+    assert [test.round_number for test in result.tests] == list(range(1, 8))
+    assert all(test.samples == 1000 and test.comparisons == 7 for test in result.tests)
+    assert all(test.seed != result.dataset_seed for test in result.tests)
+    assert result.tests[0].detected and result.tests[0].signal == "direct"
+    assert not result.tests[-1].detected
     if kind == "autond":
         assert result.difference_search.best.packed_difference != 0
         assert result.threshold is None
@@ -40,9 +45,12 @@ def test_basic_neural_scripts_train_and_report_without_retraining(kind, tmp_path
         raise AssertionError("reporting must reuse the trained result")
 
     monkeypatch.setattr(SklearnMLPDriver, "train", forbidden)
+    monkeypatch.setattr(SklearnMLPDriver, "predict", forbidden)
     output = StringIO()
     result.to_terminal(details=True, file=output)
-    assert "validation" in output.getvalue().lower()
+    assert "independent" in output.getvalue().lower()
+    assert "Adjusted p" in output.getvalue()
+    assert "No statistically significant" in result.conclusion
     assert (
         "Round 1 — epochs" in output.getvalue()
         if kind == "autond"
@@ -52,6 +60,11 @@ def test_basic_neural_scripts_train_and_report_without_retraining(kind, tmp_path
         target = tmp_path / f"{view}.png"
         result.plot(view=view, show=False, save_to=target)
         assert target.read_bytes().startswith(b"\x89PNG")
+        if view == "rounds":
+            axis = plt.gcf().axes[0]
+            assert axis.get_ylabel() == "Independent test accuracy"
+            assert len(axis.collections) == 1
+            assert "simultaneous chance band" in axis.get_legend_handles_labels()[1][0]
     plt.close("all")
 
 
@@ -92,5 +105,6 @@ def test_guide_tensorflow_architectures_train(architecture):
         epochs=1,
         batch_size=16,
     )
+    assert len(result.tests) == 1 and result.tests[0].samples == 1000
     assert len(result.rounds[0].result.validation_accuracy) == 1
     assert 0 <= result.rounds[0].result.validation_accuracy[0] <= 1

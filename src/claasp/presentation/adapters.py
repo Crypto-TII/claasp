@@ -1304,7 +1304,13 @@ def _neural_round_table(rounds, threshold=None):
             _number(max(history), ValueKind.PROBABILITY, evidence),
         )
         if threshold is not None:
-            cells += (_text("continue" if max(history) >= threshold else "stop"),)
+            cells += (
+                _text(
+                    "continue"
+                    if max(abs(value - 0.5) for value in history) >= threshold - 0.5
+                    else "stop"
+                ),
+            )
         rows.append(TableRow(cells))
     columns: tuple[TableColumn, ...] = (
         TableColumn("round", "Round"),
@@ -1320,7 +1326,7 @@ def _neural_analysis_section(result: NeuralAnalysisResult, *, details=False) -> 
     settings = [
         ("primitive", result.primitive_family),
         ("experiment", result.kind),
-        ("samples per round", str(result.sample_count)),
+        ("training/validation samples per round", str(result.sample_count)),
         ("dataset seed", str(result.dataset_seed)),
         ("architecture", result.experiment.architecture),
         ("training driver", ", ".join(dict.fromkeys(row.result.driver for row in result.rounds))),
@@ -1328,8 +1334,24 @@ def _neural_analysis_section(result: NeuralAnalysisResult, *, details=False) -> 
         ("batch size", str(result.experiment.batch_size)),
         ("validation fraction", str(result.experiment.validation_fraction)),
         ("partition/training seed", str(result.experiment.seed)),
-        ("accuracy evidence", "empirical validation; not an independent test"),
+        (
+            "accuracy evidence",
+            "independent final-model test"
+            if result.tests
+            else "validation only; no independent test",
+        ),
     ]
+    if result.tests:
+        test = result.tests[0]
+        settings.extend(
+            [
+                ("test samples per round", str(test.samples)),
+                ("independent test seed", str(test.seed)),
+                ("family-wise confidence", f"{test.confidence:.1%}"),
+                ("planned round comparisons", str(test.comparisons)),
+                ("statistical check", "two-sided exact binomial; Bonferroni"),
+            ]
+        )
     if result.varied_input:
         settings.append(("input", result.varied_input))
     if result.input_differences:
@@ -1357,7 +1379,9 @@ def _neural_analysis_section(result: NeuralAnalysisResult, *, details=False) -> 
             (TableColumn("setting", "Setting"), TableColumn("value", "Value")),
             tuple(TableRow.of(name, value) for name, value in settings),
         ),
-        _neural_round_table(result.rounds, result.threshold),
+        _neural_test_table(result)
+        if result.tests
+        else _neural_round_table(result.rounds, result.threshold),
     ]
     if details:
         for row in result.rounds:
@@ -1372,7 +1396,25 @@ def _neural_analysis_section(result: NeuralAnalysisResult, *, details=False) -> 
                     tuple(TableRow.of(value) for value in result.dataset_digests),
                 )
             )
-    return ReportSection("Neural distinguisher", tables=tuple(tables))
+    if details and result.tests:
+        tables.append(
+            Table(
+                (
+                    TableColumn("round", "Round"),
+                    TableColumn("correct", "Correct / tested"),
+                    TableColumn("digest", "Independent test SHA-256"),
+                ),
+                tuple(
+                    TableRow.of(
+                        test.round_number, f"{test.successes}/{test.samples}", test.dataset_digest
+                    )
+                    for test in result.tests
+                ),
+            )
+        )
+    return ReportSection(
+        "Neural distinguisher", paragraphs=(_neural_conclusion(result),), tables=tuple(tables)
+    )
 
 
 def _neural_difference_section(result: NeuralDifferenceSearchResult) -> ReportSection:
@@ -1406,6 +1448,69 @@ def _neural_difference_section(result: NeuralDifferenceSearchResult) -> ReportSe
 def _neural_staged_section(result: NeuralStagedTrainingResult) -> ReportSection:
     return ReportSection(
         "Staged neural training",
-        paragraphs=(f"Heuristic stopping threshold: {result.threshold:.6g}",),
+        paragraphs=(
+            f"Validation-only heuristic: continue when some epoch has |accuracy - 0.5| >= {result.threshold - 0.5:.6g}. This is not a calibrated significance test.",
+        ),
         tables=(_neural_round_table(result.rounds, result.threshold),),
     )
+
+
+def _neural_test_table(result):
+    evidence = PresentationEvidence(EvidenceClass.EMPIRICAL)
+    return Table(
+        (
+            TableColumn("round", "Round"),
+            TableColumn("accuracy", "Test accuracy", Alignment.RIGHT),
+            TableColumn("band", "Chance band"),
+            TableColumn("pvalue", "Adjusted p", Alignment.RIGHT),
+            TableColumn("signal", "Evidence"),
+        ),
+        tuple(
+            TableRow(
+                (
+                    _integer(test.round_number),
+                    _number(test.accuracy, ValueKind.PROBABILITY, evidence),
+                    _text(f"[{test.chance_lower:.4f}, {test.chance_upper:.4f}]"),
+                    _number(test.adjusted_pvalue, ValueKind.PROBABILITY, evidence),
+                    _text(
+                        {
+                            "direct": "above chance",
+                            "inverted": "below chance",
+                            "not detected": "not detected",
+                        }[test.signal]
+                    ),
+                )
+            )
+            for test in result.tests
+        ),
+        "Independent final-model tests",
+    )
+
+
+def _neural_conclusion(result):
+    if not result.tests:
+        return "Conclusion: No independent test was performed; validation histories alone do not establish a distinguishing advantage."
+    missing = [str(test.round_number) for test in result.tests if not test.detected]
+    direct = [str(test.round_number) for test in result.tests if test.signal == "direct"]
+    inverted = [str(test.round_number) for test in result.tests if test.signal == "inverted"]
+    statements = []
+    if direct:
+        statements.append("Above-chance evidence at round(s) " + ", ".join(direct) + ".")
+    if inverted:
+        statements.append(
+            "Below-chance evidence at round(s) "
+            + ", ".join(inverted)
+            + "; reversing predictions is a candidate distinguisher and needs fresh confirmation."
+        )
+    if missing:
+        statements.append(
+            "No statistically significant distinguishing advantage detected at round(s) "
+            + ", ".join(missing)
+            + " for this trained model and test budget."
+        )
+    from textwrap import fill
+
+    statements.append(
+        "These tests concern this fixed model and test budget; non-detection does not rule out other distinguishers."
+    )
+    return "Conclusion:\n" + fill(" ".join(statements), width=88)

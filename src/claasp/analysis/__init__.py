@@ -93,7 +93,7 @@ from claasp.analysis.neural import (
     xor_differential_component_dataset,
     xor_differential_dataset,
 )
-from claasp.analysis.neural_distinguisher import NeuralAnalysisResult
+from claasp.analysis.neural_distinguisher import NeuralAnalysisResult, NeuralRoundTestResult
 from claasp.analysis.neural_experiments import (
     DatasetPartition,
     NeuralRun,
@@ -220,6 +220,7 @@ __all__ = [
     "NISTSummaryRow",
     "NeuralDataset",
     "NeuralAnalysisResult",
+    "NeuralRoundTestResult",
     "NeuralDifferenceCandidate",
     "NeuralDifferenceSearchResult",
     "NeuralExperiment",

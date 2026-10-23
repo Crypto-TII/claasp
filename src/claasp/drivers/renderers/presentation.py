@@ -599,7 +599,11 @@ def _plot_component_ddt(result, *, include_zero, scale, show, save_to):
 
 
 def _plot_neural_analysis(result, *, view, show, save_to):
-    view = view or ("rounds" if result.kind == "autond" or len(result.rounds) > 1 else "epochs")
+    view = view or (
+        "rounds" if result.tests or result.kind == "autond" or len(result.rounds) > 1 else "epochs"
+    )
+    if result.tests and view == "rounds":
+        return _plot_neural_tests(result, show=show, save_to=save_to)
     return _plot_neural_histories(
         tuple((row.round_number, row.result.validation_accuracy) for row in result.rounds),
         title=f"{result.primitive_family} — {result.kind}",
@@ -636,6 +640,8 @@ def _plot_neural_histories(histories, *, title, view, show, save_to, threshold=N
             axis.axhline(
                 threshold, color="#a33", linestyle=":", label="heuristic stopping threshold"
             )
+            if 0 <= 1 - threshold <= 1:
+                axis.axhline(1 - threshold, color="#a33", linestyle=":")
         axis.set_xlabel("Rounds")
     axis.axhline(0.5, color="#555", linestyle="--", label="balanced-label chance (0.5)")
     from matplotlib.ticker import MaxNLocator
@@ -647,4 +653,46 @@ def _plot_neural_histories(histories, *, title, view, show, save_to, threshold=N
     _finish_figure(figure, show=show, save_to=save_to)
     return FigureArtifact(
         figure, "neural_validation", tuple(series), MatplotlibPresentationDriver.identity
+    )
+
+
+def _plot_neural_tests(result, *, show, save_to):
+    pyplot = _matplotlib()
+    from matplotlib.ticker import MaxNLocator
+
+    figure, axis = pyplot.subplots(figsize=(8, 4), layout="constrained")
+    tests = result.tests
+    numbers = tuple(test.round_number for test in tests)
+    accuracy = tuple(test.accuracy for test in tests)
+    lower = tuple(test.chance_lower for test in tests)
+    upper = tuple(test.chance_upper for test in tests)
+    # Extend a single-point band horizontally so its acceptance region is visible.
+    band_x = numbers if len(numbers) > 1 else (numbers[0] - 0.25, numbers[0] + 0.25)
+    band_lower = lower if len(numbers) > 1 else lower * 2
+    band_upper = upper if len(numbers) > 1 else upper * 2
+    axis.fill_between(
+        band_x,
+        band_lower,
+        band_upper,
+        color="#777777",
+        alpha=0.2,
+        label=f"{tests[0].confidence:.0%} simultaneous chance band",
+    )
+    axis.plot(numbers, accuracy, marker="o", label="independent test accuracy")
+    axis.axhline(0.5, color="#555", linestyle="--", label="chance (0.5)")
+    axis.xaxis.set_major_locator(MaxNLocator(integer=True))
+    axis.set(
+        xlabel="Rounds",
+        ylabel="Independent test accuracy",
+        ylim=(0, 1),
+        title=f"{result.primitive_family} — {result.kind}",
+    )
+    axis.grid(alpha=0.2)
+    axis.legend()
+    _finish_figure(figure, show=show, save_to=save_to)
+    return FigureArtifact(
+        figure,
+        "neural_independent_test",
+        (("test accuracy", accuracy), ("chance lower", lower), ("chance upper", upper)),
+        MatplotlibPresentationDriver.identity,
     )
