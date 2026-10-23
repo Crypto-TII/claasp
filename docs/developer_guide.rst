@@ -42,6 +42,7 @@ renderers.
    primitive_authoring
    implementing_toy_spn
    analysis
+   component_properties
    whats_new_v5
    parameters
    api

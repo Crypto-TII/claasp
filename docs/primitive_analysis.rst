@@ -45,7 +45,7 @@ are exercised in CI; outputs and figures appear next to their generating calls.
 Explore :doc:`component_analysis`, :doc:`diffusion_and_randomness`, or
 :doc:`neural_distinguishers`. Each topic groups its introductory and advanced
 walkthroughs together. :doc:`basic_algebraic_analysis` and
-:doc:`basic_trail_search` are reserved for planned examples.
+:doc:`basic_trail_search` contain TODO walkthroughs. Unfinished pages state their remaining work explicitly.
 
 Exploring an analysis in depth
 ------------------------------

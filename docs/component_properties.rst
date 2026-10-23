@@ -1,8 +1,8 @@
 Component properties
 ====================
 
-For short discovery and reporting examples, start with
-:doc:`basic_component_analysis` and :doc:`advanced_component_analysis`.
+For user-facing discovery and reporting examples, see
+`Component analysis tests <../user/component_analysis.html>`_ in the user guide.
 
 Component-property analysis answers small specification questions without
 constructing a report or choosing a solver. Every request names both a

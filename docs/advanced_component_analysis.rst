@@ -407,4 +407,4 @@ ANFs can grow very large. Explicit requests remain available.
 
 Download :download:`the complete script <examples/component_analysis.py>`.
 The typed ``PropertyRequest`` and optional-driver interfaces remain available
-for integrations; see :doc:`component_properties`.
+for integrations; see the developer guide’s component-property reference.

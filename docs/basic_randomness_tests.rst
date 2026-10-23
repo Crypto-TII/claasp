@@ -1,5 +1,8 @@
-Randomness tests (NIST STS-style)
-=================================
+Randomness tests
+================
 
-This guide is planned. It will introduce preparing primitive-generated data,
-running NIST STS-style randomness tests, and interpreting their reports.
+.. toctree::
+   :maxdepth: 2
+
+   Introduction <basic_randomness_intro>
+   Advanced <statistical_testing>

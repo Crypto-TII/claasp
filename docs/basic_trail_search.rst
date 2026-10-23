@@ -1,5 +1,18 @@
 Trail search
 ============
 
-This subsection is planned. It will contain short examples of configuring
-a trail search, running a supported backend, and inspecting the returned trail.
+Search for characteristics and distinguishers, and distinguish a feasible result
+from a proven optimum. The topic walkthroughs below are **TODO**; some retain
+working examples from the earlier guide as starting material.
+
+.. toctree::
+   :maxdepth: 2
+
+   trail_search_introduction
+   differential_trail_search
+   linear_trail_search
+   truncated_differences
+   impossible_differentials
+   differential_linear
+   boomerang
+   quasi_differential

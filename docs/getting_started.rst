@@ -143,9 +143,10 @@ no better trail exists:
    >>> (result.trail.total_weight, result.is_optimal)
    (3.0, True)
 
-:doc:`Want to know more about searching for trails? <analysis>`
-That guide explains trail kinds, input constraints, backend and solver
-selection, result fields, probabilities, and supported primitive structures.
+:doc:`Want to know more about searching for trails? <advanced_differential_trail_search>`
+That page retains examples of input constraints, backend and solver selection,
+result fields, probabilities, and supported primitive structures while the new
+walkthrough is being completed.
 
 Display the trail
 -----------------

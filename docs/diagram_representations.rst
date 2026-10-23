@@ -60,3 +60,17 @@ API reference
 
 .. automodule:: claasp.drivers.renderers
    :members:
+
+Primitive visualization is a TODO
+---------------------------------
+
+CLAASP 5 does not currently expose ``primitive.draw()``. The existing diagram
+backend renders the complete low-level component graph, which is useful to
+renderer developers but too detailed to serve as a clear user-facing picture
+of a full primitive. It will remain outside the public ``Primitive`` API until
+there is a compact view with meaningful round structure, readable component
+grouping, and appropriate notebook and terminal presentation.
+
+The backend-neutral diagram IR and serializers remain available as advanced
+developer interfaces. Their output is not canonical graph serialization and
+cannot be deserialized as a primitive.

@@ -1,5 +1,12 @@
 Algebraic analysis
 ==================
 
-This subsection is planned. It will contain short examples of constructing
-and inspecting algebraic representations of a primitive.
+Construct and inspect Boolean polynomial models and study algebraic properties.
+The following guides are **TODO**.
+
+.. toctree::
+   :maxdepth: 2
+
+   algebraic_tests
+   polynomial_system_graphs
+   monomial_prediction
