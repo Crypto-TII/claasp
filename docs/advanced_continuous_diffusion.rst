@@ -71,7 +71,7 @@ Continuous coordinates lie in [-1, 1], with Boolean zero represented by -1 and
 Boolean one by +1. CLAASP propagates these coordinates through the graph's
 continuous component rules. The result is a heuristic model: dependence between
 internal values means these coordinates should not be read as exact
-probabilities throughout the cipher.
+probabilities throughout the primitive.
 
 For output vectors :math:`u,v` of width :math:`m`, each CAF sample is
 
@@ -109,7 +109,7 @@ for each coordinate.
 This is the per-output analogue of the averaged avalanche probability profiles.
 Its units are signed-distance contributions in [0, 2]. Where neither output is
 zero, half the contribution is the empirical sign-reversal probability. It is
-not the probability of flipping a Boolean cipher output.
+not the probability of flipping a Boolean primitive output.
 
 Use the same plot selections as the avalanche example. All views reuse the
 retained experiment:
@@ -204,7 +204,7 @@ whose side length is two; ``1.0`` is a much larger perturbation than the default
 ``0.001``. This is a demonstration of the metric's response, rather than an
 infinitesimal perturbation experiment. The curve is already near one after the
 early rounds: a flat plateau there means roughly half the output signs differ,
-on average. It does not mean the cipher values stopped changing.
+on average. It does not mean the primitive values stopped changing.
 
 With the default ``lambda_value=0.001``, the same uniform-pair experiment can
 instead remain flat at zero across all twelve rounds. Nearby interior points

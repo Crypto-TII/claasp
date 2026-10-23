@@ -145,7 +145,7 @@ jobs:
       - name: Run headless plots and dataframe parity
         env:
           MPLBACKEND: Agg
-        run: python -m pytest tests/unit/drivers/renderers/test_presentation.py tests/unit/drivers/renderers/test_component_ddt.py tests/unit/presentation/test_files.py tests/examples/test_avalanche_example.py tests/examples/test_continuous_diffusion_example.py tests/examples/test_component_analysis_example.py -q
+        run: python -m pytest tests/unit/drivers/renderers/test_presentation.py tests/unit/drivers/renderers/test_presentation__component_ddt.py tests/unit/presentation/test_files.py tests/examples/test_avalanche_example.py tests/examples/test_continuous_diffusion_example.py tests/examples/test_component_analysis_example.py -q
 
   singular-export:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
@@ -420,4 +420,4 @@ jobs:
         run: python -m pytest -m external tests/integration/test_neural_driver_integration.py tests/integration/test_tensorflow_neural_driver.py tests/examples/test_neural_examples.py -q
 
       - name: Execute downloadable neural guide scripts
-        run: MPLBACKEND=Agg OPENBLAS_NUM_THREADS=1 python -m pytest tests/examples/test_neural_examples.py -q
+        run: MPLBACKEND=Agg OPENBLAS_NUM_THREADS=1 python -m pytest tests/examples/test_neural_examples.py tests/unit/analysis/test_neural_distinguisher.py tests/unit/analysis/test_neural_workflows.py -q

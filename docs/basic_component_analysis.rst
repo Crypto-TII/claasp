@@ -53,7 +53,7 @@ three. A bit permutation is invertible but has branch number two: moving bits
 alone does not increase the number of active bits.
 
 These are exact local properties, rather than sampled measurements or a
-security assessment of the whole cipher. Operations without a default analyzer
+security assessment of the whole primitive. Operations without a default analyzer
 remain visible in the inventory. Their absence from the property tables does
 not mean they passed a test.
 
