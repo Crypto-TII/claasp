@@ -43,6 +43,7 @@ to ask their question. Configuration, alternative reports, thresholds and
 parameter comparisons belong in the matching advanced page. Runnable scripts
 are exercised in CI; outputs and figures appear next to their generating calls.
 
-Start with :doc:`basic_avalanche_analysis`, :doc:`basic_continuous_diffusion`,
-:doc:`basic_component_analysis`, or :doc:`basic_neural_distinguishers`, then
-follow the links to their corresponding advanced guides.
+Explore :doc:`basic_diffusion_and_randomness`, :doc:`basic_component_analysis`,
+or :doc:`basic_neural_distinguishers`, then follow the links to their matching
+advanced guides. :doc:`basic_algebraic_analysis` and :doc:`basic_trail_search`
+are reserved for planned examples.

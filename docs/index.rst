@@ -32,9 +32,10 @@ systems and solvers are optional backends.
    :caption: Basic Primitive Analysis
 
    basic_primitive_analysis
-   basic_avalanche_analysis
-   basic_continuous_diffusion
+   basic_diffusion_and_randomness
    basic_component_analysis
+   basic_algebraic_analysis
+   basic_trail_search
    basic_neural_distinguishers
 
 .. toctree::

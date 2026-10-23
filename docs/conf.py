@@ -57,6 +57,10 @@ else:
         [
             "user_guide.rst",
             "basic_primitive_analysis.rst",
+            "basic_diffusion_and_randomness.rst",
+            "basic_randomness_tests.rst",
+            "basic_algebraic_analysis.rst",
+            "basic_trail_search.rst",
             "basic_avalanche_analysis.rst",
             "basic_continuous_diffusion.rst",
             "basic_component_analysis.rst",
