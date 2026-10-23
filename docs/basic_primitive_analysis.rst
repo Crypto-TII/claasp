@@ -62,3 +62,24 @@ are explored in the advanced guides and require the ``ml-tensorflow`` extra.
 Training retains empirical validation accuracy, rather than an exact
 cryptographic property. Seeds make dataset generation and partitioning
 repeatable; numerical training results can vary across library versions.
+
+Reading neural accuracy
+~~~~~~~~~~~~~~~~~~~~~~
+
+Random guessing has an **expected** accuracy of 0.5 on balanced labels, not a
+minimum measured accuracy. Finite validation samples and imperfect training
+can put a score on either side of that line. With about 300 validation examples,
+independent fair guesses have an accuracy standard deviation of approximately
+``sqrt(0.5 * 0.5 / 300) = 0.029``. Scores such as 0.45 and 0.55 are therefore
+plausible fluctuations around chance. This illustrates sampling noise; it is
+not a significance test for adaptively trained models.
+
+A classifier that consistently scores below chance on independent data could
+be made useful by reversing its binary predictions: accuracy ``a`` becomes
+``1 - a``. A single below-chance validation score does not establish that
+repeatable effect. If inversion is chosen using validation data, confirm its
+benefit on an untouched test set.
+
+The conclusions in these guides apply to the trained model, data and budget,
+and only to the tested rounds. Near-chance performance does not establish
+that the primitive resists other models or cryptanalytic methods.

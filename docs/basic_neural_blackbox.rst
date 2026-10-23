@@ -52,6 +52,15 @@ Accuracy near 0.5 means this model and budget no longer find a useful
 distinction; small fluctuations around 0.5 are expected. The decline is
 empirical and need not be monotonic or mark a security boundary.
 
+In this run, accuracy falls from about 95% at round one to approximately
+50% from round two onward. This trained black-box distinguisher is no longer
+effective from round two through round seven at this model and training
+budget. More data or a different model could change that conclusion.
+
+Scores below 0.5 can occur: chance accuracy is an expectation, not a lower
+bound on a finite measurement. See :doc:`basic_primitive_analysis` for how to
+interpret validation noise and consistently below-chance predictions.
+
 Download :download:`the script <examples/basic_neural_blackbox.py>`.
 Continue to :doc:`advanced_neural_blackbox` for experiment parameters and interpretation.
 

@@ -52,5 +52,19 @@ Accuracy near 0.5 means this model and budget no longer find a useful
 distinction; small fluctuations around 0.5 are expected. The decline is
 empirical and need not be monotonic or mark a security boundary.
 
+In this run, accuracy falls to about 55% at round five and fluctuates around
+50% at rounds six and seven. From round six onward, up to the seven rounds
+tested, this trained distinguisher no longer shows a useful advantage at this
+model and training budget. This does not rule out other distinguishers.
+
+The curve matches :doc:`basic_neural_autond` because AutoND finds the same
+plaintext difference, ``0x400000``, supplied here. Both examples then use the
+same datasets, seeds, classifier and training settings; AutoND adds the
+automatic difference search.
+
+Scores below 0.5 can occur: chance accuracy is an expectation, not a lower
+bound on a finite measurement. See :doc:`basic_primitive_analysis` for how to
+interpret validation noise and consistently below-chance predictions.
+
 Download :download:`the script <examples/basic_neural_differential.py>`.
 Continue to :doc:`advanced_neural_differential` for experiment parameters and interpretation.
