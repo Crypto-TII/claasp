@@ -48,7 +48,7 @@ walkthroughs together. :doc:`basic_algebraic_analysis` and
 :doc:`basic_trail_search` are reserved for planned examples.
 
 Exploring an analysis in depth
------------------------------
+------------------------------
 
 The introduction answers one question with a short script using defaults.
 The matching advanced walkthrough explores parameters, measured quantities,
