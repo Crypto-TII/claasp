@@ -64,7 +64,7 @@ cryptographic property. Seeds make dataset generation and partitioning
 repeatable; numerical training results can vary across library versions.
 
 Reading neural accuracy
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Random guessing has an **expected** accuracy of 0.5 on balanced labels, not a
 minimum measured accuracy. Finite validation samples and imperfect training
