@@ -277,20 +277,42 @@ class SmtXorQuasidifferentialModel(SmtModel):
             return positions[-rotation:] + positions[:-rotation]
 
         if operation == "SHIFT":
-            shift_amount = component.description[1]
-            bit_map = [None] * output_bit_size
-
-            if shift_amount < 0:
-                shift_amount = -shift_amount
-                for index in range(output_bit_size - shift_amount):
-                    bit_map[index] = shift_amount + index
-            else:
-                for index in range(output_bit_size - shift_amount):
-                    bit_map[shift_amount + index] = index
-
-            return bit_map
+            return self._shift_bit_map(output_bit_size, component.description[1])
 
         return None
+
+    @staticmethod
+    def _shift_bit_map(output_bit_size, shift_amount):
+        """
+        Return the bit map of a shift by ``shift_amount``, as ``_difference_bit_map`` describes it.
+
+        A positive amount shifts right and a negative one left; the vacated bits are forced to zero
+        and map to ``None``.
+
+        INPUT:
+
+        - ``output_bit_size`` -- **integer**; the number of bits shifted
+        - ``shift_amount`` -- **integer**; the shift amount, negative for a left shift
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: SmtXorQuasidifferentialModel._shift_bit_map(4, 1)
+            [None, 0, 1, 2]
+            sage: SmtXorQuasidifferentialModel._shift_bit_map(4, -1)
+            [1, 2, 3, None]
+        """
+        bit_map = [None] * output_bit_size
+
+        if shift_amount < 0:
+            shift_amount = -shift_amount
+            for index in range(output_bit_size - shift_amount):
+                bit_map[index] = shift_amount + index
+        else:
+            for index in range(output_bit_size - shift_amount):
+                bit_map[shift_amount + index] = index
+
+        return bit_map
 
     def _wire_bit(self, known, source_id, position):
         """
