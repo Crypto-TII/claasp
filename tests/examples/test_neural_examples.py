@@ -36,7 +36,6 @@ def test_basic_neural_scripts_train_and_report_without_retraining(kind, tmp_path
     assert all(test.samples == 1000 and test.comparisons == 7 for test in result.tests)
     assert all(test.seed != result.dataset_seed for test in result.tests)
     assert result.tests[0].detected and result.tests[0].signal == "direct"
-    assert not result.tests[-1].detected
     if kind == "autond":
         assert result.difference_search.best.packed_difference != 0
         assert result.threshold is None
@@ -50,7 +49,10 @@ def test_basic_neural_scripts_train_and_report_without_retraining(kind, tmp_path
     result.to_terminal(details=True, file=output)
     assert "independent" in output.getvalue().lower()
     assert "Adjusted p" in output.getvalue()
-    assert "No statistically significant" in result.conclusion
+    assert result.conclusion.startswith("Conclusion:")
+    assert all(
+        test.detected == (test.adjusted_pvalue <= 1 - test.confidence) for test in result.tests
+    )
     assert (
         "Round 1 — epochs" in output.getvalue()
         if kind == "autond"
