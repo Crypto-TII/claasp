@@ -69,8 +69,9 @@ and records the observed output-bit changes:
    9.47
 
 Increase the sample count for an actual experiment. The fixed seed makes runs
-with the same parameters reproducible. See :doc:`statistical_testing` for the
-probability matrix, dataset families, NIST STS, and Dieharder integration.
+with the same parameters reproducible. See :doc:`advanced_avalanche_analysis` for probability reporting,
+:doc:`basic_randomness_tests` for tests on primitive-generated datasets, and
+:doc:`statistical_tests` for statistical testing independently of the data source.
 
 Create a neural-distinguisher dataset
 -------------------------------------

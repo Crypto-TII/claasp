@@ -21,7 +21,7 @@ renderers.
    diagram_representations
    concepts
    extending_analysis
-   statistical_testing
+   statistical_datasets
    documentation_quality
    development
 

@@ -340,5 +340,5 @@ it with ``python avalanche.py``. It uses the same public calls and parameters
 as this page; CI exercises it with smaller budgets. The displayed commands and
 terminal output are also executed during documentation builds.
 
-See :doc:`statistical_testing` for dataset/statistical-testing interfaces and
+See :doc:`basic_randomness_tests` for tests on primitive-generated datasets and
 :doc:`displaying_results` for presentation and exports.

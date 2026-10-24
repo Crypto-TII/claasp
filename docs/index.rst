@@ -55,6 +55,12 @@ systems and solvers are optional backends.
 
 .. toctree::
    :maxdepth: 2
+   :caption: Other
+
+   statistical_tests
+
+.. toctree::
+   :maxdepth: 2
    :caption: Reference and development
 
    development

@@ -32,6 +32,7 @@ if guide == "user":
     exclude_patterns.extend(
         [
             "developer_guide.rst",
+            "statistical_datasets.rst",
             "development.rst",
             "architecture.rst",
             "composite_architecture.rst",
@@ -58,6 +59,10 @@ else:
     exclude_patterns.extend(
         [
             "user_guide.rst",
+            "statistical_tests.rst",
+            "basic_statistical_testing.rst",
+            "statistical_testing.rst",
+            "advanced_randomness_tests.rst",
             "algebraic_tests.rst",
             "polynomial_system_graphs.rst",
             "monomial_prediction.rst",

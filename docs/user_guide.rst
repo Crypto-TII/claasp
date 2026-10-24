@@ -52,3 +52,9 @@ analysis guides for your own work.
    neural_distinguishers
    input_recovery
    displaying_results
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Other
+
+   statistical_tests
