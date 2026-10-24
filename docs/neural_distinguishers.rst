@@ -1,136 +1,62 @@
-Neural distinguisher
-====================
+Neural distinguishers
+=====================
 
-CLAASP defines neural datasets and experiment requests independently of a
-machine-learning framework. Generating data therefore requires neither NumPy
-nor TensorFlow, and an optional training driver can consume the same immutable
-contract.
+Train classifiers to distinguish primitive-generated examples from random
+examples, or automate the search for a useful input difference. These guides
+follow the common script structure in :doc:`primitive_analysis`.
 
-The black-box experiment labels real primitive outputs with one and random
-outputs with zero. Features contain the varied input followed by the output,
-using MSB-first bits:
+.. toctree::
+   :maxdepth: 2
 
-.. doctest::
+   neural_blackbox
+   neural_differential
+   neural_autond
 
-   >>> from claasp.analysis import black_box_dataset
-   >>> from claasp.primitives import Speck
-   >>> primitive = Speck(number_of_rounds=1)
-   >>> data = black_box_dataset(primitive, "plaintext", samples=4, seed=41)
-   >>> data.kind, data.sample_count, data.feature_width
-   ('black_box', 4, 64)
-   >>> data == black_box_dataset(primitive, "plaintext", samples=4, seed=41)
-   True
+The Getting started installation includes scikit-learn and plotting support.
+The basic examples use a CPU multilayer perceptron. TensorFlow architectures
+are explored in the advanced guides and require the ``ml-tensorflow`` extra.
+Training retains validation histories separately from independent final-model
+tests. Seeds make datasets and partitions repeatable; numerical training
+results can vary across library versions.
 
-The differential generator labels related pairs with one and independently
-random pairs with zero:
+Reading neural accuracy
+-----------------------
 
-.. doctest::
+The neural facade evaluates each final model on 1,000 independently generated
+test rows by default, after training. The test generator uses a separate
+recorded seed, with fair random labels rather than fixing the label counts.
+Black-box experiments reuse the same fixed key and other fixed inputs in both
+training and testing. The test rows are never supplied to ``train`` or used
+for epoch selection, difference search or AutoND scheduling.
 
-   >>> from claasp.analysis import xor_differential_dataset
-   >>> data = xor_differential_dataset(
-   ...     primitive, {"plaintext": 0x00400000, "key": 0}, samples=4, seed=7
-   ... )
-   >>> data.kind, data.feature_width
-   ('xor_differential', 64)
+CLAASP applies an **exact two-sided binomial test** of chance accuracy 0.5
+using `SciPy binomtest <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.binomtest.html>`_.
+Both above- and below-chance results can be significant. The default 95%
+family-wise confidence uses Bonferroni correction across the planned round
+comparisons in that analysis; the terminal report records their number,
+test counts, acceptance bands and adjusted p-values. The bands are discrete
+null acceptance regions, not confidence intervals for the measured accuracy.
+Increasing ``test_samples`` narrows them; testing more rounds widens them.
+The confidence level is controlled by ``confidence``. Non-detection means
+**no statistically significant distinguishing advantage was detected for this
+trained model at this test budget**, not that no distinguisher exists.
 
-``NeuralExperiment`` records architecture, split, seed, epochs, and batch
-size. An optional framework adapter implements ``NeuralTrainingDriver`` and
-returns ``NeuralExperimentResult``. Framework imports, tensor conversion,
-devices, training, and checkpoints belong to that driver rather than the core
-contracts.
+Random guessing has expected accuracy 0.5, not a minimum measured accuracy.
+Finite measurements can fall on either side. A classifier with repeatable
+accuracy 0.40 becomes a 0.60-accuracy classifier after reversing its predictions.
+The two-sided test accounts for inspecting both directions. If inversion is
+chosen from these test results, confirm the inverted classifier's performance
+on another untouched dataset before claiming its accuracy.
 
-Dataset partitions and run provenance
--------------------------------------
+Each round's default test concerns only the final model, not the highest
+validation score over epochs. Train and choose models using training and
+validation data. Reusing test scores to tune architectures, differences or
+hyperparameters invalidates their untouched-test interpretation. For a larger
+predeclared comparison family, set ``comparisons`` to cover all tested models,
+or reserve new independent data after model selection. The default correction
+covers rounds within one call, not every experiment a user might try.
 
-Splits are explicit sample-index contracts rather than framework-owned hidden
-state. They may be label-stratified and are reproducible from their own seed:
-
-.. doctest::
-
-   >>> from claasp.analysis import deterministic_partition, dataset_digest
-   >>> partition = deterministic_partition(
-   ...     data, validation_fraction=0.25, testing_fraction=0.25,
-   ...     seed=19, stratified=False,
-   ... )
-   >>> partition.training, partition.validation, partition.testing
-   ((0, 2), (1,), (3,))
-   >>> len(dataset_digest(data))
-   64
-
-``NeuralRunProvenance`` binds a run to the exact dataset digest, primitive
-realization, dataset and partition seeds, driver version, and canonical scalar
-options. ``NeuralRun.validate_for`` rejects stale datasets and partitions that
-do not cover every sample exactly once.
-
-Round and component projections
---------------------------------
-
-``component_output_dataset`` and ``xor_differential_component_dataset`` can
-train or evaluate a distinguisher on an intermediate round state, a round
-key, or an arbitrary component instead of only the primitive's final output.
-They read the requested component's value directly from the primitive's typed
-``ExecutionTrace`` (see ``claasp.annotations``), produced by
-``Primitive.evaluate_with_trace``. ``round_component_ids`` selects every
-component CLAASP added while building one round, so passing it as
-``component_ids`` projects that round's full state, while a single id targets
-one exact wire:
-
-.. doctest::
-
-   >>> from claasp.analysis import component_output_dataset, round_component_ids
-   >>> reduced = Speck(number_of_rounds=2)
-   >>> round_component_ids(reduced, 0)[:3]
-   ('rotate_0_0', 'modular_add_0_1', 'xor_0_2')
-   >>> right_word = reduced.graph.round_outputs[0][1].source_id
-   >>> projected = component_output_dataset(
-   ...     reduced, "plaintext", right_word, samples=4, seed=5
-   ... )
-   >>> projected.kind, projected.sample_count, projected.feature_width
-   ('black_box', 4, 48)
-   >>> projected.feature_names[-1]
-   'xor_0_4[15]'
-
-``xor_differential_component_dataset`` projects the same way for related
-input pairs, replacing ``xor_differential_dataset``'s final-output pair with
-one from a chosen component. Both functions validate every id against the
-primitive's graph up front and raise ``KeyError`` for an id that is not one
-of its inputs or components.
-
-Optional ML training drivers
------------------------------
-
-``NeuralTrainingDriver`` implementations live under
-``claasp.drivers.neural`` and are never imported by
-``claasp``'s core. The bundled ``SklearnMLPDriver`` trains a small
-``sklearn.neural_network.MLPClassifier``. The optional ``ml`` extra (installed
-with ``pip install 'claasp[ml]'``) uses scikit-learn; an equivalent TensorFlow,
-Keras, or PyTorch driver can implement the same protocol. The
-scikit-learn import happens inside ``train``, so constructing a
-``SklearnMLPDriver`` never requires the extra -- only calling ``train`` does::
-
-   from claasp.analysis import NeuralExperiment
-   from claasp.drivers.neural import SklearnMLPDriver
-
-   dataset = xor_differential_dataset(
-       reduced, {"plaintext": 0x00400000, "key": 0}, samples=3000, seed=11
-   )
-   experiment = NeuralExperiment("mlp", epochs=15, batch_size=64, seed=2)
-   result = SklearnMLPDriver(hidden_layer_sizes=(32, 32)).train(dataset, experiment)
-   result.validation_accuracy[-1]  # tolerance-based evidence, e.g. > 0.8
-
-``result.validation_accuracy`` is tolerance/threshold-based experimental
-evidence, never an exact cross-platform fixture: the dedicated
-``neural-ml-execution`` CI job trains this same reduced-round Speck32/64
-differential distinguisher and only asserts that the final accuracy clears a
-documented threshold, not a specific value.
-
-Automated difference search and staged training
------------------------------------------------
-
-``primitive.analysis.find_good_neural_input_difference`` provides the seeded
-evolutionary input-difference search formerly exposed by AutoND.
-``train_staged_neural_distinguisher`` trains successive reduced-round graphs
-until validation accuracy falls below the configured statistical threshold,
-and ``run_autond`` composes both phases. Dataset generation, candidate ranking,
-round limits, and seeds are explicit; a real TensorFlow CI job constructs both
-legacy architectures and performs a bounded training run.
+Custom drivers provide ``predict(dataset)`` alongside ``train`` to participate
+in independent testing. ``test_samples=0`` explicitly requests validation-only
+reporting and suppresses statistical conclusions. The low-level
+``NeuralExperimentResult`` retains training validation histories only.

@@ -23,10 +23,14 @@ EXPECTED_SCOPE = ["src/claasp", "tests", "tools", "docs/conf.py"]
 EXPECTED_TYPING_BOUNDARIES = [
     "matplotlib",
     "matplotlib.*",
+    "mpl_toolkits",
+    "mpl_toolkits.*",
     "numpy",
     "numpy.*",
     "pandas",
     "pandas.*",
+    "scipy",
+    "scipy.*",
     "sklearn",
     "sklearn.*",
     "tensorflow",
@@ -101,6 +105,7 @@ def validate_manifest(manifest: dict[str, object]) -> list[str]:
     expected_override = {
         "module": EXPECTED_TYPING_BOUNDARIES,
         "follow_imports": "skip",
+        "follow_imports_for_stubs": True,
         "ignore_missing_imports": True,
     }
     if overrides != [expected_override]:

@@ -213,3 +213,22 @@ def AESRound(
     )
     builder.set_output("output", state)
     return builder.build(provenance={"specification": "FIPS 197 encryption round"})
+
+
+def AESMixColumn() -> CompositeDefinition:
+    """Return the standard four-byte AES MixColumns building block.
+
+    EXAMPLES::
+
+        >>> from claasp.composites import AESMixColumn
+        >>> hex(AESMixColumn().evaluate(0xdb135345))
+        '0x8e4da1bc'
+        >>> AESMixColumn().analyze().component("linear_map").properties("invertible")[0].value
+        True
+    """
+    builder = CompositeBuilder("AESMixColumn", {"column": UnitArrayType(AES_FIELD, (4,))})
+    builder.add_round()
+    matrix = tuple(tuple(row[:4]) for row in MIX_COLUMNS_MATRIX[:4])
+    output = builder.add_component(LinearMap(builder.input("column"), matrix))
+    builder.set_output("output", output)
+    return builder.build(provenance={"specification": "FIPS 197 MixColumns, one column"})

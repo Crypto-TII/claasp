@@ -233,6 +233,18 @@ class TensorFlowDistinguisherDriver:
             True,
         )
 
+    def predict(self, dataset: NeuralDataset) -> tuple[int, ...]:
+        """Predict independent rows with the retained final model, without fitting."""
+        if self._model is None or self._model_key is None:
+            raise ValueError("train a model before predicting")
+        import numpy as np
+
+        features = np.asarray(dataset.features, dtype=np.float32)
+        if self._model_key[0] == "dbitnet":
+            features = features[..., np.newaxis]
+        probabilities = self._model.predict(features, verbose=0).reshape(-1)
+        return tuple(int(value >= 0.5) for value in probabilities)
+
 
 def _tensorflow():
     try:

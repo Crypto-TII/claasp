@@ -21,8 +21,7 @@ renderers.
    diagram_representations
    concepts
    extending_analysis
-   neural_distinguishers
-   statistical_testing
+   statistical_datasets
    documentation_quality
    development
 
@@ -43,6 +42,7 @@ renderers.
    primitive_authoring
    implementing_toy_spn
    analysis
+   component_properties
    whats_new_v5
    parameters
    api

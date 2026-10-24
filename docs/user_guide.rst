@@ -34,22 +34,27 @@ analysis guides for your own work.
    customizing_aes
    parameters
    primitive_authoring
+   implementing_toy_spn
    composite_blocks
    transformations
    batch_evaluation
+   serialization_and_source
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Primitive Analysis
+
+   primitive_analysis
+   component_analysis
+   diffusion_and_randomness
+   basic_algebraic_analysis
+   basic_trail_search
+   neural_distinguishers
+   input_recovery
+   displaying_results
 
 .. toctree::
    :maxdepth: 2
-   :caption: Advanced primitive analysis
+   :caption: Other
 
-   analysis
-   component_properties
-   displaying_results
-   serialization_and_source
-   statistical_testing
-   neural_distinguishers
-
-.. toctree::
-   :hidden:
-
-   implementing_toy_spn
+   statistical_tests

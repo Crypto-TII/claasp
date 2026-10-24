@@ -33,8 +33,8 @@ def test_three_round_andrx_optima_and_reporting(primitive_type):
     assert linear.constraint_models
 
     summary, details = StringIO(), StringIO()
-    differential.show(file=summary)
-    differential.show(details=True, file=details)
+    differential.to_terminal(file=summary)
+    differential.to_terminal(details=True, file=details)
     assert "    3 |" in summary.getvalue()
     assert "BitwiseAnd" in details.getvalue()
 

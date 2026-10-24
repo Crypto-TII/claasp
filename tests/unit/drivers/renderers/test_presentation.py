@@ -196,3 +196,199 @@ def test_renderer_module_import_is_lazy_about_matplotlib():
         [sys.executable, "-c", code], text=True, capture_output=True, check=True, env=environment
     )
     assert completed.stdout.strip() == "False"
+
+
+def test_avalanche_plot_defaults_to_display_and_can_save_headlessly(monkeypatch, tmp_path):
+    result = AvalancheResult("fixture", "plaintext", 2, 9, ((0.0, 0.5), (1.0, 0.5)), threshold=0.01)
+    calls = []
+    monkeypatch.setattr(pyplot, "show", lambda: calls.append("display"))
+    try:
+        artifact = result.plot()
+        assert calls == ["display"]
+        assert artifact.kind == "avalanche_summary"
+        assert artifact.series == (
+            ("minimum", (0.0,)),
+            ("maximum", (1.0,)),
+            ("average", (0.5,)),
+            ("lower_threshold", (0.49,)),
+            ("upper_threshold", (0.51,)),
+        )
+        assert pyplot.gcf() is artifact.figure
+        assert pyplot.gcf().axes[0].get_xlabel() == "Rounds"
+        path = tmp_path / "avalanche.png"
+        saved = result.plot(show=False, save_to=path)
+        assert calls == ["display"]
+        assert path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+        assert saved.series == artifact.series
+        result.plot(save_to=tmp_path / "displayed.png")
+        assert calls == ["display", "display"]
+    finally:
+        pyplot.close("all")
+
+
+def test_avalanche_plot_explains_missing_optional_dependency(monkeypatch):
+    import builtins
+
+    original_import = builtins.__import__
+
+    def without_matplotlib(name, *args, **kwargs):
+        if name == "matplotlib":
+            raise ImportError("not installed")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", without_matplotlib)
+    result = AvalancheResult("fixture", "plaintext", 2, 9, ((0.5,),))
+    with pytest.raises(ImportError, match="presentation"):
+        result.plot(show=False)
+
+
+@pytest.mark.parametrize("metric", ["probability", "entropy", "weight"])
+@pytest.mark.parametrize("view", ["summary", "heatmap", "3d"])
+def test_avalanche_round_views_preserve_values_colors_and_opaque_planes(view, metric):
+    from claasp.analysis.avalanche import _round_profiles
+
+    first = ((0.0, 0.5), (1.0, 0.5))
+    final = ((0.25, 0.5), (0.75, 0.5))
+    result = AvalancheResult(
+        "fixture",
+        "plaintext",
+        4,
+        9,
+        final,
+        round_probabilities=(first, final),
+        round_numbers=(1, 2),
+    )
+    try:
+        artifact = result.plot(view=view, metric=metric, show=False)
+        axis = pyplot.gcf().axes[0]
+        assert artifact.kind == f"avalanche_{view}"
+        if view == "summary":
+            expected_minimum = (
+                (0.0, 0.25) if metric != "entropy" else (0.0, pytest.approx(0.8112781244591328))
+            )
+            assert artifact.series[0][1] == expected_minimum
+            assert artifact.series[-2][0] == "lower_threshold"
+        else:
+            profiles = _round_profiles(result, metric)
+            assert artifact.series == (("round_1", profiles[0]), ("round_2", profiles[1]))
+            if view == "heatmap":
+                image = axis.images[0]
+                assert image.get_clim() == (0, 1)
+                assert image.to_rgba(1.0 if metric == "entropy" else 0.5) == pyplot.get_cmap(
+                    "RdYlGn"
+                )(1.0)
+            else:
+                planes = [
+                    item for item in axis.collections if type(item).__name__ == "Poly3DCollection"
+                ]
+                assert len(planes) == 2
+                assert all(item.get_alpha() == 1 for item in planes)
+                assert all(color[-1] == 1 for item in planes for color in item.get_facecolors())
+                for plane, profile in zip(planes, profiles, strict=True):
+                    expected_colors = sorted(
+                        tuple(
+                            pyplot.get_cmap("RdYlGn")(
+                                value if metric == "entropy" else 1 - abs(2 * value - 1)
+                            )
+                        )
+                        for value in profile
+                    )
+                    assert (
+                        sorted(tuple(color) for color in plane.get_facecolors()) == expected_colors
+                    )
+
+                points = [
+                    item for item in axis.collections if type(item).__name__ == "Path3DCollection"
+                ]
+                assert len(points) == 2
+                assert points[0].to_rgba(1.0 if metric == "entropy" else 0.5) == pyplot.get_cmap(
+                    "RdYlGn"
+                )(1.0)
+                if metric != "entropy":
+                    for probability in (0, 0.125, 0.25, 0.375, 0.5, 0.75, 1.0):
+                        assert points[0].to_rgba(float(probability)) == pyplot.get_cmap("RdYlGn")(
+                            1 - abs(2 * probability - 1)
+                        )
+    finally:
+        pyplot.close("all")
+
+
+def test_avalanche_plot_rejects_unknown_views_and_metrics():
+    result = AvalancheResult("fixture", "plaintext", 2, 9, ((0.5,),))
+    with pytest.raises(ValueError, match="view"):
+        result.plot(view="unknown", show=False)
+    with pytest.raises(ValueError, match="metric"):
+        result.plot(metric="unknown", show=False)
+
+
+@pytest.mark.parametrize("style", ["dots", "planes"])
+def test_3d_round_order_and_heights_survive_camera_rotation(style):
+    matrices = tuple(((value, value),) for value in (0.1, 0.3, 0.4, 0.5))
+    result = AvalancheResult(
+        "fixture",
+        "plaintext",
+        10,
+        9,
+        matrices[-1],
+        round_probabilities=matrices,
+        round_numbers=(1, 2, 3, 4),
+    )
+    try:
+        artifact = result.plot(view="3d", style=style, show=False)
+        figure = pyplot.gcf()
+        axis = figure.axes[0]
+        assert artifact.series == tuple(
+            (f"round_{i}", (value, value)) for i, value in enumerate((0.1, 0.3, 0.4, 0.5), 1)
+        )
+        assert axis.get_zlim() == (0, 1)
+        points = [item for item in axis.collections if type(item).__name__ == "Path3DCollection"]
+        assert len(points) == 4
+        assert all(tuple(item.get_sizes()) == (3,) for item in points)
+        if style == "dots":
+            assert len(axis.lines) == 4
+            assert all(tuple(line.get_data_3d()[2]) == (0, 0) for line in axis.lines)
+        figure.canvas.draw()
+        # At the default camera, round 1 is nearest, so it must draw last.
+        bases = [entry[1] for entry in axis._round_artists]
+        orders = [item.get_zorder() for item in bases]
+        assert orders == sorted(orders, reverse=True)
+        assert all(
+            dot.get_zorder() == base.get_zorder() + 1
+            for base, dot in zip(bases, points, strict=True)
+        )
+        axis.view_init(azim=60)
+        figure.canvas.draw()
+        # Looking from the opposite side reverses the exact plane order.
+        orders = [item.get_zorder() for item in bases]
+        assert orders == sorted(orders)
+        axis.view_init(elev=150, azim=-60)
+        figure.canvas.draw()
+        orders = [item.get_zorder() for item in bases]
+        assert orders == sorted(orders)
+    finally:
+        pyplot.close("all")
+
+
+def test_avalanche_plot_rejects_unknown_3d_style():
+    result = AvalancheResult("fixture", "plaintext", 2, 9, ((0.5,),))
+    with pytest.raises(ValueError, match="style"):
+        result.plot(view="3d", style="unknown", show=False)
+
+
+@pytest.mark.parametrize("samples", [2, 1000])
+def test_default_plot_band_reflects_sampling_power(samples):
+    result = AvalancheResult("fixture", "state", samples, 0, ((0.45, 0.55),))
+    try:
+        artifact = result.plot(show=False)
+        lower = artifact.series[-2][1][0]
+        upper = artifact.series[-1][1][0]
+        legend = pyplot.gcf().axes[0].get_legend_handles_labels()[1]
+        band = next(label for label in legend if "simultaneous SAC band" in label)
+        if samples == 2:
+            assert (lower, upper) == (0, 1)
+            assert "inconclusive" in band
+        else:
+            assert 0.45 < lower < 0.5 < upper < 0.55
+            assert "inconclusive" not in band
+    finally:
+        pyplot.close("all")

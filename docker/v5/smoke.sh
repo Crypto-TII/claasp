@@ -14,7 +14,7 @@ done
 
 cryptominisat5 --version | grep 'CryptoMiniSat version 5.11.15' >/dev/null
 minizinc --solvers | grep -i chuffed >/dev/null
-python -c 'import matplotlib, mypy, numpy, pandas, pytest, sklearn, sphinx'
+python -c 'import matplotlib, mpmath, mypy, numpy, pandas, pytest, sklearn, sphinx'
 
 ruff --version | grep '0.16.8' >/dev/null
 python -m mypy --version | grep '2.3.1' >/dev/null

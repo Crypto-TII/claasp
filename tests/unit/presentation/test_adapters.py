@@ -136,7 +136,7 @@ def test_component_results_keep_exact_bound_and_unavailable_distinct():
 
 def test_avalanche_adapter_labels_fixed_matrix_empirical():
     result = AvalancheResult("speck", "plaintext", 4, 9, ((0.0, 0.5), (1.0, 0.25)))
-    summary, matrix = avalanche_section(result).tables
+    summary, statistics, matrix = avalanche_section(result, details=True).tables
     assert summary.rows[2].cells[1].evidence.classification is EvidenceClass.EMPIRICAL
     assert matrix.rows[1].cells[1].text == "1"
     assert matrix.rows[1].cells[2].text == "0.25"

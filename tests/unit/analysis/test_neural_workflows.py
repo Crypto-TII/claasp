@@ -92,3 +92,31 @@ def test_autond_executes_search_and_training_through_public_facade():
         seed=5,
     )
     assert facade.difference_search == direct.difference_search
+
+
+def test_staged_training_can_measure_past_the_threshold():
+    driver = SequenceDriver((0.9, 0.5, 0.49))
+    result = Speck(number_of_rounds=3).analysis.train_staged_neural_distinguisher(
+        driver,
+        {"plaintext": 0x400000, "key": 0},
+        starting_round=1,
+        samples=32,
+        significance_samples=10000,
+        stop_on_threshold=False,
+        experiment=NeuralExperiment("mlp", epochs=1, seed=3),
+    )
+    assert [stage.round_number for stage in result.rounds] == [1, 2, 3]
+    assert result.rounds[-1].result.validation_accuracy == (0.49,)
+
+
+def test_staged_training_does_not_discard_repeatable_below_chance_signal():
+    driver = SequenceDriver((0.1, 0.5))
+    result = Speck(number_of_rounds=3).analysis.train_staged_neural_distinguisher(
+        driver,
+        {"plaintext": 0x400000, "key": 0},
+        starting_round=1,
+        samples=32,
+        significance_samples=10000,
+        experiment=NeuralExperiment("mlp", epochs=1),
+    )
+    assert [stage.round_number for stage in result.rounds] == [1, 2]

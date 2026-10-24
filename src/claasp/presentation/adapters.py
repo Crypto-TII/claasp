@@ -11,10 +11,21 @@ from enum import Enum
 from fractions import Fraction
 from math import isinf
 
-from claasp.analysis.avalanche import AvalancheResult
-from claasp.analysis.component_properties import ComponentPropertyResult, PropertyClaim
+from claasp.analysis.avalanche import AvalancheCriteriaResult, AvalancheResult
+from claasp.analysis.component_inspection import ComponentPropertiesResult, ComponentTableResult
+from claasp.analysis.component_properties import (
+    ComponentAnalysisResult,
+    ComponentPropertyResult,
+    PropertyClaim,
+)
+from claasp.analysis.continuous_diffusion import ContinuousDiffusionResult
 from claasp.analysis.neural import NeuralExperimentResult
+from claasp.analysis.neural_distinguisher import NeuralAnalysisResult
 from claasp.analysis.neural_experiments import NeuralRun
+from claasp.analysis.neural_workflows import (
+    NeuralDifferenceSearchResult,
+    NeuralStagedTrainingResult,
+)
 from claasp.analysis.statistical_results import (
     DieharderReport,
     NISTFinalReport,
@@ -422,8 +433,16 @@ def trace_section(trace: ExecutionTrace) -> ReportSection:
 
 def component_property_section(
     results: tuple[ComponentPropertyResult, ...] | list[ComponentPropertyResult],
+    *,
+    details: bool = True,
+    component=None,
 ) -> ReportSection:
     """Present component properties in caller-supplied semantic order.
+
+    Use ``details=False`` for a compact table after selecting one component;
+    the default retains component identities, graph references and methods.
+    ``component`` supplies dimensions and field semantics for domain labels;
+    without it the label describes the mathematical space without dimensions.
 
     EXAMPLES::
 
@@ -445,7 +464,11 @@ def component_property_section(
                 (
                     _text(result.provenance.semantic_identity),
                     _text(result.request.property.value),
-                    _text(result.request.domain.value),
+                    _text(
+                        _component_domain_description(
+                            result.request.domain, component, details=details
+                        )
+                    ),
                     value,
                     _text(evidence.classification.value),
                     _text(evidence.applicability.value),
@@ -458,7 +481,7 @@ def component_property_section(
         (
             TableColumn("component", "Semantic component"),
             TableColumn("property", "Property"),
-            TableColumn("unit_type", "UnitType"),
+            TableColumn("domain", "Domain"),
             TableColumn("value", "Value", Alignment.RIGHT),
             TableColumn("evidence", "Evidence"),
             TableColumn("applicability", "Applicability"),
@@ -468,22 +491,115 @@ def component_property_section(
         tuple(rows),
         "Component properties",
     )
+    if not details:
+        columns = (1, 2, 3, 4)
+        table = Table(
+            tuple(
+                TableColumn("domain", "Domain") if index == 2 else table.columns[index]
+                for index in columns
+            ),
+            tuple(TableRow(tuple(row.cells[index] for index in columns)) for row in table.rows),
+            table.title,
+        )
     return ReportSection("Component properties", tables=(table,))
 
 
-def avalanche_section(result: AvalancheResult) -> ReportSection:
-    """Present empirical avalanche metadata, summaries, and the fixed matrix.
+def _continuous_diffusion_section(
+    result: ContinuousDiffusionResult, *, details: bool = False
+) -> ReportSection:
+    metadata = Table(
+        (TableColumn("setting", "Setting"), TableColumn("value", "Value")),
+        tuple(
+            TableRow((_text(key), _text(str(value))))
+            for key, value in (
+                ("primitive", result.primitive_family),
+                ("input", result.input_name),
+                ("samples", len(result.samples[0])),
+                ("seed", result.seed),
+                ("lambda", result.lambda_value),
+                ("decimal precision", result.precision),
+                ("sampling", result.method),
+                ("sampling engine", result.sampling_engine),
+                ("claim", result.claim_kind),
+            )
+        ),
+    )
+    empirical = PresentationEvidence(EvidenceClass.EMPIRICAL, complete=False)
+    table = Table(
+        (TableColumn("round", "Round"), TableColumn("caf", "CAF")),
+        tuple(
+            TableRow((_integer(number), _text(f"{value:.6g}", empirical)))
+            for number, value in zip(result.round_numbers, result.factors, strict=True)
+        ),
+    )
+    tables = [metadata, table]
+    if details:
+        if not result.vectors:
+            raise ValueError("per-output CAF vectors are not available for this result")
+        for number, vector in zip(result.round_numbers, result.vectors, strict=True):
+            tables.append(
+                Table(
+                    (
+                        TableColumn("bit", "Output bit (MSB first)"),
+                        TableColumn("contribution", "Mean signed distance"),
+                    ),
+                    tuple(
+                        TableRow((_integer(bit), _text(f"{value:.6g}", empirical)))
+                        for bit, value in enumerate(vector)
+                    ),
+                    f"CAF contributions — round {number}",
+                )
+            )
+    return ReportSection("Continuous diffusion — continuous avalanche factor", tables=tuple(tables))
+
+
+def _avalanche_criteria_section(result: AvalancheCriteriaResult) -> ReportSection:
+    """Adapt precomputed criterion decisions without running an analysis."""
+    columns = (
+        ("round", "Round"),
+        ("full_diffusion", "Full diffusion"),
+        ("avalanche", "Avalanche"),
+        ("strict_avalanche", "Strict avalanche"),
+    )
+    table = Table(
+        tuple(TableColumn(key, title) for key, title in columns),
+        tuple(
+            TableRow(
+                tuple(_text("unknown" if row[key] is None else str(row[key])) for key, _ in columns)
+            )
+            for row in result
+        ),
+    )
+    return ReportSection("Avalanche criteria", tables=(table,))
+
+
+def avalanche_section(
+    result: AvalancheResult, *, details: bool = False, metric: str | None = None
+) -> ReportSection:
+    """Present empirical round statistics and, optionally, bit matrices.
 
     EXAMPLES::
 
-        >>> try:
-        ...     avalanche_section()
-        ... except TypeError:
-        ...     print("required arguments rejected")
-        required arguments rejected
+        >>> from claasp.analysis.avalanche import AvalancheCriteriaResult, AvalancheResult
+        >>> result = AvalancheResult("demo", "plaintext", 2, 9, ((0.5,),))
+        >>> len(avalanche_section(result).tables), len(avalanche_section(result, details=True).tables)
+        (2, 3)
     """
+    from claasp.analysis.avalanche import (
+        _comparison_count,
+        _metric_matrix,
+        _report_bounds,
+        _report_label,
+        _report_status,
+        _round_data,
+        _round_statistics,
+        _validate_metric,
+    )
 
+    selected = _validate_metric(result.metric if metric is None else metric)
+    lower, upper = _report_bounds(result, selected)
     empirical = PresentationEvidence(EvidenceClass.EMPIRICAL, complete=False)
+    final_round = str(result.round_numbers[-1]) if result.round_numbers else "unknown"
     summary = Table(
         (TableColumn("field", "Field"), TableColumn("value", "Value", Alignment.RIGHT)),
         (
@@ -491,32 +607,143 @@ def avalanche_section(result: AvalancheResult) -> ReportSection:
             TableRow((_text("input"), _text(result.input_name))),
             TableRow((_text("samples"), _integer(result.sample_count, empirical))),
             TableRow((_text("seed"), _integer(result.seed, empirical))),
-            TableRow((_text("method"), _text(result.method, empirical))),
+            TableRow((_text("method"), _text(f"avalanche_{selected}", empirical))),
+            TableRow((_text("evaluation method"), _text(result.method, empirical))),
+            TableRow((_text("final round"), _text(final_round))),
             TableRow(
                 (
-                    _text("maximum SAC bias"),
+                    _text(f"maximum SAC bias (final round {final_round})"),
                     _number(result.maximum_sac_bias, ValueKind.PROBABILITY, empirical),
                 )
+            ),
+            TableRow(
+                (
+                    _text("report check"),
+                    _text(
+                        f"all pairs in [{lower:.6g}, {upper:.6g}]",
+                        empirical,
+                    ),
+                )
+            ),
+            *(
+                (
+                    TableRow(
+                        (
+                            _text("fixed tolerance"),
+                            _number(result.threshold, ValueKind.PROBABILITY, empirical),
+                        )
+                    ),
+                )
+                if result.threshold is not None
+                else (
+                    TableRow(
+                        (
+                            _text("check method"),
+                            _text(
+                                "observed dependence"
+                                if selected == "dependence"
+                                else "Hoeffding + union bound"
+                            ),
+                        )
+                    ),
+                    *(
+                        ()
+                        if selected == "dependence"
+                        else (
+                            TableRow(
+                                (
+                                    _text("simultaneous confidence"),
+                                    _text(f"{result.confidence:.1%}"),
+                                )
+                            ),
+                            TableRow(
+                                (
+                                    _text("comparison scope"),
+                                    _text(
+                                        f"{_comparison_count(result)} pairs across all retained rounds"
+                                    ),
+                                )
+                            ),
+                            TableRow(
+                                (_text("interpretation"), _text("consistent is not proof of SAC"))
+                            ),
+                        )
+                    ),
+                )
+            ),
+            *(
+                (
+                    TableRow(
+                        (
+                            _text("positions"),
+                            _text("(input bit, output bit), MSB first; first 8 ties shown"),
+                        )
+                    ),
+                )
+                if details
+                else ()
             ),
         ),
         "Avalanche summary",
     )
-    matrix = Table(
-        (TableColumn("input_bit", "Input bit", Alignment.RIGHT),)
-        + tuple(
-            TableColumn(f"output_{index}", f"Output {index}", Alignment.RIGHT)
-            for index in range(result.output_bit_count)
+
+    def positions_text(positions):
+        text = ", ".join(f"({i},{o})" for i, o in positions[:8])
+        return text + (f" ... (+{len(positions) - 8})" if len(positions) > 8 else "")
+
+    statistics = Table(
+        tuple(
+            TableColumn(key, label)
+            for key, label in (
+                ("round", "Round"),
+                ("minimum", "Min"),
+                *((("min_positions", "Min positions"),) if details else ()),
+                ("maximum", "Max"),
+                *((("max_positions", "Max positions"),) if details else ()),
+                ("average", "Average"),
+                ("criterion", _report_label(result, selected)),
+            )
         ),
         tuple(
             TableRow(
-                (_integer(index),)
-                + tuple(_number(value, ValueKind.PROBABILITY, empirical) for value in row)
+                (
+                    _text(str(item.number) if item.number is not None else "unknown"),
+                    _number(item.minimum, ValueKind.PROBABILITY, empirical),
+                    *((_text(positions_text(item.minimum_positions)),) if details else ()),
+                    _number(item.maximum, ValueKind.PROBABILITY, empirical),
+                    *((_text(positions_text(item.maximum_positions)),) if details else ()),
+                    _number(item.average, ValueKind.PROBABILITY, empirical),
+                    _text(_report_status(result, selected, item.satisfied), empirical),
+                )
             )
-            for index, row in enumerate(result.probabilities)
+            for item in _round_statistics(result, selected)
         ),
-        "Empirical output-flip probabilities",
+        f"Round statistics — avalanche {selected}",
     )
-    return ReportSection("Avalanche", tables=(summary, matrix))
+    matrices = []
+    if details:
+        for number, probabilities in _round_data(result):
+            matrix = _metric_matrix(probabilities, selected)
+            matrices.append(
+                Table(
+                    (TableColumn("input_bit", "Input bit", Alignment.RIGHT),)
+                    + tuple(
+                        TableColumn(f"output_{index}", f"Output {index}", Alignment.RIGHT)
+                        for index in range(len(matrix[0]))
+                    ),
+                    tuple(
+                        TableRow(
+                            (_integer(index),)
+                            + tuple(
+                                _number(value, ValueKind.PROBABILITY, empirical) for value in row
+                            )
+                        )
+                        for index, row in enumerate(matrix)
+                    ),
+                    f"Empirical avalanche {selected} — round {number if number is not None else 'unknown'}",
+                )
+            )
+    return ReportSection("Avalanche", tables=(summary, statistics, *matrices))
 
 
 def _statistical_payload(result):
@@ -817,6 +1044,20 @@ def adapt_result(result: object) -> AdaptationResult:
         required arguments rejected
     """
 
+    if isinstance(result, NeuralAnalysisResult):
+        return AdaptationResult(section=_neural_analysis_section(result))
+    if isinstance(result, NeuralExperimentResult):
+        return AdaptationResult(section=_neural_training_section(result))
+    if isinstance(result, NeuralDifferenceSearchResult):
+        return AdaptationResult(section=_neural_difference_section(result))
+    if isinstance(result, NeuralStagedTrainingResult):
+        return AdaptationResult(section=_neural_staged_section(result))
+    if isinstance(result, ComponentPropertiesResult):
+        return AdaptationResult(section=_component_properties_section(result))
+    if isinstance(result, ComponentTableResult):
+        return AdaptationResult(section=_component_table_section(result))
+    if isinstance(result, ComponentAnalysisResult):
+        return AdaptationResult(section=_component_analysis_section(result))
     dispatch = (
         ((Trail, TrailSearchResult), trail_section),
         ((ExecutionTrace,), trace_section),
@@ -835,3 +1076,441 @@ def adapt_result(result: object) -> AdaptationResult:
             (("type", f"{type(result).__module__}.{type(result).__qualname__}"),),
         )
     )
+
+
+def _component_parameters(component):
+    from claasp.components import Constant
+
+    width = component.output_type.encoded_bit_size
+    description = f"{width} bits" if width is not None else str(component.output_type)
+    if isinstance(component, Constant) and width is not None:
+        value = 0
+        unit_width = component.output_type.unit_type.encoded_bit_size
+        if unit_width is not None:
+            for unit in component.values:
+                value = (value << unit_width) | unit
+            return f"{description}; value=0x{value:x}"
+    for name in ("table", "mapping"):
+        values = getattr(component, name, None)
+        if values is not None:
+            preview = ", ".join(str(value) for value in values[:4])
+            suffix = ", …" if len(values) > 4 else ""
+            return f"{description}; {name}=[{preview}{suffix}]"
+    return description
+
+
+def _component_analysis_section(result: ComponentAnalysisResult, *, details=False) -> ReportSection:
+    from claasp.analysis.component_inspection import _component_kind
+
+    selector_counts: dict[str, int] = {}
+    rows = []
+    for group_number, (group, properties) in enumerate(
+        zip(result.groups, result.properties, strict=True), 1
+    ):
+        kind = _component_kind(group.representative)
+        selector_index = selector_counts.get(kind, 0)
+        selector_counts[kind] = selector_index + 1
+        rows.append(
+            TableRow.of(
+                str(group_number),
+                kind,
+                str(selector_index),
+                _component_parameters(group.representative),
+                str(group.count),
+                "properties below" if properties else "no default requests",
+            )
+        )
+    inventory = Table(
+        (
+            TableColumn("group", "Group"),
+            TableColumn("component", "Component"),
+            TableColumn("selector_index", "Selector index", Alignment.RIGHT),
+            TableColumn("parameters", "Parameters"),
+            TableColumn("count", "Occurrences", Alignment.RIGHT),
+            TableColumn("analysis", "Analysis"),
+        ),
+        tuple(rows),
+        f"{result.primitive_family} — component inventory",
+    )
+    tables = [inventory]
+    for index, (group, properties) in enumerate(
+        zip(result.groups, result.properties, strict=True), 1
+    ):
+        if details:
+            for name in ("table", "mapping", "values"):
+                values = getattr(group.representative, name, None)
+                if values is None:
+                    continue
+                labels = {
+                    "table": ("Input", "Output"),
+                    "mapping": ("Output position", "Input position"),
+                    "values": ("Unit index", "Value"),
+                }[name]
+                tables.append(
+                    Table(
+                        (TableColumn("index", labels[0]), TableColumn("value", labels[1])),
+                        tuple(
+                            TableRow.of(str(position), str(value))
+                            for position, value in enumerate(values)
+                        ),
+                        f"Group {index}: {type(group.representative).__name__} — {name}",
+                    )
+                )
+            if properties:
+                tables.extend(
+                    component_property_section(properties, component=group.representative).tables
+                )
+            continue
+        if not properties:
+            continue
+        tables.append(
+            Table(
+                (
+                    TableColumn("property", "Property"),
+                    TableColumn("value", "Value", Alignment.RIGHT),
+                    TableColumn("evidence", "Evidence"),
+                ),
+                tuple(
+                    TableRow(
+                        (
+                            _text(item.request.property.value),
+                            TableCell(evidence=_property_evidence(item))
+                            if item.value is None
+                            else _text(item.value, _property_evidence(item)),
+                            _text(_property_evidence(item).classification.value),
+                        )
+                    )
+                    for item in properties
+                ),
+                f"Group {index}: {type(group.representative).__name__} ({_component_domain_description(properties[0].request.domain, group.representative)})",
+            )
+        )
+    return ReportSection("Component analysis", tables=tuple(tables))
+
+
+def _component_properties_section(
+    result: ComponentPropertiesResult, *, details=False
+) -> ReportSection:
+    component = result.group.representative if result.group is not None else None
+    section = component_property_section(result.results, details=details, component=component)
+    tables = tuple(Table(table.columns, table.rows) for table in section.tables)
+    return ReportSection(f"{result.component_name} properties", tables=tables)
+
+
+def _component_table_section(result: ComponentTableResult, *, include_zero=False) -> ReportSection:
+    start = 0 if include_zero else 1
+    evidence = PresentationEvidence(EvidenceClass.EXACT)
+    table = Table(
+        (TableColumn("input", "Input XOR"),)
+        + tuple(
+            TableColumn(f"output_{index}", str(index), Alignment.RIGHT)
+            for index in range(1 << result.output_bit_size)
+        ),
+        tuple(
+            TableRow(
+                (_integer(index),)
+                + tuple(_integer(value, evidence) for value in result.counts[index])
+            )
+            for index in range(start, len(result.counts))
+        ),
+    )
+    return ReportSection(
+        f"{result.component_name} differential counts (exact; out of {1 << result.input_bit_size})",
+        tables=(table,),
+    )
+
+
+def _component_domain_description(domain, component=None, *, details=False):
+    from claasp.components import BinaryAffineMap, SBox
+    from claasp.unit_types import BinaryExtensionField, PrimeField
+
+    category = domain.value
+    inputs: int | None
+    outputs: int | None
+    if component is None:
+        if category in {"word_linear", "finite_field_linear"}:
+            return "Finite-field vectors; element weights"
+        if category == "feedback_register":
+            return "Register state vectors"
+        return "Binary vectors; bit weights"
+
+    input_types = tuple(selection.array_type for selection in component.inputs)
+    output_type = component.output_type
+    if isinstance(component, BinaryAffineMap):
+        inputs, outputs = len(component.matrix[0]), len(component.matrix)
+        scope = " (per unit)" if output_type.unit_count > 1 else ""
+        return f"{inputs}-bit vectors → {outputs}-bit vectors; bit weights{scope}"
+    if category == "feedback_register":
+        return "Register state vectors"
+    if category in {"word_linear", "finite_field_linear"}:
+        if not input_types:
+            return "Finite-field vectors; element weights"
+        scalar = input_types[0].unit_type
+        if isinstance(scalar, BinaryExtensionField):
+            field = f"GF(2^{scalar.degree})"
+            weights = "byte weights" if scalar.degree == 8 else "element weights"
+            suffix = f"; modulus=0x{scalar.modulus:x}" if details else ""
+        elif isinstance(scalar, PrimeField):
+            field, weights, suffix = f"GF({scalar.modulus})", "element weights", ""
+        else:
+            return "Finite-field vectors; element weights"
+        inputs = sum(array.unit_count for array in input_types)
+        return f"{field}^{inputs} → {field}^{output_type.unit_count}; {weights}{suffix}"
+
+    if category in {"lookup_table", "boolean"} and isinstance(component, SBox):
+        inputs = input_types[0].unit_type.encoded_bit_size
+        outputs = output_type.unit_type.encoded_bit_size
+    else:
+        widths = tuple(array.encoded_bit_size for array in input_types)
+        if any(width is None for width in widths):
+            return "State vectors with the declared unit types"
+        inputs = sum(width for width in widths if width is not None)
+        outputs = output_type.encoded_bit_size
+    if inputs is None or outputs is None:
+        return "Binary vectors; bit weights"
+    scope = " (per lookup)" if isinstance(component, SBox) and output_type.unit_count > 1 else ""
+    return f"{inputs}-bit vectors → {outputs}-bit vectors; bit weights{scope}"
+
+
+def _neural_training_section(result: NeuralExperimentResult) -> ReportSection:
+    evidence = PresentationEvidence(EvidenceClass.EMPIRICAL)
+    table = Table(
+        (
+            TableColumn("epoch", "Epoch"),
+            TableColumn("accuracy", "Validation accuracy", Alignment.RIGHT),
+        ),
+        tuple(
+            TableRow((_integer(epoch), _number(value, ValueKind.PROBABILITY, evidence)))
+            for epoch, value in enumerate(result.validation_accuracy, 1)
+        ),
+    )
+    return ReportSection(
+        "Neural training — empirical validation",
+        paragraphs=(f"driver: {result.driver}",),
+        tables=(table,),
+    )
+
+
+def _neural_round_table(rounds, threshold=None):
+    evidence = PresentationEvidence(EvidenceClass.EMPIRICAL)
+    rows = []
+    for row in rounds:
+        history = row.result.validation_accuracy
+        if not history:
+            continue
+        cells: tuple[TableCell, ...] = (
+            _integer(row.round_number),
+            _number(history[-1], ValueKind.PROBABILITY, evidence),
+            _number(max(history), ValueKind.PROBABILITY, evidence),
+        )
+        if threshold is not None:
+            cells += (
+                _text(
+                    "continue"
+                    if max(abs(value - 0.5) for value in history) >= threshold - 0.5
+                    else "stop"
+                ),
+            )
+        rows.append(TableRow(cells))
+    columns: tuple[TableColumn, ...] = (
+        TableColumn("round", "Round"),
+        TableColumn("final", "Final validation accuracy", Alignment.RIGHT),
+        TableColumn("peak", "Peak validation accuracy", Alignment.RIGHT),
+    )
+    if threshold is not None:
+        columns += (TableColumn("decision", "Heuristic rule"),)
+    return Table(columns, tuple(rows), "Validation by round")
+
+
+def _neural_analysis_section(result: NeuralAnalysisResult, *, details=False) -> ReportSection:
+    settings = [
+        ("primitive", result.primitive_family),
+        ("experiment", result.kind),
+        ("training/validation samples per round", str(result.sample_count)),
+        ("dataset seed", str(result.dataset_seed)),
+        ("architecture", result.experiment.architecture),
+        ("training driver", ", ".join(dict.fromkeys(row.result.driver for row in result.rounds))),
+        ("epochs", str(result.experiment.epochs)),
+        ("batch size", str(result.experiment.batch_size)),
+        ("validation fraction", str(result.experiment.validation_fraction)),
+        ("partition/training seed", str(result.experiment.seed)),
+        (
+            "accuracy evidence",
+            "independent final-model test"
+            if result.tests
+            else "validation only; no independent test",
+        ),
+    ]
+    if result.tests:
+        test = result.tests[0]
+        settings.extend(
+            [
+                ("test samples per round", str(test.samples)),
+                ("independent test seed", str(test.seed)),
+                ("family-wise confidence", f"{test.confidence:.1%}"),
+                ("planned round comparisons", str(test.comparisons)),
+                ("statistical check", "two-sided exact binomial; Bonferroni"),
+            ]
+        )
+    if result.varied_input:
+        settings.append(("input", result.varied_input))
+    if result.input_differences:
+        settings.append(
+            (
+                "XOR differences",
+                ", ".join(f"{name}={value:#x}" for name, value in result.input_differences),
+            )
+        )
+    if result.fixed_inputs:
+        settings.append(
+            ("fixed inputs", ", ".join(f"{name}={value:#x}" for name, value in result.fixed_inputs))
+        )
+    if result.threshold is not None:
+        settings.append(("heuristic stopping threshold", f"{result.threshold:.6g}"))
+    if result.difference_search is not None:
+        settings.append(
+            (
+                "search population / generations / samples",
+                f"{len(result.difference_search.candidates)} / {result.difference_search.generations} / {result.difference_search.samples}",
+            )
+        )
+    tables = [
+        Table(
+            (TableColumn("setting", "Setting"), TableColumn("value", "Value")),
+            tuple(TableRow.of(name, value) for name, value in settings),
+        ),
+        _neural_test_table(result)
+        if result.tests
+        else _neural_round_table(result.rounds, result.threshold),
+    ]
+    if details:
+        for row in result.rounds:
+            for table in _neural_training_section(row.result).tables:
+                tables.append(
+                    Table(table.columns, table.rows, f"Round {row.round_number} — epochs")
+                )
+        if result.dataset_digests:
+            tables.append(
+                Table(
+                    (TableColumn("digest", "Dataset SHA-256"),),
+                    tuple(TableRow.of(value) for value in result.dataset_digests),
+                )
+            )
+    if details and result.tests:
+        tables.append(
+            Table(
+                (
+                    TableColumn("round", "Round"),
+                    TableColumn("correct", "Correct / tested"),
+                    TableColumn("digest", "Independent test SHA-256"),
+                ),
+                tuple(
+                    TableRow.of(
+                        test.round_number, f"{test.successes}/{test.samples}", test.dataset_digest
+                    )
+                    for test in result.tests
+                ),
+            )
+        )
+    return ReportSection(
+        "Neural distinguisher", paragraphs=(_neural_conclusion(result),), tables=tuple(tables)
+    )
+
+
+def _neural_difference_section(result: NeuralDifferenceSearchResult) -> ReportSection:
+    table = Table(
+        (
+            TableColumn("rank", "Rank (best first)"),
+            TableColumn("difference", "XOR differences"),
+            TableColumn("score", "Empirical bias score", Alignment.RIGHT),
+            TableColumn("round", "Highest sampled round", Alignment.RIGHT),
+        ),
+        tuple(
+            TableRow.of(
+                str(index),
+                ", ".join(f"{name}={value:#x}" for name, value in row.input_differences),
+                f"{row.score:.6g}",
+                str(row.highest_round),
+            )
+            for index, row in enumerate(reversed(result.candidates), 1)
+        ),
+    )
+    return ReportSection(
+        "Input-difference search",
+        paragraphs=(
+            f"seed={result.seed}; samples={result.samples}; generations={result.generations}",
+            "Bias scores rank sampled candidates; they are not neural accuracies or optimality proofs.",
+        ),
+        tables=(table,),
+    )
+
+
+def _neural_staged_section(result: NeuralStagedTrainingResult) -> ReportSection:
+    return ReportSection(
+        "Staged neural training",
+        paragraphs=(
+            f"Validation-only heuristic: continue when some epoch has |accuracy - 0.5| >= {result.threshold - 0.5:.6g}. This is not a calibrated significance test.",
+        ),
+        tables=(_neural_round_table(result.rounds, result.threshold),),
+    )
+
+
+def _neural_test_table(result):
+    evidence = PresentationEvidence(EvidenceClass.EMPIRICAL)
+    return Table(
+        (
+            TableColumn("round", "Round"),
+            TableColumn("accuracy", "Test accuracy", Alignment.RIGHT),
+            TableColumn("band", "Chance band"),
+            TableColumn("pvalue", "Adjusted p", Alignment.RIGHT),
+            TableColumn("signal", "Evidence"),
+        ),
+        tuple(
+            TableRow(
+                (
+                    _integer(test.round_number),
+                    _number(test.accuracy, ValueKind.PROBABILITY, evidence),
+                    _text(f"[{test.chance_lower:.4f}, {test.chance_upper:.4f}]"),
+                    _number(test.adjusted_pvalue, ValueKind.PROBABILITY, evidence),
+                    _text(
+                        {
+                            "direct": "above chance",
+                            "inverted": "below chance",
+                            "not detected": "not detected",
+                        }[test.signal]
+                    ),
+                )
+            )
+            for test in result.tests
+        ),
+        "Independent final-model tests",
+    )
+
+
+def _neural_conclusion(result):
+    if not result.tests:
+        return "Conclusion: No independent test was performed; validation histories alone do not establish a distinguishing advantage."
+    missing = [str(test.round_number) for test in result.tests if not test.detected]
+    direct = [str(test.round_number) for test in result.tests if test.signal == "direct"]
+    inverted = [str(test.round_number) for test in result.tests if test.signal == "inverted"]
+    statements = []
+    if direct:
+        statements.append("Above-chance evidence at round(s) " + ", ".join(direct) + ".")
+    if inverted:
+        statements.append(
+            "Below-chance evidence at round(s) "
+            + ", ".join(inverted)
+            + "; reversing predictions is a candidate distinguisher and needs fresh confirmation."
+        )
+    if missing:
+        statements.append(
+            "No statistically significant distinguishing advantage detected at round(s) "
+            + ", ".join(missing)
+            + " for this trained model and test budget."
+        )
+    from textwrap import fill
+
+    statements.append(
+        "These tests concern this fixed model and test budget; non-detection does not rule out other distinguishers."
+    )
+    return "Conclusion:\n" + fill(" ".join(statements), width=88)

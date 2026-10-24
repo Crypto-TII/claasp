@@ -7,10 +7,10 @@ BUILDDIR = _build
 html: user-html developer-html
 
 user-html:
-	CLAASP_DOCS_GUIDE=user $(SPHINXBUILD) -W --keep-going -b html $(SOURCEDIR) $(BUILDDIR)/user
+	CLAASP_DOCS_GUIDE=user $(SPHINXBUILD) -a -W --keep-going -b html $(SOURCEDIR) $(BUILDDIR)/user
 
 developer-html:
-	CLAASP_DOCS_GUIDE=developer $(SPHINXBUILD) -W --keep-going -b html $(SOURCEDIR) $(BUILDDIR)/developer
+	CLAASP_DOCS_GUIDE=developer $(SPHINXBUILD) -a -W --keep-going -b html $(SOURCEDIR) $(BUILDDIR)/developer
 
 doctest: user-doctest developer-doctest
 

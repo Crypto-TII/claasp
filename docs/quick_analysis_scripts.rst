@@ -19,17 +19,16 @@ probability represented by the model.
    >>> differential = speck.analysis.find_optimal_trail(
    ...     kind="xor_differential", backend="dependency_free"
    ... )
-   >>> differential.show()  # doctest: +ELLIPSIS
+   >>> differential.to_terminal()  # doctest: +ELLIPSIS
    Trail
    ...
 
 The report shows one difference per round, each round's probability, and the
 cumulative probability. Its total weight is 1 and the matching lower bound is
 1, so this is a proved optimum rather than merely the best trail encountered
-so far. Use ``differential.show(details=True)`` to inspect every component and
+so far. Use ``differential.to_terminal(details=True)`` to inspect every component and
 the search metadata. Another exact backend may choose a different trail with
-the same optimal weight. See :doc:`analysis` for constraints, enumeration,
-and solver-backed searches.
+the same optimal weight.
 
 Find an optimal XOR linear trail
 ---------------------------------
@@ -43,7 +42,7 @@ same:
    >>> linear = speck.analysis.find_optimal_trail(
    ...     kind="xor_linear", backend="dependency_free"
    ... )
-   >>> linear.show()  # doctest: +ELLIPSIS
+   >>> linear.to_terminal()  # doctest: +ELLIPSIS
    Trail
    ...
 
@@ -69,8 +68,9 @@ and records the observed output-bit changes:
    9.47
 
 Increase the sample count for an actual experiment. The fixed seed makes runs
-with the same parameters reproducible. See :doc:`statistical_testing` for the
-probability matrix, dataset families, NIST STS, and Dieharder integration.
+with the same parameters reproducible. See :doc:`advanced_avalanche_analysis` for probability reporting,
+:doc:`basic_randomness_tests` for tests on primitive-generated datasets, and
+:doc:`statistical_tests` for statistical testing independently of the data source.
 
 Create a neural-distinguisher dataset
 -------------------------------------
@@ -90,7 +90,7 @@ machine-learning framework:
    >>> dataset.sample_count, dataset.feature_width, dataset.labels
    (4, 64, (0, 1, 1, 0))
 
-See :doc:`neural_distinguishers` for dataset partitions and the optional
+See :doc:`advanced_neural_differential` for dataset partitions and the optional
 training driver.
 
 Inspect AES round values

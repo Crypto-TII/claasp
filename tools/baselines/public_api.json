@@ -421,6 +421,12 @@
       "qualified_name": "claasp.analysis.AutoNDResult"
     },
     {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheCriteriaResult",
+      "defined_in": "claasp.analysis.avalanche",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.AvalancheCriteriaResult"
+    },
+    {
       "canonical_name": "claasp.analysis.datasets.AvalancheDataset",
       "defined_in": "claasp.analysis.datasets",
       "kind": "dataclass",
@@ -463,10 +469,22 @@
       "qualified_name": "claasp.analysis.CPCharacteristicResult"
     },
     {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ComponentAnalysis"
+    },
+    {
       "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisProvenance",
       "defined_in": "claasp.analysis.component_properties",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.ComponentAnalysisProvenance"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult",
+      "defined_in": "claasp.analysis.component_properties",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ComponentAnalysisResult"
     },
     {
       "canonical_name": "claasp.analysis.component_properties.ComponentGroup",
@@ -479,6 +497,12 @@
       "defined_in": "claasp.analysis.component_properties",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.ComponentOccurrence"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentPropertiesResult",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ComponentPropertiesResult"
     },
     {
       "canonical_name": "claasp.analysis.component_properties.ComponentProperty",
@@ -497,6 +521,18 @@
       "defined_in": "claasp.analysis.component_properties",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.ComponentSemanticKey"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ComponentTableResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ContinuousDiffusionResult"
     },
     {
       "canonical_name": "claasp.analysis.cube.CubeSumResult",
@@ -637,6 +673,12 @@
       "qualified_name": "claasp.analysis.NISTSummaryRow"
     },
     {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.NeuralAnalysisResult"
+    },
+    {
       "canonical_name": "claasp.analysis.neural.NeuralDataset",
       "defined_in": "claasp.analysis.neural",
       "kind": "dataclass",
@@ -665,6 +707,12 @@
       "defined_in": "claasp.analysis.neural",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.NeuralExperimentResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.NeuralRoundTestResult"
     },
     {
       "canonical_name": "claasp.analysis.neural_workflows.NeuralRoundTrainingResult",
@@ -1040,6 +1088,26 @@
       "qualified_name": "claasp.analysis.analyze_lookup_table"
     },
     {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheCriteriaResult.__init__",
+      "defined_in": "claasp.analysis.avalanche",
+      "documented_by": "claasp.analysis.avalanche.AvalancheCriteriaResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheCriteriaResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheCriteriaResult.rounds",
+      "defined_in": "claasp.analysis.avalanche",
+      "documented_by": "claasp.analysis.avalanche.AvalancheCriteriaResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheCriteriaResult.rounds"
+    },
+    {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheCriteriaResult.to_terminal",
+      "defined_in": "claasp.analysis.avalanche",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheCriteriaResult.to_terminal"
+    },
+    {
       "canonical_name": "claasp.analysis.avalanche.AvalancheResult.__init__",
       "defined_in": "claasp.analysis.avalanche",
       "documented_by": "claasp.analysis.avalanche.AvalancheResult",
@@ -1047,11 +1115,36 @@
       "qualified_name": "claasp.analysis.avalanche.AvalancheResult.__init__"
     },
     {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheResult.check_criteria",
+      "defined_in": "claasp.analysis.avalanche",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheResult.check_criteria"
+    },
+    {
       "canonical_name": "claasp.analysis.avalanche.AvalancheResult.complete",
       "defined_in": "claasp.analysis.avalanche",
       "documented_by": "claasp.analysis.avalanche.AvalancheResult",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.avalanche.AvalancheResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheResult.confidence",
+      "defined_in": "claasp.analysis.avalanche",
+      "documented_by": "claasp.analysis.avalanche.AvalancheResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheResult.confidence"
+    },
+    {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheResult.dependence",
+      "defined_in": "claasp.analysis.avalanche",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheResult.dependence"
+    },
+    {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheResult.entropy",
+      "defined_in": "claasp.analysis.avalanche",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheResult.entropy"
     },
     {
       "canonical_name": "claasp.analysis.avalanche.AvalancheResult.input_bit_count",
@@ -1086,10 +1179,23 @@
       "qualified_name": "claasp.analysis.avalanche.AvalancheResult.method"
     },
     {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheResult.metric",
+      "defined_in": "claasp.analysis.avalanche",
+      "documented_by": "claasp.analysis.avalanche.AvalancheResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheResult.metric"
+    },
+    {
       "canonical_name": "claasp.analysis.avalanche.AvalancheResult.output_bit_count",
       "defined_in": "claasp.analysis.avalanche",
       "kind": "property",
       "qualified_name": "claasp.analysis.avalanche.AvalancheResult.output_bit_count"
+    },
+    {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheResult.plot",
+      "defined_in": "claasp.analysis.avalanche",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheResult.plot"
     },
     {
       "canonical_name": "claasp.analysis.avalanche.AvalancheResult.primitive_family",
@@ -1106,6 +1212,20 @@
       "qualified_name": "claasp.analysis.avalanche.AvalancheResult.probabilities"
     },
     {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheResult.round_numbers",
+      "defined_in": "claasp.analysis.avalanche",
+      "documented_by": "claasp.analysis.avalanche.AvalancheResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheResult.round_numbers"
+    },
+    {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheResult.round_probabilities",
+      "defined_in": "claasp.analysis.avalanche",
+      "documented_by": "claasp.analysis.avalanche.AvalancheResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheResult.round_probabilities"
+    },
+    {
       "canonical_name": "claasp.analysis.avalanche.AvalancheResult.sample_count",
       "defined_in": "claasp.analysis.avalanche",
       "documented_by": "claasp.analysis.avalanche.AvalancheResult",
@@ -1118,6 +1238,31 @@
       "documented_by": "claasp.analysis.avalanche.AvalancheResult",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.avalanche.AvalancheResult.seed"
+    },
+    {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheResult.threshold",
+      "defined_in": "claasp.analysis.avalanche",
+      "documented_by": "claasp.analysis.avalanche.AvalancheResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheResult.threshold"
+    },
+    {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheResult.to_terminal",
+      "defined_in": "claasp.analysis.avalanche",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheResult.vectors",
+      "defined_in": "claasp.analysis.avalanche",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheResult.vectors"
+    },
+    {
+      "canonical_name": "claasp.analysis.avalanche.AvalancheResult.weight",
+      "defined_in": "claasp.analysis.avalanche",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.avalanche.AvalancheResult.weight"
     },
     {
       "canonical_name": "claasp.analysis.avalanche.avalanche_probabilities",
@@ -1212,6 +1357,170 @@
       "qualified_name": "claasp.analysis.check_speck32_differential_linear_fixture"
     },
     {
+      "canonical_name": "claasp.analysis.component_inspection",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.component_inspection"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.__init__",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentAnalysis",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.count",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.count"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.ddt",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.ddt"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.group",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentAnalysis",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.group"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.primitive_family",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentAnalysis",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.primitive_family"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.properties",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.properties"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis.realization",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentAnalysis",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentAnalysis.realization"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentPropertiesResult",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentPropertiesResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.__init__",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentPropertiesResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.component_name",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentPropertiesResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.component_name"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.group",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentPropertiesResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.group"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.results",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentPropertiesResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.results"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.to_terminal",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentPropertiesResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.__init__",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentTableResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.claim",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.claim"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.component_name",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentTableResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.component_name"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.counts",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentTableResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.counts"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.input_bit_size",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentTableResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.input_bit_size"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.output_bit_size",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentTableResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.output_bit_size"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.plot",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.plot"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.provenance",
+      "defined_in": "claasp.analysis.component_inspection",
+      "documented_by": "claasp.analysis.component_inspection.ComponentTableResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.provenance"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_inspection.ComponentTableResult.to_terminal",
+      "defined_in": "claasp.analysis.component_inspection",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.component_inspection.ComponentTableResult.to_terminal"
+    },
+    {
       "canonical_name": "claasp.analysis.neural.component_output_dataset",
       "defined_in": "claasp.analysis.neural",
       "kind": "function",
@@ -1277,6 +1586,46 @@
       "documented_by": "claasp.analysis.component_properties.ComponentAnalysisProvenance",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisProvenance.semantic_identity"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult",
+      "defined_in": "claasp.analysis.component_properties",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult.__init__",
+      "defined_in": "claasp.analysis.component_properties",
+      "documented_by": "claasp.analysis.component_properties.ComponentAnalysisResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult.groups",
+      "defined_in": "claasp.analysis.component_properties",
+      "documented_by": "claasp.analysis.component_properties.ComponentAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisResult.groups"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult.primitive_family",
+      "defined_in": "claasp.analysis.component_properties",
+      "documented_by": "claasp.analysis.component_properties.ComponentAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisResult.primitive_family"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult.properties",
+      "defined_in": "claasp.analysis.component_properties",
+      "documented_by": "claasp.analysis.component_properties.ComponentAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisResult.properties"
+    },
+    {
+      "canonical_name": "claasp.analysis.component_properties.ComponentAnalysisResult.to_terminal",
+      "defined_in": "claasp.analysis.component_properties",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.component_properties.ComponentAnalysisResult.to_terminal"
     },
     {
       "canonical_name": "claasp.analysis.component_properties.ComponentGroup",
@@ -2075,6 +2424,114 @@
       "qualified_name": "claasp.analysis.constraints.NotEqual.right"
     },
     {
+      "canonical_name": "claasp.analysis.continuous_diffusion.continuous_diffusion",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.continuous_diffusion"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.__init__",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "documented_by": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.claim_kind",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "documented_by": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.claim_kind"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.factors",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.factors"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.input_name",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "documented_by": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.input_name"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.lambda_value",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "documented_by": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.lambda_value"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.method",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "documented_by": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.method"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.plot",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.plot"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.precision",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "documented_by": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.precision"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.primitive_family",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "documented_by": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.primitive_family"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.round_numbers",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "documented_by": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.round_numbers"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.samples",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "documented_by": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.samples"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.sampling_engine",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "documented_by": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.sampling_engine"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.seed",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "documented_by": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.seed"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.to_terminal",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.vectors",
+      "defined_in": "claasp.analysis.continuous_diffusion",
+      "documented_by": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult.vectors"
+    },
+    {
       "canonical_name": "claasp.analysis.statistical_datasets.correlation_dataset",
       "defined_in": "claasp.analysis.statistical_datasets",
       "kind": "function",
@@ -2300,10 +2757,28 @@
       "qualified_name": "claasp.analysis.facade.Analysis.__init__"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.autond",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.autond"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.avalanche",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.avalanche"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.component",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.component"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.component_analysis",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.component_analysis"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.component_groups",
@@ -2322,6 +2797,12 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.component_property"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.continuous_diffusion",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.continuous_diffusion"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.continuous_evaluate",
@@ -2394,6 +2875,18 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.is_xor_differential_transition_possible"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.neural_blackbox",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.neural_blackbox"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.neural_differential",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.neural_differential"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.propagate_truncated_xor_difference",
@@ -3137,6 +3630,18 @@
       "qualified_name": "claasp.analysis.neural.NeuralExperimentResult.driver"
     },
     {
+      "canonical_name": "claasp.analysis.neural.NeuralExperimentResult.plot",
+      "defined_in": "claasp.analysis.neural",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural.NeuralExperimentResult.plot"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural.NeuralExperimentResult.to_terminal",
+      "defined_in": "claasp.analysis.neural",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural.NeuralExperimentResult.to_terminal"
+    },
+    {
       "canonical_name": "claasp.analysis.neural.NeuralExperimentResult.validation_accuracy",
       "defined_in": "claasp.analysis.neural",
       "documented_by": "claasp.analysis.neural.NeuralExperimentResult",
@@ -3155,6 +3660,242 @@
       "defined_in": "claasp.analysis.neural",
       "kind": "method",
       "qualified_name": "claasp.analysis.neural.NeuralTrainingDriver.train"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.neural_distinguisher"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.__init__",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.conclusion",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.conclusion"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.dataset_digests",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.dataset_digests"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.dataset_seed",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.dataset_seed"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.difference_search",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.difference_search"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.experiment",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.experiment"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.fixed_inputs",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.fixed_inputs"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.input_differences",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.input_differences"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.kind",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.kind"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.plot",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.plot"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.primitive_family",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.primitive_family"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.rounds",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.rounds"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.sample_count",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.sample_count"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.tests",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.tests"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.threshold",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.threshold"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.to_terminal",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.varied_input",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralAnalysisResult.varied_input"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.__init__",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.accuracy",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.accuracy"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.adjusted_pvalue",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.adjusted_pvalue"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.chance_lower",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.chance_lower"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.chance_upper",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.chance_upper"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.comparisons",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.comparisons"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.confidence",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.confidence"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.dataset_digest",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.dataset_digest"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.detected",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.detected"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.pvalue",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.pvalue"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.round_number",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.round_number"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.samples",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.samples"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.seed",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.seed"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.signal",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.signal"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.successes",
+      "defined_in": "claasp.analysis.neural_distinguisher",
+      "documented_by": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.neural_distinguisher.NeuralRoundTestResult.successes"
     },
     {
       "canonical_name": "claasp.analysis.neural_experiments.DatasetPartition.__init__",
@@ -3405,6 +4146,12 @@
       "qualified_name": "claasp.analysis.neural_workflows.NeuralDifferenceSearchResult.seed"
     },
     {
+      "canonical_name": "claasp.analysis.neural_workflows.NeuralDifferenceSearchResult.to_terminal",
+      "defined_in": "claasp.analysis.neural_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural_workflows.NeuralDifferenceSearchResult.to_terminal"
+    },
+    {
       "canonical_name": "claasp.analysis.neural_workflows.NeuralRoundTrainingResult.__init__",
       "defined_in": "claasp.analysis.neural_workflows",
       "documented_by": "claasp.analysis.neural_workflows.NeuralRoundTrainingResult",
@@ -3440,6 +4187,12 @@
       "qualified_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.input_differences"
     },
     {
+      "canonical_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.plot",
+      "defined_in": "claasp.analysis.neural_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.plot"
+    },
+    {
       "canonical_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.rounds",
       "defined_in": "claasp.analysis.neural_workflows",
       "documented_by": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult",
@@ -3452,6 +4205,12 @@
       "documented_by": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.threshold"
+    },
+    {
+      "canonical_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.to_terminal",
+      "defined_in": "claasp.analysis.neural_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.to_terminal"
     },
     {
       "canonical_name": "claasp.analysis.problem.AnalysisProblem.__init__",
@@ -6680,6 +7439,12 @@
       "qualified_name": "claasp.composites.AESKeySchedule"
     },
     {
+      "canonical_name": "claasp.composites.aes.AESMixColumn",
+      "defined_in": "claasp.composites.aes",
+      "kind": "function",
+      "qualified_name": "claasp.composites.AESMixColumn"
+    },
+    {
       "canonical_name": "claasp.composites.aes.AESRound",
       "defined_in": "claasp.composites.aes",
       "kind": "function",
@@ -7359,6 +8124,18 @@
       "qualified_name": "claasp.drivers.neural.sklearn_driver.SklearnMLPDriver.__init__"
     },
     {
+      "canonical_name": "claasp.drivers.neural.sklearn_driver.SklearnMLPDriver.model",
+      "defined_in": "claasp.drivers.neural.sklearn_driver",
+      "kind": "property",
+      "qualified_name": "claasp.drivers.neural.sklearn_driver.SklearnMLPDriver.model"
+    },
+    {
+      "canonical_name": "claasp.drivers.neural.sklearn_driver.SklearnMLPDriver.predict",
+      "defined_in": "claasp.drivers.neural.sklearn_driver",
+      "kind": "method",
+      "qualified_name": "claasp.drivers.neural.sklearn_driver.SklearnMLPDriver.predict"
+    },
+    {
       "canonical_name": "claasp.drivers.neural.sklearn_driver.SklearnMLPDriver.train",
       "defined_in": "claasp.drivers.neural.sklearn_driver",
       "kind": "method",
@@ -7376,6 +8153,12 @@
       "defined_in": "claasp.drivers.neural.tensorflow_driver",
       "kind": "property",
       "qualified_name": "claasp.drivers.neural.tensorflow_driver.TensorFlowDistinguisherDriver.model"
+    },
+    {
+      "canonical_name": "claasp.drivers.neural.tensorflow_driver.TensorFlowDistinguisherDriver.predict",
+      "defined_in": "claasp.drivers.neural.tensorflow_driver",
+      "kind": "method",
+      "qualified_name": "claasp.drivers.neural.tensorflow_driver.TensorFlowDistinguisherDriver.predict"
     },
     {
       "canonical_name": "claasp.drivers.neural.tensorflow_driver.TensorFlowDistinguisherDriver.reset",
@@ -12468,6 +13251,12 @@
       "defined_in": "claasp.graph.primitive",
       "kind": "property",
       "qualified_name": "claasp.graph.primitive.PrimitiveGraph.round_keys"
+    },
+    {
+      "canonical_name": "claasp.graph.primitive.PrimitiveGraph.round_output_boundaries",
+      "defined_in": "claasp.graph.primitive",
+      "kind": "property",
+      "qualified_name": "claasp.graph.primitive.PrimitiveGraph.round_output_boundaries"
     },
     {
       "canonical_name": "claasp.graph.primitive.PrimitiveGraph.round_outputs",
@@ -30164,10 +30953,10 @@
       "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.round_transitions"
     },
     {
-      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.show",
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.to_terminal",
       "defined_in": "claasp.semantics.cryptanalysis.trails",
       "kind": "method",
-      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.show"
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.to_terminal"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.trail",

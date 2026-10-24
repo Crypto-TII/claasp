@@ -9,13 +9,23 @@ from claasp.analysis.advanced_trails import (
     propagate_truncated_xor_difference,
 )
 from claasp.analysis.algebraic import BooleanAlgebraicEvidence, analyze_boolean_algebra
-from claasp.analysis.avalanche import AvalancheResult, avalanche_probabilities
+from claasp.analysis.avalanche import (
+    AvalancheCriteriaResult,
+    AvalancheResult,
+    avalanche_probabilities,
+)
 from claasp.analysis.boomerang import (
     BoomerangExperimentResult,
     run_speck32_boomerang_experiment,
 )
+from claasp.analysis.component_inspection import (
+    ComponentAnalysis,
+    ComponentPropertiesResult,
+    ComponentTableResult,
+)
 from claasp.analysis.component_properties import (
     ComponentAnalysisProvenance,
+    ComponentAnalysisResult,
     ComponentGroup,
     ComponentOccurrence,
     ComponentProperty,
@@ -46,6 +56,7 @@ from claasp.analysis.constraints import (
     Nonzero,
     NotEqual,
 )
+from claasp.analysis.continuous_diffusion import ContinuousDiffusionResult, continuous_diffusion
 from claasp.analysis.cube import CubeSumResult, evaluate_cube_sum
 from claasp.analysis.datasets import (
     AvalancheDataset,
@@ -82,6 +93,7 @@ from claasp.analysis.neural import (
     xor_differential_component_dataset,
     xor_differential_dataset,
 )
+from claasp.analysis.neural_distinguisher import NeuralAnalysisResult, NeuralRoundTestResult
 from claasp.analysis.neural_experiments import (
     DatasetPartition,
     NeuralRun,
@@ -157,6 +169,8 @@ def __getattr__(name):
 
 
 __all__ = [
+    "ContinuousDiffusionResult",
+    "continuous_diffusion",
     "Analysis",
     "AnalysisProblem",
     "AnalysisResult",
@@ -164,13 +178,18 @@ __all__ = [
     "AttackTarget",
     "AutoNDResult",
     "AvalancheDataset",
+    "AvalancheCriteriaResult",
     "AvalancheResult",
     "AvalancheSample",
     "BitPattern",
     "BooleanAlgebraicEvidence",
     "BoomerangExperimentResult",
     "CPCharacteristicResult",
+    "ComponentAnalysis",
+    "ComponentPropertiesResult",
+    "ComponentTableResult",
     "ComponentAnalysisProvenance",
+    "ComponentAnalysisResult",
     "ComponentGroup",
     "ComponentOccurrence",
     "ComponentProperty",
@@ -200,6 +219,8 @@ __all__ = [
     "NISTFinalReport",
     "NISTSummaryRow",
     "NeuralDataset",
+    "NeuralAnalysisResult",
+    "NeuralRoundTestResult",
     "NeuralDifferenceCandidate",
     "NeuralDifferenceSearchResult",
     "NeuralExperiment",
