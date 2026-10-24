@@ -28,8 +28,7 @@ cumulative probability. Its total weight is 1 and the matching lower bound is
 1, so this is a proved optimum rather than merely the best trail encountered
 so far. Use ``differential.to_terminal(details=True)`` to inspect every component and
 the search metadata. Another exact backend may choose a different trail with
-the same optimal weight. See :doc:`advanced_differential_trail_search` for constraints, enumeration,
-and solver-backed searches.
+the same optimal weight.
 
 Find an optimal XOR linear trail
 ---------------------------------

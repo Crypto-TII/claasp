@@ -143,10 +143,6 @@ no better trail exists:
    >>> (result.trail.total_weight, result.is_optimal)
    (3.0, True)
 
-:doc:`Want to know more about searching for trails? <advanced_differential_trail_search>`
-That guide explains input constraints, backend and solver selection, result
-fields, probabilities, and supported primitive structures.
-
 Display the trail
 -----------------
 
