@@ -1,15 +1,6 @@
 Linear trail search: advanced
 =============================
 
-**TODO**
-
-Explore masks, correlation signs, weights, constraints, enumeration and completeness. Explain the distinction between a characteristic and a linear hull.
-
-Retained examples
------------------
-
-The following working material is a starting point for the TODO walkthrough.
-
 Linear search uses the same graph facade and retains each LAT correlation
 sign. For three-round PRESENT, the minimum trail weight is 4:
 

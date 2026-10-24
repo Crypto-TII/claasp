@@ -1,15 +1,6 @@
 Truncated differences: advanced
 ===============================
 
-**TODO**
-
-Explore retained boundaries, propagation rules and deterministic versus probabilistic truncated differences. Explain soundness and supported models.
-
-Retained examples
------------------
-
-The following working material is a starting point for the TODO walkthrough.
-
 Deterministic truncated differences use the explicit symbols ``0``, ``1``,
 and ``?``. Modular addition propagates them with a sound paired-carry
 reachability computation:
@@ -33,3 +24,10 @@ Sound deterministic propagation is available for supported graphs. For example::
    assert len(boundaries.boundaries) == 4
 
 Unsupported graphs raise a capability error identifying the missing semantic rule.
+
+Probabilistic truncated differences
+-----------------------------------
+
+**TODO:** Add a worked probabilistic-truncated search example, including its
+model assumptions, parameters and interpretation. The deterministic propagation
+examples above are already documented.

@@ -1,10 +1,6 @@
 Impossible differentials: advanced
 ==================================
 
-**TODO**
-
-Compare direct infeasibility checks and miss-in-the-middle reasoning; explain bit-, word- and hybrid models, proof status and backend limitations.
-
 Checking a component transition
 -------------------------------
 

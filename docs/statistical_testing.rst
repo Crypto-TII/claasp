@@ -1,10 +1,6 @@
 Datasets and statistical testing
 ================================
 
-**TODO:** Turn the retained dataset and external-suite material below into a
-complete advanced walkthrough, including a Dieharder example, generated reports
-and plots, sample-size requirements and interpretation of the results.
-
 Dataset generation is available without NumPy, NIST STS, or Dieharder. A
 local seeded random generator makes experiments reproducible without changing
 Python's global random state. Inputs and outputs use the same packed MSB-first
@@ -112,3 +108,11 @@ runs one bounded pass over every NIST STS test when ``niststs`` is installed.
 It returns a ``StatisticalTestRun`` containing the parsed observations and
 execution metadata. A dedicated CI job builds the patched tool from source
 and exercises it; importing and parsing results never requires it.
+
+Round-by-round reports and plots
+--------------------------------
+
+**TODO:** Add a worked example comparing randomness-test results across rounds,
+with generated reports and plots and an explanation of sample-size requirements.
+Dataset generation, manifests, result parsing and external-suite execution are
+covered above.

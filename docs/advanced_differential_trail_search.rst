@@ -1,15 +1,6 @@
 Differential trail search: advanced
 ===================================
 
-**TODO**
-
-Develop a complete walkthrough covering constraints, SPN and ARX examples, backend selection, fixed-weight and bounded enumeration, independent checking and completeness.
-
-Retained examples
------------------
-
-The following working material is a starting point for the TODO walkthrough.
-
 Differential and linear semantics
 ---------------------------------
 

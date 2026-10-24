@@ -1,15 +1,6 @@
 Input and key recovery: advanced
 ================================
 
-**TODO**
-
-Explore partial known inputs, constraints, word-oriented recovery, multiple solutions and solver limits. Explain that a consistent recovered key need not be unique.
-
-Retained examples
------------------
-
-The following working material is a starting point for the TODO walkthrough.
-
 Analysis constraints refer to primitive inputs, outputs, components, and indexed
 logical units—not DIMACS or backend variable names. Problems and projected
 results therefore remain meaningful when the solver changes.
