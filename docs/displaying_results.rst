@@ -83,13 +83,9 @@ names and never adds an implicit timestamp.
 Combining reports
 -----------------
 
-``present(result)`` produces immutable ``ReportData``. Its sections can be
-combined in a new report and rendered without repeating the analysis.
-
-**TODO:** Add a short, runnable example combining two analysis reports and
-exporting the resulting document.
+**TODO**
 
 LaTeX tables
 ------------
 
-**TODO:** Add a short LaTeX-table export example using a user-friendly API.
+**TODO**

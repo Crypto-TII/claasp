@@ -112,7 +112,4 @@ and exercises it; importing and parsing results never requires it.
 Round-by-round reports and plots
 --------------------------------
 
-**TODO:** Add a worked example comparing randomness-test results across rounds,
-with generated reports and plots and an explanation of sample-size requirements.
-Dataset generation, manifests, result parsing and external-suite execution are
-covered above.
+**TODO**

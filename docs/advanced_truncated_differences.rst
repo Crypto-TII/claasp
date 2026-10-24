@@ -28,6 +28,4 @@ Unsupported graphs raise a capability error identifying the missing semantic rul
 Probabilistic truncated differences
 -----------------------------------
 
-**TODO:** Add a worked probabilistic-truncated search example, including its
-model assumptions, parameters and interpretation. The deterministic propagation
-examples above are already documented.
+**TODO**
