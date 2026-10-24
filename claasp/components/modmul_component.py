@@ -58,6 +58,7 @@ class ModMul(Modular):
         sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
         ['MODMUL', 3, 4]
     """
+
     def __init__(
         self,
         current_round_number,

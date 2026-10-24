@@ -94,6 +94,7 @@ class Fsr(Component):
         sage: print(component.output_bit_size)
         0
     """
+
     def __init__(
         self,
         current_round_number,

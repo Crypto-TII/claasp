@@ -2,7 +2,9 @@ from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicMode
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.ciphers.single_component_ciphers.or_cipher import OrCipher
 from claasp.components.or_component import Or
-
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
 
 def test_algebraic_polynomials():
     cipher = OrCipher(word_bit_size=4, number_of_inputs=2)
@@ -77,3 +79,30 @@ def test_smt_constraints():
     assert constraints[1] == '(assert (= or_0_0_1 (or plaintext_1 key_1)))'
     assert constraints[-2] == '(assert (= or_0_0_2 (or plaintext_2 key_2)))'
     assert constraints[-1] == '(assert (= or_0_0_3 (or plaintext_3 key_3)))'
+
+def test_smt_xor_quasidifferential_propagation_constraints():
+    cipher = OrCipher(word_bit_size=2, number_of_inputs=2)
+    model = SmtXorQuasidifferentialModel(cipher)
+    or_component = cipher.component_from(0, 0)
+    variables, constraints = or_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert variables == ['or_0_0_0', 'or_0_0_1', 'qdt_or_0_0_0', 'qdt_or_0_0_1',
+                         'hw_qdt_or_0_0_0', 'hw_qdt_or_0_0_1']
+
+    assert len(constraints) == 8
+    assert constraints[0] == '(assert (=> or_0_0_0 (or plaintext_0 key_0)))'
+    assert constraints[-1] == '(assert (= hw_qdt_or_0_0_1 (or plaintext_1 key_1 qdt_or_0_0_1)))'
+
+
+def test_smt_xor_quasidifferential_propagation_constraints_more_than_two_operands():
+    cipher = OrCipher(word_bit_size=2, number_of_inputs=3)
+    model = SmtXorQuasidifferentialModel(cipher)
+    or_component = cipher.component_from(0, 0)
+
+    try:
+        or_component.smt_xor_quasidifferential_propagation_constraints(model)
+        raised = False
+    except NotImplementedError:
+        raised = True
+
+    assert raised

@@ -148,6 +148,14 @@
         Arai, K. (eds) Intelligent Computing.  Lecture Notes in Networks and
         Systems, vol 285. Springer
 
+.. [BR2022]
+        Beyne T., Rijmen V. : *Differential Cryptanalysis in the Fixed-Key
+        Model* : In Advances in Cryptology -- CRYPTO 2022, LNCS 13509,
+        pp. 687-716, Springer 2022 :
+        https://doi.org/10.1007/978-3-031-15982-4_23 (extended version:
+        Cryptology ePrint Archive, Paper 2022/837,
+        https://eprint.iacr.org/2022/837)
+
 .. [BKLPPRSV2007]
         Bogdanov A., Knudsen L., Leander G., Paar C., Poschmann A., Robshaw M.,
         Seurin Y., Vikkelsoe C. : *PRESENT: An Ultra-Lightweight Block Cipher*
