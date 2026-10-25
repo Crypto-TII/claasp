@@ -66,7 +66,7 @@ def test_two_round_speck_finds_exact_optimum_and_checks_wiring():
     assert check_speck_trail(primitive, result.trail)
 
     output = StringIO()
-    result.show(file=output)
+    result.to_terminal(file=output)
     rendered = output.getvalue()
     assert f"0x{result.trail.input_pattern.value:08x}" in rendered
     assert f"0x{result.trail.output_pattern.value:08x}" in rendered
@@ -77,7 +77,7 @@ def test_two_round_speck_finds_exact_optimum_and_checks_wiring():
     assert "rotate_0_0" not in rendered
 
     output = StringIO()
-    result.show(details=True, file=output)
+    result.to_terminal(details=True, file=output)
     rendered = output.getvalue()
     assert "solver" in rendered and "Kissat" in rendered
     assert "runtime" in rendered and "peak memory" in rendered
@@ -192,3 +192,18 @@ def test_three_round_dependency_free_speck_search_proves_exact_optimum():
         (1, 4),
     ]
     assert check_speck_trail(primitive, result.trail)
+
+
+def test_trail_to_terminal_has_round_and_detailed_reports(capsys):
+    primitive = Speck(number_of_rounds=2)
+    result = primitive.analysis.find_optimal_trail(backend="dependency_free")
+    assert not hasattr(result, "show")
+    result.to_terminal()
+    text = capsys.readouterr().out
+    assert "Round trail" in text
+    assert "Proved optimal." in text
+    assert "modular_add_0_1" not in text
+    output = StringIO()
+    result.to_terminal(details=True, file=output)
+    assert "modular_add_0_1" in output.getvalue()
+    assert capsys.readouterr().out == ""

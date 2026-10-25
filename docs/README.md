@@ -19,3 +19,17 @@ plans, generated audits, and temporary review notes are kept in their original
 pull requests or release records rather than in the published documentation.
 
 Build and contribution commands are documented in `development.rst`.
+
+`examples/basic_avalanche.py` and `examples/avalanche.py` accompany the basic
+and advanced avalanche pages. Inline Matplotlib Sphinx directives execute the displayed commands in a
+shared context, retaining each analysis result for all of its plot views. The
+basic terminal output is generated during the build and included next to its
+command. `tests/examples/test_avalanche_example.py` exercises the companion
+script with small, seeded inputs in the presentation CI job. Run it headlessly
+with `MPLBACKEND=Agg python -m pytest tests/examples/test_avalanche_example.py`.
+
+`examples/basic_continuous_diffusion.py` and `examples/continuous_diffusion.py`
+provide the matching continuous-diffusion experiments.
+`tests/examples/test_continuous_diffusion_example.py` runs both scripts with
+the numerical and presentation extras installed. Continuous experiments use
+a precision-local mpmath context; importing the core requires no numerical extras.

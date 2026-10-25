@@ -6,7 +6,8 @@ Install CLAASP
 
 CLAASP requires Python 3.11 or later. From the repository root, create a
 virtual environment and install the package using the commands for your
-shell.
+shell. The installation below includes all optional Python dependencies for
+plotting, tables, and neural training (scikit-learn and TensorFlow).
 
 On Linux, macOS, or another POSIX shell:
 
@@ -14,7 +15,7 @@ On Linux, macOS, or another POSIX shell:
 
    python -m venv .venv
    source .venv/bin/activate
-   python -m pip install -e .
+   python -m pip install -e '.[analysis,presentation,ml,ml-tensorflow]'
 
 On Windows PowerShell:
 
@@ -22,7 +23,7 @@ On Windows PowerShell:
 
    py -m venv .venv
    .\.venv\Scripts\Activate.ps1
-   python -m pip install -e .
+   python -m pip install -e '.[analysis,presentation,ml,ml-tensorflow]'
 
 ``source`` belongs to POSIX shells; PowerShell runs the activation script
 directly. On either platform, confirm that the installation works with:
@@ -30,6 +31,53 @@ directly. On either platform, confirm that the installation works with:
 .. code-block:: console
 
    python -c "import claasp; print('CLAASP import OK')"
+
+Choose a smaller installation
+-----------------------------
+
+Experienced users can install just the dependency-free core from the repository
+root, inside an activated virtual environment:
+
+.. code-block:: console
+
+   python -m pip install -e .
+
+Select optional dependencies according to your needs. For example, add plotting
+and tables to a core installation with:
+
+.. code-block:: console
+
+   python -m pip install -e '.[presentation]'
+
+Available extras can be combined inside the brackets, as in the full installation
+above:
+
+.. list-table:: Optional Python dependencies
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Extra
+     - Purpose
+   * - ``analysis``
+     - NumPy avalanche evaluation and mpmath continuous-diffusion experiments.
+   * - ``presentation``
+     - Matplotlib plots and pandas tables.
+   * - ``ml``
+     - NumPy/scikit-learn neural training and SciPy independent-test statistics.
+   * - ``ml-tensorflow``
+     - NumPy/TensorFlow neural training and SciPy independent-test statistics.
+   * - ``docs``
+     - Build the HTML documentation and its plots.
+   * - ``dev``
+     - Run tests and build distributions.
+   * - ``quality``
+     - Run linting and static type checks.
+
+TensorFlow requires a supported Python version and platform. If you do not need
+TensorFlow training, use ``python -m pip install -e '.[analysis,presentation,ml]'``.
+External executables such as SAT solvers, NIST STS, and LaTeX are installed
+separately when required by the selected analysis or export; the corresponding
+advanced guides describe those requirements.
 
 Choose a primitive
 ------------------
@@ -95,19 +143,15 @@ no better trail exists:
    >>> (result.trail.total_weight, result.is_optimal)
    (3.0, True)
 
-:doc:`Want to know more about searching for trails? <analysis>`
-That guide explains trail kinds, input constraints, backend and solver
-selection, result fields, probabilities, and supported primitive structures.
-
 Display the trail
 -----------------
 
-``show()`` prints only the round boundaries and their relative and cumulative
+``to_terminal()`` prints only the round boundaries and their relative and cumulative
 probabilities by default:
 
 .. doctest::
 
-   >>> result.show()
+   >>> result.to_terminal()
    Trail
    <BLANKLINE>
    Round trail
@@ -124,7 +168,7 @@ probabilities by default:
    Total weight: 3.
 
 :doc:`Want to know more about displaying a trail? <displaying_results>`
-That guide covers ``show(details=True)``, structured report data, and terminal,
+That guide covers ``to_terminal(details=True)``, structured report data, and terminal,
 Markdown, and CSV output.
 
 Implement your own primitive

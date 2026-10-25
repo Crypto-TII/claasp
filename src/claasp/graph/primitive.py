@@ -356,6 +356,30 @@ class PrimitiveGraph:
         return PublishedValues("Round outputs", values, self._primitive)
 
     @property
+    def round_output_boundaries(self) -> tuple[tuple[int, tuple[Selection, ...]], ...]:
+        """Return published round outputs with their original zero-based round numbers.
+
+        Unlike a compact list of outputs, these boundaries retain gaps when
+        some rounds do not publish an output.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> tuple(number for number, _ in Speck(number_of_rounds=2).graph.round_output_boundaries)
+            (0, 1)
+        """
+        published = getattr(self._primitive, "_published_intermediate_outputs", {})
+        boundaries = []
+        for primitive_round in self._primitive._rounds:
+            value = published.get(primitive_round.number, {}).get("round_output")
+            if value is not None:
+                values = value if isinstance(value, tuple) else (value,)
+                boundaries.append(
+                    (primitive_round.number, tuple(as_selection(item) for item in values))
+                )
+        return tuple(boundaries)
+
+    @property
     def key_schedule_states(self) -> PublishedValues:
         """Return published key-schedule states with a concise summary."""
 

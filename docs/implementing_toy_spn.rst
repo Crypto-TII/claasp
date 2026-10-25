@@ -1,7 +1,8 @@
 Implementing a two-round ToySPN
 ===============================
 
-This guide turns short substitution-permutation-network pseudocode into a
+This worked example applies the authoring operations in :doc:`primitive_authoring`
+to substitution-permutation-network pseudocode, building a
 CLAASP primitive. The construction has a 16-bit state and key, four parallel
 4-bit S-boxes, a bit permutation, and two rounds.
 
@@ -51,10 +52,9 @@ selects individual bits, so ``state[start:start + 4]`` connects one nibble to
 one S-box. ``graph.join()`` places the four S-box outputs back into one state;
 it is structural wiring rather than an extra cryptographic operation.
 
-``set_intermediate_output()`` gives an inspectable value a stable name without
-adding a component. ``set_round_output(state)`` is exactly the shorter spelling
-of ``set_intermediate_output(state, name="round_output")``. The final
-``set_output(state)`` separately declares what evaluation returns.
+The ``sbox_layer`` tag exposes each round's substitution output, while the
+published round boundary follows the permutation. These two observation points
+let an analysis distinguish substitution and complete-round values.
 
 Build the primitive, inspect it, and evaluate one input:
 
@@ -74,6 +74,6 @@ Build the primitive, inspect it, and evaluate one input:
    >>> f"{toy_spn.evaluate(plaintext=0x1234, key=0x5678):04x}"
    'f616'
 
-The completed object is immutable. Continue with :doc:`primitive_authoring`
-for published round outputs and round keys, reusable composite blocks, field and
-word domains, explicit provenance, validation, and full primitive classes.
+The result ``f616`` provides a concrete check of the complete two-round
+construction, exercising key addition, parallel substitutions, and permutation
+wiring across both rounds.

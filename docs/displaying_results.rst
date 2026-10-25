@@ -1,5 +1,5 @@
-Presenting and exporting results
-================================
+Reporting and exporting results
+===============================
 
 CLAASP presents already-produced typed results. ``present(result)`` never runs
 an analysis, solver, statistical program, or neural-training framework. The
@@ -31,122 +31,24 @@ then render that report for a terminal or another supported destination:
 ``ReportData`` can be rendered, exported, combined with other report sections,
 or passed to an application without parsing terminal text.
 
-Trail and trace summaries
--------------------------
+Terminal and detailed reports
+-----------------------------
 
-For quick interactive inspection, ``show()`` is a convenience that presents
-and renders the trail directly. By default it shows only the input and each
-round difference, together with the relative and cumulative probability:
+Use ``result.to_terminal()`` for the default report and
+``result.to_terminal(details=True)`` for detailed data where supported.
+Topic-specific reports and plots are demonstrated in each analysis guide.
+To save terminal output, pass an open text stream as ``file=``.
 
-.. doctest::
+Saving plots
+------------
 
-   >>> result.show()  # doctest: +ELLIPSIS
-   Trail
-   ...
+For a plottable analysis result, use
+``result.plot(show=False, save_to="analysis.png")`` to save a plot without
+opening a window. Plotting reuses the retained result. Select the view and
+metric as described in the corresponding advanced guide.
 
-Use ``result.show(details=True)`` when debugging a model or inspecting every
-intermediate component. The detailed report also includes the proof bound,
-search method, solver, runtime, memory measurement when available, and the
-primitive component responsible for each transition. The explicit
-presentation API below provides immutable report data and selectable output
-formats for tools and exports.
-
-``show()`` can write either terminal text or Markdown to any text stream:
-
-.. code-block:: python
-
-   result.show(details=True)
-   result.show(format="markdown")
-
-   with open("trail.md", "w", encoding="utf-8") as output:
-       result.show(details=True, format="markdown", file=output)
-
-The default searches use a zero key difference. Their reports include every
-data-state component but omit the resulting all-zero key schedule. A
-related-key result must retain its key-schedule propagation as well.
-
-.. doctest::
-
-   >>> from claasp.presentation import render_section, trail_section
-   >>> from claasp.semantics.cryptanalysis import (
-   ...     Trail, TrailKind, TrailSearchMetadata, TrailSearchResult, TrailStep,
-   ...     Transition, XorDifference,
-   ... )
-   >>> transition = Transition(
-   ...     TrailKind.XOR_DIFFERENTIAL,
-   ...     XorDifference(1, 4), XorDifference(3, 4), 4, 16,
-   ... )
-   >>> trail = Trail(
-   ...     TrailKind.XOR_DIFFERENTIAL,
-   ...     XorDifference(1, 4), XorDifference(3, 4),
-   ...     (TrailStep("sbox_0_0", transition),),
-   ... )
-   >>> metadata = TrailSearchMetadata("fixed PRESENT evidence")
-   >>> section = trail_section(TrailSearchResult(trail, 2.0, metadata), details=True)
-   >>> "total weight" in render_section(section, format="terminal")
-   True
-   >>> section.tables[1].rows[0].cells[-1].text
-   'sbox_0_0'
-
-``trace_section(execution_trace)`` similarly lists intermediate values in
-execution order and names the component that produced each value.
-
-Exact, bounded, and unavailable properties
-------------------------------------------
-
-Property tables do not turn a bound or an unavailable value into an exact
-score. The value column uses ``≤`` or ``≥`` for proved bounds, and unavailable
-rows retain a typed diagnostic and applicability:
-
-.. doctest::
-
-   >>> from claasp.analysis import (
-   ...     ComponentProperty, ComponentPropertyResult, PropertyClaim,
-   ...     PropertyDomain, PropertyRequest,
-   ... )
-   >>> from claasp.analysis.component_properties import (
-   ...     ComponentAnalysisProvenance, DiagnosticCode, PropertyDiagnostic,
-   ... )
-   >>> from claasp.presentation import component_property_section
-   >>> provenance = ComponentAnalysisProvenance("AES MixColumns", "fixed field evidence")
-   >>> request = PropertyRequest(
-   ...     ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER, PropertyDomain.WORD_LINEAR)
-   >>> exact = ComponentPropertyResult(request, PropertyClaim.EXACT, 5, True, provenance)
-   >>> bounded = ComponentPropertyResult(
-   ...     request, PropertyClaim.PROVED_UPPER_BOUND, 5, False, provenance)
-   >>> unavailable = ComponentPropertyResult(
-   ...     PropertyRequest(ComponentProperty.BOOMERANG_UNIFORMITY, PropertyDomain.WORD_LINEAR),
-   ...     PropertyClaim.UNAVAILABLE, None, False, provenance,
-   ...     PropertyDiagnostic(DiagnosticCode.INAPPLICABLE_DOMAIN, "not a lookup table"),
-   ... )
-   >>> rows = component_property_section((exact, bounded, unavailable)).tables[0].rows
-   >>> [row.cells[3].text for row in rows]
-   ['5', '≤5', 'inapplicable: not a lookup table']
-   >>> [row.cells[4].text for row in rows]
-   ['exact', 'proved_bound', 'unavailable']
-
-Avalanche and statistical summaries
------------------------------------
-
-Avalanche matrices always remain empirical and retain sample count and seed.
-NIST STS and Dieharder adapters preserve every parser row, including weak,
-failed, and unavailable observations. A ``StatisticalTestRun`` also contributes
-dataset SHA-256, suite/tool version, command, and runtime.
-
-.. doctest::
-
-   >>> from claasp.analysis.avalanche import AvalancheResult
-   >>> from claasp.presentation import avalanche_section
-   >>> avalanche = AvalancheResult(
-   ...     "speck", "plaintext", 4, 9, ((0.0, 0.5), (1.0, 0.25)))
-   >>> summary, matrix = avalanche_section(avalanche).tables
-   >>> (summary.rows[2].cells[1].text, summary.rows[3].cells[1].text)
-   ('4', '9')
-   >>> matrix.rows[1].cells[2].text
-   '0.25'
-
-Text and report-data export
----------------------------
+Markdown, CSV and JSON report data
+----------------------------------
 
 Terminal, Markdown, and CSV consume the same immutable table. ``report_data``
 returns ordinary JSON-compatible dictionaries and lists. It is a presentation
@@ -178,23 +80,12 @@ newlines, does not create parents unless requested, and refuses to overwrite
 unless ``overwrite=True``. It never derives directories from primitive or test
 names and never adds an implicit timestamp.
 
-Optional plotting
+Combining reports
 -----------------
 
-Plotting is requested explicitly and imports Matplotlib only inside the driver
-method. Set a noninteractive backend before importing ``pyplot`` in headless
-programs::
+**TODO**
 
-   import matplotlib
-   matplotlib.use("Agg")
-   from claasp.drivers.renderers import MatplotlibPresentationDriver
+LaTeX tables
+------------
 
-   artifact = MatplotlibPresentationDriver().avalanche_matrix(avalanche)
-   artifact.figure.savefig("avalanche.png")
-
-Radar charts additionally require one ``RadarScale`` per included property.
-Each scale states its mathematical domain, finite range, and whether higher or
-lower is better. Axis labels show that contract and the evidence class.
-Unavailable, inapplicable, unscaled, or nonnumeric properties are omitted and
-listed in ``artifact.omitted``; unrelated domains are never normalized by an
-implicit common formula.
+**TODO**

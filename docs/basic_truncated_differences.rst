@@ -1,0 +1,4 @@
+Truncated differences: introduction
+===================================
+
+**TODO**

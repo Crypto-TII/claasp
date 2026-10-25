@@ -13,6 +13,12 @@ claasp.analysis
 .. automodule:: claasp.analysis
    :no-index:
 
+claasp.analysis.component_inspection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.component_inspection
+   :no-index:
+
 claasp.analysis.component_properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -23,6 +29,12 @@ claasp.analysis.linear_properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.analysis.linear_properties
+   :no-index:
+
+claasp.analysis.neural_distinguisher
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.neural_distinguisher
    :no-index:
 
 claasp.analysis.trail_search

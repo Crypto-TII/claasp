@@ -319,13 +319,17 @@ class Analysis:
 
     def avalanche(
         self,
-        input_name: str,
-        number_of_samples: int,
+        input_name: str | None = None,
+        number_of_samples: int = 1000,
         *,
         seed: int = 0,
         fixed_inputs=None,
+        metric: str = "probability",
+        threshold: float | None = None,
+        confidence: float = 0.95,
+        engine: str = "numpy",
     ):
-        """Estimate the strict-avalanche matrix through the public evaluator."""
+        """Measure avalanche probabilities at published round outputs."""
 
         from claasp.analysis.avalanche import avalanche_probabilities
 
@@ -335,6 +339,10 @@ class Analysis:
             number_of_samples,
             seed=seed,
             fixed_inputs=fixed_inputs,
+            metric=metric,
+            threshold=threshold,
+            confidence=confidence,
+            engine=engine,
         )
 
     def run_statistical_tests(
@@ -371,6 +379,53 @@ class Analysis:
             driver_options=driver_options,
         )
 
+    def neural_blackbox(self, input_name=None, **options):
+        """Train a real-versus-random-output MLP with fixed other inputs.
+
+        Use rounds="all" for a round comparison; samples, epochs and seed set its budget.
+        The result keeps independent two-sided tests separate from validation histories.
+
+        EXAMPLES::
+
+            >>> callable(Analysis.neural_blackbox)
+            True
+        """
+        from claasp.analysis.neural_distinguisher import _train_neural
+
+        return _train_neural(self.primitive, "black_box", input_name, **options)
+
+    def neural_differential(self, input_name=None, input_difference=0, **options):
+        """Train a related-input-pair distinguisher with explicit XOR differences.
+
+        Unspecified input differences are zero. ``fixed_inputs`` optionally
+        fixes inputs in both classes. Independent tests use test_samples and confidence.
+
+        EXAMPLES::
+
+            >>> callable(Analysis.neural_differential)
+            True
+        """
+        from claasp.analysis.neural_distinguisher import _train_neural
+
+        return _train_neural(
+            self.primitive, "xor_differential", input_name, input_difference, **options
+        )
+
+    def autond(self, **options):
+        """Search input differences and train a bounded AutoND-style workflow.
+
+        Defaults use one-bit candidate seeds, a small evolutionary search and
+        an MLP. Use rounds="all" to measure beyond the early-stopping recommendation.
+
+        EXAMPLES::
+
+            >>> callable(Analysis.autond)
+            True
+        """
+        from claasp.analysis.neural_distinguisher import _autond
+
+        return _autond(self.primitive, **options)
+
     def find_good_neural_input_difference(self, **options):
         """Run the deterministic AutoND-style evolutionary difference search."""
 
@@ -388,6 +443,7 @@ class Analysis:
         experiment,
         maximum_round=None,
         significance_samples=None,
+        stop_on_threshold=True,
     ):
         """Train successive reduced-round neural distinguishers."""
 
@@ -402,6 +458,7 @@ class Analysis:
             experiment=experiment,
             maximum_round=maximum_round,
             significance_samples=significance_samples,
+            stop_on_threshold=stop_on_threshold,
         )
 
     def run_autond(self, driver, experiment, **options):
@@ -410,6 +467,29 @@ class Analysis:
         from claasp.analysis.neural_workflows import run_autond
 
         return run_autond(self.primitive, driver, experiment, **options)
+
+    def continuous_diffusion(
+        self,
+        input_name: str | None = None,
+        number_of_samples: int = 16,
+        *,
+        lambda_value: float = 0.001,
+        seed: int = 0,
+        precision: int = 80,
+        sampling: str = "boolean_neighborhood",
+    ):
+        """Measure round-by-round continuous avalanche factors with local precision."""
+        from claasp.analysis.continuous_diffusion import continuous_diffusion
+
+        return continuous_diffusion(
+            self.primitive,
+            input_name,
+            number_of_samples,
+            lambda_value=lambda_value,
+            seed=seed,
+            precision=precision,
+            sampling=sampling,
+        )
 
     def continuous_evaluate(self, inputs, *, tolerance=1e-4):
         """Propagate continuous-diffusion correlations through the typed graph."""
@@ -464,6 +544,46 @@ class Analysis:
         from claasp.analysis.advanced_trails import find_sbox_boomerang_transition
 
         return find_sbox_boomerang_transition(self.primitive, component, **options)
+
+    def component(self, kind: str, *, index: int | None = None, bit_size: int | None = None):
+        """Select one semantic group by operation name without computing properties.
+
+        Names include ``sbox``, ``permutation`` and ``linear_map``. Ambiguous
+        matches require an output ``bit_size`` or a zero-based group ``index``.
+        Repeated equivalent occurrences form one group, not an ambiguity.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Present
+            >>> primitive = Present(number_of_rounds=2)
+            >>> primitive.analysis.component("sbox").count
+            34
+            >>> primitive.analysis.component("permutation", bit_size=64).count
+            2
+        """
+        from claasp.analysis.component_inspection import _select_component
+
+        return _select_component(self.primitive, kind, index=index, bit_size=bit_size)
+
+    def component_analysis(self):
+        """Discover semantic component groups and analyze their default properties.
+
+        Equivalent occurrences are analyzed once. Unsupported operations remain
+        in the inventory without fabricated property values. Core analyzers
+        retain their exact-enumeration budgets and evidence qualifications.
+        Default lookup requests are limited to tables of at most 256 entries;
+        modular-addition ANFs are requested only for widths up to eight bits.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Present
+            >>> result = Present(number_of_rounds=2).analysis.component_analysis()
+            >>> result.primitive_family
+            'present'
+        """
+        from claasp.analysis.component_properties import _component_analysis
+
+        return _component_analysis(self.primitive)
 
     def component_groups(self, domain):
         """Return immutable semantic groups, never structural bindings.

@@ -1,6 +1,9 @@
 Implementing a primitive
 =========================
 
+For a complete worked implementation, continue to
+:doc:`implementing_toy_spn` after this reference to the authoring operations.
+
 Primitive code should resemble the primitive's pseudocode. Whole unit arrays can be
 passed directly to components, indexing selects logical units, and component
 identifiers are optional.

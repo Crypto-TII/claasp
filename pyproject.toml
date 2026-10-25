@@ -12,11 +12,12 @@ authors = [{name = "TII Cryptanalysis Team"}]
 dependencies = []
 
 [project.optional-dependencies]
+analysis = ["numpy>=1.24", "mpmath>=1.3"]
 dev = ["pytest==9.1.1", "build==1.3.0"]
-docs = ["sphinx==9.0.4", "furo==2025.12.19"]
+docs = ["sphinx==9.0.4", "furo==2025.12.19", "matplotlib>=3.7", "mpmath>=1.3", "scikit-learn>=1.3"]
 quality = ["ruff==0.16.8", "mypy==2.3.1"]
-ml = ["numpy>=1.24", "scikit-learn>=1.3"]
-ml-tensorflow = ["numpy>=1.24", "tensorflow>=2.13"]
+ml = ["numpy>=1.24", "scipy>=1.7", "scikit-learn>=1.3"]
+ml-tensorflow = ["numpy>=1.24", "scipy>=1.7", "tensorflow>=2.13"]
 presentation = ["matplotlib>=3.7", "pandas>=2"]
 
 [tool.pytest.ini_options]
@@ -122,16 +123,22 @@ no_error_summary = true
 module = [
   "matplotlib",
   "matplotlib.*",
+  "mpl_toolkits",
+  "mpl_toolkits.*",
   "numpy",
   "numpy.*",
   "pandas",
   "pandas.*",
+  "scipy",
+  "scipy.*",
   "sklearn",
   "sklearn.*",
   "tensorflow",
   "tensorflow.*",
 ]
+# Apply the same boundary to .pyi files shipped by optional packages.
 follow_imports = "skip"
+follow_imports_for_stubs = true
 ignore_missing_imports = true
 
 [tool.setuptools.packages.find]

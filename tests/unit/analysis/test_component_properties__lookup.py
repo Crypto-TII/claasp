@@ -88,3 +88,26 @@ def test_component_dispatch_rejects_wrong_domain_without_fabricated_value():
 def test_lookup_validation_precedes_analysis():
     with pytest.raises(ValueError, match="must contain 4 entries"):
         LookupTable((0, 1), 2)
+
+
+@pytest.mark.parametrize(
+    "table, expected",
+    [
+        (LookupTable((0, 2, 3, 1), 2), True),
+        (LookupTable((0, 0, 1, 1), 2), False),
+        (LookupTable((0, 1, 2, 3), 2, 3), False),
+        (LookupTable((0, 1, 0, 1), 2, 1), False),
+    ],
+)
+def test_lookup_invertibility_requires_a_square_bijection(table, expected):
+    result = _property(table, ComponentProperty.INVERTIBLE)
+    assert result.value is expected
+    assert result.claim is PropertyClaim.EXACT and result.complete
+
+
+def test_nonbijective_square_table_retains_unused_output_coordinates():
+    # This two-bit function is (0, x0), so one output mask is constant.
+    table = LookupTable((0, 0, 1, 1), 2)
+    assert _property(table, ComponentProperty.NONLINEARITY).value == 0
+    assert _property(table, ComponentProperty.ALGEBRAIC_DEGREE).value == 1
+    assert _property(table, ComponentProperty.BALANCED).value is False

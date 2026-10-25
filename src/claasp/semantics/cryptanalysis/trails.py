@@ -4,6 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
 from math import inf, log2
+from typing import TextIO
 
 from claasp.representations.constraints import ConstraintModelApplication
 from claasp.semantics.base import XOR_DIFFERENTIAL, XOR_LINEAR
@@ -405,12 +406,12 @@ class TrailSearchResult:
         """Return whether the trail meets the claimed lower bound."""
         return self.trail.total_weight == self.lower_bound
 
-    def show(self, *, details: bool = False, format: str = "terminal", file=None) -> None:  # noqa: A002
+    def to_terminal(self, *, details: bool = False, file: TextIO | None = None) -> None:
         """Display round differences, or the full component evidence on request.
 
         Presentation is imported only when this convenience method is called;
         producing and checking the typed result remain independent of a
-        renderer. ``format`` may be ``"terminal"`` or ``"markdown"``.
+        renderer. Output goes to standard output unless ``file`` is supplied.
 
         EXAMPLES::
 
@@ -422,17 +423,15 @@ class TrailSearchResult:
             ...     XorDifference(1, 4), XorDifference(2, 4), ())
             >>> output = StringIO()
             >>> metadata = TrailSearchMetadata("example")
-            >>> TrailSearchResult(trail, 0.0, metadata).show(file=output)
+            >>> TrailSearchResult(trail, 0.0, metadata).to_terminal(file=output)
             >>> "0x1" in output.getvalue()
             True
         """
 
-        import sys
+        from claasp.presentation import trail_section
+        from claasp.presentation._terminal import to_terminal
 
-        from claasp.presentation import render_section, trail_section
-
-        destination = sys.stdout if file is None else file
-        destination.write(render_section(trail_section(self, details=details), format=format))
+        to_terminal(trail_section(self, details=details), file=file)
 
 
 class SBoxTransitionSemantics:

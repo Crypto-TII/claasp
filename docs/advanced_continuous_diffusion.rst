@@ -1,0 +1,269 @@
+Continuous diffusion tests: parameters and reporting
+====================================================
+
+Start with :doc:`basic_continuous_diffusion` for the short AES example.
+Here we study a twelve-round ToyAES with three-bit S-boxes and a 3-by-3-word
+state: a 27-bit teaching primitive, distinct from standard AES.
+
+Measure and report
+-------------------
+
+.. plot::
+   :context: reset
+   :nofigs:
+   :include-source:
+
+   from claasp.primitives import ToyAES
+
+   primitive = ToyAES(word_size=3, state_size=3, number_of_rounds=12)
+   result = primitive.analysis.continuous_diffusion(
+       "plaintext", 1024, lambda_value=0.001, seed=9, precision=80,
+   )
+
+.. code-block:: python
+
+   result.to_terminal()
+
+.. plot::
+   :context:
+   :nofigs:
+   :include-source: false
+
+   from io import StringIO
+   from pathlib import Path
+
+   output = StringIO()
+   result.to_terminal(file=output)
+   Path("_build").mkdir(exist_ok=True)
+   Path("_build/continuous_advanced_terminal.txt").write_text(output.getvalue(), encoding="utf-8")
+
+.. literalinclude:: _build/continuous_advanced_terminal.txt
+   :language: text
+
+.. plot::
+   :context: close-figs
+   :include-source:
+
+   result.plot()
+
+Rounds and sampling noise
+--------------------------
+
+This example uses **12 rounds and 1,024 pairs** to show the plateau after the
+transition to CAF near one. Extra rounds reveal whether that behavior persists;
+a larger sample budget reduces the noise in each per-output contribution.
+
+For a contribution taking values zero or two, near an equal split its standard
+error is approximately :math:`1/\sqrt{N}`: 0.125 with 64 pairs and 0.03125
+with 1,024. Some variation between output coordinates remains expected.
+A single coordinate's standard error is distinct from a simultaneous bound
+across all coordinates and rounds.
+
+Sampling uses a **local NumPy Generator (PCG64)** for Boolean vectors, perturbed
+coordinate selection, perturbation sizes, and uniform close-pair draws. The seed
+makes the experiment reproducible, and the terminal report names the sampling
+engine. High-precision propagation uses mpmath to retain small continuous values.
+
+What is measured?
+------------------
+
+Continuous coordinates lie in [-1, 1], with Boolean zero represented by -1 and
+Boolean one by +1. CLAASP propagates these coordinates through the graph's
+continuous component rules. The result is a heuristic model: dependence between
+internal values means these coordinates should not be read as exact
+probabilities throughout the primitive.
+
+For output vectors :math:`u,v` of width :math:`m`, each CAF sample is
+
+.. math::
+
+   \frac{1}{m}\sum_{j=0}^{m-1}|\operatorname{sgn}(u_j)-\operatorname{sgn}(v_j)|.
+
+The reported CAF is its mean over sampled pairs. A sign reversal contributes
+two, an unchanged sign zero, and a zero coordinate compared with a nonzero one
+contributes one. Thus CAF lies in [0, 2], with one the independent random-sign
+reference. It is distinct from the flip probabilities and statistical SAC
+check in :doc:`advanced_avalanche_analysis`.
+
+For the continuous model, signed distance, and CAF, see Coutinho, de Sousa
+Júnior and Borges, `Continuous Diffusion Analysis (2020), Definitions 13–14
+<https://doi.org/10.1109/ACCESS.2020.3005504>`_.
+
+Per-output contribution vectors
+--------------------------------
+
+Each round also retains a CAF contribution vector, indexed by output bit in
+MSB-first order:
+
+.. math::
+
+   c_{r,j}=\frac{1}{N}\sum_{k=1}^{N}
+   |\operatorname{sgn}(u^{(k)}_{r,j})-\operatorname{sgn}(v^{(k)}_{r,j})|.
+
+``result.vectors[round_index][output_bit]`` exposes these values. Averaging a
+round's vector gives its CAF. In the default sampler, the input coordinate is
+selected at random, so the vector averages over those choices. A full matrix
+conditioned on each individual input coordinate would require an experiment
+for each coordinate.
+
+This is the per-output analogue of the averaged avalanche probability profiles.
+Its units are signed-distance contributions in [0, 2]. Where neither output is
+zero, half the contribution is the empirical sign-reversal probability. It is
+not the probability of flipping a Boolean primitive output.
+
+Use the same plot selections as the avalanche example. All views reuse the
+retained experiment:
+
+.. plot::
+   :context: close-figs
+   :include-source:
+
+   result.plot(view="heatmap")
+
+.. plot::
+   :context: close-figs
+   :include-source:
+
+   result.plot(view="3d", style="dots")
+
+.. plot::
+   :context: close-figs
+   :include-source:
+
+   result.plot(view="3d", style="planes")
+
+Heatmap and 3D colors use the same red-orange-yellow-dark-green shades as the
+avalanche plots, with the random-sign reference at **one**. The scale runs from
+zero to two. Dots include faint round baselines; opaque profiles use the same
+value colors and camera-aware round ordering.
+
+For per-output vectors in the terminal, request details:
+
+.. code-block:: python
+
+   result.to_terminal(details=True)
+
+Sampling and perturbations
+---------------------------
+
+The default ``sampling="boolean_neighborhood"`` is a local experiment: choose
+a random Boolean vector, select one coordinate uniformly, and move it inward
+by a uniform amount between zero and ``lambda_value``. This keeps both inputs
+inside the continuous domain. Other primitive inputs are sampled independently
+at Boolean endpoints and held equal within each pair. No outward perturbation
+or clipping is used.
+
+A smaller perturbation delays the transition. Keep twelve rounds here: with
+``lambda_value=0.00001``, a plot ending at round seven would look flat near zero.
+The later rounds reveal the rise toward the random-sign reference:
+
+.. plot::
+   :context: close-figs
+   :include-source:
+
+   smaller = primitive.analysis.continuous_diffusion(
+       "plaintext", 1024, lambda_value=0.00001, seed=9,
+   )
+   smaller.plot()
+
+CAF records sign crossings, not the size of a numerical change. A zero value
+means no sampled output coordinate crossed zero at that round; the coordinates
+can still have changed in magnitude. More rounds can reveal a delayed rise.
+More samples improve estimation at the existing rounds, but do not make an
+individual perturbation grow faster.
+
+This changes the experiment, so it requires new evaluations. Changing only the
+report or saving a figure reuses its retained result.
+
+Uniform continuous pairs
+-------------------------
+
+Definition 14 (Continuous Avalanche Factor) in Coutinho, de Sousa Júnior and
+Borges's `Continuous Diffusion Analysis (2020)
+<https://doi.org/10.1109/ACCESS.2020.3005504>`_ uses continuous input pairs
+conditioned on Euclidean distance at most lambda. Select uniform close-pair
+sampling explicitly. For this illustration, use ``lambda_value=1.0`` so that
+sign crossings are readily visible:
+
+.. plot::
+   :context: close-figs
+   :include-source:
+
+   uniform = primitive.analysis.continuous_diffusion(
+       "plaintext", 1024, lambda_value=1.0, seed=9, sampling="uniform_near_pairs",
+   )
+   uniform.plot()
+
+CLAASP samples a displacement uniformly in the Euclidean ball, accepts it in
+proportion to the overlapping cube volume, and samples the first point within
+that overlap. This avoids an unbounded rejection search for close independent
+points in a high-dimensional cube.
+
+Here lambda is an absolute Euclidean distance in the continuous input cube,
+whose side length is two; ``1.0`` is a much larger perturbation than the default
+``0.001``. This is a demonstration of the metric's response, rather than an
+infinitesimal perturbation experiment. The curve is already near one after the
+early rounds: a flat plateau there means roughly half the output signs differ,
+on average. It does not mean the primitive values stopped changing.
+
+With the default ``lambda_value=0.001``, the same uniform-pair experiment can
+instead remain flat at zero across all twelve rounds. Nearby interior points
+can retain the same output signs even as their continuous magnitudes change.
+CAF alone cannot distinguish unchanged outputs from changed outputs that stay
+on the same side of zero. Increasing the sample budget may uncover rare sign
+crossings; it does not guarantee a curve rising toward one.
+
+The uniform and Boolean-neighborhood samplers explore different regions of the
+input cube. Their curves need not agree, and these plots also use different
+perturbation sizes. To isolate the effect of the sampling distribution, compare
+both samplers at the same ``lambda_value``. Neither a zero curve nor a plateau
+near one establishes a Boolean diffusion criterion or a security claim.
+
+Vary key coordinates
+---------------------
+
+.. plot::
+   :context: close-figs
+   :include-source:
+
+   key_result = primitive.analysis.continuous_diffusion("key", 1024, seed=9)
+   key_result.plot()
+
+Here the plaintext is shared within each pair and the continuous perturbation
+is applied to the key. Each report records which input was varied.
+
+Precision and reuse
+--------------------
+
+Deep-round continuous magnitudes can be far smaller than binary64 can retain.
+The sampled experiment uses ``mpmath`` with a local precision context (80 decimal
+digits by default). S-box propagation uses cached integer Walsh coefficients
+to avoid subtracting nearly equal probability sums. This preserves small
+magnitudes without changing global numerical settings. It remains a finite
+precision computation; compare settings when investigating a result:
+
+.. code-block:: python
+
+   higher_precision = primitive.analysis.continuous_diffusion(
+       "plaintext", 1024, seed=9, precision=120,
+   )
+   print(result.factors)
+   print(higher_precision.factors)
+
+``result.samples`` retains the normalized signed-distance samples for each round;
+``result.round_numbers`` identifies the published boundaries, and
+``result.factors`` contains their means. Leading setup rounds are excluded.
+``analysis.continuous_evaluate(inputs)`` remains available for direct binary64
+propagation of user-supplied continuous inputs.
+
+Save a plot or create it without displaying it:
+
+.. code-block:: python
+
+   result.plot(save_to="continuous_diffusion.png")
+   artifact = result.plot(show=False)
+
+Download :download:`the script <examples/continuous_diffusion.py>`.
+Both this companion and the basic script are exercised in CI. Empirical CAF
+values describe the specified model and sampling protocol, rather than proving
+a primitive secure or satisfying an avalanche criterion.

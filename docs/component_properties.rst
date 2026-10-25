@@ -1,6 +1,9 @@
 Component properties
 ====================
 
+For user-facing discovery and reporting examples, see
+`Component analysis tests <../user/component_analysis.html>`_ in the user guide.
+
 Component-property analysis answers small specification questions without
 constructing a report or choosing a solver. Every request names both a
 property and its mathematical domain. Every immutable result says whether its
@@ -102,4 +105,6 @@ executable produces a typed ``driver_unavailable`` result; it is never a core
 import requirement.
 
 Presentation, tables, plots, and radar charts consume these results in a
-separate layer and are intentionally absent from this API.
+separate layer. The grouped ``component_analysis()`` convenience delegates
+terminal formatting to that layer; individual property requests retain their
+immutable evidence-qualified results.

@@ -94,4 +94,5 @@ Optional NumPy, pandas, Matplotlib, scikit-learn, and legacy-capture imports
 are explicit skipped-import boundaries. This makes their values ``Any`` at
 that boundary and keeps the exact result independent of packages installed on
 a contributor host; their own implementations are not part of the v5 typing
-scope.
+scope. The same boundary applies to ``.pyi`` stub files, which may use newer
+Python syntax than CLAASP's minimum supported version.
