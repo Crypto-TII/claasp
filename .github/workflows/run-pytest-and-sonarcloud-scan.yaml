@@ -20,20 +20,13 @@ jobs:
     runs-on: self-hosted
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v7
       with:
         persist-credentials: false
         fetch-depth: 0
 
     - name: Fix Directory Structure
-      run: |
-          mkdir /home/runner/_work/claasp_backup
-          mv -f /home/runner/_work/claasp/claasp/* /home/runner/_work/claasp_backup
-          rm -rf /home/runner/_work/claasp/
-          mkdir /home/runner/_work/claasp
-          mv -f /home/runner/_work/claasp_backup/* /home/runner/_work/claasp
-          chmod g+w /home/runner/_work/claasp/ -R
-          rm -rf /home/runner/_work/claasp_backup
+      uses: ./.github/actions/fix-directory
 
     - name: Run remote-pytest
       run: |
@@ -43,7 +36,7 @@ jobs:
         GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
 
     - name: Upload Coverage.xml to artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: coverage-report
         path: /home/runner/_work/claasp/coverage.xml
@@ -56,7 +49,7 @@ jobs:
       image: tiicrc/claasp-lib:develop-arm64
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         persist-credentials: false
         fetch-depth: 0
@@ -70,16 +63,18 @@ jobs:
         GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
 
   run-code-coverage:
+    # Pull requests from forks don't receive SONAR_TOKEN, so the scan would fail.
+    if: ${{ github.event_name == 'push' || !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v7
       with:
         persist-credentials: false
         fetch-depth: 0
 
     - name: Download Latest Coverage.xml from Artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: coverage-report
 
