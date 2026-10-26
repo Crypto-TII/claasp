@@ -657,6 +657,11 @@
         Notes in Computer Science, vol. 10779, pp. 3–25. Springer (2018) :
         https://doi.org/10.1007/978-3-319-78556-1_1
 
+.. [RRSY1998]
+        Rivest R. L., Robshaw M. J. B., Sidney R., Yin Y. L. : *The RC6 Block
+        Cipher* : Version 1.1, August 20, 1998 :
+        https://people.csail.mit.edu/rivest/pubs/RRSY98.pdf
+
 .. _claasp-ref-S:
 
 .. only:: html
