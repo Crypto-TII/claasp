@@ -1937,26 +1937,35 @@ def remove_key_schedule(cipher, keep_round_key_injection=True):
 
                     component._input._bit_size = sum(len(positions) for positions in component.input_bit_positions)
 
-                    if len(component.input_bit_positions) == 1:
-                        # the XOR is now a plain wire: output bit j = source bit positions[j]
-                        components_to_remove[component.id] = (
-                            component.input_id_links[0],
-                            list(component.input_bit_positions[0]),
-                        )
+                    is_single_word_xor = (
+                        component.type == "word_operation"
+                        and component.description[0] == "XOR"
+                        and component.input_bit_size == component.output_bit_size
+                    )
+                    if len(component.input_bit_positions) == 1 or is_single_word_xor:
+                        # One logical word can span several source links (e.g. uBlock's two halves).
+                        components_to_remove[component.id] = [
+                            (input_id, position)
+                            for input_id, positions in zip(component.input_id_links, component.input_bit_positions)
+                            for position in positions
+                        ]
                         cipher_without_key_schedule.remove_round_component_from_id(round_.id, component.id)
 
         for round_ in cipher_without_key_schedule.rounds_as_list:
             for component in round_.components:
-                for i, input_id in enumerate(component.input_id_links):
-                    positions = list(component.input_bit_positions[i])
-                    while input_id in components_to_remove:
-                        # consumers read the removed wire's OUTPUT bits: map them back to the source bits
-                        # (identity only when the wire read its source as [0, 1, ..., n-1])
-                        source_id, source_positions = components_to_remove[input_id]
-                        positions = [source_positions[position] for position in positions]
-                        input_id = source_id
-                    component.input_id_links[i] = input_id
-                    component.input_bit_positions[i] = positions
+                input_links = []
+                input_positions = []
+                for input_id, positions in zip(component.input_id_links, component.input_bit_positions):
+                    for position in positions:
+                        source_id, source_position = input_id, position
+                        while source_id in components_to_remove:
+                            source_id, source_position = components_to_remove[source_id][source_position]
+                        if not input_links or input_links[-1] != source_id:
+                            input_links.append(source_id)
+                            input_positions.append([])
+                        input_positions[-1].append(source_position)
+                component.input_id_links[:] = input_links
+                component.input_bit_positions[:] = input_positions
 
                 component._input._bit_size = sum(len(positions) for positions in component.input_bit_positions)
 
