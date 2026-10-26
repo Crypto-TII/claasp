@@ -45,7 +45,7 @@ def smt_quasidifferential_modadd(
     does not collide.
 
     The ``M`` and ``M-transpose`` linear maps of Section 5.2 reduce,
-    bit by bit in claasp's MSB-first ordering (index 0 = MSB), to:
+    bit by bit in claasp's MSB-first ordering (index 0 = MSB), to::
 
         M_pseudoinverse(t)[0] = false
         M_pseudoinverse(t)[q] = t[q] xor t[q-1]                for q = 1..n-1

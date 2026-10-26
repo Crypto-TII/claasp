@@ -369,6 +369,7 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
         - ``chosen_cipher_output`` -- **string** (default: ``None``)
 
         OUTPUT:
+
         - **bool**; ``True`` if the cube monomial can reach the bit (feasible, not
           balanced), ``False`` if it cannot (balanced, proven for all keys).
 
@@ -397,6 +398,7 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
         match :meth:`is_balanced_at_specific_output_bit_over_cube` per bit.
 
         INPUT:
+
         - ``output_bit_indices`` -- **list of integers**
         - ``cube`` -- **list of strings**
         - ``chosen_cipher_output`` -- **string** (default: ``None``)
@@ -404,6 +406,7 @@ class MilpTwoSubsetDivisionPropertyModel(MilpMonomialPredictionModel):
           key-schedule-removed cipher (cheaper to build, but the solve can be slower).
 
         OUTPUT:
+
         - **dict** ``{bit_index: bool}``; ``True`` iff that bit is provably balanced.
 
         EXAMPLES::

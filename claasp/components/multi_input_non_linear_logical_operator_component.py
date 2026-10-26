@@ -280,7 +280,7 @@ class MultiInputNonlinearLogicalOperator(Component):
         .. NOTE::
 
             AND is seen as a 2x1 S-box, as described in 3.1 of https://eprint.iacr.org/2014/973.pdf
-          https://eprint.iacr.org/2020/290.pdf
+            https://eprint.iacr.org/2020/290.pdf
 
         INPUT:
 
@@ -318,8 +318,8 @@ class MultiInputNonlinearLogicalOperator(Component):
         .. NOTE::
 
             The constraints are extracted from https://eprint.iacr.org/2020/632.pdf
-          The probability is extracted from https://www.iacr.org/archive/fse2014/85400194/85400194.pdf
-          Results checked from https://eprint.iacr.org/2021/213.pdf
+            The probability is extracted from https://www.iacr.org/archive/fse2014/85400194/85400194.pdf
+            Results checked from https://eprint.iacr.org/2021/213.pdf
 
         TESTING NOTE:
 

@@ -654,8 +654,8 @@ class Cipher:
         - ``verbosity`` -- **boolean** (default: `False`); set this flag to True in order to print the input/output of
           each component
         - ``evaluate_api`` -- **boolean** (default: `False`); if set to True, takes integer inputs (as the evaluate function)
-        and returns integer inputs; it is expected that cipher.evaluate(x) == cipher.evaluate_vectorized(x, evaluate_api = True)
-        is True.
+          and returns integer inputs; it is expected that
+          cipher.evaluate(x) == cipher.evaluate_vectorized(x, evaluate_api = True) is True.
 
         EXAMPLES::
 
@@ -1524,7 +1524,7 @@ class Cipher:
         OUTPUT:
 
         - ``test_result`` -- output of the testing. True if all the cipher.evaluate(input)=output for every input
-        test vectors, and False, otherwise.
+          test vectors, and False, otherwise.
 
         EXAMPLES::
 
@@ -1559,7 +1559,7 @@ class Cipher:
 
     def find_impossible_property(self, type, technique="sat", solver="kissat", scenario="single-key"):
         """
-        From [SGLYTQH2017] : Finds impossible differentials or zero-correlation linear approximations (based on type)
+        From [SGLYTQH2017]_ : Finds impossible differentials or zero-correlation linear approximations (based on type)
         by fixing the input and output iteratively to all possible Hamming weight 1 value, and asking the solver
         to find a solution; if none is found, then the propagation is impossible.
         Return a list of impossible differentials or zero_correlation linear approximations if there are any; otherwise return an empty list

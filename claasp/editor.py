@@ -232,6 +232,7 @@ def add_fsr_component(cipher, input_id_links, input_bit_positions, output_bit_si
     Use this function to create and add an lfsr/nlfsr component to editor.
 
     INPUT:
+
     - ``cipher`` -- **Cipher object**; an instance of the object cipher
     - ``input_id_links`` -- **list**; the list of input_id links
     - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
@@ -253,7 +254,7 @@ def add_fsr_component(cipher, input_id_links, input_bit_positions, output_bit_si
       The last entry in the description list represents the word size which is 1-bit in this example.
       By default, the registers clock one time.
 
-    EXAMPLES:
+    EXAMPLES::
 
         sage: from claasp.cipher import Cipher
         sage: cipher = Cipher("cipher_name", "fsr", ["input"], [12], 12)
@@ -1880,7 +1881,7 @@ def remove_key_schedule(cipher, keep_round_key_injection=True):
 
     - ``cipher`` -- **Cipher object**; an instance of a cipher.
     - ``keep_round_key_injection`` -- **bool** (default: True); if False, removes components corresponding to the
-    round key injection.
+      round key injection.
 
     EXAMPLES::
 

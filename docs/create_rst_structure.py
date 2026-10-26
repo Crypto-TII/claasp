@@ -3,9 +3,8 @@ import sys
 from pathlib import Path
 from shutil import copyfile
 
-EXCLUDED_FOLDERS = ["__pycache__", "DTOs", "tii_reports"]
+EXCLUDED_FOLDERS = ["__pycache__", "DTOs", "tii_reports", "nist_sts_templates", "tmp"]
 EXCLUDED_FILES = ["__init__.py", "constants.py", ".DS_Store", "name_mappings.py", "finalAnalysisReportExample.txt"]
-EXCLUDED_EXTENSIONS = [".md"]
 ROOT_FOLDER = "../claasp/"
 SOURCE_ROOT_FOLDER = "./source/"
 Path(SOURCE_ROOT_FOLDER).mkdir(exist_ok=True)
@@ -14,6 +13,12 @@ IS_HTML = sys.argv[1] == "html"
 REFERENCES_EXTENSION = "rst" if IS_HTML else "bib"
 copyfile("conf.py", Path("source", "conf.py"))
 copyfile("references.rst", Path("source", f"references.{REFERENCES_EXTENSION}"))
+if IS_HTML:
+    # The references page is linked from the index but not listed in a toctree.
+    references = Path("source", "references.rst")
+    references.write_text(":orphan:\n\n" + references.read_text())
+    # sphinxcontrib.bibtex always reads references.bib, which is only used for the PDF.
+    Path("source", "references.bib").write_text("")
 
 
 def header_style(section, level):
@@ -34,9 +39,9 @@ def header_style(section, level):
 
 with Path(SOURCE_ROOT_FOLDER, "index.rst").open(mode="w") as index_rst_file:
     index_rst_file.write(
-        "=========================\n"
+        "============================================================================\n"
         "CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives\n"
-        "=========================\n"
+        "============================================================================\n"
         "\n"
         "This is a sample reference manual for CLAASP.\n"
         "\n"
@@ -57,7 +62,7 @@ with Path(SOURCE_ROOT_FOLDER, "index.rst").open(mode="w") as index_rst_file:
             for file in files:
                 file_name = os.path.splitext(file)[0]
                 file_extension = os.path.splitext(file)[1]
-                if file not in EXCLUDED_FILES and file_extension not in EXCLUDED_EXTENSIONS:
+                if file not in EXCLUDED_FILES and file_extension == ".py":
                     file_without_extension = os.path.splitext(file)[0]
                     file_path = os.path.join(root, file_without_extension)
                     index_rst_file.write(f"    {file_path.replace(ROOT_FOLDER, '')}\n")

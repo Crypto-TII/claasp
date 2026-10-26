@@ -18,8 +18,8 @@
 
 
 def mod_binary_operation_polynomials(x, y, z, c, is_addition):
-    """
-    Return a set of polynomials representing `(x * y) mod 2^{n}`.
+    r"""
+    Return a set of polynomials representing :math:`(x * y) \bmod 2^{n}`.
 
     Where `*` is either addition or subtraction depends on whether `is_addition` argument is set to `True` or `False`.
     If the carry variable `c` is `None`, it generates a set of algebraic normal form of each coordinate Boolean
@@ -70,8 +70,8 @@ def mod_binary_operation_polynomials(x, y, z, c, is_addition):
 
 
 def mod_addition_polynomials(x, y, z, c=None):
-    """
-    Return a set of polynomials representing `(x + y) mod 2^{n}`.
+    r"""
+    Return a set of polynomials representing :math:`(x + y) \bmod 2^{n}`.
 
     If the carry variable `c` is not provided, it generates a set of algebraic normal form of each coordinate Boolean
     function.
@@ -141,8 +141,8 @@ def mod_addition_polynomials(x, y, z, c=None):
 
 
 def mod_subtraction_polynomials(x, y, z, c=None):
-    """
-    Return a set of polynomials representing `(x - y) mod 2^{n}`.
+    r"""
+    Return a set of polynomials representing :math:`(x - y) \bmod 2^{n}`.
 
     If the carry variable `c` is not provided, it generates a set of algebraic normal form of each coordinate Boolean
     function.

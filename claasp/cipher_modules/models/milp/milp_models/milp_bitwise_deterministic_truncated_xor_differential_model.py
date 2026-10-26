@@ -243,10 +243,11 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
     def link_binary_tuples_to_integer_variables(self, id_tuples, ids):
         """
         Returns constraints linking the tuple of binary variables to the associated integer variable representing the
-        truncated pattern of a bit, for the bitwise deterministic truncated xor differential model
-            - (0, 0) means that the pattern is 0, i.e. the bit value equals 0
-            - (0, 1) means that the pattern is 1, i.e. the bit value equals 1
-            - (1, 0) means that the pattern is 2, i.e. the bit value is unknown
+        truncated pattern of a bit, for the bitwise deterministic truncated xor differential model:
+
+        - (0, 0) means that the pattern is 0, i.e. the bit value equals 0
+        - (0, 1) means that the pattern is 1, i.e. the bit value equals 1
+        - (1, 0) means that the pattern is 2, i.e. the bit value is unknown
 
         .. SEEALSO::
 

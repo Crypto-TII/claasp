@@ -39,7 +39,7 @@ class ForroPermutation(Cipher):
     Construct an instance of the ForroPermutation class.
 
     This class is used to store compact representations of a permutation, used to generate the
-    corresponding cipher. It implements the Forró permutation proposed in [CPV+22]_.
+    corresponding cipher. It implements the Forró permutation proposed in [CPV+22]_. The unit tests check it against [CryptDances22]_.
 
     INPUT:
 

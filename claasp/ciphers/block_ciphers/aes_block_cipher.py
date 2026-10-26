@@ -338,11 +338,13 @@ class AESBlockCipher(Cipher):
     def SUBBYTES(self, s):
         """
         SUBBYTES transformation - Apply S-box to each byte of state.
-        Pseudocode expanding Algorithm 1 Step 05 as described in FIPS-197 Section 5.1.1:
-        SUBBYTES(s)
-            for 0 ≤ r < 4 and 0 ≤ c < 4
-                s[r,c] = Sbox(s[r,c]) 
-            return s
+        Pseudocode expanding Algorithm 1 Step 05 as described in FIPS-197 Section 5.1.1::
+
+            SUBBYTES(s)
+                for 0 ≤ r < 4 and 0 ≤ c < 4
+                    s[r,c] = Sbox(s[r,c]) 
+                return s
+
         """
         s_output = []
         for c in range(self.Nb):
@@ -354,11 +356,12 @@ class AESBlockCipher(Cipher):
     def SHIFTROWS(self, sbox_layer_components):
         """
         SHIFTROWS transformation - Cyclically shift rows.
-        Pseudocode expanding Algorithm 1 Step 06 as described in FIPS-197 Section 5.1.2
-        SHIFTROWS(s)
-            for 0 ≤ r < 4 and 0 ≤ c < 4
-                s{r,c} = s{r,(c+r) mod 4}
-            return s
+        Pseudocode expanding Algorithm 1 Step 06 as described in FIPS-197 Section 5.1.2::
+
+            SHIFTROWS(s)
+                for 0 ≤ r < 4 and 0 ≤ c < 4
+                    s{r,c} = s{r,(c+r) mod 4}
+                return s
 
         """
         shift_row_layer_components = []
@@ -375,14 +378,16 @@ class AESBlockCipher(Cipher):
     def MIXCOLUMNS(self, round_number, shift_row_layer_components):
         """
         MIXCOLUMNS transformation - Mix columns.
-        Pseudocode expanding Algorithm 1 Step 07 as described in FIPS-197 Section 5.1.3 
-        MIXCOLUMNS(s)
-            for 0 ≤ c < 4 
-                ⎡s{0,c}⎤    ⎡02 03 01 01⎤   ⎡s{0,c}⎤
-                ⎢s{1,c}|    ⎢01 02 03 01|   ⎢s{1,c}|
-                ⎢s{2,c}| =  ⎢01 01 02 03| * ⎢s{2,c}| 
-                ⎣s{3,c}⎦    ⎣03 01 01 02⎦   ⎣s{3,c}⎦
-            return s
+        Pseudocode expanding Algorithm 1 Step 07 as described in FIPS-197 Section 5.1.3::
+
+            MIXCOLUMNS(s)
+                for 0 ≤ c < 4 
+                    ⎡s{0,c}⎤    ⎡02 03 01 01⎤   ⎡s{0,c}⎤
+                    ⎢s{1,c}|    ⎢01 02 03 01|   ⎢s{1,c}|
+                    ⎢s{2,c}| =  ⎢01 01 02 03| * ⎢s{2,c}| 
+                    ⎣s{3,c}⎦    ⎣03 01 01 02⎦   ⎣s{3,c}⎦
+                return s
+
         """
         if round_number == self.Nr - 1:
             # Final round: no MIXCOLUMNS
@@ -402,11 +407,13 @@ class AESBlockCipher(Cipher):
     def ADDROUNDKEY(self, s, w, round_number):
         """
         ADDROUNDKEY transformation - XOR state with round key.
-        Pseudocode expanding Algorithm 1 Step 03, 08, 12 as described in FIPS-197 Section 5.1.4
-        ADDROUNDKEY(s,w)
-            for 0 ≤ c < 4
-                [s{0,c},s{1,c},s{2,c},s{3,c}] = [s{0,c},s{1,c},s{2,c},s{3,c}]⊕[w(4*round+c)]
-            return s
+        Pseudocode expanding Algorithm 1 Step 03, 08, 12 as described in FIPS-197 Section 5.1.4::
+
+            ADDROUNDKEY(s,w)
+                for 0 ≤ c < 4
+                    [s{0,c},s{1,c},s{2,c},s{3,c}] = [s{0,c},s{1,c},s{2,c},s{3,c}]⊕[w(4*round+c)]
+                return s
+
         """
         # Algorithm 1 Step 03: Initial round whitening (round_number == -1): plaintext XOR round key
         if s == INPUT_PLAINTEXT:

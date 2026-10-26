@@ -17,14 +17,16 @@
 
 
 """
-SKIPJACK block cipher [NIST1998]
+SKIPJACK block cipher [NIST1998]_
 https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
 
 Cipher Specifications:
+
 - Block size: 64 bits (4 words of 16 bits each)
 - Key size: 80 bits (10 bytes)
 - Rounds: 32 (alternating Rule A and Rule B)
 - Structure:
+
   * Rounds 1-8: Rule A
   * Rounds 9-16: Rule B
   * Rounds 17-24: Rule A
@@ -64,8 +66,9 @@ class SkipjackBlockCipher(Cipher):
         64-bit block and 32 rounds (Rule A / Rule B schedule).
 
         Test vectors reference:
-        - [NIST1998] SKIPJACK and KEA Algorithm Specifications, Annex III
-            https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
+
+        - [NIST1998]_ SKIPJACK and KEA Algorithm Specifications, Annex III
+          https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
 
         EXAMPLES::
 
