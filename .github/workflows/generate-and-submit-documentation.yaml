@@ -6,7 +6,11 @@ on:
 permissions: write-all
 jobs:
   generate-documentation:
-    runs-on: self-hosted-k3s
+    runs-on: ubuntu-latest
+    # The CLAASP base image already has Sage, Sphinx and LaTeX installed,
+    # so the docs can be built on a standard GitHub runner.
+    container:
+      image: tiicrc/claasp-base:latest
     steps:
     - name: Checkout
       uses: actions/checkout@v7
