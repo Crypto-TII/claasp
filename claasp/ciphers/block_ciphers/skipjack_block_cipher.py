@@ -17,7 +17,7 @@
 
 
 """
-SKIPJACK block cipher [NIST1998]
+SKIPJACK block cipher [NIST1998]_
 https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
 
 Cipher Specifications:
@@ -67,7 +67,7 @@ class SkipjackBlockCipher(Cipher):
 
         Test vectors reference:
 
-        - [NIST1998] SKIPJACK and KEA Algorithm Specifications, Annex III
+        - [NIST1998]_ SKIPJACK and KEA Algorithm Specifications, Annex III
           https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
 
         EXAMPLES::

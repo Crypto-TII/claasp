@@ -42,7 +42,10 @@ class AradiBlockCipherSBox(Cipher):
     - ``sub_keys_zero`` -- **boolean** (default: `False`)
     - ``transformations_flag`` -- **boolean** (default: `True`)
 
+    The test vector in the examples below is taken from [GreMW24]_.
+
     EXAMPLES::
+
         sage: # The following test vector was taken from [GreMW24].
         sage: from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
         sage: aradi = AradiBlockCipherSBox(number_of_rounds=16)

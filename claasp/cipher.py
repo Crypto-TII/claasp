@@ -1559,7 +1559,7 @@ class Cipher:
 
     def find_impossible_property(self, type, technique="sat", solver="kissat", scenario="single-key"):
         """
-        From [SGLYTQH2017] : Finds impossible differentials or zero-correlation linear approximations (based on type)
+        From [SGLYTQH2017]_ : Finds impossible differentials or zero-correlation linear approximations (based on type)
         by fixing the input and output iteratively to all possible Hamming weight 1 value, and asking the solver
         to find a solution; if none is found, then the propagation is impossible.
         Return a list of impossible differentials or zero_correlation linear approximations if there are any; otherwise return an empty list

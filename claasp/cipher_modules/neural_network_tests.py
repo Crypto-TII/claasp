@@ -33,7 +33,7 @@ class NeuralNetworkTests:
                                                     hidden_layers=[32, 32, 32], number_of_epochs=10,
                                                     rounds_to_train=[]):
         """
-        Runs a test inspired by [BHPR2021]; trains a MLP to distinguish samples of the form
+        Runs a test inspired by [BHPR2021]_; trains a MLP to distinguish samples of the form
         L || R from random L || Random, where L is one of the inputs to the cipher, and R one of its outputs.
         The test is run for each of the inputs defined by the cipher, and each R in {cipher output,
         round i output, round key i}. Within an experiments, all inputs other than L are fixed.
@@ -215,7 +215,7 @@ class NeuralNetworkTests:
     def neural_network_differential_distinguisher_tests(self, nb_samples=10000, hidden_layers=[32, 32, 32],
                                                         number_of_epochs=10, diff=[[0x400000], [0xa]], rounds_to_train=[]):
         """
-        Runs a test inspired by [BR2021]; trains a MLP to distinguish samples of the form
+        Runs a test inspired by [BR2021]_; trains a MLP to distinguish samples of the form
         L || R from random L || Random, where L and R are the outputs of the cipher, for inputs related by an
         XOR difference.
         The test is run for each of the differences in diff iteratively, for each output in {cipher output,
@@ -555,7 +555,7 @@ class NeuralNetworkTests:
                                         training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=200):
         """
         Trains a differential neural distinguisher on nr rounds, for the input difference input_difference, using a slightly
-        modified (AMSGrad instead of cyclic learning rate schedule) depth depth Gohr's RESNet ([Go2019]).
+        modified (AMSGrad instead of cyclic learning rate schedule) depth depth Gohr's RESNet ([Go2019]_).
         Return ``{number_of_rounds: accuracy}``, where accuracy is the maximum validation accuracy over the training
         epochs (see :meth:`train_neural_distinguisher`), not an accuracy on an independent test set.
 
@@ -599,7 +599,7 @@ class NeuralNetworkTests:
                             training_samples=10 ** 7, testing_samples=10 ** 6, number_of_epochs=40, verbose=False, neural_net = 'dbitnet', save_prefix=None,
                             seed=None):
         """
-        Runs the AutoND pipeline ([BGHR2023]):
+        Runs the AutoND pipeline ([BGHR2023]_):
         - Find an input difference for the inputs set to True in difference_positions using an optimizer
         - Train a neural distinguisher based on DBitNET for that input difference, increasing the number of rounds
         until the maximum validation accuracy falls below the threshold of :meth:`train_neural_distinguisher`.
@@ -876,7 +876,7 @@ class NeuralNetworkTests:
                                                             nb_samples=10 ** 3, previous_generation=None,
                                                             verbose=False, seed=None):
         """
-        Return good neural distinguisher input differences for a cipher, based on the AutoND pipeline ([BGHR2023]).
+        Return good neural distinguisher input differences for a cipher, based on the AutoND pipeline ([BGHR2023]_).
 
         Return a tuple ``(differences, scores, highest_round)``, where the differences are sorted by increasing score.
         For each round ``r`` (counted from 1), the output difference is taken at the last round or cipher output of
