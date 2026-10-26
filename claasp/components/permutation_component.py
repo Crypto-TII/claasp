@@ -228,7 +228,7 @@ class Permutation(Component):
         return self.cms_constraints()
 
     def cms_xor_linear_mask_propagation_constraints(self, model=None):
-        return self.cms_constraints()
+        return self.sat_xor_linear_mask_propagation_constraints(model)
 
     def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
         """
@@ -288,7 +288,13 @@ class Permutation(Component):
         return self.sat_constraints()
 
     def sat_xor_linear_mask_propagation_constraints(self, model=None):
-        return self.sat_constraints()
+        """Encode permutation masks using component-local input and output identifiers."""
+        input_ids = self._generate_component_input_ids()
+        output_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
+        constraints = []
+        for output_id, source_position in zip(output_ids, self._bit_perm()):
+            constraints.extend(sat_utils.cnf_equivalent([output_id, input_ids[source_position]]))
+        return input_ids + output_ids, constraints
 
     def sat_semi_deterministic_truncated_xor_differential_constraints(self):
         return self.sat_bitwise_deterministic_truncated_xor_differential_constraints()

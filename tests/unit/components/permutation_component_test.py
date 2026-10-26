@@ -100,8 +100,9 @@ def test_cms_xor_wrappers_match_cms_constraints():
 
     assert cms_diff_variables == cms_variables
     assert cms_diff_constraints == cms_constraints
-    assert cms_lin_variables == cms_variables
-    assert cms_lin_constraints == cms_constraints
+    sat_lin_variables, sat_lin_constraints = permutation_component.sat_xor_linear_mask_propagation_constraints()
+    assert cms_lin_variables == sat_lin_variables
+    assert cms_lin_constraints == sat_lin_constraints
 
 
 def test_smt_constraints():
@@ -409,3 +410,29 @@ def test_smt_xor_quasidifferential_propagation_constraints():
         "(assert (= qdt_permutation_0_0_2 qdt_plaintext_2))",
         "(assert (= qdt_permutation_0_0_3 qdt_plaintext_1))",
     ]
+
+
+def test_sat_permutation_linear_masks_preserve_inner_product():
+    component = make_permutation_component()
+    variables, clauses = component.sat_xor_linear_mask_propagation_constraints()
+    assert variables == [f"{component.id}_{i}_i" for i in range(4)] + [
+        f"{component.id}_{i}_o" for i in range(4)
+    ]
+    for input_mask in range(16):
+        for output_mask in range(16):
+            assignment = dict(zip(variables, [
+                (mask >> (3 - i)) & 1
+                for mask in (input_mask, output_mask) for i in range(4)
+            ]))
+            feasible = all(any(
+                assignment[literal.lstrip("-")] != literal.startswith("-")
+                for literal in clause.split()
+            ) for clause in clauses)
+            preserves_parity = all(
+                ((input_mask & value).bit_count() % 2)
+                == ((output_mask & sum(
+                    ((value >> (3 - i)) & 1) << (3 - PERMUTATION[i]) for i in range(4)
+                )).bit_count() % 2)
+                for value in range(16)
+            )
+            assert feasible == preserves_parity
