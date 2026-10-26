@@ -227,10 +227,10 @@ class NeuralNetworkTests:
 
         - ``nb_samples`` -- **integer** (default: `10000`); how many sample the neural network is trained with
         - ``hidden_layers`` -- **list** (default: `[32, 32, 32]`); a list containing the number of neurons in each
-         hidden layer of the neural network
+          hidden layer of the neural network
         - ``number_of_epochs`` -- **integer** (default: `10`); how long is the training of the neural network
         - ``diff`` -- **list** (default: `[[0x01, 0x0a, 0x400000], [0, 0, 0]]`); list of input differences, containing
-        one list of values per input to the cipher.
+          one list of values per input to the cipher.
 
         EXAMPLES::
 
@@ -445,9 +445,10 @@ class NeuralNetworkTests:
 
         INPUT:
 
-        - ``data_generator`` -- **function**; A dataset generation function, taking as input a cipher (usually self), a number of rounds,
-        and a number of samples, an returns a dataset X, Y, where X is a numpy matrix with one row per sample, and Y is a label veector.
-        To reproduce classical neural distinguisher results, on would use the example below.
+        - ``data_generator`` -- **function**; A dataset generation function, taking as input a cipher (usually self), a
+          number of rounds, and a number of samples, an returns a dataset X, Y, where X is a numpy matrix with one row
+          per sample, and Y is a label veector. To reproduce classical neural distinguisher results, on would use the
+          example below.
         - ``starting_round`` -- **integer**; number of rounds of the first trained distinguisher, between 1 and the
           number of rounds of the cipher (rounds are counted from 1, so the full cipher is
           ``self.cipher.number_of_rounds``)
@@ -460,8 +461,8 @@ class NeuralNetworkTests:
         - ``pipeline`` -- **boolean**; (default: `True`) If False, only trains for starting_round. If True, increments
           starting_round and retrains the model as long as the maximum validation accuracy is above the threshold
         - ``save_prefix`` -- **string** (default: `None`); the folder and file name to store the trained neural distinguishers; they will be saved
-        under f'save_prefix{nr}.h5' with Keras 2, or f'save_prefix{nr}.keras' with Keras 3, where nr is the number of
-        rounds; if None, then the trained neural networks are not saved.
+          under f'save_prefix{nr}.h5' with Keras 2, or f'save_prefix{nr}.keras' with Keras 3, where nr is the number of
+          rounds; if None, then the trained neural networks are not saved.
 
         EXAMPLES::
 
@@ -561,12 +562,12 @@ class NeuralNetworkTests:
         INPUT:
 
         - ``input_difference`` -- **list of integers**; The input difference, expressed as a list with one value per
-        input to the cipher.
+          input to the cipher.
         - ``number_of_rounds`` -- **integer**; number of rounds to analyze, between 1 and the number of rounds of the
           cipher
         - ``depth`` -- **integer**; (default: `1`) the depth of the neural network, as defined in Gohr's paper
         - ``word_size`` -- **integer**; the word size of the cipher, determines the shape of the neural network.
-        Defaults to output_bit_size when unspecified (may reduce the accuracy of the obtained distinguisher).
+          Defaults to output_bit_size when unspecified (may reduce the accuracy of the obtained distinguisher).
         - ``training_samples`` -- **integer**; (default: `10**7`) number samples used for training
         - ``testing_samples`` -- **integer**; (default: `10**6`) number of samples of the validation dataset
         - ``number_of_epochs`` -- **integer**; (default: `200`) number of training epochs
@@ -611,14 +612,14 @@ class NeuralNetworkTests:
 
         INPUT:
 
-        - ``difference_positions`` -- **list of booleans**; default: `True in the plaintext position, False in the
-        other positions`. If specified, must have the same length as self.inputs_bit_size, and contain one boolean per
-        input position. The optimizer will look for input differences in the positions set to True; by default,
-        the single-key case will be run.
+        - ``difference_positions`` -- **list of booleans**; default: ``True`` in the plaintext position, ``False`` in
+          the other positions. If specified, must have the same length as self.inputs_bit_size, and contain one boolean
+          per input position. The optimizer will look for input differences in the positions set to True; by default,
+          the single-key case will be run.
         - ``optimizer_samples`` -- **integer**; number of samples used by the optimizer; higher values increase the
-        quality of the optimizer, at the cost of a longer runtime.
+          quality of the optimizer, at the cost of a longer runtime.
         - ``optimizer_generations`` -- **integer**; (default: `50`) number of generations used by the optimizer;
-        higher values increase the runtime.
+          higher values increase the runtime.
         - ``training_samples`` -- **integer**; (default: `10**7`) number samples used for training
         - ``testing_samples`` -- **integer**; (default: `10**6`) number of samples of the validation dataset
         - ``number_of_epochs`` -- **integer**; (default: `40`) number of training epochs

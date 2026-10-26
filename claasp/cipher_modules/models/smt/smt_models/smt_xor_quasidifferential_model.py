@@ -1566,7 +1566,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
           ``set_fixed_variables``
         - ``fixed_masks`` -- **list** (default: `None`); QDT MASK constraints, which
           set_fixed_variables cannot express (it only fixes ordinary difference bits, never
-          qdt_-prefixed ones). Each entry is a dict:
+          ``qdt_``-prefixed ones). Each entry is a dict:
 
           | {
           |     'component_id': 'plaintext',

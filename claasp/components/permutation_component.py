@@ -788,6 +788,7 @@ class Permutation(Component):
         - ``model`` -- **model object**; a model instance
 
         EXAMPLES::
+
             sage: from claasp.components.permutation_component import Permutation
             sage: from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel

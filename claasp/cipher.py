@@ -654,8 +654,8 @@ class Cipher:
         - ``verbosity`` -- **boolean** (default: `False`); set this flag to True in order to print the input/output of
           each component
         - ``evaluate_api`` -- **boolean** (default: `False`); if set to True, takes integer inputs (as the evaluate function)
-        and returns integer inputs; it is expected that cipher.evaluate(x) == cipher.evaluate_vectorized(x, evaluate_api = True)
-        is True.
+          and returns integer inputs; it is expected that
+          cipher.evaluate(x) == cipher.evaluate_vectorized(x, evaluate_api = True) is True.
 
         EXAMPLES::
 
@@ -1524,7 +1524,7 @@ class Cipher:
         OUTPUT:
 
         - ``test_result`` -- output of the testing. True if all the cipher.evaluate(input)=output for every input
-        test vectors, and False, otherwise.
+          test vectors, and False, otherwise.
 
         EXAMPLES::
 

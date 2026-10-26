@@ -577,7 +577,7 @@ class MixColumn(LinearLayer):
         return cp_declarations, cp_constraints
 
     def get_bit_based_c_code(self, verbosity):
-        """
+        r"""
         Return C code lines that evaluate this MIX COLUMN on bit strings.
 
         INPUT:

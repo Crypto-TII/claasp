@@ -434,8 +434,8 @@
         Reference implementation and test vectors: https://github.com/giftcipher/gift.
 
 .. [Go2019]
-        Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning
-* : In Advances in Cryptology – CRYPTO 2019
+        Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning*.
+        In Advances in Cryptology – CRYPTO 2019
 
 .. [GreMW24]
         Greene P., Motley M., Weeks B.: *ARADI and LLAMA: Low-Latency Cryptography for

@@ -1256,7 +1256,7 @@ class Sbox(Component):
         return sbox_sign_lat
 
     def get_bit_based_c_code(self, verbosity):
-        """
+        r"""
         Return C code lines implementing this S-box at bit level.
 
         INPUT:
@@ -1377,7 +1377,7 @@ class Sbox(Component):
 
         .. NOTE::
 
-        This is for MILP large xor differential probability. Constraints extracted from [ASTTY2017]_.
+            This is for MILP large xor differential probability. Constraints extracted from [ASTTY2017]_.
 
         INPUT:
 
@@ -1447,7 +1447,7 @@ class Sbox(Component):
 
         .. NOTE::
 
-        This is for MILP large xor linear probability. Constraints extracted from [ASTTY2017]_.
+            This is for MILP large xor linear probability. Constraints extracted from [ASTTY2017]_.
 
         INPUT:
 
@@ -1518,10 +1518,10 @@ class Sbox(Component):
         """
         Return a list of variables and a list of constrains modeling a component of type SBOX.
 
-        NOTE::
+        .. NOTE::
 
-        This is for MILP small xor differential probability. Constraints extracted from
-        [SHW+2014]_ and [ASTTY2017]_.
+            This is for MILP small xor differential probability. Constraints extracted from
+            [SHW+2014]_ and [ASTTY2017]_.
 
         INPUT:
 
@@ -1611,8 +1611,8 @@ class Sbox(Component):
 
         .. NOTE::
 
-        This is for MILP small xor linear probability. Constraints extracted from
-        [SHW+2014]_ (Appendix A) and [ASTTY2017]_.
+            This is for MILP small xor linear probability. Constraints extracted from
+            [SHW+2014]_ (Appendix A) and [ASTTY2017]_.
 
         INPUT:
 
@@ -1826,9 +1826,9 @@ class Sbox(Component):
 
         .. NOTE::
 
-        This formulation currently supports only S-boxes whose input and output sizes match
-        ``model.word_size`` exactly, so the component corresponds to one input word and one
-        output word. If the S-box width is not word-aligned, this method raises ``ValueError``.
+            This formulation currently supports only S-boxes whose input and output sizes match
+            ``model.word_size`` exactly, so the component corresponds to one input word and one
+            output word. If the S-box width is not word-aligned, this method raises ``ValueError``.
 
         OUTPUT:
 

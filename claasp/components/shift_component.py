@@ -948,7 +948,7 @@ class Shift(Component):
         discards are forced to zero -- which is precisely the structure
         already encoded by this class's own
         smt_xor_linear_mask_propagation_constraints, reused here with
-        the qdt_-prefixed variable names of the quasidifferential
+        the ``qdt_``-prefixed variable names of the quasidifferential
         model.
 
         Weight is 0: linear maps have a delta-function correlation and

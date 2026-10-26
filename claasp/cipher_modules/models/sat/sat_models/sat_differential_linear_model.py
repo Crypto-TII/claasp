@@ -417,15 +417,18 @@ class SatDifferentialLinearModel(SatModel):
         of the top part (differential part) and the correlation weight of the bottom part (linear part).
 
         INPUT:
+
         - ``weight`` -- **int**; Maximum probability weight for the regular XOR differential part.
         - ``num_unknown_vars`` -- **int** (default: None); Upper limit on the number of unknown variables allowed.
         - ``fixed_values`` -- **list** (default: `[]`); specifies a list of variables that should be fixed to specific values. Each entry in the list should be a dictionary representing constraints for specific components, written in the CLAASP constraining syntax.
         - ``solver_name`` -- **str** (default: ``solvers.SOLVER_DEFAULT``); The name of the SAT solver to use.
 
         RETURN:
+
         - **dict**; Solution returned by the solver, including the trail and additional information.
 
         EXAMPLES::
+
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher

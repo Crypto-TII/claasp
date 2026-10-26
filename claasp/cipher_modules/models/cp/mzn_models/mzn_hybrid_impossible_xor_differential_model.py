@@ -21,7 +21,7 @@ MZN Hybrid Impossible Xor Differential Model.
 .. _mzn-hybrid-impossible-differential-standard:
 
 MZN Hybrid Impossible XOR Differential
-------------------------------------
+--------------------------------------
 
 The target of this class is to combine the precision of a bitwise impossible xor differential model while keeping track
 of active non-linear components as done by the wordwise impossible xor differential model.

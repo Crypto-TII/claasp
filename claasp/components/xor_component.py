@@ -766,21 +766,21 @@ class Xor(Component):
         in deterministic truncated XOR differential model.
 
         This method uses a binary encoding (where each variable v is seen as a binary tuple (v0, v1), where v0 is the MSB) to
-        model the result c of the truncated XOR between inputs a and b.
+        model the result c of the truncated XOR between inputs a and b::
 
-        _______________
-         a  |  b  |  c
-        _______________
-         0  |  0  |  0
-         0  |  1  |  1
-         0  |  2  |  2
-         1  |  0  |  1
-         1  |  1  |  0
-         1  |  2  |  2
-         2  |  0  |  2
-         2  |  1  |  2
-         2  |  2  |  2
-        _______________
+            _______________
+             a  |  b  |  c
+            _______________
+             0  |  0  |  0
+             0  |  1  |  1
+             0  |  2  |  2
+             1  |  0  |  1
+             1  |  1  |  0
+             1  |  2  |  2
+             2  |  0  |  2
+             2  |  1  |  2
+             2  |  2  |  2
+            _______________
 
         Espresso was used to reduce the number of constraints to 10 inequalities.
         A k-input XOR is then split into k-1 2-input sequential XORs, for wich the results are stored in intermediate
@@ -1046,12 +1046,13 @@ class Xor(Component):
         Returns a list of variables and a list of constraints for XOR component
         in deterministic truncated XOR differential model.
 
-        It follows a simplified model:
-        if dX0 + dX1 > 2
-            then dY = 3
-        elif dX0<2 / dX1<2
-            then zeta Y = zetaX0 ^ zetaX1
-        else dY = 2
+        It follows a simplified model::
+
+            if dX0 + dX1 > 2
+                then dY = 3
+            elif dX0<2 / dX1<2
+                then zeta Y = zetaX0 ^ zetaX1
+            else dY = 2
 
         INPUTS:
 

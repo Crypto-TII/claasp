@@ -104,6 +104,7 @@ def cutting_off_milp(valid_points, number_of_ineqs=None):
     can do some optimizations itself.
 
     INPUT:
+
     - ``valid_points`` -- **matrix**; the polyhedron representing the convex hull
     - ``number_of_ineqs`` -- **integer** (default: `None`); number of inequalities that should be used for representing the
       S-box

@@ -203,8 +203,6 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
 
         EXAMPLES::
 
-        EXAMPLES::
-
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_input_differential_linear_model import SharedDifferencePairedInputDifferentialLinearModel
             sage: speck = SpeckBlockCipher(number_of_rounds=5)

@@ -1111,7 +1111,7 @@ class MznModel:
         INPUT:
 
         - ``file_path`` -- **string**; the path of the file that will contain the model
-        - ``prefix`` -- **str** (default: ``)
+        - ``prefix`` -- **str** (default: ``""``)
         """
         if prefix == "":
             filename = f"{file_path}/{self.cipher_id}_mzn_{self.sat_or_milp}.mzn"

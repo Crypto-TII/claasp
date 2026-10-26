@@ -1559,9 +1559,11 @@ class MilpMonomialPredictionModel:
         - ``which_var_degree`` -- **string** (default: ``None``); prefix or full name of the input
           variable on which the degree constraint (``fixed_degree``) is applied.
           Typical values include:
-            * ``"p"`` or ``"plaintext"`` for plaintext variables
-            * ``"k"`` or ``"key"`` for key variables
-            * ``"i"`` for initialization vector variables
+
+          * ``"p"`` or ``"plaintext"`` for plaintext variables
+          * ``"k"`` or ``"key"`` for key variables
+          * ``"i"`` for initialization vector variables
+
           If ``None``, defaults to the first input listed in ``self._cipher.inputs``.
         - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
           ID if you want to compute the ANF for an intermediate output instead of the final cipher output.
@@ -1627,8 +1629,9 @@ class MilpMonomialPredictionModel:
           to test.
         - ``endian`` -- **string** (default: ``"msb"``); defines how bit positions are indexed
           and extracted:
-            * ``"msb"`` : bit index 0 corresponds to the most significant bit (default)
-            * ``"lsb"`` : bit index 0 corresponds to the least significant bit
+
+          * ``"msb"`` : bit index 0 corresponds to the most significant bit (default)
+          * ``"lsb"`` : bit index 0 corresponds to the least significant bit
 
         OUTPUT:
 
@@ -2133,9 +2136,11 @@ class MilpMonomialPredictionModel:
           of the cipher output bit to analyze.
         - ``which_var_degree`` -- **string** (default: ``None``); prefix identifying which
           input the algebraic degree should be computed over:
-            * ``"k"`` → degree with respect to key bits
-            * ``"p"`` → degree with respect to plaintext bits
-            * ``"i"`` → degree with respect to IV bits
+
+          * ``"k"`` → degree with respect to key bits
+          * ``"p"`` → degree with respect to plaintext bits
+          * ``"i"`` → degree with respect to IV bits
+
           If ``None`` (default), the first input listed in ``self._cipher.inputs`` is used.
         - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
           ID if the computation targets an intermediate output instead of the final cipher output.
@@ -2209,9 +2214,11 @@ class MilpMonomialPredictionModel:
 
         - ``which_var_degree`` -- **string** (default: ``None``); prefix indicating which
           variable group the degree should be computed over:
-            * ``"k"`` → key bits
-            * ``"p"`` → plaintext bits
-            * ``"i"`` → IV bits
+
+          * ``"k"`` → key bits
+          * ``"p"`` → plaintext bits
+          * ``"i"`` → IV bits
+
           If ``None`` (default), the degree is computed with respect to the first input
           listed in ``self._cipher.inputs``.
         - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher
@@ -2286,9 +2293,11 @@ class MilpMonomialPredictionModel:
 
         - ``which_var_degree`` -- **string** (default: ``None``); prefix identifying which
           input group the algebraic degree should be computed over:
-            * ``"k"`` → degree with respect to key bits
-            * ``"p"`` → degree with respect to plaintext bits
-            * ``"i"`` → degree with respect to IV bits
+
+          * ``"k"`` → degree with respect to key bits
+          * ``"p"`` → degree with respect to plaintext bits
+          * ``"i"`` → degree with respect to IV bits
+
           If ``None`` (default), the first input listed in ``self._cipher.inputs`` is used.
 
         - ``chosen_cipher_output`` -- **string** (default: ``None``); specify a cipher component
@@ -2355,9 +2364,11 @@ class MilpMonomialPredictionModel:
 
         - ``which_var_degree`` -- **string** (default: ``None``); prefix indicating which
           variable group the algebraic degree should be computed over:
-            * ``"k"`` → key bits
-            * ``"p"`` → plaintext bits
-            * ``"i"`` → IV bits
+
+          * ``"k"`` → key bits
+          * ``"p"`` → plaintext bits
+          * ``"i"`` → IV bits
+
           If ``None`` (default), the degree is computed with respect to the first input
           listed in ``self._cipher.inputs``.
 

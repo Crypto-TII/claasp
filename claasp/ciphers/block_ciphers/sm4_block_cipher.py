@@ -25,13 +25,13 @@ class SM4(Cipher):
 
     EXAMPLES::
 
-    sage: from claasp.ciphers.block_ciphers.sm4_block_cipher import SM4
-    sage: sm4 = SM4()
-    sage: key = 0x0123456789ABCDEFFEDCBA9876543210
-    sage: plaintext = 0x0123456789ABCDEFFEDCBA9876543210
-    sage: ciphertext = 0x681EDF34D206965E86B3E94F536E4246
-    sage: sm4.evaluate([key, plaintext]) == ciphertext
-    True
+        sage: from claasp.ciphers.block_ciphers.sm4_block_cipher import SM4
+        sage: sm4 = SM4()
+        sage: key = 0x0123456789ABCDEFFEDCBA9876543210
+        sage: plaintext = 0x0123456789ABCDEFFEDCBA9876543210
+        sage: ciphertext = 0x681EDF34D206965E86B3E94F536E4246
+        sage: sm4.evaluate([key, plaintext]) == ciphertext
+        True
     """
 
     def __init__(self, number_of_rounds=32, word_size=8, state_size=8):

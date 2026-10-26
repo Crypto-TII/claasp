@@ -25,12 +25,12 @@ The user is asked to use one of the following MILP solver, some need to be insta
 Available MILP solvers are:
 
     * `Use Solver through Sage <https://doc.sagemath.org/html/en/thematic_tutorials/linear_programming.html>`_
-    * `GLPK`_ (integrated in sage by default, poor performance)
-    * `Gurobi`_ (show better performance, but you need to get a license beforehand)
-    * `CBC`_
-    * `CVXOPT`_
-    * `CPLEX`_
-    * `PPL`_
+    * `GLPK <https://www.gnu.org/software/glpk/>`_ (integrated in sage by default, poor performance)
+    * `Gurobi <https://www.gurobi.com/>`_ (show better performance, but you need to get a license beforehand)
+    * `CBC <https://github.com/coin-or/Cbc>`_
+    * `CVXOPT <https://cvxopt.org/>`_
+    * `CPLEX <https://www.ibm.com/products/ilog-cplex-optimization-studio>`_
+    * `PPL <https://www.bugseng.com/ppl>`_
 
 The default choice is HiGHS (``HIGHS_EXT``, an external solver), while the models are built with GLPK.
 

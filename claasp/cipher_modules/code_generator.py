@@ -258,7 +258,7 @@ def get_word_operation_component_bit_based_c_code(component, verbosity):
 
 def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False,
                                                      verbosity=False, convert_output_to_bytes=False):
-    """
+    r"""
     Return string python code needed to evaluate a cipher using a vectorized implementation bit based oriented.
 
     INPUT:

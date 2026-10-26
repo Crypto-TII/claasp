@@ -1791,7 +1791,7 @@ class Modular(Component):
         .. NOTE::
 
             Using the 8 inequalities as described in Fu2016 https://eprint.iacr.org/2016/407.pdf
-          https://github.com/fukai6/milp_speck/blob/master/speck_diff_find.py
+            https://github.com/fukai6/milp_speck/blob/master/speck_diff_find.py
 
         INPUT:
 
