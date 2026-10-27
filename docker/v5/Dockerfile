@@ -11,6 +11,9 @@ ARG KISSAT_VERSION=4.0.4
 ARG KISSAT_SHA256=bfe93eaa6323b48011e4b1fcf74b3f2e20f9de544767e728009e5b2018296193
 ARG ESPRESSO_VERSION=1.1
 ARG ESPRESSO_SHA256=3e9ad0d7af29b67bc59c9bf014e9ed840af199490f1794b8249b4ab77f44b99e
+# Ubuntu archive snapshot that the apt version pins below are resolved from.
+# Bump it together with the pins; the live mirrors drop superseded versions.
+ARG UBUNTU_SNAPSHOT=20261027T000000Z
 ARG DEBIAN_FRONTEND=noninteractive
 
 LABEL org.opencontainers.image.title="CLAASP 5 release environment" \
@@ -23,17 +26,30 @@ ENV LANG=C.UTF-8 \
     PYTHONPATH=/workspace/src \
     PATH=/opt/claasp-venv/bin:/usr/local/bin:/usr/bin:/bin
 
-RUN apt-get -q update \
-    && apt-get install --no-install-recommends -y \
+# The snapshot service serves every architecture, ports included, under
+# /ubuntu. It is HTTPS-only and the base image has no CA bundle yet, so TLS
+# peer verification is skipped for that host alone; package integrity still
+# rests on apt's signature check against the Ubuntu archive keyring.
+RUN printf '%s\n' \
+        'Types: deb' \
+        "URIs: https://snapshot.ubuntu.com/ubuntu/${UBUNTU_SNAPSHOT}/" \
+        'Suites: noble noble-updates noble-backports noble-security' \
+        'Components: main universe restricted multiverse' \
+        'Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg' \
+        > /etc/apt/sources.list.d/ubuntu.sources \
+    && apt-get -q -o Acquire::https::snapshot.ubuntu.com::Verify-Peer=false \
+        update --error-on=any \
+    && apt-get -o Acquire::https::snapshot.ubuntu.com::Verify-Peer=false \
+        install --no-install-recommends -y \
         build-essential=12.10ubuntu1 \
         autoconf=2.71-3 \
         automake=1:1.16.5-1.3ubuntu1 \
-        ca-certificates=20260601~24.04.1 \
+        ca-certificates=20260816ubuntu0.24.04.1 \
         cmake=3.28.3-1build7 \
         cryptominisat=5.11.15+dfsg1-1.1build1 \
         curl=8.5.0-2ubuntu10.16 \
         dieharder=3.31.1.4-1.1build1 \
-        git=1:2.43.0-1ubuntu7.3 \
+        git=1:2.43.0-1ubuntu7.4 \
         glpk-utils=5.0-1build2 \
         minisat=1:2.2.1-8build1 \
         minizinc=2.8.2+dfsg1-1build2 \
