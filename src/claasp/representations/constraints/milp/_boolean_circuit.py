@@ -74,6 +74,10 @@ def _boolean_circuit(primitive):
         return tuple(reversed(output))
 
     for component in primitive.graph.components:
+        if isinstance(component, Add) and not isinstance(component.output_type.unit_type, Bit):
+            raise NotImplementedError(
+                "Boolean circuit Add requires Bit units; use ModularAdd or Xor for Word units"
+            )
         operands = tuple(
             tuple(
                 values[name][bit] for name, bit in primitive.graph.selection_bit_sources(selection)

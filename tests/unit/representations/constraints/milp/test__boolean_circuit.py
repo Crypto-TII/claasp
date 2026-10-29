@@ -39,3 +39,11 @@ def test_boolean_circuit_preserves_real_primitive_wiring(primitive):
             for name, array in primitive.graph.input_arrays.items()
         }
         assert lowered.evaluate(**assignment) == primitive.evaluate(**assignment)
+
+
+def test_circuit_does_not_invent_semantics_for_generic_word_addition():
+    from claasp.primitives import Add
+    from claasp.unit_types import Word
+
+    with pytest.raises(NotImplementedError, match="Add requires Bit"):
+        _boolean_circuit(Add(unit_type=Word(2)))
