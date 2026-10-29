@@ -6,7 +6,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from claasp.presentation.exports import render_section, report_data
+from claasp.presentation.exports import _latex, render_section, report_data
 from claasp.presentation.model import ReportData
 
 _EXTENSIONS = {
@@ -14,6 +14,7 @@ _EXTENSIONS = {
     "markdown": ".md",
     "csv": ".csv",
     "json": ".json",
+    "latex": ".tex",
 }
 
 
@@ -35,7 +36,7 @@ class WrittenReport:
 
 def _validated_path(path: str | Path, output_format: str) -> Path:
     if output_format not in _EXTENSIONS:
-        raise ValueError("format must be one of: terminal, markdown, csv, json")
+        raise ValueError("format must be one of: terminal, markdown, csv, json, latex")
     candidate = Path(path)
     if not candidate.name or any(part == ".." for part in candidate.parts):
         raise ValueError("output path must be explicit and must not contain '..'")
@@ -113,9 +114,11 @@ def render_report(
     """
 
     normalized = format.strip().lower()
-    if normalized not in {"terminal", "markdown"}:
-        raise ValueError("human-readable report format must be terminal or markdown")
+    if normalized not in {"terminal", "markdown", "latex"}:
+        raise ValueError("human-readable report format must be terminal, markdown, or latex")
     heading = f"# {report.title}\n" if normalized == "markdown" else report.title + "\n"
+    if normalized == "latex":
+        heading = r"\section*{" + _latex(report.title) + "}\n"
     sections = "\n".join(render_section(section, format=normalized) for section in report.sections)
     mathematical = report.provenance.mathematical
     lines = [f"method: {mathematical.method}"]
@@ -137,4 +140,7 @@ def render_report(
         locator = f" ({citation.locator})" if citation.locator else ""
         lines.append(f"citation [{citation.identifier}]: {citation.title}{locator}")
     label = "## Provenance" if normalized == "markdown" else "Provenance"
+    if normalized == "latex":
+        label = r"\subsection*{Provenance}"
+        lines = [_latex(line) for line in lines]
     return heading + "\n" + sections + "\n" + label + "\n\n" + "\n".join(lines) + "\n"

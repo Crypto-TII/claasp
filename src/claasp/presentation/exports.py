@@ -216,12 +216,44 @@ def report_data(report: ReportData) -> dict[str, object]:
     }
 
 
+def _latex(value: str) -> str:
+    """Escape plain report text without allowing TeX commands through."""
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "&": r"\&",
+        "%": r"\%",
+        "$": r"\$",
+        "#": r"\#",
+        "_": r"\_",
+        "{": r"\{",
+        "}": r"\}",
+        "~": r"\textasciitilde{}",
+        "^": r"\textasciicircum{}",
+        "≥": r"\ensuremath{\geq}",
+        "≤": r"\ensuremath{\leq}",
+    }
+    return "".join(
+        replacements.get(char, char) for char in value.replace("\r\n", "\n").replace("\r", "\n")
+    ).replace("\n", " ")
+
+
+def _render_latex_table(table: Table) -> str:
+    alignments = {Alignment.LEFT: "l", Alignment.RIGHT: "r", Alignment.CENTER: "c"}
+    spec = "".join(alignments[column.alignment] for column in table.columns)
+    lines = [r"\begin{tabular}{" + spec + "}", r"\hline"]
+    lines.append(" & ".join(_latex(column.heading) for column in table.columns) + r" \\")
+    lines.append(r"\hline")
+    lines.extend(" & ".join(_latex(cell.text) for cell in row.cells) + r" \\" for row in table.rows)
+    lines.extend((r"\hline", r"\end{tabular}"))
+    return "\n".join(lines)
+
+
 def render_section(
     section: ReportSection,
     *,
     format: str = "terminal",  # noqa: A002 - public format API
 ) -> str:
-    """Render one section as terminal, Markdown, or CSV text.
+    """Render one section as terminal, Markdown, CSV, or LaTeX text.
 
     EXAMPLES::
 
@@ -233,33 +265,39 @@ def render_section(
     """
 
     normalized = format.lower()
-    if normalized not in {"terminal", "markdown", "csv"}:
-        raise ValueError("format must be 'terminal', 'markdown', or 'csv'")
+    if normalized not in {"terminal", "markdown", "csv", "latex"}:
+        raise ValueError("format must be terminal, markdown, csv, or latex")
     renderer = {
         "terminal": render_terminal_table,
         "markdown": render_markdown_table,
         "csv": render_csv_table,
+        "latex": _render_latex_table,
     }[normalized]
     if normalized == "csv":
         if section.paragraphs or len(section.tables) != 1:
             raise ValueError("CSV section rendering requires exactly one table and no prose")
         return renderer(section.tables[0])
+    escape = _latex if normalized == "latex" else str
     blocks = []
     if normalized == "markdown":
         blocks.append(f"## {section.title}")
+    elif normalized == "latex":
+        blocks.append(r"\subsection*{" + _latex(section.title) + "}")
     elif normalized == "terminal":
         blocks.append(section.title)
-    blocks.extend(section.paragraphs)
+    blocks.extend(escape(paragraph) for paragraph in section.paragraphs)
     for table in section.tables:
         if table.title:
-            blocks.append(f"### {table.title}" if normalized == "markdown" else table.title)
+            blocks.append(f"### {table.title}" if normalized == "markdown" else escape(table.title))
         blocks.append(renderer(table))
-        blocks.extend(table.notes)
+        blocks.extend(escape(note) for note in table.notes)
     if section.citations:
         blocks.append("Citations")
         blocks.extend(
-            f"[{citation.identifier}] {citation.title}"
-            + (f" ({citation.locator})" if citation.locator else "")
+            escape(
+                f"[{citation.identifier}] {citation.title}"
+                + (f" ({citation.locator})" if citation.locator else "")
+            )
             for citation in section.citations
         )
     return "\n\n".join(blocks) + "\n"

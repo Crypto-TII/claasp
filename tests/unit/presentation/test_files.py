@@ -113,3 +113,35 @@ def test_optional_dataframe_matches_display_text_or_reports_missing_dependency(m
     monkeypatch.setattr(builtins, "__import__", missing_pandas)
     with pytest.raises(ImportError, match="optional pandas"):
         to_dataframe(table)
+
+
+def test_latex_report_escapes_text_and_preserves_sections_and_provenance(tmp_path):
+    from claasp.presentation import Alignment
+
+    table = Table(
+        (TableColumn("name", "Name_#"), TableColumn("value", "Value", Alignment.RIGHT)),
+        (TableRow.of(r"a&b%$\{}~^", "≥0.5\nnext"),),
+        title="Results_1",
+        notes=("50% success",),
+    )
+    report = compose_report(
+        "Demo & evidence",
+        (ReportSection("First", ("Use $ safely",), (table,)), ReportSection("Second", ("Done",))),
+        PresentationProvenance(MathematicalProvenance("exact_check")),
+    )
+    text = render_report(report, format="latex")
+    assert r"\section*{Demo \& evidence}" in text
+    assert r"\subsection*{First}" in text and r"\subsection*{Second}" in text
+    assert r"\begin{tabular}{lr}" in text
+    assert r"Name\_\# & Value \\" in text
+    assert r"a\&b\%\$\textbackslash{}\{\}\textasciitilde{}\textasciicircum{}" in text
+    assert r"\ensuremath{\geq}0.5 next" in text
+    assert r"method: exact\_check" in text
+    path = tmp_path / "report.tex"
+    written = write_report(report, path, format="latex")
+    assert path.read_text() == text
+    assert written.byte_count == len(text.encode("utf-8"))
+    with pytest.raises(FileExistsError):
+        write_report(report, path, format="latex")
+    with pytest.raises(ValueError, match="extension"):
+        write_report(report, tmp_path / "wrong.txt", format="latex")

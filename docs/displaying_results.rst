@@ -88,4 +88,22 @@ Combining reports
 LaTeX tables
 ------------
 
-**TODO**
+Use the same report with ``format="latex"``. The export is a LaTeX fragment
+containing sections, aligned ``tabular`` tables, notes and provenance. Include
+it in a UTF-8 LaTeX document with ``\input{analysis.tex}``. No TeX executable
+is needed to export it. Text is escaped, including underscores, percentages,
+and backslashes; report values are never treated as raw TeX commands.
+
+.. code-block:: python
+
+   from claasp.presentation import present, write_report
+   from claasp.primitives import Speck
+
+   result = Speck(number_of_rounds=7).analysis.avalanche()
+   report = present(result)
+   write_report(report, "analysis.tex", format="latex")
+
+For a string instead of a file, use ``render_report(report, format="latex")``.
+For just one section, use ``render_section(section, format="latex")``.
+Unicode text is preserved; select a TeX engine and fonts supporting that text
+(for example LuaLaTeX). Column alignment follows the report's table model.
