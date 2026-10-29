@@ -1017,3 +1017,21 @@ def test_public_api_preserves_exact_sbox_boomerang_search():
 
     assert result.independently_valid
     assert result.characteristic.count == 4
+
+
+def test_minizinc_optimizes_nonintegral_heys_correlations_exactly():
+    from fractions import Fraction
+    from math import prod
+
+    from claasp.primitives.toy_primitives.heys import HEYS_SBOX
+
+    result = BitVectorSBox(lookup_table=HEYS_SBOX).analysis.find_optimal_trail(
+        kind="xor_linear",
+        backend="cp",
+        solver=MiniZincSolver(timeout_seconds=20),
+    )
+    correlation = prod(
+        abs(Fraction(s.transition.numerator, s.transition.denominator)) for s in result.trail.steps
+    )
+    assert correlation == Fraction(3, 4)
+    assert result.is_optimal

@@ -2,6 +2,7 @@
 
 from fractions import Fraction
 from functools import lru_cache
+from math import gcd
 
 from claasp.semantics.cryptanalysis import SBoxTransitionSemantics, TrailKind
 
@@ -11,7 +12,7 @@ class _NonIntegralTransitionWeightError(NotImplementedError):
 
 
 @lru_cache(maxsize=None)
-def _weighted_transitions(table: tuple[int, ...], kind: TrailKind, output_width: int | None = None):
+def _transition_counts(table: tuple[int, ...], kind: TrailKind, output_width: int | None = None):
     semantics = SBoxTransitionSemantics(table, output_width)
     if kind is TrailKind.XOR_DIFFERENTIAL:
         counts: dict[tuple[int, int], int] = {}
@@ -30,6 +31,12 @@ def _weighted_transitions(table: tuple[int, ...], kind: TrailKind, output_width:
             for target, count in enumerate(row)
             if count
         )
+    return semantics, transitions
+
+
+@lru_cache(maxsize=None)
+def _weighted_transitions(table: tuple[int, ...], kind: TrailKind, output_width: int | None = None):
+    semantics, transitions = _transition_counts(table, kind, output_width)
     weighted: list[tuple[int, int, int]] = []
     for source, target, count in transitions:
         ratio = Fraction(len(table), count)
@@ -57,10 +64,26 @@ def _add_sbox_relation(
     allocate,
     indices,
     add,
+    probability_factors=None,
 ):
-    """Add support and exact unary-weight functions for one lookup application."""
+    """Add support and an exact unary weight or dyadic numerator relation."""
 
-    semantics, assignments = _weighted_transitions(tuple(table), kind, len(output_names))
+    try:
+        semantics, assignments = _weighted_transitions(tuple(table), kind, len(output_names))
+    except _NonIntegralTransitionWeightError:
+        if probability_factors is None:
+            raise
+        return _add_probability_relation(
+            table,
+            kind,
+            input_names,
+            output_names,
+            prefix,
+            allocate,
+            indices,
+            add,
+            probability_factors,
+        )
     if len(input_names) != semantics.width or len(output_names) != semantics.output_width:
         raise ValueError("lookup relation variables do not match its encoded widths")
 
@@ -75,29 +98,18 @@ def _add_sbox_relation(
             signatures[signature] = name
         threshold_names.append(name)
 
-    if kind is TrailKind.XOR_DIFFERENTIAL:
-        _add_differential_support(
-            tuple(table), input_names, output_names, prefix, allocate, indices, add
-        )
-    else:
-        supported = {(source, target) for source, target, _ in assignments}
-        for source in range(1 << semantics.width):
-            for target in range(1 << semantics.output_width):
-                if (source, target) in supported:
-                    continue
-                encoded = tuple(
-                    (source >> (semantics.width - 1 - bit)) & 1 for bit in range(semantics.width)
-                ) + tuple(
-                    (target >> (semantics.output_width - 1 - bit)) & 1
-                    for bit in range(semantics.output_width)
-                )
-                add(
-                    tuple(
-                        -indices[name] if value else indices[name]
-                        for name, value in zip(input_names + output_names, encoded)
-                    ),
-                    f"{kind.value}_lookup_support",
-                )
+    _add_lookup_support(
+        semantics,
+        assignments,
+        table,
+        kind,
+        input_names,
+        output_names,
+        prefix,
+        allocate,
+        indices,
+        add,
+    )
 
     possible = (True,) * len(assignments)
     encoded_assignments = []
@@ -138,6 +150,91 @@ def _add_sbox_relation(
                 f"{kind.value}_lookup_weight",
             )
     return tuple(threshold_names)
+
+
+def _add_lookup_support(
+    semantics,
+    assignments,
+    table,
+    kind,
+    input_names,
+    output_names,
+    prefix,
+    allocate,
+    indices,
+    add,
+):
+    if kind is TrailKind.XOR_DIFFERENTIAL:
+        _add_differential_support(
+            tuple(table), input_names, output_names, prefix, allocate, indices, add
+        )
+    else:
+        supported = {(source, target) for source, target, _ in assignments}
+        for source in range(1 << semantics.width):
+            for target in range(1 << semantics.output_width):
+                if (source, target) in supported:
+                    continue
+                encoded = tuple(
+                    (source >> (semantics.width - 1 - bit)) & 1 for bit in range(semantics.width)
+                ) + tuple(
+                    (target >> (semantics.output_width - 1 - bit)) & 1
+                    for bit in range(semantics.output_width)
+                )
+                add(
+                    tuple(
+                        -indices[name] if value else indices[name]
+                        for name, value in zip(input_names + output_names, encoded)
+                    ),
+                    f"{kind.value}_lookup_support",
+                )
+
+
+def _add_probability_relation(
+    table,
+    kind,
+    input_names,
+    output_names,
+    prefix,
+    allocate,
+    indices,
+    add,
+    factors,
+):
+    semantics, counts = _transition_counts(tuple(table), kind, len(output_names))
+    if len(input_names) != semantics.width:
+        raise ValueError("lookup relation variables do not match its encoded widths")
+    divisor = gcd(*(count for _, _, count in counts))
+    denominator = len(table) // divisor
+    exponent = denominator.bit_length() - 1
+    assignments = tuple((source, target, count // divisor) for source, target, count in counts)
+    _add_lookup_support(
+        semantics,
+        assignments,
+        table,
+        kind,
+        input_names,
+        output_names,
+        prefix,
+        allocate,
+        indices,
+        add,
+    )
+    names = tuple(allocate(f"probability_{prefix}_{bit}") for bit in range(exponent + 1))
+    factors.append((exponent, tuple(indices[name] for name in names)))
+    for source, target, numerator in assignments:
+        values = tuple(
+            (source >> (len(input_names) - 1 - bit)) & 1 for bit in range(len(input_names))
+        ) + tuple((target >> (len(output_names) - 1 - bit)) & 1 for bit in range(len(output_names)))
+        forbid = tuple(
+            -indices[name] if value else indices[name]
+            for name, value in zip(input_names + output_names, values)
+        )
+        for bit, name in enumerate(names):
+            add(
+                (*forbid, indices[name] if numerator & (1 << bit) else -indices[name]),
+                "exact_lookup_numerator",
+            )
+    return ()
 
 
 def _add_differential_support(

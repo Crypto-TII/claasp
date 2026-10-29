@@ -1,6 +1,6 @@
 """Capability-based exact optimization of weighted graph characteristics."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from fractions import Fraction
 from time import perf_counter
 
@@ -32,10 +32,11 @@ from claasp.representations.constraints.sat import (
     WordDifferentialSATModel,
     WordLinearSATModel,
 )
-from claasp.representations.constraints.smt._sbox_encoding import (
-    _NonIntegralTransitionWeightError,
-    _require_integral_sbox_weights,
+from claasp.representations.constraints.smt._probability_encoding import (
+    _comparison_clauses,
+    _probability,
 )
+from claasp.representations.constraints.smt._sbox_encoding import _transition_counts
 from claasp.semantics.cryptanalysis import (
     Trail,
     TrailComponentTransition,
@@ -129,8 +130,8 @@ def _require_exact_trail_capability(primitive, kind: TrailKind, *, backend="sat"
                     if isinstance(component, BitVectorSBox)
                     else component.output_type.unit_type.encoded_bit_size
                 )
-                _require_integral_sbox_weights(component.table, kind, output_width)
-            except (_NonIntegralTransitionWeightError, NotImplementedError) as error:
+                _transition_counts(tuple(component.table), kind, output_width)
+            except NotImplementedError as error:
                 raise _capability_error(
                     primitive,
                     kind,
@@ -216,8 +217,8 @@ def resolve_input_policy(
             and ("key" in name.lower() or "tweak" in name.lower())
         ):
             resolved.setdefault(name, 0)
-    if nonzero_input in resolved:
-        raise ValueError(f"nonzero input {nonzero_input!r} cannot also be fixed")
+    if resolved.get(nonzero_input) == 0:
+        raise ValueError(f"nonzero input {nonzero_input!r} cannot be fixed to zero")
     return InputPolicy(nonzero_input, resolved)
 
 
@@ -232,7 +233,7 @@ def optimize_word_characteristic(
     fixed_input_masks=None,
     fixed_inputs=None,
 ) -> TrailSearchResult:
-    """Minimize an integer characteristic weight and prove the preceding bound UNSAT.
+    """Optimize exact characteristic probabilities and prove the optimum.
 
     EXAMPLES::
 
@@ -280,10 +281,24 @@ def optimize_word_characteristic(
             options["fixed_inputs"] = resolved_fixed_inputs
         return WordLinearSATModel(primitive, **options)
 
+    initial_model = build(None)
+    initial_formula = initial_model.cnf_formula()
+    if initial_model._shared._probability_bits:
+        return _optimize_probability_characteristic(
+            primitive,
+            kind,
+            backend,
+            selected_solver,
+            policy,
+            initial_model,
+            initial_formula,
+            started,
+        )
+
     def solve(bound):
         nonlocal peak_memory, runtime
-        model = build(bound)
-        formula = model.cnf_formula()
+        model = initial_model if bound is None else build(bound)
+        formula = initial_formula if bound is None else model.cnf_formula()
         result = selected_solver.solve(formula)
         runtime += result.runtime_seconds
         result_peak_memory = getattr(result, "peak_memory_bytes", None)
@@ -342,6 +357,97 @@ def optimize_word_characteristic(
         metadata,
         components,
         _constraint_models(best_formula.constraint_models, backend, kind),
+        rounds,
+    )
+
+
+def _optimize_probability_characteristic(
+    primitive,
+    kind,
+    backend,
+    solver,
+    policy,
+    model,
+    formula,
+    started,
+):
+    """Maximize an exact dyadic numerator, proving strict improvement UNSAT."""
+    bits = model._shared._probability_bits
+    denominator = model._shared._probability_denominator
+    runtime, peak_memory = 0.0, None
+
+    def solve(minimum):
+        nonlocal runtime, peak_memory
+        extra: list[tuple[int, ...]] = []
+        for clause in _comparison_clauses(bits, minimum):
+            extra.extend((clause,) if clause else ((1,), (-1,)))
+        bounded = replace(
+            formula,
+            clauses=formula.clauses + tuple(extra),
+            provenance=formula.provenance + ("exact_probability_bound",) * len(extra),
+        )
+        solved = solver.solve(bounded)
+        runtime += solved.runtime_seconds
+        measured = getattr(solved, "peak_memory_bytes", None)
+        if measured is not None:
+            peak_memory = max(peak_memory or 0, measured)
+        status = _status(solved)
+        if status is SatStatus.UNSATISFIABLE:
+            return None
+        if status is not SatStatus.SATISFIABLE:
+            raise RuntimeError("solver did not complete exact probability optimization")
+        if not bounded.is_satisfied(solved.assignment):
+            raise RuntimeError("solver returned an invalid probability-bound witness")
+        characteristic = model.decode_characteristic(solved.assignment)
+        if not model.check_characteristic(characteristic):
+            raise RuntimeError("decoded characteristic failed independent validation")
+        product = _probability(characteristic.steps) * denominator
+        encoded = sum(
+            (
+                int(bit)
+                if isinstance(bit, bool)
+                else int(bool(solved.assignment[formula.variables[abs(bit) - 1]]) == (bit > 0))
+            )
+            << position
+            for position, bit in enumerate(bits)
+        )
+        if product.denominator != 1 or encoded != product.numerator:
+            raise RuntimeError("probability objective disagrees with independent transition counts")
+        return product.numerator, characteristic
+
+    lower, upper, best = 0, denominator, None
+    while lower < upper:
+        candidate = (lower + upper + 1) // 2
+        feasible = solve(candidate)
+        if feasible is None:
+            upper = candidate - 1
+        else:
+            lower, best = feasible
+            if lower > upper:
+                raise RuntimeError("probability witness contradicts an earlier UNSAT bound")
+    if best is None:
+        raise RuntimeError(
+            f"no nonzero {kind.value} characteristic exists for {primitive.family_name!r}"
+        )
+    if lower < denominator and solve(lower + 1) is not None:
+        raise RuntimeError("strictly improving probability bound was not proved UNSAT")
+    trail = _trail(primitive, kind, policy.nonzero_input, best)
+    components, rounds = _evidence(primitive, kind, model._shared, best)
+    version = getattr(solver, "version", None)
+    metadata = TrailSearchMetadata(
+        "exact dyadic probability-product optimization by binary search; "
+        "strict improvement proved UNSAT (or probability one reached)",
+        "Kissat" if isinstance(solver, KissatSolver) else type(solver).__name__,
+        version() if callable(version) else None,
+        max(runtime, perf_counter() - started),
+        peak_memory,
+    )
+    return TrailSearchResult(
+        trail,
+        trail.total_weight,
+        metadata,
+        components,
+        _constraint_models(formula.constraint_models, backend, kind),
         rounds,
     )
 

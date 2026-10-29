@@ -25,6 +25,12 @@ from claasp.components import (
 )
 from claasp.drivers.solvers import SatStatus
 from claasp.representations.constraints import ConstraintBackend, _direct_model
+from claasp.representations.constraints.smt._probability_encoding import (
+    _add_bound,
+    _encode_probability_product,
+    _negate,
+    _satisfies_weight_bound,
+)
 from claasp.representations.constraints.smt._sbox_encoding import _add_sbox_relation
 from claasp.representations.constraints.smt.formula import SMTFormula
 from claasp.representations.constraints.smt.trails import _at_most
@@ -198,6 +204,7 @@ class WordDifferentialSMTModel:
             )
 
         weights, operands_by_id = [], {}
+        probability_factors: list[tuple[int, tuple[int, ...]]] = []
         for component in self.primitive.graph.components:
             operands = tuple(selected(selection) for selection in component.inputs)
             operands_by_id[component.component_id] = operands
@@ -299,6 +306,7 @@ class WordDifferentialSMTModel:
                             allocate,
                             indices,
                             add,
+                            probability_factors,
                         )
                     )
                 else:
@@ -314,6 +322,7 @@ class WordDifferentialSMTModel:
                                 allocate,
                                 indices,
                                 add,
+                                probability_factors,
                             )
                         )
             elif isinstance(component, (LinearMap, BinaryAffineMap)):
@@ -380,28 +389,48 @@ class WordDifferentialSMTModel:
                         "fixed_difference",
                     )
         self._semantic_names = tuple(variables)
-        bound = self.fixed_weight if self.fixed_weight is not None else self.maximum_weight
-        if bound is not None:
-            _at_most(weights, bound, allocate, indices, add)
-        if self.fixed_weight is not None:
-            if self.fixed_weight > len(weights):
-                impossible = indices[allocate("impossible_fixed_weight")]
-                add((impossible,), "impossible_fixed_weight")
-                add((-impossible,), "impossible_fixed_weight")
-            else:
-                complements = []
-                for bit, name in enumerate(weights):
-                    complement = allocate(f"weight_complement_{bit}")
-                    add((indices[name], indices[complement]), "weight_complement")
-                    add((-indices[name], -indices[complement]), "weight_complement")
-                    complements.append(complement)
-                _at_most(
-                    complements,
-                    len(weights) - self.fixed_weight,
-                    lambda name: allocate("lower_" + name),
-                    indices,
-                    add,
-                )
+        self._probability_bits: tuple[int | bool, ...] = ()
+        self._probability_denominator = 1
+        if probability_factors:
+            self._probability_bits, self._probability_denominator = _encode_probability_product(
+                probability_factors,
+                weights,
+                allocate,
+                indices,
+                add,
+            )
+            bound = self.fixed_weight if self.fixed_weight is not None else self.maximum_weight
+            if bound is not None:
+                scale = 1 << bound
+                minimum = (self._probability_denominator + scale - 1) // scale
+                _add_bound(self._probability_bits, minimum, allocate, indices, add)
+                if self.fixed_weight is not None:
+                    maximum = self._probability_denominator // scale
+                    inverse = tuple(_negate(bit) for bit in self._probability_bits)
+                    _add_bound(inverse, (1 << len(inverse)) - 1 - maximum, allocate, indices, add)
+        else:
+            bound = self.fixed_weight if self.fixed_weight is not None else self.maximum_weight
+            if bound is not None:
+                _at_most(weights, bound, allocate, indices, add)
+            if self.fixed_weight is not None:
+                if self.fixed_weight > len(weights):
+                    impossible = indices[allocate("impossible_fixed_weight")]
+                    add((impossible,), "impossible_fixed_weight")
+                    add((-impossible,), "impossible_fixed_weight")
+                else:
+                    complements = []
+                    for bit, name in enumerate(weights):
+                        complement = allocate(f"weight_complement_{bit}")
+                        add((indices[name], indices[complement]), "weight_complement")
+                        add((-indices[name], -indices[complement]), "weight_complement")
+                        complements.append(complement)
+                    _at_most(
+                        complements,
+                        len(weights) - self.fixed_weight,
+                        lambda name: allocate("lower_" + name),
+                        indices,
+                        add,
+                    )
         self._unit_arrays, self._operands, self._output = unit_arrays, operands_by_id, output
         self._formula = SMTFormula(tuple(variables), tuple(clauses), tuple(provenance))
         return self._formula
@@ -585,8 +614,7 @@ class WordDifferentialSMTModel:
             and trail.steps == steps
             and trail.input_differences == inputs
             and trail.output_difference == output
-            and (self.maximum_weight is None or trail.total_weight <= self.maximum_weight)
-            and (self.fixed_weight is None or trail.total_weight == self.fixed_weight)
+            and _satisfies_weight_bound(trail.steps, self.maximum_weight, self.fixed_weight)
             and (self.output_difference is None or output == self.output_difference)
             and (self.nonzero_input is None or dict(inputs)[self.nonzero_input] != 0)
             and all(
