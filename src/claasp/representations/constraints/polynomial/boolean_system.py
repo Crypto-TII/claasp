@@ -1,5 +1,6 @@
 """Local Boolean equations retaining intermediate graph and carry variables."""
 
+import re
 from dataclasses import dataclass
 
 from claasp.components import ModularAdd, ModularSubtract
@@ -37,6 +38,35 @@ class BooleanEquationSystem:
     variables: tuple[str, ...]
     inputs: tuple[tuple[str, tuple[str, ...]], ...]
     outputs: tuple[BooleanPolynomial, ...]
+
+    def __post_init__(self) -> None:
+        if not all(
+            isinstance(value, tuple)
+            for value in (self.equations, self.rounds, self.variables, self.inputs, self.outputs)
+        ):
+            raise TypeError("Boolean equation-system fields must be immutable tuples")
+        if len(set(self.variables)) != len(self.variables) or any(
+            not isinstance(name, str) or re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", name) is None
+            for name in self.variables
+        ):
+            raise ValueError("variables must be distinct safe polynomial identifiers")
+        if len(self.rounds) != len(self.equations) or any(
+            type(value) is not int or value <= 0 for value in self.rounds
+        ):
+            raise ValueError("each equation requires a positive round number")
+        registered = set(self.variables)
+        for polynomial in self.equations + self.outputs:
+            if not isinstance(polynomial, BooleanPolynomial):
+                raise TypeError("equations and outputs must be Boolean polynomials")
+            if any(
+                name not in registered for term in polynomial.monomials for name in term.variables
+            ):
+                raise ValueError("polynomials reference an unregistered variable")
+        if len({name for name, _ in self.inputs}) != len(self.inputs) or any(
+            not name or not isinstance(names, tuple) or not set(names) <= registered
+            for name, names in self.inputs
+        ):
+            raise ValueError("input bindings must have distinct names and registered variables")
 
     @classmethod
     def from_primitive(cls, primitive) -> "BooleanEquationSystem":

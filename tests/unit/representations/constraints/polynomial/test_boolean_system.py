@@ -46,3 +46,12 @@ def test_singular_export_includes_field_equations_and_rejects_unknown_variables(
     assert "CLAASP_BASIS_END" in program
     with pytest.raises(ValueError):
         system.singular_program(fixed_variables={"unknown;quit": 1})
+
+
+def test_user_constructed_system_cannot_inject_singular_commands():
+    with pytest.raises(ValueError, match="identifiers"):
+        BooleanEquationSystem((), (), ("v0);quit;",), (), ())
+    from claasp.representations.constraints.polynomial import BooleanPolynomial
+
+    with pytest.raises(ValueError, match="unregistered"):
+        BooleanEquationSystem((BooleanPolynomial.variable("unknown"),), (1,), ("v0",), (), ())
