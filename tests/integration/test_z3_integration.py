@@ -265,3 +265,25 @@ def test_fractional_weight_intervals_and_explicit_fixed_weight_tolerance():
         solver=Z3Solver(),
     ).require_complete()
     assert not exact.trails
+
+
+def test_fractional_query_api_doctests():
+    """Run optional-solver API examples with their real driver in CI."""
+    import doctest
+    import importlib
+
+    from claasp.analysis import Analysis
+
+    runner = doctest.DocTestRunner()
+    for method in (
+        Analysis.enumerate_xor_differential_trails,
+        Analysis.enumerate_xor_linear_trails,
+    ):
+        module = importlib.import_module(method.__module__)
+        test = doctest.DocTestParser().get_doctest(
+            method.__doc__, vars(module).copy(), method.__qualname__, module.__file__, 0
+        )
+        for example in test.examples:
+            example.options[doctest.SKIP] = False
+        runner.run(test)
+    assert runner.summarize().failed == 0
