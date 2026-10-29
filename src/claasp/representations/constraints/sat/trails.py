@@ -660,9 +660,11 @@ class WordDeterministicTruncatedSATModel:
             operands_by_id[component_id] = operands
             output = unit_arrays[component_id]
             width = _truncated_width(component.output_type)
-            if isinstance(component, (ModularAdd, ModularSubtract)) or (
-                isinstance(component, Add) and isinstance(component.output_type.unit_type, Word)
-            ):
+            if isinstance(component, Add) and not isinstance(component.output_type.unit_type, Bit):
+                raise NotImplementedError(
+                    "truncated Add requires Bit units; use ModularAdd or Xor for Word units"
+                )
+            if isinstance(component, (ModularAdd, ModularSubtract)):
                 for unit in range(component.output_type.unit_count):
                     accumulator = operands[0][unit * width : (unit + 1) * width]
                     for operand_number, operand_group in enumerate(operands[1:], 1):
@@ -856,9 +858,7 @@ class WordDeterministicTruncatedSATModel:
                 for names in self._operands[component.component_id]
             )
             operand_units = tuple(self._units(pattern, width) for pattern in operands)
-            if isinstance(component, (ModularAdd, ModularSubtract)) or (
-                isinstance(component, Add) and isinstance(component.output_type.unit_type, Word)
-            ):
+            if isinstance(component, (ModularAdd, ModularSubtract)):
                 expected_units = []
                 for items in zip(*operand_units):
                     value = items[0]
