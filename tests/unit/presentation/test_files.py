@@ -145,3 +145,38 @@ def test_latex_report_escapes_text_and_preserves_sections_and_provenance(tmp_pat
         write_report(report, path, format="latex")
     with pytest.raises(ValueError, match="extension"):
         write_report(report, tmp_path / "wrong.txt", format="latex")
+
+
+def test_report_class_adapts_renders_and_saves_without_rerunning_analysis(tmp_path):
+    from io import StringIO
+
+    from claasp.presentation import Report
+
+    source = AvalancheResult("demo", "input", 2, 7, ((0.0, 1.0),))
+    report = Report(source)
+    assert report.data == present(source)
+    assert Report(report.data).data is report.data
+    assert report.to_latex() == render_report(report.data, format="latex")
+    stream = StringIO()
+    report.to_terminal(file=stream)
+    assert stream.getvalue() == report.render()
+    destination = tmp_path / "report.tex"
+    report.save(destination, format="latex")
+    assert destination.read_text() == report.to_latex()
+    with pytest.raises(FileExistsError):
+        report.save(destination, format="latex")
+    with pytest.raises(TypeError, match="unsupported_result"):
+        Report(object())
+
+
+def test_documented_latex_fragment_matches_the_live_report():
+    from pathlib import Path
+
+    from claasp.presentation import Report
+    from claasp.primitives import Speck
+
+    result = Speck(number_of_rounds=2).analysis.find_optimal_trail(
+        kind="xor_differential", backend="dependency_free"
+    )
+    fragment = Path(__file__).parents[3] / "docs/_static/reporting/trail-report.tex"
+    assert fragment.read_text() == Report(result).to_latex()

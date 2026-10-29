@@ -88,22 +88,68 @@ Combining reports
 LaTeX tables
 ------------
 
-Use the same report with ``format="latex"``. The export is a LaTeX fragment
-containing sections, aligned ``tabular`` tables, notes and provenance. Include
-it in a UTF-8 LaTeX document with ``\input{analysis.tex}``. No TeX executable
-is needed to export it. Text is escaped, including underscores, percentages,
-and backslashes; report values are never treated as raw TeX commands.
+Wrap an existing result in ``Report``. ``to_latex()`` returns the source,
+``to_terminal()`` prints the ordinary report, and ``save()`` writes a file.
+None of these methods reruns the analysis.
+
+This example prints the LaTeX source in the terminal:
+
+.. doctest::
+
+   >>> from claasp.presentation import Report
+   >>> from claasp.primitives import Speck
+   >>> result = Speck(number_of_rounds=2).analysis.find_optimal_trail(
+   ...     kind="xor_differential", backend="dependency_free"
+   ... )
+   >>> report = Report(result)
+   >>> print(report.to_latex(), end="")
+   \section*{Trail}
+   <BLANKLINE>
+   \subsection*{Trail}
+   <BLANKLINE>
+   Round trail
+   <BLANKLINE>
+   \begin{tabular}{rlrr}
+   \hline
+   Round & Difference & Relative probability & Cumulative probability \\
+   \hline
+   input & 0x00400000 & 1/1 & 1/1 \\
+   1 & 0x80008000 & 1/1 & 1/1 \\
+   2 & 0x81008102 & 1/2 & 1/2 \\
+   \hline
+   \end{tabular}
+   <BLANKLINE>
+   Proved optimal.
+   <BLANKLINE>
+   Total weight: 1.
+   <BLANKLINE>
+   \subsection*{Provenance}
+   <BLANKLINE>
+   method: exact Matsui branch-and-bound with monotone partial xdp+ bounds (4 round nodes; nested partial-carry pruning)
+
+Save the same source with:
 
 .. code-block:: python
 
-   from claasp.presentation import present, write_report
-   from claasp.primitives import Speck
+   report.save("analysis.tex", format="latex")
 
-   result = Speck(number_of_rounds=7).analysis.avalanche()
-   report = present(result)
-   write_report(report, "analysis.tex", format="latex")
+The export is a fragment with aligned tables, notes, and provenance. Text is
+escaped; values are never treated as raw TeX commands. Include the fragment
+with ``\input{analysis.tex}`` in a UTF-8 document. No TeX installation is
+needed for exporting; compiling requires a suitable engine such as LuaLaTeX.
 
-For a string instead of a file, use ``render_report(report, format="latex")``.
-For just one section, use ``render_section(section, format="latex")``.
-Unicode text is preserved; select a TeX engine and fonts supporting that text
-(for example LuaLaTeX). Column alignment follows the report's table model.
+The table below is rendered from exactly the source printed above:
+
+.. image:: _static/reporting/trail-report.png
+   :alt: PDF rendering of the two-round Speck trail report
+   :width: 720px
+
+Download the :download:`rendered PDF <_static/reporting/trail-document.pdf>`,
+:download:`LaTeX fragment <_static/reporting/trail-report.tex>`, or
+:download:`enclosing document <_static/reporting/trail-document.tex>`.
+To reproduce the PDF, put the two TeX files in one directory and run
+``lualatex trail-document.tex`` there.
+
+The lower-level ``render_report``, ``render_section`` and ``write_report``
+functions remain available for applications working directly with immutable
+``ReportData``.
