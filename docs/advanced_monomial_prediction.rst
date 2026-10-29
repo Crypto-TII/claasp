@@ -19,8 +19,8 @@ Select one output bit, all outputs, or an intermediate component by id:
 are substituted before expansion. ``maximum_terms`` (default 100,000) bounds
 the terms retained in any intermediate polynomial; ``maximum_operations``
 (default 1,000,000) bounds monomial products. A limit raises an error and never
-returns a partial ANF. Other input names use their full name plus an underscore
-to avoid collisions between similarly named inputs.
+returns a partial ANF. The conventional names ``left`` and ``right`` use ``l`` and ``r``. Other
+input names use their full name plus an underscore to avoid collisions.
 
 Use ``result.degree_in(("p1", "p8"))`` to count only selected variables,
 keeping other variables symbolic. ``result.coefficient(("p1", "p8"))``
