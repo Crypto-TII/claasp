@@ -205,3 +205,21 @@ def test_z3_public_trail_search_accepts_a_bit_graph():
     assert result.is_optimal
     assert result.trail.total_weight == result.lower_bound == 0
     assert "SMT" in result.metadata.technique
+
+
+def test_z3_optimizes_nonintegral_heys_correlations_exactly():
+    from fractions import Fraction
+    from math import prod
+
+    from claasp.primitives import Heys
+
+    result = Heys(number_of_rounds=1).analysis.find_optimal_trail(
+        kind="xor_linear",
+        backend="smt",
+        solver=Z3Solver(timeout_seconds=20),
+    )
+    correlation = prod(
+        abs(Fraction(s.transition.numerator, s.transition.denominator)) for s in result.trail.steps
+    )
+    assert correlation == Fraction(3, 4)
+    assert result.is_optimal

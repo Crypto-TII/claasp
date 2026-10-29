@@ -25,6 +25,11 @@ from claasp.components import (
 )
 from claasp.drivers.solvers import SatStatus
 from claasp.representations.constraints import ConstraintBackend, _direct_model
+from claasp.representations.constraints.smt._probability_encoding import (
+    _add_bound,
+    _encode_probability_product,
+    _satisfies_weight_bound,
+)
 from claasp.representations.constraints.smt._sbox_encoding import _add_sbox_relation
 from claasp.representations.constraints.smt.formula import SMTFormula
 from claasp.representations.constraints.smt.trails import _at_most
@@ -212,6 +217,7 @@ class WordLinearSMTModel:
         records: list[tuple[str, int, int, str | None]] = []
         sbox_records: list[tuple[str, int, tuple[str, ...], tuple[str, ...]]] = []
         weights: list[str] = []
+        probability_factors: list[tuple[int, tuple[int, ...]]] = []
         folded = self._constant_subgraph()
         for component in self.primitive.graph.components:
             if component.component_id in folded:
@@ -341,6 +347,7 @@ class WordLinearSMTModel:
                             allocate,
                             indices,
                             add,
+                            probability_factors,
                         )
                     )
                     sbox_records.append((cast(str, component.component_id), 0, input_names, output))
@@ -359,6 +366,7 @@ class WordLinearSMTModel:
                                 allocate,
                                 indices,
                                 add,
+                                probability_factors,
                             )
                         )
                         sbox_records.append(
@@ -436,7 +444,21 @@ class WordLinearSMTModel:
                     "fixed_external_mask",
                 )
         semantic_names = tuple(variables)
-        if self.maximum_weight is not None:
+        self._probability_bits: tuple[int | bool, ...] = ()
+        self._probability_denominator = 1
+        if probability_factors:
+            self._probability_bits, self._probability_denominator = _encode_probability_product(
+                probability_factors,
+                weights,
+                allocate,
+                indices,
+                add,
+            )
+            if self.maximum_weight is not None:
+                scale = 1 << self.maximum_weight
+                minimum = (self._probability_denominator + scale - 1) // scale
+                _add_bound(self._probability_bits, minimum, allocate, indices, add)
+        elif self.maximum_weight is not None:
             _at_most(weights, self.maximum_weight, allocate, indices, add)
         self._unit_arrays, self._edges, self._records, self._output = (
             unit_arrays,
@@ -564,7 +586,7 @@ class WordLinearSMTModel:
             constant_sign,
             tuple((name, assignment[name]) for name in self._semantic_names),
         )
-        if self.maximum_weight is not None and result.total_weight > self.maximum_weight:
+        if not _satisfies_weight_bound(result.steps, self.maximum_weight):
             raise ValueError("word linear witness exceeds weight bound")
         if not self.check_characteristic(result):
             raise ValueError("word linear witness violates independent graph mask rules")
@@ -789,7 +811,7 @@ class WordLinearSMTModel:
             and trail.output_mask == _packed(self._output, values)
             and trail.steps == tuple(steps)
             and trail.constant_sign == constant_sign
-            and (self.maximum_weight is None or trail.total_weight <= self.maximum_weight)
+            and _satisfies_weight_bound(trail.steps, self.maximum_weight)
             and (self.nonzero_input is None or input_dict[self.nonzero_input] != 0)
             and all(input_dict[name] == value for name, value in self.fixed_input_masks.items())
         )

@@ -245,7 +245,7 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute SAT integration
-        run: python -m pytest -m external tests/integration/test_kissat_integration.py tests/integration/test_minisat_integration.py -q
+        run: python -m pytest -m external tests/integration/test_kissat_integration.py tests/integration/test_minisat_integration.py tests/integration/test_fractional_trail_weights.py -q
 
   z3-execution:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'

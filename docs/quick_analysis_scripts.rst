@@ -72,6 +72,26 @@ with the same parameters reproducible. See :doc:`advanced_avalanche_analysis` fo
 :doc:`basic_randomness_tests` for tests on primitive-generated datasets, and
 :doc:`statistical_tests` for statistical testing independently of the data source.
 
+Search with fractional S-box weights
+------------------------------------
+
+Some S-box correlations are not powers of two. For example, a correlation of
+3/4 has weight approximately 0.4150375. The same search API supports these
+transitions without rounding the optimization objective:
+
+.. literalinclude:: examples/heys_fractional_trail.py
+   :language: python
+   :start-at: from claasp.primitives
+
+This example requires the default Kissat solver. Its optimal absolute
+component-product correlation is 81/512, with total weight approximately
+2.660149997. The reported masks can differ when several optimal trails exist.
+The optimum is proved using exact integer products of transition counts;
+logarithms are used only for displaying weights. Differential searches use the
+same exact treatment. The displayed weight can differ from a sum of rounded
+component weights.
+
+
 Create a neural-distinguisher dataset
 -------------------------------------
 
