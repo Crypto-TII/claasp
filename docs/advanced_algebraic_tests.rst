@@ -2,11 +2,11 @@ Boolean polynomial systems and algebraic tests: advanced
 ========================================================
 
 Retaining local equations
---------------------------
+-------------------------
 
 ``polynomial_system()`` supports Bit/Word wiring, Boolean operations, lookup
 substitutions and modular addition/subtraction. It retains intermediate
-variables and explicit ripple carries rather than expanding the full cipher.
+variables and explicit ripple carries rather than expanding the full primitive.
 Unsupported components raise an error instead of omitting constraints.
 
 .. code-block:: python
@@ -22,7 +22,7 @@ input-variable names, and output polynomials. All bit positions are MSB first.
 Each equation is interpreted as zero and variables take values in {0, 1}.
 
 Connection graphs
-------------------
+-----------------
 
 A small substitution illustrates which variables occur together in equations:
 
