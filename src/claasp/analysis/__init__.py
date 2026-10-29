@@ -112,6 +112,7 @@ from claasp.analysis.neural_workflows import (
     train_staged_neural_distinguisher,
 )
 from claasp.analysis.problem import AnalysisProblem, MinimizeWeight
+from claasp.analysis.randomness import FrequencyTestResult, frequency_test
 from claasp.analysis.statistical import (
     StatisticalCampaignResult,
     StatisticalRoundResult,
@@ -122,6 +123,7 @@ from claasp.analysis.statistical_datasets import (
     StatisticalDataset,
     StatisticalDatasetManifest,
     StatisticalRecord,
+    SuppliedStatisticalDataset,
     avalanche_statistical_dataset,
     cbc_dataset,
     correlation_dataset,
@@ -206,6 +208,7 @@ __all__ = [
     "EvaluationDataset",
     "EvaluationSample",
     "FixedValue",
+    "FrequencyTestResult",
     "HammingWeight",
     "HybridDifferentialResult",
     "LegacyBoundedDifferentialCluster",
@@ -244,6 +247,7 @@ __all__ = [
     "StatisticalAssessment",
     "StatisticalCampaignResult",
     "StatisticalDataset",
+    "SuppliedStatisticalDataset",
     "StatisticalDatasetManifest",
     "StatisticalRecord",
     "StatisticalRoundResult",
@@ -278,6 +282,7 @@ __all__ = [
     "generate_avalanche_dataset",
     "generate_random_dataset",
     "find_good_input_difference",
+    "frequency_test",
     "find_impossible_xor_differential",
     "find_probabilistic_truncated_xor_differential",
     "find_sbox_boomerang_transition",

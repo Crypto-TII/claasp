@@ -490,3 +490,96 @@ def _dataset(primitive, kind, input_name, samples, blocks, seed, ratio, fixed_in
     return StatisticalDataset(
         primitive, kind, input_name, samples, blocks, seed, ratio, tuple(sorted(fixed.items()))
     )
+
+
+@dataclass(frozen=True, slots=True)
+class SuppliedStatisticalDataset:
+    """An immutable packed stream supplied independently of a primitive.
+
+    Bytes are packed most-significant bit first. ``from_bits`` accepts a flat
+    iterable of bits, including a one-dimensional NumPy array. File input is
+    explicitly either packed binary or whitespace-separated ASCII bits.
+
+    EXAMPLES::
+
+        >>> dataset = SuppliedStatisticalDataset.from_bits([1, 0] * 4)
+        >>> dataset.data.hex(), dataset.bit_count
+        ('aa', 8)
+    """
+
+    data: bytes
+    bit_count: int
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.data, bytes):
+            raise TypeError("data must be immutable packed bytes")
+        if type(self.bit_count) is not int or not 0 < self.bit_count <= 8 * len(self.data):
+            raise ValueError("bit_count must be positive and fit the packed stream")
+        if len(self.data) != (self.bit_count + 7) // 8:
+            raise ValueError("packed stream contains unused bytes")
+        padding = (-self.bit_count) % 8
+        if padding and self.data[-1] & ((1 << padding) - 1):
+            raise ValueError("unused trailing bits must be zero")
+
+    @classmethod
+    def from_bits(cls, bits) -> SuppliedStatisticalDataset:
+        """Pack a flat bit iterable, rejecting non-binary or empty input.
+
+        EXAMPLES::
+
+            >>> SuppliedStatisticalDataset.from_bits([1, 0, 1]).data.hex()
+            'a0'
+        """
+        from operator import index
+
+        packed = bytearray()
+        value = count = 0
+        for bit in bits:
+            try:
+                bit = index(bit)
+            except TypeError as error:
+                raise ValueError(
+                    "bits must be a flat iterable of integer zeros and ones"
+                ) from error
+            if bit not in (0, 1):
+                raise ValueError("bits must contain only zeros and ones")
+            value = (value << 1) | bit
+            count += 1
+            if count % 8 == 0:
+                packed.append(value)
+                value = 0
+        if count % 8:
+            packed.append(value << (-count % 8))
+        return cls(bytes(packed), count)
+
+    @classmethod
+    def from_file(cls, path, *, input_format: str = "binary") -> SuppliedStatisticalDataset:
+        """Read packed binary or ASCII bits without guessing the file format.
+
+        EXAMPLES::
+
+            >>> callable(SuppliedStatisticalDataset.from_file)
+            True
+        """
+        from pathlib import Path
+
+        data = Path(path).read_bytes()
+        if input_format == "binary":
+            return cls(data, len(data) * 8)
+        if input_format != "ascii":
+            raise ValueError("input_format must be binary or ascii")
+        compact = b"".join(data.split())
+        if any(bit not in (48, 49) for bit in compact):
+            raise ValueError("ASCII input must contain only bits and whitespace")
+        return cls.from_bits(bit - 48 for bit in compact)
+
+    def write_binary(self, stream: BinaryIO) -> int:
+        """Write the packed stream, including zero padding in the final byte."""
+        written = stream.write(self.data)
+        if written is not None and written != len(self.data):
+            raise OSError("stream accepted only part of the supplied dataset")
+        return len(self.data)
+
+    def digest(self) -> str:
+        """Return SHA-256 of packed bytes (bit_count identifies final padding)."""
+        return sha256(self.data).hexdigest()

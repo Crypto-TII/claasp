@@ -29,7 +29,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
-from claasp.analysis.statistical_datasets import StatisticalDataset
+from claasp.analysis.statistical_datasets import StatisticalDataset, SuppliedStatisticalDataset
 from claasp.analysis.statistical_results import NISTFinalReport, StatisticalTestRun
 from claasp.drivers.statistical.parsers import parse_nist_final_report
 
@@ -125,15 +125,16 @@ class NistStsDriver:
 
     def run(
         self,
-        dataset: StatisticalDataset,
+        dataset: StatisticalDataset | SuppliedStatisticalDataset,
         *,
         number_of_bit_streams: int = 1,
         test_selection: str = _DEFAULT_TEST_SELECTION,
+        bits_per_sequence: int | None = None,
     ) -> StatisticalTestRun[NISTFinalReport]:
         """Execute ``assess`` on one dataset and parse its fixed report file."""
 
-        if not isinstance(dataset, StatisticalDataset):
-            raise TypeError("dataset must be a StatisticalDataset")
+        if not isinstance(dataset, (StatisticalDataset, SuppliedStatisticalDataset)):
+            raise TypeError("dataset must be a StatisticalDataset or SuppliedStatisticalDataset")
         if (
             not isinstance(number_of_bit_streams, int)
             or isinstance(number_of_bit_streams, bool)
@@ -146,6 +147,10 @@ class NistStsDriver:
             or any(character not in "01" for character in test_selection)
         ):
             raise ValueError("test_selection must be a 15-character string of '0'/'1'")
+        if bits_per_sequence is not None and (
+            type(bits_per_sequence) is not int or bits_per_sequence <= 0
+        ):
+            raise ValueError("bits_per_sequence must be a positive integer")
         executable = shutil.which(self.executable)
         if executable is None:
             raise FileNotFoundError(f"NIST STS executable {self.executable!r} was not found")
@@ -156,15 +161,43 @@ class NistStsDriver:
             input_path = Path(directory) / "dataset.bin"
             with input_path.open("wb") as stream:
                 byte_count = dataset.write_binary(stream)
-            total_bits = byte_count * 8
+            total_bits = (
+                dataset.bit_count
+                if isinstance(dataset, SuppliedStatisticalDataset)
+                else byte_count * 8
+            )
             if total_bits < number_of_bit_streams:
                 raise ValueError("dataset does not contain enough bits for number_of_bit_streams")
-            stream_length = total_bits // number_of_bit_streams
+            if bits_per_sequence is None:
+                if total_bits % number_of_bit_streams:
+                    raise ValueError(
+                        "dataset length must divide evenly into the requested sequences"
+                    )
+                stream_length = total_bits // number_of_bit_streams
+            else:
+                stream_length = bits_per_sequence
+                if stream_length * number_of_bit_streams != total_bits:
+                    raise ValueError(
+                        "dataset must contain exactly bits_per_sequence * number_of_bit_streams bits"
+                    )
+            # The upstream packed reader consumes 32-bit chunks and discards
+            # the unused tail of each sequence. ASCII input preserves arbitrary
+            # sequence boundaries, including non-byte-aligned supplied data.
+            input_format = "1"
+            if stream_length % 32:
+                raw = input_path.read_bytes()
+                with input_path.open("wb") as stream:
+                    remaining = total_bits
+                    for byte in raw:
+                        count = min(8, remaining)
+                        stream.write(f"{byte:08b}"[:count].encode("ascii"))
+                        remaining -= count
+                input_format = "0"
             tool_arguments = (
                 str(input_path),
                 str(stream_length),
                 str(number_of_bit_streams),
-                "1",
+                input_format,
                 test_selection,
             )
 
