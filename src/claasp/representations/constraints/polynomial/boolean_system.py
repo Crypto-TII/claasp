@@ -22,7 +22,7 @@ class BooleanEquationSystem:
     """Equations equal to zero over Boolean variables, with round ownership.
 
     Intermediate outputs and ripple carries stay symbolic, so constructing
-    an ARX system does not expand the whole cipher's output ANFs.
+    an ARX system does not expand the whole primitive's output ANFs.
 
     EXAMPLES::
 
