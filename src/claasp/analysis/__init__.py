@@ -87,6 +87,14 @@ from claasp.analysis.monomial import (
     enumerate_optimal_monomial_parity,
     project_optimal_pool_monomial_parity,
 )
+from claasp.analysis.monomial_workflows import (
+    AlgebraicDegreeResult,
+    ANFResult,
+    SuperpolyAnalysisResult,
+    analyze_anf,
+    find_algebraic_degree,
+    recover_superpoly,
+)
 from claasp.analysis.neural import (
     NeuralDataset,
     NeuralExperiment,
@@ -179,6 +187,12 @@ __all__ = [
     "ContinuousDiffusionResult",
     "continuous_diffusion",
     "Analysis",
+    "ANFResult",
+    "AlgebraicDegreeResult",
+    "SuperpolyAnalysisResult",
+    "analyze_anf",
+    "find_algebraic_degree",
+    "recover_superpoly",
     "AnalysisProblem",
     "AnalysisResult",
     "TrailSearchBackend",

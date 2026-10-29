@@ -391,6 +391,18 @@
       "qualified_name": "claasp.analysis"
     },
     {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ANFResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.AlgebraicDegreeResult"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis",
       "defined_in": "claasp.analysis.facade",
       "kind": "class",
@@ -883,6 +895,12 @@
       "qualified_name": "claasp.analysis.StatisticalTestRun"
     },
     {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.SuperpolyAnalysisResult"
+    },
+    {
       "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset",
       "defined_in": "claasp.analysis.statistical_datasets",
       "kind": "dataclass",
@@ -1098,6 +1116,12 @@
       "defined_in": "claasp.analysis.algebraic",
       "kind": "method",
       "qualified_name": "claasp.analysis.algebraic.BooleanAlgebraicEvidence.require_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.analyze_anf",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.analyze_anf"
     },
     {
       "canonical_name": "claasp.analysis.algebraic.analyze_boolean_algebra",
@@ -2900,6 +2924,18 @@
       "qualified_name": "claasp.analysis.facade.Analysis.__init__"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.algebraic_degree",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.algebraic_degree"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.anf",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.anf"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.autond",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -3068,6 +3104,12 @@
       "qualified_name": "claasp.analysis.facade.Analysis.solve"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.superpoly",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.superpoly"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.train_staged_neural_distinguisher",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -3196,6 +3238,12 @@
       "documented_by": "claasp.analysis.facade.TrailSearchBackend",
       "kind": "constructor",
       "qualified_name": "claasp.analysis.facade.TrailSearchBackend.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.find_algebraic_degree",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.find_algebraic_degree"
     },
     {
       "canonical_name": "claasp.analysis.neural_workflows.find_good_input_difference",
@@ -3666,6 +3714,159 @@
       "documented_by": "claasp.analysis.monomial.SolutionPoolMonomialParityResult",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.monomial.SolutionPoolMonomialParityResult.termination"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.__init__",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.ANFResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.coefficient",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.coefficient"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.complete",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.ANFResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.degree_in",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.degree_in"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.degrees",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.degrees"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.polynomials",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.ANFResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.polynomials"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.superpoly",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.superpoly"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.to_terminal",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.variables",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.ANFResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.variables"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.__init__",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.complete",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.enumerated_paths",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.enumerated_paths"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.exact_degree",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.exact_degree"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.require_complete",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.require_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.termination",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.termination"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.upper_bound",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.upper_bound"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.__init__",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.complete",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.enumerated_paths",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.enumerated_paths"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.polynomial",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.polynomial"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.require_complete",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.require_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.termination",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.termination"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.to_terminal",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.to_terminal"
     },
     {
       "canonical_name": "claasp.analysis.neural.NeuralDataset.__init__",
@@ -4487,6 +4688,12 @@
       "defined_in": "claasp.analysis.randomness",
       "kind": "property",
       "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.passed"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.recover_superpoly",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.recover_superpoly"
     },
     {
       "canonical_name": "claasp.analysis.neural.round_component_ids",
