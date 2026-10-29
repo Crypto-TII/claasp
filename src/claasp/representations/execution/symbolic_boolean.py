@@ -55,15 +55,53 @@ class BooleanSymbolicEvaluator:
         2
     """
 
-    def evaluate(self, primitive: Primitive) -> BooleanSymbolicResult:
-        """Return exact output ANFs for a supported Bit/Word primitive graph."""
+    def evaluate(
+        self,
+        primitive: Primitive,
+        *,
+        fixed_inputs=None,
+        maximum_terms=100_000,
+        maximum_operations=1_000_000,
+    ) -> BooleanSymbolicResult:
+        """Return exact ANFs, stopping explicitly at the declared resource limits.
 
+        Concrete fixed inputs are substituted before expanding components.
+        A limit raises RuntimeError; no truncated polynomial is returned.
+        """
+        from claasp.representations.constraints.polynomial.boolean import _bounded_anf
+
+        with _bounded_anf(maximum_terms, maximum_operations):
+            return self._evaluate(primitive, fixed_inputs or {})
+
+    def _evaluate(self, primitive, fixed_inputs):
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a typed graph")
         values: dict[str, tuple[SymbolicUnit, ...]] = {}
+        if set(fixed_inputs) - set(primitive.graph.input_arrays):
+            raise ValueError("unknown fixed input")
         for name, unit_array in primitive.graph.input_arrays.items():
-            prefix = {"plaintext": "p", "key": "k", "state": "s"}.get(name, name[:1])
+            prefix = {"plaintext": "p", "key": "k", "state": "s", "iv": "i"}.get(name, name + "_")
             unit_type = unit_array.array_type.unit_type
+            if name in fixed_inputs:
+                decoded = primitive._decode_boundary(fixed_inputs[name], unit_array.array_type)
+                if isinstance(unit_type, Bit):
+                    values[name] = tuple(
+                        BooleanPolynomial.one() if value else BooleanPolynomial.zero()
+                        for value in decoded
+                    )
+                elif isinstance(unit_type, Word):
+                    values[name] = tuple(
+                        tuple(
+                            BooleanPolynomial.one()
+                            if value & (1 << (unit_type.width - 1 - bit))
+                            else BooleanPolynomial.zero()
+                            for bit in range(unit_type.width)
+                        )
+                        for value in decoded
+                    )
+                else:
+                    raise NotImplementedError("fixed inputs require Bit or Word units")
+                continue
             if isinstance(unit_type, Bit):
                 values[name] = tuple(
                     BooleanPolynomial.variable(f"{prefix}{index}")

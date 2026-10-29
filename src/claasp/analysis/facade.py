@@ -565,6 +565,92 @@ class Analysis:
 
         return _select_component(self.primitive, kind, index=index, bit_size=bit_size)
 
+    def anf(
+        self,
+        *,
+        output_bit=None,
+        component=None,
+        fixed_inputs=None,
+        maximum_terms=100_000,
+        maximum_operations=1_000_000,
+    ):
+        """Return exact output/intermediate ANFs with explicit expansion limits.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Simon
+            >>> Simon(number_of_rounds=1).analysis.anf(output_bit=0).degrees
+            (2,)
+        """
+        from claasp.analysis.monomial_workflows import analyze_anf
+
+        return analyze_anf(
+            self.primitive,
+            output_bit=output_bit,
+            component=component,
+            fixed_inputs=fixed_inputs,
+            maximum_terms=maximum_terms,
+            maximum_operations=maximum_operations,
+        )
+
+    def algebraic_degree(
+        self,
+        *,
+        output_bit=0,
+        variable_input="plaintext",
+        solver=None,
+        exact=False,
+        maximum_paths=10_000,
+        variable_positions=None,
+    ):
+        """Find a division-property upper bound or a parity-proved exact degree.
+
+        EXAMPLES::
+
+            >>> callable(Analysis.algebraic_degree)
+            True
+        """
+        from claasp.analysis.monomial_workflows import find_algebraic_degree
+
+        return find_algebraic_degree(
+            self.primitive,
+            output_bit=output_bit,
+            variable_input=variable_input,
+            solver=solver,
+            exact=exact,
+            maximum_paths=maximum_paths,
+            variable_positions=variable_positions,
+        )
+
+    def superpoly(
+        self,
+        cube_positions,
+        *,
+        cube_input="plaintext",
+        output_bit=0,
+        solver=None,
+        maximum_paths=10_000,
+        zero_outside_cube=False,
+    ):
+        """Recover a cube superpoly by complete solver-path parity.
+
+        EXAMPLES::
+
+            >>> callable(Analysis.superpoly)
+            True
+        """
+        from claasp.analysis.monomial_workflows import recover_superpoly
+
+        return recover_superpoly(
+            self.primitive,
+            cube_positions,
+            cube_input=cube_input,
+            output_bit=output_bit,
+            solver=solver,
+            maximum_paths=maximum_paths,
+            zero_outside_cube=zero_outside_cube,
+        )
+
     def polynomial_system(self):
         """Build local Boolean equations for round statistics and algebra runs.
 
