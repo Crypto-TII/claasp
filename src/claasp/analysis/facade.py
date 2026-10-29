@@ -565,6 +565,20 @@ class Analysis:
 
         return _select_component(self.primitive, kind, index=index, bit_size=bit_size)
 
+    def polynomial_system(self):
+        """Build local Boolean equations for round statistics and algebra runs.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> Speck(number_of_rounds=1).analysis.polynomial_system().statistics()[0][0]
+            1
+        """
+        from claasp.analysis.boolean_system import BooleanSystemAnalysis
+        from claasp.representations.constraints.polynomial import BooleanEquationSystem
+
+        return BooleanSystemAnalysis(BooleanEquationSystem.from_primitive(self.primitive))
+
     def component_analysis(self):
         """Discover semantic component groups and analyze their default properties.
 
