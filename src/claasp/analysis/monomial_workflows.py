@@ -15,8 +15,14 @@ class ANFResult:
     EXAMPLES::
 
         >>> from claasp.primitives import Simon
-        >>> Simon(number_of_rounds=1).analysis.anf(output_bit=0).degrees
-        (2,)
+        >>> result = Simon(number_of_rounds=1).analysis.anf(output_bit=0)
+        >>> result.degrees, result.coefficient(("p1", "p8"))
+        ((2,), (1,))
+        >>> result.superpoly(("p1",)).coefficient(("p8",))
+        (1,)
+
+    The coefficient check selects one exact monomial. Extracting its p1 cube
+    coefficient retains p8 symbolically; it does not fix that bit to zero.
     """
 
     polynomials: tuple[BooleanPolynomial, ...]
@@ -181,11 +187,19 @@ def find_algebraic_degree(
     Exact mode enumerates each candidate degree to UNSAT and projects complete
     input monomials before taking parity. If the leading terms cancel, it
     descends to the next reachable degree. Other inputs remain symbolic.
+    Requires GLPK; these examples run in the GLPK integration job. A reachable
+    upper bound is not an exact degree until path parity has been completed.
 
     EXAMPLES::
 
-        >>> callable(find_algebraic_degree)
-        True
+        >>> from claasp.primitives import Simon
+        >>> primitive = Simon(number_of_rounds=1)
+        >>> bound = primitive.analysis.algebraic_degree(output_bit=0)  # doctest: +SKIP
+        >>> bound.upper_bound, bound.exact_degree  # doctest: +SKIP
+        (2, None)
+        >>> exact = primitive.analysis.algebraic_degree(output_bit=0, exact=True).require_complete()  # doctest: +SKIP
+        >>> exact.exact_degree  # doctest: +SKIP
+        2
     """
     from claasp.drivers.solvers import GLPKSolver, MILPStatus
     from claasp.representations.constraints.milp import (
@@ -363,11 +377,21 @@ def recover_superpoly(
     model paths rather than 2**(cube width + symbolic width). Worst-case cost
     remains exponential. Unsupported operations and incomplete searches are
     explicit, and no incomplete polynomial is returned.
+    Requires GLPK; these examples run in the GLPK integration job. Here the
+    cube coefficient is p8; zeroing the other plaintext bits makes it zero
+    (the zero polynomial has degree -1).
 
     EXAMPLES::
 
-        >>> callable(recover_superpoly)
+        >>> from claasp.primitives import Simon
+        >>> from claasp.representations.constraints.polynomial import BooleanPolynomial
+        >>> primitive = Simon(number_of_rounds=1)
+        >>> result = primitive.analysis.superpoly((1,), output_bit=0).require_complete()  # doctest: +SKIP
+        >>> result.polynomial == BooleanPolynomial.variable("p8")  # doctest: +SKIP
         True
+        >>> zeroed = primitive.analysis.superpoly((1,), zero_outside_cube=True).require_complete()  # doctest: +SKIP
+        >>> zeroed.polynomial.degree  # doctest: +SKIP
+        -1
     """
     from claasp.drivers.solvers import GLPKSolver, MILPStatus
     from claasp.representations.constraints.milp import (

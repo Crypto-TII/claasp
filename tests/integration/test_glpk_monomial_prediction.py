@@ -84,3 +84,27 @@ def test_superpoly_keeps_public_variables_and_can_select_the_key_coefficient():
         output_bit=0, variable_positions=(1,), exact=True
     ).require_complete()
     assert degree.exact_degree == 1
+
+
+def test_monomial_workflow_api_doctests():
+    """Run optional-solver API examples with their real driver in CI."""
+    import doctest
+    import importlib
+
+    from claasp.analysis import Analysis, find_algebraic_degree, recover_superpoly
+
+    runner = doctest.DocTestRunner()
+    for method in (
+        Analysis.algebraic_degree,
+        Analysis.superpoly,
+        find_algebraic_degree,
+        recover_superpoly,
+    ):
+        module = importlib.import_module(method.__module__)
+        test = doctest.DocTestParser().get_doctest(
+            method.__doc__, vars(module).copy(), method.__qualname__, module.__file__, 0
+        )
+        for example in test.examples:
+            example.options[doctest.SKIP] = False
+        runner.run(test)
+    assert runner.summarize().failed == 0
