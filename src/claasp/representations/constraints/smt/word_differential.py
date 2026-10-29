@@ -395,6 +395,7 @@ class WordDifferentialSMTModel:
                         "fixed_difference",
                     )
         self._semantic_names = tuple(variables)
+        self._weight_names = tuple(weights)
         self._probability_bits: tuple[int | bool, ...] = ()
         self._probability_denominator = 1
         if probability_factors or self._general_weight_query:

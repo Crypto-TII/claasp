@@ -1,7 +1,7 @@
 """Bit-oriented PRESENT block primitive."""
 
 from claasp.components import Add, BitVectorSBox, Constant, Permutation
-from claasp.graph import Primitive, UnitArray, UnitArrayType
+from claasp.graph import Primitive, Selection, UnitArray, UnitArrayType
 from claasp.unit_types import Bit
 
 PRESENT_SBOX = (0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2)
@@ -46,7 +46,7 @@ class Present(Primitive):
         counter_type = UnitArrayType(bit, (5,))
         super().__init__("present", {"plaintext": state_type, "key": key_type})
         state = self.graph.input("plaintext")
-        key = self.graph.input("key")
+        key: UnitArray | Selection = self.graph.input("key")
 
         for round_number in range(1, number_of_rounds + 1):
             self._builder.add_round()
@@ -70,21 +70,24 @@ class Present(Primitive):
                     substituted_state, P_LAYER_MAPPING, component_id=f"p_layer_{round_number}"
                 )
             )
+            if round_number != number_of_rounds:
+                self._builder.set_round_output(state)
             key = self._update_key(key, round_number, key_type, counter_type, key_bit_size)
 
         state = self._builder.add_component(
             Add((state, key[:64]), component_id="final_add_round_key")
         )
+        self._builder.set_round_output(state)
         self._builder.set_output(state)
 
     def _update_key(
         self,
-        key: UnitArray,
+        key: UnitArray | Selection,
         round_number: int,
         key_type: UnitArrayType,
         counter_type: UnitArrayType,
         key_bit_size: int,
-    ) -> UnitArray:
+    ) -> UnitArray | Selection:
         rotation_mapping = tuple((position + 61) % key_bit_size for position in range(key_bit_size))
         rotated = self._builder.add_component(
             Permutation(key, rotation_mapping, component_id=f"key_rotate_{round_number}")

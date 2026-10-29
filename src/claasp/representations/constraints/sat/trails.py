@@ -10,6 +10,10 @@ from typing import Any
 
 from claasp.components import (
     Add,
+    BitVectorSBox,
+    BitwiseAnd,
+    BitwiseNot,
+    BitwiseOr,
     Constant,
     Identity,
     LinearMap,
@@ -508,6 +512,12 @@ def _truncated_pattern(bits, assignment):
     )
 
 
+def _truncated_width(array_type):
+    if not isinstance(array_type.unit_type, (Bit, Word)):
+        raise NotImplementedError("truncated SAT lowering requires Bit or Word domains")
+    return 1 if isinstance(array_type.unit_type, Bit) else array_type.unit_type.width
+
+
 class WordDeterministicTruncatedSATModel:
     """Assemble deterministic-truncated ARX Word graphs as ordinary CNF.
 
@@ -569,13 +579,12 @@ class WordDeterministicTruncatedSATModel:
 
     @staticmethod
     def _coerce(pattern, array_type):
-        if not isinstance(array_type.unit_type, Word):
-            raise NotImplementedError("truncated SAT lowering requires Word domains")
+        _truncated_width(array_type)
         if isinstance(pattern, str):
             pattern = TruncatedXorDifference.parse(pattern)
         if not isinstance(pattern, TruncatedXorDifference):
             raise TypeError("truncated patterns must be strings or TruncatedXorDifference values")
-        expected = array_type.unit_count * array_type.unit_type.width
+        expected = array_type.unit_count * _truncated_width(array_type)
         if len(pattern.bits) != expected:
             raise ValueError(f"truncated pattern must contain {expected} bits")
         return pattern
@@ -632,11 +641,10 @@ class WordDeterministicTruncatedSATModel:
         ]
         unit_arrays = {}
         for name, array_type in sources:
-            if not isinstance(array_type.unit_type, Word):
-                raise NotImplementedError("truncated SAT lowering requires Word domains")
+            _truncated_width(array_type)
             unit_arrays[name] = tuple(
                 pair(f"truncated_{name}_{bit}")
-                for bit in range(array_type.unit_count * array_type.unit_type.width)
+                for bit in range(array_type.unit_count * _truncated_width(array_type))
             )
 
         def selected(selection):
@@ -651,8 +659,10 @@ class WordDeterministicTruncatedSATModel:
             operands = tuple(selected(selection) for selection in component.inputs)
             operands_by_id[component_id] = operands
             output = unit_arrays[component_id]
-            width = component.output_type.unit_type.width
-            if isinstance(component, (ModularAdd, ModularSubtract)):
+            width = _truncated_width(component.output_type)
+            if isinstance(component, (ModularAdd, ModularSubtract)) or (
+                isinstance(component, Add) and isinstance(component.output_type.unit_type, Word)
+            ):
                 for unit in range(component.output_type.unit_count):
                     accumulator = operands[0][unit * width : (unit + 1) * width]
                     for operand_number, operand_group in enumerate(operands[1:], 1):
@@ -668,7 +678,7 @@ class WordDeterministicTruncatedSATModel:
                         )
                         local_type = (
                             ModularAddDeterministicTruncatedSATModel
-                            if isinstance(component, ModularAdd)
+                            if not isinstance(component, ModularSubtract)
                             else ModularSubtractDeterministicTruncatedSATModel
                         )
                         local = local_type(width).cnf_formula()
@@ -699,12 +709,62 @@ class WordDeterministicTruncatedSATModel:
                                 label,
                             )
                         accumulator = target
+            elif isinstance(component, (BitVectorSBox, SBox)):
+                from claasp.semantics.cryptanalysis._lookup_truncated import _truncated_lookup
+
+                input_width = (
+                    len(operands[0])
+                    if isinstance(component, BitVectorSBox)
+                    else _truncated_width(component.inputs[0].array_type)
+                )
+                output_width = len(output) if isinstance(component, BitVectorSBox) else width
+                for start in range(0, len(operands[0]), input_width):
+                    target_start = start // input_width * output_width
+                    source = operands[0][start : start + input_width]
+                    target = output[target_start : target_start + output_width]
+                    for symbols in product("01?", repeat=input_width):
+                        expected = _truncated_lookup(
+                            tuple(component.table),
+                            TruncatedXorDifference.parse("".join(symbols)),
+                            output_width,
+                        )
+                        antecedent = tuple(
+                            -indices[name] if value else indices[name]
+                            for names_pair, symbol in zip(source, symbols)
+                            for name, value in zip(
+                                names_pair, (1, 0) if symbol == "?" else (0, int(symbol))
+                            )
+                        )
+                        for names_pair, symbol in zip(target, str(expected)):
+                            for name, value in zip(
+                                names_pair, (1, 0) if symbol == "?" else (0, int(symbol))
+                            ):
+                                add(
+                                    antecedent + ((indices[name] if value else -indices[name]),),
+                                    "truncated_lookup",
+                                )
+            elif isinstance(component, (BitwiseAnd, BitwiseOr)):
+                for bit, target in enumerate(output):
+                    for symbols in product("01?", repeat=len(operands)):
+                        expected = (0, 0) if all(symbol == "0" for symbol in symbols) else (1, 0)
+                        antecedent = tuple(
+                            -indices[name] if value else indices[name]
+                            for operand, symbol in zip(operands, symbols)
+                            for name, value in zip(
+                                operand[bit], (1, 0) if symbol == "?" else (0, int(symbol))
+                            )
+                        )
+                        for name, value in zip(target, expected):
+                            add(
+                                antecedent + ((indices[name] if value else -indices[name]),),
+                                "truncated_boolean_nonlinear",
+                            )
             elif isinstance(component, (Xor, Add)):
                 for bit, target in enumerate(output):
                     xor_relation(
                         tuple(operand[bit] for operand in operands), target, "truncated_xor"
                     )
-            elif isinstance(component, Identity):
+            elif isinstance(component, (Identity, BitwiseNot)):
                 for source, target in zip(operands[0], output):
                     equal(source, target, "truncated_identity")
             elif isinstance(component, Permutation):
@@ -789,23 +849,53 @@ class WordDeterministicTruncatedSATModel:
             name: _truncated_pattern(bits, assignment) for name, bits in self._unit_arrays.items()
         }
         for component in self.primitive.graph.components:
-            width = component.output_type.unit_type.width
+            assert component.component_id is not None
+            width = _truncated_width(component.output_type)
             operands = tuple(
                 _truncated_pattern(names, assignment)
                 for names in self._operands[component.component_id]
             )
             operand_units = tuple(self._units(pattern, width) for pattern in operands)
-            if isinstance(component, (ModularAdd, ModularSubtract)):
+            if isinstance(component, (ModularAdd, ModularSubtract)) or (
+                isinstance(component, Add) and isinstance(component.output_type.unit_type, Word)
+            ):
                 expected_units = []
                 for items in zip(*operand_units):
                     value = items[0]
                     for operand in items[1:]:
                         value = (
                             truncated_modular_add(value, operand)
-                            if isinstance(component, ModularAdd)
+                            if not isinstance(component, ModularSubtract)
                             else truncated_modular_subtract(value, operand)
                         )
                     expected_units.append(value)
+            elif isinstance(component, (BitVectorSBox, SBox)):
+                from claasp.semantics.cryptanalysis._lookup_truncated import _truncated_lookup
+
+                if isinstance(component, BitVectorSBox):
+                    expected_units = [
+                        _truncated_lookup(
+                            tuple(component.table),
+                            operands[0],
+                            len(patterns[component.component_id].bits),
+                        )
+                    ]
+                else:
+                    input_width = _truncated_width(component.inputs[0].array_type)
+                    expected_units = [
+                        _truncated_lookup(tuple(component.table), item, width)
+                        for item in self._units(operands[0], input_width)
+                    ]
+            elif isinstance(component, (BitwiseAnd, BitwiseOr)):
+                expected_units = [
+                    TruncatedXorDifference.parse(
+                        "".join(
+                            "0" if all(str(item)[bit] == "0" for item in items) else "?"
+                            for bit in range(width)
+                        )
+                    )
+                    for items in zip(*operand_units)
+                ]
             elif isinstance(component, (Xor, Add)):
                 expected_units = []
                 for items in zip(*operand_units):
@@ -813,7 +903,7 @@ class WordDeterministicTruncatedSATModel:
                     for operand in items[1:]:
                         value = value.xor(operand)
                     expected_units.append(value)
-            elif isinstance(component, (Identity, Permutation)):
+            elif isinstance(component, (Identity, BitwiseNot, Permutation)):
                 items = operand_units[0]
                 expected_units = (
                     [items[position] for position in component.mapping]
@@ -1567,8 +1657,8 @@ class WordImpossibleSATModel:
         output_pattern=None,
     ) -> None:
         selected = primitive.graph.input_arrays.get(active_input)
-        if selected is None or not isinstance(selected.array_type.unit_type, Word):
-            raise ValueError("active_input must name a Word-unit_type primitive input")
+        if selected is None or not isinstance(selected.array_type.unit_type, (Bit, Word)):
+            raise ValueError("active_input must name a Bit/Word primitive input")
         if not isinstance(zero_difference_inputs, tuple) or any(
             name == active_input or name not in primitive.graph.input_arrays
             for name in zero_difference_inputs
@@ -1591,7 +1681,7 @@ class WordImpossibleSATModel:
             name: "0"
             * (
                 primitive.graph.input_arrays[name].array_type.unit_count
-                * primitive.graph.input_arrays[name].array_type.unit_type.width
+                * _truncated_width(primitive.graph.input_arrays[name].array_type)
             )
             for name in zero_difference_inputs
         }
@@ -3513,8 +3603,8 @@ class WordDeterministicDifferentialLinearSATModel:
         *,
         prefix_rounds: int,
         middle_rounds: int,
-        differential_maximum_weight: int,
-        linear_maximum_weight: int,
+        differential_maximum_weight: int | None,
+        linear_maximum_weight: int | None,
         input_difference: int | None = None,
         output_mask: int | None = None,
     ) -> None:
@@ -3526,10 +3616,12 @@ class WordDeterministicDifferentialLinearSATModel:
         if prefix_rounds + middle_rounds >= len(primitive.graph.rounds):
             raise ValueError("the differential, middle, and linear slices must all be nonempty")
         for weight in (differential_maximum_weight, linear_maximum_weight):
-            if not isinstance(weight, int) or isinstance(weight, bool) or weight < 0:
+            if weight is not None and (
+                not isinstance(weight, int) or isinstance(weight, bool) or weight < 0
+            ):
                 raise ValueError("weight bounds must be nonnegative integers")
         block_width = sum(
-            unit_array.array_type.unit_count * unit_array.array_type.unit_type.width
+            unit_array.array_type.unit_count * _truncated_width(unit_array.array_type)
             for name, unit_array in primitive.graph.input_arrays.items()
             if name == "plaintext"
         )
@@ -3555,7 +3647,7 @@ class WordDeterministicDifferentialLinearSATModel:
 
     @staticmethod
     def _zero_pattern(unit_array):
-        return "0" * (unit_array.array_type.unit_count * unit_array.array_type.unit_type.width)
+        return "0" * (unit_array.array_type.unit_count * _truncated_width(unit_array.array_type))
 
     def cnf_formula(self) -> CNFFormula:
         """Return the complete round-sliced differential-linear formula."""
