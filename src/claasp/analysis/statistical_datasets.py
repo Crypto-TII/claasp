@@ -527,8 +527,12 @@ class SuppliedStatisticalDataset:
 
         EXAMPLES::
 
-            >>> SuppliedStatisticalDataset.from_bits([1, 0, 1]).data.hex()
-            'a0'
+            >>> dataset = SuppliedStatisticalDataset.from_bits([1, 0, 1])
+            >>> dataset.data.hex(), dataset.bit_count
+            ('a0', 3)
+
+        The final byte is zero-padded; bit_count keeps those padding bits out
+        of statistical calculations.
         """
         from operator import index
 
@@ -558,8 +562,17 @@ class SuppliedStatisticalDataset:
 
         EXAMPLES::
 
-            >>> callable(SuppliedStatisticalDataset.from_file)
-            True
+            >>> from pathlib import Path
+            >>> from tempfile import TemporaryDirectory
+            >>> with TemporaryDirectory() as directory:
+            ...     path = Path(directory) / "bits.txt"
+            ...     _ = path.write_text("101 010", encoding="ascii")
+            ...     dataset = SuppliedStatisticalDataset.from_file(path, input_format="ascii")
+            ...     print(dataset.data.hex(), dataset.bit_count)
+            a8 6
+
+        Binary files use all eight bits of every byte; ASCII input preserves
+        the exact number of zero/one characters and ignores whitespace.
         """
         from pathlib import Path
 

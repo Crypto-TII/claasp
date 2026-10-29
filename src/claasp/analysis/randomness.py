@@ -37,8 +37,17 @@ def frequency_test(bits, *, alpha: float = 0.01) -> FrequencyTestResult:
 
     EXAMPLES::
 
+        >>> balanced = frequency_test([0, 1] * 50, alpha=0.01)
+        >>> balanced.bit_count, balanced.ones, balanced.p_value, balanced.passed
+        (100, 50, 1.0, True)
         >>> frequency_test([1] * 100).passed
         False
+        >>> short = frequency_test([0, 1] * 10)
+        >>> short.applicable, short.passed
+        (False, None)
+
+    Passing only means no significant imbalance was detected: the perfectly
+    predictable alternating sequence above passes this particular test.
     """
     if not isfinite(alpha) or not 0 < alpha < 1:
         raise ValueError("alpha must lie strictly between zero and one")
