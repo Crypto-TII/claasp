@@ -80,7 +80,14 @@ class BooleanSymbolicEvaluator:
         if set(fixed_inputs) - set(primitive.graph.input_arrays):
             raise ValueError("unknown fixed input")
         for name, unit_array in primitive.graph.input_arrays.items():
-            prefix = {"plaintext": "p", "key": "k", "state": "s", "iv": "i"}.get(name, name + "_")
+            prefix = {
+                "plaintext": "p",
+                "key": "k",
+                "state": "s",
+                "iv": "i",
+                "left": "l",
+                "right": "r",
+            }.get(name, name + "_")
             unit_type = unit_array.array_type.unit_type
             if name in fixed_inputs:
                 decoded = primitive._decode_boundary(fixed_inputs[name], unit_array.array_type)
