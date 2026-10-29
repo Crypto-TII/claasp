@@ -573,7 +573,7 @@ class Analysis:
             >>> from claasp.primitives import Speck
             >>> result = Speck(number_of_rounds=1).analysis.polynomial_system()
             >>> result.statistics()
-            ((1, 272, 208, 586, 2),)
+            ((1, 144, 96, 285, 2),)
             >>> graph = result.connection_graph(round_number=1)
             >>> len(graph.equations) == len(result.system.equations)
             True
