@@ -82,3 +82,57 @@ def test_comparison_handles_signed_literals_mixed_with_constant_bits():
                 for clause in clauses
             )
             assert accepted == (actual >= minimum)
+
+
+def test_fractional_weight_boundaries_use_certified_integer_rounding():
+    from decimal import Decimal
+
+    from claasp.representations.constraints.smt._probability_encoding import (
+        _numerator_interval,
+        _weight_interval,
+    )
+
+    # 3/8 has weight 1.415037499... . A finite decimal fixed weight
+    # cannot equal this irrational value, but an explicit window contains it.
+    assert _numerator_interval(8, _weight_interval(maximum=1.42)) == (3, 8)
+    assert _numerator_interval(8, _weight_interval(maximum=1.41)) == (4, 8)
+    assert _numerator_interval(8, _weight_interval(fixed=1.42)) == (3, 2)
+    assert _numerator_interval(8, _weight_interval(fixed=1.42, tolerance=0.01)) == (3, 3)
+    assert _numerator_interval(8, _weight_interval(minimum=Decimal("1.42"))) == (0, 2)
+    assert _numerator_interval(8, _weight_interval(fixed=1)) == (4, 4)
+    assert _numerator_interval(8, _weight_interval(maximum=10000)) == (1, 8)
+
+
+def test_weight_query_rejects_invalid_ranges():
+    import pytest
+
+    from claasp.representations.constraints.smt._probability_encoding import _weight_interval
+
+    for options in (
+        {"maximum": -1},
+        {"minimum": 2, "maximum": 1},
+        {"fixed": 1, "maximum": 2},
+        {"maximum": float("nan")},
+        {"maximum": True},
+        {"tolerance": 0.01},
+    ):
+        with pytest.raises(ValueError):
+            _weight_interval(**options)
+
+
+def test_certified_decimal_boundaries_match_exact_rational_power_oracle():
+    from decimal import Decimal
+    from fractions import Fraction
+
+    from claasp.representations.constraints.smt._probability_encoding import _scaled_probability
+
+    for denominator in (8, 32, 128):
+        for value in ("0.1", "0.5", "1.2", "2.65", "4.01"):
+            weight = Fraction(value)
+            # x >= D*2^-p/q iff x^q * 2^p >= D^q. This oracle
+            # uses no logarithm, exponential, or floating-point arithmetic.
+            p, q = weight.numerator, weight.denominator
+            ceiling = next(x for x in range(denominator + 1) if (x**q << p) >= denominator**q)
+            floor = max(x for x in range(denominator + 1) if (x**q << p) <= denominator**q)
+            assert _scaled_probability(denominator, Decimal(value), ceiling=True) == ceiling
+            assert _scaled_probability(denominator, Decimal(value), ceiling=False) == floor

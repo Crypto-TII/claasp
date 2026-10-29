@@ -92,6 +92,44 @@ same exact treatment. The displayed weight can differ from a sum of rounded
 component weights.
 
 
+Query a fractional weight interval
+---------------------------------
+
+Enumeration accepts inclusive ``minimum_weight`` and ``maximum_weight``
+bounds. For example, this one-round Heys characteristic has probability
+3/8 and weight approximately 1.4150375:
+
+.. code-block:: python
+
+   from claasp.primitives import Heys
+
+   result = Heys(number_of_rounds=1).analysis.enumerate_xor_differential_trails(
+       minimum_weight=1.41, maximum_weight=1.42,
+       fixed_input_differences={"plaintext": 0x2000, "key": 0},
+       output_difference=0x5000,
+   )
+   result.require_complete()
+
+Linear enumeration accepts the same bounds. ``fixed_weight=1.42`` asks for
+exact equality and will not find the weight above. Use
+``fixed_weight=1.42, weight_tolerance=0.01`` for an explicit inclusive window.
+The tolerance applies to the total physical weight, not to individually
+rounded component scores. Maximum and minimum bounds cannot be combined with
+``fixed_weight``. A nonzero tolerance requires ``fixed_weight``.
+
+Decimal boundaries are translated to certified integer probability bounds;
+solver constraints and independent witness checks never compare rounded
+floating-point logarithms. Inputs are interpreted as their decimal spelling.
+An exact non-integer decimal weight generally has no matching characteristic,
+since transition probabilities are rational. The displayed weight is only a
+human-readable approximation.
+
+Enumeration is complete only after solver UNSAT. A limit or unknown status
+leaves ``complete=False``; call ``require_complete()`` before making claims
+about all trails. Auxiliary solver assignments do not count as distinct
+characteristics.
+
+
 Create a neural-distinguisher dataset
 -------------------------------------
 

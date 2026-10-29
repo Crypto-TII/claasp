@@ -223,3 +223,45 @@ def test_z3_optimizes_nonintegral_heys_correlations_exactly():
     )
     assert correlation == Fraction(3, 4)
     assert result.is_optimal
+
+
+def test_fractional_weight_intervals_and_explicit_fixed_weight_tolerance():
+    from claasp.primitives import BitVectorSBox, Heys
+    from claasp.primitives.toy_primitives.heys import HEYS_SBOX
+    from claasp.representations.constraints.smt import WordDifferentialSMTModel
+
+    cipher = Heys(number_of_rounds=1)
+    for options, count in [
+        ({"maximum_weight": 1.41}, 0),
+        ({"minimum_weight": 1.41, "maximum_weight": 1.42}, 1),
+        ({"fixed_weight": 1.42}, 0),
+        ({"fixed_weight": 1.42, "weight_tolerance": 0.01}, 1),
+    ]:
+        result = cipher.analysis.enumerate_xor_differential_trails(
+            **options,
+            fixed_input_differences={"plaintext": 0x2000, "key": 0},
+            output_difference=0x5000,
+            solver=Z3Solver(),
+        ).require_complete()
+        assert len(result.trails) == count
+        for trail in result.trails:
+            checker = WordDifferentialSMTModel(cipher, **options)
+            checker.smt_formula()
+            assert checker.check_characteristic(trail)
+
+    primitive = BitVectorSBox(4, HEYS_SBOX)
+    # abs(Walsh)/16 = 3/4 has weight 0.415037..., not exactly 0.42.
+    result = primitive.analysis.enumerate_xor_linear_trails(
+        minimum_weight=0.41,
+        maximum_weight=0.42,
+        fixed_input_masks={"input": 1},
+        solver=Z3Solver(),
+    ).require_complete()
+    assert result.trails
+    assert all(0.41 <= trail.total_weight <= 0.42 for trail in result.trails)
+    exact = primitive.analysis.enumerate_xor_linear_trails(
+        fixed_weight=0.42,
+        fixed_input_masks={"input": 1},
+        solver=Z3Solver(),
+    ).require_complete()
+    assert not exact.trails
