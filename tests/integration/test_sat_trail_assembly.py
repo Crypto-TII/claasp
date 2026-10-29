@@ -263,3 +263,31 @@ def test_public_wordwise_impossible_search_keeps_its_model_interpretation():
     assert result.found
     assert result.candidates[0].representation == "wordwise"
     assert result.candidates[0].trail.middle.contradictory_positions
+
+
+def test_composed_search_api_doctests():
+    """Run optional-solver API examples with their real driver in CI."""
+    import doctest
+    import importlib
+
+    from claasp.analysis import (
+        Analysis,
+        find_optimal_differential_linear_trail,
+        search_impossible_differentials,
+    )
+
+    runner = doctest.DocTestRunner()
+    for method in (
+        Analysis.search_impossible_differentials,
+        Analysis.find_optimal_differential_linear_trail,
+        search_impossible_differentials,
+        find_optimal_differential_linear_trail,
+    ):
+        module = importlib.import_module(method.__module__)
+        test = doctest.DocTestParser().get_doctest(
+            method.__doc__, vars(module).copy(), method.__qualname__, module.__file__, 0
+        )
+        for example in test.examples:
+            example.options[doctest.SKIP] = False
+        runner.run(test)
+    assert runner.summarize().failed == 0

@@ -533,9 +533,16 @@ class Analysis:
     ):
         """Search or enumerate checked impossible-model external pattern pairs.
 
+        Requires Kissat; the integration job executes the examples below.
+        A candidate limit is not an exhaustion proof: complete remains False.
+
         EXAMPLES::
 
-            >>> callable(Analysis.search_impossible_differentials)
+            >>> from claasp.primitives import ToySpeck
+            >>> result = ToySpeck(3).analysis.search_impossible_differentials(limit=1)  # doctest: +SKIP
+            >>> result.found, result.complete  # doctest: +SKIP
+            (True, False)
+            >>> result.candidates[0].trail.boundary.is_impossible  # doctest: +SKIP
             True
         """
         from claasp.analysis.composed_search import search_impossible_differentials
@@ -564,10 +571,16 @@ class Analysis:
     ):
         """Optimize the declared differential/truncated/linear characteristic model.
 
+        Requires Kissat; the integration job executes the examples below.
+        The rational score P_D * C_L**2 is relative to the declared model,
+        not an empirical whole-primitive correlation.
+
         EXAMPLES::
 
-            >>> callable(Analysis.find_optimal_differential_linear_trail)
-            True
+            >>> from claasp.primitives import ToySpeck
+            >>> result = ToySpeck(3).analysis.find_optimal_differential_linear_trail().require_complete()  # doctest: +SKIP
+            >>> result.partition, result.score  # doctest: +SKIP
+            ((1, 1, 1), Fraction(1, 1))
         """
         from claasp.analysis.composed_search import find_optimal_differential_linear_trail
 
