@@ -48,3 +48,23 @@ def test_boolean_ideal_basis_detects_inconsistent_fixed_io():
     assert impossible.basis == ("1",)
     consistent = result.groebner(fixed_variables=fixed, timeout_seconds=10).require_complete()
     assert consistent.basis and consistent.basis != ("1",)
+
+
+@pytest.mark.skipif(shutil.which("Singular") is None, reason="Singular is not installed")
+def test_boolean_system_api_doctests():
+    """Run optional-solver API examples with their real driver in CI."""
+    import doctest
+    import importlib
+
+    from claasp.analysis import BooleanSystemAnalysis
+
+    runner = doctest.DocTestRunner()
+    for method in (BooleanSystemAnalysis.groebner,):
+        module = importlib.import_module(method.__module__)
+        test = doctest.DocTestParser().get_doctest(
+            method.__doc__, vars(module).copy(), method.__qualname__, module.__file__, 0
+        )
+        for example in test.examples:
+            example.options[doctest.SKIP] = False
+        runner.run(test)
+    assert runner.summarize().failed == 0

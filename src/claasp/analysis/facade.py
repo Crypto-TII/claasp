@@ -571,8 +571,12 @@ class Analysis:
         EXAMPLES::
 
             >>> from claasp.primitives import Speck
-            >>> Speck(number_of_rounds=1).analysis.polynomial_system().statistics()[0][0]
-            1
+            >>> result = Speck(number_of_rounds=1).analysis.polynomial_system()
+            >>> result.statistics()
+            ((1, 272, 208, 586, 2),)
+            >>> graph = result.connection_graph(round_number=1)
+            >>> len(graph.equations) == len(result.system.equations)
+            True
         """
         from claasp.analysis.boolean_system import BooleanSystemAnalysis
         from claasp.representations.constraints.polynomial import BooleanEquationSystem
