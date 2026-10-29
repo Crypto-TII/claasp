@@ -301,7 +301,7 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute GLPK integration
-        run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py tests/integration/test_glpk_arx_transitions.py -q
+        run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py tests/integration/test_glpk_arx_transitions.py tests/integration/test_glpk_monomial_prediction.py -q
 
   latex-rendering:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
