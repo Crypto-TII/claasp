@@ -284,9 +284,12 @@ def test_composed_search_api_doctests():
         find_optimal_differential_linear_trail,
     ):
         module = importlib.import_module(method.__module__)
+        docstring = method.__doc__
+        assert docstring is not None
         test = doctest.DocTestParser().get_doctest(
-            method.__doc__, vars(module).copy(), method.__qualname__, module.__file__, 0
+            docstring, vars(module).copy(), method.__qualname__, module.__file__, 0
         )
+        assert test.examples
         for example in test.examples:
             example.options[doctest.SKIP] = False
         runner.run(test)
