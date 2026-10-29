@@ -12,18 +12,18 @@
     "misc": 26,
     "no-redef": 1,
     "operator": 79,
-    "return-value": 4,
+    "return-value": 3,
     "type-var": 2,
     "union-attr": 69,
     "var-annotated": 134
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 676,
+    "src/claasp": 675,
     "tests": 133,
     "tools": 36
   },
-  "diagnostic_count": 845,
+  "diagnostic_count": 844,
   "diagnostics": [
     {
       "code": "operator",
@@ -1410,13 +1410,6 @@
       "line": 528,
       "message": "Argument 1 to \"_store_le_word\" of \"MSX\" has incompatible type \"Any | None\"; expected \"BitState\"",
       "path": "src/claasp/primitives/block_ciphers/msx.py"
-    },
-    {
-      "code": "return-value",
-      "column": 16,
-      "line": 119,
-      "message": "Incompatible return value type (got \"UnitArray | Selection\", expected \"UnitArray\")",
-      "path": "src/claasp/primitives/block_ciphers/present.py"
     },
     {
       "code": "call-arg",

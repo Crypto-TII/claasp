@@ -47,6 +47,8 @@ class Heys(Primitive):
             )
             if round_number != number_of_rounds - 1:
                 state = permute_bits(self, state, HEYS_PERMUTATION)
+            if round_number != number_of_rounds - 1:
+                self._builder.set_round_output(state)
         state = xor_bits(
             self,
             state,
@@ -58,4 +60,5 @@ class Heys(Primitive):
                 )
             ],
         )
+        self._builder.set_round_output(state)
         self._builder.set_output(state)

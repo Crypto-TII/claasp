@@ -48,6 +48,7 @@ class ToySpeck(Primitive):
         for round_number in range(rounds):
             self._builder.add_round()
             x, y = round_function(x, y, round_key)
+            self._builder.set_round_output(x, y)
             if round_number + 1 < rounds:
                 index = round_number % len(schedule)
                 constant = self._builder.add_component(Constant(word_type, (round_number,)))
