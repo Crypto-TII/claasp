@@ -61,9 +61,13 @@ class BooleanSystemAnalysis:
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> result = Speck(number_of_rounds=1).analysis.polynomial_system()
-        >>> result.statistics()[0][0]
-        1
+        >>> result = Speck(number_of_rounds=2).analysis.polynomial_system()
+        >>> result.statistics()
+        ((1, 272, 208, 586, 2), (2, 368, 304, 871, 2))
+
+    Each row contains round, variables, equations, terms and maximum degree.
+    These are local equations retaining intermediate values and carry bits,
+    not fully expanded output ANFs or a measure of attack complexity.
     """
 
     system: BooleanEquationSystem
@@ -99,7 +103,17 @@ class BooleanSystemAnalysis:
         return tuple(rows)
 
     def to_terminal(self, *, cumulative=True, file=None):
-        """Print aligned round statistics using the shared table renderer."""
+        """Print aligned round statistics using the shared table renderer.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import BitVectorSBox
+            >>> result = BitVectorSBox(2, [0, 1, 3, 2]).analysis.polynomial_system()
+            >>> result.to_terminal()  # doctest: +NORMALIZE_WHITESPACE
+            Round | Variables | Equations | Terms | Max degree
+            ------+-----------+-----------+-------+-----------
+            1     | 4         | 2         | 5     | 1
+        """
         from claasp.presentation import Table, TableColumn, TableRow, render_terminal_table
 
         headings = ("Round", "Variables", "Equations", "Terms", "Max degree")
@@ -110,7 +124,21 @@ class BooleanSystemAnalysis:
         print(render_terminal_table(table), file=file)
 
     def connection_graph(self, *, round_number=None) -> PolynomialConnectionGraph:
-        """Return equation-variable incidence, optionally for one round."""
+        """Return equation-variable incidence, optionally for one round.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import BitVectorSBox
+            >>> result = BitVectorSBox(2, [0, 1, 3, 2]).analysis.polynomial_system()
+            >>> graph = result.connection_graph(round_number=1)
+            >>> graph.variables, graph.equations
+            (('v0', 'v1', 'v2', 'v3'), ('e0', 'e1'))
+            >>> graph.edges[:2]
+            (('v0', 'e0'), ('v2', 'e0'))
+
+        Each edge links a variable to an equation containing it. Call
+        graph.plot() with the presentation extra installed to display it.
+        """
         selected = [
             (index, equation)
             for index, (equation, owner) in enumerate(
@@ -140,6 +168,22 @@ class BooleanSystemAnalysis:
         Fixed variables use the registered names in system.inputs and
         system.variables. A timeout returns complete=False, not evidence of
         algebraic security or the absence of a solution.
+        Requires Singular; this example runs in its integration job.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import BitVectorSBox
+            >>> result = BitVectorSBox(2, [0, 1, 3, 2]).analysis.polynomial_system()
+            >>> result.system.inputs
+            (('input', ('v0', 'v1')),)
+            >>> basis = result.groebner(  # doctest: +SKIP
+            ...     fixed_variables={"v0": 0, "v1": 0, "v2": 1}, timeout_seconds=10,
+            ... ).require_complete()
+            >>> basis.basis  # doctest: +SKIP
+            ('1',)
+
+        Input 00 maps to output 00. Fixing its first output variable v2 to 1
+        is inconsistent; a completed basis containing 1 certifies this.
         """
         from claasp.drivers.algebra import SingularDriver
 
