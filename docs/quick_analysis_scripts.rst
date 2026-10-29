@@ -93,7 +93,7 @@ component weights.
 
 
 Query a fractional weight interval
----------------------------------
+----------------------------------
 
 Enumeration accepts inclusive ``minimum_weight`` and ``maximum_weight``
 bounds. For example, this one-round Heys characteristic has probability
