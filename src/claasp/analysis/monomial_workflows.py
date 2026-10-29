@@ -429,7 +429,14 @@ def recover_superpoly(
         assignment = run.assignment
         monomial: list[str] = []
         for name, array in primitive.graph.input_arrays.items():
-            prefix = {"plaintext": "p", "key": "k", "state": "s", "iv": "i"}.get(name, name + "_")
+            prefix = {
+                "plaintext": "p",
+                "key": "k",
+                "state": "s",
+                "iv": "i",
+                "left": "l",
+                "right": "r",
+            }.get(name, name + "_")
             monomial.extend(
                 f"{prefix}{bit}"
                 for bit in range(compilation._width(array.array_type))
