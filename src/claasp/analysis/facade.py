@@ -605,10 +605,20 @@ class Analysis:
     ):
         """Find a division-property upper bound or a parity-proved exact degree.
 
+        Requires GLPK. The integration job executes the solver examples below.
+        Default bounds do not account for cancellation; exact mode must finish
+        path enumeration before its degree can be used as an exact result.
+
         EXAMPLES::
 
-            >>> callable(Analysis.algebraic_degree)
-            True
+            >>> from claasp.primitives import Simon
+            >>> primitive = Simon(number_of_rounds=1)
+            >>> bound = primitive.analysis.algebraic_degree(output_bit=0)  # doctest: +SKIP
+            >>> bound.upper_bound, bound.exact_degree  # doctest: +SKIP
+            (2, None)
+            >>> exact = primitive.analysis.algebraic_degree(output_bit=0, exact=True).require_complete()  # doctest: +SKIP
+            >>> exact.exact_degree  # doctest: +SKIP
+            2
         """
         from claasp.analysis.monomial_workflows import find_algebraic_degree
 
@@ -634,10 +644,20 @@ class Analysis:
     ):
         """Recover a cube superpoly by complete solver-path parity.
 
+        Requires GLPK. The integration job executes the solver examples below.
+        Other variables stay symbolic unless zero_outside_cube is requested.
+
         EXAMPLES::
 
-            >>> callable(Analysis.superpoly)
+            >>> from claasp.primitives import Simon
+            >>> from claasp.representations.constraints.polynomial import BooleanPolynomial
+            >>> primitive = Simon(number_of_rounds=1)
+            >>> result = primitive.analysis.superpoly((1,), output_bit=0).require_complete()  # doctest: +SKIP
+            >>> result.polynomial == BooleanPolynomial.variable("p8")  # doctest: +SKIP
             True
+            >>> zeroed = primitive.analysis.superpoly((1,), zero_outside_cube=True).require_complete()  # doctest: +SKIP
+            >>> zeroed.polynomial.degree  # doctest: +SKIP
+            -1
         """
         from claasp.analysis.monomial_workflows import recover_superpoly
 
