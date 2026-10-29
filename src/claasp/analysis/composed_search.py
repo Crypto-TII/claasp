@@ -77,10 +77,16 @@ def search_impossible_differentials(
     A finite limit is not an exhaustion certificate. Wordwise candidates carry
     the existing model's abstract interpretation rather than a new concrete
     probability claim. Unsupported operations fail explicitly.
+    Requires Kissat; these examples run in its integration job. A one-candidate
+    limit finds a checked contradiction but does not exhaust the search.
 
     EXAMPLES::
 
-        >>> callable(search_impossible_differentials)
+        >>> from claasp.primitives import ToySpeck
+        >>> result = ToySpeck(3).analysis.search_impossible_differentials(limit=1)  # doctest: +SKIP
+        >>> result.found, result.complete  # doctest: +SKIP
+        (True, False)
+        >>> result.candidates[0].trail.boundary.is_impossible  # doctest: +SKIP
         True
     """
     from claasp.representations.constraints.sat import (
@@ -293,10 +299,16 @@ def find_optimal_differential_linear_trail(
     Default execution uses the optional Kissat executable. No sampled or
     whole-primitive correlation is inferred from the characteristic score.
 
+    Requires Kissat; these examples run in its integration job. The score is
+    P_D * C_L**2 for this characteristic model, not a measured whole-primitive
+    correlation. require_complete() is needed before claiming model optimality.
+
     EXAMPLES::
 
-        >>> callable(find_optimal_differential_linear_trail)
-        True
+        >>> from claasp.primitives import ToySpeck
+        >>> result = ToySpeck(3).analysis.find_optimal_differential_linear_trail().require_complete()  # doctest: +SKIP
+        >>> result.partition, result.score  # doctest: +SKIP
+        ((1, 1, 1), Fraction(1, 1))
     """
     from claasp.representations.constraints.sat import WordDeterministicDifferentialLinearSATModel
     from claasp.representations.constraints.smt._probability_encoding import (
