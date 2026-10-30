@@ -14,6 +14,11 @@ from claasp.analysis.avalanche import (
     AvalancheResult,
     avalanche_probabilities,
 )
+from claasp.analysis.boolean_system import (
+    BooleanSystemAnalysis,
+    GroebnerResult,
+    PolynomialConnectionGraph,
+)
 from claasp.analysis.boomerang import (
     BoomerangExperimentResult,
     run_speck32_boomerang_experiment,
@@ -185,6 +190,9 @@ __all__ = [
     "AvalancheSample",
     "BitPattern",
     "BooleanAlgebraicEvidence",
+    "BooleanSystemAnalysis",
+    "GroebnerResult",
+    "PolynomialConnectionGraph",
     "BoomerangExperimentResult",
     "CPCharacteristicResult",
     "ComponentAnalysis",

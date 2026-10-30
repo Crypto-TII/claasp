@@ -457,6 +457,12 @@
       "qualified_name": "claasp.analysis.BooleanAlgebraicEvidence"
     },
     {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.BooleanSystemAnalysis"
+    },
+    {
       "canonical_name": "claasp.analysis.boomerang.BoomerangExperimentResult",
       "defined_in": "claasp.analysis.boomerang",
       "kind": "dataclass",
@@ -605,6 +611,12 @@
       "defined_in": "claasp.analysis.randomness",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.FrequencyTestResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.GroebnerResult"
     },
     {
       "canonical_name": "claasp.analysis.constraints.HammingWeight",
@@ -761,6 +773,12 @@
       "defined_in": "claasp.analysis.constraints",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.NotEqual"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.PolynomialConnectionGraph"
     },
     {
       "canonical_name": "claasp.analysis.monomial.PresentMonomialSemantics",
@@ -1293,6 +1311,119 @@
       "defined_in": "claasp.analysis.neural",
       "kind": "function",
       "qualified_name": "claasp.analysis.black_box_dataset"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.__init__",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.BooleanSystemAnalysis",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.connection_graph",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.connection_graph"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.groebner",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.groebner"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.statistics",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.statistics"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.system",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.BooleanSystemAnalysis",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.system"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.to_terminal",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult.__init__",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.GroebnerResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.boolean_system.GroebnerResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult.basis",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.GroebnerResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.GroebnerResult.basis"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult.complete",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.GroebnerResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.GroebnerResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult.diagnostic",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.GroebnerResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.GroebnerResult.diagnostic"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult.require_complete",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boolean_system.GroebnerResult.require_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult.runtime_seconds",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.GroebnerResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.GroebnerResult.runtime_seconds"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.__init__",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.PolynomialConnectionGraph",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.edges",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.PolynomialConnectionGraph",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.edges"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.equations",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.PolynomialConnectionGraph",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.equations"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.plot",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.plot"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.variables",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.PolynomialConnectionGraph",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.variables"
     },
     {
       "canonical_name": "claasp.analysis.boomerang.BoomerangExperimentResult.__init__",
@@ -2899,6 +3030,12 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.neural_differential"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.polynomial_system",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.polynomial_system"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.propagate_truncated_xor_difference",
@@ -25201,6 +25338,12 @@
       "qualified_name": "claasp.representations.constraints.polynomial"
     },
     {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.polynomial.BooleanEquationSystem"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.polynomial.boolean.BooleanMonomial",
       "defined_in": "claasp.representations.constraints.polynomial.boolean",
       "kind": "dataclass",
@@ -25335,6 +25478,60 @@
       "defined_in": "claasp.representations.constraints.polynomial.boolean",
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.polynomial.boolean.BooleanPolynomial.zero"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.__init__",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "documented_by": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.equations",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "documented_by": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.equations"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.from_primitive",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.from_primitive"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.inputs",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "documented_by": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.inputs"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.outputs",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "documented_by": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.outputs"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.rounds",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "documented_by": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.rounds"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.singular_program",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.singular_program"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.variables",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "documented_by": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.variables"
     },
     {
       "canonical_name": "claasp.representations.constraints.polynomial.boolean.equality_polynomials",

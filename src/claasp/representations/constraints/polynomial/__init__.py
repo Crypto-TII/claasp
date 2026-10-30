@@ -10,6 +10,7 @@ from claasp.representations.constraints.polynomial.boolean import (
     monomial_transition_table,
     vectorial_anf,
 )
+from claasp.representations.constraints.polynomial.boolean_system import BooleanEquationSystem
 from claasp.representations.constraints.polynomial.expression import Monomial, Polynomial
 from claasp.representations.constraints.polynomial.lowering import (
     PowerLoweringPolicy,
@@ -21,6 +22,7 @@ from claasp.representations.constraints.polynomial.system import (
 )
 
 __all__ = [
+    "BooleanEquationSystem",
     "BooleanMonomial",
     "BooleanPolynomial",
     "Monomial",

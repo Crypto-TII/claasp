@@ -7,23 +7,23 @@
     "call-overload": 82,
     "dict-item": 28,
     "has-type": 22,
-    "index": 63,
+    "index": 62,
     "list-item": 4,
-    "misc": 28,
+    "misc": 26,
     "no-redef": 1,
     "operator": 79,
     "return-value": 4,
     "type-var": 2,
     "union-attr": 69,
-    "var-annotated": 135
+    "var-annotated": 134
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 680,
+    "src/claasp": 676,
     "tests": 133,
     "tools": 36
   },
-  "diagnostic_count": 849,
+  "diagnostic_count": 845,
   "diagnostics": [
     {
       "code": "operator",
@@ -4063,34 +4063,6 @@
       "line": 540,
       "message": "\"UnitType\" has no attribute \"degree\"",
       "path": "src/claasp/representations/execution/scalar.py"
-    },
-    {
-      "code": "misc",
-      "column": 21,
-      "line": 68,
-      "message": "Generator has incompatible item type \"tuple[BooleanPolynomial, ...]\"; expected \"BooleanPolynomial\"",
-      "path": "src/claasp/representations/execution/symbolic_boolean.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 79,
-      "message": "Need type annotation for \"binding_cache\" (hint: \"binding_cache: dict[<type>, <type>] = ...\")",
-      "path": "src/claasp/representations/execution/symbolic_boolean.py"
-    },
-    {
-      "code": "index",
-      "column": 20,
-      "line": 85,
-      "message": "Invalid index type \"str | None\" for \"dict[str, tuple[BooleanPolynomial, ...]]\"; expected type \"str\"",
-      "path": "src/claasp/representations/execution/symbolic_boolean.py"
-    },
-    {
-      "code": "misc",
-      "column": 25,
-      "line": 116,
-      "message": "Generator has incompatible item type \"tuple[BooleanPolynomial, ...]\"; expected \"BooleanPolynomial\"",
-      "path": "src/claasp/representations/execution/symbolic_boolean.py"
     },
     {
       "code": "misc",
