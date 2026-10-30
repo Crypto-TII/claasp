@@ -189,3 +189,108 @@ def test_native_xor_trail_counts_match_ordinary_cnf(model, expected):
     assert len(result.trails) == expected
     assert dict(result.reproducibility)["formulation"] == "native_xor"
     assert all(model.check_characteristic(trail) for trail in result.trails)
+
+
+def test_public_automatic_impossible_search_has_concrete_toy_validation():
+    primitive = ToySpeck(3)
+    result = primitive.analysis.search_impossible_differentials(
+        solver=KissatSolver(timeout_seconds=20)
+    )
+    assert result.found and not result.complete
+    candidate = result.candidates[0]
+    assert candidate.trail.boundary.is_impossible
+    input_pattern = str(dict(candidate.trail.forward.input_patterns)["plaintext"])
+    output_pattern = str(dict(candidate.trail.backward.input_patterns)["output"])
+
+    def matches(value, pattern):
+        return all(symbol == "?" or symbol == bit for symbol, bit in zip(pattern, f"{value:08b}"))
+
+    for key in (0, 1, 0x1234):
+        outputs = []
+        for x in range(256):
+            output = primitive.evaluate(plaintext=x, key=key)
+            assert isinstance(output, int)
+            outputs.append(output)
+        for difference in range(256):
+            if matches(difference, input_pattern):
+                assert all(
+                    not matches(outputs[x] ^ outputs[x ^ difference], output_pattern)
+                    for x in range(256)
+                )
+
+
+def test_public_present_impossible_search_and_distinct_external_pairs():
+    from claasp.primitives import Present
+
+    result = Present(number_of_rounds=2).analysis.search_impossible_differentials(
+        limit=2, solver=KissatSolver(timeout_seconds=20)
+    )
+    assert len(result.candidates) == 2
+    patterns = {
+        (
+            str(dict(candidate.trail.forward.input_patterns)["plaintext"]),
+            str(dict(candidate.trail.backward.input_patterns)["output"]),
+        )
+        for candidate in result.candidates
+    }
+    assert len(patterns) == 2
+    assert all(candidate.trail.boundary.is_impossible for candidate in result.candidates)
+
+
+def test_public_differential_linear_search_optimizes_all_declared_partitions():
+    from fractions import Fraction
+
+    result = (
+        ToySpeck(4)
+        .analysis.find_optimal_differential_linear_trail(solver=KissatSolver(timeout_seconds=20))
+        .require_complete()
+    )
+    assert result.found
+    assert set(result.attempted_partitions) == {(1, 1, 2), (1, 2, 1), (2, 1, 1)}
+    # Probability one reaches the universal upper bound, certifying this fixture.
+    assert result.score == Fraction(1)
+    assert result.trail.total_weight == 0
+
+
+def test_public_wordwise_impossible_search_keeps_its_model_interpretation():
+    from claasp.primitives import ToyAES
+
+    result = ToyAES(
+        number_of_rounds=2, word_size=4, state_size=2
+    ).analysis.search_impossible_differentials(
+        representation="wordwise", solver=KissatSolver(timeout_seconds=20)
+    )
+    assert result.found
+    assert result.candidates[0].representation == "wordwise"
+    assert result.candidates[0].trail.middle.contradictory_positions
+
+
+def test_composed_search_api_doctests():
+    """Run optional-solver API examples with their real driver in CI."""
+    import doctest
+    import importlib
+
+    from claasp.analysis import (
+        Analysis,
+        find_optimal_differential_linear_trail,
+        search_impossible_differentials,
+    )
+
+    runner = doctest.DocTestRunner()
+    for method in (
+        Analysis.search_impossible_differentials,
+        Analysis.find_optimal_differential_linear_trail,
+        search_impossible_differentials,
+        find_optimal_differential_linear_trail,
+    ):
+        module = importlib.import_module(method.__module__)
+        docstring = method.__doc__
+        assert docstring is not None
+        test = doctest.DocTestParser().get_doctest(
+            docstring, vars(module).copy(), method.__qualname__, module.__file__, 0
+        )
+        assert test.examples
+        for example in test.examples:
+            example.options[doctest.SKIP] = False
+        runner.run(test)
+    assert runner.summarize().failed == 0

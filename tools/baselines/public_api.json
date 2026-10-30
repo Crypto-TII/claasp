@@ -595,6 +595,12 @@
       "qualified_name": "claasp.analysis.DifferentialLinearFixture"
     },
     {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.DifferentialLinearSearchResult"
+    },
+    {
       "canonical_name": "claasp.analysis.constraints.Equal",
       "defined_in": "claasp.analysis.constraints",
       "kind": "dataclass",
@@ -641,6 +647,18 @@
       "defined_in": "claasp.analysis.hybrid",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.HybridDifferentialResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleCandidate",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ImpossibleCandidate"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ImpossibleSearchResult"
     },
     {
       "canonical_name": "claasp.analysis.legacy_evidence.LegacyBoundedDifferentialCluster",
@@ -2486,6 +2504,147 @@
       "qualified_name": "claasp.analysis.composed.DifferentialLinearFixture.trail"
     },
     {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.__init__",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.attempted_partitions",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.attempted_partitions"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.complete",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.found",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.found"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.partition",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.partition"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.require_complete",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.require_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.score",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.score"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.to_terminal",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.trail",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleCandidate.__init__",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleCandidate",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleCandidate.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleCandidate.middle_round",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleCandidate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleCandidate.middle_round"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleCandidate.representation",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleCandidate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleCandidate.representation"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleCandidate.trail",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleCandidate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleCandidate.trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.__init__",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleSearchResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.attempted_rounds",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.attempted_rounds"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.candidates",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.candidates"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.complete",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.found",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.found"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.require_complete",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.require_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.termination",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.termination"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.to_terminal",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.to_terminal"
+    },
+    {
       "canonical_name": "claasp.analysis.constraints.Equal.__init__",
       "defined_in": "claasp.analysis.constraints",
       "documented_by": "claasp.analysis.constraints.Equal",
@@ -3032,6 +3191,12 @@
       "qualified_name": "claasp.analysis.facade.Analysis.find_lowest_weight_xor_linear_trail"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.find_optimal_differential_linear_trail",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.find_optimal_differential_linear_trail"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.find_optimal_trail",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -3096,6 +3261,12 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.run_statistical_tests"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.search_impossible_differentials",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.search_impossible_differentials"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.solve",
@@ -3256,6 +3427,12 @@
       "defined_in": "claasp.analysis.advanced_trails",
       "kind": "function",
       "qualified_name": "claasp.analysis.find_impossible_xor_differential"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.find_optimal_differential_linear_trail",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.find_optimal_differential_linear_trail"
     },
     {
       "canonical_name": "claasp.analysis.advanced_trails.find_probabilistic_truncated_xor_differential",
@@ -4730,6 +4907,12 @@
       "defined_in": "claasp.analysis.statistical",
       "kind": "function",
       "qualified_name": "claasp.analysis.run_statistical_campaign"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.search_impossible_differentials",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.search_impossible_differentials"
     },
     {
       "canonical_name": "claasp.analysis.component_properties.semantic_component_groups",

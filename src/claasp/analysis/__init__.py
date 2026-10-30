@@ -54,6 +54,13 @@ from claasp.analysis.composed import (
     run_speck32_differential_linear_experiment,
     speck32_differential_linear_legacy_fixture,
 )
+from claasp.analysis.composed_search import (
+    DifferentialLinearSearchResult,
+    ImpossibleCandidate,
+    ImpossibleSearchResult,
+    find_optimal_differential_linear_trail,
+    search_impossible_differentials,
+)
 from claasp.analysis.constraints import (
     Equal,
     FixedValue,
@@ -193,6 +200,11 @@ __all__ = [
     "analyze_anf",
     "find_algebraic_degree",
     "recover_superpoly",
+    "ImpossibleCandidate",
+    "ImpossibleSearchResult",
+    "DifferentialLinearSearchResult",
+    "search_impossible_differentials",
+    "find_optimal_differential_linear_trail",
     "AnalysisProblem",
     "AnalysisResult",
     "TrailSearchBackend",

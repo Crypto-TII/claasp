@@ -518,6 +518,81 @@ class Analysis:
             self.primitive, input_pattern, output_pattern, solver=solver
         )
 
+    def search_impossible_differentials(
+        self,
+        *,
+        middle_round=None,
+        split_order=None,
+        input_pattern=None,
+        output_pattern=None,
+        active_input="plaintext",
+        zero_difference_inputs=None,
+        representation="bitwise",
+        solver=None,
+        limit=1,
+    ):
+        """Search or enumerate checked impossible-model external pattern pairs.
+
+        Requires Kissat; the integration job executes the examples below.
+        A candidate limit is not an exhaustion proof: complete remains False.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import ToySpeck
+            >>> result = ToySpeck(3).analysis.search_impossible_differentials(limit=1)  # doctest: +SKIP
+            >>> result.found, result.complete  # doctest: +SKIP
+            (True, False)
+            >>> result.candidates[0].trail.boundary.is_impossible  # doctest: +SKIP
+            True
+        """
+        from claasp.analysis.composed_search import search_impossible_differentials
+
+        return search_impossible_differentials(
+            self.primitive,
+            middle_round=middle_round,
+            split_order=split_order,
+            input_pattern=input_pattern,
+            output_pattern=output_pattern,
+            active_input=active_input,
+            zero_difference_inputs=zero_difference_inputs,
+            representation=representation,
+            solver=solver,
+            limit=limit,
+        )
+
+    def find_optimal_differential_linear_trail(
+        self,
+        *,
+        prefix_rounds=None,
+        middle_rounds=None,
+        input_difference=None,
+        output_mask=None,
+        solver=None,
+    ):
+        """Optimize the declared differential/truncated/linear characteristic model.
+
+        Requires Kissat; the integration job executes the examples below.
+        The rational score P_D * C_L**2 is relative to the declared model,
+        not an empirical whole-primitive correlation.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import ToySpeck
+            >>> result = ToySpeck(3).analysis.find_optimal_differential_linear_trail().require_complete()  # doctest: +SKIP
+            >>> result.partition, result.score  # doctest: +SKIP
+            ((1, 1, 1), Fraction(1, 1))
+        """
+        from claasp.analysis.composed_search import find_optimal_differential_linear_trail
+
+        return find_optimal_differential_linear_trail(
+            self.primitive,
+            prefix_rounds=prefix_rounds,
+            middle_rounds=middle_rounds,
+            input_difference=input_difference,
+            output_mask=output_mask,
+            solver=solver,
+        )
+
     def find_impossible_xor_differential(
         self,
         middle_round,
