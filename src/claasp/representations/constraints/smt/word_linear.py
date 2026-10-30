@@ -26,9 +26,10 @@ from claasp.components import (
 from claasp.drivers.solvers import SatStatus
 from claasp.representations.constraints import ConstraintBackend, _direct_model
 from claasp.representations.constraints.smt._probability_encoding import (
-    _add_bound,
+    _add_weight_interval,
     _encode_probability_product,
-    _satisfies_weight_bound,
+    _weight_interval,
+    _within_interval,
 )
 from claasp.representations.constraints.smt._sbox_encoding import _add_sbox_relation
 from claasp.representations.constraints.smt.formula import SMTFormula
@@ -115,17 +116,26 @@ class WordLinearSMTModel:
         self,
         primitive,
         *,
-        maximum_weight,
+        maximum_weight=None,
+        minimum_weight=None,
+        fixed_weight=None,
+        weight_tolerance=0,
         nonzero_input=None,
         fixed_input_masks=None,
         fixed_inputs=None,
     ):
-        if maximum_weight is not None and (
-            not isinstance(maximum_weight, int)
-            or isinstance(maximum_weight, bool)
-            or maximum_weight < 0
-        ):
-            raise ValueError("maximum_weight must be a nonnegative integer")
+        self._weight_interval = _weight_interval(
+            maximum_weight, fixed_weight, minimum_weight, weight_tolerance
+        )
+        self._general_weight_query = (
+            minimum_weight is not None
+            or weight_tolerance != 0
+            or any(
+                value is not None and not isinstance(value, int)
+                for value in (maximum_weight, fixed_weight)
+            )
+        )
+        self._general_weight_query |= fixed_weight is not None
         self.primitive = primitive
         self.maximum_weight = maximum_weight
         self.nonzero_input = nonzero_input
@@ -446,7 +456,7 @@ class WordLinearSMTModel:
         semantic_names = tuple(variables)
         self._probability_bits: tuple[int | bool, ...] = ()
         self._probability_denominator = 1
-        if probability_factors:
+        if probability_factors or self._general_weight_query:
             self._probability_bits, self._probability_denominator = _encode_probability_product(
                 probability_factors,
                 weights,
@@ -454,10 +464,14 @@ class WordLinearSMTModel:
                 indices,
                 add,
             )
-            if self.maximum_weight is not None:
-                scale = 1 << self.maximum_weight
-                minimum = (self._probability_denominator + scale - 1) // scale
-                _add_bound(self._probability_bits, minimum, allocate, indices, add)
+            _add_weight_interval(
+                self._probability_bits,
+                self._probability_denominator,
+                self._weight_interval,
+                allocate,
+                indices,
+                add,
+            )
         elif self.maximum_weight is not None:
             _at_most(weights, self.maximum_weight, allocate, indices, add)
         self._unit_arrays, self._edges, self._records, self._output = (
@@ -586,7 +600,7 @@ class WordLinearSMTModel:
             constant_sign,
             tuple((name, assignment[name]) for name in self._semantic_names),
         )
-        if not _satisfies_weight_bound(result.steps, self.maximum_weight):
+        if not _within_interval(result.steps, self._weight_interval):
             raise ValueError("word linear witness exceeds weight bound")
         if not self.check_characteristic(result):
             raise ValueError("word linear witness violates independent graph mask rules")
@@ -811,7 +825,7 @@ class WordLinearSMTModel:
             and trail.output_mask == _packed(self._output, values)
             and trail.steps == tuple(steps)
             and trail.constant_sign == constant_sign
-            and _satisfies_weight_bound(trail.steps, self.maximum_weight)
+            and _within_interval(trail.steps, self._weight_interval)
             and (self.nonzero_input is None or input_dict[self.nonzero_input] != 0)
             and all(input_dict[name] == value for name, value in self.fixed_input_masks.items())
         )
@@ -823,6 +837,7 @@ class WordLinearSMTModel:
         formula = self.smt_formula()
         metadata = (
             ("primitive", self.primitive.family_name),
+            ("weight_interval", repr(self._weight_interval)),
             (
                 "realization",
                 getattr(getattr(self.primitive, "realization", None), "name", "default"),
@@ -848,6 +863,10 @@ class WordLinearSMTModel:
             ),
             ("formula_sha256", sha256(repr(formula).encode()).hexdigest()),
             ("fixed_inputs", repr(tuple(sorted(self.fixed_inputs.items())))),
+        )
+        blocking_names = {name for names in self._unit_arrays.values() for name in names}
+        blocking_names.update(
+            name for operands in self._edges.values() for names in operands for name in names
         )
         indices = {name: i for i, name in enumerate(formula.variables, 1)}
         trails: list[WordLinearCharacteristic] = []
@@ -879,6 +898,7 @@ class WordLinearSMTModel:
                     tuple(
                         -indices[name] if value else indices[name]
                         for name, value in trail.semantic_assignment
+                        if name in blocking_names
                     )
                 )
 
