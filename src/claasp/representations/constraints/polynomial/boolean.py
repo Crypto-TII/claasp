@@ -1,7 +1,23 @@
 """Sparse Boolean polynomials and exact monomial-transition semantics."""
 
 from collections.abc import Iterable, Mapping, Sequence
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
+
+_ANF_BUDGET: ContextVar[dict[str, int] | None] = ContextVar("claasp_anf_budget", default=None)
+
+
+@contextmanager
+def _bounded_anf(maximum_terms, maximum_operations):
+    for limit in (maximum_terms, maximum_operations):
+        if type(limit) is not int or limit <= 0:
+            raise ValueError("ANF resource limits must be positive integers")
+    token = _ANF_BUDGET.set({"terms": maximum_terms, "remaining": maximum_operations})
+    try:
+        yield
+    finally:
+        _ANF_BUDGET.reset(token)
 
 
 @dataclass(frozen=True, slots=True, order=True)
@@ -60,6 +76,7 @@ class BooleanPolynomial:
 
     def __init__(self, monomials: Iterable[BooleanMonomial] = ()) -> None:
         parity: set[BooleanMonomial] = set()
+        budget = _ANF_BUDGET.get()
         for monomial in monomials:
             if not isinstance(monomial, BooleanMonomial):
                 raise TypeError("ANF terms must be BooleanMonomial objects")
@@ -67,6 +84,10 @@ class BooleanPolynomial:
                 parity.remove(monomial)
             else:
                 parity.add(monomial)
+                if budget is not None and len(parity) > budget["terms"]:
+                    raise RuntimeError(
+                        "exact ANF exceeded maximum_terms; use fewer rounds, fixed inputs, or the solver-based degree workflow"
+                    )
         object.__setattr__(self, "monomials", tuple(sorted(parity)))
 
     @classmethod
@@ -107,6 +128,13 @@ class BooleanPolynomial:
             other = self.one() if other else self.zero()
         if not isinstance(other, BooleanPolynomial):
             return NotImplemented
+        budget = _ANF_BUDGET.get()
+        if budget is not None:
+            budget["remaining"] -= len(self.monomials) * len(other.monomials)
+            if budget["remaining"] < 0:
+                raise RuntimeError(
+                    "exact ANF exceeded maximum_operations; use fewer rounds, fixed inputs, or the solver-based degree workflow"
+                )
         return BooleanPolynomial(
             left * right for left in self.monomials for right in other.monomials
         )
