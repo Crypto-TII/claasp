@@ -601,6 +601,12 @@
       "qualified_name": "claasp.analysis.FixedValue"
     },
     {
+      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult",
+      "defined_in": "claasp.analysis.randomness",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.FrequencyTestResult"
+    },
+    {
       "canonical_name": "claasp.analysis.constraints.HammingWeight",
       "defined_in": "claasp.analysis.constraints",
       "kind": "dataclass",
@@ -857,6 +863,12 @@
       "defined_in": "claasp.analysis.statistical_results",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.StatisticalTestRun"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.SuppliedStatisticalDataset"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.Trail",
@@ -3073,6 +3085,12 @@
       "qualified_name": "claasp.analysis.find_sbox_boomerang_transition"
     },
     {
+      "canonical_name": "claasp.analysis.randomness.frequency_test",
+      "defined_in": "claasp.analysis.randomness",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.frequency_test"
+    },
+    {
       "canonical_name": "claasp.analysis.datasets.generate_avalanche_dataset",
       "defined_in": "claasp.analysis.datasets",
       "kind": "function",
@@ -4286,6 +4304,54 @@
       "qualified_name": "claasp.analysis.random_statistical_dataset"
     },
     {
+      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.__init__",
+      "defined_in": "claasp.analysis.randomness",
+      "documented_by": "claasp.analysis.randomness.FrequencyTestResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.alpha",
+      "defined_in": "claasp.analysis.randomness",
+      "documented_by": "claasp.analysis.randomness.FrequencyTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.alpha"
+    },
+    {
+      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.applicable",
+      "defined_in": "claasp.analysis.randomness",
+      "documented_by": "claasp.analysis.randomness.FrequencyTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.applicable"
+    },
+    {
+      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.bit_count",
+      "defined_in": "claasp.analysis.randomness",
+      "documented_by": "claasp.analysis.randomness.FrequencyTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.bit_count"
+    },
+    {
+      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.ones",
+      "defined_in": "claasp.analysis.randomness",
+      "documented_by": "claasp.analysis.randomness.FrequencyTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.ones"
+    },
+    {
+      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.p_value",
+      "defined_in": "claasp.analysis.randomness",
+      "documented_by": "claasp.analysis.randomness.FrequencyTestResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.p_value"
+    },
+    {
+      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.passed",
+      "defined_in": "claasp.analysis.randomness",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.passed"
+    },
+    {
       "canonical_name": "claasp.analysis.neural.round_component_ids",
       "defined_in": "claasp.analysis.neural",
       "kind": "function",
@@ -4700,6 +4766,51 @@
       "documented_by": "claasp.analysis.statistical_datasets.StatisticalRecord",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.statistical_datasets.StatisticalRecord.value"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.__init__",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "documented_by": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.bit_count",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "documented_by": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.bit_count"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.data",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "documented_by": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.data"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.digest",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.digest"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.from_bits",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.from_bits"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.from_file",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.from_file"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.write_binary",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.write_binary"
     },
     {
       "canonical_name": "claasp.analysis.statistical_results.DieharderObservation.__init__",
