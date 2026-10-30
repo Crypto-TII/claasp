@@ -8,7 +8,15 @@ on:
       - "**"
       - ".github/workflows/claasp-v5-release-image.yaml"
   pull_request:
-    branches: [claasp-v5, develop]
+    branches:
+      - claasp-v5
+      - develop
+      # Bases used by the CLAASP v5 tutorial-porting PR stack.
+      - feat/latex-report-tables
+      - feat/statistical-supplied-datasets
+      - feat/fractional-trail-queries
+      - feat/boolean-algebraic-systems
+      - feat/monomial-analysis-workflows
     paths:
       - "docker/v5/**"
       - "**"
@@ -19,7 +27,7 @@ permissions:
 
 jobs:
   multiarch-build:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -35,7 +43,7 @@ jobs:
           cache-to: type=gha,scope=claasp-v5-release,mode=max
 
   architecture-validation:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     needs: multiarch-build
     runs-on: ubuntu-latest
     strategy:

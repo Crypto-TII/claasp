@@ -38,7 +38,7 @@ from claasp.presentation.exports import (
     section_data,
     table_data,
 )
-from claasp.presentation.files import WrittenReport, render_report, write_report
+from claasp.presentation.files import Report, WrittenReport, render_report, write_report
 from claasp.presentation.formatting import FormatSpec, ValueKind, format_value
 from claasp.presentation.model import (
     Alignment,
@@ -64,6 +64,7 @@ __all__ = [
     "PresentationEvidence",
     "PresentationProvenance",
     "PrimitiveProvenance",
+    "Report",
     "ReportData",
     "ReportSection",
     "ReproducibilityMetadata",

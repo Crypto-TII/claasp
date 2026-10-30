@@ -5,8 +5,10 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TextIO
 
-from claasp.presentation.exports import render_section, report_data
+from claasp.presentation.composition import present
+from claasp.presentation.exports import _latex, render_section, report_data
 from claasp.presentation.model import ReportData
 
 _EXTENSIONS = {
@@ -14,6 +16,7 @@ _EXTENSIONS = {
     "markdown": ".md",
     "csv": ".csv",
     "json": ".json",
+    "latex": ".tex",
 }
 
 
@@ -35,7 +38,7 @@ class WrittenReport:
 
 def _validated_path(path: str | Path, output_format: str) -> Path:
     if output_format not in _EXTENSIONS:
-        raise ValueError("format must be one of: terminal, markdown, csv, json")
+        raise ValueError("format must be one of: terminal, markdown, csv, json, latex")
     candidate = Path(path)
     if not candidate.name or any(part == ".." for part in candidate.parts):
         raise ValueError("output path must be explicit and must not contain '..'")
@@ -113,9 +116,11 @@ def render_report(
     """
 
     normalized = format.strip().lower()
-    if normalized not in {"terminal", "markdown"}:
-        raise ValueError("human-readable report format must be terminal or markdown")
+    if normalized not in {"terminal", "markdown", "latex"}:
+        raise ValueError("human-readable report format must be terminal, markdown, or latex")
     heading = f"# {report.title}\n" if normalized == "markdown" else report.title + "\n"
+    if normalized == "latex":
+        heading = r"\section*{" + _latex(report.title) + "}\n"
     sections = "\n".join(render_section(section, format=normalized) for section in report.sections)
     mathematical = report.provenance.mathematical
     lines = [f"method: {mathematical.method}"]
@@ -137,4 +142,74 @@ def render_report(
         locator = f" ({citation.locator})" if citation.locator else ""
         lines.append(f"citation [{citation.identifier}]: {citation.title}{locator}")
     label = "## Provenance" if normalized == "markdown" else "Provenance"
+    if normalized == "latex":
+        label = r"\subsection*{Provenance}"
+        lines = [_latex(line) for line in lines]
     return heading + "\n" + sections + "\n" + label + "\n\n" + "\n".join(lines) + "\n"
+
+
+class Report:
+    """Present an existing analysis result or immutable report data.
+
+    Construction never runs an analysis. Rendering and file output delegate
+    to the shared presentation layer.
+
+    EXAMPLES::
+
+        >>> from claasp.analysis.avalanche import AvalancheResult
+        >>> report = Report(AvalancheResult("demo", "input", 2, 7, ((0.0, 1.0),)))
+        >>> report.data.title
+        'Avalanche'
+    """
+
+    def __init__(self, result: object) -> None:
+        self.data = result if isinstance(result, ReportData) else present(result)
+
+    def render(self, *, format: str = "terminal") -> str:  # noqa: A002 - public format API
+        """Return terminal, Markdown, or LaTeX text without printing it.
+
+        EXAMPLES::
+
+            >>> Report.render.__name__
+            'render'
+        """
+        return render_report(self.data, format=format)
+
+    def to_latex(self) -> str:
+        """Return an escaped LaTeX fragment for inclusion in a document.
+
+        EXAMPLES::
+
+            >>> Report.to_latex.__name__
+            'to_latex'
+        """
+        return self.render(format="latex")
+
+    def to_terminal(self, *, file: TextIO | None = None) -> None:
+        """Print the report to the terminal or a supplied text stream.
+
+        EXAMPLES::
+
+            >>> Report.to_terminal.__name__
+            'to_terminal'
+        """
+        print(self.render(), end="", file=file)
+
+    def save(
+        self,
+        path: str | Path,
+        *,
+        format: str,  # noqa: A002 - public format API
+        overwrite: bool = False,
+        create_parents: bool = False,
+    ) -> WrittenReport:
+        """Save a report with an explicit format and overwrite policy.
+
+        EXAMPLES::
+
+            >>> Report.save.__name__
+            'save'
+        """
+        return write_report(
+            self.data, path, format=format, overwrite=overwrite, create_parents=create_parents
+        )
