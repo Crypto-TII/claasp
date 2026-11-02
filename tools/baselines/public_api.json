@@ -601,12 +601,6 @@
       "qualified_name": "claasp.analysis.FixedValue"
     },
     {
-      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult",
-      "defined_in": "claasp.analysis.randomness",
-      "kind": "dataclass",
-      "qualified_name": "claasp.analysis.FrequencyTestResult"
-    },
-    {
       "canonical_name": "claasp.analysis.constraints.HammingWeight",
       "defined_in": "claasp.analysis.constraints",
       "kind": "dataclass",
@@ -3085,12 +3079,6 @@
       "qualified_name": "claasp.analysis.find_sbox_boomerang_transition"
     },
     {
-      "canonical_name": "claasp.analysis.randomness.frequency_test",
-      "defined_in": "claasp.analysis.randomness",
-      "kind": "function",
-      "qualified_name": "claasp.analysis.frequency_test"
-    },
-    {
       "canonical_name": "claasp.analysis.datasets.generate_avalanche_dataset",
       "defined_in": "claasp.analysis.datasets",
       "kind": "function",
@@ -4231,6 +4219,157 @@
       "qualified_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.to_terminal"
     },
     {
+      "canonical_name": "claasp.analysis.nist_sts",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.nist_sts"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.__init__",
+      "defined_in": "claasp.analysis.nist_sts",
+      "documented_by": "claasp.analysis.nist_sts.NISTTests",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.approximate_entropy_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.approximate_entropy_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.assess",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.assess"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.block_frequency_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.block_frequency_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.cumulative_sums_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.cumulative_sums_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.dft_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.dft_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.format_results_nist_style",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.format_results_nist_style"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.frequency_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.frequency_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.linear_complexity_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.linear_complexity_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.longest_run_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.longest_run_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.non_overlapping_template_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.non_overlapping_template_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.non_overlapping_template_test_given_template",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.non_overlapping_template_test_given_template"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.overlapping_template_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.overlapping_template_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.random_excursions_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.random_excursions_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.random_excursions_variant_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.random_excursions_variant_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.rank_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.rank_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.run_all_tests",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.run_all_tests"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.runs_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.runs_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.serial_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.serial_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.uniformity_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.uniformity_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.universal_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.universal_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.parse_final_analysis_report",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.nist_sts.parse_final_analysis_report"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.parse_nist_stats",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.nist_sts.parse_nist_stats"
+    },
+    {
       "canonical_name": "claasp.analysis.problem.AnalysisProblem.__init__",
       "defined_in": "claasp.analysis.problem",
       "documented_by": "claasp.analysis.problem.AnalysisProblem",
@@ -4302,54 +4441,6 @@
       "defined_in": "claasp.analysis.statistical_datasets",
       "kind": "function",
       "qualified_name": "claasp.analysis.random_statistical_dataset"
-    },
-    {
-      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.__init__",
-      "defined_in": "claasp.analysis.randomness",
-      "documented_by": "claasp.analysis.randomness.FrequencyTestResult",
-      "kind": "constructor",
-      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.__init__"
-    },
-    {
-      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.alpha",
-      "defined_in": "claasp.analysis.randomness",
-      "documented_by": "claasp.analysis.randomness.FrequencyTestResult",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.alpha"
-    },
-    {
-      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.applicable",
-      "defined_in": "claasp.analysis.randomness",
-      "documented_by": "claasp.analysis.randomness.FrequencyTestResult",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.applicable"
-    },
-    {
-      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.bit_count",
-      "defined_in": "claasp.analysis.randomness",
-      "documented_by": "claasp.analysis.randomness.FrequencyTestResult",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.bit_count"
-    },
-    {
-      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.ones",
-      "defined_in": "claasp.analysis.randomness",
-      "documented_by": "claasp.analysis.randomness.FrequencyTestResult",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.ones"
-    },
-    {
-      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.p_value",
-      "defined_in": "claasp.analysis.randomness",
-      "documented_by": "claasp.analysis.randomness.FrequencyTestResult",
-      "kind": "dataclass_field",
-      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.p_value"
-    },
-    {
-      "canonical_name": "claasp.analysis.randomness.FrequencyTestResult.passed",
-      "defined_in": "claasp.analysis.randomness",
-      "kind": "property",
-      "qualified_name": "claasp.analysis.randomness.FrequencyTestResult.passed"
     },
     {
       "canonical_name": "claasp.analysis.neural.round_component_ids",

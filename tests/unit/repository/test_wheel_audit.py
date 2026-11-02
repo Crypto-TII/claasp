@@ -43,3 +43,9 @@ def test_wheel_audit_rejects_cache_baseline_config_and_native_artifacts():
     assert any("development-only path" in violation for violation in violations)
     assert any("development-only file" in violation for violation in violations)
     assert sum("native source" in violation for violation in violations) >= 3
+
+
+def test_wheel_audit_requires_the_native_nist_templates():
+    missing = "claasp/analysis/nist_sts_templates/template9"
+    violations = wheel_audit.audit_entries(sorted(wheel_audit.REQUIRED - {missing}))
+    assert violations == [f"missing required wheel entry: {missing}"]
