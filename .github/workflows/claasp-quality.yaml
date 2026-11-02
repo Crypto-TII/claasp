@@ -8,6 +8,12 @@ on:
     branches:
       - claasp-v5
       - develop
+      # Bases used by the CLAASP v5 tutorial-porting PR stack.
+      - feat/latex-report-tables
+      - feat/statistical-supplied-datasets
+      - feat/fractional-trail-queries
+      - feat/boolean-algebraic-systems
+      - feat/monomial-analysis-workflows
     paths:
       - "**"
       - "docs/architecture/**"
@@ -23,7 +29,7 @@ env:
 
 jobs:
   sage-free-tests:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     name: Sage-free Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
@@ -59,7 +65,7 @@ jobs:
         run: make -C docs html
 
   documentation-quality:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     name: Documentation and quality Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
@@ -126,7 +132,7 @@ jobs:
           python tools/wheel_audit.py dist/*.whl
 
   presentation-rendering:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     name: Optional presentation rendering
     runs-on: ubuntu-latest
 
@@ -148,7 +154,7 @@ jobs:
         run: python -m pytest tests/unit/drivers/renderers/test_presentation.py tests/unit/drivers/renderers/test_presentation__component_ddt.py tests/unit/presentation/test_files.py tests/examples/test_avalanche_example.py tests/examples/test_continuous_diffusion_example.py tests/examples/test_component_analysis_example.py -q
 
   singular-export:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     name: Singular exporter integration
     runs-on: ubuntu-latest
 
@@ -173,7 +179,7 @@ jobs:
         run: python -m pytest tests/unit/representations/constraints/polynomial/exporters/test_singular.py tests/integration/test_algebra_drivers.py -q
 
   msolve-export:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     name: msolve exporter integration
     runs-on: ubuntu-latest
 
@@ -212,7 +218,7 @@ jobs:
         run: python -m pytest tests/unit/representations/constraints/polynomial/exporters/test_msolve.py tests/integration/test_algebra_drivers.py -q
 
   sat-execution:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     name: SAT execution integration
     runs-on: ubuntu-latest
 
@@ -248,7 +254,7 @@ jobs:
         run: python -m pytest -m external tests/integration/test_kissat_integration.py tests/integration/test_minisat_integration.py tests/integration/test_fractional_trail_weights.py -q
 
   z3-execution:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     name: Z3 execution integration
     runs-on: ubuntu-latest
 
@@ -273,7 +279,7 @@ jobs:
         run: python -m pytest -m external tests/integration/test_z3_integration.py tests/integration/test_speck_trail_enumeration.py tests/integration/test_word_differential.py -q
 
   glpk-execution:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     name: GLPK execution integration
     runs-on: ubuntu-latest
 
@@ -298,7 +304,7 @@ jobs:
         run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py tests/integration/test_glpk_arx_transitions.py -q
 
   latex-rendering:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     name: LaTeX diagram rendering
     runs-on: ubuntu-latest
 
@@ -323,7 +329,7 @@ jobs:
         run: python -m pytest -m external tests/integration/test_latex_diagram.py -q
 
   native-source-execution:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     name: Generated C compilation and execution
     runs-on: ubuntu-latest
 
@@ -346,7 +352,7 @@ jobs:
         run: python -m pytest -m external tests/integration/test_native_source_driver.py -q
 
   minizinc-execution:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     name: MiniZinc execution integration
     runs-on: ubuntu-latest
 
@@ -372,7 +378,7 @@ jobs:
         run: python -m pytest -m external tests/integration/test_minizinc_integration.py -q
 
   dieharder-execution:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     name: Dieharder execution integration
     runs-on: ubuntu-latest
 
@@ -400,7 +406,7 @@ jobs:
 
 
   neural-ml-execution:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5'
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
     name: Neural distinguisher ML execution
     runs-on: ubuntu-latest
 

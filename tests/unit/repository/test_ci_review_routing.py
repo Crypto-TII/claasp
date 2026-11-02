@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 ROOT = next(
@@ -11,7 +12,7 @@ QUALITY = ROOT / ".github" / "workflows" / "claasp-quality.yaml"
 RELEASE_IMAGE = ROOT / ".github" / "workflows" / "claasp-v5-release-image.yaml"
 REVIEW_CONDITION = (
     "if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || "
-    "github.head_ref == 'claasp-v5'"
+    "github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')"
 )
 
 
@@ -34,12 +35,24 @@ def _job_blocks(workflow: Path) -> dict[str, str]:
     return blocks
 
 
-def test_review_workflows_accept_both_review_directions():
-    quality = QUALITY.read_text(encoding="utf-8")
-    image = RELEASE_IMAGE.read_text(encoding="utf-8")
-
-    assert "      - claasp-v5\n      - develop" in quality
-    assert "branches: [claasp-v5, develop]" in image
+def test_review_workflows_accept_review_and_stack_bases():
+    expected = {
+        "claasp-v5",
+        "develop",
+        "feat/latex-report-tables",
+        "feat/statistical-supplied-datasets",
+        "feat/fractional-trail-queries",
+        "feat/boolean-algebraic-systems",
+        "feat/monomial-analysis-workflows",
+    }
+    for workflow in (QUALITY, RELEASE_IMAGE):
+        # Restrict the check to pull-request routing, excluding push branches
+        # and path filters. Validate the complete allowlist rather than its
+        # previous inline YAML spelling.
+        trigger = workflow.read_text(encoding="utf-8").split("  pull_request:\n", 1)[1]
+        branches = trigger.split("    paths:", 1)[0]
+        actual = set(re.findall(r"^\s+- ([^\s#]+)\s*$", branches, re.MULTILINE))
+        assert actual == expected, workflow.name
 
 
 def test_every_review_workflow_job_rejects_unrelated_develop_prs():
