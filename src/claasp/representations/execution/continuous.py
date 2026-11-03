@@ -7,6 +7,7 @@ heuristic: these values are not probabilities and do not carry a proof claim.
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from functools import partial
 
 from claasp.components.algebraic import Add, LinearMap
 from claasp.components.structural import Constant, Identity, Permutation
@@ -26,7 +27,9 @@ from claasp.components.word import (
 from claasp.graph import Primitive
 from claasp.semantics.cryptanalysis.continuous import (
     continuous_and,
+    continuous_differential_add,
     continuous_modular_add,
+    continuous_modular_subtract,
     continuous_not,
     continuous_or,
     continuous_rotate_left,
@@ -88,6 +91,11 @@ class ContinuousExecutionDriver:
         (1.0,)
     """
 
+    def __init__(self, *, carry_order="lsb_first"):
+        if carry_order not in {"lsb_first", "legacy_msb_first"}:
+            raise ValueError("carry_order must be lsb_first or legacy_msb_first")
+        self.carry_order = carry_order
+
     def evaluate(
         self,
         primitive: Primitive,
@@ -137,7 +145,7 @@ class ContinuousExecutionDriver:
             flattened,
             output,
             tolerance,
-            "legacy MUR2020 continuous-diffusion equations over the typed v5 graph",
+            f"MUR2020 majority/carry model, carry_order={self.carry_order}",
         )
 
     def _component(self, primitive, component, inputs):
@@ -163,7 +171,11 @@ class ContinuousExecutionDriver:
         if isinstance(component, (ModularAdd, ModularSubtract)):
             if isinstance(component, ModularAdd) and component.modulus is not None:
                 raise self._unsupported(primitive, component, "non-power-of-two modular addition")
-            return _fold_units(inputs, continuous_modular_add)
+            if isinstance(component, ModularSubtract) and self.carry_order == "lsb_first":
+                return _fold_units(inputs, continuous_modular_subtract)
+            return _fold_units(
+                inputs, partial(continuous_modular_add, carry_order=self.carry_order)
+            )
         if isinstance(component, Rotate):
             operation = (
                 continuous_rotate_left if component.direction == "left" else continuous_rotate_right
@@ -230,6 +242,56 @@ class ContinuousExecutionDriver:
             f"backend 'dependency_free': component {component.component_id!r} "
             f"({type(component).__name__}) is unsupported: {reason}"
         )
+
+
+class ContinuousDifferentialExecutionDriver(ContinuousExecutionDriver):
+    """Evaluate the legacy ARX differential-correlation heuristic separately.
+
+    Round-key constants have zero difference, whatever their concrete value.
+    This model supports the legacy MODADD/ROTATE/XOR operation set and is
+    heuristic; it does not compute the generalized primitive's Boolean lift.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Speck
+        >>> result = ContinuousDifferentialExecutionDriver().evaluate(
+        ...     Speck(number_of_rounds=1), {"plaintext": (-1.,)*32, "key": (-1.,)*64}
+        ... )
+        >>> result.claim_kind
+        'heuristic'
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    def evaluate(self, primitive, inputs, *, tolerance=1e-4):
+        """Return the separate differential model with explicit provenance."""
+        from dataclasses import replace
+
+        result = super().evaluate(primitive, inputs, tolerance=tolerance)
+        return replace(
+            result, provenance="legacy CP ARX continuous differential-correlation heuristic"
+        )
+
+    def _component(self, primitive, component, inputs):
+        if isinstance(component, Constant):
+            width = component.output_type.unit_type.encoded_bit_size
+            if width is None:
+                raise self._unsupported(
+                    primitive,
+                    component,
+                    "continuous differential constants require a binary encoding",
+                )
+            return tuple((-1.0,) * width for _ in component.values)
+        if isinstance(component, ModularAdd) and component.modulus is None:
+            return _fold_units(inputs, continuous_differential_add)
+        if not isinstance(component, (Identity, Permutation, Xor, Rotate)):
+            raise self._unsupported(
+                primitive,
+                component,
+                "legacy continuous differential model supports MODADD/ROTATE/XOR only",
+            )
+        return super()._component(primitive, component, inputs)
 
 
 def _pack(array_type, values, name):
