@@ -729,6 +729,22 @@ class BitGraphPrimitive(Primitive):
         state = self._record(output)
         if final:
             self._builder.set_output(output)
+        tag = "round_output" if final else prefix
+        if tag == "round_key_output":
+            self._builder.add_round_key(output)
+        published = getattr(self, "_published_intermediate_outputs", {})
+        existing = published.get(self.current_round_number, {}).get(tag)
+        if existing is None:
+            self._builder.set_intermediate_output(output, name=tag)
+        else:
+            # Retain earlier observations when a round publishes more than one
+            # state, while the canonical boundary is its latest state.
+            observations = published[self.current_round_number]
+            index = 0
+            while f"{tag}_{index}" in observations:
+                index += 1
+            observations[f"{tag}_{index}"] = existing
+            observations[tag] = output
         return state
 
     def add_primitive_output_component(self, ids, positions, output_bit_size):

@@ -97,7 +97,9 @@ class Simon(Primitive):
                         )
                     )
                 )
+            self._builder.add_round_key(round_keys[round_number])
             left, right = self._round(left, right, round_keys[round_number], round_number)
+            self._builder.set_round_output(left, right)
         self._builder.set_output((left, right))
 
     def _round(self, left, right, round_key, round_number):
