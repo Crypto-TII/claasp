@@ -51,6 +51,16 @@
       "xor_linear_reason": null
     },
     {
+      "configuration": "default",
+      "primitive": "Alzette",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
       "configuration": {
         "number_of_rounds": 1
       },
@@ -263,6 +273,18 @@
       "xor_linear_reason": null
     },
     {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "Blowfish",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'sbox_0_2' (BitVectorSBox): dense Walsh-table materialization is limited to 1048576 table cells"
+    },
+    {
       "configuration": "default",
       "primitive": "BluetoothE0KeystreamFunction",
       "xor_differential": "unsupported",
@@ -277,6 +299,18 @@
         "number_of_rounds": 1
       },
       "primitive": "CHAM",
+      "xor_differential": "supported_and_tested",
+      "xor_differential_limitation": null,
+      "xor_differential_reason": null,
+      "xor_linear": "supported_and_tested",
+      "xor_linear_limitation": null,
+      "xor_linear_reason": null
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "CRAX",
       "xor_differential": "supported_and_tested",
       "xor_differential_limitation": null,
       "xor_differential_reason": null,
@@ -975,6 +1009,18 @@
       "xor_linear": "unsupported",
       "xor_linear_limitation": "exact_semantics",
       "xor_linear_reason": "component 'modular_add_0_5' (ModularAdd) arity 3"
+    },
+    {
+      "configuration": {
+        "number_of_rounds": 1
+      },
+      "primitive": "RC6",
+      "xor_differential": "unsupported",
+      "xor_differential_limitation": "exact_semantics",
+      "xor_differential_reason": "component 'var_rot_0_8' (VariableRotate)",
+      "xor_linear": "unsupported",
+      "xor_linear_limitation": "exact_semantics",
+      "xor_linear_reason": "component 'var_rot_0_8' (VariableRotate)"
     },
     {
       "configuration": {
