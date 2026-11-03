@@ -173,10 +173,26 @@ class ContinuousDifferentialCPModel:
                 "constraint correlation = product([if output_mask[i] then abs(output_values[i]) else 1.0 endif | i in index_set(output_mask)]);",
             )
         )
+        free = [
+            ref
+            for name, entries in self.inputs.items()
+            for ref, value in zip(self._wires[name], entries)
+            if value is None
+        ]
+        search = (
+            " :: seq_search([bool_search(output_mask, input_order, indomain_min, complete), "
+            "float_search(["
+            + ",".join(free)
+            + "], 0.000001, input_order, indomain_split, complete)])"
+            if free
+            else ""
+        )
         return MiniZincModel(
             tuple(self._declarations),
             tuple(self._constraints),
-            solve="solve maximize correlation;" if self.maximize else "solve satisfy;",
+            solve=f"solve{search} maximize correlation;"
+            if self.maximize
+            else f"solve{search} satisfy;",
             constraint_models=(ConstraintModelApplication(self.model_provenance),),
         )
 
