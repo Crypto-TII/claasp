@@ -22,7 +22,9 @@ from claasp.semantics.cryptanalysis.composed import (
 from claasp.semantics.cryptanalysis.continuous import (
     ContinuousHeuristicResult,
     continuous_and,
+    continuous_differential_add,
     continuous_modular_add,
+    continuous_modular_subtract,
     continuous_not,
     continuous_or,
     continuous_rotate_left,
@@ -43,6 +45,10 @@ from claasp.semantics.cryptanalysis.problem import (
     PropagationProblem,
     TransitionProvider,
     default_component_semantics,
+)
+from claasp.semantics.cryptanalysis.quasidifferential import (
+    QuasidifferentialSemantics,
+    QuasidifferentialTransition,
 )
 from claasp.semantics.cryptanalysis.trails import (
     BitPattern,
@@ -83,6 +89,8 @@ from claasp.semantics.cryptanalysis.truncated import (
 )
 
 __all__ = [
+    "QuasidifferentialSemantics",
+    "QuasidifferentialTransition",
     "AESTwoRoundDifferentialEvidence",
     "BitPattern",
     "BitwiseAndSemantics",
@@ -130,6 +138,8 @@ __all__ = [
     "branch_number_activity_table",
     "check_probabilistic_truncated_modular_add",
     "continuous_modular_add",
+    "continuous_differential_add",
+    "continuous_modular_subtract",
     "continuous_not",
     "continuous_or",
     "continuous_rotate_left",

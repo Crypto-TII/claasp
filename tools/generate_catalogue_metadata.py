@@ -107,6 +107,7 @@ DRIVERS = (
     ),
     ("z3", "solver", "executable", "z3", "claasp.drivers.solvers.z3:Z3Solver"),
     ("glpk", "solver", "executable", "glpsol", "claasp.drivers.solvers.glpk:GLPKSolver"),
+    ("highs", "solver", "python_module", "scipy", "claasp.drivers.solvers.highs:HighsSolver"),
     (
         "singular",
         "solver",
@@ -334,7 +335,7 @@ REPRESENTATIONS = (
         "claasp.representations.constraints.milp:BooleanMonomialGraphMILPModel",
         {"BitwiseAnd", "Constant", "Rotate", "Xor"},
         {"Bit", "Word"},
-        {"glpk"},
+        {"glpk", "highs"},
         "generic_graph",
     ),
     (
@@ -700,6 +701,9 @@ def _tags(category: str, component_names: set[str]) -> list[str]:
 
 def build_catalogue() -> dict:
     inventory = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    inventory["records"] += json.loads(
+        (ROOT / "tools/data/legacy_inventory_delta.json").read_text(encoding="utf-8")
+    )["records"]
     realization_audit = json.loads(REALIZATIONS.read_text(encoding="utf-8"))
     single_components = json.loads(SINGLE_COMPONENTS.read_text(encoding="utf-8"))
     source_records = {

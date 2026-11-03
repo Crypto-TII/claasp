@@ -11,13 +11,17 @@ from claasp.drivers.solvers.minizinc import (
     CPStatus,
     MiniZincSolver,
 )
+from claasp.drivers.solvers.progress import MILPProgressLog, MILPProgressSnapshot
 
 __all__ = [
+    "MILPProgressLog",
+    "MILPProgressSnapshot",
     "CPEnumerationResult",
     "CPResult",
     "CPStatus",
     "CryptoMiniSatSolver",
     "GLPKSolver",
+    "HighsSolver",
     "GurobiSolver",
     "GurobiSolutionPoolResult",
     "KissatSolver",
@@ -38,6 +42,10 @@ def __getattr__(name: str):
         from claasp.drivers.solvers.z3 import Z3Solver
 
         return Z3Solver
+    if name == "HighsSolver":
+        from claasp.drivers.solvers.highs import HighsSolver
+
+        return HighsSolver
     if name == "GLPKSolver":
         from claasp.drivers.solvers.glpk import GLPKSolver
 

@@ -3,7 +3,7 @@
 from claasp.representations.execution.continuous import ContinuousExecutionDriver
 
 
-def _continuous_outputs(primitive, inputs, outputs):
+def _continuous_outputs(primitive, inputs, outputs, *, carry_order="lsb_first"):
     values = {}
     for name, array in primitive.graph.input_arrays.items():
         width = array.array_type.unit_type.encoded_bit_size
@@ -12,7 +12,7 @@ def _continuous_outputs(primitive, inputs, outputs):
             for start in range(0, len(inputs[name]), width)
         )
     cache: dict[str, tuple] = {}
-    driver = ContinuousExecutionDriver()
+    driver = ContinuousExecutionDriver(carry_order=carry_order)
     for component in primitive.graph.components:
         selected = tuple(
             primitive.graph.resolve_selection(item, values, cache) for item in component.inputs

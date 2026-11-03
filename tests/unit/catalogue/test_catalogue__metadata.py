@@ -22,12 +22,12 @@ def test_committed_catalogue_covers_public_primitives_components_and_drivers():
     primitives = catalogue["primitives"]
     assert catalogue["schema_version"] == 2
     assert {item["name"] for item in primitives} == set(ALL_EXPORTS)
-    assert len(primitives) == len(ALL_EXPORTS) == 143
+    assert len(primitives) == len(ALL_EXPORTS) == 147
     assert len(catalogue["components"]) == 23
     assert len(catalogue["representations"]) == 21
     assert len(catalogue["analyses"]) == 12
-    assert len(catalogue["drivers"]) == 26
-    assert len({item["name"] for item in catalogue["drivers"]}) == 26
+    assert len(catalogue["drivers"]) == 27
+    assert len({item["name"] for item in catalogue["drivers"]}) == 27
 
 
 def test_every_primitive_has_classification_contract_and_evidence():
@@ -125,7 +125,7 @@ def test_catalogue_closure_gate_passes():
         text=True,
     )
     assert (
-        "143 primitives, 23 components, 21 representations, 12 analyses, 26 drivers"
+        "147 primitives, 23 components, 21 representations, 12 analyses, 27 drivers"
         in completed.stdout
     )
 

@@ -15,6 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
+from fractions import Fraction
+
 from claasp.graph.bit_builder import (
     BitGraphPrimitive,
     BitState,
@@ -46,9 +48,14 @@ class ChaskeyPi(BitGraphPrimitive):
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
+        >>> bottom = ChaskeyPi(number_of_rounds=0.5, start_round=("bottom",))
+        >>> hex(bottom.evaluate(0x123456789abcdef123456789abcdef))
+        '0x89be024524e06d79024569bef003f370'
     """
 
-    def __init__(self, number_of_rounds=12, word_size=32, rotations=_DEFAULT_ROTATIONS):
+    def __init__(
+        self, number_of_rounds=12, word_size=32, rotations=_DEFAULT_ROTATIONS, start_round=("top",)
+    ):
         try:
             word_size = coerce_exact_int(word_size, "word_size")
         except ValueError:
@@ -57,11 +64,19 @@ class ChaskeyPi(BitGraphPrimitive):
             raise ValueError("word_size must be a positive integer")
 
         try:
-            number_of_rounds = coerce_exact_int(number_of_rounds, "number_of_rounds")
-        except ValueError:
-            raise ValueError("number_of_rounds must be > 0")
-        if number_of_rounds <= 0:
-            raise ValueError("number_of_rounds must be > 0")
+            halves = Fraction(str(number_of_rounds)) * 2
+        except (ValueError, ZeroDivisionError):
+            raise ValueError("number_of_rounds must be a positive multiple of 0.5") from None
+        if isinstance(number_of_rounds, bool) or halves.denominator != 1 or halves <= 0:
+            raise ValueError("number_of_rounds must be a positive multiple of 0.5")
+        number_of_half_rounds = int(halves)
+        if (
+            not isinstance(start_round, (tuple, list))
+            or len(start_round) != 1
+            or start_round[0] not in ("top", "bottom")
+        ):
+            raise ValueError('start_round must be ("top",) or ("bottom",)')
+        start_bottom = start_round[0] == "bottom"
 
         if len(rotations) != 5:
             raise ValueError("rotations must contain exactly 5 values")
@@ -88,12 +103,17 @@ class ChaskeyPi(BitGraphPrimitive):
             bit_positions = [bit + word_index * self.word_size for bit in range(self.word_size)]
             state.append(BitState([INPUT_PLAINTEXT], [bit_positions]))
 
-        for round_number in range(number_of_rounds):
-            self._builder.add_round()
-            state = self.round_function(state)
-
+        for half_index in range(number_of_half_rounds):
+            if half_index % 2 == 0:
+                self._builder.add_round()
+            if (half_index + start_bottom) % 2 == 0:
+                state = self.round_function_top_half(state)
+            else:
+                state = self.round_function_bottom_half(state)
+            if half_index % 2 == 0 and half_index != number_of_half_rounds - 1:
+                continue
             inputs_id, inputs_pos = get_inputs_parameter(state)
-            if round_number == number_of_rounds - 1:
+            if half_index == number_of_half_rounds - 1:
                 self.add_primitive_output_component(inputs_id, inputs_pos, self.state_bit_size)
             else:
                 self.add_round_output_component(inputs_id, inputs_pos, self.state_bit_size)
@@ -119,7 +139,17 @@ class ChaskeyPi(BitGraphPrimitive):
         return self._state_from_current_component()
 
     def round_function(self, state):
-        """Build the round function stage in this primitive's typed operation graph."""
+        """Apply one full round, starting with the top half."""
+        return self.round_function_bottom_half(self.round_function_top_half(state))
+
+    def round_function_top_half(self, state):
+        """Apply the first balanced half-round.
+
+        EXAMPLES::
+
+            >>> callable(ChaskeyPi(number_of_rounds=0.5).round_function_top_half)
+            True
+        """
         v0, v1, v2, v3 = state
 
         # v[0] += v[1]; v[1]=ROTL(v[1],5); v[1] ^= v[0]; v[0]=ROTL(v[0],16)
@@ -132,6 +162,18 @@ class ChaskeyPi(BitGraphPrimitive):
         v2 = self._modadd_words(v2, v3)
         v3 = self._rotate_word(v3, self.rotations[1])
         v3 = self._xor_words(v3, v2)
+
+        return [v0, v1, v2, v3]
+
+    def round_function_bottom_half(self, state):
+        """Apply the second balanced half-round.
+
+        EXAMPLES::
+
+            >>> callable(ChaskeyPi(number_of_rounds=0.5).round_function_bottom_half)
+            True
+        """
+        v0, v1, v2, v3 = state
 
         # v[0] += v[3]; v[3]=ROTL(v[3],13); v[3] ^= v[0]
         v0 = self._modadd_words(v0, v3)

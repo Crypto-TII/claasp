@@ -157,6 +157,12 @@ MILP models
 .. automodule:: claasp.representations.constraints.milp
    :members:
 
+Quasidifferential semantics
+---------------------------
+
+.. automodule:: claasp.semantics.cryptanalysis.quasidifferential
+   :members:
+
 Complete public namespace index
 -------------------------------
 

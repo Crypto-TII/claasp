@@ -6,7 +6,7 @@ import pytest
 
 from claasp.semantics.cryptanalysis import (
     ContinuousHeuristicResult,
-    continuous_modular_add,
+    continuous_differential_add,
     continuous_rotate_left,
     continuous_rotate_right,
     continuous_speck32,
@@ -56,7 +56,7 @@ ROUND_ONE_RIGHT = (
 def test_continuous_component_vectors_preserve_legacy_scip_results():
     rotated_left = continuous_rotate_right(LEFT, 7)
     rotated_right = continuous_rotate_left(RIGHT, 2)
-    added = continuous_modular_add(rotated_left, RIGHT)
+    added = continuous_differential_add(rotated_left, RIGHT)
 
     assert rotated_left[10] == 1
     assert rotated_right[1] == 1 and rotated_right[15] == 1

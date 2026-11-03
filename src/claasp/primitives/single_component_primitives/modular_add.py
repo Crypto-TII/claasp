@@ -19,6 +19,11 @@ class ModularAdd(Primitive):
     54
 
 
+    An explicit modulus also supports non-power-of-two experiments.
+
+    >>> ModularAdd(word_bit_size=4, modulus=13).evaluate(11, 7)
+    5
+
     EXAMPLES::
 
         >>> primitive = ModularAdd()
@@ -28,7 +33,9 @@ class ModularAdd(Primitive):
         ('0x0', 0)
     """
 
-    def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:
+    def __init__(
+        self, word_bit_size: int = 4, number_of_inputs: int = 2, *, modulus: int | None = None
+    ) -> None:
         super().__init__(
             "modadd",
             word_inputs(word_bit_size, number_of_inputs),
@@ -36,7 +43,7 @@ class ModularAdd(Primitive):
         )
         self._builder.add_round()
         operands = self.graph.inputs()
-        output = self._builder.add_component(ModularAddComponent(operands))
+        output = self._builder.add_component(ModularAddComponent(operands, modulus=modulus))
         self._builder.set_output(output)
 
 

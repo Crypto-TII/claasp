@@ -1,0 +1,395 @@
+{
+  "legacy_commit": "1136c49f8b68fdc1839eb9df04132c99a2e05387",
+  "cases": [
+    {
+      "class": "Simon",
+      "legacy_options": {
+        "number_of_rounds": 3,
+        "rotation_amounts": [
+          -3,
+          -5,
+          2
+        ]
+      },
+      "options": {
+        "number_of_rounds": 3,
+        "rotation_amounts": [
+          -3,
+          -5,
+          2
+        ]
+      },
+      "inputs": [
+        0,
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "class": "Simon",
+      "legacy_options": {
+        "number_of_rounds": 3,
+        "rotation_amounts": [
+          -3,
+          -5,
+          2
+        ]
+      },
+      "options": {
+        "number_of_rounds": 3,
+        "rotation_amounts": [
+          -3,
+          -5,
+          2
+        ]
+      },
+      "inputs": [
+        1,
+        1
+      ],
+      "expected": 0
+    },
+    {
+      "class": "Simon",
+      "legacy_options": {
+        "number_of_rounds": 3,
+        "rotation_amounts": [
+          -3,
+          -5,
+          2
+        ]
+      },
+      "options": {
+        "number_of_rounds": 3,
+        "rotation_amounts": [
+          -3,
+          -5,
+          2
+        ]
+      },
+      "inputs": [
+        2309737967,
+        81985529216486895
+      ],
+      "expected": 69965978
+    },
+    {
+      "class": "ChaskeyPi",
+      "legacy_options": {
+        "number_of_rounds": 0.5,
+        "start_round": [
+          "bottom"
+        ]
+      },
+      "options": {
+        "number_of_rounds": 0.5,
+        "start_round": [
+          "bottom"
+        ]
+      },
+      "inputs": [
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "class": "ChaskeyPi",
+      "legacy_options": {
+        "number_of_rounds": 0.5,
+        "start_round": [
+          "bottom"
+        ]
+      },
+      "options": {
+        "number_of_rounds": 0.5,
+        "start_round": [
+          "bottom"
+        ]
+      },
+      "inputs": [
+        1
+      ],
+      "expected": 79228162514264337593543958529
+    },
+    {
+      "class": "ChaskeyPi",
+      "legacy_options": {
+        "number_of_rounds": 0.5,
+        "start_round": [
+          "bottom"
+        ]
+      },
+      "options": {
+        "number_of_rounds": 0.5,
+        "start_round": [
+          "bottom"
+        ]
+      },
+      "inputs": [
+        81985529216486895
+      ],
+      "expected": 182996295015194644775724658026746363098
+    },
+    {
+      "class": "ChaskeyPi",
+      "legacy_options": {
+        "number_of_rounds": 1.5,
+        "start_round": [
+          "top"
+        ]
+      },
+      "options": {
+        "number_of_rounds": 1.5,
+        "start_round": [
+          "top"
+        ]
+      },
+      "inputs": [
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "class": "ChaskeyPi",
+      "legacy_options": {
+        "number_of_rounds": 1.5,
+        "start_round": [
+          "top"
+        ]
+      },
+      "options": {
+        "number_of_rounds": 1.5,
+        "start_round": [
+          "top"
+        ]
+      },
+      "inputs": [
+        1
+      ],
+      "expected": 1339612589501990877725974391655768065
+    },
+    {
+      "class": "ChaskeyPi",
+      "legacy_options": {
+        "number_of_rounds": 1.5,
+        "start_round": [
+          "top"
+        ]
+      },
+      "options": {
+        "number_of_rounds": 1.5,
+        "start_round": [
+          "top"
+        ]
+      },
+      "inputs": [
+        81985529216486895
+      ],
+      "expected": 21546324670971333423117790388652825776
+    },
+    {
+      "class": "ChaChaPermutation",
+      "legacy_options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom_second"
+        ],
+        "round_mode": "half_half"
+      },
+      "options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom_second"
+        ],
+        "round_mode": "half_half"
+      },
+      "inputs": [
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "class": "ChaChaPermutation",
+      "legacy_options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom_second"
+        ],
+        "round_mode": "half_half"
+      },
+      "options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom_second"
+        ],
+        "round_mode": "half_half"
+      },
+      "inputs": [
+        1
+      ],
+      "expected": 93035356709837681990313447409664581517155553155203251334447807650926904808710537610888644646174176209341261578270384352304155509437562880
+    },
+    {
+      "class": "ChaChaPermutation",
+      "legacy_options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom_second"
+        ],
+        "round_mode": "half_half"
+      },
+      "options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom_second"
+        ],
+        "round_mode": "half_half"
+      },
+      "inputs": [
+        81985529216486895
+      ],
+      "expected": 7627552743421775989377358107928065574320932632120543176118317345926959120320676809980286398892908714239594909097981548430291085943804361562477153697630635
+    },
+    {
+      "class": "ChaChaPermutation",
+      "legacy_options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom"
+        ],
+        "round_mode": "half"
+      },
+      "options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom"
+        ],
+        "round_mode": "half"
+      },
+      "inputs": [
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "class": "ChaChaPermutation",
+      "legacy_options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom"
+        ],
+        "round_mode": "half"
+      },
+      "options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom"
+        ],
+        "round_mode": "half"
+      },
+      "inputs": [
+        1
+      ],
+      "expected": 97579947814577283940600011470176993473046012633629812786408672576195414769588847935032439036323961160336430067276254906266003346959513029709825
+    },
+    {
+      "class": "ChaChaPermutation",
+      "legacy_options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom"
+        ],
+        "round_mode": "half"
+      },
+      "options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom"
+        ],
+        "round_mode": "half"
+      },
+      "inputs": [
+        81985529216486895
+      ],
+      "expected": 10309059984919396675584204889824279153920336841193634688262548383019162152207274413986569176637571386624427017733266400485430606094138066276368583748826485
+    },
+    {
+      "class": "SalsaPermutation",
+      "legacy_options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom"
+        ]
+      },
+      "options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom"
+        ],
+        "round_mode": "half"
+      },
+      "inputs": [
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "class": "SalsaPermutation",
+      "legacy_options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom"
+        ]
+      },
+      "options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom"
+        ],
+        "round_mode": "half"
+      },
+      "inputs": [
+        1
+      ],
+      "expected": 5043456793138493339171717132818382574698042536565837248833397973597271509116183187702568681086825261925141146822017349
+    },
+    {
+      "class": "SalsaPermutation",
+      "legacy_options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom"
+        ]
+      },
+      "options": {
+        "number_of_rounds": 3,
+        "start_round": [
+          "even",
+          "bottom"
+        ],
+        "round_mode": "half"
+      },
+      "inputs": [
+        81985529216486895
+      ],
+      "expected": 200284402233212358917106345708613778565423817034816585688476687853612422167380974204332150258333380300743582487864814428999737881011286
+    }
+  ]
+}

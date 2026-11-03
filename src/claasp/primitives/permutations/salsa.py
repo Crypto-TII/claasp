@@ -2,6 +2,7 @@
 
 from claasp.components import ModularAdd, Rotate, Xor
 from claasp.graph import Primitive, Selection, UnitArray, UnitArrayType
+from claasp.primitives.permutations._arx_rounds import stage_configuration
 from claasp.unit_types import Word
 
 _COLUMNS = ((0, 4, 8, 12), (5, 9, 13, 1), (10, 14, 2, 6), (15, 3, 7, 11))
@@ -32,6 +33,19 @@ class SalsaPermutation(Primitive):
         >>> output = primitive.evaluate(inputs)
         >>> (hex(output)[:18], output.bit_length())
         ('0x0', 0)
+
+    Partial rounds are explicit: ``round_mode="half"`` applies two stages
+    per reported round, and ``"half_half"`` applies one. ``start_round``
+    selects odd/even column orientation and the first stage. Standard full
+    rounds remain the default.
+
+    EXAMPLES::
+
+        >>> state = 123456789
+        >>> SalsaPermutation(number_of_rounds=1).evaluate(state) == SalsaPermutation(
+        ...     number_of_rounds=4, round_mode="half_half"
+        ... ).evaluate(state)
+        True
     """
 
     def __init__(
@@ -40,6 +54,8 @@ class SalsaPermutation(Primitive):
         *,
         word_size: int = 32,
         rotations: tuple[int, int, int, int] = (7, 9, 13, 18),
+        start_round: tuple[str, str] = ("odd", "top"),
+        round_mode: str = "single",
     ) -> None:
         if not isinstance(number_of_rounds, int) or isinstance(number_of_rounds, bool):
             raise TypeError("number_of_rounds must be an integer")
@@ -57,6 +73,27 @@ class SalsaPermutation(Primitive):
         state: list[UnitArray | Selection] = [
             self.graph.input("state")[index] for index in range(16)
         ]
+        first_stage, stages_per_round = stage_configuration(start_round, round_mode)
+        if first_stage or round_mode != "single":
+            for round_number in range(number_of_rounds):
+                self._builder.add_round()
+                for offset in range(stages_per_round):
+                    absolute_stage = first_stage + stages_per_round * round_number + offset
+                    groups = _COLUMNS if absolute_stage // 4 % 2 == 0 else _ROWS
+                    stage = absolute_stage % 4
+                    for quarter, group in enumerate(groups):
+                        a, b, c, d = group
+                        left, right, target = ((a, d, b), (a, b, c), (b, c, d), (c, d, a))[stage]
+                        state[target] = self._add_rotate_xor(
+                            state[left],
+                            state[right],
+                            state[target],
+                            rotations[stage],
+                            f"round_{round_number}_stage_{offset}_quarter_{quarter}",
+                        )
+                self._builder.set_round_output(*state)
+            self._builder.set_output(state)
+            return
         for round_number in range(number_of_rounds):
             self._builder.add_round()
             groups = _COLUMNS if round_number % 2 == 0 else _ROWS
@@ -69,6 +106,7 @@ class SalsaPermutation(Primitive):
                     rotations,
                     f"round_{round_number}_quarter_{quarter_number}",
                 )
+            self._builder.set_round_output(*state)
         self._builder.set_output(state)
 
     def _quarter_round(

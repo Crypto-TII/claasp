@@ -43,16 +43,17 @@ def test_graph_continuous_sbox_matches_fixed_concrete_values():
     assert result.output == (1.0, -1.0)
 
 
-def test_graph_continuous_speck_matches_preserved_specialized_equations():
-    primitive = Speck(number_of_rounds=1)
+@pytest.mark.parametrize("rounds", [1, 2, 5])
+def test_graph_continuous_speck_matches_preserved_specialized_equations(rounds):
+    primitive = Speck(number_of_rounds=rounds)
     left = tuple(-1.0 + index / 20 for index in range(16))
     right = tuple(1.0 - index / 20 for index in range(16))
 
-    result = primitive.analysis.continuous_evaluate(
+    result = primitive.analysis.continuous_differential_evaluate(
         {"plaintext": left + right, "key": (-1.0,) * 64}
     )
 
-    assert result.output == pytest.approx(continuous_speck32(left, right, rounds=1).values)
+    assert result.output == pytest.approx(continuous_speck32(left, right, rounds=rounds).values)
 
 
 def test_graph_continuous_supports_and_based_simon():

@@ -422,6 +422,16 @@
       "target": "glpsol"
     },
     {
+      "availability": "python_module",
+      "implementation": "claasp.drivers.solvers.highs:HighsSolver",
+      "kind": "solver",
+      "name": "highs",
+      "representations": [
+        "boolean_monomial_milp"
+      ],
+      "target": "scipy"
+    },
+    {
       "availability": "executable",
       "implementation": "claasp.drivers.algebra.singular:SingularDriver",
       "kind": "solver",
@@ -1189,6 +1199,73 @@
       "authenticity": "canonical",
       "bijectivity_obligation": true,
       "category": "block_ciphers",
+      "classification_basis": "Legacy interface preserved; Blowfish key is fixed at construction.",
+      "components": [
+        "BitVectorSBox",
+        "Constant",
+        "ModularAdd",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "family": "blowfish",
+      "fixed_evidence": [
+        "tests/unit/primitives/test_package__missing_legacy_primitives.py"
+      ],
+      "input_roles": [
+        "plaintext"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": "claasp/ciphers/block_ciphers/blowfish_block_cipher.py",
+      "module": "claasp.primitives.block_ciphers.blowfish",
+      "name": "Blowfish",
+      "official_name": "Blowfish",
+      "parameter_sets": [
+        {
+          "name": "standard-1",
+          "values": {
+            "key": 0,
+            "key_bit_size": 128,
+            "number_of_rounds": 16
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "block_ciphers",
+        "sbox_based"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "Constant",
@@ -1234,6 +1311,77 @@
             "block_bit_size": 64,
             "key_bit_size": 128,
             "number_of_rounds": null
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "arx",
+        "block_ciphers"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "block_ciphers",
+      "classification_basis": "Legacy keyed/permutation interface preserved.",
+      "components": [
+        "Constant",
+        "ModularAdd",
+        "Rotate",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "family": "crax",
+      "fixed_evidence": [
+        "tests/unit/primitives/test_package__missing_legacy_primitives.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": "claasp/ciphers/block_ciphers/crax_block_cipher.py",
+      "module": "claasp.primitives.block_ciphers.crax",
+      "name": "CRAX",
+      "official_name": "CRAX",
+      "parameter_sets": [
+        {
+          "name": "standard-1",
+          "values": {
+            "number_of_rounds": 10
           }
         }
       ],
@@ -3276,6 +3424,96 @@
       "authenticity": "canonical",
       "bijectivity_obligation": true,
       "category": "block_ciphers",
+      "classification_basis": "Legacy keyed/permutation interface preserved.",
+      "components": [
+        "Constant",
+        "ModularAdd",
+        "ModularMultiply",
+        "Rotate",
+        "VariableRotate",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "family": "rc6",
+      "fixed_evidence": [
+        "tests/unit/primitives/test_package__missing_legacy_primitives.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": "claasp/ciphers/block_ciphers/rc6_block_cipher.py",
+      "module": "claasp.primitives.block_ciphers.rc6",
+      "name": "RC6",
+      "official_name": "RC6",
+      "parameter_sets": [
+        {
+          "name": "standard-1",
+          "values": {
+            "key_bit_size": 128,
+            "number_of_rounds": 20,
+            "word_size": 32
+          }
+        },
+        {
+          "name": "standard-2",
+          "values": {
+            "key_bit_size": 192,
+            "number_of_rounds": 20,
+            "word_size": 32
+          }
+        },
+        {
+          "name": "standard-3",
+          "values": {
+            "key_bit_size": 256,
+            "number_of_rounds": 20,
+            "word_size": 32
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "block_ciphers"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "ModularAdd",
@@ -4244,7 +4482,12 @@
           "values": {
             "block_bit_size": 32,
             "key_bit_size": 64,
-            "number_of_rounds": null
+            "number_of_rounds": null,
+            "rotation_amounts": [
+              -1,
+              -8,
+              -2
+            ]
           }
         }
       ],
@@ -7096,6 +7339,71 @@
       "authenticity": "canonical",
       "bijectivity_obligation": true,
       "category": "permutations",
+      "classification_basis": "Legacy keyed/permutation interface preserved.",
+      "components": [
+        "Constant",
+        "ModularAdd",
+        "Rotate",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "family": "alzette",
+      "fixed_evidence": [
+        "tests/unit/primitives/test_package__missing_legacy_primitives.py"
+      ],
+      "input_roles": [
+        "plaintext"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        }
+      ],
+      "kind": "permutation",
+      "labels": [],
+      "legacy_source": "claasp/ciphers/permutations/alzette_permutation.py",
+      "module": "claasp.primitives.permutations.alzette",
+      "name": "Alzette",
+      "official_name": "Alzette",
+      "parameter_sets": [
+        {
+          "name": "standard-1",
+          "values": {
+            "round_constant": 3084996962
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "arx",
+        "permutations"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "permutations",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
         "BitwiseAnd",
@@ -7379,6 +7687,11 @@
               12,
               8,
               7
+            ],
+            "round_mode": "single",
+            "start_round": [
+              "odd",
+              "top"
             ],
             "word_size": 32
           }
@@ -8518,6 +8831,11 @@
               9,
               13,
               18
+            ],
+            "round_mode": "single",
+            "start_round": [
+              "odd",
+              "top"
             ],
             "word_size": 32
           }
@@ -9739,6 +10057,7 @@
         {
           "name": "default",
           "values": {
+            "modulus": null,
             "number_of_inputs": 2,
             "word_bit_size": 16
           }
@@ -9927,6 +10246,7 @@
         {
           "name": "default",
           "values": {
+            "modulus": null,
             "number_of_inputs": 2,
             "word_bit_size": 4
           }
@@ -9992,6 +10312,7 @@
         {
           "name": "default",
           "values": {
+            "modulus": null,
             "number_of_inputs": 2,
             "word_bit_size": 4
           }
@@ -10057,6 +10378,7 @@
         {
           "name": "default",
           "values": {
+            "modulus": null,
             "number_of_inputs": 2,
             "word_bit_size": 4
           }
@@ -12106,7 +12428,8 @@
         "Word"
       ],
       "drivers": [
-        "glpk"
+        "glpk",
+        "highs"
       ],
       "implementation": "claasp.representations.constraints.milp:BooleanMonomialGraphMILPModel",
       "kind": "constraint",

@@ -40,6 +40,7 @@ class ContinuousDiffusionResult:
     claim_kind: str = "heuristic"
     vectors: tuple[tuple[float, ...], ...] = ()
     sampling_engine: str = "numpy_PCG64"
+    carry_order: str = "lsb_first"
 
     def __post_init__(self) -> None:
         if not self.samples or any(not row for row in self.samples):
@@ -163,6 +164,7 @@ def continuous_diffusion(
     seed: int = 0,
     precision: int = 80,
     sampling: str = "boolean_neighborhood",
+    carry_order: str = "lsb_first",
 ) -> ContinuousDiffusionResult:
     """Estimate the continuous avalanche factor at every published round.
 
@@ -206,6 +208,9 @@ def continuous_diffusion(
             "Continuous diffusion requires: pip install 'claasp[analysis]'"
         ) from error
     context.dps = precision
+    from claasp.representations.execution.continuous import ContinuousExecutionDriver
+
+    ContinuousExecutionDriver(carry_order=carry_order)  # Validate before sampling.
     random = numpy.random.default_rng(numpy.random.PCG64(seed))
     final = primitive.details().number_of_rounds
     setup = max(0, len(primitive.graph.rounds) - final)
@@ -235,9 +240,13 @@ def continuous_diffusion(
             for name in primitive.graph.input_arrays
         }
         inputs[input_name] = left
-        first = _continuous_outputs(primitive, inputs, [selections for _, selections in outputs])
+        first = _continuous_outputs(
+            primitive, inputs, [selections for _, selections in outputs], carry_order=carry_order
+        )
         inputs[input_name] = right
-        second = _continuous_outputs(primitive, inputs, [selections for _, selections in outputs])
+        second = _continuous_outputs(
+            primitive, inputs, [selections for _, selections in outputs], carry_order=carry_order
+        )
         for row, total, x, y in zip(scores, totals, first, second, strict=True):
             contributions = [
                 float(abs(context.sign(a) - context.sign(b))) for a, b in zip(x, y, strict=True)
@@ -256,6 +265,7 @@ def continuous_diffusion(
         tuple(number for number, _ in outputs),
         tuple(tuple(row) for row in scores),
         method=sampling,
+        carry_order=carry_order,
         sampling_engine=f"numpy_{type(random.bit_generator).__name__}",
         vectors=tuple(tuple(value / number_of_samples for value in row) for row in totals),
     )

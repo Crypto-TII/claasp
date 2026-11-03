@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "source_commit": "1136c49f8b68fdc1839eb9df04132c99a2e05387",
+  "records": [
+    {
+      "path": "claasp/cipher_modules/division_property_path_search.py",
+      "kind": "source",
+      "sha256": "a0c7923828de80877394347e718a622a0cb61b8c5fab0a10c71ddce25d8ef553",
+      "disposition": "migrate",
+      "status": "ported-with-semantic-regressions",
+      "v5_destination": "src/claasp/analysis/division_property.py",
+      "evidence": [
+        "tests/unit/analysis/test_division_property.py"
+      ],
+      "scope": "Todo recurrence tables and original path-search assertions; 42 uBlock S-box trails, 11 full-adder trails, exhaustive 2-bit addition, uBlock-5 and Simon32-13 balance verdicts. Typed graph APIs and portable MILP replace Sage/Gurobi construction details."
+    },
+    {
+      "path": "tests/unit/cipher_modules/division_property_path_search_test.py",
+      "kind": "test",
+      "sha256": "b4555122e95e1a5e1ec30e4097be8798df3b783fc0f511041d07a21097086341",
+      "disposition": "migrate",
+      "status": "ported-with-semantic-regressions",
+      "v5_destination": "tests/unit/analysis/test_division_property.py",
+      "evidence": [
+        "tests/unit/analysis/test_division_property.py"
+      ],
+      "scope": "Todo recurrence tables and original path-search assertions; 42 uBlock S-box trails, 11 full-adder trails, exhaustive 2-bit addition, uBlock-5 and Simon32-13 balance verdicts. Typed graph APIs and portable MILP replace Sage/Gurobi construction details."
+    },
+    {
+      "path": "claasp/cipher_modules/models/milp/milp_models/Gurobi/two_subset_division_property.py",
+      "kind": "source",
+      "sha256": "dfd673dc848d50e5759f77cf6cbdc141dcca2eb4d23ab1cbc594e485d2910a71",
+      "disposition": "migrate",
+      "status": "ported-with-semantic-regressions",
+      "v5_destination": "src/claasp/analysis/two_subset.py",
+      "evidence": [
+        "tests/unit/analysis/test_two_subset.py",
+        "tests/integration/test_two_subset_division_property.py"
+      ],
+      "scope": "Todo recurrence tables and original path-search assertions; 42 uBlock S-box trails, 11 full-adder trails, exhaustive 2-bit addition, uBlock-5 and Simon32-13 balance verdicts. Typed graph APIs and portable MILP replace Sage/Gurobi construction details."
+    },
+    {
+      "path": "tests/unit/cipher_modules/models/milp/milp_models/Gurobi/two_subset_division_property_test.py",
+      "kind": "test",
+      "sha256": "7c4fd89384546f350a5ef69bce40f3773fa5ca9987d26ee654389500ee7069fe",
+      "disposition": "migrate",
+      "status": "ported-with-semantic-regressions",
+      "v5_destination": "tests/integration/test_two_subset_division_property.py",
+      "evidence": [
+        "tests/unit/analysis/test_two_subset.py",
+        "tests/integration/test_two_subset_division_property.py"
+      ],
+      "scope": "Todo recurrence tables and original path-search assertions; 42 uBlock S-box trails, 11 full-adder trails, exhaustive 2-bit addition, uBlock-5 and Simon32-13 balance verdicts. Typed graph APIs and portable MILP replace Sage/Gurobi construction details."
+    }
+  ]
+}
