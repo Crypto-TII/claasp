@@ -1291,7 +1291,11 @@ class Primitive:
                 if actual != selection.source:
                     raise ValueError("binding input does not match its graph unit_array type")
         if binding_id is None:
-            binding_id = f"__{kind.value}_{len(self._bindings)}"
+            index = len(self._bindings)
+            binding_id = f"__{kind.value}_{index}"
+            while binding_id in self._unit_arrays:
+                index += 1
+                binding_id = f"__{kind.value}_{index}"
         if binding_id in self._unit_arrays:
             raise ValueError(f"graph source {binding_id!r} already exists")
         binding = ValueBinding(binding_id, kind, inputs, output_type, word_width)

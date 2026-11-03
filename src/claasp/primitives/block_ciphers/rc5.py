@@ -116,11 +116,16 @@ class RC5(Primitive):
                 variable_rotate(self, xor(self, a, b), low_bits(self, b, amount_width), left=True),
                 schedule[2 * round_number + 2],
             )
+            self._builder.add_round_key(
+                (schedule[2 * round_number + 2], schedule[2 * round_number + 3])
+            )
             b = add(
                 self,
                 variable_rotate(self, xor(self, b, a), low_bits(self, a, amount_width), left=True),
                 schedule[2 * round_number + 3],
             )
-        self._builder.set_output(
-            concatenate(self, byte_swap(self, a, word_size), byte_swap(self, b, word_size))
-        )
+            if round_number < number_of_rounds - 1:
+                self._builder.set_round_output(a, b)
+        final = concatenate(self, byte_swap(self, a, word_size), byte_swap(self, b, word_size))
+        self._builder.set_round_output(final)
+        self._builder.set_output(final)

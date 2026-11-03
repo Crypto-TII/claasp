@@ -5,7 +5,7 @@ import pytest
 from claasp import Primitive, UnitArrayType
 from claasp.analysis import TwoSubsetDivisionProperty, two_subset_transition_table
 from claasp.components import ModularAdd
-from claasp.drivers.solvers import GLPKSolver
+from claasp.drivers.solvers import GLPKSolver, HighsSolver
 from claasp.primitives import Simon, Ublock
 from claasp.unit_types import Word
 
@@ -80,7 +80,7 @@ def test_legacy_keyless_ublock_and_lea_cases():
     )
     analysis = TwoSubsetDivisionProperty(primitive, key_schedule="removed")
     assert analysis.is_balanced_over_cube_scan(
-        [36, 37], range(32), solver=GLPKSolver(timeout_seconds=120)
+        [36, 37], range(32), solver=HighsSolver(timeout_seconds=120)
     ) == {36: True, 37: False}
 
 
