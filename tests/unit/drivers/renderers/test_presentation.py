@@ -392,3 +392,111 @@ def test_default_plot_band_reflects_sampling_power(samples):
             assert "inconclusive" not in band
     finally:
         pyplot.close("all")
+
+
+@pytest.fixture(params=("xor_differential", "xor_linear"))
+def trail_plot_result(request):
+    from claasp.semantics.cryptanalysis import (
+        Trail,
+        TrailKind,
+        TrailRoundTransition,
+        TrailSearchMetadata,
+        TrailSearchResult,
+        TrailStep,
+        Transition,
+        XorDifference,
+        XorMask,
+    )
+
+    kind = TrailKind(request.param)
+    pattern = XorDifference(1, 4) if kind is TrailKind.XOR_DIFFERENTIAL else XorMask(1, 4)
+    # Include a zero-weight round and a fractional weight; linear signs must
+    # not affect either plotted weight series.
+    ratios = ((1, 2), (1, 4), (1, 1), (3, 4))
+    sign = -1 if kind is TrailKind.XOR_LINEAR else 1
+    steps = tuple(
+        TrailStep(str(number), Transition(kind, pattern, pattern, numerator, denominator, sign))
+        for number, (numerator, denominator) in enumerate(ratios)
+    )
+    trail = Trail(kind, pattern, pattern, steps)
+    rounds = tuple(
+        TrailRoundTransition(number, pattern, numerator, denominator, sign)
+        for number, (numerator, denominator) in enumerate(ratios)
+    )
+    return TrailSearchResult(
+        trail, trail.total_weight, TrailSearchMetadata("fixture"), round_transitions=rounds
+    )
+
+
+def test_trail_plot_preserves_relative_and_cumulative_round_weights(trail_plot_result):
+    from math import log2
+
+    result = trail_plot_result
+    artifact = result.plot(show=False)
+    try:
+        axis = artifact.figure.axes[0]
+        fractional = -log2(3 / 4)
+        expected = ((0, 1, 2, 0, fractional), (0, 1, 3, 3, 3 + fractional))
+        assert artifact.kind == "trail_weights"
+        assert tuple(name for name, _ in artifact.series) == (
+            "relative_weight",
+            "cumulative_weight",
+        )
+        assert len(axis.lines) == 2
+        for line, (_, series), values in zip(axis.lines, artifact.series, expected):
+            assert tuple(line.get_xdata()) == (0, 1, 2, 3, 4)
+            assert tuple(line.get_ydata()) == pytest.approx(values)
+            assert series == pytest.approx(values)
+        assert artifact.series[-1][1][-1] == pytest.approx(result.trail.total_weight)
+        assert axis.get_xlabel() == "Round"
+        assert axis.get_ylabel() == "Weight (bits)"
+        assert result.trail.kind.value.replace("xor_", "") in axis.get_title()
+        assert tuple(axis.get_xticks()) == (0, 1, 2, 3, 4)
+        assert [text.get_text() for text in axis.get_legend().get_texts()] == [
+            "Relative weight",
+            "Cumulative weight",
+        ]
+    finally:
+        pyplot.close(artifact.figure)
+
+
+def test_trail_plot_displays_and_saves_headlessly(trail_plot_result, monkeypatch, tmp_path):
+    calls = []
+    monkeypatch.setattr(pyplot, "show", lambda: calls.append("display"))
+    try:
+        trail_plot_result.plot()
+        assert calls == ["display"]
+        destination = tmp_path / "trail.png"
+        trail_plot_result.plot(show=False, save_to=destination)
+        assert calls == ["display"]
+        assert destination.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+        trail_plot_result.plot(save_to=str(tmp_path / "displayed.svg"))
+        assert calls == ["display", "display"]
+        assert (tmp_path / "displayed.svg").exists()
+    finally:
+        pyplot.close("all")
+
+
+def test_trail_plot_rejects_results_without_round_evidence(trail_plot_result):
+    from dataclasses import replace
+
+    result = replace(trail_plot_result, round_transitions=())
+    before = pyplot.get_fignums()
+    with pytest.raises(ValueError, match="recorded round transitions"):
+        result.plot(show=False)
+    assert pyplot.get_fignums() == before
+
+
+def test_trail_plot_explains_missing_optional_dependency(trail_plot_result, monkeypatch):
+    import builtins
+
+    original_import = builtins.__import__
+
+    def without_matplotlib(name, *args, **kwargs):
+        if name == "matplotlib":
+            raise ImportError("not installed")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", without_matplotlib)
+    with pytest.raises(ImportError, match="presentation"):
+        trail_plot_result.plot(show=False)
