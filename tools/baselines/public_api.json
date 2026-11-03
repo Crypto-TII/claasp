@@ -601,6 +601,12 @@
       "qualified_name": "claasp.analysis.DifferentialLinearSearchResult"
     },
     {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.DivisionPropertyPathSearch"
+    },
+    {
       "canonical_name": "claasp.analysis.constraints.Equal",
       "defined_in": "claasp.analysis.constraints",
       "kind": "dataclass",
@@ -977,6 +983,12 @@
       "defined_in": "claasp.semantics.cryptanalysis.truncated",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.TruncatedXorDifference"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.TwoSubsetDivisionProperty"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.XorDifference",
@@ -3058,6 +3070,85 @@
       "qualified_name": "claasp.analysis.deterministic_partition"
     },
     {
+      "canonical_name": "claasp.analysis.division_property",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.division_property"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.__init__",
+      "defined_in": "claasp.analysis.division_property",
+      "documented_by": "claasp.analysis.division_property.DivisionPropertyPathSearch",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_division_property_trail",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_division_property_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_integral_distinguishers",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_integral_distinguishers"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_minimum_data_for_rounds",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_minimum_data_for_rounds"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_number_of_balanced_rounds",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_number_of_balanced_rounds"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.optimal_input",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.optimal_input"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.state_bit_size",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.state_bit_size"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.structure",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.structure"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.todo_input",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.todo_input"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.feistel_division_property_trail",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.division_property.feistel_division_property_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.spn_division_property_trail",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.division_property.spn_division_property_trail"
+    },
+    {
       "canonical_name": "claasp.analysis.monomial.enumerate_optimal_monomial_parity",
       "defined_in": "claasp.analysis.monomial",
       "kind": "function",
@@ -3141,6 +3232,12 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.continuous_evaluate"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.division_property",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.division_property"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.enumerate_solutions",
@@ -3279,6 +3376,12 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.train_staged_neural_distinguisher"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.two_subset_division_property",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.two_subset_division_property"
     },
     {
       "canonical_name": "claasp.analysis.facade.AnalysisResult.__init__",
@@ -5804,6 +5907,61 @@
       "defined_in": "claasp.semantics.cryptanalysis.truncated",
       "kind": "function",
       "qualified_name": "claasp.analysis.truncated_modular_add"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.two_subset"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.__init__",
+      "defined_in": "claasp.analysis.two_subset",
+      "documented_by": "claasp.analysis.two_subset.TwoSubsetDivisionProperty",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.is_balanced_at_all_output_bits_over_cube",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.is_balanced_at_all_output_bits_over_cube"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.is_balanced_at_specific_output_bit_over_cube",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.is_balanced_at_specific_output_bit_over_cube"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.is_balanced_over_cube_scan",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.is_balanced_over_cube_scan"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.milp_model",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.milp_model"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.two_subset_transition_table",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.two_subset.two_subset_transition_table"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.two_subset_transition_table",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.two_subset_transition_table"
     },
     {
       "canonical_name": "claasp.analysis.legacy_evidence.ublock_three_round_legacy_cluster",
