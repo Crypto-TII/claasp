@@ -41,9 +41,18 @@ class Simon(Primitive):
         >>> primitive = Simon()
         >>> hex(primitive.evaluate(0x65656877, 0x1918111009080100))
         '0xc69be9bb'
+        >>> variant = Simon(number_of_rounds=3, rotation_amounts=(-3, -5, 2))
+        >>> variant.evaluate(0x1234, 1) != Simon(number_of_rounds=3).evaluate(0x1234, 1)
+        True
     """
 
-    def __init__(self, block_bit_size=32, key_bit_size=64, number_of_rounds=None):
+    def __init__(
+        self,
+        block_bit_size=32,
+        key_bit_size=64,
+        number_of_rounds=None,
+        rotation_amounts=(-1, -8, -2),
+    ):
         configuration = next(
             (
                 item
@@ -62,6 +71,11 @@ class Simon(Primitive):
             raise ValueError(
                 f"Simon{block_bit_size}/{key_bit_size} requires between 1 and {standard_rounds} rounds"
             )
+        if len(rotation_amounts) != 3 or any(
+            not isinstance(value, int) or isinstance(value, bool) for value in rotation_amounts
+        ):
+            raise ValueError("rotation_amounts must contain three integers")
+        self.rotation_amounts = tuple(rotation_amounts)
         width = block_bit_size // 2
         key_words = key_bit_size // width
         word_type = UnitArrayType(Word(width), (1,))
@@ -103,10 +117,28 @@ class Simon(Primitive):
         self._builder.set_output((left, right))
 
     def _round(self, left, right, round_key, round_number):
-        rotate_1 = self._builder.add_component(Rotate(left, 1, "left"))
-        rotate_8 = self._builder.add_component(Rotate(left, 8, "left"))
+        rotate_1 = self._builder.add_component(
+            Rotate(
+                left,
+                abs(self.rotation_amounts[0]),
+                "left" if self.rotation_amounts[0] < 0 else "right",
+            )
+        )
+        rotate_8 = self._builder.add_component(
+            Rotate(
+                left,
+                abs(self.rotation_amounts[1]),
+                "left" if self.rotation_amounts[1] < 0 else "right",
+            )
+        )
         nonlinear = self._builder.add_component(BitwiseAnd((rotate_1, rotate_8)))
-        rotate_2 = self._builder.add_component(Rotate(left, 2, "left"))
+        rotate_2 = self._builder.add_component(
+            Rotate(
+                left,
+                abs(self.rotation_amounts[2]),
+                "left" if self.rotation_amounts[2] < 0 else "right",
+            )
+        )
         function = self._builder.add_component(Xor((nonlinear, rotate_2)))
         new_left = self._builder.add_component(
             Xor((right, function, round_key), component_id=f"round_{round_number}_xor")

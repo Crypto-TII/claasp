@@ -14,16 +14,16 @@
     "operator": 79,
     "return-value": 3,
     "type-var": 2,
-    "union-attr": 69,
+    "union-attr": 68,
     "var-annotated": 134
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 675,
+    "src/claasp": 674,
     "tests": 133,
     "tools": 36
   },
-  "diagnostic_count": 844,
+  "diagnostic_count": 843,
   "diagnostics": [
     {
       "code": "operator",
@@ -105,7 +105,7 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 128,
+      "line": 150,
       "message": "Need type annotation for \"results\" (hint: \"results: list[<type>] = ...\")",
       "path": "src/claasp/analysis/facade.py"
     },
@@ -234,13 +234,6 @@
       "line": 328,
       "message": "Item \"None\" of \"Selection | None\" has no attribute \"array_type\"",
       "path": "src/claasp/drivers/native.py"
-    },
-    {
-      "code": "union-attr",
-      "column": 42,
-      "line": 44,
-      "message": "Item \"SatResult\" of \"MILPResult | SatResult\" has no attribute \"is_feasible\"",
-      "path": "src/claasp/drivers/solvers/glpk.py"
     },
     {
       "code": "arg-type",
@@ -1449,7 +1442,7 @@
     {
       "code": "arg-type",
       "column": 60,
-      "line": 108,
+      "line": 134,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/block_ciphers/simon/primitive.py"
     },

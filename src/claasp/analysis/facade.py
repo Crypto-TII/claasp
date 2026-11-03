@@ -90,6 +90,28 @@ class Analysis:
     def __init__(self, primitive: Primitive) -> None:
         self.primitive = primitive
 
+    def quasidifferential(self):
+        """Inspect signed trails and recover exact fixed-key probabilities.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> analysis = Speck(number_of_rounds=1).analysis.quasidifferential()
+            >>> analysis.model().cnf_formula().variable_count > 0
+            True
+        """
+        from claasp.analysis.quasidifferential import QuasidifferentialAnalysis
+
+        return QuasidifferentialAnalysis(self.primitive)
+
+    def find_lowest_weight_xor_quasidifferential_trail(self, **constraints):
+        """Find a signed trail with maximum absolute coefficient.
+
+        Solver witnesses and the exact product of local coefficients are checked;
+        a negative coefficient is retained, rather than interpreted as a probability.
+        """
+        return self.quasidifferential().find_lowest_weight_trail(**constraints)
+
     def solve(self, problem: AnalysisProblem, solver: object | None = None) -> AnalysisResult:
         """Solve a backend-neutral problem through a SAT adapter."""
 
@@ -467,6 +489,34 @@ class Analysis:
         from claasp.analysis.neural_workflows import run_autond
 
         return run_autond(self.primitive, driver, experiment, **options)
+
+    def division_property(self, *, structure=None, bijective_function=False):
+        """Inspect an SPN or Feistel structure and search Todo division-property paths.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Present
+            >>> search = Present(number_of_rounds=2).analysis.division_property()
+            >>> search.find_number_of_balanced_rounds(search.todo_input(28))
+            4
+        """
+        from claasp.analysis.division_property import DivisionPropertyPathSearch
+
+        return DivisionPropertyPathSearch(self.primitive, structure, bijective_function)
+
+    def two_subset_division_property(self, *, key_schedule="original"):
+        """Create a portable key-invariant two-subset division-property analysis.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Present
+            >>> analysis = Present(number_of_rounds=1).analysis.two_subset_division_property()
+            >>> len(analysis.primitive.graph.input_arrays)
+            2
+        """
+        from claasp.analysis.two_subset import TwoSubsetDivisionProperty
+
+        return TwoSubsetDivisionProperty(self.primitive, key_schedule=key_schedule)
 
     def continuous_diffusion(
         self,
