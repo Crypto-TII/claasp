@@ -103,3 +103,30 @@ def test_branch_witness_validation_rejects_wrong_outputs():
 
     with pytest.raises(ValueError, match="matrix evaluation"):
         _checked_branch_number(((1, 0), (0, 1)), 1, {"input_bits": [1, 0], "output_bits": [0, 0]})
+
+
+def test_independent_blocks_preserve_every_small_binary_branch_number():
+    from claasp.drivers.analysis.branch_number import _independent_binary_blocks
+
+    def minimum(matrix):
+        masks = tuple(sum(bit << column for column, bit in enumerate(row)) for row in matrix)
+        return min(
+            value.bit_count() + sum((row & value).bit_count() % 2 for row in masks)
+            for value in range(1, 1 << len(matrix[0]))
+        )
+
+    for encoded in range(1 << 9):
+        matrix = tuple(
+            tuple((encoded >> (3 * row + column)) & 1 for column in range(3)) for row in range(3)
+        )
+        blocks = _independent_binary_blocks(matrix)
+        assert sorted(column for _, columns, _ in blocks for column in columns) == [0, 1, 2]
+        assert min(minimum(block) for block, _, _ in blocks) == minimum(matrix)
+        for block, columns, rows in blocks:
+            assert block == tuple(tuple(matrix[row][column] for column in columns) for row in rows)
+            assert all(
+                not matrix[row][column]
+                for row in rows
+                for column in range(3)
+                if column not in columns
+            )

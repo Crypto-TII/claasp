@@ -199,26 +199,60 @@ class MiniZincBranchNumberDriver:
         compressed = _identical_word_strands(matrix, word_size)
         if compressed is not None:
             matrix, word_size = compressed, 1
-        model = _minizinc_model(matrix, word_size)
-        try:
-            solved = self.solver.solve(model)
-        except (FileNotFoundError, RuntimeError, TimeoutExpired) as error:
-            return unavailable_result(
-                request, provenance, DiagnosticCode.DRIVER_UNAVAILABLE, str(error)
+        # A direct sum's minimum support is the minimum of its independent
+        # blocks. Proving each small block avoids an exponential search over
+        # their Cartesian product (uBlock has two 16-bit blocks after strand
+        # compression). This reduction is applied only to one-bit weights.
+        blocks = (
+            _independent_binary_blocks(matrix)
+            if word_size == 1
+            else ((matrix, tuple(range(len(matrix[0]))), tuple(range(len(matrix)))),)
+        )
+        branch_number = None
+        full_input, full_output = [0] * len(matrix[0]), [0] * len(matrix)
+        for block, columns, rows in blocks:
+            model = _minizinc_model(block, word_size)
+            try:
+                solved = self.solver.solve(model)
+            except (FileNotFoundError, RuntimeError, TimeoutExpired) as error:
+                return unavailable_result(
+                    request, provenance, DiagnosticCode.DRIVER_UNAVAILABLE, str(error)
+                )
+            if (
+                not solved.is_satisfied
+                or solved.values is None
+                or "==========" not in solved.stdout
+            ):
+                return unavailable_result(
+                    request,
+                    provenance,
+                    DiagnosticCode.DRIVER_UNAVAILABLE,
+                    "MiniZinc did not return an optimal branch number",
+                )
+            try:
+                value = _checked_branch_number(block, word_size, solved.values)
+            except ValueError as error:
+                return unavailable_result(
+                    request, provenance, DiagnosticCode.DRIVER_UNAVAILABLE, str(error)
+                )
+            if branch_number is None or value < branch_number:
+                branch_number = value
+                inputs, outputs = solved.values["input_bits"], solved.values["output_bits"]
+                assert isinstance(inputs, (list, tuple)) and isinstance(outputs, (list, tuple))
+                full_input, full_output = [0] * len(matrix[0]), [0] * len(matrix)
+                for column, bit in zip(columns, inputs):
+                    full_input[column] = bit
+                for row, bit in zip(rows, outputs):
+                    full_output[row] = bit
+        if (
+            branch_number is None
+            or _checked_branch_number(
+                matrix, word_size, {"input_bits": full_input, "output_bits": full_output}
             )
-        if not solved.is_satisfied or solved.values is None or "==========" not in solved.stdout:
-            return unavailable_result(
-                request,
-                provenance,
-                DiagnosticCode.DRIVER_UNAVAILABLE,
-                "MiniZinc did not return an optimal branch number",
-            )
-        try:
-            branch_number = _checked_branch_number(matrix, word_size, solved.values)
-        except ValueError as error:
-            return unavailable_result(
-                request, provenance, DiagnosticCode.DRIVER_UNAVAILABLE, str(error)
-            )
+            != branch_number
+        ):
+            raise RuntimeError("independent branch blocks failed full-matrix witness validation")
+
         result = ComponentPropertyResult(
             request, PropertyClaim.EXACT, branch_number, True, provenance
         )
@@ -244,6 +278,38 @@ def _identical_word_strands(matrix, word_size):
             coefficients.append(coefficient)
         reduced.append(tuple(coefficients))
     return tuple(reduced)
+
+
+def _independent_binary_blocks(matrix):
+    """Find exact disjoint input/output blocks, retaining original indices.
+
+    For nonzero x the weight of (x, Mx) adds across these blocks. Every
+    nonzero block costs at least its minimum; activating just a minimizing
+    block attains that bound. Zero columns fall back to the original model.
+    """
+    columns = len(matrix[0])
+    column_rows = [tuple(r for r, row in enumerate(matrix) if row[c]) for c in range(columns)]
+    if any(not rows for rows in column_rows):
+        return ((matrix, tuple(range(columns)), tuple(range(len(matrix)))),)
+    row_columns = [tuple(c for c, value in enumerate(row) if value) for row in matrix]
+    remaining, blocks = set(range(columns)), []
+    while remaining:
+        first = min(remaining)
+        inputs, outputs, pending = {first}, set(), [first]
+        while pending:
+            for row in column_rows[pending.pop()]:
+                if row in outputs:
+                    continue
+                outputs.add(row)
+                for column in row_columns[row]:
+                    if column not in inputs:
+                        inputs.add(column)
+                        pending.append(column)
+        remaining.difference_update(inputs)
+        ordered_inputs, ordered_outputs = tuple(sorted(inputs)), tuple(sorted(outputs))
+        block = tuple(tuple(matrix[r][c] for c in ordered_inputs) for r in ordered_outputs)
+        blocks.append((block, ordered_inputs, ordered_outputs))
+    return tuple(blocks)
 
 
 def _checked_branch_number(matrix, word_size, values):
