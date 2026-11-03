@@ -87,6 +87,7 @@ def validate(root=ROOT, legacy_root=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--check", action="store_true", help="validate the committed snapshot")
     parser.add_argument("--legacy-root", type=Path)
     args = parser.parse_args()
     print(json.dumps(validate(legacy_root=args.legacy_root), indent=2))

@@ -66,6 +66,11 @@ python -m pytest --doctest-modules src/claasp -p no:cacheprovider -q
 make -C docs doctest
 make -C docs html
 
+python tools/legacy_parity_gate.py --check
+python tools/legacy_constructor_contracts.py --check
+python tools/legacy_dispositions.py --check
+python tools/legacy_native_nist.py --check
+
 python tools/legacy_inventory.py --check
 python tools/legacy_inventory.py --check-model-closure
 python tools/legacy_inventory.py --check-catalogue-classification

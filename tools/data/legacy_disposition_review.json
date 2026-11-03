@@ -5,16 +5,17 @@
       "evidence_files": [
         "tests/unit/semantics/cryptanalysis/test_activity.py",
         "tests/unit/representations/constraints/milp/test_trails.py",
-        "tests/integration/test_glpk_word_trails.py"
+        "tests/integration/test_glpk_word_trails.py",
+        "tests/unit/analysis/test_wordwise_activity.py",
+        "tests/integration/test_wordwise_activity.py"
       ],
-      "replacement_contract": "Typed activity MILP/CP models retain exact wiring and explicit branch-number relaxations. AES active-S-box sequences are solved; uBlock reference values are labeled lower bounds rather than exact concrete differential optima."
+      "replacement_contract": "Typed activity relaxations retain exact wiring and certified word branch numbers, including mixed uBlock graphs. The returned lower bound is distinguished from the exact differential optimum; concrete traces are admitted and small instances are solved."
     },
     "algebraic": {
       "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
       "evidence_files": [
         "tests/unit/analysis/test_boolean_system.py",
         "tests/unit/representations/constraints/polynomial/test_boolean_system.py",
-        "tests/unit/analysis/test_monomial__parity.py",
         "tests/integration/test_monomial_parity_glpk.py"
       ],
       "replacement_contract": "Sparse Boolean polynomial systems and typed monomial models replace Sage-owned rings. Truth-table/cube evaluation checks small instances; solver completeness and limits are explicit. Licensed large legacy runs are not inferred from portable tests."
@@ -179,7 +180,8 @@
         "tests/unit/analysis/test_trail_search.py",
         "tests/integration/test_fractional_trail_weights.py",
         "tests/integration/test_word_differential.py",
-        "tests/integration/test_speck_trail_enumeration.py"
+        "tests/integration/test_speck_trail_enumeration.py",
+        "tests/integration/test_minimax_differential.py"
       ],
       "replacement_contract": "Exact rational component products, signs, bounded enumeration and checked decoded trails replace backend-owned dictionaries. The capability matrix records construction separately from materialization, solving and witness validation."
     },
