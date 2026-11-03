@@ -202,7 +202,9 @@ def test_legacy_xor_sequence_preserves_all_three_operand_assignments():
 
 
 def test_non_boolean_encodable_graph_is_rejected_explicitly():
-    with pytest.raises(ValueError, match="requires the Bit or Word unit_type"):
+    with pytest.raises(
+        ValueError, match="requires the Bit, Word or BinaryExtensionField unit_type"
+    ):
         BooleanCNFModel(MiMC(17, 3, (1,))).cnf_formula()
 
 

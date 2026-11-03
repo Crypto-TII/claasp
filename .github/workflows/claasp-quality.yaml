@@ -259,6 +259,9 @@ jobs:
       - name: Execute SAT integration
         run: python -m pytest -m external tests/integration/test_kissat_integration.py tests/integration/test_minisat_integration.py tests/integration/test_fractional_trail_weights.py -q
 
+      - name: Prove complete small-component functional parity
+        run: CLAASP_PARITY_BACKEND=minisat python -m pytest -m external tests/integration/test_component_backend_parity.py -q
+
       - name: Execute composed-search regressions and API doctests
         run: python -m pytest -m external tests/integration/test_sat_trail_assembly.py -k "public or api_doctests" -q
 
@@ -285,7 +288,10 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute Z3 integration
-        run: python -m pytest -m external tests/integration/test_z3_integration.py tests/integration/test_speck_trail_enumeration.py tests/integration/test_word_differential.py tests/integration/test_quasidifferential_search.py tests/integration/test_boomerang_search.py -q
+        run: python -m pytest -m external tests/integration/test_z3_integration.py tests/integration/test_speck_trail_enumeration.py tests/integration/test_word_differential.py tests/integration/test_quasidifferential_search.py tests/integration/test_boomerang_search.py tests/integration/test_binary_field_recovery.py -q
+
+      - name: Prove complete small-component functional parity
+        run: CLAASP_PARITY_BACKEND=z3 python -m pytest -m external tests/integration/test_component_backend_parity.py -q
 
   glpk-execution:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')
@@ -311,6 +317,9 @@ jobs:
 
       - name: Execute GLPK integration
         run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py tests/integration/test_glpk_arx_transitions.py tests/integration/test_glpk_monomial_prediction.py tests/integration/test_two_subset_division_property.py tests/integration/test_glpk_progress.py -q
+
+      - name: Prove complete small-component functional parity
+        run: CLAASP_PARITY_BACKEND=glpk python -m pytest -m external tests/integration/test_component_backend_parity.py -q
 
   latex-rendering:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')
@@ -385,6 +394,9 @@ jobs:
 
       - name: Execute MiniZinc integration
         run: python -m pytest -m external tests/integration/test_minizinc_integration.py tests/integration/test_continuous_differential_search.py -q
+
+      - name: Prove complete small-component functional parity
+        run: CLAASP_PARITY_BACKEND=minizinc python -m pytest -m external tests/integration/test_component_backend_parity.py -q
 
   dieharder-execution:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')

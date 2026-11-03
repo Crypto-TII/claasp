@@ -1,5 +1,8 @@
 """Backend-specific functional SAT component encodings."""
 
+from claasp.representations.constraints.sat.components.binary_field import (
+    BinaryFieldFunctionalSATModel,
+)
 from claasp.representations.constraints.sat.components.boolean import (
     BooleanFunctionalSATModel,
     BooleanNativeXorSATModel,
@@ -42,6 +45,7 @@ from claasp.representations.constraints.sat.components.wiring import (
 )
 
 __all__ = [
+    "BinaryFieldFunctionalSATModel",
     "BooleanFunctionalSATModel",
     "BooleanNativeXorSATModel",
     "DifferentialToTruncatedSATModel",
