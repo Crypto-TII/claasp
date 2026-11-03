@@ -1,0 +1,295 @@
+{
+  "baseline_commit": "3aacc2758059de85682a9c6d0eda2cd75940e747",
+  "records": [
+    {
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
+      "dependencies": [
+        "claasp"
+      ],
+      "disposition": "migrate",
+      "fixed_evidence": {
+        "requires_fixture_review": false,
+        "test_functions": [
+          "tests/unit/primitives/test_missing_legacy_primitives.py"
+        ]
+      },
+      "kind": "source",
+      "milestone_owner": "legacy-parity-audit",
+      "path": "claasp/ciphers/block_ciphers/blowfish_block_cipher.py",
+      "prerequisites": [],
+      "primitive": {
+        "bijectivity_obligation": true,
+        "classification_basis": "Legacy interface preserved; Blowfish key is fixed at construction.",
+        "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
+        "official_name": "Blowfish",
+        "outside_scope_reason": null,
+        "primitive_category": "block_ciphers",
+        "proposed_class": "Blowfish",
+        "proposed_module": "claasp.primitives.block_ciphers.blowfish"
+      },
+      "public_entry_points": [
+        "BlowfishBlockCipher"
+      ],
+      "rationale": null,
+      "responsibility": "Blowfish primitive",
+      "status": "migrated-after-parity-audit",
+      "tests": [
+        "tests/unit/primitives/test_missing_legacy_primitives.py"
+      ],
+      "v5_destination": "src/claasp/primitives/block_ciphers/blowfish.py"
+    },
+    {
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
+      "dependencies": [
+        "claasp"
+      ],
+      "disposition": "migrate",
+      "fixed_evidence": {
+        "requires_fixture_review": false,
+        "test_functions": [
+          "tests/unit/primitives/test_missing_legacy_primitives.py"
+        ]
+      },
+      "kind": "source",
+      "milestone_owner": "legacy-parity-audit",
+      "path": "claasp/ciphers/block_ciphers/crax_block_cipher.py",
+      "prerequisites": [],
+      "primitive": {
+        "bijectivity_obligation": true,
+        "classification_basis": "Legacy keyed/permutation interface preserved.",
+        "higher_level_parent": null,
+        "input_roles": [
+          "plaintext",
+          "key"
+        ],
+        "official_name": "CRAX",
+        "outside_scope_reason": null,
+        "primitive_category": "block_ciphers",
+        "proposed_class": "CRAX",
+        "proposed_module": "claasp.primitives.block_ciphers.crax"
+      },
+      "public_entry_points": [
+        "CraxBlockCipher"
+      ],
+      "rationale": null,
+      "responsibility": "CRAX primitive",
+      "status": "migrated-after-parity-audit",
+      "tests": [
+        "tests/unit/primitives/test_missing_legacy_primitives.py"
+      ],
+      "v5_destination": "src/claasp/primitives/block_ciphers/crax.py"
+    },
+    {
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
+      "dependencies": [
+        "claasp"
+      ],
+      "disposition": "migrate",
+      "fixed_evidence": {
+        "requires_fixture_review": false,
+        "test_functions": [
+          "tests/unit/primitives/test_missing_legacy_primitives.py"
+        ]
+      },
+      "kind": "source",
+      "milestone_owner": "legacy-parity-audit",
+      "path": "claasp/ciphers/block_ciphers/rc6_block_cipher.py",
+      "prerequisites": [],
+      "primitive": {
+        "bijectivity_obligation": true,
+        "classification_basis": "Legacy keyed/permutation interface preserved.",
+        "higher_level_parent": null,
+        "input_roles": [
+          "plaintext",
+          "key"
+        ],
+        "official_name": "RC6",
+        "outside_scope_reason": null,
+        "primitive_category": "block_ciphers",
+        "proposed_class": "RC6",
+        "proposed_module": "claasp.primitives.block_ciphers.rc6"
+      },
+      "public_entry_points": [
+        "RC6BlockCipher"
+      ],
+      "rationale": null,
+      "responsibility": "RC6 primitive",
+      "status": "migrated-after-parity-audit",
+      "tests": [
+        "tests/unit/primitives/test_missing_legacy_primitives.py"
+      ],
+      "v5_destination": "src/claasp/primitives/block_ciphers/rc6.py"
+    },
+    {
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
+      "dependencies": [
+        "claasp"
+      ],
+      "disposition": "migrate",
+      "fixed_evidence": {
+        "requires_fixture_review": false,
+        "test_functions": [
+          "tests/unit/primitives/test_missing_legacy_primitives.py"
+        ]
+      },
+      "kind": "source",
+      "milestone_owner": "legacy-parity-audit",
+      "path": "claasp/ciphers/permutations/alzette_permutation.py",
+      "prerequisites": [],
+      "primitive": {
+        "bijectivity_obligation": true,
+        "classification_basis": "Legacy keyed/permutation interface preserved.",
+        "higher_level_parent": null,
+        "input_roles": [
+          "plaintext"
+        ],
+        "official_name": "Alzette",
+        "outside_scope_reason": null,
+        "primitive_category": "permutations",
+        "proposed_class": "Alzette",
+        "proposed_module": "claasp.primitives.permutations.alzette"
+      },
+      "public_entry_points": [
+        "AlzettePermutation"
+      ],
+      "rationale": null,
+      "responsibility": "Alzette primitive",
+      "status": "migrated-after-parity-audit",
+      "tests": [
+        "tests/unit/primitives/test_missing_legacy_primitives.py"
+      ],
+      "v5_destination": "src/claasp/primitives/permutations/alzette.py"
+    },
+    {
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
+      "dependencies": [
+        "claasp"
+      ],
+      "disposition": "migrate",
+      "fixed_evidence": {
+        "requires_fixture_review": true,
+        "test_functions": [
+          "test_blowfish_block_cipher",
+          "test_blowfish_variable_key_size",
+          "test_blowfish_evaluate_using_c",
+          "test_blowfish_invalid_key_size"
+        ]
+      },
+      "kind": "test",
+      "milestone_owner": "legacy-parity-audit",
+      "path": "tests/unit/ciphers/block_ciphers/blowfish_block_cipher_test.py",
+      "prerequisites": [],
+      "public_entry_points": [
+        "test_blowfish_block_cipher",
+        "test_blowfish_variable_key_size",
+        "test_blowfish_evaluate_using_c",
+        "test_blowfish_invalid_key_size"
+      ],
+      "rationale": null,
+      "responsibility": "present block cipher test",
+      "status": "migrated-after-parity-audit",
+      "tests": [
+        "test_blowfish_block_cipher",
+        "test_blowfish_variable_key_size",
+        "test_blowfish_evaluate_using_c",
+        "test_blowfish_invalid_key_size"
+      ],
+      "v5_destination": "tests/unit/primitives/test_missing_legacy_primitives.py"
+    },
+    {
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
+      "dependencies": [
+        "claasp"
+      ],
+      "disposition": "migrate",
+      "fixed_evidence": {
+        "requires_fixture_review": true,
+        "test_functions": [
+          "test_crax_block_cipher",
+          "test_crax_block_cipher_reduced_rounds",
+          "test_crax_block_cipher_evaluate_tv1",
+          "test_crax_block_cipher_evaluate_tv2"
+        ]
+      },
+      "kind": "test",
+      "milestone_owner": "legacy-parity-audit",
+      "path": "tests/unit/ciphers/block_ciphers/crax_block_cipher_test.py",
+      "prerequisites": [],
+      "public_entry_points": [
+        "test_crax_block_cipher",
+        "test_crax_block_cipher_reduced_rounds",
+        "test_crax_block_cipher_evaluate_tv1",
+        "test_crax_block_cipher_evaluate_tv2"
+      ],
+      "rationale": null,
+      "responsibility": "present block cipher test",
+      "status": "migrated-after-parity-audit",
+      "tests": [
+        "test_crax_block_cipher",
+        "test_crax_block_cipher_reduced_rounds",
+        "test_crax_block_cipher_evaluate_tv1",
+        "test_crax_block_cipher_evaluate_tv2"
+      ],
+      "v5_destination": "tests/unit/primitives/test_missing_legacy_primitives.py"
+    },
+    {
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
+      "dependencies": [
+        "claasp"
+      ],
+      "disposition": "migrate",
+      "fixed_evidence": {
+        "requires_fixture_review": true,
+        "test_functions": [
+          "test_rc6_block_cipher"
+        ]
+      },
+      "kind": "test",
+      "milestone_owner": "legacy-parity-audit",
+      "path": "tests/unit/ciphers/block_ciphers/rc6_block_cipher_test.py",
+      "prerequisites": [],
+      "public_entry_points": [
+        "test_rc6_block_cipher"
+      ],
+      "rationale": null,
+      "responsibility": "present block cipher test",
+      "status": "migrated-after-parity-audit",
+      "tests": [
+        "test_rc6_block_cipher"
+      ],
+      "v5_destination": "tests/unit/primitives/test_missing_legacy_primitives.py"
+    },
+    {
+      "acceptance_criterion": "Applicable fixed vectors, parameter variants, and independent semantic checks pass through the typed v5 primitive graph.",
+      "dependencies": [
+        "claasp"
+      ],
+      "disposition": "migrate",
+      "fixed_evidence": {
+        "requires_fixture_review": true,
+        "test_functions": [
+          "test_alzette_permutation"
+        ]
+      },
+      "kind": "test",
+      "milestone_owner": "legacy-parity-audit",
+      "path": "tests/unit/ciphers/permutations/alzette_permutation_test.py",
+      "prerequisites": [],
+      "public_entry_points": [
+        "test_alzette_permutation"
+      ],
+      "rationale": null,
+      "responsibility": "present block cipher test",
+      "status": "migrated-after-parity-audit",
+      "tests": [
+        "test_alzette_permutation"
+      ],
+      "v5_destination": "tests/unit/primitives/test_missing_legacy_primitives.py"
+    }
+  ],
+  "schema_version": 1,
+  "source_commit": "1136c49f8b68fdc1839eb9df04132c99a2e05387"
+}
