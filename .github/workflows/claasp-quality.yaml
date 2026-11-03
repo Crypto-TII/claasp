@@ -136,6 +136,8 @@ jobs:
       - name: Run catalogue closure gates
         run: |
           python tools/legacy_inventory.py --check
+          python tools/legacy_parity_gate.py
+          python tools/legacy_constructor_contracts.py --check
           python tools/legacy_inventory.py --check-model-closure
           python tools/legacy_inventory.py --check-catalogue-classification
           python tools/legacy_inventory.py --check-component-closure
@@ -376,7 +378,7 @@ jobs:
         run: cc --version
 
       - name: Compile and execute generated C fixtures
-        run: python -m pytest -m external tests/integration/test_native_source_driver.py -q
+        run: python -m pytest -m external tests/integration/test_native_source_driver.py tests/integration/test_current_legacy_generated_backends.py -q
 
   minizinc-execution:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')
