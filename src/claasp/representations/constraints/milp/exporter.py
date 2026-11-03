@@ -4,7 +4,9 @@ from claasp.representations.constraints.milp.model import MILPModel, VariableKin
 
 
 def _number(value: float) -> str:
-    return str(int(value)) if value.is_integer() else format(value, ".15g")
+    return (
+        str(int(value)) if isinstance(value, int) or value.is_integer() else format(value, ".15g")
+    )
 
 
 def _expression(terms: tuple[tuple[str, float], ...], constant: float = 0) -> str:
