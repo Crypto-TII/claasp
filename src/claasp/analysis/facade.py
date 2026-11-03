@@ -515,6 +515,19 @@ class Analysis:
 
         return run_autond(self.primitive, driver, experiment, **options)
 
+    def active_sboxes(self):
+        """Create a wordwise active-S-box lower-bound analysis.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Ublock
+            >>> Ublock(number_of_rounds=1).analysis.active_sboxes().model().milp_model().objective_sense.value
+            'minimize'
+        """
+        from claasp.analysis.wordwise_activity import WordwiseActivityAnalysis
+
+        return WordwiseActivityAnalysis(self.primitive)
+
     def division_property(self, *, structure=None, bijective_function=False):
         """Inspect an SPN or Feistel structure and search Todo division-property paths.
 

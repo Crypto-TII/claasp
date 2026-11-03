@@ -310,13 +310,13 @@ jobs:
       - name: Install GLPK
         run: |
           sudo apt-get update
-          sudo apt-get install --yes glpk-utils
+          sudo apt-get install --yes glpk-utils minizinc
 
       - name: Install test dependencies
         run: python -m pip install -e '.[dev,analysis]'
 
       - name: Execute GLPK integration
-        run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py tests/integration/test_glpk_arx_transitions.py tests/integration/test_glpk_monomial_prediction.py tests/integration/test_two_subset_division_property.py tests/integration/test_glpk_progress.py -q
+        run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py tests/integration/test_glpk_arx_transitions.py tests/integration/test_glpk_monomial_prediction.py tests/integration/test_two_subset_division_property.py tests/integration/test_glpk_progress.py tests/integration/test_glpk_word_trails.py tests/integration/test_wordwise_activity.py -q
 
       - name: Prove complete small-component functional parity
         run: CLAASP_PARITY_BACKEND=glpk python -m pytest -m external tests/integration/test_component_backend_parity.py tests/integration/test_minimax_differential.py::test_portable_backend_keeps_related_key_minimax_objective -q

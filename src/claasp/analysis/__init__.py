@@ -186,6 +186,7 @@ from claasp.analysis.truncated import (
     truncated_modular_add,
 )
 from claasp.analysis.two_subset import TwoSubsetDivisionProperty, two_subset_transition_table
+from claasp.analysis.wordwise_activity import ActiveSBoxResult, WordwiseActivityAnalysis
 from claasp.semantics.cryptanalysis import (
     BitPattern,
     ModularAddLinearSemantics,
@@ -211,6 +212,8 @@ def __getattr__(name):
 
 
 __all__ = [
+    "ActiveSBoxResult",
+    "WordwiseActivityAnalysis",
     "MinimaxDifferentialAnalysis",
     "MinimaxDifferentialResult",
     "BoomerangAnalysis",

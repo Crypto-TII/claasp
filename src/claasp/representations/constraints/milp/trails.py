@@ -295,7 +295,10 @@ class WordwiseActivityResult:
 class WordwiseBranchNumberActiveSBoxesMILPModel:
     """Minimize active S-box units using wordwise branch-number relations.
 
-    The model keeps one activity bit per typed scalar unit. Bijective S-boxes,
+    The model keeps one activity bit per scalar field unit or S-box-sized word.
+    Mixed bit/word graphs use aligned encoded words and exact supplied branch
+    results; ``primitive.analysis.active_sboxes()`` resolves those properties.
+    Bijective S-boxes,
     permutations, rotations, and identities propagate activity exactly. XOR
     and invertible linear maps use their reviewed branch-number relaxation.
 
@@ -325,6 +328,8 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
         *,
         active_input: str,
         zero_difference_inputs: tuple[str, ...] = (),
+        word_size: int | None = None,
+        branch_numbers=None,
     ) -> None:
         if active_input not in primitive.graph.input_arrays:
             raise ValueError("active_input must name a primitive input")
@@ -334,6 +339,8 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
         ):
             raise ValueError("zero_difference_inputs must name other primitive inputs")
         self.primitive = primitive
+        self.word_size = word_size
+        self.branch_numbers = dict(branch_numbers or {})
         self.active_input = active_input
         self.zero_difference_inputs = zero_difference_inputs
         self._model: MILPModel | None = None
@@ -345,6 +352,16 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
 
     def milp_model(self) -> MILPModel:
         """Return the portable wordwise activity optimization model."""
+
+        from claasp.components import BitVectorSBox
+
+        if any(isinstance(c, BitVectorSBox) for c in self.primitive.graph.components):
+            from claasp.representations.constraints.milp._word_activity import (
+                _BitWordActivityCompiler,
+            )
+
+            self._model = _BitWordActivityCompiler(self).build()
+            return self._model
 
         variables = []
         constraints = []

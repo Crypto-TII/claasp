@@ -397,6 +397,12 @@
       "qualified_name": "claasp.analysis.ANFResult"
     },
     {
+      "canonical_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ActiveSBoxResult"
+    },
+    {
       "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
       "defined_in": "claasp.analysis.monomial_workflows",
       "kind": "dataclass",
@@ -1055,6 +1061,12 @@
       "defined_in": "claasp.analysis.two_subset",
       "kind": "class",
       "qualified_name": "claasp.analysis.TwoSubsetDivisionProperty"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity.WordwiseActivityAnalysis",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.WordwiseActivityAnalysis"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.XorDifference",
@@ -3443,6 +3455,12 @@
       "documented_by": "claasp.analysis.facade.Analysis",
       "kind": "constructor",
       "qualified_name": "claasp.analysis.facade.Analysis.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.active_sboxes",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.active_sboxes"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.algebraic_degree",
@@ -6616,6 +6634,90 @@
       "defined_in": "claasp.analysis.legacy_evidence",
       "kind": "function",
       "qualified_name": "claasp.analysis.ublock_three_round_legacy_cluster"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.wordwise_activity"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.__init__",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "documented_by": "claasp.analysis.wordwise_activity.ActiveSBoxResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.branch_numbers",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "documented_by": "claasp.analysis.wordwise_activity.ActiveSBoxResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.branch_numbers"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.complete",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "documented_by": "claasp.analysis.wordwise_activity.ActiveSBoxResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.lower_bound",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.lower_bound"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.model_objective",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "documented_by": "claasp.analysis.wordwise_activity.ActiveSBoxResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.model_objective"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.status",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "documented_by": "claasp.analysis.wordwise_activity.ActiveSBoxResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.status"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.to_terminal",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.wordwise_activity.ActiveSBoxResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity.WordwiseActivityAnalysis",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.wordwise_activity.WordwiseActivityAnalysis"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity.WordwiseActivityAnalysis.__init__",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "documented_by": "claasp.analysis.wordwise_activity.WordwiseActivityAnalysis",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.wordwise_activity.WordwiseActivityAnalysis.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity.WordwiseActivityAnalysis.find_lowest_number_of_active_sboxes",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.wordwise_activity.WordwiseActivityAnalysis.find_lowest_number_of_active_sboxes"
+    },
+    {
+      "canonical_name": "claasp.analysis.wordwise_activity.WordwiseActivityAnalysis.model",
+      "defined_in": "claasp.analysis.wordwise_activity",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.wordwise_activity.WordwiseActivityAnalysis.model"
     },
     {
       "canonical_name": "claasp.analysis.neural.xor_differential_component_dataset",

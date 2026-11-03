@@ -85,6 +85,12 @@ claasp.analysis.two_subset
 .. automodule:: claasp.analysis.two_subset
    :no-index:
 
+claasp.analysis.wordwise_activity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.wordwise_activity
+   :no-index:
+
 claasp.annotations
 ~~~~~~~~~~~~~~~~~~
 

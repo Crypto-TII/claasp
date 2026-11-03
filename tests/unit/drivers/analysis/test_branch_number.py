@@ -64,3 +64,42 @@ def test_minizinc_missing_executable_returns_typed_unavailable_result():
 
     assert result.claim is PropertyClaim.UNAVAILABLE
     assert result.diagnostic.code is DiagnosticCode.DRIVER_UNAVAILABLE
+
+
+def test_word_compression_matches_exhaustive_independent_binary_matrix_weights():
+    from itertools import product
+
+    from claasp.drivers.analysis.branch_number import _identical_word_strands
+
+    scalar = ((1, 1, 0), (0, 1, 1), (1, 1, 1))
+    matrix = tuple(
+        tuple(scalar[row // 2][column // 2] if row % 2 == column % 2 else 0 for column in range(6))
+        for row in range(6)
+    )
+    assert _identical_word_strands(matrix, 2) == scalar
+
+    def minimum(matrix, width):
+        values = []
+        for bits in product((0, 1), repeat=len(matrix[0])):
+            if not any(bits):
+                continue
+            output = tuple(sum(a * b for a, b in zip(row, bits)) % 2 for row in matrix)
+            values.append(
+                sum(
+                    any(vector[start : start + width])
+                    for vector in (bits, output)
+                    for start in range(0, len(vector), width)
+                )
+            )
+        return min(values)
+
+    assert minimum(matrix, 2) == minimum(scalar, 1)
+
+
+def test_branch_witness_validation_rejects_wrong_outputs():
+    import pytest
+
+    from claasp.drivers.analysis.branch_number import _checked_branch_number
+
+    with pytest.raises(ValueError, match="matrix evaluation"):
+        _checked_branch_number(((1, 0), (0, 1)), 1, {"input_bits": [1, 0], "output_bits": [0, 0]})
