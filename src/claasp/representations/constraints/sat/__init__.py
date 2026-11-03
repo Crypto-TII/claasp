@@ -29,6 +29,9 @@ from claasp.representations.constraints.sat.components import (
 from claasp.representations.constraints.sat.exporters import CryptoMiniSatDimacsExporter
 from claasp.representations.constraints.sat.lowering import BooleanCNFModel, BooleanNativeXorModel
 from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
+from claasp.representations.constraints.sat.quasidifferential import (
+    QuasidifferentialSATModel,
+)
 from claasp.representations.constraints.sat.trails import (
     AutomaticWordImpossibleSATResult,
     NWindowSATStrategy,
@@ -65,6 +68,7 @@ from claasp.representations.constraints.sat.trails import (
 )
 
 __all__ = [
+    "QuasidifferentialSATModel",
     "AutomaticWordImpossibleSATResult",
     "BooleanCNFModel",
     "BooleanNativeXorModel",

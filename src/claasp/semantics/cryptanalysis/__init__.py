@@ -44,6 +44,10 @@ from claasp.semantics.cryptanalysis.problem import (
     TransitionProvider,
     default_component_semantics,
 )
+from claasp.semantics.cryptanalysis.quasidifferential import (
+    QuasidifferentialSemantics,
+    QuasidifferentialTransition,
+)
 from claasp.semantics.cryptanalysis.trails import (
     BitPattern,
     ModularAddLinearSemantics,
@@ -83,6 +87,8 @@ from claasp.semantics.cryptanalysis.truncated import (
 )
 
 __all__ = [
+    "QuasidifferentialSemantics",
+    "QuasidifferentialTransition",
     "AESTwoRoundDifferentialEvidence",
     "BitPattern",
     "BitwiseAndSemantics",

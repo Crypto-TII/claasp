@@ -133,6 +133,12 @@ from claasp.analysis.neural_workflows import (
     train_staged_neural_distinguisher,
 )
 from claasp.analysis.problem import AnalysisProblem, MinimizeWeight
+from claasp.analysis.quasidifferential import (
+    FixedKeyProbabilityResult,
+    QuasidifferentialAnalysis,
+    QuasidifferentialEnumeration,
+    QuasidifferentialTrail,
+)
 from claasp.analysis.statistical import (
     StatisticalCampaignResult,
     StatisticalRoundResult,
@@ -192,6 +198,10 @@ def __getattr__(name):
 
 
 __all__ = [
+    "QuasidifferentialAnalysis",
+    "QuasidifferentialTrail",
+    "QuasidifferentialEnumeration",
+    "FixedKeyProbabilityResult",
     "DivisionPropertyPathSearch",
     "TwoSubsetDivisionProperty",
     "two_subset_transition_table",

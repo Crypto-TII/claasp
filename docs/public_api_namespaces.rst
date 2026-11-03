@@ -49,6 +49,12 @@ claasp.analysis.nist_sts
 .. automodule:: claasp.analysis.nist_sts
    :no-index:
 
+claasp.analysis.quasidifferential
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.quasidifferential
+   :no-index:
+
 claasp.analysis.trail_search
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -757,6 +763,12 @@ claasp.representations.constraints.sat.model
 .. automodule:: claasp.representations.constraints.sat.model
    :no-index:
 
+claasp.representations.constraints.sat.quasidifferential
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.quasidifferential
+   :no-index:
+
 claasp.representations.constraints.sat.trails
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -833,6 +845,12 @@ claasp.semantics.cryptanalysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.semantics.cryptanalysis
+   :no-index:
+
+claasp.semantics.cryptanalysis.quasidifferential
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.semantics.cryptanalysis.quasidifferential
    :no-index:
 
 claasp.serialization
