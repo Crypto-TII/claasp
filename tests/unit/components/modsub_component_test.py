@@ -1,15 +1,17 @@
-from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher import Cipher
+from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+from claasp.components.modsub_component import ModSub
 from claasp.name_mappings import PERMUTATION
-
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
+from claasp.ciphers.single_component_ciphers.modsub_cipher import ModsubCipher
 
 def test_algebraic_polynomials():
     cipher = Cipher("cipher_name", PERMUTATION, ["input"], [8], 8)
     cipher.add_round()
-    cipher.add_MODSUB_component(["input", "input"], [[0, 1, 2, 3], [4, 5, 6, 7]], 4)
-    modsub_component = cipher.get_component_from_id('modsub_0_0')
+    cipher.add_modsub_component(["input", "input"], [[0, 1, 2, 3], [4, 5, 6, 7]], 4)
+    modsub_component = cipher.component_from_id('modsub_0_0')
     algebraic = AlgebraicModel(cipher)
     algebraic_polynomials = modsub_component.algebraic_polynomials(algebraic)
 
@@ -25,8 +27,7 @@ def test_algebraic_polynomials():
 
 
 def test_cms_constraints():
-    raiden = RaidenBlockCipher(number_of_rounds=3)
-    modsub_component = raiden.component_from(0, 7)
+    modsub_component = ModSub(0, 7, ['modadd_0_4', 'plaintext'], [list(range(32)), list(range(32, 64))], 32, 2 ** 32)
     output_bit_ids, constraints = modsub_component.cms_constraints()
 
     assert output_bit_ids[0] == 'temp_carry_plaintext_32'
@@ -39,8 +40,7 @@ def test_cms_constraints():
 
 
 def test_cp_constraints():
-    raiden = RaidenBlockCipher(number_of_rounds=3)
-    modsub_component = raiden.component_from(0, 7)
+    modsub_component = ModSub(0, 7, ['modadd_0_4', 'plaintext'], [list(range(32)), list(range(32, 64))], 32, 2 ** 32)
     output_bit_ids, constraints = modsub_component.cp_constraints()
 
     assert output_bit_ids[0] == 'array[0..31] of var 0..1: constant_modsub_0_7= array1d(0..31,[0, 0, 0, 0, 0, 0, 0, ' \
@@ -57,14 +57,17 @@ def test_cp_constraints():
 
 
 def test_cp_xor_differential_propagation_constraints():
-    raiden = RaidenBlockCipher(number_of_rounds=3)
-    modsub_component = raiden.component_from(0, 7)
-    cp_model = MznModel(raiden)
+    class DummyModel:
+        c = 0
+        component_and_probability = {}
+        modadd_twoterms_mant = []
+
+    modsub_component = ModSub(0, 7, ['modadd_0_4', 'plaintext'], [list(range(32)), list(range(32, 64))], 32, 2 ** 32)
+    cp_model = DummyModel()
     output_bit_ids, constraints = modsub_component.cp_xor_differential_propagation_constraints(cp_model)
 
     assert output_bit_ids[0] == 'array[0..31] of var 0..1: pre_modsub_0_7_0;'
-    assert output_bit_ids[
-               -1] == 'array[0..31] of var 0..1: eq_modsub_0_7 = Eq(Shi_pre_modsub_0_7_1, Shi_pre_modsub_0_7_0, Shi_modsub_0_7);'
+    assert output_bit_ids[-1] == 'array[0..31] of var 0..1: eq_modsub_0_7 = Eq(Shi_pre_modsub_0_7_1, Shi_pre_modsub_0_7_0, Shi_modsub_0_7);'
 
     assert constraints[0] == 'constraint pre_modsub_0_7_0[0] = modadd_0_4[0];'
     assert constraints[1] == 'constraint pre_modsub_0_7_0[1] = modadd_0_4[1];'
@@ -76,8 +79,7 @@ def test_cp_xor_differential_propagation_constraints():
 
 
 def test_sat_constraints():
-    raiden = RaidenBlockCipher(number_of_rounds=3)
-    modsub_component = raiden.component_from(0, 7)
+    modsub_component = ModSub(0, 7, ['modadd_0_4', 'plaintext'], [list(range(32)), list(range(32, 64))], 32, 2 ** 32)
     output_bit_ids, constraints = modsub_component.sat_constraints()
 
     assert output_bit_ids[0] == 'temp_carry_plaintext_32'
@@ -89,8 +91,7 @@ def test_sat_constraints():
 
 
 def test_smt_constraints():
-    raiden = RaidenBlockCipher(number_of_rounds=3)
-    modsub_component = raiden.component_from(0, 7)
+    modsub_component = ModSub(0, 7, ['modadd_0_4', 'plaintext'], [list(range(32)), list(range(32, 64))], 32, 2 ** 32)
     output_bit_ids, constraints = modsub_component.smt_constraints()
 
     assert output_bit_ids[0] == 'temp_carry_plaintext_32'
@@ -103,3 +104,30 @@ def test_smt_constraints():
     assert constraints[-2] == '(assert (= modsub_0_7_30 (xor modadd_0_4_30 temp_input_plaintext_62 ' \
                               'carry_modsub_0_7_30)))'
     assert constraints[-1] == '(assert (= modsub_0_7_31 (xor modadd_0_4_31 temp_input_plaintext_63)))'
+
+def test_smt_xor_quasidifferential_propagation_constraints():
+    cipher = ModsubCipher(word_bit_size=2, number_of_inputs=2, modulus=4)
+    model = SmtXorQuasidifferentialModel(cipher)
+    modsub_component = cipher.component_from(0, 0)
+    variables, constraints = modsub_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert len(variables) == 20
+    assert variables[:4] == ['modsub_0_0_0', 'modsub_0_0_1', 'qdt_modsub_0_0_0', 'qdt_modsub_0_0_1']
+    assert variables[-2:] == ['hw_qdt_modsub_0_0_0', 'hw_qdt_modsub_0_0_1']
+
+    assert len(constraints) == 23
+    assert constraints[0] == '(assert (= modsub_aprime_modsub_0_0_0 (xor key_0 plaintext_0)))'
+
+
+def test_smt_xor_quasidifferential_propagation_constraints_more_than_two_operands():
+    cipher = ModsubCipher(word_bit_size=2, number_of_inputs=3, modulus=4)
+    model = SmtXorQuasidifferentialModel(cipher)
+    modsub_component = cipher.component_from(0, 0)
+
+    try:
+        modsub_component.smt_xor_quasidifferential_propagation_constraints(model)
+        raised = False
+    except NotImplementedError:
+        raised = True
+
+    assert raised

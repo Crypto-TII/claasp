@@ -12,7 +12,7 @@ def test_spongent_pi_permutation():
     spongentpi = SpongentPiPermutation(state_bit_size=160, number_of_rounds=4)
     assert spongentpi.number_of_rounds == 4
     assert spongentpi.id == 'spongent_pi_p160_o160_r4'
-    assert spongentpi.component_from(3, 0).id == 'linear_layer_3_0'
+    assert spongentpi.component_from(3, 0).id == 'permutation_3_0'
 
     # Very long test
     plaintext = 0x0000000000000000000000000000000000000000

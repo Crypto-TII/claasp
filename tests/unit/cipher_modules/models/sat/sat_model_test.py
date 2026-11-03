@@ -1,13 +1,13 @@
 import pytest
 
-from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.sat.solvers import CRYPTOMINISAT, CRYPTOMINISAT_EXT, KISSAT_EXT, PARKISSAT_EXT
+from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
 
 
 def test_solve():
@@ -74,17 +74,17 @@ def test_fix_variables_value_constraints():
 
     speck = SpeckBlockCipher(number_of_rounds=3)
     sat = SatXorDifferentialModel(speck)
-    fixed_values = [set_fixed_variables('plaintext', 'equal', range(32), [(speck.get_all_components_ids()[-1], list(range(32)))])]
+    fixed_values = [set_fixed_variables('plaintext', 'equal', range(32), [(speck.all_components_ids()[-1], list(range(32)))])]
     trail = sat.find_one_xor_differential_trail(fixed_values=fixed_values)
-    assert trail['components_values']['plaintext']['value'] == trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+    assert trail['components_values']['plaintext']['value'] == trail['components_values'][speck.all_components_ids()[-1]]['value']
 
-    fixed_values = [set_fixed_variables('plaintext', 'not_equal', range(32), [(speck.get_all_components_ids()[-1], list(range(32)))])]
+    fixed_values = [set_fixed_variables('plaintext', 'not_equal', range(32), [(speck.all_components_ids()[-1], list(range(32)))])]
     trail = sat.find_one_xor_differential_trail(fixed_values=fixed_values)
-    assert trail['components_values']['plaintext']['value'] != trail['components_values'][speck.get_all_components_ids()[-1]]['value']
+    assert trail['components_values']['plaintext']['value'] != trail['components_values'][speck.all_components_ids()[-1]]['value']
 
     fixed_values = [set_fixed_variables('plaintext', 'equal', range(32), [0]*31+[1])]
-    fixed_values.append(set_fixed_variables(speck.get_all_components_ids()[-1], 'equal', range(32), [0]*31+[1]))
-    fixed_values.append(set_fixed_variables('plaintext', 'not_equal', range(32), [(speck.get_all_components_ids()[-1], list(range(32)))]))
+    fixed_values.append(set_fixed_variables(speck.all_components_ids()[-1], 'equal', range(32), [0]*31+[1]))
+    fixed_values.append(set_fixed_variables('plaintext', 'not_equal', range(32), [(speck.all_components_ids()[-1], list(range(32)))]))
     trail = sat.find_one_xor_differential_trail(fixed_values=fixed_values)
     assert trail['status'] == 'UNSATISFIABLE'
 
@@ -111,7 +111,7 @@ def test_build_xor_differential_sat_model_from_dictionary():
         component_id="key", constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
 
-    for component in speck.get_all_components():
+    for component in speck.all_components():
         print(component.id)
         component_model_type = {
             "component_id": component.id,
@@ -143,7 +143,7 @@ def test_build_generic_sat_model_from_dictionary():
         component_id="key", constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
 
-    for component in speck.get_all_components():
+    for component in speck.all_components():
         component_model_type = {
             "component_id": component.id,
             "component_object": component,
@@ -187,3 +187,14 @@ def test_weight_constraints():
     sat = SatXorDifferentialModel(speck)
     sat.build_xor_differential_trail_model()
     assert len(sat.weight_constraints(7)) == 2
+
+
+def test_parallel_counter_branch():
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    sat = SatModel(speck, counter="parallel")
+
+    variables, constraints = sat._parallel_counter(["hw_0", "hw_1", "hw_2"], 5)
+
+    assert variables
+    assert constraints
+    assert any(variable.startswith("r_") for variable in variables)

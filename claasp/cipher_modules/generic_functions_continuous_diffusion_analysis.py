@@ -19,14 +19,14 @@
 
 import copy
 import math
+from decimal import MAX_EMAX, Decimal, getcontext
+
 import numpy as np
 from numpy.linalg import multi_dot
-from decimal import Decimal, getcontext, MAX_EMAX
-
 from sage.crypto.sbox import SBox
-from sage.rings.quotient_ring import QuotientRing
 from sage.rings.finite_rings.finite_field_constructor import FiniteField
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+from sage.rings.quotient_ring import QuotientRing
 
 from claasp.utils.utils import int_to_poly, poly_to_int
 

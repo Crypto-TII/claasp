@@ -12,7 +12,11 @@ from plotly.subplots import make_subplots
 
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-from claasp.cipher_modules.statistical_tests.nist_statistical_tests import NISTStatisticalTests
+from claasp.cipher_modules.statistical_tests.nist_statistical_tests_report import NISTStatisticalTestsReport
+
+
+def _default_test_reports_dir():
+    return os.path.join(os.getcwd(), 'test_reports').replace(os.sep, '/')
 
 
 def _print_colored_state(state, verbose, file):
@@ -406,18 +410,24 @@ class Report:
 
         print("Report saved in " + output_dir + '/' + self.cipher.id)
 
-    def save_as_DataFrame(self, output_dir=os.getcwd() + '/test_reports', fixed_input=None, fixed_output=None,
+    def save_as_dataframe(self, output_dir=None, fixed_input=None, fixed_output=None,
                           fixed_test=None):
+        if output_dir is None:
+            output_dir = _default_test_reports_dir()
         self._export(file_format='.csv', output_dir=output_dir, fixed_input=fixed_input, fixed_output=fixed_output,
                      fixed_test=fixed_test)
 
-    def save_as_latex_table(self, output_dir=os.getcwd() + '/test_reports', fixed_input=None, fixed_output=None,
+    def save_as_latex_table(self, output_dir=None, fixed_input=None, fixed_output=None,
                             fixed_test=None):
+        if output_dir is None:
+            output_dir = _default_test_reports_dir()
         self._export(file_format='.tex', output_dir=output_dir, fixed_input=fixed_input, fixed_output=fixed_output,
                      fixed_test=fixed_test)
 
-    def save_as_json(self, output_dir=os.getcwd() + '/test_reports', fixed_input=None, fixed_output=None,
+    def save_as_json(self, output_dir=None, fixed_input=None, fixed_output=None,
                      fixed_test=None):
+        if output_dir is None:
+            output_dir = _default_test_reports_dir()
         self._export(file_format='.json', output_dir=output_dir, fixed_input=fixed_input, fixed_output=fixed_output,
                      fixed_test=fixed_test)
 
@@ -446,9 +456,10 @@ class Report:
         for comp, comp_choice in itertools.product(component_types, input_comps):
             if 'show_' + comp == comp_choice:
                 show_components[comp] = var_choices[comp_choice]
-            elif 'show_' + comp == comp_choice + '_o' and show_output:
+            # Backward compatibility for the historical typo in the public argument name.
+            elif comp == 'permutation' and comp_choice == 'show_permuation':
                 show_components[comp] = var_choices[comp_choice]
-            elif 'show_' + comp == comp_choice + '_i' and show_input:
+            elif ('show_' + comp == comp_choice + '_o' and show_output) or ('show_' + comp == comp_choice + '_i' and show_input):
                 show_components[comp] = var_choices[comp_choice]
 
         return show_components
@@ -510,10 +521,10 @@ class Report:
     def _get_comp_value_and_key_flow(self, comp_id, key_flow):
 
         if comp_id[-2:] == "_i" or comp_id[-2:] == "_o":
-            input_links = self.cipher.get_component_from_id(comp_id[:-2]).input_id_links
+            input_links = self.cipher.component_from_id(comp_id[:-2]).input_id_links
             comp_value = ('_'.join(comp_id.split('_')[:-3])) + '_' + ('_'.join(comp_id.split('_')[-1]))
         else:
-            input_links = self.cipher.get_component_from_id(comp_id).input_id_links
+            input_links = self.cipher.component_from_id(comp_id).input_id_links
             comp_value = '_'.join(comp_id.split('_')[:-2])
 
         if (all(
@@ -558,7 +569,7 @@ class Report:
             else:
                 if verbose:
                     print(
-                        f'{comp_id}        Input Links : {self.cipher.get_component_from_id(comp_id if comp_id[-2:] not in ["_i", "_o"] else comp_id[:-2]).input_id_links}',
+                        f'{comp_id}        Input Links : {self.cipher.component_from_id(comp_id if comp_id[-2:] not in ["_i", "_o"] else comp_id[:-2]).input_id_links}',
                         file=file if save_fig else None)
                     _print_colored_state(out_list[comp_id][0], verbose, file)
                 else:
@@ -583,17 +594,21 @@ class Report:
                 comp_value = ('_'.join(comp_id.split('_')[:-3])) + '_' + ('_'.join(comp_id.split('_')[-1]))
             else:
                 comp_value = '_'.join(comp_id.split('_')[:-2])
-            if show_components[
-                comp_value if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
-                                               'intermediate_output', 'intermediate_output_o',
-                                               'intermediate_output_i'] and 'key' not in comp_id) else comp_id]:
+            current_comp = (
+                comp_value
+                if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
+                                    'intermediate_output', 'intermediate_output_o', 'intermediate_output_i']
+                    and 'key' not in comp_id)
+                else comp_id
+            )
+            if show_components.get(current_comp, False):
                 if 'key' in comp_id:
                     _print_colored_state(out_list[comp_id][0], verbose, file)
                     print(f'\t{comp_id}\t', file=file)
                 else:
                     if verbose:
                         print(
-                            f'{comp_id}       Input Links : {self.cipher.get_component_from_id(comp_id if comp_id[-2:] not in ["_i", "_o"] else comp_id[:-2]).input_id_links}',
+                            f'{comp_id}       Input Links : {self.cipher.component_from_id(comp_id if comp_id[-2:] not in ["_i", "_o"] else comp_id[:-2]).input_id_links}',
                             file=file)
                         _print_colored_state(out_list[comp_id][0], verbose, file)
                     else:
@@ -653,10 +668,14 @@ class Report:
             if comp_id != 'plaintext' and 'key' not in comp_id:
                 comp_value, key_flow = self._get_comp_value_and_key_flow(comp_id, key_flow)
 
-            if show_components[
-                comp_value if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
-                                               'intermediate_output', 'intermediate_output_o',
-                                               'intermediate_output_i'] and 'key' not in comp_id) else comp_id]:
+            current_comp = (
+                comp_value
+                if (comp_id not in ['plaintext', 'cipher_output', 'cipher_output_o', 'cipher_output_i',
+                                    'intermediate_output', 'intermediate_output_o', 'intermediate_output_i']
+                    and 'key' not in comp_id)
+                else comp_id
+            )
+            if show_components.get(current_comp, False):
                 self._update_out_list(out_list, rel_prob, abs_prob, show_as_hex, comp_id, word_size, state_size,
                                       key_state_size, key_flow, word_denominator)
 
@@ -744,13 +763,8 @@ class Report:
                                                    show_graph=show_graph)
 
             elif 'nist' in self.test_name:
-                for dict in self.test_report['test_results']:
-                    NISTStatisticalTests._generate_chart_round(dict,
-                                                               output_directory,
-                                                               show_graph=show_graph)
-                NISTStatisticalTests._generate_chart_all(self.test_report['test_results'],
-                                                         output_directory,
-                                                         show_graph=show_graph)
+                reporter = NISTStatisticalTestsReport(self.test_report, output_dir=output_directory)
+                reporter.generate_charts(output_dir=output_directory)
 
         elif 'algebraic' in self.test_name:
 
@@ -873,7 +887,7 @@ class Report:
 
     def save_as_image(self, show_as_hex=False, test_name=None, fixed_input=None, fixed_output=None,
                       fixed_input_difference=None, word_size=1, state_size=1, key_state_size=1,
-                      output_directory=os.getcwd() + '/test_reports',
+                      output_directory=None,
                       verbose=False, show_word_permutation=False,
                       show_var_shift=False, show_var_rotate=False, show_theta_xoodoo=False,
                       show_theta_keccak=False, show_shift_rows=False, show_sigma=False, show_reverse=False,
@@ -908,6 +922,9 @@ class Report:
                 sage: report.save_as_image(test_name='avalanche_weight_vectors', fixed_input='plaintext', fixed_output='round_output', fixed_input_difference='average') # doctest: +SKIP
 
         """
+        if output_directory is None:
+            output_directory = _default_test_reports_dir()
+
         time = '_date:' + 'time:'.join(str(datetime.now()).split(' '))
         test_directory = output_directory
         if 'component_analysis' in self.test_name:
@@ -939,7 +956,9 @@ class Report:
                                 fixed_input_difference=fixed_input_difference, fixed_input=fixed_input)
         print('Report saved in ' + test_directory)
 
-    def clean_reports(self, output_dir=os.getcwd() + '/test_reports'):
+    def clean_reports(self, output_dir=None):
+        if output_dir is None:
+            output_dir = _default_test_reports_dir()
 
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)

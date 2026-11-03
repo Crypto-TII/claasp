@@ -23,12 +23,14 @@ The target of this module is to generate MILP inequalities for a wordwise trunca
 """
 
 import itertools
-from math import ceil, log
-import pickle, os
+import os
+import pickle
 from functools import reduce
+from math import ceil, log
+
+from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.utils import generate_product_of_sum_from_espresso
-from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 
 input_patterns_file_name = "dictionary_containing_truncated_input_pattern_inequalities.obj"
 xor_n_inputs_file_name = "dictionary_containing_truncated_xor_inequalities_between_n_input_bits.obj"
@@ -42,15 +44,14 @@ wordwise_truncated_xor_inequalities_between_n_input_bits_file_path = os.path.joi
 
 def generate_valid_points_input_words(wordsize=4, max_pattern_value=3):
     """
-    Model 1 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
+    Model 1 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294 ::
 
-    delta | zeta
-    ------------
-      0   |  Z (0)
-      1   |  N (> 0)
-      2   |  N*
-      3   |  U
-
+        delta | zeta
+        ------------
+          0   |  Z (0)
+          1   |  N (> 0)
+          2   |  N*
+          3   |  U
 
     """
 
@@ -78,7 +79,7 @@ def update_dictionary_that_contains_wordwise_truncated_input_inequalities(wordsi
         dictio = {}
 
     if wordsize not in dictio.keys():
-        print(f"Adding inequalities for truncated words of size {wordsize} bits in pre-saved dictionary")
+        # Precompute input-pattern inequalities for this wordsize and cache them.
         valid_points = generate_valid_points_input_words(wordsize)
         inequalities = generate_product_of_sum_from_espresso(valid_points)
         dictio[wordsize] = inequalities
@@ -202,9 +203,7 @@ def update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_
         dictio[wordsize] = {}
 
     if number_of_inputs not in dictio[wordsize].keys():
-        print(
-            f"Adding wordwise xor inequalities between {number_of_inputs} inputs of size {wordsize} in pre-saved dictionary"
-        )
+        # Precompute inequalities for this (wordsize, number_of_inputs) pair and cache them.
         valid_points = generate_valid_points_for_xor_between_n_input_words(wordsize, number_of_inputs)
         inequalities = milp_utils.generate_product_of_sum_from_espresso(valid_points)
         dictio[wordsize][number_of_inputs] = inequalities

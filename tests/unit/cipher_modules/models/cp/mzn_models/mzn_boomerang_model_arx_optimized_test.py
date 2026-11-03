@@ -1,4 +1,5 @@
 import os
+
 import numpy as np
 
 from claasp.cipher_modules.models.cp.mzn_models.mzn_boomerang_model_arx_optimized import MznBoomerangModelARXOptimized
@@ -6,7 +7,6 @@ from claasp.cipher_modules.models.cp.solvers import CPSAT
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.name_mappings import BOOMERANG_XOR_DIFFERENTIAL
-
 
 SPECK32_64_WORD_SIZE = 16
 SPECK32_64_ALPHA = 7

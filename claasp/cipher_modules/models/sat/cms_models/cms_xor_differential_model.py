@@ -42,14 +42,16 @@ For any further information, visit `CryptoMiniSat - XOR clauses
 """
 
 from claasp.cipher_modules.models.sat.sat_model import SatModel
-from claasp.cipher_modules.models.sat.utils import utils
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+from claasp.cipher_modules.models.sat.utils import utils
+from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
 )
@@ -88,23 +90,33 @@ class CmsSatXorDifferentialModel(SatXorDifferentialModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=22)
             sage: cms = CmsSatXorDifferentialModel(speck)
             sage: cms.build_xor_differential_trail_model()
-            ...
         """
         variables = []
         self._variables_list = []
+        if not fixed_variables:
+            fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
         constraints = SatModel.fix_variables_value_constraints(fixed_variables)
-        component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
-        operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
         self._model_constraints = constraints
+        component_types = (
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            CIPHER_OUTPUT,
+            LINEAR_LAYER,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            MIX_COLUMN,
+            WORD_OPERATION,
+        )
+        operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types
             ):
-                variables, constraints = component.cms_xor_differential_propagation_constraints(self)
+                raise ValueError(f"{component.id} not yet implemented")
             else:
-                print(f"{component.id} not yet implemented")
+                variables, constraints = component.cms_xor_differential_propagation_constraints(self)
 
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)

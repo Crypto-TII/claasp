@@ -34,6 +34,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
 )
@@ -97,7 +98,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         x = self._binary_variable
         p = self._integer_variable
 
-        components = self._cipher.get_all_components()
+        components = self._cipher.all_components()
         last_component = components[-1]
 
         self.build_bitwise_deterministic_truncated_xor_differential_trail_model(fixed_variables)
@@ -151,19 +152,20 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         )
         self._model_constraints = constraints
 
-        component_list = component_list or self._cipher.get_all_components()
+        component_list = component_list or self._cipher.all_components()
         for component in component_list:
             component_types = (
                 CIPHER_OUTPUT,
                 CONSTANT,
                 INTERMEDIATE_OUTPUT,
                 LINEAR_LAYER,
+                PERMUTATION_COMPONENT,
                 MIX_COLUMN,
                 SBOX,
                 WORD_OPERATION,
             )
             operation = component.description[0]
-            operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
+            operation_types = ("AND", "MODADD", "MODMUL", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 if operation in ("XOR", "MODADD") or component.type == LINEAR_LAYER:
@@ -241,10 +243,11 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
     def link_binary_tuples_to_integer_variables(self, id_tuples, ids):
         """
         Returns constraints linking the tuple of binary variables to the associated integer variable representing the
-        truncated pattern of a bit, for the bitwise deterministic truncated xor differential model
-            - (0, 0) means that the pattern is 0, i.e. the bit value equals 0
-            - (0, 1) means that the pattern is 1, i.e. the bit value equals 1
-            - (1, 0) means that the pattern is 2, i.e. the bit value is unknown
+        truncated pattern of a bit, for the bitwise deterministic truncated xor differential model:
+
+        - (0, 0) means that the pattern is 0, i.e. the bit value equals 0
+        - (0, 1) means that the pattern is 1, i.e. the bit value equals 1
+        - (1, 0) means that the pattern is 2, i.e. the bit value is unknown
 
         .. SEEALSO::
 
@@ -398,7 +401,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
 
     def _get_component_values(self, objective_variables, components_variables):
         components_values = {}
-        list_component_ids = self._cipher.inputs + self._cipher.get_all_components_ids()
+        list_component_ids = self._cipher.inputs + self._cipher.all_components_ids()
         for component_id in list_component_ids:
             dict_tmp = self._get_component_value_weight(component_id, components_variables)
             components_values[component_id] = dict_tmp
@@ -417,7 +420,7 @@ class MilpBitwiseDeterministicTruncatedXorDifferentialModel(MilpModel):
         if component_id in self._cipher.inputs:
             output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)]
         else:
-            component = self._cipher.get_component_from_id(component_id)
+            component = self._cipher.component_from_id(component_id)
             output_size = component.output_bit_size
         suffix_dict = {"": output_size}
         final_output = self._get_final_output(component_id, components_variables, suffix_dict)

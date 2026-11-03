@@ -16,15 +16,16 @@
 # ****************************************************************************
 
 
-from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MznModel
 from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.name_mappings import (
-    CIPHER_OUTPUT,
     CIPHER,
+    CIPHER_OUTPUT,
     CONSTANT,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
 )
@@ -34,7 +35,7 @@ class MznCipherModel(MznModel):
     def __init__(self, cipher):
         super().__init__(cipher)
 
-    def build_cipher_model(self, fixed_variables=[], second=False):
+    def build_cipher_model(self, fixed_variables=[]):
         """
         Build the cipher model.
 
@@ -55,16 +56,24 @@ class MznCipherModel(MznModel):
             sage: cp.build_cipher_model(fixed_variables)
         """
         self.initialise_model()
-        self._model_prefix.extend(self.input_constraints())
-        self.sbox_mant = []
+        self.sbox_cache = []
         variables = []
-        self._variables_list = []
+        self._variables_declarations = self.input_declarations()
         constraints = self.fix_variables_value_constraints(fixed_variables)
-        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+        component_types = (
+            CIPHER_OUTPUT,
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            LINEAR_LAYER,
+            MIX_COLUMN,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            WORD_OPERATION,
+        )
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR")
         self._model_constraints = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types
@@ -74,15 +83,12 @@ class MznCipherModel(MznModel):
                 if component.type != SBOX:
                     variables, constraints = component.cp_constraints()
                 else:
-                    variables, constraints = component.cp_constraints(self.sbox_mant)
+                    variables, constraints = component.cp_constraints(self.sbox_cache)
 
             self._model_constraints.extend(constraints)
-            self._variables_list.extend(variables)
+            self._variables_declarations.extend(variables)
 
         self._model_constraints.extend(self.final_constraints())
-
-        if not second:
-            self._model_constraints = self._model_prefix + self._variables_list + self._model_constraints
 
     def find_missing_bits(self, fixed_values=[], solver_name=SOLVER_DEFAULT, solver_external=True):
         self.build_cipher_model(fixed_variables=fixed_values)
@@ -112,16 +118,16 @@ class MznCipherModel(MznModel):
         new_constraint = "output["
         for element in cipher_inputs:
             new_constraint = f'{new_constraint}"{element} = "++ show({element}) ++ "\\n" ++'
-        for component_id in self._cipher.get_all_components_ids():
+        for component_id in self._cipher.all_components_ids():
             new_constraint = new_constraint + f'"{component_id} = "++ show({component_id})++ "\\n" ++ "0" ++ "\\n" ++'
         new_constraint = new_constraint[:-2] + "];"
         cp_constraints.append(new_constraint)
 
         return cp_constraints
 
-    def input_constraints(self):
+    def input_declarations(self):
         """
-        Return a list of CP constraints for the inputs of the cipher.
+        Return a list of CP variable declarations for the inputs of the cipher.
 
         INPUT:
 
@@ -133,17 +139,17 @@ class MznCipherModel(MznModel):
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_cipher_model import MznCipherModel
             sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
             sage: cp = MznCipherModel(speck)
-            sage: cp.input_constraints()
+            sage: cp.input_declarations()
             ['array[0..31] of var 0..1: plaintext;',
               ...
              'array[0..31] of var 0..1: cipher_output_3_12;']
         """
-        self.sbox_mant = []
+        self.sbox_cache = []
         cp_declarations = [
             f"array[0..{bit_size - 1}] of var 0..1: {input_};"
             for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
         ]
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if CONSTANT not in component.type:
                 cp_declarations.append(f"array[0..{component.output_bit_size - 1}] of var 0..1: {component.id};")
 

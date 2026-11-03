@@ -1,7 +1,6 @@
-import pytest
 
-from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 
 OUTPUT_TXT = 'dieharder_test_output.txt'
 TESTS_FINISHED = "Dieharder Tests Finished!!!"

@@ -18,7 +18,7 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 SBOX = [0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2]
 
@@ -120,7 +120,7 @@ class LedBlockCipher(Cipher):
         constant = self.get_round_constant(round_number)
         const_id = self.add_constant_component(self.block_bit_size, constant).id
 
-        xor_id = self.add_XOR_component(
+        xor_id = self.add_xor_component(
             [*state.id, const_id],
             [*state.input_bit_positions, list(range(self.block_bit_size))],
             self.block_bit_size,
@@ -130,7 +130,7 @@ class LedBlockCipher(Cipher):
     def sub_cells(self, state):
         sbox_out_ids = []
         for i in range(16):
-            id_sbox = self.add_SBOX_component(state.id, [state.input_bit_positions[0][i * 4 : (i + 1) * 4]], 4, SBOX).id
+            id_sbox = self.add_sbox_component(state.id, [state.input_bit_positions[0][i * 4 : (i + 1) * 4]], 4, SBOX).id
             sbox_out_ids.append(id_sbox)
         return ComponentState(sbox_out_ids, [list(range(4))] * 16)
 
@@ -166,7 +166,7 @@ class LedBlockCipher(Cipher):
         return ComponentState(new_state, new_positions)
 
     def add_round_key(self, state, key):
-        xor_id = self.add_XOR_component(
+        xor_id = self.add_xor_component(
             [*state.id, *key.id], [*state.input_bit_positions, *key.input_bit_positions], self.block_bit_size
         ).id
 

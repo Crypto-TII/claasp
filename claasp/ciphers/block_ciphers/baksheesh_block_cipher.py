@@ -1,6 +1,5 @@
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, BLOCK_CIPHER
-
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [{"block_bit_size": 128, "key_bit_size": 128, "number_of_rounds": 35}]
 # fmt: off
@@ -36,13 +35,13 @@ class BaksheeshBlockCipher(Cipher):
 
     EXAMPLES::
 
-    sage: from claasp.ciphers.block_ciphers.baksheesh_block_cipher import BaksheeshBlockCipher
-    sage: baksheesh = BaksheeshBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=35)
-    sage: baksheesh.number_of_rounds
-    35
+        sage: from claasp.ciphers.block_ciphers.baksheesh_block_cipher import BaksheeshBlockCipher
+        sage: baksheesh = BaksheeshBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=35)
+        sage: baksheesh.number_of_rounds
+        35
 
-    sage: baksheesh.component_from(0, 0).id
-    'xor_0_0'
+        sage: baksheesh.component_from(0, 0).id
+        'xor_0_0'
     """
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=35):
         super().__init__(
@@ -62,7 +61,7 @@ class BaksheeshBlockCipher(Cipher):
 
         # 1) Whitening
         self.add_round()
-        xor = self.add_XOR_component(state[0] + key[0], state[1] + key[1], block_bit_size)
+        xor = self.add_xor_component(state[0] + key[0], state[1] + key[1], block_bit_size)
         state = ([xor.id], [list(range(block_bit_size))])
 
         # 2) Rounds
@@ -71,7 +70,7 @@ class BaksheeshBlockCipher(Cipher):
             state = self.apply_bit_permutation(state)
             state = self.apply_round_constants(state, round_number)
             key = self.update_key(key)
-            xor = self.add_XOR_component(state[0] + key[0], state[1] + key[1], block_bit_size)
+            xor = self.add_xor_component(state[0] + key[0], state[1] + key[1], block_bit_size)
             state = ([xor.id], [list(range(block_bit_size))])
             self.add_round_output_component(state[0], state[1], block_bit_size)
             self.add_round()
@@ -81,14 +80,14 @@ class BaksheeshBlockCipher(Cipher):
         state = self.apply_bit_permutation(state)
         state = self.apply_round_constants(state, number_of_rounds - 1)
         key = self.update_key(key)
-        xor = self.add_XOR_component(state[0] + key[0], state[1] + key[1], block_bit_size)
+        xor = self.add_xor_component(state[0] + key[0], state[1] + key[1], block_bit_size)
 
         self.add_cipher_output_component([xor.id], [list(range(block_bit_size))], block_bit_size)
 
     def apply_sbox_layer(self, state):
         ids, bits = [], []
         for i in range(self.number_of_nibbles):
-            sbox = self.add_SBOX_component(state[0], [state[1][0][i * 4 : (i + 1) * 4]], 4, SBOX)
+            sbox = self.add_sbox_component(state[0], [state[1][0][i * 4 : (i + 1) * 4]], 4, SBOX)
             ids.append(sbox.id)
             bits.append(list(range(4)))
         state = (ids, bits)
@@ -109,7 +108,7 @@ class BaksheeshBlockCipher(Cipher):
 
         constant = self.add_constant_component(self.block_bit_size, value)
 
-        comp = self.add_XOR_component(
+        comp = self.add_xor_component(
             state[0] + [constant.id], state[1] + [list(range(self.block_bit_size))], self.block_bit_size
         )
         state = ([comp.id], [list(range(self.block_bit_size))])

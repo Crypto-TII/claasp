@@ -1,5 +1,6 @@
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox_and_compact_linear_map import (
-    AradiBlockCipherSBoxAndCompactLinearMap)
+    AradiBlockCipherSBoxAndCompactLinearMap,
+)
 
 
 def test_aradi_block_cipher_sbox_and_compact_linear_map():

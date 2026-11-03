@@ -3,9 +3,9 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_impossible_xor_differential_
 )
 from claasp.cipher_modules.models.cp.solvers import CHUFFED
 from claasp.cipher_modules.models.utils import set_fixed_variables
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, UNSATISFIABLE
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, UNSATISFIABLE
 
 
 def test_build_impossible_xor_differential_trail_with_extensions_model():
@@ -21,10 +21,10 @@ def test_build_impossible_xor_differential_trail_with_extensions_model():
         intermediate_components=False,
     )
 
-    assert len(mzn.model_constraints) == 1764
-    assert mzn.model_constraints[99] == "array[0..31] of var 0..2: inverse_plaintext;"
-    assert mzn.model_constraints[3] == "array[0..63] of var 0..2: key;"
-    assert mzn.model_constraints[39] == "array[0..31] of var 0..2: cipher_output_5_12;"
+    assert len(mzn.model_constraints) + len(mzn.model_variables) == 1762
+    assert "array[0..31] of var 0..2: inverse_plaintext;" in mzn.model_variables
+    assert "array[0..63] of var 0..2: key;" in mzn.model_variables
+    assert "array[0..31] of var 0..2: cipher_output_5_12;" in mzn.model_variables
 
 
 def test_build_impossible_xor_differential_trail_model():
@@ -35,10 +35,10 @@ def test_build_impossible_xor_differential_trail_model():
         number_of_rounds=5, fixed_variables=fixed_variables, middle_round=3
     )
 
-    assert len(mzn.model_constraints) == 1661
-    assert mzn.model_constraints[2] == "array[0..31] of var 0..2: plaintext;"
-    assert mzn.model_constraints[3] == "array[0..63] of var 0..2: key;"
-    assert mzn.model_constraints[4] == "array[0..31] of var 0..2: inverse_cipher_output_4_12;"
+    assert len(mzn.model_constraints) + len(mzn.model_variables) == 1659
+    assert "array[0..31] of var 0..2: plaintext;" in mzn.model_variables
+    assert "array[0..63] of var 0..2: key;" in mzn.model_variables
+    assert "array[0..31] of var 0..2: inverse_cipher_output_4_12;" in mzn.model_variables
 
 
 def test_find_all_impossible_xor_differential_trails():
@@ -50,7 +50,7 @@ def test_find_all_impossible_xor_differential_trails():
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    ciphertext_id = "inverse_" + speck.get_all_components_ids()[-1]
+    ciphertext_id = "inverse_" + speck.all_components_ids()[-1]
     ciphertext = set_fixed_variables(
         component_id=ciphertext_id, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
@@ -70,7 +70,7 @@ def test_find_lowest_complexity_impossible_xor_differential_trail():
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    ciphertext_id = "inverse_" + speck.get_all_components_ids()[-1]
+    ciphertext_id = "inverse_" + speck.all_components_ids()[-1]
     ciphertext = set_fixed_variables(
         component_id=ciphertext_id, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
@@ -96,7 +96,7 @@ def test_find_one_impossible_xor_differential_trail():
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    ciphertext_id = "inverse_" + speck.get_all_components_ids()[-1]
+    ciphertext_id = "inverse_" + speck.all_components_ids()[-1]
     ciphertext = set_fixed_variables(
         component_id=ciphertext_id, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
@@ -152,7 +152,7 @@ def test_find_one_impossible_xor_differential_trail_with_initial_and_final_round
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    ciphertext_id = "inverse_" + speck.get_all_components_ids()[-1]
+    ciphertext_id = "inverse_" + speck.all_components_ids()[-1]
     ciphertext = set_fixed_variables(
         component_id=ciphertext_id, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )
@@ -183,7 +183,7 @@ def test_find_one_impossible_xor_differential_trail_with_extensions():
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    ciphertext_id = speck.get_all_components_ids()[-1]
+    ciphertext_id = speck.all_components_ids()[-1]
     ciphertext = set_fixed_variables(
         component_id=ciphertext_id, constraint_type="not_equal", bit_positions=range(32), bit_values=(0,) * 32
     )

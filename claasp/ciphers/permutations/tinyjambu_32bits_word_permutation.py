@@ -20,8 +20,8 @@ from copy import deepcopy
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, PERMUTATION
 from claasp.utils.utils import get_inputs_parameter
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, PERMUTATION
 
 WORD_SIZE = 32
 STATE_SIZE = 128
@@ -108,11 +108,11 @@ class TinyJambuWordBasedPermutation(Cipher):
             ],
         )
         inputs_id, inputs_pos = get_inputs_parameter([input1, input2])
-        self.add_AND_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_and_component(inputs_id, inputs_pos, WORD_SIZE)
 
         inputs_id = [self.get_current_component_id()]
         inputs_pos = [list(range(WORD_SIZE))]
-        self.add_NOT_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_not_component(inputs_id, inputs_pos, WORD_SIZE)
 
         temp = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         input1 = ComponentState(
@@ -130,7 +130,7 @@ class TinyJambuWordBasedPermutation(Cipher):
             ],
         )
         inputs_id, inputs_pos = get_inputs_parameter([state[0], input1, input2, temp, key[r % len(key)]])
-        self.add_XOR_component(inputs_id, inputs_pos, WORD_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
         temp = ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))])
 
         for i in range(len(state) - 1):

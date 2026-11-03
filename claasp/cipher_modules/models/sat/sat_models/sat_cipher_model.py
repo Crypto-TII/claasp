@@ -21,12 +21,13 @@ from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.utils import set_component_solution
 from claasp.name_mappings import (
-    CIPHER_OUTPUT,
     CIPHER,
+    CIPHER_OUTPUT,
     CONSTANT,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
 )
@@ -60,10 +61,19 @@ class SatCipherModel(SatModel):
         constraints = SatModel.fix_variables_value_constraints(fixed_variables)
         self._variables_list = []
         self._model_constraints = constraints
-        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+        component_types = (
+            CIPHER_OUTPUT,
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            LINEAR_LAYER,
+            MIX_COLUMN,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            WORD_OPERATION,
+        )
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR")
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types
@@ -80,7 +90,16 @@ class SatCipherModel(SatModel):
         constraints = SatModel.fix_variables_value_constraints(fixed_variables)
         self._variables_list = []
         self._model_constraints = constraints
-        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+        component_types = (
+            CIPHER_OUTPUT,
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            LINEAR_LAYER,
+            MIX_COLUMN,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            WORD_OPERATION,
+        )
         operation_types = ("AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR")
 
         for component_and_model_type in component_and_model_types:
@@ -121,7 +140,7 @@ class SatCipherModel(SatModel):
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
             sage: sat = SatCipherModel(speck)
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: ciphertext_id = speck.get_all_components_ids()[-1]
+            sage: ciphertext_id = speck.all_components_ids()[-1]
             sage: ciphertext = set_fixed_variables(
             ....:     component_id=ciphertext_id,
             ....:     constraint_type="equal",
@@ -143,7 +162,7 @@ class SatCipherModel(SatModel):
     def _parse_solver_output(self, variable2value):
         out_suffix = ""
         components_solutions = self._get_cipher_inputs_components_solutions(out_suffix, variable2value)
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             hex_value = self._get_component_hex_value(component, out_suffix, variable2value)
             component_solution = set_component_solution(hex_value)
             components_solutions[component.id] = component_solution

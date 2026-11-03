@@ -17,7 +17,7 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 # Constants for IDEA cipher
 IDEA_BLOCK_SIZE = 64
@@ -181,7 +181,7 @@ class IdeaBlockCipher(Cipher):
         return ComponentState([self.get_current_component_id()], [list(range(self.WORD_SIZE))])
 
     def _add_modadd_component(self, s1, s2):
-        self.add_MODADD_component(
+        self.add_modadd_component(
             [s1.id[0], s2.id[0]],
             [s1.input_bit_positions[0], s2.input_bit_positions[0]],
             self.WORD_SIZE,
@@ -190,7 +190,7 @@ class IdeaBlockCipher(Cipher):
         return ComponentState([self.get_current_component_id()], [list(range(self.WORD_SIZE))])
 
     def _add_xor_component(self, s1, s2):
-        self.add_XOR_component(
+        self.add_xor_component(
             [s1.id[0], s2.id[0]],
             [s1.input_bit_positions[0], s2.input_bit_positions[0]],
             self.WORD_SIZE,

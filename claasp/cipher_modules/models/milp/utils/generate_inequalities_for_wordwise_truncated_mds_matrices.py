@@ -23,11 +23,13 @@ using model 5 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
 
 """
 
+import os
+import pickle
 from itertools import product
 from math import ceil, log
-import pickle, os
-from claasp.cipher_modules.models.milp.utils import utils as milp_utils
+
 from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 
 wordwise_truncated_mds_file_name = "dictionary_containing_truncated_mds_inequalities.obj"
 wordwise_truncated_mds_file_path = os.path.join(MILP_AUXILIARY_FILE_PATH, wordwise_truncated_mds_file_name)
@@ -75,9 +77,7 @@ def update_dictionary_that_contains_wordwise_truncated_mds_inequalities(wordsize
         dictio[wordsize] = {}
 
     if dimensions not in dictio[wordsize].keys():
-        print(
-            f"Adding wordwise mds inequalities for {dimensions[0]} x {dimensions[1]} matrices for words of {wordsize} bits in pre-saved dictionary"
-        )
+        # Precompute inequalities for this (wordsize, dimensions) pair and cache them.
         valid_points = generate_valid_points_for_truncated_mds_matrix(dimensions)
         inequalities = milp_utils.generate_product_of_sum_from_espresso(valid_points)
         dictio[wordsize][dimensions] = inequalities

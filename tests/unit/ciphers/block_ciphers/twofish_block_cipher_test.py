@@ -10,7 +10,7 @@ def test_twofish_block_cipher():
     assert twofish.family_name == 'twofish_block_cipher'
     assert twofish.number_of_rounds == 16
     assert twofish.id == 'twofish_block_cipher_k128_p128_o128_r16'
-    assert twofish.component_from(0, 0).id == 'linear_layer_0_0'
+    assert twofish.component_from(0, 0).id == 'permutation_0_0'
 
     twofish = TwofishBlockCipher(number_of_rounds=4)
     assert twofish.number_of_rounds == 4

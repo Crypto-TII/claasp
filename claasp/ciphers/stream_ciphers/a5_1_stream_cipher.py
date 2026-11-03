@@ -17,9 +17,8 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
+from claasp.name_mappings import INPUT_FRAME, INPUT_KEY, STREAM_CIPHER
 from claasp.utils.utils import get_inputs_parameter
-from claasp.name_mappings import STREAM_CIPHER, INPUT_KEY, INPUT_FRAME
-
 
 BIT_LENGTH = "BIT_LENGTH"
 TAPPED_BITS = "TAPPED_BITS"
@@ -113,7 +112,7 @@ class A51StreamCipher(Cipher):
             for i in range(len(REGISTERS)):
                 regs_xor_output.append(ComponentState(regs.id, [[regs_output_bit[i]]]))
             inputs_id, inputs_pos = get_inputs_parameter(regs_xor_output)
-            self.add_XOR_component(inputs_id, inputs_pos, 1)
+            self.add_xor_component(inputs_id, inputs_pos, 1)
             cipher_output.append(ComponentState([self.get_current_component_id()], [[0]]))
 
         inputs_id, inputs_pos = get_inputs_parameter(cipher_output)
@@ -135,7 +134,7 @@ class A51StreamCipher(Cipher):
         # load key
         fsr_description = [[[register[BIT_LENGTH], register[TAPPED_BITS]] for register in REGISTERS], 1]
         for i in range(key_bit_size):
-            self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
+            self.add_fsr_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
             regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
             inputs = [regs]
@@ -143,12 +142,12 @@ class A51StreamCipher(Cipher):
                 inputs.append(constant_0[j])
                 inputs.append(ComponentState([INPUT_KEY], [[i]]))
             inputs_id, inputs_pos = get_inputs_parameter(inputs)
-            self.add_XOR_component(inputs_id, inputs_pos, regs_size)
+            self.add_xor_component(inputs_id, inputs_pos, regs_size)
             regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
         # load frame
         for i in range(frame_bit_size):
-            self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
+            self.add_fsr_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
             regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
             inputs = [regs]
@@ -156,7 +155,7 @@ class A51StreamCipher(Cipher):
                 inputs.append(constant_0[j])
                 inputs.append(ComponentState([INPUT_FRAME], [[i]]))
             inputs_id, inputs_pos = get_inputs_parameter(inputs)
-            self.add_XOR_component(inputs_id, inputs_pos, regs_size)
+            self.add_xor_component(inputs_id, inputs_pos, regs_size)
             regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
         # normal clocked without output
@@ -165,14 +164,14 @@ class A51StreamCipher(Cipher):
             1,
             number_of_normal_clocks_at_initialization,
         ]
-        self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
+        self.add_fsr_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
         regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
         return regs
 
     def round_function(self, regs, regs_size, fsr_description):
         self.add_round()
-        self.add_FSR_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
+        self.add_fsr_component(regs.id, regs.input_bit_positions, regs_size, fsr_description)
         regs = ComponentState([self.get_current_component_id()], [list(range(regs_size))])
 
         return regs

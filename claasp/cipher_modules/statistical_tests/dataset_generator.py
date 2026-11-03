@@ -17,12 +17,13 @@
 # ****************************************************************************
 
 
-import random
-import numpy as np
 import math as math
+import random
+from copy import deepcopy
 from enum import Enum
 from operator import xor
-from copy import deepcopy
+
+import numpy as np
 
 
 class DatasetType(Enum):
@@ -79,7 +80,7 @@ class DatasetGenerator:
           the plaintext avalanche dataset
         - ``number_of_samples`` -- **integer**; how many testing data should be generated
         - ``save_file`` -- **boolean** (default: `False`); save the generated data to file if it is True
-        - ``filename`` -- **string** (default: ``); the file name to save the generated data
+        - ``filename`` -- **string** (default: ``""``); the file name to save the generated data
 
         OUTPUT:
 
@@ -158,7 +159,7 @@ class DatasetGenerator:
         - ``number_of_samples`` -- **integer**; how many testing data should be generated
         - ``number_of_blocks_in_one_sample`` -- **integer**; how many blocks should be generated in one test sequence
         - ``save_file`` -- **boolean** (default: `False`); save the generated data to file if it is True
-        - ``filename`` -- **string** (default: ``); the file name to save the generated data
+        - ``filename`` -- **string** (default: ``""``); the file name to save the generated data
 
         OUTPUT:
 
@@ -243,7 +244,7 @@ class DatasetGenerator:
         - ``number_of_samples`` -- **integer**; how many testing data should be generated
         - ``number_of_blocks_in_one_sample`` -- **integer**; how many blocks should be generated in one test sequence
         - ``save_file`` -- **boolean** (default: `False`); save the generated data to file if it is True
-        - ``filename`` -- **string** (default: ``); the file name to save the generated data
+        - ``filename`` -- **string** (default: ``""``); the file name to save the generated data
 
         OUTPUT:
 
@@ -324,7 +325,7 @@ class DatasetGenerator:
           inputs, range  in [0, 1]. For exmaple, if ratio = 0.5, means half of the weight 2 high density inputs will be
           taken as  inputs.
         - ``save_file`` -- **boolean** (default: `False`); save the generated data to file if it is True
-        - ``filename`` -- **string** (default: ``); the file name to save the generated data
+        - ``filename`` -- **string** (default: ``""``); the file name to save the generated data
 
         OUTPUT:
 
@@ -409,7 +410,7 @@ class DatasetGenerator:
           inputs, range in [0, 1]. For example, if ratio = 0.5, means half of the weight 2 low density inputs will be
           taken as inputs
         - ``save_file`` -- **boolean** (default: `False`); save the generated data to file if it is True
-        - ``filename`` -- **string** (default: ``); the file name to save the generated data
+        - ``filename`` -- **string** (default: ``""``); the file name to save the generated data
 
         OUTPUT:
 
@@ -469,7 +470,7 @@ class DatasetGenerator:
         - ``number_of_samples`` -- **integer**; how many testing data should be generated
         - ``number_of_blocks_in_one_sample`` -- **integer** how many blocks should be generated in  one test sequence
         - ``save_file`` -- **boolean** (default: `False`); save the generated data to file if it is True
-        - ``filename`` -- **string** (default: ``); the file name to save the generated data
+        - ``filename`` -- **string** (default: ``""``); the file name to save the generated data
 
         OUTPUT:
 

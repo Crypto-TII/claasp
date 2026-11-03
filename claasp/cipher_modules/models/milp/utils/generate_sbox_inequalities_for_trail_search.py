@@ -29,7 +29,7 @@ import os
 import pickle
 
 from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
-from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.solvers import SOLVER_INTERNAL_DEFAULT
 
 small_sbox_file_name = "dictionary_that_contains_inequalities_for_small_sboxes.obj"
 small_sbox_xor_linear_file_name = "dictionary_that_contains_inequalities_for_small_sboxes_xor_linear.obj"
@@ -49,7 +49,7 @@ def sbox_inequalities(sbox, analysis="differential", algorithm="milp"):
     - ``algorithm`` -- **string** (default: `greedy`); choosing the algorithm for computing the S-box model, one of
       ['none', 'greedy', 'milp']
 
-        EXAMPLES::
+    EXAMPLES::
 
         sage: from sage.crypto.sbox import SBox
         sage: SBox_PRESENT = SBox([12,5,6,11,9,0,10,13,3,14,15,8,4,7,1,2])
@@ -114,8 +114,8 @@ def cutting_off_greedy(dict_polyhedron):
     - ``dict_polyhedron`` -- **dictionary**; the polyhedron representing the convex hull
     """
     from sage.modules.free_module import VectorSpace
-    from sage.rings.finite_rings.finite_field_constructor import GF
     from sage.modules.free_module_element import vector
+    from sage.rings.finite_rings.finite_field_constructor import GF
 
     dict_chosen_inequalities = {}
     for proba in dict_polyhedron.keys():
@@ -165,7 +165,7 @@ def cutting_off_milp(dict_polyhedron, number_of_ineqs=None):
     - ``number_of_ineqs`` -- **integer** (default: `None`); either `None` or the number of inequalities that should be
       used for representing the S-box.
 
-    .. [SasTod17]_ "New Algorithm for Modeling S-box in MILP Based Differential and Division Trail Search"
+    See [SasTod17]_: "New Algorithm for Modeling S-box in MILP Based Differential and Division Trail Search"
     """
     from sage.matrix.constructor import matrix
     from sage.modules.free_module import VectorSpace
@@ -185,7 +185,7 @@ def cutting_off_milp(dict_polyhedron, number_of_ineqs=None):
 
         # precompute which inequality removes which impossible point
         precomputation = matrix([[int(not (ineq.contains(p))) for p in impossible] for ineq in ineqs])
-        milp = MixedIntegerLinearProgram(maximization=False, solver=SOLVER_DEFAULT)
+        milp = MixedIntegerLinearProgram(maximization=False, solver=SOLVER_INTERNAL_DEFAULT)
         var_ineqs = milp.new_variable(binary=True, name="ineqs")
 
         # either use the minimal number of inequalities for the representation
@@ -243,7 +243,7 @@ def update_dictionary_that_contains_inequalities_for_small_sboxes(sbox, analysis
         dictio = {}
 
     if str(sbox) not in dictio.keys():
-        print("Adding sbox inequalities in pre-saved dictionary")
+        # Compute and persist inequalities the first time this S-box is requested.
         dict_inequalities = sbox_inequalities(sbox, analysis)
         dictio[str(sbox)] = dict_inequalities
         write_file = open(file_path, "wb")

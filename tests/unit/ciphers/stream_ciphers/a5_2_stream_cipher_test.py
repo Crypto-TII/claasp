@@ -1,5 +1,6 @@
 from claasp.ciphers.stream_ciphers.a5_2_stream_cipher import A52StreamCipher
 
+
 def test_a52():
     a52 = A52StreamCipher()
     assert a52.family_name == 'a52'

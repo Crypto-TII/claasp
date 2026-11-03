@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.ciphers.permutations.util import sub_quarter_round_latin_dances, init_latin_dances_cipher
+from claasp.ciphers.permutations.util import init_latin_dances_cipher, sub_quarter_round_latin_dances
 from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 
 COLUMNS = [[0, 4, 8, 12], [5, 9, 13, 1], [10, 14, 2, 6], [15, 3, 7, 11]]
@@ -30,6 +30,7 @@ class SalsaPermutation(Cipher):
     Construct an instance of the SalsaPermutation class.
 
     This class is used to store compact representations of a permutation, used to generate the corresponding cipher.
+    The unit tests reproduce Crowley's truncated differential on this permutation [Cro2005]_.
 
     INPUT:
 
@@ -66,7 +67,6 @@ class SalsaPermutation(Cipher):
     ):
         init_latin_dances_cipher(
             self,
-            super(),
             INPUT_PLAINTEXT,
             state_of_components,
             number_of_rounds,

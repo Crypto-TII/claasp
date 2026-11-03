@@ -20,7 +20,9 @@
 The target of this module is to generate MILP inequalities for a XOR operation between n input bits.
 """
 
-import pickle, os
+import os
+import pickle
+
 from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
 
 file_name = "dictionary_containing_xor_inequalities_between_n_input_bits.obj"
@@ -54,7 +56,7 @@ def update_dictionary_that_contains_xor_inequalities_between_n_input_bits(number
     dictio = output_dictionary_that_contains_xor_inequalities()
 
     if number_of_input_bits not in dictio.keys():
-        print(f"Adding xor inequalities between {number_of_input_bits} input bits in pre-saved dictionary")
+        # Precompute impossible points for this arity and cache them for reuse.
         dictio[number_of_input_bits] = generate_impossible_points_for_xor_between_n_input_bits(number_of_input_bits)
         write_file = open(xor_inequalities_between_n_input_bits_file_path, "wb")
         pickle.dump(dictio, write_file)

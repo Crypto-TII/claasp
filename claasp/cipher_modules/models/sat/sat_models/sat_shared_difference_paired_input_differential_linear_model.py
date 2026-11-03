@@ -21,16 +21,17 @@ from copy import deepcopy
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-from claasp.cipher_modules.models.sat.utils import utils as sat_utils, constants
+from claasp.cipher_modules.models.sat.utils import constants
+from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.sat.utils.utils import (
     _generate_component_model_types,
     _update_component_model_types_for_linear_components,
 )
-from claasp.cipher_modules.models.utils import set_component_solution, get_bit_bindings
+from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution
 
 
 class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
-    """
+    r"""
     Model for finding high-order differential-linear distinguishers based on SAT encoding.
 
     This model combines three propagation techniques:
@@ -48,7 +49,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
     """
 
     def __init__(self, cipher, dict_of_components):
-        """
+        r"""
         Initializes the model with cipher and components.
 
         INPUT:
@@ -60,7 +61,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_input_differential_linear_model import SharedDifferencePairedInputDifferentialLinearModel
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: component_dict = {'middle_part_components': [], 'bottom_part_components': speck.get_components_in_round(4)}
+            sage: component_dict = {'middle_part_components': [], 'bottom_part_components': speck.components_in_round(4)}
             sage: model = SharedDifferencePairedInputDifferentialLinearModel(speck, component_dict)
         """
         bottom_part_components = dict_of_components["bottom_part_components"]
@@ -75,7 +76,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
             regular_component_id = regular_component_dict["component_id"]
 
             regular_component = regular_component_dict["component_object"]
-            round_number = cipher.get_round_from_component_id(regular_component_id)
+            round_number = cipher.round_from_component_id(regular_component_id)
             regular_component_copy = deepcopy(regular_component)
             regular_component_copy._id = "cipher1_" + regular_component._id
 
@@ -84,7 +85,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
                 for input_id_link in regular_component_copy.input_id_links
             ]
 
-            regular_component_copy.set_input_id_links(new_input_id_links)
+            regular_component_copy.input_id_links = new_input_id_links
 
             cipher._rounds.rounds[round_number]._components.extend([regular_component_copy])
             new_regular_components.append(
@@ -123,7 +124,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         border_components = []
 
         for linear_component in self.linear_components:
-            component_obj = self.cipher.get_component_from_id(linear_component["component_id"])
+            component_obj = self.cipher.component_from_id(linear_component["component_id"])
             for input_id in component_obj.input_id_links:
                 if input_id in regular_component_ids:
                     border_components.append(input_id)
@@ -142,7 +143,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         linear_component_ids = [item["component_id"] for item in self.linear_components]
 
         for component_id in border_components:
-            component = self.cipher.get_component_from_id(component_id)
+            component = self.cipher.component_from_id(component_id)
             for idx in range(component.output_bit_size):
                 linear_component = f"{component_id}_{idx}_o"
                 component_successors = self.bit_bindings[linear_component]
@@ -202,12 +203,10 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
 
         EXAMPLES::
 
-        EXAMPLES::
-
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_input_differential_linear_model import SharedDifferencePairedInputDifferentialLinearModel
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: component_dict = {'middle_part_components': [], 'bottom_part_components': speck.get_components_in_round(4)}
+            sage: component_dict = {'middle_part_components': [], 'bottom_part_components': speck.components_in_round(4)}
             sage: model = SharedDifferencePairedInputDifferentialLinearModel(speck, component_dict)
             sage: model.build_shared_difference_paired_input_differential_model()
             ...
@@ -216,7 +215,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         constraints = SatXorLinearModel.branch_xor_linear_constraints(self.bit_bindings)
         self._model_constraints.extend(constraints)
         high_order_differential_constraints = []
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.id.startswith("cipher1_") and "modadd" in component.id:
                 component_copy_id = component.id.split("cipher1_")[1]
                 for i in range(component.output_bit_size):
@@ -279,7 +278,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
         total_weight_diff = 0
         total_weight_lin = 0
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.id in [d["component_id"] for d in self.regular_components]:
                 hex_value = self._get_component_hex_value(component, "", variable2value)
 
@@ -298,7 +297,7 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
     def find_one_shared_difference_paired_input_differential_linear_trail_with_fixed_weight(
         self, weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
     ):
-        """
+        r"""
         Finds a high-order differential-linear trail with fixed weight using paired inputs and a shared difference.
 
         This method searches for trails satisfying:
@@ -327,9 +326,9 @@ class SharedDifferencePairedInputDifferentialLinearModel(SatModel):
             sage: top_part_components = []
             sage: bottom_part_components = []
             sage: for round_number in range(2):
-            ....:     top_part_components.append(speck.get_components_in_round(round_number))
+            ....:     top_part_components.append(speck.components_in_round(round_number))
             sage: for round_number in range(2, 5):
-            ....:     bottom_part_components.append(speck.get_components_in_round(round_number))
+            ....:     bottom_part_components.append(speck.components_in_round(round_number))
             sage: bottom_part_components = list(itertools.chain(*bottom_part_components))
             sage: bottom_part_components = [component.id for component in bottom_part_components]
             sage: component_model_list = {

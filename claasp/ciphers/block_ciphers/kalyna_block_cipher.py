@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
+import numpy as np
+
 from claasp.cipher import Cipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
-import numpy as np
 
 
 class KalynaBlockCipher(Cipher):
@@ -26,13 +27,13 @@ class KalynaBlockCipher(Cipher):
 
     EXAMPLES::
 
-    sage: from claasp.ciphers.block_ciphers.kalyna_block_cipher import KalynaBlockCipher
-    sage: kalyna = KalynaBlockCipher()
-    sage: key = 0x0F0E0D0C0B0A09080706050403020100
-    sage: plaintext = 0x1F1E1D1C1B1A19181716151413121110
-    sage: ciphertext = 0x06ADD2B439EAC9E120AC9B777D1CBF81
-    sage: kalyna.evaluate([key, plaintext]) == ciphertext
-    True
+        sage: from claasp.ciphers.block_ciphers.kalyna_block_cipher import KalynaBlockCipher
+        sage: kalyna = KalynaBlockCipher()
+        sage: key = 0x0F0E0D0C0B0A09080706050403020100
+        sage: plaintext = 0x1F1E1D1C1B1A19181716151413121110
+        sage: ciphertext = 0x06ADD2B439EAC9E120AC9B777D1CBF81
+        sage: kalyna.evaluate([key, plaintext]) == ciphertext
+        True
     """
 
     def __init__(self, number_of_rounds=10):
@@ -159,7 +160,7 @@ class KalynaBlockCipher(Cipher):
         S0 = self.add_constant_component(
             self.CIPHER_BLOCK_SIZE, 0x00000000000000000000000000000005
         )
-        g1_first = self.add_MODADD_component(
+        g1_first = self.add_modadd_component(
             [INPUT_KEY, S0.id],
             [
                 [i for i in range(self.CIPHER_BLOCK_SIZE // 2, self.CIPHER_BLOCK_SIZE)],
@@ -167,7 +168,7 @@ class KalynaBlockCipher(Cipher):
             ],
             self.CIPHER_BLOCK_SIZE // 2,
         )
-        g1_second = self.add_MODADD_component(
+        g1_second = self.add_modadd_component(
             [INPUT_KEY, S0.id],
             [
                 [i for i in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -178,7 +179,7 @@ class KalynaBlockCipher(Cipher):
         sboxes_components = []
         for i in range(self.CIPHER_BLOCK_SIZE // 16):
             sboxes_components.append(
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [g1_first.id],
                     [list(range((8 * i), (8 * i + 8)))],
                     self.SBOX_BIT_SIZE,
@@ -187,7 +188,7 @@ class KalynaBlockCipher(Cipher):
             )
         for i in range(self.CIPHER_BLOCK_SIZE // 16, self.CIPHER_BLOCK_SIZE // 8):
             sboxes_components.append(
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [g1_second.id],
                     [list(range((8 * i) - 64, (8 * i + 8) - 64))],
                     self.SBOX_BIT_SIZE,
@@ -211,7 +212,7 @@ class KalynaBlockCipher(Cipher):
             self.CIPHER_BLOCK_SIZE // 2,
             self.kalyna_matrix_description,
         )
-        g2_first = self.add_XOR_component(
+        g2_first = self.add_xor_component(
             [g1_first.id, INPUT_KEY],
             [
                 [i for i in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -219,7 +220,7 @@ class KalynaBlockCipher(Cipher):
             ],
             self.CIPHER_BLOCK_SIZE // 2,
         )
-        g2_second = self.add_XOR_component(
+        g2_second = self.add_xor_component(
             [g1_second.id, INPUT_KEY],
             [
                 [i for i in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -230,7 +231,7 @@ class KalynaBlockCipher(Cipher):
         sboxes_components_2 = []
         for i in range(self.CIPHER_BLOCK_SIZE // 16):
             sboxes_components_2.append(
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [g2_first.id],
                     [list(range((8 * i), (8 * i + 8)))],
                     self.SBOX_BIT_SIZE,
@@ -239,7 +240,7 @@ class KalynaBlockCipher(Cipher):
             )
         for i in range(self.CIPHER_BLOCK_SIZE // 16, self.CIPHER_BLOCK_SIZE // 8):
             sboxes_components_2.append(
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [g2_second.id],
                     [list(range((8 * i) - 64, (8 * i + 8) - 64))],
                     self.SBOX_BIT_SIZE,
@@ -264,7 +265,7 @@ class KalynaBlockCipher(Cipher):
             self.CIPHER_BLOCK_SIZE // 2,
             self.kalyna_matrix_description,
         )
-        g2_first_modadd = self.add_MODADD_component(
+        g2_first_modadd = self.add_modadd_component(
             [INPUT_KEY, g2_first.id],
             [
                 [i for i in range(self.KEY_BLOCK_SIZE // 2, self.KEY_BLOCK_SIZE)],
@@ -272,7 +273,7 @@ class KalynaBlockCipher(Cipher):
             ],
             self.CIPHER_BLOCK_SIZE // 2,
         )
-        g2_second_modadd = self.add_MODADD_component(
+        g2_second_modadd = self.add_modadd_component(
             [INPUT_KEY, g2_second.id],
             [
                 [i for i in range(self.KEY_BLOCK_SIZE // 2)],
@@ -283,7 +284,7 @@ class KalynaBlockCipher(Cipher):
         sboxes_components_3 = []
         for i in range(self.CIPHER_BLOCK_SIZE // 16):
             sboxes_components_3.append(
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [g2_second_modadd.id],
                     [list(range((8 * i), (8 * i + 8)))],
                     self.SBOX_BIT_SIZE,
@@ -292,7 +293,7 @@ class KalynaBlockCipher(Cipher):
             )
         for i in range(self.CIPHER_BLOCK_SIZE // 16, self.CIPHER_BLOCK_SIZE // 8):
             sboxes_components_3.append(
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [g2_first_modadd.id],
                     [list(range((8 * i) - 64, (8 * i + 8) - 64))],
                     self.SBOX_BIT_SIZE,
@@ -319,7 +320,7 @@ class KalynaBlockCipher(Cipher):
         )
 
         const = self.add_constant_component(self.CIPHER_BLOCK_SIZE, 0x0)
-        g3_second_128 = self.add_XOR_component(
+        g3_second_128 = self.add_xor_component(
             [g3_second.id, const.id],
             [
                 [j for j in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -327,7 +328,7 @@ class KalynaBlockCipher(Cipher):
             ],
             self.CIPHER_BLOCK_SIZE,
         )
-        g3_first_128 = self.add_XOR_component(
+        g3_first_128 = self.add_xor_component(
             [const.id, g3_first.id],
             [
                 [j for j in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -335,7 +336,7 @@ class KalynaBlockCipher(Cipher):
             ],
             self.CIPHER_BLOCK_SIZE,
         )
-        k_T = self.add_XOR_component(
+        k_T = self.add_xor_component(
             [g3_second_128.id, g3_first_128.id],
             [
                 [j for j in range(self.CIPHER_BLOCK_SIZE)],
@@ -360,7 +361,7 @@ class KalynaBlockCipher(Cipher):
                 self.KEY_BLOCK_SIZE,
                 32 * k,
             )
-            k_i_prime = self.add_MODADD_component(
+            k_i_prime = self.add_modadd_component(
                 [tmv.id, k_T.id],
                 [
                     [j for j in range(self.KEY_BLOCK_SIZE)],
@@ -368,7 +369,7 @@ class KalynaBlockCipher(Cipher):
                 ],
                 self.CIPHER_BLOCK_SIZE,
             )
-            k_i_prime_int = self.add_MODADD_component(
+            k_i_prime_int = self.add_modadd_component(
                 [k_i_prime.id, rotated_key.id],
                 [
                     [j for j in range(self.KEY_BLOCK_SIZE)],
@@ -379,7 +380,7 @@ class KalynaBlockCipher(Cipher):
             sboxes_components_E = []
             for i in range(self.KEY_BLOCK_SIZE // 8):
                 sboxes_components_E.append(
-                    self.add_SBOX_component(
+                    self.add_sbox_component(
                         [k_i_prime_int.id],
                         [list(range((8 * i), (8 * i + 8)))],
                         self.SBOX_BIT_SIZE,
@@ -410,7 +411,7 @@ class KalynaBlockCipher(Cipher):
                 self.CIPHER_BLOCK_SIZE // 2,
                 self.kalyna_matrix_description,
             )
-            k_i_prime_first_half = self.add_XOR_component(
+            k_i_prime_first_half = self.add_xor_component(
                 [gE_second.id, k_i_prime.id],
                 [
                     [j for j in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -418,7 +419,7 @@ class KalynaBlockCipher(Cipher):
                 ],
                 self.KEY_BLOCK_SIZE // 2,
             )
-            k_i_prime_second_half = self.add_XOR_component(
+            k_i_prime_second_half = self.add_xor_component(
                 [gE_first.id, k_i_prime.id],
                 [
                     [j for j in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -429,7 +430,7 @@ class KalynaBlockCipher(Cipher):
             sboxes_components_E2 = []
             for i in range(self.KEY_BLOCK_SIZE // 16):
                 sboxes_components_E2.append(
-                    self.add_SBOX_component(
+                    self.add_sbox_component(
                         [k_i_prime_first_half.id],
                         [list(range((8 * i), (8 * i + 8)))],
                         self.SBOX_BIT_SIZE,
@@ -438,7 +439,7 @@ class KalynaBlockCipher(Cipher):
                 )
             for i in range(self.KEY_BLOCK_SIZE // 16, self.KEY_BLOCK_SIZE // 8):
                 sboxes_components_E2.append(
-                    self.add_SBOX_component(
+                    self.add_sbox_component(
                         [k_i_prime_second_half.id],
                         [list(range((8 * i) - 64, (8 * i + 8) - 64))],
                         self.SBOX_BIT_SIZE,
@@ -470,7 +471,7 @@ class KalynaBlockCipher(Cipher):
                 self.CIPHER_BLOCK_SIZE // 2,
                 self.kalyna_matrix_description,
             )
-            k_2i_prime_first_half = self.add_MODADD_component(
+            k_2i_prime_first_half = self.add_modadd_component(
                 [gE2_second.id, k_i_prime.id],
                 [
                     [j for j in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -478,7 +479,7 @@ class KalynaBlockCipher(Cipher):
                 ],
                 self.KEY_BLOCK_SIZE // 2,
             )
-            k_2i_prime_second_half = self.add_MODADD_component(
+            k_2i_prime_second_half = self.add_modadd_component(
                 [gE2_first.id, k_i_prime.id],
                 [
                     [j for j in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -523,7 +524,7 @@ class KalynaBlockCipher(Cipher):
         k0_second = even_round_keys[0]["second_half"]
 
         # self.add_round()
-        first_half = self.add_MODADD_component(
+        first_half = self.add_modadd_component(
             [k0_first.id, INPUT_PLAINTEXT],
             [
                 [i for i in range(self.KEY_BLOCK_SIZE // 2)],
@@ -532,7 +533,7 @@ class KalynaBlockCipher(Cipher):
             self.CIPHER_BLOCK_SIZE // 2,
         )
 
-        second_half = self.add_MODADD_component(
+        second_half = self.add_modadd_component(
             [k0_second.id, INPUT_PLAINTEXT],
             [
                 [i for i in range(self.KEY_BLOCK_SIZE // 2)],
@@ -545,7 +546,7 @@ class KalynaBlockCipher(Cipher):
             sboxes_components = []
             for i in range(self.CIPHER_BLOCK_SIZE // 16):
                 sboxes_components.append(
-                    self.add_SBOX_component(
+                    self.add_sbox_component(
                         [first_half.id],
                         [list(range((8 * i), (8 * i + 8)))],
                         self.SBOX_BIT_SIZE,
@@ -554,7 +555,7 @@ class KalynaBlockCipher(Cipher):
                 )
             for i in range(self.CIPHER_BLOCK_SIZE // 16, self.CIPHER_BLOCK_SIZE // 8):
                 sboxes_components.append(
-                    self.add_SBOX_component(
+                    self.add_sbox_component(
                         [second_half.id],
                         [list(range((8 * i) - 64, (8 * i + 8) - 64))],
                         self.SBOX_BIT_SIZE,
@@ -588,7 +589,7 @@ class KalynaBlockCipher(Cipher):
             )
             if k % 2 == 1:
                 k_round = odd_round_keys[k]
-                first_half = self.add_XOR_component(
+                first_half = self.add_xor_component(
                     [g_second.id, k_round.id],
                     [
                         [j for j in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -596,7 +597,7 @@ class KalynaBlockCipher(Cipher):
                     ],
                     self.CIPHER_BLOCK_SIZE // 2,
                 )
-                second_half = self.add_XOR_component(
+                second_half = self.add_xor_component(
                     [g_first.id, k_round.id],
                     [
                         [j for j in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -612,7 +613,7 @@ class KalynaBlockCipher(Cipher):
             else:
                 k_round_first_half = even_round_keys[k]["first_half"]
                 k_round_second_half = even_round_keys[k]["second_half"]
-                first_half = self.add_XOR_component(
+                first_half = self.add_xor_component(
                     [g_second.id, k_round_first_half.id],
                     [
                         [j for j in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -620,7 +621,7 @@ class KalynaBlockCipher(Cipher):
                     ],
                     self.CIPHER_BLOCK_SIZE // 2,
                 )
-                second_half = self.add_XOR_component(
+                second_half = self.add_xor_component(
                     [g_first.id, k_round_second_half.id],
                     [
                         [j for j in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -642,7 +643,7 @@ class KalynaBlockCipher(Cipher):
         sboxes_components = []
         for i in range(self.CIPHER_BLOCK_SIZE // 16):
             sboxes_components.append(
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [first_half.id],
                     [list(range((8 * i), (8 * i + 8)))],
                     self.SBOX_BIT_SIZE,
@@ -651,7 +652,7 @@ class KalynaBlockCipher(Cipher):
             )
         for i in range(self.CIPHER_BLOCK_SIZE // 16, self.CIPHER_BLOCK_SIZE // 8):
             sboxes_components.append(
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     [second_half.id],
                     [list(range((8 * i) - 64, (8 * i + 8) - 64))],
                     self.SBOX_BIT_SIZE,
@@ -679,7 +680,7 @@ class KalynaBlockCipher(Cipher):
 
         k_round_first_half = even_round_keys[self.NROUNDS]["first_half"]
         k_round_second_half = even_round_keys[self.NROUNDS]["second_half"]
-        first_half = self.add_MODADD_component(
+        first_half = self.add_modadd_component(
             [g_second.id, k_round_first_half.id],
             [
                 [j for j in range(self.CIPHER_BLOCK_SIZE // 2)],
@@ -687,7 +688,7 @@ class KalynaBlockCipher(Cipher):
             ],
             self.CIPHER_BLOCK_SIZE // 2,
         )
-        second_half = self.add_MODADD_component(
+        second_half = self.add_modadd_component(
             [g_first.id, k_round_second_half.id],
             [
                 [j for j in range(self.CIPHER_BLOCK_SIZE // 2)],

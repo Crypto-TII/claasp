@@ -17,7 +17,7 @@
 
 from minizinc import Status
 
-from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MznModel
 from claasp.cipher_modules.models.cp.solvers import SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import (
     check_if_implemented_component,
@@ -105,22 +105,22 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         if number_of_rounds is None:
             number_of_rounds = self._cipher.number_of_rounds
 
-        self._variables_list = []
+        self._variables_declarations = []
         constraints = self.fix_variables_value_constraints(fixed_variables)
         deterministic_truncated_xor_differential = constraints
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if check_if_implemented_component(component):
                 variables, constraints = self.propagate_deterministically(component, wordwise)
-                self._variables_list.extend(variables)
+                self._variables_declarations.extend(variables)
                 deterministic_truncated_xor_differential.extend(constraints)
 
         if not wordwise:
             variables, constraints = self.input_deterministic_truncated_xor_differential_constraints()
         else:
             variables, constraints = self.input_wordwise_deterministic_truncated_xor_differential_constraints()
-        self._model_prefix.extend(variables)
-        self._variables_list.extend(constraints)
+        self._variables_declarations.extend(variables)
+        deterministic_truncated_xor_differential.extend(constraints)
         if not wordwise:
             deterministic_truncated_xor_differential.extend(
                 self.final_deterministic_truncated_xor_differential_constraints(minimize)
@@ -130,7 +130,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
                 self.final_wordwise_deterministic_truncated_xor_differential_constraints(minimize)
             )
 
-        self._model_constraints = self._model_prefix + self._variables_list + deterministic_truncated_xor_differential
+        self._model_constraints = deterministic_truncated_xor_differential
 
     def final_deterministic_truncated_xor_differential_constraints(self, minimize=False):
         """
@@ -155,10 +155,10 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
         new_constraint = "output["
         for element in cipher_inputs:
             new_constraint = f'{new_constraint}"{element} = "++ show({element}) ++ "\\n" ++'
-        for component_id in cipher.get_all_components_ids():
+        for component_id in cipher.all_components_ids():
             new_constraint = new_constraint + f'"{component_id} = "++ show({component_id})++ "\\n" ++ "0" ++ "\\n" ++'
             if "cipher_output" in component_id and minimize:
-                cp_constraints.append(f"solve maximize count({self._cipher.get_all_components_ids()[-1]}, 0);")
+                cp_constraints.append(f"solve maximize count({self._cipher.all_components_ids()[-1]}, 0);")
         new_constraint = new_constraint[:-2] + "];"
         if cp_constraints == []:
             cp_constraints.append(SOLVE_SATISFY)
@@ -392,9 +392,9 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_deterministic_truncated_xor_differential_model import MznDeterministicTruncatedXorDifferentialModel
-            sage: aes = AESBlockCipher()
+            sage: aes = ToyAESBlockCipher()
             sage: cp = MznDeterministicTruncatedXorDifferentialModel(aes)
             sage: cp.input_deterministic_truncated_xor_differential_constraints()
             (['array[0..127] of var 0..2: key;',
@@ -402,7 +402,6 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
                ...
               'constraint count(plaintext,1) > 0;'])
         """
-        number_of_rounds = self._cipher.number_of_rounds
 
         cp_constraints = []
         cp_declarations = [
@@ -410,8 +409,7 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
             for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
         ]
         cipher = self._cipher
-        rounds = number_of_rounds
-        for component in cipher.get_all_components():
+        for component in cipher.all_components():
             output_id_link = component.id
             output_size = int(component.output_bit_size)
             if CIPHER_OUTPUT in component.type:
@@ -492,10 +490,10 @@ class MznDeterministicTruncatedXorDifferentialModel(MznModel):
     def propagate_deterministically(self, component, wordwise=False, inverse=False):
         if not wordwise:
             if component.type == SBOX:
-                variables, constraints, sbox_mant = (
-                    component.cp_deterministic_truncated_xor_differential_trail_constraints(self.sbox_mant, inverse)
+                variables, constraints, sbox_cache = (
+                    component.cp_deterministic_truncated_xor_differential_trail_constraints(self.sbox_cache, inverse)
                 )
-                self.sbox_mant = sbox_mant
+                self.sbox_cache = sbox_cache
             else:
                 variables, constraints = component.cp_deterministic_truncated_xor_differential_trail_constraints()
         else:

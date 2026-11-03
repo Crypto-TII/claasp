@@ -18,7 +18,7 @@
 
 """The target of this module is to generate MILP inequalities for a AND operation between 2 input bits."""
 
-from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.solvers import SOLVER_INTERNAL_DEFAULT
 
 
 def and_inequalities():
@@ -65,8 +65,8 @@ def cutting_off_greedy(valid_points):
     - ``valid_points`` -- **matrix**; the polyhedron representing the convex hull
     """
     from sage.modules.free_module import VectorSpace
-    from sage.rings.finite_rings.finite_field_constructor import GF
     from sage.modules.free_module_element import vector
+    from sage.rings.finite_rings.finite_field_constructor import GF
 
     chosen_ineqs = []
     poly = convex_hull(valid_points)
@@ -104,11 +104,12 @@ def cutting_off_milp(valid_points, number_of_ineqs=None):
     can do some optimizations itself.
 
     INPUT:
+
     - ``valid_points`` -- **matrix**; the polyhedron representing the convex hull
     - ``number_of_ineqs`` -- **integer** (default: `None`); number of inequalities that should be used for representing the
       S-box
 
-    .. [SasTod17]_ "New Algorithm for Modeling S-box in MILP Based Differential and Division Trail Search"
+    See [SasTod17]_: "New Algorithm for Modeling S-box in MILP Based Differential and Division Trail Search"
     """
     from sage.matrix.constructor import matrix
     from sage.modules.free_module import VectorSpace
@@ -123,7 +124,7 @@ def cutting_off_milp(valid_points, number_of_ineqs=None):
 
     # precompute which inequality removes which impossible point
     precomputation = matrix([[int(not (ineq.contains(p))) for p in impossible] for ineq in ineqs])
-    milp = MixedIntegerLinearProgram(maximization=False, solver=SOLVER_DEFAULT)
+    milp = MixedIntegerLinearProgram(maximization=False, solver=SOLVER_INTERNAL_DEFAULT)
     var_ineqs = milp.new_variable(binary=True, name="ineqs")
 
     # either use the minimal number of inequalities for the representation

@@ -15,16 +15,43 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp.round import Round
 from claasp.DTOs.power_of_2_word_based_dto import PowerOf2WordBasedDTO
+from claasp.round import Round
 
 
 class Rounds:
     def __init__(self):
         self._current_round_number = None  # No rounds added on creation
         self._rounds = []
+        self._by_id = None
+        self._consumers = None
+
+    def __setstate__(self, state):
+        # Objects pickled before the _by_id/_consumers indexes were introduced
+        # won't have them in their state; rebuild lazily on first access.
+        self.__dict__.update(state)
+        self._by_id = None
+        self._consumers = None
+
+    def _build_indexes(self):
+        by_id = {}
+        consumers = {}
+        for component in self.all_components():
+            by_id[component.id] = component
+            seen = set()
+            for link in component.input_id_links:
+                if isinstance(link, str) and link not in seen:
+                    consumers.setdefault(link, []).append(component)
+                    seen.add(link)
+        self._by_id = by_id
+        self._consumers = consumers
+
+    def _invalidate_indexes(self):
+        self._by_id = None
+        self._consumers = None
 
     def add_component(self, component):
+        self._invalidate_indexes()
         self.current_round.add_component(component)
 
     def add_round(self):
@@ -96,30 +123,36 @@ class Rounds:
     def components_in_round(self, round_number):
         return self.round_at(round_number).components
 
-    def get_all_components(self):
+    def all_components(self):
         components = []
         for cipher_round in self._rounds:
             components += cipher_round.components
 
         return components
 
-    def get_all_components_ids(self):
+    def all_components_ids(self):
         components_ids = []
         for cipher_round in self._rounds:
-            components_ids += cipher_round.get_components_ids()
+            components_ids += cipher_round.components_ids()
 
         return components_ids
 
-    def get_component_from_id(self, component_id):
-        for cipher_round in self._rounds:
-            component = cipher_round.get_component_from_id(component_id)
-            if component is not None:
-                return component
-        raise ValueError(f"Component with id {component_id} not found.")
+    def component_from_id(self, component_id):
+        if self._by_id is None:
+            self._build_indexes()
+        component = self._by_id.get(component_id)
+        if component is None:
+            raise ValueError(f"Component with id {component_id} not found.")
+        return component
 
-    def get_round_from_component_id(self, component_id):
+    def get_successor_components(self, component_id):
+        if self._consumers is None:
+            self._build_indexes()
+        return self._consumers.get(component_id, [])
+
+    def round_from_component_id(self, component_id):
         for cipher_round in self._rounds:
-            round_number = cipher_round.get_round_from_component_id(component_id)
+            round_number = cipher_round.round_from_component_id(component_id)
 
             if round_number is not None:
                 return round_number
@@ -150,9 +183,11 @@ class Rounds:
             requested_round.print_round_as_python_dictionary()
 
     def remove_round_component(self, round_number, component):
+        self._invalidate_indexes()
         self._rounds[round_number].remove_component(component)
 
     def remove_round_component_from_id(self, round_number, component_id):
+        self._invalidate_indexes()
         self._rounds[round_number].remove_component_from_id(component_id)
 
     def round_at(self, round_number):

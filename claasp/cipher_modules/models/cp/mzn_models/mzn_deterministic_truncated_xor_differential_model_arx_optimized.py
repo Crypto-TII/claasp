@@ -17,12 +17,11 @@
 
 
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
-from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION
+from claasp.name_mappings import CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION
 
 
 class MznDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
-
-    def __init__(self, cipher, sat_or_milp='sat'):
+    def __init__(self, cipher, sat_or_milp="sat"):
         super().__init__(cipher, sat_or_milp)
 
     def build_deterministic_truncated_xor_differential_trail_model(self, fixed_variables=[]):
@@ -48,11 +47,11 @@ class MznDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
         """
         variables = []
         constraints = self.fix_variables_value_constraints_for_ARX(fixed_variables)
-        self._variables_list = []
+        self._variables_declarations = []
         self._model_constraints = constraints
 
-        for component in self._cipher.get_all_components():
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, WORD_OPERATION]
+        for component in self._cipher.all_components():
+            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, PERMUTATION_COMPONENT, WORD_OPERATION]
             operation = component.description[0]
             operation_types = ["ROTATE", "SHIFT"]
 
@@ -63,5 +62,5 @@ class MznDeterministicTruncatedXorDifferentialModelARXOptimized(MznModel):
             else:
                 print(f"{component.id} not yet implemented")
 
-            self._variables_list.extend(variables)
+            self._variables_declarations.extend(variables)
             self._model_constraints.extend(constraints)

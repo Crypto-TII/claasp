@@ -1,4 +1,5 @@
 import itertools
+
 import pytest
 
 from claasp.cipher_modules.models.sat import solvers
@@ -10,15 +11,15 @@ from claasp.cipher_modules.models.sat.utils.utils import (
     _update_component_model_types_for_truncated_components,
 )
 from claasp.cipher_modules.models.utils import (
-    set_fixed_variables,
-    integer_to_bit_list,
-    differential_truncated_checker_single_key,
     differential_truncated_checker_permutation,
+    differential_truncated_checker_single_key,
+    integer_to_bit_list,
+    set_fixed_variables,
 )
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, SATISFIABLE
+from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, SATISFIABLE
 
 
 def test_differential_truncated_in_single_key_scenario_speck3264():
@@ -358,7 +359,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
     aradi = AradiBlockCipherSBox(number_of_rounds=4)
     bottom_part_components = []
     for round_number in range(2, 4):
-        bottom_part_components.append(aradi.get_components_in_round(round_number))
+        bottom_part_components.append(aradi.components_in_round(round_number))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
     bottom_part_components = [component.id for component in bottom_part_components]
 
@@ -395,7 +396,7 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     chacha = ChachaPermutation(number_of_rounds=3, round_mode=ROUND_MODE_HALF)
     bottom_part_components = []
     for round_number in range(2, 3):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
+        bottom_part_components.append(chacha.components_in_round(round_number))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
     bottom_part_components = [component.id for component in bottom_part_components]
     initial_state_positions = integer_to_bit_list(

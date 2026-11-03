@@ -1,24 +1,27 @@
 import copy
+import io
+import os
 import pickle
+import tempfile
+from contextlib import redirect_stdout
 from pathlib import Path
 
 from plotly.basedatatypes import BaseFigure
 
-from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
-from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
-from claasp.cipher_modules.models.utils import set_fixed_variables
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-from claasp.cipher_modules.report import Report
-from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
-from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
 from claasp.cipher_modules.algebraic_tests import AlgebraicTests
 from claasp.cipher_modules.avalanche_tests import AvalancheTests
 from claasp.cipher_modules.component_analysis_tests import CipherComponentsAnalysis
 from claasp.cipher_modules.continuous_diffusion_analysis import ContinuousDiffusionAnalysis
-
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
+from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model import SmtXorDifferentialModel
+from claasp.cipher_modules.models.utils import set_fixed_variables
+from claasp.cipher_modules.neural_network_tests import NeuralNetworkTests
+from claasp.cipher_modules.report import Report
+from claasp.cipher_modules.statistical_tests.dieharder_statistical_tests import DieharderTests
+from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 
 CACHE_DIR = Path(__file__).resolve().parent / 'data'
 CACHE_FILE = CACHE_DIR / 'report_test_cache.pkl'
@@ -30,18 +33,24 @@ _CACHE = None
 def _load_cache():
     global _CACHE
     if _CACHE is None:
-        if CACHE_FILE.exists():
+        try:
             with CACHE_FILE.open('rb') as cache_file:
                 _CACHE = pickle.load(cache_file)
-        else:
+        except (FileNotFoundError, EOFError, pickle.UnpicklingError):
             _CACHE = {}
     return _CACHE
 
 
 def _persist_cache():
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    with CACHE_FILE.open('wb') as cache_file:
-        pickle.dump(_CACHE, cache_file)
+    fd, tmp = tempfile.mkstemp(dir=CACHE_DIR, suffix='.tmp')
+    try:
+        with os.fdopen(fd, 'wb') as cache_file:
+            pickle.dump(_CACHE, cache_file)
+        os.replace(tmp, CACHE_FILE)
+    except BaseException:
+        os.unlink(tmp)
+        raise
 
 
 def _get_cached_result(key, factory):
@@ -90,11 +99,14 @@ def _cached_speck_neural_network_results():
 
 
 def _cached_speck_algebraic_results():
+    # A system whose Groebner basis completes well within the timeout: when the
+    # alarm fires instead, PolyBoRi may only honour it minutes later, which made
+    # this fixture randomly exceed the per-test timeout on CI.
     def _generate():
-        cipher = SpeckBlockCipher(number_of_rounds=2)
-        return AlgebraicTests(cipher).algebraic_tests(timeout_in_seconds=1)
+        cipher = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=1)
+        return AlgebraicTests(cipher).algebraic_tests(timeout_in_seconds=60)
 
-    return _get_cached_result('speck_r2_algebraic_tests', _generate)
+    return _get_cached_result('speck_b8_r1_algebraic_tests', _generate)
 
 
 def _cached_speck_component_analysis():
@@ -124,9 +136,10 @@ def _cached_present_trail():
             set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=list(range(64)),
                                 bit_values=[0] * 64)
         ]
-        return sat_model.find_one_xor_differential_trail_with_fixed_weight(
-            fixed_weight=16,
+        return sat_model.find_one_xor_differential_trail(
             fixed_values=related_key_setting,
+            lower_bound=16,
+            upper_bound=16,
             solver_name='KISSAT_EXT')
 
     return _get_cached_result('present_r2_sat_fixed_weight_16', _generate)
@@ -213,7 +226,8 @@ def _run_show():
     neural_network_tests_report.show(fixed_input_difference=None)
     neural_network_tests_report.show(fixed_input_difference='0xa')
 
-def test_save_as_latex_table():
+def test_save_as_latex_table(tmp_path):
+    output_dir = str(tmp_path / 'test_reports')
     simon = SimonBlockCipher(number_of_rounds=2)
     smt = SmtXorDifferentialModel(simon)
 
@@ -232,17 +246,18 @@ def test_save_as_latex_table():
 
     avalanche_test_results = AvalancheTests(simon).avalanche_tests()
     avalanche_report = Report(avalanche_test_results)
-    avalanche_report.save_as_latex_table(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
-    avalanche_report.clean_reports()
+    avalanche_report.save_as_latex_table(output_dir=output_dir, fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
+    avalanche_report.clean_reports(output_dir=output_dir)
     trail_report = Report(trail)
-    trail_report.save_as_latex_table()
-    trail_report.clean_reports()
+    trail_report.save_as_latex_table(output_dir=output_dir)
+    trail_report.clean_reports(output_dir=output_dir)
     dieharder=DieharderTests(simon)
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
-    report_sts.save_as_latex_table()
-    report_sts.clean_reports()
+    report_sts.save_as_latex_table(output_dir=output_dir)
+    report_sts.clean_reports(output_dir=output_dir)
 
-def test_save_as_DataFrame():
+def test_save_as_dataframe(tmp_path):
+    output_dir = str(tmp_path / 'test_reports')
     speck = SpeckBlockCipher(number_of_rounds=2)
     cp = MznXorDifferentialModel(speck)
     plaintext = set_fixed_variables(
@@ -259,31 +274,32 @@ def test_save_as_DataFrame():
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
-    avalanche_report.save_as_DataFrame(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
-    avalanche_report.clean_reports()
+    avalanche_report.save_as_dataframe(output_dir=output_dir, fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
+    avalanche_report.clean_reports(output_dir=output_dir)
     trail_report = Report(trail)
-    trail_report.save_as_DataFrame()
-    trail_report.clean_reports()
+    trail_report.save_as_dataframe(output_dir=output_dir)
+    trail_report.clean_reports(output_dir=output_dir)
     dieharder = DieharderTests(speck)
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
-    report_sts.save_as_DataFrame()
-    report_sts.clean_reports()
+    report_sts.save_as_dataframe(output_dir=output_dir)
+    report_sts.clean_reports(output_dir=output_dir)
 
-def test_save_as_json():
+def test_save_as_json(tmp_path):
+    output_dir = str(tmp_path / 'test_reports')
 
     speck = SpeckBlockCipher(number_of_rounds=2)
 
     neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests(nb_samples=10)
     blackbox_report = Report(neural_network_blackbox_distinguisher_tests_results)
-    blackbox_report.save_as_json(fixed_input='plaintext',fixed_output='round_output')
-    blackbox_report.clean_reports()
+    blackbox_report.save_as_json(output_dir=output_dir, fixed_input='plaintext',fixed_output='round_output')
+    blackbox_report.clean_reports(output_dir=output_dir)
 
     simon = SimonBlockCipher(number_of_rounds=2)
 
     dieharder = DieharderTests(simon)
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
-    report_sts.save_as_json()
-    report_sts.clean_reports()
+    report_sts.save_as_json(output_dir=output_dir)
+    report_sts.clean_reports(output_dir=output_dir)
     present = PresentBlockCipher(number_of_rounds=2)
     sat = SatXorDifferentialModel(present)
     related_key_setting = [
@@ -292,15 +308,15 @@ def test_save_as_json():
         set_fixed_variables(component_id='plaintext', constraint_type='equal', bit_positions=list(range(64)),
                             bit_values=[0] * 64)
     ]
-    trail = sat.find_one_xor_differential_trail_with_fixed_weight(fixed_weight=16, fixed_values=related_key_setting,
-                                                                  solver_name='KISSAT_EXT')
+    trail = sat.find_one_xor_differential_trail(fixed_values=related_key_setting, lower_bound=16, upper_bound=16,
+                                                solver_name='KISSAT_EXT')
     trail_report = Report(trail)
     trail_report.show()
 
     avalanche_results = AvalancheTests(simon).avalanche_tests()
     avalanche_report = Report(avalanche_results)
-    avalanche_report.save_as_json(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
-    avalanche_report.clean_reports()
+    avalanche_report.save_as_json(output_dir=output_dir, fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
+    avalanche_report.clean_reports(output_dir=output_dir)
 
 def test_show(monkeypatch, tmp_path):
     captured_fig_shows = []
@@ -322,3 +338,69 @@ def test_show(monkeypatch, tmp_path):
 
     assert captured_fig_shows, 'Expected Plotly show to be invoked at least once'
     assert component_charts, 'Expected component analysis radar chart to be produced'
+
+
+def test_report_accepts_cp_trail_output():
+    """
+    Test that Report can be instantiated with CP model trail output directly,
+    without requiring explicit 'input_parameters' or 'test_name' nesting.
+    This validates that Report gracefully handles single-trial dictionaries
+    from find_one_xor_differential_trail and similar methods.
+    """
+    speck = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=2)
+    cp = MznXorDifferentialModel(speck)
+    trail = cp.find_one_xor_differential_trail(
+        lower_bound=1, upper_bound=1, solver_name='chuffed', solve_external=False
+    )
+
+    assert 'test_name' in trail
+    assert trail['test_name'] == 'find_one_xor_differential_trail'
+
+    trail_report = Report(trail)
+    assert trail_report.cipher == speck
+    assert trail_report.test_name == 'find_one_xor_differential_trail'
+
+
+def test_save_as_dataframe_uses_runtime_cwd_default(monkeypatch, tmp_path):
+    class DummyCipher:
+        id = 'dummy_cipher'
+
+    report = Report({'cipher': DummyCipher(), 'test_name': 'dummy_trail'})
+    captured = {}
+
+    def fake_export(self, file_format, output_dir, fixed_input=None, fixed_output=None, fixed_test=None):
+        captured['file_format'] = file_format
+        captured['output_dir'] = output_dir
+
+    monkeypatch.setattr(Report, '_export', fake_export)
+    monkeypatch.chdir(tmp_path)
+
+    report.save_as_dataframe()
+
+    assert captured['file_format'] == '.csv'
+    assert captured['output_dir'] == str(tmp_path / 'test_reports')
+
+
+def test_clean_reports_uses_runtime_cwd_default(monkeypatch, tmp_path):
+    class DummyCipher:
+        id = 'dummy_cipher'
+
+    report = Report({'cipher': DummyCipher(), 'test_name': 'dummy_trail'})
+    monkeypatch.chdir(tmp_path)
+    reports_dir = tmp_path / 'test_reports'
+    reports_dir.mkdir()
+    (reports_dir / 'sentinel.txt').write_text('ok')
+
+    report.clean_reports()
+
+    assert not reports_dir.exists()
+
+
+def test_show_rejects_invalid_hex_word_size():
+    report = Report({'cipher': object(), 'test_name': 'dummy_trail'})
+    stdout = io.StringIO()
+
+    with redirect_stdout(stdout):
+        report.show(show_as_hex=True, word_size=1)
+
+    assert 'Incorrect word_size: if show_as_hex=True, word_size has to be a multiple of 4' in stdout.getvalue()

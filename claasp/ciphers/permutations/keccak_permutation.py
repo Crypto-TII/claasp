@@ -17,9 +17,9 @@
 
 
 from claasp.cipher import Cipher
-from claasp.utils.utils import simplify_inputs
-from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.DTOs.component_state import ComponentState
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
+from claasp.utils.utils import simplify_inputs
 
 X_NUM = 5
 Y_NUM = 5
@@ -69,6 +69,7 @@ class KeccakPermutation(Cipher):
     Construct an instance of the KeccakPermutation class.
 
     This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
+    The permutation is defined by FIPS 202 and implemented by the designers' XKCP reference package [XKCPREF]_.
 
     INPUT:
 
@@ -87,6 +88,10 @@ class KeccakPermutation(Cipher):
     """
 
     def __init__(self, number_of_rounds=24, word_size=64):
+        maximum_number_of_rounds = 12 + 2 * (int(word_size).bit_length() - 1)
+        if word_size <= 0 or word_size & (word_size - 1) or number_of_rounds > maximum_number_of_rounds:
+            raise ValueError('word_size must be a power of two and number_of_rounds must not exceed Keccak-f rounds')
+        round_offset = maximum_number_of_rounds - number_of_rounds
         self.word_bit_size = word_size
         self.plane_size = Y_NUM * self.word_bit_size
         self.state_bit_size = X_NUM * self.plane_size
@@ -106,7 +111,7 @@ class KeccakPermutation(Cipher):
             self.add_round()
 
             # round parameter
-            ci = self.get_ci(round_number)
+            ci = self.get_ci(round_number + round_offset)
             states = self.round_function(states, ci)
 
             self.add_output_component(number_of_rounds, round_number, states)
@@ -148,19 +153,19 @@ class KeccakPermutation(Cipher):
         # A[x,y] = B[x,y] xor ((not B[x+1,y]) and B[x+2,y]), for (x,y) in (range(5), range(5))
         for i in range(X_NUM):
             for j in range(Y_NUM):
-                self.add_NOT_component(
+                self.add_not_component(
                     b[(i + 1) % X_NUM][j].id, b[(i + 1) % X_NUM][j].input_bit_positions, self.word_bit_size
                 )
                 b_not = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
                 inputs_id = b[(i + 2) % X_NUM][j].id + b_not.id
                 inputs_pos = b[(i + 2) % X_NUM][j].input_bit_positions + b_not.input_bit_positions
-                self.add_AND_component(inputs_id, inputs_pos, self.word_bit_size)
+                self.add_and_component(inputs_id, inputs_pos, self.word_bit_size)
                 b_and = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
                 inputs_id = b[i][j].id + b_and.id
                 inputs_pos = b[i][j].input_bit_positions + b_and.input_bit_positions
-                self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+                self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
                 states[i][j] = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
         self.add_round_output_nonlinear(states)
 
@@ -179,7 +184,7 @@ class KeccakPermutation(Cipher):
         # A[0,0] = A[0,0] xor RC
         inputs_id = c.id + states[0][0].id
         inputs_pos = c.input_bit_positions + states[0][0].input_bit_positions
-        self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+        self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
         states[0][0] = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
         return states
@@ -228,7 +233,7 @@ class KeccakPermutation(Cipher):
                 inputs_id = inputs_id + states[i][j].id
                 inputs_pos = inputs_pos + states[i][j].input_bit_positions
             inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-            self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
             c.append(ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))]))
         # D[x] = C[x - 1] xor rot(C[x + 1], 1) for x in range(5)
         d = []
@@ -238,14 +243,14 @@ class KeccakPermutation(Cipher):
             )
             inputs_id = c[(i - 1) % X_NUM].id + [self.get_current_component_id()]
             inputs_pos = c[(i - 1) % X_NUM].input_bit_positions + [list(range(self.word_bit_size))]
-            self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+            self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
             d.append(ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))]))
         # A[x, y] = A[x, y] xor D[x] for x in range(5), y in range(5)
         for i in range(X_NUM):
             for j in range(Y_NUM):
                 inputs_id = states[i][j].id + d[i].id
                 inputs_pos = states[i][j].input_bit_positions + d[i].input_bit_positions
-                self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+                self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
                 states[i][j] = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
         return states

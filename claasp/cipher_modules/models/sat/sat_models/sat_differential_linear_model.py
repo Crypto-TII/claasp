@@ -26,13 +26,14 @@ from claasp.cipher_modules.models.sat.sat_models.sat_semi_deterministic_truncate
     SatSemiDeterministicTruncatedXorDifferentialModel,
 )
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-from claasp.cipher_modules.models.sat.utils import utils as sat_utils, constants
+from claasp.cipher_modules.models.sat.utils import constants
+from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.sat.utils.utils import (
     _generate_component_model_types,
-    _update_component_model_types_for_truncated_components,
     _update_component_model_types_for_linear_components,
+    _update_component_model_types_for_truncated_components,
 )
-from claasp.cipher_modules.models.utils import set_component_solution, get_bit_bindings
+from claasp.cipher_modules.models.utils import get_bit_bindings, set_component_solution
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
 
 
@@ -124,7 +125,7 @@ class SatDifferentialLinearModel(SatModel):
         border_components = []
 
         for truncated_component in self.truncated_components:
-            component_obj = self.cipher.get_component_from_id(truncated_component["component_id"])
+            component_obj = self.cipher.component_from_id(truncated_component["component_id"])
             for input_id in component_obj.input_id_links:
                 if input_id in regular_component_ids:
                     border_components.append(input_id)
@@ -141,7 +142,7 @@ class SatDifferentialLinearModel(SatModel):
         truncated_component_ids = {item["component_id"] for item in self.truncated_components}
         border_components = []
         for linear_component in self.linear_components:
-            component_obj = self.cipher.get_component_from_id(linear_component["component_id"])
+            component_obj = self.cipher.component_from_id(linear_component["component_id"])
             for input_id in component_obj.input_id_links:
                 if input_id in truncated_component_ids:
                     border_components.append(input_id)
@@ -156,7 +157,7 @@ class SatDifferentialLinearModel(SatModel):
         def get_component_output_bit_size(component_identifier):
             component_output_bit_size = 0
             if component_identifier not in (INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK):
-                component = self.cipher.get_component_from_id(component_identifier)
+                component = self.cipher.component_from_id(component_identifier)
                 component_output_bit_size = component.output_bit_size
             else:
                 for cipher_index, cipher_input in enumerate(self._cipher.inputs):
@@ -187,7 +188,7 @@ class SatDifferentialLinearModel(SatModel):
         linear_component_ids = [item["component_id"] for item in self.linear_components]
 
         for component_id in border_components:
-            component = self.cipher.get_component_from_id(component_id)
+            component = self.cipher.component_from_id(component_id)
             for idx in range(component.output_bit_size):
                 truncated_component = f"{component_id}_{idx}_o"
                 component_successors = self.bit_bindings[truncated_component]
@@ -221,7 +222,7 @@ class SatDifferentialLinearModel(SatModel):
             for hw_variable in hw_variables:
                 if linear_component_id in hw_variable:
                     hw_linear_variables.append(hw_variable)
-        hw_variables.extend(hw_linear_variables)
+        hw_variables.extend(list(dict.fromkeys(hw_linear_variables)))
         if weight == 0:
             return [], [f"-{var}" for var in hw_variables]
 
@@ -272,9 +273,9 @@ class SatDifferentialLinearModel(SatModel):
             sage: middle_part_components = []
             sage: bottom_part_components = []
             sage: for round_number in range(2, 3):
-            ....:     middle_part_components += [component.id for component in speck.get_components_in_round(round_number)]
+            ....:     middle_part_components += [component.id for component in speck.components_in_round(round_number)]
             sage: for round_number in range(3, 6):
-            ....:     bottom_part_components += [component.id for component in speck.get_components_in_round(round_number)]
+            ....:     bottom_part_components += [component.id for component in speck.components_in_round(round_number)]
             sage: component_model_list = {
             ....:     'middle_part_components': middle_part_components,
             ....:     'bottom_part_components': bottom_part_components
@@ -369,7 +370,7 @@ class SatDifferentialLinearModel(SatModel):
         total_weight_diff = 0
         total_weight_lin = 0
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if component.id in [d["component_id"] for d in self.regular_components]:
                 hex_value = self._get_component_hex_value(component, "", variable2value)
                 weight = self.calculate_component_weight(component, "", variable2value)
@@ -388,6 +389,20 @@ class SatDifferentialLinearModel(SatModel):
 
         return components_solutions, total_weight_diff + 2 * total_weight_lin
 
+    def _sequential_counter_greater_or_equal(self, weight, dummy_id):
+        hw_variables = [var_id for var_id in self._variables_list if var_id.startswith("hw_")]
+
+        linear_component_ids = [linear_component["component_id"] for linear_component in self.linear_components]
+        hw_linear_variables = []
+        for linear_component_id in linear_component_ids:
+            for hw_variable in hw_variables:
+                if linear_component_id in hw_variable:
+                    hw_linear_variables.append(hw_variable)
+        hw_variables.extend(list(dict.fromkeys(hw_linear_variables)))
+        variables, constraints = self._sequential_counter_algorithm(hw_variables, weight, dummy_id, greater_or_equal=True)
+        self._variables_list.extend(variables)
+        self._model_constraints.extend(constraints)
+
     def find_one_differential_linear_trail_with_fixed_weight(
         self,
         weight,
@@ -402,15 +417,18 @@ class SatDifferentialLinearModel(SatModel):
         of the top part (differential part) and the correlation weight of the bottom part (linear part).
 
         INPUT:
+
         - ``weight`` -- **int**; Maximum probability weight for the regular XOR differential part.
         - ``num_unknown_vars`` -- **int** (default: None); Upper limit on the number of unknown variables allowed.
         - ``fixed_values`` -- **list** (default: `[]`); specifies a list of variables that should be fixed to specific values. Each entry in the list should be a dictionary representing constraints for specific components, written in the CLAASP constraining syntax.
         - ``solver_name`` -- **str** (default: ``solvers.SOLVER_DEFAULT``); The name of the SAT solver to use.
 
         RETURN:
+
         - **dict**; Solution returned by the solver, including the trail and additional information.
 
         EXAMPLES::
+
             sage: from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -419,9 +437,9 @@ class SatDifferentialLinearModel(SatModel):
             sage: middle_part_components = []
             sage: bottom_part_components = []
             sage: for round_number in range(2, 3):
-            ....:     middle_part_components.append(speck.get_components_in_round(round_number))
+            ....:     middle_part_components.append(speck.components_in_round(round_number))
             sage: for round_number in range(3, 6):
-            ....:     bottom_part_components.append(speck.get_components_in_round(round_number))
+            ....:     bottom_part_components.append(speck.components_in_round(round_number))
             sage: middle_part_components = list(itertools.chain(*middle_part_components))
             sage: bottom_part_components = list(itertools.chain(*bottom_part_components))
             sage: middle_part_components = [component.id for component in middle_part_components]
@@ -455,12 +473,14 @@ class SatDifferentialLinearModel(SatModel):
             ....:     solver_name="CADICAL_EXT",
             ....:     num_unknown_vars=2
             ....: )
-            sage: trail["status"] == 'SATISFIABLE'
+            sage: trail["total_weight"] == 10
             True
         """
         start_time = time.time()
 
         self.build_xor_differential_linear_model(weight, num_unknown_vars, unknown_window_size_configuration)
+        if self._counter == self._sequential_counter:
+            self._sequential_counter_greater_or_equal(weight, "dummy_hw_1")
         constraints = self.fix_variables_value_constraints(
             fixed_values, self.regular_components, self.truncated_components, self.linear_components
         )

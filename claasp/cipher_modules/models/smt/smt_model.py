@@ -41,46 +41,9 @@ import re
 import subprocess
 
 from claasp.cipher_modules.models.smt import solvers
-from claasp.cipher_modules.models.smt.solvers import MATHSAT_EXT, YICES_EXT, Z3_EXT
 from claasp.cipher_modules.models.smt.utils import constants, utils
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary, set_component_solution
 from claasp.name_mappings import SATISFIABLE, SBOX, UNSATISFIABLE
-
-
-def mathsat_parser(output_to_parse):
-    tmp_dict = {}
-    for line in output_to_parse[1:]:
-        if line.strip().startswith("(define-fun"):
-            solution = line.strip()[1:-1].split(" ")
-            var_name = solution[1]
-            var_value = 1 if solution[-1] == "true" else 0
-            tmp_dict[var_name] = var_value
-
-    return tmp_dict
-
-
-def yices_parser(output_to_parse):
-    tmp_dict = {}
-    for line in output_to_parse[1:]:
-        if line.startswith("(="):
-            solution = line[1:-1].split(" ")
-            var_name = solution[1]
-            var_value = 1 if solution[-1] == "true" else 0
-            tmp_dict[var_name] = var_value
-
-    return tmp_dict
-
-
-def z3_parser(output_to_parse):
-    tmp_dict = {}
-    for index in range(2, len(output_to_parse), 2):
-        if output_to_parse[index] == ")":
-            break
-        var_name = output_to_parse[index].split()[1]
-        var_value = 1 if output_to_parse[index + 1].strip()[:-1] == "true" else 0
-        tmp_dict[var_name] = var_value
-
-    return tmp_dict
 
 
 class SmtModel:
@@ -207,7 +170,7 @@ class SmtModel:
             for i in range(bit_length_of_hw)
         )
 
-        return variables, constraints, bit_length_of_hw
+        return variables, constraints
 
     def _sequential_counter_algorithm(self, hw_list, weight, dummy_id, greater_or_equal=False):
         n = len(hw_list)
@@ -436,12 +399,6 @@ class SmtModel:
              'components_values': {},
              'total_weight': None}
         """
-
-        def _get_data(data_string, lines):
-            data_line = [line for line in lines if data_string in line][0]
-            data = float(re.findall(r"\d+\.?\d*", data_line)[0])
-            return data
-
         solver_specs = [specs for specs in solvers.SMT_SOLVERS_EXTERNAL if specs["solver_name"] == solver_name.upper()][
             0
         ]
@@ -449,16 +406,14 @@ class SmtModel:
         command = [solver_specs["keywords"]["command"]["executable"]] + solver_specs["keywords"]["command"]["options"]
         smt_input = "\n".join(self._model_constraints) + "\n"
         solver_process = subprocess.run(command, input=smt_input, capture_output=True, text=True)
-        solver_output = solver_process.stdout.splitlines()
-        solve_time = _get_data(solver_specs["keywords"]["time"], solver_output)
-        memory = _get_data(solver_specs["keywords"]["memory"], solver_output)
-        if solver_output[0] == "sat":
-            if solver_name == Z3_EXT:
-                variable2value = z3_parser(solver_output)
-            elif solver_name == YICES_EXT:
-                variable2value = yices_parser(solver_output)
-            elif solver_name == MATHSAT_EXT:
-                variable2value = mathsat_parser(solver_output)
+        solver_output = solver_process.stdout
+        solve_time = float(re.search(rf"{solver_specs['keywords']['time']}\s+(\d+(?:\.\d+)?)", solver_output).group(1))
+        memory = float(re.search(rf"{solver_specs['keywords']['memory']}\s+(\d+(?:\.\d+)?)", solver_output).group(1))
+        if solver_output[0:3] == "sat":
+            pattern = re.compile(r"\(define-fun\s+(\w+)\s+\(\)\s+(?:Bool\s+)?(true|false)\s*\)")
+            variable2value = {
+                variable: int(value == "true") for variable, value in pattern.findall(solver_output)
+            }
             component2attributes, total_weight = self._parse_solver_output(variable2value)
             status = SATISFIABLE
         else:

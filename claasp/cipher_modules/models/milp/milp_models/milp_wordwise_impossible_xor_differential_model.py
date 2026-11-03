@@ -22,12 +22,13 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_t
     MilpWordwiseDeterministicTruncatedXorDifferentialModel,
 )
 from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
-from claasp.cipher_modules.models.milp.utils import utils as milp_utils, milp_truncated_utils
+from claasp.cipher_modules.models.milp.utils import milp_truncated_utils
+from claasp.cipher_modules.models.milp.utils import utils as milp_utils
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
     MILP_BACKWARD_SUFFIX,
     MILP_BUILDING_MESSAGE,
-    MILP_WORDWISE_IMPOSSIBLE_AUTO,
     MILP_WORDWISE_IMPOSSIBLE,
+    MILP_WORDWISE_IMPOSSIBLE_AUTO,
 )
 from claasp.name_mappings import CIPHER_OUTPUT, INPUT_KEY
 
@@ -56,14 +57,14 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
             sage: milp._forward_cipher = aes.get_partial_cipher(0, 0, keep_key_schedule=True)
             sage: backward_cipher = milp._cipher.cipher_partial_inverse(1, 1, keep_key_schedule=False)
-            sage: milp._backward_cipher = backward_cipher.add_suffix_to_components("_backward", [backward_cipher.get_all_components_ids()[-1]])
+            sage: milp._backward_cipher = backward_cipher.add_suffix_to_components("_backward", [backward_cipher.all_components_ids()[-1]])
             sage: milp.build_wordwise_impossible_xor_differential_trail_model() # doctest: +SKIP
             ...
         """
@@ -90,8 +91,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
@@ -115,7 +116,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             middle_round, self._cipher.number_of_rounds - 1, keep_key_schedule=False
         )
         self._backward_cipher = backward_cipher.add_suffix_to_components(
-            MILP_BACKWARD_SUFFIX, [backward_cipher.get_all_components_ids()[-1]]
+            MILP_BACKWARD_SUFFIX, [backward_cipher.all_components_ids()[-1]]
         )
 
         self.build_wordwise_impossible_xor_differential_trail_model(fixed_bits, fixed_words)
@@ -124,7 +125,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
         # finding incompatibility
         constraints = []
-        forward_output = [c for c in self._forward_cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
+        forward_output = [c for c in self._forward_cipher.all_components() if c.type == CIPHER_OUTPUT][0]
         output_size = forward_output.output_bit_size // self.word_size
 
         _, output_ids = forward_output._get_wordwise_input_output_linked_class(self)
@@ -136,7 +137,11 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
 
         constraints.extend([sum(inconsistent_vars) == 1])
         for inconsistent_index in range(output_size):
-            incompatibility_constraints = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2]
+            # Only allow (0, 1), (0, 2), (1, 0), (2, 0)
+            incompatibility_constraints = [
+                forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2,
+                forward_vars[inconsistent_index] + backward_vars[inconsistent_index] >= 1,
+            ]
             dummy = x[
                 f"dummy_incompatibility_{x[forward_vars[inconsistent_index]]}_or_{x[backward_vars[inconsistent_index]]}_is_0"
             ]
@@ -151,7 +156,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             )
 
         # output is fixed
-        cipher_output = [c for c in self._cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
+        cipher_output = [c for c in self._cipher.all_components() if c.type == CIPHER_OUTPUT][0]
         _, cipher_output_ids = cipher_output._get_wordwise_input_output_linked_class(self)
         constraints.extend(
             [x_class[id] <= 2 for id in cipher_output_ids] + [sum([x_class[id] for id in cipher_output_ids]) >= 1]
@@ -187,8 +192,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
@@ -202,20 +207,20 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         x_class = self._trunc_wordvar
         p = self._integer_variable
 
-        if component_id_list == None:
+        if component_id_list is None:
             return self.add_constraints_to_build_in_sage_milp_class(fixed_bits=fixed_bits, fixed_words=fixed_words)
 
-        assert set(component_id_list) <= set(self._cipher.get_all_components_ids()) - set(
+        assert set(component_id_list) <= set(self._cipher.all_components_ids()) - set(
             get_key_schedule_component_ids(self._cipher)
         )
 
-        middle_round_numbers = [self._cipher.get_round_from_component_id(id) for id in component_id_list]
+        middle_round_numbers = [self._cipher.round_from_component_id(id) for id in component_id_list]
 
         assert len(set(middle_round_numbers)) == 1
 
         middle_round_number = middle_round_numbers[0]
 
-        if len(component_id_list) == 1 and self._cipher.get_component_from_id(component_id_list[0]).description == [
+        if len(component_id_list) == 1 and self._cipher.component_from_id(component_id_list[0]).description == [
             "round_output"
         ]:
             return self.add_constraints_to_build_in_sage_milp_class(middle_round_number + 1, fixed_bits, fixed_words)
@@ -229,19 +234,19 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         backward_last_round_components = set(
             backward_cipher._rounds.round_at(
                 self._cipher.number_of_rounds - 1 - middle_round_number
-            ).get_components_ids()
-            + [backward_cipher.get_all_components_ids()[-1]]
+            ).components_ids()
+            + [backward_cipher.all_components_ids()[-1]]
         )
         input_id_links_of_chosen_components = [
-            _ for c in [backward_cipher.get_component_from_id(id) for id in component_id_list] for _ in c.input_id_links
+            _ for c in [backward_cipher.component_from_id(id) for id in component_id_list] for _ in c.input_id_links
         ]
         round_input_id_links_of_chosen_components = [
-            backward_cipher.get_round_from_component_id(id) for id in input_id_links_of_chosen_components
+            backward_cipher.round_from_component_id(id) for id in input_id_links_of_chosen_components
         ]
         links_round = [
             _
             for r in round_input_id_links_of_chosen_components
-            for _ in backward_cipher._rounds.round_at(r).get_components_ids()
+            for _ in backward_cipher._rounds.round_at(r).components_ids()
         ]
         self._backward_cipher = backward_cipher.add_suffix_to_components(
             MILP_BACKWARD_SUFFIX, backward_last_round_components | set(links_round)
@@ -253,12 +258,12 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         incompatibility_constraints = []
 
         for id in component_id_list:
-            forward_component = self._cipher.get_component_from_id(id)
+            forward_component = self._cipher.component_from_id(id)
             output_size = forward_component.output_bit_size // self.word_size
             _, output_ids = forward_component._get_wordwise_input_output_linked_class(self)
             forward_vars = [x_class[id] for id in output_ids]
 
-            backward_component = self._backward_cipher.get_component_from_id(id + f"{MILP_BACKWARD_SUFFIX}")
+            backward_component = self._backward_cipher.component_from_id(id + f"{MILP_BACKWARD_SUFFIX}")
             input_ids, _ = backward_component._get_wordwise_input_output_linked_class(self)
             backward_vars = [x_class[id] for id in input_ids if INPUT_KEY not in id]
             inconsistent_vars = [x[f"{forward_component.id}_inconsistent_{_}"] for _ in range(output_size)]
@@ -270,14 +275,18 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
                     for i in backward_component.input_id_links
                 ]
             ):
-                if INPUT_KEY not in input_id and self._cipher.get_component_from_id(input_id).input_id_links == [id]:
+                if INPUT_KEY not in input_id and self._cipher.component_from_id(input_id).input_id_links == [id]:
                     backward_vars = [
                         x_class[f"{input_id}_{pos}"] for pos in backward_component.input_bit_positions[index]
                     ]
 
             incompatibility_constraints.extend([sum(inconsistent_vars) == 1])
             for inconsistent_index in range(output_size):
-                incompatibility_constraint = [forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2]
+                # Only allow (0, 1), (0, 2), (1, 0), (2, 0)
+                incompatibility_constraint = [
+                    forward_vars[inconsistent_index] + backward_vars[inconsistent_index] <= 2,
+                    forward_vars[inconsistent_index] + backward_vars[inconsistent_index] >= 1,
+                ]
                 incompatibility_constraints.extend(
                     milp_utils.milp_if_then(
                         inconsistent_vars[inconsistent_index],
@@ -287,7 +296,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
                 )
 
         # output is fixed
-        cipher_output = [c for c in self._cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
+        cipher_output = [c for c in self._cipher.all_components() if c.type == CIPHER_OUTPUT][0]
         _, cipher_output_ids = cipher_output._get_wordwise_input_output_linked_class(self)
         incompatibility_constraints.extend(
             [x_class[id] <= 1 for id in cipher_output_ids] + [sum([x_class[id] for id in cipher_output_ids]) >= 1]
@@ -324,8 +333,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: milp.init_model_in_sage_milp_class()
@@ -361,7 +370,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
             mip.add_constraint(constraint)
 
         # unknown patterns are tuples of the form (1,x) (i.e pattern = 2 or 3)
-        forward_output = [c for c in self._forward_cipher.get_all_components() if c.type == CIPHER_OUTPUT][0]
+        forward_output = [c for c in self._forward_cipher.all_components() if c.type == CIPHER_OUTPUT][0]
         _, forward_output_id_tuple = forward_output._get_wordwise_input_output_linked_class_tuples(self)
         mip.add_constraint(
             p["number_of_unknown_patterns"]
@@ -385,8 +394,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         EXAMPLE::
 
             sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail(1, get_single_key_scenario_format_for_fixed_values(aes)) # doctest: +SKIP
@@ -422,8 +431,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         EXAMPLE::
 
             sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_chosen_components(['mix_column_0_21'], get_single_key_scenario_format_for_fixed_values(aes)) # doctest: +SKIP
@@ -467,8 +476,8 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         EXAMPLE::
 
             sage: from claasp.cipher_modules.models.utils import get_single_key_scenario_format_for_fixed_values
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_impossible_xor_differential_model import MilpWordwiseImpossibleXorDifferentialModel
             sage: milp = MilpWordwiseImpossibleXorDifferentialModel(aes)
             sage: trail = milp.find_one_wordwise_impossible_xor_differential_trail_with_fully_automatic_model(get_single_key_scenario_format_for_fixed_values(aes)) # doctest: +SKIP
@@ -514,7 +523,7 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
         if component_id in self._cipher.inputs:
             output_size = self._cipher.inputs_bit_size[self._cipher.inputs.index(component_id)] // wordsize
         elif self._forward_cipher != self._cipher and component_id.endswith(MILP_BACKWARD_SUFFIX):
-            component = self._backward_cipher.get_component_from_id(component_id)
+            component = self._backward_cipher.component_from_id(component_id)
             output_size = component.output_bit_size // wordsize
         elif self._forward_cipher == self._cipher and component_id.endswith(MILP_BACKWARD_SUFFIX):
             if component_id in self._backward_cipher.inputs:
@@ -522,10 +531,10 @@ class MilpWordwiseImpossibleXorDifferentialModel(MilpWordwiseDeterministicTrunca
                     self._backward_cipher.inputs_bit_size[self._backward_cipher.inputs.index(component_id)] // wordsize
                 )
             else:
-                component = self._backward_cipher.get_component_from_id(component_id)
+                component = self._backward_cipher.component_from_id(component_id)
                 output_size = component.output_bit_size // wordsize
         else:
-            component = self._cipher.get_component_from_id(component_id)
+            component = self._cipher.component_from_id(component_id)
             output_size = component.output_bit_size // wordsize
         suffix_dict = {"_class": output_size}
         final_output = self._get_final_output(component_id, components_variables, suffix_dict)

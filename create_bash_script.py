@@ -1,6 +1,4 @@
 import os
-import sys
-
 
 with open("docker/Dockerfile", "r") as f:
     dockerfile_lines = f.readlines()

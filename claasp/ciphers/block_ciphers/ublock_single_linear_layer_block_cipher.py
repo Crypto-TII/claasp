@@ -15,13 +15,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-import numpy as np
 import sys
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
-
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"block_bit_size": 128, "key_bit_size": 128, "number_of_rounds": 16},
@@ -36,16 +34,15 @@ PL = [[1, 3, 4, 6, 0, 2, 7, 5], [2, 7, 8, 13, 3, 6, 9, 12, 1, 4, 15, 10, 14, 11,
 PR = [[2, 7, 5, 0, 1, 6, 4, 3], [6, 11, 1, 12, 9, 4, 2, 15, 7, 0, 13, 10, 14, 3, 8, 5]]
 P_WORD_SIZE = 8
 RC_SIZE = 32
-ROTATE_SIZE = 32
 # fmt: off
 PK = [
-    [6, 0, 8, 13, 1, 15, 5, 10, 4, 9, 12, 2, 11, 3, 7, 14],
+    [1, 4, 11, 13, 8, 6, 0, 14, 2, 9, 7, 12, 10, 3, 15, 5],
     [
-        10, 5, 15, 0, 2, 7, 8, 13, 14, 6, 4, 12, 1, 3, 11, 9, 24,
+        3, 12, 4, 13, 10, 1, 9, 5, 6, 15, 0, 14, 11, 7, 8, 2, 24,
         25, 26, 27, 28, 29, 30, 31, 16, 17, 18, 19, 20, 21, 22, 23
     ],
     [
-        10, 5, 15, 0, 2, 7, 8, 13, 1, 14, 4, 12, 9, 11, 3, 6, 24,
+        3, 8, 4, 14, 10, 1, 15, 5, 6, 12, 0, 13, 11, 7, 9, 2, 24,
         25, 26, 27, 28, 29, 30, 31, 16, 17, 18, 19, 20, 21, 22, 23
     ],
 ]
@@ -120,7 +117,10 @@ def generate_ublock_matrix(n, shift0, shift1, shift2, permutation_left, permutat
         for element in equation:
             matrix[i][element] = 1
 
-    linear_layer_matrix = np.array(matrix).T.tolist()
+    if nibblewise:
+        linear_layer_matrix = matrix
+    else:
+        linear_layer_matrix = [list(row) for row in zip(*matrix)]
 
     return linear_layer_matrix
 
@@ -137,6 +137,9 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
     - ``key_bit_size`` -- **integer** (default: `128`); cipher round_key bit size of the cipher
     - ``number_of_rounds`` -- **integer** (default: `16`); number of rounds of the cipher. The cipher uses the
       corresponding amount given the other parameters (if available) when r is 0
+    - ``use_mix_column`` -- **boolean** (default: `False`); controls which internal linear transformation the
+      cipher uses, when set to True, the component is instantiated with a MixColumn-based transformation; when
+      False, a standard linear layer is used instead
 
     EXAMPLES::
 
@@ -155,10 +158,11 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         True
     """
 
-    def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=16):
+    def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=16, use_mix_column=False):
         self.key_block_size = key_bit_size // 4
         self.block_bit_size = block_bit_size
         self.key_bit_size = key_bit_size
+        self.use_mix_column = use_mix_column
 
         if self.block_bit_size == 128:
             self.pl = PL[0]
@@ -168,10 +172,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             elif self.key_bit_size == 256:
                 self.pk = PK[1]
             else:
-                print(
-                    "The round_key size of block size 128 should be 128 or 256.",
-                    file=sys.stderr,
-                )
+                print("The round_key size of block size 128 should be 128 or 256.", file=sys.stderr)
                 sys.exit(1)
         elif self.block_bit_size == 256:
             self.pl = PL[1]
@@ -179,10 +180,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             if self.key_bit_size == 256:
                 self.pk = PK[2]
             else:
-                print(
-                    "The round_key size of block size 256 should be 256.",
-                    file=sys.stderr,
-                )
+                print("The round_key size of block size 256 should be 256.", file=sys.stderr)
                 sys.exit(1)
         else:
             print("The block size should be 128 or 256.", file=sys.stderr)
@@ -210,7 +208,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             key_0, key_1, key_2, key_3, round_key = self.key_schedule(key_0, key_1, key_2, key_3, RC[round_number])
 
         # cipher output and round key output
-        self.add_XOR_component(
+        self.add_xor_component(
             state.id + round_key.id, state.input_bit_positions + round_key.input_bit_positions, self.block_bit_size
         )
         cipher_output = ComponentState([self.get_current_component_id()], [list(range(self.block_bit_size))])
@@ -229,7 +227,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
 
     def round_function(self, state, round_key):
         # state xor round_key
-        self.add_XOR_component(
+        self.add_xor_component(
             state.id + round_key.id, state.input_bit_positions + round_key.input_bit_positions, self.block_bit_size
         )
         state = ComponentState([self.get_current_component_id()], [list(range(self.block_bit_size))])
@@ -238,18 +236,27 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         window_size = SBOX_SIZE
         n = self.block_bit_size // window_size
         for i in range(n):
-            self.add_SBOX_component(
+            self.add_sbox_component(
                 state.id, [state.input_bit_positions[0][i * window_size : (i + 1) * window_size]], window_size, SBOX
             )
             ids.append(self.get_current_component_id())
         state = ComponentState(ids, [list(range(window_size))] * n)
-        # linear layer
-        self.add_linear_layer_component(
-            state.id,
-            state.input_bit_positions,
-            self.block_bit_size,
-            generate_ublock_matrix(self.block_bit_size, 4, 8, 20, self.pl, self.pr),
-        )
+        if self.use_mix_column:
+            # mix_column
+            self.add_mix_column_component(
+                state.id,
+                state.input_bit_positions,
+                self.block_bit_size,
+                [generate_ublock_matrix(self.block_bit_size // 4, 1, 2, 5, self.pl, self.pr, nibblewise=True), 0x13, 4],
+            )
+        else:
+            # linear layer
+            self.add_linear_layer_component(
+                state.id,
+                state.input_bit_positions,
+                self.block_bit_size,
+                generate_ublock_matrix(self.block_bit_size, 4, 8, 20, self.pl, self.pr),
+            )
         state = ComponentState([self.get_current_component_id()], [list(range(self.block_bit_size))])
 
         return state
@@ -273,7 +280,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         self.add_constant_component(RC_SIZE, RC)
         round_constant = ComponentState([self.get_current_component_id()], [list(range(RC_SIZE))])
         if self.key_block_size == RC_SIZE:
-            self.add_XOR_component(
+            self.add_xor_component(
                 key_0.id + round_constant.id,
                 key_0.input_bit_positions + round_constant.input_bit_positions,
                 RC_SIZE,
@@ -283,7 +290,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             window_size = SBOX_SIZE
             n = int(self.key_block_size / window_size)
             for i in range(n):
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     temp.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, SBOX
                 )
                 ids.append(self.get_current_component_id())
@@ -291,7 +298,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         else:
             key_0_left = ComponentState(key_0.id, [list(range(RC_SIZE))])
             key_0_right = ComponentState(key_0.id, [list(range(RC_SIZE, self.key_block_size))])
-            self.add_XOR_component(
+            self.add_xor_component(
                 key_0_left.id + round_constant.id,
                 key_0_left.input_bit_positions + round_constant.input_bit_positions,
                 RC_SIZE,
@@ -301,13 +308,13 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
             window_size = SBOX_SIZE
             n = RC_SIZE // window_size
             for i in range(n):
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     temp.id, [list(range(i * window_size, (i + 1) * window_size))], window_size, SBOX
                 )
                 ids.append(self.get_current_component_id())
             n = (self.key_block_size - RC_SIZE) // window_size
             for i in range(n):
-                self.add_SBOX_component(
+                self.add_sbox_component(
                     key_0_right.id,
                     [key_0_right.input_bit_positions[0][i * window_size : (i + 1) * window_size]],
                     window_size,
@@ -315,7 +322,7 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
                 )
                 ids.append(self.get_current_component_id())
             temp = ComponentState(ids, [list(range(window_size))] * int(self.key_block_size / window_size))
-        self.add_XOR_component(
+        self.add_xor_component(
             key_2.id + temp.id, key_2.input_bit_positions + temp.input_bit_positions, self.key_block_size
         )
         key_2 = ComponentState([self.get_current_component_id()], [list(range(self.key_block_size))])
@@ -325,12 +332,12 @@ class UblockSingleLinearLayerBlockCipher(Cipher):
         window_size = SBOX_SIZE
         n = self.key_block_size // window_size
         for i in range(n):
-            self.add_SBOX_component(
+            self.add_sbox_component(
                 key_1.id, [key_1.input_bit_positions[0][i * window_size : (i + 1) * window_size]], window_size, SBOX_TK
             )
             ids.append(self.get_current_component_id())
         temp = ComponentState(ids, [list(range(window_size))] * n)
-        self.add_XOR_component(
+        self.add_xor_component(
             key_3.id + temp.id, key_3.input_bit_positions + temp.input_bit_positions, self.key_block_size
         )
         key_3 = ComponentState([self.get_current_component_id()], [list(range(self.key_block_size))])

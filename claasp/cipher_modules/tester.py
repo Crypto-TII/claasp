@@ -21,9 +21,10 @@ import secrets
 from types import ModuleType
 
 from claasp.cipher_modules import evaluator
+
 # Imports below need to be imported one by one following best practises.
 # These methods are used in generated code that needs to be reviewed
-from claasp.utils.integer_functions import int_to_bytearray, bytearray_to_int
+from claasp.utils.integer_functions import bytearray_to_int, int_to_bytearray
 
 
 def test_against_reference_code(cipher, number_of_tests=5):

@@ -18,10 +18,18 @@
 
 from copy import deepcopy
 
-from claasp.input import Input
+from claasp.cipher_modules.models.cp.mzn_model import SOLVE_SATISFY, MiniZincModelParts, MznModel
 from claasp.component import Component
-from claasp.cipher_modules.models.cp.mzn_model import MznModel, SOLVE_SATISFY
-from claasp.name_mappings import CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, SBOX, MIX_COLUMN, WORD_OPERATION
+from claasp.input import Input
+from claasp.name_mappings import (
+    CIPHER_OUTPUT,
+    CONSTANT,
+    INTERMEDIATE_OUTPUT,
+    MIX_COLUMN,
+    PERMUTATION_COMPONENT,
+    SBOX,
+    WORD_OPERATION,
+)
 
 
 def build_xor_truncated_table(numadd):
@@ -34,10 +42,10 @@ def build_xor_truncated_table(numadd):
 
     EXAMPLES::
 
-        sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+        sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
         sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
         ....: build_xor_truncated_table)
-        sage: aes = AESBlockCipher()
+        sage: aes = ToyAESBlockCipher()
         sage: build_xor_truncated_table(3)
         'array[0..4, 1..3] of int: xor_truncated_table_3 = array2d(0..4, 1..3, [0,0,0,0,1,1,1,0,1,1,1,0,1,1,1]);'
     """
@@ -59,6 +67,11 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
         self._first_step = []
         self._first_step_find_all_solutions = []
         super().__init__(cipher)
+        self.word_size = 4
+        for component in self._cipher.all_components():
+            if SBOX in component.type:
+                self.word_size = int(component.output_bit_size)
+                break
 
     def add_additional_xor_constraints(self, nmax, repetition):
         """
@@ -74,9 +87,9 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
             ....: MznXorDifferentialNumberOfActiveSboxesModel)
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
@@ -116,9 +129,9 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
             ....: MznXorDifferentialNumberOfActiveSboxesModel)
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(aes)
             sage: fixed_variables = [set_fixed_variables('key', 'not_equal', range(128),
             ....: integer_to_bit_list(0, 128, 'little'))]
@@ -129,17 +142,25 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
         self.list_of_xor_all_inputs = []
         self.list_of_xor_components = []
         self.mix_column_mant = []
-        self.sbox_mant = []
+        self.sbox_cache = []
         self.input_sbox = []
-        self._variables_list = []
+        self._variables_declarations = []
         self.c = 0
         self.table_of_solutions_length = 0
         constraints = self.fix_variables_value_constraints(fixed_variables, "first_step")
         self._first_step = constraints
-        self._variables_list.extend(self.input_xor_differential_first_step_constraints(possible_sboxes))
+        self._variables_declarations.extend(self.input_xor_differential_first_step_constraints(possible_sboxes))
 
-        for component in self._cipher.get_all_components():
-            component_types = [CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, SBOX, MIX_COLUMN, WORD_OPERATION]
+        for component in self._cipher.all_components():
+            component_types = [
+                CONSTANT,
+                INTERMEDIATE_OUTPUT,
+                CIPHER_OUTPUT,
+                SBOX,
+                MIX_COLUMN,
+                PERMUTATION_COMPONENT,
+                WORD_OPERATION,
+            ]
             operation = component.description[0]
             operation_types = ["ROTATE", "SHIFT", "XOR", "NOT"]
             if component.type not in component_types or (
@@ -150,16 +171,22 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
                 variables, constraints = component.cp_transform_xor_components_for_first_step(self)
             else:
                 variables, constraints = component.cp_xor_differential_propagation_first_step_constraints(self)
-            self._variables_list.extend(variables)
+            self._variables_declarations.extend(variables)
             self._first_step.extend(constraints)
 
         self.add_additional_xor_constraints(nmax, repetition)
         for i, component in enumerate(self.list_of_xor_components):
             variables, constraints = self.xor_xor_differential_first_step_constraints(component)
-            self._variables_list.extend(variables)
+            self._variables_declarations.extend(variables)
             self._first_step.append(constraints)
         self._first_step.extend(self.final_xor_differential_first_step_constraints(weight))
-        self._first_step = self._model_prefix + self._variables_list + self._first_step
+        self._first_step = self.assemble_model_lines(
+            MiniZincModelParts(
+                prefix=list(self._model_prefix),
+                variables=list(self._variables_declarations),
+                constraints=list(self._first_step),
+            )
+        )
 
     def create_xor_component(self, component1, component2, nmax):
         """
@@ -175,8 +202,8 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
             ....: MznXorDifferentialNumberOfActiveSboxesModel)
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(aes)
             sage: old_xor_components = deepcopy(cp.list_of_xor_components)
             sage: xor_component1 = aes.component_from(0, 32)
@@ -221,10 +248,10 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
             ....: MznXorDifferentialNumberOfActiveSboxesModel)
-            sage: aes = AESBlockCipher()
+            sage: aes = ToyAESBlockCipher()
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(aes)
             sage: cp.final_xor_differential_first_step_constraints()
             ['constraint number_of_active_sBoxes = ;',
@@ -317,8 +344,8 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
             ....: MznXorDifferentialNumberOfActiveSboxesModel)
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher()
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher()
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(aes)
             sage: cp.input_xor_differential_first_step_constraints()
             ['var 1..200: number_of_active_sBoxes;',
@@ -336,7 +363,7 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
             cp_declarations = [number_of_active_sboxes_declaration]
         else:
             active_sboxes_count = 0
-            for component in self._cipher.get_all_components():
+            for component in self._cipher.all_components():
                 if SBOX in component.type:
                     input_bit_positions = component.input_bit_positions
                     active_sboxes_count += len(input_bit_positions)
@@ -362,8 +389,8 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
 
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_number_of_active_sboxes_model import (
             ....: MznXorDifferentialNumberOfActiveSboxesModel)
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznXorDifferentialNumberOfActiveSboxesModel(aes)
             sage: xor_component = aes.component_from(0, 32)
             sage: cp.xor_xor_differential_first_step_constraints(xor_component)
@@ -390,7 +417,7 @@ class MznXorDifferentialNumberOfActiveSboxesModel(MznModel):
         )
         xor_table = build_xor_truncated_table(numadd)
         cp_declarations = []
-        if xor_table not in self._variables_list:
+        if xor_table not in self._variables_declarations:
             cp_declarations = [xor_table]
 
         return cp_declarations, cp_constraints

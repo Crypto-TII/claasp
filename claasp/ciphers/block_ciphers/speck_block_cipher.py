@@ -18,8 +18,8 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 from claasp.utils.utils import get_number_of_rounds_from
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
 
 PARAMETERS_CONFIGURATION_LIST = [
     {"block_bit_size": 32, "key_bit_size": 64, "number_of_rounds": 22},
@@ -133,11 +133,11 @@ class SpeckBlockCipher(Cipher):
         p1 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
 
         # p1 = modadd(p1, p2)
-        self.add_MODADD_component(p1.id + p2.id, p1.input_bit_positions + p2.input_bit_positions, self.word_size)
+        self.add_modadd_component(p1.id + p2.id, p1.input_bit_positions + p2.input_bit_positions, self.word_size)
         p1 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
 
         # p1 = p1 ^ round_key
-        self.add_XOR_component(p1.id + key.id, p1.input_bit_positions + key.input_bit_positions, self.word_size)
+        self.add_xor_component(p1.id + key.id, p1.input_bit_positions + key.input_bit_positions, self.word_size)
         p1 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
 
         # p2 <<< beta
@@ -145,7 +145,7 @@ class SpeckBlockCipher(Cipher):
         p2 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
 
         # p2 = p1 ^ p2
-        self.add_XOR_component(p1.id + p2.id, p1.input_bit_positions + p2.input_bit_positions, self.word_size)
+        self.add_xor_component(p1.id + p2.id, p1.input_bit_positions + p2.input_bit_positions, self.word_size)
         p2 = ComponentState([self.get_current_component_id()], [list(range(self.word_size))])
 
         return p1, p2

@@ -15,14 +15,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 from copy import deepcopy
+
 from minizinc import Status
 
 from claasp.cipher_modules.graph_generator import split_cipher_graph_into_top_bottom
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import get_bct_operations
+from claasp.cipher_modules.models.cp.minizinc_utils.utils import group_strings_by_pattern
+from claasp.cipher_modules.models.cp.mzn_model import MiniZincModelParts
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import (
     MznXorDifferentialModelARXOptimized,
 )
-from claasp.cipher_modules.models.cp.minizinc_utils.utils import group_strings_by_pattern
 
 
 class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
@@ -66,8 +68,8 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
 
     @staticmethod
     def remove_component(new_cipher, component):
-        component_to_remove = new_cipher.get_component_from_id(component.id)
-        round_number = new_cipher.get_round_from_component_id(component.id)
+        component_to_remove = new_cipher.component_from_id(component.id)
+        round_number = new_cipher.round_from_component_id(component.id)
         new_cipher.remove_round_component(round_number, component_to_remove)
 
     @staticmethod
@@ -85,7 +87,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
 
         for middle_id in self.sboxes_ids:
             bottom_cipher._inputs.append(middle_id)
-            bottom_cipher._inputs_bit_size.append(original_cipher.get_component_from_id(middle_id).output_bit_size)
+            bottom_cipher._inputs_bit_size.append(original_cipher.component_from_id(middle_id).output_bit_size)
 
     def update_bottom_cipher_inputs(self, bottom_cipher, original_cipher, initial_nodes, new_input_bit_positions):
         for node_id in initial_nodes:
@@ -97,7 +99,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
                 del self.top_cipher._inputs[index_input_to_delete]
                 del self.top_cipher._inputs_bit_size[index_input_to_delete]
             else:
-                old_component = original_cipher.get_component_from_id(node_id)
+                old_component = original_cipher.component_from_id(node_id)
                 new_input_id_links = self.get_new_input_id_links(old_component, bottom_cipher)
                 bottom_cipher.update_input_id_links_from_component_id(old_component.id, new_input_id_links)
                 new_input_bit_positions[old_component.id] = old_component.input_bit_positions
@@ -171,7 +173,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
         self.differential_model_bottom_cipher.build_xor_differential_trail_model(-1, fixed_variables_for_bottom_cipher)
 
         for sbox_component_id in self.sboxes_ids:
-            sbox_component = self.original_cipher.get_component_from_id(sbox_component_id)
+            sbox_component = self.original_cipher.component_from_id(sbox_component_id)
             bct_mzn_model = sbox_component.create_bct_mzn_constraint_from_component_ids()
             self.differential_model_bottom_cipher.add_constraint_from_str(bct_mzn_model)
 
@@ -192,7 +194,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
         self._model_constraints.extend([get_word_operations()])
         self._model_constraints.extend([get_bct_operations()])
 
-        self._variables_list.extend(
+        self._variables_declarations.extend(
             self.differential_model_top_cipher.get_variables() + self.differential_model_bottom_cipher.get_variables()
         )
         self._model_constraints.extend(
@@ -205,12 +207,11 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
         self.probability_vars = top_cipher_probability_vars + bottom_cipher_probability_vars
 
     def write_minizinc_model_to_file(self, file_path, prefix=""):
-        model_string_top = "\n".join(self.differential_model_top_cipher.mzn_comments) + "\n".join(
-            self.differential_model_top_cipher.mzn_output_directives
-        )
-
-        model_string_bottom = "\n".join(self.differential_model_bottom_cipher.mzn_comments) + "\n".join(
-            self.differential_model_bottom_cipher.mzn_output_directives
+        output_directives = (
+            self.differential_model_top_cipher.mzn_comments
+            + self.differential_model_top_cipher.mzn_output_directives
+            + self.differential_model_bottom_cipher.mzn_comments
+            + self.differential_model_bottom_cipher.mzn_output_directives
         )
         if prefix == "":
             filename = f"{file_path}/{self.original_cipher.id}_mzn_{self.differential_model_top_cipher.sat_or_milp}.mzn"
@@ -220,17 +221,13 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
             filename += f"{self.differential_model_top_cipher.sat_or_milp}.mzn"
             self.filename = filename
 
-        f = open(filename, "w")
-        f.write(
-            model_string_top
-            + "\n"
-            + model_string_bottom
-            + "\n"
-            + "\n".join(self._variables_list)
-            + "\n"
-            + "\n".join(self._model_constraints)
+        parts = MiniZincModelParts(
+            prefix=output_directives,
+            variables=list(self._variables_declarations),
+            constraints=list(self._model_constraints),
         )
-        f.close()
+        with open(filename, "w") as file:
+            file.write(self.assemble_model(parts))
 
     def parse_components_with_solution(self, result, solution):
         dict_of_component_value = {}
@@ -249,7 +246,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
             return hex_values
 
         if result.status not in [Status.UNKNOWN, Status.UNSATISFIABLE, Status.ERROR]:
-            list_of_sublist_of_vars = group_strings_by_pattern(self._variables_list)
+            list_of_sublist_of_vars = group_strings_by_pattern(self._variables_declarations)
             dict_of_component_value = get_hex_from_sublists(list_of_sublist_of_vars, solution.__dict__)
 
         return {"component_values": dict_of_component_value}

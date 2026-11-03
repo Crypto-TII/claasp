@@ -378,7 +378,7 @@ class DESExactKeyLengthBlockCipher(Cipher):
             )
 
             # AddRoundKey to Expanded State
-            keyed_state = self.add_XOR_component(
+            keyed_state = self.add_xor_component(
                 [state.id, round_key.id],
                 [
                     [
@@ -393,7 +393,7 @@ class DESExactKeyLengthBlockCipher(Cipher):
             # Sbox
             sbox_state = []
             for i in range(number_of_sboxes):
-                sbox_output = self.add_SBOX_component(
+                sbox_output = self.add_sbox_component(
                     [keyed_state.id], [list(range(6 * i, 6 * i + 6))], 4, self.sbox[i + 1]
                 )
 
@@ -408,7 +408,7 @@ class DESExactKeyLengthBlockCipher(Cipher):
             )
 
             # XOR with Left Half
-            right_state = self.add_XOR_component(
+            right_state = self.add_xor_component(
                 [state.id, right_state_to_xor.id],
                 [list(range(number_of_sboxes * 4)), list(range(number_of_sboxes * 4))],
                 number_of_sboxes * 4,
@@ -434,7 +434,7 @@ class DESExactKeyLengthBlockCipher(Cipher):
                     list(range(self.cipher_block_size)),
                 )
                 state = output
-                self.add_intermediate_output_component(
-                    [state.id], [list(range(self.cipher_block_size))], self.cipher_block_size, "round_output"
+                self.add_round_output_component(
+                    [state.id], [list(range(self.cipher_block_size))], self.cipher_block_size
                 )
                 self.add_round()

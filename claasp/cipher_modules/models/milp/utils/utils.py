@@ -18,10 +18,9 @@
 import datetime
 import pickle
 import re
-
 from subprocess import run
-from bitstring import BitArray
 
+from bitstring import BitArray
 from sage.numerical.mip import MIPSolverException
 
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_large_sboxes import (
@@ -34,16 +33,16 @@ from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
     MILP_BACKWARD_SUFFIX,
     MILP_BITWISE_DETERMINISTIC_TRUNCATED,
-    MILP_BITWISE_IMPOSSIBLE_AUTO,
     MILP_BITWISE_IMPOSSIBLE,
+    MILP_BITWISE_IMPOSSIBLE_AUTO,
     MILP_TRUNCATED_XOR_DIFFERENTIAL_OBJECTIVE,
     MILP_WORDWISE_DETERMINISTIC_TRUNCATED,
-    MILP_WORDWISE_IMPOSSIBLE_AUTO,
     MILP_WORDWISE_IMPOSSIBLE,
+    MILP_WORDWISE_IMPOSSIBLE_AUTO,
+    MILP_XOR_DIFFERENTIAL_NUMBER_OF_ACTIVE_SBOXES,
     MILP_XOR_DIFFERENTIAL_OBJECTIVE,
 )
 from claasp.name_mappings import SBOX
-
 
 ### -------------------------External solver parsing methods------------------------- ###
 
@@ -65,11 +64,17 @@ def _get_data(data_keywords, lines):
 
 
 def _get_variables_value(internal_variables, read_file):
+    # the variables are integer, hence their values are rounded: solvers may write them with a numerical error and in
+    # scientific notation (e.g. HiGHS writes "1e-13" or "-2e-13" for 0), whose sign and exponent are part of the number
+    number = r"[-+]?(?:[0-9]+[.]?[0-9]*|[.][0-9]+)(?:[eE][-+]?[0-9]+)?"
+    # the solution is read once, keeping the first value written for each index
+    values = {}
+    for index, value in re.findall(r"[xyz]_([0-9]+)[\s]+[\*]?[\s]*(%s)" % number, read_file):
+        values.setdefault(int(index), float(round(float(value))))
     variables_value = {}
     for key in internal_variables.keys():
         index = int(re.search(r"\d+", str(internal_variables[key])).group()) + 1
-        match = re.search(r"[xyz]_%s[\s]+[\*]?[\s]*([0-9]*[.]?[0-9]+)" % index, read_file)
-        variables_value[key] = float(match.group(1)) if match else 0.0
+        variables_value[key] = values.get(index, 0.0)
     return variables_value
 
 
@@ -108,6 +113,11 @@ def _parse_external_solver_output(model, solver_specs, model_type, solution_file
                 i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i
             ][0]
             objective_value = "_".join(inconsistent_component_var.split("_")[:-3])
+        elif model_type == MILP_XOR_DIFFERENTIAL_NUMBER_OF_ACTIVE_SBOXES:
+            # objective is a plain count of active S-boxes, not a weight_precision-scaled probability
+            components_variables = _get_variables_value(model.binary_variable, read_file)
+            objective_variables = _get_variables_value(model.integer_variable, read_file)
+            objective_value = objective_variables[MILP_XOR_DIFFERENTIAL_OBJECTIVE]
         else:
             components_variables = _get_variables_value(model.binary_variable, read_file)
             objective_variables = _get_variables_value(model.integer_variable, read_file)
@@ -162,10 +172,13 @@ def generate_product_of_sum_from_espresso(valid_points):
 
 
 def output_espresso_dictionary(file_path):
-    read_file = open(file_path, "rb")
-    dictio = pickle.load(read_file)
-    read_file.close()
-    return dictio
+    try:
+        read_file = open(file_path, "rb")
+        dictio = pickle.load(read_file)
+        read_file.close()
+        return dictio
+    except OSError:
+        return {}
 
 
 def delete_espresso_dictionary(file_path):
@@ -204,7 +217,7 @@ def milp_less(model, a, b, big_m):
 
     """
     d = model.binary_variable
-    a_less_b = d[str(a) + "_less_" + str(b) + "_dummy"]
+    a_less_b = d[f"{a}_less_{b}_dummy"]
     constraints = [a <= b - 1 + big_m * (1 - a_less_b), a >= b - big_m * a_less_b]
 
     return a_less_b, constraints
@@ -244,7 +257,7 @@ def milp_and(model, a, b):
 
     """
     d = model.binary_variable
-    a_and_b = d[str(a) + "_and_" + str(b) + "_dummy"]
+    a_and_b = d[f"{a}_and_{b}_dummy"]
 
     constraint = [a + b - 1 <= a_and_b, a_and_b <= a, a_and_b <= b]
 
@@ -258,7 +271,7 @@ def milp_or(model, a, b):
 
     """
     d = model.binary_variable
-    a_or_b = d[str(a) + "_or_" + str(b) + "_dummy"]
+    a_or_b = d[f"{a}_or_{b}_dummy"]
 
     constraint = [a + b >= a_or_b, a_or_b >= a, a_or_b >= b]
 
@@ -576,21 +589,21 @@ def milp_xor_truncated(model, input_1, input_2, output):
     in the deterministic truncated XOR differential model.
 
     This method uses a binary encoding (where each variable v is seen as a binary tuple (v0, v1), where v0 is the MSB) to
-    model the result c of the truncated XOR between inputs a and b.
+    model the result c of the truncated XOR between inputs a and b::
 
-    _______________
-     a  |  b  |  c
-    _______________
-     0  |  0  |  0
-     0  |  1  |  1
-     0  |  2  |  2
-     1  |  0  |  1
-     1  |  1  |  0
-     1  |  2  |  2
-     2  |  0  |  2
-     2  |  1  |  2
-     2  |  2  |  2
-    _______________
+        _______________
+         a  |  b  |  c
+        _______________
+         0  |  0  |  0
+         0  |  1  |  1
+         0  |  2  |  2
+         1  |  0  |  1
+         1  |  1  |  0
+         1  |  2  |  2
+         2  |  0  |  2
+         2  |  1  |  2
+         2  |  2  |  2
+        _______________
 
     The table can be obtained with the following lines:
 
@@ -631,29 +644,29 @@ def milp_xor_truncated_wordwise(model, input_1, input_2, output):
     in deterministic truncated XOR differential model.
 
     This method uses a binary encoding (where each variable v is seen as a binary tuple (v0, v1), where v0 is the MSB) to
-    model the result c of the truncated XOR between inputs a and b.
+    model the result c of the truncated XOR between inputs a and b::
 
-    _______________
-     a  |  b  |  c
-    _______________
-     0  |  0  |  0
-     0  |  1  |  1
-     0  |  2  |  2
-     0  |  3  |  3
-     1  |  0  |  1
-     1  |  1  |  0
-     1  |  1  |  1
-     1  |  2  |  3
-     1  |  3  |  3
-     2  |  0  |  2
-     2  |  1  |  3
-     2  |  2  |  3
-     2  |  3  |  3
-     3  |  0  |  3
-     3  |  1  |  3
-     3  |  2  |  3
-     3  |  3  |  3
-    _______________
+        _______________
+         a  |  b  |  c
+        _______________
+         0  |  0  |  0
+         0  |  1  |  1
+         0  |  2  |  2
+         0  |  3  |  3
+         1  |  0  |  1
+         1  |  1  |  0
+         1  |  1  |  1
+         1  |  2  |  3
+         1  |  3  |  3
+         2  |  0  |  2
+         2  |  1  |  3
+         2  |  2  |  3
+         2  |  3  |  3
+         3  |  0  |  3
+         3  |  1  |  3
+         3  |  2  |  3
+         3  |  3  |  3
+        _______________
 
 
     Espresso was used to reduce the number of constraints to 91 inequalities.
@@ -767,23 +780,21 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
             i for i in objective_variables.keys() if objective_variables[i] > 0 and "inconsistent" in i
         ][0]
         inconsistent_component_id = "_".join(inconsistent_component_var.split("_")[:-3])
-        full_cipher_components = model._cipher.get_all_components_ids()
-        backward_components = model._backward_cipher.get_all_components_ids() + model._backward_cipher.inputs
+        full_cipher_components = model._cipher.all_components_ids()
+        backward_components = model._backward_cipher.all_components_ids() + model._backward_cipher.inputs
         index = full_cipher_components.index(inconsistent_component_id)
         updated_cipher_components = full_cipher_components[: index + 1] + [
             c + MILP_BACKWARD_SUFFIX if c + MILP_BACKWARD_SUFFIX in backward_components else c
             for c in full_cipher_components[index:]
         ]
         list_component_ids = model._forward_cipher.inputs + updated_cipher_components
-    elif model._incompatible_components != None:
-        full_cipher_components = model._cipher.get_all_components_ids()
-        backward_components = model._backward_cipher.get_all_components_ids() + model._backward_cipher.inputs
+    elif model._incompatible_components is not None:
+        full_cipher_components = model._cipher.all_components_ids()
+        backward_components = model._backward_cipher.all_components_ids() + model._backward_cipher.inputs
 
         indices = []
         for id in model._incompatible_components:
-            backward_incompatible_component = model._backward_cipher.get_component_from_id(
-                id + f"{MILP_BACKWARD_SUFFIX}"
-            )
+            backward_incompatible_component = model._backward_cipher.component_from_id(f"{id}{MILP_BACKWARD_SUFFIX}")
             input_ids, _ = backward_incompatible_component._get_input_output_variables()
             renamed_input_ids = {
                 "_".join(id.split("_")[:-2]) if MILP_BACKWARD_SUFFIX in id else "_".join(id.split("_")[:-1])
@@ -797,8 +808,8 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
         ]
         list_component_ids = model._forward_cipher.inputs + updated_cipher_components
     else:
-        full_cipher_components = model._cipher.get_all_components_ids()
-        backward_components = model._backward_cipher.get_all_components_ids()
+        full_cipher_components = model._cipher.all_components_ids()
+        backward_components = model._backward_cipher.all_components_ids()
         incompatible_value = backward_components[-1]
 
         incompatible_component_id = "_".join(incompatible_value.split("_")[:-1])
@@ -814,8 +825,8 @@ def _get_component_values_for_impossible_models(model, objective_variables, comp
 def _get_variables_values_as_string(component_id, components_variables, suffix, suffix_length):
     diff_str = ""
     for i in range(suffix_length):
-        if component_id + "_" + str(i) + suffix in components_variables:
-            bit = components_variables[component_id + "_" + str(i) + suffix]
+        if f"{component_id}_{i}{suffix}" in components_variables:
+            bit = components_variables[f"{component_id}_{i}{suffix}"]
             diff_str += f"{bit}".split(".")[0]
         else:
             diff_str += "*"
@@ -849,7 +860,7 @@ def _set_weight_precision(model, analysis_type):
     if any(SBOX in item for item in model.non_linear_component_id):
         dict_product_of_sum = get_dictionary_that_contains_inequalities_for_large_sboxes(analysis=analysis_type)
         for id in model.non_linear_component_id:
-            sb = tuple(model._cipher.get_component_from_id(id).description)
+            sb = tuple(model._cipher.component_from_id(id).description)
             for proba in dict_product_of_sum[str(sb)].keys():
                 if (proba & (proba - 1)) != 0:  # proba not power of two
                     model._has_non_integer_weight = True

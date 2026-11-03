@@ -14,12 +14,12 @@
 # [X.Y.Z]: github.com/owner/repository/compare/vX.Y.Z..vX.Y.Z <- Changelog Footer
 # [X.Y.Q]: github.com/owner/repository/compare/vX.Y.Z..vX.Y.Q
 
-import re
-import datetime
 import argparse
 import copy
-from typing import Tuple, List, Dict
+import datetime
+import re
 from enum import Enum
+from typing import Dict, List, Tuple
 
 
 class ChangeTypes(Enum):

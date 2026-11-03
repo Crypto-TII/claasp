@@ -16,13 +16,11 @@
 # ****************************************************************************
 
 
-from os.path import dirname
-from os.path import exists
-from os.path import realpath
+from os.path import dirname, exists, realpath
 
 from claasp.cipher import Cipher
 from claasp.ciphers.block_ciphers import lowmc_generate_matrices
-from claasp.name_mappings import BLOCK_CIPHER, INPUT_PLAINTEXT, INPUT_KEY
+from claasp.name_mappings import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
 PARAMETERS_CONFIGURATION_LIST = [
     # See https://tches.iacr.org/index.php/TCHES/article/view/8680/8239 Table 6
@@ -277,12 +275,12 @@ class LowMCBlockCipher(Cipher):
     def add_round_constant(self, plaintext_id, round_number):
         constant_id = self.add_constant_component(self.block_bit_size, self.round_constants[round_number]).id
 
-        return self.add_XOR_component(
+        return self.add_xor_component(
             [plaintext_id, constant_id], [list(range(self.block_bit_size))] * 2, self.block_bit_size
         ).id
 
     def add_round_key(self, plaintext_id, rk_id):
-        return self.add_XOR_component(
+        return self.add_xor_component(
             [plaintext_id, rk_id], [list(range(self.block_bit_size))] * 2, self.block_bit_size
         ).id
 
@@ -323,10 +321,11 @@ class LowMCBlockCipher(Cipher):
 
         return number_of_sboxes
 
-    def linear_layer(self, plaintext_id, round_number):
+    def linear_layer(self, input_state, round_number):
+        input_id_links, input_bit_positions = input_state
         return self.add_linear_layer_component(
-            [plaintext_id],
-            [list(range(self.block_bit_size))],
+            input_id_links,
+            input_bit_positions,
             self.block_bit_size,
             self.matrices_for_linear_layer[round_number],
         ).id
@@ -418,13 +417,12 @@ class LowMCBlockCipher(Cipher):
         # m computations of 3 - bit sbox
         # remaining n - 3m bits remain the same
         for i in range(self.n_sbox):
-            sbox_output[i] = self.add_SBOX_component([plaintext_id], [list(range(3 * i, 3 * (i + 1)))], 3, self.sbox).id
+            sbox_output[i] = self.add_sbox_component([plaintext_id], [list(range(3 * i, 3 * (i + 1)))], 3, self.sbox).id
 
-        return self.add_concatenate_component(
+        return (
             sbox_output + [plaintext_id],
             [list(range(3))] * self.n_sbox + [list(range(3 * self.n_sbox, self.block_bit_size))],
-            self.block_bit_size,
-        ).id
+        )
 
     def update_key_register(self, key_id, round_number):
         rk_id = self.add_linear_layer_component(

@@ -36,19 +36,19 @@ class Round:
     def component_from(self, index):
         return self._components[index]
 
-    def get_component_from_id(self, component_id):
+    def component_from_id(self, component_id):
         for component in self._components:
             if component.is_id_equal_to(component_id):
                 return component
 
-    def get_components_ids(self):
+    def components_ids(self):
         return [component.id for component in self._components]
 
     def get_number_of_components(self):
         # List goes from position 0 to len() - 1
         return self.number_of_components - 1
 
-    def get_round_from_component_id(self, component_id):
+    def round_from_component_id(self, component_id):
         for component in self._components:
             if component.is_id_equal_to(component_id):
                 return self._id
@@ -77,7 +77,8 @@ class Round:
             print("  {")
             print(f"    # round = {self._id} - round component = {component_number}")
             requested_component = self.component_from(component_number)
-            requested_component.print_as_python_dictionary()
+            for key, value in requested_component.as_python_dictionary().items():
+                print(f"    '{key}': {repr(value)},")
             print("  },")
         print("  ],")
 
@@ -85,7 +86,7 @@ class Round:
         self._components.remove(component)
 
     def remove_component_from_id(self, component_id):
-        self._components.remove(self.get_component_from_id(component_id))
+        self._components.remove(self.component_from_id(component_id))
 
     def round_as_python_dictionary(self):
         round_dictionary = []
@@ -118,4 +119,4 @@ class Round:
             if component.id == component_id:
                 break
             i += 1
-        self._components[i].set_input_id_links(new_input_id_links)
+        self._components[i].input_id_links = new_input_id_links

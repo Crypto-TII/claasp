@@ -1,5 +1,6 @@
 from claasp.ciphers.permutations.gaston_sbox_theta_permutation import GastonSboxThetaPermutation
 
+
 def test_gaston_sbox_theta_permutation():
     gaston = GastonSboxThetaPermutation(number_of_rounds=12)
     assert gaston.number_of_rounds == 12

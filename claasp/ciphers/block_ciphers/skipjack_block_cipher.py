@@ -17,14 +17,16 @@
 
 
 """
-SKIPJACK block cipher [NIST1998]
+SKIPJACK block cipher [NIST1998]_
 https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
 
 Cipher Specifications:
+
 - Block size: 64 bits (4 words of 16 bits each)
 - Key size: 80 bits (10 bytes)
 - Rounds: 32 (alternating Rule A and Rule B)
 - Structure:
+
   * Rounds 1-8: Rule A
   * Rounds 9-16: Rule B
   * Rounds 17-24: Rule A
@@ -33,8 +35,7 @@ Cipher Specifications:
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY
-
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
 
 # SKIPJACK F-Table (S-box 8x8 bits)
 SKIPJACK_FTABLE = [
@@ -59,16 +60,29 @@ SKIPJACK_FTABLE = [
 
 class SkipjackBlockCipher(Cipher):
     """
-    SKIPJACK NSA - 64-bit block, 80-bit key, 32 rounds
-    
-    Based on official CLAASP documentation:
-    - add_SBOX_component(input_id_links, input_bit_positions, output_bit_size, description)
-    - add_XOR_component(input_id_links, input_bit_positions, output_bit_size)
-    - add_concatenate_component(input_id_links, input_bit_positions, output_bit_size)
-    
-    Where:
-    - input_id_links: list of strings ['comp1', 'comp2']
-    - input_bit_positions: list of lists [[bits1], [bits2]]
+        SKIPJACK block cipher.
+
+        This implementation follows the NIST specification with an 80-bit key,
+        64-bit block and 32 rounds (Rule A / Rule B schedule).
+
+        Test vectors reference:
+
+        - [NIST1998]_ SKIPJACK and KEA Algorithm Specifications, Annex III
+          https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
+
+        EXAMPLES::
+
+                sage: from claasp.ciphers.block_ciphers.skipjack_block_cipher import SkipjackBlockCipher
+                sage: cipher = SkipjackBlockCipher()
+                sage: cipher.id
+                'skipjack_p64_k80_o64_r32'
+                sage: cipher.number_of_rounds
+                32
+
+                sage: key = 0x00998877665544332211
+                sage: plaintext = 0x33221100ddccbbaa
+                sage: hex(SkipjackBlockCipher().evaluate([plaintext, key]))
+                '0x2587cae27a12d300'
     """
 
     def __init__(self, number_of_rounds=32):
@@ -133,9 +147,16 @@ class SkipjackBlockCipher(Cipher):
         - bits [0:7] = high byte = g[0]
         - bits [8:15] = low byte = g[1]
         """
-        # Extract g[0] (high byte, bits 0-7) and g[1] (low byte, bits 8-15)
-        g0 = ComponentState(word.id, [word.input_bit_positions[0][0:8]])
-        g1 = ComponentState(word.id, [word.input_bit_positions[0][8:16]])
+        # Extract g[0] (high byte) and g[1] (low byte)
+        # Handle both layouts:
+        # 1) Single-ID 16-bit word: id=[x], positions=[[0..15]]
+        # 2) Multi-ID 2x8-bit word: id=[x_hi, x_lo], positions=[[0..7], [0..7]]
+        if len(word.id) == 1:
+            g0 = ComponentState(word.id, [word.input_bit_positions[0][0:8]])
+            g1 = ComponentState(word.id, [word.input_bit_positions[0][8:16]])
+        else:
+            g0 = ComponentState([word.id[0]], [word.input_bit_positions[0]])
+            g1 = ComponentState([word.id[1]], [word.input_bit_positions[1]])
 
         g_prev = g0  # g[0]
         g_out = g1   # g[1]
@@ -151,7 +172,7 @@ class SkipjackBlockCipher(Cipher):
             key_byte = ComponentState([INPUT_KEY], [list(range(bit_start, bit_end))])
 
             # XOR: g_out XOR key_byte
-            self.add_XOR_component(
+            self.add_xor_component(
                 [g_out.id[0], key_byte.id[0]],
                 [g_out.input_bit_positions[0], key_byte.input_bit_positions[0]],
                 8
@@ -159,7 +180,7 @@ class SkipjackBlockCipher(Cipher):
             xor_result = ComponentState([self.get_current_component_id()], [list(range(8))])
 
             # SBOX: F[xor_result]
-            self.add_SBOX_component(
+            self.add_sbox_component(
                 [xor_result.id[0]],
                 [xor_result.input_bit_positions[0]],
                 8,
@@ -168,7 +189,7 @@ class SkipjackBlockCipher(Cipher):
             sbox_result = ComponentState([self.get_current_component_id()], [list(range(8))])
 
             # XOR: sbox_result XOR g_prev
-            self.add_XOR_component(
+            self.add_xor_component(
                 [sbox_result.id[0], g_prev.id[0]],
                 [sbox_result.input_bit_positions[0], g_prev.input_bit_positions[0]],
                 8
@@ -179,16 +200,8 @@ class SkipjackBlockCipher(Cipher):
             g_prev = g_out
             g_out = g_new
 
-        # At the end: g_prev = g[4], g_out = g[5]
-        # Result: (g[4] << 8) | g[5]
-        # In CLAASP concatenate: first input goes to MSB (high byte position)
-        # So we need: [g[4], g[5]] where g[4] is high byte
-        self.add_concatenate_component(
-            [g_prev.id[0], g_out.id[0]],
-            [g_prev.input_bit_positions[0], g_out.input_bit_positions[0]],
-            16
-        )
-        return ComponentState([self.get_current_component_id()], [list(range(16))])
+        return ComponentState([g_prev.id[0], g_out.id[0]],
+                              [g_prev.input_bit_positions[0], g_out.input_bit_positions[0]])
 
     def _rule_a(self, w1, w2, w3, w4, counter, round_number):
         """Rule A: w1' = G(w1) XOR w4 XOR counter, w2' = G(w1), w3' = w2, w4' = w3"""
@@ -198,17 +211,10 @@ class SkipjackBlockCipher(Cipher):
         self.add_constant_component(16, counter)
         counter_comp = ComponentState([self.get_current_component_id()], [list(range(16))])
 
-        # w1' = G(w1) XOR w4 XOR counter
-        self.add_XOR_component(
-            [g_output.id[0], w4.id[0]],
-            [g_output.input_bit_positions[0], w4.input_bit_positions[0]],
-            16
-        )
-        temp = ComponentState([self.get_current_component_id()], [list(range(16))])
-
-        self.add_XOR_component(
-            [temp.id[0], counter_comp.id[0]],
-            [temp.input_bit_positions[0], counter_comp.input_bit_positions[0]],
+        # Both g_output and w4 can be multi-ID (2x8-bit), so flatten both.
+        self.add_xor_component(
+            g_output.id + w4.id + [counter_comp.id[0]],
+            g_output.input_bit_positions + w4.input_bit_positions + [counter_comp.input_bit_positions[0]],
             16
         )
         w1_new = ComponentState([self.get_current_component_id()], [list(range(16))])
@@ -223,15 +229,15 @@ class SkipjackBlockCipher(Cipher):
         self.add_constant_component(16, counter)
         counter_comp = ComponentState([self.get_current_component_id()], [list(range(16))])
 
-        # w3' = w1 XOR w2 XOR counter
-        self.add_XOR_component(
-            [w1.id[0], w2.id[0]],
-            [w1.input_bit_positions[0], w2.input_bit_positions[0]],
+        # w1 and w2 can be multi-ID, so flatten both for a full 16-bit XOR each.
+        self.add_xor_component(
+            w1.id + w2.id,
+            w1.input_bit_positions + w2.input_bit_positions,
             16
         )
         temp = ComponentState([self.get_current_component_id()], [list(range(16))])
 
-        self.add_XOR_component(
+        self.add_xor_component(
             [temp.id[0], counter_comp.id[0]],
             [temp.input_bit_positions[0], counter_comp.input_bit_positions[0]],
             16
@@ -241,25 +247,22 @@ class SkipjackBlockCipher(Cipher):
         return w4, g_output, w3_new, w3
 
     def _add_round_output(self, w1, w2, w3, w4, round_number, total_rounds):
-        """Add round output: concatenate w1||w2||w3||w4"""
-        self.add_concatenate_component(
-            [w1.id[0], w2.id[0], w3.id[0], w4.id[0]],
-            [w1.input_bit_positions[0], w2.input_bit_positions[0], w3.input_bit_positions[0], w4.input_bit_positions[0]],
-            64
-        )
-        
+        """Add round output: wire w1||w2||w3||w4 directly, flattening multi-ID states."""
+        input_links = []
+        input_positions = []
+        for w in [w1, w2, w3, w4]:
+            input_links.extend(w.id)
+            input_positions.extend(w.input_bit_positions)
+
         if round_number == total_rounds - 1:
-            # Final cipher output
             self.add_cipher_output_component(
-                [self.get_current_component_id()],
-                [list(range(64))],
+                input_links,
+                input_positions,
                 64
             )
         else:
-            # Intermediate output
             self.add_round_output_component(
-                [self.get_current_component_id()],
-                [list(range(64))],
+                input_links,
+                input_positions,
                 64
             )
-            

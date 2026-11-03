@@ -22,14 +22,14 @@ from sage.rings.finite_rings.finite_field_constructor import GF
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.DTOs.component_state import ComponentState
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.utils.utils import (
-    simplify_inputs,
-    get_ci,
     calculate_inputs,
     create_new_state_for_calculation,
+    get_ci,
     layer_and_lane_initialization,
+    simplify_inputs,
 )
 
 LANE_NUM = 4
@@ -68,6 +68,7 @@ class XoodooInvertiblePermutation(Cipher):
     Construct an instance of the XoodooInvertiblePermutation class.
 
     This class is used to store compact representations of a cipher.
+    It is equivalent to the Xoodoo permutation implemented by the designers' XKCP reference package [XKCPREF]_.
 
     INPUT:
 
@@ -125,7 +126,7 @@ class XoodooInvertiblePermutation(Cipher):
                 for i in range(PLANE_NUM):
                     inputs_id += [planes[i].id[j]]
                     inputs_pos += [[planes[i].input_bit_positions[j][k]]]
-                self.add_SBOX_component(inputs_id, inputs_pos, SBOX_SIZE, SBOX)
+                self.add_sbox_component(inputs_id, inputs_pos, SBOX_SIZE, SBOX)
                 for i in range(PLANE_NUM):
                     planes_new[i].id[j] += [self.get_current_component_id()]
                     planes_new[i].input_bit_positions[j] += [[i]]
@@ -146,7 +147,7 @@ class XoodooInvertiblePermutation(Cipher):
         # A0,0 = A0,0 + Ci
         inputs_id = c.id + [planes[0].id[0]]
         inputs_pos = c.input_bit_positions + [planes[0].input_bit_positions[0]]
-        self.add_XOR_component(inputs_id, inputs_pos, LANE_SIZE)
+        self.add_xor_component(inputs_id, inputs_pos, LANE_SIZE)
         planes[0].id[0] = self.get_current_component_id()
         planes[0].input_bit_positions[0] = list(range(LANE_SIZE))
 
@@ -176,7 +177,7 @@ class XoodooInvertiblePermutation(Cipher):
                     lanej = ComponentState(new_plane.id[j], new_plane.input_bit_positions[j])
                 else:
                     lanej = ComponentState([new_plane.id[j]], [new_plane.input_bit_positions[j]])
-                self.add_rotate_component(lanej.id, lanej.input_bit_positions, LANE_SIZE, rotz)
+                self.add_rotate_component(lanej.id, lanej.input_bit_positions, LANE_SIZE, -rotz)
                 new_plane.id[j] = self.get_current_component_id()
                 new_plane.input_bit_positions[j] = list(range(LANE_SIZE))
 

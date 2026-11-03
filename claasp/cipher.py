@@ -19,18 +19,24 @@ import importlib
 import inspect
 import os
 import sys
+from copy import deepcopy
 
 import claasp
 from claasp import editor
-from claasp.cipher_modules import code_generator
-from claasp.cipher_modules import tester, evaluator
+from claasp.cipher_modules import code_generator, evaluator, tester
 from claasp.cipher_modules.inverse_cipher import *
+from claasp.cipher_modules.inverse_cipher import (
+    _apply_inversion_step,
+    _AvailableBits,
+    _cipher_view_components_with_inputs,
+    _get_all_equivalent_bits,
+    _inversion_stall_message,
+)
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.components.cipher_output_component import CipherOutput
 from claasp.compound_xor_differential_cipher import convert_to_compound_xor_cipher
-from claasp.rounds import Rounds
 from claasp.name_mappings import CIPHER_INVERSE_SUFFIX
-
+from claasp.rounds import Rounds
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)
@@ -68,12 +74,12 @@ class Cipher:
         sage: from claasp.name_mappings import PERMUTATION
         sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [6], 6)
         sage: cipher.add_round()
-        sage: sbox_0_0 = cipher.add_SBOX_component(["input"], [[0,1,2]], 4, [6,7,0,1,2,3,4,5])
-        sage: sbox_0_1 = cipher.add_SBOX_component(["input"], [[3,4,5]], 4, [7,0,1,2,3,4,5,6])
+        sage: sbox_0_0 = cipher.add_sbox_component(["input"], [[0,1,2]], 4, [6,7,0,1,2,3,4,5])
+        sage: sbox_0_1 = cipher.add_sbox_component(["input"], [[3,4,5]], 4, [7,0,1,2,3,4,5,6])
         sage: rotate_0_2 = cipher.add_rotate_component([sbox_0_0.id, sbox_0_1.id], [[0,1,2],[3,4,5]], 6, 3)
         sage: cipher.add_round()
-        sage: sbox_1_0 = cipher.add_SBOX_component([rotate_0_2.id], [[0,1,2]], 4, [6,7,0,1,2,3,4,5])
-        sage: sbox_1_1 = cipher.add_SBOX_component([rotate_0_2.id], [[3,4,5]], 4, [7,0,1,2,3,4,5,6])
+        sage: sbox_1_0 = cipher.add_sbox_component([rotate_0_2.id], [[0,1,2]], 4, [6,7,0,1,2,3,4,5])
+        sage: sbox_1_1 = cipher.add_sbox_component([rotate_0_2.id], [[3,4,5]], 4, [7,0,1,2,3,4,5,6])
         sage: rotate_1_2 = cipher.add_rotate_component([sbox_1_0.id, sbox_1_1.id], [[0,1,2],[3,4,5]], 6, 3)
         sage: cipher.id == "cipher_name_i6_o6_r2"
         True
@@ -158,20 +164,17 @@ class Cipher:
     def _are_there_not_forbidden_components(self, forbidden_types, forbidden_descriptions):
         return self._rounds.are_there_not_forbidden_components(forbidden_types, forbidden_descriptions)
 
-    def add_AND_component(self, input_id_links, input_bit_positions, output_bit_size):
-        return editor.add_AND_component(self, input_id_links, input_bit_positions, output_bit_size)
+    def add_and_component(self, input_id_links, input_bit_positions, output_bit_size):
+        return editor.add_and_component(self, input_id_links, input_bit_positions, output_bit_size)
 
     def add_cipher_output_component(self, input_id_links, input_bit_positions, output_bit_size):
         return editor.add_cipher_output_component(self, input_id_links, input_bit_positions, output_bit_size)
 
-    def add_concatenate_component(self, input_id_links, input_bit_positions, output_bit_size):
-        return editor.add_concatenate_component(self, input_id_links, input_bit_positions, output_bit_size)
-
     def add_constant_component(self, output_bit_size, value):
         return editor.add_constant_component(self, output_bit_size, value)
 
-    def add_FSR_component(self, input_id_links, input_bit_positions, output_bit_size, description):
-        return editor.add_FSR_component(self, input_id_links, input_bit_positions, output_bit_size, description)
+    def add_fsr_component(self, input_id_links, input_bit_positions, output_bit_size, description):
+        return editor.add_fsr_component(self, input_id_links, input_bit_positions, output_bit_size, description)
 
     def add_intermediate_output_component(self, input_id_links, input_bit_positions, output_bit_size, output_tag):
         return editor.add_intermediate_output_component(
@@ -198,21 +201,24 @@ class Cipher:
             mix_column_description,
         )
 
-    def add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
-        return editor.add_MODADD_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
+    def add_modadd_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
+        return editor.add_modadd_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
-    def add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
-        return editor.add_MODSUB_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
+    def add_modmul_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
+        return editor.add_modmul_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
+
+    def add_modsub_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
+        return editor.add_modsub_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
     def add_idea_modmul_component(self, input_id_links, input_bit_positions, output_bit_size, modulus=None):
         return editor.add_idea_modmul_component(self, input_id_links, input_bit_positions, output_bit_size, modulus)
 
-    def add_NOT_component(self, input_id_links, input_bit_positions, output_bit_size):
+    def add_not_component(self, input_id_links, input_bit_positions, output_bit_size):
 
-        return editor.add_NOT_component(self, input_id_links, input_bit_positions, output_bit_size)
+        return editor.add_not_component(self, input_id_links, input_bit_positions, output_bit_size)
 
-    def add_OR_component(self, input_id_links, input_bit_positions, output_bit_size):
-        return editor.add_OR_component(self, input_id_links, input_bit_positions, output_bit_size)
+    def add_or_component(self, input_id_links, input_bit_positions, output_bit_size):
+        return editor.add_or_component(self, input_id_links, input_bit_positions, output_bit_size)
 
     def add_permutation_component(
         self,
@@ -220,6 +226,7 @@ class Cipher:
         input_bit_positions,
         output_bit_size,
         permutation_description,
+        word_size=1,
     ):
         return editor.add_permutation_component(
             self,
@@ -227,6 +234,7 @@ class Cipher:
             input_bit_positions,
             output_bit_size,
             permutation_description,
+            word_size,
         )
 
     def add_reverse_component(self, input_id_links, input_bit_positions, output_bit_size):
@@ -244,14 +252,22 @@ class Cipher:
     def add_round_output_component(self, input_id_links, input_bit_positions, output_bit_size):
         return editor.add_round_output_component(self, input_id_links, input_bit_positions, output_bit_size)
 
-    def add_SBOX_component(self, input_id_links, input_bit_positions, output_bit_size, description):
-        return editor.add_SBOX_component(self, input_id_links, input_bit_positions, output_bit_size, description)
+    def add_sbox_component(self, input_id_links, input_bit_positions, output_bit_size, description):
+        return editor.add_sbox_component(self, input_id_links, input_bit_positions, output_bit_size, description)
 
-    def add_SHIFT_component(self, input_id_links, input_bit_positions, output_bit_size, parameter):
-        return editor.add_SHIFT_component(self, input_id_links, input_bit_positions, output_bit_size, parameter)
+    def add_shift_component(self, input_id_links, input_bit_positions, output_bit_size, parameter):
+        return editor.add_shift_component(self, input_id_links, input_bit_positions, output_bit_size, parameter)
 
-    def add_shift_rows_component(self, input_id_links, input_bit_positions, output_bit_size, parameter):
-        return editor.add_shift_rows_component(self, input_id_links, input_bit_positions, output_bit_size, parameter)
+    def add_shift_rows_component(self, input_id_links, input_bit_positions, rotation_amount=1, word_bit_size=8,
+                                 number_of_words=4):
+        return editor.add_shift_rows_component(
+            self,
+            input_id_links,
+            input_bit_positions,
+            rotation_amount,
+            word_bit_size,
+            number_of_words,
+        )
 
     def add_sigma_component(
         self,
@@ -316,8 +332,8 @@ class Cipher:
             word_size,
         )
 
-    def add_XOR_component(self, input_id_links, input_bit_positions, output_bit_size):
-        return editor.add_XOR_component(self, input_id_links, input_bit_positions, output_bit_size)
+    def add_xor_component(self, input_id_links, input_bit_positions, output_bit_size):
+        return editor.add_xor_component(self, input_id_links, input_bit_positions, output_bit_size)
 
     def as_python_dictionary(self):
         return {
@@ -363,8 +379,8 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher as identity
-            sage: identity().evaluate([0x01234567,0x89ABCDEF])
+            sage: from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher as identity
+            sage: identity().evaluate([0x01234567])
             19088743
         """
         return evaluator.evaluate(self, cipher_input, intermediate_output, verbosity)
@@ -408,194 +424,12 @@ class Cipher:
 
         TEST::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: key = 0x2b7e151628aed2a6abf7158809cf4f3c
-            sage: plaintext = 0x6bc1bee22e409f96e93d7e117393172a
-            sage: cipher = AESBlockCipher(number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([key, plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
-
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: key = 0x0e2ddd5c5b4ca9d4
-            sage: plaintext = 0xb779ee0a
-            sage: cipher = TeaBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext, key])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
-
-            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
-            sage: key = 0x98edeafc899338c45fad
-            sage: plaintext = 0x42c20fd3b586879e
-            sage: cipher = PresentBlockCipher(number_of_rounds=1)
-            sage: ciphertext = cipher.evaluate([plaintext, key])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
-
             sage: from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
             sage: plaintext = 0
             sage: cipher = AsconSboxSigmaPermutation(number_of_rounds=1)
             sage: ciphertext = cipher.evaluate([plaintext])
             sage: cipher_inv = cipher.cipher_inverse()
             sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            True
-
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: key = 0x1211100a09080201
-            sage: plaintext = 0x6120676e
-            sage: cipher = SimonBlockCipher(number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext, key])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
-
-            sage: from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-            sage: key = 0x687ded3b3c85b3f35b1009863e2a8cbf
-            sage: plaintext = 0x42c20fd3b586879e
-            sage: cipher = MidoriBlockCipher(number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext, key])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
-
-            sage: from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
-            sage: key = 0xffffeeee
-            sage: plaintext = 0x5778
-            sage: cipher = SkinnyBlockCipher(number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext, key])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
-
-            sage: from claasp.ciphers.permutations.spongent_pi_permutation import SpongentPiPermutation
-            sage: plaintext = 0x1234
-            sage: cipher = SpongentPiPermutation(number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            True
-
-            sage: from claasp.ciphers.block_ciphers.xtea_block_cipher import XTeaBlockCipher
-            sage: key = 0x1de1c3c2c65880074c32dce537b22ab3
-            sage: plaintext = 0xbd7d764dff0ada1e
-            sage: cipher = XTeaBlockCipher(number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext, key])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
-
-            sage: from claasp.ciphers.permutations.photon_permutation import PhotonPermutation
-            sage: plaintext = 0x1234
-            sage: cipher = PhotonPermutation(number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            True
-
-            sage: from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
-            sage: key = 0x0f1e2d3c4b5a69788796a5b4c3d2e1f0
-            sage: plaintext = 0x101112131415161718191a1b1c1d1e1f
-            sage: cipher = LeaBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext, key])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
-
-            sage: from claasp.ciphers.permutations.sparkle_permutation import SparklePermutation
-            sage: plaintext = 0x1234
-            sage: cipher = SparklePermutation(number_of_steps=1)
-            sage: ciphertext = cipher.evaluate([plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            True
-
-            sage: from claasp.ciphers.permutations.xoodoo_invertible_permutation import XoodooInvertiblePermutation
-            sage: plaintext = 0x1234
-            sage: cipher = XoodooInvertiblePermutation(number_of_rounds=1)
-            sage: ciphertext = cipher.evaluate([plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            True
-
-            sage: from claasp.ciphers.permutations.gift_sbox_permutation import GiftSboxPermutation
-            sage: key = 0x000102030405060708090A0B0C0D0E0F
-            sage: plaintext = 0x000102030405060708090A0B0C0D0E0F
-            sage: cipher = GiftSboxPermutation(number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext, key])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
-
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: key = 0x1de1c3c2c65880074c32dce537b22ab3
-            sage: plaintext = 0xbd7d764dff0ada1e
-            sage: cipher = RaidenBlockCipher(number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext, key])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
-
-            sage: from claasp.ciphers.block_ciphers.hight_block_cipher import HightBlockCipher
-            sage: key = 0x000000066770000000a0000000000001
-            sage: plaintext = 0x0011223344556677
-            sage: cipher = HightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=2)
-            sage: ciphertext = cipher.evaluate([plaintext, key])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
-
-            sage: from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
-            sage: cipher = DESBlockCipher(number_of_rounds=4)
-            sage: key = 0x133457799BBCDFF1
-            sage: plaintext = 0x0123456789ABCDEF
-            sage: ciphertext = cipher.evaluate([key, plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
-
-            sage: from claasp.ciphers.permutations.salsa_permutation import SalsaPermutation
-            sage: cipher = SalsaPermutation(number_of_rounds=2)
-            sage: plaintext = 0xffff
-            sage: ciphertext = cipher.evaluate([plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            True
-
-            sage: from claasp.ciphers.block_ciphers.bea1_block_cipher import BEA1BlockCipher
-            sage: cipher = BEA1BlockCipher(number_of_rounds=1)
-            sage: key = 0x8cdd0f3459fb721e798655298d5c1
-            sage: plaintext = 0x47a57eff5d6475a68916
-            sage: ciphertext = cipher.evaluate([key, plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
-            True
-
-            sage: from claasp.ciphers.permutations.keccak_invertible_permutation import KeccakInvertiblePermutation
-            sage: plaintext = 0x1234
-            sage: cipher = KeccakInvertiblePermutation(number_of_rounds=2, word_size=8)
-            sage: ciphertext = cipher.evaluate([plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            True
-
-            sage: from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
-            sage: cipher = ChachaPermutation(number_of_rounds=2)
-            sage: plaintext = 0xffff
-            sage: ciphertext = cipher.evaluate([plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext]) == plaintext
-            True
-
-            sage: from claasp.ciphers.block_ciphers.twofish_block_cipher import TwofishBlockCipher
-            sage: cipher = TwofishBlockCipher(key_length=256, number_of_rounds=2)
-            sage: key = 0xD43BB7556EA32E46F2A282B7D45B4E0D57FF739D4DC92C1BD7FC01700CC8216F
-            sage: plaintext = 0x90AFE91BB288544F2C32DC239B2635E6
-            sage: ciphertext = cipher.evaluate([key, plaintext])
-            sage: cipher_inv = cipher.cipher_inverse()
-            sage: cipher_inv.evaluate([ciphertext, key]) == plaintext
             True
         """
         inverted_cipher = Cipher(
@@ -607,59 +441,29 @@ class Cipher:
         )
 
         inverted_cipher_components = []
-        cipher_components_tmp = get_cipher_components(self)
-        available_bits = []
+        cipher_components_tmp = _cipher_view_components_with_inputs(self)
+        available_bits = _AvailableBits()
         key_schedule_component_ids = get_key_schedule_component_ids(self)
-        all_equivalent_bits = get_all_equivalent_bits(self)
-        while len(cipher_components_tmp) > 0:
-            # print(len(cipher_components_tmp))
-            number_of_unprocessed_components = 0
+        all_equivalent_bits = _get_all_equivalent_bits(self)
+        while cipher_components_tmp:
+            # Rebuild the worklist each pass instead of list.remove(c) mid-iteration: remove() is an
+            # O(n) scan (O(n^2) over a pass) and mutating the list while iterating it silently skips
+            # the element after each removed one. Collect the still-unprocessed components and, if a
+            # whole pass makes no progress, the inversion is stalled.
+            unprocessed_components = []
             for c in cipher_components_tmp:
-                # print(c.id, "---------", len(cipher_components_tmp))
-                # OPTION 1 - Add components that are not invertible
-                if are_there_enough_available_inputs_to_evaluate_component(
-                    c,
-                    available_bits,
-                    all_equivalent_bits,
-                    key_schedule_component_ids,
-                    self,
-                ):
-                    # print("--------> evaluated")
-                    inverted_component = evaluated_component(
-                        c,
-                        available_bits,
-                        key_schedule_component_ids,
-                        all_equivalent_bits,
-                        self,
-                    )
-                    update_available_bits_with_component_output_bits(c, available_bits, self)
+                inverted_component = _apply_inversion_step(
+                    c, available_bits, all_equivalent_bits, key_schedule_component_ids, self
+                )
+                if inverted_component is not None:
                     inverted_cipher_components.append(inverted_component)
-                    cipher_components_tmp.remove(c)
-                # OPTION 2 - Add components that are invertible
-                elif (
-                    is_possibly_invertible_component(c)
-                    and are_there_enough_available_inputs_to_perform_inversion(
-                        c, available_bits, all_equivalent_bits, self
-                    )
-                ) or (c.type == CIPHER_INPUT and (c.description[0] == INPUT_KEY or c.description[0] == INPUT_TWEAK)):
-                    # print("--------> inverted")
-                    inverted_component = component_inverse(
-                        c,
-                        available_bits,
-                        all_equivalent_bits,
-                        key_schedule_component_ids,
-                        self,
-                    )
-                    update_available_bits_with_component_input_bits(c, available_bits)
-                    update_available_bits_with_component_output_bits(c, available_bits, self)
-                    inverted_cipher_components.append(inverted_component)
-                    cipher_components_tmp.remove(c)
                 else:
-                    number_of_unprocessed_components += 1
-                    if number_of_unprocessed_components == len(cipher_components_tmp):
-                        raise Error("Unable to invert cipher for now.")
+                    unprocessed_components.append(c)
+            if len(unprocessed_components) == len(cipher_components_tmp):
+                raise Error(_inversion_stall_message(cipher_components_tmp))
+            cipher_components_tmp = unprocessed_components
 
-                        # STEP 3 - rebuild cipher
+        # STEP 3 - rebuild cipher
         for _ in range(self.number_of_rounds):
             inverted_cipher.add_round()
         for component in inverted_cipher_components:
@@ -675,11 +479,54 @@ class Cipher:
                     component
                 )
 
-        sorted_inverted_cipher = sort_cipher_graph(inverted_cipher)
+        # STEP 3b - order the inverse inputs in one-to-one correspondence with the forward
+        # cipher's inputs: each surviving forward input (key, tweak, ...) keeps its position, and
+        # the forward input replaced by the inverse's ciphertext input (the original cipher_output,
+        # now an input here) takes that input's slot. Otherwise the input order would depend on the
+        # worklist processing order rather than mirroring the forward primitive.
+        bit_size_by_input = dict(zip(inverted_cipher.inputs, inverted_cipher.inputs_bit_size))
+        new_inverse_inputs = [input_id for input_id in inverted_cipher.inputs if input_id not in self.inputs]
+        ordered_inputs = []
+        new_inputs_placed = False
+        for forward_input in self.inputs:
+            if forward_input in bit_size_by_input:
+                ordered_inputs.append(forward_input)
+            elif not new_inputs_placed:
+                ordered_inputs.extend(new_inverse_inputs)
+                new_inputs_placed = True
+        if not new_inputs_placed:
+            ordered_inputs.extend(new_inverse_inputs)
+        inverted_cipher._inputs = ordered_inputs
+        inverted_cipher._inputs_bit_size = [bit_size_by_input[input_id] for input_id in ordered_inputs]
 
-        return sorted_inverted_cipher
+        inverted_cipher.sort_cipher()
+
+        return inverted_cipher
 
     def get_partial_cipher(self, start_round=None, end_round=None, keep_key_schedule=True):
+        """
+        Return a new cipher made of the rounds ``[start_round, end_round]`` of this cipher.
+
+        Components outside the range are pruned and the dangling links are rewired onto the slice
+        boundary. When ``start_round > 0`` the slice's data input is re-rooted to the state entering
+        ``start_round``; ``keep_key_schedule`` controls whether the key schedule is retained.
+
+        INPUT:
+
+        - ``start_round`` -- **integer** (default: 0); first round to keep
+        - ``end_round`` -- **integer** (default: last round); last round to keep
+        - ``keep_key_schedule`` -- **bool** (default: True); keep the full key-schedule components
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=4)
+            sage: partial = speck.get_partial_cipher(1, 2)
+            sage: partial.inputs
+            ['intermediate_output_0_6', 'key']
+            sage: partial.all_components_ids()[-1]
+            'intermediate_output_3_11'
+        """
         if start_round is None:
             start_round = 0
         if end_round is None:
@@ -699,51 +546,14 @@ class Cipher:
         for round in self.rounds_as_list:
             partial_cipher.rounds_as_list.append(deepcopy(round))
 
-        removed_components_ids, intermediate_outputs = remove_components_from_rounds(
-            partial_cipher, start_round, end_round, keep_key_schedule
-        )
-
-        if start_round > 0:
-            for input_type in set([input for input in self.inputs if INPUT_KEY not in input]):
-                removed_components_ids.append(input_type)
-                input_index = partial_cipher.inputs.index(input_type)
-                partial_cipher.inputs.pop(input_index)
-                partial_cipher.inputs_bit_size.pop(input_index)
-
-            partial_cipher.inputs.insert(0, intermediate_outputs[start_round - 1].id)
-            partial_cipher.inputs_bit_size.insert(0, intermediate_outputs[start_round - 1].output_bit_size)
-            update_input_links_from_rounds(
-                partial_cipher.rounds_as_list[start_round : end_round + 1],
-                removed_components_ids,
-                intermediate_outputs,
-            )
-
-        if end_round < self.number_of_rounds - 1:
-            removed_components_ids.append(CIPHER_OUTPUT)
-            last_round = partial_cipher.rounds_as_list[end_round]
-            for component in last_round.components:
-                if component.description == ["round_output"]:
-                    last_round.remove_component(component)
-                    new_cipher_output = Component(
-                        component.id,
-                        CIPHER_OUTPUT,
-                        Input(
-                            component.output_bit_size,
-                            component.input_id_links,
-                            component.input_bit_positions,
-                        ),
-                        component.output_bit_size,
-                        [CIPHER_OUTPUT],
-                    )
-                    new_cipher_output.__class__ = CipherOutput
-                    last_round.add_component(new_cipher_output)
+        editor._extract_partial_cipher(self, partial_cipher, start_round, end_round, keep_key_schedule)
 
         return partial_cipher
 
     def add_suffix_to_components(self, suffix, component_id_list=None):
         renamed_inputs = self.inputs
         if component_id_list is None:
-            component_id_list = self.get_all_components_ids() + self.inputs
+            component_id_list = self.all_components_ids() + self.inputs
             renamed_inputs = [f"{input}{suffix}" if input in component_id_list else input for input in self.inputs]
         renamed_cipher = Cipher(
             f"{self.family_name}",
@@ -806,13 +616,11 @@ class Cipher:
 
         key_schedule_component_ids = get_key_schedule_component_ids(partial_cipher_inverse)
         key_schedule_components = [
-            partial_cipher_inverse.get_component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id
+            partial_cipher_inverse.component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id
         ]
 
         if not keep_key_schedule:
-            for current_round in partial_cipher_inverse.rounds_as_list:
-                for key_component in set(key_schedule_components).intersection(current_round.components):
-                    partial_cipher_inverse.rounds.remove_round_component(current_round.id, key_component)
+            editor.remove_components(partial_cipher_inverse, key_schedule_components)
 
         return partial_cipher_inverse
 
@@ -846,8 +654,8 @@ class Cipher:
         - ``verbosity`` -- **boolean** (default: `False`); set this flag to True in order to print the input/output of
           each component
         - ``evaluate_api`` -- **boolean** (default: `False`); if set to True, takes integer inputs (as the evaluate function)
-        and returns integer inputs; it is expected that cipher.evaluate(x) == cipher.evaluate_vectorized(x, evaluate_api = True)
-        is True.
+          and returns integer inputs; it is expected that
+          cipher.evaluate(x) == cipher.evaluate_vectorized(x, evaluate_api = True) is True.
 
         EXAMPLES::
 
@@ -972,16 +780,16 @@ class Cipher:
         """
         return code_generator.generate_word_based_c_code(self, word_size, intermediate_output, verbosity)
 
-    def get_all_components(self):
-        return self._rounds.get_all_components()
+    def all_components(self):
+        return self._rounds.all_components()
 
-    def get_all_components_ids(self):
-        return self._rounds.get_all_components_ids()
+    def all_components_ids(self):
+        return self._rounds.all_components_ids()
 
     def get_all_inputs_bit_positions(self):
         return {cipher_input: range(bit_size) for cipher_input, bit_size in zip(self._inputs, self._inputs_bit_size)}
 
-    def get_component_from_id(self, component_id):
+    def component_from_id(self, component_id):
         """
         Return the component according to the id given as input.
 
@@ -993,13 +801,16 @@ class Cipher:
 
             sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: component = fancy.get_component_from_id('sbox_0_0')
+            sage: component = fancy.component_from_id('sbox_0_0')
             sage: component.description
             [0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15]
         """
-        return self._rounds.get_component_from_id(component_id)
+        return self._rounds.component_from_id(component_id)
 
-    def get_components_in_round(self, round_number):
+    def get_successor_components(self, component):
+        return self._rounds.get_successor_components(component.id)
+
+    def components_in_round(self, round_number):
         return self._rounds.components_in_round(round_number)
 
     def get_current_component_id(self):
@@ -1031,7 +842,7 @@ class Cipher:
     def get_number_of_components_in_round(self, round_number):
         return self._rounds.number_of_components(round_number)
 
-    def get_round_from_component_id(self, component_id):
+    def round_from_component_id(self, component_id):
         """
         Return the round according to the round of the component id given as input.
 
@@ -1043,10 +854,10 @@ class Cipher:
 
             sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
             sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: fancy.get_round_from_component_id('xor_1_14')
+            sage: fancy.round_from_component_id('xor_1_14')
             1
         """
-        return self._rounds.get_round_from_component_id(component_id)
+        return self._rounds.round_from_component_id(component_id)
 
     def impossible_differential_search(self, technique="sat", solver="Kissat", scenario="single-key"):
         """
@@ -1055,7 +866,7 @@ class Cipher:
 
         - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
         - ``solver`` -- **string**; the name of the solver to use for the search
-        - ``scenario`` -- **string**; the type of impossible differentials to search, single-key or related-key
+        - ``scenario`` -- **string**; {"single-key", "variable-key", "related-key", "no-key"}: see :meth:`find_impossible_property`
         """
         return self.find_impossible_property(type="differential", technique=technique, solver=solver, scenario=scenario)
 
@@ -1161,6 +972,19 @@ class Cipher:
 
         return self._are_there_not_forbidden_components(forbidden_types, forbidden_descriptions)
 
+    def _uniform_sbox_size(self):
+        """
+        Return the common S-box ``input_bit_size`` if the cipher has at least one S-box and all
+        S-boxes share the same size, otherwise ``None``.
+
+        Shared by :meth:`is_spn` and :meth:`has_uniform_sboxes` so that the "does this cipher have
+        a single, well-defined S-box size" check lives in one place.
+        """
+        _, _, _, set_of_sbox_sizes = self.get_sizes_of_components_by_type()
+        if len(set_of_sbox_sizes) != 1:
+            return None
+        return next(iter(set_of_sbox_sizes))
+
     def is_spn(self):
         """
         Return True if the cipher is SPN.
@@ -1171,8 +995,8 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=2)
             sage: aes.is_spn()
             True
         """
@@ -1193,10 +1017,8 @@ class Cipher:
         ) = self.get_sizes_of_components_by_type()
         if (len(set_of_sbox_sizes) > 1) or (len(set_of_mix_column_sizes) > 1):
             return False
-        sbox_size = 0
+        sbox_size = self._uniform_sbox_size() or 0
         mix_column_size = 0
-        if len(set_of_sbox_sizes) > 0:
-            sbox_size = set_of_sbox_sizes.pop()
         if len(set_of_mix_column_sizes) > 0:
             mix_column_size = set_of_mix_column_sizes.pop()
         if sbox_size == 0 and mix_column_size == 0 or sbox_size != mix_column_size:
@@ -1207,7 +1029,108 @@ class Cipher:
                 return False
         return set_of_components <= spn_components
 
-    def get_model(self, technique, problem):
+    def has_uniform_sboxes(self):
+        """
+        Return True if the cipher has at least one S-box, all S-boxes have the same input_bit_size,
+        all S-boxes are square (``input_bit_size == output_bit_size``), and all components belong
+        to the standard SPN or permutation component set.
+
+        Less restrictive than :meth:`is_spn`: does not require MixColumns to be present or to have
+        the same cell size as the S-boxes, and allows bit/word permutation components and SHIFT
+        components (e.g. Mantis). Suitable as a compatibility check for the first-step active
+        S-box count model.
+
+        The square-S-box requirement matters because the first-step CP model derives its word
+        activity arrays from the S-box's ``output_bit_size`` (see
+        :meth:`Sbox.cp_xor_differential_first_step_constraints
+        <claasp.components.sbox_component.Sbox.cp_xor_differential_first_step_constraints>`) while
+        the common word size used everywhere else is taken from the S-box's ``input_bit_size``
+        (see :meth:`is_two_step_trail_search_friendly`); for a non-square S-box, such as DES's 6-to-4
+        S-boxes, the two disagree and the model would be built incorrectly.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: ToyAESBlockCipher(number_of_rounds=1).has_uniform_sboxes()
+            True
+            sage: from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
+            sage: UblockBlockCipher(number_of_rounds=2).has_uniform_sboxes()
+            True
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: PresentBlockCipher(number_of_rounds=1).has_uniform_sboxes()
+            True
+            sage: from claasp.ciphers.block_ciphers.mantis_block_cipher import MantisBlockCipher
+            sage: MantisBlockCipher(number_of_rounds=2).has_uniform_sboxes()
+            True
+            sage: from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
+            sage: DESBlockCipher(number_of_rounds=1).has_uniform_sboxes()
+            False
+        """
+        spn_components = {
+            CIPHER_OUTPUT,
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            MIX_COLUMN,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            "ROTATE",
+            "SHIFT",
+            "XOR",
+        }
+        if self._uniform_sbox_size() is None:
+            return False
+        if any(
+            component.type == SBOX and component.input_bit_size != component.output_bit_size
+            for component in self.all_components()
+        ):
+            return False
+        set_of_components, _, _, _ = self.get_sizes_of_components_by_type()
+        return set_of_components <= spn_components
+
+    def is_two_step_trail_search_friendly(self):
+        """
+        Return True if the cipher is compatible with the two-step XOR differential trail search
+        for counting the minimum number of active S-boxes.
+
+        The word size is determined by the common S-box input size. Checks performed:
+
+        - All S-boxes must have the same ``input_bit_size`` and all component types must belong
+          to the supported set (checked via :meth:`has_uniform_sboxes`)
+        - MixColumn cell sizes (``description[2]``) must be multiples of word_size
+
+        Key schedule components with non-aligned rotations (e.g. LBlock) do not affect correctness
+        when key differences are fixed to zero (the standard setting for differential trail
+        searches), so they are not checked here.
+
+        Note that :meth:`~claasp.cipher_modules.models.cp.mzn_model.MznModel.initialise_model`
+        calls this method for every CP model, not just the two-step search, so any diagnostic
+        emitted from here (e.g. via the ``warnings`` module) would fire on unrelated model
+        construction and break doctests throughout the codebase; that is why this is a docstring
+        note rather than a runtime warning.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: ToyAESBlockCipher(number_of_rounds=1).is_two_step_trail_search_friendly()
+            True
+            sage: ToyAESBlockCipher(number_of_rounds=2).is_two_step_trail_search_friendly()
+            True
+            sage: from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
+            sage: UblockBlockCipher(number_of_rounds=2).is_two_step_trail_search_friendly()
+            True
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: PresentBlockCipher(number_of_rounds=1).is_two_step_trail_search_friendly()
+            True
+        """
+        if not self.has_uniform_sboxes():
+            return False
+        word_size = next(c.input_bit_size for c in self.all_components() if c.type == SBOX)
+        for component in self.all_components():
+            if component.type == MIX_COLUMN and component.description[2] % word_size != 0:
+                return False
+        return True
+
+    def model(self, technique, problem):
         """
         Returns a model for a given technique and problem.
 
@@ -1239,7 +1162,7 @@ class Cipher:
         set_of_mix_column_sizes = set()
         set_of_components = set()
         set_of_rotate_and_shift_values = set()
-        for component in self._rounds.get_all_components():
+        for component in self._rounds.all_components():
             if component.type == SBOX:
                 set_of_sbox_sizes.add(component.input_bit_size)
             if component.type == MIX_COLUMN:
@@ -1426,7 +1349,7 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher as identity
+            sage: from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher as identity
             sage: identity().print_evaluation_python_code() # random
             from copy import copy
             from bitstring import BitArray
@@ -1484,10 +1407,10 @@ class Cipher:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher as identity
+            sage: from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher as identity
             sage: identity = identity()
             sage: identity.file_name
-            'identity_block_cipher_p32_k32_o32_r1.py'
+            'identity_cipher_p32_o32_r1.py'
             sage: identity.print_evaluation_python_code_to_file(identity.id + 'evaluation.py') # doctest: +SKIP
         """
         original_stdout = sys.stdout  # Save a reference to the original standard output
@@ -1569,16 +1492,6 @@ class Cipher:
     def remove_round_component_from_id(self, round_id, component_id):
         editor.remove_round_component_from_id(self, round_id, component_id)
 
-    def set_file_name(self, file_name):
-        self._file_name = file_name
-
-    def set_id(self, cipher_id):
-        self._id = cipher_id
-
-    def set_inputs(self, inputs_ids_list, inputs_bit_size_list):
-        self._inputs = inputs_ids_list
-        self._inputs_bit_size = inputs_bit_size_list
-
     def sort_cipher(self):
         return editor.sort_cipher(self)
 
@@ -1611,7 +1524,7 @@ class Cipher:
         OUTPUT:
 
         - ``test_result`` -- output of the testing. True if all the cipher.evaluate(input)=output for every input
-        test vectors, and False, otherwise.
+          test vectors, and False, otherwise.
 
         EXAMPLES::
 
@@ -1646,107 +1559,116 @@ class Cipher:
 
     def find_impossible_property(self, type, technique="sat", solver="kissat", scenario="single-key"):
         """
-        From [SGLYTQH2017] : Finds impossible differentials or zero-correlation linear approximations (based on type)
+        From [SGLYTQH2017]_ : Finds impossible differentials or zero-correlation linear approximations (based on type)
         by fixing the input and output iteratively to all possible Hamming weight 1 value, and asking the solver
         to find a solution; if none is found, then the propagation is impossible.
         Return a list of impossible differentials or zero_correlation linear approximations if there are any; otherwise return an empty list
+
+        Four scenarios, based on whether the cipher has a key input and, if so, which input differences are swept.
+        A "1-bit difference" is a difference with exactly one bit set (Hamming weight 1).
+
+        - ``"single-key"`` -- the key difference is zero and the plaintext difference goes over all 1-bit values.
+        - ``"variable-key"`` -- the plaintext difference is zero and the key difference goes over all 1-bit values.
+        - ``"related-key"`` -- the plaintext difference and the key difference each go over zero and all 1-bit
+          values, in every combination except both zero. This covers the ``"single-key"`` and ``"variable-key"``
+          cases, plus the cases where one plaintext bit and one key bit are active together.
+        - ``"no-key"`` -- the plaintext difference goes over all 1-bit values and the key, if any, is not
+          constrained. This is the scenario for keyless permutations and functions.
+
+        ``"single-key"``, ``"variable-key"`` and ``"related-key"`` need a key input and raise ``ValueError``
+        without one. The output difference always goes over all 1-bit values.
+
+        Each result of ``"single-key"`` and ``"no-key"`` is a pair ``(plaintext_difference, output_difference)``;
+        each result of ``"variable-key"`` and ``"related-key"`` is a triple
+        ``(plaintext_difference, key_difference, output_difference)``.
+
         INPUT:
 
         - ``type`` -- **string**; {"differential", "linear"}: the type of property to search for
         - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
         - ``solver`` -- **string**; the name of the solver to use for the search
+        - ``scenario`` -- **string** (default: ``"single-key"``); {"single-key", "variable-key", "related-key", "no-key"}
         """
         from claasp.cipher_modules.models.utils import (
-            set_fixed_variables,
             integer_to_bit_list,
+            set_fixed_variables,
         )
 
-        model = self.get_model(technique, f"xor_{type}")
+        model = self.model(technique, f"xor_{type}")
         if type == "differential":
             search_function = model.find_one_xor_differential_trail
         else:
             search_function = model.find_one_xor_linear_trail
-        last_component_id = self.get_all_components()[-1].id
+        last_component_id = self.all_components()[-1].id
         impossible = []
         inputs_dictionary = self.inputs_size_to_dict()
         plain_bits = inputs_dictionary[INPUT_PLAINTEXT]
-        key_bits = inputs_dictionary[INPUT_KEY]
+        has_key = INPUT_KEY in inputs_dictionary
+        key_bits = inputs_dictionary.get(INPUT_KEY, 0)
+        scenarios = ("single-key", "variable-key", "related-key", "no-key")
+        if scenario not in scenarios:
+            raise ValueError(f"unknown scenario {scenario!r}; expected one of {scenarios}")
+        if scenario != "no-key" and not has_key:
+            raise ValueError(f"scenario={scenario!r} requires a cipher with a key input; this cipher has none "
+                             "(use scenario='no-key' for a keyless permutation or function)")
 
-        if scenario == "single-key":
-            # Fix the key difference to be zero, and the plaintext difference to be non-zero.
-            for input_bit_position in range(plain_bits):
-                for output_bit_position in range(plain_bits):
-                    fixed_values = []
-                    fixed_values.append(
-                        set_fixed_variables(
-                            INPUT_KEY,
-                            "equal",
-                            list(range(key_bits)),
-                            integer_to_bit_list(0, key_bits, "big"),
-                        )
-                    )
-                    fixed_values.append(
-                        set_fixed_variables(
-                            INPUT_PLAINTEXT,
-                            "equal",
-                            list(range(plain_bits)),
-                            integer_to_bit_list(1 << input_bit_position, plain_bits, "big"),
-                        )
-                    )
-                    fixed_values.append(
-                        set_fixed_variables(
-                            last_component_id,
-                            "equal",
-                            list(range(plain_bits)),
-                            integer_to_bit_list(1 << output_bit_position, plain_bits, "big"),
-                        )
-                    )
-                    solution = search_function(fixed_values, solver_name=solver)
-                    if solution["status"] == "UNSATISFIABLE":
-                        impossible.append((1 << input_bit_position, 1 << output_bit_position))
+        # Input differences to sweep, as (plaintext_difference, key_difference) pairs.
+        plaintext_1_bit = [1 << i for i in range(plain_bits)]
+        key_1_bit = [1 << i for i in range(key_bits)]
+        if scenario == "variable-key":
+            input_differences = [(0, k) for k in key_1_bit]
         elif scenario == "related-key":
-            for input_bit_position in range(key_bits):
-                for output_bit_position in range(plain_bits):
-                    fixed_values = []
+            input_differences = [(p, k) for p in [0] + plaintext_1_bit for k in [0] + key_1_bit if p or k]
+        else:
+            input_differences = [(p, 0) for p in plaintext_1_bit]
+
+        for plaintext_difference, key_difference in input_differences:
+            for output_bit_position in range(plain_bits):
+                output_difference = 1 << output_bit_position
+                fixed_values = []
+                if scenario != "no-key":
                     fixed_values.append(
                         set_fixed_variables(
                             INPUT_KEY,
                             "equal",
                             list(range(key_bits)),
-                            integer_to_bit_list(1 << (input_bit_position), key_bits, "big"),
+                            integer_to_bit_list(key_difference, key_bits, "big"),
                         )
                     )
-                    fixed_values.append(
-                        set_fixed_variables(
-                            INPUT_PLAINTEXT,
-                            "equal",
-                            list(range(plain_bits)),
-                            integer_to_bit_list(0, plain_bits, "big"),
-                        )
+                fixed_values.append(
+                    set_fixed_variables(
+                        INPUT_PLAINTEXT,
+                        "equal",
+                        list(range(plain_bits)),
+                        integer_to_bit_list(plaintext_difference, plain_bits, "big"),
                     )
-
-                    fixed_values.append(
-                        set_fixed_variables(
-                            last_component_id,
-                            "equal",
-                            list(range(plain_bits)),
-                            integer_to_bit_list(1 << output_bit_position, plain_bits, "big"),
-                        )
+                )
+                fixed_values.append(
+                    set_fixed_variables(
+                        last_component_id,
+                        "equal",
+                        list(range(plain_bits)),
+                        integer_to_bit_list(output_difference, plain_bits, "big"),
                     )
-                    solution = search_function(fixed_values, solver_name=solver)
-                    if solution["status"] == "UNSATISFIABLE":
-                        impossible.append((1 << input_bit_position, 1 << output_bit_position))
+                )
+                solution = search_function(fixed_values, solver_name=solver)
+                if solution["status"] == "UNSATISFIABLE":
+                    if scenario in ("variable-key", "related-key"):
+                        impossible.append((plaintext_difference, key_difference, output_difference))
+                    else:
+                        impossible.append((plaintext_difference, output_difference))
         return impossible
 
-    def zero_correlation_linear_search(self, technique="sat", solver="Kissat"):
+    def zero_correlation_linear_search(self, technique="sat", solver="Kissat", scenario="single-key"):
         """
         Return a list of zero_correlation linear approximations if there are any; otherwise return an empty list
         INPUT:
 
         - ``technique`` -- **string**; {"sat", "smt", "milp", "cp"}: the technique to use for the search
         - ``solver`` -- **string**; the name of the solver to use for the search
+        - ``scenario`` -- **string**; {"single-key", "variable-key", "related-key", "no-key"}: see :meth:`find_impossible_property`
         """
-        return self.find_impossible_property(type="linear", technique=technique, solver=solver)
+        return self.find_impossible_property(type="linear", technique=technique, solver=solver, scenario=scenario)
 
     def convert_to_compound_xor_cipher(self):
         convert_to_compound_xor_cipher(self)
@@ -1771,17 +1693,33 @@ class Cipher:
     def file_name(self):
         return self._file_name
 
+    @file_name.setter
+    def file_name(self, file_name):
+        self._file_name = file_name
+
     @property
     def id(self):
         return self._id
+
+    @id.setter
+    def id(self, cipher_id):
+        self._id = cipher_id
 
     @property
     def inputs(self):
         return self._inputs
 
+    @inputs.setter
+    def inputs(self, inputs):
+        self._inputs = inputs
+
     @property
     def inputs_bit_size(self):
         return self._inputs_bit_size
+
+    @inputs_bit_size.setter
+    def input_bit_size(self, input_bit_size):
+        self._inputs_bit_size = input_bit_size
 
     @property
     def number_of_rounds(self):
@@ -1876,5 +1814,6 @@ class Cipher:
         return ancestors_ids, descendants_ids
 
     def update_input_id_links_from_component_id(self, component_id, new_input_id_links):
-        round_number = self.get_round_from_component_id(component_id)
+        round_number = self.round_from_component_id(component_id)
         self._rounds.rounds[round_number].update_input_id_links_from_component_id(component_id, new_input_id_links)
+        self._rounds._invalidate_indexes()

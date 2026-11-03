@@ -17,10 +17,10 @@
 
 import itertools
 import math
-import os
 import subprocess
 import time
 from copy import deepcopy
+from dataclasses import dataclass, field
 from datetime import timedelta
 
 from minizinc import Instance, Model, Solver, Status
@@ -28,18 +28,44 @@ from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
-from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_INTERNAL, CP_SOLVERS_EXTERNAL, SOLVER_DEFAULT
-from claasp.name_mappings import SBOX, CIPHER, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, SATISFIABLE, UNSATISFIABLE
-
-from claasp.cipher_modules.models.utils import write_model_to_file, convert_solver_solution_to_dictionary
+from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_EXTERNAL, CP_SOLVERS_INTERNAL, SOLVER_DEFAULT
+from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
+from claasp.name_mappings import (
+    CIPHER,
+    CIPHER_OUTPUT,
+    CONSTANT,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    PERMUTATION_COMPONENT,
+    SATISFIABLE,
+    SBOX,
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
+    SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
+    UNSATISFIABLE,
+    WORD_OPERATION,
+    XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION,
+)
 
 SOLVE_SATISFY = "solve satisfy;"
 CONSTRAINT_TYPE_ERROR = "Constraint type not defined"
 
 
-class MznModel:
+@dataclass
+class MiniZincModelParts:
+    prefix: list[str] = field(default_factory=list)
+    variables: list[str] = field(default_factory=list)
+    constraints: list[str] = field(default_factory=list)
+    outputs: list[str] = field(default_factory=list)
+    carries_outputs: list[str] = field(default_factory=list)
 
-    def __init__(self, cipher, sat_or_milp='sat'):
+    def lines(self):
+        return self.prefix + self.variables + self.constraints + self.outputs + self.carries_outputs
+
+
+class MznModel:
+    def __init__(self, cipher, sat_or_milp="sat"):
         self._cipher = cipher
         self.initialise_model()
         if sat_or_milp not in ("sat", "milp"):
@@ -65,19 +91,20 @@ class MznModel:
         self.output_postfix = "y"
         self.carries_vars = []
         self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
-        
+        self.component_probability_var = {}
+
     def initialise_model(self):
-        self._variables_list = []
+        self._variables_declarations = []
         self._model_constraints = []
         self.c = 0
-        if self._cipher.is_spn():
-            for component in self._cipher.get_all_components():
+        if self._cipher.is_two_step_trail_search_friendly():
+            for component in self._cipher.all_components():
                 if SBOX in component.type:
                     self.word_size = int(component.output_bit_size)
                     break
         self._float_and_lat_values = []
         self._probability = False
-        self.sbox_mant = []
+        self.sbox_cache = []
         self.mix_column_mant = []
         self.modadd_twoterms_mant = []
         self.input_sbox = []
@@ -85,7 +112,25 @@ class MznModel:
         self.list_of_xor_components = []
         self.list_of_xor_all_inputs = []
         self.component_and_probability = {}
+        self.probability_vars = []
+        self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
+        self.component_probability_var = {}
         self._model_prefix = ['include "globals.mzn";', f"{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}"]
+
+    def current_model_parts(self):
+        return MiniZincModelParts(
+            prefix=list(self._model_prefix),
+            variables=list(self._variables_declarations),
+            constraints=list(self._model_constraints),
+            outputs=list(self.mzn_output_directives),
+            carries_outputs=list(self.mzn_carries_output_directives),
+        )
+
+    def assemble_model_lines(self, parts=None):
+        return (parts or self.current_model_parts()).lines()
+
+    def assemble_model(self, parts=None):
+        return "\n".join(self.assemble_model_lines(parts)) + "\n"
 
     def add_comment(self, comment):
         """
@@ -161,36 +206,60 @@ class MznModel:
         component_solution["weight"] = component_weight
         components_values[f"solution{solution_number}"][f"{component}"] = component_solution
 
+    def _process_metadata(self, metadata, component):
+        probability_var = metadata.get("probability_var")
+        if probability_var:
+            self.probability_vars.append(probability_var)
+            self.component_probability_var[component.id] = probability_var
+
+            if hasattr(self._cipher, "round_from_component_id"):
+                round_index = self._cipher.round_from_component_id(component.id)
+
+                if round_index < len(self.probability_modadd_vars_per_round):
+                    self.probability_modadd_vars_per_round[round_index].append(probability_var)
+
     def build_generic_cp_model_from_dictionary(self, component_and_model_types, fixed_variables=None):
         variables = []
-        self._variables_list = []
-
-        fixed_constraints = []
-        if fixed_variables:
-            if hasattr(self, "fix_variables_value_constraints_for_ARX"):
-                fixed_constraints = self.fix_variables_value_constraints_for_ARX(
-                    fixed_variables
-                )
-            else:
-                fixed_constraints = self.fix_variables_value_constraints(
-                    fixed_variables
-                )
-        component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
-        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
-        self._model_constraints = fixed_constraints
+        self._variables_declarations = []
+        self._model_constraints = []
+        component_types = [
+            CIPHER_OUTPUT,
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            LINEAR_LAYER,
+            MIX_COLUMN,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            WORD_OPERATION,
+        ]
+        operation_types = ["AND", "MODADD", "MODSUB", "NOT", "OR", "ROTATE", "SHIFT", "SHIFT_BY_VARIABLE_AMOUNT", "XOR"]
 
         for component_and_model_type in component_and_model_types:
             component = component_and_model_type["component_object"]
             model_type = component_and_model_type["model_type"]
             operation = component.description[0]
             if component.type not in component_types or (
-                    WORD_OPERATION == component.type and operation not in operation_types):
-                print(f'{component.id} not yet implemented')
+                WORD_OPERATION == component.type and operation not in operation_types
+            ):
+                print(f"{component.id} not yet implemented")
             else:
                 cp_generic_propagation_constraints = getattr(component, model_type)
-                variables, constraints = cp_generic_propagation_constraints(self)
+                try:
+                    result = cp_generic_propagation_constraints()
+                except TypeError:
+                    result = cp_generic_propagation_constraints(self)
+
+                if len(result) == 2:
+                    variables, constraints = result
+                    metadata = {}
+                elif len(result) == 3:
+                    variables, constraints, metadata = result
+                    self._process_metadata(metadata, component)
+                else:
+                    raise ValueError("Unexpected return value from component generator")
+
                 self._model_constraints.extend(constraints)
-                self._variables_list.extend(variables)
+                self._variables_declarations.extend(variables)
 
     def build_mix_column_truncated_table(self, component):
         """
@@ -203,8 +272,8 @@ class MznModel:
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: aes = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
+            sage: aes = ToyAESBlockCipher(number_of_rounds=3)
             sage: cp = MznModel(aes)
             sage: mix_column = aes.component_from(0, 21)
             sage: cp.build_mix_column_truncated_table(mix_column)
@@ -295,7 +364,7 @@ class MznModel:
             {3, 4}
         """
         set_of_sboxes_values = set()
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if SBOX in component.type:
                 set_of_sboxes_values.add(tuple(component.description))
                 input_size = component.input_bit_size
@@ -359,8 +428,8 @@ class MznModel:
             bit_positions = component["bit_positions"]
             bit_values = component["bit_values"]
             if step == "first_step":
-                if not self._cipher.is_spn():
-                    raise ValueError("Cipher is not SPN")
+                if not self._cipher.is_two_step_trail_search_friendly():
+                    raise ValueError("Cipher not compatible with the two-step trail search")
                 input_length = len(bit_positions) // self.word_size
                 bit_positions = self.calculate_bit_positions(bit_positions, input_length)
                 bit_values = self.calculate_bit_values(bit_values, input_length)
@@ -372,12 +441,13 @@ class MznModel:
                 logic_operator = " \\/ "
             else:
                 raise ValueError(CONSTRAINT_TYPE_ERROR)
-            if bit_values[0] not in [0,1]:
+            if bit_values[0] not in [0, 1, 2]:
                 variables_values = []
                 for v in bit_values:
                     variables_values.extend([(v[0], i) for i in v[1]])
                 values_constraints = [
-                    f"{component_id}[{position}] {sign} {variables_values[i][0]}[{variables_values[i][1]}]" for i, position in enumerate(bit_positions)
+                    f"{component_id}[{position}] {sign} {variables_values[i][0]}[{variables_values[i][1]}]"
+                    for i, position in enumerate(bit_positions)
                 ]
             else:
                 values_constraints = [
@@ -473,13 +543,22 @@ class MznModel:
 
         return value
 
-    def get_command_for_solver_process(self, model_type, solver_name, num_of_processors, timelimit):
+    def get_command_for_solver_process(
+        self,
+        model_type,
+        solver_name,
+        num_of_processors,
+        timelimit,
+        intermediate_solutions=False,
+    ):
         solvers = (
             "deterministic_truncated_xor_differential_one_solution",
             "differential_pair_one_solution",
             "impossible_xor_differential_one_solution",
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
             "xor_differential_one_solution",
             "xor_linear_one_solution",
+            XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION,
             CIPHER,
         )
         found_name = False
@@ -489,12 +568,15 @@ class MznModel:
                 found_name = True
         if not found_name:
             raise NameError(f"Solver {solver_name} not defined. Specify a valid solver name.")
-        if model_type not in solvers:
+        # if model type is not in solvers and does not contain the word optimal/lowest then add -a
+        if model_type not in solvers and "optimal" not in model_type.lower() and "lowest" not in model_type.lower():
             command_options["options"].insert(0, "-a")
         if num_of_processors is not None:
             command_options["options"].insert(0, f"-p {num_of_processors}")
         if timelimit is not None:
             command_options["options"].extend(["--time-limit", str(timelimit)])
+        if intermediate_solutions:
+            command_options["options"].insert(0, "-i")
         command = []
         for key in command_options["format"]:
             command.extend(command_options[key])
@@ -523,10 +605,13 @@ class MznModel:
 
     def output_probability_per_round(self):
         for mzn_probability_modadd_vars in self.probability_modadd_vars_per_round:
-            mzn_probability_vars_per_round = "++".join(mzn_probability_modadd_vars)
+            if not mzn_probability_modadd_vars:
+                continue
+            mzn_probability_vars_per_round = ", ".join(mzn_probability_modadd_vars)
+            mzn_probability_sum = ", ".join(mzn_probability_modadd_vars)
             self.mzn_output_directives.append(
                 f'output ["\\n"++"Probability {mzn_probability_vars_per_round}:'
-                f' "++show(sum({mzn_probability_vars_per_round}))++"\\n"];'
+                f' "++show(sum([{mzn_probability_sum}]))++"\\n"];'
             )
 
     def parse_solver_information(self, output_to_parse, truncated=False, solve_external=True):
@@ -600,7 +685,7 @@ class MznModel:
         def set_solution_values_internal(solution):
             components_values = {}
             values = solution.__dict__["_output_item"].splitlines()
-            total_weight = 0
+            total_weight = "0"
             for i in range(len(values)):
                 curr_val = values[i]
                 if "Trail weight" in curr_val:
@@ -625,7 +710,7 @@ class MznModel:
                 components_values, memory, time, total_weight = self.parse_solver_information(
                     output_to_parse, truncated, solve_external
                 )
-            all_components = [*self._cipher.inputs, *self._cipher.get_all_components_ids()]
+            all_components = [*self._cipher.inputs, *self._cipher.all_components_ids()]
             for component_id in all_components:
                 solution_number = 1
                 for j, string in enumerate(output_to_parse):
@@ -645,10 +730,17 @@ class MznModel:
                     elif "----------" in string:
                         solution_number += 1
         else:
-            if "solveTime" in output_to_parse.statistics:
-                time = output_to_parse.statistics["solveTime"].total_seconds()
+            stats = output_to_parse.statistics
+            if "solveTime" in stats:
+                time = stats["solveTime"].total_seconds()
+            elif "time" in stats:
+                time = stats["time"].total_seconds()
+            elif "flatTime" in stats:
+                time = stats["flatTime"].total_seconds()
+            elif "initTime" in stats:
+                time = stats["initTime"].total_seconds()
             else:
-                time = output_to_parse.statistics["time"].total_seconds()
+                time = 0
             if "trailMem" in output_to_parse.statistics:
                 memory = output_to_parse.statistics["trailMem"]
             else:
@@ -697,13 +789,14 @@ class MznModel:
             hex_value = ("0x" + "0" * (math.ceil(len(value) / 4) - len(hex_value))) + hex_value
             component_solution["value"] = hex_value
         else:
-            component_solution["value"] = value
+            component_solution["value"] = value.replace("2", "?")
 
     def solve(
         self,
         model_type,
-        solver_name=SOLVER_DEFAULT,
         solve_external=False,
+        # MiniZinc solver parameters
+        solver_name=SOLVER_DEFAULT,
         timeout_in_seconds_=None,
         processes_=None,
         nr_solutions_=None,
@@ -751,15 +844,25 @@ class MznModel:
         if model_type in (
             "deterministic_truncated_xor_differential_one_solution",
             "deterministic_truncated_xor_differential",
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION,
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL,
             "impossible_xor_differential_attack",
             "impossible_xor_differential_one_solution",
             "impossible_xor_differential",
         ):
             truncated = True
+
         solutions = []
         if solve_external:
-            command = self.get_command_for_solver_process(model_type, solver_name, processes_, timeout_in_seconds_)
-            model = "\n".join(self._model_constraints) + "\n"
+            command = self.get_command_for_solver_process(
+                model_type,
+                solver_name,
+                processes_,
+                timeout_in_seconds_,
+                intermediate_solutions=intermediate_solutions_,
+            )
+            model = self.assemble_model()
             start = time.time()
             solver_process = subprocess.run(command, input=model, capture_output=True, text=True)
             end = time.time()
@@ -767,14 +870,13 @@ class MznModel:
             if solver_process.returncode >= 0:
                 solver_output = solver_process.stdout.splitlines()
         else:
-            constraints = self._model_constraints
-            mzn_model_string = "\n".join(constraints)
+            mzn_model_string = self.assemble_model()
             solver_name_mzn = Solver.lookup(solver_name)
             bit_mzn_model = Model()
             bit_mzn_model.add_string(mzn_model_string)
             instance = Instance(solver_name_mzn, bit_mzn_model)
             start = time.time()
-            if processes_ != None and timeout_in_seconds_ != None:
+            if processes_ is not None and timeout_in_seconds_ is not None:
                 solver_output = instance.solve(
                     processes=processes_,
                     timeout=timedelta(seconds=int(timeout_in_seconds_)),
@@ -831,9 +933,11 @@ class MznModel:
             )
         if model_type in (
             "deterministic_truncated_one_solution",
+            SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION,
             "impossible_xor_differential_one_solution",
             "xor_differential_one_solution",
             "xor_linear_one_solution",
+            XOR_DIFFERENTIAL_LINEAR_ONE_SOLUTION,
             CIPHER,
         ):
             return solutions[0]
@@ -843,7 +947,7 @@ class MznModel:
     def solve_for_ARX(
         self,
         solver_name=None,
-        timeout_in_seconds_=30,
+        timeout_in_seconds_=120,
         processes_=4,
         nr_solutions_=None,
         random_seed_=None,
@@ -906,14 +1010,12 @@ class MznModel:
             sage: result.statistics['nSolutions']
             1
         """
-        constraints = self._model_constraints
-        variables = self._variables_list
-        mzn_model_string = "\n".join(constraints) + "\n".join(variables)
+        mzn_model_string = self.assemble_model()
         solver_name_mzn = Solver.lookup(solver_name)
         bit_mzn_model = Model()
         bit_mzn_model.add_string(mzn_model_string)
         instance = Instance(solver_name_mzn, bit_mzn_model)
-        if processes_ != None and timeout_in_seconds_ != None:
+        if processes_ is not None and timeout_in_seconds_ is not None:
             result = instance.solve(
                 processes=processes_,
                 timeout=timedelta(seconds=int(timeout_in_seconds_)),
@@ -967,11 +1069,11 @@ class MznModel:
         """
         solver_names = []
 
-        keys = ['solver_brand_name', 'solver_name']
+        keys = ["solver_brand_name", "solver_name"]
         for solver in CP_SOLVERS_INTERNAL:
             solver_names.append({key: solver[key] for key in keys})
         if verbose:
-            keys = ['solver_brand_name', 'solver_name', 'keywords']
+            keys = ["solver_brand_name", "solver_name", "keywords"]
 
         for solver in CP_SOLVERS_EXTERNAL:
             solver_names.append({key: solver[key] for key in keys})
@@ -1009,22 +1111,20 @@ class MznModel:
         INPUT:
 
         - ``file_path`` -- **string**; the path of the file that will contain the model
-        - ``prefix`` -- **str** (default: ``)
+        - ``prefix`` -- **str** (default: ``""``)
         """
-        model_string = (
-            "\n".join(self.mzn_comments)
-            + "\n".join(self._variables_list)
-            + "\n".join(self._model_constraints)
-            + "\n".join(self.mzn_output_directives)
-            + "\n".join(self.mzn_carries_output_directives)
-        )
         if prefix == "":
             filename = f"{file_path}/{self.cipher_id}_mzn_{self.sat_or_milp}.mzn"
         else:
             filename = f"{file_path}/{prefix}_{self.cipher_id}_mzn_{self.sat_or_milp}.mzn"
 
+        parts = self.current_model_parts()
+        # Prepend comments to prefix if any exist
+        if self.mzn_comments:
+            parts.prefix = self.mzn_comments + parts.prefix
+
         with open(filename, "w") as file:
-            file.write(model_string)
+            file.write(self.assemble_model(parts))
 
     @property
     def cipher(self):
@@ -1041,23 +1141,49 @@ class MznModel:
     @property
     def model_constraints(self):
         """
-        Return the model specified by ``model_type``.
+        Return the constraints of the model.
 
-        INPUT:
-
-        - ``model_type`` -- **string**; the model to retrieve
+        This property provides access to only the constraints, excluding variable declarations.
+        Use together with `model_variables` to get the complete model.
 
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=4)
-            sage: cp = MznModel(speck)
-            sage: cp.model_constraints()
-            Traceback (most recent call last):
-            ...
-            ValueError: No model generated
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: mzn = MznXorDifferentialModel(speck)
+            sage: mzn.build_xor_differential_trail_model()
+            sage: constraints = mzn.model_constraints
+            sage: len(constraints) > 0
+            True
+            sage: 'constraint rot_0_0[2] = plaintext[11];' in constraints
+            True
         """
         if not self._model_constraints:
             raise ValueError("No model generated")
         return self._model_constraints
+
+    @property
+    def model_variables(self):
+        """
+        Return the variable declarations of the model.
+
+        This property provides access to only the variable declarations, excluding constraints.
+        Use together with `model_constraints` to get the complete model.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import MznXorDifferentialModel
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: mzn = MznXorDifferentialModel(speck)
+            sage: mzn.build_xor_differential_trail_model()
+            sage: variables = mzn.model_variables
+            sage: len(variables) > 0
+            True
+            sage: 'array[0..15] of var 0..1: pre_modadd_0_1_0;' == variables[0]
+            True
+        """
+        if not self._variables_declarations:
+            raise ValueError("No model generated")
+        return self._variables_declarations

@@ -1,9 +1,11 @@
 from decimal import Decimal
 
 from claasp.cipher_modules.generic_functions_continuous_diffusion_analysis import (
-    compute_sbox_precomputations, SBOX_continuous_diffusion_analysis,
+    MIX_COLUMN_generalized_continuous_diffusion_analysis,
+    SBOX_continuous_diffusion_analysis,
     SHIFT_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis,
-    MIX_COLUMN_generalized_continuous_diffusion_analysis)
+    compute_sbox_precomputations,
+)
 
 
 def test_SBOX_continuous_diffusion_analysis():

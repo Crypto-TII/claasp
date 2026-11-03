@@ -29,6 +29,7 @@ from claasp.name_mappings import (
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
+    PERMUTATION_COMPONENT,
     SBOX,
     WORD_OPERATION,
 )
@@ -36,10 +37,8 @@ from claasp.name_mappings import (
 
 def group_triples(var_names):
     """
-    Given a list of variable names (strings) of the form
-       hw_{p|q|r}_modadd_X_Y_Z
-    group them by (X,Y,Z) and return a dict:
-       grouped[(X, Y, Z)] = (pVarName, qVarName, rVarName)
+    Given a list of variable names (strings) of the form ``hw_{p|q|r}_modadd_X_Y_Z``,
+    group them by (X,Y,Z) and return a dict ``grouped[(X, Y, Z)] = (pVarName, qVarName, rVarName)``,
     where pVarName, qVarName, rVarName are the corresponding names.
     We assume each group has exactly three variables: one for p, q, and r.
     """
@@ -100,10 +99,19 @@ class SatSemiDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferent
         constraints = SatSemiDeterministicTruncatedXorDifferentialModel.fix_variables_value_constraints(fixed_variables)
         self._variables_list = []
         self._model_constraints = constraints
-        component_types = (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION)
+        component_types = (
+            CIPHER_OUTPUT,
+            CONSTANT,
+            INTERMEDIATE_OUTPUT,
+            LINEAR_LAYER,
+            MIX_COLUMN,
+            PERMUTATION_COMPONENT,
+            SBOX,
+            WORD_OPERATION,
+        )
         operation_types = ("AND", "MODADD", "NOT", "OR", "ROTATE", "SHIFT", "XOR")
 
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             operation = component.description[0]
             if component.type in component_types and (component.type != WORD_OPERATION or operation in operation_types):
                 variables, constraints = component.sat_semi_deterministic_truncated_xor_differential_constraints()
@@ -331,7 +339,7 @@ class SatSemiDeterministicTruncatedXorDifferentialModel(SatTruncatedXorDifferent
     def _parse_solver_output(self, variable2value):
         components_solutions = self._get_cipher_inputs_components_solutions_double_ids(variable2value)
         total_weight = 0
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             value = self._get_component_value_double_ids(component, variable2value)
             weight = SatSemiDeterministicTruncatedXorDifferentialModel._calculate_component_weight(
                 component, variable2value, self._variables_list

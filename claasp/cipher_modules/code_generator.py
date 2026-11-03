@@ -1,17 +1,17 @@
 
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
@@ -24,9 +24,19 @@ from subprocess import call
 import claasp
 from claasp.cipher_modules.generic_functions_vectorized_byte import get_number_of_bytes_needed_for_bit_size
 from claasp.component import free_input
-from claasp.name_mappings import (SBOX, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION, CONSTANT,
-                                  CONCATENATE, PADDING, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT,
-                                  FSR, CIPHER_INVERSE_SUFFIX)
+from claasp.name_mappings import (
+    CIPHER_INVERSE_SUFFIX,
+    CIPHER_OUTPUT,
+    CONSTANT,
+    FSR,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    PADDING,
+    PERMUTATION_COMPONENT,
+    SBOX,
+    WORD_OPERATION,
+)
 
 tii_path = inspect.getfile(claasp)
 tii_dir_path = os.path.dirname(tii_path)
@@ -34,11 +44,38 @@ tii_dir_path = os.path.dirname(tii_path)
 TII_C_LIB_PATH = f'{tii_dir_path}/cipher_modules/'
 
 
+def process_tag():
+    """Unique-per-OS-process suffix for generated C artifacts.
+
+    ``evaluate_using_c`` writes/compiles/links/deletes files under the shared
+    ``TII_C_LIB_PATH``. Under ``pytest -n=... --isolate`` many worker/forked
+    processes do this concurrently; with fixed file names one process links a
+    ``.o`` another is still compiling (or has just ``rm``-ed) -> a corrupt binary
+    and non-deterministic results (observed intermittently, esp. on slower arches
+    where the compile window is wider). Tagging every artifact with the PID gives
+    each process private files, so there is nothing to race over.
+    """
+    return str(os.getpid())
+
+
+def evaluate_c_name(cipher):
+    """Per-process base name of the generated evaluate program for ``cipher``."""
+    return f"{cipher.id}_evaluate_{process_tag()}"
+
+
+def generic_c_functions_o_name(cipher):
+    """Per-process object-file name of the generic C helper ``cipher`` links against."""
+    cipher_word_size = cipher.is_power_of_2_word_based()
+    if cipher_word_size:
+        return f"generic_word_{cipher_word_size}_based_c_functions_{process_tag()}.o"
+    return f"generic_bit_based_c_functions_{process_tag()}.o"
+
+
 def delete_generated_evaluate_c_shared_library(cipher):
-    name = cipher.id + "_evaluate"
-    call(["rm", TII_C_LIB_PATH + name + ".c"])
-    call(["rm", TII_C_LIB_PATH + name + ".o"])
-    call(["rm", TII_C_LIB_PATH + "generic_bit_based_c_functions.o"])
+    name = evaluate_c_name(cipher)
+    call(["rm", "-f", TII_C_LIB_PATH + name + ".c"])
+    call(["rm", "-f", TII_C_LIB_PATH + name + ".o"])
+    call(["rm", "-f", TII_C_LIB_PATH + generic_c_functions_o_name(cipher)])
 
 
 def generate_bit_based_c_code(cipher, intermediate_output, verbosity):
@@ -86,7 +123,7 @@ def get_rounds_bit_based_c_code(cipher, intermediate_output, verbosity):
             rounds_code.append(f'\tprintf("\\nROUND {round_number.id}\\n\\n");\n')
 
         for component in round_number.components:
-            if component.type in ['constant', 'sbox', 'linear_layer', 'mix_column', 'concatenate']:
+            if component.type in ['constant', 'sbox', 'linear_layer', 'mix_column']:
                 rounds_code.extend(component.get_bit_based_c_code(verbosity))
                 c_variables.append(component.id)
 
@@ -140,7 +177,7 @@ def get_cipher_output_component_bit_based_c_code(component, index, intermediate_
 
         list_index = [0] * number_of_descriptions
 
-        for cipher_component in cipher.get_all_components():
+        for cipher_component in cipher.all_components():
             if cipher_component.type == 'intermediate_output':
                 i = string_dictionary[cipher_component.description[0]]
                 cipher_output_code.append(
@@ -218,58 +255,10 @@ def get_word_operation_component_bit_based_c_code(component, verbosity):
 
     return word_operation_code
 
-def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False,
-                                                     verbosity=False, convert_output_to_bytes=False):
-    """
-    Return string python code needed to evaluate a cipher using a vectorized implementation bit based oriented.
-
-    INPUT:
-
-    - ``cipher`` -- **Cipher object**; a cipher instance
-    - ``store_intermediate_outputs`` -- **boolean** (default: `False`); set this flag to True in order to return a list
-      with each round output
-    - ``verbosity`` -- **boolean** (default: `False`); set to True to make the Python code print the input/output of
-      each component
-    - ``convert_output_to_bytes`` -- **boolean** (default: `False`)
-
-    EXAMPLES::
-
-        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-        sage: from claasp.cipher_modules import code_generator
-        sage: speck = SpeckBlockCipher()
-        sage: string_python_code = code_generator.generate_bit_based_vectorized_python_code_string(speck)
-        sage: string_python_code.split("\n")[0]
-        'from claasp.cipher_modules.generic_functions_vectorized_bit import *'
-    """
-    code = ['from claasp.cipher_modules.generic_functions_vectorized_bit import *\n',
-            'def evaluate(input, store_intermediate_outputs):', '  intermediateOutputs={}']
-
-    code.extend([f'  {cipher.inputs[i]}=input[{i}]' for i in range(len(cipher.inputs))])
-    for component in cipher.get_all_components():
-        params = prepare_input_bit_based_vectorized_python_code_string(component)
-        component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
-                                   'sbox', 'cipher_output', 'intermediate_output', 'fsr']
-        component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
-                                          'MODADD', 'MODSUB', 'OR', 'AND']
-        if component.type in component_types_allowed or (component.type == 'word_operation' and
-                                                         component.description[0] in component_descriptions_allowed):
-            code.extend(component.get_bit_based_vectorized_python_code(params, convert_output_to_bytes))
-        name = component.id
-        if True and component.type != 'constant':
-            code.append(f'  bit_vector_print_as_hex_values("{name}_output", {name})')
-    if store_intermediate_outputs:
-        code.append('  return intermediateOutputs')
-    elif CIPHER_INVERSE_SUFFIX in cipher.id:
-        code.append('  return intermediateOutputs["plaintext"]')
-    else:
-        code.append('  return intermediateOutputs["cipher_output"]')
-
-    return '\n'.join(code)
-
 
 def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False,
                                                      verbosity=False, convert_output_to_bytes=False):
-    """
+    r"""
     Return string python code needed to evaluate a cipher using a vectorized implementation bit based oriented.
 
     INPUT:
@@ -294,12 +283,12 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
             'from time import time \n'
             'def evaluate(input, store_intermediate_outputs):', '  intermediateOutputs={}']
     code.extend([f'  {cipher.inputs[i]}=input[{i}]' for i in range(len(cipher.inputs))])
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         params = prepare_input_bit_based_vectorized_python_code_string(component)
-        component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
+        component_types_allowed = ['constant', 'linear_layer', 'mix_column', 'permutation',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
-                                          'MODADD', 'MODSUB', 'OR', 'AND']
+                                          'MODADD', 'MODMUL', 'MODSUB', 'OR', 'AND']
         if component.type in component_types_allowed or (component.type == 'word_operation' and
                                                          component.description[0] in component_descriptions_allowed):
             code.append("  t0 = time()")
@@ -362,15 +351,15 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
         code.append(f'  {cipher.inputs[i]}=input[{i}]')
         output_bit_sizes[cipher.inputs[i]] = cipher.inputs_bit_size[i]
     cipher_descriptions = []
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         cipher_descriptions.append(component.description)
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         formatted_component_inputs = prepare_input_byte_based_vectorized_python_code_string(output_bit_sizes, component)
         output_bit_sizes[component.id] = component.output_bit_size
-        component_types_allowed = ['constant', 'linear_layer', 'concatenate', 'mix_column',
+        component_types_allowed = ['constant', 'linear_layer', 'mix_column', 'permutation',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
         component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
-                                          'MODADD', 'MODSUB', 'IDEA_MODMUL', 'OR', 'AND']
+                                          'MODADD', 'MODMUL', 'MODSUB', 'IDEA_MODMUL', 'OR', 'AND']
         if component.type in component_types_allowed or (component.type == 'word_operation' and
                                                          component.description[0] in component_descriptions_allowed):
             code.extend(component.get_byte_based_vectorized_python_code(formatted_component_inputs))
@@ -468,9 +457,9 @@ def get_number_of_inputs(component):
         number_of_inputs = len(component.description[0][0])
     elif component.type == 'linear_layer':
         number_of_inputs = len(component.description[0])
-    elif component.type == 'sbox':
+    elif component.type == PERMUTATION_COMPONENT:
         number_of_inputs = 1
-    elif component.type == 'concatenate':
+    elif component.type == 'sbox':
         number_of_inputs = 1
     elif 'output' in component.type:
         number_of_inputs = 1
@@ -478,13 +467,25 @@ def get_number_of_inputs(component):
     return number_of_inputs
 
 
+def _needs_recompile(object_path, source_path):
+    """Whether ``object_path`` is missing or older than ``source_path``.
+
+    A leftover generic ``.o`` from a previous (e.g. crashed, or PID-reused,
+    see ``process_tag``) process must not be silently reused once its source
+    ``.c`` file has changed since it was compiled -- that would link a stale
+    binary against fresh cipher-specific code.
+    """
+    return not os.path.exists(object_path) or os.path.getmtime(object_path) < os.path.getmtime(source_path)
+
+
 def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosity):
-    name = cipher.id + "_evaluate"
+    name = evaluate_c_name(cipher)
+    generic_o = generic_c_functions_o_name(cipher)
     cipher_word_size = cipher.is_power_of_2_word_based()
     if cipher_word_size:
-        if not os.path.exists(TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o"):
-            call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_c_functions.c", "-o", TII_C_LIB_PATH +
-                  f"generic_word_{cipher_word_size}_based_c_functions.o", "-D", f"word_size={cipher_word_size}"])
+        if _needs_recompile(TII_C_LIB_PATH + generic_o, TII_C_LIB_PATH + "generic_word_based_c_functions.c"):
+            call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_word_based_c_functions.c", "-o",
+                  TII_C_LIB_PATH + generic_o, "-D", f"word_size={cipher_word_size}"])
 
         f = open(TII_C_LIB_PATH + name + ".c", "w+")
         f.write(cipher.generate_word_based_c_code(cipher_word_size, intermediate_output, verbosity))
@@ -492,7 +493,7 @@ def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosi
 
         call(["gcc",
               "-w",
-              TII_C_LIB_PATH + f"generic_word_{cipher_word_size}_based_c_functions.o",
+              TII_C_LIB_PATH + generic_o,
               TII_C_LIB_PATH + name + ".c",
               "-o",
               TII_C_LIB_PATH + name + ".o",
@@ -500,16 +501,15 @@ def generate_evaluate_c_code_shared_library(cipher, intermediate_output, verbosi
               f"word_size={cipher_word_size}"])
 
     else:
-        generic_bit_based_c_functions_o_file = "generic_bit_based_c_functions.o"
-        if not os.path.exists(TII_C_LIB_PATH + generic_bit_based_c_functions_o_file):
+        if _needs_recompile(TII_C_LIB_PATH + generic_o, TII_C_LIB_PATH + "generic_bit_based_c_functions.c"):
             call(["gcc", "-w", "-c", TII_C_LIB_PATH + "generic_bit_based_c_functions.c",
-                  "-o", TII_C_LIB_PATH + generic_bit_based_c_functions_o_file])
+                  "-o", TII_C_LIB_PATH + generic_o])
 
         f = open(TII_C_LIB_PATH + name + ".c", "w+")
         f.write(cipher.generate_bit_based_c_code(intermediate_output, verbosity))
         f.close()
 
-        call(["gcc", "-w", TII_C_LIB_PATH + generic_bit_based_c_functions_o_file,
+        call(["gcc", "-w", TII_C_LIB_PATH + generic_o,
               TII_C_LIB_PATH + name + ".c", "-o", TII_C_LIB_PATH + name + ".o"])
 
 
@@ -535,42 +535,31 @@ def generate_python_code_string(cipher, verbosity=False):
         # This test is skipped due to it changes the order of the intermediate outputs sometimes as:
         # intermediate_output['cipher_output'] = []
         # intermediate_output['round_key_output'] = []
-        sage: from claasp.ciphers.toys.identity_block_cipher import IdentityBlockCipher
+        sage: from claasp.ciphers.single_component_ciphers.identity_cipher import IdentityCipher
         sage: from claasp.cipher_modules import code_generator
-        sage: identity = IdentityBlockCipher()
+        sage: identity = IdentityCipher()
         sage: print(code_generator.generate_python_code_string(identity, verbosity=True)) # doctest: +SKIP
         from copy import copy
         from bitstring import BitArray
         from claasp.cipher_modules.generic_functions import *
         <BLANKLINE>
         def evaluate(input):
-            plaintext_output = copy(BitArray(uint=input[0], length=32))
-            key_output = copy(BitArray(uint=input[1], length=32))
+            plaintext_output = copy(BitArray(uint=int(input[0]), length=32))
             intermediate_output = {}
-            intermediate_output['round_key_output'] = []
             intermediate_output['cipher_output'] = []
             components_io = {}
             component_input = BitArray(1)
             print('\nRound_0\n')
         <BLANKLINE>
-            # round: 0, component: 0, component_id: concatenate_0_0
-            component_input = select_bits(key_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])
+            # round: 0, component: 0, component_id: cipher_output_0_0
+            component_input = select_bits(plaintext_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])
             output_bit_size = 32
-            concatenate_0_0_output = component_input
-            components_io['concatenate_0_0'] = [component_input.uint, concatenate_0_0_output.uint]
-            print('concatenate_0_0_input = {}'.format(component_input))
-            print('concatenate_0_0_output = {}'.format(concatenate_0_0_output))
-        ...
-        <BLANKLINE>
-            # round: 0, component: 3, component_id: cipher_output_0_3
-            component_input = select_bits(concatenate_0_2_output, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31])
-            output_bit_size = 32
-            cipher_output_0_3_output = component_input
-            intermediate_output['cipher_output'].append(cipher_output_0_3_output.uint)
-            cipher_output = cipher_output_0_3_output.uint
-            components_io['cipher_output_0_3'] = [component_input.uint, cipher_output_0_3_output.uint]
-            print('cipher_output_0_3_input = {}'.format(component_input))
-            print('cipher_output_0_3_output = {}'.format(cipher_output_0_3_output))
+            cipher_output_0_0_output = component_input
+            intermediate_output['cipher_output'].append(cipher_output_0_0_output.uint)
+            cipher_output = cipher_output_0_0_output.uint
+            components_io['cipher_output_0_0'] = [component_input.uint, cipher_output_0_0_output.uint]
+            print('cipher_output_0_0_input = {}'.format(component_input))
+            print('cipher_output_0_0_output = {}'.format(cipher_output_0_0_output))
         <BLANKLINE>
             return cipher_output, intermediate_output, components_io
         <BLANKLINE>
@@ -670,13 +659,17 @@ def build_function_call(component):
         polynomial = component.description[1]
         word_size = component.description[2]
         return f"mix_column_generalized(component_input, {mix_column_matrix}, {polynomial}, {word_size})"
+    elif component.type == PERMUTATION_COMPONENT:
+        permutation_list = component.description[0]
+        word_size = component.description[1]
+        return f"permutation(component_input, {permutation_list}, {word_size})"
     elif component.type == WORD_OPERATION:
         if component.description[0] in ('SHIFT_BY_VARIABLE_AMOUNT', 'ROTATE_BY_VARIABLE_AMOUNT'):
             return f"{component.description[0]}" \
                    f"(component_input, {component.output_bit_size}, {component.description[1]})"
         elif component.description[0] == 'NOT':
             return f"{component.description[0]}(component_input)"
-        elif component.description[0] in ['MODADD', 'MODSUB']:
+        elif component.description[0] in ['MODADD', 'MODMUL', 'MODSUB']:
             return f"{component.description[0]}(component_input, {component.description[1]}, {component.description[2]})"
         elif component.description[0] == 'IDEA_MODMUL':
             return f"idea_modmul(component_input, {component.description[1]}, {component.description[2]})"
@@ -684,8 +677,6 @@ def build_function_call(component):
             return f"{component.description[0]}(component_input, {component.description[1]})"
     elif component.type == CONSTANT:
         return f"set_from_hex_string('{component.description[0]}')"
-    elif component.type == CONCATENATE:
-        return "component_input"
     elif component.type == PADDING:
         return "padding(component_input)"
     elif component.type == FSR:
@@ -742,7 +733,7 @@ def generate_python_code_string_for_continuous_diffusion_analysis(cipher, verbos
     cipher_code_string += "    intermediate_output = {}\n"
     intermediate_output = set()
 
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         if component.type in (INTERMEDIATE_OUTPUT, CIPHER_OUTPUT):
             intermediate_output.add(component.description[0])
     cipher_code_string += "".join(f"    intermediate_output['{int_out}'] = []\n" for int_out in intermediate_output)
@@ -822,7 +813,7 @@ def build_continuous_diffusion_analysis_function_call(component):
     elif component.type == CONSTANT:
         return f"CONSTANT_continuous_diffusion_analysis({component.description[0]}, " \
                f"{component.output_bit_size})"
-    elif component.type in [CONCATENATE, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT]:
+    elif component.type in [INTERMEDIATE_OUTPUT, CIPHER_OUTPUT]:
         return "component_input"
     elif component.type == PADDING:
         return "padding(component_input)"
@@ -879,7 +870,7 @@ def get_rounds_word_based_c_code(cipher, intermediate_output, verbosity, word_si
                                            component.description[0] in ['SHIFT', 'ROTATE',
                                                                         'SHIFT_BY_VARIABLE_AMOUNT',
                                                                         'ROTATE_BY_VARIABLE_AMOUNT']
-            if component.type in ['constant', 'sbox', 'concatenate'] or is_shift_or_rotate_component:
+            if component.type in ['constant', 'sbox'] or is_shift_or_rotate_component:
                 rounds_code.extend(component.get_word_based_c_code(verbosity, word_size, wordstring_variables))
             elif component.type == 'word_operation':
                 rounds_code.extend(get_word_operation_word_based_c_code(component, verbosity,

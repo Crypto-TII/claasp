@@ -16,8 +16,7 @@
 # ****************************************************************************
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import STREAM_CIPHER, INPUT_KEY, INPUT_INITIALIZATION_VECTOR
-
+from claasp.name_mappings import INPUT_INITIALIZATION_VECTOR, INPUT_KEY, STREAM_CIPHER
 
 # fmt: off
 SBoxA = [
@@ -60,11 +59,6 @@ SBoxQ = [
 
 WORD_NUM = 16
 WORD_SIZE = 32
-LFSR_S = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
-LFSR_P = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
-FSM_R = []
-FSM_P = []
-
 LFSR_DESCR = [
     [
         [16, [[1, [0]], [1, [2]], [1, [11]]]]  # Register len =16, feedback poly=alpha*x0 + x2 + alpha^(-1)*x11
@@ -100,6 +94,10 @@ class Snow3GStreamCipher(Cipher):
         self.key_bit_size = key_bit_size
         self.iv_bit_size = iv_bit_size
         self.number_of_initialization_clocks = number_of_initialization_clocks
+        self.lfsr_s = [None] * WORD_NUM
+        self.lfsr_p = [None] * WORD_NUM
+        self.fsm_r = []
+        self.fsm_p = []
 
         super().__init__(
             family_name="snow3g_stream_cipher",
@@ -144,34 +142,34 @@ class Snow3GStreamCipher(Cipher):
         const_1 = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
         # lfsr cells-1th to 4th:  k_0+1, k_1+1, k_2+1, k_3+1
         for i in range(4):
-            self.add_XOR_component(
+            self.add_xor_component(
                 [key.id[0]] + const_1,
                 [list(range(i * WORD_SIZE, (i + 1) * WORD_SIZE)), list(range(WORD_SIZE))],
                 WORD_SIZE,
             )
-            LFSR_S[i] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
-            LFSR_P[i] = [list(range(WORD_SIZE))]
+            self.lfsr_s[i] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+            self.lfsr_p[i] = [list(range(WORD_SIZE))]
         # lfsr cells-5th to 8th:  k_0, k_1, k_2, k_3
         for i in range(4):
-            LFSR_S[i + 4] = [key.id[0]]
-            LFSR_P[i + 4] = [list(range(i * WORD_SIZE, (i + 1) * WORD_SIZE))]
+            self.lfsr_s[i + 4] = [key.id[0]]
+            self.lfsr_p[i + 4] = [list(range(i * WORD_SIZE, (i + 1) * WORD_SIZE))]
 
         # lfsr[8]: k0+1
-        self.add_XOR_component([key.id[0]] + const_1, [list(range(WORD_SIZE)), list(range(WORD_SIZE))], WORD_SIZE)
-        LFSR_S[8] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
-        LFSR_P[8] = [list(range(WORD_SIZE))]
+        self.add_xor_component([key.id[0]] + const_1, [list(range(WORD_SIZE)), list(range(WORD_SIZE))], WORD_SIZE)
+        self.lfsr_s[8] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.lfsr_p[8] = [list(range(WORD_SIZE))]
 
         # lfsr[9]: k1+1+iv3
-        self.add_XOR_component(
+        self.add_xor_component(
             [key.id[0]] + const_1 + [iv[0][0]],
             [list(range(WORD_SIZE, 2 * WORD_SIZE)), list(range(WORD_SIZE)), list(range(3 * WORD_SIZE, 4 * WORD_SIZE))],
             WORD_SIZE,
         )
-        LFSR_S[9] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
-        LFSR_P[9] = [list(range(WORD_SIZE))]
+        self.lfsr_s[9] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.lfsr_p[9] = [list(range(WORD_SIZE))]
 
         # lfsr[10] :k2+1+iv2
-        self.add_XOR_component(
+        self.add_xor_component(
             [key.id[0]] + const_1 + [iv[0][0]],
             [
                 list(range(2 * WORD_SIZE, 3 * WORD_SIZE)),
@@ -180,65 +178,65 @@ class Snow3GStreamCipher(Cipher):
             ],
             WORD_SIZE,
         )
-        LFSR_S[10] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
-        LFSR_P[10] = [list(range(WORD_SIZE))]
+        self.lfsr_s[10] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.lfsr_p[10] = [list(range(WORD_SIZE))]
 
         # lfsr[11]: k3+1
-        self.add_XOR_component(
+        self.add_xor_component(
             [key.id[0]] + const_1, [list(range(3 * WORD_SIZE, 4 * WORD_SIZE)), list(range(WORD_SIZE))], WORD_SIZE
         )
-        LFSR_S[11] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
-        LFSR_P[11] = [list(range(WORD_SIZE))]
+        self.lfsr_s[11] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.lfsr_p[11] = [list(range(WORD_SIZE))]
 
         # lfsr[12] : k0+iv1
-        self.add_XOR_component(
+        self.add_xor_component(
             [key.id[0], iv[0][0]], [list(range(WORD_SIZE)), list(range(WORD_SIZE, 2 * WORD_SIZE))], WORD_SIZE
         )
-        LFSR_S[12] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
-        LFSR_P[12] = [list(range(WORD_SIZE))]
+        self.lfsr_s[12] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.lfsr_p[12] = [list(range(WORD_SIZE))]
 
         # lfsr[13, 14]: k1+0, k2+0
         for i in range(2):
-            LFSR_S[12 + i + 1] = [key.id[0]]
-            LFSR_P[12 + i + 1] = [list(range((i + 1) * WORD_SIZE, (i + 2) * WORD_SIZE))]
+            self.lfsr_s[12 + i + 1] = [key.id[0]]
+            self.lfsr_p[12 + i + 1] = [list(range((i + 1) * WORD_SIZE, (i + 2) * WORD_SIZE))]
 
         # s15=k3+iv0
-        self.add_XOR_component(
+        self.add_xor_component(
             [key.id[0], iv[0][0]], [list(range(3 * WORD_SIZE, 4 * WORD_SIZE)), list(range(WORD_SIZE))], WORD_SIZE
         )
-        LFSR_S[15] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
-        LFSR_P[15] = [list(range(WORD_SIZE))]
+        self.lfsr_s[15] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.lfsr_p[15] = [list(range(WORD_SIZE))]
 
         for i in range(3):
-            FSM_R.append([const_0.id[0]])
-            FSM_P.append([list(range(WORD_SIZE))])
-        FSM_R[1] = FSM_R[1] + FSM_R[1] + FSM_R[1] + FSM_R[1]
-        FSM_P[1] = [list(range(8))] * 4
+            self.fsm_r.append([const_0.id[0]])
+            self.fsm_p.append([list(range(WORD_SIZE))])
+        self.fsm_r[1] = self.fsm_r[1] + self.fsm_r[1] + self.fsm_r[1] + self.fsm_r[1]
+        self.fsm_p[1] = [list(range(8))] * 4
 
     def clock_fsm(self, const_0):
-        self.add_MODADD_component(LFSR_S[15] + FSM_R[0], LFSR_P[15] + FSM_P[0], WORD_SIZE)
+        self.add_modadd_component(self.lfsr_s[15] + self.fsm_r[0], self.lfsr_p[15] + self.fsm_p[0], WORD_SIZE)
         F = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
 
-        self.add_XOR_component(F + FSM_R[1], [list(range(WORD_SIZE))] + FSM_P[1], WORD_SIZE)
+        self.add_xor_component(F + self.fsm_r[1], [list(range(WORD_SIZE))] + self.fsm_p[1], WORD_SIZE)
         F = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
 
-        self.add_XOR_component(FSM_R[2] + LFSR_S[5], FSM_P[2] + LFSR_P[5], WORD_SIZE)
+        self.add_xor_component(self.fsm_r[2] + self.lfsr_s[5], self.fsm_p[2] + self.lfsr_p[5], WORD_SIZE)
         r = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
 
-        self.add_MODADD_component(r + FSM_R[1], [list(range(WORD_SIZE))] + FSM_P[1], WORD_SIZE)
+        self.add_modadd_component(r + self.fsm_r[1], [list(range(WORD_SIZE))] + self.fsm_p[1], WORD_SIZE)
         r = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
 
-        FSM_R[2], FSM_P[2] = self.S2(FSM_R[1], FSM_P[1], const_0)
-        FSM_R[1], FSM_P[1] = self.S1(FSM_R[0], FSM_P[0], const_0)
-        FSM_R[0] = r
-        FSM_P[0] = [list(range(WORD_SIZE))]
+        self.fsm_r[2], self.fsm_p[2] = self.S2(self.fsm_r[1], self.fsm_p[1], const_0)
+        self.fsm_r[1], self.fsm_p[1] = self.S1(self.fsm_r[0], self.fsm_p[0], const_0)
+        self.fsm_r[0] = r
+        self.fsm_p[0] = [list(range(WORD_SIZE))]
 
         return F
 
     def S1(self, w_id, w_pos, const_0):
         sba = []
         for i in range(4):
-            self.add_SBOX_component(w_id, [w_pos[0][i * 8 : i * 8 + 8]], 8, SBoxA)
+            self.add_sbox_component(w_id, [w_pos[0][i * 8 : i * 8 + 8]], 8, SBoxA)
             sba.append([ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]])
 
         id_0 = sba[0] + [const_0.id[0]] + sba[0] + sba[0] + [const_0.id[0]] + sba[0] + sba[0]
@@ -249,23 +247,23 @@ class Snow3GStreamCipher(Cipher):
 
         ids = id_0 + sba[1] + sba[2] + id_3 + sba[3]
         pos = pos_0 + [list(range(8))] + [list(range(8))] + pos_0 + [list(range(8))]
-        self.add_XOR_component(ids, pos, 8)
+        self.add_xor_component(ids, pos, 8)
         r0 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
         ids = id_0 + sba[0] + id_1 + sba[2] + sba[3]
         pos = pos_0 + [list(range(8))] + pos_0 + [list(range(8))] + [list(range(8))]
 
-        self.add_XOR_component(ids, pos, 8)
+        self.add_xor_component(ids, pos, 8)
         r1 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
         ids = sba[0] + id_1 + sba[1] + id_2 + sba[3]
         pos = [list(range(8))] + pos_0 + [list(range(8))] + pos_0 + [list(range(8))]
-        self.add_XOR_component(ids, pos, 8)
+        self.add_xor_component(ids, pos, 8)
         r2 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
         ids = sba[0] + sba[1] + id_2 + sba[2] + id_3
         pos = [list(range(8))] + [list(range(8))] + pos_0 + [list(range(8))] + pos_0
-        self.add_XOR_component(ids, pos, 8)
+        self.add_xor_component(ids, pos, 8)
         r3 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
         S1_id = r0 + r1 + r2 + r3
@@ -275,7 +273,7 @@ class Snow3GStreamCipher(Cipher):
     def S2(self, w_id, w_pos, const_0):
         sbq = []
         for i in range(4):
-            self.add_SBOX_component([w_id[i]], [w_pos[i]], 8, SBoxQ)
+            self.add_sbox_component([w_id[i]], [w_pos[i]], 8, SBoxQ)
             sbq.append([ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]])
 
         id_0 = sbq[0] + [const_0.id[0]] + sbq[0] + sbq[0] + [const_0.id[0]] + sbq[0] + [const_0.id[0]] + sbq[0]
@@ -286,23 +284,23 @@ class Snow3GStreamCipher(Cipher):
 
         ids = id_0 + sbq[1] + sbq[2] + id_3 + sbq[3]
         pos = pos_0 + [list(range(8))] + [list(range(8))] + pos_0 + [list(range(8))]
-        self.add_XOR_component(ids, pos, 8)
+        self.add_xor_component(ids, pos, 8)
         r0 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
         ids = id_0 + sbq[0] + id_1 + sbq[2] + sbq[3]
         pos = pos_0 + [list(range(8))] + pos_0 + [list(range(8))] + [list(range(8))]
 
-        self.add_XOR_component(ids, pos, 8)
+        self.add_xor_component(ids, pos, 8)
         r1 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
         ids = sbq[0] + id_1 + sbq[1] + id_2 + sbq[3]
         pos = [list(range(8))] + pos_0 + [list(range(8))] + pos_0 + [list(range(8))]
-        self.add_XOR_component(ids, pos, 8)
+        self.add_xor_component(ids, pos, 8)
         r2 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
         ids = sbq[0] + sbq[1] + id_2 + sbq[2] + id_3
         pos = [list(range(8))] + [list(range(8))] + pos_0 + [list(range(8))] + pos_0
-        self.add_XOR_component(ids, pos, 8)
+        self.add_xor_component(ids, pos, 8)
         r3 = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
 
         S2_id = r0 + r1 + r2 + r3
@@ -311,49 +309,49 @@ class Snow3GStreamCipher(Cipher):
 
     def clock_lfsr_initialization_mode(self, F, const_0):
         self.clock_lfsr(const_0)
-        self.add_XOR_component(LFSR_S[15] + F, LFSR_P[15] + [list(range(WORD_SIZE))], WORD_SIZE)
-        LFSR_S[15] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
-        LFSR_P[15] = [list(range(WORD_SIZE))]
+        self.add_xor_component(self.lfsr_s[15] + F, self.lfsr_p[15] + [list(range(WORD_SIZE))], WORD_SIZE)
+        self.lfsr_s[15] = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
+        self.lfsr_p[15] = [list(range(WORD_SIZE))]
 
     def clock_lfsr(self, const_0):
         S0a, S11a = self.create_alpha_state(const_0)
         fsr_ids = S0a
         fsr_pos = [list(range(WORD_SIZE))]
         for i in range(1, 11):
-            fsr_ids = fsr_ids + LFSR_S[i]
-            fsr_pos = fsr_pos + LFSR_P[i]
+            fsr_ids = fsr_ids + self.lfsr_s[i]
+            fsr_pos = fsr_pos + self.lfsr_p[i]
         fsr_ids = fsr_ids + S11a
         fsr_pos = fsr_pos + [list(range(WORD_SIZE))]
         for i in range(12, WORD_NUM):
-            fsr_ids = fsr_ids + LFSR_S[i]
-            fsr_pos = fsr_pos + LFSR_P[i]
+            fsr_ids = fsr_ids + self.lfsr_s[i]
+            fsr_pos = fsr_pos + self.lfsr_p[i]
 
-        self.add_FSR_component(fsr_ids, fsr_pos, WORD_SIZE * WORD_NUM, LFSR_DESCR)
+        self.add_fsr_component(fsr_ids, fsr_pos, WORD_SIZE * WORD_NUM, LFSR_DESCR)
         S15 = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE * WORD_NUM))]).id[0]]
         for i in range(WORD_NUM - 1):
-            LFSR_S[i] = LFSR_S[i + 1]
-            LFSR_P[i] = LFSR_P[i + 1]
-        LFSR_S[WORD_NUM - 1] = S15
-        LFSR_P[WORD_NUM - 1] = [list(range((WORD_NUM - 1) * WORD_SIZE, WORD_NUM * WORD_SIZE))]
+            self.lfsr_s[i] = self.lfsr_s[i + 1]
+            self.lfsr_p[i] = self.lfsr_p[i + 1]
+        self.lfsr_s[WORD_NUM - 1] = S15
+        self.lfsr_p[WORD_NUM - 1] = [list(range((WORD_NUM - 1) * WORD_SIZE, WORD_NUM * WORD_SIZE))]
 
     def create_alpha_state(self, const_0):
-        S0 = LFSR_S[0]
+        S0 = self.lfsr_s[0]
         S0a_id, S0a_pos = self.MULalpha(S0, const_0)
         s0_id = S0 + [const_0.id[0]] + S0a_id
-        s0_pos = [LFSR_P[0][0][8:WORD_SIZE], list(range(8))] + S0a_pos
-        self.add_XOR_component(s0_id, s0_pos, WORD_SIZE)
+        s0_pos = [self.lfsr_p[0][0][8:WORD_SIZE], list(range(8))] + S0a_pos
+        self.add_xor_component(s0_id, s0_pos, WORD_SIZE)
         S0a = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
 
-        S11a_id, S11a_pos = self.DIValpha(LFSR_S[11], const_0)
-        s11_id = [const_0.id[0]] + LFSR_S[11] + S11a_id
-        s11_pos = [list(range(8)), LFSR_P[11][0][0:24]] + S11a_pos
-        self.add_XOR_component(s11_id, s11_pos, WORD_SIZE)
+        S11a_id, S11a_pos = self.DIValpha(self.lfsr_s[11], const_0)
+        s11_id = [const_0.id[0]] + self.lfsr_s[11] + S11a_id
+        s11_pos = [list(range(8)), self.lfsr_p[11][0][0:24]] + S11a_pos
+        self.add_xor_component(s11_id, s11_pos, WORD_SIZE)
         S11a = [ComponentState([self.get_current_component_id()], [list(range(WORD_SIZE))]).id[0]]
 
         return S0a, S11a
 
     def MULalpha(self, S0, const_0):
-        P = LFSR_P[0][0][:8]
+        P = self.lfsr_p[0][0][:8]
         mulxpow1 = self.MULxPOW(S0, 23, const_0, P)
         mulxpow2 = self.MULxPOW(S0, 245, const_0, P)
         mulxpow3 = self.MULxPOW(S0, 48, const_0, P)
@@ -365,7 +363,7 @@ class Snow3GStreamCipher(Cipher):
         return S0a_id, S0a_pos
 
     def DIValpha(self, S11, const_0):
-        P = LFSR_P[11][0][8 * 3 : 8 * 4]
+        P = self.lfsr_p[11][0][8 * 3 : 8 * 4]
         mulxpow1 = self.MULxPOW(S11, 16, const_0, P)
         mulxpow2 = self.MULxPOW(S11, 39, const_0, P)
         mulxpow3 = self.MULxPOW(S11, 6, const_0, P)
@@ -390,12 +388,12 @@ class Snow3GStreamCipher(Cipher):
         m_id2 = V + [const_0.id[0]] + V + [const_0.id[0]] + V + [const_0.id[0]] + V
         m_pos2 = [[P[0]]] + [[0]] + [[P[0]]] + [[0]] + [[P[0]]] + [[0, 1]] + [[P[0]]]
 
-        self.add_XOR_component(m_id1 + m_id2, m_pos1 + m_pos2, 8)
+        self.add_xor_component(m_id1 + m_id2, m_pos1 + m_pos2, 8)
         V = [ComponentState([self.get_current_component_id()], [list(range(8))]).id[0]]
         return V
 
     def snow3g_key_stream(self, F, keystream, clock_number):
-        key_word = self.add_XOR_component(F + LFSR_S[0], [list(range(WORD_SIZE))] + LFSR_P[0], WORD_SIZE).id
+        key_word = self.add_xor_component(F + self.lfsr_s[0], [list(range(WORD_SIZE))] + self.lfsr_p[0], WORD_SIZE).id
         if clock_number == 0:
             keystream = self.add_round_output_component([key_word], [list(range(WORD_SIZE))], WORD_SIZE).id
         else:

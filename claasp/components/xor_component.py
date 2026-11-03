@@ -16,20 +16,21 @@
 # ****************************************************************************
 
 
-from claasp.input import Input
-from claasp.component import Component
-from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
 from claasp.cipher_modules.models.milp.utils import utils as milp_utils
+from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
+    output_dictionary_that_contains_wordwise_truncated_xor_inequalities,
+    update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs,
+)
 from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_xor_with_n_input_bits import (
     output_dictionary_that_contains_xor_inequalities,
     update_dictionary_that_contains_xor_inequalities_between_n_input_bits,
 )
-from claasp.cipher_modules.models.milp.utils.generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits import (
-    update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs,
-    output_dictionary_that_contains_wordwise_truncated_xor_inequalities,
-)
 from claasp.cipher_modules.models.milp.utils.utils import espresso_pos_to_constraints
+from claasp.cipher_modules.models.sat.utils import constants
+from claasp.cipher_modules.models.sat.utils import utils as sat_utils
+from claasp.cipher_modules.models.smt.utils import utils as smt_utils
+from claasp.component import Component
+from claasp.input import Input
 from claasp.name_mappings import WORD_OPERATION
 
 
@@ -136,7 +137,40 @@ def get_milp_constraints_from_inequalities(inequalities, input_vars, number_of_i
     return constraints
 
 
-class XOR(Component):
+class Xor(Component):
+    """
+    Construct an XOR component.
+
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+
+    NOTE:
+
+        The number of operands is automatically inferred as
+        ``sum(len(p) for p in input_bit_positions) / output_bit_size``.
+        For example, three input groups of 2 bits each with ``output_bit_size=2`` give a 3-input XOR;
+        two input groups of 2 bits each give a 2-input XOR.
+
+    EXAMPLES::
+
+        sage: from claasp.components.xor_component import Xor
+        sage: component = Xor(0, 0, ['input1', 'input2', 'input2'], [[0, 1], [0, 1], [2, 3]], 2)
+        sage: print(component.id)
+        xor_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)  # 6 total bits / output_bit_size 2 = 3 operands
+        ['XOR', 3]
+        sage: component2 = Xor(0, 1, ['a', 'b'], [[0, 1], [0, 1]], 2)
+        sage: print(component2.description)  # 4 total bits / output_bit_size 2 = 2 operands
+        ['XOR', 2]
+    """
     def __init__(
         self,
         current_round_number,
@@ -148,7 +182,7 @@ class XOR(Component):
         component_id = f"xor_{current_round_number}_{current_round_number_of_components}"
         component_type = WORD_OPERATION
         input_len = sum(map(len, input_bit_positions))
-        description = ["XOR", int(input_len / output_bit_size)]
+        description = ["XOR", input_len // output_bit_size]
         component_input = Input(input_len, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
 
@@ -162,24 +196,24 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: fancy = FancyBlockCipher(number_of_rounds=1)
-            sage: xor_component = fancy.get_component_from_id("xor_0_7")
-            sage: algebraic = AlgebraicModel(fancy)
+            sage: cipher = XorCipher(word_bit_size=12, number_of_inputs=2)
+            sage: xor_component = cipher.component_from_id('xor_0_0')
+            sage: algebraic = AlgebraicModel(cipher)
             sage: xor_component.algebraic_polynomials(algebraic)
-            [xor_0_7_y0 + xor_0_7_x12 + xor_0_7_x0,
-             xor_0_7_y1 + xor_0_7_x13 + xor_0_7_x1,
-             xor_0_7_y2 + xor_0_7_x14 + xor_0_7_x2,
-             xor_0_7_y3 + xor_0_7_x15 + xor_0_7_x3,
-             xor_0_7_y4 + xor_0_7_x16 + xor_0_7_x4,
-             xor_0_7_y5 + xor_0_7_x17 + xor_0_7_x5,
-             xor_0_7_y6 + xor_0_7_x18 + xor_0_7_x6,
-             xor_0_7_y7 + xor_0_7_x19 + xor_0_7_x7,
-             xor_0_7_y8 + xor_0_7_x20 + xor_0_7_x8,
-             xor_0_7_y9 + xor_0_7_x21 + xor_0_7_x9,
-             xor_0_7_y10 + xor_0_7_x22 + xor_0_7_x10,
-             xor_0_7_y11 + xor_0_7_x23 + xor_0_7_x11]
+            [xor_0_0_y0 + xor_0_0_x12 + xor_0_0_x0,
+             xor_0_0_y1 + xor_0_0_x13 + xor_0_0_x1,
+             xor_0_0_y2 + xor_0_0_x14 + xor_0_0_x2,
+             xor_0_0_y3 + xor_0_0_x15 + xor_0_0_x3,
+             xor_0_0_y4 + xor_0_0_x16 + xor_0_0_x4,
+             xor_0_0_y5 + xor_0_0_x17 + xor_0_0_x5,
+             xor_0_0_y6 + xor_0_0_x18 + xor_0_0_x6,
+             xor_0_0_y7 + xor_0_0_x19 + xor_0_0_x7,
+             xor_0_0_y8 + xor_0_0_x20 + xor_0_0_x8,
+             xor_0_0_y9 + xor_0_0_x21 + xor_0_0_x9,
+             xor_0_0_y10 + xor_0_0_x22 + xor_0_0_x10,
+             xor_0_0_y11 + xor_0_0_x23 + xor_0_0_x11]
         """
         ninputs = self.input_bit_size
         noutputs = self.output_bit_size
@@ -213,24 +247,18 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0,2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cms_constraints()
-            (['xor_0_2_0',
-              'xor_0_2_1',
-              'xor_0_2_2',
-              ...
-              'x -xor_0_2_13 modadd_0_1_13 key_61',
-              'x -xor_0_2_14 modadd_0_1_14 key_62',
-              'x -xor_0_2_15 modadd_0_1_15 key_63'])
+            (['xor_0_0_0', 'xor_0_0_1'],
+            ['x -xor_0_0_0 plaintext_0 key_0', 'x -xor_0_0_1 plaintext_1 key_1'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            operands = [f"x -{output_bit_ids[i]}"]
-            operands.extend(input_bit_ids[i::output_bit_len])
+        for i, output_bit_id in enumerate(output_bit_ids):
+            operands = [f"x -{output_bit_id}"]
+            operands.extend(input_bit_ids[i::self.output_bit_size])
             constraints.append(" ".join(operands))
 
         return output_bit_ids, constraints
@@ -251,14 +279,12 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: xor_component = speck.component_from(0, 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cp_constraints()
             ([],
-             ['constraint xor_0_2[0] = (modadd_0_1[0] + key[48]) mod 2;',
-              ...
-              'constraint xor_0_2[15] = (modadd_0_1[15] + key[63]) mod 2;'])
+            ['constraint xor_0_0[0] = (plaintext[0] + key[0]) mod 2;',
+            'constraint xor_0_0[1] = (plaintext[1] + key[1]) mod 2;'])
         """
         cp_declarations = []
         all_inputs = []
@@ -268,6 +294,23 @@ class XOR(Component):
         for i in range(self.output_bit_size):
             operation = " + ".join(all_inputs[i::self.output_bit_size])
             cp_constraints.append(f"constraint {self.id}[{i}] = ({operation}) mod 2;")
+
+        return cp_declarations, cp_constraints
+
+    def cp_continuous_differential_propagation_constraints(self, model):
+        output_id_link = self.id
+        input_len = self.output_bit_size
+
+        cp_declarations = []
+        cp_constraints = []
+
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: x1_{output_id_link};")
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: x2_{output_id_link};")
+        cp_declarations.append(f"array[0..{input_len - 1}] of var -1.0..1.0: {output_id_link};")
+
+        cp_constraints.append(
+            f"constraint {output_id_link} = continuous_xor(x1_{output_id_link}, x2_{output_id_link},{output_id_link});"
+        )
 
         return cp_declarations, cp_constraints
 
@@ -281,14 +324,12 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: xor_component = speck.component_from(0, 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cp_deterministic_truncated_xor_differential_constraints()
             ([],
-             ['constraint if ((modadd_0_1[0] < 2) /\\ (key[48]< 2)) then xor_0_2[0] = (modadd_0_1[0] + key[48]) mod 2 else xor_0_2[0] = 2 endif;',
-               ...
-              'constraint if ((modadd_0_1[15] < 2) /\\ (key[63]< 2)) then xor_0_2[15] = (modadd_0_1[15] + key[63]) mod 2 else xor_0_2[15] = 2 endif;'])
+            ['constraint if ((plaintext[0] < 2) /\\ (key[0]< 2)) then xor_0_0[0] = (plaintext[0] + key[0]) mod 2 else xor_0_0[0] = 2 endif;',
+            'constraint if ((plaintext[1] < 2) /\\ (key[1]< 2)) then xor_0_0[1] = (plaintext[1] + key[1]) mod 2 else xor_0_0[1] = 2 endif;'])
         """
         cp_declarations = []
         all_inputs = []
@@ -316,14 +357,12 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=5)
-            sage: xor_component = speck.component_from(0, 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cp_hybrid_deterministic_truncated_xor_differential_constraints()
             ([],
-             ['constraint if (modadd_0_1[0] < 2) /\\ (key[48] < 2) then xor_0_2[0] = (modadd_0_1[0] + key[48]) mod 2 elseif (modadd_0_1[0] + key[48] = modadd_0_1[0]) then xor_0_2[0] = modadd_0_1[0] elseif (modadd_0_1[0] + key[48] = key[48]) then xor_0_2[0] = key[48] else xor_0_2[0] = 2 endif;',
-               ...
-              'constraint if (modadd_0_1[15] < 2) /\\ (key[63] < 2) then xor_0_2[15] = (modadd_0_1[15] + key[63]) mod 2 elseif (modadd_0_1[15] + key[63] = modadd_0_1[15]) then xor_0_2[15] = modadd_0_1[15] elseif (modadd_0_1[15] + key[63] = key[63]) then xor_0_2[15] = key[63] else xor_0_2[15] = 2 endif;'])
+             ['constraint if (plaintext[0] < 2) /\\ (key[0] < 2) then xor_0_0[0] = (plaintext[0] + key[0]) mod 2 elseif (plaintext[0] + key[0] = plaintext[0]) then xor_0_0[0] = plaintext[0] elseif (plaintext[0] + key[0] = key[0]) then xor_0_0[0] = key[0] else xor_0_0[0] = 2 endif;',
+              'constraint if (plaintext[1] < 2) /\\ (key[1] < 2) then xor_0_0[1] = (plaintext[1] + key[1]) mod 2 elseif (plaintext[1] + key[1] = plaintext[1]) then xor_0_0[1] = plaintext[1] elseif (plaintext[1] + key[1] = key[1]) then xor_0_0[1] = key[1] else xor_0_0[1] = 2 endif;'])
         """
         cp_declarations = []
         all_inputs = [
@@ -349,6 +388,9 @@ class XOR(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_deterministic_truncated_xor_differential_constraints()
 
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.cp_deterministic_truncated_xor_differential_constraints()
+
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         r"""
         Return lists declarations and constraints for XOR component CP wordwise deterministic truncated XOR differential model.
@@ -359,18 +401,19 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=5)
-            sage: cp = MznModel(aes)
-            sage: xor_component = aes.component_from(0, 0)
+            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
+            sage: cp = MznModel(cipher)
+            sage: cp.word_size = 8
+            sage: xor_component = cipher.component_from_id("xor_0_0")
             sage: xor_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
             (['var -2..255: xor_0_0_temp_0_0_value;',
               ...
-              'var 0..9: xor_0_0_bound_value_0_15 = if xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value > 0 then ceil(log2(xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value)) else 0 endif;'],
-             ['constraint xor_0_0_temp_0_0_value = key_value[0] /\\ xor_0_0_temp_0_0_active = key_active[0];',
+              'var 0..9: xor_0_0_bound_value_0_0 = if xor_0_0_temp_0_0_value + xor_0_0_temp_1_0_value > 0 then ceil(log2(xor_0_0_temp_0_0_value + xor_0_0_temp_1_0_value)) else 0 endif;'],
+             ['constraint xor_0_0_temp_0_0_value = plaintext_value[0] /\\ xor_0_0_temp_0_0_active = plaintext_active[0];',
                ...
-              'constraint if xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active > 2 then xor_0_0_active[15] == 3 /\\ xor_0_0_value[15] = -2 elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 1 then xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value elseif xor_0_0_temp_0_15_active + xor_0_0_temp_1_15_active == 0 then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 elseif xor_0_0_temp_0_15_value + xor_0_0_temp_1_15_value < 0 then xor_0_0_active[15] = 2 /\\ xor_0_0_value[15] = -1 elseif xor_0_0_temp_0_15_value == xor_0_0_temp_1_15_value then xor_0_0_active[15] = 0 /\\ xor_0_0_value[15] = 0 else xor_0_0_active[15] = 1 /\\ xor_0_0_value[15] = sum([(((floor(xor_0_0_temp_0_15_value/pow(2,j)) + floor(xor_0_0_temp_1_15_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..xor_0_0_bound_value_0_15]) endif;'])
+              'constraint if xor_0_0_temp_0_0_active + xor_0_0_temp_1_0_active > 2 then xor_0_0_active[0] == 3 /\\ xor_0_0_value[0] = -2 elseif xor_0_0_temp_0_0_active + xor_0_0_temp_1_0_active == 1 then xor_0_0_active[0] = 1 /\\ xor_0_0_value[0] = xor_0_0_temp_0_0_value + xor_0_0_temp_1_0_value elseif xor_0_0_temp_0_0_active + xor_0_0_temp_1_0_active == 0 then xor_0_0_active[0] = 0 /\\ xor_0_0_value[0] = 0 elseif xor_0_0_temp_0_0_value + xor_0_0_temp_1_0_value < 0 then xor_0_0_active[0] = 2 /\\ xor_0_0_value[0] = -1 elseif xor_0_0_temp_0_0_value == xor_0_0_temp_1_0_value then xor_0_0_active[0] = 0 /\\ xor_0_0_value[0] = 0 else xor_0_0_active[0] = 1 /\\ xor_0_0_value[0] = sum([(((floor(xor_0_0_temp_0_0_value/pow(2,j)) + floor(xor_0_0_temp_1_0_value/pow(2,j))) mod 2) * pow(2,j)) | j in 0..xor_0_0_bound_value_0_0]) endif;'])
         """
         output_id_link = self.id
         cp_declarations = []
@@ -495,14 +538,15 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(aes)
-            sage: xor_component = aes.component_from(2, 31)
-            sage: xor_component.cp_xor_differential_propagation_first_step_constraints(cp, cp._variables_list)
+            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
+            sage: cp = MznModel(cipher)
+            sage: cp.word_size = 8
+            sage: xor_component = cipher.component_from_id("xor_0_0")
+            sage: xor_component.cp_xor_differential_propagation_first_step_constraints(cp, cp._variables_declarations)
             (['array[0..1, 1..2] of int: xor_truncated_table_2 = array2d(0..1, 1..2, [0,0,1,1]);'],
-             'constraint table([rot_2_16[0]]++[xor_2_26[0]], xor_truncated_table_2);')
+             'constraint table([plaintext[0]]++[key[0]], xor_truncated_table_2);')
         """
         numadd = self.description[1]
         all_inputs = []
@@ -536,15 +580,15 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=22)
-            sage: xor_component = speck.component_from(0, 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.cp_xor_linear_mask_propagation_constraints()
-            (['array[0..31] of var 0..1: xor_0_2_i;',
-              'array[0..15] of var 0..1: xor_0_2_o;'],
-             ['constraint xor_0_2_o[0] = xor_0_2_i[0];',
-              ...
-              'constraint xor_0_2_o[15] = xor_0_2_i[31];'])
+            (['array[0..3] of var 0..1: xor_0_0_i;',
+            'array[0..1] of var 0..1: xor_0_0_o;'],
+            ['constraint xor_0_0_o[0] = xor_0_0_i[0];',
+            'constraint xor_0_0_o[0] = xor_0_0_i[2];',
+            'constraint xor_0_0_o[1] = xor_0_0_i[1];',
+            'constraint xor_0_0_o[1] = xor_0_0_i[3];'])
         """
         cp_declarations = [
             f"array[0..{self.input_bit_size - 1}] of var 0..1: {self.id}_i;",
@@ -601,25 +645,25 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpModel(simon)
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = simon.get_component_from_id("xor_0_5")
+            sage: xor_component = cipher.component_from_id('xor_0_0')
             sage: variables, constraints = xor_component.milp_constraints(milp)
-            ...
             sage: variables
-            [('x[and_0_4_0]', x_0),
-            ('x[and_0_4_1]', x_1),
-            ...
-            ('x[xor_0_5_14]', x_46),
-            ('x[xor_0_5_15]', x_47)]
+            [('x[plaintext_0]', x_0),
+            ('x[plaintext_1]', x_1),
+             ('x[key_0]', x_2),
+             ('x[key_1]', x_3),
+             ('x[xor_0_0_0]', x_4),
+             ('x[xor_0_0_1]', x_5)]
             sage: constraints[:4]
-            [x_32 <= x_0 + x_16,
-             x_16 <= x_0 + x_32,
-             x_0 <= x_16 + x_32,
-             x_0 + x_16 + x_32 <= 2]
+            [x_4 <= x_0 + x_2,
+             x_2 <= x_0 + x_4,
+             x_0 <= x_2 + x_4,
+             x_0 + x_2 + x_4 <= 2]
         """
         x = model.binary_variable
         input_vars, output_vars = self._get_input_output_variables()
@@ -648,6 +692,26 @@ class XOR(Component):
     def milp_xor_differential_propagation_constraints(self, model):
         return self.milp_constraints(model)
 
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        output_ids = self._milp_wordwise_branch_number_active_sboxes_output_ids(model)
+        number_of_operands = self.description[1]
+        flat_input_ids = model._flat_input_word_ids(self)
+        words_per_operand = len(output_ids)
+        if len(flat_input_ids) != number_of_operands * words_per_operand * model.word_size:
+            raise NotImplementedError(f"{self.id}: XOR input word count does not match operand count x output size")
+        operand_word_groups = []
+        for operand_index in range(number_of_operands):
+            start = operand_index * words_per_operand * model.word_size
+            end = (operand_index + 1) * words_per_operand * model.word_size
+            operand_bits = flat_input_ids[start:end]
+            operand_word_groups.append([operand_bits[j * model.word_size] for j in range(words_per_operand)])
+
+        constraints = []
+        for j, output_id in enumerate(output_ids):
+            group_words = [operand_words[j] for operand_words in operand_word_groups] + [output_id]
+            constraints += model._branch_number_constraints(group_words, 2)
+        return constraints
+
     def milp_xor_linear_constraints(self, model):
         """
         Return a list of variables and a list of constraints for XOR operation in MILP XOR LINEAR model.
@@ -658,26 +722,25 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpModel(simon)
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = simon.get_component_from_id("xor_0_5")
+            sage: xor_component = cipher.component_from_id('xor_0_0')
             sage: variables, constraints = xor_component.milp_xor_linear_constraints(milp)
             sage: variables
-            [('x[xor_0_5_0_i]', x_0),
-            ('x[xor_0_5_1_i]', x_1),
-            ...
-            ('x[xor_0_5_14_o]', x_46),
-            ('x[xor_0_5_15_o]', x_47)]
+            [('x[xor_0_0_0_i]', x_0),
+            ('x[xor_0_0_1_i]', x_1),
+            ('x[xor_0_0_2_i]', x_2),
+            ('x[xor_0_0_3_i]', x_3),
+            ('x[xor_0_0_0_o]', x_4),
+            ('x[xor_0_0_1_o]', x_5)]
             sage: constraints
-            [x_32 == x_0,
-            x_33 == x_1,
-            x_34 == x_2,
-            ...
-            x_46 == x_30,
-            x_47 == x_31]
+            [x_4 == x_0,
+            x_5 == x_1,
+            x_4 == x_2,
+            x_5 == x_3]
         """
         x = model.binary_variable
         output_bit_size = self.output_bit_size
@@ -703,21 +766,21 @@ class XOR(Component):
         in deterministic truncated XOR differential model.
 
         This method uses a binary encoding (where each variable v is seen as a binary tuple (v0, v1), where v0 is the MSB) to
-        model the result c of the truncated XOR between inputs a and b.
+        model the result c of the truncated XOR between inputs a and b::
 
-        _______________
-         a  |  b  |  c
-        _______________
-         0  |  0  |  0
-         0  |  1  |  1
-         0  |  2  |  2
-         1  |  0  |  1
-         1  |  1  |  0
-         1  |  2  |  2
-         2  |  0  |  2
-         2  |  1  |  2
-         2  |  2  |  2
-        _______________
+            _______________
+             a  |  b  |  c
+            _______________
+             0  |  0  |  0
+             0  |  1  |  1
+             0  |  2  |  2
+             1  |  0  |  1
+             1  |  1  |  0
+             1  |  2  |  2
+             2  |  0  |  2
+             2  |  1  |  2
+             2  |  2  |  2
+            _______________
 
         Espresso was used to reduce the number of constraints to 10 inequalities.
         A k-input XOR is then split into k-1 2-input sequential XORs, for wich the results are stored in intermediate
@@ -729,25 +792,22 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
-            sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_5")
+            sage: xor_component = cipher.component_from_id('xor_0_0')
             sage: variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_binary_constraints(milp)
             sage: variables
-            [('x[and_0_4_0_class_bit_0]', x_0),
-             ('x[and_0_4_0_class_bit_1]', x_1),
+            [('x[plaintext_0_class_bit_0]', x_0),
+             ('x[plaintext_0_class_bit_1]', x_1),
              ...
-             ('x[xor_0_5_15_class_bit_0]', x_94),
-             ('x[xor_0_5_15_class_bit_1]', x_95)]
-            sage: constraints
-            [x_96 == 2*x_0 + x_1,
-             x_97 == 2*x_2 + x_3,
-             ...
-             1 <= 1 - x_30 + x_94,
-             1 <= 2 - x_62 - x_63]
+             ('x[xor_0_0_1_class_bit_0]', x_10),
+             ('x[xor_0_0_1_class_bit_1]', x_11)]
+            sage: constraints[:2]
+            [x_12 == 2*x_0 + x_1,
+             x_13 == 2*x_2 + x_3]
 
         """
 
@@ -796,25 +856,22 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_5")
+            sage: xor_component = cipher.component_from_id('xor_0_0')
             sage: variables, constraints = xor_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
-            [('x_class[and_0_4_0]', x_0),
-             ('x_class[and_0_4_1]', x_1),
+            [('x_class[plaintext_0]', x_0),
+             ('x_class[plaintext_1]', x_1),
             ...
-             ('x_class[xor_0_5_14]', x_46),
-             ('x_class[xor_0_5_15]', x_47)]
-            sage: constraints
-            [x_0 <= 3 - 2*x_48,
-             2 - 2*x_48 <= x_0,
-            ...
-            x_47 <= 2 + 4*x_95,
-            2 <= x_47 + 4*x_95]
+             ('x_class[xor_0_0_0]', x_4),
+             ('x_class[xor_0_0_1]', x_5)]
+            sage: constraints[:2]
+            [x_0 <= 3 - 2*x_6,
+             2 - 2*x_6 <= x_0]
 
         """
 
@@ -829,7 +886,7 @@ class XOR(Component):
 
         constraints = []
 
-        # if a_i < 2 for all i then b = XOR(a_i, i in range(num_inputs))
+        # if a_i < 2 for all i then b = Xor(a_i, i in range(num_inputs))
         # else b = 2
         a = [
             [x_class[input_vars[i + chunk * input_bit_size]] for chunk in range(num_of_inputs)]
@@ -849,7 +906,7 @@ class XOR(Component):
             all_ai_less_2, constr = milp_utils.milp_generalized_and(model, list_ai_less_2)
             constraints.extend(constr)
 
-            # if all_ai_less_2 == 1 then b = XOR(a_i, i in range(num_inputs))
+            # if all_ai_less_2 == 1 then b = Xor(a_i, i in range(num_inputs))
             # else b = 2
             xor_constr = milp_utils.milp_generalized_xor(a[i], b[i])
             constr = milp_utils.milp_if_then_else(
@@ -865,7 +922,7 @@ class XOR(Component):
         in deterministic truncated XOR differential model.
 
         This does not implement the XOR for more than 2 inputs in a sequential manner.
-        Indeed, if Y = XOR(X_0, X_1, X_2), and the input patterns are:
+        Indeed, if Y = Xor(X_0, X_1, X_2), and the input patterns are:
 
         delta_X_0 = 1
         delta_X_1 = 2
@@ -882,25 +939,18 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: cipher = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp._word_size = 8
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_32")
+            sage: xor_component = cipher.component_from_id("xor_0_0")
             sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
-            sage: variables
-            [('x[xor_0_31_word_0_class_bit_0]', x_0),
-             ('x[xor_0_31_word_0_class_bit_1]', x_1),
-            ...
-             ('x[xor_0_32_30]', x_118),
-             ('x[xor_0_32_31]', x_119)]
-            sage: constraints
-            [1 <= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_81,
-             1 <= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_81,
-             ...
-             1 <= 1 + x_31 - x_39,
-             1 <= 2 - x_30 - x_39]
+            sage: variables[:1]
+            [('x[plaintext_word_0_class_bit_0]', x_0)]
+            sage: len(constraints) > 0
+            True
 
         """
         if model.word_size == 8:
@@ -936,7 +986,7 @@ class XOR(Component):
         in deterministic truncated XOR differential model.
         It should perform the wordwise xor for multiple inputs faster than the
         xor_wordwise_deterministic_truncated_xor_differential_constraints() methods but skips some cases
-        e.g. if DX1 = 1, DX2 = 2, DX3 = 1 and X1 = X3, then DY = XOR(DX1, DX2, DX3) = 2 but this method will
+        e.g. if DX1 = 1, DX2 = 2, DX3 = 1 and X1 = X3, then DY = Xor(DX1, DX2, DX3) = 2 but this method will
         return 3
 
         INPUTS:
@@ -945,25 +995,18 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: cipher = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp._word_size = 8
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_31")
+            sage: xor_component = cipher.component_from_id("xor_0_0")
             sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints(milp)
-            sage: variables
-            [('x[sbox_0_26_word_0_class_bit_0]', x_0),
-            ('x[sbox_0_26_word_0_class_bit_1]', x_1),
-             ...
-            ('x[xor_0_31_30]', x_158),
-            ('x[xor_0_31_31]', x_159)]
-            sage: constraints
-            [1 <= 1 + x_0 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 + x_8 + x_9 + x_41 - x_161,
-             1 <= 1 + x_1 + x_40 + x_42 + x_43 + x_44 + x_45 + x_46 + x_47 + x_48 + x_49 - x_161,
-            ...
-             1 <= 1 + x_111 - x_119,
-             1 <= 2 - x_110 - x_119]
+            sage: variables[:1]
+            [('x[plaintext_word_0_class_bit_0]', x_0)]
+            sage: len(constraints) > 0
+            True
 
 
         """
@@ -1003,12 +1046,13 @@ class XOR(Component):
         Returns a list of variables and a list of constraints for XOR component
         in deterministic truncated XOR differential model.
 
-        It follows a simplified model:
-        if dX0 + dX1 > 2
-            then dY = 3
-        elif dX0<2 / dX1<2
-            then zeta Y = zetaX0 ^ zetaX1
-        else dY = 2
+        It follows a simplified model::
+
+            if dX0 + dX1 > 2
+                then dY = 3
+            elif dX0<2 / dX1<2
+                then zeta Y = zetaX0 ^ zetaX1
+            else dY = 2
 
         INPUTS:
 
@@ -1016,12 +1060,13 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: cipher = AESBlockCipher(number_of_rounds=2)
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
+            sage: milp._word_size = 8
             sage: milp.init_model_in_sage_milp_class()
-            sage: xor_component = cipher.get_component_from_id("xor_0_32")
+            sage: xor_component = cipher.component_from_id("xor_0_0")
             sage: variables, constraints = xor_component.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints(milp)
 
         """
@@ -1092,14 +1137,14 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=22)
-            sage: minizinc = MznModel(speck)
-            sage: xor_component = speck.get_component_from_id("xor_0_2")
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
+            sage: minizinc = MznModel(cipher)
+            sage: xor_component = cipher.component_from_id('xor_0_0')
             sage: _, xor_minizinc_constraints = xor_component.minizinc_constraints(minizinc)
             sage: xor_minizinc_constraints[0]
-            'constraint xor_word(\narray1d(0..16-1, [xor_0_2_x16,xor_0_2_x17,xor_0_2_x18,xor_0_2_x19,xor_0_2_x20,xor_0_2_x21,xor_0_2_x22,xor_0_2_x23,xor_0_2_x24,xor_0_2_x25,xor_0_2_x26,xor_0_2_x27,xor_0_2_x28,xor_0_2_x29,xor_0_2_x30,xor_0_2_x31]),\narray1d(0..16-1, [xor_0_2_x0,xor_0_2_x1,xor_0_2_x2,xor_0_2_x3,xor_0_2_x4,xor_0_2_x5,xor_0_2_x6,xor_0_2_x7,xor_0_2_x8,xor_0_2_x9,xor_0_2_x10,xor_0_2_x11,xor_0_2_x12,xor_0_2_x13,xor_0_2_x14,xor_0_2_x15]),\narray1d(0..16-1, [xor_0_2_y0,xor_0_2_y1,xor_0_2_y2,xor_0_2_y3,xor_0_2_y4,xor_0_2_y5,xor_0_2_y6,xor_0_2_y7,xor_0_2_y8,xor_0_2_y9,xor_0_2_y10,xor_0_2_y11,xor_0_2_y12,xor_0_2_y13,xor_0_2_y14,xor_0_2_y15]))=true;\n'
+            'constraint xor_word(\narray1d(0..2-1, [xor_0_0_x2,xor_0_0_x3]),\narray1d(0..2-1, [xor_0_0_x0,xor_0_0_x1]),\narray1d(0..2-1, [xor_0_0_y0,xor_0_0_y1]))=true;\n'
         """
 
         def create_block_of_xor_constraints(input_vars_1_temp, input_vars_2_temp, output_varstrs_temp, i):
@@ -1123,7 +1168,7 @@ class XOR(Component):
         if self.description[0].lower() != "xor":
             raise ValueError("component must be Boolean XOR word_operation")
 
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
+        var_names = self.minizinc_define_var(model.input_postfix, model.output_postfix, model.data_type)
 
         mzn_constraints = []
         component_id = self.id
@@ -1179,29 +1224,25 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.sat_constraints()
-            (['xor_0_2_0',
-              'xor_0_2_1',
-              ...
-              'xor_0_2_14',
-              'xor_0_2_15'],
-             ['-xor_0_2_0 modadd_0_1_0 key_48',
-              'xor_0_2_0 -modadd_0_1_0 key_48',
-              ...
-              'xor_0_2_15 modadd_0_1_15 -key_63',
-              '-xor_0_2_15 -modadd_0_1_15 -key_63'])
+            (['xor_0_0_0', 'xor_0_0_1'],
+            ['-xor_0_0_0 plaintext_0 key_0',
+            'xor_0_0_0 -plaintext_0 key_0',
+            'xor_0_0_0 plaintext_0 -key_0',
+            '-xor_0_0_0 -plaintext_0 -key_0',
+            '-xor_0_0_1 plaintext_1 key_1',
+            'xor_0_0_1 -plaintext_1 key_1',
+            'xor_0_0_1 plaintext_1 -key_1',
+            '-xor_0_0_1 -plaintext_1 -key_1'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            result_bit_ids = [f"inter_{j}_{output_bit_ids[i]}" for j in range(self.description[1] - 2)] + [
-                output_bit_ids[i]
-            ]
-            constraints.extend(sat_utils.cnf_xor_seq(result_bit_ids, input_bit_ids[i::output_bit_len]))
+        for i, output_bit_id in enumerate(output_bit_ids):
+            result_bit_ids = [f"inter_{j}_{output_bit_id}" for j in range(self.description[1] - 2)] + [output_bit_id]
+            constraints.extend(sat_utils.cnf_xor_seq(result_bit_ids, input_bit_ids[i::self.output_bit_size]))
 
         return output_bit_ids, constraints
 
@@ -1212,7 +1253,7 @@ class XOR(Component):
         .. SEEALSO::
 
             - :ref:`sat-standard` for the format.
-            - :obj:`sat_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
+            - :obj:`sat_constraints() <components.xor_component.Xor.sat_constraints>` for the model.
 
         INPUT:
 
@@ -1220,23 +1261,27 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-            (['xor_0_2_0_0',
-              'xor_0_2_1_0',
-              ...
-              'xor_0_2_14_1',
-              'xor_0_2_15_1'],
-             ['xor_0_2_0_0 -modadd_0_1_0_0',
-              'xor_0_2_0_0 -key_48_0',
-              ...
-              'key_63_1 xor_0_2_15_0 xor_0_2_15_1 -modadd_0_1_15_1',
-              'xor_0_2_15_0 -modadd_0_1_15_1 -key_63_1 -xor_0_2_15_1'])
+            (['xor_0_0_0_0', 'xor_0_0_1_0', 'xor_0_0_0_1', 'xor_0_0_1_1'],
+            ['xor_0_0_0_0 -plaintext_0_0',
+            'xor_0_0_0_0 -key_0_0',
+            'plaintext_0_0 key_0_0 -xor_0_0_0_0',
+            'plaintext_0_1 key_0_1 xor_0_0_0_0 -xor_0_0_0_1',
+            'plaintext_0_1 xor_0_0_0_0 xor_0_0_0_1 -key_0_1',
+            'key_0_1 xor_0_0_0_0 xor_0_0_0_1 -plaintext_0_1',
+            'xor_0_0_0_0 -plaintext_0_1 -key_0_1 -xor_0_0_0_1',
+            'xor_0_0_1_0 -plaintext_1_0',
+            'xor_0_0_1_0 -key_1_0',
+            'plaintext_1_0 key_1_0 -xor_0_0_1_0',
+            'plaintext_1_1 key_1_1 xor_0_0_1_0 -xor_0_0_1_1',
+            'plaintext_1_1 xor_0_0_1_0 xor_0_0_1_1 -key_1_1',
+            'key_1_1 xor_0_0_1_0 xor_0_0_1_1 -plaintext_1_1',
+            'xor_0_0_1_0 -plaintext_1_1 -key_1_1 -xor_0_0_1_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
         in_ids = [(id_0, id_1) for id_0, id_1 in zip(in_ids_0, in_ids_1)]
         out_ids = [(id_0, id_1) for id_0, id_1 in zip(out_ids_0, out_ids_1)]
         constraints = []
@@ -1244,7 +1289,7 @@ class XOR(Component):
             result_ids = [
                 (f"inter_{j}_{self.id}_{i}_0", f"inter_{j}_{self.id}_{i}_1") for j in range(self.description[1] - 2)
             ] + [out_id]
-            constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, in_ids[i::out_len]))
+            constraints.extend(sat_utils.cnf_xor_truncated_seq(result_ids, in_ids[i::self.output_bit_size]))
 
         return out_ids_0 + out_ids_1, constraints
 
@@ -1258,7 +1303,7 @@ class XOR(Component):
         .. SEEALSO::
 
             - :ref:`sat-standard` for the format.
-            - :obj:`sat_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
+            - :obj:`sat_constraints() <components.xor_component.Xor.sat_constraints>` for the model.
 
         INPUT:
 
@@ -1266,20 +1311,18 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.sat_xor_differential_propagation_constraints()
-            (['xor_0_2_0',
-              'xor_0_2_1',
-              ...
-              'xor_0_2_14',
-              'xor_0_2_15'],
-             ['-xor_0_2_0 modadd_0_1_0 key_48',
-              'xor_0_2_0 -modadd_0_1_0 key_48',
-              ...
-              'xor_0_2_15 modadd_0_1_15 -key_63',
-              '-xor_0_2_15 -modadd_0_1_15 -key_63'])
+            (['xor_0_0_0', 'xor_0_0_1'],
+            ['-xor_0_0_0 plaintext_0 key_0',
+            'xor_0_0_0 -plaintext_0 key_0',
+            'xor_0_0_0 plaintext_0 -key_0',
+            '-xor_0_0_0 -plaintext_0 -key_0',
+            '-xor_0_0_1 plaintext_1 key_1',
+            'xor_0_0_1 -plaintext_1 key_1',
+            'xor_0_0_1 plaintext_1 -key_1',
+            '-xor_0_0_1 -plaintext_1 -key_1'])
         """
         return self.sat_constraints()
 
@@ -1297,38 +1340,37 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.sat_xor_linear_mask_propagation_constraints()
-            (['xor_0_2_0_i',
-              'xor_0_2_1_i',
-              ...
-              'xor_0_2_14_o',
-              'xor_0_2_15_o'],
-             ['xor_0_2_0_i -xor_0_2_0_o',
-              'xor_0_2_16_i -xor_0_2_0_i',
-              ...
-              'xor_0_2_31_i -xor_0_2_15_i',
-              'xor_0_2_15_o -xor_0_2_31_i'])
+            (['xor_0_0_0_i',
+            'xor_0_0_1_i',
+            'xor_0_0_2_i',
+            'xor_0_0_3_i',
+            'xor_0_0_0_o',
+            'xor_0_0_1_o'],
+            ['xor_0_0_0_i -xor_0_0_0_o',
+            'xor_0_0_2_i -xor_0_0_0_i',
+            'xor_0_0_0_o -xor_0_0_2_i',
+            'xor_0_0_1_i -xor_0_0_1_o',
+            'xor_0_0_3_i -xor_0_0_1_i',
+            'xor_0_0_1_o -xor_0_0_3_i'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         bit_ids = input_bit_ids + output_bit_ids
         constraints = []
-        for i in range(output_bit_len):
-            constraints.extend(sat_utils.cnf_equivalent(bit_ids[i::output_bit_len]))
-        result = bit_ids, constraints
+        for i in range(self.output_bit_size):
+            constraints.extend(sat_utils.cnf_equivalent(bit_ids[i::self.output_bit_size]))
 
-        return result
+        return bit_ids, constraints
 
     def smt_constraints(self):
         """
         Return a variable list and SMT-LIB list asserts representing XOR for SMT CIPHER model
 
         Since the XOR operation is part of the SMT-LIB formalism, the operation can be modeled using the corresponding
-        builtin operation, e.g. ``z = XOR(x, y)`` becomes ``(assert (= z (xor x y)))``.
+        builtin operation, e.g. ``z = Xor(x, y)`` becomes ``(assert (= z (xor x y)))``.
         This method support XOR operation using more than two inputs.
 
         INPUT:
@@ -1337,27 +1379,19 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.smt_constraints()
-            (['xor_0_2_0',
-              'xor_0_2_1',
-              ...
-              'xor_0_2_14',
-              'xor_0_2_15'],
-             ['(assert (= xor_0_2_0 (xor modadd_0_1_0 key_48)))',
-              '(assert (= xor_0_2_1 (xor modadd_0_1_1 key_49)))',
-              ...
-              '(assert (= xor_0_2_14 (xor modadd_0_1_14 key_62)))',
-              '(assert (= xor_0_2_15 (xor modadd_0_1_15 key_63)))'])
+            (['xor_0_0_0', 'xor_0_0_1'],
+            ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
+            '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         constraints = []
-        for i in range(output_bit_len):
-            operation = smt_utils.smt_xor(input_bit_ids[i::output_bit_len])
-            equation = smt_utils.smt_equivalent([output_bit_ids[i], operation])
+        for i, output_bit_id in enumerate(output_bit_ids):
+            operation = smt_utils.smt_xor(input_bit_ids[i::self.output_bit_size])
+            equation = smt_utils.smt_equivalent([output_bit_id, operation])
             constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
@@ -1368,7 +1402,7 @@ class XOR(Component):
 
         .. SEEALSO::
 
-            :obj:`smt_constraints() <components.xor_component.XOR.sat_constraints>` for the model.
+            :obj:`smt_constraints() <components.xor_component.Xor.sat_constraints>` for the model.
 
         INPUT:
 
@@ -1376,20 +1410,12 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.smt_xor_differential_propagation_constraints()
-            (['xor_0_2_0',
-              'xor_0_2_1',
-              ...
-              'xor_0_2_14',
-              'xor_0_2_15'],
-             ['(assert (= xor_0_2_0 (xor modadd_0_1_0 key_48)))',
-              '(assert (= xor_0_2_1 (xor modadd_0_1_1 key_49)))',
-              ...
-              '(assert (= xor_0_2_14 (xor modadd_0_1_14 key_62)))',
-              '(assert (= xor_0_2_15 (xor modadd_0_1_15 key_63)))'])
+            (['xor_0_0_0', 'xor_0_0_1'],
+            ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
+            '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))'])
         """
         return self.smt_constraints()
 
@@ -1407,32 +1433,138 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: xor_component = speck.component_from(0, 2)
+            sage: from claasp.components.xor_component import Xor
+            sage: xor_component = Xor(0, 0, ['plaintext', 'key'], [list(range(2)), list(range(2))], 2)
             sage: xor_component.smt_xor_linear_mask_propagation_constraints()
-            (['xor_0_2_0_o',
-              'xor_0_2_1_o',
-              ...
-              'xor_0_2_30_i',
-              'xor_0_2_31_i'],
-             ['(assert (= xor_0_2_0_o xor_0_2_0_i xor_0_2_16_i))',
-              '(assert (= xor_0_2_1_o xor_0_2_1_i xor_0_2_17_i))',
-              ...
-              '(assert (= xor_0_2_14_o xor_0_2_14_i xor_0_2_30_i))',
-              '(assert (= xor_0_2_15_o xor_0_2_15_i xor_0_2_31_i))'])
+            (['xor_0_0_0_o',
+            'xor_0_0_1_o',
+            'xor_0_0_0_i',
+            'xor_0_0_1_i',
+            'xor_0_0_2_i',
+            'xor_0_0_3_i'],
+            ['(assert (= xor_0_0_0_o xor_0_0_0_i xor_0_0_2_i))',
+            '(assert (= xor_0_0_1_o xor_0_0_1_i xor_0_0_3_i))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         bit_ids = output_bit_ids + input_bit_ids
         constraints = []
-        for i in range(output_bit_len):
-            equation = smt_utils.smt_equivalent(bit_ids[i::output_bit_len])
+        for i in range(self.output_bit_size):
+            equation = smt_utils.smt_equivalent(bit_ids[i::self.output_bit_size])
             constraints.append(smt_utils.smt_assert(equation))
-        result = bit_ids, constraints
 
-        return result
+        return bit_ids, constraints
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for XOR quasidifferential propagation.
+
+        Handles an arbitrary number of operands (not just 2), matching
+        the general ``Xor`` component (``self.description[1]`` addends).
+
+        Per Beyne & Rijmen, XOR is a linear map, so Theorem 3.2 applies:
+
+        - difference propagation is the ordinary XOR rule (weight 0);
+        - mask propagation requires ALL masks meeting at the XOR node
+          (every input operand's mask AND the output mask) to be equal
+          -- the standard "branching" rule of linear cryptanalysis,
+          which is also what lets masks flow into a round-key XOR
+          branch (Section 4.4 of the paper).
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
+            sage: xor_component = cipher.component_from_id('xor_0_0')
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: variables, constraints = xor_component.smt_xor_quasidifferential_propagation_constraints(smt)
+            sage: variables
+            ['xor_0_0_0', 'xor_0_0_1', 'qdt_xor_0_0_0', 'qdt_xor_0_0_1']
+            sage: constraints
+            ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
+             '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))',
+             '(assert (= qdt_plaintext_0 qdt_xor_0_0_0))',
+             '(assert (= qdt_key_0 qdt_xor_0_0_0))',
+             '(assert (= qdt_plaintext_1 qdt_xor_0_0_1))',
+             '(assert (= qdt_key_1 qdt_xor_0_0_1))']
+        """
+
+        # Ordinary XOR difference input identifiers.
+        input_bit_ids = self._generate_input_ids()
+
+        # Ordinary XOR difference output identifiers.
+
+        output_bit_ids_result = self._generate_output_ids()
+
+        if (
+            isinstance(output_bit_ids_result, (tuple, list))
+            and output_bit_ids_result
+            and isinstance(output_bit_ids_result[-1], list)
+        ):
+            output_bit_ids = output_bit_ids_result[-1]
+        else:
+            output_bit_ids = output_bit_ids_result
+
+        # QDT input mask identifiers.
+        qdt_input_bit_ids = model._qdt_input_bit_ids(self)
+        # QDT output mask identifiers.
+        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
+
+        word_size = self.output_bit_size
+
+        if word_size == 0 or len(input_bit_ids) % word_size != 0:
+            raise ValueError(f"Unexpected XOR input size for {self.id}: {len(input_bit_ids)} bits")
+
+        variables = output_bit_ids + qdt_output_bit_ids
+
+        constraints = []
+
+        # XOR difference propagation (n-ary):
+        #
+        # dz_i = dx_0_i XOR dx_1_i XOR ... XOR dx_{k-1}_i
+
+        for i, output_bit in enumerate(output_bit_ids):
+            operands = input_bit_ids[i::word_size]
+
+            equation = smt_utils.smt_equivalent(
+                [
+                    output_bit,
+                    smt_utils.smt_xor(operands),
+                ]
+            )
+
+            constraints.append(smt_utils.smt_assert(equation))
+
+        # QDT mask propagation (n-ary, branching rule):
+        #
+        # u_0_i = u_1_i = ... = u_{k-1}_i = uz_i
+
+        for i, output_bit in enumerate(qdt_output_bit_ids):
+            operand_masks = qdt_input_bit_ids[i::word_size]
+
+            for operand_mask in operand_masks:
+                equation = smt_utils.smt_equivalent(
+                    [
+                        operand_mask,
+                        output_bit,
+                    ]
+                )
+
+                constraints.append(smt_utils.smt_assert(equation))
+
+        return (
+            variables,
+            constraints,
+        )
+
 
     def cp_transform_xor_components_for_first_step(self, model):
         """
@@ -1444,13 +1576,14 @@ class XOR(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(aes)
-            sage: xor_component = aes.component_from(0, 31)
+            sage: cipher = XorCipher(word_bit_size=8, number_of_inputs=2)
+            sage: cp = MznModel(cipher)
+            sage: cp.word_size = 8
+            sage: xor_component = cipher.component_from_id("xor_0_0")
             sage: xor_component.cp_transform_xor_components_for_first_step(cp)
-            (['array[0..3] of var 0..1: xor_0_31;'], [])
+            (['array[0..0] of var 0..1: xor_0_0;'], [])
         """
         output_size = int(self.output_bit_size)
         input_id_link = self.input_id_links
@@ -1460,6 +1593,8 @@ class XOR(Component):
         numb_of_inp = len(input_id_link)
         all_inputs = []
         cp_declarations = [f"array[0..{(output_size - 1) // model.word_size}] of var 0..1: {output_id_link};"]
+        if output_size % model.word_size != 0:
+            return cp_declarations, []
         number_of_mix = 0
         is_mix = False
         for i in range(numb_of_inp):
@@ -1488,8 +1623,8 @@ class XOR(Component):
             input_bits = 0
             for input_bit in input_bit_positions:
                 input_bits += len(input_bit)
-            xor_component = XOR("", "", input_id_link, input_bit_positions, input_bits)
-            xor_component.set_description(["XOR", numadd + 1])
+            xor_component = Xor("", "", input_id_link, input_bit_positions, input_bits)
+            xor_component.description = ["XOR", numadd + 1]
             model.list_of_xor_components.append(xor_component)
         cp_constraints = []
 

@@ -2,8 +2,9 @@
 import multiprocessing
 import os
 import sys
-from setuptools import setup, find_packages
 from codecs import open
+
+from setuptools import find_packages, setup
 from setuptools.command.test import test as TestCommand
 
 package_name = "claasp"
@@ -63,7 +64,8 @@ setup(
             'cipher_modules/generic_bit_based_c_functions.c',
             'cipher_modules/generic_bit_based_c_functions.h',
             'cipher_modules/generic_word_based_c_functions.c',
-            'cipher_modules/generic_word_based_c_functions.h'
+            'cipher_modules/generic_word_based_c_functions.h',
+            'cipher_modules/statistical_tests/nist_sts_templates/*'
         ]
     },
     classifiers=[

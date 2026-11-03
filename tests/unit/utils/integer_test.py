@@ -1,5 +1,4 @@
-from claasp.utils.integer import to_binary
-from claasp.utils.integer import generate_bitmask
+from claasp.utils.integer import generate_bitmask, to_binary
 
 
 def test_generate_bitmask():

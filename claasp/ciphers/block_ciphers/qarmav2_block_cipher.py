@@ -531,14 +531,14 @@ class QARMAv2BlockCipher(Cipher):
     def state_masking(self, id_links, bit_positions):
         masked_state = []
         for id_link, bit_position in zip(id_links, bit_positions):
-            masked_state.append(self.add_XOR_component(id_link, bit_position, len(bit_position[0])).id)
+            masked_state.append(self.add_xor_component(id_link, bit_position, len(bit_position[0])).id)
 
         return masked_state
 
     def state_sboxing(self, id_links, bit_positions, sbox):
         sboxed_state = []
         for id_link, bit_position in zip(id_links, bit_positions):
-            sboxed_state.append(self.add_SBOX_component(id_link, bit_position, self.word_size, sbox).id)
+            sboxed_state.append(self.add_sbox_component(id_link, bit_position, self.word_size, sbox).id)
 
         return sboxed_state
 
@@ -565,7 +565,7 @@ class QARMAv2BlockCipher(Cipher):
         if self.number_of_layers == 2:
             key_state[0] = [
                 [
-                    self.add_XOR_component(
+                    self.add_xor_component(
                         key_state[0][0] + [alpha[0], alpha[1]],
                         key_state[0][1] + [list(range(self.layer_block_size)), list(range(self.layer_block_size))],
                         self.key_block_size,
@@ -575,7 +575,7 @@ class QARMAv2BlockCipher(Cipher):
             ]
             key_state[1] = [
                 [
-                    self.add_XOR_component(
+                    self.add_xor_component(
                         key_state[1][0] + [beta[0], beta[1]],
                         key_state[1][1] + [list(range(self.layer_block_size)), list(range(self.layer_block_size))],
                         self.key_block_size,
@@ -586,7 +586,7 @@ class QARMAv2BlockCipher(Cipher):
         else:
             key_state[0] = [
                 [
-                    self.add_XOR_component(
+                    self.add_xor_component(
                         key_state[0][0] + [alpha[0]],
                         key_state[0][1] + [list(range(self.layer_block_size))],
                         self.key_block_size,
@@ -596,7 +596,7 @@ class QARMAv2BlockCipher(Cipher):
             ]
             key_state[1] = [
                 [
-                    self.add_XOR_component(
+                    self.add_xor_component(
                         key_state[1][0] + [beta[0]],
                         key_state[1][1] + [list(range(self.layer_block_size))],
                         self.key_block_size,
@@ -624,42 +624,42 @@ class QARMAv2BlockCipher(Cipher):
     # --------------------------------------------------------------------------------#
 
     def update_single_constant(self, constant):
-        spill = self.add_SHIFT_component(
+        spill = self.add_shift_component(
             [constant], [list(range(self.layer_block_size))], self.layer_block_size, 51
         )
-        tmp_0 = self.add_SHIFT_component(
+        tmp_0 = self.add_shift_component(
             [constant], [list(range(self.layer_block_size))], self.layer_block_size, -13
         )
-        tmp_1 = self.add_SHIFT_component(
+        tmp_1 = self.add_shift_component(
             [spill.id], [list(range(self.layer_block_size))], self.layer_block_size, -50
         )
-        tmp_2 = self.add_SHIFT_component(
+        tmp_2 = self.add_shift_component(
             [spill.id], [list(range(self.layer_block_size))], self.layer_block_size, -33
         )
-        tmp_3 = self.add_SHIFT_component(
+        tmp_3 = self.add_shift_component(
             [spill.id], [list(range(self.layer_block_size))], self.layer_block_size, -19
         )
-        tmp = self.add_XOR_component(
+        tmp = self.add_xor_component(
             [tmp_0.id, tmp_1.id, tmp_2.id, tmp_3.id, spill.id],
             [list(range(self.layer_block_size)) for j in range(5)],
             self.layer_block_size,
         )
-        spill = self.add_SHIFT_component(
+        spill = self.add_shift_component(
             [tmp.id], [list(range(self.layer_block_size))], self.layer_block_size, 54
         )
-        tmp_0 = self.add_SHIFT_component(
+        tmp_0 = self.add_shift_component(
             [tmp.id], [list(range(self.layer_block_size))], self.layer_block_size, -10
         )
-        tmp_1 = self.add_SHIFT_component(
+        tmp_1 = self.add_shift_component(
             [spill.id], [list(range(self.layer_block_size))], self.layer_block_size, -50
         )
-        tmp_2 = self.add_SHIFT_component(
+        tmp_2 = self.add_shift_component(
             [spill.id], [list(range(self.layer_block_size))], self.layer_block_size, -33
         )
-        tmp_3 = self.add_SHIFT_component(
+        tmp_3 = self.add_shift_component(
             [spill.id], [list(range(self.layer_block_size))], self.layer_block_size, -19
         )
-        tmp = self.add_XOR_component(
+        tmp = self.add_xor_component(
             [tmp_0.id, tmp_1.id, tmp_2.id, tmp_3.id, spill.id],
             [list(range(self.layer_block_size)) for j in range(5)],
             self.layer_block_size,
@@ -668,10 +668,10 @@ class QARMAv2BlockCipher(Cipher):
 
     def o_function(self, key):
         key_rot_0 = self.add_rotate_component(key[0][0], key[0][1], self.key_block_size, 1)
-        key_shift_0 = self.add_SHIFT_component(key[0][0], key[0][1], self.key_block_size, self.key_block_size - 1)
+        key_shift_0 = self.add_shift_component(key[0][0], key[0][1], self.key_block_size, self.key_block_size - 1)
         key_1 = [
             [
-                self.add_XOR_component(
+                self.add_xor_component(
                     [key_rot_0.id, key_shift_0.id],
                     [list(range(self.key_block_size)), list(range(self.key_block_size))],
                     self.key_block_size,
@@ -680,11 +680,11 @@ class QARMAv2BlockCipher(Cipher):
             [list(range(self.key_block_size))],
         ]
 
-        key_lshift_1 = self.add_SHIFT_component(key[1][0], key[1][1], self.key_block_size, -1)
-        key_rshift_1 = self.add_SHIFT_component(
+        key_lshift_1 = self.add_shift_component(key[1][0], key[1][1], self.key_block_size, -1)
+        key_rshift_1 = self.add_shift_component(
             [key_lshift_1.id], [list(range(self.key_block_size))], self.key_block_size, self.key_block_size - 1
         )
-        key_rotated_1 = self.add_XOR_component(
+        key_rotated_1 = self.add_xor_component(
             key[1][0] + [key_rshift_1.id], key[1][1] + [list(range(self.key_block_size))], self.key_block_size
         )
         key_2 = [
@@ -702,7 +702,7 @@ class QARMAv2BlockCipher(Cipher):
         output = []
         for c in range(4):
             output.append(
-                self.add_XOR_component(
+                self.add_xor_component(
                     [input_ids[(c + r + 1) % 4] for r in range(3)],
                     [input_pos[(c + r + 1) % 4][r + 1 :] + input_pos[(c + r + 1) % 4][: r + 1] for r in range(3)],
                     4,
@@ -712,17 +712,17 @@ class QARMAv2BlockCipher(Cipher):
 
     def majority_function(self, key):
         maj_key_size = self.key_block_size / 2
-        and_0_1 = self.add_AND_component(
+        and_0_1 = self.add_and_component(
             [key, key],
             [list(range(maj_key_size)), list(range(maj_key_size, 2 * maj_key_size))],
             maj_key_size,
         )
-        and_0_2 = self.add_AND_component(
+        and_0_2 = self.add_and_component(
             [key, key],
             [list(range(maj_key_size)), list(range(2 * maj_key_size, 3 * maj_key_size))],
             maj_key_size,
         )
-        and_1_2 = self.add_AND_component(
+        and_1_2 = self.add_and_component(
             [key, key],
             [
                 list(range(maj_key_size, 2 * maj_key_size)),
@@ -730,7 +730,7 @@ class QARMAv2BlockCipher(Cipher):
             ],
             maj_key_size,
         )
-        maj_key_rotated = self.add_OR_component(
+        maj_key_rotated = self.add_or_component(
             [and_0_1, and_0_2, and_1_2], [list(range(maj_key_size)) for j in range(3)], maj_key_size
         )
         maj_key = self.add_rotate_component([maj_key_rotated], [list(range(maj_key_size))], maj_key_size, 17)

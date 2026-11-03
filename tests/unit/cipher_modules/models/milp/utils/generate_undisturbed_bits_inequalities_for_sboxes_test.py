@@ -1,6 +1,7 @@
 from sage.crypto.sbox import SBox
-from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+
 from claasp.cipher_modules.models.milp.utils.generate_undisturbed_bits_inequalities_for_sboxes import *
+from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 
 
 def test_update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits():

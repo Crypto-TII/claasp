@@ -16,14 +16,40 @@
 # ****************************************************************************
 
 
-from claasp.input import Input
-from claasp.component import Component
+from claasp.cipher_modules.models.sat.utils import constants
+from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-from claasp.cipher_modules.models.sat.utils import constants, utils as sat_utils
+from claasp.component import Component
+from claasp.input import Input
 from claasp.name_mappings import WORD_OPERATION
 
 
-class SHIFT(Component):
+class Shift(Component):
+    """
+    Construct a SHIFT component.
+
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``parameter`` -- **integer**; operation parameter (for example shift/rotation amount). Negative values are allowed when semantics supports them.
+
+    EXAMPLES::
+
+        sage: from claasp.components.shift_component import Shift
+        sage: component = Shift(0, 0, ['input'], [[0, 1]], 2, -1)
+        sage: print(component.id)
+        shift_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)
+        ['SHIFT', -1]
+    """
+
     def __init__(
         self,
         current_round_number,
@@ -49,18 +75,13 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
             sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: shift_component = fancy.get_component_from_id("shift_1_12")
-            sage: algebraic = AlgebraicModel(fancy)
+            sage: cipher = ShiftCipher(bit_size=2, shift_amount=1)
+            sage: shift_component = cipher.component_from_id('shift_0_0')
+            sage: algebraic = AlgebraicModel(cipher)
             sage: shift_component.algebraic_polynomials(algebraic)
-            [shift_1_12_y0,
-             shift_1_12_y1,
-             shift_1_12_y2,
-             shift_1_12_y3 + shift_1_12_x0,
-             shift_1_12_y4 + shift_1_12_x1,
-             shift_1_12_y5 + shift_1_12_x2]
+            [shift_0_0_y0, shift_0_0_y1 + shift_0_0_x0]
         """
         if self.description[0].lower() != "shift":
             raise ValueError("component must be bitwise shift")
@@ -93,17 +114,10 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: shift_component = tea.component_from(0, 0)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.cms_constraints()
-            (['shift_0_0_0',
-              'shift_0_0_1',
-              'shift_0_0_2',
-              ...
-              '-shift_0_0_29',
-              '-shift_0_0_30',
-              '-shift_0_0_31'])
+            (['shift_0_0_0', 'shift_0_0_1'], ['-shift_0_0_0', 'shift_0_0_1 -input_0', 'input_0 -shift_0_0_1'])
         """
         return self.sat_constraints()
 
@@ -123,18 +137,10 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: shift_component = tea.component_from(0, 0)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.cp_constraints()
-            ([],
-             ['constraint shift_0_0[0] = plaintext[36];',
-              ...
-              'constraint shift_0_0[27] = plaintext[63];',
-              'constraint shift_0_0[28] = 0;',
-              'constraint shift_0_0[29] = 0;',
-              'constraint shift_0_0[30] = 0;',
-              'constraint shift_0_0[31] = 0;'])
+            ([], ['constraint shift_0_0[0] = 0;', 'constraint shift_0_0[1] = input[0];'])
         """
         shift_amount = abs(self.description[1])
         cp_declarations = []
@@ -166,6 +172,9 @@ class SHIFT(Component):
     def cp_deterministic_truncated_xor_differential_trail_constraints(self):
         return self.cp_constraints()
 
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.cp_constraints()
+
     def cp_inverse_constraints(self):
         """
         Return a list of CP declarations and a list of CP constraints for SHIFT component for CP INVERSE CIPHER model.
@@ -176,17 +185,10 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: shift_component = tea.component_from(0, 0)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.cp_inverse_constraints()
-            ([],
-             ['constraint shift_0_0_inverse[0] = plaintext[36];',
-              ...
-              'constraint shift_0_0_inverse[27] = plaintext[63];',
-              'constraint shift_0_0_inverse[28] = 0;',
-               ...
-              'constraint shift_0_0_inverse[31] = 0;'])
+            ([], ['constraint shift_0_0_inverse[0] = 0;', 'constraint shift_0_0_inverse[1] = input[0];'])
         """
         shift_amount = abs(self.description[1])
         cp_declarations = []
@@ -227,17 +229,12 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: from claasp.components.shift_component import SHIFT
-            sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(aes)
-            sage: shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
-            sage: shift_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(cp)
-            ([],
-             ['constraint shift_0_18_active[0] = sbox_0_6_active[0];',
-               ...
-              'constraint shift_0_18_value[3] = 0;'])
+            sage: from claasp.components.shift_component import Shift
+            sage: class DummyModel:
+            ....:     word_size = 2
+            sage: shift_component = Shift(0, 18, ['sbox_0_2'], [list(range(4))], 4, -2)
+            sage: shift_component.cp_wordwise_deterministic_truncated_xor_differential_constraints(DummyModel())
+            ([], ['constraint shift_0_18_active[0] = sbox_0_2_active[1];', 'constraint shift_0_18_active[1] = 0;', 'constraint shift_0_18_value[0] = sbox_0_2_active[1];', 'constraint shift_0_18_value[1] = 0;'])
         """
         output_size = int(self.output_bit_size)
         output_id_link = self.id
@@ -311,18 +308,12 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: from claasp.components.shift_component import SHIFT
-            sage: aes = AESBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(aes)
-            sage: shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
-            sage: shift_component.cp_xor_differential_first_step_constraints(cp)
-            (['array[0..3] of var 0..1: shift_0_18;'],
-             ['constraint shift_0_18[0] = sbox_0_6[0];',
-              'constraint shift_0_18[1] = sbox_0_10[0];',
-              'constraint shift_0_18[2] = sbox_0_14[0];',
-              'constraint shift_0_18[3] = 0;'])
+            sage: from claasp.components.shift_component import Shift
+            sage: class DummyModel:
+            ....:     word_size = 2
+            sage: shift_component = Shift(0, 18, ['input0'], [list(range(4))], 4, -2)
+            sage: shift_component.cp_xor_differential_first_step_constraints(DummyModel())
+            (['array[0..1] of var 0..1: shift_0_18;'], ['constraint shift_0_18[0] = input0[1];', 'constraint shift_0_18[1] = 0;'])
         """
         output_size = int(self.output_bit_size)
         input_id_link = self.input_id_links
@@ -392,19 +383,10 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: shift_component = tea.component_from(0, 0)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.cp_xor_linear_mask_propagation_constraints()
-            (['array[0..31] of var 0..1: shift_0_0_i;',
-              'array[0..31] of var 0..1: shift_0_0_o;'],
-             ['constraint shift_0_0_o[0]=shift_0_0_i[4];',
-              'constraint shift_0_0_o[1]=shift_0_0_i[5];',
-               ...
-              'constraint shift_0_0_o[27]=shift_0_0_i[31];',
-              'constraint shift_0_0_i[0]=0;',
-               ...
-              'constraint shift_0_0_i[3]=0;'])
+            (['array[0..1] of var 0..1: shift_0_0_i;', 'array[0..1] of var 0..1: shift_0_0_o;'], ['constraint shift_0_0_i[1]=0;', 'constraint shift_0_0_o[1]=shift_0_0_i[0];'])
         """
         output_size = self.output_bit_size
         output_id_link = self.id
@@ -470,28 +452,20 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: tea = TeaBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
-            sage: milp = MilpModel(tea)
+            sage: cipher = ShiftCipher(bit_size=2, shift_amount=1)
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: shift_component = tea.get_component_from_id("shift_0_0")
+            sage: shift_component = cipher.component_from_id('shift_0_0')
             sage: variables, constraints = shift_component.milp_constraints(milp)
             sage: variables
-            [('x[plaintext_8]', x_0),
-            ('x[plaintext_9]', x_1),
-            ...
-            ('x[shift_0_0_6]', x_14),
-            ('x[shift_0_0_7]', x_15)]
+            [('x[plaintext_0]', x_0),
+            ('x[plaintext_1]', x_1),
+            ('x[shift_0_0_0]', x_2),
+            ('x[shift_0_0_1]', x_3)]
             sage: constraints
-            [x_8 == x_4,
-            x_9 == x_5,
-            x_10 == x_6,
-            x_11 == x_7,
-            x_12 == 0,
-            x_13 == 0,
-            x_14 == 0,
-            x_15 == 0]
+            [x_2 == 0, x_3 == x_0]
         """
         x = model.binary_variable
         input_vars, output_vars = self._get_input_output_variables()
@@ -520,28 +494,20 @@ class SHIFT(Component):
 
         EXAMPLE::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: cipher = TeaBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
+            sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
+            sage: cipher = ShiftCipher(bit_size=2, shift_amount=1)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: shift_component = cipher.get_component_from_id("shift_0_0")
+            sage: shift_component = cipher.component_from(0, 0)
             sage: variables, constraints = shift_component.milp_bitwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
-            [('x_class[plaintext_8]', x_0),
-            ('x_class[plaintext_9]', x_1),
-            ...
-            ('x_class[shift_0_0_6]', x_14),
-            ('x_class[shift_0_0_7]', x_15)]
+            [('x_class[plaintext_0]', x_0),
+            ('x_class[plaintext_1]', x_1),
+            ('x_class[shift_0_0_0]', x_2),
+            ('x_class[shift_0_0_1]', x_3)]
             sage: constraints
-            [x_8 == x_4,
-            x_9 == x_5,
-            x_10 == x_6,
-            x_11 == x_7,
-            x_12 == 0,
-            x_13 == 0,
-            x_14 == 0,
-            x_15 == 0]
+            [x_2 == 0, x_3 == x_0]
 
         """
         x_class = model.trunc_binvar
@@ -572,26 +538,27 @@ class SHIFT(Component):
 
         EXAMPLE::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: cipher = AESBlockCipher(number_of_rounds=3)
+            sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
+            sage: cipher = ShiftCipher(bit_size=4, shift_amount=-4)
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
             sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: from claasp.components.shift_component import SHIFT
-            sage: shift_component = SHIFT(0, 18, ['sbox_0_2', 'sbox_0_6', 'sbox_0_10', 'sbox_0_14'], [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]], 32, -8)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 18, ['plaintext'], [list(range(4))], 4, -4)
             sage: variables, constraints = shift_component.milp_wordwise_deterministic_truncated_xor_differential_constraints(milp)
             sage: variables
-            [('x_class[sbox_0_2_word_0_class]', x_0),
-             ('x_class[sbox_0_6_word_0_class]', x_1),
-             ...
-             ('x[shift_0_18_30]', x_70),
-             ('x[shift_0_18_31]', x_71)]
+            [('x_class[plaintext_word_0_class]', x_0),
+            ('x_class[shift_0_18_word_0_class]', x_1),
+            ('x[plaintext_0]', x_2),
+            ('x[plaintext_1]', x_3),
+            ('x[plaintext_2]', x_4),
+            ('x[plaintext_3]', x_5),
+            ('x[shift_0_18_0]', x_6),
+            ('x[shift_0_18_1]', x_7),
+            ('x[shift_0_18_2]', x_8),
+            ('x[shift_0_18_3]', x_9)]
             sage: constraints
-            [x_4 == x_1,
-             x_5 == x_2,
-             ...
-             x_70 == 0,
-             x_71 == 0]
+            [x_1 == 0, x_6 == 0, x_7 == 0, x_8 == 0, x_9 == 0]
 
         """
         x_class = model.trunc_wordvar
@@ -631,28 +598,17 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
             sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
-            sage: tea = TeaBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
-            sage: milp = MilpModel(tea)
+            sage: cipher = ShiftCipher(bit_size=2, shift_amount=1)
+            sage: milp = MilpModel(cipher)
             sage: milp.init_model_in_sage_milp_class()
-            sage: shift_component = tea.get_component_from_id("shift_0_0")
+            sage: shift_component = cipher.component_from_id('shift_0_0')
             sage: variables, constraints = shift_component.milp_xor_linear_mask_propagation_constraints(milp)
             sage: variables
-            [('x[shift_0_0_0_i]', x_0),
-            ('x[shift_0_0_1_i]', x_1),
-            ...
-            ('x[shift_0_0_6_o]', x_14),
-            ('x[shift_0_0_7_o]', x_15)]
+            [('x[shift_0_0_0_i]', x_0), ('x[shift_0_0_1_i]', x_1), ('x[shift_0_0_0_o]', x_2), ('x[shift_0_0_1_o]', x_3)]
             sage: constraints
-            [x_0 == 0,
-            x_1 == 0,
-            x_2 == 0,
-            x_3 == 0,
-            x_8 == x_4,
-            x_9 == x_5,
-            x_10 == x_6,
-            x_11 == x_7]
+            [x_1 == 0, x_3 == x_0]
         """
         x = model.binary_variable
         input_vars, output_vars = self._get_independent_input_output_variables()
@@ -685,16 +641,19 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
+            sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
             sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: tea = TeaBlockCipher(number_of_rounds=32)
-            sage: minizinc = MznModel(tea)
-            sage: shift_component = tea.get_component_from_id("shift_0_0")
-            sage: _, shift_mzn_constraints = shift_component.minizinc_constraints(minizinc)
-            sage: shift_mzn_constraints[0]
-            'constraint LSHIFT(array1d(0..32-1, [shift_0_0_x0,shift_0_0_x1,shift_0_0_x2,shift_0_0_x3,shift_0_0_x4,shift_0_0_x5,shift_0_0_x6,shift_0_0_x7,shift_0_0_x8,shift_0_0_x9,shift_0_0_x10,shift_0_0_x11,shift_0_0_x12,shift_0_0_x13,shift_0_0_x14,shift_0_0_x15,shift_0_0_x16,shift_0_0_x17,shift_0_0_x18,shift_0_0_x19,shift_0_0_x20,shift_0_0_x21,shift_0_0_x22,shift_0_0_x23,shift_0_0_x24,shift_0_0_x25,shift_0_0_x26,shift_0_0_x27,shift_0_0_x28,shift_0_0_x29,shift_0_0_x30,shift_0_0_x31]), 4)=array1d(0..32-1, [shift_0_0_y0,shift_0_0_y1,shift_0_0_y2,shift_0_0_y3,shift_0_0_y4,shift_0_0_y5,shift_0_0_y6,shift_0_0_y7,shift_0_0_y8,shift_0_0_y9,shift_0_0_y10,shift_0_0_y11,shift_0_0_y12,shift_0_0_y13,shift_0_0_y14,shift_0_0_y15,shift_0_0_y16,shift_0_0_y17,shift_0_0_y18,shift_0_0_y19,shift_0_0_y20,shift_0_0_y21,shift_0_0_y22,shift_0_0_y23,shift_0_0_y24,shift_0_0_y25,shift_0_0_y26,shift_0_0_y27,shift_0_0_y28,shift_0_0_y29,shift_0_0_y30,shift_0_0_y31]);\n'
+            sage: cipher = ShiftCipher(bit_size=2, shift_amount=1)
+            sage: minizinc = MznModel(cipher)
+            sage: shift_component = cipher.component_from_id('shift_0_0')
+            sage: shift_component.minizinc_constraints(minizinc)
+            (['var bool: shift_0_0_x0;',
+            'var bool: shift_0_0_x1;',
+            'var bool: shift_0_0_y0;',
+            'var bool: shift_0_0_y1;'],
+            ['constraint RSHIFT(array1d(0..2-1, [shift_0_0_x0,shift_0_0_x1]), 1)=array1d(0..2-1, [shift_0_0_y0,shift_0_0_y1]);\n'])
         """
-        var_names = self._define_var(model.input_postfix, model.output_postfix, model.data_type)
+        var_names = self.minizinc_define_var(model.input_postfix, model.output_postfix, model.data_type)
         shift_const = self.description[1]
         ninputs = noutputs = self.output_bit_size
         input_vars = [self.id + "_" + model.input_postfix + str(i) for i in range(ninputs)]
@@ -740,36 +699,26 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: shift_component = tea.component_from(0, 0)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.sat_constraints()
-            (['shift_0_0_0',
-              'shift_0_0_1',
-              ...
-              'shift_0_0_30',
-              'shift_0_0_31'],
-             ['shift_0_0_0 -plaintext_36',
-              'plaintext_36 -shift_0_0_0',
-              ...
-              '-shift_0_0_30',
-              '-shift_0_0_31'])
+            (['shift_0_0_0', 'shift_0_0_1'], ['-shift_0_0_0', 'shift_0_0_1 -input_0', 'input_0 -shift_0_0_1'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
             shift_amount = -shift_amount
-            for i in range(output_bit_len - shift_amount):
-                constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i + shift_amount]]))
-            for i in range(output_bit_len - shift_amount, output_bit_len):
-                constraints.append(f"-{output_bit_ids[i]}")
+            for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids[shift_amount:]):
+                constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
+            for output_bit_id in output_bit_ids[self.output_bit_size - shift_amount :]:
+                constraints.append(f"-{output_bit_id}")
         else:
-            for i in range(shift_amount):
-                constraints.append(f"-{output_bit_ids[i]}")
-            for i in range(shift_amount, output_bit_len):
-                constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i - shift_amount]]))
+            for output_bit_id in output_bit_ids[:shift_amount]:
+                constraints.append(f"-{output_bit_id}")
+            for output_bit_id, input_bit_id in zip(output_bit_ids[shift_amount:], input_bit_ids):
+                constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
 
         return output_bit_ids, constraints
 
@@ -783,7 +732,7 @@ class SHIFT(Component):
         .. SEEALSO::
 
             - :ref:`sat-standard` for the format.
-            - :obj:`sat_constraints() <components.shift_component.SHIFT.sat_constraints>` for the model.
+            - :obj:`sat_constraints() <components.shift_component.Shift.sat_constraints>` for the model.
 
         INPUT:
 
@@ -791,38 +740,28 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: shift_component = tea.component_from(0, 0)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.sat_bitwise_deterministic_truncated_xor_differential_constraints()
-            (['shift_0_0_0_0',
-              'shift_0_0_1_0',
-              ...
-              'shift_0_0_30_1',
-              'shift_0_0_31_1'],
-             ['shift_0_0_0_0 -plaintext_36_0',
-              'plaintext_36_0 -shift_0_0_0_0',
-              ...
-              '-shift_0_0_31_0',
-              '-shift_0_0_31_1'])
+            (['shift_0_0_0_0', 'shift_0_0_1_0', 'shift_0_0_0_1', 'shift_0_0_1_1'], ['-shift_0_0_0_0', '-shift_0_0_0_1', 'shift_0_0_1_0 -input_0_0', 'input_0_0 -shift_0_0_1_0', 'shift_0_0_1_1 -input_0_1', 'input_0_1 -shift_0_0_1_1'])
         """
         in_ids_0, in_ids_1 = self._generate_input_double_ids()
-        out_len, out_ids_0, out_ids_1 = self._generate_output_double_ids()
+        out_ids_0, out_ids_1 = self._generate_output_double_ids()
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
             shift_amount = -shift_amount
-            for i in range(out_len - shift_amount):
+            for i in range(self.output_bit_size - shift_amount):
                 constraints.extend(sat_utils.cnf_equivalent([out_ids_0[i], in_ids_0[i + shift_amount]]))
                 constraints.extend(sat_utils.cnf_equivalent([out_ids_1[i], in_ids_1[i + shift_amount]]))
-            for i in range(out_len - shift_amount, out_len):
+            for i in range(self.output_bit_size - shift_amount, self.output_bit_size):
                 constraints.append(f"-{out_ids_0[i]}")
                 constraints.append(f"-{out_ids_1[i]}")
         else:
             for i in range(shift_amount):
                 constraints.append(f"-{out_ids_0[i]}")
                 constraints.append(f"-{out_ids_1[i]}")
-            for i in range(shift_amount, out_len):
+            for i in range(shift_amount, self.output_bit_size):
                 constraints.extend(sat_utils.cnf_equivalent([out_ids_0[i], in_ids_0[i - shift_amount]]))
                 constraints.extend(sat_utils.cnf_equivalent([out_ids_1[i], in_ids_1[i - shift_amount]]))
 
@@ -835,7 +774,7 @@ class SHIFT(Component):
         .. SEEALSO::
 
             - :ref:`sat-standard` for the format.
-            - :obj:`sat_constraints() <components.shift_component.SHIFT.sat_constraints>` for the model.
+            - :obj:`sat_constraints() <components.shift_component.Shift.sat_constraints>` for the model.
 
         INPUT:
 
@@ -843,20 +782,10 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: shift_component = tea.component_from(0, 0)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.sat_xor_differential_propagation_constraints()
-            (['shift_0_0_0',
-              'shift_0_0_1',
-              ...
-              'shift_0_0_30',
-              'shift_0_0_31'],
-             ['shift_0_0_0 -plaintext_36',
-              'plaintext_36 -shift_0_0_0',
-              ...
-              '-shift_0_0_30',
-              '-shift_0_0_31'])
+            (['shift_0_0_0', 'shift_0_0_1'], ['-shift_0_0_0', 'shift_0_0_1 -input_0', 'input_0 -shift_0_0_1'])
         """
         return self.sat_constraints()
 
@@ -870,7 +799,7 @@ class SHIFT(Component):
         .. SEEALSO::
 
             - :ref:`sat-standard` for the format.
-            - :obj:`sat_constraints() <components.shift_component.SHIFT.sat_constraints>` for the model.
+            - :obj:`sat_constraints() <components.shift_component.Shift.sat_constraints>` for the model.
 
         INPUT:
 
@@ -878,38 +807,26 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: shift_component = tea.component_from(0, 0)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.sat_xor_linear_mask_propagation_constraints()
-            (['shift_0_0_0_i',
-              'shift_0_0_1_i',
-              ...
-              'shift_0_0_30_o',
-              'shift_0_0_31_o'],
-             ['-shift_0_0_0_i',
-              '-shift_0_0_1_i',
-              ...
-              'shift_0_0_27_o -shift_0_0_31_i',
-              'shift_0_0_31_i -shift_0_0_27_o'])
+            (['shift_0_0_0_i', 'shift_0_0_1_i', 'shift_0_0_0_o', 'shift_0_0_1_o'], ['shift_0_0_1_o -shift_0_0_0_i', 'shift_0_0_0_i -shift_0_0_1_o', '-shift_0_0_1_i'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
             shift_amount = -shift_amount
-            constraints.extend([f"-{input_bit_ids[i]}" for i in range(shift_amount)])
-            for i in range(output_bit_len - shift_amount):
-                constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i + shift_amount]]))
+            constraints.extend(f"-{input_bit_id}" for input_bit_id in input_bit_ids[:shift_amount])
+            for output_bit_id, input_bit_id in zip(output_bit_ids[:-shift_amount], input_bit_ids[shift_amount:]):
+                constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
         else:
-            for i in range(shift_amount, output_bit_len):
-                constraints.extend(sat_utils.cnf_equivalent([output_bit_ids[i], input_bit_ids[i - shift_amount]]))
-            constraints.extend([f"-{input_bit_ids[i]}" for i in range(output_bit_len - shift_amount, output_bit_len)])
-        result = input_bit_ids + output_bit_ids, constraints
+            for output_bit_id, input_bit_id in zip(output_bit_ids[shift_amount:], input_bit_ids[:-shift_amount]):
+                constraints.extend(sat_utils.cnf_equivalent([output_bit_id, input_bit_id]))
+            constraints.extend(f"-{input_bit_id}" for input_bit_id in input_bit_ids[-shift_amount:])
 
-        return result
+        return input_bit_ids + output_bit_ids, constraints
 
     def smt_constraints(self):
         """
@@ -927,37 +844,27 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: shift_component = tea.component_from(0, 0)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.smt_constraints()
-            (['shift_0_0_0',
-              'shift_0_0_1',
-              ...
-              'shift_0_0_30',
-              'shift_0_0_31'],
-             ['(assert (= shift_0_0_0 plaintext_36))',
-              '(assert (= shift_0_0_1 plaintext_37))',
-              ...
-              '(assert (not shift_0_0_30))',
-              '(assert (not shift_0_0_31))'])
+            (['shift_0_0_0', 'shift_0_0_1'], ['(assert (not shift_0_0_0))', '(assert (= shift_0_0_1 input_0))'])
         """
         input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
+        output_bit_ids = self._generate_output_ids()
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
             shift_amount = -shift_amount
-            for i in range(output_bit_len - shift_amount):
-                equation = smt_utils.smt_equivalent((output_bit_ids[i], input_bit_ids[i + shift_amount]))
+            for output_bit_id, input_bit_id in zip(output_bit_ids, input_bit_ids[shift_amount:]):
+                equation = smt_utils.smt_equivalent((output_bit_id, input_bit_id))
                 constraints.append(smt_utils.smt_assert(equation))
-            for i in range(output_bit_len - shift_amount, output_bit_len):
-                constraints.append(smt_utils.smt_assert(smt_utils.smt_not(output_bit_ids[i])))
+            for output_bit_id in output_bit_ids[self.output_bit_size - shift_amount :]:
+                constraints.append(smt_utils.smt_assert(smt_utils.smt_not(output_bit_id)))
         else:
-            for i in range(shift_amount):
-                constraints.append(smt_utils.smt_assert(smt_utils.smt_not(output_bit_ids[i])))
-            for i in range(shift_amount, output_bit_len):
-                equation = smt_utils.smt_equivalent((output_bit_ids[i], input_bit_ids[i - shift_amount]))
+            for output_bit_id in output_bit_ids[:shift_amount]:
+                constraints.append(smt_utils.smt_assert(smt_utils.smt_not(output_bit_id)))
+            for output_bit_id, input_bit_id in zip(output_bit_ids[shift_amount:], input_bit_ids):
+                equation = smt_utils.smt_equivalent((output_bit_id, input_bit_id))
                 constraints.append(smt_utils.smt_assert(equation))
 
         return output_bit_ids, constraints
@@ -968,7 +875,7 @@ class SHIFT(Component):
 
         .. SEEALSO::
 
-            :obj:`smt_constraints() <components.shift_component.SHIFT.smt_constraints>`.
+            :obj:`smt_constraints() <components.shift_component.Shift.smt_constraints>`.
 
         INPUT:
 
@@ -976,20 +883,10 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: shift_component = tea.component_from(0, 0)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.smt_xor_differential_propagation_constraints()
-            (['shift_0_0_0',
-              'shift_0_0_1',
-              ...
-              'shift_0_0_30',
-              'shift_0_0_31'],
-             ['(assert (= shift_0_0_0 plaintext_36))',
-              '(assert (= shift_0_0_1 plaintext_37))',
-              ...
-              '(assert (not shift_0_0_30))',
-              '(assert (not shift_0_0_31))'])
+            (['shift_0_0_0', 'shift_0_0_1'], ['(assert (not shift_0_0_0))', '(assert (= shift_0_0_1 input_0))'])
         """
         return self.smt_constraints()
 
@@ -1002,7 +899,7 @@ class SHIFT(Component):
 
         .. SEEALSO::
 
-            :obj:`smt_constraints() <components.shift_component.SHIFT.smt_constraints>`.
+            :obj:`smt_constraints() <components.shift_component.Shift.smt_constraints>`.
 
         INPUT:
 
@@ -1010,42 +907,81 @@ class SHIFT(Component):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-            sage: tea = TeaBlockCipher(number_of_rounds=3)
-            sage: shift_component = tea.component_from(0, 0)
+            sage: from claasp.components.shift_component import Shift
+            sage: shift_component = Shift(0, 0, ['input'], [[0, 1]], 2, 1)
             sage: shift_component.smt_xor_linear_mask_propagation_constraints()
-            (['shift_0_0_0_i',
-              'shift_0_0_1_i',
-              ...
-              'shift_0_0_30_o',
-              'shift_0_0_31_o'],
-             ['(assert (not shift_0_0_0_i))',
-              '(assert (not shift_0_0_1_i))',
-              ...
-              '(assert (= shift_0_0_26_o shift_0_0_30_i))',
-              '(assert (= shift_0_0_27_o shift_0_0_31_i))'])
+            (['shift_0_0_0_i', 'shift_0_0_1_i', 'shift_0_0_0_o', 'shift_0_0_1_o'], ['(assert (= shift_0_0_1_o shift_0_0_0_i))', '(assert (not shift_0_0_1_i))'])
         """
-        _, input_bit_ids = self._generate_component_input_ids()
-        out_suffix = constants.OUTPUT_BIT_ID_SUFFIX
-        output_bit_len, output_bit_ids = self._generate_output_ids(suffix=out_suffix)
+        input_bit_ids = self._generate_component_input_ids()
+        output_bit_ids = self._generate_output_ids(suffix=constants.OUTPUT_BIT_ID_SUFFIX)
         shift_amount = self.description[1]
         constraints = []
         if shift_amount < 0:
             shift_amount = -shift_amount
-            constraints.extend([smt_utils.smt_assert(smt_utils.smt_not(input_bit_ids[i])) for i in range(shift_amount)])
-            for i in range(output_bit_len - shift_amount):
-                equation = smt_utils.smt_equivalent((output_bit_ids[i], input_bit_ids[i + shift_amount]))
+            for input_bit_id in input_bit_ids[:shift_amount]:
+                constraints.append(smt_utils.smt_assert(smt_utils.smt_not(input_bit_id)))
+            for output_bit_id, input_bit_id in zip(output_bit_ids[:-shift_amount], input_bit_ids[shift_amount:]):
+                equation = smt_utils.smt_equivalent((output_bit_id, input_bit_id))
                 constraints.append(smt_utils.smt_assert(equation))
         else:
-            for i in range(shift_amount, output_bit_len):
-                equation = smt_utils.smt_equivalent((output_bit_ids[i], input_bit_ids[i - shift_amount]))
+            for output_bit_id, input_bit_id in zip(output_bit_ids[shift_amount:], input_bit_ids[:-shift_amount]):
+                equation = smt_utils.smt_equivalent((output_bit_id, input_bit_id))
                 constraints.append(smt_utils.smt_assert(equation))
-            constraints.extend(
-                [
-                    smt_utils.smt_assert(smt_utils.smt_not(input_bit_ids[i]))
-                    for i in range(output_bit_len - shift_amount, output_bit_len)
-                ]
-            )
-        result = input_bit_ids + output_bit_ids, constraints
+            for input_bit_id in input_bit_ids[-shift_amount:]:
+                constraints.append(smt_utils.smt_assert(smt_utils.smt_not(input_bit_id)))
 
-        return result
+        return input_bit_ids + output_bit_ids, constraints
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for SHIFT quasidifferential propagation.
+
+        SHIFT is linear but, unlike Rotate, NOT invertible: it discards
+        the bits shifted out. Per Beyne & Rijmen, Theorem 3.2 (5), a
+        linear map L propagates differences forwards (b = L(a)) and
+        masks backwards through its TRANSPOSE (u = L^T(v)). The
+        transpose of a shift is the shift in the OPPOSITE direction,
+        and the mask bits corresponding to positions that the shift
+        discards are forced to zero -- which is precisely the structure
+        already encoded by this class's own
+        smt_xor_linear_mask_propagation_constraints, reused here with
+        the ``qdt_``-prefixed variable names of the quasidifferential
+        model.
+
+        Weight is 0: linear maps have a delta-function correlation and
+        contribute no weight loss.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.shift_cipher import ShiftCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = ShiftCipher(bit_size=2, shift_amount=1)
+            sage: shift_component = cipher.component_from_id('shift_0_0')
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: variables, constraints = shift_component.smt_xor_quasidifferential_propagation_constraints(smt)
+            sage: len(variables)
+            4
+        """
+
+        # The transpose of a shift is the shift the other way, and the
+        # bits the shift discards carry a zero mask.
+        shift_amount = self.description[1]
+        inputs = list(range(self.input_bit_size))
+        outputs = list(range(self.output_bit_size))
+
+        if shift_amount < 0:
+            shift_amount = -shift_amount
+            mask_pairs = [(None, position) for position in inputs[:shift_amount]]
+            mask_pairs += list(zip(outputs[:-shift_amount], inputs[shift_amount:]))
+        else:
+            mask_pairs = list(zip(outputs[shift_amount:], inputs[:-shift_amount]))
+            mask_pairs += [(None, position) for position in inputs[-shift_amount:]]
+
+        return model._bit_moving_propagation_constraints(self, mask_pairs)

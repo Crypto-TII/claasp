@@ -17,7 +17,7 @@
 
 
 from claasp.cipher import Cipher
-from claasp.name_mappings import STREAM_CIPHER, INPUT_KEY, INPUT_INITIALIZATION_VECTOR
+from claasp.name_mappings import INPUT_INITIALIZATION_VECTOR, INPUT_KEY, STREAM_CIPHER
 
 PARAMETERS_CONFIGURATION_LIST = [
     {
@@ -50,19 +50,19 @@ class BiviumStreamCipher(Cipher):
 
     EXAMPLES::
 
-    sage: from claasp.ciphers.stream_ciphers.bivium_stream_cipher import BiviumStreamCipher
-    sage: biv = BiviumStreamCipher(keystream_bit_len = 2**8)
-    sage: key = 0xffffffffffffffffffff
-    sage: iv = 0xffffffffffffffffffff
-    sage: ks = 0x30d0e5ede563dee67884718977510a4c22661cf128d8f75af4a2708276014d83
-    sage: biv.evaluate([key, iv]) == ks
-    True
+        sage: from claasp.ciphers.stream_ciphers.bivium_stream_cipher import BiviumStreamCipher
+        sage: biv = BiviumStreamCipher(keystream_bit_len = 2**8)
+        sage: key = 0xffffffffffffffffffff
+        sage: iv = 0xffffffffffffffffffff
+        sage: ks = 0x30d0e5ede563dee67884718977510a4c22661cf128d8f75af4a2708276014d83
+        sage: biv.evaluate([key, iv]) == ks
+        True
 
-    sage: key = 0xffffffffff0000000000
-    sage: iv = 0xffffffffff
-    sage: ks = 0xdebe55784f853606399af3f6f4b8d0a706963a91f2ba4c687baea16da074f3c3
-    sage: biv.evaluate([key, iv]) == ks
-    True
+        sage: key = 0xffffffffff0000000000
+        sage: iv = 0xffffffffff
+        sage: ks = 0xdebe55784f853606399af3f6f4b8d0a706963a91f2ba4c687baea16da074f3c3
+        sage: biv.evaluate([key, iv]) == ks
+        True
 
     """
 
@@ -95,7 +95,7 @@ class BiviumStreamCipher(Cipher):
         for clock_number in range(self._get_len_of_keystream(keystream_bit_len)):
             self.add_round()
             key_stream = self.bivium_key_stream(biv_state, clock_number, key_stream)
-            biv_state = self.add_FSR_component(
+            biv_state = self.add_fsr_component(
                 [biv_state], [list(range(self.state_bit_size))], self.state_bit_size, NLFSR_DESCR
             ).id
 
@@ -126,8 +126,8 @@ class BiviumStreamCipher(Cipher):
         cst0 = self.add_constant_component(13, 0x0).id
         state0_id = [cst0] + key[0] + [cst0] + iv[0]
         state0_pos = [list(range(13)), list(range(self.key_bit_size)), list(range(4)), list(range(self.iv_bit_size))]
-        biv_state = self.add_FSR_component(state0_id, state0_pos, self.state_bit_size, NLFSR_DESCR).id
-        biv_state = self.add_FSR_component(
+        biv_state = self.add_fsr_component(state0_id, state0_pos, self.state_bit_size, NLFSR_DESCR).id
+        biv_state = self.add_fsr_component(
             [biv_state],
             [list(range(self.state_bit_size))],
             self.state_bit_size,
@@ -137,7 +137,7 @@ class BiviumStreamCipher(Cipher):
         return biv_state
 
     def bivium_key_stream(self, state, clock_number, ks):
-        z = self.add_XOR_component([state, state, state, state], [[0], [27], [93], [108]], 1).id
+        z = self.add_xor_component([state, state, state, state], [[0], [27], [93], [108]], 1).id
         if clock_number == 0:
             ks = self.add_round_output_component([z], [[0]], 1).id
         else:

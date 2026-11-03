@@ -1,6 +1,6 @@
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_linear_model import MznXorLinearModel
 from claasp.cipher_modules.models.cp.solvers import CHUFFED
-from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
@@ -86,17 +86,25 @@ def test_find_one_xor_linear_trail():
 def test_find_one_xor_linear_trail_with_fixed_weight():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
     mzn = MznXorLinearModel(speck)
-    trail = mzn.find_one_xor_linear_trail_with_fixed_weight(3, solve_external=False)
+    trail = mzn.find_one_xor_linear_trail(lower_bound=3, upper_bound=3, solve_external=False)
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r4"
     assert trail["model_type"] == "xor_linear_one_solution"
     assert trail["total_weight"] == "3.0"
 
-    trail = mzn.find_one_xor_linear_trail_with_fixed_weight(3, solver_name=CHUFFED, solve_external=False)
+    trail = mzn.find_one_xor_linear_trail(lower_bound=3, upper_bound=3, solver_name=CHUFFED, solve_external=False)
 
     assert str(trail["cipher"]) == "speck_p32_k64_o32_r4"
     assert trail["model_type"] == "xor_linear_one_solution"
     assert trail["total_weight"] == "3.0"
+
+
+def test_find_one_xor_linear_trail_with_fixed_weight_solve_with_api():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+    mzn = MznXorLinearModel(speck)
+    trail = mzn.find_one_xor_linear_trail(lower_bound=3, upper_bound=3, solve_external=False, solve_with_API=True)
+
+    assert isinstance(trail.statistics, dict)
 
 
 def test_fix_variables_value_xor_linear_constraints():

@@ -19,9 +19,9 @@
 from copy import deepcopy
 
 from claasp.cipher import Cipher
-from claasp.utils.utils import simplify_inputs
-from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 from claasp.DTOs.component_state import ComponentState
+from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
+from claasp.utils.utils import simplify_inputs
 
 X_NUM = 5
 Y_NUM = 5
@@ -78,7 +78,7 @@ class KeccakInvertiblePermutation(Cipher):
     Construct an instance of the KeccakInvertiblePermutation class.
 
     This class is used to store compact representations of a cipher, used to generate the corresponding cipher.
-    https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf
+    It is equivalent to the Keccak-p permutation implemented by the designers' XKCP reference package [XKCPREF]_.
 
     INPUT:
 
@@ -97,6 +97,10 @@ class KeccakInvertiblePermutation(Cipher):
     """
 
     def __init__(self, number_of_rounds=24, word_size=64):
+        maximum_number_of_rounds = 12 + 2 * (int(word_size).bit_length() - 1)
+        if word_size <= 0 or word_size & (word_size - 1) or number_of_rounds > maximum_number_of_rounds:
+            raise ValueError('word_size must be a power of two and number_of_rounds must not exceed Keccak-f rounds')
+        round_offset = maximum_number_of_rounds - number_of_rounds
         self.word_bit_size = word_size
         self.plane_size = Y_NUM * self.word_bit_size
         self.state_bit_size = X_NUM * self.plane_size
@@ -116,7 +120,7 @@ class KeccakInvertiblePermutation(Cipher):
             self.add_round()
 
             # round parameter
-            ci = self.get_ci(round_number)
+            ci = self.get_ci(round_number + round_offset)
             state = self.round_function(state, ci, word_size)
 
             self.add_output_component(number_of_rounds, round_number, state)
@@ -146,7 +150,7 @@ class KeccakInvertiblePermutation(Cipher):
                     inputs_id = inputs_id + b[i][j].id
                     inputs_pos = inputs_pos + [[k]]
                 inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-                self.add_SBOX_component(inputs_id, inputs_pos, SBOX_SIZE, SBOX)
+                self.add_sbox_component(inputs_id, inputs_pos, SBOX_SIZE, SBOX)
                 for i in range(X_NUM):
                     state_new[i][j].id[k] = self.get_current_component_id()
                     state_new[i][j].input_bit_positions[k] = [i]
@@ -168,7 +172,7 @@ class KeccakInvertiblePermutation(Cipher):
         inputs_id = c.id + state[0][0].id
         inputs_pos = c.input_bit_positions + state[0][0].input_bit_positions
         inputs_id, inputs_pos = simplify_inputs(inputs_id, inputs_pos)
-        self.add_XOR_component(inputs_id, inputs_pos, self.word_bit_size)
+        self.add_xor_component(inputs_id, inputs_pos, self.word_bit_size)
         state[0][0] = ComponentState([self.get_current_component_id()], [list(range(self.word_bit_size))])
 
         return state

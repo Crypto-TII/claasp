@@ -1,30 +1,31 @@
 
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
 
-import sys
 import math
-import numpy as np
-from math import log
-from claasp.cipher_modules import evaluator
-from claasp.name_mappings import INTERMEDIATE_OUTPUT, CIPHER_OUTPUT
+
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
+
+from claasp.cipher_modules import evaluator
+from claasp.name_mappings import CIPHER_OUTPUT, INTERMEDIATE_OUTPUT
+
 
 class AvalancheTests:
     def __init__(self, cipher):
@@ -85,7 +86,7 @@ class AvalancheTests:
         all_avalanche_probability_vectors = self.avalanche_probability_vectors(number_of_samples)
         criterion = self.compute_criterion_from_avalanche_probability_vectors(all_avalanche_probability_vectors,
                                                                          avalanche_dependence_uniform_bias)
-        intermediate_output_names = self._add_intermediate_output_components_id_to_dictionary(self._cipher.get_all_components())
+        intermediate_output_names = self._add_intermediate_output_components_id_to_dictionary(self._cipher.all_components())
         diffusion_tests = {"input_parameters": {
             "cipher": self._cipher,
             "test_name": "avalanche_tests",
@@ -279,7 +280,7 @@ class AvalancheTests:
         """
 
         intermediate_output_names = {}
-        for component in self._cipher.get_all_components():
+        for component in self._cipher.all_components():
             if self._is_output(component):
                 if component.description[0] not in list(intermediate_output_names.keys()):
                     intermediate_output_names[component.description[0]] = [0, component.output_bit_size]
@@ -433,8 +434,8 @@ class AvalancheTests:
 
 
     def _set_vector_entropy(self, criterion, input_diff, input_tag, number_of_occurrence, output_tag, vector):
-        vector_entropy = [round((-proba * log(proba, 2)) - (1 - proba) *
-                                log(1 - proba, 2), 5) if proba not in [0, 1] else 0 for proba in vector]
+        vector_entropy = [round((-proba * math.log(proba, 2)) - (1 - proba) *
+                                math.log(1 - proba, 2), 5) if proba not in [0, 1] else 0 for proba in vector]
         criterion[input_tag][output_tag][input_diff][number_of_occurrence][
             "avalanche_entropy_vectors"] = vector_entropy
 
@@ -544,6 +545,3 @@ class AvalancheTests:
         # plt.show()
         print("graph can be plot with the build-in method plot.show()")
         return plt
-
-
-

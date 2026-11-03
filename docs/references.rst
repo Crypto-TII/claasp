@@ -48,22 +48,37 @@
         Software Encryption, 2014 :
         https://link.springer.com/content/pdf/10.1007%2F978-3-662-46706-0_27.pdf
 
-.. [ADP2018]
-        Albrecht M. R., Deo A., Paterson K. G. : *Cold Boot Attacks on Ring and
-        Module LWE Keys Under the NTT* : IACR Transactions on Cryptographic
-        Hardware and Embedded Systems, 2018(3), 173-213
-
-.. [AK2019]
-        Ankele R., Kölbl S. : *Mind the Gap - A Closer Look at the Security of
-        Block Ciphers against Differential Cryptanalysis* : Selected Areas in
-        Cryptography -- SAC 2018, Springer International Publishing 2019 :
-        https://link.springer.com/chapter/10.1007%2F978-3-030-10970-7_8
-
 .. [ASTTY2017]
         Abdelkhalek A., Sasaki Y., Todo Y., Tolba M., Youssef A. M. : *MILP
         modeling for (large) s-boxes to optimize probability of differential
         characteristics* : IACR Transactions on Symmetric Cryptology (2017):
         99-129 : https://tosc.iacr.org/index.php/ToSC/article/view/805/759
+
+.. [A1997]
+        Adams C. : *The CAST-128 Encryption Algorithm* : RFC 2144, Network
+        Working Group, 1997 : https://datatracker.ietf.org/doc/html/rfc2144
+        
+.. [ABK1998]
+        Anderson R., Biham E., Knudsen L. : *Serpent: A Proposal for the
+        Advanced Encryption Standard* : First Advanced Encryption Standard
+        Candidate Conference, 1998 :
+        https://www.cl.cam.ac.uk/archive/rja14/Papers/serpent.pdf
+
+.. [AJN2016]
+        Aumasson J.-P., Jovanovic P., Neves S. : *NORX v3.0* : CAESAR
+        Competition, third-round submission, 2016 :
+        https://competitions.cr.yp.to/round3/norxv30.pdf
+
+.. [ASCONREF]
+        Ascon Team : *ascon-c reference implementation for NIST SP 800-232* :
+        commit 446347f21b209f3921c65ece70027c366cbe1693 :
+        https://github.com/ascon/ascon-c/tree/446347f21b209f3921c65ece70027c366cbe1693
+
+.. [AumassonBernstein2012]
+        Aumasson, J.-P., Bernstein, D. J. : *SipHash: a fast short-input PRF* :
+        INDOCRYPT 2012, Lecture Notes in Computer Science, vol. 7668, pp.
+        489-508, Springer (2012) :
+        https://cr.yp.to/siphash/siphash-20120918.pdf
 
 .. _claasp-ref-B:
 
@@ -71,20 +86,27 @@
 
         **B**
 
-.. [BC2003]
-        Biryukov A., Canniere C. D. : *Block Ciphers and Systems of Quadratic
-        Equations* : In Proceedings of Fast Software Encryption 2003, LNCS
-        2887, pp. 274-289, Springer-Verlag 2003
+.. [BBBGPUV2020]
+        Beierle C., Biryukov A., dos Santos L. C., Großschädl J., Perrin L.,
+        Udovenko A., Velichkov V., Wang Q. :
+        *Alzette: A 64-Bit ARX-Box (Feat. CRAX and TRAX)* :
+        In: Micciancio D., Ristenpart T. (eds.) Advances in Cryptology –
+        CRYPTO 2020, LNCS 12172, pp. 419–448. Springer, 2020.
+        DOI: 10.1007/978-3-030-56877-1_15.
+        IACR ePrint 2019/1378, https://eprint.iacr.org/2019/1378
 
-.. [BFS2003]
-        Bardet M., Faugère J.-C., Salvy B. : *Complexity of Gröbner basis
-        computation for Semi-regular Overdetermined sequences over F2 with
-        solutions in F2* : Research Report RR-5049, INRIA, 2003.
+.. [BDDGR23]
+        Belkheyar Y., Daemen J., Dobraunig C., Ghosh S., Rasoolzadeh S. : *BipBip: A Low-Latency
+        Tweakable Block Cipher with Small Dimensions* : In IACR Transactions on Cryptographic
+        Hardware and Embedded Systems, vol. 2023, no. 1, pp. 326-368, 2023
 
-.. [BDKLLSSSS18]
-        Bos, J.W., Ducas, L., Kiltz, E., Lepoint, T., Lyubashevsky, V.,
-        Schanck, J.M., Schwabe, P., Seiler, G., Stehlé, D. : *CRYSTALS-Kyber: A
-        CCA-Secure Module-Lattice-Based* KEM. EuroS&P 2018: 353-367.
+.. [BDG+25] Y. Belkheyar, P. Derbez, S. Ghosh, G. Leander, S. Mella, L. Perrin,
+        S. Rasoolzadeh, L. Stennes, S. Sun, G. Van Assche, D. Vizár,
+        "ChiLow and ChiChi: New Constructions for Code Encryption",
+        in Advances in Cryptology -- EUROCRYPT 2025, S. Fehr and P.-A. Fouque (eds.),
+        LNCS, vol. 15607, Springer, 2025, pp. 212--243.
+        Cryptology ePrint Archive, Paper 2025/308,
+        https://eprint.iacr.org/2025/308
 
 .. [BHPR2021]
         Bellini E., Hambitzer A., Protopapa M., Rossi M. : *Limitations
@@ -100,86 +122,24 @@
         Arai, K. (eds) Intelligent Computing.  Lecture Notes in Networks and
         Systems, vol 285. Springer
 
-.. [BKLPPRSV2007]
-        Bogdanov A., Knudsen L., Leander G., Paar C., Poschmann A., Robshaw M.,
-        Seurin Y., Vikkelsoe C. : *PRESENT: An Ultra-Lightweight Block Cipher*
-        : In Proceedings of CHES 2007, LNCS 4727, pp. 450-466, Springer Verlag
-        2007 : https://doi.org/10.1007/978-3-540-74735-2_31
-
-.. [BLP2008]
-        Bernstein D. J., Lange T., Peters C. : *Attacking and defending the
-        mceliece cryptosystem* : In International Workshop on Post-Quantum
-        Cryptography, pp. 31–46, Springer 2008
-
-.. [BFP2009]
-        Bettale L., Faugère J.-C., Perret L. : *Hybrid approach for solving
-        multivariate systems over finite fields* : J. Mathematical
-        Cryptology,3(3):177–197, 2009
+.. [BR2022]
+        Beyne T., Rijmen V. : *Differential Cryptanalysis in the Fixed-Key
+        Model* : In Advances in Cryptology -- CRYPTO 2022, LNCS 13509,
+        pp. 687-716, Springer 2022 :
+        https://doi.org/10.1007/978-3-031-15982-4_23 (extended version:
+        Cryptology ePrint Archive, Paper 2022/837,
+        https://eprint.iacr.org/2022/837)
 
 .. [BGHR2023]
         Bellini E., Gerault D., Hambitzer A., Rossi M. : *A Cipher-Agnostic
         Neural Training Pipeline with Automated Finding of Good Input
         Differences* : In IACR Transactions on Symmetric Cryptology 2023
 
-.. [BCC+2010]
-        Bouillaguet C., Chen H-C., Cheng H-C, Chou T., Niederhagen R., Shamir
-        A., Yang B. Y. : *Fast exhaustive search for polynomial systems in F2*
-        : In Cryptographic Hardware and Embedded Systems,CHES 2010, 12th
-        International Workshop, Santa Barbara, CA, USA, August17-20, 2010.
-        Proceedings, pages 203–218, 2010
-
-.. [Ber2010]
-        Bernstein D. J. : *Grover vs. McEliece* : In International Workshop on
-        Post-QuantumCryptography. pp. 73–80. Springer (2010)
-
-.. [BFS+2011]
-        Bardet M., Faugère J.-C., Salvy B., Spaenlehauer P.-J. : *On the
-        complexity of solving quadratic boolean systems* : CoRR,abs/1112.6263,
-        2011
-
-.. [BLP2011]
-        Bernstein D. J., Lange T., Peters C. : *Smaller decoding exponents:
-        ball-collision decoding* : In Annual Cryptology Conference. pp.
-        743–760. Springer (2011)
-
-.. [BS2011]
-        Byrne E., Sneyd A. : *On the Parameters of Codes with Two Homogeneous
-        Weights* : WCC 2011-Workshop on coding and cryptography, pp. 81-90,
-        2011 : https://hal.inria.fr/inria-00607341/document
-
-.. [BH2012]
-        Brouwer A., Haemers W. : *Spectra of graphs* : Springer, 2012 :
-        http://homepages.cwi.nl/~aeb/math/ipm/ipm.pdf
-
-.. [BFS2015]
-        Bardet M., Faugère J.-C., Salvy B. : *On the complexity of the F5
-        Gröbner basis algorithm* : Journal of Symbolic Computation,
-        70:49–70,2015.
-
-.. [BM2018]
-        Both L., May A. : *Decoding linear codes with high error rate and its
-        impact for LPN security* : In International Conference on Post-Quantum
-        Cryptography. pp. 25--46. Springer (2018)
-
-.. [BKW2019]
-        Björklund A., Kaski P., Williams, R. : *Solving  Systemsof Polynomial
-        Equations over GF(2) by a Parity-Counting Self-Reduction* : In
-        International Colloquium on Automata, Languages, and Programming (ICALP
-        2019), volume 132 of Leibniz International Proceedings in Informatics
-        (LIPIcs), pages 26:1–26:13, Dagstuhl, Germany, 2019.  Schloss
-        Dagstuhl–Leibniz-Zentrum fuer Informatik.
-
-.. [BJMM2012]
-        Becker A., Joux A., May A., Meurer A. : *Decoding random binary linear
-        codes in 2^(n/20): How 1+1=0 improves information set decoding* : In
-        Annual international conference on the theory and applications of
-        cryptographic techniques. pp. 520–536. Springer (2012)
-
-.. [BCG+2020]
-        Bardet M., Bros M., Cabarcas D., Gaborit M., Perlner R., Smith-Tone D.,
-        Tillich J.-P., Verbel J. : *Improvements of algebraic attacks for
-        solving the rank decoding and minrank problems* : In Advances in
-        Cryptology–ASIACRYPT2020
+.. [BGGMP2023]
+        Bellini E., Gerault D., Grados J., Makarim R. H., Peyrin T. : 
+        *Fully Automated Differential-Linear Attacks against ARX Ciphers* : In
+        Cryptology ePrint Archive, (2023), 181 : 
+        https://eprint.iacr.org/2023/181.pdf
 
 .. [BJKL+2016]
         Beierle C., Jean J., Kölbl S., Leander G., Moradi A., Peyrin T., Sasaki Y.,
@@ -188,22 +148,51 @@
         Cryptology ePrint Archive, Report 2016/660, 2016.
         https://eprint.iacr.org/2016/660.pdf
 
+.. [BKLMMNSSSTV2017]
+        Bernstein D. J., Kölbl S., Lucks S., Massolino P. M. C., Mendel F.,
+        Nawaz K., Schneider T., Schwabe P., Standaert F.-X., Todo Y., Viguier
+        B. : *Gimli: a cross-platform permutation* : In Cryptographic Hardware
+        and Embedded Systems -- CHES 2017, LNCS 10529, pp. 299-320, Springer
+        2017 : https://doi.org/10.1007/978-3-319-66787-4_15
+        
+.. [BSSTWW2013]
+        Beaulieu R., Shors D., Smith J., Treatman-Clark S., Weeks B., Wingers
+        L. : *The SIMON and SPECK Families of Lightweight Block Ciphers* :
+        Cryptology ePrint Archive, Report 2013/404, 2013 :
+        https://eprint.iacr.org/2013/404
+
 .. _claasp-ref-C:
 
 .. only:: html
 
         **C**
 
-.. [Cou2001]
-        Courtois N. : *La sécurité des primitives cryptographiques basées sur
-        des problèmes algébriques multivariables* : MQ, IP, MinRank, HFE. PhD
-        thesis, Université de Paris 6 - Pierre et Marie Curie, 2001.
+.. [CDGP1993] Claesen, L., Daemen, J., Genoe, M., & Peeters, G. (1993).
+        *Subterranean: A 600 Mbit/sec Cryptographic VLSI Chip*.
+        In Proceedings of the 1993 IEEE International Conference on
+        Computer Design: VLSI in Computers & Processors (ICCD '93),
+        Cambridge, MA, USA, October 3-6, 1993, pp. 610-613.
+        IEEE Computer Society.
+        https://doi.org/10.1109/ICCD.1993.393304
 
-.. [CHPSS18]
-        Cid C., Huang T., Peyrin T., Sasaki Y., Song L. : *Boomerang
-        Connectivity Table: A New Cryptanalysis Tool* (2018) : IACR
-        Transactions on Symmetric Cryptology, Vol 2017, Issue 4, pre-print :
-        https://eprint.iacr.org/2018/161.pdf
+.. [CPV+22]
+        Coutinho, M., Passos, I., Vásquez, J.C.G. et al.
+        Latin Dances Reloaded: Improved Cryptanalysis Against Salsa and
+        ChaCha, and the Proposal of Forró. J Cryptol 36, 18 (2023).
+        https://doi.org/10.1007/s00145-023-09455-5
+
+.. [Cro2005]
+        Crowley P. : *Truncated differential cryptanalysis of five rounds of
+        Salsa20* : IACR 2005 : http://eprint.iacr.org/2005/375
+
+.. [CryptDances22]
+        Coutinho, M. et al. CryptDances: a GPU-based cryptanalysis
+        tool for ChaCha, Salsa and Forro (MIT licensed).
+        https://github.com/murcoutinho/cryptDances
+
+.. [CryptoLUXSPARX]
+        CryptoLUX : *SPARX Reference C Implementation* :
+        https://github.com/cryptolu/SPARX/blob/master/ref-c/sparx.c
 
 .. [CZZ2023]
         Cao, W., Zhang, W., Zhou, C. : *New Automatic Search Tool for Searching
@@ -218,48 +207,28 @@
 
         **D**
 
-.. [DAKRV18]
-        D'Anvers, J.-P., Karmakar, A., Roy S.S., Vercauteren F.: *Saber:
-        Module-LWR Based Key Exchange, CPA-Secure Encryption and CCA-Secure
-        KEM* : AFRICACRYPT 2018: 282-305.
+.. [DPUVGB2016]
+        Dinu D., Perrin L., Udovenko A., Velichkov V., Großschädl J.,
+        Biryukov A. : *Design Strategies for ARX with Provable Bounds:
+        Sparx and LAX* : ASIACRYPT 2016.
 
-.. [Din2021Cry]
-        Dinur I. : *Cryptanalytic Applications of the Polynomial Method for
-        Solving Multivariate Equation Systems over GF(2).* Springer-Verlag,
-        2021.
+.. [DampersSAECHAM2025]
+        Dampers, A. et al. : *SAECHAM: A Lightweight Block Cipher based on
+        CHAM* : Implementation repository (2025) :
+        https://github.com/dampers/SAECHAM-implementations
 
-.. [Din2021Imp]
-        Dinur I. : *Improved algorithms for solving polynomial systems over
-        GF(2) by multiple parity-counting* : In Proceedings of the 2021
-        ACM-SIAM Symposium on Discrete Algorithms (SODA), pages 2550–2564
+.. [DEY2023]
+        Dey, S., Garai, H. K., Maitra, S. : *Cryptanalysis of Reduced Round
+        ChaCha -- New Attack & Deeper Analysis* : IACR Transactions on
+        Symmetric Cryptology, 2023(1), 89-110 :
+        https://eprint.iacr.org/2023/134
 
-.. [DKLLSSS18]
-        Ducas, L., Kiltz, E., Lepoint, T., Lyubashevsky, V., Schwabe, P.,
-        Seiler, G., Stehlé, D. : *CRYSTALS-Dilithium: A Lattice-Based Digital
-        Signature Scheme* : IACR Trans. Cryptogr. Hardw. Embed. Syst.  2018(1):
-        238-268.
-
-.. [Dum1991]
-        Dumer I. : *On minimum distance decoding of linear codes* : In Proc.
-        5th Joint Soviet-Swedish Int. Workshop Inform. Theory. pp. 50–52 (1991)
-
-.. [Du2001]
-        Duursma I. : *From weight enumerators to zeta functions* : In Discrete
-        Applied Mathematics, vol. 111, no. 1-2, pp. 55-73, 2001
-
-.. [Du2004]
-        Duursma I. : *Combinatorics of the two-variable zeta function* : Finite
-        fields and applications, 109-136, Lecture Notes in Comput. Sci., 2948,
-        Springer, Berlin, 2004
-
-.. [Du2018]
-        Dunkelman O. : *Efficient Construction of the Boomerang Connection
-        Table* : (preprint), in Cryptology ePrint Archive, (2018), 631
-
-.. [Dio2020]
-        Diogo Duarte : *J. On the complexity of the crossbred algorithm* :
-        CryptologyePrint Archive, Report 2020/1058, 2020. :
-        https://eprint.iacr.org/2020/1058
+.. [DMR2019]
+        Daemen, J., Massolino, P. M. C., and Rotella, Y.
+        *The Subterranean 2.0 cipher suite.*
+        Submission to the NIST Lightweight Cryptography Standardization process,
+        version 1.1, March 29, 2019.
+        https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/subterranean-spec-round2.pdf
 
 .. _claasp-ref-E:
 
@@ -273,10 +242,6 @@
 
         **F**
 
-.. [FSS2011]
-        Faugère J.-C., Safey El Din M., Spaenlehauer P.-J. : *On the complexity
-        of the generalized minrank problem* : CoRR, abs/1112.4411,2011.
-
 .. [FWGSH2016]
         Fu K., Wang M., Guo Y., Sun S., Hu L. : *MILP-based automatic search
         algorithms for differential and linear trails for speck* : In
@@ -289,9 +254,28 @@
 
         **G**
 
+.. [GASTON2023]
+        El Hirch S., Daemen J., Rohit R. S., Makarim R. H. : *Twin Column
+        Parity Mixers and Gaston* : Cryptology ePrint Archive, Paper 2023/799,
+        2023 : https://eprint.iacr.org/2023/799
+
+.. [GIMLI2017]
+        Bernstein D. J., Kölbl S., Lucks S., Massolino P. M. C., Mendel F.,
+        Nawaz K., Schneider T., Schwabe P., Standaert F.-X., Todo Y., Viguier B. :
+        *Gimli: a cross-platform permutation* : CHES 2017 :
+        https://gimli.cr.yp.to/gimli-20170627.pdf
+
+.. [GIFT2017]
+        Banik S., Pandey S. K., Peyrin T., Sasaki Y., Sim S. M., Todo Y. :
+        *GIFT: A Small Present -- Towards Reaching the Limit of Lightweight Encryption* :
+        In Cryptographic Hardware and Embedded Systems -- CHES 2017, Lecture Notes in Computer Science,
+        vol. 10529, pp. 321--345. Springer (2017) : https://doi.org/10.1007/978-3-319-66787-4_16.
+        Full version: https://eprint.iacr.org/2017/622.pdf.
+        Reference implementation and test vectors: https://github.com/giftcipher/gift.
+
 .. [Go2019]
-        Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning
-* : In Advances in Cryptology – CRYPTO 2019
+        Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning*.
+        In Advances in Cryptology – CRYPTO 2019
 
 .. [GreMW24]
         Greene P., Motley M., Weeks B.: *ARADI and LLAMA: Low-Latency Cryptography for
@@ -304,13 +288,24 @@
 
         **H**
 
+.. [HJM2005]
+        Hell M., Johansson T., Meier W. : *Grain: A Stream Cipher for Constrained
+        Environments* : International Journal of Wireless and Mobile Computing,
+        2(1), 86-93, 2007 : originally presented at ECRYPT SASC 2005; a
+        subsequently tweaked version was submitted to eSTREAM as "Grain v1" and
+        selected for the eSTREAM Profile 2 portfolio :
+        https://www.ecrypt.eu.org/stream/p3ciphers/grain/grain_p3.pdf
+
 .. [He2002]
         Heys H. : *A Tutorial on Linear and Differential Cryptanalysis* : 2002
         : http://www.engr.mun.ca/~howard/PAPERS/ldc_tutorial.pdf
 
-.. [HP2003]
-        Huffman W. C., Pless V. : *Fundamentals of Error-Correcting Codes* :
-        Cambridge Univ. Press, 2003
+.. [HKPT2026]
+        Hu, K., Khairallah, M., Peyrin, T., & Tan, Q.
+        (2026). uKNIT: Breaking Round-Alignment for Cipher Design.
+        IACR Transactions on Symmetric Cryptology, 2026(2).
+        https://doi.org/10.46586/tosc.a0zo-4njsuvm
+        https://github.com/syllab-ntu/UKNIT
 
 .. _claasp-ref-I:
 
@@ -324,11 +319,11 @@
 
         **J**
 
-.. [JV2018]
-        Joux A., Vitse V. : *A crossbred algorithm for solving boolean
-        polynomial systems* : In Jerzy Kaczorowski, Josef Pieprzyk, JacekPomyka
-        la, editors, Number-Theoretic Methods in Cryptology, pages 3–21, Cham,
-        2018. Springer International Publishing.
+.. [JeongCHAM2020]
+        Jeong I. R., Lee J. W. : *Revised version of block cipher CHAM* :
+        In Information Security and Cryptology – ICISC 2019, Lecture Notes in
+        Computer Science, vol. 11975, pp. 1–19. Springer (2020) :
+        https://doi.org/10.1007/978-3-030-40921-0_1
 
 .. _claasp-ref-K:
 
@@ -336,10 +331,11 @@
 
         **K**
 
-.. [KPG1999]
-        Kipnis A., Patarin J., Goubin L. : *Unbalanced oil and vinegar
-        signature schemes* : In Advances in Cryptology EUROCRYPT99, pages
-        206–222, Berlin, Heidelberg, 1999. Springer BerlinHeidelberg.
+.. [XKCPREF]
+        Keccak Team : *eXtended Keccak Code Package (XKCP), reference
+        implementations of Keccak-p and Xoodoo* : commit
+        eb5244d6b95fb1c434b211bac293093e18aa8fd1 :
+        https://github.com/XKCP/XKCP/tree/eb5244d6b95fb1c434b211bac293093e18aa8fd1
 
 .. [Knudsen2011TheBC]
         Knudsen, L. R., & Robshaw, M. J. B., : *The Block Cipher Companion* :
@@ -360,22 +356,11 @@
         Cryptographic Hardware and Embedded Systems, 2021(4), 510–545.
         https://doi.org/10.46586/tches.v2021.i4.510-545
 
-.. [Lin1999]
-        van Lint J. : *Introduction to coding theory* : 3rd ed. Springer-Verlag
-        GTM, 86, 1999
-
 .. [LM2001]
         Lipmaa H., Moriai S. : *Efficient Algorithms for Computing Differential
         Properties of Addition* : International Workshop on Fast Software
         Encryption, 2001 :
         https://link.springer.com/content/pdf/10.1007%2F3-540-45473-X_28.pdf
-
-.. [LPT+2017]
-        Lokshtanov D., Paturi R., Tamaki S., Williams R., Yu H. : *Beating
-        brute force for systems of polynomial equation sover finite fields* :
-        In Proceedings of the Twenty-Eighth Annual ACM-SIAM Symposium on
-        Discrete Algorithms, SODA '17, page 2190–2202, USA, 2017. Society for
-        Industrial and Applied Mathematics
 
 .. [LWR2016]
         Liu Y., Wang Q., Rijmen V. : *Automatic Search of Linear Trails in ARX
@@ -389,21 +374,18 @@
 
         **M**
 
-.. [MMT2011]
-        May A., Meurer A., Thomae E. : *Decoding random linear codes in
-        2^(0.054n)* : In International Conference on the Theory and Application
-        of Cryptology and Information Security. pp. 107–124. Springer (2011)
+.. [Mouha2015]
+        Mouha N. : *Chaskey: An Efficient MAC Algorithm for 32-Bit Microcontrollers* :
+        In Selected Areas in Cryptography -- SAC 2014, Lecture Notes in Computer Science,
+        vol. 8781, pp. 306--323. Springer (2015).
+        https://mouha.be/wp-content/uploads/chaskey12.c
 
-.. [MHT2013]
-        Miura H., Hashimoto Y., Takagi T. : *Extended algorithm for solving
-        underdefined multivariate quadratic equations* : In Post-Quantum
-        Cryptography, 2013. Springer Berlin Heidelberg.
-
-.. [MO2015]
-        May A., Ozerov I. : *On computing nearest neighbors with applications
-        to decoding of binary linear codes* : In Annual International
-        Conference on the Theory and Applications of Cryptographic Techniques.
-        pp.  203--228. Springer (2015)
+.. [MWGP2011]
+        Mouha N., Wang Q., Gu D., Preneel B. : *Differential and Linear
+        Cryptanalysis using Mixed-Integer Linear Programming* : In Inscrypt
+        2011, Lecture Notes in Computer Science, vol. 7537, pp. 57--76.
+        Springer (2012).
+        https://mouha.be/wp-content/uploads/milp.pdf
 
 .. [MUR2020]
         Murilo C., Rafael T., and Fabio B. : *Continuous
@@ -421,6 +403,13 @@
         KEA Algorithm Specifications* : Version 2.0. 29 de mayo de 1998 :
         https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/skipjack/skipjack.pdf
 
+.. [NISTLWCSUB] 
+        Daemen, J., Massolino, P. M. C., and Rotella, Y.
+        *Subterranean 2.0 -- Round 2 submission package*
+        (reference software, including subterranean_bit.py).
+        NIST Lightweight Cryptography Standardization process, Round 2 Candidates.
+        https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/submissions-rnd2/subterranean.zip
+
 .. _claasp-ref-O:
 
 .. only:: html
@@ -432,10 +421,6 @@
 .. only:: html
 
         **P**
-
-.. [Pra1962]
-        Prange E. : *The use of information sets in decoding cyclic codes* :
-        IRE Transactions on Information Theory 8(5), 5–9 (1962)
 
 .. _claasp-ref-Q:
 
@@ -449,21 +434,50 @@
 
         **R**
 
+.. [RijndaelSpec]
+        Daemen J., Rijmen V. : *A Specification for Rijndael, the AES
+        Algorithm* (2002) :
+        https://asmaes.sourceforge.net/rijndael/rijndaelImplementation.pdf
+
+.. [RijndaelDesign]
+        Daemen J., Rijmen V. : *The Design of Rijndael AES -- The Advanced
+        Encryption Standard* (2001) :
+        https://cs.ru.nl/~joan/papers/JDA_VRI_Rijndael_2002.pdf
+
+.. [RohCHAM2018]
+        Roh D., Koo B., Jung Y., Jeong I. R., Lee J. W., Kwon D., Kim W.-H. :
+        *CHAM: A Family of Lightweight Block Ciphers for Resource-Constrained
+        Devices* : In Information Security and Cryptology – ICISC 2017, Lecture
+        Notes in Computer Science, vol. 10779, pp. 3–25. Springer (2018) :
+        https://doi.org/10.1007/978-3-319-78556-1_1
+
+.. [RRSY1998]
+        Rivest R. L., Robshaw M. J. B., Sidney R., Yin Y. L. : *The RC6 Block
+        Cipher* : Version 1.1, August 20, 1998 :
+        https://people.csail.mit.edu/rivest/pubs/RRSY98.pdf
+
 .. _claasp-ref-S:
 
 .. only:: html
 
         **S**
 
-.. [Ste1988]
-        Stern J. : *A method for finding codewords of small weight* : In
-        International Colloquium on Coding Theory and Applications. pp.
-        106–113.  Springer (1988)
+.. [Sch1994]
+        Schneier B. : *Description of a New Variable-Length Key, 64-Bit Block
+        Cipher (Blowfish)* : Fast Software Encryption, Cambridge Security
+        Workshop Proceedings, Springer-Verlag, 1994, pp. 191-204 :
+        https://www.schneier.com/academic/archives/1994/09/description_of_a_new.html
 
 .. [SGLYTQH2017]
         Sun S., Gerault D., Lafourcade P., Yang Q., Todo Y., Qiao K., Hu L. :
         *Analysis of AES, SKINNY, and others with constraint programming* : In
         IACR transactions on symmetric cryptology 2017 (1), 281--306
+
+.. [SasTod17]
+        Sasaki, Y., Todo, Y. : *New Algorithm for Modeling S-box in MILP Based
+        Differential and Division Trail Search* : Codes, Cryptology and
+        Information Security (C2SI 2017), Lecture Notes in Computer Science,
+        vol. 10194, pp. 150-165, Springer (2017)
 
 .. [SGWW2020]
         Sun L., Gerault D., Wang W., Wang M. : *On the usage of deterministic
@@ -479,6 +493,12 @@
         and linear characteristics with predefined properties* : Cryptology
         ePrint Archive (2014) : https://eprint.iacr.org/2014/747.pdf
 
+.. [SIHMAS2011] 
+        Shibutani, K., Isobe, T., Hiwatari, H., Mitsuda, A., Akishita, T., Shirai, T. (2011).
+        *Piccolo: An Ultra-Lightweight Blockcipher*. In: Preneel, B., Takagi, T. (eds) Cryptographic
+        Hardware and Embedded Systems -- CHES 2011. Lecture Notes in Computer Science, vol 6917,
+        pp. 342-357. Springer, Berlin, Heidelberg. https://doi.org/10.1007/978-3-642-23951-9_23
+
 .. [SW2023]
         Sun, L., Wang, M. : *SoK: Modeling for Large S-boxes Oriented to
         Differential Probabilities and Linear Correlations (Long Paper)* :
@@ -490,10 +510,10 @@
 
         **T**
 
-.. [TW2012]
-        Thomae E., Wolf C. : *Solving underdetermined systems of multivariate
-        quadratic equations revisited* : In Public Key Cryptography – PKC 2012,
-        Berlin, Heidelberg, 2012. Springer Berlin Heidelberg.
+.. [Tod2015]
+        Todo Y. : *Structural Evaluation by Generalized Integral Property* :
+        In Advances in Cryptology – EUROCRYPT 2015, LNCS 9056, pp. 287–314.
+        Springer Berlin Heidelberg, 2015 : https://eprint.iacr.org/2015/090
 
 .. _claasp-ref-U:
 
@@ -507,17 +527,25 @@
 
         **V**
 
-.. [VBC+2019]
-        Verbel J., Baena J., Cabarcas D., Perlner R., Smith-Tone D. : *On the
-        complexity of “superdetermined” minrank instances* : In Post-Quantum
-        Cryptography, pages 167–186, Cham, 2019. Springer International
-        Publishing.
-
 .. _claasp-ref-W:
 
 .. only:: html
 
         **W**
+.. [WARP] Subhadeep Banik, Zhenzhen Bao, Takanori Isobe,
+        Hiroyasu Kubo, Fukang Liu, Kazuhiko Minematsu,
+        Kosei Sakamoto, Nao Shibata, and Maki Shigeri.
+        *WARP: Revisiting GFN for Lightweight 128-Bit Block Cipher*.
+        In: Selected Areas in Cryptography (SAC 2020),
+        LNCS 12804, Springer, pp. 535–564, 2021.
+        DOI: 10.1007/978-3-030-81652-0_21.
+
+.. [WHZDWS2025]
+
+        Wang J., Huang T., Zeng G., Ding T., Wu S., Sun S. : *THF: Designing
+        Low-Latency Tweakable Block Ciphers* : IACR Transactions on Symmetric
+        Cryptology, 2025(4), pp. 125-166, 2025 :
+        https://eprint.iacr.org/2025/1314
 
 .. _claasp-ref-X:
 
@@ -531,13 +559,26 @@
 
         **Y**
 
-.. [YC2004]
-        Yang B.-Y., Chen J.-M. : *Theoretical analysis of XL over small fields*
-        : In Information Security and Privacy, pages 277–288, Berlin,
-        Heidelberg, 2004. Springer Berlin Heidelberg
+.. [YZSAG2015]
+        Yang G., Zhu B., Suder V., Aagaard M. D., Gong G. : *The Simeck Family
+        of Lightweight Block Ciphers* : In Cryptographic Hardware and Embedded
+        Systems -- CHES 2015, LNCS 9293, pp. 307-329, Springer 2015 :
+        https://eprint.iacr.org/2015/612
 
 .. _claasp-ref-Z:
 
 .. only:: html
 
         **Z**
+
+.. [ZBL+2015]
+        Zhang W., Bao Z., Lin D., Rijmen V., Yang B., Verbauwhede I. :
+        *RECTANGLE: a bit-slice lightweight block cipher suitable for multiple
+        platforms* : Science China Information Sciences, 58(12), 1-15 (2015) :
+        https://eprint.iacr.org/2014/084.pdf
+
+.. [ZDY+2019]
+        Zhang W., Ding T., Yang B., Bao Z., Xiang Z., Ji F., Zhao X. :
+        *KNOT: Algorithm Specifications and Supporting Document* : Submission to
+        the NIST Lightweight Cryptography project (2019) :
+        https://csrc.nist.gov/projects/lightweight-cryptography/round-1-candidates

@@ -1,27 +1,79 @@
+import pytest
+
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-from claasp.ciphers.stream_ciphers.a5_1_stream_cipher import A51StreamCipher
-from claasp.ciphers.stream_ciphers.trivium_stream_cipher import TriviumStreamCipher
-from claasp.ciphers.stream_ciphers.snow3g_stream_cipher import Snow3GStreamCipher
+from claasp.ciphers.single_component_ciphers.fsr_cipher import FsrCipher
 
 
 def test_fsr_algebraic_polynomials():
-    a51 = A51StreamCipher()
-    fsr_component = a51.get_component_from_id("fsr_1_0")
-    algebraic = AlgebraicModel(a51)
-    A = fsr_component.algebraic_polynomials(algebraic)
-    assert (
-        str(A[0])
-        == "fsr_1_0_x1*fsr_1_0_x30*fsr_1_0_x53 + fsr_1_0_x1*fsr_1_0_x10*fsr_1_0_x53 + fsr_1_0_x1*fsr_1_0_x10*fsr_1_0_x30 + fsr_1_0_x0*fsr_1_0_x30*fsr_1_0_x53 + fsr_1_0_x0*fsr_1_0_x10*fsr_1_0_x53 + fsr_1_0_x0*fsr_1_0_x10*fsr_1_0_x30 + fsr_1_0_x1*fsr_1_0_x10 + fsr_1_0_x0*fsr_1_0_x10 + fsr_1_0_y0 + fsr_1_0_x1"
-    )
+    binary_cipher = FsrCipher(register_size=4)
+    fsr_component = binary_cipher.component_from_id("fsr_0_0")
+    algebraic = AlgebraicModel(binary_cipher)
+    binary_polynomials = fsr_component.algebraic_polynomials(algebraic)
+    assert [str(polynomial) for polynomial in binary_polynomials] == [
+        "fsr_0_0_y0 + fsr_0_0_x1",
+        "fsr_0_0_y1 + fsr_0_0_x2",
+        "fsr_0_0_y2 + fsr_0_0_x3",
+        "fsr_0_0_y3 + fsr_0_0_x1 + fsr_0_0_x0",
+    ]
 
-    trivium = TriviumStreamCipher(number_of_initialization_clocks=1, keystream_bit_len=1)
-    fsr_component = trivium.get_component_from_id("fsr_0_2")
-    algebraic = AlgebraicModel(trivium)
-    T = fsr_component.algebraic_polynomials(algebraic)
-    assert str(T[92]) == "fsr_0_2_x178*fsr_0_2_x179 + fsr_0_2_y92 + fsr_0_2_x222 + fsr_0_2_x177 + fsr_0_2_x24"
+    clocked_cipher = FsrCipher(register_size=4, description=[[[4, [[0], [1]], [[0]]]], 1])
+    fsr_component = clocked_cipher.component_from_id("fsr_0_0")
+    algebraic = AlgebraicModel(clocked_cipher)
+    clocked_polynomials = fsr_component.algebraic_polynomials(algebraic)
+    assert [str(polynomial) for polynomial in clocked_polynomials] == [
+        "fsr_0_0_x0*fsr_0_0_x1 + fsr_0_0_y0",
+        "fsr_0_0_x0*fsr_0_0_x2 + fsr_0_0_x0*fsr_0_0_x1 + fsr_0_0_y1 + fsr_0_0_x1",
+        "fsr_0_0_x0*fsr_0_0_x3 + fsr_0_0_x0*fsr_0_0_x2 + fsr_0_0_y2 + fsr_0_0_x2",
+        "fsr_0_0_x0*fsr_0_0_x3 + fsr_0_0_x0*fsr_0_0_x1 + fsr_0_0_y3 + fsr_0_0_x3 + fsr_0_0_x0",
+    ]
 
-    snow = Snow3GStreamCipher(number_of_initialization_clocks=1, keystream_word_size=1)
-    fsr_component = snow.get_component_from_id("fsr_0_714")
-    algebraic = AlgebraicModel(snow)
-    S = fsr_component.algebraic_polynomials(algebraic)
-    assert str(S[480]) == "fsr_0_714_y480 + fsr_0_714_x352 + fsr_0_714_x64 + fsr_0_714_x0"
+    word_cipher = FsrCipher(register_size=4, description=[[[2, [[1, [0]], [1, [1]]]]], 2])
+    fsr_component = word_cipher.component_from_id("fsr_0_0")
+    algebraic = AlgebraicModel(word_cipher)
+    word_polynomials = fsr_component.algebraic_polynomials(algebraic)
+    assert [str(polynomial) for polynomial in word_polynomials] == [
+        "fsr_0_0_y0 + fsr_0_0_x2",
+        "fsr_0_0_y1 + fsr_0_0_x3",
+        "fsr_0_0_y2 + fsr_0_0_x2 + fsr_0_0_x0",
+        "fsr_0_0_y3 + fsr_0_0_x3 + fsr_0_0_x1",
+    ]
+
+
+@pytest.mark.parametrize("feedback, expected", [([], 0), ([[]], 1), ([[], []], 0)])
+@pytest.mark.parametrize("clock", [None, [], [[]], [[], []]])
+def test_fsr_algebraic_polynomials_binary_constants(feedback, expected, clock):
+    register = [2, feedback]
+    if clock is not None:
+        register.append(clock)
+    cipher = FsrCipher(register_size=2, description=[[register], 1])
+    component = cipher.component_from_id("fsr_0_0")
+    model = AlgebraicModel(cipher)
+    ring = model.ring()
+    polynomials = component.algebraic_polynomials(model)
+    for value in range(4):
+        output = value if clock == [[], []] else ((value & 1) << 1) | expected
+        assert cipher.evaluate([value]) == output
+        assignment = {ring(f"fsr_0_0_{postfix}{i}"): (state >> (1 - i)) & 1
+                      for postfix, state in [("x", value), ("y", output)] for i in range(2)}
+        assert all(polynomial.subs(assignment) == 0 for polynomial in polynomials)
+
+
+@pytest.mark.parametrize("registers", [
+    [[1, [[1]]], [1, [[0]]]],
+    [[2, [[2], [3]]], [2, [[0], [1]]]],
+    [[2, [[2]], [[3]]], [2, [[0]], [[0]]]],
+    [[1, [[1]], [[1]]], [1, [[0]], [[0]]]],
+])
+@pytest.mark.parametrize("clocks", [0, 1, 2, 3])
+def test_fsr_algebraic_polynomials_binary_synchronous_registers(registers, clocks):
+    size = sum(register[0] for register in registers)
+    cipher = FsrCipher(register_size=size, description=[registers, 1, clocks])
+    component = cipher.component_from_id("fsr_0_0")
+    model = AlgebraicModel(cipher)
+    ring = model.ring()
+    polynomials = component.algebraic_polynomials(model)
+    for value in range(1 << size):
+        output = cipher.evaluate([value])
+        assignment = {ring(f"fsr_0_0_{postfix}{i}"): (state >> (size - 1 - i)) & 1
+                      for postfix, state in [("x", value), ("y", output)] for i in range(size)}
+        assert all(polynomial.subs(assignment) == 0 for polynomial in polynomials)

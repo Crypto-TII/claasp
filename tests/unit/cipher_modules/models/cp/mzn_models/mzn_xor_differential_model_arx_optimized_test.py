@@ -1,11 +1,10 @@
 from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model_arx_optimized import (
     MznXorDifferentialModelARXOptimized,
 )
+from claasp.cipher_modules.models.cp.solvers import CPSAT
 from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.tea_block_cipher import TeaBlockCipher
-
-from claasp.cipher_modules.models.cp.solvers import CPSAT
 
 SPECK4 = SpeckBlockCipher(number_of_rounds=4, block_bit_size=32, key_bit_size=64)
 MZN4 = MznXorDifferentialModelARXOptimized(SPECK4)

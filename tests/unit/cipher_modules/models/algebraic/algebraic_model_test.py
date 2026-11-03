@@ -1,6 +1,6 @@
-from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.cipher_modules.models.algebraic.boolean_polynomial_ring import is_boolean_polynomial_ring
+from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
 
 
 def test_connection_polynomials():

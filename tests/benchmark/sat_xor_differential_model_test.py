@@ -1,11 +1,11 @@
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
 from claasp.cipher_modules.models.utils import set_fixed_variables
-from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
 
 SPECK = SpeckBlockCipher()
-AES = AESBlockCipher()
+AES = ToyAESBlockCipher()
 
 
 def test_build_xor_differential_trail_model_with_speck_cipher(benchmark):
@@ -82,7 +82,7 @@ def test_find_one_xor_differential_trail_with_fixed_weight(benchmark):
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    benchmark(sat.find_one_xor_differential_trail_with_fixed_weight, 3, fixed_values=[plaintext, key])
+    benchmark(sat.find_one_xor_differential_trail, fixed_values=[plaintext, key], lower_bound=3, upper_bound=3)
 
 
 def test_find_one_xor_differential_trail_with_fixed_weight_with_aes_cipher(benchmark):
@@ -93,4 +93,4 @@ def test_find_one_xor_differential_trail_with_fixed_weight_with_aes_cipher(bench
     key = set_fixed_variables(
         component_id=INPUT_KEY, constraint_type="equal", bit_positions=range(64), bit_values=(0,) * 64
     )
-    benchmark(sat.find_one_xor_differential_trail_with_fixed_weight, 3, fixed_values=[plaintext, key])
+    benchmark(sat.find_one_xor_differential_trail, fixed_values=[plaintext, key], lower_bound=3, upper_bound=3)

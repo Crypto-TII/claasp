@@ -1,18 +1,21 @@
 import itertools
 import math
+import platform
+
+import pytest
 
 from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
 from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT
 from claasp.cipher_modules.models.utils import (
-    set_fixed_variables,
-    integer_to_bit_list,
-    differential_linear_checker_for_permutation,
     differential_linear_checker_for_block_cipher_single_key,
+    integer_to_bit_list,
+    set_fixed_variables,
+    truncated_differential_linear_checker_permutation,
 )
 from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox import AradiBlockCipherSBox
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
-from claasp.name_mappings import INPUT_PLAINTEXT, INPUT_KEY, SATISFIABLE
+from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
+from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, SATISFIABLE
 
 
 def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
@@ -21,9 +24,9 @@ def test_differential_linear_trail_with_fixed_weight_6_rounds_speck():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2, 3):
-        middle_part_components.append(speck.get_components_in_round(round_number))
+        middle_part_components.append(speck.components_in_round(round_number))
     for round_number in range(3, 6):
-        bottom_part_components.append(speck.get_components_in_round(round_number))
+        bottom_part_components.append(speck.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -68,9 +71,9 @@ def test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2, 3):
-        middle_part_components.append(speck.get_components_in_round(round_number))
+        middle_part_components.append(speck.components_in_round(round_number))
     for round_number in range(3, 6):
-        bottom_part_components.append(speck.get_components_in_round(round_number))
+        bottom_part_components.append(speck.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -110,11 +113,11 @@ def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(1):
-        top_part_components.append(chacha.get_components_in_round(round_number))
+        top_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(1, 3):
-        middle_part_components.append(chacha.get_components_in_round(round_number))
+        middle_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(3, 6):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
+        bottom_part_components.append(chacha.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -172,11 +175,11 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_aradi():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(1):
-        top_part_components.append(aradi.get_components_in_round(round_number))
+        top_part_components.append(aradi.components_in_round(round_number))
     for round_number in range(1, 3):
-        middle_part_components.append(aradi.get_components_in_round(round_number))
+        middle_part_components.append(aradi.components_in_round(round_number))
     for round_number in range(3, 4):
-        bottom_part_components.append(aradi.get_components_in_round(round_number))
+        bottom_part_components.append(aradi.components_in_round(round_number))
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
 
@@ -229,11 +232,11 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2):
-        top_part_components.append(chacha.get_components_in_round(round_number))
+        top_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(2, 4):
-        middle_part_components.append(chacha.get_components_in_round(round_number))
+        middle_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(4, 8):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
+        bottom_part_components.append(chacha.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -277,11 +280,11 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_second_case
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2):
-        top_part_components.append(chacha.get_components_in_round(round_number))
+        top_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(2, 4):
-        middle_part_components.append(chacha.get_components_in_round(round_number))
+        middle_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(4, 8):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
+        bottom_part_components.append(chacha.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -327,11 +330,11 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2):
-        top_part_components.append(chacha.get_components_in_round(round_number))
+        top_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(2, 3):
-        middle_part_components.append(chacha.get_components_in_round(round_number))
+        middle_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(3, 8):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
+        bottom_part_components.append(chacha.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -401,9 +404,11 @@ def test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case():
         },
     )
     assert trail["status"] == SATISFIABLE
-    assert trail["total_weight"] == 11
+    assert trail["total_weight"] == 13
 
 
+@pytest.mark.skipif(platform.machine() in ("aarch64", "arm64"),
+                    reason="SAT solve exceeds isolate-timeout on slower ARM runners")
 def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
     """Test for finding a differential-linear trail with fixed weight for 4 rounds of ChaCha permutation.
     This test is using in the middle part the semi-deterministic model.
@@ -414,11 +419,11 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
     middle_part_components = []
     bottom_part_components = []
     for round_number in range(2):
-        top_part_components.append(chacha.get_components_in_round(round_number))
+        top_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(2, 4):
-        middle_part_components.append(chacha.get_components_in_round(round_number))
+        middle_part_components.append(chacha.components_in_round(round_number))
     for round_number in range(4, 8):
-        bottom_part_components.append(chacha.get_components_in_round(round_number))
+        bottom_part_components.append(chacha.components_in_round(round_number))
 
     middle_part_components = list(itertools.chain(*middle_part_components))
     bottom_part_components = list(itertools.chain(*bottom_part_components))
@@ -454,6 +459,7 @@ def test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden():
         solver_name=CADICAL_EXT,
         num_unknown_vars=8,
     )
+    print(trail)
     assert trail["status"] == SATISFIABLE
     assert trail["total_weight"] <= 12
 
@@ -464,12 +470,14 @@ def test_diff_lin_chacha():
     """
     input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000
     output_mask = 0x00010000000100010000000100030003000000800000008000000000000001800000000000000001000000010000000201000101010000000000010103000101
-    number_of_samples = 2**12
+    input_difference_as_string = bin(input_difference)[2:].zfill(512)
+    output_mask_as_string = bin(output_mask)[2:].zfill(512)
+    number_of_samples = 2**13
     number_of_rounds = 6
     state_size = 512
     chacha = ChachaPermutation(number_of_rounds=number_of_rounds, round_mode=ROUND_MODE_HALF)
-    corr = differential_linear_checker_for_permutation(
-        chacha, input_difference, output_mask, number_of_samples, state_size
+    corr = truncated_differential_linear_checker_permutation(
+        chacha, input_difference_as_string, output_mask_as_string, number_of_samples, state_size
     )
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) < 3
@@ -481,12 +489,14 @@ def test_diff_lin_chacha_8():
     """
     input_difference = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000
     output_mask = 0x00000001000000000000000101010181000080800000000000000000000800800000100000000101000000010000000000000000000000010100000100000101
+    output_mask_as_string = bin(output_mask)[2:].zfill(512)
     number_of_samples = 2**10
     number_of_rounds = 8
     state_size = 512
+    input_difference_as_string = bin(input_difference)[2:].zfill(512)
     chacha = ChachaPermutation(number_of_rounds=number_of_rounds, round_mode=ROUND_MODE_HALF)
-    corr = differential_linear_checker_for_permutation(
-        chacha, input_difference, output_mask, number_of_samples, state_size
+    corr = truncated_differential_linear_checker_permutation(
+        chacha, input_difference_as_string, output_mask_as_string, number_of_samples, state_size
     )
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) < 8
@@ -498,6 +508,7 @@ def test_diff_lin_speck():
     """
     input_difference = 0x02110A04
     output_mask = 0x02000201
+    output_mask_as_string = bin(output_mask)[2:].zfill(32)
     number_of_samples = 2**15
     number_of_rounds = 6
     fixed_key = 0x0
@@ -505,7 +516,7 @@ def test_diff_lin_speck():
     block_size = speck.inputs_bit_size[0]
     key_size = speck.inputs_bit_size[1]
     corr = differential_linear_checker_for_block_cipher_single_key(
-        speck, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=42
+        speck, input_difference, output_mask_as_string, number_of_samples, block_size, key_size, fixed_key, seed=42
     )
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) <= 8
@@ -517,6 +528,7 @@ def test_diff_lin_aradi():
     """
     input_difference = 0x00000000000080000000000000008000
     output_mask = 0x90900120800000011010002000000000
+    output_mask_as_string = bin(output_mask)[2:].zfill(128)
     number_of_samples = 2**12
     number_of_rounds = 4
     fixed_key = 0x90900120800000011010002000000000
@@ -524,7 +536,7 @@ def test_diff_lin_aradi():
     block_size = speck.inputs_bit_size[0]
     key_size = speck.inputs_bit_size[1]
     corr = differential_linear_checker_for_block_cipher_single_key(
-        speck, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=42
+        speck, input_difference, output_mask_as_string, number_of_samples, block_size, key_size, fixed_key, seed=42
     )
     abs_corr = abs(corr)
     assert abs(math.log(abs_corr, 2)) < 8

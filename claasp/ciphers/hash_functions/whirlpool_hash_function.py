@@ -106,7 +106,7 @@ class WhirlpoolHashFunction(Cipher):
 
         round_key = self.add_constant_component(self.cipher_block_size, 0x00)  # Initial Key value
 
-        add_round_key = self.add_XOR_component(
+        add_round_key = self.add_xor_component(
             [INPUT_MESSAGE, round_key.id],
             [list(range(self.cipher_block_size)), list(range(self.cipher_block_size))],
             self.cipher_block_size,
@@ -127,14 +127,14 @@ class WhirlpoolHashFunction(Cipher):
             key_shift_column_components = self.create_shift_column_components(key_sboxes_components, word_size)
             key_mix_row_components = self.create_mix_row_components(key_shift_column_components)
 
-            add_round_constant = self.add_XOR_component(
+            add_round_constant = self.add_xor_component(
                 [key_mix_row_components[i].id for i in range(self.num_columns)] + [round_constant.id],
                 [list(range(self.column_size)) for _ in range(self.num_columns)]
                 + [list(range(self.cipher_block_size))],
                 self.cipher_block_size,
             )
 
-            add_round_key = self.add_XOR_component(
+            add_round_key = self.add_xor_component(
                 [mix_row_components[i].id for i in range(self.num_columns)] + [add_round_constant.id],
                 [list(range(self.column_size)) for _ in range(self.num_columns)]
                 + [list(range(self.cipher_block_size))],
@@ -150,7 +150,7 @@ class WhirlpoolHashFunction(Cipher):
             if round_number != number_of_rounds - 1:
                 self.add_round()
 
-        output = self.add_XOR_component(
+        output = self.add_xor_component(
             [INPUT_MESSAGE, add_round_key.id],
             [list(range(self.cipher_block_size)), list(range(self.cipher_block_size))],
             self.cipher_block_size,
@@ -161,7 +161,7 @@ class WhirlpoolHashFunction(Cipher):
     def create_sbox_component(self, add_round_key):
         sboxes_components = []
         for j in range(self.num_sboxes):
-            sbox = self.add_SBOX_component(
+            sbox = self.add_sbox_component(
                 [add_round_key.id],
                 [list(range(j * self.sbox_bit_size, (j + 1) * self.sbox_bit_size))],
                 self.sbox_bit_size,

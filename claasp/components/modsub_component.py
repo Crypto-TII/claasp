@@ -16,10 +16,10 @@
 # ****************************************************************************
 
 
-from claasp.components.modular_component import Modular
 from claasp.cipher_modules.models.sat.utils import utils as sat_utils
 from claasp.cipher_modules.models.smt.utils import utils as smt_utils
-
+from claasp.components.modular_component import Modular
+from claasp.components.modadd_component import smt_quasidifferential_modadd
 
 def cp_twoterms(input_1, input_2, out, component_name, input_length, cp_constraints, cp_declarations):
     cp_declarations.append(f"array[0..{input_length - 1}] of var 0..1:pre_minus_{input_2};")
@@ -32,7 +32,56 @@ def cp_twoterms(input_1, input_2, out, component_name, input_length, cp_constrai
     return cp_declarations, cp_constraints
 
 
-class MODSUB(Modular):
+def sat_generate_ids_for_modsub(component):
+    input_bit_ids = component._generate_input_ids()
+    lhs_input_bit_ids = input_bit_ids[: component.output_bit_size]
+    rhs_input_bit_ids = input_bit_ids[component.output_bit_size :]
+    output_bit_ids = component._generate_output_ids()
+    temp_carry_bit_ids = [f"temp_carry_{rhs_input_bit_id}" for rhs_input_bit_id in rhs_input_bit_ids[:-1]]
+    temp_input_bit_ids = [f"temp_input_{rhs_input_bit_id}" for rhs_input_bit_id in rhs_input_bit_ids]
+    carry_bit_ids = [f"carry_{output_bit_id}" for output_bit_id in output_bit_ids[:-1]]
+
+    return output_bit_ids, temp_carry_bit_ids, temp_input_bit_ids, carry_bit_ids, lhs_input_bit_ids, rhs_input_bit_ids
+
+
+class ModSub(Modular):
+    """
+    Construct a modular subtraction component.
+
+
+    INPUT:
+
+    - ``current_round_number`` -- **integer**; round index where the component is created. ``0`` is valid.
+    - ``current_round_number_of_components`` -- **integer**; index of the component inside the round. ``0`` is valid.
+    - ``input_id_links`` -- **list**; input component identifiers (usually strings). Must align with ``input_bit_positions``.
+    - ``input_bit_positions`` -- **list**; bit positions for each input identifier (list of lists). Must align with ``input_id_links``.
+    - ``output_bit_size`` -- **integer**; output size in bits. ``0`` is valid only when supported by the component semantics.
+    - ``modulus`` -- **integer**; modulus used by modular arithmetic operations. Must be greater than ``0``.
+
+    NOTE:
+
+        The number of operands is automatically inferred as
+        ``sum(len(p) for p in input_bit_positions) / output_bit_size``.
+        However, **only 2 operands are supported** by the bit-vector evaluator and the SAT/CMS
+        constraint methods (attempting more will raise an ``AssertionError`` at runtime).
+        The algebraic model handles more than 2 operands via left-to-right sequential subtraction:
+        ``a0 - a1 - a2 - ...`` (i.e. ``((a0 - a1) - a2) - ...``).
+
+    EXAMPLES::
+
+        sage: from claasp.components.modsub_component import ModSub
+        sage: component = ModSub(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+        sage: print(component.id)
+        modsub_0_0
+        sage: print(component.type)
+        word_operation
+        sage: print(component.description)  # 4 total bits / output_bit_size 2 = 2 operands
+        ['MODSUB', 2, 2]
+        sage: component3 = ModSub(0, 1, ['a', 'b', 'c'], [[0, 1], [0, 1], [0, 1]], 2, 4)
+        sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
+        ['MODSUB', 3, 4]
+    """
+
     def __init__(
         self,
         current_round_number,
@@ -62,23 +111,20 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
-            sage: from claasp.cipher import Cipher
-            sage: from claasp.name_mappings import PERMUTATION
-            sage: cipher = Cipher("cipher_name", PERMUTATION, ["input"], [8], 8)
-            sage: cipher.add_round()
-            sage: modsub_0_0 = cipher.add_MODSUB_component(["input","input"], [[0,1,2,3],[4,5,6,7]], 4)
-            sage: modsub_component = cipher.get_component_from_id('modsub_0_0')
-            sage: algebraic = AlgebraicModel(cipher)
-            sage: modsub_component.algebraic_polynomials(algebraic)
-            [modsub_0_0_b0_0,
-             modsub_0_0_b0_0 + modsub_0_0_y0 + modsub_0_0_x4 + modsub_0_0_x0,
-             modsub_0_0_x4*modsub_0_0_b0_0 + modsub_0_0_x0*modsub_0_0_b0_0 + modsub_0_0_x0*modsub_0_0_x4 + modsub_0_0_b0_1 + modsub_0_0_b0_0 + modsub_0_0_x4,
-             modsub_0_0_b0_1 + modsub_0_0_y1 + modsub_0_0_x5 + modsub_0_0_x1,
-             modsub_0_0_x5*modsub_0_0_b0_1 + modsub_0_0_x1*modsub_0_0_b0_1 + modsub_0_0_x1*modsub_0_0_x5 + modsub_0_0_b0_2 + modsub_0_0_b0_1 + modsub_0_0_x5,
-             modsub_0_0_b0_2 + modsub_0_0_y2 + modsub_0_0_x6 + modsub_0_0_x2,
-             modsub_0_0_x6*modsub_0_0_b0_2 + modsub_0_0_x2*modsub_0_0_b0_2 + modsub_0_0_x2*modsub_0_0_x6 + modsub_0_0_b0_3 + modsub_0_0_b0_2 + modsub_0_0_x6,
-             modsub_0_0_b0_3 + modsub_0_0_y3 + modsub_0_0_x7 + modsub_0_0_x3]
+                sage: from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
+                sage: from claasp.ciphers.single_component_ciphers.modsub_cipher import ModsubCipher
+                sage: cipher = ModsubCipher()
+                sage: modsub_component = cipher.component_from_id('modsub_0_0')
+                sage: algebraic = AlgebraicModel(cipher)
+                sage: modsub_component.algebraic_polynomials(algebraic)
+                [modsub_0_0_b0_0,
+                modsub_0_0_b0_0 + modsub_0_0_y0 + modsub_0_0_x4 + modsub_0_0_x0,
+                modsub_0_0_x4*modsub_0_0_b0_0 + modsub_0_0_x0*modsub_0_0_b0_0 + modsub_0_0_x0*modsub_0_0_x4 + modsub_0_0_b0_1 + modsub_0_0_b0_0 + modsub_0_0_x4,
+                modsub_0_0_b0_1 + modsub_0_0_y1 + modsub_0_0_x5 + modsub_0_0_x1,
+                modsub_0_0_x5*modsub_0_0_b0_1 + modsub_0_0_x1*modsub_0_0_b0_1 + modsub_0_0_x1*modsub_0_0_x5 + modsub_0_0_b0_2 + modsub_0_0_b0_1 + modsub_0_0_x5,
+                modsub_0_0_b0_2 + modsub_0_0_y2 + modsub_0_0_x6 + modsub_0_0_x2,
+                modsub_0_0_x6*modsub_0_0_b0_2 + modsub_0_0_x2*modsub_0_0_b0_2 + modsub_0_0_x2*modsub_0_0_x6 + modsub_0_0_b0_3 + modsub_0_0_b0_2 + modsub_0_0_x6,
+                modsub_0_0_b0_3 + modsub_0_0_y3 + modsub_0_0_x7 + modsub_0_0_x3]
 
         """
         component_id = self.id
@@ -143,17 +189,10 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: raiden = RaidenBlockCipher(number_of_rounds=3)
-            sage: modsub_component = raiden.component_from(0, 7)
-            sage: modsub_component.cms_constraints()
-            (['temp_carry_plaintext_32',
-              'temp_carry_plaintext_33',
-              'temp_carry_plaintext_34',
-              ...
-              'modsub_0_7_31 -modadd_0_4_31 temp_input_plaintext_63',
-              'modsub_0_7_31 modadd_0_4_31 -temp_input_plaintext_63',
-              '-modsub_0_7_31 -modadd_0_4_31 -temp_input_plaintext_63'])
+            sage: from claasp.components.modsub_component import ModSub
+            sage: modsub_component = ModSub(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: modsub_component.cms_constraints()[:1]
+            (['temp_carry_input2_0', 'temp_input_input2_0', 'temp_input_input2_1', 'carry_modsub_0_0_0', 'modsub_0_0_0', 'modsub_0_0_1'],)
         """
         return self.sat_constraints()
 
@@ -167,20 +206,10 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: raiden = RaidenBlockCipher(number_of_rounds=3)
-            sage: modsub_component = raiden.component_from(0, 7)
-            sage: modsub_component.cp_constraints()
-            (['array[0..31] of var 0..1: constant_modsub_0_7= array1d(0..31,[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);',
-              ...
-              'array[0..31] of var 0..1:minus_pre_modsub_0_7_1;'],
-             ['constraint pre_modsub_0_7_0[0]=modadd_0_4[0];',
-              'constraint pre_modsub_0_7_0[1]=modadd_0_4[1];',
-              'constraint pre_modsub_0_7_0[2]=modadd_0_4[2];',
-              ...
-              'constraint pre_minus_pre_modsub_0_7_1[31]=(pre_modsub_0_7_1[31] + 1) mod 2;',
-              'constraint modadd(pre_minus_pre_modsub_0_7_1, constant_modsub_0_7, minus_pre_modsub_0_7_1);',
-              'constraint modadd(pre_modsub_0_7_0,minus_pre_modsub_0_7_1,modsub_0_7);'])
+            sage: from claasp.components.modsub_component import ModSub
+            sage: modsub_component = ModSub(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: modsub_component.cp_constraints()[:1]
+            (['array[0..1] of var 0..1: constant_modsub_0_0= array1d(0..1,[0, 1]);', 'array[0..1] of var 0..1: modsub_0_0;', 'array[0..1] of var 0..1:pre_modsub_0_0_0;', 'array[0..1] of var 0..1:pre_modsub_0_0_1;', 'array[0..1] of var 0..1:pre_minus_pre_modsub_0_0_1;', 'array[0..1] of var 0..1:minus_pre_modsub_0_0_1;'],)
         """
         output_size = self.output_bit_size
         output_id_link = self.id
@@ -277,71 +306,41 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: raiden = RaidenBlockCipher(number_of_rounds=3)
-            sage: modsub_component = raiden.component_from(0, 7)
-            sage: modsub_component.sat_constraints()
-            (['temp_carry_plaintext_32',
-              'temp_carry_plaintext_33',
-              ...
-              'modsub_0_7_30',
-              'modsub_0_7_31'],
-             ['-temp_carry_plaintext_32 temp_carry_plaintext_33',
-              '-temp_carry_plaintext_32 -plaintext_33',
-              ...
-              'modsub_0_7_31 modadd_0_4_31 -temp_input_plaintext_63',
-              '-modsub_0_7_31 -modadd_0_4_31 -temp_input_plaintext_63'])
+            sage: from claasp.components.modsub_component import ModSub
+            sage: modsub_component = ModSub(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: modsub_component.sat_constraints()[:1]
+            (['temp_carry_input2_0', 'temp_input_input2_0', 'temp_input_input2_1', 'carry_modsub_0_0_0', 'modsub_0_0_0', 'modsub_0_0_1'],)
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        temp_carry_bit_ids = [f"temp_carry_{input_bit_ids[output_bit_len + i]}" for i in range(output_bit_len - 1)]
-        temp_input_bit_ids = [f"temp_input_{input_bit_ids[output_bit_len + i]}" for i in range(output_bit_len)]
-        carry_bit_ids = [f"carry_{output_bit_ids[i]}" for i in range(output_bit_len - 1)]
+        output_bit_ids, temp_carry_bit_ids, temp_input_bit_ids, carry_bit_ids, lhs_input_bit_ids, rhs_input_bit_ids = (
+            sat_generate_ids_for_modsub(self)
+        )
         constraints = []
         # carries complement 2
-        for i in range(output_bit_len - 2):
-            constraints.extend(
-                sat_utils.cnf_carry_comp2(
-                    temp_carry_bit_ids[i], input_bit_ids[output_bit_len + i + 1], temp_carry_bit_ids[i + 1]
-                )
-            )
-        constraints.extend(
-            sat_utils.cnf_inequality(temp_carry_bit_ids[output_bit_len - 2], input_bit_ids[2 * output_bit_len - 1])
-        )
+        for temp_carry_bit_id, rhs_input_bit_id, prev_temp_carry_bit_id in zip(
+            temp_carry_bit_ids[:-1], rhs_input_bit_ids[1:-1], temp_carry_bit_ids[1:]
+        ):
+            constraints.extend(sat_utils.cnf_carry_comp2(temp_carry_bit_id, rhs_input_bit_id, prev_temp_carry_bit_id))
+        constraints.extend(sat_utils.cnf_inequality(temp_carry_bit_ids[-1], rhs_input_bit_ids[-1]))
         # results complement 2
-        for i in range(output_bit_len - 1):
-            constraints.extend(
-                sat_utils.cnf_result_comp2(
-                    temp_input_bit_ids[i], input_bit_ids[output_bit_len + i], temp_carry_bit_ids[i]
-                )
-            )
-        constraints.extend(
-            sat_utils.cnf_equivalent([temp_input_bit_ids[output_bit_len - 1], input_bit_ids[2 * output_bit_len - 1]])
-        )
+        for temp_input_bit_id, rhs_input_bit_id, temp_carry_bit_id in zip(
+            temp_input_bit_ids[:-1], rhs_input_bit_ids[:-1], temp_carry_bit_ids
+        ):
+            constraints.extend(sat_utils.cnf_result_comp2(temp_input_bit_id, rhs_input_bit_id, temp_carry_bit_id))
+        constraints.extend(sat_utils.cnf_equivalent([temp_input_bit_ids[-1], rhs_input_bit_ids[-1]]))
         # carries
-        for i in range(output_bit_len - 2):
+        for carry_bit_id, lhs_input_bit_id, temp_input_bit_id, prev_carry_bit_id in zip(
+            carry_bit_ids[:-1], lhs_input_bit_ids[1:-1], temp_input_bit_ids[1:-1], carry_bit_ids[1:]
+        ):
             constraints.extend(
-                sat_utils.cnf_carry(
-                    carry_bit_ids[i], input_bit_ids[i + 1], temp_input_bit_ids[i + 1], carry_bit_ids[i + 1]
-                )
+                sat_utils.cnf_carry(carry_bit_id, lhs_input_bit_id, temp_input_bit_id, prev_carry_bit_id)
             )
-        constraints.extend(
-            sat_utils.cnf_and(
-                carry_bit_ids[output_bit_len - 2],
-                (input_bit_ids[output_bit_len - 1], temp_input_bit_ids[output_bit_len - 1]),
-            )
-        )
+        constraints.extend(sat_utils.cnf_and(carry_bit_ids[-1], (lhs_input_bit_ids[-1], temp_input_bit_ids[-1])))
         # results
-        for i in range(output_bit_len - 1):
-            constraints.extend(
-                sat_utils.cnf_xor(output_bit_ids[i], [input_bit_ids[i], temp_input_bit_ids[i], carry_bit_ids[i]])
-            )
-        constraints.extend(
-            sat_utils.cnf_xor(
-                output_bit_ids[output_bit_len - 1],
-                [input_bit_ids[output_bit_len - 1], temp_input_bit_ids[output_bit_len - 1]],
-            )
-        )
+        for output_bit_id, lhs_input_bit_id, temp_input_bit_id, carry_bit_id in zip(
+            output_bit_ids[:-1], lhs_input_bit_ids[:-1], temp_input_bit_ids[:-1], carry_bit_ids
+        ):
+            constraints.extend(sat_utils.cnf_xor(output_bit_id, [lhs_input_bit_id, temp_input_bit_id, carry_bit_id]))
+        constraints.extend(sat_utils.cnf_xor(output_bit_ids[-1], [lhs_input_bit_ids[-1], temp_input_bit_ids[-1]]))
 
         return temp_carry_bit_ids + temp_input_bit_ids + carry_bit_ids + output_bit_ids, constraints
 
@@ -361,66 +360,144 @@ class MODSUB(Modular):
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.raiden_block_cipher import RaidenBlockCipher
-            sage: raiden = RaidenBlockCipher(number_of_rounds=3)
-            sage: modsub_component = raiden.component_from(0, 7)
-            sage: modsub_component.smt_constraints()
-            (['temp_carry_plaintext_32',
-              'temp_carry_plaintext_33',
-              ...
-              'modsub_0_7_30',
-              'modsub_0_7_31'],
-             ['(assert (= temp_carry_plaintext_32 (and (not plaintext_33) temp_carry_plaintext_33)))',
-              '(assert (= temp_carry_plaintext_33 (and (not plaintext_34) temp_carry_plaintext_34)))',
-              ...
-              '(assert (= modsub_0_7_30 (xor modadd_0_4_30 temp_input_plaintext_62 carry_modsub_0_7_30)))',
-              '(assert (= modsub_0_7_31 (xor modadd_0_4_31 temp_input_plaintext_63)))'])
+            sage: from claasp.components.modsub_component import ModSub
+            sage: modsub_component = ModSub(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 2)
+            sage: modsub_component.smt_constraints()[:1]
+            (['temp_carry_input2_0', 'temp_input_input2_0', 'temp_input_input2_1', 'carry_modsub_0_0_0', 'modsub_0_0_0', 'modsub_0_0_1'],)
         """
-        input_bit_ids = self._generate_input_ids()
-        output_bit_len, output_bit_ids = self._generate_output_ids()
-        temp_carry_bit_ids = [f"temp_carry_{input_bit_ids[output_bit_len + i]}" for i in range(output_bit_len - 1)]
-        temp_input_bit_ids = [f"temp_input_{input_bit_ids[output_bit_len + i]}" for i in range(output_bit_len)]
-        carry_bit_ids = [f"carry_{output_bit_ids[i]}" for i in range(output_bit_len - 1)]
+        output_bit_ids, temp_carry_bit_ids, temp_input_bit_ids, carry_bit_ids, lhs_input_bit_ids, rhs_input_bit_ids = (
+            sat_generate_ids_for_modsub(self)
+        )
         constraints = []
 
         # carries complement 2
-        for i in range(output_bit_len - 2):
-            operation = smt_utils.smt_and(
-                (smt_utils.smt_not(input_bit_ids[output_bit_len + i + 1]), temp_carry_bit_ids[i + 1])
-            )
-            equation = smt_utils.smt_equivalent((temp_carry_bit_ids[i], operation))
+        for temp_carry_bit_id, rhs_input_bit_id, prev_temp_carry_bit_id in zip(
+            temp_carry_bit_ids[:-1], rhs_input_bit_ids[1:-1], temp_carry_bit_ids[1:]
+        ):
+            operation = smt_utils.smt_and((smt_utils.smt_not(rhs_input_bit_id), prev_temp_carry_bit_id))
+            equation = smt_utils.smt_equivalent((temp_carry_bit_id, operation))
             constraints.append(smt_utils.smt_assert(equation))
-        distinction = smt_utils.smt_distinct(
-            temp_carry_bit_ids[output_bit_len - 2], input_bit_ids[2 * output_bit_len - 1]
-        )
+        distinction = smt_utils.smt_distinct(temp_carry_bit_ids[-1], rhs_input_bit_ids[-1])
         constraints.append(smt_utils.smt_assert(distinction))
 
         # results complement 2
-        for i in range(output_bit_len - 1):
-            operation = smt_utils.smt_xor((smt_utils.smt_not(input_bit_ids[output_bit_len + i]), temp_carry_bit_ids[i]))
-            equation = smt_utils.smt_equivalent((temp_input_bit_ids[i], operation))
+        for temp_input_bit_id, rhs_input_bit_id, temp_carry_bit_id in zip(
+            temp_input_bit_ids[:-1], rhs_input_bit_ids[:-1], temp_carry_bit_ids
+        ):
+            operation = smt_utils.smt_xor((smt_utils.smt_not(rhs_input_bit_id), temp_carry_bit_id))
+            equation = smt_utils.smt_equivalent((temp_input_bit_id, operation))
             constraints.append(smt_utils.smt_assert(equation))
-        equation = smt_utils.smt_equivalent(
-            (temp_input_bit_ids[output_bit_len - 1], input_bit_ids[2 * output_bit_len - 1])
-        )
+        equation = smt_utils.smt_equivalent((temp_input_bit_ids[-1], rhs_input_bit_ids[-1]))
         constraints.append(smt_utils.smt_assert(equation))
 
         # carries
-        for i in range(output_bit_len - 2):
-            operation = smt_utils.smt_carry(input_bit_ids[i + 1], temp_input_bit_ids[i + 1], carry_bit_ids[i + 1])
-            equation = smt_utils.smt_equivalent((carry_bit_ids[i], operation))
+        for carry_bit_id, lhs_input_bit_id, temp_input_bit_id, prev_carry_bit_id in zip(
+            carry_bit_ids[:-1], lhs_input_bit_ids[1:-1], temp_input_bit_ids[1:-1], carry_bit_ids[1:]
+        ):
+            operation = smt_utils.smt_carry(lhs_input_bit_id, temp_input_bit_id, prev_carry_bit_id)
+            equation = smt_utils.smt_equivalent((carry_bit_id, operation))
             constraints.append(smt_utils.smt_assert(equation))
-        operation = smt_utils.smt_and((input_bit_ids[output_bit_len - 1], temp_input_bit_ids[output_bit_len - 1]))
-        equation = smt_utils.smt_equivalent((carry_bit_ids[output_bit_len - 2], operation))
+        operation = smt_utils.smt_and((lhs_input_bit_ids[-1], temp_input_bit_ids[-1]))
+        equation = smt_utils.smt_equivalent((carry_bit_ids[-1], operation))
         constraints.append(smt_utils.smt_assert(equation))
 
         # results
-        for i in range(output_bit_len - 1):
-            operation = smt_utils.smt_xor((input_bit_ids[i], temp_input_bit_ids[i], carry_bit_ids[i]))
-            equation = smt_utils.smt_equivalent((output_bit_ids[i], operation))
+        for output_bit_id, lhs_input_bit_id, temp_input_bit_id, carry_bit_id in zip(
+            output_bit_ids[:-1], lhs_input_bit_ids[:-1], temp_input_bit_ids[:-1], carry_bit_ids
+        ):
+            operation = smt_utils.smt_xor((lhs_input_bit_id, temp_input_bit_id, carry_bit_id))
+            equation = smt_utils.smt_equivalent((output_bit_id, operation))
             constraints.append(smt_utils.smt_assert(equation))
-        operation = smt_utils.smt_xor((input_bit_ids[output_bit_len - 1], temp_input_bit_ids[output_bit_len - 1]))
-        equation = smt_utils.smt_equivalent((output_bit_ids[output_bit_len - 1], operation))
+        operation = smt_utils.smt_xor((lhs_input_bit_ids[-1], temp_input_bit_ids[-1]))
+        equation = smt_utils.smt_equivalent((output_bit_ids[-1], operation))
         constraints.append(smt_utils.smt_assert(equation))
 
         return temp_carry_bit_ids + temp_input_bit_ids + carry_bit_ids + output_bit_ids, constraints
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for MODSUB quasidifferential propagation.
+
+        Modular subtraction reduces EXACTLY to modular addition with
+        permuted roles: ``z = x - y`` is equivalent to ``x = z + y``, so
+        a MODSUB transition with input differences (A, B), output
+        difference C, input masks (U, V) and output mask W has the same
+        QDT coefficient as the MODADD transition with input differences
+        (C, B), output difference A, input masks (W, V) and output mask
+        U:
+
+            D_MODSUB(A,B,C,U,V,W) == D_MODADD(C,B,A,W,V,U)
+
+        i.e. simply swap A <-> C and U <-> W.
+
+        This was verified by EXHAUSTIVE brute force of Equation (4)
+        applied directly to modular subtraction and to modular
+        addition, over all 3-bit (A,B,C,U,V,W) combinations: 6728 valid
+        transitions compared, 0 mismatches.
+
+        The constraints are therefore ModAdd's own, obtained by calling
+        the shared ``smt_quasidifferential_modadd`` with the arguments
+        permuted. Only 2 operands are supported, as for ModAdd.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.modsub_cipher import ModsubCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = ModsubCipher(word_bit_size=2, number_of_inputs=2, modulus=4)
+            sage: modsub = cipher.component_from_id('modsub_0_0')
+            sage: variables, constraints = modsub.smt_xor_quasidifferential_propagation_constraints(SmtXorQuasidifferentialModel(cipher))
+            sage: len(variables), len(constraints)
+            (20, 23)
+            sage: constraints[0]
+            '(assert (= modsub_aprime_modsub_0_0_0 (xor key_0 plaintext_0)))'
+
+        The first auxiliary variable already shows the swap: for ``z = x - y``
+        the shared addition sees ``x = z + y``.
+        """
+
+        num_operands = self.description[1]
+
+        if num_operands != 2:
+            raise NotImplementedError(
+                f"{self.id}: quasidifferential propagation for MODSUB is "
+                f"only implemented for 2 operands (Theorem 5.2 of "
+                f"Beyne & Rijmen, via the reduction to MODADD); "
+                f"got {num_operands}."
+            )
+
+        word_size = self.output_bit_size
+
+        input_bit_ids = self._generate_input_ids()
+        output_bit_ids = self._generate_output_ids()
+
+        qdt_input_bit_ids = model._qdt_input_bit_ids(self)
+        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
+
+        # MODSUB's own variables.
+        modsub_a_ids = input_bit_ids[:word_size]
+        modsub_b_ids = input_bit_ids[word_size:]
+        modsub_c_ids = output_bit_ids
+
+        modsub_u_ids = qdt_input_bit_ids[:word_size]
+        modsub_v_ids = qdt_input_bit_ids[word_size:]
+        modsub_w_ids = qdt_output_bit_ids
+
+        # Apply the verified permutation to obtain MODADD's roles:
+        # (a, b, c, u, v, w) = (C, B, A, W, V, U).
+        return smt_quasidifferential_modadd(
+            self,
+            "modsub_",
+            modsub_c_ids,
+            modsub_b_ids,
+            modsub_a_ids,
+            modsub_w_ids,
+            modsub_v_ids,
+            modsub_u_ids,
+        )

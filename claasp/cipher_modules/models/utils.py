@@ -15,28 +15,40 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-
 import json
 import math
 import os
+import re
+from concurrent.futures import ProcessPoolExecutor
 from copy import deepcopy
 
 import numpy as np
 
 from claasp.name_mappings import (
-    CONSTANT,
     CIPHER_OUTPUT,
-    INTERMEDIATE_OUTPUT,
-    WORD_OPERATION,
-    LINEAR_LAYER,
-    SBOX,
-    MIX_COLUMN,
+    CONSTANT,
     INPUT_KEY,
-    INPUT_PLAINTEXT,
     INPUT_MESSAGE,
+    INPUT_PLAINTEXT,
     INPUT_STATE,
+    INTERMEDIATE_OUTPUT,
+    LINEAR_LAYER,
+    MIX_COLUMN,
+    PERMUTATION_COMPONENT,
+    SBOX,
+    WORD_OPERATION,
 )
 
+STATE_SIZE_MULTIPLE_OF_8_ERROR = "State size must be a multiple of 8."
+KEY_SIZE_MULTIPLE_OF_8_ERROR = "Key size must be a multiple of 8."
+
+
+def hex_to_bitlist(hex_str):
+    if not hex_str.startswith(("0x", "0X")):
+        raise ValueError("Hex string must start with 0x")
+    val_int = int(hex_str, 16)
+    bit_len = (len(hex_str) - 2) * 4
+    return integer_to_bit_list(val_int, bit_len, "big")
 
 def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_output_arcs, previous_output_bit_ids):
     for i in range(input_bit_size):
@@ -50,7 +62,7 @@ def add_arcs(arcs, component, curr_input_bit_ids, input_bit_size, intermediate_o
 
 
 def check_if_implemented_component(component):
-    component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, SBOX, MIX_COLUMN, WORD_OPERATION)
+    component_types = (CONSTANT, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT, LINEAR_LAYER, PERMUTATION_COMPONENT, SBOX, MIX_COLUMN, WORD_OPERATION)
     operation = component.description[0]
     operation_types = ("AND", "OR", "MODADD", "MODSUB", "NOT", "ROTATE", "SHIFT", "XOR")
     if component.type not in component_types or (component.type == WORD_OPERATION and operation not in operation_types):
@@ -281,6 +293,39 @@ def set_fixed_variables(component_id, constraint_type, bit_positions, bit_values
         "bit_values": bit_values,
     }
 
+def join_and_sanitize_strings(l):
+    """
+    Join a list of strings using ``_`` and sanitize the resulting string so that it only
+    contains alphanumeric characters, ``.``, ``_`` or ``-``. The returned string is
+    prefixed with ``_``.
+
+    INPUT:
+
+    - ``l`` -- **list** (or ``None``); list of strings to be joined and sanitized. If ``None``,
+      an empty string is returned.
+
+    OUTPUT:
+
+    - **string**; a sanitized string obtained by joining the elements of ``l`` with ``_``,
+      removing all characters except ``[a-zA-Z0-9._-]``, and prefixing the result with ``_``.
+      If ``l`` is ``None``, the function returns ``""``.
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.utils import join_and_sanitize_strings
+        sage: join_and_sanitize_strings(['sat', 'xor-linear'])
+        '_sat_xor-linear'
+
+        sage: join_and_sanitize_strings(['model°', 'round#1'])
+        '_model_round1'
+
+        sage: join_and_sanitize_strings(None)
+        ''
+    """
+    if l is None:
+        return ""
+    joined = "_".join(l)
+    return "_" + re.sub(r"[^a-zA-Z0-9._-]", "", joined)
 
 def write_model_to_file(model_to_write, file_name):
     """
@@ -396,7 +441,7 @@ def to_bias_for_correlation_measure(cipher, solution):
     solution_with_bias = deepcopy(solution)
     solution_with_bias["measure"] = "bias"
     solution_with_bias["total_weight"] += 1
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_bias["components_values"][component.id + suffix]["weight"]:
@@ -409,7 +454,7 @@ def to_bias_for_probability_measure(cipher, solution):
     solution_with_bias = deepcopy(solution)
     solution_with_bias["measure"] = "bias"
     solution_with_bias["total_weight"] = round(-math.log(2 ** (-solution_with_bias["total_weight"]) - 1 / 2.0, 2), 1)
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_bias["components_values"][component.id + suffix]["weight"]:
@@ -468,7 +513,7 @@ def to_probability_for_correlation_measure(cipher, solution):
     solution_with_proba["total_weight"] = round(
         -math.log((2 ** (-solution_with_proba["total_weight"]) + 1) / 2.0, 2), 3
     )
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_proba["components_values"][component.id + suffix]["weight"]:
@@ -486,7 +531,7 @@ def to_probability_for_bias_measure(cipher, solution):
     solution_with_proba = deepcopy(solution)
     solution_with_proba["measure"] = "probability"
     solution_with_proba["total_weight"] = round(-math.log(2 ** (-solution_with_proba["total_weight"]) + 1 / 2.0, 2), 3)
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_proba["components_values"][component.id + suffix]["weight"]:
@@ -519,7 +564,7 @@ def to_correlation_for_xor_linear_trail(cipher, solution):
         sage: milp = MilpXorLinearModel(speck)
         sage: plaintext = set_fixed_variables(component_id='plaintext', constraint_type='not equal',
         ....: bit_positions=range(32), bit_values=integer_to_bit_list(0x0, 32, 'big'))
-        sage: trail = milp.find_lowest_weight_xor_linear_trail([plaintext])
+        sage: trail = milp.find_lowest_weight_xor_linear_trail([plaintext], solver_name='GLPK')
         sage: to_correlation_for_xor_linear_trail(speck, trail) # random
         {'building_time_seconds': 0.10187196731567383,
          'cipher_id': 'speck_p32_k64_o32_r4',
@@ -546,7 +591,7 @@ def to_correlation_for_bias_measure(cipher, solution):
     solution_with_correlation = deepcopy(solution)
     solution_with_correlation["measure"] = "correlation"
     solution_with_correlation["total_weight"] -= 1
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_correlation["components_values"][component.id + suffix]["weight"]:
@@ -561,7 +606,7 @@ def to_correlation_for_probability_measure(cipher, solution):
     solution_with_correlation["total_weight"] = round(
         -math.log(2 * 2 ** (-solution_with_correlation["total_weight"]) - 1, 2), 1
     )
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         suffix_list = component.suffixes
         for suffix in suffix_list:
             if solution_with_correlation["components_values"][component.id + suffix]["weight"]:
@@ -593,14 +638,14 @@ def find_sign_for_one_xor_linear_trail(cipher, solution):
         sage: milp = MilpXorLinearModel(speck)
         sage: fixed_variables = [set_fixed_variables('plaintext', 'not equal', list(range(32)),
         ....: integer_to_bit_list(0, 32, 'little'))]
-        sage: trail = milp.find_lowest_weight_xor_linear_trail(fixed_variables)
+        sage: trail = milp.find_lowest_weight_xor_linear_trail(fixed_variables, solver_name='GLPK')
         sage: trail_with_sign = find_sign_for_one_xor_linear_trail(speck, trail)
         sage: abs(trail_with_sign['final_sign'])
         1
     """
     constants = {}
     sign = +1
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         output_id_link = component.id
         if "sbox" in component.type:
             input_int = int(solution["components_values"][f"{output_id_link}_i"]["value"], 16)
@@ -640,7 +685,7 @@ def find_sign_for_xor_linear_trails(cipher, solutions):
         sage: plaintext = set_fixed_variables(
         ....: component_id='plaintext', constraint_type='not equal',
         ....: bit_positions=range(8), bit_values=integer_to_bit_list(0x0, 8, 'big'))
-        sage: trails = milp.find_all_xor_linear_trails_with_fixed_weight(1, fixed_values = [plaintext])
+        sage: trails = milp.find_all_xor_linear_trails_with_fixed_weight(1, fixed_values = [plaintext], solver_name='GLPK')
         sage: trails_with_sign = find_sign_for_xor_linear_trails(speck, trails)
         sage: abs(trails_with_sign[0]['final_sign'])
         1
@@ -687,9 +732,9 @@ def get_bit_bindings(cipher, format_func=(lambda x: x)):
     """
     arcs = {}
     intermediate_output_arcs = {
-        component.id: {} for component in cipher.get_all_components() if INTERMEDIATE_OUTPUT in component.type
+        component.id: {} for component in cipher.all_components() if INTERMEDIATE_OUTPUT in component.type
     }
-    for component in cipher.get_all_components():
+    for component in cipher.all_components():
         if component.type == CONSTANT:
             continue
         input_bit_size = component.input_bit_size
@@ -765,54 +810,30 @@ def get_related_key_scenario_format_for_fixed_values(_cipher):
     return fixed_variables
 
 
-def _extract_bits(columns, positions):
-    """Extracts bits from columns at specified positions using vectorization."""
-    bit_size = columns.shape[0] * 8
-    positions = np.array(positions)
-    byte_indices = (bit_size - positions - 1) // 8
-    bit_indices = positions % 8
-    if np.any(byte_indices < 0) or np.any(byte_indices >= columns.shape[0]):
-        raise IndexError("Byte index out of range.")
-    bytes_at_positions = columns[byte_indices][:, :]
-    bits = (bytes_at_positions >> bit_indices[:, np.newaxis]) & 1
-
-    return bits
-
-
 def _number_to_n_bit_binary_string(number, n_bits):
     """Converts a number to an n-bit binary string with leading zero padding."""
     return format(number, f"0{n_bits}b")
 
 
-def _extract_bit_positions(hex_number, state_size):
-    """Extracts bit positions from a hex state_size-number."""
-    binary_str = _number_to_n_bit_binary_string(hex_number, state_size)
-    binary_str = binary_str[::-1]
-    positions = [i for i, bit in enumerate(binary_str) if bit == "1"]
-    return positions
+def _extract_bit_positions_msb(binary_str, bits_to_consider=("0", "1")):
+    """Return positions (MSB first) of all determined bits in a pattern string."""
+    return [index for index, bit in enumerate(binary_str) if bit in bits_to_consider]
 
 
-def extract_bit_positions(binary_str):
-    """Extracts bit positions from a binary+unknows string."""
-    binary_str = binary_str[::-1]
-    positions = [i for i, bit in enumerate(binary_str) if bit in ("0", "1")]
-    return positions
+def _extract_bits_msb(columns, positions):
+    """Extract bits assuming position 0 corresponds to the MSB of byte 0."""
+    positions = np.array(positions)
+    byte_indices = positions // 8
+    bit_indices = 7 - (positions % 8)
+    if np.any(byte_indices < 0) or np.any(byte_indices >= columns.shape[0]):
+        raise IndexError("Byte index out of range.")
+    bytes_at_positions = columns[byte_indices][:, :]
+    return (bytes_at_positions >> bit_indices[:, np.newaxis]) & 1
 
 
-def extract_bits(columns, positions):
-    """Extracts the bits from columns at the specified positions."""
-    num_positions = len(positions)
-    num_columns = columns.shape[1]
-    bit_size = columns.shape[0] * 8
-
-    result = np.zeros((num_positions, num_columns), dtype=np.uint8)
-
-    for i in range(num_positions):
-        for j in range(num_columns):
-            byte_index = (bit_size - positions[i] - 1) // 8
-            bit_index = positions[i] % 8
-            result[i, j] = 1 & (columns[:, j][byte_index] >> bit_index)
-    return result
+def _repeat_input_difference_msb(input_difference, num_samples, num_bytes):
+    """Repeat an input difference keeping bit position 0 at the MSB."""
+    return _repeat_input_difference(input_difference, num_samples, num_bytes)
 
 
 def _repeat_input_difference(input_difference, num_samples, num_bytes):
@@ -822,42 +843,210 @@ def _repeat_input_difference(input_difference, num_samples, num_bytes):
     return repeated_array
 
 
-def differential_linear_checker_for_permutation(
-    cipher, input_difference, output_mask, number_of_samples, state_size, seed=None
-):
-    """
-    This method helps to verify experimentally differential-linear distinguishers for permutations using the vectorized evaluator
-    """
-    if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
-    num_bytes = int(state_size / 8)
+# ---------------------------------------------------------------------------
+# Module-level worker functions (must be picklable for ProcessPoolExecutor)
+# Each returns the "count" statistic for its chunk; the caller aggregates.
+# ---------------------------------------------------------------------------
+
+def _w_diff_linear_sk(args):
+    cipher, input_difference, output_mask, state_num_bytes, key_num_bytes, fixed_key, chunk_size, seed = args
     rng = np.random.default_rng(seed)
-    input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
-    plaintext1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
-    plaintext2 = plaintext1 ^ input_difference_data
-    ciphertext1 = cipher.evaluate_vectorized([plaintext1])
-    ciphertext2 = cipher.evaluate_vectorized([plaintext2])
-    ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
-    bit_positions_ciphertext = _extract_bit_positions(output_mask, state_size)
-    ccc = _extract_bits(ciphertext3.T, bit_positions_ciphertext)
+    fk = _repeat_input_difference(fixed_key, chunk_size, key_num_bytes)
+    id_ = _repeat_input_difference(input_difference, chunk_size, state_num_bytes)
+    p1 = rng.integers(0, 256, size=(state_num_bytes, chunk_size), dtype=np.uint8)
+    p2 = p1 ^ id_
+    c1 = cipher.evaluate_vectorized([p1, fk])
+    c2 = cipher.evaluate_vectorized([p2, fk])
+    c3 = c1[0] ^ c2[0]
+    bit_pos = _extract_bit_positions_msb(output_mask, ("1",))
+    ccc = _extract_bits_msb(c3.T, bit_pos)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
-    count = np.count_nonzero(parities == 0)
-    corr = 2 * count / number_of_samples * 1.0 - 1
-    return corr
+    return int(np.count_nonzero(parities == 0))
+
+
+def _w_linear_sk(args):
+    cipher, input_mask, output_mask, state_num_bytes, key_num_bytes, fixed_key, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    fk = _repeat_input_difference(fixed_key, chunk_size, key_num_bytes)
+    plaintext = rng.integers(0, 256, size=(state_num_bytes, chunk_size), dtype=np.uint8)
+    return _linear_parity_count(cipher, [plaintext, fk], input_mask, output_mask)
+
+
+def _linear_parity_count(cipher, inputs, input_mask, output_mask):
+    """Number of samples on which ``input_mask . inputs[0]`` and ``output_mask . cipher(inputs)`` have the same parity."""
+    plaintext = inputs[0]
+    number_of_samples = plaintext.shape[1]
+    output = cipher.evaluate_vectorized(inputs)[0]
+    in_pos = _extract_bit_positions_msb(input_mask, ("1",))
+    out_pos = _extract_bit_positions_msb(output_mask, ("1",))
+    in_par = np.bitwise_xor.reduce(_extract_bits_msb(plaintext, in_pos), axis=0) if len(in_pos) > 0 else np.zeros(number_of_samples, dtype=np.uint8)
+    out_par = np.bitwise_xor.reduce(_extract_bits_msb(output.T, out_pos), axis=0) if len(out_pos) > 0 else np.zeros(number_of_samples, dtype=np.uint8)
+    return int(np.count_nonzero((in_par ^ out_par) == 0))
+
+
+def _w_diff_perm(args):
+    cipher, input_difference, output_difference, num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    id_ = _repeat_input_difference(input_difference, chunk_size, num_bytes)
+    od_ = _repeat_input_difference(output_difference, chunk_size, num_bytes)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p2 = p1 ^ id_
+    c1 = cipher.evaluate_vectorized([p1])
+    c2 = cipher.evaluate_vectorized([p2])
+    return int(np.count_nonzero(np.all(c1[0] ^ c2[0] == od_.T, axis=1)))
+
+
+def _w_diff_trunc_perm(args):
+    cipher, input_difference, output_difference, num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    id_ = _repeat_input_difference_msb(input_difference, chunk_size, num_bytes)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p2 = p1 ^ id_
+    c1 = cipher.evaluate_vectorized([p1])
+    c2 = cipher.evaluate_vectorized([p2])
+    diff = c1[0] ^ c2[0]
+    bit_pos = _extract_bit_positions_msb(output_difference)
+    known = _extract_bits_msb(diff.T, bit_pos)
+    filled = np.array([int(output_difference[p]) for p in bit_pos], dtype=np.uint8)[:, np.newaxis]
+    return int(np.all(known == filled, axis=0).sum())
+
+
+def _w_diff_trunc_sk(args):
+    cipher, input_difference, output_difference, num_bytes, key_num_bytes, fixed_key, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    fk = _repeat_input_difference(fixed_key, chunk_size, key_num_bytes)
+    id_ = _repeat_input_difference(input_difference, chunk_size, num_bytes)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p2 = p1 ^ id_
+    c1 = cipher.evaluate_vectorized([p1, fk])
+    c2 = cipher.evaluate_vectorized([p2, fk])
+    diff = c1[0] ^ c2[0]
+    bit_pos = _extract_bit_positions_msb(output_difference)
+    known = _extract_bits_msb(diff.T, bit_pos)
+    filled = np.array([int(b) for b in output_difference if b in ("0", "1")], dtype=np.uint8)[:, np.newaxis]
+    return int(np.all(known == filled, axis=0).sum())
+
+
+def _w_sdpi_diff_perm(args):
+    cipher, input_difference, output_difference, num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    id_ = _repeat_input_difference(input_difference, chunk_size, num_bytes)
+    od_ = _repeat_input_difference(output_difference, chunk_size, num_bytes)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p2 = p1 ^ id_
+    p11 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p22 = p11 ^ id_
+    c1 = cipher.evaluate_vectorized([p1])
+    c2 = cipher.evaluate_vectorized([p2])
+    c11 = cipher.evaluate_vectorized([p11])
+    c22 = cipher.evaluate_vectorized([p22])
+    return int(np.count_nonzero(np.all(c1[0] ^ c2[0] ^ c11[0] ^ c22[0] == od_.T, axis=1)))
+
+
+def _w_sdpi_diff_linear_perm(args):
+    cipher, input_difference, output_mask, num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    id_ = _repeat_input_difference(input_difference, chunk_size, num_bytes)
+    bcf1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    bcf2 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p2 = p1 ^ id_
+    p11 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    p22 = p11 ^ id_
+    c1 = cipher.evaluate_vectorized([bcf1, p1])
+    c2 = cipher.evaluate_vectorized([bcf1, p2])
+    c11 = cipher.evaluate_vectorized([bcf2, p11])
+    c22 = cipher.evaluate_vectorized([bcf2, p22])
+    c3 = c1[0] ^ c2[0] ^ c11[0] ^ c22[0]
+    bit_pos = _extract_bit_positions_msb(output_mask, ("1",))
+    ccc = _extract_bits_msb(c3.T, bit_pos)
+    parities = np.bitwise_xor.reduce(ccc, axis=0)
+    return int(np.count_nonzero(parities == 0))
+
+
+def _w_diff_trunc_perm_io(args):
+    cipher, input_trunc_diff, output_trunc_diff, state_size, num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    mask = _sample_truncated_difference_from_string(input_trunc_diff, chunk_size, state_size, rng)
+    p2 = p1 ^ mask
+    c1 = cipher.evaluate_vectorized([p1])[0]
+    c2 = cipher.evaluate_vectorized([p2])[0]
+    diff = c1 ^ c2
+    bit_pos = _extract_bit_positions_msb(output_trunc_diff)
+    if not bit_pos:
+        return chunk_size
+    known = _extract_bits_msb(diff.T, bit_pos)
+    filled = np.array([int(output_trunc_diff[p]) for p in bit_pos], dtype=np.uint8)[:, None]
+    return int(np.all(known == filled, axis=0).sum())
+
+
+def _w_trunc_diff_linear_perm(args):
+    cipher, input_trunc_diff, output_mask, state_size, num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    p1 = rng.integers(0, 256, size=(num_bytes, chunk_size), dtype=np.uint8)
+    mask = _sample_truncated_difference_from_string(input_trunc_diff, chunk_size, state_size, rng)
+    p2 = p1 ^ mask
+    c1 = cipher.evaluate_vectorized([p1])
+    c2 = cipher.evaluate_vectorized([p2])
+    c3 = c1[0] ^ c2[0]
+    bit_pos = _extract_bit_positions_msb(output_mask, ("1",))
+    ccc = _extract_bits_msb(c3.T, bit_pos)
+    parities = np.bitwise_xor.reduce(ccc, axis=0)
+    return int(np.count_nonzero(parities == 0))
+
+
+def _parallel_dispatch(worker_func, fixed_args, number_of_samples, num_workers, seed):
+    """Split samples into chunks, run worker_func on each in parallel, return (total_count, total_samples)."""
+    base_chunk = number_of_samples // num_workers
+    remainder = number_of_samples % num_workers
+    rng = np.random.default_rng(seed)
+    seeds = rng.integers(0, 2 ** 31, size=num_workers).tolist()
+    args_list = [
+        fixed_args + (base_chunk + (1 if i < remainder else 0), int(s))
+        for i, s in enumerate(seeds)
+    ]
+    with ProcessPoolExecutor(max_workers=num_workers) as executor:
+        counts = list(executor.map(worker_func, args_list))
+    return sum(counts), number_of_samples
 
 
 def differential_linear_checker_for_block_cipher_single_key(
-    cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None
+    cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None,
+    num_workers=1
 ):
     """
-    Verifies experimentally differential-linear distinguishers for block ciphers using the vectorized evaluator
+    Verify experimentally differential-linear distinguishers for block ciphers using the vectorized evaluator.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; cipher instance providing ``evaluate_vectorized``
+    - ``input_difference`` -- **integer**; input XOR difference
+    - ``output_mask`` -- **string**; output linear mask as a bitstring of length ``block_size``
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``block_size`` -- **integer**; block size in bits (must be multiple of 8)
+    - ``key_size`` -- **integer**; key size in bits (must be multiple of 8)
+    - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
     """
     if block_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     if key_size % 8 != 0:
-        raise ValueError("Key size must be a multiple of 8.")
+        raise ValueError(KEY_SIZE_MULTIPLE_OF_8_ERROR)
     state_num_bytes = int(block_size / 8)
     key_num_bytes = int(key_size / 8)
+    if num_workers > 1:
+        count, total = _parallel_dispatch(
+            _w_diff_linear_sk,
+            (cipher, input_difference, output_mask, state_num_bytes, key_num_bytes, fixed_key),
+            number_of_samples, num_workers, seed,
+        )
+        return 2 * count / total - 1.0
     rng = np.random.default_rng(seed)
     fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, state_num_bytes)
@@ -866,23 +1055,267 @@ def differential_linear_checker_for_block_cipher_single_key(
     ciphertext1 = cipher.evaluate_vectorized([plaintext1, fixed_key_data])
     ciphertext2 = cipher.evaluate_vectorized([plaintext2, fixed_key_data])
     ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
-    bit_positions_ciphertext = _extract_bit_positions(output_mask, block_size)
-    ccc = _extract_bits(ciphertext3.T, bit_positions_ciphertext)
+    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ("1",))
+    ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     count = np.count_nonzero(parities == 0)
     corr = 2 * count / number_of_samples * 1.0 - 1
     return corr
 
 
-def differential_checker_permutation(
-    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+def linear_checker_for_block_cipher_single_key(
+    cipher, input_mask, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None,
+    num_workers=1
 ):
     """
-    Verifies experimentally differential distinguishers for permutations using the vectorized evaluator
+    Verify experimentally linear distinguishers for block ciphers in a single-key scenario.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; cipher instance providing ``evaluate_vectorized``
+    - ``input_mask`` -- **string**; input linear mask as a bitstring of length ``block_size``
+    - ``output_mask`` -- **string**; output linear mask as a bitstring of length ``block_size``
+    - ``number_of_samples`` -- **integer**; number of random plaintext samples
+    - ``block_size`` -- **integer**; block size in bits (must be multiple of 8)
+    - ``key_size`` -- **integer**; key size in bits (must be multiple of 8)
+    - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
+    """
+    if block_size % 8 != 0:
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
+    if key_size % 8 != 0:
+        raise ValueError(KEY_SIZE_MULTIPLE_OF_8_ERROR)
+    if len(input_mask) != block_size:
+        raise ValueError("Input mask length must be equal to block_size.")
+    if len(output_mask) != block_size:
+        raise ValueError("Output mask length must be equal to block_size.")
+
+    state_num_bytes = int(block_size / 8)
+    key_num_bytes = int(key_size / 8)
+
+    if num_workers > 1:
+        count, total = _parallel_dispatch(
+            _w_linear_sk,
+            (cipher, input_mask, output_mask, state_num_bytes, key_num_bytes, fixed_key),
+            number_of_samples, num_workers, seed,
+        )
+        return 2 * count / total - 1.0
+
+    rng = np.random.default_rng(seed)
+    fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
+    plaintext = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
+    count = _linear_parity_count(cipher, [plaintext, fixed_key_data], input_mask, output_mask)
+    return 2 * count / number_of_samples - 1.0
+
+
+def linear_checker_permutation(
+    cipher, input_mask, output_mask, number_of_samples, state_size, seed=None, num_workers=1
+):
+    """
+    Verify experimentally linear approximations of permutations using the vectorized evaluator.
+
+    Keyless counterpart of ``linear_checker_for_block_cipher_single_key``: the cipher must have a single input (the
+    state). The correlation of ``input_mask . x + output_mask . P(x)`` is estimated on random states ``x``.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_mask`` -- **integer** or **string**; input linear mask, as an integer or as a bitstring of length ``state_size``
+    - ``output_mask`` -- **integer** or **string**; output linear mask, as an integer or as a bitstring of length ``state_size``
+    - ``number_of_samples`` -- **integer**; number of random state samples
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
+        sage: from claasp.cipher_modules.models.utils import linear_checker_permutation
+        sage: keccak = KeccakSboxPermutation(number_of_rounds=1, word_size=8)
+        sage: input_mask = 0x404040c0404040404000222222222200020000008181818181
+        sage: output_mask = 0x101
+        sage: correlation = linear_checker_permutation(keccak, input_mask, output_mask, 1 << 12, 200, seed=1)
+        sage: abs(abs(correlation) - 0.5) < 0.05
+        True
+    """
+    # Sage doctests pass Sage Integers; numpy's generator and shapes need Python ints.
+    number_of_samples, state_size, num_workers = int(number_of_samples), int(state_size), int(num_workers)
+    seed = None if seed is None else int(seed)
+    if state_size % 8 != 0:
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
+    if len(cipher.inputs) != 1:
+        raise ValueError("linear_checker_permutation needs a cipher with a single input; use "
+                         "linear_checker_for_block_cipher_single_key for keyed ciphers.")
+    if cipher.inputs_bit_size[0] != state_size:
+        raise ValueError("state_size must be equal to the cipher input size.")
+    input_mask = _mask_as_binary_string(input_mask, state_size, "Input")
+    output_mask = _mask_as_binary_string(output_mask, state_size, "Output")
+
+    state_num_bytes = int(state_size / 8)
+
+    if num_workers > 1:
+        count, total = _parallel_dispatch(
+            _w_linear_perm,
+            (cipher, input_mask, output_mask, state_num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        return 2 * count / total - 1.0
+
+    rng = np.random.default_rng(seed)
+    state = rng.integers(low=0, high=256, size=(state_num_bytes, number_of_samples), dtype=np.uint8)
+    count = _linear_parity_count(cipher, [state], input_mask, output_mask)
+    return 2 * count / number_of_samples - 1.0
+
+
+def _mask_as_binary_string(mask, size, label):
+    if isinstance(mask, str):
+        if len(mask) != size:
+            raise ValueError(f"{label} mask length must be equal to state_size.")
+        if set(mask) - {"0", "1"}:
+            raise ValueError(f"{label} mask must be a bitstring of 0s and 1s.")
+        return mask
+    mask = int(mask)
+    if mask < 0 or mask >= (1 << size):
+        raise ValueError(f"{label} mask must fit in state_size bits.")
+    return _number_to_n_bit_binary_string(mask, size)
+
+
+def _w_linear_perm(args):
+    cipher, input_mask, output_mask, state_num_bytes, chunk_size, seed = args
+    rng = np.random.default_rng(seed)
+    state = rng.integers(0, 256, size=(state_num_bytes, chunk_size), dtype=np.uint8)
+    return _linear_parity_count(cipher, [state], input_mask, output_mask)
+
+
+def _w_boomerang_sk(args):
+    (cipher, inverse, input_difference, output_difference, state_num_bytes, key_num_bytes,
+     fixed_key, chunk_size, seed) = args
+    rng = np.random.default_rng(seed)
+    fk = _repeat_input_difference(fixed_key, chunk_size, key_num_bytes)
+    delta_col = _repeat_input_difference(input_difference, chunk_size, state_num_bytes)      # (sb, n)
+    nabla_row = _repeat_input_difference(output_difference, chunk_size, state_num_bytes).T   # (n, sb)
+    plaintext_0 = rng.integers(0, 256, size=(state_num_bytes, chunk_size), dtype=np.uint8)
+    plaintext_1 = plaintext_0 ^ delta_col
+    ciphertext_0 = cipher.evaluate_vectorized([plaintext_0, fk])[0]                          # (n, sb)
+    ciphertext_1 = cipher.evaluate_vectorized([plaintext_1, fk])[0]
+    plaintext_2 = inverse.evaluate_vectorized([(ciphertext_0 ^ nabla_row).T, fk])[0]         # (n, sb)
+    plaintext_3 = inverse.evaluate_vectorized([(ciphertext_1 ^ nabla_row).T, fk])[0]
+    returned = plaintext_2 ^ plaintext_3
+    matches = np.all(returned == delta_col.T, axis=1)
+    return int(np.count_nonzero(matches))
+
+
+def boomerang_checker_for_block_cipher_single_key(
+    cipher, input_difference, output_difference, number_of_samples, block_size, key_size, fixed_key, seed=None,
+    num_workers=1
+):
+    """
+    Verify experimentally boomerang (BCT) distinguishers for block ciphers using the vectorized evaluator.
+
+    The sandwich/boomerang is checked directly: with a random plaintext ``P0`` and a fixed key,
+    ``P1 = P0 ^ input_difference``; the pair is encrypted, the ``output_difference`` is applied to both
+    ciphertexts, they are decrypted with the cipher's inverse, and the run is a success when the two
+    returned plaintexts differ exactly by ``input_difference``. The forward direction uses
+    ``cipher.evaluate_vectorized`` and the backward direction uses ``cipher.cipher_inverse()``.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; invertible cipher providing ``evaluate_vectorized`` and ``cipher_inverse``
+    - ``input_difference`` -- **integer**; input XOR difference (delta)
+    - ``output_difference`` -- **integer**; output XOR difference (nabla)
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``block_size`` -- **integer**; block size in bits (must be multiple of 8)
+    - ``key_size`` -- **integer**; key size in bits (must be multiple of 8)
+    - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical boomerang probability in the interval ``[0, 1]``
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.cipher_modules.models.utils import boomerang_checker_for_block_cipher_single_key
+        sage: speck = SpeckBlockCipher(number_of_rounds=5)
+        sage: input_difference = 0
+        sage: output_difference = 0
+        sage: boomerang_checker_for_block_cipher_single_key(
+        ....:     speck,
+        ....:     input_difference=input_difference,
+        ....:     output_difference=output_difference,
+        ....:     number_of_samples=1024,
+        ....:     block_size=32,
+        ....:     key_size=64,
+        ....:     fixed_key=0,
+        ....: )
+        1.0
+    """
+    if block_size % 8 != 0:
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
+    if key_size % 8 != 0:
+        raise ValueError(KEY_SIZE_MULTIPLE_OF_8_ERROR)
+    state_num_bytes = int(block_size / 8)
+    key_num_bytes = int(key_size / 8)
+    # cast to Python int so `.to_bytes` / float division work when called with Sage Integers
+    input_difference = int(input_difference)
+    output_difference = int(output_difference)
+    fixed_key = int(fixed_key)
+    number_of_samples = int(number_of_samples)
+    if seed is not None:
+        seed = int(seed)
+    inverse = cipher.cipher_inverse()
+    fixed_args = (
+        cipher, inverse, input_difference, output_difference, state_num_bytes, key_num_bytes, fixed_key,
+    )
+    if num_workers > 1:
+        count, total = _parallel_dispatch(_w_boomerang_sk, fixed_args, number_of_samples, num_workers, seed)
+        return count / total
+    count = _w_boomerang_sk(fixed_args + (number_of_samples, seed))
+    return count / number_of_samples
+
+
+def differential_checker_permutation(
+    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None, num_workers=1
+):
+    """
+    Verify experimentally differential distinguishers for permutations using the vectorized evaluator.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_difference`` -- **integer**; input XOR difference
+    - ``output_difference`` -- **integer**; expected output XOR difference
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``
     """
     if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     num_bytes = int(state_size / 8)
+
+    if num_workers > 1:
+        total, n = _parallel_dispatch(
+            _w_diff_perm,
+            (cipher, input_difference, output_difference, num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        return math.log(total / n, 2)
 
     rng = np.random.default_rng(seed)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
@@ -900,17 +1333,43 @@ def differential_checker_permutation(
 
 
 def differential_truncated_checker_permutation(
-    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None, num_workers=1
 ):
     """
-    Verifies experimentally differential-truncated distinguishers for permutations in the single-key scenario
+    Verify experimentally differential-truncated distinguishers for permutations.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_difference`` -- **integer**; input XOR difference
+    - ``output_difference`` -- **string**; truncated output pattern over ``{'0','1','?','2'}``
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical probability weight, or ``-inf`` if no match is found
     """
     if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     num_bytes = int(state_size / 8)
+
+    if num_workers > 1:
+        total, n = _parallel_dispatch(
+            _w_diff_trunc_perm,
+            (cipher, input_difference, output_difference, num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        if total == 0:
+            print(f"\nWARNING: No matches found out of {n} samples!")
+            return float("-inf")
+        return math.log(total / n, 2)
+
     rng = np.random.default_rng(seed)
 
-    input_diff_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
+    input_diff_data = _repeat_input_difference_msb(input_difference, number_of_samples, num_bytes)
     plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
     plaintext_data2 = plaintext_data1 ^ input_diff_data
 
@@ -918,33 +1377,61 @@ def differential_truncated_checker_permutation(
     ciphertext2 = cipher.evaluate_vectorized([plaintext_data2])
     diff_ciphertext = ciphertext1[0] ^ ciphertext2[0]
 
-    bit_positions = extract_bit_positions(output_difference)
-    known_bits = extract_bits(diff_ciphertext.T, bit_positions)
+    bit_positions = _extract_bit_positions_msb(output_difference)
+    known_bits = _extract_bits_msb(diff_ciphertext.T, bit_positions)
     np.set_printoptions(linewidth=400)
 
-    inv_output_diff = output_difference[::-1]
-    filled_bits = [int(bit) for bit in inv_output_diff if bit in ("0", "1")]
-    total = 0
-    for i in range(len(known_bits[0])):
-        if np.all(known_bits[:, i] == filled_bits):
-            total += 1
+    filled_bits = np.array([int(output_difference[pos]) for pos in bit_positions], dtype=np.uint8)[:, np.newaxis]
+    total = int(np.all(known_bits == filled_bits, axis=0).sum())
+
+    if total == 0:
+        print(f"\nWARNING: No matches found out of {number_of_samples} samples!")
+        return float("-inf")
 
     prob_weight = math.log(total / number_of_samples, 2)
     return prob_weight
 
 
 def differential_truncated_checker_single_key(
-    cipher, input_difference, output_difference, number_of_samples, state_size, fixed_key, key_size, seed=None
+    cipher, input_difference, output_difference, number_of_samples, state_size, fixed_key, key_size, seed=None,
+    num_workers=1
 ):
     """
-    Verifies experimentally differential-truncated distinguishers for block_ciphers in the single-key scenario
+    Verify experimentally differential-truncated distinguishers for block ciphers in the single-key scenario.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; cipher instance providing ``evaluate_vectorized``
+    - ``input_difference`` -- **integer**; input XOR difference
+    - ``output_difference`` -- **string**; truncated output pattern over ``{'0','1','?','2'}``
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``state_size`` -- **integer**; block size in bits (must be multiple of 8)
+    - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
+    - ``key_size`` -- **integer**; key size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``
     """
     if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     num_bytes = int(state_size / 8)
+    key_num_bytes = int(key_size / 8)
+
+    if num_workers > 1:
+        total, n = _parallel_dispatch(
+            _w_diff_trunc_sk,
+            (cipher, input_difference, output_difference, num_bytes, key_num_bytes, fixed_key),
+            number_of_samples, num_workers, seed,
+        )
+        if total == 0:
+            return float("-inf")
+        return math.log(total / n, 2)
+
     rng = np.random.default_rng(seed)
 
-    key_num_bytes = int(key_size / 8)
     fixed_key_data = _repeat_input_difference(fixed_key, number_of_samples, key_num_bytes)
     input_diff_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
     plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
@@ -953,30 +1440,49 @@ def differential_truncated_checker_single_key(
     ciphertext1 = cipher.evaluate_vectorized([plaintext_data1, fixed_key_data])
     ciphertext2 = cipher.evaluate_vectorized([plaintext_data2, fixed_key_data])
     diff_ciphertext = ciphertext1[0] ^ ciphertext2[0]
-    bit_positions = extract_bit_positions(output_difference)
-    known_bits = extract_bits(diff_ciphertext.T, bit_positions)
+    bit_positions = _extract_bit_positions_msb(output_difference)
+    known_bits = _extract_bits_msb(diff_ciphertext.T, bit_positions)
 
-    inv_output_diff = output_difference[::-1]
-    filled_bits = [int(bit) for bit in inv_output_diff if bit in ("0", "1")]
+    filled_bits = np.array([int(bit) for bit in output_difference if bit in ("0", "1")], dtype=np.uint8)[:, np.newaxis]
+    total = int(np.all(known_bits == filled_bits, axis=0).sum())
 
-    total = 0
-    for i in range(len(known_bits[0])):
-        if np.all(known_bits[:, i] == filled_bits):
-            total += 1
-
+    if total == 0:
+        return float("-inf")
     prob_weight = math.log(total / number_of_samples, 2)
     return prob_weight
 
 
 def shared_difference_paired_input_differential_checker_permutation(
-    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None
+    cipher, input_difference, output_difference, number_of_samples, state_size, seed=None, num_workers=1
 ):
     """
-    Verifies experimentally SharedDifferencePairedInputDifferential distinguishers for permutations using the vectorized evaluator
+    Verify experimentally shared-difference paired-input differential distinguishers for permutations.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_difference`` -- **integer**; paired input XOR difference
+    - ``output_difference`` -- **integer**; expected paired output XOR difference
+    - ``number_of_samples`` -- **integer**; number of sampled paired inputs
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``
     """
     if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     num_bytes = int(state_size / 8)
+
+    if num_workers > 1:
+        total, n = _parallel_dispatch(
+            _w_sdpi_diff_perm,
+            (cipher, input_difference, output_difference, num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        return math.log(total / n, 2)
 
     rng = np.random.default_rng(seed)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
@@ -1003,14 +1509,36 @@ def shared_difference_paired_input_differential_checker_permutation(
 
 
 def shared_difference_paired_input_differential_linear_checker_permutation(
-    cipher, input_difference, output_mask, number_of_samples, state_size, seed=None
+    cipher, input_difference, output_mask, number_of_samples, state_size, seed=None, num_workers=1
 ):
     """
-    This method helps to verify experimentally SharedDifferencePairedInputDifferentialLinear distinguishers for permutations using the vectorized evaluator
+    Verify experimentally shared-difference paired-input differential-linear distinguishers for permutations.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_difference`` -- **integer**; paired input XOR difference
+    - ``output_mask`` -- **string**; output linear mask as a bitstring of length ``state_size``
+    - ``number_of_samples`` -- **integer**; number of sampled paired inputs
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
     """
     if state_size % 8 != 0:
-        raise ValueError("State size must be a multiple of 8.")
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
     num_bytes = int(state_size / 8)
+
+    if num_workers > 1:
+        count, n = _parallel_dispatch(
+            _w_sdpi_diff_linear_perm,
+            (cipher, input_difference, output_mask, num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        return 2 * count / n - 1.0
 
     rng = np.random.default_rng(seed)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
@@ -1029,8 +1557,178 @@ def shared_difference_paired_input_differential_linear_checker_permutation(
     ciphertext22 = cipher.evaluate_vectorized([bottom_ciphertext_final2, plaintext22])
 
     ciphertext3 = ciphertext1[0] ^ ciphertext2[0] ^ ciphertext11[0] ^ ciphertext22[0]
-    bit_positions_ciphertext = _extract_bit_positions(output_mask, state_size)
-    ccc = _extract_bits(ciphertext3.T, bit_positions_ciphertext)
+    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ("1",))
+    ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
+    parities = np.bitwise_xor.reduce(ccc, axis=0)
+    count = np.count_nonzero(parities == 0)
+    corr = 2 * count / number_of_samples * 1.0 - 1
+    return corr
+
+
+def _sample_truncated_difference_from_string(pattern, num_samples, state_size, rng):
+    """
+    Build a (state_size // 8, num_samples) uint8 matrix with per-sample input differences
+    that satisfy the truncated pattern.
+
+    Pattern is a string of length = state_size over {'0','1','2','?'}:
+      - '0' or '1': fixed bit value
+      - '2' or '?': unconstrained (random)
+
+    Bit index 0 corresponds to the MSB of the state (MSB-first ordering).
+
+    Bits are packed into bytes using big-endian order, i.e., index 0 becomes
+    the MSB of byte 0.
+
+    Returns:
+        A (state_size // 8, num_samples) array of dtype uint8.
+    """
+    if len(pattern) != state_size:
+        raise ValueError(f"pattern length ({len(pattern)}) must equal state_size ({state_size}).")
+    if any(c not in ('0','1','2','?') for c in pattern):
+        raise ValueError("pattern may only contain '0', '1', '2', or '?'.")
+
+    if state_size % 8 != 0:
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
+
+    # Fixed positions & values (MSB-first indexing)
+    indices = np.arange(state_size)
+    fixed_mask = np.array([ch in ('0', '1') for ch in pattern], dtype=bool)
+    fixed_pos = indices[fixed_mask]
+    fixed_vals = np.array([int(ch) for ch in pattern if ch in ('0', '1')], dtype=np.uint8)
+
+    # Generate random bits for all positions, then overwrite fixed ones
+    bits = rng.integers(0, 2, size=(num_samples, state_size), dtype=np.uint8)
+    if fixed_pos.size:
+        bits[:, fixed_pos] = fixed_vals  # broadcast per column
+
+    # Pack bit rows into bytes (big-endian: position 0 = MSB of byte 0)
+    input_diff_samples = np.packbits(bits, axis=1, bitorder='big')
+
+    return input_diff_samples.T
+
+
+def differential_truncated_checker_permutation_input_and_output_truncated(
+    cipher,
+    input_trunc_diff,
+    output_trunc_diff,
+    number_of_samples,
+    state_size,
+    seed=None,
+    num_workers=1,
+):
+    """
+    Verify experimentally differential-truncated distinguishers for permutations with truncated input and output.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_trunc_diff`` -- **string**; input truncated pattern over ``{'0','1','2','?'}``
+    - ``output_trunc_diff`` -- **string**; output truncated pattern over ``{'0','1','2','?'}``
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical probability weight, or ``-inf`` if no match is found
+    """
+    if state_size % 8 != 0:
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
+    if len(input_trunc_diff) != state_size or len(output_trunc_diff) != state_size:
+        raise ValueError("Both truncated differences must have length == state_size.")
+
+    num_bytes = state_size // 8
+
+    if num_workers > 1:
+        total, n = _parallel_dispatch(
+            _w_diff_trunc_perm_io,
+            (cipher, input_trunc_diff, output_trunc_diff, state_size, num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        if total == 0:
+            return float("-inf")
+        return math.log(total / n, 2)
+
+    rng = np.random.default_rng(seed)
+
+    plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    input_mask = _sample_truncated_difference_from_string(input_trunc_diff, number_of_samples, state_size, rng)
+    plaintext_data2 = plaintext_data1 ^ input_mask
+
+    ciphertext1 = cipher.evaluate_vectorized([plaintext_data1])[0]
+    ciphertext2 = cipher.evaluate_vectorized([plaintext_data2])[0]
+
+    diff_ciphertext = ciphertext1 ^ ciphertext2
+
+    bit_positions = _extract_bit_positions_msb(output_trunc_diff)
+    if len(bit_positions) == 0:
+        total = number_of_samples
+    else:
+        known_bits = _extract_bits_msb(diff_ciphertext.T, bit_positions)
+        filled_bits = np.array([int(output_trunc_diff[pos]) for pos in bit_positions], dtype=np.uint8)[:, None]
+        matches = np.all(known_bits == filled_bits, axis=0)
+        total = int(matches.sum())
+
+    if total == 0:
+        return float("-inf")
+    prob_weight = math.log(total / number_of_samples, 2)
+    return prob_weight
+
+
+def truncated_differential_linear_checker_permutation(
+    cipher,
+    input_trunc_diff,
+    output_mask,
+    number_of_samples,
+    state_size,
+    seed=None,
+    num_workers=1,
+):
+    """
+    Verify experimentally truncated-differential-linear distinguishers for permutations.
+
+    INPUT:
+
+    - ``cipher`` -- **Cipher object**; permutation instance providing ``evaluate_vectorized``
+    - ``input_trunc_diff`` -- **string**; input truncated pattern over ``{'0','1','2','?'}``
+    - ``output_mask`` -- **string**; output linear mask as a bitstring of length ``state_size``
+    - ``number_of_samples`` -- **integer**; number of random plaintext pairs
+    - ``state_size`` -- **integer**; permutation state size in bits (must be multiple of 8)
+    - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
+    - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+
+    OUTPUT:
+
+    - This method returns a **float**; the empirical correlation in the interval ``[-1, 1]``
+    """
+    if state_size % 8 != 0:
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
+    if len(input_trunc_diff) != state_size or len(output_mask) != state_size:
+        raise ValueError("Both truncated differences must have length == state_size.")
+
+    num_bytes = state_size // 8
+
+    if num_workers > 1:
+        count, n = _parallel_dispatch(
+            _w_trunc_diff_linear_perm,
+            (cipher, input_trunc_diff, output_mask, state_size, num_bytes),
+            number_of_samples, num_workers, seed,
+        )
+        return 2 * count / n - 1.0
+
+    rng = np.random.default_rng(seed)
+
+    plaintext_data1 = rng.integers(low=0, high=256, size=(num_bytes, number_of_samples), dtype=np.uint8)
+    input_mask = _sample_truncated_difference_from_string(input_trunc_diff, number_of_samples, state_size, rng)
+    plaintext_data2 = plaintext_data1 ^ input_mask
+
+    ciphertext1 = cipher.evaluate_vectorized([plaintext_data1])
+    ciphertext2 = cipher.evaluate_vectorized([plaintext_data2])
+
+    ciphertext3 = ciphertext1[0] ^ ciphertext2[0]
+    bit_positions_ciphertext = _extract_bit_positions_msb(output_mask, ("1",))
+    ccc = _extract_bits_msb(ciphertext3.T, bit_positions_ciphertext)
     parities = np.bitwise_xor.reduce(ccc, axis=0)
     count = np.count_nonzero(parities == 0)
     corr = 2 * count / number_of_samples * 1.0 - 1

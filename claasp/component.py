@@ -17,8 +17,8 @@
 
 
 from copy import deepcopy
-from bitstring import BitArray
 
+from bitstring import BitArray
 from sage.matrix.constructor import matrix
 from sage.modules.free_module import VectorSpace
 from sage.modules.free_module_element import vector
@@ -27,8 +27,8 @@ from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 from claasp.cipher_modules.models.sat.utils import constants
 from claasp.DTOs.power_of_2_word_based_dto import PowerOf2WordBasedDTO
 from claasp.name_mappings import (
+    CIPHER_INPUT,
     CIPHER_OUTPUT,
-    CONCATENATE,
     INTERMEDIATE_OUTPUT,
     LINEAR_LAYER,
     MIX_COLUMN,
@@ -76,6 +76,40 @@ def free_input(code):
 
 
 class Component:
+    """
+    Construct a generic component.
+
+    INPUT:
+
+    - ``component_id`` -- **string**; unique component identifier (for example,
+        ``'xor_0_0'``). Required and should not be ``None``.
+    - ``component_type`` -- **string**; component category (for example,
+        ``'word_operation'``). Required and should not be ``None``.
+    - ``component_input`` -- **Input**; instance of :class:`claasp.input.Input`.
+        Required and should not be ``None``.
+        ``component_input.id_links`` must be a list.
+        ``component_input.bit_positions`` must be a list of lists and should not be empty.
+        ``component_input.id_links`` and ``component_input.bit_positions`` must have the same length.
+    - ``output_bit_size`` -- **integer**; output width in bits. ``0`` is allowed
+        when the component semantics allows it.
+    - ``description`` -- **object**; component-specific metadata (typically a
+        list). Required and should not be ``None``.
+
+    EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('xor_0_0', 'word_operation', component_input, 4, ['XOR', 2])
+            sage: print(component.id)
+            xor_0_0
+            sage: print(component.type)
+            word_operation
+            sage: print(component.output_bit_size)
+            4
+            sage: print(component.description)
+            ['XOR', 2]
+    """
     def __init__(
         self,
         component_id,
@@ -85,27 +119,21 @@ class Component:
         description,
     ):
         if not isinstance(component_input.id_links, list):
-            print("type of [input_id_link] should be a list")
-            return
+            raise TypeError(f"{component_id} id_links must be a list.")
 
         if not isinstance(component_input.bit_positions, list):
-            print("type of [input_bit_positions] should be a list")
-            return
+            raise TypeError(f"{component_id} bit_positions must be a list.")
 
-        if not isinstance(component_input.bit_positions[0], list):
-            print("element of [input_bit_positions] should be a list")
-            return
+        for positions in component_input.bit_positions:
+            if not isinstance(positions, list):
+                raise TypeError(f"Each element of {component_id} bit_positions must be a list.")
 
         if len(component_input.id_links) != len(component_input.bit_positions):
-            print("[input_id_link] and [input_bit_positions] should have the same length")
-            return
+            raise ValueError(f"{component_id} id_links and bit_positions must have the same length.")
 
-        length = 0
-        for i in component_input.bit_positions:
-            length += len(i)
+        length = sum(len(positions) for positions in component_input.bit_positions)
         if component_input.bit_size != length:
-            print("the length of [input_bit_positions] is not equal to input_bit_size")
-            return
+            raise ValueError(f"The length of {component_id} bit_positions is not equal to input_bit_size")
 
         self._id = component_id
         self._type = component_type
@@ -114,13 +142,109 @@ class Component:
         self._description = description
         self._suffixes = ("_i", "_o")
 
+    def _raise_method_not_implemented_error(self, method_name):
+        raise NotImplementedError(
+            f"{self.__class__.__name__} (id='{self.id}', type='{self.type}') "
+            f"does not implement method '{method_name}'."
+        )
+
+    def algebraic_polynomials(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("algebraic_polynomials")
+
+    def cms_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("cms_constraints")
+
+    def cms_xor_differential_propagation_constraints(self, *args, **kwargs):
+        return self.cms_constraints(*args, **kwargs)
+
+    def cms_xor_linear_mask_propagation_constraints(self, *args, **kwargs):
+        return self.cms_constraints(*args, **kwargs)
+
+    def cp_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("cp_constraints")
+
+    def cp_continuous_differential_propagation_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("cp_continuous_differential_propagation_constraints")
+
+    def cp_deterministic_truncated_xor_differential_constraints(self):
+        self._raise_method_not_implemented_error("cp_deterministic_truncated_xor_differential_constraints")
+
+    def cp_deterministic_truncated_xor_differential_trail_constraints(self):
+        return self.cp_deterministic_truncated_xor_differential_constraints()
+
+    def cp_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.cp_deterministic_truncated_xor_differential_constraints()
+
+    def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("cp_wordwise_deterministic_truncated_xor_differential_constraints")
+
+    def cp_xor_differential_propagation_constraints(self, *args, **kwargs):
+        return self.cp_constraints(*args, **kwargs)
+
+    def cp_xor_linear_mask_propagation_constraints(self, *args, **kwargs):
+        return self.cp_constraints(*args, **kwargs)
+
+    def get_bit_based_vectorized_python_code(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("get_bit_based_vectorized_python_code")
+
+    def get_byte_based_vectorized_python_code(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("get_byte_based_vectorized_python_code")
+
+    def milp_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("milp_constraints")
+
+    def milp_bitwise_deterministic_truncated_xor_differential_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("milp_bitwise_deterministic_truncated_xor_differential_constraints")
+
+    def milp_wordwise_deterministic_truncated_xor_differential_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("milp_wordwise_deterministic_truncated_xor_differential_constraints")
+
+    def milp_xor_differential_propagation_constraints(self, *args, **kwargs):
+        return self.milp_constraints(*args, **kwargs)
+
+    def milp_xor_linear_mask_propagation_constraints(self, *args, **kwargs):
+        return self.milp_constraints(*args, **kwargs)
+
+    def minizinc_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("minizinc_constraints")
+
+    def minizinc_deterministic_truncated_xor_differential_trail_constraints(self, *args, **kwargs):
+        return self.minizinc_constraints(*args, **kwargs)
+
+    def minizinc_xor_differential_propagation_constraints(self, *args, **kwargs):
+        return self.minizinc_constraints(*args, **kwargs)
+
+    def sat_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("sat_constraints")
+
+    def sat_bitwise_deterministic_truncated_xor_differential_constraints(self):
+        self._raise_method_not_implemented_error("sat_bitwise_deterministic_truncated_xor_differential_constraints")
+
+    def sat_semi_deterministic_truncated_xor_differential_constraints(self):
+        return self.sat_bitwise_deterministic_truncated_xor_differential_constraints()
+
+    def sat_xor_differential_propagation_constraints(self, *args, **kwargs):
+        return self.sat_constraints(*args, **kwargs)
+
+    def sat_xor_linear_mask_propagation_constraints(self, *args, **kwargs):
+        return self.sat_constraints(*args, **kwargs)
+
+    def smt_constraints(self, *args, **kwargs):
+        self._raise_method_not_implemented_error("smt_constraints")
+
+    def smt_xor_differential_propagation_constraints(self, *args, **kwargs):
+        return self.smt_constraints(*args, **kwargs)
+
+    def smt_xor_linear_mask_propagation_constraints(self, *args, **kwargs):
+        return self.smt_constraints(*args, **kwargs)
+
     def _create_minizinc_1d_array_from_list(self, mzn_list):
         mzn_list_size = len(mzn_list)
         lst_temp = f"[{','.join(mzn_list)}]"
 
         return f"array1d(0..{mzn_list_size}-1, {lst_temp})"
 
-    def _define_var(self, input_postfix, output_postfix, data_type):
+    def minizinc_define_var(self, input_postfix, output_postfix, data_type):
         """
         Define Minizinc variables from component.
 
@@ -129,6 +253,15 @@ class Component:
         - ``input_postfix`` -- **strings**
         - ``output_postfix`` -- **strings**
         - ``data_type`` -- **strings**
+
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component.minizinc_define_var("in", "out", "data_type")
+            ['var data_type: my_component_id_in0;', 'var data_type: my_component_id_in1;', 'var data_type: my_component_id_in2;', 'var data_type: my_component_id_in3;', 'var data_type: my_component_id_out0;', 'var data_type: my_component_id_out1;', 'var data_type: my_component_id_out2;', 'var data_type: my_component_id_out3;']
         """
         var_definition_names = []
         component_id = self.id
@@ -144,40 +277,96 @@ class Component:
         return var_definition_names
 
     def _generate_component_input_ids(self):
-        input_id_link = self.id
-        in_suffix = constants.INPUT_BIT_ID_SUFFIX
-        input_bit_size = self.input_bit_size
-        input_bit_ids = [f"{input_id_link}_{i}{in_suffix}" for i in range(input_bit_size)]
+        """
+        Generate component-local input identifiers.
 
-        return input_bit_size, input_bit_ids
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component._generate_component_input_ids()
+            ['my_component_id_0_i', 'my_component_id_1_i', 'my_component_id_2_i', 'my_component_id_3_i']
+        """
+        suffix = constants.INPUT_BIT_ID_SUFFIX
+        input_bit_ids = [f"{self.id}_{i}{suffix}" for i in range(self.input_bit_size)]
+
+        return input_bit_ids
 
     def _generate_input_ids(self, suffix=""):
-        input_id_link = self.input_id_links
-        input_bit_positions = self.input_bit_positions
+        """
+        Generate linked input identifiers.
+
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component._generate_input_ids()
+            ['input_0', 'input_1', 'input_2', 'input_3']
+            sage: component._generate_input_ids(suffix="my_suffix")
+            ['input_0my_suffix', 'input_1my_suffix', 'input_2my_suffix', 'input_3my_suffix']
+        """
         input_bit_ids = []
-        for link, positions in zip(input_id_link, input_bit_positions):
-            input_bit_ids.extend([f"{link}_{j}{suffix}" for j in positions])
+        for input_id_link, input_link_positions in zip(self.input_id_links, self.input_bit_positions):
+            input_bit_ids.extend([f"{input_id_link}_{j}{suffix}" for j in input_link_positions])
 
         return input_bit_ids
 
     def _generate_input_double_ids(self):
+        """
+        Generate paired linked input identifiers.
+
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component._generate_input_double_ids()
+            (['input_0_0', 'input_1_0', 'input_2_0', 'input_3_0'], ['input_0_1', 'input_1_1', 'input_2_1', 'input_3_1'])
+        """
         in_ids_0 = self._generate_input_ids(suffix="_0")
         in_ids_1 = self._generate_input_ids(suffix="_1")
 
         return in_ids_0, in_ids_1
 
     def _generate_output_ids(self, suffix=""):
-        output_id_link = self.id
-        output_bit_size = self.output_bit_size
-        output_bit_ids = [f"{output_id_link}_{j}{suffix}" for j in range(output_bit_size)]
+        """
+        Generate output identifiers.
 
-        return output_bit_size, output_bit_ids
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component._generate_output_ids()
+            ['my_component_id_0', 'my_component_id_1', 'my_component_id_2', 'my_component_id_3']
+        """
+        output_bit_ids = [f"{self.id}_{j}{suffix}" for j in range(self.output_bit_size)]
+
+        return output_bit_ids
 
     def _generate_output_double_ids(self):
-        out_len, out_ids_0 = self._generate_output_ids(suffix="_0")
-        _, out_ids_1 = self._generate_output_ids(suffix="_1")
+        """
+        Generate paired output identifiers.
 
-        return out_len, out_ids_0, out_ids_1
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component._generate_output_double_ids()
+            (['my_component_id_0_0', 'my_component_id_1_0', 'my_component_id_2_0', 'my_component_id_3_0'], ['my_component_id_0_1', 'my_component_id_1_1', 'my_component_id_2_1', 'my_component_id_3_1'])
+        """
+        out_ids_0 = self._generate_output_ids(suffix="_0")
+        out_ids_1 = self._generate_output_ids(suffix="_1")
+
+        return out_ids_0, out_ids_1
 
     def _get_independent_input_output_variables(self):
         """
@@ -191,22 +380,13 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: component = fancy.get_component_from_id("and_0_8")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
             sage: l = component._get_independent_input_output_variables()
-            sage: l[0]
-            ['and_0_8_0_i',
-             'and_0_8_1_i',
-             ...
-             'and_0_8_22_i',
-             'and_0_8_23_i']
-            sage: l[1]
-            ['and_0_8_0_o',
-             'and_0_8_1_o',
-             ...
-             'and_0_8_10_o',
-             'and_0_8_11_o']
+            sage: l
+            (['my_component_id_0_i', 'my_component_id_1_i', 'my_component_id_2_i', 'my_component_id_3_i'], ['my_component_id_0_o', 'my_component_id_1_o', 'my_component_id_2_o', 'my_component_id_3_o'])
         """
         input_vars = [f"{self.id}_{i}_i" for i in range(self.input_bit_size)]
         output_vars = [f"{self.id}_{i}_o" for i in range(self.output_bit_size)]
@@ -225,28 +405,15 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=2)
-            sage: component = fancy.get_component_from_id("and_0_8")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
             sage: l = component._get_input_output_variables()
             sage: l[0]
-            ['xor_0_7_0',
-            'xor_0_7_1',
-            'xor_0_7_2',
-            ...
-            'key_21',
-            'key_22',
-            'key_23']
+            ['input_0', 'input_1', 'input_2', 'input_3']
             sage: l[1]
-            ['and_0_8_0',
-            'and_0_8_1',
-            'and_0_8_2',
-            'and_0_8_3',
-            ...
-            'and_0_8_8',
-            'and_0_8_9',
-            'and_0_8_10',
-            'and_0_8_11']
+            ['my_component_id_0', 'my_component_id_1', 'my_component_id_2', 'my_component_id_3']
         """
 
         output_vars = [f"{self.id}_{i}" for i in range(self.output_bit_size)]
@@ -273,25 +440,15 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-            sage: fancy = FancyBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_truncated_xor_differential_model import MilpBitwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpBitwiseDeterministicTruncatedXorDifferentialModel(fancy)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: component = fancy.component_from(0, 6)
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
             sage: input_class_id, output_class_id = component._get_input_output_variables_tuples()
             sage: input_class_id
-            [('sbox_0_0_0_class_bit_0', 'sbox_0_0_0_class_bit_1'),
-             ('sbox_0_0_1_class_bit_0', 'sbox_0_0_1_class_bit_1'),
-             ...
-             ('sbox_0_5_2_class_bit_0', 'sbox_0_5_2_class_bit_1'),
-             ('sbox_0_5_3_class_bit_0', 'sbox_0_5_3_class_bit_1')]
+            [('input_0_class_bit_0', 'input_0_class_bit_1'), ('input_1_class_bit_0', 'input_1_class_bit_1'), ('input_2_class_bit_0', 'input_2_class_bit_1'), ('input_3_class_bit_0', 'input_3_class_bit_1')]
             sage: output_class_id
-            [('linear_layer_0_6_0_class_bit_0', 'linear_layer_0_6_0_class_bit_1'),
-             ('linear_layer_0_6_1_class_bit_0', 'linear_layer_0_6_1_class_bit_1'),
-            ...
-             ('linear_layer_0_6_22_class_bit_0', 'linear_layer_0_6_22_class_bit_1'),
-             ('linear_layer_0_6_23_class_bit_0', 'linear_layer_0_6_23_class_bit_1')]
+            [('my_component_id_0_class_bit_0', 'my_component_id_0_class_bit_1'), ('my_component_id_1_class_bit_0', 'my_component_id_1_class_bit_1'), ('my_component_id_2_class_bit_0', 'my_component_id_2_class_bit_1'), ('my_component_id_3_class_bit_0', 'my_component_id_3_class_bit_1')]
 
 
 
@@ -331,23 +488,17 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: cipher = AESBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: component = cipher.get_component_from_id("rot_0_18")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: from types import SimpleNamespace
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: milp = SimpleNamespace(word_size=8)
             sage: input_class_id, output_class_id = component._get_wordwise_input_output_linked_class(milp)
             sage: input_class_id
-            ['sbox_0_2_word_0_class',
-             'sbox_0_6_word_0_class',
-             'sbox_0_10_word_0_class',
-             'sbox_0_14_word_0_class']
+            ['input_word_0_class']
             sage: output_class_id
-            ['rot_0_18_word_0_class',
-             'rot_0_18_word_1_class',
-             'rot_0_18_word_2_class',
-             'rot_0_18_word_3_class']
+            []
         """
 
         output_class_ids = [f"{self.id}_word_{i}_class" for i in range(self.output_bit_size // model.word_size)]
@@ -370,23 +521,17 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: cipher = AESBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: component = cipher.get_component_from_id("rot_0_18")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: from types import SimpleNamespace
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: milp = SimpleNamespace(word_size=8)
             sage: input_id_tuples, output_id_tuples = component._get_wordwise_input_output_linked_class_tuples(milp)
             sage: input_id_tuples
-            [('sbox_0_2_word_0_class_bit_0', 'sbox_0_2_word_0_class_bit_1'),
-             ('sbox_0_6_word_0_class_bit_0', 'sbox_0_6_word_0_class_bit_1'),
-             ('sbox_0_10_word_0_class_bit_0', 'sbox_0_10_word_0_class_bit_1'),
-             ('sbox_0_14_word_0_class_bit_0', 'sbox_0_14_word_0_class_bit_1')]
+            [('input_word_0_class_bit_0', 'input_word_0_class_bit_1')]
             sage: output_id_tuples
-            [('rot_0_18_word_0_class_bit_0', 'rot_0_18_word_0_class_bit_1'),
-             ('rot_0_18_word_1_class_bit_0', 'rot_0_18_word_1_class_bit_1'),
-             ('rot_0_18_word_2_class_bit_0', 'rot_0_18_word_2_class_bit_1'),
-             ('rot_0_18_word_3_class_bit_0', 'rot_0_18_word_3_class_bit_1')]
+            []
 
         """
         tuple_size = 2
@@ -410,25 +555,17 @@ class Component:
 
         EXAMPLES::
 
-            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
-            sage: cipher = AESBlockCipher(number_of_rounds=3)
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_truncated_xor_differential_model import MilpWordwiseDeterministicTruncatedXorDifferentialModel
-            sage: milp = MilpWordwiseDeterministicTruncatedXorDifferentialModel(cipher)
-            sage: milp.init_model_in_sage_milp_class()
-            sage: component = cipher.get_component_from_id("rot_0_18")
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: from types import SimpleNamespace
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: milp = SimpleNamespace(word_size=8)
             sage: input_id_tuples, output_id_tuples = component._get_wordwise_input_output_full_tuples(milp)
-            sage: input_id_tuples[0]
-            ('sbox_0_2_word_0_class_bit_0',
-             'sbox_0_2_word_0_class_bit_1',
-             ...
-             'sbox_0_2_6',
-             'sbox_0_2_7')
-            sage: output_id_tuples[0]
-            ('rot_0_18_word_0_class_bit_0',
-             'rot_0_18_word_0_class_bit_1',
-             ...
-             'rot_0_18_6',
-             'rot_0_18_7')
+            sage: input_id_tuples
+            []
+            sage: output_id_tuples
+            []
 
 
         """
@@ -449,17 +586,21 @@ class Component:
         return input_full_tuple, output_full_tuple
 
     def as_python_dictionary(self):
-        return {
-            "id": self._id,
-            "type": self._type,
-            "input_bit_size": self.input_bit_size,
-            "input_id_link": self.input_id_links,
-            "input_bit_positions": self.input_bit_positions,
-            "output_bit_size": self._output_bit_size,
-            "description": self._description,
-        }
+        """
+        Return the component as a Python dictionary.
 
-    def get_graph_representation(self):
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: d = component.as_python_dictionary()
+            sage: d['id'], d['type'], d['input_bit_size'], d['output_bit_size']
+            ('my_component_id', 'my_component_type', 4, 4)
+            sage: d['input_id_link'], d['input_bit_positions'], d['description']
+            (['input'], [[0, 1, 2, 3]], [])
+        """
         return {
             "id": self._id,
             "type": self._type,
@@ -471,6 +612,20 @@ class Component:
         }
 
     def is_id_equal_to(self, component_id):
+        """
+        Check whether the component id equals ``component_id``.
+
+        EXAMPLES::
+
+            sage: from claasp.component import Component
+            sage: from claasp.input import Input
+            sage: component_input = Input(4, ['input'], [[0, 1, 2, 3]])
+            sage: component = Component('my_component_id', 'my_component_type', component_input, 4, [])
+            sage: component.is_id_equal_to('my_id')
+            False
+            sage: component.is_id_equal_to('my_component_id')
+            True
+        """
         return self._id == component_id
 
     def is_power_of_2_word_based(self, dto):
@@ -495,8 +650,7 @@ class Component:
         return PowerOf2WordBasedDTO(word_size, fixed)
 
     def check_output_size(self, available_word_sizes, fixed, word_size):
-        if self._type in (CONCATENATE, INTERMEDIATE_OUTPUT, CIPHER_OUTPUT):
-            word_size = self.output_size_for_concatenate(available_word_sizes, fixed, word_size)
+        if self._type in (INTERMEDIATE_OUTPUT, CIPHER_OUTPUT):
             if word_size is None:
                 return None, fixed
         else:
@@ -508,24 +662,6 @@ class Component:
 
         return fixed, word_size
 
-    def output_size_for_concatenate(self, available_word_sizes, fixed, word_size):
-        if word_size is None:
-            word_sizes = [size for size in available_word_sizes if self._output_bit_size % size != 0]
-            if word_sizes:
-                word_size = word_sizes[0]
-        else:
-            word_sizes = [
-                size
-                for size in available_word_sizes[available_word_sizes.index(word_size) :]
-                if self._output_bit_size % size != 0
-            ]
-            if (fixed and self._output_bit_size % word_size != 0) or (not fixed and not word_sizes):
-                word_size = None
-            elif not fixed:
-                word_size = word_sizes[0]
-
-        return word_size
-
     def is_forbidden(self, forbidden_types, forbidden_descriptions):
         if self._type in forbidden_types:
             return True
@@ -534,32 +670,40 @@ class Component:
 
         return False
 
+    def milp_wordwise_branch_number_number_of_active_sboxes_constraints(self, model):
+        raise NotImplementedError(f"{self.id}: component type '{self.type}' is not supported by this model")
+
+    def _milp_wordwise_branch_number_active_sboxes_output_ids(self, model):
+        return model._own_word_ids(self.id, self.output_bit_size)
+
+    def _milp_wordwise_branch_number_active_sboxes_pass_through_constraints(self, model, output_ids, label):
+        w = model._word_variable
+        input_ids = model._resolved_input_word_ids(self)
+        if len(input_ids) != len(output_ids):
+            raise NotImplementedError(f"{self.id}: {label} component word count mismatch")
+        return [w[output_id] == w[input_id] for output_id, input_id in zip(output_ids, input_ids)]
+
+    def _milp_wordwise_branch_number_active_sboxes_exact_permutation_constraints(self, model, output_ids, bit_perm):
+        w = model._word_variable
+        flat_input_ids = model._flat_input_word_ids(self)
+        constraints = []
+        for j, output_id in enumerate(output_ids):
+            source_words = {
+                flat_input_ids[bit_perm[j * model.word_size + offset]] for offset in range(model.word_size)
+            }
+            if len(source_words) != 1:
+                raise NotImplementedError(f"{self.id}: output word {j} is not sourced from a single input word")
+            constraints.append(w[output_id] == w[source_words.pop()])
+        return constraints
+
     def print(self):
-        print(f"    id =", self._id)
-        print(f"    type =", self._type)
-        print(f"    input_bit_size =", self.input_bit_size)
-        print(f"    input_id_link =", self.input_id_links)
-        print(f"    input_bit_positions =", self.input_bit_positions)
-        print(f"    output_bit_size =", self._output_bit_size)
-        print(f"    description =", self._description)
-
-    def print_as_python_dictionary(self):
-        print(f"    'id': '{self._id}',")
-        print(f"    'type': '{self._type}',")
-        print(f"    'input_bit_size': {self.input_bit_size},")
-        print(f"    'input_id_link': {self.input_id_links},")
-        print(f"    'input_bit_positions': {self.input_bit_positions},")
-        print(f"    'output_bit_size': {self._output_bit_size},")
-        print(f"    'description': {self._description},")
-
-    def set_description(self, description):
-        self._description = description
-
-    def set_input_id_links(self, input_id_links):
-        self._input.set_input_id_links(input_id_links)
-
-    def set_input_bit_positions(self, bit_positions):
-        self._input.set_input_bit_positions(bit_positions)
+        print(f"    id = {self._id}")
+        print(f"    type = {self._type}")
+        print(f"    input_bit_size = {self.input_bit_size}")
+        print(f"    input_id_link = {self.input_id_links}")
+        print(f"    input_bit_positions = {self.input_bit_positions}")
+        print(f"    output_bit_size = {self._output_bit_size}")
+        print(f"    description = {self._description}")
 
     def print_values(self, code):
         code.append(f'\tprintf("{self.id}_input = ");')
@@ -574,8 +718,6 @@ class Component:
         code.append(f"\tprint_wordstring({self.id}, 16);\n")
 
     def select_bits(self, code):
-        n = len(self.input_id_links)
-
         code.append(
             (f"\tinput_id = (BitString*[]) {{{', '.join(self.input_id_links)}}};\n\tinput_positions = (uint16_t*[]) {{")
         )
@@ -584,7 +726,7 @@ class Component:
             code.append((f"\t\t(uint16_t[]) {{{len(position_list)}, {', '.join(map(str, position_list))}}},"))
 
         code.append("\t};")
-
+        n = len(self.input_id_links)
         code.append(f"\tinput = select_bits({n}, input_id, input_positions, {self.output_bit_size});")
 
     def select_words(self, code, word_size, input=True):
@@ -606,16 +748,30 @@ class Component:
                 f"\tmemcpy({self.id} -> list, (Word[]) {{{', '.join(word_list)}}}, {len(word_list)} * sizeof(Word));"
             )
 
-    def set_id(self, id_string):
-        self._id = id_string
-
     @property
     def description(self):
         return self._description
 
+    @description.setter
+    def description(self, description):
+        self._description = description
+
     @property
     def id(self):
         return self._id
+
+    @id.setter
+    def id(self, id_string):
+        self._id = id_string
+
+    @property
+    def round(self):
+        if self._type == CIPHER_INPUT:
+            return -1
+        try:
+            return int(self._id.split("_")[-2])
+        except (ValueError, IndexError):
+            return -1
 
     @property
     def input_bit_size(self):
@@ -625,9 +781,17 @@ class Component:
     def input_id_links(self):
         return self._input.id_links
 
+    @input_id_links.setter
+    def input_id_links(self, input_id_links):
+        self._input.id_links = input_id_links
+
     @property
     def input_bit_positions(self):
         return self._input.bit_positions
+
+    @input_bit_positions.setter
+    def input_bit_positions(self, bit_positions):
+        self._input.bit_positions = bit_positions
 
     @property
     def output_bit_size(self):

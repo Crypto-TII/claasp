@@ -3,11 +3,11 @@ from claasp.cipher_modules.models.sat.sat_models.sat_shared_difference_paired_in
 )
 from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT
 from claasp.cipher_modules.models.utils import (
+    integer_to_bit_list,
     set_fixed_variables,
     shared_difference_paired_input_differential_checker_permutation,
-    integer_to_bit_list,
 )
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation, ROUND_MODE_HALF
+from claasp.ciphers.permutations.chacha_permutation import ROUND_MODE_HALF, ChachaPermutation
 from claasp.name_mappings import INPUT_PLAINTEXT, SATISFIABLE
 
 

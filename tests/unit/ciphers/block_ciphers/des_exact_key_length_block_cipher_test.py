@@ -7,7 +7,7 @@ def test_des_exact_key_length_block_cipher():
     assert des_exact_key.family_name == 'des_exact_key_length_block_cipher'
     assert des_exact_key.number_of_rounds == 16
     assert des_exact_key.id == 'des_exact_key_length_block_cipher_k56_p64_o64_r16'
-    assert des_exact_key.component_from(0, 0).id == 'linear_layer_0_0'
+    assert des_exact_key.component_from(0, 0).id == 'permutation_0_0'
 
     des_exact_key = DESExactKeyLengthBlockCipher(number_of_rounds=4)
     assert des_exact_key.number_of_rounds == 4

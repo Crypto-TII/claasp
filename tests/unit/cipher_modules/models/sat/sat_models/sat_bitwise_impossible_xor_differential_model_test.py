@@ -7,7 +7,6 @@ from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT
 
-
 SIMON_INCOMPATIBLE_ROUND_OUTPUT = "????????00?????0???????0????????"
 
 
@@ -17,7 +16,7 @@ def test_build_bitwise_deterministic_truncated_xor_differential_trail_model():
     sat._forward_cipher = speck.get_partial_cipher(0, 1, keep_key_schedule=True)
     backward_cipher = sat._cipher.cipher_partial_inverse(1, 1, keep_key_schedule=False)
     sat._backward_cipher = backward_cipher.add_suffix_to_components(
-        "_backward", [backward_cipher.get_all_components_ids()[-1]]
+        "_backward", [backward_cipher.all_components_ids()[-1]]
     )
     sat.build_bitwise_impossible_xor_differential_trail_model()
     constraints = sat.model_constraints
