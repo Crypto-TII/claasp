@@ -1,0 +1,22 @@
+name: Current legacy parity drift
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare-current-legacy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: develop
+          path: legacy-source
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Detect legacy additions and changed behavior requiring review
+        run: python tools/legacy_parity_gate.py --legacy-root legacy-source

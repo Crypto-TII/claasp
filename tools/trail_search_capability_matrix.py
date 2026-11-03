@@ -88,7 +88,15 @@ def generate():
                 _require_exact_trail_capability(primitive, kind, backend="sat")
                 model_options = {"maximum_weight": None} if kind is TrailKind.XOR_LINEAR else {}
                 model_type(primitive, **model_options)
-                row[kind.value] = "supported_and_tested"
+                row[kind.value] = "model_constructed"
+                row[f"{kind.value}_evidence"] = {
+                    "graph_constructed": True,
+                    "exact_contract_checked": True,
+                    "model_constructed": True,
+                    "formula_materialized": False,
+                    "solver_executed": False,
+                    "witness_independently_checked": False,
+                }
                 row[f"{kind.value}_limitation"] = None
                 row[f"{kind.value}_reason"] = None
             except TrailSearchCapabilityError as error:
@@ -102,17 +110,18 @@ def generate():
                 row[f"{kind.value}_reason"] = f"model construction: {type(error).__name__}: {error}"
         rows.append(row)
     return {
-        "schema": 3,
+        "schema": 4,
         "meaning": {
-            "supported_and_tested": (
-                "the reduced/default graph passed the exact component/unit_type contract; "
-                "the encodings are covered by focused construction and solver tests"
+            "model_constructed": (
+                "this configuration passed the exact component/unit_type contract and model constructor only; "
+                "no per-row formula, solver execution, or witness check is claimed"
             ),
             "unsupported": (
                 "the graph cannot enter the exact optimizer for the recorded component, "
                 "weight-unit_type, output, or constructor reason"
             ),
         },
+        "scope": "The matrix is construction evidence, not an end-to-end solver capability guarantee. Dense-table budgets and solver resources require separate checks.",
         "rows": rows,
     }
 
