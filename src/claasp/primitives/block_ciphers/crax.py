@@ -1,0 +1,156 @@
+# ****************************************************************************
+# Copyright 2023 Technology Innovation Institute
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# ****************************************************************************
+
+
+from claasp.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
+from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
+
+WORD_SIZE = 32
+
+# Rotation amounts for each Alzette sub-round: (ry, rx).
+# Sub-round i performs: x += ROT(y, ry), y ^= ROT(x, rx), x ^= c.
+# Source: Algorithm 1 of [BBBGPUV2020]_.
+ALZETTE_ROTATIONS = [(31, 24), (17, 17), (0, 31), (24, 16)]
+
+# First five SPARKLE round constants, used as Alzette constants in CRAX-S.
+# Source: Equation (1) of [BBBGPUV2020]_.
+SPARKLE_CONSTANTS = [
+    0xB7E15162,
+    0xBF715880,
+    0x38B4DA56,
+    0x324E7738,
+    0xBB1185EB,
+]
+
+PARAMETERS_CONFIGURATION_LIST = [{"number_of_rounds": 10}]
+
+
+class CRAX(BitGraphPrimitive):
+    """CRAX primitive represented by a typed bit graph.
+
+    The construction preserves the legacy round and key-schedule conventions.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import CRAX
+        >>> hex(CRAX().evaluate(0, 0))
+        '0x72edfac9453f5f4c'
+    """
+
+    def __init__(self, number_of_rounds=10):
+        super().__init__(
+            family_name="crax",
+            primitive_type=BLOCK_CIPHER,
+            primitive_inputs=[INPUT_PLAINTEXT, INPUT_KEY],
+            primitive_inputs_bit_size=[64, 128],
+            primitive_output_bit_size=64,
+        )
+
+        # Initial state: x = bits 0..31, y = bits 32..63 of plaintext.
+        state_x = BitState([INPUT_PLAINTEXT], [list(range(WORD_SIZE))])
+        state_y = BitState([INPUT_PLAINTEXT], [list(range(WORD_SIZE, 2 * WORD_SIZE))])
+
+        for step in range(number_of_rounds):
+            self._builder.add_round()
+
+            # --- Round constant for this Alzette call ---
+            rcon_val = SPARKLE_CONSTANTS[step % 5]
+            self.add_constant_component(WORD_SIZE, rcon_val)
+            ci = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+
+            # --- Step counter XOR into x ---
+            # x ^= step  (step is a small integer 0..9, fits in 32 bits)
+            self.add_constant_component(WORD_SIZE, step)
+            step_const = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+            inputs_id, inputs_pos = get_inputs_parameter([state_x, step_const])
+            self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
+            state_x = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+
+            # --- Key XOR ---
+            # Even steps: x ^= K0, y ^= K1
+            # Odd  steps: x ^= K2, y ^= K3
+            key_word_x_start = 0 if step % 2 == 0 else 2 * WORD_SIZE
+            key_word_y_start = WORD_SIZE if step % 2 == 0 else 3 * WORD_SIZE
+
+            key_x = BitState(
+                [INPUT_KEY], [list(range(key_word_x_start, key_word_x_start + WORD_SIZE))]
+            )
+            key_y = BitState(
+                [INPUT_KEY], [list(range(key_word_y_start, key_word_y_start + WORD_SIZE))]
+            )
+
+            inputs_id, inputs_pos = get_inputs_parameter([state_x, key_x])
+            self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
+            state_x = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+
+            inputs_id, inputs_pos = get_inputs_parameter([state_y, key_y])
+            self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
+            state_y = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+
+            # --- Alzette call ---
+            state_x, state_y = self._alzette_call(state_x, state_y, ci)
+
+            # Emit round output (used for intermediate analysis).
+            inputs_id, inputs_pos = get_inputs_parameter([state_x, state_y])
+            self.add_round_output_component(inputs_id, inputs_pos, 64)
+
+        # --- Final key whitening: x ^= K0, y ^= K1 ---
+        key_x = BitState([INPUT_KEY], [list(range(WORD_SIZE))])
+        key_y = BitState([INPUT_KEY], [list(range(WORD_SIZE, 2 * WORD_SIZE))])
+
+        inputs_id, inputs_pos = get_inputs_parameter([state_x, key_x])
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
+        state_x = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+
+        inputs_id, inputs_pos = get_inputs_parameter([state_y, key_y])
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
+        state_y = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+
+        inputs_id, inputs_pos = get_inputs_parameter([state_x, state_y])
+        self.add_primitive_output_component(inputs_id, inputs_pos, 64)
+
+    def _alzette_call(self, state_x, state_y, ci):
+        """Apply one Alzette call: four sub-rounds of (x+=ROT(y,ry), y^=ROT(x,rx), x^=c)."""
+        for ry, rx in ALZETTE_ROTATIONS:
+            state_x, state_y = self._alzette_sub_round(state_x, state_y, ci, ry, rx)
+        return state_x, state_y
+
+    def _alzette_sub_round(self, state_x, state_y, ci, ry, rx):
+        """One Alzette sub-round: x += ROT(y, ry), y ^= ROT(x, rx), x ^= c."""
+        # x <- x + ROT(y, ry)
+        if ry == 0:
+            inputs_id, inputs_pos = get_inputs_parameter([state_x, state_y])
+        else:
+            self.add_rotate_component(state_y.id, state_y.input_bit_positions, WORD_SIZE, ry)
+            rot_y = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+            inputs_id, inputs_pos = get_inputs_parameter([state_x, rot_y])
+        self.add_modadd_component(inputs_id, inputs_pos, WORD_SIZE)
+        state_x = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+
+        # y <- y XOR ROT(x, rx)
+        self.add_rotate_component(state_x.id, state_x.input_bit_positions, WORD_SIZE, rx)
+        rot_x = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+        inputs_id, inputs_pos = get_inputs_parameter([state_y, rot_x])
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
+        state_y = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+
+        # x <- x XOR c
+        inputs_id, inputs_pos = get_inputs_parameter([state_x, ci])
+        self.add_xor_component(inputs_id, inputs_pos, WORD_SIZE)
+        state_x = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
+
+        return state_x, state_y
