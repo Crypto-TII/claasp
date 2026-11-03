@@ -3,11 +3,14 @@
 import shutil
 import subprocess
 from pathlib import Path
+from queue import Empty, Queue
 from tempfile import TemporaryDirectory
+from threading import Thread
 from time import monotonic
 
 from claasp.drivers.solvers.base import SatResult, SatStatus
 from claasp.drivers.solvers.milp_results import MILPResult, MILPStatus
+from claasp.drivers.solvers.progress import MILPProgressLog
 from claasp.representations.constraints.milp.exporter import LPExporter
 from claasp.representations.constraints.milp.model import MILPModel
 from claasp.representations.constraints.sat import CNFFormula
@@ -16,13 +19,20 @@ from claasp.representations.constraints.sat import CNFFormula
 class GLPKSolver:
     """Solve a portable model through a local ``glpsol`` executable."""
 
-    def __init__(self, executable: str = "glpsol", timeout_seconds: float | None = None) -> None:
+    def __init__(
+        self,
+        executable: str = "glpsol",
+        timeout_seconds: float | None = None,
+        *,
+        progress_log: MILPProgressLog | None = None,
+    ) -> None:
         if not isinstance(executable, str) or not executable:
             raise ValueError("executable must be a non-empty string")
         if timeout_seconds is not None and timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive")
         self.executable = executable
         self.timeout_seconds = timeout_seconds
+        self.progress_log = progress_log
 
     def solve(self, model: MILPModel | CNFFormula) -> MILPResult | SatResult:
         """Optimize ``model`` and independently validate any returned witness."""
@@ -31,6 +41,7 @@ class GLPKSolver:
             from claasp.representations.constraints.milp.boolean import cnf_to_milp
 
             solved = self.solve(cnf_to_milp(model))
+            assert isinstance(solved, MILPResult)
             if solved.status is MILPStatus.UNKNOWN:
                 raise RuntimeError("GLPK returned unknown; Boolean infeasibility is not proved")
             assignment = (
@@ -69,9 +80,16 @@ class GLPKSolver:
             if self.timeout_seconds is not None:
                 command.extend(("--tmlim", str(max(1, int(self.timeout_seconds)))))
             start = monotonic()
-            completed = subprocess.run(
-                command, text=True, capture_output=True, timeout=self.timeout_seconds, check=False
-            )
+            if self.progress_log is None:
+                completed = subprocess.run(
+                    command,
+                    text=True,
+                    capture_output=True,
+                    timeout=self.timeout_seconds,
+                    check=False,
+                )
+            else:
+                completed = self._run_with_progress(command)
             elapsed = monotonic() - start
             if completed.returncode != 0 or not result_path.exists():
                 raise RuntimeError(
@@ -89,8 +107,74 @@ class GLPKSolver:
             recomputed = model.objective_value(assignment)
             if objective is None or abs(recomputed - objective) > 1e-6:
                 raise RuntimeError("GLPK objective disagrees with the returned assignment")
-        return MILPResult(
+        result = MILPResult(
             status, assignment, objective, elapsed, completed.stdout, completed.stderr
+        )
+        if self.progress_log is not None:
+            if assignment is not None:
+                self.progress_log.record_solution(model, assignment, status=status.value)
+            self.progress_log.finish(result)
+        return result
+
+    def _run_with_progress(self, command):
+        # Drain both streams concurrently: a verbose stderr must not deadlock
+        # the stdout reader. The timeout also applies when neither emits lines.
+        assert self.progress_log is not None
+        events: Queue[tuple[str, str | None]] = Queue()
+        output: dict[str, list[str]] = {"stdout": [], "stderr": []}
+        with subprocess.Popen(
+            command, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1
+        ) as process:
+
+            def read(name, stream):
+                try:
+                    for line in stream:
+                        events.put((name, line))
+                finally:
+                    events.put((name, None))
+
+            threads = [
+                Thread(target=read, args=(name, stream), daemon=True)
+                for name, stream in (("stdout", process.stdout), ("stderr", process.stderr))
+            ]
+            for thread in threads:
+                thread.start()
+            started = monotonic()
+            closed = 0
+            try:
+                while closed < 2:
+                    remaining = (
+                        None
+                        if self.timeout_seconds is None
+                        else self.timeout_seconds - (monotonic() - started)
+                    )
+                    if remaining is not None and remaining <= 0:
+                        raise subprocess.TimeoutExpired(command, self.timeout_seconds or 0)
+                    try:
+                        name, line = events.get(
+                            timeout=min(0.1, remaining) if remaining is not None else 0.1
+                        )
+                    except Empty:
+                        continue
+                    if line is None:
+                        closed += 1
+                    else:
+                        output[name].append(line)
+                        self.progress_log.feed(line, "GLPK")
+                process.wait(
+                    timeout=None
+                    if self.timeout_seconds is None
+                    else max(0.001, self.timeout_seconds - (monotonic() - started))
+                )
+            except BaseException:
+                process.kill()
+                process.wait()
+                raise
+            finally:
+                for thread in threads:
+                    thread.join()
+        return subprocess.CompletedProcess(
+            command, process.returncode, "".join(output["stdout"]), "".join(output["stderr"])
         )
 
     @staticmethod

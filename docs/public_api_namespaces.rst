@@ -187,6 +187,12 @@ claasp.drivers.solvers.gurobi
 .. automodule:: claasp.drivers.solvers.gurobi
    :no-index:
 
+claasp.drivers.solvers.progress
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.drivers.solvers.progress
+   :no-index:
+
 claasp.drivers.source
 ~~~~~~~~~~~~~~~~~~~~~
 
