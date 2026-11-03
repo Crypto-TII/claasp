@@ -25,6 +25,12 @@ claasp.analysis.component_properties
 .. automodule:: claasp.analysis.component_properties
    :no-index:
 
+claasp.analysis.division_property
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.division_property
+   :no-index:
+
 claasp.analysis.linear_properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -43,6 +49,12 @@ claasp.analysis.nist_sts
 .. automodule:: claasp.analysis.nist_sts
    :no-index:
 
+claasp.analysis.quasidifferential
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.quasidifferential
+   :no-index:
+
 claasp.analysis.trail_search
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -53,6 +65,12 @@ claasp.analysis.truncated
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.analysis.truncated
+   :no-index:
+
+claasp.analysis.two_subset
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.two_subset
    :no-index:
 
 claasp.annotations
@@ -745,6 +763,12 @@ claasp.representations.constraints.sat.model
 .. automodule:: claasp.representations.constraints.sat.model
    :no-index:
 
+claasp.representations.constraints.sat.quasidifferential
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.quasidifferential
+   :no-index:
+
 claasp.representations.constraints.sat.trails
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -821,6 +845,12 @@ claasp.semantics.cryptanalysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.semantics.cryptanalysis
+   :no-index:
+
+claasp.semantics.cryptanalysis.quasidifferential
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.semantics.cryptanalysis.quasidifferential
    :no-index:
 
 claasp.serialization
