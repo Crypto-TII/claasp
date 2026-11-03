@@ -38,6 +38,7 @@ def test_native_evaluation_preserves_reference_vector(primitive, inputs, expecte
     source = compile_source(primitive, target="c").artifact
     compilation = compile_native(source, compiler="cc")
     assert compilation.status is NativeCompilationStatus.SUCCESS, compilation.stderr
+    assert compilation.artifact is not None
     result = run_compiled(compilation.artifact, primitive, inputs)
     assert result.status is NativeExecutionStatus.SUCCESS, result.stderr
     assert primitive._encode_boundary(result.output, primitive.graph.output.array_type) == expected
