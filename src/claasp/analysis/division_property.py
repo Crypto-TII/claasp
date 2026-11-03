@@ -48,7 +48,7 @@ INPUT_PATTERNS = ("todo", "optimal")
 
 def spn_division_property_trail(sbox_bit_size, sbox_degree, number_of_sboxes, active_bits_per_sbox):
     """
-    Return the number of active bits after each round of an ``(l, d, m)``-SPN, following Algorithm 2 of [Tod2015]_.
+    Return the number of active bits after each round of an ``(l, d, m)``-SPN, following Algorithm 2 of Todo (EUROCRYPT 2015).
 
     The trail stops when at most one active bit is left; every output bit is balanced after the
     rounds with at least two active bits.
@@ -97,7 +97,7 @@ def spn_division_property_trail(sbox_bit_size, sbox_degree, number_of_sboxes, ac
 def _feistel_function_evaluation(
     branch_bit_size, function_degree, bijective_function, function_input_bits, other_bits
 ):
-    """Return the division vectors after one round from one division vector (FeistelFuncEval of [Tod2015]_)."""
+    """Return the division vectors after one round from one division vector (FeistelFuncEval of Todo (EUROCRYPT 2015))."""
     vectors = []
     for bits_through_function in range(function_input_bits + 1):
         if bijective_function and bits_through_function == branch_bit_size:
@@ -110,7 +110,7 @@ def _feistel_function_evaluation(
 
 
 def _minimal_vectors(vectors):
-    """Return the vectors that are not componentwise larger than another one (SizeReduce of [Tod2015]_)."""
+    """Return the vectors that are not componentwise larger than another one (SizeReduce of Todo (EUROCRYPT 2015))."""
     vectors = set(vectors)
     minimal = [
         vector
@@ -126,7 +126,7 @@ def feistel_division_property_trail(
     branch_bit_size, function_degree, active_bits, bijective_function=False
 ):
     """
-    Return the division property after each round of an ``(l, d)``-Feistel network, following Algorithm 1 of [Tod2015]_.
+    Return the division property after each round of an ``(l, d)``-Feistel network, following Algorithm 1 of Todo (EUROCRYPT 2015).
 
     The network has two ``l``-bit branches and the round ``(w1, w2) -> (z1, z2) = (F(w1) xor w2, w1)``,
     where ``F`` has algebraic degree ``d``. The division property after a round is the list of
@@ -174,7 +174,7 @@ def feistel_division_property_trail(
 
 class DivisionPropertyPathSearch:
     """
-    Construct an instance of the division property path search of [Tod2015]_ for the primitive.
+    Construct an instance of the division property path search of Todo (EUROCRYPT 2015) for the primitive.
 
     The primitive is analysed as an ``(l, d, m)``-SPN, with ``m`` bijective ``l``-bit S-boxes of
     algebraic degree ``d`` on the whole state and otherwise linear components, or as an
@@ -188,7 +188,7 @@ class DivisionPropertyPathSearch:
 
     INPUT:
 
-    - ``primitive`` -- **Cipher object**; an instance of a primitive
+    - ``primitive`` -- **Primitive object**; an instance of a primitive
     - ``structure`` -- **string** (default: `None`); ``"spn"`` or ``"feistel"``, detected if ``None``
     - ``bijective_function`` -- **boolean** (default: `False`); whether ``F`` is bijective
 
@@ -222,7 +222,7 @@ class DivisionPropertyPathSearch:
 
     @property
     def structure(self):
-        """Return the structure in the notation of [Tod2015]_."""
+        """Return the structure in the notation of Todo (EUROCRYPT 2015)."""
         if self.structure_type == SPN:
             return "({sbox_bit_size}, {sbox_degree}, {number_of_sboxes})-SPN".format(
                 **self.parameters
@@ -243,7 +243,7 @@ class DivisionPropertyPathSearch:
         """
         Return the division property after each round.
 
-        See :func:`spn_division_property_trail` and :func:`feistel_division_property_trail`.
+        See ``spn_division_property_trail`` and ``feistel_division_property_trail``.
 
         INPUT:
 
@@ -288,7 +288,7 @@ class DivisionPropertyPathSearch:
 
     def todo_input(self, data_bit_size):
         """
-        Return the input division property of [Tod2015]_ for ``data_bit_size`` active bits.
+        Return the input division property of Todo (EUROCRYPT 2015) for ``data_bit_size`` active bits.
 
         For an SPN, full S-boxes first and then one partial S-box; for a Feistel network, ``w2`` first
         and then ``w1``.

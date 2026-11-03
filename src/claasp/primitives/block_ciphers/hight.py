@@ -224,6 +224,7 @@ class HIGHT(Primitive):
                 round_key = [
                     add(self, key_word, constant(self, 8, delta)) for key_word, delta in entries
                 ]
+            self._builder.add_round_key(tuple(round_key))
             state = [
                 state[1],
                 add(self, state[2], xor(self, f1(state[3]), round_key[2])),
@@ -236,4 +237,5 @@ class HIGHT(Primitive):
             ]
             if round_number == rounds - 1 and transformations_flag:
                 state = final(state)
+            self._builder.set_round_output(*state)
         self._builder.set_output(concatenate(self, *state))
