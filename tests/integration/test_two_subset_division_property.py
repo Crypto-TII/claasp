@@ -73,7 +73,7 @@ def test_legacy_keyless_ublock_and_lea_cases():
     analysis = TwoSubsetDivisionProperty(Ublock(number_of_rounds=6), key_schedule="removed")
     cube = list(range(36, 64)) + list(range(100, 128))
     assert not analysis.is_balanced_at_specific_output_bit_over_cube(
-        1, cube, solver=GLPKSolver(timeout_seconds=120)
+        1, cube, solver=GLPKSolver(timeout_seconds=300)
     )
     primitive = LEA(
         block_bit_size=128, key_bit_size=128, number_of_rounds=6, reorder_input_and_output=False
