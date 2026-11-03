@@ -14,3 +14,19 @@ FIXTURE = json.loads(Path("tests/fixtures/legacy_parity/constructor_options.json
 def test_legacy_nondefault_options(case):
     primitive = load_export(case["class"])(**case["options"])
     assert primitive.evaluate(*case["inputs"]) == case["expected"]
+
+
+@pytest.mark.parametrize("modulus", [3, 7, 13, 16])
+def test_explicit_modulus_arithmetic_matches_integer_oracle(modulus):
+    from claasp.primitives import IDEAMultiply, ModularAdd, ModularMultiply, ModularSubtract
+
+    add = ModularAdd(4, modulus=modulus)
+    subtract = ModularSubtract(4, modulus=modulus)
+    multiply = ModularMultiply(4, modulus=modulus)
+    idea = IDEAMultiply(4, modulus=modulus)
+    for left in range(16):
+        for right in range(16):
+            assert add.evaluate(left, right) == (left + right) % modulus
+            assert subtract.evaluate(left, right) == (left - right) % modulus
+            assert multiply.evaluate(left, right) == (left * right) % modulus
+            assert idea.evaluate(left, right) == ((left or 16) * (right or 16)) % modulus
