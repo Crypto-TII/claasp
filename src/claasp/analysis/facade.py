@@ -703,7 +703,9 @@ class Analysis:
             solver=solver,
         )
 
-    def boomerang(self, *, switch_round=None, components=None):
+    def boomerang(
+        self, *, switch_round=None, components=None, upper_window=None, lower_window=None
+    ):
         """Create a restricted ARX boomerang search with checked middle switches.
 
         EXAMPLES::
@@ -714,7 +716,13 @@ class Analysis:
         """
         from claasp.analysis.boomerang_search import BoomerangAnalysis
 
-        return BoomerangAnalysis(self.primitive, switch_round=switch_round, components=components)
+        return BoomerangAnalysis(
+            self.primitive,
+            switch_round=switch_round,
+            components=components,
+            upper_window=upper_window,
+            lower_window=lower_window,
+        )
 
     def find_sbox_boomerang_transition(self, component, **options):
         """Optimize or check an exact S-box boomerang-connectivity entry."""

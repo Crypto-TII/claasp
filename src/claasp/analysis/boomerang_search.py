@@ -61,10 +61,14 @@ class BoomerangAnalysis:
         ('modular_add_1_1',)
     """
 
-    def __init__(self, primitive, *, switch_round=None, components=None):
+    def __init__(
+        self, primitive, *, switch_round=None, components=None, upper_window=None, lower_window=None
+    ):
         self.primitive = primitive
         self.switch_round = switch_round
         self.components = components
+        self.upper_window = upper_window
+        self.lower_window = lower_window
 
     def model(self, *, input_difference=None, output_difference=None):
         """Build the restricted model without starting a solver."""
@@ -74,6 +78,8 @@ class BoomerangAnalysis:
             components=self.components,
             input_difference=input_difference,
             output_difference=output_difference,
+            upper_window=self.upper_window,
+            lower_window=self.lower_window,
         )
 
     def find_one_trail(

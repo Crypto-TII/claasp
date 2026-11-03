@@ -84,6 +84,8 @@ class BoomerangSATModel:
         components=None,
         input_difference=None,
         output_difference=None,
+        upper_window=None,
+        lower_window=None,
     ):
         from claasp.representations.constraints.sat.trails import WordDifferentialSATModel
         from claasp.transformations import slice_primitive
@@ -275,6 +277,7 @@ class BoomerangSATModel:
             WordDifferentialSATModel(
                 self.upper,
                 nonzero_input=self.input_name,
+                n_window=upper_window,
                 fixed_input_differences={name: 0 for name in self.upper.graph.secret_inputs}
                 | ({self.input_name: input_difference} if input_difference is not None else {}),
             ),
@@ -282,6 +285,7 @@ class BoomerangSATModel:
                 self.lower,
                 fixed_input_differences={name: 0 for name in self.lower.graph.secret_inputs},
                 output_difference=output_difference,
+                n_window=lower_window,
             ),
         )
         self._formula = None
