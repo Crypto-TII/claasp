@@ -144,6 +144,8 @@ class FixedKeyProbabilityResult:
     diagnostic: str | None = None
     key_averaged: bool = False
     trails: tuple[QuasidifferentialTrail, ...] = ()
+    event: str = "differential"
+    difference_constraints: tuple[tuple[str, int | str | None], ...] = ()
 
     @property
     def probability(self):
@@ -174,7 +176,8 @@ class FixedKeyProbabilityResult:
 
         rows = (
             TableRow.of("signed sum", str(self.signed_sum)),
-            TableRow.of("complete", self.complete),
+            TableRow.of("event", self.event),
+            ("complete", self.complete),
             TableRow.of("trails", self.trail_count),
             TableRow.of("key averaged", self.key_averaged),
             TableRow.of("diagnostic", self.diagnostic or "-"),
@@ -451,7 +454,18 @@ class QuasidifferentialAnalysis:
         if maximum_weight is not None or minimum_weight not in (None, 0):
             diagnostic = "weight-limited sum; not a complete fixed-key probability"
         result = FixedKeyProbabilityResult(
-            total, complete, len(enumeration.trails), diagnostic, averaged, enumeration.trails
+            total,
+            complete,
+            len(enumeration.trails),
+            diagnostic,
+            averaged,
+            enumeration.trails,
+            "constrained differential"
+            if any(
+                name not in self.primitive.graph.input_arrays for name in (fixed_differences or {})
+            )
+            else "differential",
+            tuple(sorted(differences.items())),
         )
         if complete and not 0 <= total <= 1:
             raise RuntimeError("complete signed sum is not a probability")

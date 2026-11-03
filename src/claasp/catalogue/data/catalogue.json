@@ -422,6 +422,16 @@
       "target": "glpsol"
     },
     {
+      "availability": "python_module",
+      "implementation": "claasp.drivers.solvers.highs:HighsSolver",
+      "kind": "solver",
+      "name": "highs",
+      "representations": [
+        "boolean_monomial_milp"
+      ],
+      "target": "scipy"
+    },
+    {
       "availability": "executable",
       "implementation": "claasp.drivers.algebra.singular:SingularDriver",
       "kind": "solver",
@@ -4472,7 +4482,12 @@
           "values": {
             "block_bit_size": 32,
             "key_bit_size": 64,
-            "number_of_rounds": null
+            "number_of_rounds": null,
+            "rotation_amounts": [
+              -1,
+              -8,
+              -2
+            ]
           }
         }
       ],
@@ -7673,6 +7688,11 @@
               8,
               7
             ],
+            "round_mode": "single",
+            "start_round": [
+              "odd",
+              "top"
+            ],
             "word_size": 32
           }
         }
@@ -8811,6 +8831,11 @@
               9,
               13,
               18
+            ],
+            "round_mode": "single",
+            "start_round": [
+              "odd",
+              "top"
             ],
             "word_size": 32
           }
@@ -10032,6 +10057,7 @@
         {
           "name": "default",
           "values": {
+            "modulus": null,
             "number_of_inputs": 2,
             "word_bit_size": 16
           }
@@ -10220,6 +10246,7 @@
         {
           "name": "default",
           "values": {
+            "modulus": null,
             "number_of_inputs": 2,
             "word_bit_size": 4
           }
@@ -10285,6 +10312,7 @@
         {
           "name": "default",
           "values": {
+            "modulus": null,
             "number_of_inputs": 2,
             "word_bit_size": 4
           }
@@ -10350,6 +10378,7 @@
         {
           "name": "default",
           "values": {
+            "modulus": null,
             "number_of_inputs": 2,
             "word_bit_size": 4
           }
@@ -12399,7 +12428,8 @@
         "Word"
       ],
       "drivers": [
-        "glpk"
+        "glpk",
+        "highs"
       ],
       "implementation": "claasp.representations.constraints.milp:BooleanMonomialGraphMILPModel",
       "kind": "constraint",
