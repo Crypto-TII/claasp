@@ -190,7 +190,18 @@ class GLPKSolver:
                 if fields[1] == "mip":
                     status_code, objective = fields[4], float(fields[5])
                 elif fields[1] == "bas":
-                    status_code, objective = fields[4], float(fields[5])
+                    # Basic LP records carry separate primal and dual statuses.
+                    primal, dual = fields[4:6]
+                    status_code = (
+                        "o"
+                        if primal == dual == "f"
+                        else "f"
+                        if primal == "f"
+                        else "n"
+                        if primal == "n"
+                        else "u"
+                    )
+                    objective = float(fields[6])
                 else:
                     raise RuntimeError(f"unsupported GLPK solution kind {fields[1]!r}")
             elif fields[0] == "j":

@@ -475,10 +475,28 @@
       "qualified_name": "claasp.analysis.BooleanSystemAnalysis"
     },
     {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangAnalysis",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.BoomerangAnalysis"
+    },
+    {
       "canonical_name": "claasp.analysis.boomerang.BoomerangExperimentResult",
       "defined_in": "claasp.analysis.boomerang",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.BoomerangExperimentResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.BoomerangSearchResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "enum",
+      "qualified_name": "claasp.analysis.BoomerangSearchStatus"
     },
     {
       "canonical_name": "claasp.analysis.advanced_trails.CPCharacteristicResult",
@@ -1570,6 +1588,100 @@
       "documented_by": "claasp.analysis.boomerang.BoomerangExperimentResult",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.boomerang.BoomerangExperimentResult.successes"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.__init__",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangAnalysis",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.find_lowest_weight_trail",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.find_lowest_weight_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.find_one_trail",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.find_one_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.model",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.model"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.__init__",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.diagnostic",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.diagnostic"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.is_optimal",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.is_optimal"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.status",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.status"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.to_terminal",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.trail",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.SATISFIABLE",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchStatus",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.SATISFIABLE"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.UNKNOWN",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchStatus",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.UNKNOWN"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.UNSATISFIABLE",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchStatus",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.UNSATISFIABLE"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.__init__",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchStatus",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.__init__"
     },
     {
       "canonical_name": "claasp.analysis.statistical_datasets.cbc_dataset",
@@ -3343,6 +3455,12 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.avalanche"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.boomerang",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.boomerang"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.component",
@@ -27248,6 +27366,12 @@
       "qualified_name": "claasp.representations.constraints.sat"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.ARXBoomerangTrail"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.trails.AutomaticWordImpossibleSATResult",
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "dataclass",
@@ -27276,6 +27400,12 @@
       "defined_in": "claasp.representations.constraints.sat.components.boolean",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.sat.BooleanNativeXorSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.BoomerangSATModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula",
@@ -27612,6 +27742,80 @@
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "dataclass",
       "qualified_name": "claasp.representations.constraints.sat.WordwiseImpossibleSATTrail"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.__init__",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.lower",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.lower"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.model_complete",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.model_complete"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.outer_weight",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.outer_weight"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.scope",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.scope"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.switches",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.switches"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.to_terminal",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.upper",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.upper"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel.cnf_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel.decode",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel.decode"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components",
