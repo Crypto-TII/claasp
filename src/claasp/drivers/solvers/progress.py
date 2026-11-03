@@ -374,4 +374,4 @@ class MILPProgressLog:
         )
 
 
-__all__ = ['MILPProgressLog', 'MILPProgressSnapshot']
+__all__ = ["MILPProgressLog", "MILPProgressSnapshot"]

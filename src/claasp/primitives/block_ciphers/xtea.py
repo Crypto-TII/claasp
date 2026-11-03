@@ -66,4 +66,5 @@ class XTEA(Primitive):
             )
             keyed = add(self, round_sum, keys[(round_sum_value >> 11) & 3])
             right = add(self, right, xor(self, nonlinear, keyed))
+            self._builder.set_round_output(left, right)
         self._builder.set_output(concatenate(self, left, right))

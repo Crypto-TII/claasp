@@ -55,4 +55,5 @@ class TEA(Primitive):
                 add(self, shift(self, left, right_shift_amount), keys[3]),
             )
             right = add(self, right, mix)
+            self._builder.set_round_output(left, right)
         self._builder.set_output(concatenate(self, left, right))
