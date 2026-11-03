@@ -158,7 +158,7 @@ MILP models
    :members:
 
 Quasidifferential semantics
---------------------------
+---------------------------
 
 .. automodule:: claasp.semantics.cryptanalysis.quasidifferential
    :members:
