@@ -510,6 +510,7 @@ class SatDifferentialLinearModel(SatModel):
         Finds the differential-linear trail with the lowest weight.
 
         INPUT:
+
         - ``fixed_values`` -- **list** (default: `[]`); specifies a list of variables that should be fixed to specific values. Each entry in the list should be a dictionary representing constraints for specific components, written in the CLAASP constraining syntax.
         - ``solver_name`` -- **str** (default: ``solvers.SOLVER_DEFAULT``); The SAT solver to use.
         - ``num_unknown_vars`` -- **int** (default: 1); number of unknown variables in the output of the middle round
@@ -523,6 +524,7 @@ class SatDifferentialLinearModel(SatModel):
           next weights (see :py:func:`~claasp.cipher_modules.models.utils.save_trail_lower_bounds_and_time_estimates`)
 
         RETURN:
+
         - **dict**; Solution with the trail and metadata (weight, time, memory usage).
         """
         log_file_name = (
